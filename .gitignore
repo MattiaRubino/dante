@@ -1,0 +1,51 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / React / Expo
+node_modules/
+.next/
+dist/
+build/
+.expo/
+.expo-shared/
+web-build/
+coverage/
+
+# Mobile signing / generated native artifacts
+*.jks
+*.keystore
+android/.gradle/
+ios/Pods/
+
+# Local databases and uploads
+*.db
+*.sqlite
+*.sqlite3
+data/
+uploads/
+backups/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
