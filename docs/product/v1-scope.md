@@ -26,6 +26,14 @@ Participant-specific data may include:
 
 A change to shared facts can be propagated to all participants, while each participant continues managing their own LifeOS independently.
 
+## Independent calendar items
+
+Activities and events may exist independently. They do not require a parent goal, program, project, routine, or optional module.
+
+Connections to higher-level structures remain optional and can be added only when they provide real value. This keeps simple actions such as an appointment, dinner, errand, or one-off workout quick to create and manage.
+
+An item may later be linked to one or more relevant structures without being recreated.
+
 ## V1 boundary
 
 V1 does not require full collaboration features such as team workspaces, shared project management, role hierarchies, task assignment, group chat, or granular collaborative permissions.
