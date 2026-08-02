@@ -25,22 +25,28 @@ Before final confirmation, LifeOS offers an optional operational-refinement step
 
 The user may decline refinement. In that case LifeOS keeps the plan intentionally simple rather than forcing a questionnaire.
 
-## Completion meaning
+## Completion and user declaration
 
-LifeOS distinguishes between:
+LifeOS treats the user's explicit declaration as authoritative for their own progress and results.
 
-- plan completion: the scheduled commitment was completed, such as performing two hours per day for six months;
-- outcome achievement: the desired external result was verified, such as actually reaching spoken English B2.
+If the user confirms that an activity was completed, that a program was followed, or that a goal was reached, LifeOS records it accordingly. The product does not require documentary proof, a certificate, sensor evidence, or an external verification unless the user explicitly wants to track one.
 
-Completing the planned time does not automatically prove that an outcome-based target was achieved.
+LifeOS may distinguish between:
 
-The user can choose one of these completion models:
+- activity completion: the planned session or commitment was reported as completed;
+- program completion: the planned sequence or duration was reported as completed;
+- goal achievement: the user reported that the desired result was achieved.
 
-- effort-based: the goal is complete when the required sessions, duration, or quantity is completed;
-- outcome-based: the goal is complete only when a metric, test, milestone, or explicit confirmation verifies the result;
-- hybrid: effort completion closes the program, while outcome achievement remains separately verified.
+These distinctions are useful for organisation and statistics, but they are not an investigation into whether the user is telling the truth.
 
-LifeOS must clearly show which completion model is being used.
+The source of a result should still be transparent, for example:
+
+- user-confirmed;
+- automatically marked according to a user-defined rule;
+- imported from an integration;
+- inferred provisionally and awaiting confirmation.
+
+LifeOS should not challenge a confirmed result without a concrete reason. If the user later says that real progress is missing, the system can reassess the plan, identify likely problems, and propose a more realistic structure.
 
 ## Assisted creation
 
@@ -59,7 +65,7 @@ The interaction should remain adaptive. It must not ask for details that are unn
 
 Before calendar insertion, LifeOS shows:
 
-- the proposed goal and completion model;
+- the proposed goal and completion handling;
 - milestones, activities, routines, and program steps;
 - total and weekly time requirements;
 - proposed days and time windows;
@@ -101,7 +107,6 @@ LifeOS then presents a structured preview before adding anything to the calendar
 Regardless of creation mode, the resulting structure may contain:
 
 - goal definition;
-- completion model;
 - target period or deadline;
 - milestones;
 - activities and routines;
