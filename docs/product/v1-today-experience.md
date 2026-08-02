@@ -19,6 +19,36 @@ From the Today view, the user can:
 - open linked goals, programs, projects, modules, attachments, locations, and notes;
 - see conflicts, schedule pressure, and meaningful changes requiring attention.
 
+## Contextual interaction and replanning
+
+An expanded item can expose a contextual conversation or command surface tied to that specific item and its surrounding plan.
+
+The user can express intentions naturally, for example:
+
+- “Today I do not want this lunch; use option Y instead.”
+- “Move this to next week and suggest an equivalent replacement for today.”
+- “Swap these two activities.”
+- “I only have thirty minutes; shorten or split this activity.”
+- “I cannot do this outdoors because of the weather.”
+- “Keep today's change, but do not alter the rest of the routine.”
+- “Apply this change to the future program as well.”
+
+The system interprets the request in the context of the selected item, checks related constraints, and produces a concrete proposal. A proposal may:
+
+- replace an item with an equivalent alternative;
+- move an item to another valid time;
+- exchange the positions of two compatible items;
+- shorten, split, merge, postpone, skip, or cancel an item;
+- adjust connected preparation, travel, recovery, meal, or dependency blocks;
+- apply a change only once or update the originating routine or program;
+- explain which deadlines, goals, priorities, or future activities would be affected.
+
+Material changes are shown before application. The user remains authoritative and can confirm, modify, or reject the proposal. Simple low-risk edits may be applied directly when the user's instruction is unambiguous and the user has enabled that behaviour.
+
+The interaction surface must not require a long conversation for simple actions. Direct controls remain available for common edits, while natural-language interaction is an additional faster path for contextual or multi-step changes.
+
+The product experience can be implemented before a production AI provider is enabled by using structured commands, deterministic rules, mock responses, and manual ChatGPT-assisted import/export. The domain action and proposal formats remain the same when a future API provider is connected.
+
 ## Contextual intelligence
 
 The Today view may surface information that affects execution, including:
