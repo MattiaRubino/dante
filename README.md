@@ -4,7 +4,15 @@ LifeOS is an adaptive personal operating system for planning goals, activities, 
 
 ## Project status
 
-The project is currently in the product-definition and architecture-foundation phase. No production application code has been committed yet.
+Phase 3 product definition is closed. Phase 4 is in progress with a coded UX prototype focused on the Home/Today surface, timeline density, progressive disclosure, overlapping items, and grouped expansion.
+
+No production application code has been committed yet. The current milestone is an interactive validation prototype with simulated data.
+
+## Current Phase 4 milestone
+
+- UX decisions: [`docs/ux/today-home-v7.md`](docs/ux/today-home-v7.md)
+- Prototype archive and restore instructions: [`prototypes/today/archive/README.md`](prototypes/today/archive/README.md)
+- Prototype index: [`prototypes/README.md`](prototypes/README.md)
 
 ## Product direction
 
