@@ -2,6 +2,22 @@
 
 This directory contains approved UX flows, prototype decisions, and open interaction questions.
 
+## Phase 4 source of truth
+
+Before changing any frontend prototype, read:
+
+- [`../phase-4/frontend-master.md`](../phase-4/frontend-master.md)
+
+The master log records:
+
+- current frontend state;
+- decisions and rationale;
+- version history;
+- known issues;
+- non-regression criteria;
+- ChatGPT/Claude handoff rules;
+- required documentation and Git workflow for every iteration.
+
 ## Current milestone
 
 - [`today-home-v7.md`](today-home-v7.md) documents the Phase 4 Home/Today prototype, including:
