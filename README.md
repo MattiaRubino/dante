@@ -10,9 +10,12 @@ No production application code has been committed yet. The current milestone is 
 
 ## Current Phase 4 milestone
 
-- UX decisions: [`docs/ux/today-home-v7.md`](docs/ux/today-home-v7.md)
+- Phase 4 frontend source of truth: [`docs/phase-4/frontend-master.md`](docs/phase-4/frontend-master.md)
+- Home/Today v7 decisions: [`docs/ux/today-home-v7.md`](docs/ux/today-home-v7.md)
 - Prototype archive and restore instructions: [`prototypes/today/archive/README.md`](prototypes/today/archive/README.md)
 - Prototype index: [`prototypes/README.md`](prototypes/README.md)
+
+The frontend master log must be read before each Phase 4 iteration and updated after every meaningful change. It records the current implementation, rationale, regressions, open issues, handoff rules, versioning, and Git workflow.
 
 ## Product direction
 
