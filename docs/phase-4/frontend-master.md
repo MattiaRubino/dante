@@ -1,81 +1,40 @@
 # LifeOS — Fase 4 Frontend Master Log
 
-> Documento operativo unico per continuità tra ChatGPT, Claude e sviluppo locale.
->
-> Questo file è la fonte di verità della Fase 4 frontend: descrive ciò che esiste, perché è stato fatto, quali vincoli devono essere preservati, cosa è ancora provvisorio e come documentare ogni modifica successiva.
+> Fonte di verità operativa per il passaggio fra ChatGPT, Claude e sviluppo locale.
+> Leggere prima di modificare il frontend e aggiornare dopo ogni giro.
 
 ---
 
-## 0. Metadati
+## 0. Stato corrente
 
 | Campo | Valore |
 |---|---|
 | Progetto | LifeOS — Personal Operating System |
-| Fase | 4 — Prototipazione frontend e validazione UX |
-| Stato | Home/Today desktop in iterazione |
-| Versione documento | `F4-FE-001` |
-| Milestone corrente | `Today v7` |
-| Ultimo aggiornamento | 4 agosto 2026 |
-| Repository | `MattiaRubino/lifeos` |
+| Fase | 4 — prototipazione frontend e validazione UX |
+| Milestone | `Home/Today v18` |
+| Versione documento | `F4-FE-007` |
+| Ultimo aggiornamento | 5 agosto 2026 |
 | Branch | `prototype/phase-4-today-home` |
 | Pull request | Draft PR `#2` |
-| Prototipo | `prototypes/today/lifeos-home-oggi-v7.html` |
-| Documento specifico | `docs/ux/today-home-v7.md` |
-| Responsabile Git | ChatGPT, su richiesta dell'utente |
-| Operatore implementazione | Claude o ChatGPT |
+| Implementazione | HTML/CSS/JavaScript standalone con dati simulati |
+| Stato produzione | Non ancora React/Next.js; prototipo di validazione |
+| Responsabile Git | ChatGPT |
+| Operatore codice | ChatGPT o Claude |
 
-Il prototipo corrente è HTML/CSS/JavaScript standalone con dati simulati. Serve a validare UX e comportamento; non è ancora codice di produzione React/Next.js.
+## 1. Regola obbligatoria per ogni modifica
 
----
+Una modifica non è chiusa finché non sono registrati:
 
-## 1. Scopo e regola obbligatoria
-
-Questo documento deve permettere di passare da ChatGPT a Claude, o viceversa, senza perdere:
-
-- stato reale del frontend;
-- funzioni già introdotte;
-- ragioni delle scelte;
-- vincoli da non rompere;
-- bug conosciuti;
-- file e versioni;
-- test eseguiti;
-- prossima attività.
-
-Una modifica frontend non è chiusa finché non sono registrati:
-
-1. richiesta o problema;
-2. decisione;
-3. file modificati;
+1. richiesta o bug;
+2. decisione UX/tecnica;
+3. file e versione iniziale;
 4. implementazione;
 5. motivazione;
-6. test;
+6. test eseguiti;
 7. regressioni o limiti;
-8. versione e commit/PR.
+8. versione risultante e commit/PR.
 
-Ogni giro della Fase 4 deve aggiornare questo file.
-
----
-
-## 2. Collaborazione ChatGPT / Claude
-
-### ChatGPT
-
-- guida tecnica e UX;
-- revisione delle modifiche;
-- custodia del contesto;
-- aggiornamento di questo master log;
-- operazioni Git;
-- controllo di coerenza tra codice e documentazione.
-
-### Claude
-
-- implementazione pratica;
-- modifica dei file;
-- prove nel proprio ambiente;
-- report di diff, errori e limiti;
-- nessuna decisione architetturale autonoma non segnalata.
-
-### Handoff obbligatorio di Claude
+Claude deve restituire sempre:
 
 ```text
 VERSIONE / FILE DI PARTENZA:
@@ -88,593 +47,304 @@ BUG O LIMITI RESIDUI:
 PUNTI CHE RICHIEDONO DECISIONE:
 ```
 
-ChatGPT usa questo report per aggiornare il master log e GitHub.
+Non rimuovere o sostituire una funzione esistente durante una correzione locale senza autorizzazione esplicita.
 
 ---
 
-## 3. Versionamento
+## 2. Obiettivo della schermata Home/Today
 
-### Documento
+Today è il cuore operativo di LifeOS. Deve consentire di:
 
-```text
-F4-FE-NNN
-```
+- leggere la giornata rapidamente;
+- comprendere orari, sovrapposizioni e margini;
+- espandere il dettaglio senza perdere contesto;
+- spostare elementi in modo fluido e annullabile;
+- separare la giornata per gruppi mantenendo il tempo come asse comune;
+- scorrere giorni consecutivi;
+- mostrare un contesto ambientale utile senza diventare un calendario generico.
 
-### Prototipi
-
-```text
-lifeos-<area>-vN.html
-```
-
-### Decisioni, problemi e modifiche
-
-```text
-FE-DEC-NNN
-FE-ISS-NNN
-FE-CHG-NNN
-```
-
-Non sovrascrivere una milestone importante. Quando cambia il comportamento, creare una nuova versione.
+La vista compatta e la vista per gruppi sono due stati della stessa timeline, non due schermate separate.
 
 ---
 
-## 4. Obiettivo della Fase 4
+## 3. Decisioni consolidate
 
-La Fase 4 trasforma le decisioni della Fase 3 in prototipi interattivi per:
-
-- validare Home/Today;
-- validare navigazione e gerarchia;
-- testare giornate leggere e dense;
-- verificare progressive disclosure;
-- gestire sovrapposizioni;
-- definire le interazioni desktop;
-- preparare la futura conversione React e l'adattamento mobile.
-
-Non serve ancora chiudere backend, API, database, autenticazione, responsive, palette o design system definitivo.
-
----
-
-## 5. Decisioni frontend consolidate
-
-### FE-DEC-001 — Today è il cuore operativo
-
-La Home/Today deve permettere di capire la giornata, agire sugli elementi e reagire ai cambiamenti senza aprire continuamente pagine separate.
-
-### FE-DEC-002 — Timeline unica e trasformabile
-
-Vista compatta e vista per gruppi sono due stati della stessa timeline, non due schermate.
-
-### FE-DEC-003 — Tre livelli di approfondimento
+### FE-DEC-001 — Tre livelli di approfondimento
 
 1. sotto-attività espandibili nella card;
-2. popup/pannello di dettaglio;
-3. espansione orizzontale per gruppi.
+2. popup/pannello completo cliccando il titolo;
+3. espansione orizzontale per gruppi tramite maniglia o pulsante.
 
-### FE-DEC-004 — Il tempo resta il riferimento comune
+### FE-DEC-002 — Tempo comune
 
-Anche separando gli elementi in colonne, la posizione verticale resta legata all'orario.
+La posizione verticale resta sempre legata all'orario, anche in vista per gruppi.
 
-### FE-DEC-005 — Niente spazio riempito senza motivo
+### FE-DEC-003 — Densità dinamica
 
-La timeline compatta e le card non devono occupare tutta la larghezza arbitrariamente. Deve restare spazio per rail, moduli futuri ed espansione.
+Le fasce dense ricevono più spazio verticale. Un singolo evento breve non deve ingrandire indiscriminatamente tutta la giornata, ma una fascia realmente affollata deve dilatarsi quanto serve per rendere le card leggibili.
 
-### FE-DEC-006 — Densità dinamica
+### FE-DEC-004 — Card adattive
 
-La scala verticale si adatta alla densità della giornata. Un singolo evento breve non deve ingrandire tutta la timeline.
+- niente card full-width senza motivo;
+- niente card microscopiche quando esiste spazio utile;
+- titolo e orario sono dati primari;
+- metadati secondari possono sparire soltanto se manca davvero spazio;
+- sovrapposizioni in corsie senza intersezioni.
 
-### FE-DEC-007 — Colonne globali stabili
+### FE-DEC-005 — Colonne globali stabili
 
-Ordine e struttura delle colonne dipendono dall'insieme globale delle tipologie, non solo dal giorno corrente.
+Ordine e struttura delle colonne dipendono dalle tipologie globali, non dalle sole tipologie presenti nel giorno corrente. Il riordino dei gruppi superiori aggiorna anche la geometria sottostante.
 
-### FE-DEC-008 — Scroll orizzontale condizionale
+### FE-DEC-006 — Scroll orizzontale condizionale
 
-La scrollbar appare solo se le colonne non entrano. L'asse orario resta fermo.
+Compare soltanto quando le colonne non entrano. L'asse orario resta fermo.
 
-### FE-DEC-009 — Colore nel dettaglio
+### FE-DEC-007 — Colore nel dettaglio
 
-Il pallino colore non appare nelle card della timeline. Il colore si modifica nel popup o nel form completo.
+Il selettore colore non appare nelle card della timeline; resta nel popup/form completo.
 
-### FE-DEC-010 — Documentazione e Git fanno parte della modifica
+### FE-DEC-008 — Percorso dell'omino
 
-Ogni milestone deve avere prototipo, documentazione, motivazione e commit identificabile.
+È una strada visiva fissa, bianca e tratteggiata. Non rappresenta energia o capacità. Il tratto futuro è più luminoso, quello passato attenuato. Può ospitare bandierine/milestone.
+
+### FE-DEC-009 — Capacità/energia fuori dalla vista normale
+
+La stima di capacità non viene mostrata stabilmente nella timeline. Potrà comparire in futuro durante pianificazione, trascinamento o analisi dedicate.
+
+### FE-DEC-010 — Focus contestuale
+
+Clic sul corpo libero della card:
+
+- card selezionata al 100%;
+- altre card dello stesso gruppo ancora leggibili;
+- altri gruppi attenuati;
+- secondo clic o clic sul vuoto ripristina la vista.
+
+### FE-DEC-011 — Drag come sottosistema isolato
+
+- titolo: apre popup;
+- comando sotto-attività: espande;
+- resto della card: drag;
+- soglia di attivazione 7 px;
+- overlay fixed indipendente dal contenitore;
+- card originale attenuata;
+- auto-scroll ai bordi;
+- spostamento fra giorni caricati;
+- categoria invariata;
+- Esc annulla silenziosamente;
+- toast post-drop con Annulla.
 
 ---
 
-## 6. Stato corrente Home/Today v7
+## 4. Stato funzionale v18
 
-### 6.1 Struttura
+### 4.1 Struttura
 
 - sidebar;
-- saluto e data;
-- ricerca/comando globale;
-- azioni rapide;
+- saluto, data, ricerca e azioni rapide;
 - tema chiaro/scuro;
 - striscia settimanale;
-- timeline;
+- titolo contestuale `Oggi — Martedì 4 agosto`;
+- barra globale dei gruppi riordinabile e filtrabile;
+- timeline continua;
 - asse ambientale;
-- rail obiettivi/priorità;
+- obiettivi e priorità nel rail destro;
+- popup dettaglio con AI contestuale dimostrativa;
 - sotto-attività;
-- popup dettaglio;
-- AI contestuale dimostrativa;
-- espansione per gruppi;
-- scroll orizzontale condizionale;
-- caricamento progressivo delle giornate.
+- drag cross-day;
+- vista gruppi;
+- scroll progressivo fino a 14 giorni;
+- zoom manuale e da mouse/trackpad.
 
-### 6.2 Striscia settimanale
+### 4.2 Timeline completa 24 ore
 
-- click sul giorno aggiorna la timeline;
-- il giorno selezionato si evidenzia;
-- oggi mantiene un indicatore;
-- gli indicatori anticipano il carico;
-- durante lo scroll tra giornate la selezione si aggiorna.
-
-### 6.3 Asse orario ambientale
-
-Può mostrare:
-
-- notte;
-- alba;
-- giorno;
-- tramonto;
-- sera;
-- temperatura;
-- fase lunare.
-
-Razionale:
-
-- identità distinta da un calendario generico;
-- contesto utile a fotografia, sport, viaggi e attività legate a luce/meteo.
-
-Vincoli:
-
-- asse fisso durante lo scroll orizzontale;
-- linea dell'ora corrente solo su oggi;
-- meteo e luna disattivabili in futuro;
-- contrasto degli orari sempre leggibile.
-
-### 6.4 Blocchi temporali
-
-- posizione verticale secondo inizio/fine;
-- corsie per sovrapposizioni;
-- larghezza adattiva con limite massimo;
-- nessuna card full-width senza motivo;
-- titolo con wrapping controllato;
-- metadati nascosti se manca spazio;
-- altezza minima locale per eventi brevi;
-- nessun pallino colore sulla card;
-- click sul titolo apre il dettaglio.
-
-### 6.5 Sovrapposizioni
-
-In vista compatta gli elementi intrecciati vengono distribuiti in corsie senza coprirsi.
-
-In vista per gruppi, due elementi dello stesso gruppo che si sovrappongono usano sotto-corsie interne alla colonna.
-
-### 6.6 Densità dinamica
-
-La scala deve considerare:
-
-- numero elementi;
-- concentrazione per fascia oraria;
-- overlap;
-- frammentazione;
-- quantità di eventi brevi;
-- spazio minimo di leggibilità.
-
-Comportamento:
-
-- giornata leggera: scala compatta;
-- giornata densa: timeline più alta e più scroll;
-- evento breve: altezza minima locale;
-- quantità estreme: futura virtualizzazione.
-
-Errore da non reintrodurre:
+Ogni giornata copre:
 
 ```text
-Non calcolare lo zoom globale soltanto dalla durata dell'evento più breve.
+00:00 → 24:00
 ```
 
-### 6.7 Sotto-attività
+Non esiste più il salto serale/notturno. La fascia notturna può contenere lavoro, sonno, viaggi o emergenze e continua direttamente nella giornata successiva.
 
-La parte bassa della card può mostrare una scritta esplicita come:
+Per evitare una schermata iniziale vuota:
+
+- oggi si apre circa due ore prima dell'ora corrente;
+- un altro giorno si apre circa un'ora prima del primo evento;
+- un giorno vuoto si apre intorno alle 08:00.
+
+L'intera giornata resta accessibile tramite scroll.
+
+### 4.3 Mapper temporale v18
+
+Il mapper combina:
+
+- quantità di eventi;
+- sovrapposizioni;
+- inizi ravvicinati;
+- attività brevi;
+- vincolo minimo di leggibilità della card.
+
+Altezze minime indicative:
 
 ```text
-3 sotto-attività · espandi
+1–5 minuti   → 50 px
+6–15 minuti  → 68 px
+16–30 minuti → 78 px
+31–45 minuti → 84 px
+46–60 minuti → 90 px
+oltre 60 min → 96 px
+con sotto-attività → almeno 98 px
 ```
 
-Le sotto-attività:
+La dilatazione viene incorporata nella funzione del tempo: griglia, orari, card, margini e linea dell'ora corrente restano coerenti.
 
-- sono cliccabili;
-- possono avere orario e durata;
-- possono appartenere a un'altra categoria;
-- possono avere stato proprio;
-- aprono il proprio dettaglio.
+### 4.4 Larghezza card
 
-L'espansione deve mantenere coerenti blocco, griglia e riferimento temporale.
+- gli overlap usano fino al 94% della larghezza utile della timeline compatta;
+- le corsie dividono lo spazio senza sovrapporsi;
+- una card singola usa una larghezza calcolata da titolo, metadati e spazio disponibile;
+- il bias di categoria è ridotto e non deve troncare inutilmente le card;
+- titolo e orario restano visibili anche nelle card strette.
 
-### 6.8 Popup di dettaglio
+### 4.5 Precisione temporale
 
-Deve contenere:
+```text
+zoom normale              → snap a 5 minuti
+zoom >= 175%              → snap a 1 minuto
+```
 
-- titolo;
-- tipo;
-- orario;
-- durata;
-- area/calendario;
-- metadati;
-- sotto-attività;
-- colore;
-- collegamenti;
-- azioni;
-- campo AI contestuale.
+Non vengono stampate etichette per ogni minuto; la precisione riguarda il posizionamento.
 
-L'AI propone cambiamenti relativi all'elemento aperto; l'utente decide.
+### 4.6 Zoom semantico
 
-### 6.9 Espansione orizzontale
+Il vecchio rapporto proporzionale fra altezze è stato eliminato. Lo zoom salva:
 
-- drag attivo solo sulla maniglia visibile;
-- la timeline cresce realmente a destra;
-- il rail rimane visibile quando c'è spazio;
-- il rail si riduce solo se necessario;
-- asse orario fisso;
-- posizione verticale invariata;
-- trasformazione continua durante il drag;
-- sotto soglia torna compatta;
-- oltre soglia completa l'apertura;
-- pulsante e drag usano lo stesso stato.
+```text
+giorno + minuto + posizione nella viewport
+```
 
-### 6.10 Colonne globali
+Dopo il re-render ritrova la stessa ancora.
 
-- ordine stabile;
-- larghezza non dipendente dal singolo giorno;
-- colonne senza elementi attenuate;
-- passare da un giorno all'altro non cambia struttura;
-- tassonomia concreta ancora provvisoria.
+- pulsanti `− / +`: ancoraggio al centro della viewport;
+- Ctrl+rotellina o pinch: ancoraggio sotto il puntatore;
+- nessun cambio di giorno;
+- smooth scrolling e browser scroll anchoring disattivati durante il reflow;
+- nessuna animazione che attraversa giorni diversi.
 
-### 6.11 Scroll orizzontale
+### 4.7 Filtri
 
-- appare solo nella vista espansa;
-- compare solo se necessario;
-- sposta intestazioni e contenuti;
-- non sposta l'asse temporale;
-- scompare tornando alla vista compatta.
+I filtri cambiano soltanto gli elementi visibili. Non cambiano:
 
-### 6.12 Rail destro
+- densità;
+- altezza della giornata;
+- ordine globale;
+- larghezza target;
+- limite di espansione;
+- geometria delle colonne.
 
-Contiene obiettivi attivi, progress ring e priorità.
+### 4.8 Espansione per gruppi
 
-Regole:
-
-- rimane visibile quando lo spazio lo consente;
-- non scompare automaticamente in modalità gruppi;
-- può ridursi o spostarsi solo se l'espansione richiede spazio;
-- potrà ospitare altri moduli contestuali.
-
-### 6.13 Scroll tra giornate
-
-Direzione:
-
-- caricamento progressivo;
-- pochi giorni iniziali;
-- caricamento vicino al fondo;
-- limite iniziale Today: 14 giorni;
-- aggiornamento del giorno principale visibile;
-- collegamento al Calendario dopo il limite.
-
-Devono aggiornarsi data, settimana, riepilogo, priorità, stato Oggi/Domani/data e linea dell'ora corrente.
-
-### 6.14 Colori
-
-Nessuna associazione definitiva tra tipo e colore.
-
-Priorità prevista:
-
-1. override del singolo elemento;
-2. colore area/calendario;
-3. default configurato;
-4. trattamento neutro LifeOS.
-
-Chiaro/scuro e colore d'accento sono dimensioni separate. Successo, warning, errore, info e AI restano ruoli semantici distinti.
+- drag soltanto dalla maniglia visibile;
+- pulsante e maniglia condividono lo stesso stato;
+- timeline cresce realmente a destra;
+- rail resta visibile quando c'è spazio;
+- ordine delle colonne segue `GROUP_ORDER`;
+- molte tipologie attivano scroll orizzontale;
+- filtri non modificano la corsa massima.
 
 ---
 
-## 7. Direzione visuale provvisoria
+## 5. Cronologia sintetica
 
-LifeOS deve essere premium, personale, calmo, moderno, leggermente futuristico e distinto da un comune calendario.
-
-Profondità su tre livelli:
-
-1. struttura;
-2. componente interattivo;
-3. pannello flottante.
-
-Usare superfici, bordi sottili, ombre morbide e luce interna minima. Evitare glow continuo, neon aggressivo, glassmorphism pesante e gradienti su ogni card.
-
-Font esplorati:
-
-- Manrope per UI;
-- Space Grotesk per titoli e metriche grandi.
-
-Questa scelta non è ancora definitiva.
+- **v2:** shell, timeline, asse ambientale, card, popup, sotto-attività.
+- **v3–v4:** espansione reale e recupero delle tre estensioni.
+- **v5:** card compatte, drag solo maniglia, densità multifattore.
+- **v6:** timeline compatta ridotta, spazio futuro e rail persistente.
+- **v7:** colonne globali stabili e scrollbar condizionale.
+- **v10:** onda/capacità inizialmente interpretata male, filtri e zoom.
+- **v12–v13:** gruppi globali, focus, collegamenti e primo drag.
+- **v14:** percorso dell'omino separato dalla capacità, focus contestuale, riordino gruppi.
+- **v15:** categoria invariata nel drag, filtro e card adattive ripristinate.
+- **v16:** overlay fixed, auto-scroll, cross-day, undo e macchina a stati del drag.
+- **v17:** densità locale, snap 5/1 minuto, filtri indipendenti dalla geometria.
+- **v18:** card realmente leggibili, timeline 24h, apertura contestuale e zoom ancorato.
 
 ---
 
-## 8. Cronologia delle iterazioni
-
-### v2 — base
-
-Introdotti shell, timeline, asse ambientale, card, popup, sotto-attività, prima espansione e rail.
-
-Problemi: espansione non reale, rail fisso, blocchi deformati, scala alterata dall'evento più breve, card troppo grandi.
-
-### v3/v4 — correzioni strutturali
-
-Obiettivo: espansione reale, conservazione delle tre estensioni e scroll tra giornate.
-
-Le regressioni hanno fissato una regola: non rimuovere funzioni esistenti durante correzioni locali.
-
-### v5 — card e densità
-
-- card adattive;
-- timeline più compatta;
-- pallino colore rimosso;
-- drag limitato alla maniglia;
-- densità basata su più fattori.
-
-### v6 — larghezza e rail
-
-- timeline compatta ristretta;
-- spazio libero a destra;
-- rail persistente;
-- espansione più controllata.
-
-### v7 — colonne globali
-
-- struttura basata sulle tipologie globali;
-- ordine stabile;
-- colonne vuote attenuate;
-- scrollbar condizionale;
-- asse orario fisso.
-
----
-
-## 9. Registro modifiche consolidate
-
-### FE-CHG-001 — Asse ambientale
-
-Rende la timeline riconoscibile e offre contesto utile. Mantenere; dati reali rimandati.
-
-### FE-CHG-002 — Corsie per overlap
-
-Evita che eventi simultanei si coprano. Mantenere.
-
-### FE-CHG-003 — Sotto-attività
-
-Permette progressive disclosure senza lasciare la timeline. Mantenere; reflow da validare.
-
-### FE-CHG-004 — Dettaglio e AI contestuale
-
-Separa scansione rapida e controllo profondo. Mantenere.
-
-### FE-CHG-005 — Timeline trasformabile
-
-Caratteristica centrale: vista unica che si separa in colonne mantenendo il tempo comune.
-
-### FE-CHG-006 — Drag solo dalla maniglia
-
-Evita interazioni involontarie. Mantenere.
-
-### FE-CHG-007 — Card compatte
-
-Riduce spazio sprecato e lascia margine all'espansione. Mantenere.
-
-### FE-CHG-008 — Densità dinamica
-
-Evita la compressione delle giornate dense. Principio approvato; formula aperta.
-
-### FE-CHG-009 — Rail persistente
-
-Obiettivi e priorità restano parte della lettura della giornata.
-
-### FE-CHG-010 — Colonne globali stabili
-
-Evita salti di layout e conserva memoria spaziale.
-
-### FE-CHG-011 — Scroll orizzontale condizionale
-
-Gestisce molte tipologie senza comprimere tutto.
-
-### FE-CHG-012 — Colore nel popup
-
-Riduce rumore visivo nella timeline.
-
----
-
-## 10. Problemi aperti
-
-### FE-ISS-001 — Formula densità
-
-Definire formula controllabile con numero elementi, overlap, distribuzione, durata, frammentazione e altezza minima.
-
-### FE-ISS-002 — Tassonomia gruppi
-
-Decidere se le colonne rappresentano tipo, area, categoria, progetto o raggruppamento scelto dall'utente.
-
-### FE-ISS-003 — Colonne vuote
-
-Valutare se mantenerle attenuate, comprimerle o riallineare le presenti senza perdere l'ordine globale.
-
-### FE-ISS-004 — Rail intermedio
-
-Definire larghezza minima, compressione, spostamento e moduli prioritari.
-
-### FE-ISS-005 — Sotto-attività complesse
-
-Verificare collisioni, aperture multiple, limite e comportamento touch.
-
-### FE-ISS-006 — Scroll multigiorno
-
-Completare caricamento progressivo, IntersectionObserver, conservazione scroll e virtualizzazione.
-
-### FE-ISS-007 — Accessibilità
-
-Tastiera, screen reader, drag accessibile, focus, reduced motion, contrasto e target touch.
-
-### FE-ISS-008 — Mobile
-
-La home mobile richiede progettazione dedicata, non compressione della desktop.
-
-### FE-ISS-009 — Conversione React
-
-Definire componenti, stato, algoritmo layout, separazione dati/presentazione, test e design tokens.
-
----
-
-## 11. Criteri di non regressione
-
-- [ ] asse orario coerente;
-- [ ] posizione temporale corretta;
-- [ ] overlap senza copertura;
-- [ ] card non full-width senza motivo;
-- [ ] wrapping controllato;
-- [ ] nessun pallino colore sulle card;
-- [ ] sotto-attività espandibili e cliccabili;
-- [ ] popup funzionante;
-- [ ] AI contestuale presente;
-- [ ] drag solo sulla maniglia;
-- [ ] pulsante e drag sincronizzati;
-- [ ] asse fermo in vista gruppi;
-- [ ] posizione verticale invariata;
-- [ ] rail visibile quando c'è spazio;
-- [ ] colonne stabili tra giornate;
-- [ ] scrollbar solo quando serve;
-- [ ] densità maggiore nelle giornate dense;
-- [ ] un evento breve non altera da solo la scala;
-- [ ] tema chiaro/scuro funzionante;
-- [ ] selezione giorno funzionante;
-- [ ] nessun errore JavaScript bloccante.
-
----
-
-## 12. Procedura per ogni giro
-
-### Prima
-
-1. leggere questo file;
-2. leggere il documento specifico;
-3. identificare la versione;
-4. elencare i vincoli;
-5. non rimuovere funzioni senza autorizzazione.
-
-### Durante
-
-1. modificare solo l'ambito richiesto;
-2. evitare refactor inutili;
-3. conservare dati utili ai test;
-4. non cambiare estetica globale se non richiesto;
-5. mantenere note tecniche.
-
-### Dopo
-
-1. creare una nuova versione se cambia il comportamento;
-2. testare la checklist;
-3. produrre preview;
-4. aggiornare questo file;
-5. aggiornare il documento della schermata;
-6. salvare su Git;
-7. annotare commit/PR;
-8. dichiarare i punti aperti.
-
----
-
-## 13. Template aggiornamento
-
-```markdown
-### FE-CHG-NNN — Titolo
-
-- Data:
-- Operatore:
-- Versione iniziale:
-- Versione risultante:
-- File modificati:
-- Commit/PR:
-
-#### Richiesta o problema
-...
-
-#### Decisione
-...
-
-#### Implementazione
-...
-
-#### Perché
-...
-
-#### Test
-- [ ] ...
-
-#### Regressioni o limiti
-...
-
-#### Prossimo passo
-...
+## 6. Test e non regressioni obbligatorie
+
+La suite v18 deve verificare almeno:
+
+- [ ] pagina senza errori JavaScript;
+- [ ] almeno 12 card renderizzate;
+- [ ] titolo giorno corretto;
+- [ ] apertura iniziale vicino al contesto, non a mezzanotte;
+- [ ] etichette da 00:00 a 24:00;
+- [ ] card Promemoria con titolo e orario leggibili;
+- [ ] nessuna intersezione fra card;
+- [ ] popup solo dal titolo;
+- [ ] focus contestuale attivabile e disattivabile;
+- [ ] filtro senza variazione dell'altezza;
+- [ ] espansione al 100% anche con filtro;
+- [ ] zoom manuale con errore ancora < 0.5 minuti;
+- [ ] zoom al mouse con errore ancora < 0.75 minuti;
+- [ ] drag standard a 5 minuti;
+- [ ] zoom elevato con snap a 1 minuto;
+- [ ] categoria invariata durante il drag;
+- [ ] sotto-attività, rail, percorso e gruppi non rimossi.
+
+Risultati v18:
+
+```text
+22 card
+0 errori JavaScript
+0 collisioni
+canvas Today ≈ 2226.52 px
+Promemoria ≈ 168 × 68 px
+test Playwright: PASS
 ```
 
 ---
 
-## 14. Artefatti
+## 7. Problemi ancora aperti
+
+- accessibilità completa del drag tramite tastiera e screen reader;
+- virtualizzazione dei 14 giorni in produzione;
+- formula finale della densità da validare con dataset realistici;
+- comportamento mobile da progettare separatamente;
+- conversione in componenti React/Next.js;
+- gestione reale di conflitti, viaggi e suggerimenti AI;
+- tassonomia definitiva dei gruppi;
+- dati reali meteo, luce e fase lunare.
+
+---
+
+## 8. Artefatti correnti
 
 ```text
 docs/phase-4/frontend-master.md
-docs/ux/today-home-v7.md
-prototypes/today/archive/README.md
-prototypes/today/archive/lifeos-home-oggi-v7.html.gz.b64.part01
-prototypes/today/archive/lifeos-home-oggi-v7.html.gz.b64.part02
-prototypes/today/archive/lifeos-home-oggi-v7.html.gz.b64.part03
-prototypes/today/archive/lifeos-home-oggi-v7.html.gz.b64.part04
-prototypes/today/archive/restore_prototype.py
+docs/phase-4/today-v18.md
+prototypes/today/lifeos-home-oggi-v18.html
+tests/prototypes/today-v18-regression.py
+prototypes/today/archive/v18/lifeos-v17-to-v18.patch
 ```
 
-Ripristino:
-
-```bash
-python prototypes/today/archive/restore_prototype.py
-```
-
----
-
-## 15. Git workflow
-
-- branch: `prototype/phase-4-today-home`;
-- PR: draft `#2`;
-- la PR resta draft finché Today è in iterazione;
-- ChatGPT gestisce Git;
-- Claude consegna file/diff/report;
-- le milestone non vengono cancellate;
-- prima del merge si controllano documentazione, prototipo e non regressione.
-
-Commit consigliati:
+Hash locale del prototipo v18:
 
 ```text
-docs: update Phase 4 frontend master log
-feat: iterate Today timeline prototype
-fix: preserve grouped timeline layout
-chore: archive Today prototype milestone
+SHA-256 b0eb870de16ea862bd707b49fd4fcaf7939151abe3e1b4c2b287a37ee5ef186b
 ```
 
 ---
 
-## 16. Changelog master
+## 9. Procedura del prossimo giro
 
-### F4-FE-001 — 4 agosto 2026
-
-- creato il master log frontend;
-- consolidato lo stato Today v7;
-- registrati principi, cronologia, modifiche e problemi aperti;
-- definito il protocollo ChatGPT/Claude;
-- definita la procedura obbligatoria di aggiornamento e Git.
-
----
+1. leggere questo file;
+2. partire esplicitamente dalla v18;
+3. elencare i vincoli da preservare;
+4. modificare soltanto l'ambito richiesto;
+5. eseguire la suite v18 più i nuovi test;
+6. creare v19 senza sovrascrivere v18;
+7. aggiornare master log, documento specifico e Git.
 
 **Aggiornare questo file a ogni giro della Fase 4 frontend.**
