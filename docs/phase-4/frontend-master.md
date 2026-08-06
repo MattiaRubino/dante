@@ -11,8 +11,8 @@
 |---|---|
 | Progetto | LifeOS — Personal Operating System |
 | Fase | 4 — prototipazione frontend e validazione UX |
-| Milestone | `Home/Today v20` |
-| Versione documento | `F4-FE-009` |
+| Milestone | `Home/Today v21` |
+| Versione documento | `F4-FE-010` |
 | Ultimo aggiornamento | 6 agosto 2026 |
 | Branch | `prototype/phase-4-today-home` |
 | Pull request | Draft PR `#2` |
@@ -146,18 +146,22 @@ I margini fra impegni descrivono l'occupazione temporale complessiva, non la dis
 
 L’orario nella card è un controllo dedicato, separato da titolo, focus e drag.
 
-- clic singolo sul solo orario: apre due campi inline per inizio e fine;
+- l’orario resta sempre su una riga propria sotto il titolo;
+- clic singolo sul solo orario: apre un time picker ancorato, esterno alla card;
+- il picker viene renderizzato a livello `body` e non modifica la geometria della card;
+- inizio e fine usano segmenti separati per ore e minuti;
+- frecce, tastiera, rotella e digitazione diretta convivono nello stesso controllo;
 - modificando soltanto l’inizio, la durata viene preservata automaticamente;
 - modificando anche la fine, la durata può cambiare;
 - inserimento manuale con precisione al minuto, indipendente dallo snap del drag;
-- `Enter` conferma, `Esc` annulla;
+- `Enter` conferma, `Esc` e click esterno annullano;
 - input invalido non modifica l’evento;
 - la conferma ricalcola posizione, corsie, margini e densità con un solo render;
 - toast con `Annulla` ripristina lo stato precedente.
 
 ---
 
-## 4. Stato funzionale v20
+## 4. Stato funzionale v21
 
 ### 4.1 Struttura
 
@@ -177,7 +181,7 @@ L’orario nella card è un controllo dedicato, separato da titolo, focus e drag
 - scroll progressivo fino a 14 giorni;
 - zoom manuale e da mouse/trackpad;
 - opzioni vista e legenda persistenti;
-- modifica manuale inline dell’orario dalla card.
+- modifica manuale dell’orario tramite time picker ancorato alla card.
 
 ### 4.2 Timeline completa 24 ore
 
@@ -320,15 +324,30 @@ L'occhio è all'inizio dei gruppi, allineato al bordo del canvas e non sopra l'a
 - click sul titolo: popup;
 - drag sul resto: spostamento.
 
-### 4.13 Modifica inline di inizio e fine
+### 4.13 Time picker ancorato per inizio e fine
 
-L’etichetta oraria è cliccabile e viene sostituita temporaneamente da:
+L’etichetta oraria non viene più sostituita dentro la card. Cliccandola si apre un popover ancorato:
 
 ```text
-[14:45] – [15:00] [✓] [×]
+Inizio   [ 14 : 45 ] ▲/▼
+Fine     [ 15 : 00 ] ▲/▼
+Durata       15 min
+                 ×  ✓
 ```
 
-Formati accettati: `14:47`, `1447`, `14.47`, oppure `9` interpretato come `09:00`.
+Regole:
+
+- orario sempre sotto il titolo, mai affiancato o spinto a destra;
+- popover a livello `body`, senza reflow della card;
+- posizione intelligente sopra/sotto e contenimento nel viewport della timeline;
+- segmenti ore/minuti selezionabili;
+- frecce e `↑/↓`: incremento del segmento attivo;
+- ore: passo 1 ora;
+- minuti: passo 5 minuti;
+- `Alt + ↑/↓`: passo 1 minuto;
+- `Page Up/Page Down`: salto maggiore;
+- digitazione diretta disponibile;
+- il blocco si sposta soltanto dopo la conferma.
 
 Vincoli:
 
@@ -356,7 +375,8 @@ Un singolo evento che attraversa la mezzanotte non viene ancora interpretato imp
 - **v17:** densità locale, snap 5/1 minuto, filtri indipendenti dalla geometria.
 - **v18:** card leggibili, timeline 24h, apertura contestuale e zoom ancorato.
 - **v19:** margini per cluster, pannello Vista e legenda, controlli flottanti e hover semantico.
-- **v20:** modifica inline di inizio/fine, durata collegata, validazione e undo.
+- **v20:** prima modifica inline di inizio/fine, durata collegata, validazione e undo.
+- **v21:** time picker ancorato, spinbutton segmentati e correzione definitiva dell’orario sotto il titolo.
 
 ---
 
@@ -384,8 +404,10 @@ Un singolo evento che attraversa la mezzanotte non viene ancora interpretato imp
 - [ ] toggle margini senza variazione dell'altezza;
 - [ ] hover del titolo attivo solo sul titolo;
 - [ ] split icon-only con tooltip e stato semantico.
-- [ ] clic sul solo orario apre l’editor inline;
-- [ ] editor senza apertura popup, focus o drag involontari;
+- [ ] clic sul solo orario apre il time picker ancorato;
+- [ ] picker esterno alla card, senza reflow, popup dettaglio, focus o drag involontari;
+- [ ] orario sempre su una riga propria sotto il titolo;
+- [ ] campi segmentati ore/minuti e frecce visibili sul campo attivo;
 - [ ] cambio del solo inizio preserva la durata;
 - [ ] cambio esplicito della fine modifica la durata;
 - [ ] precisione manuale al minuto anche a zoom normale;
@@ -394,7 +416,7 @@ Un singolo evento che attraversa la mezzanotte non viene ancora interpretato imp
 - [ ] il blocco viene riposizionato correttamente;
 - [ ] toast `Annulla` ripristina l’orario precedente.
 
-Risultati v20:
+Risultati v21:
 
 ```text
 22 card
@@ -402,9 +424,10 @@ Risultati v20:
 0 collisioni
 margini cluster: verificati
 controlli flottanti: stabili
-editor orario inline: PASS
-validazione, Enter/Esc e undo: PASS
-suite Playwright v20: PASS
+orario sotto il titolo: verificato
+popover esterno senza reflow: verificato
+spinbutton, digitazione, Enter/Esc e undo: PASS
+suite Playwright v21: PASS
 ```
 
 ---
@@ -426,17 +449,17 @@ suite Playwright v20: PASS
 
 ```text
 docs/phase-4/frontend-master.md
-docs/phase-4/today-v20.md
-tests/prototypes/today-v20-regression.py
-prototypes/today/archive/v20/README.md
-prototypes/today/archive/v20/lifeos-v19-to-v20.patch.gz.b64
-prototypes/today/archive/v20/restore_v20.py
+docs/phase-4/today-v21.md
+tests/prototypes/today-v21-regression.py
+prototypes/today/archive/v21/README.md
+prototypes/today/archive/v21/lifeos-v20-to-v21.patch.gz.b64
+prototypes/today/archive/v21/restore_v21.py
 ```
 
-Hash locale del prototipo v20:
+Hash locale del prototipo v21:
 
 ```text
-SHA-256 e1144fa16e4f94c1afdc1074dbe8750696fc2197517c1dfeddebaa5c247e5c37
+SHA-256 86b5bc051520fa1d7ce5415ea2940c3bd1832b3735a4d0232745ed84b15bb0fb
 ```
 
 ---
@@ -444,11 +467,11 @@ SHA-256 e1144fa16e4f94c1afdc1074dbe8750696fc2197517c1dfeddebaa5c247e5c37
 ## 9. Procedura del prossimo giro
 
 1. leggere questo file;
-2. partire esplicitamente dalla v20;
+2. partire esplicitamente dalla v21;
 3. elencare i vincoli da preservare;
 4. modificare soltanto l'ambito richiesto;
-5. eseguire la suite v20 più i nuovi test;
-6. creare v21 senza sovrascrivere v20;
+5. eseguire la suite v21 più i nuovi test;
+6. creare v22 senza sovrascrivere v21;
 7. aggiornare master log, documento specifico e Git.
 
 **Aggiornare questo file a ogni giro della Fase 4 frontend.**
