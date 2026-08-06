@@ -11,8 +11,8 @@
 |---|---|
 | Progetto | LifeOS — Personal Operating System |
 | Fase | 4 — prototipazione frontend e validazione UX |
-| Milestone | `Home/Today v19` |
-| Versione documento | `F4-FE-008` |
+| Milestone | `Home/Today v20` |
+| Versione documento | `F4-FE-009` |
 | Ultimo aggiornamento | 6 agosto 2026 |
 | Branch | `prototype/phase-4-today-home` |
 | Pull request | Draft PR `#2` |
@@ -142,9 +142,22 @@ Gli elementi informativi secondari non devono diventare una fila di pulsanti per
 
 I margini fra impegni descrivono l'occupazione temporale complessiva, non la distanza fra due card scelte in base alla corsia visiva.
 
+### FE-DEC-014 — Modifica manuale dell’orario
+
+L’orario nella card è un controllo dedicato, separato da titolo, focus e drag.
+
+- clic singolo sul solo orario: apre due campi inline per inizio e fine;
+- modificando soltanto l’inizio, la durata viene preservata automaticamente;
+- modificando anche la fine, la durata può cambiare;
+- inserimento manuale con precisione al minuto, indipendente dallo snap del drag;
+- `Enter` conferma, `Esc` annulla;
+- input invalido non modifica l’evento;
+- la conferma ricalcola posizione, corsie, margini e densità con un solo render;
+- toast con `Annulla` ripristina lo stato precedente.
+
 ---
 
-## 4. Stato funzionale v19
+## 4. Stato funzionale v20
 
 ### 4.1 Struttura
 
@@ -163,7 +176,8 @@ I margini fra impegni descrivono l'occupazione temporale complessiva, non la dis
 - vista gruppi;
 - scroll progressivo fino a 14 giorni;
 - zoom manuale e da mouse/trackpad;
-- opzioni vista e legenda persistenti.
+- opzioni vista e legenda persistenti;
+- modifica manuale inline dell’orario dalla card.
 
 ### 4.2 Timeline completa 24 ore
 
@@ -306,6 +320,25 @@ L'occhio è all'inizio dei gruppi, allineato al bordo del canvas e non sopra l'a
 - click sul titolo: popup;
 - drag sul resto: spostamento.
 
+### 4.13 Modifica inline di inizio e fine
+
+L’etichetta oraria è cliccabile e viene sostituita temporaneamente da:
+
+```text
+[14:45] – [15:00] [✓] [×]
+```
+
+Formati accettati: `14:47`, `1447`, `14.47`, oppure `9` interpretato come `09:00`.
+
+Vincoli:
+
+- inizio fra `00:00` e `23:59`;
+- fine fra `00:01` e `24:00`;
+- fine successiva all’inizio nella stessa giornata;
+- durata minima 1 minuto.
+
+Un singolo evento che attraversa la mezzanotte non viene ancora interpretato implicitamente: richiede una rappresentazione multi-day separata.
+
 ---
 
 ## 5. Cronologia sintetica
@@ -323,6 +356,7 @@ L'occhio è all'inizio dei gruppi, allineato al bordo del canvas e non sopra l'a
 - **v17:** densità locale, snap 5/1 minuto, filtri indipendenti dalla geometria.
 - **v18:** card leggibili, timeline 24h, apertura contestuale e zoom ancorato.
 - **v19:** margini per cluster, pannello Vista e legenda, controlli flottanti e hover semantico.
+- **v20:** modifica inline di inizio/fine, durata collegata, validazione e undo.
 
 ---
 
@@ -350,8 +384,17 @@ L'occhio è all'inizio dei gruppi, allineato al bordo del canvas e non sopra l'a
 - [ ] toggle margini senza variazione dell'altezza;
 - [ ] hover del titolo attivo solo sul titolo;
 - [ ] split icon-only con tooltip e stato semantico.
+- [ ] clic sul solo orario apre l’editor inline;
+- [ ] editor senza apertura popup, focus o drag involontari;
+- [ ] cambio del solo inizio preserva la durata;
+- [ ] cambio esplicito della fine modifica la durata;
+- [ ] precisione manuale al minuto anche a zoom normale;
+- [ ] input invalido resta aperto e non salva;
+- [ ] `Enter` conferma ed `Esc` annulla;
+- [ ] il blocco viene riposizionato correttamente;
+- [ ] toast `Annulla` ripristina l’orario precedente.
 
-Risultati v19:
+Risultati v20:
 
 ```text
 22 card
@@ -359,7 +402,9 @@ Risultati v19:
 0 collisioni
 margini cluster: verificati
 controlli flottanti: stabili
-suite Playwright v19: PASS
+editor orario inline: PASS
+validazione, Enter/Esc e undo: PASS
+suite Playwright v20: PASS
 ```
 
 ---
@@ -381,17 +426,17 @@ suite Playwright v19: PASS
 
 ```text
 docs/phase-4/frontend-master.md
-docs/phase-4/today-v19.md
-tests/prototypes/today-v19-regression.py
-prototypes/today/archive/v19/README.md
-prototypes/today/archive/v19/lifeos-v18-to-v19.patch.gz.b64
-prototypes/today/archive/v19/restore_v19.py
+docs/phase-4/today-v20.md
+tests/prototypes/today-v20-regression.py
+prototypes/today/archive/v20/README.md
+prototypes/today/archive/v20/lifeos-v19-to-v20.patch.gz.b64
+prototypes/today/archive/v20/restore_v20.py
 ```
 
-Hash locale del prototipo v19:
+Hash locale del prototipo v20:
 
 ```text
-SHA-256 9fb2fc551b7675a42813544c52b490e1ac973d60bc7547ed16d0c62f1b5a1000
+SHA-256 e1144fa16e4f94c1afdc1074dbe8750696fc2197517c1dfeddebaa5c247e5c37
 ```
 
 ---
@@ -399,11 +444,11 @@ SHA-256 9fb2fc551b7675a42813544c52b490e1ac973d60bc7547ed16d0c62f1b5a1000
 ## 9. Procedura del prossimo giro
 
 1. leggere questo file;
-2. partire esplicitamente dalla v19;
+2. partire esplicitamente dalla v20;
 3. elencare i vincoli da preservare;
 4. modificare soltanto l'ambito richiesto;
-5. eseguire la suite v19 più i nuovi test;
-6. creare v20 senza sovrascrivere v19;
+5. eseguire la suite v20 più i nuovi test;
+6. creare v21 senza sovrascrivere v20;
 7. aggiornare master log, documento specifico e Git.
 
 **Aggiornare questo file a ogni giro della Fase 4 frontend.**
