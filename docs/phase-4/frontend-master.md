@@ -382,9 +382,10 @@ suite Playwright v19: PASS
 ```text
 docs/phase-4/frontend-master.md
 docs/phase-4/today-v19.md
-prototypes/today/lifeos-home-oggi-v19.html
 tests/prototypes/today-v19-regression.py
-prototypes/today/archive/v19/lifeos-v18-to-v19.patch
+prototypes/today/archive/v19/README.md
+prototypes/today/archive/v19/lifeos-v18-to-v19.patch.gz.b64
+prototypes/today/archive/v19/restore_v19.py
 ```
 
 Hash locale del prototipo v19:
