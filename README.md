@@ -25,7 +25,8 @@ LifeOS will provide:
 - goals, projects, activities, routines, and progress tracking;
 - optional modules such as nutrition, training, health, learning, travel, and creative work;
 - web, Android, and iOS clients with equivalent functionality and platform-adapted UX;
-- AI-assisted planning behind a replaceable provider interface;
+- AI-assisted interpretation, planning and recalibration behind replaceable provider/tool interfaces;
+- integrations with external apps, device data and services through a normalized Integration Hub;
 - local development with a future path to portable cloud deployment.
 
 ## Initial technical direction
@@ -34,9 +35,24 @@ LifeOS will provide:
 - Mobile: Expo + React Native + TypeScript
 - Backend: Python + FastAPI
 - Primary database: PostgreSQL
+- Data model: typed relational core + metadata/JSONB + graph-like personal relations + audit/version history
 - File storage: local provider initially, replaceable by S3-compatible/cloud providers
-- AI: mock/manual provider first, API provider later
+- AI: replaceable gateway, Context Builder, structured proposals and provider-neutral Tool API / MCP-compatible direction
+- Integrations: provider adapters normalized into LifeOS domain data with provenance and deduplication
 - Repository: private monorepo
 - Local infrastructure: Docker Compose for infrastructure dependencies
+
+## Architecture sources of truth
+
+Before detailed production data-model or AI/integration implementation, read:
+
+- [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
+- [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
+- [`docs/architecture/personal-data-ai-integration.md`](docs/architecture/personal-data-ai-integration.md) — accepted detailed direction for personal data, semantic relations, AI ingestion, integrations, history and scaling
+- [`docs/decisions/ADR-003-primary-database.md`](docs/decisions/ADR-003-primary-database.md)
+- [`docs/decisions/ADR-005-ai-gateway.md`](docs/decisions/ADR-005-ai-gateway.md)
+- [`docs/decisions/ADR-006-hybrid-personal-data-model.md`](docs/decisions/ADR-006-hybrid-personal-data-model.md)
+
+The architecture is fixed at the level of principles and boundaries. Exact production tables, relation vocabulary, JSONB boundaries, retention rules and specialist-domain schemas are intentionally deferred until detailed domain modeling.
 
 See [`docs/`](docs/) for the current product and architecture decisions.
