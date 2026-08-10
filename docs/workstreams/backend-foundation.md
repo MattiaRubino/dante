@@ -1,0 +1,86 @@
+# Workstream — Backend Foundation
+
+- Status: **READY TO START**
+- Intended branch: `feature/backend-foundation`
+- Work type: production technical foundation
+
+## Purpose
+
+Create the backend skeleton that can support LifeOS without prematurely freezing every specialist-domain table or API.
+
+## Required reading before implementation
+
+1. [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md)
+2. [`../architecture/system-overview.md`](../architecture/system-overview.md)
+3. [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md)
+4. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+5. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+6. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+7. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+8. accepted ADRs under [`../decisions/`](../decisions/)
+
+## Initial deliverables
+
+- Python project/package structure;
+- FastAPI application bootstrap;
+- Pydantic settings/configuration;
+- SQLAlchemy setup;
+- Alembic initialization;
+- PostgreSQL local development configuration through Docker/Docker Compose;
+- pytest baseline;
+- versioned API routing skeleton;
+- modular-monolith package boundaries;
+- error-handling/logging baseline;
+- provider interfaces/stubs for Storage, AI Gateway and Integration Hub where useful;
+- development health/readiness endpoint where appropriate.
+
+## Boundary
+
+Do **not** begin by creating the complete final database for nutrition, training, learning, finance, travel and every other imaginable module.
+
+Backend Foundation should provide infrastructure and enough domain support for the first vertical slice while preserving the accepted hybrid-data architecture.
+
+## First vertical slice target
+
+After bootstrap, support a narrow end-to-end flow around:
+
+`Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation`
+
+The exact persistence mapping follows Domain Model v0, not the temporary needs of one frontend screen.
+
+## Tests / validation expected
+
+At minimum:
+
+- application starts in development;
+- database connection/config can be tested without hard-coded secrets;
+- migrations can be created/applied/rolled back in development;
+- unit tests run independently of production services;
+- critical domain logic is testable without requiring FastAPI request handling;
+- API and persistence layers do not become the domain model itself.
+
+## Do not change without an ADR or explicit review
+
+- PostgreSQL as primary source of truth;
+- FastAPI/Pydantic/SQLAlchemy/Alembic stack direction;
+- modular monolith first;
+- clients never connect directly to the database;
+- AI never bypasses domain validation;
+- no per-user database/table creation;
+- DEV/UAT/PROD are environments rather than permanent Git branches.
+
+## Next exact step
+
+Create `feature/backend-foundation` from the current canonical `main` after the documentation-governance consolidation is merged, then bootstrap the backend with no specialist-domain schema beyond what the first coherent slice requires.
+
+## Handoff maintenance
+
+Once implementation starts, add:
+
+- last validated commit;
+- actual package/file paths;
+- commands to run/test/migrate;
+- completed tasks;
+- current task;
+- known issues;
+- next exact steps.
