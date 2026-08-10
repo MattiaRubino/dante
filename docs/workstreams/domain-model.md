@@ -11,7 +11,7 @@
 
 Turn the LifeOS product vocabulary and requirements into an implementation-ready domain model without prematurely designing every specialist module or every final SQL table.
 
-This pass explicitly revalidates earlier concepts instead of treating prior documentation as automatically correct. Earlier product definitions remain valuable inputs, but a concept can be revised when broader scenario coverage, stronger reasoning, or implementation constraints reveal a better model.
+This pass explicitly revalidates earlier concepts instead of treating prior documentation as automatically correct. Earlier product definitions remain valuable inputs, but a concept can be revised when broader scenario coverage, stronger reasoning, external benchmarks, or implementation constraints reveal a better model.
 
 ## Current decision rule
 
@@ -19,7 +19,7 @@ This pass explicitly revalidates earlier concepts instead of treating prior docu
 
 Decisions may be reopened when new evidence, edge cases, contradictions, or better abstractions emerge. Changes must be explicit, reasoned, and preserved in history rather than silently rewriting prior assumptions.
 
-The active modeling method and concept records live in [`../domain/README.md`](../domain/README.md).
+The active modeling method and mandatory concept-review protocol live in [`../domain/README.md`](../domain/README.md).
 
 ## Required reading
 
@@ -28,16 +28,17 @@ The active modeling method and concept records live in [`../domain/README.md`](.
 3. [`../domain/README.md`](../domain/README.md)
 4. [`../domain/concepts/goal.md`](../domain/concepts/goal.md)
 5. [`../domain/concepts/plan.md`](../domain/concepts/plan.md)
-6. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-7. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-8. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-9. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-10. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-11. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-12. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-13. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-14. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-15. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+6. [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
+7. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+8. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+9. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+10. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+11. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+12. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+13. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+14. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+15. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+16. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -62,7 +63,8 @@ The existing vocabulary includes or strongly suggests:
 - Reminder;
 - Milestone;
 - Schedule occurrence / Calendar block;
-- Actual session/result;
+- Session / Actual result;
+- Observation / Evidence;
 - Confirmation / provenance / source;
 - Register / RegisterEntry / Quantity;
 - Asset / Subject;
@@ -74,7 +76,7 @@ The existing vocabulary includes or strongly suggests:
 - Integration / external record;
 - Template / Review Queue / Trigger where justified by V1 sequencing.
 
-This list is a modeling input, not an accepted ontology and not a command to create one SQL table per bullet.
+This list is modeling input, not an accepted ontology and not a command to create one SQL table per bullet.
 
 ## Questions Domain Model v0 must answer
 
@@ -93,50 +95,72 @@ This list is a modeling input, not an accepted ontology and not a command to cre
 ## Rules
 
 - Revalidate concepts one at a time; do not inherit terminology merely because it already exists.
+- For every concept, inspect applicable internal documentation/scenarios and perform enough targeted external benchmarking to expose likely missing semantics before acceptance.
 - Do not model one table per life topic (`english`, `photography`, `farming`, etc.).
 - Do not collapse everything into one `entities` table or arbitrary JSON blob.
 - Do not treat AI inference as confirmed truth.
 - Keep operational policy separate from domain/topic type where behavior differs by user/plan.
 - Preserve planned/actual/history distinctions.
+- Preserve original intention when later evidence reveals additional relevance; do not rewrite history to make past execution look intentionally linked to a Goal when it was not.
 - Prefer progressive formalization: generic first when genuinely unpredictable; promote repeated/query-heavy concepts through reviewed migrations.
 - Do not reopen an accepted architectural ADR merely because a first implementation mapping is inconvenient; propose an explicit ADR change when new evidence genuinely challenges the architecture.
 - Preserve earlier documents while conflicts are being revalidated; propagate replacements deliberately after related concepts are understood.
+- Run cluster checkpoints in addition to concept-level reviews; do not defer all cross-model validation until the end.
 
 ## Current modeling progress
 
-### Completed current baselines
-
-#### Goal v0
+### Goal v0
 
 - Goal reviewed against the existing LifeOS feature-discovery simulation and broader goal patterns.
-- Goal definition broadened to cover outcomes, conditions, changes, and behavioral patterns.
+- Goal definition covers outcomes, conditions, changes, and behavioral patterns.
 - Goal evaluation criteria separated conceptually from Goal identity.
 - Goal progress rejected as a universally canonical percentage.
 - Goal temporal target/window separated from operational calendar occupancy.
 - Goal ownership distinguished from optional subject.
 
-Current record:
+Record:
 
 - [`../domain/concepts/goal.md`](../domain/concepts/goal.md)
 
-#### Plan v0
+### Plan v0
 
-- `Plan` introduced as the current execution-strategy primitive: it describes how a purpose is intended to be pursued or organized.
+- `Plan` is the current execution-strategy primitive: it describes how a purpose is intended to be pursued or organized.
 - Plan separated from Goal, Activity, Routine, Schedule, and Actual.
-- Plan given persistent identity independent of linked Goals.
-- Plan allowed to exist without an explicit Goal to avoid artificial duplicate Goals.
-- Goal↔Plan treated conceptually as many-to-many.
+- Plan has persistent identity independent of linked Goals.
+- Plan may exist without an explicit Goal to avoid artificial duplicate Goals.
+- Goal-to-Plan is conceptually many-to-many.
 - Plan may coordinate typed capabilities such as phases, activities, milestones, dependencies, routines, constraints, progression, scheduling policies, and adaptation rules without requiring all of them.
 - `Project` is not currently justified as a separate kernel primitive.
-- `Program` is not currently accepted as a separate kernel primitive; program-like progression remains a specialization candidate to be tested later.
-- Project-like, program-like, and hybrid plans are all representable without a premature `PROJECT | PROGRAM` kernel enum.
+- `Program` is not currently accepted as a separate kernel primitive; program-like progression remains a specialization candidate.
 - Plan explicitly rejected as an arbitrary metadata/JSON mega-object.
 
-Current record:
+Record:
 
 - [`../domain/concepts/plan.md`](../domain/concepts/plan.md)
 
-### Current conceptual direction
+### Activity v0
+
+- `Activity` accepted as the actionable-intention primitive between Plan and execution time.
+- `Task` is not currently a separate primitive; it is a contextual/user-facing form of Activity for defined work completion.
+- Activity separated from Goal, Plan, Event, Routine, Schedule, Session, and Actual.
+- Semantic work decomposition (`sub-activity`) separated from temporal execution decomposition (`Session`).
+- Estimated effort, scheduled duration, and actual effort separated conceptually.
+- Calendar placement does not transform an Activity into an Event.
+- Activity may exist without Goal, Plan, Routine, or exact Schedule.
+- Activity may intentionally contribute to multiple Goals.
+- Goal evaluation is explicitly not limited to Activities originally planned for that Goal.
+- Actuals/Observations arising from unrelated or unplanned Activities may become valid evidence for Goal criteria.
+- Discovered relevance must not retroactively rewrite the original purpose of an Activity.
+- Positive/negative impact is contextual to evidence + criterion + evaluation policy, not an intrinsic Activity property.
+- Ambiguous AI-discovered relevance remains proposed/inferred with provenance until user authority or approved policy resolves it; deterministic authorized calculations need not ask redundant confirmations.
+- Goal-to-Goal influence was discovered as a real cross-domain requirement and deferred to the formal Relationship Model rather than represented as a generic `influences` field.
+- Composite Activity versus Plan remains an explicit checkpoint boundary rather than being resolved through an arbitrary size threshold.
+
+Record:
+
+- [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
+
+## Current conceptual direction
 
 ```text
 Goal      -> what is wanted
@@ -147,22 +171,49 @@ Actual    -> what actually happened
 Evidence  -> what supports evaluation
 ```
 
+Important evidence path now required by the model:
+
+```text
+Activity (possibly unrelated to Goal)
+        ↓
+Actual / Observation
+        ↓
+Evidence
+        ├──> Goal criterion A
+        └──> Goal criterion B
+```
+
+The evidence path may also begin from an unplanned import/observation with no originating Activity.
+
 This is a conceptual model under active review, not yet a persistence schema.
 
-### Important unresolved questions
+## Important unresolved questions
 
-- whether `Program` eventually requires a formal specialization with distinct invariants;
+- whether `Program` eventually requires formal specialization with distinct invariants;
 - whether `Project` remains a product label/view or later proves distinct domain behavior;
 - exact Plan and Goal lifecycle state machines;
 - exact version-versus-replacement boundaries;
 - criterion entity/value-object/persistence model;
-- relationship semantics such as support, contribution, decomposition, and multi-goal execution;
-- exact Activity/Task boundary;
-- Routine semantics relative to generated occurrences and Plans;
+- exact Event semantics;
+- Routine semantics and generated-occurrence identity;
+- exact composite Activity versus Plan boundary;
+- Schedule versus Session versus Occurrence boundaries;
+- Actual, Observation, Evidence, Outcome, Confirmation, and Provenance boundaries;
+- formal relationship semantics, including support, contribution, conflict, dependency, decomposition, Goal-to-Goal effects, and multi-goal execution;
 - Milestone semantics;
 - exact Life Area / World / Value model;
 - Asset / Subject model;
 - persistence/API mapping.
+
+## Checkpoint plan
+
+Do not wait until the complete Domain Atlas is finished to test coherence.
+
+The first intended cluster checkpoint is the **intention/execution cluster**, after enough adjacent concepts are reviewed to test Goal + Plan + Activity together with Event, Routine, and any required Milestone semantics.
+
+At that checkpoint, rebuild representative scenarios from the feature-discovery simulation and add difficult cross-domain cases, including Activities that unexpectedly affect multiple Goals and Goal interactions that create support or conflict.
+
+A final whole-domain stress test remains mandatory before broad persistence implementation.
 
 ## Output expected before broad persistence implementation
 
@@ -182,27 +233,28 @@ The model should eventually become concrete enough to implement an initial verti
 
 `Workspace → Goal/Plan → Activity → Schedule → Actual/Confirmation`
 
-This is still a working implementation target, not a final persistence schema. The concepts in the sequence must each be validated before implementation.
+This remains a working implementation target, not a final persistence schema. Concepts in the sequence must each be validated before implementation.
 
 ## Current task
 
-Continue the Domain Atlas one concept at a time. Do not begin broad SQL or backend implementation while the core conceptual boundaries are still under review.
+Continue the Domain Atlas one concept at a time. Do not begin broad SQL or backend implementation while core conceptual boundaries remain under review.
 
 ## Next exact step
 
-Select the next domain concept with the user and review it with the same definition/invariants/alternatives/stress-test method used for Goal and Plan.
+Select the next adjacent concept with the user and review it using the mandatory internal-simulation + external-benchmark + stress-test method.
 
-Given the accepted Goal/Plan split, `Activity / Task` is a strong next candidate because it defines the executable unit that sits between Plan and Schedule. `Routine`, `Milestone`, and formal Program specialization remain nearby candidates, but none is pre-decided.
+Given the accepted Activity boundary, `Event` is a strong next candidate because it directly tests the distinction between actionable intention and occurrence-centred time commitments. `Routine` is the other strong candidate because it tests how recurring rules generate execution without collapsing recurrence into Activity identity.
 
 ## Handoff
 
 - Active branch: `feature/domain-model`
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
-- Last completed concepts: `Goal v0`, `Plan v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
+- Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Known documentation conflict: previous canonical glossary assumes Goal/Program/Project are distinct; active Domain Atlas now uses Goal + Plan as the current baseline and leaves Project/Program as specialization candidates pending further evidence
+- Known documentation conflicts: previous glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Task semantics; active Domain Atlas now uses Goal + Plan + Activity as the current baselines while Project/Program remain specialization candidates pending evidence
