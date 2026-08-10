@@ -2,6 +2,7 @@
 
 - Status: **READY TO START**
 - Intended branch: `feature/backend-foundation`
+- Base: current canonical `main`
 - Work type: production technical foundation
 
 ## Purpose
@@ -11,13 +12,22 @@ Create the backend skeleton that can support LifeOS without prematurely freezing
 ## Required reading before implementation
 
 1. [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md)
-2. [`../architecture/system-overview.md`](../architecture/system-overview.md)
-3. [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md)
-4. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-5. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-6. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-7. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-8. accepted ADRs under [`../decisions/`](../decisions/)
+2. [`../development/operating-rules.md`](../development/operating-rules.md)
+3. [`../architecture/system-overview.md`](../architecture/system-overview.md)
+4. [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md)
+5. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+6. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+7. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+8. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+9. accepted ADRs under [`../decisions/`](../decisions/)
+
+## Where to work
+
+Create `feature/backend-foundation` from the latest `main` immediately before implementation begins.
+
+During the initial foundation phase, Domain Model v0 should preferably be developed as a bounded sub-scope on this same branch if it would otherwise modify the same backend/domain files. Split it into a separate `feature/domain-model` branch only after there is a clean file/ownership boundary or after Backend Foundation has merged.
+
+Normal incremental status goes in this handoff. Do not update `PROJECT-STATUS.md` for every backend commit; update global status when the workstream actually starts, blocks, reaches an integrated milestone or finishes.
 
 ## Initial deliverables
 
@@ -39,6 +49,8 @@ Create the backend skeleton that can support LifeOS without prematurely freezing
 Do **not** begin by creating the complete final database for nutrition, training, learning, finance, travel and every other imaginable module.
 
 Backend Foundation should provide infrastructure and enough domain support for the first vertical slice while preserving the accepted hybrid-data architecture.
+
+Do not make backend schema decisions from temporary Phase 4 visual details. Phase 4 is allowed to continue independently with simulated data until stable contracts exist.
 
 ## First vertical slice target
 
@@ -71,7 +83,11 @@ At minimum:
 
 ## Next exact step
 
-Create `feature/backend-foundation` from the current canonical `main` after the documentation-governance consolidation is merged, then bootstrap the backend with no specialist-domain schema beyond what the first coherent slice requires.
+1. Re-read current `main` and this handoff immediately before starting.
+2. Create `feature/backend-foundation` from current `main`.
+3. Update this handoff to **IN PROGRESS** with the actual branch/PR and starting commit.
+4. Bootstrap the backend with no specialist-domain schema beyond what the first coherent slice requires.
+5. Develop Domain Model v0 inside the same branch initially unless a clean independent boundary has already emerged.
 
 ## Handoff maintenance
 
