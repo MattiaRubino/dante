@@ -121,13 +121,15 @@ Current known examples:
 - existing documentation treats `Goal`, `Program`, and `Project` as distinct canonical concepts;
 - `Goal v0` broadened Goal semantics and reopened `Project` for revalidation;
 - `Plan v0` provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants;
-- `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics.
+- `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics;
+- `Event v0` strengthens the Activity/Event boundary by treating temporal placement as intrinsic to Event meaning while preserving original expectation, current accepted schedule, actual occurrence, participation, attendance, and provenance as distinct semantics.
 
 ## Current concepts
 
 - [`Goal v0`](concepts/goal.md) — current baseline accepted on 2026-08-10.
 - [`Plan v0`](concepts/plan.md) — current baseline accepted on 2026-08-10.
 - [`Activity v0`](concepts/activity.md) — current baseline accepted on 2026-08-10.
+- [`Event v0`](concepts/event.md) — current baseline accepted on 2026-08-10.
 
 ## Current structural direction
 
@@ -135,7 +137,8 @@ Current known examples:
 Goal      -> what is wanted
 Plan      -> how it is intended to be pursued or organized
 Activity  -> what concrete action is intended
-Schedule  -> when concrete execution is planned
+Event     -> what occurrence is expected at an intrinsic temporal placement
+Schedule  -> when concrete execution is planned or an occurrence is currently expected
 Actual    -> what actually happened
 Evidence  -> what supports evaluation
 ```
@@ -146,12 +149,17 @@ Important current consequences:
 
 - `Project` and `Program` remain specialization/product-language candidates rather than assumed independent aggregate roots;
 - `Task` is not currently a second primitive beside Activity;
-- Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity that was not originally planned for that Goal, or from an unplanned observation/import;
-- discovered relevance must not rewrite the historical intention of an Activity;
-- Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field.
+- placing an Activity at an exact time does not transform it into an Event;
+- Event state, participant response, actual attendance, and Event outcome are distinct dimensions;
+- original temporal expectation, current accepted schedule, and actual occurrence must remain distinguishable;
+- actual start/end can deviate from schedule in either direction; early/late/overrun semantics are derived rather than fundamental Event state;
+- Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity or Event that was not originally planned for that Goal, or from an unplanned observation/import;
+- discovered relevance must not rewrite historical intention;
+- Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field;
+- Event recurrence versus Routine and Event availability/capacity semantics remain deliberately open for adjacent reviews.
 
 ## Open modeling sequence
 
 The workstream continues one concept at a time so later concepts are shaped by already-established invariants rather than by a large speculative taxonomy.
 
-With Goal, Plan, and Activity established as current baselines, nearby concepts such as Event and Routine are strong next candidates because they sharpen the boundary between actionable work, temporal occurrences, and recurring execution before the first intention/execution cluster checkpoint.
+With Goal, Plan, Activity, and Event established as current baselines, `Routine` is the strongest next candidate because it tests recurring behavioral rules, generation of occurrences/Activities, exceptions, pause/revision semantics, and the boundary with recurring Events before the first intention/execution cluster checkpoint.
