@@ -9,7 +9,7 @@ V1 product definition and the main architecture foundation are sufficiently matu
 Current tracks:
 
 - **Phase 4 Home/Today UX prototype:** in progress on `prototype/phase-4-today-home` (PR #2).
-- **Backend Foundation:** ready to start after documentation/governance consolidation.
+- **Backend Foundation:** ready to start from current `main`.
 - **Core Domain Model v0:** ready to start in parallel with the backend foundation.
 
 No production application code has been committed yet.
@@ -22,10 +22,12 @@ Any human or AI agent continuing the project should read:
 
 1. this README;
 2. [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md);
-3. the relevant [`docs/workstreams/`](docs/workstreams/) handoff;
-4. the product/architecture documents and ADRs linked by that handoff.
+3. [`docs/development/operating-rules.md`](docs/development/operating-rules.md);
+4. the relevant [`docs/workstreams/`](docs/workstreams/) handoff;
+5. the product/architecture documents and ADRs linked by that handoff;
+6. relevant current code/tests before changing implementation.
 
-Repository documentation is the canonical project memory when chat history is incomplete or contradictory.
+Repository documentation on current `main` is the canonical project memory when chat history or old branches are incomplete, stale or contradictory. An active workstream branch may contain newer unmerged work only inside that workstream's scope.
 
 ## Product direction
 
@@ -60,9 +62,11 @@ V1 is personal-first. Collaboration/social capabilities are deferred.
 
 - `main` is the single integrated source of truth.
 - Work happens on bounded `feature/*`, `fix/*`, `docs/*` or `prototype/*` branches and returns through PRs.
+- New production work starts from current `main` unless its workstream handoff explicitly names an active prototype branch.
+- Before merge, compare against current `main` and check semantic/documentation coherence, not only Git conflicts.
 - DEV, UAT and PROD are deployment environments, not permanent Git branches.
 
-See [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md).
+See [`docs/development/operating-rules.md`](docs/development/operating-rules.md) and [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md).
 
 ## Architecture sources of truth
 
