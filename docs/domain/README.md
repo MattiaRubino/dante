@@ -21,6 +21,25 @@ Earlier product documents, simulations, glossaries, ADRs, prototypes, and conver
 
 Where an accepted ADR defines a broader architectural constraint, this workstream should respect it unless new evidence is strong enough to justify an explicit ADR change.
 
+## Mandatory concept-review protocol
+
+Every Domain Atlas concept must be reviewed against more than the immediately preceding discussion before it is accepted.
+
+The default review cycle is:
+
+1. inspect relevant existing LifeOS documentation and prior decisions;
+2. inspect the feature-discovery simulation and other applicable real-user scenarios;
+3. perform a targeted external benchmark/research pass where comparable mature systems, standards, APIs, or research can expose missing semantics;
+4. propose the smallest strong domain model that explains the evidence;
+5. review and challenge the proposal with the user;
+6. add edge cases and intentionally difficult scenarios;
+7. check consistency against already accepted Domain Atlas concepts;
+8. save the concept only when it is coherent enough to be the current baseline.
+
+Existing documentation and external products are evidence, not authority. Contradictions must be surfaced rather than inherited silently.
+
+A full external research pass does not need to repeat identical stable evidence for every adjacent concept, but each concept must receive enough targeted validation to expose likely missing cases.
+
 ## Working method
 
 Concepts are reviewed one at a time.
@@ -59,6 +78,38 @@ Definitions should be stress-tested against multiple classes of use rather than 
 
 We should prefer a small set of strong primitives over many overlapping nouns. A new domain entity should exist because it has materially different identity, lifecycle, invariants, or behavior—not merely because another productivity product uses that label.
 
+## Cluster checkpoints
+
+Concept-by-concept validation is necessary but not sufficient. After a small group of strongly related primitives is defined, the group must be stress-tested together before the Domain Atlas moves too far downstream.
+
+Current intended checkpoint structure:
+
+### Intention and execution
+
+Likely includes Goal, Plan, Activity, Event, Routine, and potentially Milestone.
+
+### Time
+
+Likely includes Schedule, Occurrence, Session, recurrence, deadline/window semantics, and temporal constraints.
+
+### Observed reality and evidence
+
+Likely includes Actual, Outcome, Confirmation, Observation, Evidence, and Provenance.
+
+### Data and subjects
+
+Likely includes Register, Quantity, Asset, Subject, Resource, and related measurement semantics.
+
+### Relationships and reasoning
+
+Likely includes semantic relationships, dependencies, contribution, Goal-to-Goal interactions, evidence-to-criterion relations, Decision, Version, and AI proposal boundaries.
+
+Cluster membership is provisional and may change as concepts are reviewed.
+
+At each checkpoint, representative feature-discovery scenarios must be reconstructed using only the model accepted so far. Repeated duplication, ambiguous ownership, hidden history rewrites, arbitrary JSON escape hatches, or excessive special cases are signals to reopen earlier concepts.
+
+A final whole-domain stress test is required before broad SQL/persistence implementation.
+
 ## Relationship to existing documentation
 
 Existing product documents remain preserved as historical and product-definition inputs while this pass is underway.
@@ -69,16 +120,16 @@ Current known examples:
 
 - existing documentation treats `Goal`, `Program`, and `Project` as distinct canonical concepts;
 - `Goal v0` broadened Goal semantics and reopened `Project` for revalidation;
-- `Plan v0` now provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants.
+- `Plan v0` provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants;
+- `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics.
 
 ## Current concepts
 
 - [`Goal v0`](concepts/goal.md) — current baseline accepted on 2026-08-10.
 - [`Plan v0`](concepts/plan.md) — current baseline accepted on 2026-08-10.
+- [`Activity v0`](concepts/activity.md) — current baseline accepted on 2026-08-10.
 
 ## Current structural direction
-
-The current conceptual direction is:
 
 ```text
 Goal      -> what is wanted
@@ -91,10 +142,16 @@ Evidence  -> what supports evaluation
 
 This is a working domain direction, not yet a persistence schema.
 
-`Project` and `Program` remain product/domain specialization candidates rather than assumed independent aggregate roots.
+Important current consequences:
+
+- `Project` and `Program` remain specialization/product-language candidates rather than assumed independent aggregate roots;
+- `Task` is not currently a second primitive beside Activity;
+- Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity that was not originally planned for that Goal, or from an unplanned observation/import;
+- discovered relevance must not rewrite the historical intention of an Activity;
+- Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field.
 
 ## Open modeling sequence
 
 The workstream continues one concept at a time so later concepts are shaped by already-established invariants rather than by a large speculative taxonomy.
 
-The next concept should be selected based on the strongest dependency created by the accepted Goal and Plan semantics, with Activity/Task, Routine, Milestone, relationships, lifecycle/versioning, and Program specialization among the likely candidates.
+With Goal, Plan, and Activity established as current baselines, nearby concepts such as Event and Routine are strong next candidates because they sharpen the boundary between actionable work, temporal occurrences, and recurring execution before the first intention/execution cluster checkpoint.
