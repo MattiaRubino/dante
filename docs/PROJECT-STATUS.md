@@ -1,9 +1,10 @@
 # Project Status
 
 - Last updated: 2026-08-10
-- Canonical branch after integration: `main`
+- Canonical branch: `main`
 - Current product stage: V1 product definition complete; Phase 4 UX prototyping in progress; backend/domain foundation ready to start in parallel
 - Production application code: not started yet
+- Documentation/governance consolidation: **COMPLETE on `main`**
 
 ## Read this first
 
@@ -20,6 +21,7 @@ Conversation history is useful context but is not the canonical project state wh
 ## Completed / accepted foundations
 
 - Product vision and V1 scope are defined.
+- Detailed V1 product-definition documents are integrated into `main`.
 - Core V1 concepts and user flows are documented, including Goal, Program, Project, Routine, Activity/Event, reminders, planned-versus-actual execution, confirmations, provenance, onboarding, learning, health/wellness boundaries and work/meeting lifecycle.
 - Web direction: Next.js + React + TypeScript.
 - Mobile direction: Expo + React Native + TypeScript.
@@ -28,6 +30,9 @@ Conversation history is useful context but is not the canonical project state wh
 - Personal data architecture is accepted: typed relational core + flexible metadata/JSONB + graph-like personal relationship layer + provenance + audit/version history.
 - AI is isolated behind a replaceable gateway and must use structured proposals validated by LifeOS domain services.
 - External integrations are normalized through an Integration Hub/provider layer.
+- `main` is the single integrated project source of truth.
+- DEV, UAT and PROD are deployment environments rather than permanent Git branches.
+- Repository-first human/AI handoff and workstream documentation rules are established.
 - V1 remains personal-first; collaboration/social capabilities are deferred.
 
 ## Active workstreams
@@ -38,7 +43,7 @@ Conversation history is useful context but is not the canonical project state wh
 - Branch: `prototype/phase-4-today-home`
 - Pull request: #2
 - Handoff: [`docs/workstreams/today-home.md`](workstreams/today-home.md)
-- The detailed Phase 4 prototype documentation remains on its active branch until accepted and merged.
+- Detailed Phase 4 prototype documentation remains on its active branch until accepted and merged.
 
 ### Backend Foundation
 
@@ -55,12 +60,11 @@ Conversation history is useful context but is not the canonical project state wh
 ## Immediate next work
 
 1. Continue Phase 4 UX independently on its prototype branch.
-2. Consolidate accepted documentation and project-governance rules into `main`.
-3. Start the backend foundation without waiting for final visual design.
-4. Define Domain Model v0 and invariants before committing to the complete SQL schema.
-5. Implement the first vertical slice only after the core domain model is coherent: Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation.
-6. Add registers, assets, skills, requirements/capabilities and semantic relations incrementally rather than designing every specialist module upfront.
-7. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
+2. Start the backend foundation from current `main` without waiting for final visual design.
+3. Define Domain Model v0 and invariants before committing to the complete SQL schema.
+4. Implement the first vertical slice only after the core domain model is coherent: Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation.
+5. Add registers, assets, skills, requirements/capabilities and semantic relations incrementally rather than designing every specialist module upfront.
+6. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
 
 ## Important constraints — do not reopen casually
 
@@ -78,10 +82,10 @@ Conversation history is useful context but is not the canonical project state wh
 
 A work item is not considered complete when only code or design is updated. The relevant workstream handoff and durable documentation must also be updated in the same PR. Significant architectural decisions require an ADR.
 
-## Historical branches
+## Historical / active branches
 
-- `docs/project-foundation`: historical foundation branch; no unique work currently missing from `main`.
-- `docs/v1-scope-and-flows`: contains the detailed V1 product-definition documents being consolidated into the canonical documentation baseline.
+- `docs/project-foundation`: historical foundation branch; no unique work missing from `main`.
+- `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are now integrated into `main`.
 - `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
 
-Historical branches and Git history are retained. Consolidation does not require deleting prior documentation or history.
+Historical branches and Git history are retained. Consolidation did not delete prior documentation or history.
