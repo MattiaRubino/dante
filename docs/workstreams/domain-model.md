@@ -29,16 +29,17 @@ The active modeling method and mandatory concept-review protocol live in [`../do
 4. [`../domain/concepts/goal.md`](../domain/concepts/goal.md)
 5. [`../domain/concepts/plan.md`](../domain/concepts/plan.md)
 6. [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
-7. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-8. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-9. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-10. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-11. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-12. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-13. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-14. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-15. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-16. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+7. [`../domain/concepts/event.md`](../domain/concepts/event.md)
+8. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+9. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+10. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+11. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+12. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+13. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+14. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+15. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+16. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+17. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -160,30 +161,66 @@ Record:
 
 - [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
 
+### Event v0
+
+- `Event` accepted as the occurrence-centred primitive whose temporal placement is intrinsic to its meaning.
+- Event remains distinct from Activity even when both appear at exact times in calendar surfaces.
+- Event separated from generic Schedule, Deadline, Milestone, Calendar Block, and Availability.
+- Event state, participant response, actual attendance, and Event outcome are separate dimensions.
+- Original expectation, current accepted schedule, and actual occurrence are explicitly distinct temporal layers.
+- Actual start/end may occur before, after, or exactly at planned start/end; early/late/overrun semantics are derived rather than foundational Event state.
+- Passage of scheduled time does not automatically imply completion or attendance.
+- Event may contribute directly to Goal criteria through outcome, attendance, observations, measurements, or other valid Evidence.
+- Event may have preparation/follow-up Activities without requiring a duplicate `Attend event` Activity.
+- All-day and multi-day are temporal Event forms rather than different kernel entities.
+- A recurring Event occurrence must preserve identity when individually rescheduled.
+- Event recurrence versus Routine remains deliberately open for Routine review.
+- Event existence does not automatically imply that its entire interval consumes scheduling capacity; availability/blocking semantics remain for the temporal cluster.
+- LifeOS Event identity remains separate from external provider identity.
+
+Record:
+
+- [`../domain/concepts/event.md`](../domain/concepts/event.md)
+
 ## Current conceptual direction
 
 ```text
 Goal      -> what is wanted
 Plan      -> how it is intended to be pursued or organized
 Activity  -> what concrete action is intended
-Schedule  -> when concrete execution is planned
+Event     -> what occurrence is expected at an intrinsic temporal placement
+Schedule  -> when concrete execution is planned or an Event is currently expected
 Actual    -> what actually happened
 Evidence  -> what supports evaluation
 ```
 
-Important evidence path now required by the model:
+Important evidence paths now required by the model:
 
 ```text
-Activity (possibly unrelated to Goal)
+Activity or Event (possibly unrelated to Goal)
         ↓
-Actual / Observation
+Actual / Observation / Outcome
         ↓
 Evidence
         ├──> Goal criterion A
         └──> Goal criterion B
 ```
 
-The evidence path may also begin from an unplanned import/observation with no originating Activity.
+The evidence path may also begin from an unplanned import/observation with no originating Activity or Event.
+
+Important temporal distinction now required by the model:
+
+```text
+Original expectation
+        ↓
+Schedule revisions
+        ↓
+Current accepted schedule
+        ↓
+Actual occurrence
+```
+
+Actual time may differ in either direction from accepted schedule.
 
 This is a conceptual model under active review, not yet a persistence schema.
 
@@ -194,10 +231,13 @@ This is a conceptual model under active review, not yet a persistence schema.
 - exact Plan and Goal lifecycle state machines;
 - exact version-versus-replacement boundaries;
 - criterion entity/value-object/persistence model;
-- exact Event semantics;
 - Routine semantics and generated-occurrence identity;
+- Event recurrence versus Routine in ambiguous repeated-life cases;
 - exact composite Activity versus Plan boundary;
 - Schedule versus Session versus Occurrence boundaries;
+- Calendar Block / Availability / capacity-reservation semantics;
+- Deadline and temporal-constraint semantics;
+- exact Event lifecycle/participant/attendance state machines;
 - Actual, Observation, Evidence, Outcome, Confirmation, and Provenance boundaries;
 - formal relationship semantics, including support, contribution, conflict, dependency, decomposition, Goal-to-Goal effects, and multi-goal execution;
 - Milestone semantics;
@@ -209,9 +249,9 @@ This is a conceptual model under active review, not yet a persistence schema.
 
 Do not wait until the complete Domain Atlas is finished to test coherence.
 
-The first intended cluster checkpoint is the **intention/execution cluster**, after enough adjacent concepts are reviewed to test Goal + Plan + Activity together with Event, Routine, and any required Milestone semantics.
+The first intended cluster checkpoint is the **intention/execution cluster**, after enough adjacent concepts are reviewed to test Goal + Plan + Activity + Event together with Routine and any required Milestone semantics.
 
-At that checkpoint, rebuild representative scenarios from the feature-discovery simulation and add difficult cross-domain cases, including Activities that unexpectedly affect multiple Goals and Goal interactions that create support or conflict.
+At that checkpoint, rebuild representative scenarios from the feature-discovery simulation and add difficult cross-domain cases, including Activities/Events that unexpectedly affect multiple Goals and Goal interactions that create support or conflict.
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
@@ -231,7 +271,7 @@ A final whole-domain stress test remains mandatory before broad persistence impl
 
 The model should eventually become concrete enough to implement an initial vertical slice around:
 
-`Workspace → Goal/Plan → Activity → Schedule → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event → Schedule → Actual/Confirmation`
 
 This remains a working implementation target, not a final persistence schema. Concepts in the sequence must each be validated before implementation.
 
@@ -241,20 +281,21 @@ Continue the Domain Atlas one concept at a time. Do not begin broad SQL or backe
 
 ## Next exact step
 
-Select the next adjacent concept with the user and review it using the mandatory internal-simulation + external-benchmark + stress-test method.
+Review `Routine` using the mandatory internal-documentation + simulation + external-benchmark + stress-test method.
 
-Given the accepted Activity boundary, `Event` is a strong next candidate because it directly tests the distinction between actionable intention and occurrence-centred time commitments. `Routine` is the other strong candidate because it tests how recurring rules generate execution without collapsing recurrence into Activity identity.
+Routine should specifically test recurring behavioral rules, generation versus identity of occurrences, pause/revision/exceptions, relation to Plan/Goal/Activity, and the boundary with recurring Events. Do not assume that recurrence alone makes something a Routine.
 
 ## Handoff
 
 - Active branch: `feature/domain-model`
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
-- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
+- Event concept commit: `84e460ba31d5b88b1f415d27d8254803358109f4`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Known documentation conflicts: previous glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Task semantics; active Domain Atlas now uses Goal + Plan + Activity as the current baselines while Project/Program remain specialization candidates pending evidence
+- Known documentation conflicts: previous glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event semantics; active Domain Atlas now uses Goal + Plan + Activity + Event as the current baselines while Project/Program remain specialization candidates pending evidence
