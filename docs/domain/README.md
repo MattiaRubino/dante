@@ -65,15 +65,36 @@ Existing product documents remain preserved as historical and product-definition
 
 When a Domain Atlas concept conflicts with an older definition, the conflict must be made explicit. The older document should not be silently rewritten until the impact is understood and the newer domain decision is ready to propagate.
 
-Current known example:
+Current known examples:
 
 - existing documentation treats `Goal`, `Program`, and `Project` as distinct canonical concepts;
-- the Goal review has shown that `Project` as an independent domain primitive requires revalidation rather than automatic inheritance.
+- `Goal v0` broadened Goal semantics and reopened `Project` for revalidation;
+- `Plan v0` now provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants.
 
 ## Current concepts
 
 - [`Goal v0`](concepts/goal.md) — current baseline accepted on 2026-08-10.
+- [`Plan v0`](concepts/plan.md) — current baseline accepted on 2026-08-10.
+
+## Current structural direction
+
+The current conceptual direction is:
+
+```text
+Goal      -> what is wanted
+Plan      -> how it is intended to be pursued or organized
+Activity  -> what concrete action is intended
+Schedule  -> when concrete execution is planned
+Actual    -> what actually happened
+Evidence  -> what supports evaluation
+```
+
+This is a working domain direction, not yet a persistence schema.
+
+`Project` and `Program` remain product/domain specialization candidates rather than assumed independent aggregate roots.
 
 ## Open modeling sequence
 
-The next concept is intentionally not fixed here until the current concept is reviewed and accepted. The workstream proceeds one concept at a time so later concepts can be shaped by already-established invariants instead of producing a large speculative taxonomy.
+The workstream continues one concept at a time so later concepts are shaped by already-established invariants rather than by a large speculative taxonomy.
+
+The next concept should be selected based on the strongest dependency created by the accepted Goal and Plan semantics, with Activity/Task, Routine, Milestone, relationships, lifecycle/versioning, and Program specialization among the likely candidates.
