@@ -1,7 +1,8 @@
 # Workstream — Core Domain Model v0
 
 - Status: **READY TO START**
-- Intended branch: `feature/domain-model` or a bounded sub-scope of `feature/backend-foundation`
+- Preferred initial execution: bounded sub-scope of `feature/backend-foundation`
+- Separate branch later if needed: `feature/domain-model`
 - Work type: domain modeling / invariants / persistence preparation
 
 ## Purpose
@@ -10,16 +11,31 @@ Turn the accepted LifeOS product vocabulary into an implementation-ready domain 
 
 ## Required reading
 
-1. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-2. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-3. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-4. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-5. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-6. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-7. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-8. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-9. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-10. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+1. [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md)
+2. [`../development/operating-rules.md`](../development/operating-rules.md)
+3. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+4. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+5. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+6. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+7. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+8. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+9. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+10. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+11. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+12. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+
+## Where to work
+
+Because Domain Model v0 and Backend Foundation will initially touch the same package boundaries, persistence mapping and tests, the default is to develop Domain Model v0 **inside `feature/backend-foundation` first**.
+
+Open a separate `feature/domain-model` branch only when:
+
+- Backend Foundation has merged and Domain Model work continues independently; or
+- there is a clearly separated documentation/modeling slice that will not edit the same implementation files in parallel.
+
+Do not run two branches against the same domain files merely to make the workstreams look separate on paper.
+
+The Domain Model handoff remains separate even when the code lives on the Backend Foundation branch, so its decisions/questions can be resumed independently.
 
 ## Concepts expected to be evaluated
 
@@ -71,6 +87,7 @@ This list is a modeling input, not a command to create one SQL table per bullet.
 - Keep operational policy separate from domain/topic type where behavior differs by user/program.
 - Preserve planned/actual/history distinctions.
 - Prefer progressive formalization: generic first when genuinely unpredictable; promote repeated/query-heavy concepts through reviewed migrations.
+- Do not reopen the accepted hybrid data architecture merely because a first implementation mapping is inconvenient; propose a deliberate ADR change only with strong new evidence.
 
 ## Output expected before broad persistence implementation
 
@@ -92,6 +109,17 @@ The model should become concrete enough to implement:
 
 without requiring completion of every domain extension.
 
+## Next exact step
+
+When Backend Foundation starts, mark this workstream **IN PROGRESS** on the same branch and begin with a conceptual/invariant pass before broad SQL mapping.
+
 ## Handoff maintenance
 
-Once modeling begins, record the last validated commit/document revision, resolved decisions, unresolved questions and the next exact modeling task here.
+Once modeling begins, record:
+
+- actual branch/PR being used;
+- last validated commit/document revision;
+- resolved decisions;
+- unresolved questions;
+- current modeling task;
+- next exact modeling task.
