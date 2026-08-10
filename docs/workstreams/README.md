@@ -23,6 +23,17 @@ A workstream handoff must contain, where applicable:
 - [`backend-foundation.md`](backend-foundation.md) — backend technical foundation, ready to start
 - [`domain-model.md`](domain-model.md) — core domain model v0, ready to start
 
-## Rule
+## Operational rule
 
-At the end of meaningful work, update the relevant handoff before considering the task complete. If the work materially changes global project state, update [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md) too.
+The handoff is the workstream's live save game. Update it after meaningful progress on that branch.
+
+Do not use `docs/PROJECT-STATUS.md` as a per-iteration log. Update global status only when the workstream starts, finishes, becomes blocked, changes branch/PR, reaches an integrated milestone or otherwise changes the global project state.
+
+Before continuing a workstream:
+
+1. read [`../development/operating-rules.md`](../development/operating-rules.md);
+2. verify the named branch/PR still exists and compare it with current `main`;
+3. use current `main` as the accepted baseline and the branch handoff as authority only for unmerged work inside that workstream;
+4. read any branch-local master log named by the handoff before editing.
+
+If the work materially changes durable product/architecture truth, update the appropriate durable document/ADR in the same PR rather than leaving that decision only in this handoff.

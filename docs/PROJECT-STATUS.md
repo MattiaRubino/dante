@@ -12,9 +12,11 @@ Any human or AI agent continuing LifeOS should read, in this order:
 
 1. [`README.md`](../README.md)
 2. this file
-3. the relevant file under [`docs/workstreams/`](workstreams/)
-4. the architecture/product documents linked by that workstream
-5. accepted ADRs under [`docs/decisions/`](decisions/)
+3. [`docs/development/operating-rules.md`](development/operating-rules.md)
+4. the relevant file under [`docs/workstreams/`](workstreams/)
+5. the architecture/product documents linked by that workstream
+6. accepted ADRs under [`docs/decisions/`](decisions/)
+7. relevant current code/tests before editing implementation
 
 Conversation history is useful context but is not the canonical project state when repository documentation exists.
 
@@ -32,7 +34,7 @@ Conversation history is useful context but is not the canonical project state wh
 - External integrations are normalized through an Integration Hub/provider layer.
 - `main` is the single integrated project source of truth.
 - DEV, UAT and PROD are deployment environments rather than permanent Git branches.
-- Repository-first human/AI handoff and workstream documentation rules are established.
+- Repository-first human/AI handoff, source-precedence and parallel-work rules are established.
 - V1 remains personal-first; collaboration/social capabilities are deferred.
 
 ## Active workstreams
@@ -44,6 +46,7 @@ Conversation history is useful context but is not the canonical project state wh
 - Pull request: #2
 - Handoff: [`docs/workstreams/today-home.md`](workstreams/today-home.md)
 - Detailed Phase 4 prototype documentation remains on its active branch until accepted and merged.
+- Branch-local `docs/phase-4/frontend-master.md` is the exact operational source for the latest Phase 4 iteration.
 
 ### Backend Foundation
 
@@ -54,7 +57,7 @@ Conversation history is useful context but is not the canonical project state wh
 ### Core Domain Model
 
 - Status: **READY TO START / may progress with backend foundation**
-- Intended branch: `feature/domain-model` or a bounded slice inside `feature/backend-foundation`
+- Preferred initial execution: bounded slice inside `feature/backend-foundation` if both tracks would otherwise edit the same core files
 - Handoff: [`docs/workstreams/domain-model.md`](workstreams/domain-model.md)
 
 ## Immediate next work
@@ -66,9 +69,25 @@ Conversation history is useful context but is not the canonical project state wh
 5. Add registers, assets, skills, requirements/capabilities and semantic relations incrementally rather than designing every specialist module upfront.
 6. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
 
+## Repository coherence baseline
+
+A repository/branch coherence audit was performed on 2026-08-10 after documentation consolidation.
+
+At that point:
+
+- `docs/project-foundation` had no commits ahead of `main` and was historical;
+- `docs/v1-scope-and-flows` had no commits ahead of `main`; its accepted V1 documents were already integrated;
+- the completed project-governance helper branches had no unique commits ahead of `main`;
+- `prototype/phase-4-today-home` was synchronized with the accepted `main` baseline and intentionally ahead only for Phase 4 UX/prototype/test material;
+- the Phase 4 diff did not contain older competing copies of the accepted DB/AI architecture.
+
+This is a dated baseline, not a permanent assumption. Before future merges or handoffs, re-check Git using the coherence gate in [`development/operating-rules.md`](development/operating-rules.md).
+
 ## Important constraints — do not reopen casually
 
 - `main` is the integrated source of truth; feature/fix/docs/prototype branches feed it through PRs.
+- Current accepted `main` takes precedence over historical branches and conversation memory.
+- A branch is authoritative only for its scoped unmerged work; it does not override unrelated accepted decisions.
 - DEV, UAT and PROD are environments, not permanent Git branches.
 - Do not create per-user database tables or databases.
 - Do not turn the entire product into arbitrary JSON or one universal graph table.
@@ -82,10 +101,13 @@ Conversation history is useful context but is not the canonical project state wh
 
 A work item is not considered complete when only code or design is updated. The relevant workstream handoff and durable documentation must also be updated in the same PR. Significant architectural decisions require an ADR.
 
+Incremental progress normally updates the workstream handoff, not this global status file. Update `PROJECT-STATUS.md` when global project truth changes.
+
 ## Historical / active branches
 
-- `docs/project-foundation`: historical foundation branch; no unique work missing from `main`.
-- `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are now integrated into `main`.
+- `docs/project-foundation`: historical foundation branch; no unique accepted work missing from `main` at the last coherence audit.
+- `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are integrated into `main`.
+- completed `docs/project-governance*` helper branches: historical/obsolete after consolidation; no unique accepted work ahead of `main` at the last audit.
 - `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
 
 Historical branches and Git history are retained. Consolidation did not delete prior documentation or history.
