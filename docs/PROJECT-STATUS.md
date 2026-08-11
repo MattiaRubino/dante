@@ -64,7 +64,7 @@ Conversation history is useful context but is not the canonical project state wh
 
 - Status: **IN PROGRESS — simulation complete; external research pending**
 - Branch: `docs/multi-actor-discovery`
-- Pull request: pending
+- Pull request: #6
 - Handoff: [`docs/workstreams/multi-actor-discovery.md`](workstreams/multi-actor-discovery.md)
 - Scope is discovery evidence only. It does not change the accepted personal-first V1 boundary, domain model or architecture.
 - Current simulation: [`docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`](product/multi-actor-collaboration-discovery-simulation-2026-08.md)
