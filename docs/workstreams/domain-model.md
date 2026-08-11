@@ -36,16 +36,17 @@ The active modeling method, documentation standard, and mandatory concept-review
 11. [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
 12. [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
 13. [`../domain/concepts/session.md`](../domain/concepts/session.md)
-14. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-15. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-16. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-17. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-18. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-19. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-20. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-21. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-22. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-23. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+14. [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
+15. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+16. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+17. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+18. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+19. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+20. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+21. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+22. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+23. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+24. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -111,8 +112,8 @@ Current sequence:
 Occurrence v0 — accepted
 → Schedule v0 — accepted
 → Session v0 — accepted
-→ Deadline / Window / Temporal Constraint — current review target
-→ Recurrence
+→ Temporal Constraint v0 — accepted
+→ Recurrence — current review target
 → Calendar Block / Availability / Capacity
 ```
 
@@ -193,29 +194,58 @@ Key decisions:
 
 Record: [`../domain/concepts/session.md`](../domain/concepts/session.md)
 
-## Current task — Deadline / Window / Temporal Constraint
+## Temporal Constraint v0 — accepted current baseline
 
-Review the temporal constraint family before proceeding to Recurrence.
+`Temporal Constraint` is accepted as the general rule capability that restricts or prefers temporal placement, duration, or temporal relationships without becoming Schedule or Actual.
+
+Key decisions:
+
+- Temporal Constraint answers **when execution/occurrence is allowed, required, bounded, or preferred**;
+- Temporal Constraint is distinct from Schedule, Session/Actual, Recurrence, Availability/Capacity, and Movement Policy;
+- `Deadline` is a latest-bound Temporal Constraint semantic specialization rather than a separate kernel primitive;
+- `Window` is a range-shaped temporal expression whose semantics depend on context rather than a universal primitive;
+- target date/window and review date do not automatically become hard Temporal Constraints;
+- the constrained temporal feature must remain explicit when relevant: start, completion/delivery, containment, duration, spacing, exclusion, or another temporal relationship;
+- hard constraints define planning admissibility; soft constraints/preferences guide optimization;
+- hard/soft strength is distinct from authority/mutability;
+- Actual that violates a hard constraint remains valid history and may produce a derived violation;
+- passing a deadline does not automatically create `missed` or failure outcome;
+- multiple hard constraints must be jointly satisfiable or the current planning problem is infeasible;
+- LifeOS must surface infeasibility instead of silently violating hard constraints;
+- constraints may be boundary-, range-, duration-, spacing-, exclusion-, or relation-based;
+- constraints may operate at broader Plan/Routine scopes and receive Occurrence-specific exceptions without requiring physical duplication;
+- material constraint revisions remain distinct from Schedule revisions and preserve enough history/provenance to explain replanning;
+- recurring constraint patterns are supported conceptually but their expression is deferred to Recurrence;
+- exact entity/value-object split, SQL, scoping persistence, optimizer representation, and rule encoding remain deferred.
+
+Record: [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
+
+## Current task — Recurrence
+
+Review `Recurrence` as the next Time-cluster concept.
 
 The review must determine at minimum:
 
-- whether `Deadline` should be a distinct entity/value-object or a specialized temporal constraint;
-- whether `Window` is one concept or several semantics such as valid window, preferred window, target window, and availability window;
-- how hard versus soft temporal constraints are represented;
-- the boundary between **accepted Schedule placement** and **allowed/preferred temporal space**;
-- earliest-start, latest-start, latest-finish, date-range, exact-boundary, and relative-boundary semantics;
-- whether a deadline means latest start, latest completion, delivery time, or another typed boundary;
-- target date versus hard deadline versus review date versus Milestone target;
-- whether passing a deadline changes canonical state or only creates a derived violation/miss until Actual/Outcome rules decide the result;
-- how hard windows constrain replanning and whether execution outside them is invalid, late, overridden, or requires explicit user authority;
-- how preferred windows influence scheduling without becoming hard constraints;
-- how constraints can attach to Activity, Event, Occurrence, Routine, Plan, Goal, or Milestone without forcing all concepts to own generic date fields;
-- how temporal constraints compose when several apply simultaneously;
-- how conflicting constraints are surfaced and how AI proposals respect authority;
-- whether constraint revisions require effective dating/history;
-- date-only, floating, named-zone, and absolute-instant boundary semantics;
-- interaction with recurrence without prematurely embedding recurrence inside constraints;
-- how temporal constraints differ from Calendar Block / Availability / Capacity.
+- what Recurrence fundamentally represents: generation rule, temporal pattern, relationship policy, or a family of recurrence semantics;
+- whether a single reusable recurrence abstraction can support both Routine-generated expected behavior and recurring Event series without collapsing their parent semantics;
+- how recurrence relates to Occurrence identity and lazy/materialized future instances;
+- calendar/wall-clock recurrence such as `every Monday at 18:00`;
+- elapsed-duration recurrence such as `every 12 hours`;
+- completion-relative recurrence such as `30 days after actual previous replacement`;
+- relation/event-anchored recurrence such as `after every photoshoot`;
+- count-limited, until-date, open-ended, and condition-limited recurrence;
+- start/anchor semantics and whether the recurrence rule owns a first occurrence;
+- timezone, DST, floating local time, named-zone time, absolute-instant, and travel behavior;
+- monthly/yearly invalid-date behavior, leap days, last-day-of-month, nth-weekday, and calendar-specific edge cases;
+- one-off Occurrence exception versus structural future-series revision;
+- `this occurrence` versus `this and future` semantics;
+- skip/cancel semantics and whether skipped/cancelled occurrences affect later generation;
+- how recurrence revisions preserve the version/rule context that generated historical Occurrences;
+- correction of an Actual that was used as a completion-relative anchor and how downstream generated expectations respond without rewriting history;
+- how recurring Temporal Constraints differ from Recurrence that creates expected Occurrences;
+- how Recurrence differs from Trigger/automation semantics for threshold/location/external-state rules;
+- external provider recurrence rules/IDs and LifeOS provider-independent identity;
+- occurrence-generation horizon, lazy expansion, deduplication, and persistent reconstruction requirements without prematurely fixing SQL.
 
 ## Current conceptual direction
 
@@ -226,10 +256,11 @@ Activity   -> what concrete action is intended
 Event      -> what occurrence-centred thing is expected to happen
 Routine    -> what recurring behavioral/execution policy is intended
 Milestone  -> what meaningful contextual checkpoint is expected/reached
+Recurrence -> how a recurring/generative temporal pattern produces expected instances (under review)
 Occurrence -> which individual expected generated instance exists
+Constraint -> where/when execution is allowed, required, or preferred
 Schedule   -> when execution/occurrence is currently accepted to happen
 Session    -> which actual execution episode happened
-Constraint -> where/when execution is allowed, required, or preferred (under review)
 Actual     -> broader truth about what happened
 Evidence   -> what supports evaluation
 ```
@@ -237,37 +268,45 @@ Evidence   -> what supports evaluation
 Important temporal separation now required:
 
 ```text
-Temporal intent / rule
+Recurring source semantics
         ↓
-Constraint(s): what time is allowed/required/preferred
+Recurrence pattern / generation rule
         ↓
-Schedule: what time is currently accepted
+Occurrence identity
         ↓
-Session / Event Actual: what time actually happened
+Temporal Constraint(s)
+        ↓
+Schedule
+        ↓
+Session / Event Actual
         ↓
 Outcome / Evidence later
 ```
 
+Not every recurring source necessarily uses every layer, and Recurrence must not become a generic IF/THEN automation engine.
+
 ## Important unresolved questions
 
-- exact Deadline / Window / Temporal Constraint taxonomy;
-- exact hard/soft constraint semantics and override authority;
-- target date versus deadline versus review date;
-- temporal constraint composition/conflict rules;
-- relation of temporal constraints to lifecycle/missed/expired outcomes;
+- exact Recurrence abstraction and typed recurrence families;
+- Event-series parent representation;
+- calendar/wall-clock versus elapsed-duration recurrence;
+- completion-relative and relation-anchored recurrence boundaries;
+- recurring Temporal Constraint versus Recurrence boundary;
+- Recurrence versus Trigger/automation boundary;
+- timezone/DST/travel semantics;
+- recurrence revision/versioning and `this-and-future` mechanics;
+- occurrence materialization horizon and persistent reconstruction;
+- correction of anchor Actual and downstream expectations;
 - exact Session state/lifecycle and pause persistence;
 - exact Schedule planned-placement/revision persistence;
-- exact Occurrence identity/materialization SQL representation;
-- Recurrence materialization, timezone/DST, travel, and completion-relative mechanics;
+- exact Temporal Constraint persistence/scoping/authority representation;
 - Calendar Block / Availability / Capacity semantics;
-- exact Event-series parent representation;
 - exact Event lifecycle/participant/attendance state machines;
 - exact Goal/Plan/Routine/Milestone lifecycle state machines;
 - exact version-versus-replacement boundaries;
 - criterion entity/value-object/persistence model;
 - Actual, Observation, Evidence, Outcome, Confirmation, and Provenance boundaries;
 - formal relationship semantics, including support, contribution, conflict, dependency, decomposition, Goal-to-Goal effects, and multi-goal execution;
-- relation-anchored Routine versus Trigger boundary;
 - exact Life Area / World / Value model;
 - Asset / Subject model;
 - persistence/API mapping.
@@ -288,7 +327,7 @@ Outcome / Evidence later
 
 The model should eventually become concrete enough to implement an initial vertical slice around:
 
-`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Occurrence/Schedule/Session → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Recurrence/Occurrence/Constraint/Schedule/Session → Actual/Confirmation`
 
 This remains a working implementation target, not a final persistence schema.
 
@@ -298,7 +337,7 @@ This remains a working implementation target, not a final persistence schema.
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
 - Intention & Execution Cluster v0: **PASS / validated current baseline**
-- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`, `Session v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`, `Session v0`, `Temporal Constraint v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
@@ -309,8 +348,9 @@ This remains a working implementation target, not a final persistence schema.
 - Occurrence concept commit: `a55fa28b2fb27b1967d18f26b318b173972e35ee`
 - Schedule concept commit: `e716e6ad16391f20bd9264c84733dc4f88da4ef8`
 - Session concept commit: `fef80394849e38e9215303b3ee6b1813ef3621a0`
+- Temporal Constraint concept commit: `de3a6bb8ca78a7c2f429cf2986c65f084592ac64`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Current task: `Deadline / Window / Temporal Constraint` review
+- Current task: `Recurrence` review
 - Known documentation conflicts: earlier glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after related clusters are stable.
