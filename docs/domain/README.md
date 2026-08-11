@@ -82,11 +82,11 @@ We should prefer a small set of strong primitives over many overlapping nouns. A
 
 Concept-by-concept validation is necessary but not sufficient. After a small group of strongly related primitives is defined, the group must be stress-tested together before the Domain Atlas moves too far downstream.
 
-Current intended checkpoint structure:
+### Intention and execution — VALIDATED CURRENT BASELINE
 
-### Intention and execution
+Validated on 2026-08-11.
 
-Current baseline set:
+Current validated set:
 
 - Goal;
 - Plan;
@@ -95,11 +95,19 @@ Current baseline set:
 - Routine;
 - Milestone.
 
-Milestone was added after the first cluster checkpoint exposed a real semantic gap between work/occurrence and a meaningful contextual checkpoint. The cluster must now receive one final combined validation pass before it is marked validated.
+The combined checkpoint passed after Milestone filled the one material gap exposed by the first pass. No current baseline needs to be reopened before the Time cluster.
 
-### Time
+Checkpoint record:
 
-Likely includes Schedule, Occurrence, Session, recurrence, deadline/window semantics, and temporal constraints.
+- [`Intention & Execution Cluster v0`](checkpoints/intention-execution-v0.md)
+
+Validation is provisional in the Domain Atlas sense: downstream temporal, evidence, relationship, persistence, or implementation work may still reopen a concept if new evidence exposes a contradiction.
+
+### Time — CURRENT CLUSTER
+
+Likely includes Schedule, Occurrence, Session, recurrence, deadline/window semantics, temporal constraints, and availability/capacity.
+
+The first concept is `Occurrence`, because Routine and recurring Event semantics both require stable identity for an individual expected instance independent from the originating policy/series.
 
 ### Observed reality and evidence
 
@@ -153,6 +161,7 @@ Activity  -> what concrete action is intended
 Event     -> what occurrence is expected at an intrinsic temporal placement
 Routine   -> what recurring behavioral/execution policy is intended
 Milestone -> what meaningful contextual checkpoint is expected/reached
+Occurrence-> which individual expected instance exists in a recurring/generated context (under review)
 Schedule  -> when concrete execution is planned or an occurrence is currently expected
 Actual    -> what actually happened
 Evidence  -> what supports evaluation
@@ -177,36 +186,40 @@ Important current consequences:
 - Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity, Event, Routine occurrence, Milestone, or observation that was not originally planned for that Goal;
 - discovered relevance must not rewrite historical intention;
 - Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field;
-- availability/capacity, exact occurrence materialization, recurrence/DST, and generated execution remain deliberately open for the temporal cluster.
+- availability/capacity, exact occurrence materialization, recurrence/DST, and generated execution remain deliberately open for the Time cluster.
 
 ## Current modeling sequence
 
-The first **intention/execution cluster checkpoint** has identified and filled one real semantic gap by accepting Milestone v0.
+The **Intention & Execution Cluster v0 is validated** as the current baseline.
 
-The immediate next step is a final combined checkpoint over:
+The workstream now moves to the **Time cluster**.
+
+Provisional sequence:
 
 ```text
-Goal
-Plan
-Activity
-Event
-Routine
-Milestone
+Occurrence
+→ Schedule
+→ Session
+→ Deadline / Window / Temporal Constraint
+→ Recurrence
+→ Calendar Block / Availability / Capacity
 ```
 
-The checkpoint must test the six baselines together against the same representative scenarios and adversarial mixed cases.
+The sequence is not immutable. Occurrence review may expose a stronger dependency and reorder adjacent concepts.
 
-It should specifically look for:
+## Open temporal questions entering the Time cluster
 
-- duplicated representations of the same real-world thing;
-- cases where two primitives cannot be distinguished naturally;
-- forced parent/child hierarchies that do not fit real life;
-- planned versus actual/history leakage;
-- recurrence versus occurrence confusion;
-- evidence that cannot reach relevant Goal criteria cleanly;
-- Activity/Plan and Routine/Plan boundary failures;
-- recurring Activity versus recurring Event ambiguity;
-- Milestone versus Goal/GoalCriterion/Outcome ambiguity;
-- scenarios that would require arbitrary JSON or domain-specific tables merely to work.
+- whether Occurrence is a persistent entity in every case or only when identity/history is needed;
+- how generated/materialized occurrences relate to their source Routine or recurring Event series;
+- how one-off exception, reschedule, skip, cancellation, replacement, and actual execution affect occurrence identity;
+- how original expected time, current accepted schedule, and actual time relate without duplication;
+- how far ahead recurring occurrences should be materialized;
+- how calendar/wall-clock, elapsed interval, completion-relative, and relation-anchored recurrence differ;
+- timezone/DST/travel behavior;
+- exact Schedule versus Occurrence versus Session boundaries;
+- Deadline/window/constraint semantics;
+- Calendar Block/Availability/capacity semantics.
 
-If the combined checkpoint passes without reopening a baseline, the intention/execution cluster can be marked validated and the next modeling cluster is Time, beginning with `Occurrence`.
+## Final validation rule
+
+A final whole-domain stress test remains mandatory before broad persistence implementation. A cluster PASS does not prevent later reopening when another cluster exposes a contradiction.
