@@ -11,7 +11,7 @@
 
 Turn the LifeOS product vocabulary and requirements into an implementation-ready domain model without prematurely designing every specialist module or every final SQL table.
 
-This pass explicitly revalidates earlier concepts instead of treating prior documentation as automatically correct. Earlier product definitions remain valuable inputs, but a concept can be revised when broader scenario coverage, stronger reasoning, external benchmarks, or implementation constraints reveal a better model.
+This pass explicitly revalidates earlier concepts instead of treating prior documentation as automatically correct. Earlier product definitions remain valuable inputs, but a concept can be revised when broader scenario coverage, stronger reasoning, external benchmarks, implementation constraints, or later cross-cluster tests reveal a better model.
 
 ## Current decision rule
 
@@ -19,36 +19,39 @@ This pass explicitly revalidates earlier concepts instead of treating prior docu
 
 Decisions may be reopened when new evidence, edge cases, contradictions, or better abstractions emerge. Changes must be explicit, reasoned, and preserved in history rather than silently rewriting prior assumptions.
 
-The active modeling method, documentation standard, benchmark/interoperability rule, and mandatory concept-review protocol live in [`../domain/README.md`](../domain/README.md).
+The active modeling method, documentation standard, benchmark/interoperability rule, mandatory concept-review protocol, and Validation Methodology v2 live in the Domain Atlas.
 
 ## Required reading
 
 1. [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md)
 2. [`../development/operating-rules.md`](../development/operating-rules.md)
 3. [`../domain/README.md`](../domain/README.md)
-4. [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
-5. [`../domain/concepts/goal.md`](../domain/concepts/goal.md)
-6. [`../domain/concepts/plan.md`](../domain/concepts/plan.md)
-7. [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
-8. [`../domain/concepts/event.md`](../domain/concepts/event.md)
-9. [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
-10. [`../domain/concepts/milestone.md`](../domain/concepts/milestone.md)
-11. [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
-12. [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
-13. [`../domain/concepts/session.md`](../domain/concepts/session.md)
-14. [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
-15. [`../domain/concepts/recurrence.md`](../domain/concepts/recurrence.md)
-16. [`../domain/concepts/availability-capacity.md`](../domain/concepts/availability-capacity.md)
-17. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-18. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-19. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-20. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-21. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-22. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-23. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-24. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-25. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-26. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+4. [`../domain/validation-methodology-v2.md`](../domain/validation-methodology-v2.md)
+5. [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
+6. [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
+7. [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md)
+8. [`../domain/concepts/goal.md`](../domain/concepts/goal.md)
+9. [`../domain/concepts/plan.md`](../domain/concepts/plan.md)
+10. [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
+11. [`../domain/concepts/event.md`](../domain/concepts/event.md)
+12. [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
+13. [`../domain/concepts/milestone.md`](../domain/concepts/milestone.md)
+14. [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
+15. [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
+16. [`../domain/concepts/session.md`](../domain/concepts/session.md)
+17. [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
+18. [`../domain/concepts/recurrence.md`](../domain/concepts/recurrence.md)
+19. [`../domain/concepts/availability-capacity.md`](../domain/concepts/availability-capacity.md)
+20. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+21. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+22. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+23. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+24. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+25. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+26. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+27. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+28. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+29. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -61,8 +64,10 @@ The Domain Model handoff remains separate so decisions and unresolved questions 
 ## Rules
 
 - Revalidate concepts one at a time; do not inherit terminology merely because it already exists.
+- Retain every applicable original scenario/boundary/history test and enrich it with Validation Methodology v2 rather than replacing prior validation.
 - For every concept, inspect applicable internal documentation/scenarios and perform enough targeted external benchmarking to expose likely missing semantics before acceptance.
 - External standards/products are evidence, not compatibility requirements or design authorities; preserve LifeOS semantics first and push provider-specific compromises into adapters when practical.
+- Benchmark systems outside the personal-productivity category when they solve a relevant hard problem well; classify findings as borrow/adapt/already-stronger/anti-pattern/not-applicable.
 - Canonical Domain Atlas documentation is maintained in English; discussion language does not create a second canonical translation tree.
 - Do not model one table per life topic (`english`, `photography`, `farming`, etc.).
 - Do not collapse everything into one `entities` table or arbitrary JSON blob.
@@ -71,9 +76,26 @@ The Domain Model handoff remains separate so decisions and unresolved questions 
 - Preserve planned/actual/history distinctions.
 - Preserve original intention when later evidence reveals additional relevance; do not rewrite history to make past execution look intentionally linked to a Goal when it was not.
 - Prefer progressive formalization: generic first when genuinely unpredictable; promote repeated/query-heavy concepts through reviewed migrations.
+- Preserve progressive disclosure: kernel precision must not force simple users to configure or understand the internal ontology.
 - Do not reopen an accepted architectural ADR merely because a first implementation mapping is inconvenient; propose an explicit ADR change when new evidence genuinely challenges the architecture.
 - Preserve earlier documents while conflicts are being revalidated; propagate replacements deliberately after related concepts are understood.
-- Run cluster checkpoints in addition to concept-level reviews; do not defer all cross-model validation until the end.
+- Run cluster checkpoints and cross-cluster validation in addition to concept-level reviews; do not defer all cross-model validation until the end.
+
+# Validated baseline — first two clusters
+
+The first two clusters are now individually and jointly validated as current baselines.
+
+```text
+Intention & Execution v0 — PASS
+Time v0                 — PASS
+Cross-cluster v2        — PASS
+```
+
+These are current best decisions, not permanent closure.
+
+Any concept may be reopened by future user-led tests, downstream cluster work, persistence mapping, implementation evidence, integration constraints, or stronger external patterns.
+
+---
 
 ## Validated cluster — Intention & Execution v0
 
@@ -88,56 +110,80 @@ Validated concepts:
 - Routine v0;
 - Milestone v0.
 
-Checkpoint record:
+Checkpoint:
 
 - [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
 
-Checkpoint conclusions:
+The cluster was subsequently re-tested under Validation Methodology v2 together with the Time cluster and remained valid.
 
-- no accepted baseline currently needs reopening;
-- Milestone was the one material missing concept exposed by the first pass and is now included;
+Key conclusions:
+
 - no universal parent/child hierarchy is required;
-- Activity versus Plan and Routine versus Plan remain intentionally soft semantic boundaries but passed the current scenario matrix;
-- Activity versus Event remains action-centred versus occurrence-centred rather than schedule-based;
-- recurring Event versus Routine remains series-of-occurrences versus behavioral-policy semantics;
-- Goal versus Milestone remains independent desired outcome versus contextual checkpoint;
-- planned/current/actual/history distinctions remain intact;
-- evidence may reach Goal criteria even when the source execution was not originally linked to that Goal;
-- later temporal, evidence, relationship, persistence, or implementation work may still reopen the cluster if new contradictions appear.
+- Goal remains desired-condition semantics rather than execution strategy;
+- Plan remains coordination/strategy rather than an executable Activity;
+- Activity remains action-centred;
+- Event remains occurrence-centred even when Schedule changes;
+- Routine remains recurring behavior/execution policy rather than Recurrence syntax;
+- Milestone remains a contextual meaningful checkpoint, with an explicit future re-test against Outcome and GoalCriterion;
+- valid later Evidence may become relevant to Goals without rewriting the source execution's historical intention.
 
-## Current cluster — Time
+Validation Methodology v2 additionally hardened:
 
-All currently planned individual Time-concept reviews are complete.
+### Routine vs Plan progression
 
-Accepted current baselines:
+Routine can be composite/adaptive, but materially changing long-horizon stages, strategy transitions, milestones, and multiple recurring policies tend toward Plan rather than one mega-Routine.
+
+Record: [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
+
+### Event without current Schedule
+
+Event temporal meaning remains intrinsic, but an Event that is postponed/unresolved can retain identity and historical expectation while temporarily having no current accepted Schedule.
+
+Record: [`../domain/concepts/event.md`](../domain/concepts/event.md)
+
+---
+
+## Validated cluster — Time v0
+
+Status: **PASS — current validated cluster baseline**.
+
+Validated concepts:
+
+- Occurrence v0;
+- Schedule v0;
+- Session v0;
+- Temporal Constraint v0;
+- Recurrence v0;
+- Availability & Capacity v0.
+
+Checkpoint:
+
+- [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
+
+Key combined result:
 
 ```text
-Occurrence v0
-Schedule v0
-Session v0
-Temporal Constraint v0
-Recurrence v0
-Availability & Capacity v0
+appears in time
+!= accepted Schedule
+!= capacity consumed
+!= resource unavailable
+!= recurring instance identity
+!= Temporal Constraint
+!= actual execution
 ```
 
-Status of the cluster itself:
+The Time model remains composable rather than one calendar mega-object.
 
-> **CHECKPOINT PENDING — not yet a validated cluster baseline.**
+---
 
-Next required step:
-
-> **Time Cluster Checkpoint v0**
-
-The checkpoint must stress-test all six concepts together before the workstream proceeds to Observed Reality & Evidence.
-
-## Occurrence v0 — accepted current baseline
+## Occurrence v0 — validated current baseline
 
 `Occurrence` is the stable logical identity of one expected instance produced by a recurring/generative source.
 
 Key decisions:
 
 - identifies **which expected instance**, not when it is currently scheduled;
-- distinct from Routine, recurring source/series, RecurrenceRule, Activity, Event, Schedule, Session, and Actual;
+- distinct from Routine, recurring source/series, Recurrence, Activity, Event, Schedule, Session, and Actual;
 - identity does not depend on current start/end or resolved UTC instant;
 - rescheduling does not automatically create a new Occurrence;
 - skip/cancellation/non-execution may remain historically identifiable;
@@ -145,374 +191,238 @@ Key decisions:
 - may exist before exact Schedule placement;
 - may later be realized through multiple Sessions;
 - future Occurrences may remain virtual/derived until instance-specific history requires persistent reconstruction;
-- historical Occurrences retain enough source/version context to prevent later source revisions from rewriting history;
-- exact SQL persistence/materialization remains deferred.
+- historical Occurrences retain enough source/version context to prevent later source revisions from rewriting history.
 
 Record: [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
 
-## Schedule v0 — accepted current baseline
+---
+
+## Schedule v0 — validated current baseline
 
 `Schedule` is the current accepted temporal assignment of a schedulable subject.
 
 Key decisions:
 
 - answers **when execution/occurrence is currently intended or expected**, not what the subject is;
-- distinct from Activity, Event, Occurrence, Actual, Session, Deadline/Target, Temporal Constraint, RecurrenceRule, Routine, Movement Policy, and Availability/Capacity;
-- system/AI suggestion remains a proposal until accepted by user authority or authorized policy;
+- remains distinct from Activity, Event, Occurrence, Actual, Session, Deadline/Target, Temporal Constraint, Recurrence, Routine, Movement Policy, and Availability/Capacity;
+- AI/system suggestion remains proposal until accepted by user authority or authorized policy;
 - Activity may exist without Schedule;
 - Occurrence may exist before exact Schedule placement;
-- Event uses Schedule for accepted temporal placement without duplicating Event identity;
+- Event identity can survive Schedule revision and can temporarily survive with no current Schedule after postponement/unresolved timing;
 - Schedule revision preserves subject identity and history;
 - Actual deviation does not silently rewrite Schedule;
-- Schedule precision may be date-only, coarse, exact, start-only, interval-based, floating local, named-zone local, or absolute-instant as applicable;
+- precision may remain date-only, coarse, exact, start-only, interval-based, floating local, named-zone local, or absolute-instant;
 - one schedulable subject may have multiple accepted planned placements;
 - estimated effort, scheduled duration, and actual duration remain distinct;
-- having a Schedule does not imply consuming user capacity/busy time;
-- recurrence remains separate from the single accepted Schedule of an instance;
-- exact placement/revision SQL representation remains deferred.
+- Schedule presence does not imply busy/capacity reservation.
 
 Record: [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
 
-## Session v0 — accepted current baseline
+---
 
-`Session` is accepted as a persistent record of one bounded episode of actual execution or performed behavior.
+## Session v0 — validated current baseline
+
+`Session` is a persistent record of one bounded episode of actual execution or performed behavior.
 
 Key decisions:
 
-- Session is **actual execution**, never the canonical planned placement;
-- Session is distinct from Schedule, Activity, Occurrence, Routine, Event attendance/actual occurrence, and broader Actual/Outcome;
+- Session is actual execution, never canonical planned placement;
+- distinct from Schedule, Activity, Occurrence, Routine, Event attendance/actual occurrence, and broader Actual/Outcome;
 - one Activity/Occurrence may have zero, one, or many Sessions;
 - planned placements and Sessions do not require one-to-one mapping;
 - Session may exist without prior Schedule;
-- spontaneous execution may be captured as Session without fabricating a pre-existing Activity, while retaining sufficient semantic context/provenance;
+- spontaneous execution may be captured without fabricating pre-existing intention;
 - pause does not automatically create a new Session;
-- one Session may contain multiple active intervals separated by pauses;
-- elapsed, active, and paused duration are conceptually distinct;
-- explicit end/close followed by later restart normally creates another Session;
-- no arbitrary universal pause threshold determines Session identity;
-- a running Session may have unknown end;
-- Session identity is stable independently from timestamps;
-- corrections preserve identity/history; split/merge preserve lineage/provenance;
-- ending Session does not imply Activity/Occurrence completion;
-- manual, timer/stopwatch, imported, and authorized automatic sources are provenance differences rather than Session types;
-- Timer/Stopwatch are capture/control mechanisms; Session is the persistent execution record;
-- measurements/Observations may relate to Session without becoming arbitrary Session JSON;
-- overlapping Sessions are not globally invalid; compatibility is context-specific and analytics must avoid naïve elapsed-time summation;
-- Event actual occurrence/attendance does not receive a redundant Session by default;
-- broader Actual may aggregate several Sessions and may also exist without any Session detail;
-- LifeOS Session identity remains separate from provider record identity;
-- exact lifecycle enum, pause persistence, parent cardinality, split/merge schema, and SQL remain deferred.
+- one Session may contain multiple active intervals;
+- elapsed, active, and paused duration remain conceptually distinct;
+- explicit end followed by later restart normally creates another Session;
+- overlap is not globally forbidden;
+- analytics must not naïvely sum overlapping elapsed time;
+- Event attendance does not create redundant Session records by default.
 
 Record: [`../domain/concepts/session.md`](../domain/concepts/session.md)
 
-## Temporal Constraint v0 — accepted current baseline
+---
 
-`Temporal Constraint` is accepted as the general rule capability that restricts or prefers temporal placement, duration, or temporal relationships without becoming Schedule or Actual.
+## Temporal Constraint v0 — validated current baseline
+
+`Temporal Constraint` restricts or prefers placement, duration, or temporal relationships without becoming Schedule or Actual.
 
 Key decisions:
 
-- Temporal Constraint answers **when execution/occurrence is allowed, required, bounded, or preferred**;
-- Temporal Constraint is distinct from Schedule, Session/Actual, Recurrence, Availability/Capacity, and Movement Policy;
-- `Deadline` is a latest-bound Temporal Constraint semantic specialization rather than a separate kernel primitive;
-- `Window` is a range-shaped temporal expression whose semantics depend on context rather than a universal primitive;
-- target date/window and review date do not automatically become hard Temporal Constraints;
-- the constrained temporal feature must remain explicit when relevant: start, completion/delivery, containment, duration, spacing, exclusion, or another temporal relationship;
-- hard constraints define planning admissibility; soft constraints/preferences guide optimization;
-- hard/soft strength is distinct from authority/mutability;
-- Actual that violates a hard constraint remains valid history and may produce a derived violation;
-- passing a deadline does not automatically create `missed` or failure outcome;
-- multiple hard constraints must be jointly satisfiable or the current planning problem is infeasible;
-- LifeOS must surface infeasibility instead of silently violating hard constraints;
-- constraints may be boundary-, range-, duration-, spacing-, exclusion-, or relation-based;
-- constraints may operate at broader Plan/Routine scopes and receive Occurrence-specific exceptions without requiring physical duplication;
-- material constraint revisions remain distinct from Schedule revisions and preserve enough history/provenance to explain replanning;
-- recurring constraint patterns may reuse Recurrence without becoming occurrence-generating sources;
-- exact entity/value-object split, SQL, scoping persistence, optimizer representation, and rule encoding remain deferred.
+- answers when execution/occurrence is allowed, required, bounded, or preferred;
+- distinct from Schedule, Session/Actual, Recurrence, Availability/Capacity, and movement authority;
+- Deadline is a latest-bound Temporal Constraint semantic specialization rather than a separate kernel primitive;
+- Window is a range shape whose meaning depends on semantic role;
+- target/review dates do not automatically become scheduling constraints;
+- hard constraints define planner admissibility while soft constraints guide optimization;
+- strength and authority/mutability remain separate;
+- Actual that violates a hard rule remains valid history;
+- a passed Deadline does not automatically assert `missed`;
+- infeasible combinations remain representable and must be surfaced rather than silently violated;
+- scoped constraints and Occurrence-specific exceptions do not require destructive source-policy rewrite.
 
 Record: [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
 
-## Recurrence v0 — accepted current baseline
+---
 
-`Recurrence` is accepted as a structured repeating-pattern capability that describes how repeated temporal/generative structure behaves without becoming the recurring source, Occurrence, Schedule, Actual, or generic automation engine.
+## Recurrence v0 — validated current baseline
+
+`Recurrence` is a structured repeating-pattern capability rather than the recurring source, Occurrence, Schedule, Actual, or a generic automation engine.
 
 Key decisions:
 
-- Recurrence is distinct from Routine and recurring Event semantics;
-- Recurrence is distinct from Occurrence identity, Schedule, Session/Actual, Temporal Constraint, and Trigger;
-- Recurrence may produce logical/quota Occurrences without exact timestamps;
-- calendar/wall-clock, elapsed-interval, quota-per-period, completion-relative, anchor-stream-relative, and cyclic semantics are materially distinct families;
-- `every day at 08:00` is not automatically equivalent to `every 24 elapsed hours`;
-- floating/user-local, named-zone wall-clock, and absolute/elapsed semantics remain distinguishable;
-- pattern anchor and effective recurrence range remain separate;
-- occurrence-count semantics describe expectations generated, not successful completions;
-- completion-relative recurrence explicitly depends on qualifying Actual/fact anchors and must not silently become an independent fixed calendar series;
-- anchor-stream recurrence remains a bounded repeated mapping from qualifying anchors rather than arbitrary condition detection;
-- one-off Schedule/Occurrence exceptions do not automatically mutate the recurrence rule;
-- structural `this and future` changes become effective future source/Recurrence revisions rather than rewriting history;
-- generated-then-skipped/cancelled remains distinct from structurally excluded-before-generation;
-- future Occurrences may remain virtual and purely virtual future candidates may be regenerated after a structural revision;
-- future Occurrences with instance-specific history must be reconciled rather than silently disappearing;
-- correction of an Actual recurrence anchor may recompute future expectations while preserving materialized history/provenance;
-- DST, travel, invalid calendar dates, leap days, and ambiguous/nonexistent local times require explicit/domain semantics rather than one hidden universal policy;
-- natural-language recurrence text is input/provenance, not the normalized canonical model;
-- external recurrence standards/provider formats are benchmark evidence and optional adapter targets, not kernel authorities;
-- lossless mapping to RRULE or any provider recurrence format is not a LifeOS invariant;
-- exact DSL, SQL, typed representation, resolver algorithms, materialization horizon, and effective-version storage remain deferred.
+- distinct from Routine and recurring Event semantics;
+- distinct from Occurrence, Schedule, Session/Actual, Temporal Constraint, and Trigger;
+- supports calendar/wall-clock, elapsed, quota-per-period, completion-relative, anchor-stream-relative, and cyclic families;
+- may produce logical expected Occurrences without exact timestamps;
+- wall-clock `daily 08:00` is not automatically `every 24 elapsed hours`;
+- floating/user-local, named-zone, and absolute/elapsed semantics remain distinguishable;
+- pattern anchor and effective range remain separate;
+- expected-occurrence count is not successful-completion count;
+- completion-relative chains depend on qualifying Actual/fact anchors;
+- one-off Occurrence/Schedule exceptions do not mutate future recurrence automatically;
+- structural `this and future` change is an effective source/Recurrence revision;
+- future purely virtual instances may regenerate, while instance-specific history must be reconciled rather than disappearing;
+- natural-language input and provider recurrence syntax are not canonical normalized truth;
+- external recurrence formats remain optional adapter targets, not kernel authorities.
+
+Validation Methodology v2 hardening:
+
+- quota-per-period recurrence preserves enough **period-frame semantics** to determine membership/boundaries when calendar/timezone/boundary interpretation can materially change the expected set;
+- equivalent logical quota Occurrences do not receive arbitrary first/second/third semantics unless meaningful ordering is explicitly established.
 
 Record: [`../domain/concepts/recurrence.md`](../domain/concepts/recurrence.md)
 
-## Availability & Capacity v0 — accepted current baseline
+---
 
-`Availability & Capacity` is accepted as the scheduling-resource model that separates usable capacity from accepted Schedule placement.
+## Availability & Capacity v0 — validated current baseline
+
+`Availability & Capacity` separates resource schedulability from accepted temporal placement.
 
 Key decisions:
 
-- Availability answers **when a schedulable resource has capacity that may be used**;
-- Capacity answers **what compatible commitments the resource can sustain**;
-- Capacity Reservation/Claim represents capacity committed, occupied, protected, or held;
-- Effective Free Capacity is derived rather than treated as a canonical list of stored empty intervals;
-- Schedule placement and capacity reservation remain distinct semantics;
-- a scheduled item does not automatically imply busy/occupied capacity;
-- Availability is distinct from Temporal Constraint and from scheduling preference;
-- Capacity is not universally binary and not universally a single scalar/percentage;
-- timestamp overlap alone does not establish capacity conflict; compatibility semantics matter;
-- incompatible overbooking must remain representable and surfaced rather than rejected/destructively normalized;
-- recurring Availability may reuse Recurrence without creating execution Occurrences;
-- positive/negative Availability overrides can alter baseline capacity temporarily;
-- Temporary Mode may alter Availability/Capacity without rewriting stable baseline history;
-- Event participation/attendance and all-day placement do not automatically determine capacity impact;
-- external free/busy data remains imported evidence/provenance, not universal LifeOS truth;
-- `Calendar Block` remains valid product/UI language but is not a separate kernel primitive by default;
-- standalone protected/unavailable/tentative temporal constructs can be represented through reservation/availability semantics without inventing fake Activities;
-- exact Resource, reservation identity, capacity dimensions, SQL, and persistence shape remain deferred.
+- Availability answers when a schedulable resource has capacity that may be used;
+- Capacity answers what compatible commitments the resource can sustain;
+- Reservation/Claim represents capacity committed, occupied, protected, or held;
+- Effective Free Capacity is derived rather than canonical stored empty intervals;
+- Schedule and Capacity Reservation remain distinct;
+- scheduled does not automatically mean busy;
+- Availability is distinct from Temporal Constraint and preference;
+- Capacity is not universally binary and not universally one scalar/percentage;
+- timestamp overlap alone does not establish conflict;
+- overbooking/conflicting reality remains representable;
+- recurring Availability may reuse Recurrence without execution Occurrences;
+- positive/negative overrides can modify baseline availability temporarily;
+- Temporary Mode may later alter capacity/availability without rewriting stable baseline;
+- Event participation/all-day placement does not automatically determine capacity impact;
+- external free/busy remains imported evidence/provenance;
+- Calendar Block is useful UI/product language but not a mandatory kernel primitive.
 
 Record: [`../domain/concepts/availability-capacity.md`](../domain/concepts/availability-capacity.md)
 
-## Current task — Time Cluster Checkpoint v0
+---
 
-The individual Time concepts are accepted but must now be validated as one combined model.
+# Cross-cluster Validation v2
 
-Checkpoint scope:
+Status: **PASS — current combined baseline**.
 
-```text
-Occurrence
-Schedule
-Session
-Temporal Constraint
-Recurrence
-Availability & Capacity
-```
+Record:
 
-The checkpoint must determine whether the combined model survives realistic and adversarial scenarios without:
+- [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md)
 
-- duplicated temporal truth;
-- accidental identity changes;
-- hidden history rewrites;
-- one-to-one assumptions between planned and actual execution;
-- false free/busy assumptions;
-- recurrence ambiguity;
-- excessive special-case behavior;
-- one universal JSON temporal escape hatch;
-- provider-specific schemas leaking into the kernel.
+The validation applied:
 
-## Required checkpoint tests
+- original scenario/boundary/history tests;
+- Real-World Workflow Inversion;
+- deep chronological simulation;
+- adversarial reductio;
+- semantic redundancy/merge-split tests;
+- downward composition;
+- upward reconstruction;
+- lateral propagation;
+- orphan/independence testing;
+- external cross-domain benchmark and anti-pattern review;
+- scale/history stress;
+- simple-user versus power-user analysis.
 
-At minimum the checkpoint should test:
-
-### Recurring workout with reschedule and Actual deviation
+Results:
 
 ```text
-Routine
-M/W/F workout
-
-Wednesday Occurrence
-original expectation Wed 18:00
-current Schedule Thu 19:00
-Session Thu 18:50-20:05
+12 concepts retained
+0 justified primitive merges
+0 new cross-cluster primitives required
+0 forced universal hierarchy
+0 historical-intention rewrites required
 ```
 
-Verify:
+The model supports both top-down planning and bottom-up retrospective capture.
 
-- same Occurrence identity;
-- Recurrence unchanged;
-- Schedule revision preserved;
-- Session does not rewrite Schedule;
-- capacity impact remains coherent.
+A spontaneous Session can exist without LifeOS fabricating an Activity/Routine/Plan/Goal that did not historically exist.
 
-### Flexible quota recurrence
+One Event/Session/fact can later become relevant to multiple Goals/domains without duplicating the source fact.
 
-```text
-Routine
-3 workouts per week
-```
+This lateral behavior confirms a future requirement for typed semantic relationships rather than one universal untyped `related_to` link.
 
-Verify:
+---
 
-- logical expected Occurrences may exist without exact dates;
-- Schedule can assign them later;
-- no fake M/W/F assumption;
-- quota count is expectation count, not completion criterion.
+# Validation watchlist
 
-### Completion-relative maintenance
+The following boundaries are sound now but must be explicitly re-tested when their strongest adjacent concepts are modeled.
 
-```text
-Replace filter
-30 days after previous Actual replacement
-```
+## Milestone vs Outcome vs GoalCriterion
 
-Verify:
+Milestone is currently justified as contextual checkpoint identity, but Outcome/GoalCriterion will be its strongest redundancy challenge.
 
-- fixed calendar recurrence is not invented;
-- next Occurrence depends on qualifying Actual anchor;
-- correction of anchor Actual can recompute future expectation without rewriting materialized history.
+## Plan vs Routine
 
-### Medication / DST
+Current boundary remains deliberately soft. Complex progression/adaptation should continue to challenge it.
 
-Test both:
+## Event participation vs personal commitment
 
-```text
-08:00 local wall-clock
-```
+Shift swaps, delegation, attendance, and multi-participant semantics may refine Event/Relationship modeling without changing the Time kernel.
 
-and:
+## Completion-relative Recurrence vs Trigger / relative Constraint
 
-```text
-every 12 elapsed hours
-```
+Current boundary remains sufficient but should be revisited when Trigger and Actual-anchor qualification are formalized.
 
-Verify they remain distinct through DST/travel behavior and no hidden universal UTC assumption appears.
+## Availability/Capacity vs Resource
 
-### Recurring Event instance moved
+Time semantics are sound; resource identity and quantitative dimensions belong to later Resource/Subject modeling.
 
-```text
-Monday meeting series
-one Monday moved to Tuesday
-```
+## Session vs Actual
 
-Verify:
+Session remains justified as bounded execution episode; broader Actual must later avoid duplicating it.
 
-- Event semantics remain Event semantics;
-- same Occurrence identity;
-- one-off Schedule exception does not mutate Recurrence;
-- `this and future` requires source/Recurrence revision instead.
+## Relationship typing/direction
 
-### Deadline + preferred window + availability
+Lateral cross-domain tests indicate that `supports`, `conflicts_with`, `prepares_for`, `depends_on`, `evidence_for`, `replaces`, etc. cannot all safely collapse into one semantic-free generic link.
 
-```text
-Activity
-submit report
+---
 
-hard completion deadline Friday 17:00
-preferred work window morning
-user availability 09:00-18:00
-```
+# Current task — user-led brainstorming / questions / additional tests
 
-Verify:
+**Do not automatically start the Observed Reality & Evidence cluster.**
 
-- Deadline/Window do not become Schedule;
-- preference does not become Availability;
-- planner can find a feasible accepted placement;
-- passing deadline does not automatically assert `missed` without Actual/Outcome.
+The explicitly agreed next step is:
 
-### Protected focus and non-blocking Event
+> **User-led architecture/product brainstorming, questions, and additional tests before selecting the next Domain Atlas cluster.**
 
-```text
-Protected focus 15:00-17:00
-Optional webinar 15:30-16:30
-```
+The next discussion may:
 
-Verify:
+- challenge the current architecture from a higher-level product perspective;
+- reopen any accepted concept;
+- add new validation methods;
+- test other real-world workflows;
+- compare LifeOS against additional systems/architectures;
+- examine scalability, performance, UX, AI, integration, data ownership, or extensibility;
+- decide whether the eventual next cluster should be Observed Reality & Evidence or something else.
 
-- Calendar Block does not need separate kernel duplication;
-- focus can reserve capacity without Activity;
-- scheduled webinar may remain non-blocking/compatible;
-- timestamp overlap alone is not conflict.
+No cluster order after this point is automatic.
 
-### Imported double booking
+---
 
-```text
-Meeting A 15:00-16:00
-Meeting B 15:30-16:30
-```
-
-Verify:
-
-- both facts remain representable;
-- capacity conflict is derived;
-- system does not silently delete/rewrite either.
-
-### Temporary disruption
-
-```text
-Normal availability Mon-Fri 09:00-18:00
-Temporary illness week
-```
-
-Verify:
-
-- temporary capacity/availability override does not rewrite stable baseline;
-- future Schedule can be replanned while past history remains intact.
-
-### Divisible Activity
-
-```text
-Activity
-3h study
-
-planned placements
-2h + 1h
-
-actual Sessions
-80m + 40m + 35m
-```
-
-Verify:
-
-- multiple planned placements and multiple actual Sessions coexist;
-- no one-to-one mapping requirement;
-- estimated effort, scheduled duration, active Session time, and Outcome remain separate.
-
-### Compatible concurrent behavior
-
-```text
-Walk + English listening
-```
-
-Verify:
-
-- overlapping Schedule/Session intervals can be compatible;
-- analytics do not naïvely treat two one-hour Sessions as two elapsed wall-clock hours.
-
-### External provider mapping
-
-Test provider recurrence/free-busy input that is weaker/different than LifeOS semantics.
-
-Verify:
-
-- provider IDs/statuses do not become LifeOS identity;
-- adapters can map/degrade without kernel distortion;
-- provenance remains available.
-
-## Checkpoint decision questions
-
-The checkpoint must answer:
-
-1. Are the six Time concepts individually necessary?
-2. Is any pair still semantically duplicated?
-3. Is a missing Time primitive exposed by combined scenarios?
-4. Can history be reconstructed after rescheduling, recurrence revision, Actual correction, or availability override?
-5. Can simple one-off Activities/Events avoid unnecessary wrappers?
-6. Can recurring/generative sources avoid eager infinite materialization?
-7. Can flexible and exact temporal semantics coexist without false precision?
-8. Can the planner distinguish allowed, preferred, accepted, available, reserved, and actual time?
-9. Can inconsistent/imported real-world states remain representable?
-10. Can future persistence remain relational/queryable without turning the model into arbitrary JSON?
-11. Does any conclusion require reopening the Intention & Execution cluster?
-12. Which unresolved questions genuinely belong to Actual/Outcome/Provenance, Resource, Relationship, Version, or persistence work rather than Time?
-
-The checkpoint result must be explicitly documented as PASS or FAIL before the workstream proceeds.
-
-## Current conceptual direction
+# Current conceptual direction
 
 ```text
 Goal         -> what is wanted
@@ -532,95 +442,93 @@ Actual       -> broader truth about what happened
 Evidence     -> what supports evaluation
 ```
 
-Important temporal separation:
+The following concepts are displayed only to show known downstream semantic space; Actual/Evidence are not yet accepted Domain Atlas concepts.
 
-```text
-Recurring source / intention
-        ↓
-Recurrence where applicable
-        ↓
-Occurrence identity where applicable
-        ↓
-Temporal Constraint(s)
-        ↓
-Availability / Capacity feasibility
-        ↓
-Schedule
-        ↓
-Session / Event Actual
-        ↓
-Outcome / Evidence later
-```
+---
 
-This is conceptual rather than a required execution pipeline. Schedule may create capacity claims, and current availability/capacity determines whether a candidate Schedule is feasible.
+# Important unresolved downstream questions
 
-## Important unresolved questions after individual Time reviews
+The first two clusters deliberately leave these areas open:
 
-The following remain deliberately open and should not be mistaken for failures of the current concept definitions:
+- Actual / Outcome / Observation / Evidence / Confirmation / Provenance boundaries;
+- GoalCriterion persistence/evaluation model;
+- semantic Relationship vocabulary and directionality;
+- Participant semantics;
+- Resource / Asset / Subject model;
+- Register / Quantity / movement/balance model;
+- Trigger / Reminder / automation boundary;
+- Temporary Mode;
+- Decision / Version / revision policy;
+- exact lifecycle state machines;
+- external provider authority/reconciliation;
+- recurrence DSL/resolver/materialization storage;
+- exact capacity dimensions/reservation persistence;
+- persistence/API/logical/physical PostgreSQL model;
+- offline/sync conflict resolution;
+- AI context/proposal/authority implementation.
 
-- exact Recurrence DSL/types/resolver/materialization persistence;
-- exact Session state/lifecycle and pause persistence;
-- exact Schedule planned-placement/revision persistence;
-- exact Temporal Constraint persistence/scoping/authority representation;
-- exact Occurrence identity/materialization SQL representation;
-- exact Availability/Capacity/Reservation persistence shape;
-- exact Resource model and capacity dimensions;
-- exact Event-series persistence parent;
-- exact Event lifecycle/participant/attendance state machines;
-- exact Goal/Plan/Routine/Milestone lifecycle state machines;
-- exact version-versus-replacement boundaries;
-- criterion entity/value-object/persistence model;
-- Actual, Observation, Evidence, Outcome, Confirmation, and Provenance boundaries;
-- formal relationship semantics, including support, contribution, conflict, dependency, decomposition, Goal-to-Goal effects, and multi-goal execution;
-- exact Life Area / World / Value model;
-- Asset / Subject / Resource model;
-- persistence/API mapping.
+These are downstream dependencies, not current failures.
 
-The Time checkpoint should identify whether any of these actually blocks temporal coherence. If not, they remain downstream dependencies rather than reasons to prematurely design tables now.
+---
 
-## Output expected before broad persistence implementation
+# Output expected before broad persistence implementation
+
+Before broad persistence/backend implementation, the full Domain Atlas should eventually establish:
 
 - concise conceptual model;
 - entity/value-object boundaries;
 - key invariants;
-- ownership model;
+- ownership/context model;
 - lifecycle/state distinctions;
 - structural relationship map;
 - dynamic relationship/provenance rules;
-- first persistence mapping for the initial vertical slice;
-- explicit list of questions intentionally deferred.
+- AI authority/proposal boundaries;
+- first logical persistence mapping for the initial vertical slice;
+- explicit list of questions intentionally deferred;
+- final whole-domain stress-test result.
 
 ## First implementation target
 
-The model should eventually become concrete enough to implement an initial vertical slice around:
+The current working implementation target remains conceptually around:
 
-`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Recurrence/Occurrence/Constraint/Availability/Capacity/Schedule/Session → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Recurrence/Occurrence/Constraint/Availability/Capacity/Schedule/Session → later Actual/Confirmation`
 
-This remains a working implementation target, not a final persistence schema.
+This is a working direction, not a final persistence schema and not permission to implement the downstream concepts before their review.
 
-## Handoff
+---
+
+# Handoff
 
 - Active branch: `feature/domain-model`
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
 - Intention & Execution Cluster v0: **PASS / validated current baseline**
-- Time cluster: **individual concept reviews complete / checkpoint pending**
+- Time Cluster v0: **PASS / validated current baseline**
+- Cross-Cluster Validation v2: **PASS / validated current combined baseline**
+- Validation Methodology v2: active validation standard
 - Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`, `Session v0`, `Temporal Constraint v0`, `Recurrence v0`, `Availability & Capacity v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
-- Event concept commit: `84e460ba31d5b88b1f415d27d8254803358109f4`
-- Routine concept commit: `f0de8c241d7650bbdbaffdf1b8cb102facf713fc`
+- Event original concept commit: `84e460ba31d5b88b1f415d27d8254803358109f4`
+- Routine original concept commit: `f0de8c241d7650bbdbaffdf1b8cb102facf713fc`
 - Milestone concept commit: `46ddf9d4bdc514fc56a718a93ad0258a2aa34a4b`
 - Intention/execution checkpoint commit: `646f41452c357010550f3fa0ab96147518ddaa4c`
 - Occurrence concept commit: `a55fa28b2fb27b1967d18f26b318b173972e35ee`
-- Schedule concept commit: `e716e6ad16391f20bd9264c84733dc4f88da4ef8`
+- Schedule original concept commit: `e716e6ad16391f20bd9264c84733dc4f88da4ef8`
 - Session concept commit: `fef80394849e38e9215303b3ee6b1813ef3621a0`
 - Temporal Constraint concept commit: `de3a6bb8ca78a7c2f429cf2986c65f084592ac64`
-- Recurrence concept commit: `58e2c50bcfac45a7a5ad8b5140b90040038fddae`
+- Recurrence original concept commit: `58e2c50bcfac45a7a5ad8b5140b90040038fddae`
 - Availability & Capacity concept commit: `87881b5ddd2ae7952e1982a3624d0a1f1b261833`
+- Validation Methodology v2 commit: `177e019a07dab46464b22a4a3ae17a3777afd494`
+- Time checkpoint commit: `7b07d56a433edb2d955f14a7ae40b0bca33a289c`
+- Cross-cluster validation v2 commit: `dd25597819ae7b843da46a15cc9790f3bdff83e6`
+- Routine v2-hardening commit: `dc1de46b02efccb646fb4073adf43c196caba048`
+- Event v2-hardening commit: `750fa0b7116873e0b9fe9c53118d52a8d6133424`
+- Recurrence v2-hardening commit: `f5b75da4dea3bbfcd6b53fc63ab2fdb302e65707`
+- Schedule v2-hardening commit: `024c6422d61f2d57819f2f9cd7b702db913b7967`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Current task: `Time Cluster Checkpoint v0` review/stress test
-- Known documentation conflicts: earlier glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine/Calendar Block semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after related clusters are stable.
+- Current task: **user-led brainstorming/questions/additional tests before selecting the next Domain Atlas cluster**
+- Known documentation conflicts: older glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine/Calendar Block semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after related clusters are stable.
