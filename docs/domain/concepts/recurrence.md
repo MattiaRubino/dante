@@ -548,13 +548,15 @@ Recurrence
 3 times per week
 ```
 
-The Recurrence can establish:
+The Recurrence can establish three distinct expected instances within the relevant period without deciding exact datetimes.
+
+Conceptually:
 
 ```text
 Week 34
-Occurrence 1
-Occurrence 2
-Occurrence 3
+Occurrence A
+Occurrence B
+Occurrence C
 ```
 
 without deciding:
@@ -772,6 +774,68 @@ Exact placement can be deferred to Schedule and optimized using:
 - user preferences.
 
 Quota recurrence must not be rewritten into arbitrary weekdays merely to fit a calendar recurrence representation.
+
+### Period frame is part of quota semantics when membership can differ
+
+Validation Methodology v2 exposed an ambiguity that must not be left to incidental library or locale defaults.
+
+For a rule such as:
+
+```text
+3 times per week
+```
+
+LifeOS needs enough semantic context to answer, where it materially matters:
+
+- what defines the period;
+- where its boundaries lie;
+- which calendar/boundary convention applies;
+- which timezone or local-context frame governs membership;
+- whether another domain/source-defined period frame applies.
+
+Example:
+
+```text
+Sunday 23:30 New York
+=
+Monday 05:30 Rome
+```
+
+The same instant can belong to different named calendar weeks depending on the frame used.
+
+Canonical hardening:
+
+> **Quota-per-period Recurrence must preserve an explicit period frame sufficient to determine period membership and boundaries whenever those semantics can materially change generated expectations or evaluation. The frame must not be silently inferred from unrelated implementation defaults.**
+
+This requirement does not introduce a separate `Period` kernel primitive at this stage. A period frame may later be represented as typed value semantics within Recurrence or by another reviewed temporal structure.
+
+### Logical quota Occurrences do not require arbitrary ordinal meaning
+
+Three expected instances in one quota period need stable distinguishable identity once they become addressable, but that does not automatically mean they have intrinsic semantic order.
+
+For example:
+
+```text
+Occurrence A
+Occurrence B
+Occurrence C
+```
+
+may simply represent three equivalent expected slots in the weekly quota.
+
+LifeOS must not silently invent:
+
+```text
+first workout
+second workout
+third workout
+```
+
+unless the source rule, dependency, schedule, or another domain relation gives those positions meaningful order.
+
+Canonical hardening:
+
+> **Logical quota Occurrences may have stable distinct identity without carrying arbitrary ordinal semantics unless the recurrence/source policy explicitly establishes an order.**
 
 ### Quota count is not Goal progress
 
@@ -1724,7 +1788,7 @@ No external provider's limitations define the LifeOS kernel.
 |---|---|
 | Team meeting every Monday 10 | recurring Event semantics + calendar Recurrence |
 | Gym Mon/Wed/Fri | Routine + calendar Recurrence |
-| Workout 3x/week | Routine + quota-per-period Recurrence |
+| Workout 3x/week | Routine + quota-per-period Recurrence with explicit-enough period frame |
 | Medication every 12 real hours | elapsed-interval Recurrence |
 | Breakfast 08:00 local while travelling | floating/user-local wall-clock Recurrence |
 | Meeting 10:00 Europe/Rome | named-zone wall-clock Recurrence |
@@ -1775,6 +1839,8 @@ minimum 48h between qualifying Sessions
 The Recurrence creates three logical weekly expectations.
 The Constraint and Scheduler decide valid placements.
 The Recurrence does not invent Mon/Wed/Fri.
+
+The weekly period frame must be explicit enough to determine membership when timezone/calendar-boundary interpretation could change the answer, and the three logical expectations need not have intrinsic first/second/third semantics.
 
 ### Case 2 — recurring Event moved once
 
@@ -1910,6 +1976,8 @@ Actual/Evidence can count toward Goals without changing the Routine's recurrence
 48. Lossless mapping to RFC 5545/RRULE, Google Calendar, Microsoft Graph, Todoist, or any other provider is not a kernel invariant.
 49. Integration adapters absorb provider-specific mapping/degradation when doing so is preferable to weakening LifeOS semantics.
 50. Exact Recurrence entity/value-object split, DSL, SQL schema, resolver algorithms, materialization horizon, and version-storage mechanics remain deliberately deferred.
+51. Quota-per-period Recurrence must preserve an explicit period frame sufficient to determine period membership/boundaries whenever differing calendar, boundary, timezone, or local-context interpretation could materially change the expected set.
+52. Logical quota Occurrences may have stable distinct identity without arbitrary ordinal meaning unless ordering is established by the source rule, dependency, Schedule, or another semantic relation.
 
 ---
 
@@ -1985,7 +2053,8 @@ Recurrence v0 deliberately does not yet fix:
 - exact source pause/end lifecycle representation;
 - exact Actual/Outcome/Confirmation rules that qualify completion-relative anchors;
 - exact notification/reminder behavior for recurring instances;
-- performance strategy for recurrence expansion at scale.
+- performance strategy for recurrence expansion at scale;
+- exact physical/value representation of quota period frames and unordered quota-slot identity.
 
 These are deferred because the current semantic boundaries are sufficient to continue the Time-cluster review without prematurely fixing persistence.
 
@@ -2003,6 +2072,7 @@ A future persistence/API model must be able to represent or derive:
 - effective range;
 - timezone/wall-clock/elapsed semantics;
 - quota/cycle parameters where applicable;
+- quota period frame where period membership is semantically relevant;
 - qualifying Actual/anchor relationships for relative recurrence;
 - effective revisions;
 - occurrence exceptions separately from source rules;
@@ -2016,7 +2086,8 @@ The physical model should avoid:
 - one provider-specific RRULE column as universal truth;
 - deriving Occurrence identity solely from generated datetime;
 - storing all possible future occurrences indefinitely;
-- arbitrary JSON as the primary structure for every recurrence family.
+- arbitrary JSON as the primary structure for every recurrence family;
+- silently using server locale/timezone/week-boundary defaults as canonical quota-period semantics.
 
 Exact mapping belongs to the later logical/physical data-model phase.
 
@@ -2073,6 +2144,10 @@ Recurrence v0 is accepted as the current LifeOS baseline with these central deci
 and:
 
 > **Recurrence may generate logical expected instances rather than exact timestamps.**
+
+and:
+
+> **Quota-per-period recurrence preserves the period frame required to make membership deterministic where it matters, without inventing arbitrary ordinal meaning for equivalent logical quota slots.**
 
 and:
 
