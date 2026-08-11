@@ -2,7 +2,7 @@
 
 - Last updated: 2026-08-11
 - Canonical branch: `main`
-- Current product stage: V1 product definition complete; Phase 4 UX prototyping in progress; backend/domain foundation ready to start in parallel; independent multi-actor product discovery in progress
+- Current product stage: V1 product definition complete; Phase 4 UX prototyping in progress; backend/domain foundation ready to start in parallel; multi-actor discovery/research evidence complete on PR #6 pending review/merge
 - Production application code: not started yet
 - Documentation/governance consolidation: **COMPLETE on `main`**
 
@@ -62,12 +62,14 @@ Conversation history is useful context but is not the canonical project state wh
 
 ### Multi-Actor / Collaboration Discovery
 
-- Status: **IN PROGRESS — simulation complete; external research pending**
+- Status: **EVIDENCE COMPLETE — awaiting PR review/merge**
 - Branch: `docs/multi-actor-discovery`
 - Pull request: #6
 - Handoff: [`docs/workstreams/multi-actor-discovery.md`](workstreams/multi-actor-discovery.md)
-- Scope is discovery evidence only. It does not change the accepted personal-first V1 boundary, domain model or architecture.
-- Current simulation: [`docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`](product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+- Scope remains discovery/research evidence only. It does not change the accepted personal-first V1 boundary, domain model or architecture.
+- Simulation: [`docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`](product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+- Consolidated research: [`docs/product/multi-actor-collaboration-research-2026-08.md`](product/multi-actor-collaboration-research-2026-08.md)
+- Generic evidence acquisition is closed. Any later synthesis/readiness pass should be a separate deliberate workstream.
 
 ## Immediate next work
 
@@ -77,7 +79,7 @@ Conversation history is useful context but is not the canonical project state wh
 4. Implement the first vertical slice only after the core domain model is coherent: Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation.
 5. Add registers, assets, skills, requirements/capabilities and semantic relations incrementally rather than designing every specialist module upfront.
 6. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
-7. Continue the independent multi-actor discovery workstream with a separate external research document, then compare that evidence with the completed simulation before promoting any collaboration concepts into binding product/domain decisions.
+7. Review/merge PR #6 when its evidence documents are accepted. Do not continue generic multi-actor research or promote its vocabulary directly into binding domain decisions; start a separate synthesis/readiness workstream only when intentionally chosen.
 
 ## Repository coherence baseline
 
@@ -119,6 +121,6 @@ Incremental progress normally updates the workstream handoff, not this global st
 - `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are integrated into `main`.
 - completed `docs/project-governance*` helper branches: historical/obsolete after consolidation; no unique accepted work ahead of `main` at the last audit.
 - `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
-- `docs/multi-actor-discovery`: active discovery branch containing the multi-actor simulation and follow-up research work; it is evidence-only until later accepted decisions deliberately incorporate findings.
+- `docs/multi-actor-discovery`: evidence work is complete on this branch; it remains non-authoritative until PR #6 is reviewed/merged into `main`.
 
 Historical branches and Git history are retained. Consolidation did not delete prior documentation or history.
