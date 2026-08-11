@@ -9,27 +9,21 @@
 
 The Domain Atlas is the working source for re-evaluating and defining LifeOS domain concepts before broad persistence or backend implementation.
 
-Its job is not to preserve earlier terminology by inertia. Its job is to produce the strongest current domain model we can justify from product intent, real-world scenarios, external evidence, implementation constraints and explicit reasoning.
+Its job is not to preserve earlier terminology by inertia. Its job is to produce the strongest current domain model justified by product intent, real-world scenarios, external evidence, implementation constraints and explicit reasoning.
 
 ## Decision rule
 
 **Accepted means current best decision, not immutable decision.**
 
-A concept may be reopened when new scenarios, evidence, implementation constraints, contradictions or better abstractions emerge. Changes must be deliberate and documented; prior reasoning must not be silently overwritten.
+A concept may be reopened when new scenarios, evidence, implementation constraints, contradictions or stronger abstractions emerge. Changes must be deliberate and documented; prior reasoning must not be silently overwritten.
 
-Earlier product documents, simulations, glossaries, ADRs, prototypes and conversation history are inputs to re-evaluate. They are not automatically correct merely because they were written earlier.
-
-Where an accepted ADR defines a broader architectural constraint, this workstream respects it unless new evidence is strong enough to justify an explicit ADR change.
+Earlier product documents, simulations, glossaries, ADRs, prototypes and conversation history are inputs to re-evaluate, not automatic truth.
 
 ---
 
 # Mandatory concept-review protocol
 
-Every Domain Atlas concept must be reviewed against more than the immediately preceding discussion before it is accepted.
-
 All new concepts use **Domain Validation Methodology v3** and its mandatory execution template.
-
-Ordered validation pipeline:
 
 ```text
 A. Evidence + candidate formation
@@ -53,7 +47,17 @@ Cluster Multi-Actor Stress Gate
 Cluster verdict
 ```
 
-Before broad persistence/API stabilization the whole accepted domain must pass final whole-domain regression, multi-actor and implementation-pressure gates.
+Before broad persistence/API stabilization:
+
+```text
+Whole-domain semantic regression
+        ↓
+Whole-domain multi-actor regression
+        ↓
+Persistence / API pressure test
+        ↓
+Implementation-readiness verdict
+```
 
 Canonical references:
 
@@ -61,7 +65,16 @@ Canonical references:
 - [`Validation Execution Template v3`](validation-execution-template-v3.md)
 - [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md)
 
-Validation Methodology v2 and its multi-actor addendum remain preserved under `history/` as audit/evolution evidence. Compatibility redirect files remain at their previous paths so older links do not silently point to a competing active standard.
+Validation Methodology v2 and its multi-actor addendum remain preserved under `history/` as audit/evolution evidence.
+
+Allowed verdicts:
+
+```text
+PASS
+PASS WITH HARDENING
+REOPEN
+DEFERRED DEPENDENCY
+```
 
 The goal is not the largest ontology. It is the smallest model that survives real life without losing semantic meaning, history, queryability, extensibility, privacy or usability.
 
@@ -70,8 +83,6 @@ The goal is not the largest ontology. It is the smallest model that survives rea
 # External benchmark and interoperability rule
 
 External standards, products, APIs and schemas are **benchmark evidence, not design authorities**.
-
-LifeOS should adopt an external pattern when it improves the internal model or provides useful interoperability at negligible conceptual cost. The domain model must not be weakened/distorted merely to match another platform.
 
 Preferred direction:
 
@@ -93,12 +104,7 @@ external schema
 LifeOS kernel must imitate it
 ```
 
-Consequences:
-
-- provider identifiers/recurrence/status taxonomies do not become canonical identity by default;
-- lossless external mapping is not a kernel invariant;
-- adapters absorb provider-specific compromise where practical;
-- specialist systems can remain authoritative while LifeOS coordinates around permitted facts.
+Provider identifiers, recurrence/status taxonomies and lossless external mapping are not kernel invariants by default. Adapters absorb provider-specific compromise where practical.
 
 ---
 
@@ -106,39 +112,29 @@ Consequences:
 
 Canonical Domain Atlas documentation is written in **English**.
 
-Discussion may occur in another language, but the repository maintains one canonical documentation tree rather than parallel translations that can diverge.
-
 Each accepted concept should document where relevant:
 
 - canonical definition;
 - why the concept exists;
 - validation basis;
-- boundaries against adjacent concepts;
-- identity and context/ownership/governance implications;
-- lifecycle and temporal semantics;
-- planned/current/actual/history distinctions;
+- nearest semantic boundaries;
+- identity and actor/context implications;
+- lifecycle/temporal/history semantics;
 - evidence/provenance implications;
 - multi-actor implications;
 - representative/adversarial examples;
 - invariants;
-- alternatives considered/rejected;
+- rejected alternatives;
 - deliberately deferred questions;
 - persistence/API implications without prematurely fixing physical tables.
 
-Every new concept/cluster checkpoint must use the v3 test registry, record applicable test IDs, justify `N/A`, record hardenings/dependencies and select exactly one verdict:
-
-```text
-PASS
-PASS WITH HARDENING
-REOPEN
-DEFERRED DEPENDENCY
-```
+Checkpoint documents record the v3 test matrix, failures/hardenings, dependencies, regression scenarios and verdict.
 
 ---
 
 # Domain & Product Language Map
 
-Canonical quick-reference terminology lives in:
+Canonical quick-reference terminology:
 
 - [`Domain & Product Language Map`](language-map.md)
 
@@ -151,59 +147,19 @@ UI LANGUAGE
 IMPLEMENTATION LANGUAGE
 ```
 
-and classifies terms as:
-
-```text
-CANONICAL
-DERIVED
-PRODUCT PROFILE
-PRODUCT / UI TERM
-PROVISIONAL
-DEFERRED
-HISTORICAL / SUPERSEDED
-```
-
 Core rule:
 
 > **Domain concept != mandatory UI object, and UI label != mandatory domain primitive.**
 
-The Language Map records decisions; it does not create primitives. New canonical terms must first pass normal Domain Atlas review.
-
-The older `docs/product/v1-core-domain-glossary.md` remains product-history evidence but is not authoritative where the Domain Atlas/Language Map supersedes its kernel terminology.
+The older `docs/product/v1-core-domain-glossary.md` remains product-history evidence but is not authoritative where current Domain Atlas decisions differ.
 
 ---
 
-# Working method
-
-Concepts are reviewed one at a time.
-
-For each concept establish:
-
-1. canonical definition;
-2. what it is/is not;
-3. identity and actor/context independence;
-4. lifecycle/temporal semantics;
-5. invariants;
-6. relationships to other concepts;
-7. evidence/provenance/derived state where relevant;
-8. real-world and edge-case coverage;
-9. explicit Multi-Actor Compatibility Gate;
-10. cross-concept consistency;
-11. rejected alternatives;
-12. deliberately deferred questions;
-13. implications for future persistence/APIs.
-
-Saving a concept does not permanently close it.
-
----
-
-# Cluster checkpoints
-
-Concept-level validation is necessary but insufficient. Related concepts must also survive cluster and cross-cluster tests.
+# Current validated clusters
 
 ## Intention & Execution — VALIDATED CURRENT BASELINE
 
-Validated set:
+Accepted:
 
 - Goal;
 - Plan;
@@ -216,11 +172,9 @@ Checkpoint:
 
 - [`Intention & Execution Cluster v0`](checkpoints/intention-execution-v0.md)
 
-The cluster later passed the cross-cluster validation and evidence-backed multi-actor synthesis.
-
 ## Time — VALIDATED CURRENT BASELINE
 
-Validated set:
+Accepted:
 
 - Occurrence;
 - Schedule;
@@ -233,26 +187,26 @@ Checkpoint:
 
 - [`Time Cluster v0`](checkpoints/time-v0.md)
 
-Earlier hardenings retained:
+Key retained hardenings:
 
-1. quota Recurrence preserves an explicit-enough period frame where membership/boundary semantics matter; equivalent quota Occurrences do not gain arbitrary ordinal meaning;
-2. materially changing long-horizon progression tends toward Plan rather than one mega-Routine;
-3. Event identity/historical expectation may survive temporary absence of current Schedule when postponed/unresolved.
+- quota Recurrence preserves an explicit-enough period frame where boundary semantics matter;
+- materially changing long-horizon progression tends toward Plan rather than one mega-Routine;
+- Event identity/history may survive temporary absence of current Schedule after postponement/TBD.
 
 ## Cross-cluster validation — VALIDATED CURRENT BASELINE
 
 - [`Cross-Cluster Validation v2`](checkpoints/cross-cluster-validation-v2.md)
 
-Result: all twelve initial concepts retained; no justified merge/removal; no universal hierarchy required; top-down planning, bottom-up reality capture and lateral relevance remain representable without rewriting historical intention.
+Result: all twelve initial concepts retained; no justified merge/removal or universal hierarchy.
 
 ## Multi-Actor Evidence Synthesis — VALIDATED CURRENT BASELINE
 
 References:
 
-- [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md);
-- [`Multi-Actor Evidence Synthesis v0`](checkpoints/multi-actor-evidence-synthesis-v0.md);
-- [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md);
-- [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md).
+- [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md)
+- [`Multi-Actor Evidence Synthesis v0`](checkpoints/multi-actor-evidence-synthesis-v0.md)
+- [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+- [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md)
 
 Result:
 
@@ -267,99 +221,142 @@ Concept merges            — 0
 Mandatory new primitives — 0
 ```
 
-## Observed Reality & Evidence — IN PROGRESS
+---
+
+# Active cluster — Observed Reality & Evidence
+
+**Status:** IN PROGRESS.
 
 Current accepted concepts:
 
-- [`Actual v0`](concepts/actual.md) — accepted 2026-08-11 under Methodology v3;
-- [`Outcome v0`](concepts/outcome.md) — accepted 2026-08-11 under Methodology v3;
-- [`Observation v0`](concepts/observation.md) — accepted 2026-08-11 under Methodology v3.
+- [`Actual v0`](concepts/actual.md);
+- [`Outcome v0`](concepts/outcome.md);
+- [`Observation v0`](concepts/observation.md);
+- [`Confirmation v0`](concepts/confirmation.md).
 
 Validation records:
 
 - [`Actual v0 Validation`](checkpoints/actual-v0-validation.md) — **PASS WITH HARDENING**;
 - [`Outcome v0 Validation`](checkpoints/outcome-v0-validation.md) — **PASS WITH HARDENING**;
-- [`Observation v0 Validation`](checkpoints/observation-v0-validation.md) — **PASS WITH HARDENING**.
+- [`Observation v0 Validation`](checkpoints/observation-v0-validation.md) — **PASS WITH HARDENING**;
+- [`Confirmation v0 Validation`](checkpoints/confirmation-v0-validation.md) — **PASS WITH HARDENING**.
 
-Current boundaries:
+## Current semantic boundaries
 
 ```text
 Actual
-= contextual realization of a specific intention/expectation
+= how a specific intention/expectation was realized
 
 Outcome
-= contextual result/disposition of that realization where result meaning matters
+= what result/disposition followed from that realization where result meaning matters
 
 Observation
-= contextual measurement/property/state/rating/simple assertion about a subject
+= what was measured/perceived/reported/derived about a subject/context
 
+Confirmation
+= who/what explicitly affirms a specific target version for a defined purpose/context
+```
+
+Critical non-collapse rules:
+
+```text
 Actual != Session
 Actual != Outcome
 Actual != Observation
+Actual != Confirmation
+
+Outcome != lifecycle/operational state
 Outcome != Observation
+Outcome != Confirmation
+
 Observation != Quantity
 Observation != Register
 Observation != Evidence
 Observation != Confirmation
 Observation != Provenance
+
+Confirmation != Actual
+Confirmation != Outcome
+Confirmation != Observation
+Confirmation != Provenance
+Confirmation != Acknowledgement
+Confirmation != Acceptance/Agreement
+Confirmation != Verification
+Confirmation != Authority
 ```
 
-Critical Actual invariants:
+## Actual invariants
 
-- Actual is not a universal reality mega-object;
-- spontaneous reality may exist without Actual when no expectation is being reconciled;
-- no established Actual does not mean failed/skipped/missed;
+- contextual realization concept, not universal reality mega-object;
+- spontaneous reality may exist without Actual;
+- no Actual does not mean failed/skipped/missed;
 - known non-realization is distinct from unknown;
 - passage of time does not establish Actual;
-- shared Actual does not imply identical actor-specific participation;
-- correction changes current accepted realized truth without silently deleting relevant assertion/provenance history.
+- shared Actual does not imply identical actor participation;
+- correction preserves relevant assertion/provenance history.
 
-Critical Outcome invariants:
+## Outcome invariants
 
-- Outcome is optional and contextual;
-- lifecycle/operational state is distinct from Outcome;
-- no universal Outcome enum is accepted;
-- absence of Outcome is not a negative Outcome;
-- `unconfirmed` belongs to Confirmation/epistemic semantics rather than Outcome;
-- measurements/Observations and produced artifacts remain separate;
-- shared Outcome does not imply identical actor-specific consequences;
+- optional and contextual;
+- no universal Outcome enum;
+- lifecycle state is distinct;
+- absence of Outcome is not negative Outcome;
+- `unconfirmed` belongs to epistemic semantics;
+- shared Outcome does not imply identical actor consequences;
 - one actor/provider assertion does not automatically establish universal canonical Outcome.
 
-Critical Observation invariants:
+## Observation invariants
 
-- Observation is a measurement/simple-assertion concept, not a universal data/fact/blob primitive;
-- may exist without prior intention, Actual, Outcome, Goal, Session, or Register;
-- Observation identity is not derived from subject/type/time/value;
-- correction of the same observational act normally preserves identity; re-observation normally creates a new Observation;
-- effective time/context is distinct from recorded/ingested time;
-- missing Observation != explicit negative Observation != failed/unavailable measurement;
-- subjective observations are valid when perspective/source/context are preserved;
-- conflicting observations may coexist and must not be silently averaged/overwritten;
-- derived observations preserve traceability to source facts;
-- query/chart aggregates do not automatically become persisted Observations;
-- high-frequency sampled data does not require one physical Observation row per tick;
-- subject != observer != recorder != source/provider/device != authority != viewer;
-- related shared context does not automatically make an Observation shared.
+- measurement/simple-assertion concept, not universal data/fact/blob primitive;
+- may exist without prior intention/Actual/Goal/Register;
+- effective time/context != recorded/ingested time;
+- missing Observation != explicit negative != failed/unavailable measurement;
+- subjective/conflicting Observations may coexist;
+- derived Observations preserve traceability;
+- chart/query aggregates do not automatically become persisted Observations;
+- high-frequency sampling does not imply one physical row per tick;
+- subject != observer != recorder != source/provider/device != authority != viewer.
 
-Next concept under review: **Confirmation**.
+## Confirmation invariants
+
+- contextual and optional, not a universal truth flag;
+- no Confirmation != false/rejected/incorrect/not performed;
+- targets a specific material target version/context/purpose;
+- materially corrected target does not silently inherit prior Confirmation;
+- `awaiting confirmation` is derived workflow state;
+- imported/inferred/automatic/corrected are not Confirmation types;
+- automation/AI must not fabricate human Confirmation;
+- Confirmation by one actor does not imply Confirmation by another;
+- subject, confirmer, recorder, observer, performer and authority actor may differ;
+- conflicting Confirmations remain representable;
+- Confirmation does not grant Authority.
+
+## Remaining cluster work
+
+The cluster is **not complete** yet.
+
+Remaining candidate reviews:
+
+1. **Evidence**;
+2. **Provenance**.
+
+After both are individually reviewed under Methodology v3, the completed cluster must pass:
+
+```text
+Observed Reality & Evidence Cluster Integration Gate
+        ↓
+Observed Reality & Evidence Multi-Actor Stress Gate
+        ↓
+cluster verdict
+```
+
+Only after that verdict do we consider moving to the next cluster.
 
 ---
 
-# Provisional future clusters
+# Provisional next cluster — Data / Subjects
 
-## Observed Reality & Evidence
-
-Remaining likely concepts:
-
-- Confirmation;
-- Evidence;
-- Provenance.
-
-Cluster membership may still change as pairwise redundancy tests run.
-
-## Data / Subjects
-
-Likely includes:
+Likely topics:
 
 - Register;
 - Quantity;
@@ -368,16 +365,23 @@ Likely includes:
 - Person/Actor review;
 - Resource.
 
-Observation v0 creates mandatory re-tests for:
+Inherited mandatory re-tests include:
 
-- Observation vs Quantity;
-- Observation vs Register/RegisterEntry;
-- subject/observer/recorder typing;
-- high-volume sampled-series physical representation.
+```text
+Observation vs Quantity
+Observation vs Register/RegisterEntry
+Subject vs observer/recorder/source
+sampled-series physical representation
+Actor vs Subject vs Resource vs Account/Principal
+```
 
-## Relationships / Reasoning
+This cluster has **not started**.
 
-Likely includes:
+---
+
+# Later Relationships / Reasoning review space
+
+Likely topics:
 
 - semantic Relationship;
 - Dependency;
@@ -385,57 +389,57 @@ Likely includes:
 - Contribution;
 - Goal-to-Goal relationships;
 - Evidence-to-Criterion relationships;
-- Authority / Visibility review;
+- Authority / Visibility;
 - Decision;
 - Version;
 - AI Proposal.
 
-Cluster membership/naming remain provisional until individual review.
+Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
 
 ---
 
-# Relationship to existing documentation
+# Relationship to historical product documentation
 
-Older V1 product documents remain preserved while Domain Atlas terminology is promoted deliberately.
+Older V1 documents remain preserved as product/history evidence.
 
 Current known differences include:
 
-- older docs treat Goal/Program/Project as distinct canonical concepts; current kernel uses Goal + Plan while Project/Program remain product profiles unless later evidence justifies separation;
-- Task remains contextual/user-facing Activity language;
-- Event remains occurrence-centred and distinct from Schedule/attendance/Outcome;
-- Routine remains repeated execution policy, distinct from Recurrence, observed habit, Schedule, Occurrence and Actual;
-- Milestone remains contextual checkpoint, distinct from Goal/Outcome/Deadline/Event;
-- Occurrence is stable expected-instance identity;
-- Schedule is accepted temporal assignment, distinct from Constraint/Recurrence/Capacity/Actual;
-- Session is actual execution episode, not planned placement or broader realization;
-- Actual is the contextual realization record linking a specific expectation to realized reality;
-- Outcome is a contextual result/disposition, not a universal completion/status field;
-- Observation is the bounded contextual record for measurement/simple assertion, not a universal data row;
+- Project/Program are current Plan product profiles rather than separate kernel primitives;
+- Task is Activity-facing UI language;
+- Calendar Block is product/UI vocabulary rather than mandatory time primitive;
 - Deadline is latest-bound Temporal Constraint semantics;
-- Availability/Capacity/reservation semantics replace the assumption that every calendar-shaped item is a duplicate Calendar Block;
-- Calendar Block remains useful product/UI vocabulary.
+- Actual is contextual realization, not Session or generic actual-value storage;
+- Outcome is contextual result/disposition, not universal completion/status;
+- Observation is bounded measurement/simple assertion, not universal data row;
+- Confirmation is contextual attestation, not one universal `confirmed` flag;
+- older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are reinterpreted through Provenance, automation/inference, Version and workflow semantics rather than Confirmation types.
 
-Do not silently rewrite historical product documents solely to make wording uniform. Current navigation/terminology references must instead make precedence explicit.
+Do not silently rewrite historical product documents solely for wording uniformity; current navigation/terminology establishes precedence.
 
 ---
 
 # Current concepts
 
-- [`Goal v0`](concepts/goal.md) — accepted; multi-actor wording hardened 2026-08-11.
-- [`Plan v0`](concepts/plan.md) — accepted.
-- [`Activity v0`](concepts/activity.md) — accepted; multi-actor responsibility wording hardened 2026-08-11.
-- [`Event v0`](concepts/event.md) — accepted; Time hardening retained.
-- [`Routine v0`](concepts/routine.md) — accepted; progression + multi-actor performer wording hardened 2026-08-11.
-- [`Milestone v0`](concepts/milestone.md) — accepted.
-- [`Occurrence v0`](concepts/occurrence.md) — accepted.
-- [`Schedule v0`](concepts/schedule.md) — accepted; postponed/TBD hardening retained.
-- [`Session v0`](concepts/session.md) — accepted.
-- [`Temporal Constraint v0`](concepts/temporal-constraint.md) — accepted.
-- [`Recurrence v0`](concepts/recurrence.md) — accepted; quota/period hardening retained.
-- [`Availability & Capacity v0`](concepts/availability-capacity.md) — accepted.
-- [`Actual v0`](concepts/actual.md) — accepted under Methodology v3; contextual realization semantics.
-- [`Outcome v0`](concepts/outcome.md) — accepted under Methodology v3; contextual result/disposition semantics.
-- [`Observation v0`](concepts/observation.md) — accepted under Methodology v3; bounded measurement/simple-assertion semantics.
+Accepted concept specs:
+
+```text
+Goal
+Plan
+Activity
+Event
+Routine
+Milestone
+Occurrence
+Schedule
+Session
+Temporal Constraint
+Recurrence
+Availability & Capacity
+Actual
+Outcome
+Observation
+Confirmation
+```
 
 ---
 
@@ -452,13 +456,15 @@ Recurrence   -> how a repeated/generative pattern repeats
 Occurrence   -> which expected generated instance exists
 Constraint   -> where/when placement is allowed/required/preferred
 Availability -> when schedulable capacity may be used
-Capacity     -> ability to accept compatible commitments
+Capacity     -> compatible commitments a resource can sustain
 Schedule     -> when execution/occurrence is currently accepted
-Session      -> which bounded actual execution episode happened
-Actual       -> how a specific expectation was realized in reality
-Outcome      -> what result/disposition followed from that realization
-Observation  -> what measurement/simple assertion applies to a subject/context
-Evidence     -> information used in evaluation (future review)
+Session      -> bounded actual execution episode
+Actual       -> realization of a specific expectation
+Outcome      -> result/disposition of realization
+Observation  -> measurement/simple assertion about subject/context
+Confirmation -> contextual affirmation of a specific target/version/purpose
+Evidence     -> information used in evaluation (under next review)
+Provenance   -> source/agent/process/assertion history (remaining review)
 ```
 
 Cross-cutting multi-actor direction:
@@ -478,33 +484,35 @@ object identity
 != visibility
 ```
 
-This is a domain direction, not a persistence schema.
+This is domain direction, not persistence schema.
 
 ---
 
 # Current modeling sequence
-
-Current validated state:
 
 ```text
 Intention & Execution v0        — PASS
 Time v0                         — PASS
 Cross-Cluster Validation v2     — PASS
 Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
-Domain & Product Language Map   — ESTABLISHED
 Validation Methodology v3       — ACTIVE MANDATORY STANDARD
 Actual v0                       — PASS WITH HARDENING / ACCEPTED
 Outcome v0                      — PASS WITH HARDENING / ACCEPTED
 Observation v0                  — PASS WITH HARDENING / ACCEPTED
+Confirmation v0                 — PASS WITH HARDENING / ACCEPTED
 
 ↓
-Confirmation review
+Evidence review
 ↓
-Evidence / Provenance reviews
+Provenance review
 ↓
 Observed Reality & Evidence cluster integration
 ↓
-cluster multi-actor stress
+Observed Reality & Evidence Multi-Actor Stress Gate
+↓
+cluster verdict
+↓ only after PASS
+select/start next cluster
 ```
 
 ---
@@ -513,25 +521,20 @@ cluster multi-actor stress
 
 Deliberately revisit later:
 
-- Actual vs Confirmation/Provenance;
-- Outcome vs Confirmation/Provenance;
-- Observation vs Evidence;
-- Observation vs Confirmation/Provenance;
-- Observation vs Quantity;
-- Observation vs Register/RegisterEntry;
+- Actual/Outcome/Observation/Confirmation vs Provenance;
+- Observation/Confirmation vs Evidence;
+- Confirmation target-version semantics vs future Version model;
+- Confirmation vs Authority/Acknowledgement/Acceptance;
+- Observation vs Quantity/Register;
 - subject vs observer/recorder/source semantics;
 - Milestone vs Outcome vs GoalCriterion;
-- competing contextual Outcome/Observation assertions under future authority rules;
-- Plan vs Routine under complex progression/adaptation;
-- Event participation vs personal commitment/delegation;
+- competing contextual assertions under Authority/Decision rules;
 - collaborative Session vs actor-scoped Actual participation;
-- completion-relative Recurrence vs Trigger/relative Constraint semantics;
-- Availability/Capacity vs Resource model;
+- Availability/Capacity vs Resource;
 - Person/Actor/Subject/Account/Principal boundaries;
-- Responsibility/Assignment/Hand-off/Stewardship boundaries;
-- Authority vs Visibility vs governance relationships;
+- Responsibility/Assignment/Hand-off/Stewardship;
+- Authority vs Visibility/governance;
 - typed/directional Relationship semantics;
-- confirmation/acknowledgement/common-ground depth by consequence;
 - AI context selection/inference privacy.
 
 These are watch items, not current failures.
