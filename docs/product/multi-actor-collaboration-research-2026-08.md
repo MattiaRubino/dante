@@ -495,8 +495,8 @@ At the same time, some specialist features — for example workforce scheduling 
 Sources:
 
 - Google Calendar guests: https://support.google.com/calendar/answer/37161
-- Teams outside-organization meeting participation: https://support.microsoft.com/en-us/teams/meetings/join-a-microsoft-teams-meeting-or-event-outside-your-org
-- Teams guest access: https://support.microsoft.com/en-US/teams/teams-channels/add-guests-to-a-team-in-microsoft-teams
+- Microsoft support, joining a Teams meeting without an account: https://support.microsoft.com/en-us/office/join-a-meeting-without-an-account-in-microsoft-teams-c6efc38f-4e03-4e79-b28f-e65a4c039508
+- Microsoft Teams guest access: https://learn.microsoft.com/en-us/microsoftteams/guest-access
 
 ---
 
@@ -1406,8 +1406,8 @@ This document is now the **single external multi-actor research artifact** for t
 ## External participation
 
 - Google Calendar non-platform guests: https://support.google.com/calendar/answer/37161
-- Teams outside-org participation: https://support.microsoft.com/en-us/teams/meetings/join-a-microsoft-teams-meeting-or-event-outside-your-org
-- Teams guest access: https://support.microsoft.com/en-US/teams/teams-channels/add-guests-to-a-team-in-microsoft-teams
+- Microsoft support, joining a Teams meeting without an account: https://support.microsoft.com/en-us/office/join-a-meeting-without-an-account-in-microsoft-teams-c6efc38f-4e03-4e79-b28f-e65a4c039508
+- Microsoft Learn, Teams guest access: https://learn.microsoft.com/en-us/microsoftteams/guest-access
 
 ## Privacy / authorization
 
