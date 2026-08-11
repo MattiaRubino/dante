@@ -40,6 +40,40 @@ Existing documentation and external products are evidence, not authority. Contra
 
 A full external research pass does not need to repeat identical stable evidence for every adjacent concept, but each concept must receive enough targeted validation to expose likely missing cases.
 
+## External benchmark and interoperability rule
+
+External standards, products, APIs, and schemas are **benchmark evidence, not design authorities**.
+
+LifeOS should adopt an external pattern when it improves the internal model or provides useful interoperability at negligible conceptual cost. The domain model must not be weakened, distorted, or made more complex merely to match another platform's schema or limitations.
+
+The preferred direction is:
+
+```text
+LifeOS semantics
+        ↓
+strong internal model
+        ↓
+optional adapters / mappings
+        ↓
+external standards and providers
+```
+
+not:
+
+```text
+external schema
+        ↓
+LifeOS kernel must imitate it
+```
+
+Consequences:
+
+- external systems may expose real edge cases and useful patterns;
+- provider-specific identifiers, recurrence formats, status taxonomies, or persistence shapes do not become LifeOS identity by default;
+- lossless mapping to an external format is not a kernel invariant;
+- integration adapters should absorb provider-specific mapping, controlled degradation, or incompatibility when that is preferable to weakening LifeOS semantics;
+- interoperability is desirable when useful, but LifeOS semantics remain primary.
+
 ## Documentation standard
 
 Canonical Domain Atlas documentation is written in **English**.
@@ -134,13 +168,12 @@ Current accepted baselines:
 - Occurrence v0;
 - Schedule v0;
 - Session v0;
-- Temporal Constraint v0.
+- Temporal Constraint v0;
+- Recurrence v0.
 
-Next concept under review:
+Next review block:
 
-- Recurrence.
-
-Likely later concepts include Calendar Block / Availability / Capacity.
+- Calendar Block / Availability / Capacity.
 
 Occurrence v0 establishes stable logical identity for one expected generated/recurring instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager materialization of future instances.
 
@@ -149,6 +182,8 @@ Schedule v0 establishes accepted temporal assignment as a separate capability ra
 Session v0 establishes actual execution episode identity as distinct from planned Schedule placement, expected Occurrence identity, Event attendance, and broader Actual/Outcome semantics.
 
 Temporal Constraint v0 establishes temporal admissibility/preference as a general rule capability: deadlines are latest-bound constraints and windows are range-shaped expressions whose semantics depend on whether they are hard validity rules, soft preferences, targets, availability, or accepted Schedule placement.
+
+Recurrence v0 establishes structured repeating-pattern semantics separately from Routine/Event identity, Occurrence identity, Schedule, Actual, Temporal Constraint, and generic Trigger behavior. It supports exact calendar patterns, quota-based expectations, elapsed intervals, completion-relative chains, anchor-stream mappings, and cycles without requiring all patterns to resolve to exact timestamps in advance.
 
 ### Observed reality and evidence
 
@@ -186,7 +221,8 @@ Current known examples:
 - `Occurrence v0` introduces stable logical identity for one expected recurring/generated instance while keeping source policy, Schedule, Session, Activity/Event semantics, and Actual distinct;
 - `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity;
 - `Session v0` treats actual execution episodes as distinct from planned placements, Occurrence identity, Activity identity, Event actual occurrence, and broader Actual/Outcome semantics;
-- `Temporal Constraint v0` replaces the assumption that Deadline and Window require parallel kernel primitives: Deadline is a latest-bound Temporal Constraint, while range/window semantics are typed by purpose and remain distinct from Schedule, target, availability, and Actual.
+- `Temporal Constraint v0` replaces the assumption that Deadline and Window require parallel kernel primitives: Deadline is a latest-bound Temporal Constraint, while range/window semantics are typed by purpose and remain distinct from Schedule, target, availability, and Actual;
+- `Recurrence v0` treats recurrence as a structured reusable repeating-pattern capability rather than RRULE/provider syntax, Routine identity, Event identity, Occurrence identity, Schedule, or generic Trigger logic; external recurrence formats remain optional adapter targets rather than kernel authorities.
 
 ## Current concepts
 
@@ -200,6 +236,7 @@ Current known examples:
 - [`Schedule v0`](concepts/schedule.md) — current baseline accepted on 2026-08-11.
 - [`Session v0`](concepts/session.md) — current baseline accepted on 2026-08-11.
 - [`Temporal Constraint v0`](concepts/temporal-constraint.md) — current baseline accepted on 2026-08-11.
+- [`Recurrence v0`](concepts/recurrence.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
 
@@ -210,6 +247,7 @@ Activity   -> what concrete action is intended
 Event      -> what occurrence-centred thing is expected to happen
 Routine    -> what recurring behavioral/execution policy is intended
 Milestone  -> what meaningful contextual checkpoint is expected/reached
+Recurrence -> how a recurring/generative pattern repeats
 Occurrence -> which individual expected instance exists in a recurring/generated context
 Constraint -> where/when execution is allowed, required, bounded, or preferred
 Schedule   -> when execution/occurrence is currently accepted to happen
@@ -228,13 +266,22 @@ Important current consequences:
 - Event state, participant response, actual attendance, and Event outcome are distinct dimensions;
 - original temporal expectation, current accepted Schedule, Session timing, and broader Actual remain distinguishable;
 - actual start/end can deviate from Schedule in either direction; early/late/overrun semantics are derived rather than fundamental state;
-- Routine is not `repeat=true`; recurring policy, expected occurrence, scheduling, Sessions, and broader Actual execution remain distinguishable;
+- Routine is not `repeat=true`; recurring policy, Recurrence, expected Occurrence, scheduling, Sessions, and broader Actual execution remain distinguishable;
 - recurring Event series and Routine are distinct even when both use recurrence machinery;
 - a one-off Routine occurrence change must not silently change future Routine policy;
 - Milestone is not executable work or a time-centred occurrence; it records a meaningful contextual checkpoint becoming true;
+- Recurrence is structured repeating-pattern semantics, not a provider recurrence string or generic automation engine;
+- Recurrence may produce logical/quota Occurrences without assigning exact timestamps;
+- calendar/wall-clock recurrence remains distinct from elapsed-duration recurrence;
+- fixed independent cadence remains distinct from completion-relative chaining;
+- source pattern anchor remains distinct from the effective recurrence range;
+- recurrence-count semantics describe expected Occurrences, not successful completions;
+- recurring Temporal Constraints may reuse recurrence-pattern machinery without becoming occurrence-generating sources;
+- structural recurrence changes are effective future revisions rather than retroactive rewrites;
 - Occurrence identity does not depend on current start/end or resolved UTC instant;
 - not every one-off Activity or Event receives a redundant Occurrence wrapper;
 - Occurrence may exist before exact Schedule placement;
+- future Occurrences may remain virtual until instance-specific history requires persistent reconstruction;
 - Schedule is accepted temporal assignment, not a container for every temporal fact;
 - Activity may exist without Schedule, and an Occurrence may exist before exact Schedule assignment;
 - Schedule revision does not change subject identity and actual Session deviation does not silently rewrite Schedule;
@@ -259,6 +306,7 @@ Important current consequences:
 - multiple hard constraints must be jointly satisfiable or planning is infeasible rather than silently inconsistent;
 - constraints may be boundary-, range-, duration-, spacing-, exclusion-, or relation-based;
 - constraints may operate at broader scopes and receive occurrence-specific exceptions without physical duplication or silent source-policy rewrite;
+- external standards and products remain benchmark evidence and optional mapping targets, not design authorities;
 - Goal progress/evaluation must be able to use valid evidence regardless of whether the source execution was originally linked to that Goal;
 - discovered relevance must not rewrite historical intention;
 - Goal-to-Goal influence remains deferred to the Relationship Model.
@@ -276,36 +324,32 @@ Occurrence v0 — accepted
 → Schedule v0 — accepted
 → Session v0 — accepted
 → Temporal Constraint v0 — accepted
-→ Recurrence — next review
-→ Calendar Block / Availability / Capacity
+→ Recurrence v0 — accepted
+→ Calendar Block / Availability / Capacity — next review
 ```
 
 The sequence is not immutable. A reviewed concept may expose a stronger dependency and reorder adjacent concepts.
 
-## Open temporal questions entering Recurrence review
+## Open temporal questions entering Calendar Block / Availability / Capacity review
 
-Occurrence, Schedule, Session, and Temporal Constraint intentionally leave the following issues for adjacent concepts:
+The accepted Time concepts intentionally leave the following issues for the final adjacent review block:
 
-- what Recurrence fundamentally represents: generation rule, pattern, relationship, or family of typed recurrence semantics;
-- recurring Event series versus Routine recurrence without collapsing Event and Routine;
-- calendar/wall-clock recurrence versus elapsed-duration recurrence;
-- completion-relative recurrence (`30 days after actual completion`) versus relative Temporal Constraint;
-- relation/event-anchored recurrence such as `after every photoshoot`;
-- fixed count, until date, open-ended, and conditional termination;
-- recurrence identity and source versioning;
-- occurrence generation/materialization horizon;
-- virtual versus persisted future Occurrences;
-- one-off exception versus future-series revision;
-- `this occurrence` versus `this and future` semantics;
-- timezone, DST, travel, floating/local time, and absolute-time behavior;
-- monthly/annual edge cases such as invalid dates and leap days;
-- skipped/cancelled Occurrences and whether they affect future generation anchors;
-- completion-relative generation when Actual is corrected later;
-- recurring hard/preferred Temporal Constraints versus recurrence that creates Occurrences;
-- recurring Activity UI semantics backed by Routine + Occurrence rather than one Activity mutated forever;
-- external provider recurrence IDs/rules and safe LifeOS identity mapping;
-- exact Calendar Block / Availability / Capacity semantics;
-- exact persistence/API representation for Time-cluster baselines.
+- whether Calendar Block is an independent kernel primitive, a Schedule/Capacity specialization, or primarily a product/UI construct;
+- how user Availability differs from scheduled occupancy, hard Temporal Constraints, preferences, and external free/busy data;
+- what `busy`, `free`, `tentative`, `focus`, and protected time mean semantically;
+- whether every scheduled Event/Activity consumes capacity automatically or capacity consumption must remain explicit;
+- how partial capacity and multi-resource capacity are represented;
+- whether simultaneous compatible activities can share capacity;
+- personal attention capacity versus physical/resource capacity;
+- external calendar busy time versus LifeOS semantic availability;
+- recurring Availability/Capacity patterns and how they reuse Recurrence without becoming occurrence-generating sources unnecessarily;
+- capacity exceptions and temporary modes such as travel, illness, holidays, or disrupted weeks;
+- conflict detection among Schedule placements, Temporal Constraints, and available Capacity;
+- whether capacity reservation itself has identity/history;
+- relation of Calendar Block to Activity/Event identity and whether a block without work semantics is still useful;
+- exact provider free/busy mapping without making provider semantics authoritative;
+- exact persistence/API representation for Time-cluster baselines;
+- whether this final review exposes any need to reopen Occurrence, Schedule, Session, Temporal Constraint, or Recurrence before the Time-cluster checkpoint.
 
 ## Final validation rule
 
