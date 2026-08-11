@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Turn LifeOS product requirements into an implementation-ready domain model without prematurely designing specialist modules, collaboration infrastructure, API shapes or final SQL tables.
+Turn LifeOS product requirements into an implementation-ready domain model without prematurely fixing specialist modules, collaboration infrastructure, API shapes or final SQL tables.
 
 Earlier product terminology is evidence, not automatic truth. Concepts are revalidated through real-world workflows, external benchmark/research, adversarial reduction, history/correction tests, multi-actor stress and cross-concept consistency.
 
@@ -33,12 +33,14 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 11. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 12. [`../domain/concepts/actual.md`](../domain/concepts/actual.md)
 13. [`../domain/checkpoints/actual-v0-validation.md`](../domain/checkpoints/actual-v0-validation.md)
-14. accepted concept specs under [`../domain/concepts/`](../domain/concepts/)
-15. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-16. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-17. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-18. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-19. accepted DB/architecture ADRs.
+14. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
+15. [`../domain/checkpoints/outcome-v0-validation.md`](../domain/checkpoints/outcome-v0-validation.md)
+16. accepted concept specs under [`../domain/concepts/`](../domain/concepts/)
+17. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+18. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+19. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+20. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+21. accepted DB/architecture ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -76,6 +78,7 @@ Time v0                         PASS
 Cross-Cluster Validation v2    PASS
 Multi-Actor Evidence Synthesis PASS WITH HARDENING
 Actual v0                       PASS WITH HARDENING / ACCEPTED
+Outcome v0                      PASS WITH HARDENING / ACCEPTED
 ```
 
 No current structural reopening is required.
@@ -236,6 +239,7 @@ Deadline       -> latest-bound Temporal Constraint meaning
 Calendar Block -> product/UI representation of temporal/capacity semantics
 Occurrence     -> canonical domain concept, usually hidden in simple UI
 Actual         -> canonical contextual realization concept, usually hidden/advanced
+Outcome        -> canonical contextual result/disposition concept, usually contextual/hidden
 ```
 
 ---
@@ -291,34 +295,83 @@ Critical hardenings:
 - subject, recorder, responsible actor, expected performer and actual performer may differ;
 - AI/system knowledge of private Actual does not grant disclosure authority.
 
+## Outcome v0 — accepted
+
+Canonical source:
+
+- [`Outcome v0`](../domain/concepts/outcome.md)
+
+Validation:
+
+- [`Outcome v0 Validation`](../domain/checkpoints/outcome-v0-validation.md)
+
+Verdict:
+
+```text
+PASS WITH HARDENING
+```
+
+Canonical definition:
+
+> An Outcome is a contextual representation of the result or disposition established for a specific Actual realization, describing what that realization achieved, produced, satisfied, failed to satisfy, or otherwise resolved in the relevant evaluation context. Outcome does not replace lifecycle/operational state, Observations or measurements, produced artifacts, Milestone attainment, Confirmation, Provenance, or actor-specific participation facts.
+
+Critical boundaries:
+
+```text
+Outcome != Actual
+Outcome != lifecycle/operational state
+Outcome != Observation
+Outcome != produced artifact/output
+Outcome != Milestone
+Outcome != Confirmation
+Outcome != Provenance
+Outcome != Evidence
+```
+
+Critical hardenings:
+
+- Outcome is optional/contextual rather than mandatory for every Actual;
+- one global completion/result enum is rejected;
+- absence of Outcome != failure/missed/not-completed;
+- `unconfirmed` belongs to epistemic/Confirmation semantics;
+- measurements and artifacts remain separate;
+- partial result does not universally mean failure;
+- replacement preserves history/relationship semantics;
+- shared Outcome != identical actor-specific consequences;
+- one actor/provider assertion != universal canonical Outcome;
+- AI inference does not create authority or disclosure permission;
+- corrections preserve relevant earlier assertion/provenance history.
+
 Mandatory re-tests:
 
-- Actual vs Outcome;
-- Actual vs Observation/Evidence;
-- Actual vs Confirmation/Provenance;
-- collaborative Session/Actual attribution at cluster checkpoint;
-- final whole-domain multi-actor and persistence-pressure gates.
+- Outcome vs Observation;
+- Outcome vs Confirmation/Provenance;
+- Outcome vs Milestone at cluster level;
+- contextual competing Outcomes under future authority rules;
+- Evidence usage;
+- logical/persistence pressure gate.
 
-## Next concept — Outcome
+## Next concept — Observation
 
-Outcome is now the active read-only review target.
+Observation is now the active **read-only** review target.
 
 It must justify a distinct domain boundary against:
 
 - Actual;
-- Milestone;
-- Activity/Occurrence completion;
-- Event result;
-- Observation;
+- Outcome;
+- raw measurement/value;
+- Register/Quantity semantics;
+- Event/Session facts;
 - Confirmation;
-- Evidence.
+- Evidence;
+- Provenance;
+- subject/source/actor attribution.
 
-No Outcome primitive is accepted until it passes the full v3 pipeline.
+No Observation primitive is accepted until it passes the full v3 pipeline.
 
-Likely remaining cluster candidates after Outcome:
+Likely remaining cluster candidates after Observation:
 
 - Confirmation;
-- Observation;
 - Evidence;
 - Provenance.
 
@@ -381,8 +434,10 @@ Session where executable episode exists
         ↓
 Actual realization context
         ↓
-Outcome / Observation / Evidence / Confirmation / Provenance
-        (boundaries under review)
+Outcome where result/disposition matters
+        ↓
+Observation / Evidence / Confirmation / Provenance
+        (remaining boundaries under review)
 ```
 
 This is not a mandatory parent/child chain and not a persistence schema.
@@ -395,10 +450,12 @@ Multi-actor relationships cut across the topology rather than forming a duplicat
 
 Explicit future boundary tests:
 
-- Actual vs Outcome;
 - Actual vs Observation/Evidence;
 - Actual vs Confirmation/Provenance;
+- Outcome vs Observation;
+- Outcome vs Confirmation/Provenance;
 - Milestone vs Outcome vs GoalCriterion;
+- contextual competing Outcomes under authority rules;
 - Plan vs Routine under complex progression;
 - collaborative Session vs broader Actual/actor attribution;
 - Event participation vs personal commitment/delegation;
@@ -441,7 +498,9 @@ Only after the domain is coherent should production persistence be treated as st
 ```text
 Actual v0 accepted
         ↓
-Outcome review — ACTIVE
+Outcome v0 accepted
+        ↓
+Observation review — ACTIVE READ-ONLY
         ↓
 remaining Reality/Evidence concepts
         ↓
