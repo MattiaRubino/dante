@@ -40,6 +40,32 @@ Existing documentation and external products are evidence, not authority. Contra
 
 A full external research pass does not need to repeat identical stable evidence for every adjacent concept, but each concept must receive enough targeted validation to expose likely missing cases.
 
+## Validation Methodology v2
+
+The original concept-review protocol remains mandatory and is now supplemented by a broader cross-cluster validation methodology.
+
+Reference:
+
+- [`Validation Methodology v2`](validation-methodology-v2.md)
+
+The expanded methodology retains all previous scenario/boundary/history checks and adds, where applicable:
+
+- Real-World Workflow Inversion;
+- deep chronological simulation;
+- adversarial REMOVE / MERGE / SPLIT / UNIVERSALIZE / INVERT / EXTREME tests;
+- semantic redundancy / merge-split analysis;
+- downward composition;
+- upward reconstruction from reality;
+- lateral cross-domain propagation;
+- orphan / independence testing;
+- external cross-domain benchmarking;
+- external anti-pattern review;
+- scale/history stress;
+- simple-user versus power-user validation;
+- final cross-cluster consistency testing.
+
+The purpose is not to produce the largest ontology. It is to produce the smallest model that survives real life without losing semantic meaning, history, queryability, extensibility, or usability.
+
 ## External benchmark and interoperability rule
 
 External standards, products, APIs, and schemas are **benchmark evidence, not design authorities**.
@@ -153,17 +179,17 @@ Current validated set:
 - Routine;
 - Milestone.
 
-The combined checkpoint passed after Milestone filled the one material gap exposed by the first pass. No current baseline needs to be reopened before the Time cluster.
-
 Checkpoint record:
 
 - [`Intention & Execution Cluster v0`](checkpoints/intention-execution-v0.md)
 
-Validation is provisional in the Domain Atlas sense: downstream temporal, evidence, relationship, persistence, or implementation work may still reopen a concept if new evidence exposes a contradiction.
+The cluster was subsequently re-tested together with the Time cluster under Validation Methodology v2 and remained valid.
 
-### Time — CONCEPTS ACCEPTED / CHECKPOINT PENDING
+### Time — VALIDATED CURRENT BASELINE
 
-Current accepted baselines:
+Validated on 2026-08-11.
+
+Current validated set:
 
 - Occurrence v0;
 - Schedule v0;
@@ -172,27 +198,33 @@ Current accepted baselines:
 - Recurrence v0;
 - Availability & Capacity v0.
 
-Next required step:
+Checkpoint record:
 
-- **Time Cluster Checkpoint v0**.
+- [`Time Cluster v0`](checkpoints/time-v0.md)
 
-The six individual concepts are accepted as current baselines, but the Time cluster is **not yet a validated cluster baseline**. The checkpoint must stress-test the combined model and may reopen any Time concept if contradictions, duplication, missing semantics, or unreasonable implementation pressure emerge.
+The checkpoint passed after deep chronological, redundancy, reductio, multidirectional traceability, benchmark, scale/history, and simple-user/power-user testing.
 
-Occurrence v0 establishes stable logical identity for one expected generated/recurring instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager materialization of future instances.
+The checkpoint produced three hardenings without structural reopening:
 
-Schedule v0 establishes accepted temporal assignment as a separate capability rather than collapsing deadlines, constraints, recurrence, capacity, movement authority, and Actual execution into one calendar object.
+1. quota-per-period Recurrence preserves an explicit enough period frame where membership/boundaries materially matter, and logical quota Occurrences do not receive arbitrary ordinal semantics;
+2. Routine does not become the default container for long-horizon progression across materially changing stages; those semantics tend toward Plan;
+3. Event identity and historical expectation may survive temporary absence of a current Schedule when the Event is postponed/unresolved.
 
-Session v0 establishes actual execution episode identity as distinct from planned Schedule placement, expected Occurrence identity, Event attendance, and broader Actual/Outcome semantics.
+### Cross-cluster validation — VALIDATED CURRENT BASELINE
 
-Temporal Constraint v0 establishes temporal admissibility/preference as a general rule capability: deadlines are latest-bound constraints and windows are range-shaped expressions whose semantics depend on whether they are hard validity rules, soft preferences, targets, availability, or accepted Schedule placement.
+The first two clusters were also validated together under Validation Methodology v2.
 
-Recurrence v0 establishes structured repeating-pattern semantics separately from Routine/Event identity, Occurrence identity, Schedule, Actual, Temporal Constraint, and generic Trigger behavior. It supports exact calendar patterns, quota-based expectations, elapsed intervals, completion-relative chains, anchor-stream mappings, and cycles without requiring all patterns to resolve to exact timestamps in advance.
+Record:
 
-Availability & Capacity v0 establishes resource schedulability separately from Schedule placement. Availability defines when capacity may be used, capacity represents the ability to accept compatible commitments, reservations/claims consume or protect capacity, and effective free capacity is derived. `Calendar Block` remains useful product/UI language but is not a separate kernel primitive by default.
+- [`Cross-Cluster Validation v2`](checkpoints/cross-cluster-validation-v2.md)
+
+The combined validation retained all twelve concepts, found no justified merge/removal, confirmed that no universal parent/child hierarchy is required, and verified top-down planning, bottom-up reality capture, and lateral cross-domain relevance without rewriting historical intention.
 
 ### Observed reality and evidence
 
 Likely includes Actual, Outcome, Confirmation, Observation, Evidence, and Provenance.
+
+This is **not** the automatic next task. Cluster selection is intentionally paused pending the agreed user-led architecture/product brainstorming and additional questions/tests.
 
 ### Data and subjects
 
@@ -220,14 +252,14 @@ Current known examples:
 - `Goal v0` broadened Goal semantics and reopened `Project` for revalidation;
 - `Plan v0` provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants;
 - `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics;
-- `Event v0` strengthens the Activity/Event boundary by treating temporal placement as intrinsic to Event meaning while preserving original expectation, current accepted schedule, actual occurrence, participation, attendance, and provenance as distinct semantics;
-- `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine;
+- `Event v0` strengthens the Activity/Event boundary by treating temporal placement as intrinsic to Event meaning while preserving original expectation, current accepted schedule, actual occurrence, participation, attendance, and provenance as distinct semantics; it also allows a postponed/unresolved Event to retain identity/history while current Schedule is absent;
+- `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine, and materially changing long-horizon progression tends toward Plan rather than a mega-Routine;
 - `Milestone v0` treats significant checkpoints as contextual entities distinct from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record;
 - `Occurrence v0` introduces stable logical identity for one expected recurring/generated instance while keeping source policy, Schedule, Session, Activity/Event semantics, and Actual distinct;
-- `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity;
+- `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity; Schedule absence is valid and may coexist with meaningful Event history;
 - `Session v0` treats actual execution episodes as distinct from planned placements, Occurrence identity, Activity identity, Event actual occurrence, and broader Actual/Outcome semantics;
 - `Temporal Constraint v0` replaces the assumption that Deadline and Window require parallel kernel primitives: Deadline is a latest-bound Temporal Constraint, while range/window semantics are typed by purpose and remain distinct from Schedule, target, availability, and Actual;
-- `Recurrence v0` treats recurrence as a structured reusable repeating-pattern capability rather than RRULE/provider syntax, Routine identity, Event identity, Occurrence identity, Schedule, or generic Trigger logic; external recurrence formats remain optional adapter targets rather than kernel authorities;
+- `Recurrence v0` treats recurrence as a structured reusable repeating-pattern capability rather than RRULE/provider syntax, Routine identity, Event identity, Occurrence identity, Schedule, or generic Trigger logic; quota recurrence now explicitly preserves period-frame semantics where needed and does not invent ordinal meaning for equivalent quota slots;
 - `Availability & Capacity v0` replaces the assumption that every calendar-shaped block or scheduled item is automatically a distinct Calendar Block/busy interval: Availability, Capacity, and reservations/claims supply the kernel semantics while Calendar Block remains primarily product/UI language for capacity-only temporal constructs.
 
 ## Current concepts
@@ -235,14 +267,14 @@ Current known examples:
 - [`Goal v0`](concepts/goal.md) — current baseline accepted on 2026-08-10.
 - [`Plan v0`](concepts/plan.md) — current baseline accepted on 2026-08-10.
 - [`Activity v0`](concepts/activity.md) — current baseline accepted on 2026-08-10.
-- [`Event v0`](concepts/event.md) — current baseline accepted on 2026-08-10.
-- [`Routine v0`](concepts/routine.md) — current baseline accepted on 2026-08-10.
+- [`Event v0`](concepts/event.md) — current baseline accepted on 2026-08-10; hardened on 2026-08-11 by Validation Methodology v2.
+- [`Routine v0`](concepts/routine.md) — current baseline accepted on 2026-08-10; hardened on 2026-08-11 by Validation Methodology v2.
 - [`Milestone v0`](concepts/milestone.md) — current baseline accepted on 2026-08-11.
 - [`Occurrence v0`](concepts/occurrence.md) — current baseline accepted on 2026-08-11.
-- [`Schedule v0`](concepts/schedule.md) — current baseline accepted on 2026-08-11.
+- [`Schedule v0`](concepts/schedule.md) — current baseline accepted on 2026-08-11; hardened on 2026-08-11 by Validation Methodology v2.
 - [`Session v0`](concepts/session.md) — current baseline accepted on 2026-08-11.
 - [`Temporal Constraint v0`](concepts/temporal-constraint.md) — current baseline accepted on 2026-08-11.
-- [`Recurrence v0`](concepts/recurrence.md) — current baseline accepted on 2026-08-11.
+- [`Recurrence v0`](concepts/recurrence.md) — current baseline accepted on 2026-08-11; hardened on 2026-08-11 by Validation Methodology v2.
 - [`Availability & Capacity v0`](concepts/availability-capacity.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
@@ -273,14 +305,18 @@ Important current consequences:
 - `Task` is not currently a second primitive beside Activity;
 - placing an Activity at an exact time does not transform it into an Event;
 - Event state, participant response, actual attendance, and Event outcome are distinct dimensions;
+- an Event may retain identity and historical expectation while current Schedule is temporarily absent because the Event is postponed/unresolved;
 - original temporal expectation, current accepted Schedule, Session timing, and broader Actual remain distinguishable;
 - actual start/end can deviate from Schedule in either direction; early/late/overrun semantics are derived rather than fundamental state;
 - Routine is not `repeat=true`; recurring policy, Recurrence, expected Occurrence, scheduling, Sessions, and broader Actual execution remain distinguishable;
+- materially changing long-horizon stages/strategy tend toward Plan rather than one mega-Routine;
 - recurring Event series and Routine are distinct even when both use recurrence machinery;
 - a one-off Routine occurrence change must not silently change future Routine policy;
 - Milestone is not executable work or a time-centred occurrence; it records a meaningful contextual checkpoint becoming true;
 - Recurrence is structured repeating-pattern semantics, not a provider recurrence string or generic automation engine;
 - Recurrence may produce logical/quota Occurrences without assigning exact timestamps;
+- quota-per-period recurrence preserves an explicit-enough period frame where calendar/boundary/timezone interpretation could materially change membership;
+- equivalent logical quota Occurrences do not acquire arbitrary first/second/third semantics unless the source/rule establishes meaningful order;
 - calendar/wall-clock recurrence remains distinct from elapsed-duration recurrence;
 - fixed independent cadence remains distinct from completion-relative chaining;
 - source pattern anchor remains distinct from the effective recurrence range;
@@ -292,7 +328,7 @@ Important current consequences:
 - Occurrence may exist before exact Schedule placement;
 - future Occurrences may remain virtual until instance-specific history requires persistent reconstruction;
 - Schedule is accepted temporal assignment, not a container for every temporal fact;
-- Activity may exist without Schedule, and an Occurrence may exist before exact Schedule assignment;
+- Activity may exist without Schedule, an Occurrence may exist before exact Schedule assignment, and a postponed Event may temporarily have no current Schedule;
 - Schedule revision does not change subject identity and actual Session deviation does not silently rewrite Schedule;
 - Schedule may preserve coarse/date-based/floating/zoned/instant semantics rather than inventing exact UTC precision;
 - multiple planned placements may support one divisible Activity/Occurrence while remaining distinct from actual Sessions;
@@ -326,53 +362,51 @@ Important current consequences:
 - `Calendar Block` remains useful UI/product language but is not a mandatory duplicate object for every Activity/Event/Occurrence with Schedule;
 - external free/busy data is imported evidence/provenance rather than universal LifeOS truth;
 - external standards and products remain benchmark evidence and optional mapping targets, not design authorities;
-- Goal progress/evaluation must be able to use valid evidence regardless of whether the source execution was originally linked to that Goal;
+- simple-user UX must not expose the full kernel by default; progressive disclosure is a cross-cutting requirement;
+- valid evidence may later reach Goals regardless of whether the source execution was originally linked to those Goals;
 - discovered relevance must not rewrite historical intention;
 - Goal-to-Goal influence remains deferred to the Relationship Model.
 
 ## Current modeling sequence
 
-The **Intention & Execution Cluster v0 is validated** as the current baseline.
+The **Intention & Execution Cluster v0 is validated** as a current baseline.
 
-All currently planned **Time-cluster concept reviews are complete**.
+The **Time Cluster v0 is validated** as a current baseline.
 
-Current sequence:
+The first two clusters have also passed **Cross-Cluster Validation v2**.
+
+Current state:
 
 ```text
-Occurrence v0 — accepted
-→ Schedule v0 — accepted
-→ Session v0 — accepted
-→ Temporal Constraint v0 — accepted
-→ Recurrence v0 — accepted
-→ Availability & Capacity v0 — accepted
-→ Time Cluster Checkpoint v0 — next
+Intention & Execution v0 — PASS
+Time v0                 — PASS
+Cross-cluster v2        — PASS
+
+↓
+USER-LED BRAINSTORMING / QUESTIONS / ADDITIONAL TESTS
+
+↓ only after explicit decision
+select next Domain Atlas cluster
 ```
 
-The Time cluster does not become validated merely because all individual concepts are accepted. The checkpoint is mandatory before moving to the Observed Reality & Evidence cluster.
+The workstream must **not** automatically proceed to `Actual / Outcome / Evidence` merely because Time is complete.
 
-## Time Cluster Checkpoint v0 — required next
+The explicitly agreed next step is architecture/product brainstorming, additional user questions, and optional reopening/testing before selecting the next cluster.
 
-The checkpoint must reconstruct difficult scenarios using the combined accepted Time model and ask at minimum:
+## Reopen watchlist
 
-- can a recurring/generated expectation retain identity while its Schedule changes repeatedly?
-- can flexible quota recurrence exist before exact temporal placement without inventing dates?
-- can wall-clock, elapsed, completion-relative, and anchor-stream recurrence coexist without hidden ambiguity?
-- can one Activity/Occurrence have multiple planned placements and multiple actual Sessions without one-to-one assumptions?
-- can deadlines, windows, duration/spacing constraints, Availability, Capacity, and Schedule remain non-duplicative?
-- can hard constraints and hard unavailability become infeasible without making real/imported data unrepresentable?
-- can non-blocking scheduled items coexist with protected capacity and true unavailability?
-- can compatible overlaps coexist while incompatible overlaps are surfaced as capacity conflicts?
-- can temporary travel/illness/disruption alter future availability/capacity without rewriting stable history?
-- can an Actual correction used as a completion-relative recurrence anchor revise future expectation while preserving materialized history?
-- can `this occurrence`, selected-occurrence exceptions, and `this and future` source revisions remain distinct?
-- can recurring Event and Routine share recurrence/occurrence machinery without becoming the same domain concept?
-- can external provider recurrence/free-busy data be mapped without provider semantics becoming kernel truth?
-- does the combined model still work for simple users without requiring them to understand the full ontology?
-- does the combined model remain queryable and implementable without a universal generic temporal JSON object?
-- does any scenario expose a missing Time primitive or force reopening Occurrence, Schedule, Session, Temporal Constraint, Recurrence, or Availability & Capacity?
+The combined v2 validation identified several boundaries to deliberately revisit later:
 
-The checkpoint should use both ordinary and adversarial scenarios and must explicitly record PASS/FAIL, any reopened concepts, and all remaining dependencies on Actual/Outcome/Provenance/Resource/Relationship work.
+- Milestone versus Outcome versus GoalCriterion;
+- Plan versus Routine under complex progression/adaptation;
+- Event participation versus personal commitment in shift/delegation scenarios;
+- completion-relative Recurrence versus future Trigger/relative Constraint semantics;
+- Availability/Capacity versus future Resource model;
+- Session versus broader Actual;
+- typed/directional Relationship requirements exposed by lateral cross-domain effects.
+
+These are watch items, not current failures.
 
 ## Final validation rule
 
-A final whole-domain stress test remains mandatory before broad persistence implementation. A cluster PASS does not prevent later reopening when another cluster exposes a contradiction.
+A final whole-domain stress test remains mandatory before broad persistence implementation. A cluster PASS does not prevent later reopening when another cluster, implementation evidence, or user-led validation exposes a contradiction.
