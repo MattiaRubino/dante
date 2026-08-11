@@ -19,7 +19,7 @@ This pass explicitly revalidates earlier concepts instead of treating prior docu
 
 Decisions may be reopened when new evidence, edge cases, contradictions, or better abstractions emerge. Changes must be explicit, reasoned, and preserved in history rather than silently rewriting prior assumptions.
 
-The active modeling method, documentation standard, and mandatory concept-review protocol live in [`../domain/README.md`](../domain/README.md).
+The active modeling method, documentation standard, benchmark/interoperability rule, and mandatory concept-review protocol live in [`../domain/README.md`](../domain/README.md).
 
 ## Required reading
 
@@ -37,16 +37,17 @@ The active modeling method, documentation standard, and mandatory concept-review
 12. [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
 13. [`../domain/concepts/session.md`](../domain/concepts/session.md)
 14. [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
-15. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-16. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-17. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-18. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-19. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-20. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-21. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-22. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-23. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-24. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+15. [`../domain/concepts/recurrence.md`](../domain/concepts/recurrence.md)
+16. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+17. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+18. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+19. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+20. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+21. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+22. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+23. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+24. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+25. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -60,6 +61,7 @@ The Domain Model handoff remains separate so decisions and unresolved questions 
 
 - Revalidate concepts one at a time; do not inherit terminology merely because it already exists.
 - For every concept, inspect applicable internal documentation/scenarios and perform enough targeted external benchmarking to expose likely missing semantics before acceptance.
+- External standards/products are evidence, not compatibility requirements or design authorities; preserve LifeOS semantics first and push provider-specific compromises into adapters when practical.
 - Canonical Domain Atlas documentation is maintained in English; discussion language does not create a second canonical translation tree.
 - Do not model one table per life topic (`english`, `photography`, `farming`, etc.).
 - Do not collapse everything into one `entities` table or arbitrary JSON blob.
@@ -113,8 +115,8 @@ Occurrence v0 — accepted
 → Schedule v0 — accepted
 → Session v0 — accepted
 → Temporal Constraint v0 — accepted
-→ Recurrence — current review target
-→ Calendar Block / Availability / Capacity
+→ Recurrence v0 — accepted
+→ Calendar Block / Availability / Capacity — current review target
 ```
 
 The order may change when a concept reveals a stronger dependency.
@@ -215,37 +217,64 @@ Key decisions:
 - constraints may be boundary-, range-, duration-, spacing-, exclusion-, or relation-based;
 - constraints may operate at broader Plan/Routine scopes and receive Occurrence-specific exceptions without requiring physical duplication;
 - material constraint revisions remain distinct from Schedule revisions and preserve enough history/provenance to explain replanning;
-- recurring constraint patterns are supported conceptually but their expression is deferred to Recurrence;
+- recurring constraint patterns may reuse Recurrence without becoming occurrence-generating sources;
 - exact entity/value-object split, SQL, scoping persistence, optimizer representation, and rule encoding remain deferred.
 
 Record: [`../domain/concepts/temporal-constraint.md`](../domain/concepts/temporal-constraint.md)
 
-## Current task — Recurrence
+## Recurrence v0 — accepted current baseline
 
-Review `Recurrence` as the next Time-cluster concept.
+`Recurrence` is accepted as a structured repeating-pattern capability that describes how repeated temporal/generative structure behaves without becoming the recurring source, Occurrence, Schedule, Actual, or generic automation engine.
+
+Key decisions:
+
+- Recurrence is distinct from Routine and recurring Event semantics;
+- Recurrence is distinct from Occurrence identity, Schedule, Session/Actual, Temporal Constraint, and Trigger;
+- Recurrence may produce logical/quota Occurrences without exact timestamps;
+- calendar/wall-clock, elapsed-interval, quota-per-period, completion-relative, anchor-stream-relative, and cyclic semantics are materially distinct families;
+- `every day at 08:00` is not automatically equivalent to `every 24 elapsed hours`;
+- floating/user-local, named-zone wall-clock, and absolute/elapsed semantics remain distinguishable;
+- pattern anchor and effective recurrence range remain separate;
+- occurrence-count semantics describe expectations generated, not successful completions;
+- completion-relative recurrence explicitly depends on qualifying Actual/fact anchors and must not silently become an independent fixed calendar series;
+- anchor-stream recurrence remains a bounded repeated mapping from qualifying anchors rather than arbitrary condition detection;
+- one-off Schedule/Occurrence exceptions do not automatically mutate the recurrence rule;
+- structural `this and future` changes become effective future source/Recurrence revisions rather than rewriting history;
+- generated-then-skipped/cancelled remains distinct from structurally excluded-before-generation;
+- future Occurrences may remain virtual and purely virtual future candidates may be regenerated after a structural revision;
+- future Occurrences with instance-specific history must be reconciled rather than silently disappearing;
+- correction of an Actual recurrence anchor may recompute future expectations while preserving materialized history/provenance;
+- DST, travel, invalid calendar dates, leap days, and ambiguous/nonexistent local times require explicit/domain semantics rather than one hidden universal policy;
+- natural-language recurrence text is input/provenance, not the normalized canonical model;
+- external recurrence standards/provider formats are benchmark evidence and optional adapter targets, not kernel authorities;
+- lossless mapping to RRULE or any provider recurrence format is not a LifeOS invariant;
+- exact DSL, SQL, typed representation, resolver algorithms, materialization horizon, and effective-version storage remain deferred.
+
+Record: [`../domain/concepts/recurrence.md`](../domain/concepts/recurrence.md)
+
+## Current task — Calendar Block / Availability / Capacity
+
+Review the final adjacent Time-cluster block before the temporal checkpoint.
 
 The review must determine at minimum:
 
-- what Recurrence fundamentally represents: generation rule, temporal pattern, relationship policy, or a family of recurrence semantics;
-- whether a single reusable recurrence abstraction can support both Routine-generated expected behavior and recurring Event series without collapsing their parent semantics;
-- how recurrence relates to Occurrence identity and lazy/materialized future instances;
-- calendar/wall-clock recurrence such as `every Monday at 18:00`;
-- elapsed-duration recurrence such as `every 12 hours`;
-- completion-relative recurrence such as `30 days after actual previous replacement`;
-- relation/event-anchored recurrence such as `after every photoshoot`;
-- count-limited, until-date, open-ended, and condition-limited recurrence;
-- start/anchor semantics and whether the recurrence rule owns a first occurrence;
-- timezone, DST, floating local time, named-zone time, absolute-instant, and travel behavior;
-- monthly/yearly invalid-date behavior, leap days, last-day-of-month, nth-weekday, and calendar-specific edge cases;
-- one-off Occurrence exception versus structural future-series revision;
-- `this occurrence` versus `this and future` semantics;
-- skip/cancel semantics and whether skipped/cancelled occurrences affect later generation;
-- how recurrence revisions preserve the version/rule context that generated historical Occurrences;
-- correction of an Actual that was used as a completion-relative anchor and how downstream generated expectations respond without rewriting history;
-- how recurring Temporal Constraints differ from Recurrence that creates expected Occurrences;
-- how Recurrence differs from Trigger/automation semantics for threshold/location/external-state rules;
-- external provider recurrence rules/IDs and LifeOS provider-independent identity;
-- occurrence-generation horizon, lazy expansion, deduplication, and persistent reconstruction requirements without prematurely fixing SQL.
+- whether `Calendar Block` is an independent kernel primitive, a Schedule/Capacity specialization, or primarily a user-facing product construct;
+- whether Availability is a persistent fact/rule, a derived view, or a combination;
+- whether Capacity is binary busy/free or supports partial/fractional/resource-specific capacity;
+- how Schedule placement differs from capacity reservation;
+- whether an Event/Activity with Schedule automatically consumes capacity or must express capacity impact separately;
+- how non-blocking calendar items, optional Events, reminders, all-day information, and passive activities should behave;
+- how focus/protected time differs from an Activity/Event and whether it needs its own domain identity;
+- how hard unavailability differs from Temporal Constraint exclusions/preferences;
+- how recurring Availability patterns reuse Recurrence without generating unnecessary execution Occurrences;
+- how temporary travel, illness, holidays, disrupted weeks, or exceptional workdays override normal availability;
+- how external free/busy information maps into LifeOS without external provider semantics becoming authoritative;
+- whether overlapping compatible activities may share capacity;
+- how attention capacity differs from physical/resource capacity;
+- whether capacity reservation has independent identity/history or is a property/relation of Schedule/another concept;
+- how planner infeasibility is detected when Schedule, Temporal Constraints, recurrence-generated expectations, and Capacity conflict;
+- whether one unified abstraction can cover user time capacity and future Resource capacity without becoming too generic;
+- whether this review reveals a missing temporal primitive or requires reopening Occurrence, Schedule, Session, Temporal Constraint, or Recurrence.
 
 ## Current conceptual direction
 
@@ -256,11 +285,12 @@ Activity   -> what concrete action is intended
 Event      -> what occurrence-centred thing is expected to happen
 Routine    -> what recurring behavioral/execution policy is intended
 Milestone  -> what meaningful contextual checkpoint is expected/reached
-Recurrence -> how a recurring/generative temporal pattern produces expected instances (under review)
+Recurrence -> how a recurring/generative pattern repeats
 Occurrence -> which individual expected generated instance exists
 Constraint -> where/when execution is allowed, required, or preferred
 Schedule   -> when execution/occurrence is currently accepted to happen
 Session    -> which actual execution episode happened
+Capacity   -> how much schedulable availability is usable/consumed (under review)
 Actual     -> broader truth about what happened
 Evidence   -> what supports evaluation
 ```
@@ -268,13 +298,15 @@ Evidence   -> what supports evaluation
 Important temporal separation now required:
 
 ```text
-Recurring source semantics
+Recurring source / intention
         ↓
-Recurrence pattern / generation rule
+Recurrence where applicable
         ↓
-Occurrence identity
+Occurrence identity where applicable
         ↓
 Temporal Constraint(s)
+        ↓
+Availability / Capacity feasibility
         ↓
 Schedule
         ↓
@@ -283,24 +315,23 @@ Session / Event Actual
 Outcome / Evidence later
 ```
 
-Not every recurring source necessarily uses every layer, and Recurrence must not become a generic IF/THEN automation engine.
+The final ordering between Capacity feasibility and accepted Schedule is conceptual rather than a persistence decision: Schedule may reserve capacity while Availability/Capacity constrains whether a proposed placement is feasible.
 
 ## Important unresolved questions
 
-- exact Recurrence abstraction and typed recurrence families;
-- Event-series parent representation;
-- calendar/wall-clock versus elapsed-duration recurrence;
-- completion-relative and relation-anchored recurrence boundaries;
-- recurring Temporal Constraint versus Recurrence boundary;
-- Recurrence versus Trigger/automation boundary;
-- timezone/DST/travel semantics;
-- recurrence revision/versioning and `this-and-future` mechanics;
-- occurrence materialization horizon and persistent reconstruction;
-- correction of anchor Actual and downstream expectations;
+- exact Calendar Block / Availability / Capacity model;
+- capacity reservation identity/history;
+- binary versus fractional/multi-resource capacity;
+- recurring Availability and exception semantics;
+- attention capacity versus physical/resource capacity;
+- external free/busy mapping;
+- whether a standalone focus/protected block requires a primitive;
+- exact Recurrence DSL/types/resolver/materialization persistence;
 - exact Session state/lifecycle and pause persistence;
 - exact Schedule planned-placement/revision persistence;
 - exact Temporal Constraint persistence/scoping/authority representation;
-- Calendar Block / Availability / Capacity semantics;
+- exact Occurrence identity/materialization SQL representation;
+- exact Event-series persistence parent;
 - exact Event lifecycle/participant/attendance state machines;
 - exact Goal/Plan/Routine/Milestone lifecycle state machines;
 - exact version-versus-replacement boundaries;
@@ -327,7 +358,7 @@ Not every recurring source necessarily uses every layer, and Recurrence must not
 
 The model should eventually become concrete enough to implement an initial vertical slice around:
 
-`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Recurrence/Occurrence/Constraint/Schedule/Session → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Recurrence/Occurrence/Constraint/Schedule/Session/Capacity → Actual/Confirmation`
 
 This remains a working implementation target, not a final persistence schema.
 
@@ -337,7 +368,7 @@ This remains a working implementation target, not a final persistence schema.
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
 - Intention & Execution Cluster v0: **PASS / validated current baseline**
-- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`, `Session v0`, `Temporal Constraint v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`, `Session v0`, `Temporal Constraint v0`, `Recurrence v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
@@ -349,8 +380,9 @@ This remains a working implementation target, not a final persistence schema.
 - Schedule concept commit: `e716e6ad16391f20bd9264c84733dc4f88da4ef8`
 - Session concept commit: `fef80394849e38e9215303b3ee6b1813ef3621a0`
 - Temporal Constraint concept commit: `de3a6bb8ca78a7c2f429cf2986c65f084592ac64`
+- Recurrence concept commit: `58e2c50bcfac45a7a5ad8b5140b90040038fddae`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Current task: `Recurrence` review
+- Current task: `Calendar Block / Availability / Capacity` review
 - Known documentation conflicts: earlier glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after related clusters are stable.
