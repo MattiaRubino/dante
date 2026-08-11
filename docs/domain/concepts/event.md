@@ -107,6 +107,50 @@ This is different from an Activity whose schedule may simply be a planner decisi
 
 Temporal identity must therefore support change without rewriting history.
 
+### Intrinsic time does not require a current Schedule forever
+
+Validation Methodology v2 added a postponed-with-date-unknown case.
+
+Example:
+
+```text
+Event
+Concert
+
+Original accepted Schedule
+20 September 21:00
+
+Provider update
+POSTPONED — new date TBD
+```
+
+The Event remains the same expected occurrence even though no current replacement time has been accepted yet.
+
+LifeOS must preserve:
+
+```text
+Event identity
++
+historical/original temporal expectation
++
+current Event lifecycle/disposition context
+```
+
+while allowing:
+
+```text
+current accepted Schedule
+none
+```
+
+No fake replacement date should be invented merely because Event meaning is time-centred.
+
+Current hardening:
+
+> **Temporal placement is intrinsic to Event semantics, but an Event may temporarily have no current accepted Schedule when its previously expected placement is withdrawn, postponed, or otherwise unresolved. Historical expectation remains reconstructible.**
+
+This is distinct from cancellation, Event identity replacement, and ordinary Activity unscheduling. Exact Event lifecycle states remain deferred.
+
 ## Original expectation, current schedule, and actual occurrence
 
 LifeOS must distinguish at least three temporal layers conceptually:
@@ -120,6 +164,8 @@ Current accepted schedule
         ↓
 Actual occurrence
 ```
+
+The `Current accepted schedule` layer may be temporarily absent for a postponed/unresolved Event while the historical expectation and Event identity remain meaningful.
 
 Example — official reschedule before the meeting:
 
@@ -204,7 +250,7 @@ This prevents overloaded status fields.
 
 Potential semantics include, without fixing a physical enum yet:
 
-- Event state: confirmed, tentative, cancelled, rescheduled, etc.;
+- Event state: confirmed, tentative, cancelled, rescheduled, postponed, etc.;
 - participant response: accepted, tentative, declined, needs action, etc.;
 - actual attendance: attended, partially attended, did not attend, unknown, etc.
 
@@ -528,6 +574,7 @@ Statistics use the corrected current value while audit/history preserves the rel
 21. Event existence does not automatically imply full scheduling-capacity occupancy.
 22. LifeOS Event identity and external provider identity remain separate.
 23. Imported/inferred facts and later user corrections preserve provenance/history.
+24. An Event may temporarily have no current accepted Schedule when a previous expected placement is withdrawn, postponed, or unresolved; Event identity and historical expectation remain reconstructible and no fake replacement time is invented.
 
 ## Stress-test coverage
 
@@ -551,6 +598,7 @@ Representative cases that fit the current model include:
 | Meeting starts early | accepted schedule preserved + earlier Actual start |
 | Meeting starts late | accepted schedule preserved + later Actual start |
 | Meeting officially moved | schedule revision + preserved prior expectation |
+| Event postponed with new date TBD | Event identity + preserved prior expectation + no current Schedule |
 | Event produces unexpected Goal evidence | Event Actual/Observation -> Evidence -> Goal criterion |
 
 No reviewed case currently requires splitting Event into separate kernel primitives such as Appointment, Meeting, Flight, Exam, Shift, Lesson, or Ceremony.
@@ -575,5 +623,7 @@ The following are not decided by Event v0:
 ## Decision note
 
 Event v0 intentionally strengthens the previous LifeOS glossary definition by making temporal placement intrinsic rather than merely present, separating Event state from participation and actual attendance, separating accepted schedule from actual occurrence, and explicitly allowing actual times to deviate in either direction.
+
+Validation Methodology v2 further clarifies that intrinsic temporal meaning does not require a current Schedule to exist continuously: a postponed/unresolved Event may retain identity and historical expectation while awaiting a new accepted placement.
 
 The older glossary remains preserved as source material until changes are propagated deliberately after adjacent concepts and the intention/execution cluster are reviewed.
