@@ -34,16 +34,17 @@ The active modeling method, documentation standard, and mandatory concept-review
 9. [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
 10. [`../domain/concepts/milestone.md`](../domain/concepts/milestone.md)
 11. [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
-12. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-13. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-14. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-15. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-16. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-17. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-18. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-19. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-20. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-21. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+12. [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
+13. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+14. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+15. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+16. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+17. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+18. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+19. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+20. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+21. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+22. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -88,7 +89,7 @@ Checkpoint record:
 
 The cluster was tested against one consistent scenario matrix spanning study, work, health, fitness, medication, job search, travel, moving house, creative release, finance, caregiving/subjects, disrupted weeks, multi-Goal evidence, recurring behavior, and mixed Event/Activity cases.
 
-### Checkpoint conclusions
+Checkpoint conclusions:
 
 - no accepted baseline currently needs reopening;
 - Milestone was the one material missing concept exposed by the first pass and is now included;
@@ -109,8 +110,8 @@ Current sequence:
 
 ```text
 Occurrence v0 — accepted
-→ Schedule — current review target
-→ Session
+→ Schedule v0 — accepted
+→ Session — current review target
 → Deadline / Window / Temporal Constraint
 → Recurrence
 → Calendar Block / Availability / Capacity
@@ -144,26 +145,62 @@ Record:
 
 - [`../domain/concepts/occurrence.md`](../domain/concepts/occurrence.md)
 
-## Current task — Schedule
+## Schedule v0 — accepted current baseline
 
-Review `Schedule` as the next Time-cluster concept.
+`Schedule` is accepted as the current accepted temporal assignment of a schedulable subject.
+
+Key decisions:
+
+- Schedule answers **when execution/occurrence is currently intended or expected**, not what the subject is;
+- Schedule is distinct from Activity, Event, Occurrence, Actual, Session, Deadline/Target, Temporal Constraint, RecurrenceRule, Routine, Movement Policy, and Availability/Capacity;
+- an AI/system suggestion is a Schedule proposal until user authority or an explicitly authorized automatic policy accepts it;
+- Activity may exist without Schedule;
+- Occurrence may exist before exact Schedule placement;
+- Event uses Schedule for accepted temporal placement without duplicating Event identity;
+- Schedule revision preserves subject identity;
+- original accepted placement and current accepted Schedule must remain historically reconstructible;
+- Actual deviation does not silently rewrite Schedule;
+- Schedule revisions can move earlier/later, shorten/extend, or change only one boundary;
+- explicit expected end/start may be revised during execution without confusing that revision with an unplanned Actual overrun;
+- Schedule precision may be date-only, coarse, exact, start-only, interval-based, floating local, named-zone local, or absolute-instant as applicable; false precision must not be invented;
+- all-day/date-based placement is not semantically the same as a normal 24-hour instant interval;
+- one schedulable subject may have multiple accepted planned placements when execution is divisible;
+- estimated effort, scheduled duration, and actual duration remain distinct;
+- the same temporal shape may represent accepted Schedule, allowed/preferred Constraint, capacity block, or another concept depending on semantics;
+- having a Schedule does not imply consuming user capacity/busy time;
+- recurrence remains separate from the single accepted Schedule of an instance;
+- lack of Schedule is valid; unscheduling does not cancel the subject;
+- cancellation of an Event/Occurrence is not represented merely by deleting Schedule history;
+- Schedule revisions require enough provenance/authority for explanation and external reconciliation;
+- exact Schedule/placement/revision SQL representation remains deliberately deferred.
+
+Record:
+
+- [`../domain/concepts/schedule.md`](../domain/concepts/schedule.md)
+
+## Current task — Session
+
+Review `Session` as the next Time-cluster concept.
 
 The review must determine at minimum:
 
-- what Schedule fundamentally represents: exact temporal placement, broader scheduling commitment, or multiple related value objects;
-- whether Schedule is an entity, value object, revision stream, or a combination;
-- whether one-off Activity, Event, and Occurrence use the same scheduling abstraction without losing their distinct semantics;
-- how Event intrinsic time relates to Schedule without duplicating the Event identity;
-- how original expectation differs from current accepted Schedule;
-- what constitutes a reschedule versus an Actual deviation;
-- whether a flexible Activity/Occurrence can be considered scheduled inside a window without exact start/end;
-- whether deadline, target date, preferred window, hard window, and exact placement belong to Schedule or separate temporal-constraint concepts;
-- whether one Activity/Occurrence may have multiple planned temporal slices and how those differ from actual Sessions;
-- whether Schedule itself reserves capacity or whether blocking/availability must remain a separate concept;
-- all-day/date-only/floating/local-time/instant semantics;
-- time-zone/DST/travel implications;
-- scheduling history, revisions, provenance, locks, movement policy, and user/AI authority;
-- interaction with recurrence expansion and occurrence exceptions without prematurely designing recurrence SQL.
+- whether Session is fundamentally an **actual execution interval/slice** rather than a planned scheduling structure;
+- whether a Session requires an Activity/Occurrence/Event parent or may exist independently;
+- whether one Activity or Occurrence may have zero, one, or many Sessions;
+- whether one Session may realize more than one planned Schedule placement;
+- whether one Session may contribute to multiple Activities/Goals without creating ambiguous ownership;
+- how pause/resume works: pause intervals inside one Session versus multiple Sessions;
+- whether stopping and later resuming the same work creates a new Session and under what boundary;
+- how manual actual-time entry differs from stopwatch/timer-captured Session data;
+- how Session relates to Actual, Outcome, Completion, Attendance, quantities, notes, and Evidence;
+- whether Events need Sessions or use attendance/actual occurrence semantics directly;
+- how background/passive activities or long-running work are represented;
+- how simultaneous/overlapping Sessions should be treated;
+- whether Session itself can be corrected/reopened while retaining previous timing history;
+- how a Session relates to planned placements when execution begins earlier/later or outside the planned block;
+- how estimated effort, scheduled duration, active working time, paused time, and elapsed Session duration remain distinct;
+- whether Timer/Stopwatch are tools that create/update Session rather than separate domain execution concepts;
+- how imported actual intervals from integrations map into Session/Actual with provenance.
 
 ## Current conceptual direction
 
@@ -175,7 +212,8 @@ Event      -> what occurrence-centred thing is expected to happen
 Routine    -> what recurring behavioral/execution policy is intended
 Milestone  -> what meaningful contextual checkpoint is expected/reached
 Occurrence -> which individual expected generated instance exists
-Schedule   -> when an Activity/Event/Occurrence is currently intended or expected to occupy time (under review)
+Schedule   -> when execution/occurrence is currently accepted to happen
+Session    -> actual execution slice (under review)
 Actual     -> what actually happened
 Evidence   -> what supports evaluation
 ```
@@ -187,29 +225,31 @@ Source policy / domain intention
         ↓
 Occurrence identity where applicable
         ↓
-Original expectation
+Accepted Schedule placement(s)
         ↓
-Schedule revisions / occurrence exception
+Actual execution Session(s)
         ↓
-Current accepted schedule
-        ↓
-Actual execution / attendance / occurrence
+Outcome / Observation / Evidence later
 ```
 
-Actual time may be earlier, later, shorter, longer, or absent relative to accepted schedule.
+Actual time may be earlier, later, shorter, longer, split, interrupted, or absent relative to accepted Schedule.
 
 ## Important unresolved questions
 
-- exact Schedule entity/value/history model;
-- exact Schedule versus temporal-window/constraint boundary;
-- exact Schedule versus planned Session boundary;
-- exact Schedule versus Event intrinsic-time representation;
-- capacity blocking / Calendar Block / Availability semantics;
-- exact Session model;
+- exact Session identity and lifecycle;
+- Session versus broader Actual record boundary;
+- Session pause/resume and active-vs-elapsed time semantics;
+- Session ownership/linking to Activity/Occurrence/Event;
+- whether one Session can realize multiple semantic intentions;
+- Timer/Stopwatch domain/tool boundary;
+- exact Schedule planned-placement persistence;
+- exact Schedule revision/audit persistence;
+- exact Occurrence identity/materialization SQL representation;
+- exact Deadline / Window / Temporal Constraint semantics;
+- hard versus soft temporal constraints;
 - recurrence materialization, timezone/DST, travel, and completion-relative recurrence mechanics;
-- exact occurrence-ID/materialization SQL representation;
+- Calendar Block / Availability / Capacity semantics;
 - exact Event-series parent representation;
-- Deadline and temporal-constraint semantics;
 - exact Event lifecycle/participant/attendance state machines;
 - exact Goal/Plan/Routine/Milestone lifecycle state machines;
 - exact version-versus-replacement boundaries;
@@ -237,7 +277,7 @@ Actual time may be earlier, later, shorter, longer, or absent relative to accept
 
 The model should eventually become concrete enough to implement an initial vertical slice around:
 
-`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Occurrence/Schedule → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Occurrence/Schedule/Session → Actual/Confirmation`
 
 This remains a working implementation target, not a final persistence schema.
 
@@ -247,7 +287,7 @@ This remains a working implementation target, not a final persistence schema.
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
 - Intention & Execution Cluster v0: **PASS / validated current baseline**
-- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`, `Occurrence v0`, `Schedule v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
@@ -256,8 +296,9 @@ This remains a working implementation target, not a final persistence schema.
 - Milestone concept commit: `46ddf9d4bdc514fc56a718a93ad0258a2aa34a4b`
 - Intention/execution checkpoint commit: `646f41452c357010550f3fa0ab96147518ddaa4c`
 - Occurrence concept commit: `a55fa28b2fb27b1967d18f26b318b173972e35ee`
+- Schedule concept commit: `e716e6ad16391f20bd9264c84733dc4f88da4ef8`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Current task: `Schedule` review
+- Current task: `Session` review
 - Known documentation conflicts: earlier glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after related clusters are stable.
