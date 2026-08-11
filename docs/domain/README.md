@@ -40,6 +40,30 @@ Existing documentation and external products are evidence, not authority. Contra
 
 A full external research pass does not need to repeat identical stable evidence for every adjacent concept, but each concept must receive enough targeted validation to expose likely missing cases.
 
+## Documentation standard
+
+Canonical Domain Atlas documentation is written in **English**.
+
+Conversation and review may occur in another language, but the repository keeps one canonical version rather than maintaining duplicated translations that could diverge.
+
+Each accepted concept should document, where relevant:
+
+- canonical definition;
+- why the concept exists;
+- validation basis;
+- boundaries against adjacent concepts;
+- identity and ownership/context;
+- lifecycle and temporal semantics;
+- planned/current/actual/history distinctions;
+- evidence/provenance implications;
+- representative and adversarial examples;
+- invariants;
+- alternatives considered/rejected;
+- questions intentionally deferred;
+- implications for future persistence/API design without prematurely fixing physical tables.
+
+Checkpoint documents should record scope, methodology, scenario matrix, boundary results, ambiguities/failures, changes made, remaining dependencies, and PASS/FAIL status.
+
 ## Working method
 
 Concepts are reviewed one at a time.
@@ -105,9 +129,17 @@ Validation is provisional in the Domain Atlas sense: downstream temporal, eviden
 
 ### Time — CURRENT CLUSTER
 
-Likely includes Schedule, Occurrence, Session, recurrence, deadline/window semantics, temporal constraints, and availability/capacity.
+Current accepted baseline:
 
-The first concept is `Occurrence`, because Routine and recurring Event semantics both require stable identity for an individual expected instance independent from the originating policy/series.
+- Occurrence v0.
+
+Next concept under review:
+
+- Schedule.
+
+Likely later concepts include Session, recurrence, deadline/window/temporal-constraint semantics, and availability/capacity.
+
+Occurrence v0 establishes stable logical identity for one expected generated/recurring instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager materialization of future instances.
 
 ### Observed reality and evidence
 
@@ -141,7 +173,8 @@ Current known examples:
 - `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics;
 - `Event v0` strengthens the Activity/Event boundary by treating temporal placement as intrinsic to Event meaning while preserving original expectation, current accepted schedule, actual occurrence, participation, attendance, and provenance as distinct semantics;
 - `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine;
-- `Milestone v0` treats significant checkpoints as contextual entities distinct from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record.
+- `Milestone v0` treats significant checkpoints as contextual entities distinct from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record;
+- `Occurrence v0` introduces stable logical identity for one expected recurring/generated instance while keeping source policy, Schedule, Session, Activity/Event semantics, and Actual distinct.
 
 ## Current concepts
 
@@ -151,20 +184,21 @@ Current known examples:
 - [`Event v0`](concepts/event.md) — current baseline accepted on 2026-08-10.
 - [`Routine v0`](concepts/routine.md) — current baseline accepted on 2026-08-10.
 - [`Milestone v0`](concepts/milestone.md) — current baseline accepted on 2026-08-11.
+- [`Occurrence v0`](concepts/occurrence.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
 
 ```text
-Goal      -> what is wanted
-Plan      -> how it is intended to be pursued or organized
-Activity  -> what concrete action is intended
-Event     -> what occurrence is expected at an intrinsic temporal placement
-Routine   -> what recurring behavioral/execution policy is intended
-Milestone -> what meaningful contextual checkpoint is expected/reached
-Occurrence-> which individual expected instance exists in a recurring/generated context (under review)
-Schedule  -> when concrete execution is planned or an occurrence is currently expected
-Actual    -> what actually happened
-Evidence  -> what supports evaluation
+Goal       -> what is wanted
+Plan       -> how it is intended to be pursued or organized
+Activity   -> what concrete action is intended
+Event      -> what occurrence-centred thing is expected to happen
+Routine    -> what recurring behavioral/execution policy is intended
+Milestone  -> what meaningful contextual checkpoint is expected/reached
+Occurrence -> which individual expected instance exists in a recurring/generated context
+Schedule   -> when concrete execution/occurrence is currently intended or expected (under review next)
+Actual     -> what actually happened
+Evidence   -> what supports evaluation
 ```
 
 This is a working domain direction, not yet a persistence schema.
@@ -177,46 +211,58 @@ Important current consequences:
 - Event state, participant response, actual attendance, and Event outcome are distinct dimensions;
 - original temporal expectation, current accepted schedule, and actual occurrence must remain distinguishable;
 - actual start/end can deviate from schedule in either direction; early/late/overrun semantics are derived rather than fundamental Event state;
-- Routine is not `repeat=true`; the recurring policy, expected occurrence, scheduling, and Actual execution must remain distinguishable;
+- Routine is not `repeat=true`; recurring policy, expected occurrence, scheduling, and Actual execution remain distinguishable;
 - recurring Event series and Routine are distinct even when both use recurrence machinery;
-- a one-off Routine occurrence change must not silently change the future Routine policy;
+- a one-off Routine occurrence change must not silently change future Routine policy;
 - Milestone is not executable work or a time-centred occurrence; it records a meaningful contextual checkpoint becoming true;
 - target expectation and actual Milestone achievement remain distinct, and target dates do not automatically become deadlines;
 - completing an Activity or crossing a metric threshold does not automatically create a Milestone;
+- Occurrence identity does not depend on current start/end or resolved UTC instant;
+- rescheduling one recurring/generated instance does not automatically create a new Occurrence;
+- not every one-off Activity or Event receives a redundant Occurrence wrapper;
+- Occurrence may exist before exact Schedule placement;
+- one Occurrence may later be realized through zero, one, or multiple Sessions;
+- future occurrences may be virtual/derived until instance-specific history requires persistent reconstruction;
+- historical occurrences must retain enough source/version context to prevent later recurrence revisions from rewriting the past;
 - Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity, Event, Routine occurrence, Milestone, or observation that was not originally planned for that Goal;
 - discovered relevance must not rewrite historical intention;
-- Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field;
-- availability/capacity, exact occurrence materialization, recurrence/DST, and generated execution remain deliberately open for the Time cluster.
+- Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field.
 
 ## Current modeling sequence
 
 The **Intention & Execution Cluster v0 is validated** as the current baseline.
 
-The workstream now moves to the **Time cluster**.
+The workstream is now in the **Time cluster**.
 
-Provisional sequence:
+Current sequence:
 
 ```text
-Occurrence
-→ Schedule
+Occurrence v0 — accepted
+→ Schedule — next review
 → Session
 → Deadline / Window / Temporal Constraint
 → Recurrence
 → Calendar Block / Availability / Capacity
 ```
 
-The sequence is not immutable. Occurrence review may expose a stronger dependency and reorder adjacent concepts.
+The sequence is not immutable. A reviewed concept may expose a stronger dependency and reorder adjacent concepts.
 
-## Open temporal questions entering the Time cluster
+## Open temporal questions entering Schedule review
 
-- whether Occurrence is a persistent entity in every case or only when identity/history is needed;
-- how generated/materialized occurrences relate to their source Routine or recurring Event series;
-- how one-off exception, reschedule, skip, cancellation, replacement, and actual execution affect occurrence identity;
-- how original expected time, current accepted schedule, and actual time relate without duplication;
-- how far ahead recurring occurrences should be materialized;
-- how calendar/wall-clock, elapsed interval, completion-relative, and relation-anchored recurrence differ;
+Occurrence v0 intentionally leaves the following issues for adjacent concepts:
+
+- whether Schedule is an entity, value object, revision stream, or combination of structures;
+- whether Schedule represents exact placement only or also windows/preferences/unscheduled commitments;
+- how original expectation and current accepted Schedule are represented without duplication;
+- how Event intrinsic temporal meaning relates to Schedule;
+- how a flexible Activity or Occurrence can exist before exact placement;
+- whether one Activity/Occurrence can have multiple planned temporal slices and how that differs from Session;
+- whether capacity blocking is a Schedule property or a separate availability/capacity concept;
+- movement/lock policy versus placement itself;
+- Schedule revision history and provenance;
+- all-day/date-only/floating/local-time/instant semantics;
 - timezone/DST/travel behavior;
-- exact Schedule versus Occurrence versus Session boundaries;
+- recurrence expansion and future occurrence materialization;
 - Deadline/window/constraint semantics;
 - Calendar Block/Availability/capacity semantics.
 
