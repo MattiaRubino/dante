@@ -1,173 +1,289 @@
 # Workstream Addendum — Multi-Actor Readiness
 
-**Status:** ACTIVE CROSS-CUTTING BASELINE  
+**Status:** EVIDENCE-BACKED CROSS-CUTTING BASELINE COMPLETE  
 **Established:** 2026-08-11  
+**Evidence synthesis completed:** 2026-08-11  
 **Active branch:** `feature/domain-model`  
 **Parent workstream:** `domain-model.md`
 
-## Why this addendum exists
+## Purpose
 
-The Domain Model workstream remains personal-first in product scope, but future LifeOS versions are expected to support collaboration and multi-actor scenarios ranging from casual shared plans to professional and specialist workflows.
+This addendum records the current handoff state after the initial multi-actor hardening was tested against the completed collaboration discovery simulation and consolidated external Deep Research.
 
-The project must therefore avoid building the current domain kernel around structural assumptions that every object belongs to, is performed by, concerns, and is visible to one registered user.
+The product remains personal-first. The domain kernel is now explicitly multi-actor-ready.
 
-This addendum records the current operational consequence:
-
-> **From this point forward, multi-actor readiness is a mandatory domain-model validation dimension.**
-
-This does not mean implementing the full collaboration feature set now.
+This does **not** mean the full collaboration feature set, authorization architecture, organizations, chat or enterprise workflow have been designed.
 
 ---
 
-## Required reading for multi-actor-sensitive work
+# Required reading
 
-1. [`../domain/multi-actor-readiness-v0.md`](../domain/multi-actor-readiness-v0.md)
-2. [`../domain/checkpoints/multi-actor-readiness-v0.md`](../domain/checkpoints/multi-actor-readiness-v0.md)
-3. [`../domain/validation-methodology-v2.md`](../domain/validation-methodology-v2.md)
-4. [`../domain/validation-methodology-v2-multi-actor-addendum.md`](../domain/validation-methodology-v2-multi-actor-addendum.md)
-5. [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
-6. [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
-7. [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md)
+Read in this order for multi-actor-sensitive domain work:
+
+1. [`../domain/README.md`](../domain/README.md)
+2. [`../domain/language-map.md`](../domain/language-map.md)
+3. [`../domain/multi-actor-readiness-v1.md`](../domain/multi-actor-readiness-v1.md)
+4. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+5. [`../domain/validation-methodology-v2.md`](../domain/validation-methodology-v2.md)
+6. [`../domain/validation-methodology-v2-multi-actor-addendum.md`](../domain/validation-methodology-v2-multi-actor-addendum.md)
+7. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+8. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+
+Historical/pre-research baseline:
+
+- [`../domain/multi-actor-readiness-v0.md`](../domain/multi-actor-readiness-v0.md)
+- [`../domain/checkpoints/multi-actor-readiness-v0.md`](../domain/checkpoints/multi-actor-readiness-v0.md)
+
+These are preserved for history; v1 + evidence synthesis are current.
 
 ---
 
-## Current cluster state
+# Current validation state
 
 ```text
 Intention & Execution v0
-PASS — validated current baseline
-PASS — multi-actor readiness checkpoint
+PASS
 
 Time v0
-PASS — validated current baseline
-PASS — multi-actor readiness checkpoint
+PASS
+
+Cross-Cluster Validation v2
+PASS
+
+Multi-Actor Evidence Synthesis v0
+PASS WITH EVIDENCE-BACKED HARDENING
 ```
 
-No structural reopening was required.
+Results:
 
-No new mandatory primitive was introduced.
-
-The baseline was hardened through cross-cutting invariants rather than by prematurely designing Actor/Team/Organization/ACL tables.
+- structural reopenings: **0**;
+- removed concepts: **0**;
+- merged concepts: **0**;
+- mandatory new primitives introduced: **0**;
+- actor-neutral wording hardened: **Goal / Activity / Routine**;
+- terminology governance established: **Domain & Product Language Map**.
 
 ---
 
-## Current hardening summary
+# Current canonical multi-actor rules
 
 ```text
-Goal identity       != owner/governor/stakeholder/subject
-Plan identity       != coordinator/contributor/responsible actor
-Activity identity   != requester/assignee/performer
-Event identity      != organizer/participant/participant response
+Goal identity       != governor / stakeholder / subject
+Plan identity       != coordinator / contributor / responsible actor
+Activity identity   != requester / assignee / performer
+Event identity      != organizer / participant / response
 Routine identity    != performer
-Milestone identity  != stakeholder/governor
+Milestone identity  != stakeholder / approver / governor
 Occurrence identity != assigned actor
-Schedule identity   != participant acceptance/capacity owner
+Schedule identity   != participant acceptance / capacity owner
 Session identity    != performer count
 Constraint identity != authority actor
 Recurrence identity != assignment rotation
-Capacity identity   != one mandatory user
+Capacity identity   != one mandatory user/account
 ```
 
-Additional baseline rules:
+And:
 
-- shared canonical object + actor-scoped state is preferred over per-user semantic duplication;
-- Account/Principal is not assumed to be Actor/Person identity;
-- non-LifeOS actors must remain representable;
-- private source facts may produce authorized derived projections without source disclosure;
-- authority, visibility, participation, ownership, responsibility, and provenance remain distinct dimensions;
-- AI cannot gain authority beyond the actor/principal and approved policy under which it acts.
+```text
+shared canonical fact
++
+actor-scoped personal overlay
+```
+
+is preferred over per-user semantic copies when actors genuinely coordinate around one real object.
 
 ---
 
-## How to work from now on
+# New evidence-backed hardenings
 
-Every new concept review must retain all existing Validation Methodology v2 tests and additionally perform the Multi-Actor / Collaboration Compatibility Test.
+The completed research adds the following permanent validation requirements.
+
+## Responsibility
+
+`assigned_to` is insufficient as the universal model.
+
+Future review must account for, where justified:
+
+- accountability/responsibility;
+- expected performer;
+- actual performer;
+- open/claimable work;
+- substitution;
+- approval;
+- hand-off.
+
+No Responsibility primitive/table has been pre-approved.
+
+## Coordination stewardship
+
+Assignment does not prove that anticipation, reminding, monitoring or repair burden transferred.
+
+This is a mandatory product/domain validation question but not yet an accepted primitive.
+
+## Common ground
+
+Where consequence matters, preserve the possible distinction:
+
+```text
+sent
+!= seen
+!= acknowledged
+!= accepted/agreed
+!= authoritative
+!= acted upon
+!= Actual
+```
+
+Do not expose this complexity universally in casual UX.
+
+## Privacy
+
+Useful derived consequences may be shared without exposing private source facts.
+
+Privacy review also includes inference/explanation/tool-call leakage, not only raw-field visibility.
+
+## Authority
+
+Creator, owner label, participant and viewer are not automatic authority synonyms.
+
+AI authority remains bounded by the principal/context/policy under which it acts.
+
+## Participation lifecycle
+
+External/partial/assisted participants are normal. Future access/revocation must remain independent from historical attribution.
+
+## Coordination burden
+
+Every collaboration feature must be evaluated per actor: who performs setup, state maintenance, acknowledgements, monitoring and repair versus who receives the benefit.
+
+---
+
+# Terminology baseline
+
+The current terminology architecture is now explicit.
+
+Reference:
+
+- [`../domain/language-map.md`](../domain/language-map.md)
+
+The map separates:
+
+```text
+Domain
+Product
+UI
+Implementation
+```
+
+and prevents familiar UX nouns from automatically becoming kernel primitives.
+
+Important mappings:
+
+```text
+Task           -> Activity UI/profile
+Project        -> Plan product profile (current direction)
+Program        -> Plan product profile (current direction)
+Calendar Block -> product/UI representation over temporal/capacity semantics
+Deadline       -> latest-bound Temporal Constraint semantics
+Occurrence     -> canonical domain concept, usually hidden in UI
+```
+
+Future Actor/Subject/Resource/Responsibility/Authority terms remain PROVISIONAL/DEFERRED until dedicated reviews.
+
+---
+
+# Current branch coherence
+
+The domain branch was merged non-destructively with the updated `main` after PR #6 integrated the multi-actor evidence documents.
+
+Merge commit:
+
+```text
+08595f9526e08db53d9b446b8a7a76cd46adcd55
+```
+
+The branch therefore contains both:
+
+- the complete Domain Atlas work;
+- the canonical multi-actor discovery/research evidence from `main`.
+
+Do not re-import or duplicate those evidence documents on another domain branch.
+
+---
+
+# How to work from now on
+
+Every new concept review must:
+
+1. follow Validation Methodology v2;
+2. apply the Multi-Actor Addendum where applicable;
+3. use the Language Map terminology/status rules;
+4. preserve progressive disclosure;
+5. introduce new primitives only after distinct identity/lifecycle/authority/query semantics are demonstrated.
 
 At minimum ask:
 
 ```text
-Can this exist for one or many actors?
-Does actor reassignment alter identity?
-Can owner differ from participant?
-Can performer differ from subject?
-Can shared state coexist with actor-private state?
+What is shared?
+What remains actor-private?
+Can roles change without replacing the object?
+Who is subject / responsible / performer / authority?
 Can non-LifeOS actors participate?
-Whose capacity is affected?
-Who has authority to change what?
-Can private facts support safe shared reasoning?
+Can private data be used without disclosure?
+Does the feature reduce total coordination burden?
 ```
-
-Do not introduce collaboration-specific primitives merely to pass the test. Introduce them only if distinct identity, lifecycle, invariants, authority, or query behavior is demonstrated.
 
 ---
 
-## Relationship to upcoming clusters
+# Downstream areas materially affected
 
-Multi-actor readiness is expected to materially influence later reviews of:
+Later reviews must explicitly use the multi-actor evidence for:
 
 ```text
-Actual
-Outcome
-Observation
-Evidence
-Provenance
-
-Subject
-Person / Actor
-Resource
-Asset
-
-Relationship
-Responsibility / Assignment
-Authority
-Visibility
-Decision
-Version
-AI Proposal
+Actual / Outcome
+Confirmation / Observation / Evidence / Provenance
+Subject / Person / Actor
+Resource / Asset
+Relationship / Dependency
+Responsibility / Assignment / Hand-off
+Authority / Visibility
+Decision / Version
+AI Proposal / Context Builder
 ```
 
-The exact cluster membership and naming remain open.
-
-The first two clusters must not be re-opened merely because those later models become more explicit unless a genuine contradiction is discovered.
+This is a review agenda, not a pre-selected set of tables.
 
 ---
 
-## Full Collaboration Discovery Simulation — pending
+# What remains deliberately unbuilt
 
-A broader dedicated collaboration/multi-user simulation is intentionally pending.
+Do not introduce merely because the research mentions them:
 
-Expected scenario families include:
+- organization/team/household hierarchy;
+- universal Group object;
+- ACL/RBAC/ABAC/ReBAC infrastructure;
+- Zanzibar/OpenFGA dependency;
+- collaboration chat;
+- generic approval engine;
+- universal responsibility workflow;
+- AI multi-agent orchestration;
+- specialist clinical/legal/workforce administration.
 
-- friends / outings / shared travel;
-- household and shared resources;
-- work meetings and assignments;
-- team Goals and Plans;
-- shift work and swaps;
-- caregiving;
-- specialist professional relationships;
-- medical/clinical multi-role operations;
-- organizational workflows;
-- external/non-LifeOS actors and providers;
-- privacy, disagreement, concurrent changes, authority, and visibility.
-
-When that simulation is available, it becomes new validation evidence and must be used to stress the entire Domain Atlas.
-
-It may confirm, harden, or reopen current decisions.
+Those require later evidence and implementation need.
 
 ---
 
-## Current next step
+# Current next step
 
-Do **not** automatically start the Observed Reality & Evidence cluster merely because this addendum is complete.
+The multi-actor synthesis/terminology hardening is complete as a cross-cutting baseline.
 
-The immediate conversation/workstream state remains:
+The project state remains:
 
 ```text
 first two clusters validated
-multi-actor readiness baseline established
-full collaboration simulation pending
-user-led brainstorming/questions/additional tests may continue
-next domain cluster not yet selected
+multi-actor readiness evidence-backed
+canonical language map established
+next cluster not automatically started
 ```
 
-This preserves the previously agreed sequencing rule.
+Continue user-led architecture/product brainstorming or explicitly select the next Domain Atlas cluster when ready.
