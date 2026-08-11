@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — Outcome v0 promoted after Methodology v3 validation  
+**Current revision:** 2026-08-11 — Observation v0 promoted after Methodology v3 validation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -76,6 +76,7 @@ Availability
 Capacity
 Actual
 Outcome
+Observation
 ```
 
 ## DERIVED
@@ -90,6 +91,7 @@ overrun
 lateness
 adherence
 streak
+query aggregates
 some progress percentages
 ```
 
@@ -121,6 +123,7 @@ Calendar Block
 Busy
 This time
 Inbox
+Registra un dato
 ```
 
 ## PROVISIONAL
@@ -145,10 +148,11 @@ A demonstrated semantic area intentionally postponed to a later concept review.
 Current examples:
 
 ```text
-Observation
 Evidence
 Confirmation
 Provenance
+Quantity
+Register
 Subject
 Resource
 Relationship
@@ -195,8 +199,6 @@ Goal != Evidence
 ```
 
 Possible UI language: Goal, Objective, context-appropriate Target.
-
-Multi-actor:
 
 ```text
 Goal identity
@@ -481,20 +483,7 @@ Capacity != universal scalar percentage
 **Question:** How did this specific intention or expectation resolve in reality?  
 **UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
 
-### Domain meaning
-
 A persistent contextual realization record representing whether and how a specific intended or expected domain subject was realized in reality.
-
-Actual provides the reconciliation bridge between expectation and realized reality without becoming a container for every fact produced by that reality.
-
-```text
-Activity / Event / Occurrence
-          ↓
-        Actual
-how that expectation was realized
-```
-
-### Not the same as
 
 ```text
 Actual != Activity/Event/Occurrence
@@ -507,41 +496,18 @@ Actual != Confirmation
 Actual != Provenance
 ```
 
-### Core guardrails
+Core guardrails:
 
-- Actual is contextual, not a universal reality object;
-- spontaneous reality may exist without Actual when no expectation is being reconciled;
-- absence of Actual does not mean failed/skipped/missed/not performed;
-- known non-realization is distinct from unknown and may have a valid Actual;
+- contextual, not a universal reality object;
+- spontaneous reality may exist without Actual;
+- absence of Actual does not mean failed/skipped/missed;
+- known non-realization is distinct from unknown;
 - passage of time does not establish Actual;
-- one Activity/Occurrence may use multiple Sessions while retaining one broader realization context;
-- ordinary Event occurrence may have Actual without a redundant Session;
-- measurements remain Observation/specialist facts rather than duplicated Actual fields;
-- correction may change current accepted Actual while relevant provenance/assertion history remains;
-- provider identity does not define LifeOS Actual identity.
+- one realization may use multiple Sessions;
+- corrections preserve relevant assertion/provenance history;
+- shared Actual does not imply identical actor participation.
 
-### Multi-actor
-
-```text
-shared Actual
-!= actor-specific participation reality
-```
-
-Subject, recorder, responsible actor, expected performer and actual performer may differ.
-
-Private Actual may support an authorized derived projection without disclosing its source facts. AI/system access to Actual does not create disclosure permission.
-
-### Typical UI presentation
-
-Users usually see consequences rather than the noun `Actual`, for example:
-
-- What happened?;
-- actual time;
-- performed / not performed;
-- attendance detail;
-- execution/history detail.
-
-The UI does not need a generic `Create Actual` surface.
+Typical UI: What happened?, actual time, performed/not performed, attendance/history detail.
 
 ---
 
@@ -553,20 +519,7 @@ The UI does not need a generic `Create Actual` surface.
 **Question:** What result or disposition followed from this realization in the relevant context?  
 **UI exposure:** CONTEXTUAL / HIDDEN / ADVANCED
 
-### Domain meaning
-
 A contextual representation of the result or disposition established for a specific Actual realization.
-
-Outcome describes what the realization achieved, satisfied, failed to satisfy, produced as a semantic result, or otherwise resolved where that result meaning matters.
-
-```text
-Actual
-  ↓
-Outcome
-result / disposition
-```
-
-### Not the same as
 
 ```text
 Outcome != Actual
@@ -579,40 +532,106 @@ Outcome != Provenance
 Outcome != Evidence
 ```
 
+Core guardrails:
+
+- optional/contextual rather than mandatory;
+- no universal Outcome enum;
+- absence of Outcome does not mean failure;
+- `unconfirmed` is epistemic/Confirmation semantics;
+- measurements and artifacts remain separate;
+- shared Outcome does not imply identical actor-specific consequences.
+
+Typical UI: Completed/Partial, Passed/Failed, Approved/Changes requested, Decision deferred, Result details.
+
+---
+
+## Observation
+
+**Status:** CANONICAL  
+**Source:** `concepts/observation.md`  
+**Validation:** `checkpoints/observation-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What was observed, measured, reported, or calculated about this subject, and to what time/context does it apply?  
+**UI exposure:** CONTEXTUAL / HIDDEN / ADVANCED
+
+### Domain meaning
+
+A persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a subject at an effective time or context.
+
+Examples:
+
+```text
+weight = 66.4 kg
+mood = 2/5
+pain = 4/10
+exam score = 78/100
+odometer = 84,220 km
+room temperature = 21.6 °C
+```
+
+### Not the same as
+
+```text
+Observation != Actual
+Observation != Outcome
+Observation != Quantity
+Observation != Register
+Observation != Evidence
+Observation != Confirmation
+Observation != Provenance
+```
+
 ### Core guardrails
 
-- Outcome is optional/contextual; not every Actual/Event/Observation requires one;
-- no universal Outcome enum is accepted;
-- operational/lifecycle state and Outcome remain separate dimensions;
-- absence of Outcome does not mean failure/missed/not-completed;
-- `unconfirmed` is epistemic/Confirmation semantics rather than Outcome;
-- measurements and produced artifacts remain separate;
-- partial result does not universally mean failure;
-- replacement must preserve relationship/history semantics;
-- a corrected Outcome preserves relevant prior assertion/provenance history;
-- provider identity does not define Outcome identity.
+- Observation is a measurement/simple-assertion concept, not a universal fact/event/blob primitive;
+- may exist without prior intention, Actual, Outcome, Goal, Session, or Register;
+- stable identity is not `subject + type + time + value`;
+- correction of the same observational act normally preserves identity; re-observation normally creates a new Observation;
+- effective time/context is distinct from recorded/ingested time;
+- missing Observation != observed negative != failed/unavailable measurement;
+- subjective Observations are valid when perspective/source/context are preserved;
+- conflicting Observations may coexist and are not silently averaged/overwritten;
+- derived Observations preserve traceability to source facts;
+- query/chart aggregates do not automatically become persisted Observations;
+- high-frequency sensor semantics do not require one SQL row per sample.
+
+### Quantity/Register boundary
+
+```text
+Quantity
+= reusable value + unit semantics
+
+Observation
+= contextual record using a value
+
+Register
+= longitudinal organization/analysis of records
+```
+
+The exact Quantity and Register models remain deferred and must re-test this boundary in the Data/Subjects cluster.
 
 ### Multi-actor
 
 ```text
-shared Outcome
-!= identical actor-specific consequence
+Observation subject
+!= observer
+!= recorder
+!= source/provider/device
+!= confirmer/authority
+!= viewer
 ```
 
-One actor/provider assertion does not automatically establish universal canonical Outcome. Different contextual authorities may make different result assertions that require later reconciliation/Provenance semantics.
+A shared Event/Goal/Plan does not automatically make related Observations shared. Private Observations may support authorized derived projections without raw-source disclosure.
 
 ### Typical UI presentation
 
-Users usually see domain-appropriate result language, for example:
+Users usually see domain language rather than `Observation`:
 
-- Completed / Partially completed;
-- Passed / Failed;
-- Approved / Changes requested;
-- Decision deferred;
-- Replaced / Skipped where semantically valid;
-- Result details.
-
-The frontend should not expose a generic universal `Outcome` enum or force meaningless result selection on ordinary Events.
+- Weight — 66.4 kg;
+- Mood — Low;
+- Odometer — 84,220 km;
+- Exam score — 78/100;
+- `Registra un dato`;
+- source/history details in advanced views.
 
 ---
 
@@ -675,8 +694,6 @@ An interval may represent hard/soft Temporal Constraint, Availability, accepted 
 
 No universal Planning Item kernel primitive has been accepted. Shared capabilities are composed around explicit concepts such as Activity, Event, Schedule and Temporal Constraint.
 
-Do not infer a universal `planning_items` aggregate/table from historical wording.
-
 ## Reminder
 
 **Status:** PRODUCT CAPABILITY / DOMAIN REVIEW DEFERRED
@@ -694,8 +711,6 @@ Organization/filtering context does not automatically establish ownership, Goal 
 **Status:** PRODUCT/ARCHITECTURE TERM, NOT DOMAIN PRIMITIVE
 
 A domain-specific capability area such as training, nutrition, learning, travel, finance or creative work.
-
-Modules may add specialist UI/rules/integrations without replacing common Goal/Plan/Activity/Time/History semantics.
 
 ## Tag
 
@@ -727,7 +742,7 @@ rather than one generic SharedItem wrapper.
 
 **Status:** IMPORTANT DEFERRED PROVENANCE DIMENSION
 
-Where information came from: user entry, file, provider, email, external system, AI proposal, etc.
+Where information came from: user entry, file, provider, email, external system, device, AI proposal, etc.
 
 Source is not local organization, object type, truth, authority or sharing state.
 
@@ -807,13 +822,7 @@ Who actually performed work. Not automatically requester/responsible actor/plann
 
 **Status:** DEFERRED — DATA/SUBJECT REVIEW
 
-Who/what information/action/observation is about.
-
-```text
-caregiver acts -> older adult subject
-parent acts -> child subject
-technician acts -> vehicle subject
-```
+Who/what information/action/Observation is about.
 
 ## Resource
 
@@ -851,19 +860,13 @@ Future design must cover purpose, context, revocation, historical attribution an
 
 # 10. Reality/Evidence terms still under review
 
-## Observation
-
-**Status:** DEFERRED — ACTIVE NEXT REVIEW
-
-Working purpose: observed/measured/asserted fact about reality that may exist without prior intention, Actual wrapper or Outcome.
-
-Must be tested against raw measurement/value, Register/Quantity, Actual, Outcome, Session/Event facts, Evidence, Confirmation, Provenance and Subject semantics.
-
 ## Evidence
 
-**Status:** DEFERRED
+**Status:** DEFERRED — UPCOMING REVIEW
 
-Information used in a particular evaluation context. Evidence is not automatically identical to source fact, positive contribution or universal proof.
+Information used in a particular evaluation context. Evidence is not automatically identical to the source fact, positive contribution or universal proof.
+
+Observation is a likely source of Evidence but is not Evidence merely by existing.
 
 ## Confirmation / Acknowledgement / Acceptance
 
@@ -894,9 +897,22 @@ How a fact/value/decision/change entered LifeOS and under what source/assertion/
 ```text
 Provenance != Actual
 Provenance != Outcome
+Provenance != Observation
 source != truth
 authority != source by default
 ```
+
+## Quantity
+
+**Status:** DEFERRED — DATA/SUBJECT REVIEW
+
+Reusable measurement value + unit semantics. Observation v0 requires Quantity to remain separable from observation identity/context.
+
+## Register
+
+**Status:** DEFERRED — DATA/SUBJECT REVIEW
+
+Longitudinal organization/analysis capability for records over time. Register may organize Observations and specialist records without becoming their source identity.
 
 ---
 
@@ -919,7 +935,7 @@ Trigger != Routine
 
 Cross-domain evidence indicates typed/directional semantics are likely needed.
 
-Potential relations such as `supports`, `conflicts_with`, `depends_on`, `prepares_for`, `replaces`, `evidence_for` must not collapse prematurely into semantic-free `related_to` if behavior/query meaning differs.
+Potential relations such as `supports`, `conflicts_with`, `depends_on`, `prepares_for`, `replaces`, `evidence_for`, `derived_from` must not collapse prematurely into semantic-free `related_to` if behavior/query meaning differs.
 
 ## Dependency
 
@@ -963,6 +979,13 @@ Outcome != Milestone
 Outcome != Confirmation
 Outcome != Provenance
 Outcome != Evidence
+Observation != Quantity
+Observation != Register
+Observation != Evidence
+Observation != Confirmation
+Observation != Provenance
+missing Observation != observed negative
+recorded time != Observation effective time
 Temporal Constraint != Availability
 Recurrence != Trigger
 Availability != empty-gap cache
@@ -985,6 +1008,8 @@ Assignment != Activity identity
 Participation response != Actual participation
 shared Actual != identical actor participation
 shared Outcome != identical actor consequence
+Observation subject != observer/recorder/source/authority/viewer
+conflicting Observation != automatic overwrite/average
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -1005,6 +1030,7 @@ Calendar Block != mandatory time primitive
 Planning Item != current universal kernel root
 Shared Item != universal collaboration primitive
 Module != domain entity
+Register view != mandatory duplicate source record
 ```
 
 ---
@@ -1044,11 +1070,7 @@ Gym
 
 ```text
 Domain
-Goal optional
-+ Plan
-+ Activities
-+ Events
-+ Milestones
+Goal optional + Plan + Activities + Events + Milestones
 
 Product
 Project
@@ -1056,18 +1078,6 @@ Project
 UI
 Website Redesign
 Overview / Tasks / Timeline / Milestones
-```
-
-## Recurring team meeting
-
-```text
-Domain
-Event + Recurrence + Occurrences + Schedule + actor-scoped participation
-
-UI
-Weekly Team Meeting
-Every Monday · 10:00
-Yes / Maybe / No
 ```
 
 ## Realized meeting with result
@@ -1084,8 +1094,6 @@ Result: Decision deferred
 Luca left at 10:45
 ```
 
-One shared Actual/Outcome does not imply identical attendance or actor-specific consequences.
-
 ## Exam
 
 ```text
@@ -1101,15 +1109,49 @@ Exam result
 78/100 · Passed
 ```
 
-The score and pass/fail result remain semantically distinct.
+The score Observation and Outcome remain semantically distinct.
+
+## Weight log
+
+```text
+Domain
+Observation
+property: body weight
+value: Quantity(66.4 kg)
+effective: 08:00
+recorded: 18:00
+
+Possible Product
+Weight Register
+
+UI
+Weight
+66.4 kg
+Today · 08:00
+```
+
+The Register view does not create a duplicate Observation.
+
+## Conflicting subjective observations
+
+```text
+Meeting context
+
+Mattia Observation
+usefulness = 4/5
+
+Luca Observation
+usefulness = 2/5
+```
+
+Both perspectives can remain valid assertions without manufactured averaging.
 
 ## Private availability
 
 ```text
-Private source
-Event + Actual: medical appointment occurred
-
-Authorized projection
+Private source context/Observation
+        ↓
+authorized projection
 Unavailable 18:00-20:00
 
 Shared UI
@@ -1117,23 +1159,6 @@ Sara is unavailable
 ```
 
 The private reason need not be exposed.
-
-## Household chore rotation
-
-```text
-Domain
-Routine
-+ Recurrence
-+ Occurrences
-+ future responsibility relations
-
-UI
-Take recycling out
-Every Thursday
-This week: Luca
-```
-
-Responsibility rotation does not require duplicate Routines.
 
 ---
 
@@ -1165,6 +1190,11 @@ Internal: Outcome
 UI: Passed / Partial / Approved / Decision deferred / Result details
 ```
 
+```text
+Internal: Observation
+UI: Weight / Mood / Score / Odometer / Registra un dato
+```
+
 Reverse rule:
 
 > **A UX label does not automatically create a backend/domain type.**
@@ -1177,21 +1207,16 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-Examples:
+Canonical domain terms do not automatically imply identically named tables, and product aliases do not create parallel persistence models.
 
-```text
-Canonical: Plan
-```
+In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome and Observation must not be translated prematurely into final SQL table/cardinality choices before the logical model is reviewed.
 
-does not yet imply:
+Observation v0 specifically does **not** imply:
 
-```text
-plans
-projects
-programs
-```
-
-Likewise Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual and Outcome must not be translated prematurely into final SQL table/cardinality choices before the logical model is reviewed.
+- one generic fact table for the whole domain;
+- one row per raw sensor sample;
+- one arbitrary JSON value shape;
+- one duplicated record per Register/dashboard/Goal use.
 
 When implementation names eventually differ from canonical language for good technical reasons, document the mapping here.
 
