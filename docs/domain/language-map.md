@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — Evidence v0 promoted after Methodology v3 validation  
+**Current revision:** 2026-08-11 — Provenance v0 promoted after Methodology v3 validation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -10,17 +10,17 @@
 
 This is the fast canonical reference for LifeOS vocabulary.
 
-It keeps four distinct languages aligned without forcing them into a one-to-one mapping:
+It keeps four distinct languages aligned without forcing a one-to-one mapping:
 
 ```text
 DOMAIN LANGUAGE
-what a concept means canonically
+what the concept means canonically
         ↓
 PRODUCT LANGUAGE
-how LifeOS packages/presents that meaning
+how LifeOS packages/presents it
         ↓
 UI LANGUAGE
-what users actually read and manipulate
+what users actually read/manipulate
         ↓
 IMPLEMENTATION LANGUAGE
 API / schema / code names once designed
@@ -30,7 +30,7 @@ Canonical rule:
 
 > **A domain concept does not require a dedicated visible UI object, and a visible product/UI term does not automatically justify a separate domain primitive.**
 
-This document is a navigation/governance layer. Detailed lifecycle, invariants, history, evidence and stress tests remain in concept specs/checkpoints.
+Detailed lifecycle, invariants, history, evidence and validation remain in the concept specs/checkpoints.
 
 ---
 
@@ -46,19 +46,17 @@ When terminology conflicts, use this order:
 6. historical product glossaries/planning documents;
 7. conversation history.
 
-The old `docs/product/v1-core-domain-glossary.md` remains valuable product-history evidence. It is **not** authoritative for kernel terminology where current Domain Atlas decisions differ.
+The old `docs/product/v1-core-domain-glossary.md` remains useful product-history evidence but is not authoritative where the current Domain Atlas differs.
 
 This map records decisions; it does not create primitives.
 
 ---
 
-# 2. Official term status classes
+# 2. Term status classes
 
 ## CANONICAL
 
 Accepted Domain Atlas concept/capability with stable current semantics.
-
-Current examples:
 
 ```text
 Goal
@@ -79,6 +77,7 @@ Outcome
 Observation
 Confirmation
 Evidence
+Provenance
 ```
 
 ## DERIVED
@@ -131,9 +130,7 @@ Registra un dato
 
 ## PROVISIONAL
 
-A recurring semantic need with sufficient evidence to track explicitly, but whose exact domain boundary has not passed dedicated review.
-
-Examples:
+Recurring semantic need with meaningful evidence but an unfinished domain boundary.
 
 ```text
 Actor
@@ -148,12 +145,9 @@ Acceptance / Agreement
 
 ## DEFERRED
 
-A demonstrated semantic area intentionally postponed to later review.
-
-Current examples:
+Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Provenance
 Quantity
 Register
 Subject
@@ -162,23 +156,23 @@ Relationship
 Principal
 Trigger
 Verification
+Decision
+Version
 ```
 
 ## HISTORICAL / SUPERSEDED
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
 
-Historical language is mapped, not silently deleted or recycled.
-
 ---
 
 # 3. UI exposure classes
 
 - **DIRECT** — natural primary user-facing noun;
-- **CONTEXTUAL** — visible, usually under a context-specific label;
-- **CONFIGURATION** — exposed primarily through rules/settings/actions;
-- **ADVANCED** — useful in detail/history/power-user surfaces;
-- **HIDDEN** — primarily internal semantics; UI exposes consequences/actions instead.
+- **CONTEXTUAL** — visible under context-specific wording;
+- **CONFIGURATION** — primarily rules/settings/actions;
+- **ADVANCED** — detail/history/power-user surfaces;
+- **HIDDEN** — mostly internal semantics; UI exposes consequences/actions instead.
 
 Kernel sophistication must not force ontology vocabulary into simple UI.
 
@@ -193,8 +187,6 @@ Kernel sophistication must not force ontology vocabulary into simple UI.
 **Question:** What outcome/condition/change/pattern is intentionally desired?  
 **UI exposure:** DIRECT
 
-Persistent representation of an intentionally desired outcome, condition, change or behavioral pattern.
-
 ```text
 Goal != Plan
 Goal != Activity
@@ -203,7 +195,7 @@ Goal != Evidence
 Goal identity != governor/stakeholder/contributor/subject/account
 ```
 
-Possible UI: Goal, Objective, context-appropriate Target.
+Possible UI: Goal, Objective, contextual Target.
 
 ## Plan
 
@@ -211,8 +203,6 @@ Possible UI: Goal, Objective, context-appropriate Target.
 **Source:** `concepts/plan.md`  
 **Question:** How is a purpose intended to be pursued/organized?  
 **UI exposure:** DIRECT / CONTEXTUAL
-
-Persistent revisable structure coordinating work, behaviors, milestones, rules, stages or other execution elements.
 
 ```text
 Plan != Goal
@@ -325,9 +315,8 @@ Schedule != Recurrence
 Schedule != Availability
 Schedule != Capacity claim
 Schedule != Session/Actual
+Schedule acceptance != participant acceptance
 ```
-
-Accepted Schedule does not mean every participant accepted participation.
 
 ## Session
 
@@ -470,12 +459,10 @@ Core guardrails:
 - query aggregates do not automatically become persisted Observations;
 - high-frequency streams do not imply row-per-sample persistence.
 
-Boundary:
-
 ```text
-Quantity   = reusable value + unit semantics
-Observation= contextual record using a value
-Register   = longitudinal organization/analysis of records
+Quantity    = reusable value + unit semantics
+Observation = contextual record using a value
+Register    = longitudinal organization/analysis of records
 ```
 
 ## Confirmation
@@ -486,13 +473,12 @@ Register   = longitudinal organization/analysis of records
 **Question:** Who or what explicitly affirms this specific version of this target, for which purpose and context?  
 **UI exposure:** CONTEXTUAL / HIDDEN / ADVANCED
 
-A persistent contextual attestation that a specific confirmer affirms a specific version of a confirmable target as sufficiently accepted for a defined purpose at that time.
-
 ```text
 Confirmation != Actual
 Confirmation != Outcome
 Confirmation != Observation
 Confirmation != Provenance
+Confirmation != Evidence
 Confirmation != Acknowledgement
 Confirmation != Acceptance/Agreement
 Confirmation != Verification
@@ -501,17 +487,13 @@ Confirmation != Authority
 
 Core guardrails:
 
-- contextual and optional, not universal;
-- no Confirmation does not mean false/rejected/incorrect/not performed;
-- Confirmation targets a material target version;
-- material target correction does not silently inherit previous Confirmation;
+- contextual and optional;
+- no Confirmation != false/rejected/incorrect/not performed;
+- target version/context/purpose matters;
+- material correction does not inherit prior Confirmation silently;
 - `awaiting confirmation` is derived workflow state;
-- imported/inferred/automatic/corrected are not Confirmation types;
 - automation/AI must not fabricate human Confirmation;
-- Confirmation by one actor does not imply Confirmation by another;
-- subject, confirmer, recorder, observer, performer and authority actor may differ;
-- conflicting Confirmations must be representable;
-- purpose/context may limit where a Confirmation is sufficient.
+- Confirmation by one actor does not imply Confirmation by another.
 
 Typical UI: Confirm, Looks correct, Yes this happened, Review and confirm, Needs confirmation.
 
@@ -523,7 +505,7 @@ Typical UI: Confirm, Looks correct, Yes this happened, Review and confirm, Needs
 **Question:** What information materially bears on this evaluation, in what direction and context, and on what basis is it being used?  
 **UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
 
-Evidence is the contextual evaluative role played by source information when it is used to support, contradict, qualify, or otherwise materially inform a specific evaluation target.
+Evidence is the contextual evaluative role played by source information when it is used to support, contradict, qualify or otherwise materially inform a specific evaluation target.
 
 ```text
 Evidence != source information itself
@@ -540,19 +522,55 @@ Core guardrails:
 
 - information is not Evidence merely because it exists;
 - Evidence does not duplicate source payload/identity;
-- Evidence may support, contradict, qualify, or otherwise inform;
-- Evidence existence does not establish target truth by itself;
+- may support, contradict or qualify;
+- Evidence existence does not establish target truth;
 - no Evidence != Evidence against;
-- no LifeOS record != proof of non-occurrence unless an explicit completeness/evaluation rule justifies that inference;
-- later-discovered Evidence relevance does not rewrite historical source purpose/intention;
+- no LifeOS record != proof of non-occurrence without a completeness rule;
+- later relevance does not rewrite historical source purpose;
 - one source can serve several evaluations without duplication;
-- evidentiary strength/certainty is contextual rather than one universal scalar;
+- strength/certainty is contextual rather than one universal scalar;
 - conflicting Evidence can coexist;
 - private Evidence use does not create disclosure permission;
-- AI discovery/use does not create authority or disclosure permission;
-- Evidence semantics do not imply one persisted entity/edge for every evaluative use.
+- Evidence semantics do not imply one persisted edge/entity per use.
 
-Typical UI: Why is this progressing?, Based on…, Supporting data, Conflicting data, Why did LifeOS conclude this?, Review evidence.
+Typical UI: Why is this progressing?, Based on…, Supporting data, Conflicting data, Review evidence.
+
+## Provenance
+
+**Status:** CANONICAL semantic lineage capability  
+**Source:** `concepts/provenance.md`  
+**Validation:** `checkpoints/provenance-v0-validation.md` — PASS WITH HARDENING  
+**Question:** How did this specific record/material version come to exist, and what materially influenced its current form?  
+**UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
+
+Provenance is bounded contextual lineage covering materially relevant source entities, generation/import/derivation/transformation/correction activities, actors/systems/providers and times.
+
+```text
+Source != Provenance
+Provenance != truth
+Provenance != Authority
+Provenance != Confirmation
+Provenance != Evidence
+Provenance != Version
+Provenance != Audit
+```
+
+Core guardrails:
+
+- source is one lineage dimension, not the entire model;
+- creator/source/recorder does not imply Authority;
+- correction preserves material prior lineage rather than rewriting origin;
+- derived/transformed records retain material source/process traceability;
+- AI/OCR/import pipelines must not launder authorship/source;
+- provider IDs do not define LifeOS identity;
+- subject, source actor, observer, recorder, transformer, confirmer and authority may differ;
+- target visibility does not imply full Provenance visibility;
+- Provenance access does not imply access to every private upstream payload;
+- retention/history does not justify indefinite retention of deleted sensitive payloads;
+- material lineage, not maximal recursive lineage, is the default;
+- no universal provenance graph/table is pre-approved.
+
+Typical UI: Source, Imported from…, Entered by…, Corrected by…, Derived from…, Why does LifeOS show this?, View history.
 
 ---
 
@@ -563,22 +581,20 @@ Typical UI: Why is this progressing?, Based on…, Supporting data, Conflicting 
 **Status:** PRODUCT / UI TERM  
 **Maps to:** Activity
 
-Use when completion of a defined work unit is the dominant UI meaning.
-
 ## Project
 
 **Status:** PRODUCT PROFILE / HISTORICAL KERNEL TERM  
-**Current mapping:** Plan profile, optionally connected to Goal(s), Milestones, Activities, Events, dependencies, etc.
+**Current mapping:** Plan profile optionally related to Goals, Milestones, Activities, Events and dependencies.
 
 ## Program
 
 **Status:** PRODUCT PROFILE / HISTORICAL KERNEL TERM  
-**Current mapping:** Plan profile emphasizing structured progression, stages, repeated policies, reviews or adaptation.
+**Current mapping:** Plan profile emphasizing progression, stages, repeated policies, reviews or adaptation.
 
 ## Calendar Block
 
 **Status:** PRODUCT / UI TERM  
-**Current mapping:** calendar-shaped representation whose underlying meaning is generally Schedule + Capacity Reservation/Claim or Availability override, depending on purpose.
+**Current mapping:** calendar-shaped representation over Schedule/Capacity/Availability semantics depending on purpose.
 
 ## Deadline
 
@@ -589,7 +605,7 @@ Use when completion of a defined work unit is the dominant UI meaning.
 
 **Status:** RANGE SHAPE / PRODUCT TERM
 
-The same interval geometry may represent Constraint, Availability, Schedule or target-window semantics; geometry does not define meaning.
+Interval geometry does not determine semantic meaning.
 
 ## Repeat
 
@@ -609,7 +625,7 @@ The same interval geometry may represent Constraint, Availability, Schedule or t
 
 **Status:** HISTORICAL / PRODUCT ABSTRACTION
 
-No universal Planning Item kernel primitive has been accepted.
+No universal Planning Item kernel primitive is accepted.
 
 ## Reminder
 
@@ -639,13 +655,11 @@ Tag must not establish ownership, authority, lifecycle, scheduling or canonical 
 
 **Status:** HISTORICAL PRODUCT PHRASE
 
-Current mapping usually uses explicit Activity/Event + future Person/Relationship semantics. The other person does not need a LifeOS Account and the item is not automatically shared.
+Current mapping usually uses Activity/Event + future Person/Relationship semantics. The other person does not need a LifeOS Account and the item is not automatically shared.
 
 ## Shared Item
 
 **Status:** PRODUCT PHRASE, NOT UNIVERSAL PRIMITIVE
-
-Preferred direction:
 
 ```text
 shared canonical object
@@ -655,11 +669,14 @@ actor-scoped state/personal overlay
 
 ## Source
 
-**Status:** IMPORTANT DEFERRED PROVENANCE DIMENSION
+**Status:** PRODUCT / PROVENANCE TERM  
+**Maps to:** one dimension of Provenance.
 
-Where information came from: user entry, file, provider, email, external system, device, AI proposal, etc.
-
-Source != truth != authority.
+```text
+Source != Provenance
+Source != truth
+Source != Authority
+```
 
 ## Temporary Mode
 
@@ -693,7 +710,7 @@ Entity capable of acting, participating, holding responsibility or exercising au
 
 **Status:** DEFERRED
 
-Human represented in LifeOS domain reality. Person may exist without LifeOS Account.
+Human represented in LifeOS reality; may exist without LifeOS Account.
 
 ## Account
 
@@ -713,13 +730,13 @@ Authenticated/acting identity semantics remain open.
 
 **Status:** PROVISIONAL
 
-Actor-scoped involvement/state around a shared object. No universal participation enum accepted.
+Actor-scoped involvement/state around a shared object.
 
 ## Responsibility
 
 **Status:** PROVISIONAL — STRONG EVIDENCE
 
-Must be richer than one `assigned_to` field and may need accountability, expected performer, open/claimable responsibility, substitution and hand-off.
+Must be richer than one `assigned_to` field and may require accountability, expected performer, claimable/open responsibility, substitution and hand-off.
 
 ## Stewardship / Coordination Responsibility
 
@@ -745,13 +762,16 @@ Who/what information/action/Observation is about.
 
 Something whose availability/capacity/access may constrain execution/scheduling.
 
-Actor and Resource can overlap but are not synonyms.
+```text
+Actor != Subject
+Actor != Resource
+```
 
 ## Owner / Governor / Steward
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use casually as synonyms for creator, participant, viewer, responsible actor or performer.
+Do not use as synonyms for creator, participant, viewer, responsible actor or performer.
 
 ## Authority
 
@@ -762,6 +782,7 @@ Who/what may establish, approve, change or override canonical state in context.
 ```text
 Authority != Visibility
 Authority != Confirmation
+Authority != Provenance/source
 ```
 
 ## Visibility / Access
@@ -794,23 +815,7 @@ Acceptance != Actual
 
 ---
 
-# 10. Reality/Evidence terms still under review
-
-## Provenance
-
-**Status:** DEFERRED — FINAL INDIVIDUAL CLUSTER REVIEW
-
-How a fact/value/decision/change entered LifeOS and what source/agent/process/assertion/correction history affected it.
-
-```text
-Provenance != Actual
-Provenance != Outcome
-Provenance != Observation
-Provenance != Confirmation
-Provenance != Evidence
-source != truth
-source != authority by default
-```
+# 10. Deferred neighboring semantics
 
 ## Verification
 
@@ -820,20 +825,32 @@ Process/basis used to check a claim or record.
 
 ```text
 Verification != Confirmation
-Verification != Evidence by default
+Verification != Provenance
 ```
 
 ## Quantity
 
 **Status:** DEFERRED — DATA/SUBJECT REVIEW
 
-Reusable measurement value + unit semantics. Observation v0 requires Quantity to remain separable from observation identity/context.
+Reusable measurement value + unit semantics.
 
 ## Register
 
 **Status:** DEFERRED — DATA/SUBJECT REVIEW
 
-Longitudinal organization/analysis capability for records over time. Register may organize Observations and specialist records without becoming their source identity.
+Longitudinal organization/analysis capability for records over time.
+
+## Version
+
+**Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
+
+Material version identity/history must later integrate with Confirmation, Evidence and Provenance without replacing them.
+
+## Decision
+
+**Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
+
+Decision rationale/authority is distinct from Provenance lineage.
 
 ---
 
@@ -842,8 +859,6 @@ Longitudinal organization/analysis capability for records over time. Register ma
 ## Trigger
 
 **Status:** DEFERRED
-
-Detects qualifying event/state/threshold and may cause action/notification/rule evaluation.
 
 ```text
 Trigger != Recurrence
@@ -854,15 +869,13 @@ Trigger != Routine
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` if behavior/query meaning differs.
-
-Evidence may ultimately use typed Relationship machinery physically/logically; that does not make Evidence semantically redundant.
+Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs.
 
 ## Dependency
 
 **Status:** DEFERRED / likely Relationship specialization or typed semantic
 
-Represents coordination dependency where justified: producer/consumer, prerequisite, simultaneity, resource, blocking, etc.
+Represents coordination dependency where justified.
 
 ---
 
@@ -908,15 +921,17 @@ Confirmation != Acceptance/Agreement
 Confirmation != Verification
 Confirmation != Authority
 Confirmation != Provenance
-Confirmation != Evidence
 Evidence != source information
 Evidence != Provenance
 Evidence != GoalCriterion
-Evidence != Milestone
+Provenance != Source
+Provenance != truth
+Provenance != Authority
+Provenance != Version
+Provenance != Audit
 missing Observation != observed negative
 no Confirmation != false/rejected/incorrect
 no Evidence != Evidence against
-no LifeOS record != proof of non-occurrence
 recorded time != Observation effective time
 Temporal Constraint != Availability
 Recurrence != Trigger
@@ -942,10 +957,9 @@ shared Actual != identical actor participation
 shared Outcome != identical actor consequence
 Observation subject != observer/recorder/source/authority/viewer
 Confirmation by A != Confirmation by B
-Evidence source != evaluator/confirmer/authority/viewer
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
-conflicting Evidence != automatic canonical conclusion
+source actor != recorder != subject by default
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -954,7 +968,7 @@ Authority != Actual
 Authority != Confirmation
 AI knowledge != disclosure permission
 AI inference != Confirmation
-AI discovery of Evidence != authority/disclosure permission
+AI provenance != disclosure permission
 future access revocation != deletion of historical attribution
 ```
 
@@ -970,7 +984,7 @@ Shared Item != universal collaboration primitive
 Module != domain entity
 Register view != mandatory duplicate source record
 Needs confirmation != Confirmation object by itself
-Evidence use != mandatory persisted Evidence entity/edge
+Source label != complete Provenance model
 ```
 
 ---
@@ -980,169 +994,95 @@ Evidence use != mandatory persisted Evidence entity/edge
 ## Buy milk
 
 ```text
-Domain
-Activity
-
-Product
-Task
-
-UI
-Buy milk
-[ ]
-Tomorrow
+Domain: Activity
+Product/UI: Task / Buy milk
 ```
 
 ## Gym 3x/week
 
 ```text
-Domain
 Routine + Recurrence + Occurrences + optional Schedules
-
-UI
-Gym
-3 times per week
+UI: Gym — 3 times per week
 ```
 
 ## Website redesign
 
 ```text
-Domain
 Goal optional + Plan + Activities + Events + Milestones
-
-Product
-Project
-
-UI
-Website Redesign
-Overview / Tasks / Timeline / Milestones
+Product: Project
 ```
 
 ## Exam result
 
 ```text
-Domain
 Event
 + Actual
 + Observation: score = 78/100
 + Outcome: passed
-+ optional Confirmation of the imported/recorded result
-+ Evidence uses toward Goal/Milestone evaluation
-+ optional Milestone
-
-UI
-Exam result
-78/100 · Passed
-Based on official result
-[Confirm result] when policy requires it
++ optional Confirmation
++ Evidence use toward Goal/Milestone
++ Provenance of imported/recorded result
 ```
 
-## Weight log and Goal evidence
+UI may show simply `78/100 · Passed`, with source/evidence/history on demand.
+
+## Weight log
 
 ```text
-Domain
-Observation O-1
+Observation
 property: body weight
 value: Quantity(66.4 kg)
 effective: 08:00
 recorded: 18:00
 
-Criterion C-1
-65 kg <= weight <= 67 kg
-
-Evidence use
-O-1 supports evaluation of C-1
-
-Possible Product
-Weight Register + Goal progress
-
-UI
-Weight
-66.4 kg
-Today · 08:00
-
-Goal
-In target range
-Based on today's weight
+Provenance
+manual entry / device import / correction chain as applicable
 ```
 
-The Observation is not duplicated into the Goal.
+Possible product: Weight Register.
 
-## Confirmation after correction
+## Correction lineage
 
 ```text
 Observation v1
-value X
+66.4 kg
+source: device import
 └ Confirmation A
 
-Observation v2 after material correction
-value Y
-└ no inherited Confirmation
+Observation v2
+64.6 kg
+correction by user
+
+Provenance preserves how v2 derived/revised v1.
+Prior Confirmation does not silently apply to v2.
 ```
-
-UI may simply show `Needs confirmation` for v2 when policy requires it.
-
-## Conflicting Evidence
-
-```text
-Claim
-Run >= 5 km
-
-Watch Observation
-5.1 km
-└ Evidence supports
-
-Phone Observation
-4.7 km
-└ Evidence contradicts
-```
-
-LifeOS preserves the conflict; it does not manufacture a truth by averaging unless an explicit evaluation rule says to do so.
 
 ## Private availability
 
 ```text
-private source context / Evidence
-↓
-authorized evaluation / projection
-Unavailable 18:00-20:00
-
-shared UI
-Sara is unavailable
+private source context / Observation / Provenance
+        ↓
+authorized projection
+Unavailable 18:00–20:00
 ```
 
-The private reason/evidence need not be exposed.
+Shared users do not automatically receive the private source reason or lineage.
 
 ---
 
 # 14. Frontend rule
 
-Frontend may choose the clearest language without changing kernel semantics.
-
-Prefer plain language, progressive disclosure, contextual labels and actions/consequences over internal nouns when clearer.
-
-Examples:
+Prefer plain language, progressive disclosure and contextual actions over internal nouns when clearer.
 
 ```text
-Internal: Occurrence
-UI: This time
-
-Internal: Temporal Constraint
-UI: Deadline / Preferred time / Not before
-
-Internal: Actual
-UI: What happened? / Actual time / Performed / Not performed
-
-Internal: Outcome
-UI: Passed / Partial / Approved / Result details
-
-Internal: Observation
-UI: Weight / Mood / Score / Odometer / Registra un dato
-
-Internal: Confirmation
-UI: Confirm / Looks correct / Review and confirm / Needs confirmation
-
-Internal: Evidence
-UI: Based on… / Supporting data / Conflicting data / Why this result?
+Occurrence          → This time
+Temporal Constraint → Deadline / Preferred time / Not before
+Actual              → What happened? / Actual time / Performed
+Outcome             → Passed / Partial / Approved / Result details
+Observation         → Weight / Mood / Score / Odometer
+Confirmation        → Confirm / Looks correct / Needs confirmation
+Evidence            → Why? / Based on… / Supporting or conflicting data
+Provenance          → Source / Imported from / Corrected by / View history
 ```
 
 Reverse rule:
@@ -1153,21 +1093,22 @@ Reverse rule:
 
 # 15. Implementation-language rule
 
-Physical/API terminology remains intentionally incomplete until logical/physical data modeling.
+Physical/API terminology remains intentionally incomplete until logical/physical modeling.
 
 Do not infer table/class names from this map.
 
-In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation and Evidence must not be translated prematurely into final SQL table/cardinality choices.
+In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence and Provenance must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
-- Observation does not imply one generic fact table or one row per raw sensor tick;
-- Confirmation does not imply one universal polymorphic `confirmations` table;
-- Evidence does not imply one universal `evidence` table, one persisted edge per evaluative use, or one global evidence-strength scalar;
-- product aliases do not create duplicate persistence models;
-- provider/source identifiers do not define LifeOS identity.
+- Observation does not imply one generic fact table or row per sensor tick;
+- Confirmation does not imply one universal polymorphic confirmation table;
+- Evidence does not imply one persisted edge/entity per evaluative use;
+- Provenance does not imply one universal provenance graph/table or event row for every technical operation;
+- provider/source identifiers do not define LifeOS identity;
+- product aliases do not create duplicate persistence models.
 
-When implementation names eventually differ from canonical language for good technical reasons, document the mapping here.
+When implementation names later differ for good technical reasons, document the mapping here.
 
 ---
 
@@ -1177,14 +1118,14 @@ A term may enter when at least one holds:
 
 1. it is an accepted Domain Atlas concept;
 2. it is recurring product/UI language with clear mapping;
-3. omitting it creates material ambiguity across domain/product/frontend/AI work;
-4. a demonstrated semantic need must be tracked explicitly as PROVISIONAL/DEFERRED.
+3. omitting it creates material ambiguity;
+4. a demonstrated semantic need must be tracked as PROVISIONAL/DEFERRED.
 
-A term does **not** become canonical because a competitor uses it, one database design would be convenient, one mockup contains it, one scenario might theoretically need it, an AI suggested it, or the architecture sounds more complete with it.
+A term does not become canonical because a competitor uses it, a table would be convenient, a mockup contains it, an AI suggested it, or it makes the ontology look complete.
 
 Change procedure:
 
-1. review/change source concept/decision first;
+1. review/change source concept first;
 2. preserve historical reasoning;
 3. update this map;
 4. update checkpoints/handoffs;
@@ -1198,10 +1139,8 @@ Do not silently recycle one term with a new meaning.
 
 This file is the semantic navigation layer, not a duplicate of every concept spec.
 
-Detailed specs remain authoritative for lifecycle, full invariants, edge/adversarial cases, evidence, history, rejected alternatives and persistence implications.
-
-This map should remain capable of answering quickly:
+It should answer quickly:
 
 > **What does this LifeOS term mean, what does it not mean, what status does it have, and what might a user actually see?**
 
-without requiring a reader to reconstruct the ontology from dozens of documents.
+Detailed lifecycle, tests, history, rejected alternatives and persistence implications remain in the authoritative concept/checkpoint documents.
