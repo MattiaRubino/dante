@@ -298,6 +298,38 @@ Therefore:
 
 > **Schedule != Event.**
 
+### Event postponed without a replacement Schedule
+
+Validation Methodology v2 clarifies an important Event/Schedule boundary.
+
+An Event can retain identity and historical temporal meaning even when its previously accepted placement is withdrawn and no replacement time is known yet.
+
+Example:
+
+```text
+Event
+Concert
+
+Historical accepted Schedule
+20 September 21:00
+
+Provider update
+POSTPONED — new date TBD
+
+Current accepted Schedule
+none
+```
+
+This does not make the Event timeless in meaning and does not require a fake placeholder Schedule.
+
+It means the current temporal assignment is unresolved.
+
+Canonical hardening:
+
+> **An Event whose previous placement is withdrawn/postponed may temporarily have no current accepted Schedule while preserving Event identity and reconstructible historical expectation. Schedule absence must not be used to erase the Event or invent replacement precision.**
+
+Event lifecycle/disposition semantics such as postponed/cancelled remain separate from Schedule and are still deferred.
+
 ---
 
 ## Schedule versus Occurrence
@@ -583,11 +615,13 @@ Revision 2
 Current accepted Schedule
 ```
 
-The current Schedule is operationally authoritative for present planning.
+The current Schedule is operationally authoritative for present planning when one exists.
 
 Previous accepted placements remain historical facts.
 
 They are not silently overwritten.
+
+For a postponed/unresolved Event, the current accepted Schedule may be absent while historical placements remain reconstructible.
 
 This history is required for:
 
@@ -1023,6 +1057,8 @@ Therefore:
 
 A future planning-state model may still expose user-facing states such as available or unscheduled, but those should not require a synthetic temporal assignment.
 
+For Event, Schedule absence may also be valid temporarily when a prior accepted placement is withdrawn/postponed and the new Event time is unresolved, provided the Event still retains its occurrence-centred temporal history/meaning.
+
 ---
 
 ## Flexible assignment versus unscheduled eligibility
@@ -1068,7 +1104,9 @@ may be a reschedule.
 
 A missed placement followed by a deliberate later carry-forward may be called postponement.
 
-Both involve a changed accepted Schedule, but the second additionally describes execution/history context.
+An Event may also be externally postponed with no replacement time yet, in which case its current accepted Schedule can be absent while lifecycle/disposition retains the postponed meaning.
+
+Both scheduled moves and schedule withdrawal may be historically meaningful, but lifecycle reason is not equivalent to the geometry of the Schedule change.
 
 Therefore `rescheduled` or `postponed` should not be treated as the only current Schedule state.
 
@@ -1129,6 +1167,8 @@ none
 ```
 
 The history should preserve that the Activity had previously been scheduled.
+
+For an Event, withdrawing the current Schedule can also represent an unresolved postponed placement without implying cancellation.
 
 Whether unscheduling itself is stored as a revision event or derived from active assignment history is a physical-design decision.
 
@@ -1232,6 +1272,7 @@ Derived values may be cached for performance later, but they do not define Sched
 | Task due Friday | Deadline; Schedule optional |
 | Meeting 15:00-16:00 | Event + accepted Schedule |
 | Meeting officially moved to 14:30 | Schedule revision, same Event |
+| Event postponed, new date TBD | Event retains identity/history; current Schedule may be absent |
 | Meeting begins 14:52 without official change | Actual deviation, Schedule unchanged |
 | Activity starts 20 minutes early | Actual deviation unless Schedule was explicitly revised |
 | Meeting explicitly extended while in progress | Schedule revision of expected end + separate Actual |
@@ -1362,6 +1403,21 @@ none
 
 The Activity remains intended; only temporal assignment was withdrawn.
 
+### Case 9 — Event postponed with no new date
+
+```text
+Event
+Concert
+
+Old Schedule
+20 September 21:00
+
+Current Schedule
+none
+```
+
+The Event remains identifiable and its previous temporal expectation remains historical truth. Lifecycle semantics record the reason; Schedule does not invent a replacement date.
+
 ---
 
 ## Core invariants
@@ -1402,6 +1458,7 @@ The Activity remains intended; only temporal assignment was withdrawn.
 34. Derived timing deltas are not foundational Schedule state.
 35. Exact SQL/API representation of Schedule, placements, revisions, and temporal value types remains deferred.
 36. Session review must verify the planned-placement versus actual-execution-slice boundary before physical persistence is fixed.
+37. An Event may temporarily have no current accepted Schedule after its previous placement is withdrawn/postponed while Event identity and historical accepted expectation remain reconstructible; Schedule absence must not fabricate a replacement time or imply cancellation by itself.
 
 ---
 
@@ -1532,6 +1589,7 @@ Was the item scheduled exactly or only at coarse precision?
 Was the temporal meaning floating, zoned, date-based, or instant-based?
 Did the subject have multiple planned placements?
 Was it later unscheduled without being cancelled?
+Did an Event lose its current Schedule because it was postponed/unresolved while retaining historical expectation?
 ```
 
 The model should support these queries without forcing arbitrary JSON as the primary representation.
@@ -1582,7 +1640,7 @@ Domain subject / recurring source
         ↓
 Occurrence identity where applicable
         ↓
-Accepted Schedule placement(s)
+Accepted Schedule placement(s), when one is currently known/accepted
         ↓
 Actual execution/attendance later
 ```
@@ -1596,6 +1654,8 @@ Movement Policy
 Availability / Capacity
 Provenance / Authority
 ```
+
+A current Schedule may legitimately be absent even when the subject has meaningful temporal history, including an Event that was postponed with replacement timing unresolved.
 
 This separation preserves history, user authority, realistic flexible planning, recurring-instance identity, and planned-versus-actual analysis without prematurely committing LifeOS to one physical calendar schema.
 
