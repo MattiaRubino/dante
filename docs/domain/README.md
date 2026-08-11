@@ -132,17 +132,20 @@ Validation is provisional in the Domain Atlas sense: downstream temporal, eviden
 Current accepted baselines:
 
 - Occurrence v0;
-- Schedule v0.
+- Schedule v0;
+- Session v0.
 
-Next concept under review:
+Next review block:
 
-- Session.
+- Deadline / Window / Temporal Constraint.
 
-Likely later concepts include Deadline / Window / Temporal Constraint, Recurrence, and Calendar Block / Availability / Capacity.
+Likely later concepts include Recurrence and Calendar Block / Availability / Capacity.
 
 Occurrence v0 establishes stable logical identity for one expected generated/recurring instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager materialization of future instances.
 
 Schedule v0 establishes accepted temporal assignment as a separate capability rather than collapsing deadlines, constraints, recurrence, capacity, movement authority, and Actual execution into one calendar object.
+
+Session v0 establishes actual execution episode identity as distinct from planned Schedule placement, expected Occurrence identity, Event attendance, and broader Actual/Outcome semantics.
 
 ### Observed reality and evidence
 
@@ -178,7 +181,8 @@ Current known examples:
 - `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine;
 - `Milestone v0` treats significant checkpoints as contextual entities distinct from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record;
 - `Occurrence v0` introduces stable logical identity for one expected recurring/generated instance while keeping source policy, Schedule, Session, Activity/Event semantics, and Actual distinct;
-- `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity.
+- `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity;
+- `Session v0` treats actual execution episodes as distinct from planned placements, Occurrence identity, Activity identity, Event actual occurrence, and broader Actual/Outcome semantics.
 
 ## Current concepts
 
@@ -190,6 +194,7 @@ Current known examples:
 - [`Milestone v0`](concepts/milestone.md) — current baseline accepted on 2026-08-11.
 - [`Occurrence v0`](concepts/occurrence.md) — current baseline accepted on 2026-08-11.
 - [`Schedule v0`](concepts/schedule.md) — current baseline accepted on 2026-08-11.
+- [`Session v0`](concepts/session.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
 
@@ -202,8 +207,8 @@ Routine    -> what recurring behavioral/execution policy is intended
 Milestone  -> what meaningful contextual checkpoint is expected/reached
 Occurrence -> which individual expected instance exists in a recurring/generated context
 Schedule   -> when execution/occurrence is currently accepted to happen
-Session    -> actual execution slice (next review)
-Actual     -> what actually happened
+Session    -> which bounded actual execution episode happened
+Actual     -> broader truth about what happened
 Evidence   -> what supports evaluation
 ```
 
@@ -215,9 +220,9 @@ Important current consequences:
 - `Task` is not currently a second primitive beside Activity;
 - placing an Activity at an exact time does not transform it into an Event;
 - Event state, participant response, actual attendance, and Event outcome are distinct dimensions;
-- original temporal expectation, current accepted Schedule, and Actual occurrence must remain distinguishable;
+- original temporal expectation, current accepted Schedule, Session timing, and broader Actual remain distinguishable;
 - actual start/end can deviate from Schedule in either direction; early/late/overrun semantics are derived rather than fundamental state;
-- Routine is not `repeat=true`; recurring policy, expected occurrence, scheduling, and Actual execution remain distinguishable;
+- Routine is not `repeat=true`; recurring policy, expected occurrence, scheduling, Sessions, and broader Actual execution remain distinguishable;
 - recurring Event series and Routine are distinct even when both use recurrence machinery;
 - a one-off Routine occurrence change must not silently change future Routine policy;
 - Milestone is not executable work or a time-centred occurrence; it records a meaningful contextual checkpoint becoming true;
@@ -226,10 +231,18 @@ Important current consequences:
 - Occurrence may exist before exact Schedule placement;
 - Schedule is accepted temporal assignment, not a container for every temporal fact;
 - Activity may exist without Schedule, and an Occurrence may exist before exact Schedule assignment;
-- Schedule revision does not change subject identity and Actual deviation does not silently rewrite Schedule;
+- Schedule revision does not change subject identity and actual Session deviation does not silently rewrite Schedule;
 - Schedule may preserve coarse/date-based/floating/zoned/instant semantics rather than inventing exact UTC precision;
-- multiple planned placements may support one divisible Activity/Occurrence while remaining distinct from Actual Sessions;
-- having a Schedule does not imply that the interval consumes availability/capacity;
+- multiple planned placements may support one divisible Activity/Occurrence while remaining distinct from actual Sessions;
+- Session is actual execution, not planned execution;
+- one Activity/Occurrence may have zero, one, or many Sessions;
+- a pause may remain inside one Session, while explicit end and later restart normally creates another Session;
+- elapsed, active, and paused Session time remain conceptually distinct;
+- ending a Session does not imply Activity/Occurrence completion;
+- Session may exist without prior Schedule and may record spontaneous work without fabricating historical intent;
+- Event actual occurrence/attendance does not receive a redundant Session by default;
+- Session measurements/Observations remain related data rather than arbitrary metadata blobs;
+- Session overlaps are not globally forbidden and analytics must not naïvely sum overlapping elapsed time;
 - deadlines, target dates, temporal windows/constraints, recurrence, movement policy, and availability/capacity remain separate adjacent concerns;
 - Goal progress/evaluation must be able to use valid evidence regardless of whether the source execution was originally linked to that Goal;
 - discovered relevance must not rewrite historical intention;
@@ -246,33 +259,34 @@ Current sequence:
 ```text
 Occurrence v0 — accepted
 → Schedule v0 — accepted
-→ Session — next review
-→ Deadline / Window / Temporal Constraint
+→ Session v0 — accepted
+→ Deadline / Window / Temporal Constraint — next review
 → Recurrence
 → Calendar Block / Availability / Capacity
 ```
 
 The sequence is not immutable. A reviewed concept may expose a stronger dependency and reorder adjacent concepts.
 
-## Open temporal questions entering Session review
+## Open temporal questions entering Deadline / Window / Temporal Constraint review
 
-Occurrence v0 and Schedule v0 intentionally leave the following issues for adjacent concepts:
+Occurrence, Schedule, and Session intentionally leave the following issues for adjacent concepts:
 
-- what exactly constitutes a Session;
-- whether Session is always Actual execution or can also represent planned execution slices;
-- whether one Activity/Occurrence/Event can have zero, one, or multiple Sessions;
-- how pauses/resumes affect Session identity;
-- whether a timer pause creates a new Session or remains inside one Session with pause intervals;
-- how Session relates to Actual, Outcome, attendance, and measurements;
-- whether one actual Session can realize more than one planned placement or more than one Activity;
-- how interrupted/resumed work is represented without fabricating new Activities/Occurrences;
-- how actual time captured manually differs from stopwatch/timer-derived time;
-- how corrections to Session start/end preserve provenance/history;
-- exact Deadline / Window / Temporal Constraint semantics;
-- hard versus soft temporal constraints;
-- Recurrence and timezone/DST/travel behavior;
+- whether Deadline is a distinct temporal constraint subtype or a broader constraint concept;
+- hard deadline versus target date versus preferred target;
+- valid execution window versus accepted Schedule placement;
+- earliest start / latest finish / date-range boundaries;
+- preferred windows versus mandatory windows;
+- recurring windows and relation to Recurrence;
+- constraints attached to Activity, Event, Occurrence, Routine, Plan, or Milestone without duplicating semantics;
+- whether a hard window expiring creates `missed`, `expired`, another outcome/state, or only a derived temporal condition;
+- how execution outside a preferred window differs from execution outside a hard-validity window;
+- how constraints interact with replanning authority and movement policy;
+- how target dates on Goal/Milestone differ from Deadline;
+- timezone/floating/date-only semantics for boundaries;
+- exact Recurrence mechanics and timezone/DST/travel behavior;
 - Calendar Block / Availability / Capacity semantics;
 - exact Schedule placement/revision persistence;
+- exact Session lifecycle/pause persistence;
 - exact Occurrence materialization persistence.
 
 ## Final validation rule
