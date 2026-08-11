@@ -31,16 +31,17 @@ The active modeling method and mandatory concept-review protocol live in [`../do
 6. [`../domain/concepts/activity.md`](../domain/concepts/activity.md)
 7. [`../domain/concepts/event.md`](../domain/concepts/event.md)
 8. [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
-9. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-10. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-11. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-12. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-13. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-14. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-15. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-16. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-17. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-18. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+9. [`../domain/concepts/milestone.md`](../domain/concepts/milestone.md)
+10. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
+11. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
+12. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
+13. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
+14. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
+15. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
+16. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+17. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+18. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
+19. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
 
 ## Where to work
 
@@ -173,6 +174,22 @@ Record: [`../domain/concepts/event.md`](../domain/concepts/event.md)
 
 Record: [`../domain/concepts/routine.md`](../domain/concepts/routine.md)
 
+### Milestone v0
+
+- `Milestone` is accepted as a distinct contextual checkpoint entity after the first cluster checkpoint exposed a real semantic gap.
+- Milestone is separate from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record.
+- It represents a meaningful state, achievement, decision, delivery, or transition becoming true within a broader Goal and/or Plan context.
+- A Milestone normally requires meaningful Goal/Plan context rather than existing as a context-free standalone objective.
+- If a checkpoint acquires independent strategic meaning and its own pursuit, it should be reconsidered as a Goal.
+- Activity completion and ordinary Goal thresholds do not automatically create Milestones.
+- Target date/window and actual achievement are distinct; reaching before/after target is derived rather than a fundamental state.
+- Passing a target does not automatically reach or fail the Milestone.
+- Milestones may be reached from Activity/Event outcomes, observations, imports, measurements, decisions, explicit user declaration, or other valid Evidence.
+- Readiness/progress toward a Milestone is optional and derived rather than a universal stored percentage.
+- Target changes preserve identity/history unless the checkpoint itself is materially redefined or abandoned.
+
+Record: [`../domain/concepts/milestone.md`](../domain/concepts/milestone.md)
+
 ## Current conceptual direction
 
 ```text
@@ -181,6 +198,7 @@ Plan      -> how it is intended to be pursued or organized
 Activity  -> what concrete action is intended
 Event     -> what occurrence is expected at an intrinsic temporal placement
 Routine   -> what recurring behavioral/execution policy is intended
+Milestone -> what meaningful contextual checkpoint is expected/reached
 Schedule  -> when concrete execution is planned or an occurrence is currently expected
 Actual    -> what actually happened
 Evidence  -> what supports evaluation
@@ -189,9 +207,9 @@ Evidence  -> what supports evaluation
 Important evidence path required by the model:
 
 ```text
-Activity / Event / Routine occurrence / independent observation
+Activity / Event / Routine occurrence / Milestone / independent observation
         ↓
-Actual / Observation / Outcome
+Actual / Observation / Outcome / Achievement
         ↓
 Evidence
         ├──> Goal criterion A
@@ -203,11 +221,11 @@ Important temporal distinction required by the model:
 ```text
 Original expectation
         ↓
-Schedule revisions / occurrence exception
+Schedule/target revisions or occurrence exception
         ↓
-Current accepted schedule
+Current accepted expectation
         ↓
-Actual occurrence
+Actual occurrence / achievement
 ```
 
 This remains a conceptual model under active review, not a persistence schema.
@@ -216,7 +234,7 @@ This remains a conceptual model under active review, not a persistence schema.
 
 - whether `Program` eventually requires formal specialization with distinct invariants;
 - whether `Project` remains a product label/view or later proves distinct domain behavior;
-- exact Goal/Plan/Routine lifecycle state machines;
+- exact Goal/Plan/Routine/Milestone lifecycle state machines;
 - exact version-versus-replacement boundaries;
 - criterion entity/value-object/persistence model;
 - exact composite Activity versus Plan boundary;
@@ -230,22 +248,20 @@ This remains a conceptual model under active review, not a persistence schema.
 - Actual, Observation, Evidence, Outcome, Confirmation, and Provenance boundaries;
 - formal relationship semantics, including support, contribution, conflict, dependency, decomposition, Goal-to-Goal effects, and multi-goal execution;
 - relation-anchored Routine versus Trigger boundary;
-- Milestone semantics and whether it is required as a primitive;
+- exact Milestone persistence, lifecycle, dependency, waiver, and GoalCriterion-reference semantics;
 - exact Life Area / World / Value model;
 - Asset / Subject model;
 - persistence/API mapping.
 
 ## Checkpoint plan
 
-The first **intention/execution cluster checkpoint is now the current task**.
+The first intention/execution checkpoint identified Milestone as one real missing concept. Milestone v0 has now been accepted, so the current task is the **final combined validation pass** for the cluster:
 
-It must test the accepted current baselines together:
+`Goal + Plan + Activity + Event + Routine + Milestone`
 
-`Goal + Plan + Activity + Event + Routine`
+The final pass must test all six current baselines against the same representative scenarios and adversarial mixed cases.
 
-against the same representative scenarios rather than validating each one in isolation.
-
-The checkpoint must specifically search for:
+It must specifically search for:
 
 - duplicate representations of the same real-world thing;
 - inability to distinguish two primitives naturally;
@@ -255,13 +271,16 @@ The checkpoint must specifically search for:
 - evidence that cannot flow to the correct Goal criteria;
 - Activity-versus-Plan and Routine-versus-Plan boundary failures;
 - recurring Activity versus recurring Event ambiguity;
+- Milestone-versus-Goal, GoalCriterion, Event Outcome, or ordinary progress ambiguity;
 - difficult multi-Goal interactions;
 - missing primitive candidates that are actually necessary rather than merely traditional labels;
 - escape hatches that would require arbitrary JSON or one-off domain tables.
 
 Representative scenarios must be drawn from the existing feature-discovery simulation and supplemented with adversarial mixed cases.
 
-If a checkpoint exposes a real conflict, reopen the affected current baseline rather than carrying the inconsistency into downstream modeling.
+If the final checkpoint exposes a real conflict, reopen the affected current baseline rather than carrying the inconsistency into downstream modeling.
+
+If the final checkpoint passes without reopening a baseline, mark the intention/execution cluster validated and move to the Time cluster beginning with `Occurrence`.
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
@@ -281,31 +300,32 @@ A final whole-domain stress test remains mandatory before broad persistence impl
 
 The model should eventually become concrete enough to implement an initial vertical slice around:
 
-`Workspace → Goal/Plan → Activity/Event/Routine → Schedule/Occurrence → Actual/Confirmation`
+`Workspace → Goal/Plan → Activity/Event/Routine/Milestone → Schedule/Occurrence → Actual/Confirmation`
 
 This remains a working implementation target, not a final persistence schema.
 
 ## Current task
 
-Run the first intention/execution cluster checkpoint before accepting another domain primitive.
+Run the final intention/execution cluster checkpoint before moving to the temporal cluster.
 
 ## Next exact step
 
-Stress-test `Goal + Plan + Activity + Event + Routine` together using one consistent scenario matrix drawn from the feature-discovery simulation plus adversarial mixed cases. Record pass/fail/ambiguity for each primitive boundary, reopen any concept that fails, and only after the checkpoint select the next concept.
+Stress-test `Goal + Plan + Activity + Event + Routine + Milestone` together using one consistent scenario matrix drawn from the feature-discovery simulation plus adversarial mixed cases. Record pass/fail/ambiguity for each primitive boundary, reopen any concept that fails, and if the cluster passes, mark it validated and begin `Occurrence` review.
 
 ## Handoff
 
 - Active branch: `feature/domain-model`
 - PR: none
 - Base main commit: `73f0d172de239853e568532535a4739ce77a0877`
-- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`
+- Completed current baselines: `Goal v0`, `Plan v0`, `Activity v0`, `Event v0`, `Routine v0`, `Milestone v0`
 - Goal concept commit: `084394ef5523517139335b5e5496aa0e4862c737`
 - Plan concept commit: `7a5b9962abb503aa9532daf2acf41af23d699060`
 - Activity final concept commit: `f2b2db24bd26684bd58aa925478a1623bf2316fc`
 - Event concept commit: `84e460ba31d5b88b1f415d27d8254803358109f4`
 - Routine concept commit: `f0de8c241d7650bbdbaffdf1b8cb102facf713fc`
+- Milestone concept commit: `46ddf9d4bdc514fc56a718a93ad0258a2aa34a4b`
 - Backend implementation: not started in this branch
 - Main modified: no
 - Phase 4 prototype branch modified: no
-- Next task: intention/execution cluster checkpoint
+- Next task: final intention/execution cluster checkpoint
 - Known documentation conflicts: previous glossary assumes Goal/Program/Project are distinct and uses narrower Activity/Event/Routine semantics; active Domain Atlas baselines supersede those definitions for this workstream pending deliberate reconciliation after checkpoint
