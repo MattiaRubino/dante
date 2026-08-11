@@ -232,14 +232,16 @@ Current accepted concepts:
 - [`Actual v0`](concepts/actual.md);
 - [`Outcome v0`](concepts/outcome.md);
 - [`Observation v0`](concepts/observation.md);
-- [`Confirmation v0`](concepts/confirmation.md).
+- [`Confirmation v0`](concepts/confirmation.md);
+- [`Evidence v0`](concepts/evidence.md).
 
 Validation records:
 
 - [`Actual v0 Validation`](checkpoints/actual-v0-validation.md) — **PASS WITH HARDENING**;
 - [`Outcome v0 Validation`](checkpoints/outcome-v0-validation.md) — **PASS WITH HARDENING**;
 - [`Observation v0 Validation`](checkpoints/observation-v0-validation.md) — **PASS WITH HARDENING**;
-- [`Confirmation v0 Validation`](checkpoints/confirmation-v0-validation.md) — **PASS WITH HARDENING**.
+- [`Confirmation v0 Validation`](checkpoints/confirmation-v0-validation.md) — **PASS WITH HARDENING**;
+- [`Evidence v0 Validation`](checkpoints/evidence-v0-validation.md) — **PASS WITH HARDENING**.
 
 ## Current semantic boundaries
 
@@ -255,6 +257,9 @@ Observation
 
 Confirmation
 = who/what explicitly affirms a specific target version for a defined purpose/context
+
+Evidence
+= how existing information materially bears on a specific evaluation
 ```
 
 Critical non-collapse rules:
@@ -264,10 +269,12 @@ Actual != Session
 Actual != Outcome
 Actual != Observation
 Actual != Confirmation
+Actual != Evidence
 
 Outcome != lifecycle/operational state
 Outcome != Observation
 Outcome != Confirmation
+Outcome != Evidence
 
 Observation != Quantity
 Observation != Register
@@ -279,10 +286,20 @@ Confirmation != Actual
 Confirmation != Outcome
 Confirmation != Observation
 Confirmation != Provenance
+Confirmation != Evidence
 Confirmation != Acknowledgement
 Confirmation != Acceptance/Agreement
 Confirmation != Verification
 Confirmation != Authority
+
+Evidence != source information
+Evidence != Observation
+Evidence != Actual
+Evidence != Outcome
+Evidence != Confirmation
+Evidence != Provenance
+Evidence != GoalCriterion
+Evidence != Milestone
 ```
 
 ## Actual invariants
@@ -331,16 +348,32 @@ Confirmation != Authority
 - conflicting Confirmations remain representable;
 - Confirmation does not grant Authority.
 
+## Evidence invariants
+
+- Evidence is contextual evaluative role/use, not intrinsic source-data type;
+- information is not Evidence merely because it exists;
+- source information retains its own identity and is not duplicated by default;
+- Evidence can support, contradict, qualify or otherwise materially inform an evaluation;
+- Evidence existence does not itself establish target truth;
+- no Evidence != Evidence against;
+- no LifeOS record != proof of non-occurrence without a justified completeness/evaluation rule;
+- later relevance does not rewrite historical source purpose/intention;
+- one source may serve several evaluations without duplication;
+- evidentiary strength/certainty is contextual, not one universal scalar;
+- conflicting Evidence can coexist;
+- private Evidence use does not create disclosure permission;
+- AI discovery/use does not create authority or disclosure permission;
+- Evidence semantics do not pre-approve one persisted entity/edge per use.
+
 ## Remaining cluster work
 
 The cluster is **not complete** yet.
 
-Remaining candidate reviews:
+One individual candidate review remains:
 
-1. **Evidence**;
-2. **Provenance**.
+1. **Provenance**.
 
-After both are individually reviewed under Methodology v3, the completed cluster must pass:
+After Provenance is reviewed under Methodology v3, the completed cluster must pass:
 
 ```text
 Observed Reality & Evidence Cluster Integration Gate
@@ -396,6 +429,8 @@ Likely topics:
 
 Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
 
+Evidence v0 creates a mandatory future re-test of whether its physical/logical representation should reuse typed Relationship machinery while preserving distinct evaluative semantics.
+
 ---
 
 # Relationship to historical product documentation
@@ -412,6 +447,7 @@ Current known differences include:
 - Outcome is contextual result/disposition, not universal completion/status;
 - Observation is bounded measurement/simple assertion, not universal data row;
 - Confirmation is contextual attestation, not one universal `confirmed` flag;
+- Evidence is contextual evaluative role/use, not a duplicate source record or universal proof object;
 - older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are reinterpreted through Provenance, automation/inference, Version and workflow semantics rather than Confirmation types.
 
 Do not silently rewrite historical product documents solely for wording uniformity; current navigation/terminology establishes precedence.
@@ -439,6 +475,7 @@ Actual
 Outcome
 Observation
 Confirmation
+Evidence
 ```
 
 ---
@@ -463,7 +500,7 @@ Actual       -> realization of a specific expectation
 Outcome      -> result/disposition of realization
 Observation  -> measurement/simple assertion about subject/context
 Confirmation -> contextual affirmation of a specific target/version/purpose
-Evidence     -> information used in evaluation (under next review)
+Evidence     -> contextual evaluative use of existing information
 Provenance   -> source/agent/process/assertion history (remaining review)
 ```
 
@@ -500,9 +537,8 @@ Actual v0                       — PASS WITH HARDENING / ACCEPTED
 Outcome v0                      — PASS WITH HARDENING / ACCEPTED
 Observation v0                  — PASS WITH HARDENING / ACCEPTED
 Confirmation v0                 — PASS WITH HARDENING / ACCEPTED
+Evidence v0                     — PASS WITH HARDENING / ACCEPTED
 
-↓
-Evidence review
 ↓
 Provenance review
 ↓
@@ -521,21 +557,21 @@ select/start next cluster
 
 Deliberately revisit later:
 
-- Actual/Outcome/Observation/Confirmation vs Provenance;
-- Observation/Confirmation vs Evidence;
+- Actual/Outcome/Observation/Confirmation/Evidence vs Provenance;
+- Evidence vs GoalCriterion/Relationship/Decision/Version;
 - Confirmation target-version semantics vs future Version model;
 - Confirmation vs Authority/Acknowledgement/Acceptance;
 - Observation vs Quantity/Register;
 - subject vs observer/recorder/source semantics;
 - Milestone vs Outcome vs GoalCriterion;
-- competing contextual assertions under Authority/Decision rules;
+- competing contextual assertions/Evidence under Authority/Decision rules;
 - collaborative Session vs actor-scoped Actual participation;
 - Availability/Capacity vs Resource;
 - Person/Actor/Subject/Account/Principal boundaries;
 - Responsibility/Assignment/Hand-off/Stewardship;
 - Authority vs Visibility/governance;
 - typed/directional Relationship semantics;
-- AI context selection/inference privacy.
+- AI context selection/inference/privacy/disclosure boundaries.
 
 These are watch items, not current failures.
 
