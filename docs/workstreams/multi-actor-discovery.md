@@ -2,7 +2,7 @@
 
 - Status: **IN PROGRESS — simulation complete; external research pending**
 - Branch: `docs/multi-actor-discovery`
-- Pull request: pending
+- Pull request: #6
 - Scope: product discovery evidence for future multi-user, multi-actor and collaboration direction. This workstream does not change current V1 implementation boundaries or define collaboration architecture.
 
 ## Source-of-truth documents
@@ -21,6 +21,7 @@
 - Added actor-by-actor needs, non-LifeOS participants, privacy boundaries, stress variations, longitudinal relationship changes, negative evidence and cross-case universality classification.
 - Added the study to the `docs/product/` Discovery / evidence index.
 - Deliberately excluded external competitor/academic research from the simulation to avoid biasing initial discovery.
+- Opened draft PR #6 for the workstream.
 
 ## Current task
 
@@ -55,4 +56,5 @@ Documentation-only workstream. Validation consists of:
 - branch created from current `main`;
 - simulation stored under `docs/product/` beside the earlier discovery study;
 - product documentation index updated;
-- no accepted ADR, architecture or V1 behavior document modified by the discovery itself.
+- no accepted ADR, architecture or V1 behavior document modified by the discovery itself;
+- draft PR #6 opened against `main`.
