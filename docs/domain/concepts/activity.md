@@ -2,33 +2,87 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-10  
+**Multi-actor wording hardening:** 2026-08-11  
 **Meaning of accepted:** best current decision; reopenable with better evidence  
 **Workstream:** Core Domain Model v0
 
 ## Canonical definition
 
-> **An Activity is a persistent representation of an actionable intention: a unit of work or behavior the user intends to perform and whose planned execution, actual execution, and outcome LifeOS may track separately. An Activity defines what is to be done; it does not itself define when execution occurs or what actually happened.**
+> **An Activity is a persistent representation of an actionable intention: a unit of work or behavior intended to be performed, whose responsibility, planned execution, actual execution, and outcome LifeOS may track separately. An Activity defines what is to be done; it does not itself define who must perform it, when execution occurs, or what actually happened.**
 
 Examples include buying something, calling someone, writing part of a document, studying for a bounded amount of time, running a distance, preparing a presentation, performing maintenance, completing a backup, or working on a creative idea for a time-boxed period.
 
-The same primitive must support simple personal tasks, measurable actions, specialist-domain execution, and larger but still actionable units without creating one entity type per life domain.
+The same primitive must support simple personal tasks, measurable actions, collaborative/shared work, specialist-domain execution, and larger but still actionable units without creating one entity type per life domain.
+
+## Why the multi-actor wording changed
+
+The original Activity v0 wording said:
+
+```text
+a unit of work or behavior the user intends to perform
+```
+
+That is a correct personal-first case but incorrectly suggests that intention-holder, requester, responsible actor and performer must be the same person.
+
+Multi-actor discovery and external research show common cases such as:
+
+```text
+Activity
+Prepare presentation
+
+requested by
+Manager
+
+responsible
+Luca
+
+performed by
+Luca + Sara
+```
+
+or:
+
+```text
+Activity
+Pick up child
+
+responsibility transfer requested
+Mattia -> Luca
+```
+
+or:
+
+```text
+Activity
+Cover open shift task
+
+responsible actor
+not yet assigned / claimable
+```
+
+The actionable intention remains one Activity while actor relationships may change.
+
+Therefore the canonical definition is actor-neutral without introducing a premature Responsibility/Actor schema.
 
 ## Validation basis
 
-Activity v0 was reviewed against:
+Activity v0 has been reviewed against:
 
-- the LifeOS feature-discovery simulation across study, professional work, health and fitness, home, maintenance, travel, creative work, caregiving, and disrupted schedules;
-- the existing LifeOS scheduling-flexibility model, including fixed/flexible execution, splitting, partial completion, fallback, and replanning;
-- the existing LifeOS planned-versus-actual model, including outcome, confirmation, measurements, postponement, and replacement;
-- external patterns including iCalendar `VTODO` versus `VEVENT`, Google Tasks scheduling semantics, and Linear parent/sub-issue decomposition.
+- the broad LifeOS feature-discovery simulation;
+- personal work, study, health, home, maintenance, travel, creative and caregiving scenarios;
+- fixed/flexible scheduling, splitting, partial completion, fallback and replanning;
+- planned-versus-actual execution, confirmation, measurements, postponement and replacement;
+- iCalendar VTODO/VEVENT separation, task-system scheduling patterns and issue/sub-issue decomposition;
+- the completed multi-actor discovery simulation;
+- the multi-actor external research and evidence-synthesis checkpoint, especially assignment, hand-off, open responsibility and actual-performer distinctions.
 
-External systems are benchmark inputs, not models to copy directly.
+External systems and research are evidence, not schemas to copy.
 
 ## Task semantics
 
 `Task` is not currently a separate domain primitive.
 
-> **Task is a user-facing or contextual form of Activity whose primary semantics are the completion of a defined unit of work.**
+> **Task is a user-facing/contextual form of Activity whose primary semantics are the completion of a defined unit of work.**
 
 Examples:
 
@@ -39,7 +93,7 @@ UI: Task / checkbox
 
 ```text
 Activity: Study English for 60 minutes
-UI: Study session / activity
+UI: Study / activity
 ```
 
 ```text
@@ -47,24 +101,36 @@ Activity: Run 5 km
 UI: Workout
 ```
 
-A specialist module may extend the execution data associated with an Activity, such as distance, sets, repetitions, pages, quantities, or domain-specific measurements, without creating a second scheduling/execution universe.
+A specialist module may extend execution/evidence data associated with an Activity without creating a second scheduling/execution universe.
 
 ## Core semantic separation
 
 ```text
 Goal      -> what is wanted
-Plan      -> how it is intended to be pursued or organized
+Plan      -> how it is intended to be pursued/organized
 Activity  -> what concrete action is intended
 Schedule  -> when concrete execution is planned
-Actual    -> what actually happened
+Session   -> when a bounded execution episode actually occurred
+Actual    -> broader truth about what happened
 Evidence  -> what may support evaluation
 ```
 
-These concepts must remain distinguishable even when a simple productivity application might store them together.
+Multi-actor relationships add dimensions around Activity without changing Activity identity:
+
+```text
+requester
+responsible actor / assignee
+performer
+approver
+subject / beneficiary
+provenance
+```
+
+These are not synonyms for Activity.
 
 ## Activity versus Goal
 
-A Goal expresses a desired outcome, condition, change, or behavioral pattern. An Activity expresses an action the user intends to perform.
+A Goal expresses a desired outcome, condition, change or behavioral pattern. An Activity expresses actionable intended work/behavior.
 
 ```text
 Goal: Improve physical fitness
@@ -75,11 +141,11 @@ Therefore:
 
 > **Activity != Goal.**
 
-An Activity may contribute to zero, one, or multiple Goals, but it does not need a Goal in order to exist.
+An Activity may contribute to zero, one or multiple Goals and may exist without a Goal.
 
 ## Activity versus Plan
 
-A Plan coordinates a strategy or body of execution. An Activity is an actionable unit within or outside such a structure.
+A Plan coordinates a strategy/body of execution. Activity is an actionable unit within or outside such structure.
 
 ```text
 Plan: Prepare for exam
@@ -89,13 +155,13 @@ Activities:
 - complete mock exam
 ```
 
-An Activity may itself be decomposable into meaningful sub-activities, but this does not make Activity and Plan interchangeable.
+An Activity may itself contain meaningful sub-activities without becoming a Plan automatically.
 
 Current distinction:
 
 > **Activity is a meaningful executable unit; Plan coordinates multiple execution elements or a broader strategy.**
 
-No arbitrary threshold such as number of subtasks or hours determines when an Activity becomes a Plan. The exact composite-Activity-versus-Plan boundary remains a checkpoint question.
+No arbitrary number of subtasks/hours defines the boundary.
 
 Therefore:
 
@@ -107,13 +173,13 @@ Scheduling an Activity does not change what the Activity is.
 
 ```text
 Activity: Write thesis introduction
-Estimated effort: 3 hours
-Scheduled execution:
+Estimated effort: 3h
+Schedules:
 - Tuesday 18:00-20:00
 - Wednesday 19:00-20:00
 ```
 
-Moving, splitting, or removing scheduled execution does not automatically create a new Activity.
+Moving/splitting/removing planned placement does not automatically create a new Activity.
 
 Therefore:
 
@@ -121,7 +187,7 @@ Therefore:
 
 ## Activity versus Session
 
-One Activity may require multiple execution sessions.
+One Activity may require zero, one or multiple actual execution Sessions.
 
 ```text
 Activity: Write report
@@ -130,15 +196,13 @@ Session B: Tuesday 17:30-18:15
 Session C: Thursday 20:00-21:00
 ```
 
-These are not three separate Tasks merely because execution is divided over time.
-
 Therefore:
 
 > **Activity != Session.**
 
 ## Sub-activity versus Session
 
-A sub-activity is semantic decomposition of work:
+Sub-activity is semantic decomposition:
 
 ```text
 Activity: Write article
@@ -148,7 +212,7 @@ Sub-activities:
 - conclusion
 ```
 
-A Session is temporal decomposition of execution:
+Session is temporal execution decomposition:
 
 ```text
 Activity: Write introduction
@@ -159,33 +223,31 @@ Sessions:
 
 Therefore:
 
-> **Sub-activity decomposition and session splitting are independent dimensions.**
+> **Sub-activity decomposition and Session splitting are independent dimensions.**
 
 ## Activity versus Actual
 
-Activity records intention. Actual records what happened.
+Activity records intention; Actual records reality.
 
 ```text
 Activity intention: Run 5 km
 Actual result: 3.8 km
 ```
 
-The Activity must not be rewritten to `Run 3.8 km` after execution, because doing so would destroy the original expectation.
+The Activity must not be rewritten to `Run 3.8 km` afterward because that destroys the original expectation.
 
 Therefore:
 
 > **Activity != Actual.**
 
-Planned and actual quantities, durations, timing, quality, and results remain distinguishable.
+Planned and actual quantities, durations, timing, quality and results remain distinguishable.
 
 ## Activity versus Event
 
-An Activity is action-centred: something the user intends to do.
-
-An Event is occurrence-centred: something expected to occur at a time or in a temporal context, often without task-style completion semantics.
+Activity is action-centred. Event is occurrence-centred.
 
 ```text
-Activity: Call the dentist
+Activity: Call dentist
 Event: Dentist appointment
 ```
 
@@ -199,28 +261,22 @@ Activity: Study chapter 8
 Event: University lecture
 ```
 
-An Activity may occupy a precise calendar interval and remain an Activity. Putting it on the calendar does not transform it into an Event.
-
-The iCalendar distinction between `VTODO` action items and `VEVENT` scheduled events provides useful external support for keeping action semantics separate from occurrence semantics.
+An Activity can occupy a precise calendar interval and remain an Activity.
 
 Therefore:
 
 > **Activity != Event.**
 
-The exact Event model remains a separate review.
-
 ## Activity versus Routine
 
-A Routine is a reusable recurring rule or behavioral pattern. An Activity is an actionable intention.
+Routine is persistent recurring behavioral/execution policy. Activity is one actionable intention.
 
 ```text
-Routine: Gym Monday / Wednesday / Friday
-Expected execution: Wednesday training Activity/occurrence
+Routine: Gym Mon/Wed/Fri
+Occurrence-specific action: Wednesday training
 ```
 
-An Activity may also exist independently of any Routine.
-
-LifeOS should not model recurrence by merely moving one completed Activity into the future and thereby obscuring historical occurrences.
+LifeOS should not represent recurrence by moving one completed Activity identity forward forever.
 
 Therefore:
 
@@ -228,11 +284,91 @@ Therefore:
 
 ## Independent existence
 
-An Activity may exist without a Goal, Plan, Routine, or exact Schedule.
+An Activity may exist without Goal, Plan, Routine or exact Schedule.
 
-Examples include buying milk, calling a mechanic, or backing up photos.
+Examples include buying milk, calling a mechanic or backing up photos.
 
-LifeOS must not create artificial Goals or Plans merely to satisfy a rigid hierarchy.
+LifeOS must not create artificial parent objects solely to satisfy a rigid hierarchy.
+
+## Responsibility, assignment and performer
+
+Activity identity is independent from ordinary changes in who requests, owns responsibility for, is assigned to, approves or actually performs the work.
+
+Canonical non-collapse rules:
+
+> **Activity identity != requester.**
+
+> **Activity identity != responsible actor / assignee.**
+
+> **Activity identity != eventual performer.**
+
+> **Activity creator != automatic authority over every actor involved.**
+
+Example:
+
+```text
+Activity
+Prepare release artwork
+
+requester
+Band lead
+
+responsible
+Designer A
+
+reassigned later
+Designer B
+
+Actual performer
+Designer B + Assistant
+```
+
+Ordinary reassignment preserves Activity identity/history.
+
+A materially changed intended action may still require replacement.
+
+## Open / claimable responsibility
+
+The future responsibility model must allow a valid state where work is intentionally available to be claimed rather than prematurely assigned.
+
+Examples:
+
+```text
+Household Activity
+Take recycling out
+responsibility: open / someone eligible may claim
+```
+
+```text
+Care help request
+Pick up prescription
+responsibility: unclaimed
+```
+
+This requirement does not yet decide the physical Responsibility model.
+
+## Hand-off is not automatically effective on send
+
+Where responsibility transfer matters, LifeOS must be able to distinguish at least conceptually:
+
+```text
+hand-off requested
+recipient response/acceptance
+canonical responsibility changed
+Actual performer later
+```
+
+Low-consequence UI may collapse these stages. The domain must not force `request sent = responsibility transferred` where that would create false certainty.
+
+## Coordination stewardship is not proved by assignment
+
+Multi-actor research shows that assigning visible execution may leave another actor carrying anticipation, reminding, monitoring and repair burden.
+
+Therefore:
+
+> **Assignment is not proof that coordination stewardship or mental load transferred.**
+
+No standalone Stewardship primitive is accepted yet. The distinction remains a mandatory future Relationship/Responsibility/product-validation question.
 
 ## Relationship to Goals and Plans
 
@@ -243,24 +379,22 @@ Activity -> 0..N Goals
 Activity -> 0..N Plans
 ```
 
-This is relationship semantics, not yet a physical database-cardinality decision.
+This is semantic relationship direction, not a final physical cardinality decision.
 
 One Activity may intentionally support multiple Goals.
 
 ```text
 Activity: Go hiking with friends
-may contribute to:
-- Goal: be more physically active
-- Goal: improve social life
+may support:
+- be more physically active
+- improve social life
 ```
 
 ## Planned relevance versus discovered relevance
 
-LifeOS must distinguish why an Activity was created from what its execution later turns out to affect.
+LifeOS must distinguish why an Activity was created from what its execution later affects.
 
 ### Intentional support
-
-Known before execution:
 
 ```text
 Goal: Improve fitness
@@ -270,71 +404,60 @@ Relation: intentionally supports Goal
 
 ### Discovered relevance
 
-An Activity may produce Actual data or Observations that become relevant to a Goal that was not part of the original intention.
-
 ```text
 Activity: Photography excursion
-Actual / observations:
+Actual/observations:
 - walked 10.4 km
-- many steps
 - several hours outdoors
 
-Evidence may become relevant to:
+Later evidence may be relevant to:
 Goal: Increase physical activity
 ```
 
-LifeOS must not retroactively rewrite the Activity as though the fitness Goal had been the reason the excursion was created.
+LifeOS must not retroactively pretend the fitness Goal was the reason the Activity existed.
 
 Therefore:
 
-> **Discovered relevance preserves the original Activity intention and connects through evidence/evaluation semantics instead of historical rewriting.**
+> **Discovered relevance preserves original Activity intention and connects through Evidence/evaluation semantics.**
 
-## Goal progress is not limited to planned Activities
+## Goal evaluation is not limited to planned Activities
 
-A Goal may receive valid evidence from:
+A Goal may receive valid Evidence from:
 
 - Actuals produced by intentionally linked Activities;
-- Actuals produced by unrelated Activities;
+- unrelated Activities;
 - independent Observations;
-- imported workouts, measurements, transactions, or records;
+- imported workouts/measurements/transactions/records;
 - Register entries;
-- external integrations;
-- user declarations;
+- integrations;
+- authorized declarations;
 - deterministic derived values;
-- other sources accepted by the relevant criterion.
-
-Example:
+- other sources accepted by the criterion/policy.
 
 ```text
-Goal: Walk at least 30 km/week
-Imported observation: Unplanned walk, 8.2 km
+Goal: Walk >= 30 km/week
+Imported observation: unplanned walk 8.2 km
 ```
 
-The walk may count even though no Activity was planned beforehand.
+The walk may count without a prior Activity.
 
 Therefore:
 
-> **Goal evaluation is evidence-driven, not limited to compliance with originally planned Activities.**
+> **Goal evaluation is Evidence-driven, not limited to compliance with planned Activities.**
 
-This is a cross-concept requirement to be propagated through GoalCriterion, Evidence, Observation, Actual, and Relationship reviews.
+## Evidence contribution is contextual
 
-## Evidence is contextual, not intrinsically positive or negative
+An Activity is not intrinsically positive/negative for every Goal.
 
-An Activity itself is not globally good, bad, positive, or negative for a Goal.
-
-A picnic may generate food observations relevant to a nutrition Goal, but the effect depends on the criterion, evaluation period, and policy.
-
-A long hike may support a Goal to increase physical activity while being incompatible with another recovery-related objective or constraint.
-
-The correct conceptual chain is:
+Correct evaluation pattern:
 
 ```text
 Fact / Actual / Observation
-          +
++
 Criterion
-          +
++
 Evaluation policy
-          ↓
+↓
 Goal evaluation
 ```
 
@@ -344,40 +467,27 @@ not:
 Activity -> globally positive/negative
 ```
 
-Therefore:
-
-> **Contribution direction is contextual to a criterion/evaluation, not an intrinsic property of Activity.**
+Therefore contribution direction belongs to context/evaluation.
 
 ## Inferred relevance and AI boundary
 
-LifeOS or AI may notice that an Activity or its resulting evidence could be relevant to an additional Goal.
+AI may identify possible Activity/Evidence relevance to additional Goals.
 
-When the interpretation is ambiguous, it remains inferred/proposed with provenance and, where useful, confidence until accepted by user authority or an approved policy.
+Ambiguous semantic reinterpretation remains inferred/proposed with provenance/confidence until resolved by authorized policy/actor.
 
-Example:
+Deterministic calculations may apply automatically when accepted evidence and criterion policy already authorize them.
 
-```text
-Goal: Complete three serious workouts/week
-Actual: 10 km photography hike
-```
+Canonical rule:
 
-The distance may be factual while whether it qualifies as a `serious workout` remains semantically ambiguous.
+> **AI may discover possible relevance but does not rewrite Activity purpose, actor responsibility, authority or Actual history merely by inference.**
 
-Where a criterion is deterministic and its source policy already authorizes the evidence, no redundant user confirmation is required.
+## Goal-to-Goal influence discovered as requirement
 
-Therefore:
+Activities expose cases where Goals support, compete, overlap or depend on one another.
 
-> **AI may discover possible relevance; deterministic domain rules establish authorized calculations; ambiguous semantic reinterpretations remain proposed/inferred until resolved by policy or user authority.**
+Do not reduce this prematurely to one generic `influences` field.
 
-## Goal-to-Goal influence discovered as a requirement
-
-Activity review exposed a broader requirement: Goals themselves may support, depend on, compete with, overlap with, or otherwise affect one another.
-
-This must not be reduced prematurely to a generic `Goal A influences Goal B` field.
-
-Possible relation semantics such as supports, conflicts with, prerequisite for, contributes to, overlaps with, or depends on belong to the future Relationship Model review.
-
-Activity v0 records this as a discovered cross-domain requirement but does not define the final relationship ontology.
+Typed relationship semantics belong to the future Relationship Model.
 
 ## Completion semantics
 
@@ -385,73 +495,82 @@ Not every Activity becomes `done` in the same way.
 
 LifeOS must support at least:
 
-- output-bounded execution, such as submitting a document;
-- quantity-bounded execution, such as reading pages or covering distance;
-- effort/time-bounded execution, such as studying for sixty minutes;
-- checklist/composite execution;
+- output-bounded;
+- quantity-bounded;
+- effort/time-bounded;
+- checklist/composite;
 - partial execution;
-- context-specific specialist completion where justified.
+- specialist completion where justified.
 
-A universal canonical `completion_percentage` is therefore not required. A percentage may be useful as a derived presentation where meaningful.
+A universal canonical `completion_percentage` is not required.
 
-## Estimated effort, scheduled duration, and actual effort
+## Estimated effort, scheduled duration and actual effort
 
-These are distinct concepts.
+These are distinct:
 
 ```text
-Estimated effort: 3 hours
-Scheduled execution: 2 hours Tuesday + 1 hour Wednesday
-Actual effort: 2 hours 24 minutes
+Estimated effort: 3h
+Scheduled: Tue 2h + Wed 1h
+Actual effort: 2h24m
 ```
 
-They must not be collapsed into one `duration` field whose meaning changes over the lifecycle.
+Do not overload one `duration` field across lifecycle meanings.
 
-## Temporal semantics and deadline ambiguity
+## Temporal semantics
 
-Activity may participate in temporal rules such as fixed execution, valid window, preferred window, hard deadline, scheduling preference, or open scheduling.
+Activity may participate in:
 
-These concepts remain semantically distinct.
+- accepted Schedule placements;
+- valid/preferred windows;
+- hard/soft Temporal Constraints;
+- deadlines;
+- movement policies;
+- open scheduling;
+- duration/spacing constraints.
 
-External task systems illustrate why a generic `due` field is dangerous. Google Tasks currently documents its `due` field as the day a task should be done or shown on the calendar grid and explicitly states that it is not the task's deadline.
+These semantics remain distinct.
 
-LifeOS should therefore avoid ambiguous temporal fields whose meaning changes between scheduling date, target date, and hard deadline.
-
-Exact temporal value objects belong to the later Time cluster.
+Do not use one ambiguous `due` field for scheduling date, target date and deadline.
 
 ## Divisibility and execution policy
 
-The existing LifeOS simulation and scheduling requirements require support for Activities that may be:
+Activities may be:
 
 - indivisible;
-- split into multiple sessions;
+- split across Sessions;
 - partially completable;
-- resumable after interruption;
-- allowed to finish early when the intended result is reached;
-- constrained by minimum useful session duration;
-- subject to preparation, recovery, spacing, or specialist execution rules.
+- resumable;
+- allowed to end early when result achieved;
+- constrained by minimum useful Session duration;
+- subject to preparation/recovery/spacing/specialist rules.
 
-These are required capabilities, not a decision to place every policy directly on the Activity table.
+These capabilities do not imply every rule belongs directly on the Activity table.
 
-## Recurrence and occurrences
+## Recurrence and Occurrences
 
-LifeOS should not treat recurrence as merely mutating one Activity's date forward after each completion.
-
-Individual expectations and results must remain historically available.
+Repeating execution must preserve individual expected-instance history.
 
 ```text
 Routine / recurring source
         ↓
-Occurrence A -> planned -> actual -> outcome
-Occurrence B -> planned -> actual -> outcome
+Occurrence A -> Schedule -> Session/Actual/Outcome
+Occurrence B -> Schedule -> Session/Actual/Outcome
 ```
 
-The exact Routine/Occurrence/Schedule model remains a later review.
+One Activity identity must not be advanced forever after completion to simulate recurrence.
 
 ## Identity and continuity
 
-An Activity normally retains identity across ordinary scheduling changes such as moving it, splitting execution across sessions, changing a preferred window, or resuming partial work.
+Activity normally retains identity across:
 
-A materially changed intended action may instead require replacement.
+- rescheduling;
+- splitting execution across Sessions;
+- preferred-window changes;
+- ordinary reassignment;
+- partial execution/resumption;
+- adding supporting context/relations.
+
+A materially changed intended action may require replacement:
 
 ```text
 Activity A: Prepare written report
@@ -459,26 +578,45 @@ replaced by
 Activity B: Prepare live demo
 ```
 
-The original intention and replacement relationship remain historically visible.
+Original intention/replacement history remains visible.
 
-The exact version-versus-replacement boundary is deferred to the history/versioning review.
+Exact version/replacement boundary remains deferred.
 
 ## Templates are not execution instances
 
-A reusable Activity blueprint does not share the completion lifecycle of an executable Activity generated from it.
+A reusable Activity blueprint does not share the completion lifecycle of generated executable Activities.
 
-Completing a generated Activity must not complete the reusable template itself.
+Completing one generated Activity does not complete the template.
 
 ## External benchmark observations
 
-The following patterns informed Activity v0 without being adopted wholesale:
+Useful benchmark patterns include:
 
-- iCalendar separates `VTODO`, representing an action item or assignment, from `VEVENT`, supporting the Activity-versus-Event distinction;
-- iCalendar supports separate to-do completion/status and temporal properties, showing that action identity and time placement need not be the same concept;
-- Google Tasks distinguishes its scheduling-oriented `due` meaning from a true deadline, reinforcing explicit temporal semantics;
-- Linear supports parent and sub-issues and explicitly describes a middle ground between a single issue and a project, supporting a semantic rather than numeric boundary between composite Activity and Plan.
+- iCalendar `VTODO` vs `VEVENT` supports action vs occurrence semantics;
+- action identity/time placement need not be the same concept;
+- task products demonstrate ambiguity of `due` terminology;
+- issue trackers demonstrate semantic parent/sub-work decomposition;
+- multi-actor work/shift/care systems demonstrate assignment, hand-off and actual performer distinctions.
 
-LifeOS deliberately keeps planned execution, Actual, Evidence, specialist measurements, and cross-goal relevance more explicit where needed.
+LifeOS keeps its stronger planned/actual/evidence/actor-separation semantics rather than copying provider models.
+
+## Multi-actor evidence hardening
+
+The completed discovery/research establishes these mandatory guardrails:
+
+```text
+Activity identity != requester
+Activity identity != assignee/responsible actor
+Activity identity != performer
+assignment != responsibility transfer proof
+assignment != coordination-stewardship transfer proof
+planned performer != Actual performer
+creator != universal authority
+```
+
+The future model must also tolerate open/claimable work and truthful hand-off states where needed.
+
+None of these findings requires splitting Activity itself.
 
 ## Current invariants
 
@@ -489,84 +627,84 @@ LifeOS deliberately keeps planned execution, Actual, Evidence, specialist measur
 5. `Activity != Actual`.
 6. `Activity != Event`.
 7. `Activity != Routine`.
-8. `Task` is not currently a separate kernel primitive; it is a user-facing/contextual semantic of Activity.
-9. An Activity may exist without a Goal, Plan, Routine, or exact Schedule.
-10. An Activity may intentionally contribute to multiple Goals and participate in multiple relevant structures where relationship rules allow it.
-11. An Activity may be indivisible or executed through multiple sessions.
+8. `Task` is product/context language, not a separate kernel primitive.
+9. Activity may exist without Goal, Plan, Routine or exact Schedule.
+10. Activity may intentionally contribute to multiple Goals/structures.
+11. Activity may be indivisible or executed through multiple Sessions.
 12. Sessions are not sub-activities.
-13. Sub-activities represent semantic work decomposition; sessions represent temporal execution decomposition.
-14. Estimated effort, scheduled time, and actual effort are distinct.
-15. Hard deadline, valid window, scheduling preference, and calendar placement are distinct temporal semantics.
-16. Putting an Activity on a calendar does not transform it into an Event.
-17. Passage of time does not automatically complete an Activity.
+13. Sub-activities are semantic decomposition; Sessions are temporal execution episodes.
+14. Estimated effort, scheduled time and actual effort are distinct.
+15. Deadline, valid window, preference and Schedule are distinct temporal meanings.
+16. Putting Activity on calendar does not transform it into Event.
+17. Passage of time does not complete Activity.
 18. Planned result and Actual result remain distinct.
-19. Rescheduling, splitting, or ordinary execution adjustments do not automatically change Activity identity.
-20. Replacement preserves the original Activity and links the successor rather than silently rewriting history.
-21. Repeating execution must preserve individual occurrence history.
-22. Activity completion may be output-, quantity-, effort-, checklist-, composite-, or context-based; no universal canonical completion percentage is required.
-23. Intentional prior Goal linkage is not required for an Activity's execution to become relevant to a Goal.
-24. Actuals and Observations produced during or after an Activity may become evidence for Goal criteria that were not originally linked to that Activity.
-25. Goal evaluation must be able to use evidence from unplanned Activities, independent observations, imports, and other accepted sources.
-26. Discovered relevance must not retroactively rewrite the original purpose or meaning of the Activity.
-27. Positive/negative/neutral impact is not an intrinsic Activity property; it is contextual to evidence, criterion, and evaluation policy.
-28. Inferred ambiguous relevance preserves provenance and remains proposed/inferred until accepted by user authority or approved policy.
-29. Deterministic calculations may incorporate accepted evidence automatically when the criterion and source policy already authorize it.
-30. Reusable templates do not share the completion lifecycle of generated executable Activities.
+19. Rescheduling/splitting/ordinary execution adjustment does not automatically change Activity identity.
+20. Ordinary reassignment does not automatically change Activity identity.
+21. Activity identity is independent from requester, responsible actor/assignee and eventual performer.
+22. Open/claimable responsibility must remain representable by the future relationship model.
+23. Hand-off request does not universally prove effective responsibility transfer.
+24. Assignment does not prove coordination-stewardship/mental-load transfer.
+25. Replacement preserves the original Activity and successor relationship/history.
+26. Repeating execution preserves individual Occurrence history.
+27. Completion semantics may be output-, quantity-, effort-, checklist-, composite- or context-based; no universal completion percentage.
+28. Prior Goal linkage is not required for later Evidence relevance.
+29. Actuals/Observations may become Evidence for Goals not originally linked.
+30. Goal evaluation can use unplanned/imported/independent evidence.
+31. Discovered relevance must not rewrite original purpose.
+32. Positive/negative contribution is contextual to Evidence/criterion/evaluation policy.
+33. Ambiguous inferred relevance preserves provenance and remains proposed until authorized/resolved.
+34. Deterministic calculations may use accepted evidence under authorized policy.
+35. Reusable templates do not share generated Activity completion lifecycle.
+36. AI does not gain actor authority merely by seeing or reasoning over Activity context.
 
 ## Stress-test coverage
 
-Representative cases covered without a second Task primitive include:
+Representative cases include:
 
-| Case | Current representation |
+| Case | Representation |
 |---|---|
-| Buy milk | independent output-bounded Activity |
+| Buy milk | independent output Activity |
 | Study 30 pages | quantity-bounded Activity |
-| Study 60 minutes | effort/time-bounded Activity |
-| Correct a batch of assignments | composite/batch Activity |
-| Fix software bug | output-bounded Activity |
+| Study 60 minutes | effort-bounded Activity |
+| Fix software bug | output Activity |
 | Deep work | time-boxed Activity |
-| Prepare hard-deadline professional work | deadline-constrained Activity within wider Plan |
 | Vehicle maintenance | Asset-linked Activity |
-| Water plant | Subject/Asset-linked Activity |
-| Workout | specialist Activity with domain measurements |
-| Submit job application | output-bounded Activity |
+| Workout | specialist Activity + measurements |
 | Prepare suitcase | checklist/composite Activity |
-| Photography backup | output-bounded Activity |
-| Interrupted work resumed later | one Activity with multiple execution sessions |
-| Replace report with demo | replacement between distinct Activities |
-| Photography hike walks 10 km | Actual becomes evidence for unrelated fitness Goal |
-| Picnic produces nutrition data | observations evaluated against relevant criteria without making picnic intrinsically good/bad |
-| Unplanned imported walk | evidence may advance walking Goal without a planned Activity |
-| One hike affects several goals | one execution may provide evidence relevant to multiple criteria |
+| Interrupted work | one Activity + multiple Sessions |
+| Replace report with demo | replacement between Activities |
+| Photography hike walks 10 km | Actual becomes Evidence for another Goal |
+| Shared presentation | one Activity + several actor relationships |
+| Reassign deliverable | same Activity, responsibility relationship changes |
+| Open household chore | Activity with future claimable responsibility |
+| Care hand-off requested but not accepted | Activity preserved; transfer remains pending |
+| Planned worker absent, substitute performs | same Activity; planned vs Actual performer differ |
 
-No reviewed scenario currently requires `Task` as a second independent domain primitive.
+No reviewed scenario requires a second independent Task primitive or per-actor Activity clones for genuinely shared work.
 
 ## Deliberately deferred questions
 
 Activity v0 does not decide:
 
-- exact Event semantics;
-- exact Routine and recurring-occurrence model;
-- exact Schedule versus Session boundaries;
-- exact Actual entity/value-object structure;
-- exact Observation and Evidence models;
-- GoalCriterion persistence and evaluation policy;
-- the formal Relationship Model, including Goal-to-Goal influence and Activity-to-Goal relation types;
-- exact composite Activity versus Plan boundary;
+- final Responsibility/Assignment/Hand-off model;
+- Actor/Person/Account/Principal model;
+- authority/visibility model;
+- whether coordination stewardship becomes domain state or product metric;
+- exact Event semantics beyond accepted Event v0;
+- exact Actual/Outcome/Observation/Evidence persistence;
+- actor-specific Actual contribution model;
+- GoalCriterion persistence;
+- formal Relationship Model;
+- exact composite Activity/Plan boundary;
 - exact completion-policy persistence;
-- exact deadline/window/scheduling value objects;
-- exact lifecycle/status state machine;
-- exact version-versus-replacement implementation;
+- lifecycle/status state machine;
+- exact version/replacement implementation;
 - Template persistence;
-- specialist module extension mechanism;
-- SQL and API representation.
-
-## Checkpoint requirement
-
-The composite-Activity-versus-Plan boundary and interactions among Goal, Plan, Activity, Event, and Routine must be re-tested at the first intention/execution cluster checkpoint rather than assumed permanently closed.
+- specialist extension mechanism;
+- SQL/API representation.
 
 ## Decision note
 
-Activity v0 supersedes the narrower previous Activity/Task glossary semantics **for the active Domain Model workstream only** while the broader documentation set is being revalidated.
+Activity v0 remains the accepted actionable-intention primitive.
 
-The previous product documents remain preserved as source material until changes are propagated deliberately after adjacent concepts have been reviewed.
+The 2026-08-11 hardening removes the accidental assumption that the person whose LifeOS contains the Activity must also be its requester, responsible actor and performer. It does not change the core Activity/Event/Plan/Schedule/Session boundaries.
