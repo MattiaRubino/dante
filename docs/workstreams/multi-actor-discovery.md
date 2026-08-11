@@ -2,7 +2,7 @@
 
 - Status: **EVIDENCE COMPLETE — simulation + unified deep research + QC complete; awaiting PR review/merge**
 - Branch: `docs/multi-actor-discovery`
-- Pull request: #6
+- Pull request: #6 — ready for review
 - Scope: product discovery evidence for future multi-user, multi-actor and collaboration direction. This workstream does not change current V1 implementation boundaries or define collaboration architecture.
 
 ## Source-of-truth documents
@@ -27,7 +27,7 @@
 - Recorded a consolidated risk register, validation questions, evidence-confidence classification, negative evidence and a five-layer analytical framing: shared reality, dependency, actor relationship, personal interpretation and coordination evidence.
 - Updated the `docs/product/` Discovery / evidence index.
 - Kept simulation, research and accepted V1/architecture documents separate.
-- Draft PR #6 remains the review container for the completed evidence work.
+- PR #6 is the ready-for-review container for the completed evidence work.
 
 ## QC outcome
 
