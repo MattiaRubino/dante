@@ -161,7 +161,7 @@ Checkpoint record:
 
 Validation is provisional in the Domain Atlas sense: downstream temporal, evidence, relationship, persistence, or implementation work may still reopen a concept if new evidence exposes a contradiction.
 
-### Time — CURRENT CLUSTER
+### Time — CONCEPTS ACCEPTED / CHECKPOINT PENDING
 
 Current accepted baselines:
 
@@ -169,11 +169,14 @@ Current accepted baselines:
 - Schedule v0;
 - Session v0;
 - Temporal Constraint v0;
-- Recurrence v0.
+- Recurrence v0;
+- Availability & Capacity v0.
 
-Next review block:
+Next required step:
 
-- Calendar Block / Availability / Capacity.
+- **Time Cluster Checkpoint v0**.
+
+The six individual concepts are accepted as current baselines, but the Time cluster is **not yet a validated cluster baseline**. The checkpoint must stress-test the combined model and may reopen any Time concept if contradictions, duplication, missing semantics, or unreasonable implementation pressure emerge.
 
 Occurrence v0 establishes stable logical identity for one expected generated/recurring instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager materialization of future instances.
 
@@ -184,6 +187,8 @@ Session v0 establishes actual execution episode identity as distinct from planne
 Temporal Constraint v0 establishes temporal admissibility/preference as a general rule capability: deadlines are latest-bound constraints and windows are range-shaped expressions whose semantics depend on whether they are hard validity rules, soft preferences, targets, availability, or accepted Schedule placement.
 
 Recurrence v0 establishes structured repeating-pattern semantics separately from Routine/Event identity, Occurrence identity, Schedule, Actual, Temporal Constraint, and generic Trigger behavior. It supports exact calendar patterns, quota-based expectations, elapsed intervals, completion-relative chains, anchor-stream mappings, and cycles without requiring all patterns to resolve to exact timestamps in advance.
+
+Availability & Capacity v0 establishes resource schedulability separately from Schedule placement. Availability defines when capacity may be used, capacity represents the ability to accept compatible commitments, reservations/claims consume or protect capacity, and effective free capacity is derived. `Calendar Block` remains useful product/UI language but is not a separate kernel primitive by default.
 
 ### Observed reality and evidence
 
@@ -222,7 +227,8 @@ Current known examples:
 - `Schedule v0` treats accepted temporal assignment as distinct from the schedulable subject, Actual execution, deadlines/targets, windows/constraints, recurrence, movement policy, and availability/capacity;
 - `Session v0` treats actual execution episodes as distinct from planned placements, Occurrence identity, Activity identity, Event actual occurrence, and broader Actual/Outcome semantics;
 - `Temporal Constraint v0` replaces the assumption that Deadline and Window require parallel kernel primitives: Deadline is a latest-bound Temporal Constraint, while range/window semantics are typed by purpose and remain distinct from Schedule, target, availability, and Actual;
-- `Recurrence v0` treats recurrence as a structured reusable repeating-pattern capability rather than RRULE/provider syntax, Routine identity, Event identity, Occurrence identity, Schedule, or generic Trigger logic; external recurrence formats remain optional adapter targets rather than kernel authorities.
+- `Recurrence v0` treats recurrence as a structured reusable repeating-pattern capability rather than RRULE/provider syntax, Routine identity, Event identity, Occurrence identity, Schedule, or generic Trigger logic; external recurrence formats remain optional adapter targets rather than kernel authorities;
+- `Availability & Capacity v0` replaces the assumption that every calendar-shaped block or scheduled item is automatically a distinct Calendar Block/busy interval: Availability, Capacity, and reservations/claims supply the kernel semantics while Calendar Block remains primarily product/UI language for capacity-only temporal constructs.
 
 ## Current concepts
 
@@ -237,23 +243,26 @@ Current known examples:
 - [`Session v0`](concepts/session.md) — current baseline accepted on 2026-08-11.
 - [`Temporal Constraint v0`](concepts/temporal-constraint.md) — current baseline accepted on 2026-08-11.
 - [`Recurrence v0`](concepts/recurrence.md) — current baseline accepted on 2026-08-11.
+- [`Availability & Capacity v0`](concepts/availability-capacity.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
 
 ```text
-Goal       -> what is wanted
-Plan       -> how it is intended to be pursued or organized
-Activity   -> what concrete action is intended
-Event      -> what occurrence-centred thing is expected to happen
-Routine    -> what recurring behavioral/execution policy is intended
-Milestone  -> what meaningful contextual checkpoint is expected/reached
-Recurrence -> how a recurring/generative pattern repeats
-Occurrence -> which individual expected instance exists in a recurring/generated context
-Constraint -> where/when execution is allowed, required, bounded, or preferred
-Schedule   -> when execution/occurrence is currently accepted to happen
-Session    -> which bounded actual execution episode happened
-Actual     -> broader truth about what happened
-Evidence   -> what supports evaluation
+Goal         -> what is wanted
+Plan         -> how it is intended to be pursued or organized
+Activity     -> what concrete action is intended
+Event        -> what occurrence-centred thing is expected to happen
+Routine      -> what recurring behavioral/execution policy is intended
+Milestone    -> what meaningful contextual checkpoint is expected/reached
+Recurrence   -> how a recurring/generative pattern repeats
+Occurrence   -> which individual expected instance exists in a recurring/generated context
+Constraint   -> where/when execution is allowed, required, bounded, or preferred
+Availability -> when schedulable capacity may be used
+Capacity     -> ability to accept compatible commitments
+Schedule     -> when execution/occurrence is currently accepted to happen
+Session      -> which bounded actual execution episode happened
+Actual       -> broader truth about what happened
+Evidence     -> what supports evaluation
 ```
 
 This is a working domain direction, not yet a persistence schema.
@@ -276,7 +285,7 @@ Important current consequences:
 - fixed independent cadence remains distinct from completion-relative chaining;
 - source pattern anchor remains distinct from the effective recurrence range;
 - recurrence-count semantics describe expected Occurrences, not successful completions;
-- recurring Temporal Constraints may reuse recurrence-pattern machinery without becoming occurrence-generating sources;
+- recurring Temporal Constraints or Availability rules may reuse recurrence-pattern machinery without becoming occurrence-generating sources;
 - structural recurrence changes are effective future revisions rather than retroactive rewrites;
 - Occurrence identity does not depend on current start/end or resolved UTC instant;
 - not every one-off Activity or Event receives a redundant Occurrence wrapper;
@@ -306,6 +315,16 @@ Important current consequences:
 - multiple hard constraints must be jointly satisfiable or planning is infeasible rather than silently inconsistent;
 - constraints may be boundary-, range-, duration-, spacing-, exclusion-, or relation-based;
 - constraints may operate at broader scopes and receive occurrence-specific exceptions without physical duplication or silent source-policy rewrite;
+- Schedule presence does not automatically imply busy/occupied capacity;
+- Availability acts on schedulable resource capacity while subject-specific timing restrictions remain Temporal Constraints;
+- Capacity is not universally binary and is not universally a single numeric percentage;
+- reservations/claims express capacity committed or protected, while effective free capacity is derived;
+- timestamp overlap alone does not establish a capacity conflict; compatibility semantics matter;
+- overcommitted/inconsistent scheduling states remain representable rather than being rejected or silently rewritten;
+- recurring Availability may reuse Recurrence without creating meaningless execution Occurrences;
+- Temporary Mode may alter availability/capacity without rewriting stable baseline rules;
+- `Calendar Block` remains useful UI/product language but is not a mandatory duplicate object for every Activity/Event/Occurrence with Schedule;
+- external free/busy data is imported evidence/provenance rather than universal LifeOS truth;
 - external standards and products remain benchmark evidence and optional mapping targets, not design authorities;
 - Goal progress/evaluation must be able to use valid evidence regardless of whether the source execution was originally linked to that Goal;
 - discovered relevance must not rewrite historical intention;
@@ -315,7 +334,7 @@ Important current consequences:
 
 The **Intention & Execution Cluster v0 is validated** as the current baseline.
 
-The workstream is now in the **Time cluster**.
+All currently planned **Time-cluster concept reviews are complete**.
 
 Current sequence:
 
@@ -325,31 +344,34 @@ Occurrence v0 — accepted
 → Session v0 — accepted
 → Temporal Constraint v0 — accepted
 → Recurrence v0 — accepted
-→ Calendar Block / Availability / Capacity — next review
+→ Availability & Capacity v0 — accepted
+→ Time Cluster Checkpoint v0 — next
 ```
 
-The sequence is not immutable. A reviewed concept may expose a stronger dependency and reorder adjacent concepts.
+The Time cluster does not become validated merely because all individual concepts are accepted. The checkpoint is mandatory before moving to the Observed Reality & Evidence cluster.
 
-## Open temporal questions entering Calendar Block / Availability / Capacity review
+## Time Cluster Checkpoint v0 — required next
 
-The accepted Time concepts intentionally leave the following issues for the final adjacent review block:
+The checkpoint must reconstruct difficult scenarios using the combined accepted Time model and ask at minimum:
 
-- whether Calendar Block is an independent kernel primitive, a Schedule/Capacity specialization, or primarily a product/UI construct;
-- how user Availability differs from scheduled occupancy, hard Temporal Constraints, preferences, and external free/busy data;
-- what `busy`, `free`, `tentative`, `focus`, and protected time mean semantically;
-- whether every scheduled Event/Activity consumes capacity automatically or capacity consumption must remain explicit;
-- how partial capacity and multi-resource capacity are represented;
-- whether simultaneous compatible activities can share capacity;
-- personal attention capacity versus physical/resource capacity;
-- external calendar busy time versus LifeOS semantic availability;
-- recurring Availability/Capacity patterns and how they reuse Recurrence without becoming occurrence-generating sources unnecessarily;
-- capacity exceptions and temporary modes such as travel, illness, holidays, or disrupted weeks;
-- conflict detection among Schedule placements, Temporal Constraints, and available Capacity;
-- whether capacity reservation itself has identity/history;
-- relation of Calendar Block to Activity/Event identity and whether a block without work semantics is still useful;
-- exact provider free/busy mapping without making provider semantics authoritative;
-- exact persistence/API representation for Time-cluster baselines;
-- whether this final review exposes any need to reopen Occurrence, Schedule, Session, Temporal Constraint, or Recurrence before the Time-cluster checkpoint.
+- can a recurring/generated expectation retain identity while its Schedule changes repeatedly?
+- can flexible quota recurrence exist before exact temporal placement without inventing dates?
+- can wall-clock, elapsed, completion-relative, and anchor-stream recurrence coexist without hidden ambiguity?
+- can one Activity/Occurrence have multiple planned placements and multiple actual Sessions without one-to-one assumptions?
+- can deadlines, windows, duration/spacing constraints, Availability, Capacity, and Schedule remain non-duplicative?
+- can hard constraints and hard unavailability become infeasible without making real/imported data unrepresentable?
+- can non-blocking scheduled items coexist with protected capacity and true unavailability?
+- can compatible overlaps coexist while incompatible overlaps are surfaced as capacity conflicts?
+- can temporary travel/illness/disruption alter future availability/capacity without rewriting stable history?
+- can an Actual correction used as a completion-relative recurrence anchor revise future expectation while preserving materialized history?
+- can `this occurrence`, selected-occurrence exceptions, and `this and future` source revisions remain distinct?
+- can recurring Event and Routine share recurrence/occurrence machinery without becoming the same domain concept?
+- can external provider recurrence/free-busy data be mapped without provider semantics becoming kernel truth?
+- does the combined model still work for simple users without requiring them to understand the full ontology?
+- does the combined model remain queryable and implementable without a universal generic temporal JSON object?
+- does any scenario expose a missing Time primitive or force reopening Occurrence, Schedule, Session, Temporal Constraint, Recurrence, or Availability & Capacity?
+
+The checkpoint should use both ordinary and adversarial scenarios and must explicitly record PASS/FAIL, any reopened concepts, and all remaining dependencies on Actual/Outcome/Provenance/Resource/Relationship work.
 
 ## Final validation rule
 
