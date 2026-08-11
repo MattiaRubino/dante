@@ -39,11 +39,13 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 17. [`../domain/checkpoints/observation-v0-validation.md`](../domain/checkpoints/observation-v0-validation.md)
 18. [`../domain/concepts/confirmation.md`](../domain/concepts/confirmation.md)
 19. [`../domain/checkpoints/confirmation-v0-validation.md`](../domain/checkpoints/confirmation-v0-validation.md)
-20. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-21. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-22. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-23. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-24. accepted architecture/DB ADRs.
+20. [`../domain/concepts/evidence.md`](../domain/concepts/evidence.md)
+21. [`../domain/checkpoints/evidence-v0-validation.md`](../domain/checkpoints/evidence-v0-validation.md)
+22. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+23. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+24. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+25. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+26. accepted architecture/DB ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -82,6 +84,7 @@ Actual v0                       PASS WITH HARDENING / ACCEPTED
 Outcome v0                      PASS WITH HARDENING / ACCEPTED
 Observation v0                  PASS WITH HARDENING / ACCEPTED
 Confirmation v0                 PASS WITH HARDENING / ACCEPTED
+Evidence v0                     PASS WITH HARDENING / ACCEPTED
 ```
 
 No current structural reopening is required.
@@ -188,6 +191,7 @@ Actual         -> canonical contextual realization
 Outcome        -> canonical contextual result/disposition
 Observation    -> canonical measurement/simple assertion
 Confirmation   -> canonical contextual attestation
+Evidence       -> canonical contextual evaluative role/relationship
 ```
 
 ---
@@ -268,6 +272,7 @@ Confirmation != Actual
 Confirmation != Outcome
 Confirmation != Observation
 Confirmation != Provenance
+Confirmation != Evidence
 Confirmation != Acknowledgement
 Confirmation != Acceptance/Agreement
 Confirmation != Verification
@@ -290,11 +295,54 @@ Critical hardenings:
 
 Mandatory future re-tests:
 
-- Confirmation vs Evidence;
 - Confirmation vs Provenance;
 - target-version semantics vs Version model;
 - Confirmation vs Authority/Acknowledgement/Acceptance;
 - persistence pressure around generic target references.
+
+### Evidence v0
+
+Canonical definition:
+
+> Evidence is the contextual evaluative role played by information when that information is used to support, contradict, qualify, or otherwise materially inform the evaluation of a specific claim, criterion, checkpoint, decision, or other evaluative target. Evidence represents the relationship between source information and an evaluation context; it does not duplicate the source information, establish truth by itself, or imply that the information was originally created for that evaluation.
+
+Boundaries:
+
+```text
+Evidence != source information itself
+Evidence != Observation
+Evidence != Actual
+Evidence != Outcome
+Evidence != Confirmation
+Evidence != Provenance
+Evidence != GoalCriterion
+Evidence != Milestone
+```
+
+Critical hardenings:
+
+- information is not Evidence merely because it exists;
+- Evidence does not duplicate source data/identity;
+- Evidence can support, contradict, qualify or otherwise materially inform;
+- Evidence existence does not establish target truth by itself;
+- no Evidence != Evidence against;
+- no LifeOS record != proof of non-occurrence without a justified completeness/evaluation rule;
+- later Evidence relevance does not rewrite historical source purpose/intention;
+- one source can serve multiple evaluations without duplication;
+- evidentiary strength/certainty is contextual rather than one universal scalar;
+- conflicting Evidence remains representable;
+- private Evidence use does not create disclosure permission;
+- AI discovery/use does not create authority or disclosure permission;
+- Evidence semantics do not pre-approve a persisted entity/edge for every use.
+
+Mandatory future re-tests:
+
+- Evidence vs Provenance;
+- Evidence vs GoalCriterion;
+- Evidence vs typed Relationship semantics;
+- Evidence vs Decision/Version;
+- private Evidence vs Authority/Visibility;
+- persistence pressure around explicit/derived/materialized Evidence use.
 
 ---
 
@@ -302,10 +350,9 @@ Mandatory future re-tests:
 
 The active cluster is **not yet ready to close**.
 
-Individual v3 reviews still required:
+One individual v3 review remains:
 
-1. **Evidence** — next;
-2. **Provenance** — after Evidence.
+1. **Provenance** — next/final individual concept.
 
 Then the complete cluster must pass:
 
@@ -365,6 +412,8 @@ Likely topics:
 
 Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
 
+Evidence v0 must be re-tested here: a typed Relationship implementation may carry its physical/logical representation, but Evidence semantics must remain distinguishable from generic relationship meaning.
+
 ---
 
 # Current conceptual topology
@@ -395,11 +444,14 @@ Actual realization context
 Confirmation
 = contextual affirmation of specific target/version/purpose
 
-Evidence / Provenance
-= remaining cluster boundaries under review
+Evidence
+= contextual evaluative use of existing information
+
+Provenance
+= final remaining cluster boundary under review
 ```
 
-Observation may also exist independently with no Actual/planning context. Confirmation is optional and may target eligible records/assertions without becoming a universal wrapper.
+Observation may also exist independently with no Actual/planning context. Confirmation is optional and may target eligible records/assertions without becoming a universal wrapper. Evidence can later bind any eligible source information into an evaluation without duplicating that source.
 
 Multi-actor relationships cut across this topology rather than forming a duplicate domain model.
 
@@ -409,13 +461,13 @@ Multi-actor relationships cut across this topology rather than forming a duplica
 
 Explicit future boundary tests:
 
-- Actual/Outcome/Observation/Confirmation vs Provenance;
-- Observation/Confirmation vs Evidence;
+- Actual/Outcome/Observation/Confirmation/Evidence vs Provenance;
+- Evidence vs GoalCriterion/Relationship/Decision/Version;
 - Observation vs Quantity/Register;
 - Confirmation vs Authority/Acknowledgement/Acceptance/Version;
 - subject vs observer/recorder/source semantics;
 - Milestone vs Outcome vs GoalCriterion;
-- contextual competing assertions under Authority rules;
+- contextual competing assertions/Evidence under Authority rules;
 - collaborative Session vs broader Actual/actor attribution;
 - Responsibility vs Assignment vs Hand-off vs Stewardship;
 - Person vs Actor vs Subject vs Account/Principal;
@@ -440,9 +492,9 @@ Observation v0 accepted
         ↓
 Confirmation v0 accepted
         ↓
-Evidence review — NEXT
+Evidence v0 accepted
         ↓
-Provenance review
+Provenance review — NEXT / FINAL INDIVIDUAL CONCEPT
         ↓
 Observed Reality & Evidence Cluster Integration Gate
         ↓
