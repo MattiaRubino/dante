@@ -269,19 +269,24 @@ Mandatory new primitives — 0
 
 ## Observed Reality & Evidence — IN PROGRESS
 
-Current accepted concept:
+Current accepted concepts:
 
-- [`Actual v0`](concepts/actual.md) — accepted 2026-08-11 under Methodology v3.
+- [`Actual v0`](concepts/actual.md) — accepted 2026-08-11 under Methodology v3;
+- [`Outcome v0`](concepts/outcome.md) — accepted 2026-08-11 under Methodology v3.
 
-Validation record:
+Validation records:
 
-- [`Actual v0 Validation`](checkpoints/actual-v0-validation.md) — **PASS WITH HARDENING**.
+- [`Actual v0 Validation`](checkpoints/actual-v0-validation.md) — **PASS WITH HARDENING**;
+- [`Outcome v0 Validation`](checkpoints/outcome-v0-validation.md) — **PASS WITH HARDENING**.
 
-Current Actual boundary:
+Current boundaries:
 
 ```text
 Actual
 = contextual realization of a specific intention/expectation
+
+Outcome
+= contextual result/disposition of that realization where result meaning matters
 
 Actual != Session
 Actual != Outcome
@@ -289,6 +294,14 @@ Actual != Observation
 Actual != Evidence
 Actual != Confirmation
 Actual != Provenance
+
+Outcome != lifecycle/operational state
+Outcome != Observation
+Outcome != produced output/artifact
+Outcome != Milestone
+Outcome != Confirmation
+Outcome != Provenance
+Outcome != Evidence
 ```
 
 Critical Actual invariants:
@@ -302,7 +315,20 @@ Critical Actual invariants:
 - subject/recorder/responsible actor/expected performer/actual performer may differ;
 - correction changes current accepted realized truth without silently deleting relevant assertion/provenance history.
 
-Next concept under review: **Outcome**.
+Critical Outcome invariants:
+
+- Outcome is optional and contextual;
+- lifecycle/operational state is distinct from Outcome;
+- no universal Outcome enum is accepted;
+- absence of Outcome is not a negative Outcome;
+- `unconfirmed` belongs to Confirmation/epistemic semantics rather than Outcome;
+- measurements/Observations and produced artifacts remain separate;
+- partial result does not universally imply failure;
+- shared Outcome does not imply identical actor-specific consequences;
+- one actor/provider assertion does not automatically establish universal canonical Outcome;
+- corrections preserve relevant assertion/provenance history.
+
+Next concept under review: **Observation**.
 
 ---
 
@@ -312,7 +338,6 @@ Next concept under review: **Outcome**.
 
 Remaining likely concepts:
 
-- Outcome;
 - Confirmation;
 - Observation;
 - Evidence;
@@ -364,7 +389,8 @@ Current known differences include:
 - Occurrence is stable expected-instance identity;
 - Schedule is accepted temporal assignment, distinct from Constraint/Recurrence/Capacity/Actual;
 - Session is actual execution episode, not planned placement or broader realization;
-- Actual is now the contextual realization record linking a specific expectation to realized reality;
+- Actual is the contextual realization record linking a specific expectation to realized reality;
+- Outcome is a contextual result/disposition, not a universal completion/status field;
 - Deadline is latest-bound Temporal Constraint semantics;
 - Availability/Capacity/reservation semantics replace the assumption that every calendar-shaped item is a duplicate Calendar Block;
 - Calendar Block remains useful product/UI vocabulary.
@@ -388,6 +414,7 @@ Do not silently rewrite historical product documents solely to make wording unif
 - [`Recurrence v0`](concepts/recurrence.md) — accepted; quota/period hardening retained.
 - [`Availability & Capacity v0`](concepts/availability-capacity.md) — accepted.
 - [`Actual v0`](concepts/actual.md) — accepted under Methodology v3; contextual realization semantics.
+- [`Outcome v0`](concepts/outcome.md) — accepted under Methodology v3; contextual result/disposition semantics.
 
 ---
 
@@ -408,8 +435,8 @@ Capacity     -> ability to accept compatible commitments
 Schedule     -> when execution/occurrence is currently accepted
 Session      -> which bounded actual execution episode happened
 Actual       -> how a specific expectation was realized in reality
-Outcome      -> what resulted from realization (under review)
-Observation  -> observed fact about reality (future review)
+Outcome      -> what result/disposition followed from that realization
+Observation  -> observed fact about reality (under review)
 Evidence     -> information used in evaluation (future review)
 ```
 
@@ -446,9 +473,10 @@ Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
 Domain & Product Language Map   — ESTABLISHED
 Validation Methodology v3       — ACTIVE MANDATORY STANDARD
 Actual v0                       — PASS WITH HARDENING / ACCEPTED
+Outcome v0                      — PASS WITH HARDENING / ACCEPTED
 
 ↓
-Outcome review
+Observation review
 ↓
 remaining Observed Reality & Evidence concepts
 ↓
@@ -461,10 +489,12 @@ cluster integration + multi-actor stress
 
 Deliberately revisit later:
 
-- Actual vs Outcome;
 - Actual vs Observation/Evidence;
 - Actual vs Confirmation/Provenance;
+- Outcome vs Observation;
+- Outcome vs Confirmation/Provenance;
 - Milestone vs Outcome vs GoalCriterion;
+- competing contextual Outcome assertions under future authority rules;
 - Plan vs Routine under complex progression/adaptation;
 - Event participation vs personal commitment/delegation;
 - collaborative Session vs actor-scoped Actual participation;
