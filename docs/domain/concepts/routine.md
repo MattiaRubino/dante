@@ -137,6 +137,36 @@ A Routine may also exist independently of any Plan.
 
 A complex Routine does not automatically become a Plan merely because it contains multiple steps. The dominant semantic distinction is whether the structure represents a repeating pattern/policy or a broader strategy coordinated toward a purpose.
 
+### Progression guardrail
+
+Validation Methodology v2 strengthened this boundary with long-horizon progression cases.
+
+A Routine may be composite and may contain adaptive execution rules, but it should not become the default container for materially changing stages, strategy transitions, milestones, and several distinct recurring policies simply because those stages happen sequentially over time.
+
+Example:
+
+```text
+Plan
+12-week training progression
+
+Stage 1
+Routine A
+
+Stage 2
+Routine B
+
+Stage 3
+Routine C
+```
+
+is generally stronger than one mega-Routine that owns the entire 12-week progression, every phase transition, all milestones, and every changing policy.
+
+Current guardrail:
+
+> **Routine may contain repeated internal structure and adaptive execution rules, but coordination of materially changing stages, strategy, milestones, and multiple recurring policies tends toward Plan semantics.**
+
+This is intentionally a semantic guardrail rather than an arbitrary threshold based on duration, number of steps, or number of child objects.
+
 ## Routine versus Template
 
 A Template is a reusable structure that can be instantiated when needed. A Routine creates or governs repeated expectation over time.
@@ -478,6 +508,7 @@ Repeated observed behavior may justify a proposal such as "Do you want to make t
 28. Repeated observed behavior does not automatically become canonical Routine intent.
 29. History must preserve which Routine policy/revision governed each occurrence.
 30. Exact recurrence materialization, timezone/DST behavior, and occurrence persistence remain Temporal Model concerns.
+31. Routine may contain repeated internal structure and adaptive execution rules, but coordination of materially changing stages, strategy, milestones, and multiple recurring policies tends toward Plan semantics rather than being absorbed into one mega-Routine.
 
 ## Stress-test coverage
 
@@ -497,6 +528,7 @@ Routine v0 was checked against representative LifeOS cases including:
 | Morning routine with multiple steps | composite Routine |
 | Maintenance after 10,000 km | Trigger/maintenance condition, not simple temporal Routine |
 | Train 3 times/week | Routine when execution policy; Goal when desired condition |
+| 12-week staged training progression | Plan coordinating stage-specific Routines rather than one default mega-Routine |
 | Move one gym session | occurrence exception |
 | Holiday for two weeks | Routine pause/temporary override |
 | Change Wednesday time from now on | effective future Routine revision |
