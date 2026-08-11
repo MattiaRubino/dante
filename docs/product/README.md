@@ -35,6 +35,8 @@ Use [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md) for the current project state
 ## Discovery / evidence
 
 - [`feature-discovery-simulation-2026-08.md`](feature-discovery-simulation-2026-08.md) — cross-domain scenario study used to discover universal primitives such as Register, Asset/Subject, Trigger, Session, Review Queue and flexible progress methods. This is product evidence; binding implementation choices are resolved through the domain/architecture documents and ADRs.
+- [`multi-actor-collaboration-discovery-simulation-2026-08.md`](multi-actor-collaboration-discovery-simulation-2026-08.md) — multi-actor discovery study combining persona-driven needs with real-life `without LifeOS → with LifeOS` simulations, stress cases and longitudinal collaboration scenarios. It is discovery evidence, not a binding collaboration architecture or implementation specification.
+- [`multi-actor-collaboration-research-2026-08.md`](multi-actor-collaboration-research-2026-08.md) — consolidated and quality-checked external research spanning foundational CSCW/groupware, coordination/common-ground theory, calendar/privacy, family and mental load, work/shift fairness, caregiving/healthcare, education, shared expenses, external participants, privacy-by-design, authorization evidence, adversarial and high-conflict relationships, minors/guardian power, accessibility/low digital literacy and multi-party AI privacy. It includes source audit, contradictions/trade-offs, risk register, confidence classification and negative evidence; it remains product evidence rather than binding architecture.
 
 ## Historical planning note
 
