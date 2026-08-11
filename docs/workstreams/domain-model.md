@@ -35,12 +35,14 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 13. [`../domain/checkpoints/actual-v0-validation.md`](../domain/checkpoints/actual-v0-validation.md)
 14. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
 15. [`../domain/checkpoints/outcome-v0-validation.md`](../domain/checkpoints/outcome-v0-validation.md)
-16. accepted concept specs under [`../domain/concepts/`](../domain/concepts/)
-17. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-18. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-19. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-20. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-21. accepted DB/architecture ADRs.
+16. [`../domain/concepts/observation.md`](../domain/concepts/observation.md)
+17. [`../domain/checkpoints/observation-v0-validation.md`](../domain/checkpoints/observation-v0-validation.md)
+18. accepted concept specs under [`../domain/concepts/`](../domain/concepts/)
+19. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+20. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+21. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+22. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+23. accepted DB/architecture ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -60,7 +62,7 @@ The old V1 glossary remains historical/product evidence. Current kernel terminol
 - Preserve provenance/source/assertion/authority distinctions.
 - Do not fabricate historical intention from later relevance.
 - Do not create one table/entity per life topic.
-- Do not collapse core semantics into arbitrary JSON or one universal graph/reality object.
+- Do not collapse core semantics into arbitrary JSON or one universal graph/reality/fact object.
 - Do not let AI inference become confirmed/canonical truth automatically.
 - Preserve progressive disclosure: kernel precision must not become UI bureaucracy.
 - Run the dedicated Multi-Actor Compatibility Gate after the Core Semantic Gate.
@@ -79,55 +81,10 @@ Cross-Cluster Validation v2    PASS
 Multi-Actor Evidence Synthesis PASS WITH HARDENING
 Actual v0                       PASS WITH HARDENING / ACCEPTED
 Outcome v0                      PASS WITH HARDENING / ACCEPTED
+Observation v0                  PASS WITH HARDENING / ACCEPTED
 ```
 
 No current structural reopening is required.
-
-## Intention & Execution
-
-Accepted concepts:
-
-- Goal;
-- Plan;
-- Activity;
-- Event;
-- Routine;
-- Milestone.
-
-Key actor-neutral hardenings:
-
-```text
-Goal identity       != governor / stakeholder / subject
-Plan identity       != coordinator / contributor
-Activity identity   != requester / assignee / performer
-Event identity      != organizer / participant / response
-Routine identity    != performer
-Milestone identity  != stakeholder / approver
-```
-
-## Time
-
-Accepted concepts:
-
-- Occurrence;
-- Schedule;
-- Session;
-- Temporal Constraint;
-- Recurrence;
-- Availability & Capacity.
-
-Critical invariants retained:
-
-```text
-Schedule != Actual
-Schedule != Capacity
-Constraint != Schedule
-Recurrence != Routine
-Occurrence identity != timestamp
-passage of time != completion
-```
-
-Time hardenings also retain quota-period semantics, Event-without-current-Schedule history and the Plan-vs-mega-Routine progression guardrail.
 
 ---
 
@@ -240,6 +197,7 @@ Calendar Block -> product/UI representation of temporal/capacity semantics
 Occurrence     -> canonical domain concept, usually hidden in simple UI
 Actual         -> canonical contextual realization concept, usually hidden/advanced
 Outcome        -> canonical contextual result/disposition concept, usually contextual/hidden
+Observation    -> canonical measurement/simple-assertion concept, usually contextual/hidden
 ```
 
 ---
@@ -264,13 +222,12 @@ Verdict:
 PASS WITH HARDENING
 ```
 
-Canonical definition:
-
-> An Actual is a persistent contextual realization record representing whether and how a specific intended or expected domain subject was realized in reality. It preserves the realized truth of that expectation without replacing the Sessions, Observations, Outcomes, participation records, Confirmations, or Provenance that describe particular facets of what happened or how LifeOS knows it.
-
-Critical boundaries:
+Canonical boundary:
 
 ```text
+Actual
+= how a specific intention/expectation was realized
+
 Actual != Session
 Actual != Outcome
 Actual != Observation
@@ -279,21 +236,7 @@ Actual != Confirmation
 Actual != Provenance
 ```
 
-Critical hardenings:
-
-- Actual is contextual, not a universal reality mega-object;
-- spontaneous Session/Observation/etc. may exist without Actual when no expectation is being reconciled;
-- no established Actual != known non-realization;
-- passage of time does not establish Actual;
-- known non-realization can be a valid Actual;
-- one Activity realization may use multiple Sessions;
-- ordinary Event occurrence can have Actual without a fake Session;
-- Actual does not duplicate measurements/facts owned by Observation or specialist records;
-- corrections preserve relevant assertion/provenance history;
-- provider ID/source does not define LifeOS Actual identity;
-- shared Actual != identical actor-specific participation;
-- subject, recorder, responsible actor, expected performer and actual performer may differ;
-- AI/system knowledge of private Actual does not grant disclosure authority.
+Critical hardenings include contextual rather than universal scope, unknown != known non-realization, passage-of-time neutrality, correction history, multi-session realization, actor-specific participation separation and bounded AI authority/disclosure.
 
 ## Outcome v0 — accepted
 
@@ -311,14 +254,12 @@ Verdict:
 PASS WITH HARDENING
 ```
 
-Canonical definition:
-
-> An Outcome is a contextual representation of the result or disposition established for a specific Actual realization, describing what that realization achieved, produced, satisfied, failed to satisfy, or otherwise resolved in the relevant evaluation context. Outcome does not replace lifecycle/operational state, Observations or measurements, produced artifacts, Milestone attainment, Confirmation, Provenance, or actor-specific participation facts.
-
-Critical boundaries:
+Canonical boundary:
 
 ```text
-Outcome != Actual
+Outcome
+= contextual result/disposition of an Actual realization
+
 Outcome != lifecycle/operational state
 Outcome != Observation
 Outcome != produced artifact/output
@@ -328,50 +269,88 @@ Outcome != Provenance
 Outcome != Evidence
 ```
 
+Critical hardenings include optional/contextual Outcome, no universal result enum, absence != failure, `unconfirmed` as epistemic rather than result semantics, shared Outcome != identical actor consequence and preservation of competing assertions/history.
+
+## Observation v0 — accepted
+
+Canonical source:
+
+- [`Observation v0`](../domain/concepts/observation.md)
+
+Validation:
+
+- [`Observation v0 Validation`](../domain/checkpoints/observation-v0-validation.md)
+
+Verdict:
+
+```text
+PASS WITH HARDENING
+```
+
+Canonical definition:
+
+> An Observation is a persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a subject at an effective time or context. It preserves what was observed or asserted without by itself establishing universal truth, authority, confirmation, Outcome, or evidentiary relevance.
+
+Critical boundaries:
+
+```text
+Observation != Actual
+Observation != Outcome
+Observation != Quantity
+Observation != Register
+Observation != Evidence
+Observation != Confirmation
+Observation != Provenance
+```
+
 Critical hardenings:
 
-- Outcome is optional/contextual rather than mandatory for every Actual;
-- one global completion/result enum is rejected;
-- absence of Outcome != failure/missed/not-completed;
-- `unconfirmed` belongs to epistemic/Confirmation semantics;
-- measurements and artifacts remain separate;
-- partial result does not universally mean failure;
-- replacement preserves history/relationship semantics;
-- shared Outcome != identical actor-specific consequences;
-- one actor/provider assertion != universal canonical Outcome;
-- AI inference does not create authority or disclosure permission;
-- corrections preserve relevant earlier assertion/provenance history.
+- measurement/simple-assertion scope; no universal fact/blob primitive;
+- Observation may exist without prior intention/Actual/Goal/Register;
+- stable identity not derived from current value/timestamp fields;
+- correction of the same observational act != new re-observation;
+- effective time/context != recorded/ingested time;
+- missing != explicit negative != failed/unavailable measurement;
+- subjective observations preserve perspective rather than pretending universal objectivity;
+- conflicting observations may coexist without silent averaging/overwrite;
+- derived observations preserve traceability;
+- chart/query aggregates are not automatically persisted;
+- high-frequency streams do not imply row-per-sample persistence;
+- subject != observer != recorder != source/provider/device != authority != viewer;
+- shared context does not force Observation visibility;
+- AI inference does not automatically establish authoritative Observation.
 
 Mandatory re-tests:
 
-- Outcome vs Observation;
-- Outcome vs Confirmation/Provenance;
-- Outcome vs Milestone at cluster level;
-- contextual competing Outcomes under future authority rules;
-- Evidence usage;
-- logical/persistence pressure gate.
+- Observation vs Quantity;
+- Observation vs Register/RegisterEntry;
+- Observation vs Evidence;
+- Observation vs Confirmation/Provenance;
+- Subject/observer/recorder/source semantics;
+- high-volume persistence pressure.
 
-## Next concept — Observation
+## Next concept — Confirmation
 
-Observation is now the active **read-only** review target.
+Confirmation is now the active **read-only** review target.
 
-It must justify a distinct domain boundary against:
+It must justify a bounded domain role against:
 
-- Actual;
-- Outcome;
-- raw measurement/value;
-- Register/Quantity semantics;
-- Event/Session facts;
-- Confirmation;
-- Evidence;
+- acknowledgement;
+- acceptance/agreement;
+- authority/canonical decision;
+- source assertion;
+- Observation validity;
+- Actual/Outcome truth;
 - Provenance;
-- subject/source/actor attribution.
+- participant response;
+- simple-user confirmation UX.
 
-No Observation primitive is accepted until it passes the full v3 pipeline.
+Primary risk:
 
-Likely remaining cluster candidates after Observation:
+> creating one generic `confirmed=true/false` field that collapses several materially different epistemic, social, workflow and authority states.
 
-- Confirmation;
+Likely remaining cluster candidates after Confirmation:
+
 - Evidence;
 - Provenance.
 
@@ -391,6 +370,15 @@ Likely topics:
 - Subject;
 - Person/Actor boundary;
 - Resource.
+
+Mandatory inherited re-tests from Observation v0:
+
+```text
+Observation vs Quantity
+Observation vs Register/RegisterEntry
+Subject vs observer/recorder/source
+sampled-series physical representation
+```
 
 ## Relationships / Reasoning
 
@@ -433,16 +421,18 @@ Schedule
 Session where executable episode exists
         ↓
 Actual realization context
-        ↓
-Outcome where result/disposition matters
-        ↓
-Observation / Evidence / Confirmation / Provenance
-        (remaining boundaries under review)
+        ├─ Outcome where result/disposition matters
+        └─ Observation(s) describing measured/asserted reality
+
+Confirmation / Evidence / Provenance
+        boundaries under review
 ```
 
 This is not a mandatory parent/child chain and not a persistence schema.
 
-Multi-actor relationships cut across the topology rather than forming a duplicate domain model.
+Observation may also exist independently, with no Actual or planning context.
+
+Multi-actor relationships cut across this topology rather than forming a duplicate domain model.
 
 ---
 
@@ -450,12 +440,15 @@ Multi-actor relationships cut across the topology rather than forming a duplicat
 
 Explicit future boundary tests:
 
-- Actual vs Observation/Evidence;
 - Actual vs Confirmation/Provenance;
-- Outcome vs Observation;
 - Outcome vs Confirmation/Provenance;
+- Observation vs Evidence;
+- Observation vs Confirmation/Provenance;
+- Observation vs Quantity;
+- Observation vs Register/RegisterEntry;
+- subject vs observer/recorder/source semantics;
 - Milestone vs Outcome vs GoalCriterion;
-- contextual competing Outcomes under authority rules;
+- contextual competing Outcome/Observation assertions under authority rules;
 - Plan vs Routine under complex progression;
 - collaborative Session vs broader Actual/actor attribution;
 - Event participation vs personal commitment/delegation;
@@ -500,9 +493,11 @@ Actual v0 accepted
         ↓
 Outcome v0 accepted
         ↓
-Observation review — ACTIVE READ-ONLY
+Observation v0 accepted
         ↓
-remaining Reality/Evidence concepts
+Confirmation review — ACTIVE READ-ONLY
+        ↓
+Evidence / Provenance reviews
         ↓
 Reality/Evidence cluster integration
         ↓
