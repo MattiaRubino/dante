@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — Actual v0 promoted after Methodology v3 validation  
+**Current revision:** 2026-08-11 — Outcome v0 promoted after Methodology v3 validation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -10,14 +10,14 @@
 
 This is the fast canonical reference for LifeOS vocabulary.
 
-It prevents four layers from drifting apart:
+It keeps four distinct languages aligned without forcing them into a one-to-one mapping:
 
 ```text
 DOMAIN LANGUAGE
 what a concept means canonically
         ↓
 PRODUCT LANGUAGE
-how LifeOS may package/present the meaning
+how LifeOS packages/presents that meaning
         ↓
 UI LANGUAGE
 what users actually read and manipulate
@@ -25,8 +25,6 @@ what users actually read and manipulate
 IMPLEMENTATION LANGUAGE
 API / schema / code names once designed
 ```
-
-The layers are related but are **not one-to-one**.
 
 Canonical rule:
 
@@ -77,6 +75,7 @@ Recurrence
 Availability
 Capacity
 Actual
+Outcome
 ```
 
 ## DERIVED
@@ -146,7 +145,6 @@ A demonstrated semantic area intentionally postponed to a later concept review.
 Current examples:
 
 ```text
-Outcome
 Observation
 Evidence
 Confirmation
@@ -228,7 +226,7 @@ Plan != Schedule
 Plan != Actual
 ```
 
-Product profiles may include Plan, Project, Program, Study plan, Training plan, Release plan, Trip plan, Rehabilitation plan.
+Product profiles may include Plan, Project, Program, Study plan, Training plan, Release plan, Trip plan and Rehabilitation plan.
 
 `Project` and `Program` are currently product profiles, not separate kernel primitives.
 
@@ -253,7 +251,7 @@ Activity != Actual
 Activity != assignee
 ```
 
-Product/UI aliases may include Task, Action, Workout, Study item, Maintenance action, Checklist item, Preparation step.
+Product/UI aliases may include Task, Action, Workout, Study item, Maintenance action, Checklist item and Preparation step.
 
 ```text
 Activity identity
@@ -535,16 +533,86 @@ Private Actual may support an authorized derived projection without disclosing i
 
 ### Typical UI presentation
 
-Users will usually see consequences rather than the word `Actual`, for example:
+Users usually see consequences rather than the noun `Actual`, for example:
 
-- Completed / Partial / Skipped;
-- Actual time 10:08-11:23;
-- 3.8 km completed;
-- Attended / Did not attend;
-- What actually happened?;
+- What happened?;
+- actual time;
+- performed / not performed;
+- attendance detail;
 - execution/history detail.
 
 The UI does not need a generic `Create Actual` surface.
+
+---
+
+## Outcome
+
+**Status:** CANONICAL  
+**Source:** `concepts/outcome.md`  
+**Validation:** `checkpoints/outcome-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What result or disposition followed from this realization in the relevant context?  
+**UI exposure:** CONTEXTUAL / HIDDEN / ADVANCED
+
+### Domain meaning
+
+A contextual representation of the result or disposition established for a specific Actual realization.
+
+Outcome describes what the realization achieved, satisfied, failed to satisfy, produced as a semantic result, or otherwise resolved where that result meaning matters.
+
+```text
+Actual
+  ↓
+Outcome
+result / disposition
+```
+
+### Not the same as
+
+```text
+Outcome != Actual
+Outcome != lifecycle/operational state
+Outcome != Observation
+Outcome != produced artifact/output
+Outcome != Milestone
+Outcome != Confirmation
+Outcome != Provenance
+Outcome != Evidence
+```
+
+### Core guardrails
+
+- Outcome is optional/contextual; not every Actual/Event/Observation requires one;
+- no universal Outcome enum is accepted;
+- operational/lifecycle state and Outcome remain separate dimensions;
+- absence of Outcome does not mean failure/missed/not-completed;
+- `unconfirmed` is epistemic/Confirmation semantics rather than Outcome;
+- measurements and produced artifacts remain separate;
+- partial result does not universally mean failure;
+- replacement must preserve relationship/history semantics;
+- a corrected Outcome preserves relevant prior assertion/provenance history;
+- provider identity does not define Outcome identity.
+
+### Multi-actor
+
+```text
+shared Outcome
+!= identical actor-specific consequence
+```
+
+One actor/provider assertion does not automatically establish universal canonical Outcome. Different contextual authorities may make different result assertions that require later reconciliation/Provenance semantics.
+
+### Typical UI presentation
+
+Users usually see domain-appropriate result language, for example:
+
+- Completed / Partially completed;
+- Passed / Failed;
+- Approved / Changes requested;
+- Decision deferred;
+- Replaced / Skipped where semantically valid;
+- Result details.
+
+The frontend should not expose a generic universal `Outcome` enum or force meaningless result selection on ordinary Events.
 
 ---
 
@@ -783,17 +851,13 @@ Future design must cover purpose, context, revocation, historical attribution an
 
 # 10. Reality/Evidence terms still under review
 
-## Outcome
+## Observation
 
 **Status:** DEFERRED — ACTIVE NEXT REVIEW
 
-Working purpose: what resulted from execution/occurrence. Must be tested against Actual, Milestone, Activity/Occurrence completion, Observation, Confirmation and Evidence.
+Working purpose: observed/measured/asserted fact about reality that may exist without prior intention, Actual wrapper or Outcome.
 
-## Observation
-
-**Status:** DEFERRED
-
-Observed fact about reality that may exist without prior intention or Actual wrapper.
+Must be tested against raw measurement/value, Register/Quantity, Actual, Outcome, Session/Event facts, Evidence, Confirmation, Provenance and Subject semantics.
 
 ## Evidence
 
@@ -829,6 +893,7 @@ How a fact/value/decision/change entered LifeOS and under what source/assertion/
 
 ```text
 Provenance != Actual
+Provenance != Outcome
 source != truth
 authority != source by default
 ```
@@ -891,11 +956,17 @@ Actual != Outcome
 Actual != Observation
 Actual != Evidence
 Actual != Provenance
+Outcome != lifecycle/operational state
+Outcome != Observation
+Outcome != produced artifact/output
+Outcome != Milestone
+Outcome != Confirmation
+Outcome != Provenance
+Outcome != Evidence
 Temporal Constraint != Availability
 Recurrence != Trigger
 Availability != empty-gap cache
 Capacity != universal busy/free boolean
-Milestone != Outcome
 ```
 
 ## Multi-actor
@@ -913,6 +984,7 @@ Sharing != ownership
 Assignment != Activity identity
 Participation response != Actual participation
 shared Actual != identical actor participation
+shared Outcome != identical actor consequence
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -998,20 +1070,38 @@ Every Monday · 10:00
 Yes / Maybe / No
 ```
 
-## Realized meeting
+## Realized meeting with result
 
 ```text
 Domain
-Event + Schedule + Actual + actor-scoped participation reality
+Event + Schedule + Actual + Outcome + actor-scoped participation
 
 UI
 Project review
 Planned 10:00-11:00
 Actually 10:08-11:23
+Result: Decision deferred
 Luca left at 10:45
 ```
 
-One shared Actual does not imply identical attendance.
+One shared Actual/Outcome does not imply identical attendance or actor-specific consequences.
+
+## Exam
+
+```text
+Domain
+Event
++ Actual
++ Observation: score = 78/100
++ Outcome: passed
++ optional Milestone: certification checkpoint reached
+
+UI
+Exam result
+78/100 · Passed
+```
+
+The score and pass/fail result remain semantically distinct.
 
 ## Private availability
 
@@ -1067,7 +1157,12 @@ UI: Deadline / Preferred time / Not before
 
 ```text
 Internal: Actual
-UI: What happened? / Completed / Actual time / Result details
+UI: What happened? / Actual time / Performed / Not performed
+```
+
+```text
+Internal: Outcome
+UI: Passed / Partial / Approved / Decision deferred / Result details
 ```
 
 Reverse rule:
@@ -1096,7 +1191,7 @@ projects
 programs
 ```
 
-Likewise Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility and Actual must not be translated prematurely into final SQL table/cardinality choices before the logical model is reviewed.
+Likewise Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual and Outcome must not be translated prematurely into final SQL table/cardinality choices before the logical model is reviewed.
 
 When implementation names eventually differ from canonical language for good technical reasons, document the mapping here.
 
