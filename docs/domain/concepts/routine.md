@@ -2,59 +2,90 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-10  
+**Validation hardening:** 2026-08-11  
+**Multi-actor wording hardening:** 2026-08-11  
 **Meaning of accepted:** best current decision; reopenable with better evidence  
 **Workstream:** Core Domain Model v0
 
 ## Canonical definition
 
-> **A Routine is a persistent reusable policy that expresses a pattern of behavior or execution the user intends to repeat over time. A Routine governs when, how often, and under which rules that behavior is expected; individual occurrences, their scheduling, and what actually happens remain distinct concepts.**
+> **A Routine is a persistent reusable policy that expresses a pattern of behavior or execution intentionally expected to repeat over time. A Routine governs when, how often, and under which rules that behavior is expected; performer/responsibility, individual Occurrences, their scheduling, and what actually happens remain distinct concepts.**
 
-A Routine may represent a simple recurring behavior, a flexible recurring expectation, or a structured recurring bundle of actions. It is not merely a stored recurrence expression and it is not the list of occurrences it produces.
+A Routine may represent a simple recurring behavior, a flexible recurring expectation, or a structured recurring bundle of actions. It is not merely a recurrence expression and it is not the list of Occurrences it produces.
+
+The personal-first case usually has the user performing the repeated behavior. Multi-actor evidence shows that performer/responsibility may instead rotate or change by Occurrence without changing Routine identity.
 
 Examples include:
 
 - train Monday / Wednesday / Friday;
 - brush teeth every evening;
 - perform a weekly review every Sunday;
-- take a medicine every 12 hours;
-- replace a filter a fixed interval after the previous replacement;
+- take medicine every 12 elapsed hours;
+- replace a filter a fixed interval after previous replacement;
 - perform a backup after each photography session;
-- execute a multi-step morning routine.
+- execute a multi-step morning routine;
+- take household recycling out every Thursday with rotating responsibility.
+
+## Why the multi-actor wording changed
+
+The original wording described a pattern `the user intends to repeat`.
+
+That remains correct for personal V1 but accidentally implied:
+
+```text
+Routine identity = performer identity
+```
+
+Multi-actor scenarios demonstrate:
+
+```text
+Routine
+Take recycling out every Thursday
+
+Occurrence 1 -> Mattia
+Occurrence 2 -> Luca
+Occurrence 3 -> Sara
+```
+
+One repeating policy is sufficient. Three duplicate Routines are not required merely because the responsible/performing actor changes.
+
+Therefore Routine semantics remain about the recurring policy, while performer/responsibility belong to separate relations/context.
 
 ## Validation basis
 
-Routine v0 was reviewed against:
+Routine v0 has been reviewed against:
 
-- the LifeOS feature-discovery simulation, including flexible routines, cyclic shifts, medication, maintenance, sport, study, home management, temporary disruptions, and Goal progress from recurring execution;
-- the existing LifeOS core glossary and scheduling-flexibility rules;
-- the already accepted Goal v0, Plan v0, Activity v0, and Event v0 boundaries;
-- external recurrence patterns from iCalendar/RFC 5545, Google Calendar recurring-series/exception behavior, Todoist recurrence semantics, and Microsoft Planner recurrence-series behavior.
+- flexible routines, cyclic shifts, medication, maintenance, sport, study, home management and temporary disruptions;
+- Goal progress from recurring execution;
+- accepted Goal, Plan, Activity and Event boundaries;
+- Time-cluster Occurrence, Schedule, Recurrence, Session and Actual distinctions;
+- iCalendar/provider recurrence patterns, Todoist fixed/completion-relative recurrence and other mature recurrence behavior;
+- long-horizon progression stress tests;
+- multi-actor discovery/research involving household rotation, team/shared repetition, recurring care, responsibility transfer and external participants.
 
-External systems are benchmark inputs rather than models to copy directly.
+External systems are evidence, not design authorities.
 
-## Routine versus recurrence
+## Routine versus Recurrence
 
-A recurrence rule describes a temporal or relational repetition pattern. A Routine represents a recurring behavioral or execution policy.
+Recurrence describes how a temporal/generative pattern repeats. Routine represents the recurring behavioral/execution policy using that pattern.
+
+```text
+Routine
+Strength training
+
+Recurrence
+Mon / Wed / Fri
+```
 
 Therefore:
 
-> **Routine != recurrence rule.**
+> **Routine != Recurrence.**
 
-The same future recurrence capability may be usable by recurring Events, Routine occurrences, reminders, or other temporal concepts without turning them all into Routines.
-
-```text
-Recurring Event
-Team meeting every Monday at 10:00
-
-Routine
-Train Monday / Wednesday / Friday
-```
-
-The first is a recurring Event series because repeated occurrence is intrinsic to the Event series. The second is a recurring behavioral policy.
+The same Recurrence capability may be used by recurring Event sources, Temporal Constraints, Availability rules or other approved semantics without turning them into Routines.
 
 ## Routine versus Activity
 
-An Activity represents a concrete actionable intention. A Routine represents the persistent policy that expects or guides repeated execution.
+Activity represents actionable intended work. Routine represents persistent repeated execution policy.
 
 ```text
 Routine
@@ -63,55 +94,51 @@ Take out trash every Thursday
 Occurrence
 Thursday 13 August
 
-Execution Activity / Actual
+Activity / execution semantics
 Take out trash
 ```
 
-The interface may describe this as a recurring task, but the domain must preserve the distinction between the recurring policy and each expected execution.
+The UI may call this a recurring task, but the domain must preserve policy vs individual expectation/execution history.
 
 Therefore:
 
-> **A recurring task in the UI does not require one Activity identity to be moved forward forever.**
-
-LifeOS should preserve the series/policy separately from its individual occurrences and execution history.
+> **A recurring task UI does not require one Activity identity to be moved forward forever.**
 
 ## Routine versus Event
 
-Recurring temporal occurrence alone does not make something a Routine.
+Recurring temporal occurrence alone does not create Routine semantics.
 
 ```text
 Recurring Event
-University lesson every Tuesday at 09:00
+University lesson every Tuesday 09:00
 ```
 
-remains an Event series.
+remains Event semantics.
 
 ```text
 Routine
 Study Tuesday and Thursday evenings
 ```
 
-is a recurring behavioral policy.
+is repeated behavioral/execution policy.
 
 Therefore:
 
 > **Routine != recurring Event.**
 
-The exact shared recurrence and occurrence machinery is deferred to the Temporal Model.
-
 ## Routine versus Goal
 
-A Goal describes a condition or result the user wants to reach or sustain. A Routine describes the repeated execution policy used to produce behavior.
+Goal defines a desired condition/result/pattern. Routine defines repeated execution policy.
 
 ```text
 Goal
-Train at least 3 times per week
+Train >= 3 times/week
 
 Routine
-Gym Monday / Wednesday / Friday
+Gym Mon/Wed/Fri
 ```
 
-The Goal may survive changes to the Routine. The Routine may also exist without an explicit Goal.
+Goal may survive Routine changes and Routine may exist without an explicit Goal.
 
 Therefore:
 
@@ -119,9 +146,7 @@ Therefore:
 
 ## Routine versus Plan
 
-A Plan coordinates how a purpose is intended to be pursued or organized. A Routine coordinates a pattern that is expected to repeat.
-
-A Plan may use one or more Routines:
+Plan coordinates broader pursuit/strategy. Routine coordinates a repeated policy.
 
 ```text
 Plan
@@ -133,109 +158,155 @@ Routines
 - strength
 ```
 
-A Routine may also exist independently of any Plan.
-
-A complex Routine does not automatically become a Plan merely because it contains multiple steps. The dominant semantic distinction is whether the structure represents a repeating pattern/policy or a broader strategy coordinated toward a purpose.
+Routine may also exist independently.
 
 ### Progression guardrail
 
-Validation Methodology v2 strengthened this boundary with long-horizon progression cases.
-
-A Routine may be composite and may contain adaptive execution rules, but it should not become the default container for materially changing stages, strategy transitions, milestones, and several distinct recurring policies simply because those stages happen sequentially over time.
-
-Example:
+A Routine may be composite/adaptive but should not become the default container for materially changing long-horizon stages, strategy transitions, milestones and multiple distinct recurring policies.
 
 ```text
 Plan
 12-week training progression
 
-Stage 1
-Routine A
-
-Stage 2
-Routine B
-
-Stage 3
-Routine C
+Stage 1 -> Routine A
+Stage 2 -> Routine B
+Stage 3 -> Routine C
 ```
 
-is generally stronger than one mega-Routine that owns the entire 12-week progression, every phase transition, all milestones, and every changing policy.
+is generally stronger than a mega-Routine owning the full staged strategy.
 
-Current guardrail:
+Canonical guardrail:
 
-> **Routine may contain repeated internal structure and adaptive execution rules, but coordination of materially changing stages, strategy, milestones, and multiple recurring policies tends toward Plan semantics.**
+> **Routine may contain repeated internal structure and adaptive execution rules, but coordination of materially changing stages, strategy, milestones and multiple recurring policies tends toward Plan semantics.**
 
-This is intentionally a semantic guardrail rather than an arbitrary threshold based on duration, number of steps, or number of child objects.
+No arbitrary duration/step count defines the boundary.
 
 ## Routine versus Template
 
-A Template is a reusable structure that can be instantiated when needed. A Routine creates or governs repeated expectation over time.
+Template is reusable structure instantiated when needed. Routine generates/governs repeated expectation.
 
 ```text
 Template
 Travel checklist
 
 Routine
-Weekly review every Sunday
+Weekly review Sunday
 ```
-
-A Routine may eventually reuse a Template, but they do not share the same lifecycle or semantics.
 
 Therefore:
 
 > **Routine != Template.**
 
+A Routine may reuse a Template without sharing lifecycle.
+
 ## Routine versus Trigger
 
-A Routine expresses repeated behavioral expectation. A Trigger detects a condition or event that may cause an action, notification, or rule to run.
+Routine expresses repeated expected behavior/execution. Trigger detects a condition/event and may cause action/notification/rule execution.
 
 ```text
 Routine
-Replace filter every three months
+Replace filter every 3 months
 
 Trigger
-Alert when filter reaches X hours of use
+Alert when usage reaches X hours
 ```
-
-Conditional automation such as arbitrary `if condition then action` must not be hidden inside Routine merely because it may eventually initiate recurring work.
 
 Therefore:
 
 > **Routine != Trigger.**
 
-## Routine occurrence
+Arbitrary `if condition then action` logic must not be hidden inside Routine.
 
-A Routine is not a list of materialized executions. LifeOS requires the semantic concept of an expected occurrence belonging to the Routine.
+## Routine versus observed habit/pattern
+
+Repeated observed behavior does not automatically become an intended Routine.
+
+```text
+Observation
+Usually reads around 22:30
+```
+
+may justify:
+
+```text
+AI proposal
+Do you want to protect reading time in the evening?
+```
+
+but must not silently create:
 
 ```text
 Routine
-Gym Monday / Wednesday / Friday
-
-Occurrence A
-Monday
-
-Occurrence B
-Wednesday
-
-Occurrence C
-Friday
+Read every evening
 ```
 
-The exact physical representation and materialization strategy for Occurrence is deferred to the Temporal Model.
+Canonical rule:
 
-An occurrence may eventually carry or link to:
+> **Observed repeated behavior != canonical Routine intent.**
 
-- its original expected time or valid window;
-- current accepted scheduling;
-- occurrence-specific exception data;
-- execution Activity or Session where appropriate;
-- Actual execution;
-- Outcome and Confirmation;
-- provenance and history.
+This distinction is essential for future personal-learning/preference intelligence.
 
-## Occurrence exceptions do not rewrite the Routine
+## Routine Occurrence
 
-A one-off change belongs to the occurrence or its scheduling unless the user explicitly changes the future rule.
+Routine is not a materialized list of executions.
+
+```text
+Routine
+Gym Mon/Wed/Fri
+        ↓
+Occurrence A
+Occurrence B
+Occurrence C
+```
+
+An Occurrence may carry/link to:
+
+- generation/source context;
+- original expectation;
+- current Schedule;
+- occurrence-specific exception;
+- responsible/assigned actor where later supported;
+- Activity/Session/Actual;
+- Outcome/Confirmation;
+- provenance/history.
+
+## Performer/responsibility does not define Routine or Occurrence identity
+
+Multi-actor hardening:
+
+> **Routine identity != performer.**
+
+> **Occurrence identity != assigned/responsible actor.**
+
+A one-off change in who performs an Occurrence normally changes an actor relationship/state, not the Routine and not the Occurrence identity.
+
+Example:
+
+```text
+Routine
+Household bin night every Thursday
+
+Occurrence
+13 August
+originally responsible: Mattia
+substitution: Luca
+```
+
+The expected Thursday instance remains the same Occurrence.
+
+## Responsibility rotation is not Recurrence identity
+
+A repeated responsibility pattern may later reuse recurrence/rule machinery, but Recurrence itself answers `how does the expected pattern repeat?`, not `who gets assigned next?`.
+
+Therefore:
+
+> **Recurrence must not become a generic assignment-rotation engine.**
+
+Exact rotation/responsibility policy belongs to later Relationship/Responsibility review.
+
+## Occurrence exceptions do not rewrite Routine
+
+One-off placement/assignment changes remain occurrence-specific unless future policy is explicitly revised.
 
 ```text
 Routine
@@ -245,168 +316,149 @@ This Wednesday only
 20:00
 ```
 
-The Routine remains unchanged.
-
-By contrast:
+Routine remains unchanged.
 
 ```text
 From now on
-Gym Wednesday 20:00
+Wednesday 20:00
 ```
 
-changes the future Routine policy.
+changes future policy.
 
-LifeOS must be able to distinguish at least conceptually:
+Likewise:
 
-- this occurrence only;
-- selected occurrences;
-- future occurrences from an effective point;
-- the complete Routine definition where historically meaningful.
+```text
+This occurrence only
+Luca substitutes for Mattia
+```
+
+must not automatically rewrite long-term responsibility policy.
 
 ## Effective-dated revisions
 
-Structural changes to a Routine must not silently rewrite the rule that governed earlier occurrences.
+Structural Routine changes must not silently rewrite the policy governing earlier Occurrences.
 
 ```text
-Routine revision v1
-run 30 minutes Mon/Wed/Fri
+v1
+Run 30m Mon/Wed/Fri
 
-effective later:
-Routine revision v2
-run 45 minutes Mon/Wed/Fri
+later effective v2
+Run 45m Mon/Wed/Fri
 ```
 
-Past occurrences remain explainable under the rule that was effective at the time.
+Past Occurrences remain explainable under the effective rule/version.
 
-The physical versioning mechanism is deferred to the Version/History model.
+Exact version persistence is deferred.
 
-## Skip, pause, and end are distinct
+## Skip, pause and end are distinct
 
-LifeOS must not collapse these semantics.
+### Skip Occurrence
 
-### Skip occurrence
-
-A specific expected occurrence is not executed.
-
-The Routine remains active.
+One expected instance is not executed; Routine remains active.
 
 ### Pause Routine
 
-The Routine remains conceptually valid but future expectation is temporarily suspended or overridden.
+Routine remains conceptually valid but future expectation is temporarily suspended/overridden.
 
 ### End Routine
 
-The repeated policy is no longer expected to continue.
+Repeated policy is no longer expected to continue.
 
-The exact lifecycle state machine remains deferred, but these semantic differences must be preserved.
+Temporary modes such as illness, holiday, travel, exams or intense work may alter execution without rewriting stable long-term policy.
 
-Temporary modes such as illness, holiday, travel, exams, or intense work may suspend or modify selected Routine behavior without rewriting long-term policy.
+## Recurrence semantic families
 
-## Recurrence anchor semantics
+Routine may use several recurrence families; Routine itself does not define their implementation.
 
-LifeOS must support more than one way to determine the next expected occurrence.
+Examples:
 
-Required semantic families include at least:
-
-### Calendar-anchored
+### Calendar/wall-clock
 
 ```text
 Every Monday at 18:00
+Every day at 08:00 local
 ```
 
-### Wall-clock anchored
-
-```text
-Every day at 08:00 local time
-```
-
-This is not necessarily equivalent to an exact elapsed 24-hour interval across DST or timezone changes.
-
-### Elapsed-interval anchored
+### Elapsed interval
 
 ```text
 Every 12 elapsed hours
 ```
 
-### Completion-anchored
+### Quota
 
 ```text
-Replace filter 30 days after the previous replacement
+3 times per week
 ```
 
-If execution occurs late, the next expectation may be relative to the Actual completion rather than the previously planned date.
-
-### Relation-anchored
+### Completion-relative
 
 ```text
-Backup photos after every photo shoot
-Stretch after every workout
+Replace filter 30 days after Actual previous replacement
 ```
 
-The exact relation to Trigger and dependency semantics remains deferred.
+### Relation/anchor-stream relative
 
-These are semantic requirements, not a decision to create one database enum per family.
+```text
+Backup after every qualifying photo Session
+```
 
-## Flexible routines
+Exact semantics live in Recurrence v0.
 
-A Routine need not prescribe one exact timestamp for every occurrence.
+## Flexible Routine
+
+Routine need not prescribe exact timestamp per Occurrence.
 
 ```text
 Routine
-Train 3 times per week
+Train 3 times/week
 
-preferred days
-Mon / Wed / Fri
-
-preferred window
+preferences
+Mon/Wed/Fri
 17:00-21:00
 
 spacing
-at least one recovery day where applicable
+recovery where applicable
 ```
 
-The Routine defines expected pattern/policy. A future scheduler may choose concrete placement according to availability, constraints, priorities, and user policy.
+Routine defines expected policy; scheduler may select placements based on constraints, availability, capacity and policy.
 
 Therefore:
 
 > **Routine policy != concrete Schedule.**
 
-A missed preferred placement may be rescheduled without changing the underlying Routine when the Routine permits that flexibility.
+## Composite Routine
 
-## Composite routines
-
-A Routine may govern a recurring bundle of actions.
+Routine may govern a recurring bundle:
 
 ```text
 Morning Routine
-- drink water
+- water
 - medication
 - breakfast
 - prepare bag
 - leave home
 ```
 
-The bundle does not require five independent Routine identities merely because its execution contains multiple actions.
+The bundle does not require one Routine per step.
 
-Individual steps may remain distinct Activities or structured execution components where their history/outcome matters.
+Individual steps may remain Activities/components where their own history/Outcome matters.
 
-A composite Routine does not automatically become a Plan: repetition remains its dominant semantic purpose.
-
-The exact boundary between a structured Routine and a Plan should be rechecked during the intention/execution cluster checkpoint.
+Repetition remains the dominant semantic; long-horizon strategic stage changes tend toward Plan.
 
 ## Routine and Goal/Plan relationships
 
-A Routine may exist without any Goal or Plan.
+Routine may exist without Goal/Plan.
 
-A Routine may also:
+It may:
 
-- support one or multiple Goals;
-- belong to or be coordinated by one or multiple Plans where the future relationship model allows it;
-- generate execution whose Actuals become Evidence for Goals not originally associated with the Routine.
+- support multiple Goals;
+- be coordinated by multiple Plans where future relationships allow;
+- generate Actuals/Evidence later relevant to Goals not originally associated with it.
 
-As with Activity and Event, discovered relevance must not rewrite the original intention of the Routine.
+Discovered relevance must not rewrite original Routine intent.
 
-## Planned execution, Actual, and evidence
+## Planned execution, Actual and Evidence
 
 Routine expectation is not Actual behavior.
 
@@ -414,7 +466,7 @@ Routine expectation is not Actual behavior.
 Routine
 Walk every evening
 
-Expected occurrence
+Occurrence
 Monday
 
 Actual
@@ -428,132 +480,154 @@ Actual
 8.4 km walk
 ```
 
-Occurrence outcome and measurements can feed statistics, Goal criteria, future planning, and adaptation.
-
-The passage of expected time does not prove execution.
+Passage of expected time does not prove execution.
 
 ## Adherence and streaks are derived
 
-A Routine must not require canonical fields such as:
+Routine does not require canonical fields:
 
 ```text
 streak = 42
 adherence = 87%
 ```
 
-These values are derived from occurrence history, Actuals, Outcomes, confirmation policy, and the evaluation period.
+These are derived from Occurrence history, Actuals, Outcomes, confirmation policy and evaluation period.
 
-LifeOS must be able to compute useful adherence/trend views while avoiding punitive or misleading universal streak semantics.
+Useful trend views remain possible without universal punitive streak semantics.
 
 ## Replanning and fallback
 
-When an expected occurrence cannot happen as planned, policy may permit outcomes such as:
+Policy may permit:
 
 - skip without replacement;
-- postpone within a valid period;
+- postpone within valid period;
 - move to another acceptable time;
-- replace with an equivalent execution;
-- shorten or split where the generated Activity permits it;
-- replan surrounding occurrences;
-- temporarily pause the Routine;
-- propose a structural Routine revision when repeated deviations indicate that the current policy is unrealistic.
+- equivalent replacement;
+- shorten/split generated execution;
+- replan surrounding Occurrences;
+- temporarily pause;
+- propose structural revision after repeated unrealistic deviations.
 
-A single deviation must not automatically rewrite the whole Routine.
+One deviation must not automatically rewrite Routine.
 
 ## AI boundary
 
 AI may propose:
 
-- a Routine from user intent;
-- recurrence/cadence options;
-- occurrence rescheduling;
-- exception handling;
-- a future Routine revision;
-- links to Goal or Plan;
-- insights about adherence or recurring conflicts.
+- Routine from explicit intent;
+- cadence/Recurrence;
+- rescheduling;
+- occurrence exception handling;
+- future Routine revision;
+- Goal/Plan links;
+- insights about adherence/conflicts;
+- responsibility/rotation suggestions where authorized.
 
-AI does not silently convert one-off behavior into a canonical Routine or alter a Routine's future policy when the change is material without the applicable user-control rule.
+AI must not:
 
-Repeated observed behavior may justify a proposal such as "Do you want to make this a Routine?" but observation alone is not canonical Routine intent.
+- silently convert observation into Routine;
+- materially alter future policy without applicable authority/policy;
+- assign another actor without authority;
+- treat recurring observed behavior as consent;
+- reveal private reasons behind another actor's availability.
+
+## Multi-actor evidence hardening
+
+Research/discovery confirms:
+
+```text
+Routine identity != one mandatory performer
+Occurrence identity != assigned actor
+assignment exception != Routine revision
+responsibility rotation != Recurrence identity
+observed group behavior != shared Routine intent
+```
+
+A genuinely shared repeated policy may later have multiple stakeholders/governors while preserving one Routine identity.
+
+Independent personal routines should not be merged solely because their schedules/behavior look similar.
 
 ## Current invariants
 
 1. `Routine != Activity`.
 2. `Routine != Event`.
-3. `Routine != RecurrenceRule`.
+3. `Routine != Recurrence`.
 4. `Routine != Schedule`.
 5. `Routine != Template`.
 6. `Routine != Trigger`.
 7. `Routine != Goal`.
-8. A Routine represents persistent recurring policy/pattern, not the list of occurrences it produces.
-9. Individual occurrences require identity/history distinct from the Routine.
-10. Changing one occurrence does not automatically change the Routine.
-11. Skip occurrence, pause Routine, and end Routine are distinct semantics.
-12. Future structural changes must be effective-dated/versionable without rewriting past occurrences.
-13. A Routine may exist without Goal or Plan.
-14. A Routine may support multiple Goals and may participate in multiple Plans subject to the future relationship model.
-15. A Routine may govern a single recurring action or a structured recurring bundle.
-16. Recurrence must support multiple anchor semantics rather than one universal fixed interval.
-17. Wall-clock recurrence and elapsed-time recurrence must remain distinguishable.
-18. Completion-relative recurrence must be possible where the next expectation depends on Actual completion.
-19. Relation-anchored recurring behavior must be representable without turning Routine into a generic automation engine.
-20. Routine policy and concrete Schedule are distinct.
-21. Expected occurrence and Actual execution are distinct.
-22. Adherence, streaks, and similar statistics are derived rather than universal canonical Routine state.
-23. One-off deviations must not automatically rewrite the recurring policy.
-24. A recurring Event series does not require a Routine.
-25. A recurring Activity may be presented that way in the UI while using Routine + occurrence semantics in the domain.
-26. Arbitrary condition-based automation belongs to Trigger/automation semantics rather than Routine itself.
-27. Passage of time does not establish occurrence completion.
-28. Repeated observed behavior does not automatically become canonical Routine intent.
-29. History must preserve which Routine policy/revision governed each occurrence.
-30. Exact recurrence materialization, timezone/DST behavior, and occurrence persistence remain Temporal Model concerns.
-31. Routine may contain repeated internal structure and adaptive execution rules, but coordination of materially changing stages, strategy, milestones, and multiple recurring policies tends toward Plan semantics rather than being absorbed into one mega-Routine.
+8. `Routine != observed habit/pattern`.
+9. Routine represents persistent repeated policy, not produced Occurrences.
+10. Individual Occurrences require distinct identity/history.
+11. Changing one Occurrence does not automatically change Routine.
+12. Skip Occurrence, pause Routine and end Routine are distinct.
+13. Structural future changes are effective-dated/versionable without rewriting history.
+14. Routine may exist without Goal/Plan.
+15. Routine may support multiple Goals/Plans subject to future relationship semantics.
+16. Routine may govern one recurring action or a structured recurring bundle.
+17. Recurrence supports materially distinct temporal/generative families.
+18. Wall-clock and elapsed recurrence remain distinguishable.
+19. Completion-relative generation can depend on qualifying Actual.
+20. Relation-anchored behavior must not make Routine a generic automation engine.
+21. Routine policy and concrete Schedule are distinct.
+22. Expected Occurrence and Actual execution are distinct.
+23. Adherence/streaks are derived rather than universal state.
+24. One-off deviations do not automatically rewrite recurring policy.
+25. Recurring Event series does not require Routine.
+26. Recurring task UI may map to Routine + Occurrence semantics.
+27. Generic condition automation belongs to Trigger/automation semantics.
+28. Passage of time does not establish completion.
+29. Repeated observed behavior does not create Routine intent automatically.
+30. History preserves which Routine policy/version governed each Occurrence.
+31. Materially changing long-horizon stages/strategy tend toward Plan rather than mega-Routine.
+32. Routine identity is independent from one mandatory performer.
+33. Occurrence responsibility/performer changes do not automatically change Occurrence/Routine identity.
+34. Responsibility rotation is not Recurrence's core meaning.
+35. AI does not gain authority to create shared/assigned Routine behavior merely from inferred patterns.
 
 ## Stress-test coverage
 
-Routine v0 was checked against representative LifeOS cases including:
-
-| Case | Current representation |
+| Case | Representation |
 |---|---|
-| Gym Mon/Wed/Fri | Routine + expected occurrences |
+| Gym Mon/Wed/Fri | Routine + Occurrences |
 | Brush teeth nightly | simple Routine |
 | Weekly review | Routine |
 | Medication every 12 elapsed hours | elapsed-interval Routine |
-| Medication at 08:00/20:00 local | wall-clock Routine |
-| Replace filter after previous replacement | completion-anchored Routine |
-| Team meeting every Monday | recurring Event, not Routine |
-| University course every Tuesday | recurring Event series |
-| Stretch after workout | relation-anchored Routine / future Trigger relation |
-| Morning routine with multiple steps | composite Routine |
-| Maintenance after 10,000 km | Trigger/maintenance condition, not simple temporal Routine |
-| Train 3 times/week | Routine when execution policy; Goal when desired condition |
-| 12-week staged training progression | Plan coordinating stage-specific Routines rather than one default mega-Routine |
-| Move one gym session | occurrence exception |
-| Holiday for two weeks | Routine pause/temporary override |
-| Change Wednesday time from now on | effective future Routine revision |
-| Miss one occurrence | occurrence outcome; Routine remains active |
+| Medication 08:00/20:00 local | wall-clock Routine |
+| Replace filter after previous replacement | completion-relative Routine |
+| Team meeting Monday | recurring Event, not Routine |
+| University course Tuesday | recurring Event source |
+| Stretch after workout | relation-anchored Routine / future Trigger boundary |
+| Morning multi-step sequence | composite Routine |
+| Maintenance after 10,000 km | Trigger/usage condition, not ordinary temporal Routine |
+| Train 3x/week | Routine when policy; Goal when desired condition |
+| 12-week staged training | Plan with stage-specific Routines |
+| Move one gym occurrence | Occurrence/Schedule exception |
+| Holiday two weeks | pause/temporary override |
+| Change Wednesday time from now | effective future revision |
+| Miss one occurrence | Occurrence outcome; Routine remains |
+| Household chore rotates people | one Routine + occurrence-specific responsibility |
+| One-off substitute | same Occurrence, actor relation changes |
+| Repeated observed evening reading | Observation/pattern; possible Routine proposal, not automatic Routine |
 
-No reviewed case currently requires representing Routine as Activity-with-repeat or as a generic automation primitive.
+No reviewed case requires representing Routine as Activity-with-repeat, per-actor duplicate Routines, or a generic automation/assignment engine.
 
 ## Deliberately deferred questions
 
-The following are not decided by Routine v0:
-
-- exact Occurrence entity/value-object/persistence design;
-- recurrence materialization strategy;
-- timezone and DST algorithms;
-- exact Routine lifecycle enum/state machine;
-- exact versioning persistence;
-- exact Routine-to-Plan/Goal relationship representation;
-- precise relation-anchored recurrence versus Trigger boundary;
-- precise composite Routine versus Plan boundary;
-- exact generated Activity versus occurrence relationship;
-- how far future occurrences are materialized or derived on demand;
-- API and SQL representation.
+- exact Routine lifecycle state machine;
+- exact version persistence;
+- final Routine-to-Goal/Plan relationships;
+- Responsibility/Assignment/rotation policy model;
+- shared Routine governance;
+- Actor/Person/Account/Principal model;
+- exact generated Activity/Occurrence relationship;
+- precise relation-anchored Recurrence vs Trigger boundary;
+- composite Routine vs Plan edge cases;
+- future materialization horizon;
+- API/SQL representation.
 
 ## Decision note
 
-Routine v0 supersedes the narrower repeated-pattern definition for the active Domain Model workstream by making the policy/occurrence/execution distinction explicit and by supporting flexible, interval-, completion-, wall-clock-, and relation-anchored behavior.
+Routine v0 remains the accepted recurring behavioral/execution-policy primitive.
 
-It does not replace existing product documents yet. Broader documentation will be reconciled deliberately after the intention/execution cluster checkpoint.
+The 2026-08-11 hardening generalizes the policy beyond one mandatory performer while preserving all prior Time/Occurrence/Recurrence/history boundaries.
