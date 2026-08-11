@@ -27,45 +27,41 @@ Where an accepted ADR defines a broader architectural constraint, this workstrea
 
 Every Domain Atlas concept must be reviewed against more than the immediately preceding discussion before it is accepted.
 
-Default cycle:
+All new concepts now use **Domain Validation Methodology v3** and its mandatory execution template.
 
-1. inspect relevant LifeOS documentation and prior decisions;
-2. inspect feature-discovery simulations and applicable real-life scenarios;
-3. perform targeted external benchmark/research where mature systems, standards, APIs or research can expose missing semantics;
-4. propose the smallest strong model explaining the evidence;
-5. challenge the proposal with the user;
-6. add adversarial/edge cases;
-7. check consistency against accepted concepts;
-8. run applicable multi-actor compatibility tests;
-9. save only when coherent enough to become the current baseline.
+Ordered validation pipeline:
 
-Existing documentation and external systems are evidence, not authority. Contradictions must be surfaced rather than inherited silently.
+```text
+A. Evidence + candidate formation
+        ↓
+B. Core Semantic Validation Gate
+        ↓
+C. Multi-Actor Compatibility Gate
+        ↓
+D. Cross-Concept Consistency Gate
+        ↓
+Concept verdict
+```
 
----
+Every completed cluster then passes:
 
-# Validation Methodology v2
+```text
+Cluster Integration Gate
+        ↓
+Cluster Multi-Actor Stress Gate
+        ↓
+Cluster verdict
+```
 
-Reference:
+Before broad persistence/API stabilization the whole accepted domain must pass final whole-domain regression, multi-actor and implementation-pressure gates.
 
-- [`Validation Methodology v2`](validation-methodology-v2.md)
-- [`Validation Methodology v2 — Multi-Actor Addendum`](validation-methodology-v2-multi-actor-addendum.md)
+Canonical references:
 
-The methodology includes, where applicable:
+- [`Validation Methodology v3`](validation-methodology-v3.md)
+- [`Validation Execution Template v3`](validation-execution-template-v3.md)
+- [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md)
 
-- Real-World Workflow Inversion;
-- deep chronological simulation;
-- adversarial REMOVE / MERGE / SPLIT / UNIVERSALIZE / INVERT / EXTREME tests;
-- semantic redundancy / merge-split analysis;
-- downward composition;
-- upward reconstruction from reality;
-- lateral cross-domain propagation;
-- orphan / independence testing;
-- external cross-domain benchmarking;
-- external anti-pattern review;
-- scale/history stress;
-- simple-user versus power-user validation;
-- multi-actor identity/authority/privacy/burden testing;
-- final cross-cluster consistency testing.
+Validation Methodology v2 and its multi-actor addendum remain preserved under `history/` as audit/evolution evidence. Compatibility redirect files remain at their previous paths so older links do not silently point to a competing active standard.
 
 The goal is not the largest ontology. It is the smallest model that survives real life without losing semantic meaning, history, queryability, extensibility, privacy or usability.
 
@@ -129,13 +125,20 @@ Each accepted concept should document where relevant:
 - deliberately deferred questions;
 - persistence/API implications without prematurely fixing physical tables.
 
-Checkpoint documents record scope, methodology, scenario matrix, failures/ambiguities, hardenings, remaining dependencies and PASS/FAIL result.
+Every new concept/cluster checkpoint must use the v3 test registry, record applicable test IDs, justify `N/A`, record hardenings/dependencies and select exactly one verdict:
+
+```text
+PASS
+PASS WITH HARDENING
+REOPEN
+DEFERRED DEPENDENCY
+```
 
 ---
 
 # Domain & Product Language Map
 
-Canonical quick-reference terminology now lives in:
+Canonical quick-reference terminology lives in:
 
 - [`Domain & Product Language Map`](language-map.md)
 
@@ -164,13 +167,6 @@ Core rule:
 
 > **Domain concept != mandatory UI object, and UI label != mandatory domain primitive.**
 
-Examples:
-
-- `Occurrence` is canonical but normally hidden behind `this time` / `this occurrence`;
-- `Task` is product/UI language over Activity;
-- `Project` and `Program` remain product-profile candidates over Plan semantics;
-- `Calendar Block` remains product/UI language over Schedule/Availability/Capacity semantics where applicable.
-
 The Language Map records decisions; it does not create primitives. New canonical terms must first pass normal Domain Atlas review.
 
 The older `docs/product/v1-core-domain-glossary.md` remains product-history evidence but is not authoritative where the Domain Atlas/Language Map supersedes its kernel terminology.
@@ -191,32 +187,13 @@ For each concept establish:
 6. relationships to other concepts;
 7. evidence/provenance/derived state where relevant;
 8. real-world and edge-case coverage;
-9. multi-actor compatibility where applicable;
-10. rejected alternatives;
-11. deliberately deferred questions;
-12. implications for future persistence/APIs.
+9. explicit Multi-Actor Compatibility Gate;
+10. cross-concept consistency;
+11. rejected alternatives;
+12. deliberately deferred questions;
+13. implications for future persistence/APIs.
 
 Saving a concept does not permanently close it.
-
----
-
-# Validation approach
-
-Definitions are stress-tested across multiple life/work classes rather than one productivity workflow:
-
-- everyday personal planning;
-- study/learning;
-- work/professional deadlines;
-- health/fitness;
-- finance/resource tracking;
-- home/travel/assets/maintenance;
-- creative work;
-- caregiving/subject-based tracking;
-- temporary disruption/unusual schedules;
-- multi-actor social/household/team/professional coordination;
-- mature external systems/research solving comparable hard problems.
-
-Prefer a small set of strong primitives over overlapping nouns. A new entity requires materially different identity, lifecycle, authority, invariants, query behavior or other demonstrated semantics — not merely a familiar label.
 
 ---
 
@@ -239,15 +216,7 @@ Checkpoint:
 
 - [`Intention & Execution Cluster v0`](checkpoints/intention-execution-v0.md)
 
-The cluster later passed Validation Methodology v2 and the evidence-backed multi-actor synthesis.
-
-Multi-actor wording was hardened on 2026-08-11 for:
-
-- Goal;
-- Activity;
-- Routine.
-
-This changes actor/governance assumptions, not the core primitive boundaries.
+The cluster later passed the cross-cluster validation and evidence-backed multi-actor synthesis.
 
 ## Time — VALIDATED CURRENT BASELINE
 
@@ -264,9 +233,7 @@ Checkpoint:
 
 - [`Time Cluster v0`](checkpoints/time-v0.md)
 
-The cluster passed deep chronological, redundancy, reductio, traceability, benchmark, scale/history and simple/power-user tests.
-
-Earlier hardenings:
+Earlier hardenings retained:
 
 1. quota Recurrence preserves an explicit-enough period frame where membership/boundary semantics matter; equivalent quota Occurrences do not gain arbitrary ordinal meaning;
 2. materially changing long-horizon progression tends toward Plan rather than one mega-Routine;
@@ -276,17 +243,14 @@ Earlier hardenings:
 
 - [`Cross-Cluster Validation v2`](checkpoints/cross-cluster-validation-v2.md)
 
-Result: all twelve concepts retained; no justified merge/removal; no universal hierarchy required; top-down planning, bottom-up reality capture and lateral relevance remain representable without rewriting historical intention.
+Result: all twelve initial concepts retained; no justified merge/removal; no universal hierarchy required; top-down planning, bottom-up reality capture and lateral relevance remain representable without rewriting historical intention.
 
 ## Multi-Actor Evidence Synthesis — VALIDATED CURRENT BASELINE
 
-The completed collaboration simulation and independent external Deep Research were reconciled against the first two clusters.
-
 References:
 
-- [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md) — current normative guardrail;
-- [`Multi-Actor Evidence Synthesis v0`](checkpoints/multi-actor-evidence-synthesis-v0.md) — validation record;
-- [`Multi-Actor Readiness v0`](multi-actor-readiness-v0.md) — preserved earlier pre-research baseline/history;
+- [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md);
+- [`Multi-Actor Evidence Synthesis v0`](checkpoints/multi-actor-evidence-synthesis-v0.md);
 - [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md);
 - [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md).
 
@@ -297,31 +261,48 @@ Intention & Execution v0 — PASS
 Time v0                 — PASS
 Multi-Actor Readiness   — PASS WITH EVIDENCE-BACKED HARDENING
 
-Structural reopenings   — 0
-Concept removals         — 0
-Concept merges           — 0
+Structural reopenings    — 0
+Concept removals          — 0
+Concept merges            — 0
 Mandatory new primitives — 0
 ```
 
-Promoted guardrails include:
+## Observed Reality & Evidence — IN PROGRESS
 
-- shared canonical fact + actor-scoped personal overlay;
-- Account/Person/Actor/Subject must not be collapsed;
-- Activity identity != requester/assignee/performer;
-- participation response != Actual participation;
-- accepted Schedule != participant acceptance;
-- responsibility is richer than one assignee;
-- assignment does not prove coordination-stewardship/mental-load transfer;
-- delivery/acknowledgement/agreement/authority/Actual may differ;
-- useful coordination may use private-derived projections without source disclosure;
-- privacy includes inference/explanation/tool boundaries;
-- creator != automatic social authority;
-- access lifecycle/revocation != historical attribution;
-- partial/external/assisted participation is normal;
-- coordination burden must be evaluated per actor;
-- AI knowledge != disclosure permission and AI authority remains bounded.
+Current accepted concept:
 
-No Actor/Team/Organization/ACL/Stewardship primitive is pre-approved by this evidence.
+- [`Actual v0`](concepts/actual.md) — accepted 2026-08-11 under Methodology v3.
+
+Validation record:
+
+- [`Actual v0 Validation`](checkpoints/actual-v0-validation.md) — **PASS WITH HARDENING**.
+
+Current Actual boundary:
+
+```text
+Actual
+= contextual realization of a specific intention/expectation
+
+Actual != Session
+Actual != Outcome
+Actual != Observation
+Actual != Evidence
+Actual != Confirmation
+Actual != Provenance
+```
+
+Critical Actual invariants:
+
+- Actual is not a universal reality mega-object;
+- spontaneous reality may exist without Actual when no expectation is being reconciled;
+- no established Actual does not mean failed/skipped/missed;
+- known non-realization is distinct from unknown;
+- passage of time does not establish Actual;
+- shared Actual does not imply identical actor-specific participation;
+- subject/recorder/responsible actor/expected performer/actual performer may differ;
+- correction changes current accepted realized truth without silently deleting relevant assertion/provenance history.
+
+Next concept under review: **Outcome**.
 
 ---
 
@@ -329,14 +310,15 @@ No Actor/Team/Organization/ACL/Stewardship primitive is pre-approved by this evi
 
 ## Observed Reality & Evidence
 
-Likely includes:
+Remaining likely concepts:
 
-- Actual;
 - Outcome;
 - Confirmation;
 - Observation;
 - Evidence;
 - Provenance.
+
+Cluster membership may still change as pairwise redundancy tests run.
 
 ## Data / Subjects
 
@@ -366,8 +348,6 @@ Likely includes:
 
 Cluster membership/naming remain provisional until individual review.
 
-The project still does **not** automatically begin the next cluster merely because the first two are validated. User-led architecture/product brainstorming and explicit sequencing remain part of the agreed workflow.
-
 ---
 
 # Relationship to existing documentation
@@ -383,7 +363,8 @@ Current known differences include:
 - Milestone remains contextual checkpoint, distinct from Goal/Outcome/Deadline/Event;
 - Occurrence is stable expected-instance identity;
 - Schedule is accepted temporal assignment, distinct from Constraint/Recurrence/Capacity/Actual;
-- Session is actual execution episode, not planned placement;
+- Session is actual execution episode, not planned placement or broader realization;
+- Actual is now the contextual realization record linking a specific expectation to realized reality;
 - Deadline is latest-bound Temporal Constraint semantics;
 - Availability/Capacity/reservation semantics replace the assumption that every calendar-shaped item is a duplicate Calendar Block;
 - Calendar Block remains useful product/UI vocabulary.
@@ -406,6 +387,7 @@ Do not silently rewrite historical product documents solely to make wording unif
 - [`Temporal Constraint v0`](concepts/temporal-constraint.md) — accepted.
 - [`Recurrence v0`](concepts/recurrence.md) — accepted; quota/period hardening retained.
 - [`Availability & Capacity v0`](concepts/availability-capacity.md) — accepted.
+- [`Actual v0`](concepts/actual.md) — accepted under Methodology v3; contextual realization semantics.
 
 ---
 
@@ -425,8 +407,10 @@ Availability -> when schedulable capacity may be used
 Capacity     -> ability to accept compatible commitments
 Schedule     -> when execution/occurrence is currently accepted
 Session      -> which bounded actual execution episode happened
-Actual       -> broader reality of what happened (future review)
-Evidence     -> what supports evaluation (future review)
+Actual       -> how a specific expectation was realized in reality
+Outcome      -> what resulted from realization (under review)
+Observation  -> observed fact about reality (future review)
+Evidence     -> information used in evaluation (future review)
 ```
 
 Cross-cutting multi-actor direction:
@@ -448,24 +432,6 @@ object identity
 
 This is a domain direction, not a persistence schema.
 
-Important consequences:
-
-- Project/Program remain product profiles unless later proven distinct;
-- Task remains Activity-facing UI language;
-- observed habit/pattern does not automatically become Routine;
-- placing Activity at exact time does not make it Event;
-- Event state, participation response, attendance and Outcome remain separable;
-- Routine, Recurrence, Occurrence, Schedule, Session and Actual remain distinct;
-- Occurrence identity survives placement/assignment changes;
-- accepted Schedule does not imply all participants accepted;
-- Schedule presence does not imply Capacity consumption;
-- private source facts can support authorized derived projections without source disclosure;
-- creator/participant/visibility do not imply authority;
-- coordination burden/mental load is not proved transferred by assignment;
-- historical participation does not imply future access;
-- AI access does not create disclosure permission or social authority;
-- progressive disclosure is mandatory: kernel precision must not become casual-user bureaucracy.
-
 ---
 
 # Current modeling sequence
@@ -473,20 +439,21 @@ Important consequences:
 Current validated state:
 
 ```text
-Intention & Execution v0       — PASS
-Time v0                        — PASS
-Cross-Cluster Validation v2   — PASS
-Multi-Actor Evidence Synthesis — PASS WITH HARDENING
-Domain & Product Language Map — ESTABLISHED
+Intention & Execution v0        — PASS
+Time v0                         — PASS
+Cross-Cluster Validation v2     — PASS
+Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
+Domain & Product Language Map   — ESTABLISHED
+Validation Methodology v3       — ACTIVE MANDATORY STANDARD
+Actual v0                       — PASS WITH HARDENING / ACCEPTED
 
 ↓
-USER-LED BRAINSTORMING / QUESTIONS / ADDITIONAL TESTS
-
-↓ only after explicit decision
-select next Domain Atlas cluster
+Outcome review
+↓
+remaining Observed Reality & Evidence concepts
+↓
+cluster integration + multi-actor stress
 ```
-
-The workstream must not automatically proceed to `Actual / Outcome / Evidence` merely because this hardening is complete.
 
 ---
 
@@ -494,10 +461,13 @@ The workstream must not automatically proceed to `Actual / Outcome / Evidence` m
 
 Deliberately revisit later:
 
+- Actual vs Outcome;
+- Actual vs Observation/Evidence;
+- Actual vs Confirmation/Provenance;
 - Milestone vs Outcome vs GoalCriterion;
 - Plan vs Routine under complex progression/adaptation;
 - Event participation vs personal commitment/delegation;
-- Session vs broader Actual and actor-specific execution attribution;
+- collaborative Session vs actor-scoped Actual participation;
 - completion-relative Recurrence vs Trigger/relative Constraint semantics;
 - Availability/Capacity vs Resource model;
 - Person/Actor/Subject/Account/Principal boundaries;
