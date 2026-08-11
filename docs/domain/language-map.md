@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — terminology architecture + historical V1 crosswalk  
+**Current revision:** 2026-08-11 — Actual v0 promoted after Methodology v3 validation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -32,14 +32,7 @@ Canonical rule:
 
 > **A domain concept does not require a dedicated visible UI object, and a visible product/UI term does not automatically justify a separate domain primitive.**
 
-Examples:
-
-- `Occurrence` is canonical domain semantics but will usually appear to users as `this time`, `this workout`, or `this occurrence`;
-- `Project` can be first-class UX while current kernel strategy semantics remain `Plan`;
-- `Task`, `Workout`, `Study item`, and `Maintenance action` may all be contextual presentations of `Activity`;
-- `Calendar Block` remains useful UI/product language while the kernel separates Schedule, Availability, Capacity, and reservations/claims.
-
-This document is a navigation/governance layer. Detailed lifecycle, invariants, history, evidence, and stress tests remain in concept specs/checkpoints.
+This document is a navigation/governance layer. Detailed lifecycle, invariants, history, evidence and stress tests remain in concept specs/checkpoints.
 
 ---
 
@@ -83,6 +76,7 @@ Temporal Constraint
 Recurrence
 Availability
 Capacity
+Actual
 ```
 
 ## DERIVED
@@ -147,15 +141,15 @@ Visibility
 
 ## DEFERRED
 
-A demonstrated semantic area intentionally postponed to a later cluster.
+A demonstrated semantic area intentionally postponed to a later concept review.
 
-Examples:
+Current examples:
 
 ```text
-Actual
 Outcome
 Observation
 Evidence
+Confirmation
 Provenance
 Subject
 Resource
@@ -193,15 +187,7 @@ Kernel sophistication must not force ontology vocabulary into simple UI.
 **Question:** What outcome/condition/change/pattern is intentionally desired?  
 **UI exposure:** DIRECT
 
-### Domain meaning
-
-Persistent representation of an outcome, condition, change, or behavioral pattern intentionally adopted as desired.
-
-### Plain language
-
-Something a personal/shared/authorized context wants to become true or remain true.
-
-### Not the same as
+Persistent representation of an outcome, condition, change or behavioral pattern intentionally adopted as desired.
 
 ```text
 Goal != Plan
@@ -210,21 +196,9 @@ Goal != Milestone
 Goal != Evidence
 ```
 
-### Product/UI language
+Possible UI language: Goal, Objective, context-appropriate Target.
 
-- Goal;
-- Objective;
-- Target only when clearly outcome-oriented.
-
-### Frontend surfaces
-
-- Goals overview/detail;
-- Home/Today progress;
-- review/check-in;
-- search;
-- AI planning/review.
-
-### Multi-actor
+Multi-actor:
 
 ```text
 Goal identity
@@ -244,11 +218,7 @@ Goal identity
 **Question:** How is a purpose intended to be pursued/organized?  
 **UI exposure:** DIRECT / CONTEXTUAL
 
-### Domain meaning
-
-Persistent revisable structure coordinating work, behaviors, milestones, rules, stages, or other execution elements in pursuit of a purpose.
-
-### Not the same as
+Persistent revisable structure coordinating work, behaviors, milestones, rules, stages or other execution elements in pursuit of a purpose.
 
 ```text
 Plan != Goal
@@ -258,30 +228,11 @@ Plan != Schedule
 Plan != Actual
 ```
 
-### Product profiles
+Product profiles may include Plan, Project, Program, Study plan, Training plan, Release plan, Trip plan, Rehabilitation plan.
 
-- Plan;
-- Project;
-- Program;
-- Study plan;
-- Training plan;
-- Release plan;
-- Trip plan;
-- Rehabilitation plan.
+`Project` and `Program` are currently product profiles, not separate kernel primitives.
 
-`Project` and `Program` are currently **product-profile candidates**, not separate kernel primitives.
-
-### Frontend surfaces
-
-- Projects/Plans;
-- Goal detail;
-- roadmap/timeline;
-- board/list;
-- review.
-
-### Multi-actor
-
-Plan identity is independent from coordinator, contributors, and responsibility relationships.
+Plan identity is independent from coordinator, contributor and responsibility relationships.
 
 ---
 
@@ -292,15 +243,7 @@ Plan identity is independent from coordinator, contributors, and responsibility 
 **Question:** What actionable work/behavior is intended to be performed?  
 **UI exposure:** DIRECT / CONTEXTUAL
 
-### Domain meaning
-
-Persistent actionable intention whose actor responsibility, Schedule, actual execution, and Outcome remain separable.
-
-### Plain language
-
-Something that is meant to be done.
-
-### Not the same as
+Persistent actionable intention whose actor responsibility, Schedule, actual execution and Outcome remain separable.
 
 ```text
 Activity != Event
@@ -310,26 +253,7 @@ Activity != Actual
 Activity != assignee
 ```
 
-### Product/UI aliases
-
-- Task;
-- Action;
-- Workout;
-- Study item;
-- Maintenance action;
-- Checklist item;
-- Preparation step.
-
-### Frontend surfaces
-
-- task/action list;
-- Today timeline;
-- Plan detail;
-- Routine execution;
-- specialist module;
-- execution history.
-
-### Multi-actor
+Product/UI aliases may include Task, Action, Workout, Study item, Maintenance action, Checklist item, Preparation step.
 
 ```text
 Activity identity
@@ -348,15 +272,9 @@ Activity identity
 **Question:** What occurrence-centred thing is expected to happen?  
 **UI exposure:** DIRECT
 
-### Domain meaning
-
 Persistent expected occurrence for which temporal placement is intrinsic to meaning.
 
-### Typical product language
-
-Meeting, appointment, lesson, exam, concert, flight, shift, interview, race, ceremony, etc.
-
-### Not the same as
+Typical product language includes Meeting, Appointment, Lesson, Exam, Concert, Flight, Shift, Interview, Race and Ceremony.
 
 ```text
 Event != Activity
@@ -365,8 +283,6 @@ Event != participant response
 Event != attendance
 Event != Milestone
 ```
-
-### Multi-actor
 
 One shared Event should normally coexist with actor-scoped participation state rather than per-user copies.
 
@@ -379,11 +295,7 @@ One shared Event should normally coexist with actor-scoped participation state r
 **Question:** What behavioral/execution policy is intentionally expected to repeat?  
 **UI exposure:** DIRECT
 
-### Domain meaning
-
 Persistent reusable policy expressing repeated behavioral/execution expectation.
-
-### Not the same as
 
 ```text
 Routine != Recurrence
@@ -391,16 +303,6 @@ Routine != Event series
 Routine != Plan
 Routine != observed habit
 ```
-
-### Frontend surfaces
-
-- Routines;
-- repeat setup;
-- Today generated expectations;
-- adherence/review;
-- specialist views.
-
-### Multi-actor
 
 Routine identity is independent from performer; responsibility may vary per Occurrence.
 
@@ -413,11 +315,7 @@ Routine identity is independent from performer; responsibility may vary per Occu
 **Question:** What meaningful contextual checkpoint matters inside Goal/Plan?  
 **UI exposure:** DIRECT / ADVANCED
 
-### Domain meaning
-
-Persistent contextual checkpoint representing meaningful state, achievement, decision, delivery, or transition.
-
-### Not the same as
+Persistent contextual checkpoint representing meaningful state, achievement, decision, delivery or transition.
 
 ```text
 Milestone != Goal
@@ -428,15 +326,6 @@ Milestone != Outcome
 Milestone != Deadline
 Milestone != Phase
 ```
-
-### Frontend surfaces
-
-- roadmap;
-- Goal/Plan timeline;
-- progress/review;
-- release/project profile.
-
-### Multi-actor
 
 Approver/stakeholder/governor relationships do not define Milestone identity.
 
@@ -451,19 +340,9 @@ Approver/stakeholder/governor relationships do not define Milestone identity.
 **Question:** Which expected instance from a recurring/generative source is this?  
 **UI exposure:** HIDDEN / ADVANCED
 
-### Domain meaning
-
 Stable logical identity for one generated expected instance.
 
-### Typical UI language
-
-- This time;
-- This workout;
-- This meeting;
-- Only this one;
-- This and future occurrences.
-
-### Not the same as
+Typical UI language: This time, This workout, This meeting, Only this one, This and future occurrences.
 
 ```text
 Occurrence != Recurrence
@@ -472,8 +351,6 @@ Occurrence != Schedule
 Occurrence != Session
 Occurrence != Actual
 ```
-
-### Multi-actor
 
 Occurrence identity is independent from assigned/responsible actor.
 
@@ -486,16 +363,7 @@ Occurrence identity is independent from assigned/responsible actor.
 **Question:** When is this schedulable subject currently accepted/intended/expected to happen?  
 **UI exposure:** HIDDEN / CONFIGURATION
 
-### Typical UI language
-
-- When;
-- Date/time;
-- Scheduled for;
-- Move to...;
-- Add to calendar;
-- Tuesday afternoon.
-
-### Not the same as
+Typical UI language: When, Date/time, Scheduled for, Move to..., Add to calendar, Tuesday afternoon.
 
 ```text
 Schedule != Temporal Constraint
@@ -505,8 +373,6 @@ Schedule != Availability
 Schedule != Capacity claim
 Schedule != Session/Actual
 ```
-
-### Multi-actor
 
 Accepted Schedule is canonical temporal assignment under relevant authority/context; it does not mean every participant accepted participation.
 
@@ -519,16 +385,7 @@ Accepted Schedule is canonical temporal assignment under relevant authority/cont
 **Question:** Which logically continuous bounded episode of actual execution occurred?  
 **UI exposure:** CONTEXTUAL / ADVANCED
 
-### Typical UI language
-
-- Start / Pause / Resume / Stop;
-- Work session;
-- Study session;
-- Workout;
-- Tracked time;
-- Execution history.
-
-### Not the same as
+Typical UI language: Start, Pause, Resume, Stop, Work session, Study session, Workout, Tracked time, Execution history.
 
 ```text
 Session != Schedule
@@ -538,8 +395,6 @@ Session != Event attendance
 Session != broader Actual/Outcome
 ```
 
-### Multi-actor
-
 Session identity follows logical execution continuity, not performer count. Actor-specific participation may cover only part of a shared Session envelope.
 
 ---
@@ -548,21 +403,10 @@ Session identity follows logical execution continuity, not performer count. Acto
 
 **Status:** CANONICAL  
 **Source:** `concepts/temporal-constraint.md`  
-**Question:** Where/when is placement/duration/temporal relation allowed, required, bounded, or preferred?  
+**Question:** Where/when is placement/duration/temporal relation allowed, required, bounded or preferred?  
 **UI exposure:** CONFIGURATION
 
-### Typical UI language
-
-- Deadline;
-- Not before;
-- Not after;
-- Preferred time;
-- Allowed window;
-- Avoid this time;
-- Minimum/maximum duration;
-- Recovery/spacing.
-
-### Not the same as
+Typical UI language: Deadline, Not before, Not after, Preferred time, Allowed window, Avoid this time, Minimum/maximum duration, Recovery/spacing.
 
 ```text
 Temporal Constraint != Schedule
@@ -583,16 +427,7 @@ Temporal Constraint != Actual
 **Question:** How does a temporal/generative pattern repeat?  
 **UI exposure:** CONFIGURATION
 
-### Typical UI language
-
-- Repeat;
-- Every Monday;
-- 3 times/week;
-- Every 12 hours;
-- After completion;
-- Custom repeat.
-
-### Not the same as
+Typical UI language: Repeat, Every Monday, 3 times/week, Every 12 hours, After completion, Custom repeat.
 
 ```text
 Recurrence != Routine
@@ -612,18 +447,9 @@ Recurrence != responsibility rotation
 **Question:** When may a schedulable resource's capacity be used?  
 **UI exposure:** DIRECT / CONFIGURATION / DERIVED
 
-### Typical UI language
-
-- Available / Unavailable;
-- Working hours;
-- Free/busy;
-- Availability for others;
-- Out of office;
-- Exception.
+Typical UI language: Available, Unavailable, Working hours, Free/busy, Availability for others, Out of office, Exception.
 
 Availability is resource-oriented. Subject-specific timing rules remain Temporal Constraints.
-
-### Multi-actor
 
 Authorized availability projections can be shared without exposing private source events.
 
@@ -636,16 +462,7 @@ Authorized availability projections can be shared without exposing private sourc
 **Question:** How much / what kind of compatible commitment can a schedulable resource sustain?  
 **UI exposure:** HIDDEN / DERIVED / ADVANCED
 
-### Typical UI language
-
-- Busy;
-- Block my time;
-- Can overlap;
-- Focus time;
-- Capacity remaining;
-- Room/resource unavailable.
-
-### Core boundaries
+Typical UI language: Busy, Block my time, Can overlap, Focus time, Capacity remaining, Room/resource unavailable.
 
 ```text
 scheduled != capacity consumed
@@ -656,28 +473,101 @@ Capacity != universal scalar percentage
 
 ---
 
-# 6. Product/profile terms that are not independent kernel primitives
+# 6. Canonical Reality concepts
+
+## Actual
+
+**Status:** CANONICAL  
+**Source:** `concepts/actual.md`  
+**Validation:** `checkpoints/actual-v0-validation.md` — PASS WITH HARDENING  
+**Question:** How did this specific intention or expectation resolve in reality?  
+**UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
+
+### Domain meaning
+
+A persistent contextual realization record representing whether and how a specific intended or expected domain subject was realized in reality.
+
+Actual provides the reconciliation bridge between expectation and realized reality without becoming a container for every fact produced by that reality.
+
+```text
+Activity / Event / Occurrence
+          ↓
+        Actual
+how that expectation was realized
+```
+
+### Not the same as
+
+```text
+Actual != Activity/Event/Occurrence
+Actual != Schedule
+Actual != Session
+Actual != Outcome
+Actual != Observation
+Actual != Evidence
+Actual != Confirmation
+Actual != Provenance
+```
+
+### Core guardrails
+
+- Actual is contextual, not a universal reality object;
+- spontaneous reality may exist without Actual when no expectation is being reconciled;
+- absence of Actual does not mean failed/skipped/missed/not performed;
+- known non-realization is distinct from unknown and may have a valid Actual;
+- passage of time does not establish Actual;
+- one Activity/Occurrence may use multiple Sessions while retaining one broader realization context;
+- ordinary Event occurrence may have Actual without a redundant Session;
+- measurements remain Observation/specialist facts rather than duplicated Actual fields;
+- correction may change current accepted Actual while relevant provenance/assertion history remains;
+- provider identity does not define LifeOS Actual identity.
+
+### Multi-actor
+
+```text
+shared Actual
+!= actor-specific participation reality
+```
+
+Subject, recorder, responsible actor, expected performer and actual performer may differ.
+
+Private Actual may support an authorized derived projection without disclosing its source facts. AI/system access to Actual does not create disclosure permission.
+
+### Typical UI presentation
+
+Users will usually see consequences rather than the word `Actual`, for example:
+
+- Completed / Partial / Skipped;
+- Actual time 10:08-11:23;
+- 3.8 km completed;
+- Attended / Did not attend;
+- What actually happened?;
+- execution/history detail.
+
+The UI does not need a generic `Create Actual` surface.
+
+---
+
+# 7. Product/profile terms that are not independent kernel primitives
 
 ## Task
 
 **Status:** PRODUCT / UI TERM  
 **Maps to:** Activity
 
-Use when completion of a defined work unit is the dominant UI meaning.
-
-Do not create a second Task lifecycle/history model beside Activity.
+Use when completion of a defined work unit is the dominant UI meaning. Do not create a second Task lifecycle/history model beside Activity.
 
 ## Project
 
 **Status:** PRODUCT PROFILE / HISTORICAL KERNEL TERM  
 **Current mapping:** Plan profile, optionally connected to Goal(s), Milestones, Activities, Events, dependencies, etc.
 
-A finite coordinated body of work can remain a first-class UX concept without a separate strategy kernel.
+A finite coordinated body of work can remain first-class UX without a separate strategy kernel.
 
 ## Program
 
 **Status:** PRODUCT PROFILE / HISTORICAL KERNEL TERM  
-**Current mapping:** Plan profile emphasizing structured progression, stages, repeated policies, reviews, or adaptation.
+**Current mapping:** Plan profile emphasizing structured progression, stages, repeated policies, reviews or adaptation.
 
 ## Calendar Block
 
@@ -695,14 +585,7 @@ Do not clone every scheduled Activity/Event into a second Calendar Block entity.
 
 **Status:** RANGE SHAPE / PRODUCT TERM
 
-An interval may represent:
-
-- hard/soft Temporal Constraint;
-- Availability;
-- accepted coarse Schedule;
-- Goal/Milestone target window.
-
-Identical geometry does not imply identical meaning.
+An interval may represent hard/soft Temporal Constraint, Availability, accepted coarse Schedule or Goal/Milestone target window. Identical geometry does not imply identical meaning.
 
 ## Repeat
 
@@ -716,16 +599,13 @@ Identical geometry does not imply identical meaning.
 
 ---
 
-# 7. Historical V1 vocabulary crosswalk
-
-This section prevents older product documents from silently reintroducing superseded kernel assumptions.
+# 8. Historical V1 vocabulary crosswalk
 
 ## Planning Item
 
-**Status:** HISTORICAL / PRODUCT ABSTRACTION  
-**Old meaning:** shared base for time/reminder/note/link-capable items.
+**Status:** HISTORICAL / PRODUCT ABSTRACTION
 
-**Current direction:** no universal Planning Item kernel primitive has been accepted. Shared capabilities are composed around explicit concepts (`Activity`, `Event`, `Schedule`, `Temporal Constraint`, etc.).
+No universal Planning Item kernel primitive has been accepted. Shared capabilities are composed around explicit concepts such as Activity, Event, Schedule and Temporal Constraint.
 
 Do not infer a universal `planning_items` aggregate/table from historical wording.
 
@@ -733,32 +613,19 @@ Do not infer a universal `planning_items` aggregate/table from historical wordin
 
 **Status:** PRODUCT CAPABILITY / DOMAIN REVIEW DEFERRED
 
-A lightweight prompt/notification remains valid product language.
-
-Current rule:
-
-- Reminder is not automatically Activity;
-- Reminder/Trigger/notification semantics still require dedicated review;
-- attaching a reminder to an object does not change the object's domain type.
+Reminder is not automatically Activity. Reminder/Trigger/notification semantics still require dedicated review.
 
 ## Calendar / Life Area
 
 **Status:** PRODUCT ORGANIZATION CONTEXT — dedicated domain status not yet reviewed
 
-Useful user-facing grouping such as Personal, Work, Family, Study, Health, custom areas.
-
-Current rule:
-
-- organization/filtering context != ownership;
-- Life Area != Goal;
-- Life Area != sharing scope by default;
-- do not promote historical `one primary calendar/area` into a universal kernel invariant before review.
+Organization/filtering context does not automatically establish ownership, Goal semantics or sharing scope.
 
 ## Module
 
 **Status:** PRODUCT/ARCHITECTURE TERM, NOT DOMAIN PRIMITIVE
 
-A domain-specific capability area such as training, nutrition, learning, travel, finance, creative work.
+A domain-specific capability area such as training, nutrition, learning, travel, finance or creative work.
 
 Modules may add specialist UI/rules/integrations without replacing common Goal/Plan/Activity/Time/History semantics.
 
@@ -766,23 +633,19 @@ Modules may add specialist UI/rules/integrations without replacing common Goal/P
 
 **Status:** PRODUCT METADATA TERM — exact persistence deferred
 
-Lightweight label/filtering concept.
-
-Tag must not establish ownership, authority, lifecycle, scheduling, or canonical hierarchy merely because it groups things.
+Lightweight label/filtering concept. Tag must not establish ownership, authority, lifecycle, scheduling or canonical hierarchy.
 
 ## Person-related commitment
 
 **Status:** HISTORICAL PRODUCT PHRASE
 
-Current mapping usually uses explicit Activity/Event + future Person/Relationship semantics.
-
-The other person does not need a LifeOS Account and the item is not automatically shared.
+Current mapping usually uses explicit Activity/Event + future Person/Relationship semantics. The other person does not need a LifeOS Account and the item is not automatically shared.
 
 ## Shared Item
 
 **Status:** PRODUCT PHRASE, NOT UNIVERSAL PRIMITIVE
 
-Current multi-actor direction:
+Current direction:
 
 ```text
 shared canonical object
@@ -790,7 +653,7 @@ shared canonical object
 actor-scoped state/personal overlay
 ```
 
-rather than one generic SharedItem type wrapping all domains.
+rather than one generic SharedItem wrapper.
 
 ## Source
 
@@ -798,59 +661,35 @@ rather than one generic SharedItem type wrapping all domains.
 
 Where information came from: user entry, file, provider, email, external system, AI proposal, etc.
 
-Source is not the same as local organization, object type, truth, authority, or sharing state.
-
-Detailed Source/Provenance model belongs to Observed Reality/Evidence review.
-
-## Provenance
-
-**Status:** DEFERRED FUTURE CANONICAL CONCEPT
-
-How a fact/value/decision/change entered LifeOS and under what source/confirmation/authority context.
-
-Already required by accepted concepts; final persistence remains deferred.
+Source is not local organization, object type, truth, authority or sharing state.
 
 ## Temporary Mode
 
 **Status:** PROVISIONAL CROSS-CUTTING CONCEPT
 
-Time-bounded context/policy that temporarily changes planning/availability/capacity behavior without rewriting stable baseline.
-
-Examples: illness, holiday, travel, exams, intense workload, reduced capacity.
-
-Evidence is strong enough to retain the concept on the watchlist; exact kernel representation remains unreviewed.
+Time-bounded context/policy temporarily changing planning/availability/capacity behavior without rewriting stable baseline.
 
 ## Inbox Item
 
 **Status:** PRODUCT CAPTURE STATE/PROFILE, NOT YET KERNEL PRIMITIVE
 
-Captured information awaiting classification.
-
-Possible resolution may become Activity, Event, Goal, Plan, note, document, Observation, etc.
-
-Do not assume `InboxItem` must remain a permanent canonical entity after classification without dedicated lifecycle review.
+Captured information awaiting classification. Resolution may become Activity, Event, Goal, Plan, note, document, Observation, etc.
 
 ## Decision Record
 
 **Status:** PRODUCT/HISTORICAL TERM -> FUTURE `Decision` REVIEW
 
-The need to preserve what was decided, by whom/what, why, when effective, and what it affected remains valid.
-
-Final Decision/Version model belongs to Relationships/Reasoning review.
+Need remains valid; final Decision/Version model belongs to Relationships/Reasoning review.
 
 ---
 
-# 8. Multi-actor terminology — tracked but not prematurely canonized
-
-The multi-actor simulation/research proves these dimensions are real. Exact primitive/value-object/relationship boundaries remain under future review.
+# 9. Multi-actor terminology — tracked but not prematurely canonized
 
 ## Actor
 
 **Status:** PROVISIONAL / DEFERRED
 
-Working meaning: entity capable of acting/participating/holding responsibility/exercising authority in domain reality.
-
-Do not equate Actor with `users.id`.
+Entity capable of acting, participating, holding responsibility or exercising authority in domain reality. Do not equate Actor with `users.id`.
 
 ## Person
 
@@ -861,8 +700,6 @@ Human represented in LifeOS domain reality. Person may exist without LifeOS Acco
 ## Account
 
 **Status:** PRODUCT/IDENTITY CONCEPT — final boundary deferred
-
-LifeOS account/login relationship.
 
 ```text
 Account != Person != Participant != Subject
@@ -878,32 +715,19 @@ Likely authenticated identity acting in system. Exact relation to Account/Actor/
 
 **Status:** PROVISIONAL
 
-Actor-scoped involvement/state around a shared object.
-
-No universal participation enum accepted.
+Actor-scoped involvement/state around a shared object. No universal participation enum accepted.
 
 ## Responsibility
 
 **Status:** PROVISIONAL — STRONG EVIDENCE
 
-Future model must be richer than one `assigned_to` field and may need to distinguish:
-
-- accountability;
-- expected performer;
-- open/claimable responsibility;
-- approval;
-- substitution;
-- hand-off.
-
-Exact ontology remains open.
+Future model must be richer than one `assigned_to` field and may need accountability, expected performer, open/claimable responsibility, approval, substitution and hand-off.
 
 ## Stewardship / Coordination Responsibility
 
 **Status:** PROVISIONAL / RESEARCH-BACKED QUESTION
 
-Execution assignment can move while anticipation, reminding, monitoring, and repair burden remain elsewhere.
-
-The phenomenon is real. Whether it becomes a concept, relation, derived metric, or product-evaluation dimension is intentionally undecided.
+Execution assignment can move while anticipation, reminding, monitoring and repair burden remain elsewhere. Exact model remains intentionally undecided.
 
 ## Performer
 
@@ -915,9 +739,7 @@ Who actually performed work. Not automatically requester/responsible actor/plann
 
 **Status:** DEFERRED — DATA/SUBJECT REVIEW
 
-Who/what the information/action/observation is about.
-
-Examples:
+Who/what information/action/observation is about.
 
 ```text
 caregiver acts -> older adult subject
@@ -937,15 +759,13 @@ Actor and Resource can overlap in scenarios but are not synonyms.
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use casually as synonyms for creator, participant, viewer, responsible actor, or performer.
+Do not use casually as synonyms for creator, participant, viewer, responsible actor or performer.
 
 ## Authority
 
 **Status:** DEFERRED — STRONG CROSS-CUTTING DIMENSION
 
-Who/what may establish, approve, change, or override canonical state in context.
-
-Authority is not inferred merely from creation, visibility, or participation.
+Who/what may establish, approve, change or override canonical state in context. Authority is not inferred merely from creation, visibility or participation.
 
 ## Visibility / Access
 
@@ -953,45 +773,39 @@ Authority is not inferred merely from creation, visibility, or participation.
 
 What an actor/principal may inspect/receive/use.
 
-Visibility != Authority.
+```text
+Visibility != Authority
+```
 
-Future design must cover purpose, context, revocation, historical attribution, and inferred/derived disclosure.
+Future design must cover purpose, context, revocation, historical attribution and inferred/derived disclosure.
 
 ---
 
-# 9. Future Reality/Evidence terms
-
-## Actual
-
-**Status:** DEFERRED
-
-Working purpose: broader truth about what actually happened, distinct from intention, Schedule, and Session.
-
-Do not use as a generic dumping ground before review.
+# 10. Reality/Evidence terms still under review
 
 ## Outcome
 
-**Status:** DEFERRED
+**Status:** DEFERRED — ACTIVE NEXT REVIEW
 
-Working purpose: what resulted from execution/occurrence; must be tested against Actual, Milestone, Confirmation, Evidence.
+Working purpose: what resulted from execution/occurrence. Must be tested against Actual, Milestone, Activity/Occurrence completion, Observation, Confirmation and Evidence.
 
 ## Observation
 
 **Status:** DEFERRED
 
-Observed fact about reality that may exist without prior intention.
+Observed fact about reality that may exist without prior intention or Actual wrapper.
 
 ## Evidence
 
 **Status:** DEFERRED
 
-Information used in a particular evaluation context. Evidence is not automatically identical to source fact, positive contribution, or universal proof.
+Information used in a particular evaluation context. Evidence is not automatically identical to source fact, positive contribution or universal proof.
 
 ## Confirmation / Acknowledgement / Acceptance
 
 **Status:** DEFERRED — IMPORTANT DISTINCTIONS
 
-At high consequence:
+Where consequence requires it:
 
 ```text
 sent
@@ -1005,11 +819,23 @@ sent
 != Actual
 ```
 
-Not every UI needs every stage. Domain semantics must remain available where consequence justifies them.
+Not every UI needs every stage.
+
+## Provenance
+
+**Status:** DEFERRED FUTURE CONCEPT
+
+How a fact/value/decision/change entered LifeOS and under what source/assertion/confirmation/authority context.
+
+```text
+Provenance != Actual
+source != truth
+authority != source by default
+```
 
 ---
 
-# 10. Other high-value deferred terms
+# 11. Other high-value deferred terms
 
 ## Trigger
 
@@ -1022,38 +848,23 @@ Trigger != Recurrence
 Trigger != Routine
 ```
 
-Examples: account balance below threshold, device battery below threshold, vehicle reaches mileage threshold.
-
 ## Relationship
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
 Cross-domain evidence indicates typed/directional semantics are likely needed.
 
-Potential relations such as:
-
-```text
-supports
-conflicts_with
-depends_on
-prepares_for
-replaces
-evidence_for
-```
-
-must not be collapsed prematurely into semantic-free `related_to` if behavior/query meaning differs.
+Potential relations such as `supports`, `conflicts_with`, `depends_on`, `prepares_for`, `replaces`, `evidence_for` must not collapse prematurely into semantic-free `related_to` if behavior/query meaning differs.
 
 ## Dependency
 
 **Status:** DEFERRED / likely Relationship specialization or typed semantic
 
-Represents producer/consumer, prerequisite, simultaneity, resource, blocking, or other coordination dependency where justified.
-
-Exact model remains open.
+Represents producer/consumer, prerequisite, simultaneity, resource, blocking or other coordination dependency where justified.
 
 ---
 
-# 11. Frequently confused terms
+# 12. Frequently confused terms
 
 ## Core
 
@@ -1075,6 +886,11 @@ Schedule != Temporal Constraint
 Schedule != Availability
 Schedule != Capacity Reservation
 Schedule != Session / Actual
+Session != Actual
+Actual != Outcome
+Actual != Observation
+Actual != Evidence
+Actual != Provenance
 Temporal Constraint != Availability
 Recurrence != Trigger
 Availability != empty-gap cache
@@ -1096,6 +912,7 @@ Visibility != Authority
 Sharing != ownership
 Assignment != Activity identity
 Participation response != Actual participation
+shared Actual != identical actor participation
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -1120,7 +937,7 @@ Module != domain entity
 
 ---
 
-# 12. Domain -> Product -> UI examples
+# 13. Domain -> Product -> UI examples
 
 ## Buy milk
 
@@ -1151,8 +968,6 @@ Gym
 3 times per week
 ```
 
-The user does not need to see quota recurrence, period frame, or Occurrence identity.
-
 ## Website redesign
 
 ```text
@@ -1171,8 +986,6 @@ Website Redesign
 Overview / Tasks / Timeline / Milestones
 ```
 
-Project can be first-class UX without a separate strategy kernel.
-
 ## Recurring team meeting
 
 ```text
@@ -1185,11 +998,26 @@ Every Monday · 10:00
 Yes / Maybe / No
 ```
 
+## Realized meeting
+
+```text
+Domain
+Event + Schedule + Actual + actor-scoped participation reality
+
+UI
+Project review
+Planned 10:00-11:00
+Actually 10:08-11:23
+Luca left at 10:45
+```
+
+One shared Actual does not imply identical attendance.
+
 ## Private availability
 
 ```text
 Private source
-Event: medical appointment
+Event + Actual: medical appointment occurred
 
 Authorized projection
 Unavailable 18:00-20:00
@@ -1219,17 +1047,11 @@ Responsibility rotation does not require duplicate Routines.
 
 ---
 
-# 13. Frontend rule
+# 14. Frontend rule
 
 Frontend may choose the clearest language without changing kernel semantics.
 
-Prefer:
-
-- plain language;
-- progressive disclosure;
-- contextual labels;
-- specialist terminology only where users expect it;
-- actions/consequences over internal nouns when clearer.
+Prefer plain language, progressive disclosure, contextual labels, specialist terminology only where users expect it and actions/consequences over internal nouns when clearer.
 
 Examples:
 
@@ -1244,8 +1066,8 @@ UI: Deadline / Preferred time / Not before
 ```
 
 ```text
-Internal: Capacity Reservation
-UI: Block my time / Focus time
+Internal: Actual
+UI: What happened? / Completed / Actual time / Result details
 ```
 
 Reverse rule:
@@ -1254,7 +1076,7 @@ Reverse rule:
 
 ---
 
-# 14. Implementation-language rule
+# 15. Implementation-language rule
 
 Physical/API terminology remains intentionally incomplete until logical/physical data modeling.
 
@@ -1274,13 +1096,13 @@ projects
 programs
 ```
 
-Likewise Actor, Participant, Responsibility, Subject, Resource, Authority, and Visibility must not be translated prematurely into tables/ACL structures.
+Likewise Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility and Actual must not be translated prematurely into final SQL table/cardinality choices before the logical model is reviewed.
 
 When implementation names eventually differ from canonical language for good technical reasons, document the mapping here.
 
 ---
 
-# 15. Terminology change policy
+# 16. Terminology change policy
 
 The map is designed for long-term stability. Stability does not mean freezing mistakes.
 
@@ -1291,14 +1113,7 @@ A term may enter only when at least one holds:
 3. omitting it creates material ambiguity across domain/product/frontend/AI work;
 4. a demonstrated semantic need must be tracked explicitly as PROVISIONAL/DEFERRED.
 
-A term does **not** become canonical because:
-
-- a competitor uses it;
-- one database design would be convenient;
-- one mockup contains it;
-- one scenario might theoretically need it;
-- an AI suggested it;
-- the architecture sounds more complete with it.
+A term does **not** become canonical because a competitor uses it, one database design would be convenient, one mockup contains it, one scenario might theoretically need it, an AI suggested it or the architecture sounds more complete with it.
 
 Change procedure:
 
@@ -1312,19 +1127,11 @@ Do not silently recycle one term with a new meaning.
 
 ---
 
-# 16. Maintenance rule
+# 17. Maintenance rule
 
 This file is the semantic navigation layer, not a duplicate of every concept spec.
 
-Detailed specs remain authoritative for:
-
-- lifecycle;
-- full invariants;
-- edge/adversarial cases;
-- evidence;
-- history;
-- rejected alternatives;
-- persistence implications.
+Detailed specs remain authoritative for lifecycle, full invariants, edge/adversarial cases, evidence, history, rejected alternatives and persistence implications.
 
 This map should remain capable of answering quickly:
 
