@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — Confirmation v0 promoted after Methodology v3 validation  
+**Current revision:** 2026-08-11 — Evidence v0 promoted after Methodology v3 validation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -78,6 +78,7 @@ Actual
 Outcome
 Observation
 Confirmation
+Evidence
 ```
 
 ## DERIVED
@@ -152,7 +153,6 @@ A demonstrated semantic area intentionally postponed to later review.
 Current examples:
 
 ```text
-Evidence
 Provenance
 Quantity
 Register
@@ -515,6 +515,45 @@ Core guardrails:
 
 Typical UI: Confirm, Looks correct, Yes this happened, Review and confirm, Needs confirmation.
 
+## Evidence
+
+**Status:** CANONICAL semantic role / relationship  
+**Source:** `concepts/evidence.md`  
+**Validation:** `checkpoints/evidence-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What information materially bears on this evaluation, in what direction and context, and on what basis is it being used?  
+**UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
+
+Evidence is the contextual evaluative role played by source information when it is used to support, contradict, qualify, or otherwise materially inform a specific evaluation target.
+
+```text
+Evidence != source information itself
+Evidence != Observation
+Evidence != Actual
+Evidence != Outcome
+Evidence != Confirmation
+Evidence != Provenance
+Evidence != GoalCriterion
+Evidence != Milestone
+```
+
+Core guardrails:
+
+- information is not Evidence merely because it exists;
+- Evidence does not duplicate source payload/identity;
+- Evidence may support, contradict, qualify, or otherwise inform;
+- Evidence existence does not establish target truth by itself;
+- no Evidence != Evidence against;
+- no LifeOS record != proof of non-occurrence unless an explicit completeness/evaluation rule justifies that inference;
+- later-discovered Evidence relevance does not rewrite historical source purpose/intention;
+- one source can serve several evaluations without duplication;
+- evidentiary strength/certainty is contextual rather than one universal scalar;
+- conflicting Evidence can coexist;
+- private Evidence use does not create disclosure permission;
+- AI discovery/use does not create authority or disclosure permission;
+- Evidence semantics do not imply one persisted entity/edge for every evaluative use.
+
+Typical UI: Why is this progressing?, Based on…, Supporting data, Conflicting data, Why did LifeOS conclude this?, Review evidence.
+
 ---
 
 # 7. Product/profile terms that are not independent kernel primitives
@@ -757,17 +796,9 @@ Acceptance != Actual
 
 # 10. Reality/Evidence terms still under review
 
-## Evidence
-
-**Status:** DEFERRED — NEXT REVIEW
-
-Information used in a particular evaluation context.
-
-Evidence is not automatically identical to the source fact, positive contribution, universal proof, Observation, Confirmation or Provenance.
-
 ## Provenance
 
-**Status:** DEFERRED — REMAINING CLUSTER REVIEW
+**Status:** DEFERRED — FINAL INDIVIDUAL CLUSTER REVIEW
 
 How a fact/value/decision/change entered LifeOS and what source/agent/process/assertion/correction history affected it.
 
@@ -776,8 +807,9 @@ Provenance != Actual
 Provenance != Outcome
 Provenance != Observation
 Provenance != Confirmation
+Provenance != Evidence
 source != truth
-authority != source by default
+source != authority by default
 ```
 
 ## Verification
@@ -788,6 +820,7 @@ Process/basis used to check a claim or record.
 
 ```text
 Verification != Confirmation
+Verification != Evidence by default
 ```
 
 ## Quantity
@@ -822,6 +855,8 @@ Trigger != Routine
 **Status:** DEFERRED — STRONG FUTURE NEED
 
 Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` if behavior/query meaning differs.
+
+Evidence may ultimately use typed Relationship machinery physically/logically; that does not make Evidence semantically redundant.
 
 ## Dependency
 
@@ -873,8 +908,15 @@ Confirmation != Acceptance/Agreement
 Confirmation != Verification
 Confirmation != Authority
 Confirmation != Provenance
+Confirmation != Evidence
+Evidence != source information
+Evidence != Provenance
+Evidence != GoalCriterion
+Evidence != Milestone
 missing Observation != observed negative
 no Confirmation != false/rejected/incorrect
+no Evidence != Evidence against
+no LifeOS record != proof of non-occurrence
 recorded time != Observation effective time
 Temporal Constraint != Availability
 Recurrence != Trigger
@@ -900,8 +942,10 @@ shared Actual != identical actor participation
 shared Outcome != identical actor consequence
 Observation subject != observer/recorder/source/authority/viewer
 Confirmation by A != Confirmation by B
+Evidence source != evaluator/confirmer/authority/viewer
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
+conflicting Evidence != automatic canonical conclusion
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -910,6 +954,7 @@ Authority != Actual
 Authority != Confirmation
 AI knowledge != disclosure permission
 AI inference != Confirmation
+AI discovery of Evidence != authority/disclosure permission
 future access revocation != deletion of historical attribution
 ```
 
@@ -925,6 +970,7 @@ Shared Item != universal collaboration primitive
 Module != domain entity
 Register view != mandatory duplicate source record
 Needs confirmation != Confirmation object by itself
+Evidence use != mandatory persisted Evidence entity/edge
 ```
 
 ---
@@ -980,32 +1026,46 @@ Event
 + Observation: score = 78/100
 + Outcome: passed
 + optional Confirmation of the imported/recorded result
++ Evidence uses toward Goal/Milestone evaluation
 + optional Milestone
 
 UI
 Exam result
 78/100 · Passed
+Based on official result
 [Confirm result] when policy requires it
 ```
 
-## Weight log
+## Weight log and Goal evidence
 
 ```text
 Domain
-Observation
+Observation O-1
 property: body weight
 value: Quantity(66.4 kg)
 effective: 08:00
 recorded: 18:00
 
+Criterion C-1
+65 kg <= weight <= 67 kg
+
+Evidence use
+O-1 supports evaluation of C-1
+
 Possible Product
-Weight Register
+Weight Register + Goal progress
 
 UI
 Weight
 66.4 kg
 Today · 08:00
+
+Goal
+In target range
+Based on today's weight
 ```
+
+The Observation is not duplicated into the Goal.
 
 ## Confirmation after correction
 
@@ -1021,19 +1081,36 @@ value Y
 
 UI may simply show `Needs confirmation` for v2 when policy requires it.
 
+## Conflicting Evidence
+
+```text
+Claim
+Run >= 5 km
+
+Watch Observation
+5.1 km
+└ Evidence supports
+
+Phone Observation
+4.7 km
+└ Evidence contradicts
+```
+
+LifeOS preserves the conflict; it does not manufacture a truth by averaging unless an explicit evaluation rule says to do so.
+
 ## Private availability
 
 ```text
-private source context
+private source context / Evidence
 ↓
-authorized projection
+authorized evaluation / projection
 Unavailable 18:00-20:00
 
 shared UI
 Sara is unavailable
 ```
 
-The private reason need not be exposed.
+The private reason/evidence need not be exposed.
 
 ---
 
@@ -1063,6 +1140,9 @@ UI: Weight / Mood / Score / Odometer / Registra un dato
 
 Internal: Confirmation
 UI: Confirm / Looks correct / Review and confirm / Needs confirmation
+
+Internal: Evidence
+UI: Based on… / Supporting data / Conflicting data / Why this result?
 ```
 
 Reverse rule:
@@ -1077,12 +1157,13 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation and Confirmation must not be translated prematurely into final SQL table/cardinality choices.
+In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation and Evidence must not be translated prematurely into final SQL table/cardinality choices.
 
 Specific guardrails:
 
 - Observation does not imply one generic fact table or one row per raw sensor tick;
 - Confirmation does not imply one universal polymorphic `confirmations` table;
+- Evidence does not imply one universal `evidence` table, one persisted edge per evaluative use, or one global evidence-strength scalar;
 - product aliases do not create duplicate persistence models;
 - provider/source identifiers do not define LifeOS identity.
 
