@@ -92,9 +92,10 @@ Current baseline set:
 - Plan;
 - Activity;
 - Event;
-- Routine.
+- Routine;
+- Milestone.
 
-Milestone remains a possible adjacent concept if the checkpoint demonstrates that it is required to resolve a real ambiguity rather than merely add another label.
+Milestone was added after the first cluster checkpoint exposed a real semantic gap between work/occurrence and a meaningful contextual checkpoint. The cluster must now receive one final combined validation pass before it is marked validated.
 
 ### Time
 
@@ -131,7 +132,8 @@ Current known examples:
 - `Plan v0` provides the current execution-strategy primitive and does not accept `Project` or `Program` as separate kernel primitives unless later review demonstrates materially distinct identity, lifecycle, or invariants;
 - `Activity v0` keeps `Task` as a contextual/user-facing form of Activity rather than a separate primitive and makes planned execution, Actual execution, and evidence separate semantics;
 - `Event v0` strengthens the Activity/Event boundary by treating temporal placement as intrinsic to Event meaning while preserving original expectation, current accepted schedule, actual occurrence, participation, attendance, and provenance as distinct semantics;
-- `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine.
+- `Routine v0` treats recurring behavior as persistent policy distinct from recurrence syntax, concrete schedule, generated occurrence, and Actual execution; recurring Event series remain Event semantics rather than being forced into Routine;
+- `Milestone v0` treats significant checkpoints as contextual entities distinct from Goal, GoalCriterion, Activity, Event, Outcome, Deadline, Phase, and Decision Record.
 
 ## Current concepts
 
@@ -140,6 +142,7 @@ Current known examples:
 - [`Activity v0`](concepts/activity.md) — current baseline accepted on 2026-08-10.
 - [`Event v0`](concepts/event.md) — current baseline accepted on 2026-08-10.
 - [`Routine v0`](concepts/routine.md) — current baseline accepted on 2026-08-10.
+- [`Milestone v0`](concepts/milestone.md) — current baseline accepted on 2026-08-11.
 
 ## Current structural direction
 
@@ -149,6 +152,7 @@ Plan      -> how it is intended to be pursued or organized
 Activity  -> what concrete action is intended
 Event     -> what occurrence is expected at an intrinsic temporal placement
 Routine   -> what recurring behavioral/execution policy is intended
+Milestone -> what meaningful contextual checkpoint is expected/reached
 Schedule  -> when concrete execution is planned or an occurrence is currently expected
 Actual    -> what actually happened
 Evidence  -> what supports evaluation
@@ -167,18 +171,32 @@ Important current consequences:
 - Routine is not `repeat=true`; the recurring policy, expected occurrence, scheduling, and Actual execution must remain distinguishable;
 - recurring Event series and Routine are distinct even when both use recurrence machinery;
 - a one-off Routine occurrence change must not silently change the future Routine policy;
-- Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity, Event, Routine occurrence, or observation that was not originally planned for that Goal;
+- Milestone is not executable work or a time-centred occurrence; it records a meaningful contextual checkpoint becoming true;
+- target expectation and actual Milestone achievement remain distinct, and target dates do not automatically become deadlines;
+- completing an Activity or crossing a metric threshold does not automatically create a Milestone;
+- Goal progress/evaluation must be able to use valid evidence even when the evidence came from an Activity, Event, Routine occurrence, Milestone, or observation that was not originally planned for that Goal;
 - discovered relevance must not rewrite historical intention;
 - Goal-to-Goal influence is a real requirement but its formal semantics are deferred to the Relationship Model rather than reduced to a generic `influences` field;
 - availability/capacity, exact occurrence materialization, recurrence/DST, and generated execution remain deliberately open for the temporal cluster.
 
 ## Current modeling sequence
 
-The first **intention/execution cluster checkpoint** begins after Routine v0.
+The first **intention/execution cluster checkpoint** has identified and filled one real semantic gap by accepting Milestone v0.
 
-The checkpoint must test Goal + Plan + Activity + Event + Routine together against the same representative scenarios and edge cases before another primitive is accepted.
+The immediate next step is a final combined checkpoint over:
 
-The checkpoint should specifically look for:
+```text
+Goal
+Plan
+Activity
+Event
+Routine
+Milestone
+```
+
+The checkpoint must test the six baselines together against the same representative scenarios and adversarial mixed cases.
+
+It should specifically look for:
 
 - duplicated representations of the same real-world thing;
 - cases where two primitives cannot be distinguished naturally;
@@ -188,7 +206,7 @@ The checkpoint should specifically look for:
 - evidence that cannot reach relevant Goal criteria cleanly;
 - Activity/Plan and Routine/Plan boundary failures;
 - recurring Activity versus recurring Event ambiguity;
-- scenarios that would require arbitrary JSON or domain-specific tables merely to work;
-- missing primitive candidates such as Milestone only when concrete cases actually require them.
+- Milestone versus Goal/GoalCriterion/Outcome ambiguity;
+- scenarios that would require arbitrary JSON or domain-specific tables merely to work.
 
-No new concept should be accepted until the checkpoint identifies whether the current five-baseline model is coherent enough to continue.
+If the combined checkpoint passes without reopening a baseline, the intention/execution cluster can be marked validated and the next modeling cluster is Time, beginning with `Occurrence`.
