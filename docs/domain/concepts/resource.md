@@ -1080,3 +1080,65 @@ Reopen Resource v0 if later evidence shows that:
 8. Authority/privacy constraints require Resource itself to own rights rather than separate policy relationships.
 
 Until stronger evidence appears, Resource remains canonical **semantic planning/execution role/capability**, not an entity.
+
+---
+
+# 2026-08-12 — Responsibility v0 closure amendment
+
+Responsibility v0 closes the previously deferred Resource ↔ Responsibility boundary without changing Resource semantics.
+
+Canonical distinction:
+
+```text
+Resource
+= what could satisfy an execution need
+= contextual eligibility/capability
+
+Responsibility
+= who is accountable for ensuring a bounded commitment is appropriately handled
+```
+
+Therefore:
+
+```text
+Resource eligibility != Responsibility
+Resource candidate != responsible Actor
+Allocation/selection != Responsibility
+Reservation/Capacity Claim != Responsibility
+Responsibility holder need not be personally Resource-eligible/available to perform
+responsible Actor != expected performer
+responsible Actor != actual performer
+```
+
+Example:
+
+```text
+Activity
+Prepare report
+
+Manager
+responsible
+
+Analyst
+Resource-eligible + expected performer
+
+Assistant
+actual substitute performer
+```
+
+All three roles can coexist without identity collapse.
+
+The word `Claim` also now has two bounded usages that must not be conflated by vocabulary:
+
+- **Responsibility Claim:** a self-initiated attempt/action to acquire a named role;
+- **Capacity Claim / Reservation:** a scheduling/capacity hold.
+
+They are separate semantic families despite sharing the English word `claim`.
+
+The older Resource wording that left precise responsibility semantics deferred is superseded by `concepts/responsibility.md`; Resource Requirement/Allocation/Reservation and actual-use modeling remain independently SAFE DEFERRED.
+
+See:
+
+- `concepts/responsibility.md`;
+- `checkpoints/responsibility-v0-validation.md`;
+- `checkpoints/relationship-v0-validation.md`.
