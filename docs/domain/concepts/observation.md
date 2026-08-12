@@ -2,6 +2,7 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-11  
+**Current revision:** 2026-08-12 — Quantity finalized and Register kernel candidate rejected  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Observed Reality & Evidence cluster
 
@@ -68,7 +69,7 @@ Without Observation, LifeOS would be pushed toward weak alternatives:
 1. store measurements directly on unrelated domain objects;
 2. turn Actual into a universal reality container;
 3. treat every measured value as an Outcome;
-4. make RegisterEntry the universal semantic record for all facts;
+4. make a universal tracker/RegisterEntry the semantic record for all facts;
 5. equate raw Quantity values with historical observations;
 6. store every specialist fact as opaque JSON;
 7. use Evidence as both source fact and evaluation relationship.
@@ -181,13 +182,12 @@ Therefore:
 
 # 5. Observation versus Quantity
 
-Quantity is value semantics:
+Quantity is accepted reusable scalar value semantics:
 
 ```text
 66.4 kg
 12 km
 45 min
-€18.50
 ```
 
 Observation is a contextual record using such a value:
@@ -195,7 +195,7 @@ Observation is a contextual record using such a value:
 ```text
 Observation
 property: body weight
-value: 66.4 kg
+value: Quantity(66.4 kg)
 subject: person
 subject-effective time: 08:00
 ```
@@ -206,46 +206,58 @@ Quantity can also appear outside Observation:
 - Temporal Constraints;
 - Capacity;
 - inventory thresholds;
-- prices;
-- budgets;
 - planned effort;
+- specifications;
 - derived calculations.
 
 Therefore:
 
 > **Quantity != Observation.**
 
-The final Quantity value-object/unit model belongs to the Data/Subjects cluster.
+Quantity v0 is now canonical value semantics. Money/MonetaryAmount, rating/scale, ratio/percentage, custom-unit, calendar-duration, range and comparator boundaries remain separate dependency questions rather than being silently absorbed into Quantity.
 
 ---
 
-# 6. Observation versus Register
+# 6. Observation versus longitudinal tracking / historical Register candidate
 
-The feature-discovery simulation identified Register as a longitudinal organization/analysis capability for data such as weight, money, pages, mileage, mood, stock, scores, symptoms, and consumption.
+The feature-discovery simulation identified a useful product need for longitudinal tracking of weight, money, pages, mileage, mood, stock, scores, symptoms, consumption and other records. It proposed `Register + RegisterEntry` as a universal structure.
 
-Observation and Register answer different questions:
+The Data / Subjects review has now rejected both **Register as a kernel primitive** and **universal RegisterEntry**.
+
+The validated architecture is:
 
 ```text
-Observation
-What fact was observed/asserted?
-
-Register
-Which longitudinal collection/view/policy organizes records over time?
+native semantic records
+Observation / Session / future justified domain records
+        ↓
+query / filtering / grouping
+        ↓
+valid aggregation / trend / comparison
+        ↓
+tracker / history / progress / report UI
 ```
 
-A Register may contain or surface Observations, but it may also organize other semantic records such as transactions, movements, specialist entries, or snapshots.
+An Observation may be surfaced in zero, one, or many longitudinal product views without changing identity or being copied into a second semantic record.
 
-Likewise an Observation may exist without any explicit user-visible Register.
+Likewise a longitudinal view may combine records whose native semantics are not Observation, provided each source record retains its own identity and rules.
 
-Canonical guardrail:
+Canonical guardrails:
 
-> **Do not duplicate one Observation merely because it is surfaced in more than one Register, dashboard, Goal evaluation, or specialist view.**
+> **Do not duplicate one Observation merely because it is surfaced in more than one tracker, dashboard, Goal evaluation, report, or specialist view.**
+
+> **No universal RegisterEntry is required between a native record and longitudinal UI.**
+
+A saved tracker/view configuration may exist later as product/application configuration, but persisted configuration does not become an independent source of domain truth merely because it has an application identifier.
 
 Therefore:
 
-> **Observation != Register and Observation != universal RegisterEntry.**
+```text
+Observation != tracker/view configuration
+Observation != universal RegisterEntry
+longitudinal view != source of truth
+```
 
-Exact Register/RegisterEntry persistence remains deferred to the Data/Subjects cluster.
+See `checkpoints/register-v0-validation.md` for the rejected-candidate rationale.
 
 ---
 
@@ -293,7 +305,7 @@ It does not by itself answer:
 - how confident LifeOS should be;
 - who may see it.
 
-Those concerns belong to future Confirmation, Provenance, Authority, Visibility, and reconciliation semantics.
+Those concerns belong to Confirmation, Provenance and future Authority, Visibility, and reconciliation semantics.
 
 Example:
 
@@ -561,7 +573,7 @@ Canonical rule:
 
 > **unknown, observed-negative, and failed/unavailable measurement must remain distinguishable where the domain cares.**
 
-The exact data-absence/status vocabulary is deferred to Confirmation/Provenance and specialist modeling rather than becoming one universal enum immediately.
+The exact data-absence/status vocabulary is deferred to specialist modeling and future epistemic rules rather than becoming one universal enum immediately.
 
 ---
 
@@ -896,16 +908,16 @@ Passes if derivation remains traceable.
 
 Both remain observations until reconciliation policy says otherwise.
 
-## Register view
+## Longitudinal product view
 
 ```text
-Weight Register
-- O1
-- O2
-- O3
+Weight history / tracker
+- Observation O1
+- Observation O2
+- Observation O3
 ```
 
-The Register organizes observations; it does not redefine their identity.
+The product view queries/surfaces the Observations. It does not own, duplicate, or redefine their identity and no universal RegisterEntry is created.
 
 ## Goal evidence
 
@@ -925,7 +937,7 @@ Later evidence use does not rewrite original observation purpose.
 
 ## REMOVE
 
-Without Observation, measurement/assertion semantics scatter across Actual, Outcome, Register, Goal, Asset, and specialist modules.
+Without Observation, measurement/assertion semantics scatter across Actual, Outcome, Goal, Asset, trackers, and specialist modules.
 
 **Result:** REMOVE fails.
 
@@ -947,11 +959,11 @@ Quantity lacks subject/time/source/identity context and is reused outside Observ
 
 **Result:** MERGE fails.
 
-## MERGE WITH REGISTER
+## MERGE WITH HISTORICAL REGISTER CANDIDATE
 
-Register is longitudinal organization/analysis; Observation is one semantic observed assertion. Each can exist without the other.
+The Register candidate was rejected as a kernel primitive. Longitudinal product views can organize/query Observation and other native records without absorbing or replacing their identity.
 
-**Result:** MERGE fails.
+**Result:** no merge target is justified; universal RegisterEntry remains rejected.
 
 ## MERGE WITH EVIDENCE
 
@@ -983,11 +995,11 @@ Raw high-frequency sensor streams show why semantic Observation must not imply o
 
 1. **Observation records a measurement/property/state/rating/simple assertion about a subject in an effective context.**
 2. **Observation is not a universal fact/event/blob primitive.**
-3. **Observation may exist without prior intention, Actual, Outcome, Goal, or Register.**
+3. **Observation may exist without prior intention, Actual, Outcome, Goal, or saved longitudinal view.**
 4. **Observation != Actual != Outcome.**
 5. **Observation != Evidence; Evidence is contextual evaluation use.**
-6. **Observation != Quantity; Quantity is reusable value/unit semantics.**
-7. **Observation != Register; Register is longitudinal organization/analysis.**
+6. **Observation != Quantity; Quantity is reusable scalar amount value semantics.**
+7. **Observation may appear in zero or many tracker/history/report views without duplication; no universal RegisterEntry is required.**
 8. **Observation != Confirmation/Provenance.**
 9. **Observation identity != subject + type + time + value.**
 10. **Correction of the same observational act normally preserves identity; re-observation normally creates a new Observation.**
@@ -1025,6 +1037,7 @@ Do not infer from this concept that LifeOS requires:
 - one generic JSON value blob for all observations;
 - one row per sensor tick;
 - a universal `observations` table containing every domain fact;
+- a universal `register_entries` table wrapping longitudinal records;
 - provider IDs as canonical identity;
 - automatic persistence of every derived aggregate.
 
@@ -1036,21 +1049,24 @@ High-volume telemetry, financial transactions, documents, and other specialist r
 
 The following remain open for later review:
 
-- exact Quantity/unit/type model;
-- Register/RegisterEntry identity and whether some product Register entries directly reference Observations or specialist records;
 - Subject/Actor/Person/Asset boundaries;
-- typed value/component representation;
+- typed categorical/rating/range/component representation;
 - data-quality/measurement-quality vocabulary;
-- Confirmation/epistemic states;
-- Provenance/assertion/source model;
 - Authority/Visibility/access semantics;
 - high-volume sampled-series physical model;
 - Version/correction persistence;
 - exact treatment of probabilistic inference versus derived Observation;
 - Evidence relationship/evaluation semantics;
+- longitudinal query/materialization and optional saved-view configuration;
 - specialist medical/financial/scientific observation profiles.
 
-These are dependencies, not reasons to weaken the current Observation boundary.
+Resolved since the original Observation v0 acceptance:
+
+- Quantity is now canonical reusable scalar value semantics;
+- Register as a kernel primitive is rejected;
+- universal RegisterEntry is rejected.
+
+These remaining dependencies are not reasons to weaken the current Observation boundary.
 
 ---
 
@@ -1058,7 +1074,7 @@ These are dependencies, not reasons to weaken the current Observation boundary.
 
 Reopen Observation v0 if later evidence shows that:
 
-1. Register/Quantity can absorb Observation without losing identity, effective time, source/perspective, correction, conflict, or independent existence;
+1. another accepted semantic record can absorb Observation without losing identity, effective time, source/perspective, correction, conflict, or independent existence;
 2. Actual/Outcome can naturally represent spontaneous observed facts without semantic overload;
 3. Evidence requires source-fact identity to be modeled differently;
 4. Subject/Provenance design proves the current Observation boundary redundant;
@@ -1066,4 +1082,6 @@ Reopen Observation v0 if later evidence shows that:
 6. ordinary product capture cannot remain simple without exposing Observation ontology;
 7. multi-actor conflicting assertions cannot be preserved naturally under the accepted model.
 
-Until such evidence appears, Observation remains the current accepted bounded measurement/simple-assertion concept.
+A future product decision to call a screen `Register`, `Tracker`, `History`, `Progress`, or similar is not a reopening trigger by itself.
+
+Until stronger evidence appears, Observation remains the current accepted bounded measurement/simple-assertion concept.
