@@ -346,11 +346,11 @@ Before closing:
 - [x] Person concept created;
 - [x] Actor concept created;
 - [x] Account boundary recorded without premature `account.md`;
-- [ ] Subject wording aligned;
-- [ ] Observation wording aligned;
-- [ ] Provenance wording aligned;
-- [ ] Language Map updated;
-- [ ] Domain README updated;
-- [ ] workstream handoff updated;
+- [x] Subject wording aligned;
+- [x] Observation wording aligned;
+- [x] Provenance wording aligned;
+- [x] Language Map updated;
+- [x] Domain README updated;
+- [x] workstream handoff updated;
 - [x] no universal `users.id`, User root or Actor entity pre-approved;
 - [x] dependency owners/reopening triggers recorded.
