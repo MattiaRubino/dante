@@ -2,6 +2,7 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-12  
+**Current revision:** 2026-08-12 — Person / Actor / Account boundary finalized  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
@@ -129,6 +130,8 @@ Exact eligible referent categories will be constrained by the containing record 
 
 # 4. Subject versus Person
 
+Person is now accepted as the native human-identity entity.
+
 Person answers:
 
 > Which human individual is represented?
@@ -153,80 +156,90 @@ Event C
 participant = Anna
 ```
 
-The same Person identity can play several roles simultaneously.
+The same Person identity can play several roles simultaneously and may exist before, without, or after any LifeOS Account.
 
 Therefore:
 
 ```text
 Person != Subject
 Person may play Subject role
+Person identity != Account identity
 ```
 
-This is critical for the next Person / Actor boundary review.
+The basic Person/Subject identity boundary is **RESOLVED** by `person.md` and `checkpoints/person-actor-account-v0-validation.md`.
 
 ---
 
 # 5. Subject versus Actor
 
-Actor concerns agency: acting, participating, holding responsibility, proposing, confirming, or exercising authority depending on later accepted semantics.
+Actor is now accepted as **contextual semantic agency**, not an entity/root.
 
-Subject does not require agency.
+Subject concerns aboutness and does not require agency.
 
 Examples:
 
-- an infant can be a Subject;
+- an infant can be a Subject without acting in the workflow;
 - a non-LifeOS person can be a Subject;
 - a car can be a Subject;
 - a room can be a Subject;
-- an animal can be a Subject.
+- an animal can be a Subject;
+- a software/AI system may be an Actor without being a Person or ordinary Subject.
 
 Therefore:
 
 ```text
 Subject != Actor
+Actor != Person
+Actor != Account
 ```
 
-A Person may be both in different relations:
+A Person may play both Subject and Actor roles in different relations:
 
 ```text
 Person Anna
 subject of Observation X
-actor/recorder of Observation Y
-performer of Activity Z
+recorder / Actor of Observation Y
+performer / Actor of Activity Z
 ```
 
-No role should silently imply another.
+Actor does not by itself imply Responsibility, Authority, ownership or one generic action role.
+
+The basic Subject/Actor boundary is **RESOLVED** by `actor.md` and the Person / Actor / Account checkpoint.
 
 ---
 
 # 6. Subject versus Account / Principal
 
-Account/Principal concerns authenticated or acting identity and later authority/access semantics.
+Account is now fixed conceptually as a platform/access identity distinct from Person and Actor. Principal remains a deferred security/authorization identity concept.
 
 Subject concerns what a descriptive record is about.
 
 Caregiver example:
 
 ```text
-LifeOS account
-Caregiver Anna
+Person Anna
+Actor role: recorder
+Account Anna-A1 authenticates access
 
 Observation
-subject = Grandmother Maria
-recorder = Anna
+subject = Person Maria
 ```
 
-Maria may have no LifeOS account.
+Maria may have no LifeOS Account.
 
 Canonical rules:
 
 ```text
 Subject != Account
 Subject != Principal
+Person != Account
+Actor != Account
 current account holder != default subject as a kernel invariant
 ```
 
 Product UI may default ordinary personal entry to `me`, but that is a contextual convenience rather than canonical identity semantics.
+
+The Subject/Account identity boundary is **RESOLVED at conceptual level**. Exact Account/Principal/credential/Authority mechanics remain deferred to the security/Relationships stage.
 
 ---
 
@@ -268,7 +281,9 @@ Subject != transformer
 Subject != Provenance
 ```
 
-A subject may also be a source in a self-report, but that coincidence must be represented by roles rather than assumed universally.
+Where a Person or system performs one of those roles, Actor semantics may apply, but the specific role remains more precise than a generic Actor relation.
+
+A subject may also be a source/Actor in a self-report, but that coincidence must be represented by roles rather than assumed universally.
 
 ---
 
@@ -415,7 +430,8 @@ Canonical rules:
 - unknown Subject may remain unknown where the record can meaningfully exist without a resolved referent;
 - later subject resolution preserves materially relevant Provenance/history;
 - account ownership/import destination does not prove subject identity;
-- source/provider identity does not prove Subject identity.
+- source/provider identity does not prove Subject identity;
+- external identifiers may support Person reconciliation but do not automatically establish it.
 
 Whether a specific record type requires a resolved Subject is a containing-concept invariant, not one universal rule.
 
@@ -446,6 +462,8 @@ Material history should preserve the prior attribution and correction basis thro
 Canonical guardrail:
 
 > **Changing Subject attribution must not silently erase material prior attribution history or pretend the corrected referent was known earlier.**
+
+Person merge/split/reconciliation must likewise preserve material attribution history rather than silently rewriting all old Subject links.
 
 ---
 
@@ -480,24 +498,30 @@ Subject role is foundational to multi-actor correctness because it prevents `use
 Canonical examples:
 
 ```text
-caregiver account A
-records Observation about Person B
+Person Anna
+Actor role: recorder
+Account Anna-A1 authenticates access
+Observation about Person Maria
 ```
 
 ```text
-manager C
+Person C
+Actor/manager role
 records assessment about Person D
 ```
 
 ```text
-AI/system derives Observation about Asset E
+AI/system Actor
+derives Observation about Asset E
 ```
 
-The domain must preserve who/what the record concerns separately from who entered, generated, transformed, confirmed, governed, or may view it.
+The domain must preserve who/what the record concerns separately from who entered, generated, transformed, confirmed, governed, authenticated, or may view it.
 
-Key rule:
+Key rules:
 
-> **Subject identity must not depend on account participation.**
+> **Subject identity must not depend on Account participation.**
+
+> **Actor attribution and Account authentication must not replace Subject identity.**
 
 Non-LifeOS subjects are ordinary domain reality, not exceptional placeholders.
 
@@ -512,10 +536,11 @@ Knowing that a private Observation is about Person X may disclose information ev
 Therefore:
 
 - visibility of a record does not automatically imply visibility of every related Subject detail;
-- visibility of a Subject does not automatically imply visibility of all records about that Subject;
+- visibility of a Person/Subject does not automatically imply visibility of all records about that Person;
 - authority over one context does not grant universal visibility into all records where the same referent is Subject;
+- identity linkage between records/contacts/accounts may itself be private;
 - derived shared projections may conceal private source/subject detail where policy requires;
-- AI must not infer disclosure permission merely because it can resolve the Subject internally.
+- AI must not infer disclosure permission merely because it can resolve the Subject/Person internally.
 
 Exact Visibility/Authority policy remains future work.
 
@@ -526,21 +551,21 @@ Exact Visibility/Authority policy remains future work.
 AI may:
 
 - propose a Subject match from imported context;
-- suggest that two records concern the same native referent;
+- suggest that two records concern the same native Person/referent;
 - use resolved Subject identity to organize/query authorized context;
 - identify likely attribution errors.
 
 AI must not silently:
 
 - replace unknown Subject with the current account holder;
-- merge two native referents merely because names/details look similar;
-- promote a probabilistic Subject match into established identity without policy/authority appropriate to the context;
-- disclose private facts merely because it knows the Subject;
+- merge two Person/native referents merely because names/details look similar;
+- promote a probabilistic Subject/Person match into established identity without policy/authority appropriate to the context;
+- disclose private facts or identity linkage merely because it knows the Subject;
 - create a universal Subject object as a shortcut around native domain identity.
 
 Canonical rule:
 
-> **AI may propose subject resolution; it does not automatically establish identity, authority, or disclosure rights.**
+> **AI may propose subject or Person resolution; it does not automatically establish identity, authority, or disclosure rights.**
 
 ---
 
@@ -555,7 +580,7 @@ Weight
 66.4 kg
 ```
 
-may imply `me` in the UI when the context safely establishes it.
+may imply `me` in the UI when the context safely establishes the current Person linked to the active Account.
 
 Caregiver/asset context may expose natural labels:
 
@@ -571,11 +596,11 @@ Odometer
 84,220 km
 ```
 
-Power-user/history surfaces may expose attribution and provenance when relevant.
+Power-user/history surfaces may expose attribution, Account/authentication context and Provenance when relevant and authorized.
 
 Canonical rule:
 
-> **Kernel separation of Subject from account/actor does not require every capture form to ask users to choose a Subject explicitly.**
+> **Kernel separation of Subject from Person/Account/Actor does not require every capture form to ask users to choose those roles explicitly.**
 
 ---
 
@@ -602,12 +627,17 @@ Useful lesson:
 
 LifeOS cannot make `current account = Subject` a universal invariant because caregiver, asset, external-participant and multi-actor scenarios are first-class.
 
-## Person/contact/account systems
+## Person/contact/account and agency systems
 
-Useful lesson for the adjacent Person/Actor review:
+The adjacent review has now confirmed these lessons for LifeOS:
 
-- real-world person identity can be distinct from account/contact/source representations;
-- a referent should retain native identity across contextual roles.
+- real-world Person identity is distinct from Account/contact/source representations;
+- Person is a native human identity that may play Subject or Actor roles;
+- Actor is contextual agency, not a wrapper identity;
+- Account is a platform/access identity, not the human or the semantic actor;
+- Principal/security identity remains distinct and deferred.
+
+See `concepts/person.md`, `concepts/actor.md`, and `checkpoints/person-actor-account-v0-validation.md`.
 
 No external schema is adopted wholesale.
 
@@ -623,7 +653,7 @@ Native Person/Asset/etc. identities remain intact and descriptive records can re
 
 ## REMOVE Subject semantics
 
-LifeOS can no longer reliably answer who/what an Observation is about without overloading account/owner/recorder/source.
+LifeOS can no longer reliably answer who/what an Observation is about without overloading Account/owner/recorder/source.
 
 **Result:** FAIL.
 
@@ -665,7 +695,7 @@ Every eligible referent must inherit from a role merely to be referenced; duplic
 
 ## Subject as contextual role over native identity
 
-Preserves aboutness without duplicate identity and composes with Person/Asset/Resource/Actor distinctions.
+Preserves aboutness without duplicate identity and composes with accepted Person/Actor/Account distinctions plus future Asset/Resource roles.
 
 **Result:** PASS.
 
@@ -678,19 +708,20 @@ Preserves aboutness without duplicate identity and composes with Person/Asset/Re
 3. **The native referent retains its own identity; no parallel Subject identity is created.**
 4. **Eligible Subject referents do not require one universal inheritance root/table.**
 5. **Subject != Person, although Person may play Subject role.**
-6. **Subject != Actor, although one Person may play both roles in different relations.**
-7. **Subject != Resource and Subject != Asset.**
-8. **Subject != Account/Principal.**
-9. **Subject != observer != recorder != source/provider/device != transformer != confirmer != authority != viewer.**
-10. **Being Subject does not imply ownership, responsibility, participation, consent, authority, visibility, or benefit.**
-11. **Current account holder is not the universal default Subject at kernel level.**
-12. **Unknown Subject must not be replaced with invented certainty.**
-13. **Later Subject resolution/correction preserves material attribution history.**
-14. **Subject must not become a universal `related_to` catch-all; focus/context/participant/source/etc. remain distinct where semantically necessary.**
-15. **Subject identity/account independence is mandatory for multi-actor and external-participant correctness.**
-16. **Subject association does not create disclosure permission.**
-17. **AI may propose Subject resolution but does not automatically establish identity or authority.**
-18. **Subject semantics do not imply a universal SQL `subjects` table.**
+6. **Subject != Actor; Actor is contextual agency rather than identity.**
+7. **Person != Actor and Person != Account.**
+8. **Subject != Resource and Subject != Asset.**
+9. **Subject != Account/Principal.**
+10. **Subject != observer != recorder != source/provider/device != transformer != confirmer != authority != viewer.**
+11. **Being Subject does not imply ownership, responsibility, participation, consent, authority, visibility, or benefit.**
+12. **Current Account holder is not the universal default Subject at kernel level.**
+13. **Unknown Subject must not be replaced with invented certainty.**
+14. **Later Subject resolution/correction preserves material attribution history.**
+15. **Subject must not become a universal `related_to` catch-all; focus/context/participant/source/etc. remain distinct where semantically necessary.**
+16. **Subject identity/Account independence is mandatory for multi-actor and external-participant correctness.**
+17. **Subject association and Person identity linkage do not create disclosure permission.**
+18. **AI may propose Subject/Person resolution but does not automatically establish identity or authority.**
+19. **Subject semantics do not imply a universal SQL `subjects` table.**
 
 ---
 
@@ -700,12 +731,15 @@ Future logical modeling must support typed references from descriptive records t
 
 It should be able to represent where needed:
 
+- native Person identity as an eligible Subject referent;
+- other eligible native referents established by later Asset/Resource/etc. reviews;
 - one or more Subject-role references;
 - unresolved/unknown Subject where valid;
 - later correction/resolution with history;
-- distinction among Subject, observer, recorder, source, performer, confirmer, authority and viewer;
+- distinction among Subject, Actor-specific roles, observer, recorder, source, performer, confirmer, authority and viewer;
 - references to non-account people and non-person referents;
-- privacy/visibility rules independent of subject identity.
+- Account/authentication context independently from Subject identity;
+- privacy/visibility rules independently from subject/person identity.
 
 Do not infer from Subject v0 that LifeOS requires:
 
@@ -714,9 +748,11 @@ Do not infer from Subject v0 that LifeOS requires:
 - every domain entity inheriting from Subject;
 - Subject owning Observation lifecycle;
 - Subject defining permissions/ACLs;
-- Subject implying account identity.
+- Subject implying Account identity;
+- `persons.id = accounts.id`;
+- an `actors` table.
 
-Final reference mechanics depend on the Person/Actor/Asset/Resource and Relationships reviews plus logical data-model pressure.
+Final heterogeneous reference mechanics depend on the remaining Asset/Resource reviews, Relationships/Authority semantics and logical data-model pressure. The basic Person/Actor/Account boundary is already resolved conceptually.
 
 ---
 
@@ -726,7 +762,7 @@ Final reference mechanics depend on the Person/Actor/Asset/Resource and Relation
 
 ### Subject vs observer / recorder / source / transformer
 
-Resolved as distinct contextual roles. Subject concerns aboutness; Provenance/actor roles concern origin/action.
+Resolved as distinct contextual roles. Subject concerns aboutness; Provenance/Actor roles concern origin/action.
 
 Re-test if the future relationship model proposes one generic role that would erase these distinctions.
 
@@ -734,18 +770,19 @@ Re-test if the future relationship model proposes one generic role that would er
 
 Resolved: semantic role survives; independent Subject entity/universal root is rejected.
 
-### Subject vs current Account
+### Subject vs Person
 
-Resolved at the basic boundary: current account holder does not define Subject identity.
+Resolved: Person is a native human entity that may play Subject role; Subject does not create or own Person identity.
+
+### Subject vs Actor
+
+Resolved: Actor is contextual agency over native identity; Subject is aboutness. Neither absorbs the other.
+
+### Subject vs Account
+
+Resolved at conceptual level: Account is platform/access identity and does not define Subject or Person identity.
 
 ## SAFE DEFERRED
-
-### Subject vs Person / Actor
-
-**Owner:** immediate Person / Actor boundary review.  
-**Why safe:** Subject can already reference native referent identity without deciding final Person/Actor implementation.  
-**Reopening trigger:** Person/Actor review concludes that one accepted identity abstraction cannot express passive/non-account subjects or acting-role separation.  
-**Tests to rerun:** CORE-04, CORE-06, MA-01, MA-09, MA-10, XCON-01, XCON-05.
 
 ### Subject vs Asset
 
@@ -761,12 +798,12 @@ Resolved at the basic boundary: current account holder does not define Subject i
 **Reopening trigger:** Resource review claims every eligible Subject must be Resource or introduces conflicting generic identity.  
 **Tests to rerun:** CORE-04, MA-14, XCON-01.
 
-### Subject vs Account / Principal / Authority / Visibility
+### Subject vs Principal / Authority / Visibility
 
-**Owner:** Person/Actor review for Account boundary, then Relationships / Reasoning for Principal/Authority/Visibility.  
-**Why safe:** Subject v0 explicitly creates no account, authority or visibility semantics.  
-**Reopening trigger:** later authority/access design requires Subject itself to own rights or identity.  
-**Tests to rerun:** MA-01, MA-06, MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
+**Owner:** Relationships / Reasoning + security/Authority stage.  
+**Why safe:** Subject v0 explicitly creates no security Principal, authority or visibility semantics; Account separation is already fixed.  
+**Reopening trigger:** later access/authority design requires Subject itself to own rights or security identity.  
+**Tests to rerun:** MA-06, MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Subject vs focus/context generic relationship semantics
 
@@ -774,6 +811,13 @@ Resolved at the basic boundary: current account holder does not define Subject i
 **Why safe:** Subject has a bounded primary-aboutness meaning and explicitly does not absorb other contextual roles.  
 **Reopening trigger:** ordinary scenarios cannot distinguish primary Subject from focus/context without introducing a more general accepted relation that changes Subject semantics.  
 **Tests to rerun:** CORE-04, CORE-05, XCON-04.
+
+### Person identity reconciliation / merge / split
+
+**Owner:** logical data model + Provenance/Version/Decision.  
+**Why safe:** Subject only references the established native Person identity; reconciliation mechanics do not change aboutness semantics.  
+**Reopening trigger:** identity reconciliation cannot preserve historical Subject attribution under the accepted Person model.  
+**Tests to rerun:** CORE-02, CORE-09, XCON-01, XCON-03.
 
 No current dependency is a structural blocker to accepting Subject as a semantic role.
 
@@ -792,7 +836,7 @@ Rejected:
 - Subject = Resource;
 - Subject = owner/governor;
 - Subject = generic `related_to`;
-- account/provider ID as Subject identity;
+- Account/provider ID as Subject identity;
 - automatic Subject establishment by AI inference.
 
 ---
