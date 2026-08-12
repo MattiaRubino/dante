@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — dependency-closure discipline established before Cluster 4 continuation  
+**Current revision:** 2026-08-12 — Quantity v0 accepted in Data / Subjects  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -226,7 +226,7 @@ Time v0                         PASS
 Observed Reality & Evidence v0  PASS
 Cross-Cluster Validation v3     PASS
 
-18 accepted concepts retained
+18 accepted concepts retained before Cluster 4
 0 structural reopenings
 0 concept removals
 0 justified concept merges
@@ -271,6 +271,9 @@ EPISTEMIC / EVALUATION
 Confirmation
 Evidence
 Provenance
+
+REUSABLE DATA VALUE SEMANTICS
+Quantity
 ```
 
 This is not a mandatory processing chain, parent tree or persistence schema.
@@ -278,7 +281,7 @@ This is not a mandatory processing chain, parent tree or persistence schema.
 Examples of valid minimal shapes:
 
 ```text
-weight measurement -> Observation
+weight measurement -> Observation using Quantity(66.4 kg)
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
 full goal workflow -> uses only the layers that add real meaning
@@ -442,13 +445,16 @@ Provenance != Audit
 
 # Active cluster — Data / Subjects
 
-**Status:** IN PROGRESS — first concept under review is `Quantity`; no concept in this cluster is accepted yet.
+**Status:** IN PROGRESS — `Quantity v0` accepted; `Register` is the next read-only concept review.
 
 The first three clusters are validated. Data / Subjects is now the transition cluster for the dependency-closure discipline.
 
-Provisional topics:
+Accepted in this cluster:
 
-- Quantity;
+1. [`Quantity v0`](concepts/quantity.md) — [`validation`](checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
+
+Provisional remaining topics:
+
 - Register;
 - Subject;
 - Person / Actor boundary;
@@ -457,13 +463,37 @@ Provisional topics:
 
 The exact review order remains reopenable if concept evidence exposes a stronger dependency.
 
-Current Quantity boundary review already requires explicit tracking of adjacent value semantics such as Money/MonetaryAmount, ratings/scales, percentages/ratios, counts, ranges/thresholds, custom units and elapsed-duration versus calendar-relative time. These are not yet accepted as concepts or specializations; they must enter the dependency register and be resolved or safely deferred by the post-Cluster-4 closure pass.
+## Quantity current baseline
+
+```text
+Quantity
+= reusable scalar amount value semantics
+= magnitude + unit semantics sufficient for interpretation
+!= independent entity / Observation / Register / universal numeric wrapper
+```
+
+Core hardenings:
+
+- number != Quantity by default;
+- property/quantity-kind != unit;
+- compatible units do not prove domain-semantic equivalence;
+- same/compatible unit does not grant universal aggregation semantics;
+- source representation != normalized/display representation;
+- actor display preference != canonical data mutation;
+- custom unit label != conversion rule;
+- Money/MonetaryAmount is not pre-collapsed into ordinary Quantity;
+- calendar-relative time is not pre-collapsed into fixed elapsed Quantity arithmetic;
+- Range/Threshold/comparator semantics remain outside basic Quantity;
+- Quantity does not imply a standalone SQL table/entity.
+
+Current dependency obligations include Money/MonetaryAmount, ratings/scales, percentages/ratios/counts, custom units, elapsed-duration versus calendar time, Range/Threshold semantics, and final decimal/unit persistence. They are explicitly registered for the post-Cluster-4 closure unless resolved earlier.
 
 Inherited mandatory re-tests:
 
 ```text
-Observation vs Quantity
-Observation vs Register/RegisterEntry
+Observation vs Quantity — basic boundary RESOLVED by Quantity v0
+Observation vs Register/RegisterEntry — pending Register review
+Quantity vs Register aggregation — mandatory next re-test
 Subject vs observer/recorder/source/transformer
 sampled-series physical representation
 Availability/Capacity vs Resource
@@ -537,6 +567,7 @@ Current known terminology refinements include:
 - Confirmation is contextual attestation, not one `confirmed` boolean;
 - Evidence is evaluative use/relationship, not duplicated source data;
 - Provenance is bounded lineage, not merely `source`, truth, Authority or Audit;
+- Quantity is bounded scalar value semantics, not a measurement entity or universal number wrapper;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage;
 - older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are redistributed into Provenance, automation/inference, Version and workflow semantics.
 
@@ -565,6 +596,7 @@ Observation
 Confirmation
 Evidence
 Provenance
+Quantity
 ```
 
 ---
@@ -591,6 +623,7 @@ Observation  -> measurement/simple assertion about subject/context
 Confirmation -> contextual affirmation of target/version/purpose
 Evidence     -> contextual evaluative use of information
 Provenance   -> bounded origin/evolution lineage
+Quantity     -> reusable scalar amount value semantics
 ```
 
 Cross-cutting multi-actor direction:
@@ -623,9 +656,12 @@ Observed Reality & Evidence v0  — PASS
 Cross-Cluster Validation v3     — PASS
 Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
 Validation Methodology v3       — ACTIVE MANDATORY STANDARD
+Quantity v0                     — ACCEPTED
 
 ↓ NOW
-Data / Subjects concept reviews
+Register read-only review
+↓
+remaining Data / Subjects concepts
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -644,7 +680,8 @@ The following are executable obligations, not generic reminders. The post-Cluste
 
 Known inherited items include:
 
-- Observation vs Quantity/Register;
+- Observation vs Register;
+- Quantity vs Register aggregation semantics;
 - Availability/Capacity vs Resource;
 - Subject vs observer/recorder/source/transformer semantics;
 - Person/Actor/Subject/Account/Principal boundaries;
@@ -665,7 +702,8 @@ Known inherited items include:
 - Quantity vs rating/scale/ratio/percentage/count semantics;
 - Quantity vs custom unit-definition semantics;
 - Quantity vs elapsed duration/calendar-relative time;
-- Quantity vs Range/Threshold/comparison semantics.
+- Quantity vs Range/Threshold/comparison semantics;
+- Quantity decimal/unit physical representation.
 
 The list is expected to grow during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
 
