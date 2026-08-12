@@ -413,7 +413,7 @@ The exact Temporary Mode domain representation remains outside this Time-cluster
 
 For personal V1, the primary schedulable resource will normally be the user.
 
-The definition intentionally does not restrict Capacity to a person because future Resource semantics may include:
+The definition intentionally does not restrict Capacity to a person because Resource semantics may include:
 
 - rooms;
 - vehicles;
@@ -422,7 +422,7 @@ The definition intentionally does not restrict Capacity to a person because futu
 - production capacity;
 - shared or count-based resources.
 
-However, this concept does **not** introduce the final `Resource` model. Resource identity belongs to the later Data/Subjects review.
+Resource v0 now defines `Resource` as contextual planning/execution role/capability over native referents/supplies rather than a universal entity/root. See the canonical alignment amendment at the end of this document.
 
 ---
 
@@ -1299,7 +1299,7 @@ busy
 
 Therefore contextual state and location must not be collapsed into capacity consumption.
 
-This will be revisited in the Subject/Resource and Relationship models.
+This is now compatible with Resource v0: Place/Location may later play Resource role where relevant, without context/location state itself becoming a capacity claim.
 
 ---
 
@@ -1333,6 +1333,8 @@ Derived analytics may later compare:
 - actual concurrency.
 
 These are not one value.
+
+Resource v0 adds the related guardrail that **allocated/reserved Resource != actually used Resource**.
 
 ---
 
@@ -1376,14 +1378,16 @@ A future planner should reason about feasibility rather than merely empty rectan
 For a candidate placement it should be able to evaluate:
 
 1. does the subject's Temporal Constraint allow the placement?
-2. is the relevant schedulable resource available?
-3. what capacity does the subject claim?
-4. are existing claims compatible?
-5. does a hard or protected reservation forbid displacement?
-6. does movement authority permit changing existing placements?
-7. if infeasible, which conflict or assumption caused infeasibility?
+2. what Resource Requirement(s), if any, must be satisfied?
+3. which native referents/supplies are eligible Resource candidates?
+4. is the relevant schedulable Resource available?
+5. what capacity does the subject claim?
+6. are existing claims compatible?
+7. does a hard or protected reservation forbid displacement?
+8. does movement/allocation authority permit changing existing placements/resources?
+9. if infeasible, which conflict or assumption caused infeasibility?
 
-The planner must not silently solve conflicts by deleting user intent or violating hard constraints.
+The planner must not silently solve conflicts by deleting user intent, violating hard constraints, or pretending a Resource was selected before it actually was.
 
 ---
 
@@ -1401,9 +1405,15 @@ or:
 Protect 90 minutes tomorrow morning for focus work
 ```
 
-but proposal/acceptance rules remain consistent with Schedule v0 and the broader LifeOS authority model.
+or:
 
-A proposed reservation does not become canonical merely because the AI generated it unless an approved automatic policy authorizes that action.
+```text
+Use Camera A17; it satisfies the requirement and is available
+```
+
+but proposal/acceptance rules remain consistent with Schedule v0, Resource v0 and the broader LifeOS authority model.
+
+A proposed reservation/allocation does not become canonical merely because the AI generated it unless an approved automatic policy authorizes that action.
 
 Imported external busy data likewise does not automatically override explicit user truth without the applicable integration/reconciliation policy.
 
@@ -1673,7 +1683,8 @@ Resource pool
 Result:
 
 - still has remaining capacity;
-- binary free/busy cannot be the universal kernel model.
+- binary free/busy cannot be the universal kernel model;
+- the pool/quantity implementation remains deferred without requiring a universal Resource entity.
 
 ---
 
@@ -1739,11 +1750,11 @@ Imported provider busy data can coexist with local user interpretation/provenanc
 
 Pass.
 
-## 27.10 Resource model not yet defined
+## 27.10 Resource model now defined
 
-Concept refers to a schedulable resource abstractly without prematurely defining Asset/Resource persistence.
+Resource v0 defines Resource as contextual planning/execution role/capability over native referents/supplies, not an entity/root. Availability/Capacity attaches to schedulable Resource-role cases without requiring wrapper identity.
 
-Pass with explicit deferral.
+Pass with hardening around Requirement/Allocation/Reservation and heterogeneous references.
 
 ---
 
@@ -1787,10 +1798,14 @@ The current accepted invariants are:
 34. Capacity and Actual Session duration remain distinct.
 35. Standalone protected capacity may have meaningful identity even when no Activity/Event exists.
 36. The Time cluster does not require every ordinary blocking Schedule to create a separate first-class Reservation aggregate.
-37. Reservation/claim physical persistence is deferred until persistence and Resource review.
+37. Reservation/claim physical persistence is deferred until logical persistence and Relationship/Allocation review.
 38. Changes to Availability/Capacity that materially affected planning may require history/provenance rather than silent overwrite.
-39. AI-generated reservations/availability changes remain proposals unless accepted by user authority or an explicitly authorized automatic policy.
-40. Exact `Capacity`, `Availability`, `Reservation`, `Calendar Block`, and future `Resource` entity/value-object/table boundaries remain deliberately deferred.
+39. AI-generated reservations/availability/resource allocations remain proposals unless accepted by user authority or an explicitly authorized automatic policy.
+40. **Resource is a contextual planning/execution role/capability, not an entity/root.**
+41. **Availability/Capacity does not manufacture Resource identity.**
+42. **A schedulable Resource is a Resource-role case whose time-dependent capacity matters; not every Resource requires calendar semantics.**
+43. **Resource Requirement != candidate != Allocation != Reservation/Claim != actual use.**
+44. Exact physical `Capacity`, `Availability`, `Reservation`, Resource-role reference, pool and compatibility structures remain deliberately deferred.
 
 ---
 
@@ -1870,12 +1885,24 @@ Violates the Domain Atlas external-benchmark/interoperability rule and would con
 
 ---
 
+## Alternative H — Resource as universal entity/root
+
+Rejected by Resource v0.
+
+People, Assets, Places, services and supplies retain native semantics; Resource is the contextual operational role under which they may satisfy execution requirements.
+
+A universal Resource wrapper would duplicate identity and encourage generic `resource_id` relationships that erase Requirement/Performer/Responsibility/Allocation semantics.
+
+---
+
 # 30. Deliberately deferred questions
 
 Availability & Capacity v0 intentionally does **not** decide:
 
-- the final `Resource` entity and ownership model;
-- whether personal attention becomes an explicit Resource record;
+- final Resource Requirement representation;
+- final Allocation/selection model;
+- exact Account/Authority rights for allocating shared Resources;
+- whether personal attention needs an explicit capacity profile record;
 - the final capacity-dimension vocabulary;
 - a quantitative compatibility model;
 - the exact product defaults for blocking/non-blocking Activities and Events;
@@ -1889,10 +1916,11 @@ Availability & Capacity v0 intentionally does **not** decide:
 - exact scheduler optimization algorithm;
 - exact conflict severity taxonomy;
 - exact Calendar UI rendering language;
+- exact pool/count/supply representation;
 - exact database range/index strategy;
 - exact API payloads.
 
-These decisions should be made only after the Time-cluster checkpoint and the later Resource, Relationship, Provenance, and persistence reviews provide enough context.
+These decisions should be made only after the Data / Subjects cluster integration, Relationships / Reasoning review and logical persistence pressure provide enough context.
 
 ---
 
@@ -1907,7 +1935,8 @@ Without fixing the schema, the future model must be capable of representing at l
 - standalone protected/tentative reservations;
 - provenance/source;
 - history/version context where material;
-- resource reference without requiring every resource type to be known now;
+- references to native referents/supplies playing Resource role rather than requiring a universal Resource entity;
+- Resource Requirements independently from concrete allocations;
 - derived free-capacity queries;
 - conflicts/overcommitment without destructive normalization;
 - external provider mappings without provider semantics becoming canonical.
@@ -1930,6 +1959,12 @@ or:
 persist every computed free interval as canonical state
 ```
 
+or:
+
+```text
+one universal resources table / resource_id wrapper
+```
+
 ---
 
 # 32. Implications for APIs
@@ -1946,6 +1981,18 @@ create availability override
 
 ```text
 protect/reserve capacity
+```
+
+```text
+define/query a Resource Requirement
+```
+
+```text
+find Resource candidates
+```
+
+```text
+allocate/select a candidate
 ```
 
 ```text
@@ -1968,7 +2015,7 @@ query simple free/busy projection
 surface capacity conflict
 ```
 
-These operations must not be collapsed into one ambiguous `calendar block` endpoint merely because they may render similarly.
+These operations must not be collapsed into one ambiguous `calendar block` or `resource` endpoint merely because they may interact in the same scheduler.
 
 ---
 
@@ -2001,8 +2048,11 @@ which expected generated instance exists
 Temporal Constraint
 where/when a subject may/must/preferably occur
 
+Resource
+what native referent/supply may satisfy an execution requirement in context
+
 Availability / Capacity
-whether the schedulable resource can accept the commitment
+whether the schedulable Resource can accept the commitment
 
 Schedule
 when the commitment is currently accepted
@@ -2017,11 +2067,11 @@ Evidence
 what supports evaluation
 ```
 
-No previous accepted Time primitive needs reopening solely because of this review.
+No previous accepted Time primitive needs reopening solely because Resource v0 now closes the earlier deferred boundary.
 
-The strongest newly confirmed cross-concept rule is:
+The strongest combined cross-concept rule is:
 
-> **appears in time != scheduled commitment != capacity consumed != resource unavailable != actual execution.**
+> **appears in time != scheduled commitment != Resource requirement satisfied != Resource allocated != capacity consumed != resource unavailable != actual execution.**
 
 These states may correlate, but LifeOS preserves their separate semantics.
 
@@ -2029,7 +2079,7 @@ These states may correlate, but LifeOS preserves their separate semantics.
 
 # 34. Acceptance summary
 
-Availability & Capacity v0 accepts the following current direction:
+Availability & Capacity v0 retains the following accepted direction:
 
 ```text
 Availability
@@ -2049,19 +2099,45 @@ product/UI representation for capacity-only temporal constructs,
 not a mandatory kernel primitive
 ```
 
-The Time cluster now has accepted baselines for:
+Resource v0 now closes the earlier abstract-resource dependency:
 
 ```text
-Occurrence
-Schedule
-Session
-Temporal Constraint
-Recurrence
-Availability & Capacity
+native referent / service / pool / supply
+        ↓ contextual Resource role
+may satisfy execution requirement
+        ↓ when time-dependent capacity matters
+Availability + Capacity
 ```
 
-The next required step is **Time Cluster Checkpoint v0**.
+No universal Resource entity/root is introduced.
 
-That checkpoint must stress-test all six concepts together before the workstream proceeds to the Observed Reality & Evidence cluster.
+---
 
-Saving Availability & Capacity v0 does not pre-declare that checkpoint a PASS.
+# 35. Resource v0 alignment — 2026-08-12
+
+This section is a canonical amendment to the original Time-cluster text and **supersedes earlier forward-looking statements in this document that said the Resource model or Resource identity still belonged to a later review**.
+
+Resource v0 is now accepted as:
+
+> **a contextual planning/execution role/capability over native referents, services, pools, supplies or other eligible providers; not an independent universal entity/root.**
+
+Therefore:
+
+```text
+Person may play Resource role
+Asset may play Resource role
+future Place may play Resource role
+service/pool/supply may play Resource role where semantics justify it
+
+Resource role != native identity
+Resource != Requirement
+Resource != Allocation
+Resource != Reservation / Capacity Claim
+Resource != actual use / consumption
+```
+
+For this Time-cluster concept, `schedulable resource` now means:
+
+> a native referent/supply playing Resource role in a context where time-dependent Availability/Capacity matters.
+
+This amendment does **not** reopen the accepted Time cluster. It closes an inherited deferred boundary and schedules regression during Data / Subjects cluster integration, the deferred-dependency closure, and Cross-Cluster Validation v4.
