@@ -2,7 +2,7 @@
 
 **Status:** Current accepted baseline — explicitly reopenable  
 **Accepted:** 2026-08-12  
-**Current revision:** 2026-08-12 — Resource v0 boundary resolved; terminology-neutral Asset revisit remains mandatory  
+**Current revision:** 2026-08-12 — terminology-neutral Cluster-4 re-review completed; Resource boundary resolved  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
@@ -12,13 +12,13 @@
 
 This is the **current scoped baseline**, not a claim that every managed/tracked thing in LifeOS is an Asset and not a claim that the word `Asset` must be the eventual product/UI label.
 
-A mandatory terminology-neutral re-review is registered before final Cluster-4 closure to test whether a stronger cross-domain abstraction exists.
+The mandatory terminology-neutral Cluster-4 re-review has now been executed. It rejected a universal `ManagedObject` abstraction under current evidence and retained the need for persistent identity for individually tracked physical objects. The exact noun `Asset` remains a non-semantic naming choice and may be changed later without changing the concept.
 
 ---
 
 # 1. Why Asset exists
 
-LifeOS needs a reusable identity/lifecycle concept for durable physical objects where the **specific instance** matters over time.
+LifeOS needs a reusable identity/lifecycle concept for physical objects where the **specific instance** matters over time.
 
 Examples:
 
@@ -91,7 +91,7 @@ Subject answers:
 
 Asset answers:
 
-> Which individually tracked durable physical object is this?
+> Which individually tracked physical object is this?
 
 Example:
 
@@ -133,7 +133,7 @@ A Person may own, use, hold, maintain, observe, schedule, or be responsible for 
 
 # 5. Asset versus Resource
 
-Resource v0 is now accepted as a **contextual planning/execution role/capability**, not an entity/root.
+Resource v0 is accepted as a **contextual planning/execution role/capability**, not an entity/root.
 
 Asset concerns persistent physical-object identity and management history.
 
@@ -164,9 +164,7 @@ Asset may play Resource role
 Resource role does not redefine Asset identity
 ```
 
-This boundary is **RESOLVED at the current conceptual baseline** by `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
-
-The mandatory terminology-neutral Asset revisit remains active: Resource v0 must continue to compose if Asset is later narrowed, renamed, generalized or rejected.
+This boundary is **RESOLVED at the current conceptual baseline** by `concepts/resource.md` and `checkpoints/resource-v0-validation.md`, and survived the Cluster-4 integration gate.
 
 ---
 
@@ -279,7 +277,7 @@ fungible stock quantity
 
 These exclusions do not imply those domains are unsupported. They mean their semantics should be modeled on their own merits rather than absorbed into Asset for convenience.
 
-A future review may reopen the boundary if a stronger abstraction survives testing.
+The terminology-neutral re-review specifically tested whether these exclusions indicated a missing universal managed/tracked-object root. Under current evidence, they do not.
 
 ---
 
@@ -291,7 +289,7 @@ Reason:
 
 - care/health/living lifecycle semantics differ materially from equipment/property management;
 - calling them Asset adds no current semantic advantage;
-- their potential future native identity should be evaluated from real workflows rather than inherited from generic ownership/management language.
+- stable identity can be modeled independently of Asset if concrete workflows later justify a native living-referent concept.
 
 Canonical rule:
 
@@ -322,7 +320,7 @@ subscription
 service + entitlement + billing + renewal/cancellation semantics
 ```
 
-Those are materially different from durable physical-object identity.
+Those are materially different from physical-object identity.
 
 The fact that another product calls something an `asset` is not enough to import that taxonomy.
 
@@ -348,7 +346,7 @@ Place with managed physical profile
 other stronger model
 ```
 
-This boundary is explicitly SAFE DEFERRED and must reopen when Place/Location/Property semantics are modeled.
+This boundary remains SAFE DEFERRED and must reopen when Place/Location/Property semantics are modeled.
 
 ---
 
@@ -582,23 +580,67 @@ The kernel may reuse Asset identity while product/UI language remains domain-spe
 
 Conversely, a product section called `Assets`, `Gear`, `Things`, `Inventory` or similar would not automatically broaden the kernel definition.
 
+The exact internal noun is also not a semantic contract: a future rename does not require changing identity invariants if the underlying concept stays the same.
+
 ---
 
-# 22. External benchmark synthesis
+# 22. Terminology-neutral benchmark synthesis — completed
 
-Mature systems were treated as evidence, not authority.
+The Cluster-4 closure deliberately re-ran the category without beginning from `Asset`, `Device`, `Item`, `Object`, or any other product noun.
 
-Useful recurring lessons include:
+Question tested:
 
-- maintenance/CMMS systems preserve identity, lifecycle, location and work history for individually managed equipment;
-- inventory/IT-asset systems distinguish individually tagged Assets from accessories/components/consumables tracked differently;
-- smart-home systems often separate physical Device identity from functional Entity/state representations and Area/location;
-- model/catalog identity is distinct from individual object identity;
-- source/provider identifiers may not be sufficient to merge representations safely.
+> **How do mature products represent things that people identify, manage, monitor, use, possess, locate, share, book, consume, or relate to, and which structures are actually persistent source semantics?**
 
-LifeOS adapts those lessons while deliberately rejecting their domain-specific taxonomies as universal truth.
+Benchmark families included:
 
-A **terminology-neutral benchmark re-review** remains mandatory before final Cluster-4 closure because `Asset` may otherwise inherit assumptions from asset-management products merely through naming.
+- smart-home/device systems;
+- equipment/inventory and personal possessions;
+- product/inventory systems;
+- property/place patterns;
+- document/storage systems;
+- finance/account patterns;
+- living-subject/patient patterns;
+- services/subscriptions.
+
+The stronger recurring pattern was:
+
+```text
+native identity appropriate to the domain
++
+typed relationships
++
+contextual roles/capabilities
++
+domain-specific lifecycle
++
+shared query/UI where useful
+```
+
+The benchmark did **not** justify:
+
+```text
+ManagedObject
+├ Person
+├ Pet
+├ Car
+├ Property
+├ Document
+├ FinancialAccount
+└ Subscription
+```
+
+as a universal LifeOS root.
+
+Result:
+
+```text
+universal ManagedObject abstraction  REJECTED
+physical-item identity need           RETAINED
+exact noun `Asset`                    NON-SEMANTIC / reopenable
+```
+
+This is evidence, not proof that later Place/Document/living/service concepts must exist separately. Those candidates remain future questions only if workflows justify them.
 
 ---
 
@@ -634,11 +676,11 @@ Fungible stock and consumables explode into meaningless identity rows.
 
 **Result:** FAIL.
 
-## Asset = every managed thing
+## Asset = every managed thing / universal ManagedObject
 
-Person, living things, documents, accounts, services, places and abstract rights become one semantic dumping ground.
+Person, living things, documents, accounts, services, places and abstract rights lose materially different identity/lifecycle semantics.
 
-**Result:** FAIL.
+**Result:** FAIL, including after terminology-neutral benchmark.
 
 ## Asset = financial asset
 
@@ -646,11 +688,11 @@ Financial semantics differ materially.
 
 **Result:** FAIL.
 
-## Asset = durable individually tracked non-human physical object
+## Asset = individually tracked non-human physical object
 
 Identity/lifecycle reuse survives tested scenarios without absorbing unrelated domains.
 
-**Result:** PASS WITH HARDENING — current baseline only.
+**Result:** PASS WITH HARDENING — current baseline, naming reopenable.
 
 ---
 
@@ -660,21 +702,22 @@ Identity/lifecycle reuse survives tested scenarios without absorbing unrelated d
 2. **Asset currently represents an individually tracked non-human physical object whose distinct identity/history materially matter.**
 3. **Physical thing != Asset automatically.**
 4. **Managed thing != Asset automatically.**
-5. **Person != Asset.**
-6. **Asset != Subject; Asset may play Subject role.**
-7. **Asset != Resource; Asset may play Resource role.**
-8. **Resource role does not redefine Asset identity or imply current allocation/reservation.**
-9. **Asset identity != owner/holder/custodian/steward/responsible actor.**
-10. **Asset identity != product/model/type definition.**
-11. **External/provider identifiers are reconciliation evidence, not canonical identity by default.**
-12. **Ownership/location/status changes do not automatically change Asset identity.**
-13. **Fungible stock does not require one Asset per physical unit.**
-14. **Living things, Documents, FinancialAccounts, services and financial assets are not absorbed by default.**
-15. **Asset history should compose from native records rather than a universal history-entry wrapper.**
-16. **Shared Asset identity does not imply shared visibility of every related record.**
-17. **AI may propose Asset reconciliation/resource candidacy but does not silently establish identity/ownership/Authority/allocation.**
-18. **Asset does not imply a final SQL table hierarchy, product taxonomy or visible UI label.**
-19. **The current physical/durable scope must be retested terminology-neutrally before final Cluster-4 closure.**
+5. **Universal ManagedObject root is rejected under current cross-domain evidence.**
+6. **Person != Asset.**
+7. **Asset != Subject; Asset may play Subject role.**
+8. **Asset != Resource; Asset may play Resource role.**
+9. **Resource role does not redefine Asset identity or imply current allocation/reservation.**
+10. **Asset identity != owner/holder/custodian/steward/responsible actor.**
+11. **Asset identity != product/model/type definition.**
+12. **External/provider identifiers are reconciliation evidence, not canonical identity by default.**
+13. **Ownership/location/status changes do not automatically change Asset identity.**
+14. **Fungible stock does not require one Asset per physical unit.**
+15. **Living things, Documents, FinancialAccounts, services and financial assets are not absorbed by default.**
+16. **Asset history should compose from native records rather than a universal history-entry wrapper.**
+17. **Shared Asset identity does not imply shared visibility of every related record.**
+18. **AI may propose Asset reconciliation/resource candidacy but does not silently establish identity/ownership/Authority/allocation.**
+19. **Asset does not imply a final SQL table hierarchy, product taxonomy or visible UI label.**
+20. **The word `Asset` is not an ontology authority; renaming is allowed if semantics remain stronger and clearer.**
 
 ---
 
@@ -696,6 +739,7 @@ The future logical model must be able to support where justified:
 Do not infer from Asset v0 that LifeOS requires:
 
 - one universal `assets` table containing all managed things;
+- a universal `managed_objects` table/root;
 - one table per Asset subtype;
 - every physical item as Asset;
 - one Asset row per consumable unit;
@@ -707,7 +751,7 @@ Do not infer from Asset v0 that LifeOS requires:
 - Asset = Resource implementation inheritance;
 - a Resource wrapper or `resource_id` merely to make an Asset schedulable.
 
-Final persistence depends on the terminology-neutral Asset re-review, Relationships/Authority modeling and logical data-model pressure.
+Final persistence depends on Relationships/Authority modeling and logical data-model pressure.
 
 ---
 
@@ -717,7 +761,7 @@ Final persistence depends on the terminology-neutral Asset re-review, Relationsh
 
 ### Asset vs Subject
 
-Resolved at current baseline: Asset is native identity; Subject is contextual aboutness. Asset may play Subject role.
+Resolved: Asset is native identity; Subject is contextual aboutness. Asset may play Subject role.
 
 ### Asset vs Person
 
@@ -725,9 +769,7 @@ Resolved: Person is a native human identity and is not Asset.
 
 ### Asset vs Resource
 
-Resolved at current conceptual baseline: Asset is native physical-object identity; Resource is a contextual planning/execution role. Asset may play Resource role without duplicate identity.
-
-**Mandatory re-test:** terminology-neutral Asset revisit + Cluster-4 integration. If Asset scope changes, rerun CORE-03, CORE-04, MA-14, XCON-01 and XCON-04 against Resource v0.
+Resolved: Asset is native physical-object identity; Resource is contextual planning/execution role. Asset may play Resource role without duplicate identity.
 
 ### Asset vs fungible inventory
 
@@ -735,21 +777,21 @@ Resolved conceptually: individual identity must materially matter. Bulk/consumab
 
 ### Asset vs ownership
 
-Resolved at identity level only: ownership does not define Asset identity. Exact ownership relation is deferred.
+Resolved at identity level: ownership does not define Asset identity. Exact ownership relation is deferred.
+
+### Asset scope vs universal managed-referent model
+
+Resolved at current baseline through the mandatory terminology-neutral Cluster-4 re-review: a universal `ManagedObject` root does not improve the model under current evidence.
+
+**Reopening trigger:** later concrete workflows show a stronger shared native identity abstraction across currently separate referent domains with fewer exceptions and no semantic loss.
+
+**Tests to rerun:** CORE-03, CORE-04, CORE-06, CORE-07, CORE-08, CORE-12, CORE-13, MA-18, MA-19, XCON-01, XCON-04, CL-03, CL-04, CL-05, CL-06.
 
 ## SAFE DEFERRED
 
-### Asset scope vs terminology-neutral managed-referent model
-
-**Owner:** Data / Subjects cluster integration + clusters 1–4 deferred-dependency closure.  
-**Why safe:** current durable-physical scope passes present scenarios, but benchmark evidence may be biased by asset-management terminology.  
-**Mandatory action:** perform a cross-product comparison of how mature personal, inventory, smart-home, property, document, finance, pet/plant, device and service-management products represent managed/tracked referents **without starting from their names**.  
-**Reopening trigger:** a broader or different identity abstraction explains the workflows with fewer exceptions and without semantic loss.  
-**Tests to rerun:** CORE-03, CORE-04, CORE-06, CORE-07, CORE-08, CORE-12, CORE-13, MA-18, MA-19, XCON-01, XCON-04, CL-03, CL-04, CL-05, CL-06.
-
 ### Asset vs Place / Location / Property
 
-**Owner:** future Place/Location/Property review or dependency closure if required earlier.  
+**Owner:** future Place/Location/Property review.  
 **Why safe:** ordinary movable-object Asset semantics do not require a final property/place ontology.  
 **Reopening trigger:** property/home workflows cannot preserve identity without treating place and physical asset as one concept.  
 **Tests to rerun:** CORE-04, XCON-01, XCON-04.
@@ -758,13 +800,13 @@ Resolved at identity level only: ownership does not define Asset identity. Exact
 
 **Owner:** future concrete pet/plant/living-entity workflow review.  
 **Why safe:** current Asset semantics do not need them and Person/Subject already prove stable identity can exist outside Asset.  
-**Reopening trigger:** recurring LifeOS workflows require a shared native identity abstraction across durable objects and living subjects.  
+**Reopening trigger:** recurring LifeOS workflows require a shared native identity abstraction across physical objects and living subjects.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-06, XCON-01.
 
 ### Asset vs Document / Artifact / FinancialAccount / service
 
-**Owner:** future specialist reviews / dependency closure if concrete workflow becomes blocking.  
-**Why safe:** each has materially different semantics and need not be forced into Asset.  
+**Owner:** future specialist reviews if concrete workflow becomes material.  
+**Why safe:** each has materially different semantics and the terminology-neutral review found no need to force them into Asset.  
 **Reopening trigger:** repeated cross-domain behavior shows one stronger shared native identity/lifecycle abstraction.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-12, XCON-01.
 
@@ -782,11 +824,39 @@ Resolved at identity level only: ownership does not define Asset identity. Exact
 **Reopening trigger:** imports/integrations cannot preserve identity/history under current semantics.  
 **Tests to rerun:** CORE-02, CORE-09, XCON-01, XCON-03.
 
-No current dependency is a structural blocker, but the terminology-neutral scope review is **mandatory before final Cluster-4 closure**.
+No current dependency is a structural blocker.
 
 ---
 
-# 27. Rejected alternatives
+# 27. Cluster-4 integration result
+
+Asset survived:
+
+- Data / Subjects Cluster Integration;
+- Cluster-4 Multi-Actor Stress;
+- terminology-neutral cross-domain re-review;
+- Deferred Dependency Closure — Clusters 1–4;
+- Cross-Cluster Validation v4.
+
+Result:
+
+```text
+Asset v0
+PASS WITH HARDENING
+structural reopenings: 0
+universal ManagedObject: rejected
+exact naming: reopenable/non-semantic
+```
+
+See:
+
+- `checkpoints/data-subjects-v0.md`;
+- `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
+- `checkpoints/cross-cluster-validation-v4.md`.
+
+---
+
+# 28. Rejected alternatives
 
 Rejected under current evidence:
 
@@ -805,17 +875,17 @@ Rejected under current evidence:
 
 ---
 
-# 28. Reopening triggers
+# 29. Reopening triggers
 
 Reopen Asset v0 if later evidence shows that:
 
-1. terminology-neutral cross-product review finds a stronger shared abstraction for managed/tracked referents;
+1. a stronger terminology-neutral shared abstraction for managed/tracked referents survives reductio and reduces exceptions without semantic loss;
 2. Resource/Requirement/Allocation modeling exposes a contradiction with the current Asset boundary or a stronger shared identity model;
-3. Place/Property, living-entity, Document, FinancialAccount or service workflows repeatedly require the same identity/lifecycle semantics and the current exclusions become artificial;
+3. Place/Property, living-entity, Document, FinancialAccount or service workflows repeatedly require the same identity/lifecycle semantics and current exclusions become artificial;
 4. ordinary personal use cannot distinguish when a physical object deserves Asset identity without exposing arbitrary system rules;
 5. integration identity/reconciliation cannot be represented safely without a different native referent model;
 6. physical/logical persistence pressure requires one stronger cross-domain identity abstraction rather than profile-specific storage;
 7. multi-actor ownership/custody/visibility semantics contradict the current identity independence;
-8. cluster regression shows that the current `physical + durable + individually tracked` boundary is terminology-driven rather than semantically necessary.
+8. later whole-domain regression shows that the current physical-object boundary is terminology-driven rather than semantically necessary.
 
-Until that mandatory re-review or stronger evidence changes it, Asset v0 remains the current accepted baseline.
+Until stronger evidence changes it, Asset v0 remains the current accepted baseline; the exact noun remains open to future renaming.
