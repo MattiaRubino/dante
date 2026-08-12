@@ -2,6 +2,7 @@
 
 **Status:** Current accepted baseline — explicitly reopenable  
 **Accepted:** 2026-08-12  
+**Current revision:** 2026-08-12 — Resource v0 boundary resolved; terminology-neutral Asset revisit remains mandatory  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
@@ -132,9 +133,9 @@ A Person may own, use, hold, maintain, observe, schedule, or be responsible for 
 
 # 5. Asset versus Resource
 
-Resource concerns whether something can provide, constrain, reserve, or consume capacity/access in execution or scheduling.
+Resource v0 is now accepted as a **contextual planning/execution role/capability**, not an entity/root.
 
-Asset concerns persistent object identity and management history.
+Asset concerns persistent physical-object identity and management history.
 
 The same object may play Resource role:
 
@@ -143,20 +144,29 @@ Asset A17
 camera
 
 Photo-shoot Activity
-required Resource -> Asset A17
+Resource Requirement
+camera suitable for wildlife photography
+
+Asset A17
+candidate / selected provider
+Resource role
 ```
 
-but an Asset may exist while not currently usable/schedulable, and a Resource may be a Person, room, service, capacity pool, or another non-Asset referent.
+but an Asset may exist while not currently usable, schedulable or relevant to an execution need.
+
+Conversely, a Person, Place, service, pool or consumable supply may play Resource role without being an Asset.
 
 Therefore:
 
 ```text
 Asset != Resource
 Asset may play Resource role
-Resource identity/capacity must not redefine Asset identity
+Resource role does not redefine Asset identity
 ```
 
-The exact Resource model remains the next mandatory Cluster-4 review.
+This boundary is **RESOLVED at the current conceptual baseline** by `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
+
+The mandatory terminology-neutral Asset revisit remains active: Resource v0 must continue to compose if Asset is later narrowed, renamed, generalized or rejected.
 
 ---
 
@@ -539,7 +549,8 @@ AI may:
 - classify a physical object into a product profile;
 - summarize maintenance/history;
 - suggest likely maintenance based on authorized records;
-- surface inconsistent identifiers or duplicate candidates.
+- surface inconsistent identifiers or duplicate candidates;
+- propose an Asset as a Resource candidate where an execution requirement is compatible.
 
 AI must not silently:
 
@@ -547,7 +558,8 @@ AI must not silently:
 - treat ownership as proven from possession/import context;
 - disclose private location/ownership/history to another actor;
 - turn every physical referent into Asset automatically;
-- invent lifecycle transitions from absence of data.
+- invent lifecycle transitions from absence of data;
+- convert candidate suitability into authoritative allocation/reservation.
 
 ---
 
@@ -606,7 +618,7 @@ Subject is contextual aboutness and includes non-Asset referents.
 
 ## Asset = Resource
 
-Identity/history and capacity/use semantics differ.
+Identity/history and operational eligibility/capacity semantics differ.
 
 **Result:** FAIL.
 
@@ -651,17 +663,18 @@ Identity/lifecycle reuse survives tested scenarios without absorbing unrelated d
 5. **Person != Asset.**
 6. **Asset != Subject; Asset may play Subject role.**
 7. **Asset != Resource; Asset may play Resource role.**
-8. **Asset identity != owner/holder/custodian/steward/responsible actor.**
-9. **Asset identity != product/model/type definition.**
-10. **External/provider identifiers are reconciliation evidence, not canonical identity by default.**
-11. **Ownership/location/status changes do not automatically change Asset identity.**
-12. **Fungible stock does not require one Asset per physical unit.**
-13. **Living things, Documents, FinancialAccounts, services and financial assets are not absorbed by default.**
-14. **Asset history should compose from native records rather than a universal history-entry wrapper.**
-15. **Shared Asset identity does not imply shared visibility of every related record.**
-16. **AI may propose Asset reconciliation but does not silently establish identity/ownership/Authority.**
-17. **Asset does not imply a final SQL table hierarchy, product taxonomy or visible UI label.**
-18. **The current physical/durable scope must be retested terminology-neutrally before final Cluster-4 closure.**
+8. **Resource role does not redefine Asset identity or imply current allocation/reservation.**
+9. **Asset identity != owner/holder/custodian/steward/responsible actor.**
+10. **Asset identity != product/model/type definition.**
+11. **External/provider identifiers are reconciliation evidence, not canonical identity by default.**
+12. **Ownership/location/status changes do not automatically change Asset identity.**
+13. **Fungible stock does not require one Asset per physical unit.**
+14. **Living things, Documents, FinancialAccounts, services and financial assets are not absorbed by default.**
+15. **Asset history should compose from native records rather than a universal history-entry wrapper.**
+16. **Shared Asset identity does not imply shared visibility of every related record.**
+17. **AI may propose Asset reconciliation/resource candidacy but does not silently establish identity/ownership/Authority/allocation.**
+18. **Asset does not imply a final SQL table hierarchy, product taxonomy or visible UI label.**
+19. **The current physical/durable scope must be retested terminology-neutrally before final Cluster-4 closure.**
 
 ---
 
@@ -674,7 +687,7 @@ The future logical model must be able to support where justified:
 - external identifiers with source/provenance;
 - lifecycle/history relations;
 - Subject-role references from Observations;
-- Resource-role participation where accepted later;
+- Resource-role participation under Resource v0;
 - ownership/possession/custody/stewardship relationships without storing them as identity fields;
 - location/property relationships;
 - merge/split/reconciliation history;
@@ -691,9 +704,10 @@ Do not infer from Asset v0 that LifeOS requires:
 - `owner_id` as Asset identity;
 - provider ID/serial as primary domain identity;
 - a universal `asset_history_entries` table;
-- Asset = Resource implementation inheritance.
+- Asset = Resource implementation inheritance;
+- a Resource wrapper or `resource_id` merely to make an Asset schedulable.
 
-Final persistence depends on the Resource review, terminology-neutral Asset re-review, Relationships/Authority modeling and logical data-model pressure.
+Final persistence depends on the terminology-neutral Asset re-review, Relationships/Authority modeling and logical data-model pressure.
 
 ---
 
@@ -709,6 +723,12 @@ Resolved at current baseline: Asset is native identity; Subject is contextual ab
 
 Resolved: Person is a native human identity and is not Asset.
 
+### Asset vs Resource
+
+Resolved at current conceptual baseline: Asset is native physical-object identity; Resource is a contextual planning/execution role. Asset may play Resource role without duplicate identity.
+
+**Mandatory re-test:** terminology-neutral Asset revisit + Cluster-4 integration. If Asset scope changes, rerun CORE-03, CORE-04, MA-14, XCON-01 and XCON-04 against Resource v0.
+
 ### Asset vs fungible inventory
 
 Resolved conceptually: individual identity must materially matter. Bulk/consumable stock is not forced into Asset-per-unit semantics.
@@ -718,13 +738,6 @@ Resolved conceptually: individual identity must materially matter. Bulk/consumab
 Resolved at identity level only: ownership does not define Asset identity. Exact ownership relation is deferred.
 
 ## SAFE DEFERRED
-
-### Asset vs Resource
-
-**Owner:** immediate Resource review.  
-**Why safe:** identity/history and capacity/use roles are already semantically distinguishable.  
-**Reopening trigger:** Resource review shows that accepted Asset scope is redundant or that Asset identity cannot compose cleanly with Resource semantics.  
-**Tests to rerun:** CORE-03, CORE-04, MA-14, XCON-01, XCON-04.
 
 ### Asset scope vs terminology-neutral managed-referent model
 
@@ -797,7 +810,7 @@ Rejected under current evidence:
 Reopen Asset v0 if later evidence shows that:
 
 1. terminology-neutral cross-product review finds a stronger shared abstraction for managed/tracked referents;
-2. Resource modeling makes Asset redundant or exposes a conflicting identity model;
+2. Resource/Requirement/Allocation modeling exposes a contradiction with the current Asset boundary or a stronger shared identity model;
 3. Place/Property, living-entity, Document, FinancialAccount or service workflows repeatedly require the same identity/lifecycle semantics and the current exclusions become artificial;
 4. ordinary personal use cannot distinguish when a physical object deserves Asset identity without exposing arbitrary system rules;
 5. integration identity/reconciliation cannot be represented safely without a different native referent model;
