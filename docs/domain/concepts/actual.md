@@ -698,6 +698,7 @@ FHIR Task intention/execution collapse            -> ANTI-PATTERN for LifeOS cor
 28. Later relevance does not fabricate historical intention.
 29. Replacement/substitution preserves the original expectation rather than rewriting it.
 30. Physical persistence/cardinality remains deferred until adjacent Reality/Evidence concepts are validated.
+31. Reported/asserted reality does not automatically establish Actual; conflicting assertions may remain unresolved until the applicable reconciliation/authority/policy context establishes a current realization.
 
 ---
 
@@ -715,7 +716,7 @@ Representative cases validated under Methodology v3 include:
 | Spontaneous debugging | Session may exist without fabricated Activity/Actual |
 | Weight measurement | Observation without Actual wrapper |
 | Planned bus replaced by taxi | original expectation preserved + Actual non-realization/replacement relation |
-| Conflicting provider/user times | one current Actual after reconciliation + preserved provenance/history |
+| Conflicting provider/user times | assertions preserved until reconciliation; current Actual established only under applicable reconciliation context |
 | Shared meeting with partial attendance | shared Event Actual + actor-scoped participation reality |
 | Collaborative sofa move | shared execution context + actor-specific participation intervals |
 | Caregiver enters fact for cared-for person | subject/performer/recorder remain separable |
@@ -746,10 +747,8 @@ Actual v0 does not decide:
 
 Mandatory re-tests:
 
-- Actual vs Outcome after Outcome v0;
-- Actual vs Observation/Evidence after those concepts exist;
-- Actual vs Confirmation/Provenance after epistemic concepts exist;
-- Actual/Session collaborative attribution at Reality/Evidence cluster checkpoint;
+- Actual establishment under future Authority/Decision/reconciliation semantics;
+- Actual vs Subject/Actor/Participation after Data/Subjects and Relationships exist;
 - final whole-domain multi-actor and persistence-pressure gates.
 
 ---
@@ -779,3 +778,25 @@ Provenance container
 ```
 
 Future adjacent concepts may harden the boundary, but any proposal to broaden Actual into a generic reality mega-entity must explicitly reopen this decision under Methodology v3.
+
+---
+
+# 23. Cross-cluster v3 hardening — assertions do not establish Actual by themselves
+
+The first-three-cluster regression exposed the need to make the epistemic boundary explicit.
+
+Scenario:
+
+```text
+Actor A: medicine taken
+Actor B: medicine not taken
+Device: dispenser unopened
+```
+
+LifeOS may preserve these as separate assertions/Observations with their own Provenance and optional Confirmations while the realization remains unresolved.
+
+Canonical rule:
+
+> **Reported or asserted reality is not automatically established Actual. Actual represents the currently established realization in context; conflicting assertions may coexist without creating multiple competing canonical Actuals or forcing premature resolution.**
+
+This hardening does not create a new primitive. The future Authority/Decision/reconciliation model must define how an applicable context establishes or revises Actual while preserving source assertion history.
