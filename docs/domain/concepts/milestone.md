@@ -390,6 +390,12 @@ LifeOS must not invent an artificial Activity such as `Receive job offer` merely
 
 User declaration remains authoritative according to the broader LifeOS confirmation/provenance policy. Imported or inferred evidence retains source and provenance.
 
+Canonical attainment hardening:
+
+> **Milestone attainment is evidence/evaluation-backed checkpoint state. It must not become a second independent source of Actual, Outcome, Observation, or other underlying reality.**
+
+The system may derive or materialize a reached/effective time for history/querying, but the basis for attainment must remain explainable and must not silently duplicate or overwrite its source facts.
+
 ## Progress toward a Milestone
 
 Milestone attainment and readiness/progress are different concepts.
@@ -578,6 +584,7 @@ Pass: reasoning/history and checkpoint attainment remain distinct.
 22. Ordinary target-date changes do not automatically change Milestone identity.
 23. Historical target revisions and actual achievement must not be silently rewritten.
 24. Exact lifecycle, waiver, cancellation, versioning, replacement, and persistence semantics remain deferred.
+25. Milestone attainment is evidence/evaluation-backed and must not become an independent duplicate source of underlying reality.
 
 ## External benchmark lessons
 
@@ -602,6 +609,7 @@ The following remain open for later reviews:
 - phase-transition mechanics;
 - how milestone readiness/progress is derived in specialist plans;
 - GoalCriterion persistence and how criteria reference Milestones;
+- exact Evidence/evaluation relationship that establishes attainment;
 - version/replacement behavior for materially redefined checkpoints;
 - notification and Trigger behavior when a Milestone is reached or at risk;
 - AI proposal/confirmation rules for inferred Milestones.
@@ -610,17 +618,8 @@ The following remain open for later reviews:
 
 Milestone is accepted as a distinct contextual domain concept because the intention/execution checkpoint exposed real cases that Goal, Plan, Activity, Event, and Routine do not represent cleanly by themselves.
 
-It is not accepted as a universal standalone objective or as a synonym for progress, deadline, task, Event, or Goal.
+It is not accepted as a universal standalone objective or as a synonym for progress, deadline, task, Event, Goal, Outcome, Evidence, or Actual reality storage.
 
-The next step is to rerun the intention/execution cluster checkpoint across:
+The first-three-cluster Validation Methodology v3 regression confirms that Milestone remains distinct after Actual, Outcome, Observation, Confirmation, Evidence and Provenance were introduced.
 
-```text
-Goal
-Plan
-Activity
-Event
-Routine
-Milestone
-```
-
-If that combined model remains coherent, the cluster can be marked validated and the Domain Atlas can move to the temporal cluster beginning with Occurrence.
+Any future model that stores Milestone attainment independently of its evaluation/evidence basis must explicitly reopen this boundary.
