@@ -61,6 +61,7 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 - Use Methodology v3 for every concept/cluster checkpoint.
 - Record test IDs, evidence, result, hardening/dependency and justified `N/A`.
 - Allowed verdicts: `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
+- Dependency closure classes are `RESOLVED`, `SAFE DEFERRED`, `REOPEN`; they are not additional concept verdicts.
 - Keep external standards/products as evidence, not design authorities.
 - Preserve planned/current/actual/history distinctions.
 - Preserve source/provenance/confirmation/evidence/authority distinctions.
@@ -72,7 +73,11 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 - Run the dedicated Multi-Actor Compatibility Gate after the Core Semantic Gate.
 - New primitives require materially distinct identity/lifecycle/authority/invariants/query behavior.
 - Run Cluster Integration + Cluster Multi-Actor Stress before declaring a cluster complete.
+- Do not leave material neighboring questions as generic `TBD`/`review later`; every applicable closure point must classify them.
+- A `SAFE DEFERRED` item must identify why it is non-blocking, its owner/future stage, exact reopening trigger and tests to rerun.
 - Re-run prior clusters together when a new cluster resolves old deferred boundaries.
+- Finish Data / Subjects, then perform the dedicated clusters 1–4 deferred-dependency closure and Cross-Cluster Validation v4 before Relationships / Reasoning.
+- From Relationships / Reasoning onward, run the Adjacent Dependency Sweep before every concept verdict.
 - Run final whole-domain regression, multi-actor and persistence/API pressure before broad implementation is treated as stable.
 
 ---
@@ -285,7 +290,7 @@ Cross-cluster checkpoint:
 
 # ACTIVE TASK — Data / Subjects
 
-The first three clusters are now validated together. **Data / Subjects is the next active domain cluster.**
+The first three clusters are validated together. **Data / Subjects is the active domain cluster.**
 
 Do not jump to SQL/API design yet.
 
@@ -298,21 +303,31 @@ Do not jump to SQL/API design yet.
 - Asset;
 - Resource.
 
-## Initial dependency question
+## Current concept — Quantity
 
-The first review should choose the smallest useful starting point between:
+Quantity is under read-only Methodology v3 review and is not yet canonical.
 
-```text
-Quantity <-> Observation/Register
-```
-
-and:
+Current candidate direction:
 
 ```text
-Subject <-> Person/Actor/Resource
+Quantity
+= reusable scalar value semantics
+= numerical magnitude + unit semantics
+!= entity / observation / register / universal numeric wrapper
 ```
 
-without assuming the final sequence before evidence is checked.
+Current adjacent questions to register during the transition cluster include:
+
+```text
+Quantity vs Money / MonetaryAmount
+Quantity vs ratings / scales
+Quantity vs ratio / percentage / counts
+Quantity vs custom UnitDefinition semantics
+Quantity vs elapsed duration / calendar-relative time
+Quantity vs Range / Threshold / comparator semantics
+```
+
+Do not resolve these by silently broadening Quantity. Complete the remaining Data / Subjects reviews first unless one becomes a structural blocker.
 
 ## Mandatory inherited re-tests
 
@@ -327,6 +342,30 @@ Provenance source/actor roles vs Subject/Person/Account
 ```
 
 The next concept remains read-only until it passes Methodology v3 and receives a separately approved Git write scope.
+
+---
+
+# TRANSITION GATE — after Data / Subjects
+
+Before Relationships / Reasoning begins, execute:
+
+```text
+Data / Subjects cluster integration
+        ↓
+Data / Subjects multi-actor stress
+        ↓
+cluster verdict
+        ↓
+DEFERRED DEPENDENCY CLOSURE — clusters 1–4
+        ↓
+RESOLVED / SAFE DEFERRED / REOPEN for every material open boundary
+        ↓
+Cross-Cluster Validation v4 — clusters 1–4
+        ↓ only after PASS
+Relationships / Reasoning
+```
+
+The dependency closure must revisit inherited issues from the first three clusters as well as new Cluster 4 findings. Nothing material may remain as unowned limbo.
 
 ---
 
@@ -354,6 +393,8 @@ Mandatory inherited re-tests:
 - Confirmation vs Authority / Acknowledgement / Acceptance;
 - competing assertions and canonical decision/reconciliation policy;
 - collaborative Session/Actual attribution.
+
+From this cluster onward, the Adjacent Dependency Sweep is mandatory before each concept verdict.
 
 ---
 
@@ -396,9 +437,11 @@ This is not a mandatory parent/child chain and not a persistence schema.
 
 ---
 
-# Reopen watchlist
+# Reopen / deferred-dependency watchlist
 
-Explicit future boundary tests:
+The post-Cluster-4 closure pass must turn every still-material item into `RESOLVED`, `SAFE DEFERRED`, or `REOPEN`.
+
+Known inherited items include:
 
 - Observation vs Quantity/Register;
 - Subject vs observer/recorder/source/transformer;
@@ -415,9 +458,15 @@ Explicit future boundary tests:
 - Responsibility vs Assignment vs Hand-off vs Stewardship;
 - Resource vs Actor;
 - Authority vs Visibility/governance;
-- AI Context Builder inference/disclosure boundaries.
+- AI Context Builder inference/disclosure boundaries;
+- Recurrence vs Trigger;
+- Quantity vs Money/MonetaryAmount;
+- Quantity vs ratings/scales/ratio/percentage/count semantics;
+- Quantity vs custom unit-definition semantics;
+- Quantity vs elapsed duration/calendar-relative time;
+- Quantity vs Range/Threshold/comparator semantics.
 
-These are watch items, not current failures.
+These are executable obligations, not generic `later` notes.
 
 ---
 
@@ -454,10 +503,15 @@ Observed Reality & Evidence v0 accepted
 ↓
 Cross-Cluster Validation v3 PASS
 ↓
-Data / Subjects — ACTIVE NEXT CLUSTER
+Data / Subjects — ACTIVE
+  Quantity read-only review now
 ↓
-cluster integration + multi-actor stress
+Data / Subjects cluster integration + multi-actor stress
 ↓
+Deferred Dependency Closure — clusters 1–4
+↓
+Cross-Cluster Validation v4
+↓ only after PASS
 Relationships / Reasoning
 ↓
 final whole-domain gates
@@ -476,4 +530,4 @@ logical/physical persistence and API stabilization
 - Phase 4 prototype branch not changed by this workstream;
 - repository visibility does not change the branch/write-scope operating rules.
 
-Continue from Methodology v3 + Language Map + the three validated cluster checkpoints. Do not create a parallel validation standard, terminology tree or collaboration ontology.
+Continue from Methodology v3 + Execution Template v3 + Language Map + the three validated cluster checkpoints. Do not create a parallel validation standard, terminology tree or collaboration ontology.
