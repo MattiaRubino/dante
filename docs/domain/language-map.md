@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Person accepted as native entity; Actor accepted as agency role; Account boundary separated  
+**Current revision:** 2026-08-12 — Asset v0 accepted as current scoped native entity; terminology-neutral re-review mandatory  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -82,9 +82,12 @@ Quantity
 Subject (semantic role, not entity)
 Person (native human entity)
 Actor (semantic agency role/capability, not entity)
+Asset (current scoped native physical-object entity)
 ```
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
+
+`Asset` is canonical only as the **current scoped baseline**. Its current `individually tracked non-human physical object` boundary must be re-tested terminology-neutrally before final Cluster-4 closure.
 
 ## DERIVED
 
@@ -116,7 +119,12 @@ Workout
 Study plan
 Release plan
 saved longitudinal tracker/view
+Vehicle profile
+Camera profile
+Equipment profile
 ```
+
+A product profile may specialize an Asset experience without creating a new kernel identity concept by default.
 
 ## PRODUCT / UI TERM
 
@@ -138,9 +146,15 @@ Tracker
 History / Storico
 Progress
 User
+Gear
+Device
+Equipment
+Inventory
 ```
 
 `User` is deliberately product/implementation language. It must not be used as a universal domain synonym for Person, Actor, Account or Principal.
+
+Terms such as `Gear`, `Equipment`, `Device`, `Things`, or `Inventory` may expose some Asset-backed experiences without redefining Asset semantics.
 
 ## PROVISIONAL
 
@@ -168,6 +182,10 @@ Trigger
 Verification
 Decision
 Version
+Place / Location / Property semantics
+living-entity identity beyond Person
+Document / Artifact identity model
+FinancialAccount specialist model
 ```
 
 Detailed Account/credential/provider/security mechanics are deferred even though the Account != Person != Actor conceptual boundary is already fixed.
@@ -180,6 +198,7 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 - `Subject` as a universal entity/root/wrapper is rejected. The accepted meaning is a contextual semantic role over native referent identity. See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
 - universal `Actor` entity/root/wrapper is rejected. Actor is accepted as contextual agency semantics over native referent/system identity. See `concepts/actor.md`.
 - universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
+- historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower and explicitly reopenable. See `concepts/asset.md` and `checkpoints/asset-v0-validation.md`.
 
 ---
 
@@ -481,7 +500,7 @@ Core guardrails:
 - high-frequency streams do not imply row-per-sample persistence;
 - one Observation can appear in zero or many tracker/history/report views without duplication;
 - Subject is a role over native identity, not a wrapper entity;
-- Person, Actor and Account are distinct when relevant to subject/recorder/authentication context.
+- Person, Actor, Account and Asset remain distinct when relevant.
 
 ```text
 Quantity      = reusable scalar amount value semantics
@@ -490,6 +509,7 @@ Subject       = native referent's contextual aboutness role
 Person        = native human identity
 Actor         = contextual agency semantics
 Account       = platform/access identity boundary
+Asset         = current scoped durable physical-object identity
 Tracker/view  = product/query presentation over native records
 ```
 
@@ -590,7 +610,7 @@ Core guardrails:
 - correction preserves material prior lineage rather than rewriting origin;
 - derived/transformed records retain material source/process traceability;
 - AI/OCR/import pipelines must not launder authorship/source;
-- provider IDs do not define Person/Account/target identity;
+- provider IDs do not define Person/Account/Asset/target identity;
 - Subject, Person, Actor role, source, observer, recorder, transformer, confirmer, Account/Principal context and authority may differ;
 - target visibility does not imply full Provenance visibility;
 - Provenance access does not imply access to every private upstream payload or identity linkage;
@@ -664,13 +684,14 @@ Core guardrails:
 
 - current Account holder is not the universal kernel-level Subject default;
 - non-LifeOS people and non-person referents may play Subject role;
+- accepted Asset v0 may play Subject role without identity collapse;
 - unknown/later-resolved/corrected Subject attribution preserves material history;
 - Subject association itself may be private;
-- AI may propose Subject/Person resolution but does not automatically establish identity/authority;
+- AI may propose native-referent resolution but does not automatically establish identity/authority;
 - focus/context/participant/source/etc. remain distinct where they answer different questions;
 - no universal `subjects` table or inheritance root is pre-approved.
 
-Typical UI usually shows the referent's natural name/context (`Maria`, `My car`) or hides self-Subject entirely rather than exposing `Subject` as a noun.
+Typical UI usually shows the referent's natural name/context (`Maria`, `Sony A7 IV`) or hides self-Subject entirely rather than exposing `Subject` as a noun.
 
 ## Person
 
@@ -688,6 +709,7 @@ Person != Actor
 Person != Account
 Person != Principal
 Person != User
+Person != Asset
 Person may play Subject role
 Person may play Actor/specific action roles
 non-account Person is ordinary domain reality
@@ -749,6 +771,44 @@ Account creation/deletion != human creation/deletion
 ```
 
 Exact Account/credential/provider/authentication schema belongs to later logical/security design. No standalone `account.md` is pre-approved by this boundary decision.
+
+## Asset
+
+**Status:** CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE  
+**Source:** `concepts/asset.md`  
+**Validation:** `checkpoints/asset-v0-validation.md` — PASS WITH HARDENING  
+**Question:** Which individually tracked non-human physical object is this, where its distinct identity and management history materially matter?  
+**UI exposure:** DIRECT / CONTEXTUAL through natural profiles
+
+Current baseline:
+
+> A persistent native representation of an individually tracked non-human physical object whose distinct identity and management history materially matter within LifeOS.
+
+```text
+Asset != Person
+Asset != Subject
+Asset != Resource
+Asset != owner/holder/custodian/steward
+Asset != model/product definition
+Asset != every physical item
+Asset != every managed thing
+Asset != financial asset semantics
+```
+
+Core guardrails:
+
+- individual identity must materially matter;
+- physical thing != Asset automatically;
+- managed thing != Asset automatically;
+- Asset may play Subject role and may later play Resource role;
+- ownership/possession/location/state do not define Asset identity;
+- provider/serial/VIN/MAC/barcode identifiers are reconciliation evidence, not automatic canonical identity;
+- fungible stock does not require one Asset per unit;
+- living things, Documents, FinancialAccounts and services are not absorbed by default;
+- no universal Asset status or history-entry wrapper is pre-approved;
+- a **terminology-neutral managed/tracked-referent review is mandatory before final Cluster-4 closure**.
+
+Typical UI: My car, Sony A7 IV, Laptop, Bike, Equipment, Gear, Appliance, depending on product context. The word `Asset` itself need not appear.
 
 ---
 
@@ -867,6 +927,23 @@ Tag must not establish ownership, authority, lifecycle, scheduling or canonical 
 
 Current mapping usually uses Activity/Event + Person + future Relationship semantics. The other Person does not need a LifeOS Account and the item is not automatically shared.
 
+## Asset / Soggetto
+
+**Status:** HISTORICAL COMBINED TERM — SUPERSEDED
+
+The old grouping of `auto, casa, attrezzo, animale, pianta, conto, documento, persona` is not canonical.
+
+Current decomposition includes at minimum:
+
+```text
+Person  -> native human identity
+Subject -> contextual aboutness role
+Asset   -> current scoped individually tracked non-human physical-object identity
+Resource -> still under review
+```
+
+Other referents are modeled only when their own semantics justify them. The Asset boundary remains subject to the mandatory terminology-neutral Cluster-4 re-review.
+
 ## Shared Item
 
 **Status:** PRODUCT PHRASE, NOT UNIVERSAL PRIMITIVE
@@ -886,7 +963,7 @@ actor-scoped state/personal overlay
 Source != Provenance
 Source != truth
 Source != Authority
-Source != Person/Actor/Account identity
+Source != Person/Actor/Account/Asset identity
 ```
 
 ## Temporary Mode
@@ -923,6 +1000,7 @@ Person != Account
 Person != Subject
 Person != Actor
 Person != Principal
+Person != Asset
 ```
 
 A Person may exist without ever having a LifeOS Account.
@@ -1007,23 +1085,32 @@ Who actually performed work; not automatically requester/responsible actor/plann
 
 Who/what a descriptive record primarily concerns. The native referent retains its identity; Subject is not an entity/root.
 
+## Asset
+
+**Status:** CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE  
+**See:** `concepts/asset.md`
+
+One individually tracked non-human physical object whose identity/history materially matter. Asset may be shared among actors, but ownership, holder, stewardship, Authority and Visibility are separate.
+
 ## Resource
 
-**Status:** DEFERRED — DATA/SUBJECT REVIEW
+**Status:** DEFERRED — NEXT DATA/SUBJECT REVIEW
 
 Something whose availability/capacity/access may constrain execution/scheduling.
 
 ```text
 Person may potentially play Resource role
+Asset may potentially play Resource role
 Actor != Resource
 Subject != Resource
+Asset != Resource
 ```
 
 ## Owner / Governor / Steward
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use as synonyms for creator, Account holder, participant, viewer, responsible actor, performer, Person or Subject.
+Do not use as synonyms for creator, Account holder, participant, viewer, responsible actor, performer, Person, Subject or Asset identity.
 
 ## Authority
 
@@ -1038,13 +1125,14 @@ Authority != Provenance/source
 Authority != Subject
 Authority != Actor
 Authority != Account
+Authority != Asset ownership by default
 ```
 
 ## Visibility / Access
 
 **Status:** DEFERRED
 
-What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor attribution are distinct. Being Subject does not grant or imply visibility.
+What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset attribution are distinct. Being Subject or owner does not automatically grant visibility.
 
 ## Acknowledgement
 
@@ -1103,11 +1191,32 @@ Account != Principal by default
 
 Exact login-provider identities, credentials, account linking, service principals, delegation and authentication/authorization representation remain open.
 
+## Asset scope / managed-referent taxonomy
+
+**Status:** SAFE DEFERRED — MANDATORY CLUSTER-4 REVISIT
+
+Do not assume the current Asset boundary is final because CMMS/inventory products use similar terminology.
+
+Before final Cluster-4 closure compare how mature products represent managed/tracked referents across:
+
+```text
+personal possessions
+equipment/inventory
+smart-home/devices
+property/places
+documents/credentials
+finance/accounts
+pets/plants/living referents
+services/subscriptions
+```
+
+The comparison must focus on identity/lifecycle/relationships/capabilities rather than names. Reopen Asset if a stronger abstraction explains the workflows with fewer exceptions.
+
 ## Version
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject/Person attribution correction without replacing them.
+Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject/Person/Asset attribution correction without replacing them.
 
 ## Decision
 
@@ -1132,7 +1241,7 @@ Trigger != Routine
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject and Actor are already bounded semantic roles and must not be generalized into every relationship.
+Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject and Actor are already bounded semantic roles and Asset ownership/custody/Resource relationships must remain distinct.
 
 ## Dependency
 
@@ -1196,6 +1305,7 @@ Person != Actor
 Person != Account
 Person != Principal
 Person != User domain primitive
+Person != Asset
 Actor != Account
 Actor != Principal
 Actor != Responsibility
@@ -1203,6 +1313,14 @@ Actor != Authority
 Actor role != Actor entity/root
 Account != Person/Actor/Subject
 User != universal domain root
+Asset != Subject
+Asset != Resource
+Asset != Person
+Asset identity != owner/holder/steward
+Asset instance != product/model definition
+physical thing != Asset automatically
+managed thing != Asset automatically
+financial asset semantics != Asset entity
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
 view membership != duplicate native record
@@ -1243,6 +1361,11 @@ Actor != Resource
 Actor != Responsibility/Authority
 Account != Participant
 Subject != Resource
+Asset != owner
+Asset owner != holder/custodian/steward
+Asset ownership != Authority/Visibility
+Asset may play Subject role
+Asset may potentially play Resource role
 Participant != Responsible actor
 Responsible actor != Performer
 Creator != Owner/Governor
@@ -1252,6 +1375,7 @@ Assignment != Activity identity
 Participation response != Actual participation
 shared Actual != identical actor participation
 shared Outcome != identical actor consequence
+shared Asset != identical actor visibility/private overlays
 Observation Subject != observer/recorder/source/authority/viewer
 current Account != universal Subject
 current Account != semantic Actor automatically
@@ -1270,7 +1394,7 @@ Actor action != Authority
 AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
-AI Subject/Person guess != established identity
+AI Subject/Person/Asset guess != established identity
 AI Actor != human author/authority automatically
 AI provenance != disclosure permission
 future Account access revocation != deletion of historical Person/Actor attribution
@@ -1294,6 +1418,9 @@ Subject UI/context != Subject entity
 Actor UI label != Actor entity
 User UI/implementation term != universal domain entity
 Account settings object != Person identity
+Asset UI profile != new Asset subtype primitive automatically
+Inventory UI != every unit is Asset
+Gear/Device UI label != broader Asset kernel semantics
 Needs confirmation != Confirmation object by itself
 Source label != complete Provenance model
 Quantity UI value != standalone Quantity entity
@@ -1356,6 +1483,41 @@ UI: Weight / History / Tracker / Progress
 
 No universal Subject wrapper or RegisterEntry copy is created.
 
+## Camera history
+
+```text
+Asset A17 = specific Sony A7 IV body
+        ↑ Subject role
+Observation: shutter count = 32,411
+Observation: battery health = 87%
+        ↓
+query / history projection
+UI: Sony A7 IV / History
+```
+
+The camera is one Asset identity; the Observations do not become Asset fields merely because the UI groups them.
+
+## Camera used for a shoot
+
+```text
+Asset A17
+        ↓ future Resource role
+Activity: photo shoot
+```
+
+Asset identity and Resource semantics remain distinct until Resource review finalizes the latter.
+
+## Company laptop
+
+```text
+Asset L1
+owner = Company
+holder = Person Mattia
+maintenance responsibility = IT
+```
+
+One Asset identity; ownership, possession and responsibility are separate future relationships.
+
 ## Caregiver measurement
 
 ```text
@@ -1416,15 +1578,15 @@ One underlying fact; no per-actor Quantity/Observation duplication.
 
 ```text
 Observation v1
-subject = Person A
-value = 66.4 kg
+subject = Asset A1
+value = 32,411
 
 Observation correction
-subject = Person B
-value remains 66.4 kg
+subject = Asset A2
+value remains 32,411
 ```
 
-Material Provenance/Version history must preserve that Subject attribution changed rather than pretending Person B was known originally.
+Material Provenance/Version history must preserve that Asset attribution changed rather than pretending A2 was always known.
 
 ## Private availability
 
@@ -1435,7 +1597,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared Actors do not automatically receive the private source reason, Person linkage, Actor/delegation lineage or Subject association.
+Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage or Subject association.
 
 ---
 
@@ -1448,12 +1610,13 @@ Occurrence          → This time
 Temporal Constraint → Deadline / Preferred time / Not before
 Actual              → What happened? / Actual time / Performed
 Outcome             → Passed / Partial / Approved / Result details
-Observation         → Weight / Mood / Score / Odometer
+Observation         → Weight / Mood / Score / Odometer / Shutter count
 Quantity            → 66.4 kg / 5 km / 45 min
-Subject             → usually hidden; natural referent label such as Maria / My car
+Subject             → usually hidden; natural referent label such as Maria / Sony A7 IV
 Person              → natural human name/contact representation
 Actor               → hidden; expose role: Done by / Recorded by / Suggested by
 Account             → Account / Profile / Login in settings/security context
+Asset               → Car / Camera / Laptop / Bike / Gear / Equipment according to context
 User                → ordinary product language only where unambiguous
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
@@ -1463,7 +1626,7 @@ Provenance          → Source / Imported from / Corrected by / View history
 
 Reverse rule:
 
-> **A UX label does not automatically create a backend/domain type.**
+> **A UX label does not automatically create or broaden a backend/domain type.**
 
 ---
 
@@ -1473,7 +1636,7 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Person, Actor, Account, Principal, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
+In particular Person, Actor, Account, Asset, Principal, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
@@ -1487,11 +1650,14 @@ Specific guardrails:
 - Person does not imply `persons.id = accounts.id`;
 - Account does not imply final auth/provider/credential/Principal schema;
 - User must not become the universal implementation FK just because the UI uses the word;
+- Asset does not imply one universal managed-things table, one table per subtype, one row per physical unit, or inheritance into Resource;
+- Asset serial/provider identifiers do not define canonical Asset identity by default;
+- Asset model/type/profile semantics are not fixed yet;
 - heterogeneous Subject/Actor references must preserve native identity and attribution history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
-- provider/source/auth identifiers do not define Person/domain identity by default;
+- provider/source/auth identifiers do not define Person/Asset/domain identity by default;
 - product aliases do not create duplicate persistence models.
 
 When implementation names later differ for good technical reasons, document the mapping here.
@@ -1512,6 +1678,8 @@ A term does not become canonical because a competitor uses it, a table would be 
 A historical candidate may be rejected when validation shows that its useful behavior is better expressed through existing concepts plus product/query/application capability or a semantic role rather than a new entity.
 
 An implementation/security concept may have an accepted boundary without being promoted prematurely into a fully modeled domain concept. `Account` currently follows this rule.
+
+A current baseline may also be accepted while carrying a **mandatory terminology-neutral re-review** when the chosen term itself may bias the abstraction. `Asset v0` currently follows this rule.
 
 Change procedure:
 
