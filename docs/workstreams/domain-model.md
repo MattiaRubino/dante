@@ -1,13 +1,13 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Clusters 1–4 validated together**
+- Status: **IN PROGRESS — Relationships / Reasoning active after Clusters 1–4 validation**
 - Active branch: `feature/domain-model`
 - Current upstream baseline: `main` integrated through `c5120ff463e027c42f4a26fc613d0917596ca738`
 - Main-to-domain merge commit: `08595f9526e08db53d9b446b8a7a76cd46adcd55`
 - PR: none yet
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current next stage: **Relationships / Reasoning**
+- Current next review: **Responsibility / Assignment / Claim / Hand-off / Stewardship family**
 
 ## Purpose
 
@@ -36,7 +36,8 @@ Read these first, in order:
 9. [`../domain/checkpoints/data-subjects-v0.md`](../domain/checkpoints/data-subjects-v0.md)
 10. [`../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
 11. [`../domain/checkpoints/cross-cluster-validation-v4.md`](../domain/checkpoints/cross-cluster-validation-v4.md)
-12. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+12. [`../domain/checkpoints/relationship-v0-validation.md`](../domain/checkpoints/relationship-v0-validation.md)
+13. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 
 Then inspect the concept specs relevant to the immediate question. Do not rely on old product glossaries as current ontology authority.
 
@@ -62,12 +63,16 @@ Validation Methodology v2 and its addendum are historical audit sources only. v3
 - Preserve source/provenance/confirmation/evidence/authority distinctions.
 - Preserve native identity versus contextual-role distinctions.
 - Do not build the domain around `users.id`.
-- Do not create universal Subject, Actor, Resource, User, ManagedObject, RegisterEntry, or semantic-free graph roots for implementation convenience.
-- Prefer specific relationships/roles over generic edges when the semantic distinction matters.
-- Do not fabricate historical intention, allocation, identity, authority, or earlier knowledge from later correction/relevance.
+- Do not create universal Subject, Actor, Resource, User, ManagedObject, RegisterEntry, Relationship, or semantic-free graph roots for implementation convenience.
+- Prefer the most specific truthful relation semantics over generic edges.
+- A semantically complete simple connection may remain direct; a materially rich connection may become a **specific qualified relation family**.
+- Qualified/structured relation != independent domain entity automatically.
+- Queryability, many-to-many cardinality, graph traversal and database row IDs do not create domain identity.
+- Relation orientation, symmetry, inverse and transitivity/propagation rules belong to the specific relation family, never to `Relationship` generally.
+- Do not fabricate historical intention, allocation, identity, authority, relationship state, or earlier knowledge from later correction/relevance.
 - Do not create one table/entity per life topic.
 - Do not collapse the domain into arbitrary JSON.
-- Do not let AI inference become established identity, Actual, Confirmation, allocation, Authority, or disclosure permission automatically.
+- Do not let AI inference become established identity, Actual, Confirmation, relationship, allocation, Authority, or disclosure permission automatically.
 - Preserve progressive disclosure; kernel terminology need not appear in ordinary UI.
 - Re-run earlier clusters when Relationships / Reasoning materially pressures accepted boundaries.
 - Do not begin final SQL/API design until Relationships / Reasoning plus whole-domain gates have passed.
@@ -83,6 +88,7 @@ Observed Reality & Evidence v0  PASS
 Data / Subjects v0              PASS WITH HARDENING
 Deferred Dependency Closure     PASS
 Cross-Cluster Validation v4     PASS WITH HARDENING
+Relationship v0 review          PASS WITH HARDENING
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
 
@@ -117,6 +123,7 @@ Person         — native human entity
 Actor          — semantic agency category/capability
 Asset          — current scoped native physical-object entity
 Resource       — semantic planning/execution role/capability
+Relationship modeling discipline — cross-cutting semantic rule, not entity/root
 ```
 
 Accepted conceptual boundary, detailed model deferred:
@@ -136,6 +143,8 @@ universal Actor entity/root
 universal Resource entity/root
 universal User root
 universal ManagedObject root
+universal Relationship entity/root/supertype
+semantic-free related_to as kernel truth
 ```
 
 ---
@@ -232,6 +241,43 @@ No universal RegisterEntry copy/source-truth layer.
 
 ---
 
+# Relationship modeling discipline — current Cluster-5 baseline
+
+Normative checkpoint:
+
+- [`Relationship v0 validation`](../domain/checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**.
+
+Current decision:
+
+```text
+UNIVERSAL Relationship ENTITY / ROOT / SUPERTYPE
+REJECTED
+
+semantic-free related_to as kernel truth
+REJECTED
+
+specific relation meaning + complete simple semantics
+→ direct typed/specific relation
+
+specific relation meaning + materially rich connection
+→ candidate specific qualified relation family
+```
+
+Key hardenings:
+
+- no forced direction: orientation semantics are relation-specific; symmetric relations remain possible;
+- qualified/structured relation does not automatically have independent domain identity;
+- query/cardinality/database pressure does not create identity;
+- binary source/target representation is not mandatory when it loses naturally n-ary context;
+- transitivity, symmetry, inverse semantics and propagation/reasoning are family-specific;
+- Subject, Evidence, Confirmation, Provenance, Actor roles, Resource stages and future Responsibility/Participation/Authority semantics must not be flattened into one `type + metadata` graph;
+- generic Personal Knowledge links remain separately SAFE DEFERRED and may not silently become operational/evidentiary/authority semantics;
+- AI-inferred relationships remain proposals/inferences unless the specific family/context establishes them through valid authority/decision semantics.
+
+This discipline must be re-tested by every material relation-family review.
+
+---
+
 # Canonical identity / role separation
 
 ```text
@@ -287,6 +333,9 @@ Resource != Responsibility/Performer
 Account authentication != semantic Actor
 visibility != authority
 ownership != visibility
+
+specific relationship != universal Relationship wrapper
+relation existence/type != Authority/Visibility/consent by default
 ```
 
 ---
@@ -311,6 +360,10 @@ Subject != generic related_to
 Actor != generic action edge
 Resource != provider identity
 Account != Person
+universal Relationship root = rejected
+semantic-free related_to = rejected
+qualified relation != entity automatically
+queryability/cardinality != domain identity
 ```
 
 ---
@@ -321,16 +374,20 @@ Normative checkpoint:
 
 - [`Deferred Dependency Closure — Clusters 1–4 v0`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
 
-Result:
+Current Relationship-specific closures/triggers:
+
+- [`Relationship v0 validation`](../domain/checkpoints/relationship-v0-validation.md)
+
+Result entering the current review:
 
 ```text
 REOPEN                         0
 unclassified material items    0
 ```
 
-Do **not** recreate a parallel watchlist. Use that checkpoint as the source of exact owners, triggers and rerun tests.
+Do **not** recreate a parallel unnamed watchlist. Use the checkpoints as sources of exact owners, triggers and rerun tests.
 
-High-value SAFE DEFERRED groups entering Relationships / Reasoning include:
+High-value SAFE DEFERRED groups entering/remaining in Relationships / Reasoning include:
 
 - Milestone / GoalCriterion / Evidence / Decision;
 - Confirmation / Authority / Acknowledgement / Acceptance / Verification;
@@ -346,6 +403,7 @@ High-value SAFE DEFERRED groups entering Relationships / Reasoning include:
 - Resource Requirement / eligibility / Allocation / Reservation / actual use / pools / supply / skill;
 - Quantity / Money / Scale / Ratio / UnitDefinition / Duration / Range;
 - longitudinal materialization / aggregate visibility;
+- generic Personal Knowledge links;
 - AI context/inference/disclosure/Authority;
 - retention/deletion/anonymization.
 
@@ -353,14 +411,23 @@ Nothing here is pre-approved as a new primitive.
 
 ---
 
-# ACTIVE NEXT STAGE — Relationships / Reasoning
+# ACTIVE STAGE — Relationships / Reasoning
 
-The next stage may begin because Cross-Cluster v4 passed with no structural reopening.
+The stage is now **in progress**, not merely next.
 
-**Do not treat this list as a checklist.** Candidate space currently includes:
+Completed review:
 
 ```text
-Relationship
+Relationship v0
+PASS WITH HARDENING
+
+universal Relationship root  REJECTED
+specific direct/qualified semantic discipline  ACCEPTED
+```
+
+**Do not treat the remaining candidate space as a checklist.** It currently includes:
+
+```text
 Dependency
 Responsibility / Assignment / Claim / Hand-off
 Stewardship / coordination burden
@@ -381,21 +448,64 @@ Principal / delegation / on-behalf-of
 focus/context relations
 ```
 
-The first task in a new chat should be to determine the **review order**, based on dependency leverage and risk, rather than accepting the list.
+## NEXT REVIEW — Responsibility family
 
-A strong likely starting point is the relationship/role foundation around:
+The next high-leverage review area is:
 
 ```text
-Relationship
-Responsibility / Participation
-Authority / Visibility
+Responsibility
+Assignment
+Claim
+Hand-off
+Stewardship / coordination burden
 ```
 
-but the next chat should re-check that ordering against the dependency-closure checkpoint before fixing it.
+These terms are **not pre-accepted as five separate concepts**. The review must determine whether they are:
 
-## Mandatory method from this point
+- distinct concepts;
+- states/roles/actions within one smaller relation family;
+- product/UI vocabulary;
+- redundant candidates;
+- safe deferrals.
 
-For **every** candidate:
+Mandatory representative chronology includes at least:
+
+```text
+open/unassigned work
+→ assigned
+→ claimable / claimed
+→ accepted or refused
+→ responsibility transfer requested
+→ hand-off pending
+→ hand-off accepted/effective
+→ fallback responsibility
+→ substitute
+→ actual performer differs
+→ completion/failure
+→ later historical query
+```
+
+It must separately stress:
+
+- requester vs responsible actor vs expected performer vs actual performer;
+- assignment vs acceptance;
+- responsibility vs Resource eligibility;
+- responsibility vs Authority/Visibility;
+- responsibility transfer vs Activity identity;
+- coordination stewardship/mental load vs execution responsibility;
+- Accountless/external Person;
+- temporary substitution;
+- refusal/silence/conflict;
+- unequal-power/caregiver/manager contexts;
+- AI proposal vs authoritative assignment/hand-off;
+- private constraints and selective disclosure;
+- current responsibility vs historical attribution.
+
+The Relationship v0 direct-vs-qualified rule must be treated as a candidate rule under stress, not as something that future reviews are forbidden to reopen.
+
+## Mandatory method
+
+For **every** candidate/family:
 
 ```text
 Evidence + candidate
@@ -414,7 +524,9 @@ No concept verdict may be saved with an unclassified material adjacent dependenc
 
 Relationships / Reasoning must explicitly pressure:
 
-- typed/directional relations vs one generic `related_to`;
+- specific relation semantics vs one generic `related_to`;
+- direct vs qualified relation threshold;
+- symmetric/asymmetric/n-ary relation semantics where relevant;
 - Responsibility vs performer vs Resource eligibility;
 - open/claimable responsibility;
 - hand-off request vs acceptance vs effective responsibility change;
@@ -469,28 +581,29 @@ backend package architecture
 implementation / vertical slices / frontend integration
 ```
 
-Do not jump directly from Cross-Cluster v4 to SQL/API stabilization.
+Do not jump directly from the current Cluster-5 work to SQL/API stabilization.
 
 ---
 
 # Git / branch handoff
 
 - active branch: `feature/domain-model`;
-- `main` remains at the integrated repository baseline and was not changed by this Cluster-4 closure scope;
+- `main` remains at the integrated repository baseline and was not changed by the Relationship review scope;
 - no PR for the domain branch yet;
 - backend implementation was not changed here;
 - Phase-4 prototype branch was not changed here;
 - repository visibility does not change write-scope rules;
 - before **any future Git write**, state the exact intended file/branch scope and wait for explicit user approval.
 
-## New-chat handoff
+## New-chat / continuation handoff
 
-A fresh chat should begin by reading this workstream plus the three latest checkpoints:
+A continuing or fresh chat should begin by reading this workstream plus:
 
 1. `data-subjects-v0.md`;
 2. `deferred-dependency-closure-clusters-1-4-v0.md`;
-3. `cross-cluster-validation-v4.md`.
+3. `cross-cluster-validation-v4.md`;
+4. `relationship-v0-validation.md`.
 
-Then inspect README + Language Map + Methodology v3.
+Then inspect README + Language Map + Methodology v3 and the concept specs pressured by the current review.
 
-The new chat should **not redo Clusters 1–4 from scratch**. It should use them as the current validated baseline, reopen only on stronger evidence, and begin Relationships / Reasoning by selecting the highest-leverage next candidate/order under the dependency register.
+Do **not** redo Clusters 1–4 or Relationship v0 from scratch unless stronger evidence exposes a real contradiction. The current next task is the Responsibility / Assignment / Claim / Hand-off / Stewardship review family under Methodology v3, with the Relationship direct-vs-qualified discipline explicitly re-tested rather than assumed infallible.
