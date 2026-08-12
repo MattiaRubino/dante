@@ -464,7 +464,7 @@ Do not derive Participation from organizer/creator fields.
 
 # 14. Participation versus Authority and Visibility
 
-Participation grants neither canonical-change Authority nor universal access.
+Participation grants neither canonical-change Authority nor universal information exposure.
 
 ```text
 Participant
@@ -494,7 +494,7 @@ Canonical rule:
 
 > **Endpoint visibility does not imply Participation-relation visibility, and Participation does not manufacture Authority.**
 
-Exact policy remains Authority/Visibility work.
+Authority v0 and Visibility v0 now close these boundaries independently. Participation may be a basis considered by policy, but it creates neither governance power nor automatic disclosure.
 
 ---
 
@@ -710,6 +710,8 @@ Canonical rule:
 
 > **AI may propose or interpret Participation; inference capability does not establish actor intent, Actual participation, Authority, or disclosure permission.**
 
+Visibility v0 strengthens this: authorized processing of private participation context does not permit disclosure of that context unless the recipient/output has its own valid Visibility basis.
+
 ---
 
 # 23. Simple UI versus kernel semantics
@@ -858,6 +860,7 @@ Preserves intended/response and Actual facets without duplicate identity.
 24. **Specific actor roles take precedence over generic Participation when the narrower role is the real semantic question.**
 25. **AI inference does not establish Participation, response, Actual attendance, Authority or disclosure permission.**
 26. **No universal Participant/Participation root/table/member graph is pre-approved.**
+27. **Participation grants neither Visibility nor Authority to re-disclose by itself.**
 
 ---
 
@@ -967,6 +970,14 @@ Do not infer from Participation v0 that LifeOS requires:
 
 **Resolution:** organizing/requesting does not establish Participation.
 
+### Participation ↔ Authority
+
+**Resolution:** Authority v0 defines governance separately; Participation creates no canonical-change power.
+
+### Participation ↔ Visibility
+
+**Resolution:** Visibility v0 defines information exposure separately; endpoints may be visible while Participation/response/attendance remains hidden.
+
 ## SAFE DEFERRED
 
 ### Acceptance / Acknowledgement
@@ -975,13 +986,6 @@ Do not infer from Participation v0 that LifeOS requires:
 **Why safe:** Participation response is bounded without equating it with generic Acceptance/Acknowledgement across other domains.  
 **Reopening trigger:** invitation/response cannot compose with a future common-ground model without changing Participation meaning.  
 **Tests to rerun:** CORE-02, CORE-04, MA-05, MA-11, XCON-04, XCON-05.
-
-### Authority / Visibility
-
-**Owner:** Relationships / Reasoning — Authority/Visibility review.  
-**Why safe:** Participation explicitly grants neither.  
-**Reopening trigger:** participant state/access cannot be governed without embedding permission semantics directly in Participation.  
-**Tests to rerun:** MA-06, MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Participant role taxonomy
 
@@ -1068,7 +1072,6 @@ Rejected:
 
 # 31. Deliberately deferred questions
 
-- Authority/Visibility over participant lists, responses and attendance;
 - generic Acceptance/Acknowledgement relationship to participation response;
 - on-behalf-of/delegated response semantics;
 - participant role taxonomy;
@@ -1079,6 +1082,8 @@ Rejected:
 - exact qualified Participation identity/cardinality/persistence;
 - specialist interaction/encounter extensions;
 - final API/SQL representation.
+
+Authority and Visibility are no longer deferred at the semantic-boundary level; their detailed policy/enforcement/persistence remains separately owned.
 
 ---
 
