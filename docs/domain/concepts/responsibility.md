@@ -988,3 +988,39 @@ Reopen Responsibility v0 if later evidence shows that:
 7. specialist-system requirements reveal that the current `ensure this is appropriately handled` boundary is too broad or too weak.
 
 Until stronger evidence appears, Responsibility remains the current accepted **specific semantic relation family** with simple direct and richer qualified forms allowed according to consequence.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 closes the Responsibility ↔ Participation boundary without changing Responsibility semantics.
+
+Canonical distinction:
+
+```text
+Responsibility
+= accountability to ensure a bounded commitment is appropriately handled
+
+Participation
+= expected/intended or Actual involvement in a bounded shared occurrence/interaction
+```
+
+Therefore:
+
+```text
+Responsibility != Participation
+responsible Actor != Participant by default
+Participation != expected performer
+Participation != actual performer
+```
+
+A responsible Actor may not participate in the Event/interaction. A Participant may bear no Responsibility for the outcome. Actual attendance/involvement must not be used to rewrite historical Responsibility, and Responsibility must not be used to infer actual attendance.
+
+Assignment/Claim/Hand-off remain role-specific: assigning Responsibility does not silently establish Participation, and changing Participation does not transfer Responsibility.
+
+Both Responsibility and Participation continue to expose the same unresolved adjacent governance/common-ground questions — Authority, Visibility, Acceptance/Acknowledgement, delegation and reconciliation — but neither absorbs them.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
