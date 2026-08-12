@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Register kernel candidate rejected; longitudinal product capability retained  
+**Current revision:** 2026-08-12 — Subject accepted as canonical semantic role; no Subject entity/root  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -56,7 +56,7 @@ This map records decisions; it does not create primitives.
 
 ## CANONICAL
 
-Accepted Domain Atlas concept/capability/value semantics with stable current semantics.
+Accepted Domain Atlas concept/capability/value/role semantics with stable current semantics.
 
 ```text
 Goal
@@ -79,6 +79,7 @@ Confirmation
 Evidence
 Provenance
 Quantity
+Subject (semantic role, not entity)
 ```
 
 ## DERIVED
@@ -154,7 +155,6 @@ Acceptance / Agreement
 Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Subject
 Resource
 Relationship
 Principal
@@ -168,7 +168,8 @@ Version
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
 
-`Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
+- `Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
+- `Subject` as a universal entity/root/wrapper is rejected. The accepted meaning is a contextual semantic role over native referent identity. See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
 
 ---
 
@@ -444,10 +445,10 @@ Core guardrails: optional/contextual; no universal Outcome enum; absence does no
 **Status:** CANONICAL  
 **Source:** `concepts/observation.md`  
 **Validation:** `checkpoints/observation-v0-validation.md` — PASS WITH HARDENING  
-**Question:** What was observed, measured, reported, or calculated about this subject, and to what time/context does it apply?  
+**Question:** What was observed, measured, reported, or calculated about this Subject referent, and to what time/context does it apply?  
 **UI exposure:** CONTEXTUAL / HIDDEN / ADVANCED
 
-A persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a subject.
+A persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a Subject referent.
 
 ```text
 Observation != Actual
@@ -468,11 +469,13 @@ Core guardrails:
 - subjective/conflicting Observations can coexist;
 - query aggregates do not automatically become persisted Observations;
 - high-frequency streams do not imply row-per-sample persistence;
-- one Observation can appear in zero or many tracker/history/report views without duplication.
+- one Observation can appear in zero or many tracker/history/report views without duplication;
+- Subject is a role over native identity, not a wrapper entity.
 
 ```text
 Quantity      = reusable scalar amount value semantics
 Observation   = contextual observed/asserted record
+Subject       = native referent's contextual aboutness role
 Tracker/view  = product/query presentation over native records
 ```
 
@@ -574,7 +577,7 @@ Core guardrails:
 - derived/transformed records retain material source/process traceability;
 - AI/OCR/import pipelines must not launder authorship/source;
 - provider IDs do not define LifeOS identity;
-- subject, source actor, observer, recorder, transformer, confirmer and authority may differ;
+- Subject, source actor, observer, recorder, transformer, confirmer and authority may differ;
 - target visibility does not imply full Provenance visibility;
 - Provenance access does not imply access to every private upstream payload;
 - retention/history does not justify indefinite retention of deleted sensitive payloads;
@@ -620,6 +623,40 @@ Core guardrails:
 - Quantity semantics do not imply a standalone SQL table/entity.
 
 Typical UI does not expose `Quantity` as a noun; users see values such as `66.4 kg`, `5 km`, `45 min` in the relevant context.
+
+## Subject
+
+**Status:** CANONICAL SEMANTIC ROLE / RELATIONSHIP CAPABILITY  
+**Source:** `concepts/subject.md`  
+**Validation:** `checkpoints/subject-v0-validation.md` — PASS WITH HARDENING  
+**Question:** Who or what is this descriptive record primarily about?  
+**UI exposure:** HIDDEN / CONTEXTUAL
+
+Subject is not an independent entity. A native referent such as a Person, Asset, Event, Device, Location or another eligible native concept plays Subject role in context and retains its own identity.
+
+```text
+Subject entity/root = rejected
+Subject != Person
+Subject != Actor
+Subject != Account/Principal
+Subject != Asset
+Subject != Resource
+Subject != observer/recorder/source/transformer
+Subject != authority/visibility/owner
+Subject != generic related_to
+```
+
+Core guardrails:
+
+- current account holder is not the universal kernel-level Subject default;
+- non-LifeOS people and non-person referents may play Subject role;
+- unknown/later-resolved/corrected subject attribution preserves material history;
+- subject association itself may be private;
+- AI may propose Subject resolution but does not automatically establish identity/authority;
+- focus/context/participant/source/etc. remain distinct where they answer different questions;
+- no universal `subjects` table or inheritance root is pre-approved.
+
+Typical UI usually shows the referent's natural name/context (`Maria`, `My car`) or hides self-subject entirely rather than exposing `Subject` as a noun.
 
 ---
 
@@ -777,22 +814,24 @@ Final Decision/Version semantics belong to Relationships/Reasoning review.
 
 ## Actor
 
-**Status:** PROVISIONAL / DEFERRED
+**Status:** PROVISIONAL / DEFERRED — NEXT BOUNDARY REVIEW
 
-Entity capable of acting, participating, holding responsibility or exercising authority. Do not equate Actor with `users.id`.
+Entity/capability capable of acting, participating, holding responsibility or exercising authority depending on final accepted semantics. Do not equate Actor with `users.id`.
 
 ## Person
 
-**Status:** DEFERRED
+**Status:** DEFERRED — NEXT BOUNDARY REVIEW
 
-Human represented in LifeOS reality; may exist without LifeOS Account.
+Human represented in LifeOS reality; may exist without LifeOS Account and may play Subject and/or Actor roles contextually.
 
 ## Account
 
-**Status:** PRODUCT/IDENTITY CONCEPT — final boundary deferred
+**Status:** PRODUCT/IDENTITY CONCEPT — NEXT BOUNDARY REVIEW
 
 ```text
-Account != Person != Participant != Subject
+Account != Person
+Account != Subject
+Account != Participant
 ```
 
 ## Principal
@@ -827,9 +866,10 @@ Who actually performed work; not automatically requester/responsible actor/plann
 
 ## Subject
 
-**Status:** DEFERRED — DATA/SUBJECT REVIEW
+**Status:** CANONICAL SEMANTIC ROLE  
+**See:** `concepts/subject.md`
 
-Who/what information/action/Observation is about.
+Who/what a descriptive record primarily concerns. The native referent retains its identity; Subject is not an entity/root.
 
 ## Resource
 
@@ -840,13 +880,14 @@ Something whose availability/capacity/access may constrain execution/scheduling.
 ```text
 Actor != Subject
 Actor != Resource
+Subject != Resource
 ```
 
 ## Owner / Governor / Steward
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use as synonyms for creator, participant, viewer, responsible actor or performer.
+Do not use as synonyms for creator, participant, viewer, responsible actor, performer or Subject.
 
 ## Authority
 
@@ -858,13 +899,14 @@ Who/what may establish, approve, change or override canonical state in context.
 Authority != Visibility
 Authority != Confirmation
 Authority != Provenance/source
+Authority != Subject
 ```
 
 ## Visibility / Access
 
 **Status:** DEFERRED
 
-What an actor/principal may inspect/receive/use. Current access and historical attribution are distinct.
+What an actor/principal may inspect/receive/use. Current access and historical attribution are distinct. Being Subject does not grant or imply visibility.
 
 ## Acknowledgement
 
@@ -913,7 +955,7 @@ The required product capability is validated, but exact query DSL, aggregate mat
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Material version identity/history must later integrate with Confirmation, Evidence and Provenance without replacing them.
+Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject-attribution correction without replacing them.
 
 ## Decision
 
@@ -938,7 +980,7 @@ Trigger != Routine
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs.
+Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject is already one bounded semantic role and must not be generalized into every relationship.
 
 ## Dependency
 
@@ -994,6 +1036,10 @@ property/quantity-kind != unit
 compatible unit != semantic equivalence by itself
 same unit != universal aggregation permission
 Quantity != Range/Threshold/comparator/criterion
+Subject != Person/Actor/Account/Principal/Asset/Resource
+Subject != observer/recorder/source/transformer/authority/viewer
+Subject role != Subject entity/root
+Subject != generic related_to
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
 view membership != duplicate native record
@@ -1027,6 +1073,7 @@ Person != Account
 Account != Participant
 Actor != Subject
 Actor != Resource
+Subject != Resource
 Participant != Responsible actor
 Responsible actor != Performer
 Creator != Owner/Governor
@@ -1036,11 +1083,13 @@ Assignment != Activity identity
 Participation response != Actual participation
 shared Actual != identical actor participation
 shared Outcome != identical actor consequence
-Observation subject != observer/recorder/source/authority/viewer
+Observation Subject != observer/recorder/source/authority/viewer
+current Account != universal Subject
+non-LifeOS Person may be Subject
 Confirmation by A != Confirmation by B
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
-source actor != recorder != subject by default
+source actor != recorder != Subject by default
 Schedule acceptance != participant acceptance
 Delivery != acknowledgement
 Acknowledgement != agreement
@@ -1050,6 +1099,7 @@ Authority != Confirmation
 AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
+AI Subject guess != established Subject identity
 AI provenance != disclosure permission
 future access revocation != deletion of historical attribution
 Quantity display preference != canonical value mutation
@@ -1068,6 +1118,7 @@ Shared Item != universal collaboration primitive
 Module != domain entity
 Register/Tracker view != kernel Register entity
 RegisterEntry != universal semantic record
+Subject UI/context != Subject entity
 Needs confirmation != Confirmation object by itself
 Source label != complete Provenance model
 Quantity UI value != standalone Quantity entity
@@ -1104,6 +1155,7 @@ Product: Project
 Event
 + Actual
 + Observation: score = 78/100
++ Subject role -> Person/student
 + Outcome: passed
 + optional Confirmation
 + Evidence use toward Goal/Milestone
@@ -1115,24 +1167,30 @@ UI may show simply `78/100 · Passed`, with source/evidence/history on demand.
 ## Weight history
 
 ```text
-Observation O1
-property: body weight
-value: Quantity(66.8 kg)
-
-Observation O2
-property: body weight
-value: Quantity(66.5 kg)
-
-Observation O3
-property: body weight
-value: Quantity(66.4 kg)
+Person P17
+        ↑ Subject role
+Observation O1: body weight = Quantity(66.8 kg)
+Observation O2: body weight = Quantity(66.5 kg)
+Observation O3: body weight = Quantity(66.4 kg)
         ↓
 query / trend projection
         ↓
 UI: Weight / History / Tracker / Progress
 ```
 
-No universal RegisterEntry copy is created. `Register` may remain a product label if it is the clearest UX language.
+No universal Subject wrapper or RegisterEntry copy is created.
+
+## Caregiver measurement
+
+```text
+Person Maria
+        ↑ Subject role
+Observation: temperature = 38.2 °C
+observer/recorder = Anna
+account = Anna's account
+```
+
+Subject, recorder and Account remain distinct.
 
 ## Quantity display conversion
 
@@ -1153,17 +1211,15 @@ One underlying fact; no per-actor Quantity/Observation duplication.
 
 ```text
 Observation v1
-66.4 kg
-source: device import
-└ Confirmation A
+subject = Person A
+value = 66.4 kg
 
-Observation v2
-64.6 kg
-correction by user
-
-Provenance preserves how v2 derived/revised v1.
-Prior Confirmation does not silently apply to v2.
+Observation correction
+subject = Person B
+value remains 66.4 kg
 ```
+
+Material Provenance/Version history must preserve that Subject attribution changed rather than pretending Person B was known originally.
 
 ## Private availability
 
@@ -1174,7 +1230,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared users do not automatically receive the private source reason or lineage.
+Shared users do not automatically receive the private source reason, lineage or Subject association.
 
 ---
 
@@ -1188,7 +1244,8 @@ Temporal Constraint → Deadline / Preferred time / Not before
 Actual              → What happened? / Actual time / Performed
 Outcome             → Passed / Partial / Approved / Result details
 Observation         → Weight / Mood / Score / Odometer
-Quantity            → 66.4 kg / 5 km / 45 min (contextual value; noun hidden)
+Quantity            → 66.4 kg / 5 km / 45 min
+Subject             → usually hidden; natural referent label such as Maria / My car
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
 Evidence            → Why? / Based on… / Supporting or conflicting data
@@ -1207,7 +1264,7 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance and Quantity must not be translated prematurely into final SQL/cardinality choices.
+In particular Actor, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
@@ -1216,6 +1273,8 @@ Specific guardrails:
 - Evidence does not imply one persisted edge/entity per evaluative use;
 - Provenance does not imply one universal provenance graph/table or event row for every technical operation;
 - Quantity does not imply a standalone table/entity for each scalar amount;
+- Subject does not imply a universal `subjects` table/root or every referent inheriting from Subject;
+- heterogeneous Subject references must preserve native identity and attribution history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
@@ -1230,14 +1289,14 @@ When implementation names later differ for good technical reasons, document the 
 
 A term may enter when at least one holds:
 
-1. it is an accepted Domain Atlas concept;
+1. it is an accepted Domain Atlas concept/capability/value/role semantics;
 2. it is recurring product/UI language with clear mapping;
 3. omitting it creates material ambiguity;
 4. a demonstrated semantic need must be tracked as PROVISIONAL/DEFERRED.
 
 A term does not become canonical because a competitor uses it, a table would be convenient, a mockup contains it, an AI suggested it, or it makes the ontology look complete.
 
-A historical candidate may be rejected when validation shows that its useful behavior is better expressed through existing concepts plus product/query/application capability.
+A historical candidate may be rejected when validation shows that its useful behavior is better expressed through existing concepts plus product/query/application capability or a semantic role rather than a new entity.
 
 Change procedure:
 
