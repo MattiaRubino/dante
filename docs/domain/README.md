@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — first three clusters validated together under Methodology v3  
+**Current revision:** 2026-08-12 — dependency-closure discipline established before Cluster 4 continuation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -35,8 +35,20 @@ C. Multi-Actor Compatibility Gate
         ↓
 D. Cross-Concept Consistency Gate
         ↓
+E. Adjacent Dependency Sweep
+        ↓
 Concept verdict
 ```
+
+Dependency closure classes are operational, not concept verdicts:
+
+```text
+RESOLVED
+SAFE DEFERRED
+REOPEN
+```
+
+A `SAFE DEFERRED` dependency must identify why it does not block the current concept, who/what future concept or stage owns it, the exact reopening trigger, and which tests must be rerun. `Review later` without an owner/trigger is not accepted.
 
 Every completed cluster then passes:
 
@@ -47,6 +59,24 @@ Cluster Multi-Actor Stress Gate
         ↓
 Cluster verdict
 ```
+
+Data / Subjects is the one transition cluster because it began before the Adjacent Dependency Sweep was established. Its sequence is:
+
+```text
+finish Data / Subjects concepts
+        ↓
+Data / Subjects cluster integration + multi-actor stress
+        ↓
+Deferred Dependency Closure — clusters 1–4
+        ↓
+RESOLVED / SAFE DEFERRED / REOPEN for every material open boundary
+        ↓
+Cross-Cluster Validation v4 — clusters 1–4
+        ↓
+only after PASS: Relationships / Reasoning
+```
+
+From Relationships / Reasoning onward, the Adjacent Dependency Sweep is mandatory before every concept verdict instead of accumulating unresolved adjacency until cluster end.
 
 Before broad persistence/API stabilization:
 
@@ -69,7 +99,7 @@ Canonical references:
 
 Validation Methodology v2 and its multi-actor addendum remain historical audit/evolution evidence.
 
-Allowed verdicts:
+Allowed concept/cluster verdicts remain:
 
 ```text
 PASS
@@ -410,11 +440,11 @@ Provenance != Audit
 
 ---
 
-# Next cluster — Data / Subjects
+# Active cluster — Data / Subjects
 
-**Status:** SELECTED — concept review not started yet.
+**Status:** IN PROGRESS — first concept under review is `Quantity`; no concept in this cluster is accepted yet.
 
-The first three clusters are validated, so Data / Subjects may now begin under Methodology v3.
+The first three clusters are validated. Data / Subjects is now the transition cluster for the dependency-closure discipline.
 
 Provisional topics:
 
@@ -425,7 +455,9 @@ Provisional topics:
 - Asset;
 - Resource.
 
-The exact review order is intentionally reopenable if the first concept exposes a stronger dependency.
+The exact review order remains reopenable if concept evidence exposes a stronger dependency.
+
+Current Quantity boundary review already requires explicit tracking of adjacent value semantics such as Money/MonetaryAmount, ratings/scales, percentages/ratios, counts, ranges/thresholds, custom units and elapsed-duration versus calendar-relative time. These are not yet accepted as concepts or specializations; they must enter the dependency register and be resolved or safely deferred by the post-Cluster-4 closure pass.
 
 Inherited mandatory re-tests:
 
@@ -438,6 +470,22 @@ Availability/Capacity vs Resource
 Actor vs Subject vs Resource vs Account/Principal
 Provenance source/actor roles vs Subject/Person/Account
 ```
+
+## Mandatory closure after Data / Subjects
+
+Before Relationships / Reasoning starts, perform one dedicated closure pass across all open dependencies from clusters 1–4. At minimum revisit the known watchlist and any new Data / Subjects findings.
+
+Every material item must become:
+
+```text
+RESOLVED
+or
+SAFE DEFERRED with exact owner + reopening trigger
+or
+REOPEN
+```
+
+Then execute **Cross-Cluster Validation v4** across Intention & Execution + Time + Observed Reality & Evidence + Data / Subjects. Only a passing combined baseline permits the next cluster.
 
 ---
 
@@ -467,6 +515,8 @@ Mandatory inherited re-tests include:
 - competing assertions and canonical decision policy;
 - Milestone attainment/evaluation relationship;
 - collaborative Session/Actual attribution.
+
+From this cluster onward the Adjacent Dependency Sweep is mandatory before each concept verdict.
 
 ---
 
@@ -574,15 +624,25 @@ Cross-Cluster Validation v3     — PASS
 Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
 Validation Methodology v3       — ACTIVE MANDATORY STANDARD
 
-↓ NEXT
-Data / Subjects
+↓ NOW
+Data / Subjects concept reviews
+↓
+Data / Subjects cluster integration + multi-actor stress
+↓
+Deferred Dependency Closure — clusters 1–4
+↓
+Cross-Cluster Validation v4 — clusters 1–4
+↓ only after PASS
+Relationships / Reasoning
 ```
 
 ---
 
-# Reopen watchlist
+# Reopen / deferred-dependency watchlist
 
-Deliberately revisit later:
+The following are executable obligations, not generic reminders. The post-Cluster-4 dependency closure must classify every still-material item as `RESOLVED`, `SAFE DEFERRED`, or `REOPEN` and give SAFE DEFERRED items an explicit owner/reopening trigger.
+
+Known inherited items include:
 
 - Observation vs Quantity/Register;
 - Availability/Capacity vs Resource;
@@ -599,9 +659,15 @@ Deliberately revisit later:
 - collaborative Session vs actor-scoped Actual participation;
 - Responsibility/Assignment/Hand-off/Stewardship;
 - Authority vs Visibility/governance;
-- AI context selection/inference/disclosure boundaries.
+- AI context selection/inference/disclosure boundaries;
+- Recurrence vs Trigger where Actual/fact anchors or arbitrary conditions meet;
+- Quantity vs Money/MonetaryAmount;
+- Quantity vs rating/scale/ratio/percentage/count semantics;
+- Quantity vs custom unit-definition semantics;
+- Quantity vs elapsed duration/calendar-relative time;
+- Quantity vs Range/Threshold/comparison semantics.
 
-These are watch items, not current failures.
+The list is expected to grow during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
 
 ---
 
@@ -609,4 +675,4 @@ These are watch items, not current failures.
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
-Cluster PASS does not prevent later reopening when another cluster, physical data model, integration, implementation evidence, safety requirement or stronger real-world evidence exposes a genuine contradiction.
+Cluster PASS and Cross-Cluster v4 do not prevent later reopening when another cluster, physical data model, integration, implementation evidence, safety requirement or stronger real-world evidence exposes a genuine contradiction.
