@@ -249,9 +249,9 @@ LifeOS materially needs the **Subject semantic role** to express aboutness indep
 Before closing:
 
 - [x] concept document created;
-- [ ] Observation wording updated;
-- [ ] Language Map updated;
-- [ ] Domain README updated;
-- [ ] workstream handoff updated;
+- [x] Observation wording updated;
+- [x] Language Map updated;
+- [x] Domain README updated;
+- [x] workstream handoff updated;
 - [x] deferrals/reopening triggers recorded;
 - [x] no universal Subject entity/table pre-approved.
