@@ -321,13 +321,15 @@ may satisfy execution requirement
 Before closing:
 
 - [x] Resource concept created;
-- [ ] Availability & Capacity aligned;
-- [ ] Asset aligned;
-- [ ] Subject aligned;
-- [ ] Person aligned;
-- [ ] Language Map updated;
-- [ ] Domain README updated;
-- [ ] workstream handoff updated;
+- [x] Availability & Capacity aligned;
+- [x] Asset aligned;
+- [x] Subject aligned;
+- [x] Person aligned;
+- [x] Language Map updated;
+- [x] Domain README updated;
+- [x] workstream handoff updated;
 - [x] Resource entity/root rejected;
 - [x] Requirement/Allocation/Reservation/actual-use boundaries recorded;
 - [x] dependency owners/reopening triggers recorded.
+
+Resource v0 propagation is complete. The next action is the **Data / Subjects Cluster Integration Gate + Cluster Multi-Actor Stress Gate in read-only mode**; no Cluster-4 checkpoint write is authorized by this scope.
