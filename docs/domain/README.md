@@ -1,8 +1,8 @@
 # LifeOS Domain Atlas
 
-**Status:** In progress — Clusters 1–4 validated together  
+**Status:** In progress — Clusters 1–4 validated together; Relationships / Reasoning in progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Data / Subjects PASS WITH HARDENING; deferred closure PASS; Cross-Cluster Validation v4 PASS WITH HARDENING  
+**Current revision:** 2026-08-12 — Relationship review PASS WITH HARDENING; universal Relationship root rejected; Responsibility family next  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -101,11 +101,12 @@ Canonical references:
 - [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md)
 - [`Domain & Product Language Map`](language-map.md)
 
-Transition/checkpoint references now include:
+Transition/current checkpoint references include:
 
 - [`Data / Subjects Cluster v0`](checkpoints/data-subjects-v0.md)
 - [`Deferred Dependency Closure — Clusters 1–4 v0`](checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
 - [`Cross-Cluster Validation v4`](checkpoints/cross-cluster-validation-v4.md)
+- [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md)
 
 Validation Methodology v2 and its multi-actor addendum remain historical audit/evolution evidence.
 
@@ -140,7 +141,7 @@ external standards/providers
 
 Mature apps/products are useful evidence because they expose product and workflow lessons accumulated through real usage. Their patterns may be borrowed, adapted, rejected, or deliberately contradicted when LifeOS has different semantics.
 
-The benchmark must not become terminology-led. In particular, a product calling something `Asset`, `Device`, `Resource`, `Account`, `Record`, or `Entity` does not make that noun authoritative for LifeOS.
+The benchmark must not become terminology-led. In particular, a product calling something `Asset`, `Device`, `Resource`, `Account`, `Record`, `Relationship`, or `Entity` does not make that noun authoritative for LifeOS.
 
 Provider identifiers/status taxonomies and lossless external mapping are not kernel invariants by default.
 
@@ -167,6 +168,8 @@ Each accepted concept should document where relevant:
 - persistence/API implications without prematurely fixing tables.
 
 Rejected candidates should receive a durable checkpoint when their historical presence or future reintroduction risk is material.
+
+Cross-cutting modeling rules that reject a universal primitive but materially constrain future concepts may also be retained as checkpoints rather than being forced into a fake concept spec. `Relationship v0` follows this rule.
 
 ---
 
@@ -298,6 +301,48 @@ unclassified material debt      0
 mandatory new primitives in v4  0
 ```
 
+## Relationships / Reasoning — IN PROGRESS
+
+First completed review:
+
+- [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**.
+
+Current result:
+
+```text
+universal Relationship entity/root/supertype   REJECTED
+semantic-free related_to as kernel truth        REJECTED
+specific direct relation semantics              ACCEPTED DISCIPLINE
+specific qualified relation families            ALLOWED WHEN JUSTIFIED
+universal relation symmetry/transitivity rules  REJECTED
+```
+
+Canonical modeling rule:
+
+> Use the most specific truthful relation semantics. Keep a connection direct when that completely represents its domain meaning. When the relationship itself has materially relevant state, lifecycle, history, temporal scope, authority, provenance, privacy, actor-scoped state or domain invariants, model a **specific qualified relation family** rather than a universal Relationship wrapper.
+
+Important hardenings:
+
+- orientation must be semantically explicit, but not every relation is directional;
+- structured/qualified relation != independent entity automatically;
+- queryability, cardinality, graph traversal or SQL row identity do not create domain identity;
+- binary representation is not mandatory when it destroys the context of a naturally richer relation;
+- symmetry, inverse, transitivity and propagation belong to each specific relation family;
+- existing rich semantics such as Subject, Evidence, Confirmation, Provenance, Actor roles and Resource stages must not be demoted into generic relation types;
+- generic Personal Knowledge links remain separately SAFE DEFERRED and must not silently acquire operational/evidentiary/authority semantics.
+
+Next high-leverage review family:
+
+```text
+Responsibility
+Assignment
+Claim
+Hand-off
+Stewardship / coordination burden
+```
+
+This is an **area of review**, not a list of pre-approved primitives. The purpose is to determine which distinctions are real and which are state/role/product language within a smaller semantic model.
+
 ## Multi-Actor Evidence Synthesis — VALIDATED CURRENT BASELINE
 
 References:
@@ -307,7 +352,7 @@ References:
 - [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
 - [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md)
 
-All four current clusters remain compatible with the personal-first, structurally multi-actor-ready direction.
+All four completed clusters and the current Relationship modeling discipline remain compatible with the personal-first, structurally multi-actor-ready direction.
 
 ---
 
@@ -357,6 +402,11 @@ Asset
 
 CONTEXTUAL PLANNING / EXECUTION ELIGIBILITY
 Resource
+
+CROSS-CUTTING RELATION MODELING DISCIPLINE
+specific direct relation
+or specific qualified relation when materially justified
+(no universal Relationship root)
 ```
 
 Key interpretations:
@@ -366,7 +416,8 @@ Key interpretations:
 - Actor is contextual agency semantics, not a wrapper entity/root and not a generic replacement for specific action roles;
 - Account is a distinct platform/access identity boundary whose detailed security model remains deferred;
 - Asset is the current scoped physical-object identity baseline; the universal ManagedObject alternative was rejected after terminology-neutral testing;
-- Resource is contextual planning/execution eligibility/capability, not a Resource identity/root, and does not manufacture identity for supplies/pools/services.
+- Resource is contextual planning/execution eligibility/capability, not a Resource identity/root, and does not manufacture identity for supplies/pools/services;
+- Relationship is a modeling discipline, not an identity-bearing common node/edge object.
 
 This topology is not a mandatory processing chain, parent tree or persistence schema.
 
@@ -379,6 +430,8 @@ Account Anna-A1 authenticates access without becoming Person or Actor identity
 Asset A17 --Subject role--> Observation(shutter count = 32,411)
 Asset A17 --Resource role--> photo-shoot requirement/allocation context
 500 ml oil --supply semantics + Resource role--> maintenance requirement, no synthetic identity
+Activity B --depends_on--> Activity A when simple Dependency semantics suffice
+future rich Responsibility/Participation -> specific qualified relation family if validation proves it
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
 longitudinal weight screen -> query over native Observations
@@ -422,6 +475,13 @@ Resource != Requirement / candidate set / Allocation / Reservation / actual use
 Resource != Responsibility / Performer / Participant
 Resource role != provider identity
 Money/Budget != Resource by default
+
+universal Relationship entity/root/supertype = rejected
+semantic-free related_to as kernel truth = rejected
+specific relation meaning > generic edge
+qualified relation structure != independent entity automatically
+queryability/cardinality/database row id != domain identity
+relation orientation/symmetry/transitivity/inverse rules are family-specific
 
 User = product/implementation term, not domain root
 Register/Tracker = product/query capability, not source-truth container
@@ -546,13 +606,20 @@ Resource role preserves independently justified provider semantics and does not 
 
 ---
 
-# Relationships / Reasoning — NEXT DOMAIN REVIEW SPACE
+# Relationships / Reasoning — ACTIVE DOMAIN REVIEW SPACE
 
-**Status:** NEXT. Do not pre-accept the candidate list.
+**Status:** IN PROGRESS.
 
-Likely review space based on demonstrated dependencies:
+Completed so far:
 
-- semantic Relationship;
+- [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**;
+- universal Relationship primitive/root rejected;
+- direct-vs-specific-qualified relation discipline accepted;
+- no generic `related_to` kernel truth;
+- no universal symmetry/transitivity/inverse reasoning rules.
+
+Remaining candidate space based on demonstrated dependencies includes:
+
 - Dependency;
 - Responsibility / Assignment / Claim / Hand-off / Stewardship;
 - Contribution;
@@ -568,13 +635,15 @@ Likely review space based on demonstrated dependencies:
 - Principal / delegation / on-behalf-of security/authority semantics;
 - focus/context relationships.
 
-These are **candidates**, not a checklist of primitives that must survive.
+These remain **candidates**, not a checklist of primitives that must survive.
 
-From this stage onward the Adjacent Dependency Sweep is mandatory before every concept verdict.
+The next review is the Responsibility / Assignment / Claim / Hand-off / Stewardship family because it most directly stresses relation state, transfer, acceptance, coordination burden and expected-vs-actual performer semantics.
+
+From this stage onward the Adjacent Dependency Sweep remains mandatory before every concept verdict.
 
 Mandatory inherited re-tests include:
 
-- Evidence as semantic role vs typed Relationship representation;
+- Evidence as semantic role vs specific qualified relation representation;
 - Provenance lineage vs Version/Decision/Audit;
 - Confirmation vs Authority/Acknowledgement/Acceptance;
 - competing assertions and canonical decision policy;
@@ -585,7 +654,8 @@ Mandatory inherited re-tests include:
 - Resource Requirement/Allocation/Reservation versus Responsibility/Performer;
 - Account/Principal/Authority/delegation boundaries;
 - Asset ownership/possession/custody/stewardship/location/Visibility;
-- historical Person/Actor/Asset/resource-allocation attribution after Account or relationship changes.
+- historical Person/Actor/Asset/resource-allocation attribution after Account or relationship changes;
+- direct-vs-qualified threshold for every material relationship family.
 
 Do not begin SQL/API design yet.
 
@@ -600,13 +670,15 @@ Observed Reality & Evidence v0  — PASS
 Data / Subjects v0              — PASS WITH HARDENING
 Deferred Dependency Closure     — PASS
 Cross-Cluster Validation v4     — PASS WITH HARDENING
+Relationship v0 review          — PASS WITH HARDENING
 
 0 structural reopenings
 0 unclassified material dependencies
 
-↓ NEXT
+↓ CURRENT
 Relationships / Reasoning
-  Adjacent Dependency Sweep mandatory per concept
+  next: Responsibility / Assignment / Claim / Hand-off / Stewardship review family
+  Adjacent Dependency Sweep mandatory per verdict
 ↓
 whole-domain semantic regression
 ↓
@@ -625,11 +697,13 @@ API contracts / backend packages / implementation
 
 # Reopen / deferred-dependency watchlist
 
-The authoritative dependency register is now:
+The authoritative dependency register remains:
 
 - [`Deferred Dependency Closure — Clusters 1–4 v0`](checkpoints/deferred-dependency-closure-clusters-1-4-v0.md).
 
-It contains exact owners, reasons, reopening triggers and regression tests for every still-material SAFE DEFERRED item.
+Relationship-specific closures and reopening triggers are now additionally recorded in:
+
+- [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md).
 
 High-value groups include:
 
@@ -647,6 +721,7 @@ High-value groups include:
 - Resource Requirement / eligibility / Allocation / Reservation / actual use / pools / supply / skill;
 - Quantity / Money / Scale / Ratio / UnitDefinition / Duration / Range;
 - longitudinal materialization / aggregate visibility;
+- generic Personal Knowledge links;
 - AI context/inference/disclosure/Authority;
 - retention/deletion/anonymization.
 
@@ -689,6 +764,8 @@ Current known terminology refinements include:
 - Asset v0 currently means individually tracked non-human physical-object identity; exact noun remains reopenable;
 - Resource is contextual planning/execution role/capability and does not manufacture identity;
 - Requirement, allocation, reservation and actual use remain distinct;
+- universal Relationship root / semantic-free `related_to` are rejected;
+- specific direct/qualified relation semantics are the accepted modeling discipline;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage.
 
 Historical docs should not be silently rewritten merely for vocabulary uniformity. Current Domain Atlas + Language Map establish kernel precedence.
@@ -722,6 +799,7 @@ Person (native entity)
 Actor (semantic agency role/capability)
 Asset (current scoped native entity)
 Resource (semantic planning/execution role/capability)
+Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
 ```
 
 Accepted boundary but not yet a fully modeled concept:
@@ -738,6 +816,6 @@ Rejected historical/current candidates are not counted as accepted concepts.
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
-Cross-Cluster v4 does not prevent later reopening when Relationships / Reasoning, the logical/physical data model, integrations, safety/privacy requirements, or stronger real-world evidence expose a genuine contradiction.
+Cross-Cluster v4 and the current Relationship review do not prevent later reopening when subsequent Relationships / Reasoning candidates, the logical/physical data model, integrations, safety/privacy requirements, or stronger real-world evidence expose a genuine contradiction.
 
-Do not jump directly from Cross-Cluster v4 to SQL/API stabilization.
+Do not jump directly from the current semantic review to SQL/API stabilization.
