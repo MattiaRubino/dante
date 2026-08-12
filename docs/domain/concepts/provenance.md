@@ -80,7 +80,7 @@ A provider ID may assist reconciliation/mapping but does not define LifeOS Perso
 
 ---
 
-# 3. Provenance versus truth and authority
+# 3. Provenance versus truth and Authority
 
 Traceability does not establish truth.
 
@@ -98,7 +98,7 @@ Actor role: recorder
 Account Anna-A1 authenticated access
 ```
 
-never implies that Anna, the Account, or the Actor role has authority to establish the target as canonical for everyone.
+never implies that Anna, the Account, or the Actor role has Authority to establish the target as canonical for everyone.
 
 Therefore:
 
@@ -107,10 +107,10 @@ Provenance != truth
 Provenance != Authority
 Actor != Authority
 Account != Authority
-creator/source != authority by default
+creator/source != Authority by default
 ```
 
-Authority policies may use provenance as input, but provenance does not manufacture authority.
+Authority v0 closes this boundary: Provenance may provide evidence/basis/context used by an Authority policy or Decision, but provenance itself never manufactures governance power and Authority does not turn lineage into objective truth.
 
 ---
 
@@ -277,11 +277,13 @@ If an AI/system materially acts as proposer, transformer, importer, or corrector
 
 AI confidence is not Provenance truth and AI provenance is not disclosure permission.
 
+Visibility v0 makes that last boundary explicit: authorized processing or possession of lineage does not imply that every source, identity linkage, or private basis may be exposed to a recipient.
+
 ---
 
 # 11. Person, Actor, Subject, Account, and provenance roles
 
-The Person / Actor / Account boundary is now fixed conceptually:
+The Person / Actor / Account boundary is fixed conceptually:
 
 ```text
 Person
@@ -352,18 +354,16 @@ Subject
 != confirmer
 != Account
 != Principal
-!= authority
+!= Authority
 ```
 
 where those dimensions differ in reality.
-
-See `concepts/person.md`, `concepts/actor.md`, `concepts/subject.md`, and `checkpoints/person-actor-account-v0-validation.md`.
 
 ---
 
 # 12. Visibility and privacy
 
-Target visibility and Provenance visibility are independent questions.
+Target Visibility and Provenance Visibility are independent questions.
 
 A shared derived consequence may be visible while private source lineage remains hidden.
 
@@ -383,9 +383,16 @@ recorder/delegation details
 
 Therefore:
 
-> **Target visibility does not imply full Provenance visibility.**
+> **Target Visibility does not imply full Provenance Visibility.**
 
-Likewise, access to a provenance fragment does not grant access to all upstream private source payloads, Person identity mappings, Actor attribution, Account/Principal information, or delegation basis.
+Likewise, access to a Provenance fragment does not grant access to all upstream private source payloads, Person identity mappings, Actor attribution, Account/Principal information, delegation basis, or relationship details.
+
+Visibility v0 additionally fixes:
+
+```text
+visible endpoints != visible lineage relationship
+visible projection != visible source lineage
+```
 
 AI/tool explanations must respect the same boundary.
 
@@ -467,7 +474,7 @@ Typical UI:
 
 Account/security/Principal details should surface only when they materially explain access, delegation, dispute, or audit and the viewer is authorized.
 
-Progressive disclosure should expose richer lineage only when useful.
+Progressive disclosure should expose richer lineage only when useful and visible to the recipient.
 
 ---
 
@@ -481,7 +488,7 @@ External systems support the separation without dictating LifeOS schema:
 - authentication/provisioning patterns demonstrate that security/account identifiers are not universal human identity;
 - specialist standards demonstrate that provenance may itself have provenance and that privacy can require selective disclosure/segmentation.
 
-LifeOS borrows the semantic lessons: **native identity, agency, access/security identity, lineage, authority and visibility remain distinct**. It does not adopt the complete external ontologies.
+LifeOS borrows the semantic lessons: **native identity, agency, access/security identity, lineage, Authority and Visibility remain distinct**. It does not adopt complete external ontologies.
 
 ---
 
@@ -498,17 +505,19 @@ LifeOS borrows the semantic lessons: **native identity, agency, access/security 
 9. Corrections preserve materially relevant prior lineage.
 10. Derived/transformed records retain material source/transformation traceability.
 11. AI/import pipelines must not launder authorship/source.
-12. Subject/source/observer/recorder/transformer/confirmer/authority roles remain distinguishable.
+12. Subject/source/observer/recorder/transformer/confirmer/Authority roles remain distinguishable.
 13. Person is native human identity; Actor is agency role/capability; Account is access identity.
 14. Person != Actor != Account, and Principal remains a distinct deferred security concept.
 15. External/non-account actors may exist in Provenance without synthetic Accounts.
-16. Account authentication does not by itself prove semantic Actor, responsibility or Authority.
+16. Account authentication does not by itself prove semantic Actor, Responsibility or Authority.
 17. Current Account access != historical Person/Actor attribution.
-18. Target visibility does not imply full Provenance visibility.
+18. Target Visibility does not imply full Provenance Visibility.
 19. Provenance access does not imply access to all upstream private payloads or identity linkages.
 20. Retention/history does not justify indefinite storage of deleted sensitive payloads/credentials/private mappings.
 21. Provenance depth is bounded by material need, not maximal recursion.
 22. Provenance semantics do not pre-approve one physical provenance/actor graph or table.
+23. Authority may govern a correction/decision without becoming lineage or truth.
+24. Visible target/projection != visible source lineage, identity linkage, or every upstream relation.
 
 ---
 
@@ -519,6 +528,7 @@ Rejected:
 - one `source` string as full provenance model;
 - Provenance = truth;
 - Provenance = Authority;
+- Provenance = Visibility;
 - merge with Confirmation;
 - merge with Evidence;
 - merge with Version;
@@ -539,7 +549,7 @@ Rejected:
 - generic versus typed provenance relationships;
 - Version/material-version mechanics;
 - Decision rationale versus lineage;
-- Authority and source-precedence policy;
+- source-precedence/reconciliation policy;
 - Principal/security identity and Account credential/provider mechanics;
 - delegated/on-behalf-of action;
 - Person reconciliation/merge/split semantics;
@@ -557,7 +567,9 @@ Resolved since Provenance v0 acceptance:
 - Person is native human identity;
 - Actor is contextual agency semantics, not entity/root;
 - Account is conceptually distinct access identity;
-- User is not a kernel identity primitive.
+- User is not a kernel identity primitive;
+- Authority is contextual scoped governance and does not arise from lineage;
+- Visibility is contextual bounded exposure and does not expose full lineage automatically.
 
 ---
 
@@ -576,7 +588,7 @@ The future model must be able to reconstruct material lineage where required, in
 - previous/derived-from relationships;
 - rule/model/formula version where material;
 - correction/reconciliation reason where appropriate;
-- selective visibility/retention rules.
+- selective Visibility/retention rules.
 
 This is a semantic capability requirement, not a final table design.
 
@@ -595,8 +607,27 @@ and must preserve historical attribution even when Account/access state changes,
 
 # 22. Reopening triggers
 
-Reopen Provenance v0 if later Version/Decision/Audit/Authority work proves this boundary redundant; if Person/Actor/Account/Principal logical modeling cannot preserve material lineage without changing the accepted semantics; if persistence pressure demonstrates that lineage cannot be represented without unacceptable generic coupling; or if specialist interoperability/safety requirements require a stronger universal provenance distinction.
+Reopen Provenance v0 if later Version/Decision/Audit work proves this boundary redundant; if Person/Actor/Account/Principal logical modeling cannot preserve material lineage without changing accepted semantics; if persistence pressure demonstrates lineage cannot be represented without unacceptable generic coupling; or if specialist interoperability/safety requirements require a stronger universal provenance distinction.
 
-A future need for a physical agent/reference table is not by itself a semantic reopening trigger; it must demonstrate that the accepted native-identity + typed-role model loses required truth, history, authority, privacy or queryability.
+A future need for a physical agent/reference table is not by itself a semantic reopening trigger; it must demonstrate that the accepted native-identity + typed-role model loses required truth, history, Authority, privacy or queryability.
 
 Absent such evidence, Provenance remains the current accepted baseline.
+
+---
+
+# 2026-08-12 — Authority + Visibility closure amendment
+
+Authority v0 and Visibility v0 close two long-standing Provenance boundaries without changing lineage semantics.
+
+```text
+Provenance
+= how this record/version came to exist or change
+
+Authority
+= who/what may legitimately make a bounded governance/correction effect effective
+
+Visibility
+= what lineage/source/projection information may be exposed to a recipient
+```
+
+Therefore creator/source/recorder does not become authoritative merely by appearing in lineage; an authorized correction does not erase its prior provenance; and a visible target or safe projection does not disclose full lineage/private sources automatically. AI may use authorized Provenance internally for explanation/reconciliation while output disclosure is evaluated independently.
