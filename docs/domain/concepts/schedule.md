@@ -7,32 +7,26 @@
 
 ## Canonical definition
 
-> **A Schedule is the current accepted temporal assignment of a schedulable subject, expressing when its execution or occurrence is intended or expected to take place at the precision currently committed. A Schedule may be revised without changing the identity of its subject, and remains distinct from temporal constraints, recurrence rules, capacity blocking, and what actually happened.**
+> **A Schedule is the current accepted temporal assignment of a schedulable subject, expressing when its execution or occurrence is intended or expected to take place at the precision currently committed. A Schedule may be revised without changing the identity of its subject, and remains distinct from temporal constraints, recurrence rules, capacity blocking, participant response, Acknowledgement, and what actually happened.**
 
-A Schedule answers the operational question:
+Schedule answers:
 
 > **When is this currently intended or expected to happen?**
 
-It does not answer:
+It does not answer what the thing is, why it matters, whether it is recurring, whether a time is merely allowed/preferred, whether capacity is consumed, whether every participant accepted, whether another actor acknowledged a change, or what actually happened.
 
-- what the thing is;
-- why it matters;
-- whether it is recurring;
-- whether a time is merely allowed/preferred rather than accepted;
-- whether the user is busy during that time;
-- whether execution actually happened at that time;
-- whether a target or deadline was met.
+---
 
-The same scheduling capability may be used by different domain subjects without collapsing their semantics.
+# 1. Why Schedule exists
 
-Examples:
+LifeOS needs reusable temporal assignment that can change independently from domain identity.
 
 ```text
 Activity
 Study chapter 5
 
 Schedule
-Tuesday 18:00 -> 20:00
+Tuesday 18:00–20:00
 ```
 
 ```text
@@ -40,7 +34,7 @@ Event
 Client meeting
 
 Schedule
-Tuesday 15:00 -> 16:00
+Tuesday 15:00–16:00
 ```
 
 ```text
@@ -48,361 +42,141 @@ Routine Occurrence
 Workout — Wednesday instance
 
 Schedule
-Thursday 19:00 -> 20:30
+Thursday 19:00–20:30
 ```
 
-The Activity remains an Activity, the Event remains an Event, and the Occurrence remains the same logical instance. Schedule supplies accepted temporal placement.
+Activity remains Activity, Event remains Event, Occurrence remains the same logical instance. Schedule supplies accepted temporal placement.
+
+Putting mutable `start_at/end_at` directly on every domain object and destructively overwriting them would lose temporal history and blur planned/current/Actual distinctions.
 
 ---
 
-## Why this concept exists
-
-The accepted Intention & Execution concepts already require a reusable temporal layer that can change independently of domain identity.
-
-`Activity v0` requires:
-
-- Activity identity to remain stable when work is rescheduled;
-- estimated effort, scheduled duration, and actual effort to remain distinct;
-- a single Activity to potentially be split across several planned execution periods;
-- calendar placement not to transform Activity into Event.
-
-`Event v0` requires:
-
-- temporal placement to be intrinsic to Event meaning but still mutable;
-- original expectation, current accepted schedule, and actual occurrence to remain distinguishable;
-- official reschedule to differ from real-world early/late execution;
-- Event identity to survive a temporal change.
-
-`Routine v0` requires:
-
-- recurring policy to remain separate from concrete scheduled instances;
-- one-off occurrence changes not to mutate the whole Routine;
-- flexible routines to be able to produce expected instances before exact placement.
-
-`Occurrence v0` requires:
-
-- stable identity for one generated instance independent from current start/end;
-- an Occurrence to be able to exist before exact temporal placement;
-- rescheduling not to create a new Occurrence automatically.
-
-The previous LifeOS scheduling documents also distinguish:
-
-- fixed placement;
-- bounded windows;
-- deadlines;
-- preferred windows;
-- open scheduling;
-- movement policy;
-- rescheduling history;
-- planned versus actual execution.
-
-Those requirements cannot be represented safely by putting `start_at` / `end_at` fields directly on every domain object and overwriting them whenever plans change.
-
-Schedule therefore exists as the temporal-assignment capability between domain intention/occurrence identity and Actual execution.
-
----
-
-## Validation basis
-
-Schedule v0 was reviewed against:
-
-### Existing LifeOS documentation
-
-- `docs/product/v1-scheduling-flexibility.md`;
-- `docs/product/v1-execution-status.md`;
-- `docs/product/v1-core-domain-glossary.md`;
-- `docs/product/feature-discovery-simulation-2026-08.md`;
-- the accepted Domain Atlas concepts Goal, Plan, Activity, Event, Routine, Milestone, and Occurrence;
-- the validated Intention & Execution cluster checkpoint.
-
-### Representative LifeOS scenarios
-
-The review included:
-
-- study assigned to an exact block;
-- study intentionally assigned only to an afternoon/day;
-- work eligible inside a window but not yet assigned;
-- tasks with deadlines but no accepted execution time;
-- meetings moved earlier or later;
-- meetings that start early/late without being rescheduled;
-- meetings explicitly extended while already in progress;
-- all-day/date-based events;
-- activities split into several planned blocks;
-- recurring Routine occurrences that exist before exact placement;
-- recurring Event instances with one-off exceptions;
-- schedules that should not consume availability/busy time;
-- floating local time versus named-time-zone placement;
-- AI-proposed schedules awaiting user authority.
-
-### External benchmark patterns
-
-Schedule v0 used external systems as evidence rather than authority.
-
-Relevant benchmark patterns include:
-
-- iCalendar/RFC 5545 distinguishes event/task temporal placement from due constraints and represents DATE separately from DATE-TIME;
-- iCalendar distinguishes floating local time, UTC, and local time bound to a time zone;
-- iCalendar `TRANSP` demonstrates that temporal placement and busy-time consumption are different semantics;
-- Google Calendar represents all-day events as dates, timed events as date-time values, recurrence separately from individual instance placement, and transparency separately from timing;
-- Google recurring instances preserve original instance identity even when one instance is moved;
-- Apple EventKit exposes event dates separately from availability semantics.
-
-LifeOS intentionally does not copy any one provider model physically.
-
----
-
-## Core semantic position
-
-The current temporal chain is:
+# 2. Core temporal position
 
 ```text
 Domain intention / recurring source
         ↓
 Occurrence identity where applicable
         ↓
-Original temporal expectation
+original temporal expectation
         ↓
 Schedule revisions
         ↓
-Current accepted Schedule
+current accepted Schedule
         ↓
 Actual execution / attendance / occurrence
 ```
 
-Schedule occupies one specific layer:
+Schedule occupies one layer: **current accepted temporal assignment**.
 
-> **the currently accepted temporal assignment.**
-
-It is neither the identity of the domain subject nor the historical/actual result.
+It is neither subject identity nor Actual result.
 
 ---
 
-## Accepted versus proposed schedule
+# 3. Proposed versus current Schedule
 
-A candidate placement proposed by LifeOS or AI is not automatically canonical Schedule truth.
-
-Example:
-
-```text
-AI proposal
-Study 18:00 -> 20:00
-```
-
-Before approval, this is a scheduling proposal.
-
-After user acceptance, or after an explicitly authorized automation policy applies it, it becomes the current accepted Schedule.
-
-Conceptually:
+A candidate placement proposed by user, LifeOS, provider or AI is not automatically current Schedule truth.
 
 ```text
 Scheduling proposal
-        ↓ applicable acceptance / Authority / approved policy
-Accepted Schedule
-```
-
-Authority v0 now makes the governance boundary explicit: acting/proposing does not create Authority, and Authority to make one bounded scheduling effect effective does not imply broader Authority or Visibility.
-
-Schedule history should eventually retain enough provenance to explain:
-
-- who proposed a placement;
-- who or what accepted/applied it;
-- what Authority/policy basis made the change effective where material;
-- when it became effective;
-- what previous accepted placement it replaced;
-- why it changed when known.
-
-The exact Provenance/Decision persistence model is deferred.
-
----
-
-## Schedule versus Activity
-
-An Activity is an actionable intention.
-
-A Schedule assigns temporal placement to that intention.
-
-```text
-Activity
-Write report
-
-Schedule
-Tuesday 14:00 -> 16:00
-```
-
-Changing the Schedule does not change the Activity identity.
-
-```text
-Same Activity
-
-Old accepted Schedule
-Tuesday 14:00 -> 16:00
-
-New accepted Schedule
-Wednesday 09:00 -> 11:00
-```
-
-Therefore:
-
-> **Schedule != Activity.**
-
-An Activity may exist with no Schedule at all.
-
-Example:
-
-```text
-Activity
-Buy a new SSD
-
-Schedule
-none
-```
-
-It may still have a deadline, preferred window, priority, or other planning constraints.
-
----
-
-## Schedule versus Event
-
-An Event is occurrence-centred and temporal placement is intrinsic to its meaning.
-
-Schedule supplies the Event's accepted temporal assignment without becoming the Event identity itself.
-
-```text
-Event
-Flight AZ123
-
-Schedule
-10 September 14:20 -> 16:05
-```
-
-If the airline changes the flight:
-
-```text
-Same Event
-
-Original accepted placement
-14:20 -> 16:05
-
+        ↓ applicable proposal/effect + Authority/policy semantics
 Current accepted Schedule
-18:00 -> 19:45
 ```
 
-The Event remains the same Event.
+The word `accepted` here means **the temporal assignment that is currently canonical/effective in the applicable governing context**. It does **not** imply a universal cross-domain Acceptance primitive.
 
-This means the physical model should avoid competing canonical truths such as independent `event.start_at` and `schedule.start_at` values representing the same semantic fact.
-
-The exact persistence boundary remains deferred, but conceptually:
-
-> **Event owns occurrence-centred meaning; Schedule represents its accepted temporal placement.**
+Generic Acceptance was tested later in Acknowledgement v0 and rejected as a standalone kernel concept.
 
 Therefore:
 
-> **Schedule != Event.**
+```text
+Schedule proposal accepted/applied
+→ scheduling proposal/effect semantics
+NOT generic Acceptance entity
+```
 
-### Event postponed without a replacement Schedule
+Authority v0 answers who/what may legitimately make the bounded scheduling effect effective. Acknowledgement v0 answers who explicitly took notice of a specific resulting proposal/change/version. Participation response answers whether a participant intends to take part.
 
-An Event can retain identity and historical temporal meaning even when its previously accepted placement is withdrawn and no replacement time is known yet.
+These are independent:
 
-Example:
+```text
+current accepted Schedule
+!= participant accepted Participation
+!= participant Acknowledgement of Schedule change
+```
+
+The exact Decision/Approval/effective-change persistence model remains deferred.
+
+---
+
+# 4. Schedule versus Activity
+
+```text
+Schedule != Activity
+```
+
+An Activity may exist without a Schedule. Rescheduling does not change Activity identity.
+
+Estimated effort, scheduled duration and Actual effort remain separate.
+
+---
+
+# 5. Schedule versus Event
+
+Event owns occurrence-centred meaning; Schedule represents its current accepted temporal placement.
+
+```text
+Schedule != Event
+```
+
+Event identity may survive reschedule.
+
+## Postponed Event with no replacement Schedule
 
 ```text
 Event
 Concert
 
-Historical accepted Schedule
+historical Schedule
 20 September 21:00
 
-Provider update
+provider update
 POSTPONED — new date TBD
 
-Current accepted Schedule
+current Schedule
 none
 ```
 
-This does not make the Event timeless in meaning and does not require a fake placeholder Schedule.
+This preserves Event identity and historical expectation without inventing fake precision.
 
-It means the current temporal assignment is unresolved.
+> **An Event may temporarily have no current accepted Schedule while historical placements remain reconstructible.**
 
-Canonical hardening:
-
-> **An Event whose previous placement is withdrawn/postponed may temporarily have no current accepted Schedule while preserving Event identity and reconstructible historical expectation. Schedule absence must not be used to erase the Event or invent replacement precision.**
-
-Event lifecycle/disposition semantics such as postponed/cancelled remain separate from Schedule.
+Postponed/cancelled lifecycle/disposition remains separate from Schedule.
 
 ---
 
-## Schedule versus Occurrence
-
-Occurrence answers:
-
-> **Which generated/recurring instance is this?**
-
-Schedule answers:
-
-> **When is this instance currently expected to happen?**
-
-Example:
+# 6. Schedule versus Occurrence
 
 ```text
-Routine
-Workout Monday / Wednesday / Friday
-
-Occurrence
-Wednesday instance #27
-
-Original expectation
-Wednesday 18:00
-
-Current Schedule
-Thursday 19:00 -> 20:30
+Occurrence = which generated instance?
+Schedule   = when is this instance currently assigned?
 ```
 
-It remains occurrence #27 after rescheduling.
+Occurrence identity must not be derived from current Schedule placement.
 
-Therefore:
-
-> **Occurrence identity must not be derived from current Schedule placement.**
-
-An Occurrence may exist before exact Schedule assignment.
-
-Example:
+A generated Occurrence may exist before exact placement and retain identity after one-off rescheduling.
 
 ```text
-Routine
-Train 3 times this week
-
-Occurrences
-A
-B
-C
-
-Exact Schedules
-not assigned yet
+Occurrence #27
+original expectation Wednesday 18:00
+current Schedule Thursday 19:00–20:30
 ```
 
-Later:
-
-```text
-A -> Monday 18:00
-B -> Thursday 19:00
-C -> Saturday 10:00
-```
-
-Therefore:
-
-> **Schedule != Occurrence.**
+It remains occurrence #27.
 
 ---
 
-## Schedule versus Routine and Recurrence
-
-A Routine represents a persistent recurring execution policy.
-
-A recurrence capability determines how repeated instances are generated or anchored.
-
-Schedule represents the accepted temporal placement of a particular schedulable subject or instance.
-
-Conceptually:
+# 7. Schedule versus Routine / Recurrence
 
 ```text
 Routine / recurring Event
@@ -414,841 +188,319 @@ Occurrences
 Schedules
 ```
 
-A one-off Schedule change for an Occurrence does not automatically change recurrence policy.
+One-off Schedule revision does not automatically mutate Recurrence or Routine policy.
 
-Therefore:
-
-> **Schedule != Routine.**
-
-and:
-
-> **Schedule != RecurrenceRule.**
-
-Schedule must not become a mega-object containing recurrence syntax merely because recurring instances eventually receive schedules.
+```text
+Schedule != Routine
+Schedule != Recurrence
+```
 
 ---
 
-## Schedule versus Actual
-
-Schedule represents accepted expectation.
-
-Actual represents observed reality.
-
-Example — no reschedule:
+# 8. Schedule versus Actual
 
 ```text
-Schedule
-15:00 -> 16:00
-
-Actual
-15:18 -> 16:25
+Schedule 15:00–16:00
+Actual   15:18–16:25
 ```
 
-This is not a Schedule revision.
-
-It is execution/occurrence that differed from the accepted Schedule.
-
-Example — explicit reschedule:
+This is deviation, not automatically a Schedule revision.
 
 ```text
-Original Schedule
-15:00 -> 16:00
-
-Current Schedule
-15:30 -> 16:30
-
-Actual
-15:38 -> 16:24
+Original Schedule 15:00–16:00
+Current Schedule  15:30–16:30
+Actual            15:38–16:24
 ```
 
-All three temporal facts are meaningful.
-
-The system must not automatically rewrite Schedule to match Actual simply because a timer starts early/late or an Event runs long.
-
-Otherwise LifeOS would lose the ability to reason about:
-
-- estimation quality;
-- punctuality/deviation;
-- realistic future planning;
-- overrun/underrun patterns;
-- missed versus proactively rescheduled execution;
-- adherence and replanning.
-
-Therefore:
+All are meaningful.
 
 > **Schedule != Actual.**
 
----
+LifeOS must not rewrite Schedule to match Actual merely because execution starts early/late or runs long.
 
-## Actual may begin earlier or later than Schedule
-
-The model must make no assumption that deviation is only lateness.
-
-All of these are valid:
-
-```text
-Schedule 15:00 -> 16:00
-Actual   14:52 -> 15:55
-```
-
-```text
-Schedule 15:00 -> 16:00
-Actual   14:55 -> 16:20
-```
-
-```text
-Schedule 15:00 -> 16:00
-Actual   15:20 -> 15:50
-```
-
-```text
-Schedule 15:00 -> 16:00
-Actual   15:00 -> 16:00
-```
-
-Concepts such as early start, late start, early finish, late finish, overrun, and underrun are normally derived from accepted Schedule versus Actual comparison rather than stored as foundational Schedule state.
+Derived comparisons may include early/late start, overrun/underrun, punctuality and estimation quality.
 
 ---
 
-## Schedule revisions may move in either direction
+# 9. Revisions may move any temporal boundary
 
-A Schedule revision may move execution earlier, later, longer, shorter, or change only one boundary.
+Schedule revisions may move earlier/later, lengthen/shorten, or change only one boundary.
 
-Examples:
+Temporal geometry of the change can be derived; semantic reason may be separately preserved through Provenance/Decision context.
 
-```text
-Original
-18:00 -> 21:00
-
-Revised
-17:30 -> 20:30
-```
-
-```text
-Original
-18:00 -> 21:00
-
-Revised
-19:00 -> 22:00
-```
-
-```text
-Original
-15:00 -> 16:00
-
-Revised
-15:00 -> 16:30
-```
-
-The temporal geometry of the change can be derived from revisions.
-
-LifeOS may additionally preserve semantic reasons such as postponed after missing original placement, proactively rescheduled, external provider update, user preference change, conflict resolution, or recovery/replanning.
-
-Those reasons are not equivalent to the mathematical direction of the shift.
+A Schedule can also be revised during execution if participants explicitly change the expected end. This remains distinct from an unplanned overrun in Actual.
 
 ---
 
-## A Schedule may be revised during execution
-
-A Schedule revision is not restricted to changes made before Actual starts.
-
-Example:
-
-```text
-Schedule
-Meeting 15:00 -> 16:00
-
-Actual start
-15:02
-```
-
-At 15:50, participants explicitly decide:
-
-```text
-Expected end changed to 16:30
-```
-
-LifeOS can preserve:
-
-```text
-Schedule revision at 15:50
-new expected end: 16:30
-
-Actual end
-16:24
-```
-
-This differs from a meeting that simply runs until 16:24 without any explicit change to the expected end.
-
-In the latter case the accepted Schedule remains 15:00-16:00 and Actual records the overrun.
-
----
-
-## Original expectation versus current accepted Schedule
+# 10. Original expectation / current Schedule / history
 
 LifeOS must preserve enough history to distinguish:
 
 ```text
-Original accepted expectation
-        ↓
-Revision 1
-        ↓
-Revision 2
-        ↓
-Current accepted Schedule
+original accepted expectation
+→ revision 1
+→ revision 2
+→ current accepted Schedule
 ```
 
-The current Schedule is operationally authoritative for present planning when one exists.
+Previous placements remain historical facts rather than being silently overwritten.
 
-Previous accepted placements remain historical facts.
+This supports auditability, provider reconciliation, AI explanation, replanning analytics and planned-versus-Actual comparison against the correct effective expectation.
 
-They are not silently overwritten.
-
-For a postponed/unresolved Event, the current accepted Schedule may be absent while historical placements remain reconstructible.
-
-This history is required for auditability, user explanation, provider reconciliation, AI reasoning, replanning analytics, and planned-versus-actual comparison against the correct effective expectation.
-
-The physical implementation may use revision records, effective-dated values, an audit stream, or another reviewed mechanism. Schedule v0 fixes the semantic requirement, not the final database representation.
+Physical revision/version mechanism is deferred.
 
 ---
 
-## Schedule versus Deadline
+# 11. Schedule versus Deadline / target / Temporal Constraint
 
-A Deadline defines a latest permissible or meaningful boundary for another intention/requirement.
-
-A Schedule assigns when execution is currently intended.
+```text
+Schedule != Deadline
+Schedule != target date/window
+Schedule != Temporal Constraint
+```
 
 Example:
 
 ```text
-Activity
-Submit declaration
-
 Deadline
 30 April 23:59
 
 Schedule
-27 April 18:00 -> 19:00
+27 April 18:00–19:00
 ```
 
-The Deadline may exist without a Schedule.
+A deadline/constraint may exist without Schedule.
 
-A Schedule may exist without a Deadline.
-
-Therefore:
-
-> **Schedule != Deadline.**
-
-A deadline displayed in a calendar does not become an Event or Schedule placement merely because it has a date/time.
-
----
-
-## Schedule versus Target date/window
-
-A target expresses when an outcome/checkpoint is desired.
-
-Schedule expresses when execution/occurrence is currently assigned.
-
-Example:
+Same temporal shape can have different meaning:
 
 ```text
-Milestone
-Master approved
+"Tuesday afternoon"
 
-Target date
-15 September
+accepted assignment → Schedule
+allowed/preferred window → Temporal Constraint
 ```
 
-That target does not mean:
+Classification follows semantics, not timestamp shape alone.
+
+---
+
+# 12. Schedule versus Availability / Capacity / busy state
+
+Temporal placement does not automatically consume capacity or mean `busy`.
 
 ```text
-Schedule
-15 September
+scheduled != capacity consumed
+scheduled != universally busy
 ```
 
-Likewise:
+Availability/Capacity and Reservation/Claim semantics remain separate.
+
+A visible free/busy projection may also exist without exposing private Schedule source details.
+
+---
+
+# 13. Precision and all-day/date semantics
+
+Schedule precision should reflect what is actually committed.
+
+Examples may include exact date-time, date/all-day, or another bounded accepted placement supported by the Time model.
+
+Do not fabricate exact time merely because the system prefers a calendar grid.
+
+Floating local time, UTC and named-time-zone semantics must remain representable where relevant; external standards are benchmark evidence, not kernel authority.
+
+---
+
+# 14. Schedule change versus Acknowledgement
+
+A material Schedule change and actor acknowledgement of that change are distinct.
 
 ```text
-Goal
-Reach B2 by December
+Schedule v1 = 15:00
+Schedule v2 = 16:00
+
+Luca Acknowledgement(v2)
 ```
-
-uses Goal horizon/target semantics, not Schedule occupancy.
-
-Therefore target semantics remain outside Schedule unless a concrete schedulable subject is explicitly assigned to that time.
-
----
-
-## Schedule versus Temporal Constraint / Window
-
-The same temporal shape can express different domain meaning.
-
-Example phrase:
 
 ```text
-Tuesday afternoon
+Schedule v2 current
+!= Luca acknowledged v2
 ```
 
-Case A — accepted assignment:
+One actor may acknowledge while another has not. Acknowledgement of v1 does not silently acknowledge materially different v2.
 
-> I decided to study Tuesday afternoon.
+Schedule itself therefore does not own delivery/read/common-ground state.
 
-Then it is Schedule semantics.
+---
 
-Case B — valid/available window:
+# 15. Schedule versus Participation response
 
-> I may study at any time Tuesday afternoon.
-
-Then it is a Temporal Constraint / valid window and exact Schedule may still be absent.
-
-Conceptually:
+One shared Event can have one current Schedule while actors hold different response states.
 
 ```text
-Temporal Constraint
-where/when scheduling is allowed or preferred
+Meeting
+Schedule 15:00–16:00
 
-Schedule
-where/when execution is currently assigned
+A accepted Participation
+B tentative
+C declined
 ```
 
-Therefore:
+> **Current accepted Schedule does not mean every participant accepted Participation.**
 
-> **Schedule != Temporal Constraint.**
-
-Classification must depend on meaning, not only on a pair of timestamps.
+Participation response remains actor-scoped and independent from temporal assignment.
 
 ---
 
-## Schedule versus movement policy
+# 16. Authority / Visibility / AI boundaries
 
-Schedule answers:
+Authority determines who/what may legitimately make the bounded scheduling effect effective.
 
-> **Where is this currently assigned?**
+Visibility determines what Schedule/projection/source information may be exposed.
 
-Movement policy answers:
+Acknowledgement records explicit taking-notice.
 
-> **How may LifeOS change that assignment?**
-
-The same Schedule may be locked, movable inside a valid window, movable only after user approval, or freely replannable according to an authorized policy.
-
-Therefore:
-
-> **Schedule != movement policy.**
-
-The accepted placement must not be overloaded with change-Authority semantics.
-
----
-
-## Schedule versus capacity / availability
-
-Temporal placement does not automatically mean the user's capacity is consumed for the entire interval.
-
-Examples:
+AI may propose placement but does not gain Authority or human Acknowledgement merely because it can optimize.
 
 ```text
-Event
-Birthday — all day
+AI proposal != current Schedule
+AI source access != disclosure permission
+AI inference != human Acknowledgement
 ```
 
-may be visible all day without making the user unavailable for the day.
+---
+
+# 17. Product / UI implications
+
+Product UI may expose:
 
 ```text
-Event
-Optional webinar — 17:00 -> 18:00
+Scheduled for…
+Move to…
+All day
+This afternoon
+Proposed time
+Apply
+Keep current time
 ```
 
-may be scheduled but intentionally marked as non-blocking.
+`Apply` or `Accept` can be scheduling-proposal UI language; it must not create a generic Acceptance concept.
 
-Conversely, a capacity block may reserve time even without a concrete Activity/Event outcome.
-
-Therefore:
-
-> **Having a Schedule does not imply busy/capacity reservation.**
-
-and:
-
-> **Schedule != Availability / Capacity.**
+Acknowledgement, when valuable, should appear separately as natural common-ground action such as `Got it` rather than being inferred from schedule visibility.
 
 ---
 
-## Schedule versus Session
+# 18. External benchmark interpretation
 
-Schedule represents planned temporal assignment.
+Mature calendars/standards provide useful evidence for date vs date-time, time zones, recurrence/instance separation, transparency/busy semantics and rescheduling history.
 
-Session represents an actual execution slice.
+LifeOS borrows/adapts useful behavior but does not make iCalendar/Google/Apple vocabulary or lossless mapping a kernel invariant.
 
-Example:
+LifeOS semantics first; adapters later.
+
+---
+
+# 19. Core invariants
+
+1. **Schedule = current accepted temporal assignment.**
+2. **Schedule != schedulable subject identity.**
+3. **Schedule != Activity/Event/Occurrence/Routine/Recurrence.**
+4. **Schedule != Temporal Constraint/Deadline/target.**
+5. **Schedule != Availability/Capacity/Reservation by default.**
+6. **Schedule != Actual.**
+7. **Occurrence identity does not depend on current Schedule.**
+8. **Event may retain identity while current Schedule is absent after postponement.**
+9. **Original/current/historical Schedule placements remain reconstructible where material.**
+10. **Actual deviation does not silently revise Schedule.**
+11. **A proposal does not become current Schedule without applicable effect/Authority/policy semantics.**
+12. **Generic cross-domain Acceptance is not required for Schedule.**
+13. **Current accepted Schedule != participant accepted Participation.**
+14. **Current Schedule/change != actor Acknowledgement of that change.**
+15. **Acknowledgement(v1) does not imply Acknowledgement(v2) after material change.**
+16. **Authority to change Schedule != Visibility of private scheduling sources.**
+17. **AI proposal/optimization != Authority/current Schedule/human Acknowledgement.**
+18. **No competing canonical temporal truth should be duplicated across subject + Schedule persistence.**
+
+---
+
+# 20. Adjacent Dependency Sweep — current
+
+## RESOLVED
+
+- Schedule ↔ Activity/Event/Occurrence/Routine/Recurrence boundaries remain distinct.
+- Schedule ↔ Actual: planned/current temporal assignment != realization.
+- Schedule ↔ Temporal Constraint/Deadline/target: assignment != boundary/goal horizon.
+- Schedule ↔ Availability/Capacity: temporal placement != capacity truth.
+- Schedule ↔ Participation response: current shared time != actor willingness to participate.
+- Schedule ↔ Authority: governance/effect owned by Authority, not Schedule.
+- Schedule ↔ Visibility: exposure/source privacy separate from temporal assignment.
+- Schedule ↔ Acknowledgement: current/material change != explicit taking-notice.
+- Schedule ↔ generic Acceptance: universal primitive rejected; scheduling proposal response remains proposal/effect-specific.
+
+## SAFE DEFERRED
+
+### Decision / Approval / effective-change representation
+
+**Owner:** Relationships / Reasoning — Decision review.  
+**Why safe:** Schedule owns resulting current temporal state; Authority owns governance; proposal/effect can remain separate.  
+**Reopening trigger:** current Schedule cannot explain/reconstruct why a proposed revision became effective without making Schedule itself a Decision record.  
+**Tests to rerun:** CORE-02, CORE-04, CORE-09, MA-06, XCON-03, XCON-04.
+
+### Version / Schedule revision persistence
+
+**Owner:** Version/logical model.  
+**Why safe:** historical reconstruction requirement is fixed without physical mechanism.  
+**Reopening trigger:** material schedule history cannot be preserved without duplicating/overwriting truth.  
+**Tests to rerun:** CORE-02, CORE-09, CORE-10, CORE-13, XCON-03.
+
+### Reservation / Capacity Claim
+
+**Owner:** Resource/Allocation/Reservation + scheduling logical model.  
+**Why safe:** scheduling and capacity consumption are explicitly separate.  
+**Reopening trigger:** resource coordination cannot prevent conflict without collapsing Schedule into Reservation.  
+**Tests to rerun:** CORE-04, MA-14, XCON-04.
+
+### Provider conflict/reconciliation
+
+**Owner:** Provenance/Decision/Integration.  
+**Why safe:** provider assertions do not automatically overwrite current truth.  
+**Reopening trigger:** multi-provider Schedule cannot preserve authoritative/current/historical state without changing Schedule semantics.  
+**Tests to rerun:** CORE-02, CORE-09, MA-12, XCON-03.
 
 ```text
-Activity
-Study chapter 5
-
-Scheduled placement
-18:00 -> 20:00
-
-Actual Session
-18:12 -> 19:47
+REOPEN                         0
+unclassified material items    0
 ```
 
-Those are not the same object or lifecycle.
+---
 
-Actual execution may contain pauses, resumptions, multiple slices, or additional unplanned work.
+# 21. Rejected alternatives
 
-Likewise one accepted Activity may have multiple planned placements before any Session occurs.
+Rejected:
 
-Therefore:
-
-> **Schedule != Session.**
+- start/end duplicated as competing source truth on every domain object;
+- Schedule = Event/Occurrence/Recurrence/Actual;
+- Schedule = Deadline/Temporal Constraint;
+- Schedule = busy/Capacity/Reservation;
+- current Schedule inferred from Actual timestamps;
+- provider date/time vocabulary as ontology authority;
+- AI proposal automatically becoming Schedule;
+- participant acceptance equated with current Schedule;
+- Acknowledgement equated with current Schedule;
+- universal Acceptance primitive merely to apply scheduling proposals;
+- placeholder/fake precision for postponed unresolved Event.
 
 ---
 
-## Multiple planned placements
+# 22. Reopening triggers
 
-A schedulable subject may require more than one planned temporal placement.
+Reopen Schedule v0 if later evidence shows that:
 
-Example:
+1. current accepted assignment cannot remain distinct from constraints/Actual/capacity;
+2. Event postponement cannot preserve identity/history without a different temporal model;
+3. Decision/Version persistence requires materially different Schedule identity;
+4. multi-provider reconciliation creates competing canonical temporal truths;
+5. multi-actor response/Acknowledgement cannot remain independent from Schedule state;
+6. logical persistence cannot avoid duplicated canonical timing while retaining history.
 
-```text
-Activity
-Study chapter 5
-
-Estimated effort
-3 hours
-```
-
-Accepted planning:
-
-```text
-Tuesday
-18:00 -> 20:00
-
-Wednesday
-18:00 -> 19:00
-```
-
-This cannot be represented safely by one universal `start_at/end_at` pair on Activity.
-
-Schedule semantics must therefore support, directly or through a related structure, more than one accepted placement for one execution intention when the subject is divisible.
-
-The physical model is intentionally not fixed yet.
-
----
-
-## Estimated effort versus scheduled duration versus actual duration
-
-These values are distinct.
-
-Example:
-
-```text
-Estimated effort
-3h
-
-Scheduled placements
-2h + 1h
-
-Actual Sessions
-1h20 + 40m + 35m
-```
-
-LifeOS must not silently treat any one of these as the other.
-
----
-
-## Schedule precision must not be invented
-
-LifeOS should represent temporal commitment at the precision actually known/accepted.
-
-Valid scheduling intentions may include:
-
-```text
-Tuesday
-Tuesday afternoon
-Tuesday at 18:00
-Tuesday 18:00 -> 20:00
-Start Tuesday 18:00 / End not yet specified
-```
-
-These are not semantically identical.
-
-The system must not convert a coarse commitment into false precision merely because the database or UI prefers exact timestamps.
-
----
-
-## Date-based / all-day placement
-
-A date-based Schedule is not semantically equivalent to a normal 24-hour instant interval.
-
-Example:
-
-```text
-Event
-Birthday
-
-Schedule
-11 August — date-based / all-day
-```
-
-LifeOS should not interpret this as inherently meaning `00:00 -> 24:00 capacity consumption`.
-
-Date-based placement has calendar-date semantics.
-
----
-
-## Floating time, zoned local time, and absolute instant
-
-Schedule must preserve different time interpretations when they matter.
-
-### Floating local time
-
-```text
-09:00 local wherever I am
-```
-
-### Zoned local time
-
-```text
-09:00 Europe/Rome
-```
-
-### Absolute instant
-
-```text
-One globally fixed instant
-```
-
-These semantics must not be collapsed prematurely into one UTC timestamp if doing so loses the user's temporal intention.
-
----
-
-## Travel and time-zone changes
-
-A Schedule should not silently reinterpret user intent merely because device or current location time zone changes.
-
-The detailed timezone/DST/travel policy belongs to Recurrence and temporal-value design, but Schedule v0 requires preserving enough semantics for those policies to be applied correctly.
-
----
-
-## Unscheduled means absence of Schedule
-
-LifeOS should not require a fake schedule record/state merely to say something has not been assigned to time.
-
-Example:
-
-```text
-Activity
-Buy SSD
-
-Schedule
-none
-
-Deadline
-31 August
-
-Preferred window
-weekend
-```
-
-The Activity exists and remains actionable.
-
-Therefore:
-
-> **No Schedule is a valid condition.**
-
-A future planning-state model may still expose user-facing states such as available or unscheduled, but those should not require a synthetic temporal assignment.
-
-For Event, Schedule absence may also be valid temporarily when a prior accepted placement is withdrawn/postponed and the new Event time is unresolved, provided the Event still retains its occurrence-centred temporal history/meaning.
-
----
-
-## Flexible assignment versus unscheduled eligibility
-
-LifeOS must distinguish:
-
-```text
-Accepted Schedule
-Tuesday afternoon
-```
-
-from:
-
-```text
-Temporal eligibility
-any time Tuesday afternoon
-
-Schedule
-none
-```
-
-The first means the user has committed the item to that coarse period.
-
-The second means the period is merely an allowed/available scheduling space.
-
-This distinction is important for AI replanning because changing an accepted commitment carries different Authority and user expectation than selecting a time from an unscheduled valid window.
-
----
-
-## Reschedule versus postponement
-
-Schedule v0 separates temporal revision history from semantic reasons for revision.
-
-A proactive move may be a reschedule. A missed placement followed by deliberate later carry-forward may be called postponement. An Event may also be externally postponed with no replacement time yet.
-
-Both scheduled moves and schedule withdrawal may be historically meaningful, but lifecycle reason is not equivalent to the geometry of the Schedule change.
-
----
-
-## Cancellation and Schedule
-
-Cancelling an Event or Occurrence is not equivalent to merely deleting its Schedule.
-
-The historical occurrence may need to remain identifiable together with its previous accepted placement.
-
-Similarly, unscheduling an Activity does not necessarily cancel the Activity.
-
----
-
-## Schedule removal / unscheduling
-
-A subject may transition from scheduled back to unscheduled while retaining identity.
-
-```text
-Activity
-Write report
-
-Previous Schedule
-Tuesday 18:00 -> 20:00
-
-Current Schedule
-none
-```
-
-The history should preserve that the Activity had previously been scheduled.
-
----
-
-## Replanning scope
-
-Schedule revision may occur at several scopes, including one placement, one Occurrence, all remaining placements, dependent items, a day/week, or future recurring occurrences.
-
-Schedule itself represents the resulting accepted temporal assignment.
-
-Replanning policy/Authority decides the scope and effectiveness of changes.
-
----
-
-## Relationship with external providers
-
-LifeOS Schedule identity/semantics must remain canonical independently of Google Calendar, Apple EventKit, Microsoft Graph, or another provider.
-
-Imported external timing may become accepted Schedule through integration policy and Provenance.
-
-Provider synchronization must preserve distinctions such as external event/instance identifier, LifeOS Event/Occurrence identity, provider current start/end, original recurring-instance anchor, LifeOS accepted Schedule, and conflict/reconciliation state.
-
----
-
-## Relationship with AI scheduling
-
-AI may propose a first Schedule, move, split, conflict resolution, or broader replanning.
-
-AI must not silently convert a proposal into accepted Schedule unless the applicable bounded automation policy grants effective Authority.
-
-Material changes should remain explainable.
-
-Visibility v0 additionally requires that AI scheduling can use authorized private Availability/Schedule sources without disclosing private reasons or source objects to recipients who only receive a safe projection.
-
----
-
-## Derived schedule analytics
-
-Moved earlier/later, deltas, durations, revision counts, Schedule-to-Actual deviations, preferred-window adherence and conflict counts can normally be derived rather than stored as canonical Schedule truth.
-
----
-
-## Representative scenario matrix
-
-| Scenario | Schedule interpretation |
-|---|---|
-| Study 18:00-21:00 | exact accepted block |
-| Study assigned to Tuesday afternoon | coarse accepted placement |
-| Study allowed anywhere 17:00-21:00 | Temporal Constraint/window; Schedule may be absent |
-| Task due Friday | Deadline; Schedule optional |
-| Meeting 15:00-16:00 | Event + accepted Schedule |
-| Meeting officially moved to 14:30 | Schedule revision, same Event |
-| Event postponed, new date TBD | Event retains identity/history; current Schedule may be absent |
-| Meeting begins 14:52 without official change | Actual deviation, Schedule unchanged |
-| Activity starts 20 minutes early | Actual deviation unless Schedule was explicitly revised |
-| Meeting explicitly extended while in progress | Schedule revision of expected end + separate Actual |
-| Meeting simply runs late | Actual overrun, Schedule unchanged |
-| Birthday all day | date-based Schedule, capacity separate |
-| Optional webinar visible but non-blocking | Schedule + separate availability/capacity semantics |
-| 3h Activity planned as 2h + 1h | multiple planned placements |
-| Routine 3x/week before placement | Occurrences may exist without exact Schedule |
-| Goal B2 by December | Goal target/horizon, not Schedule |
-| Milestone target 15 Sep | target/deadline semantics, not Schedule |
-| Plan 1 Sep-30 Nov | Plan horizon, not Schedule occupancy |
-| Routine Mon/Wed/Fri | recurring policy, not one Schedule |
-| Event start known/end unknown | partial-precision Schedule semantics required |
-| 09:00 floating | floating local Schedule semantics |
-| 09:00 Europe/Rome | zoned local Schedule semantics |
-| Fixed webinar global instant | absolute-instant semantics |
-| Activity schedule removed but Activity kept | unscheduled Activity, historical Schedule retained |
-| Recurring occurrence cancelled | occurrence disposition/history, not merely deleted Schedule |
-
----
-
-## Adversarial cases
-
-Validated adversarial cases include same interval/different semantics, actual early/late deviation, explicit mid-session extension, multi-block Activity scheduling, coarse commitment, all-day non-blocking placement, provider update versus Actual, unscheduling without cancellation, and Event postponement without a replacement date.
-
----
-
-## Core invariants
-
-1. **Schedule is not the schedulable subject.**
-2. **Schedule != Actual.**
-3. **Schedule != Deadline.**
-4. **Schedule != Goal/Milestone target.**
-5. **Schedule != Temporal Constraint / preferred window.**
-6. **Schedule != RecurrenceRule.**
-7. **Schedule != Routine.**
-8. **Schedule != Movement Policy.**
-9. **Schedule != Availability/Capacity.**
-10. **Schedule != Session.**
-11. A Schedule represents **accepted** temporal assignment, not merely an AI/system proposal.
-12. Applicable Acceptance/Authority/policy is required to make a material proposal effective; proposing/acting alone is insufficient.
-13. Activity may exist with no Schedule.
-14. Occurrence may exist before exact Schedule placement.
-15. Event temporal meaning may use Schedule without duplicating Event identity.
-16. Schedule revision does not automatically change subject identity.
-17. Original accepted placement and current accepted Schedule must remain historically reconstructible.
-18. Actual deviation must not silently rewrite Schedule.
-19. Schedule revisions may move start/end earlier/later and change duration independently.
-20. Explicit expectation may be revised during execution; this remains distinct from unplanned overrun.
-21. Temporal precision must not be fabricated.
-22. Date-based/all-day placement remains distinct from ordinary 24-hour instant interval.
-23. Floating local, named-zone local and absolute-instant semantics remain distinguishable where relevant.
-24. One schedulable subject may require multiple accepted planned placements when execution is divisible.
-25. Estimated effort, scheduled duration and actual duration remain distinct.
-26. Temporal range shape alone does not classify Schedule.
-27. Having a Schedule does not imply the same interval reserves capacity.
-28. Recurrence generates/organizes instances; one-off Schedule exceptions do not automatically mutate recurrence policy.
-29. Lack of Schedule is valid and does not require synthetic `UNSCHEDULED` temporal object.
-30. Unscheduling does not automatically cancel the subject.
-31. Cancelling an Occurrence/Event is not represented merely by deleting Schedule history.
-32. Schedule revision history must preserve enough Provenance/Authority for later explanation/reconciliation.
-33. Provider identities remain external mappings, not LifeOS Schedule identity.
-34. Derived timing deltas are not foundational Schedule state.
-35. Exact SQL/API representation remains deferred.
-36. Session remains planned-placement versus actual-execution-slice boundary.
-37. Event may temporarily have no current accepted Schedule after postponement while identity/history remain reconstructible.
-38. Authority to change Schedule != Visibility of all related private source/context.
-39. Visibility of a free/busy or coarse Schedule projection != Visibility of the underlying private Schedule subject/reason/participants.
-
----
-
-## Alternatives considered and rejected
-
-Rejected as domain models:
-
-- direct overwritable `start_at/end_at` on every planning object;
-- Schedule mega-object containing start/end/due/window/rrule/busy/movable/Actual;
-- every temporal item becoming Event;
-- every schedulable object receiving one exact UTC interval;
-- Schedule as purely transient UI calculation.
-
-Physical denormalization/caching may still exist later without changing semantic truth.
-
----
-
-## Questions intentionally deferred
-
-Schedule v0 does **not** yet fix:
-
-- exact entity/value/revision persistence shape;
-- planned placement child structure;
-- exact Deadline/Window/Temporal Constraint persistence;
-- hard/soft constraint persistence;
-- exact movement-policy/policy persistence;
-- Recurrence materialization/DST/travel policy;
-- full lifecycle/disposition vocabulary;
-- exact cancellation/postponement ownership;
-- Provenance/audit physical schema;
-- external-provider conflict-resolution rules;
-- SQL range/time-zone representation;
-- API serialization/coarse/floating/date values;
-- offline/sync conflict semantics;
-- Decision/reconciliation representation.
-
-Authority and Visibility semantic boundaries are now resolved. Acceptance/Acknowledgement, detailed Decision/effective-change and technical Principal/enforcement remain separate future reviews.
-
----
-
-## Implications for future persistence
-
-The eventual persistence model must answer current/past Schedule, effective history, who/what changed it, original accepted expectation, Authority/policy basis where material, which Schedule was effective at Actual execution, temporal precision/meaning, multiple placements, unscheduling, and Event postponement without fabrication.
-
-The model should support these queries without arbitrary JSON as the primary representation.
-
----
-
-## Implications for APIs
-
-Future APIs should make semantic roles explicit rather than expose ambiguous `date/due/time` fields.
-
-Material Schedule mutations should support concurrency/versioning or equivalent protection from silent lost updates during sync/AI/user edits.
-
----
-
-## Current conclusion
-
-Schedule v0 establishes:
-
-> **Schedule is accepted temporal assignment, not everything temporal about an object.**
-
-Current model:
-
-```text
-Domain subject / recurring source
-        ↓
-Occurrence identity where applicable
-        ↓
-Accepted Schedule placement(s), when one is currently known/accepted
-        ↓
-Actual execution/attendance later
-```
-
-with adjacent but distinct concepts:
-
-```text
-Temporal Constraints / Deadline / Target
-Recurrence
-Movement Policy
-Availability / Capacity
-Provenance
-Authority
-Visibility
-```
-
-A current Schedule may legitimately be absent even when the subject has meaningful temporal history.
-
----
-
-# 2026-08-12 — Authority + Visibility closure amendment
-
-Authority v0 and Visibility v0 close the previously deferred governance/exposure boundaries around accepted temporal assignment.
-
-```text
-Scheduling proposal
-!= accepted Schedule
-
-Authority
-= who/what may legitimately make a bounded Schedule change effective
-
-Visibility
-= what Schedule/availability projection or source detail may be exposed
-```
-
-Therefore Authority to reschedule does not imply Visibility into every private Event/Activity/reason, and a recipient may see a free/busy or coarse temporal projection without seeing the private Schedule source. Current accepted Schedule retains its own temporal semantics; Authority/Visibility remain orthogonal capabilities rather than fields that redefine Schedule identity.
-
-AI scheduling preserves the same boundary: optimization/proposal capability does not create Authority, and authorized source processing does not create disclosure permission.
+Until then, Schedule remains the current accepted temporal-assignment capability.
