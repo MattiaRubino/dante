@@ -695,3 +695,46 @@ See:
 - `concepts/responsibility.md`;
 - `checkpoints/responsibility-v0-validation.md`;
 - `checkpoints/relationship-v0-validation.md`.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 resolves the previously deferred Participant/Participation boundary while preserving Actor as the shared agency category.
+
+Current authoritative separation:
+
+```text
+Actor
+= contextual agency category/capability
+
+Participant
+= contextual involvement role over native identity
+
+Participation
+= specific involvement relation family
+
+response Actor
+= Actor who submits/changes a Participation response
+```
+
+Therefore:
+
+```text
+Actor != Participant
+Actor != Participation
+Participant != Person identity subtype
+Participant != Responsibility holder by default
+Participant != Resource
+```
+
+A native Person may participate without a LifeOS Account. The participant whose involvement is at stake may differ from the Actor/Account/Principal that submitted the response, preserving on-behalf-of/delegation semantics for later Authority review.
+
+Specific-role precedence remains intact: `performed_by`, `responsible_for`, `recorded_by`, `confirmed_by`, etc. are stronger than generic Participation when those narrower meanings are the actual question.
+
+The older deferred list entry `Participation/...` is superseded at the semantic level by `concepts/participation.md`; delegation, Authority/Visibility, collective actors, participant-role taxonomy and physical typed-reference representation remain SAFE DEFERRED.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
