@@ -2,7 +2,7 @@
 
 **Status:** In progress — Clusters 1–4 validated together; Relationships / Reasoning in progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Responsibility v0 PASS WITH HARDENING; Assignment/Claim/Hand-off reduced to role-specific operations; Stewardship distinct SAFE DEFERRED  
+**Current revision:** 2026-08-12 — Participation v0 PASS WITH HARDENING; planned/response Participation separated from Actual Participation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -109,6 +109,8 @@ Transition/current checkpoint references include:
 - [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md)
 - [`Responsibility v0`](concepts/responsibility.md)
 - [`Responsibility v0 validation`](checkpoints/responsibility-v0-validation.md)
+- [`Participation v0`](concepts/participation.md)
+- [`Participation v0 validation`](checkpoints/participation-v0-validation.md)
 
 Validation Methodology v2 and its multi-actor addendum remain historical audit/evolution evidence.
 
@@ -143,7 +145,7 @@ external standards/providers
 
 Mature apps/products are useful evidence because they expose product and workflow lessons accumulated through real usage. Their patterns may be borrowed, adapted, rejected, or deliberately contradicted when LifeOS has different semantics.
 
-The benchmark must not become terminology-led. In particular, a product calling something `Asset`, `Device`, `Resource`, `Account`, `Record`, `Relationship`, `Assignment`, or `Entity` does not make that noun authoritative for LifeOS.
+The benchmark must not become terminology-led. In particular, a product calling something `Asset`, `Device`, `Resource`, `Account`, `Record`, `Relationship`, `Assignment`, `Participant`, or `Entity` does not make that noun authoritative for LifeOS.
 
 Provider identifiers/status taxonomies and lossless external mapping are not kernel invariants by default.
 
@@ -194,6 +196,8 @@ Checkpoint:
 
 Responsibility v0 later confirmed the existing Activity invariant: ordinary changes in requester/responsible actor/expected performer/actual performer do not change Activity identity.
 
+Participation v0 later confirmed the existing Event invariant: Event identity/state remains independent from participant set, participation response and Actual attendance/involvement.
+
 ## Time — PASS
 
 Accepted:
@@ -210,6 +214,8 @@ Checkpoint:
 - [`Time Cluster v0`](checkpoints/time-v0.md)
 
 Resource v0 closes the previously deferred meaning of `schedulable resource`: a provider playing contextual Resource role where time-dependent Capacity/Availability matters; no Resource entity/root is introduced.
+
+Participation v0 confirms that Event attendance/Actual Participation does not require one Session per participant; Session remains bounded performed/execution episode semantics.
 
 ## Observed Reality & Evidence — PASS
 
@@ -229,7 +235,8 @@ Cluster checkpoint:
 Integrated hardenings:
 
 - reported/asserted reality != established Actual;
-- Milestone attainment is Evidence/evaluation-backed checkpoint state, not duplicate reality storage.
+- Milestone attainment is Evidence/evaluation-backed checkpoint state, not duplicate reality storage;
+- shared Event Actual != identical actor-specific Actual Participation.
 
 ## Data / Subjects — PASS WITH HARDENING
 
@@ -310,7 +317,8 @@ mandatory new primitives in v4  0
 Completed reviews:
 
 - [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**;
-- [`Responsibility v0`](concepts/responsibility.md) — [`validation`](checkpoints/responsibility-v0-validation.md) — **PASS WITH HARDENING**.
+- [`Responsibility v0`](concepts/responsibility.md) — [`validation`](checkpoints/responsibility-v0-validation.md) — **PASS WITH HARDENING**;
+- [`Participation v0`](concepts/participation.md) — [`validation`](checkpoints/participation-v0-validation.md) — **PASS WITH HARDENING**.
 
 ### Relationship modeling discipline
 
@@ -369,6 +377,7 @@ Core Responsibility separation:
 Responsibility != requester
 Responsibility != expected performer
 Responsibility != actual performer
+Responsibility != Participation
 Responsibility != Resource
 Responsibility != Authority
 Responsibility != Visibility
@@ -379,13 +388,61 @@ unknown responsibility != explicitly open/unassigned
 
 Every material Assignment/Claim/Hand-off must identify the specific semantic role being established/acquired/transferred. Their effect may depend on Authority/policy/Acceptance; a hand-off request is not universally effective transfer.
 
-Responsibility v0 is the first major stress test of Relationship v0 and **confirms rather than reopens** its direct-vs-specific-qualified discipline.
+### Participation v0
+
+Current result:
+
+```text
+Participation
+CANONICAL SPECIFIC SEMANTIC RELATION FAMILY
+expected/intended and Actual involvement facets remain distinct
+NOT native entity/root
+NOT universal membership/social graph
+
+Participant
+contextual role over native identity
+NOT entity/root
+
+Invitation
+participation proposal/request semantics
+NOT standalone universal primitive
+
+Participation Response
+actor-scoped intended/response state
+NOT Actual Participation
+
+Attendance
+Event-facing Actual Participation semantics
+NOT standalone universal primitive
+```
+
+Core Participation separation:
+
+```text
+Event identity != participant set/state
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+Participation != Session
+Participation != Responsibility
+Participation != Performer
+Participation != Resource
+Participation != Organizer/requester
+Participation != Authority/Visibility
+shared Actual != identical actor-specific Actual Participation
+```
+
+Provider attendance telemetry is Evidence/Provenance, not automatic canonical human Participation. The participant whose involvement is at stake may differ from the Actor/Account/Principal submitting a response.
+
+Responsibility and Participation are the first two major relation-family stresses and both **confirm rather than reopen** Relationship v0's direct-vs-specific-qualified discipline.
 
 ### Current next-selection rule
 
 Do not advance by roadmap order. Re-evaluate dependency leverage after every accepted family.
 
-`Participation` is currently the strongest likely next review because it pressures Event/Session/Actual identity, invitation/response/attendance, actor-scoped state, Acceptance/Acknowledgement and historical participation. This is a likely next candidate, not a pre-accepted primitive.
+Responsibility and Participation now converge on unresolved **common-ground/governance** pressure: Authority, Visibility, Acceptance/Acknowledgement, delegation/on-behalf-of and reconciliation. These areas should be re-scored together before selecting the next candidate; none is pre-accepted.
 
 ## Multi-Actor Evidence Synthesis — VALIDATED CURRENT BASELINE
 
@@ -396,7 +453,7 @@ References:
 - [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
 - [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md)
 
-All four completed clusters and the current Relationship/Responsibility baselines remain compatible with the personal-first, structurally multi-actor-ready direction.
+All four completed clusters and the current Relationship/Responsibility/Participation baselines remain compatible with the personal-first, structurally multi-actor-ready direction.
 
 ---
 
@@ -455,6 +512,10 @@ or specific qualified relation when materially justified
 SPECIFIC ACCOUNTABILITY RELATION FAMILY
 Responsibility
 (simple direct or specifically qualified when justified)
+
+SPECIFIC INVOLVEMENT RELATION FAMILY
+Participation
+(expected/intended and Actual facets remain distinct)
 ```
 
 Key interpretations:
@@ -466,7 +527,8 @@ Key interpretations:
 - Asset is the current scoped physical-object identity baseline; the universal ManagedObject alternative was rejected after terminology-neutral testing;
 - Resource is contextual planning/execution eligibility/capability, not a Resource identity/root, and does not manufacture identity for supplies/pools/services;
 - Relationship is a modeling discipline, not an identity-bearing common node/edge object;
-- Responsibility is a specific accountability relation family, not an assignee field, Actor identity, Resource role, Authority, or generic Relationship wrapper.
+- Responsibility is a specific accountability relation family, not an assignee field, Actor identity, Resource role, Authority, Participation or generic Relationship wrapper;
+- Participation is a specific involvement relation family over native identity, not Participant identity, generic membership, Responsibility, Resource, Session, or Event Actual.
 
 This topology is not a mandatory processing chain, parent tree or persistence schema.
 
@@ -482,8 +544,10 @@ Asset A17 --Resource role--> photo-shoot requirement/allocation context
 Activity B --depends_on--> Activity A when simple Dependency semantics suffice
 Activity A --responsible_for--> Person Anna in a simple case
 rich open/transfer/history responsibility -> specific qualified Responsibility context
+Event E --expected_participant--> Person Anna in a simple case
+rich response/history/Actual involvement -> specific qualified Participation semantics
 spontaneous work -> Session
-ordinary meeting -> Event + Schedule + Actual
+ordinary meeting -> Event + Schedule + shared Actual + actor-scoped Participation when needed
 longitudinal weight screen -> query over native Observations
 full goal workflow -> uses only the layers that add real meaning
 ```
@@ -494,6 +558,7 @@ full goal workflow -> uses only the layers that add real meaning
 
 ```text
 Actual != Session / Outcome / Observation / Confirmation / Evidence / Provenance
+shared Actual != identical actor-specific Actual Participation
 reported/asserted reality != established Actual
 
 Outcome != lifecycle state / Observation / Confirmation / Evidence / Provenance / Milestone
@@ -505,14 +570,14 @@ Subject entity/root = rejected
 Subject != Person / Actor / Account / Principal / Asset / Resource
 Subject != observer / recorder / source / transformer / authority / viewer
 
-Person != Actor / Resource / Account / Principal / User / Asset
+Person != Actor / Resource / Participant / Account / Principal / User / Asset
 
 Actor entity/root = rejected
-Actor != Resource / Account / Principal / Responsibility / Authority
-Actor != specific performer/recorder/observer/confirmer/proposer/responsible relation
+Actor != Resource / Account / Principal / Responsibility / Participation / Authority
+Actor != specific performer/recorder/observer/confirmer/proposer/responsible/participant relation
 specific action role > generic actor edge when known
 
-Account != Person / Actor / Subject / Principal by default
+Account != Person / Actor / Subject / Participant / Principal by default
 
 Asset != Subject / Resource / Person
 Asset identity != owner / holder / custodian / steward / model definition
@@ -522,8 +587,9 @@ universal ManagedObject root = rejected
 
 Resource entity/root = rejected
 Resource != Requirement / candidate set / Allocation / Reservation / actual use
-Resource != Responsibility / Performer / Participant
+Resource != Responsibility / Performer / Participant / Participation
 Resource role != provider identity
+Resource reservation != Participation
 Money/Budget != Resource by default
 
 universal Relationship entity/root/supertype = rejected
@@ -534,11 +600,21 @@ queryability/cardinality/database row id != domain identity
 relation orientation/symmetry/transitivity/inverse rules are family-specific
 
 Responsibility != requester / expected performer / actual performer
-Responsibility != Resource / Authority / Visibility / Stewardship
+Responsibility != Participation / Resource / Authority / Visibility / Stewardship
 unknown Responsibility != explicitly open/unassigned
 Assignment / Claim / Hand-off != standalone universal primitives
 hand-off request != effective transfer by default
 Responsibility transfer != Activity identity change
+
+Participant entity/root = rejected
+Participation != Responsibility / Performer / Resource / Organizer / Authority / Visibility / Session
+Invitation != Acceptance / Actual Participation
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+Attendance universal primitive = rejected
 
 User = product/implementation term, not domain root
 Register/Tracker = product/query capability, not source-truth container
@@ -635,7 +711,7 @@ Terminology-neutral Cluster-4 result:
 
 ```text
 universal ManagedObject abstraction  REJECTED
-physical-object identity need           RETAINED
+physical-object identity need         RETAINED
 exact noun `Asset`                    NON-SEMANTIC / reopenable
 ```
 
@@ -659,7 +735,7 @@ Requirement
 → Actual use / consumption
 ```
 
-Resource role preserves independently justified provider semantics and does not create identity or Responsibility.
+Resource role preserves independently justified provider semantics and does not create identity, Responsibility or Participation.
 
 ---
 
@@ -671,34 +747,38 @@ Completed so far:
 
 - [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**;
 - [`Responsibility v0`](concepts/responsibility.md) — [`validation`](checkpoints/responsibility-v0-validation.md) — **PASS WITH HARDENING**;
+- [`Participation v0`](concepts/participation.md) — [`validation`](checkpoints/participation-v0-validation.md) — **PASS WITH HARDENING**;
 - universal Relationship primitive/root rejected;
 - direct-vs-specific-qualified relation discipline accepted;
 - no generic `related_to` kernel truth;
 - no universal symmetry/transitivity/inverse reasoning rules;
 - Assignment/Claim/Hand-off as standalone universal primitives rejected;
-- Responsibility vs Stewardship semantic boundary resolved.
+- Responsibility vs Stewardship semantic boundary resolved;
+- universal Participant/member/social-graph root rejected;
+- Invitation/Attendance as standalone universal primitives rejected;
+- intended/response Participation separated from Actual Participation.
 
 Remaining candidate space based on demonstrated dependencies includes:
 
-- Participation;
+- Authority / Visibility;
+- Acknowledgement / Acceptance / Agreement / Verification where concrete workflows require them;
+- Principal / delegation / on-behalf-of security/authority semantics;
 - Dependency;
 - Stewardship standalone primitive question when concrete product pressure requires it;
 - Contribution;
 - Goal relationships / GoalCriterion;
 - Evidence/Criterion relationships;
 - Resource Requirement / Allocation / substitution where justified;
-- Authority / Visibility;
-- Acknowledgement / Acceptance / Agreement / Verification where concrete workflows require them;
 - Decision;
 - Version;
 - AI Proposal;
-- Principal / delegation / on-behalf-of security/authority semantics;
 - focus/context relationships;
-- Trigger/policy semantics including fallback/conditional Responsibility.
+- Trigger/policy semantics including fallback/conditional Responsibility;
+- group/collective actor semantics where future cases require them.
 
 These remain **candidates**, not a checklist of primitives that must survive.
 
-The next review must be selected by dependency leverage. `Participation` currently has the strongest pressure because it directly touches Event/Session/Actual and actor-scoped response/attendance history, while also exposing Acceptance/Acknowledgement boundaries. This is not a pre-acceptance of Participation.
+The next review must be selected by dependency leverage. Responsibility and Participation now both expose the same common-ground/governance pressure: Authority, Visibility, Acceptance/Acknowledgement, delegation/on-behalf-of and reconciliation. This cluster of boundaries currently deserves re-scoring before selecting the next candidate; none is pre-accepted.
 
 From this stage onward the Adjacent Dependency Sweep remains mandatory before every concept verdict.
 
@@ -710,12 +790,13 @@ Mandatory inherited re-tests include:
 - competing assertions and canonical decision policy;
 - Milestone attainment/evaluation relationship;
 - collaborative Session/Actual attribution;
+- Participation response vs Actual Participation/evidence threshold;
 - Subject vs focus/context/Visibility;
 - Person/Actor specific roles vs Participation/Responsibility/Stewardship;
-- Resource Requirement/Allocation/Reservation versus Responsibility/Performer;
+- Resource Requirement/Allocation/Reservation versus Responsibility/Performer/Participation;
 - Account/Principal/Authority/delegation boundaries;
 - Asset ownership/possession/custody/stewardship/location/Visibility;
-- historical Person/Actor/Asset/resource-allocation/Responsibility attribution after Account or relationship changes;
+- historical Person/Actor/Asset/resource-allocation/Responsibility/Participation attribution after Account or relationship changes;
 - direct-vs-qualified threshold for every material relationship family.
 
 Do not begin SQL/API design yet.
@@ -733,6 +814,7 @@ Deferred Dependency Closure     — PASS
 Cross-Cluster Validation v4     — PASS WITH HARDENING
 Relationship v0 review          — PASS WITH HARDENING
 Responsibility v0 review        — PASS WITH HARDENING
+Participation v0 review         — PASS WITH HARDENING
 
 0 structural reopenings
 0 unclassified material dependencies
@@ -740,7 +822,8 @@ Responsibility v0 review        — PASS WITH HARDENING
 ↓ CURRENT
 Relationships / Reasoning
   next candidate: reselect by dependency leverage
-  strongest current likely candidate: Participation
+  strongest current pressure area: Authority / Visibility / Acceptance-Acknowledgement / delegation
+  none pre-accepted
   Adjacent Dependency Sweep mandatory per verdict
 ↓
 whole-domain semantic regression
@@ -767,18 +850,27 @@ The authoritative Clusters 1–4 dependency register remains:
 Cluster-5 specific closures/reopening triggers are additionally recorded in:
 
 - [`Relationship v0 validation`](checkpoints/relationship-v0-validation.md);
-- [`Responsibility v0 validation`](checkpoints/responsibility-v0-validation.md).
+- [`Responsibility v0 validation`](checkpoints/responsibility-v0-validation.md);
+- [`Participation v0 validation`](checkpoints/participation-v0-validation.md).
 
-Responsibility v0 resolves the previous broad Activity ↔ Responsibility/Assignment/Hand-off boundary at the semantic level. Still SAFE DEFERRED around Responsibility are:
+Responsibility v0 resolves the previous broad Activity ↔ Responsibility/Assignment/Hand-off boundary at the semantic level.
+
+Participation v0 resolves the previous Event/Session/Actual ↔ Participation boundary at the semantic level.
+
+Still SAFE DEFERRED around Responsibility/Participation are:
 
 - Authority/delegation;
 - Acceptance/Acknowledgement;
 - Visibility;
 - Provenance/Version/Decision/reconciliation mechanics;
 - standalone coordination Stewardship;
-- collective/joint Responsibility;
-- fallback/conditional Responsibility;
-- exact qualified Responsibility identity/persistence.
+- collective/joint/fallback Responsibility;
+- participant role taxonomy;
+- collective/group Participation;
+- recurring-series Participation inheritance/override;
+- provider attendance reconciliation/evidence threshold;
+- retention/deletion/privacy;
+- exact qualified Responsibility/Participation identity/persistence.
 
 Other high-value groups include:
 
@@ -786,7 +878,6 @@ Other high-value groups include:
 - Confirmation / Authority / Acknowledgement / Acceptance / Verification;
 - Provenance / Version / Decision / Audit / retention;
 - Actual establishment / Authority / reconciliation;
-- Session/Actual / Participation / actor-scoped consequences;
 - Recurrence / Trigger;
 - Account / Principal / credentials / delegation;
 - Person/Asset reconciliation;
@@ -840,10 +931,14 @@ Current known terminology refinements include:
 - Requirement, allocation, reservation and actual use remain distinct;
 - universal Relationship root / semantic-free `related_to` are rejected;
 - specific direct/qualified relation semantics are the accepted modeling discipline;
-- Responsibility is a specific accountability relation family independent of requester/performer/Resource/Authority;
+- Responsibility is a specific accountability relation family independent of requester/performer/Resource/Authority/Participation;
 - Assignment/Claim/Hand-off are role-specific operations/workflows rather than universal primitives;
 - explicit open/unassigned Responsibility != unknown Responsibility;
 - coordination Stewardship is distinct from Responsibility but standalone primitive remains deferred;
+- Participation is a specific involvement relation family, not Participant identity or universal membership;
+- Invitation is participation proposal/request semantics, not universal primitive;
+- Participation response != Actual Participation; accepted != attended; declined/no response/no telemetry are not proofs of Actual absence;
+- Attendance is Event-facing Actual Participation semantics, not universal primitive or Session;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage.
 
 Historical docs should not be silently rewritten merely for vocabulary uniformity. Current Domain Atlas + Language Map establish kernel precedence.
@@ -879,6 +974,7 @@ Asset (current scoped native entity)
 Resource (semantic planning/execution role/capability)
 Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
 Responsibility (specific semantic relation family; not universal entity/root)
+Participation (specific semantic relation family; not entity/root)
 ```
 
 Accepted boundary but not yet a fully modeled concept:
@@ -895,6 +991,6 @@ Rejected historical/current candidates are not counted as accepted concepts.
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
-Cross-Cluster v4 and the current Relationship/Responsibility reviews do not prevent later reopening when subsequent Relationships / Reasoning candidates, the logical/physical data model, integrations, safety/privacy requirements, or stronger real-world evidence expose a genuine contradiction.
+Cross-Cluster v4 and the current Relationship/Responsibility/Participation reviews do not prevent later reopening when subsequent Relationships / Reasoning candidates, the logical/physical data model, integrations, safety/privacy requirements, or stronger real-world evidence expose a genuine contradiction.
 
 Do not jump directly from the current semantic review to SQL/API stabilization.
