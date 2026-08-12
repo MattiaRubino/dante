@@ -2,7 +2,7 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-11  
-**Current revision:** 2026-08-12 — Quantity finalized, Register kernel candidate rejected, Subject role finalized  
+**Current revision:** 2026-08-12 — Quantity, Register, Subject, and Person / Actor / Account boundaries finalized  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Observed Reality & Evidence cluster
 
@@ -668,13 +668,15 @@ One Observation may later become relevant to multiple Goals or analyses without 
 
 ---
 
-# 19. Subject role and multi-actor semantics
+# 19. Subject, Person, Actor, and Account semantics
 
-Subject v0 is now canonical as a **semantic role/reference capability**, not an entity or universal root.
+Subject v0 is canonical as a **semantic role/reference capability**, not an entity or universal root.
 
 For Observation:
 
 > **Subject identifies the native referent whose state/property/condition/asserted fact the Observation primarily concerns. The referenced Person, Asset, Event, Device, Location, or other eligible referent retains native identity.**
+
+Person is now canonical native human identity. Actor is canonical contextual agency semantics. Account is a separate platform/access identity boundary.
 
 Potential dimensions remain:
 
@@ -687,6 +689,7 @@ transformer
 confirmer/reviewer
 authority
 viewer
+account/authentication context
 ```
 
 These dimensions may coincide in personal use but must not be collapsed universally.
@@ -695,24 +698,33 @@ Example:
 
 ```text
 subject
-older adult
+Person Maria
 
-observer
-caregiver
+observer / recorder
+Person Anna
 
-recorder
-caregiver
+Actor semantics
+Anna acts as observer/recorder
+
+Account
+Anna-A1 authenticates LifeOS access
 
 device
 thermometer
 ```
 
-The record must not imply that the older adult personally entered or asserted the value.
+The record must not imply that Maria personally entered or asserted the value, that Anna's Account identity is her Person identity, or that acting as recorder grants Authority.
 
 Canonical guardrails:
 
 ```text
-Subject != Person/Actor/Account identity
+Subject != Person identity
+Subject role may reference Person
+Subject != Actor
+Person != Actor
+Actor != Account
+Person != Account
+Subject != Account/Principal
 Subject != observer
 Subject != recorder
 Subject != source/provider/device
@@ -721,11 +733,9 @@ Subject != authority
 Subject != viewer
 ```
 
-A Person or Asset may play Subject role while retaining native identity. Current account holder is not the universal kernel-level Subject default. Unknown or later-corrected subject attribution must preserve material attribution history.
+A Person or future Asset may play Subject role while retaining native identity. The specific observer/recorder/etc. relation may carry Actor semantics without becoming a generic `actor_id` edge. Current Account holder is not the universal kernel-level Subject default. Unknown or later-corrected subject attribution must preserve material attribution history.
 
-Exact Person/Actor/Account, Asset, Resource, Authority, Visibility, focus/context and generic relationship mechanics remain scheduled adjacent reviews; they do not reopen the basic Subject-role boundary by themselves.
-
-See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
+The basic Person/Actor/Account boundary is now resolved by `concepts/person.md`, `concepts/actor.md`, and `checkpoints/person-actor-account-v0-validation.md`. Asset, Resource, Principal, Authority, Visibility, focus/context and generic relationship mechanics remain scheduled adjacent reviews.
 
 ---
 
@@ -782,7 +792,7 @@ Examples:
 
 A shared Goal/Event/Plan does not automatically make related Observations shared.
 
-Subject association itself may be sensitive: knowing that a hidden record concerns Person X can disclose information even if the value remains hidden.
+Subject association and Person identity linkage may themselves be sensitive: knowing that a hidden record concerns Person X, or that two source identities map to the same Person, can disclose information even if the value remains hidden.
 
 Private Observations may support authorized derived projections:
 
@@ -802,11 +812,11 @@ private health context
 capacity reduced today
 ```
 
-without sharing the underlying symptom/measurement or unnecessary subject detail.
+without sharing the underlying symptom/measurement, Person linkage, or unnecessary Subject detail.
 
 Canonical rule:
 
-> **The ability to compute from an Observation or resolve its Subject does not imply permission to disclose the Observation, Subject association, or private cause.**
+> **The ability to compute from an Observation or resolve its Subject/Person does not imply permission to disclose the Observation, identity linkage, Subject association, or private cause.**
 
 ---
 
@@ -821,22 +831,25 @@ AI may:
 - propose derived values;
 - suggest that an Observation may be relevant to a Goal;
 - surface conflicting sources;
-- propose Subject resolution/matching when imported context is ambiguous.
+- propose Subject/Person resolution when imported context is ambiguous.
 
 AI must not silently:
 
 - invent Observations that were never observed/asserted;
 - change an Observation's source/Subject;
-- replace unknown Subject with the current account holder;
-- turn probabilistic Subject matching into established identity without appropriate policy/authority;
+- replace unknown Subject with the current Account holder;
+- merge two Person/native identities merely from probabilistic similarity;
+- turn probabilistic Subject/Person matching into established identity without appropriate policy/authority;
 - turn uncertain inference into confirmed fact;
 - discard conflicting observations;
-- disclose private observations or Subject associations to another actor;
-- make itself authority over specialist facts merely because it computed them.
+- disclose private Observations, Person linkage or Subject associations to another Actor;
+- make itself Authority merely because it computed or transformed data.
+
+If AI materially acts — for example as transformer/proposer — Actor semantics may apply, but AI Actor attribution does not create human authorship, Confirmation, Acceptance, Authority or responsibility.
 
 Canonical rule:
 
-> **AI inference may create a proposal/inference candidate; it does not automatically create authoritative observed truth or established Subject identity.**
+> **AI inference may create a proposal/inference candidate; it does not automatically create authoritative observed truth, established Person/Subject identity, or authority.**
 
 ---
 
@@ -870,14 +883,16 @@ Exam
 + Registra un dato
 ```
 
-Users should not need to understand the nouns `Observation` or `Subject` for ordinary capture.
+Users should not need to understand the nouns `Observation`, `Subject`, `Actor`, or `Account` for ordinary capture.
 
-Personal product context may safely default the visible subject to `me` when context establishes it, while caregiver/asset flows may expose a natural Person/Asset label.
+Personal product context may safely default the visible subject to `me` when context establishes the current Person linked to the active Account, while caregiver/asset flows may expose a natural Person/Asset label.
 
 Power-user/detail surfaces may expose:
 
 - source;
 - Subject/referent;
+- observer/recorder Actor roles;
+- Account/authentication context where materially relevant and authorized;
 - effective time;
 - recorded time;
 - device/method;
@@ -910,10 +925,11 @@ Passes because effective and recorded times remain distinct and the product may 
 Observation
 subject = Person Maria
 temperature = 38.2 °C
-observer/recorder = caregiver Anna
+observer/recorder = Person Anna
+Account Anna-A1 authenticates entry
 ```
 
-Passes because Subject and recorder/account roles remain distinct.
+Passes because Subject, Person, Actor-role and Account/access semantics remain distinct.
 
 ## Subjective self-report
 
@@ -992,7 +1008,7 @@ Score/measurement and semantic result/disposition can differ.
 
 ## MERGE WITH QUANTITY
 
-Quantity lacks subject/time/source/identity context and is reused outside Observation.
+Quantity lacks Subject/time/source/identity context and is reused outside Observation.
 
 **Result:** MERGE fails.
 
@@ -1010,9 +1026,15 @@ Subject v0 confirms no independent Subject entity is needed; Observation referen
 
 ## REMOVE SUBJECT SEMANTICS
 
-Observation loses the ability to state who/what the assertion is about without overloading account/source/owner.
+Observation loses the ability to state who/what the assertion is about without overloading Account/source/owner.
 
 **Result:** FAIL — Subject role is required.
+
+## COLLAPSE PERSON / ACTOR / ACCOUNT
+
+Caregiver, non-account Person, software/AI Actor, provider-change and historical-attribution scenarios lose semantic identity.
+
+**Result:** FAIL — Observation depends on their separation where those roles are material.
 
 ## MERGE WITH EVIDENCE
 
@@ -1050,7 +1072,7 @@ Raw high-frequency sensor streams show why semantic Observation must not imply o
 6. **Observation != Quantity; Quantity is reusable scalar amount value semantics.**
 7. **Observation may appear in zero or many tracker/history/report views without duplication; no universal RegisterEntry is required.**
 8. **Observation != Confirmation/Provenance.**
-9. **Observation identity != subject + type + time + value.**
+9. **Observation identity != Subject + type + time + value.**
 10. **Correction of the same observational act normally preserves identity; re-observation normally creates a new Observation.**
 11. **Effective time/context != recorded/ingested time.**
 12. **Missing Observation != observed negative != failed/unavailable measurement.**
@@ -1060,11 +1082,14 @@ Raw high-frequency sensor streams show why semantic Observation must not imply o
 16. **Chart/query aggregates do not automatically become persisted Observations.**
 17. **Observation semantics do not mandate one physical row per raw sensor sample.**
 18. **Subject is a semantic role over native referent identity, not a Subject entity/root.**
-19. **Subject != observer != recorder != source != transformer != authority != viewer.**
-20. **Current Account is not the universal kernel-level Subject default.**
-21. **Unknown/later-corrected Subject attribution preserves material history.**
-22. **Private Observation can support an authorized derived projection without source or Subject disclosure.**
-23. **AI inference does not automatically create authoritative Observation or established Subject identity.**
+19. **Person is native human identity; Subject role may reference Person without redefining it.**
+20. **Actor is contextual agency and does not replace observer/recorder/etc. roles.**
+21. **Person != Actor != Account, and Account authentication does not define Subject.**
+22. **Subject != observer != recorder != source != transformer != authority != viewer.**
+23. **Current Account is not the universal kernel-level Subject default.**
+24. **Unknown/later-corrected Subject or Person attribution preserves material history.**
+25. **Private Observation can support an authorized derived projection without source, Person-linkage or Subject disclosure.**
+26. **AI inference does not automatically create authoritative Observation, established Person/Subject identity, or Authority.**
 
 ---
 
@@ -1075,11 +1100,14 @@ Future logical modeling should be capable of representing, where applicable:
 - stable Observation identity;
 - observed property/type;
 - one or more Subject-role references to eligible native referents where the Observation profile allows;
+- native Person identity as one eligible Subject referent;
+- observer/recorder/etc. typed roles that may carry Actor semantics;
+- Account/authentication context separately where materially relevant;
 - unresolved/unknown Subject where semantically valid;
 - effective instant/period/context;
 - typed value semantics, potentially using Quantity or categorical/text/boolean/range forms;
 - method/device/source/provenance references;
-- correction/supersession history including materially relevant Subject-attribution corrections;
+- correction/supersession history including materially relevant Subject/Person attribution corrections;
 - derived-from relationships;
 - context links such as Actual/Session/Event/Asset;
 - privacy/authority metadata through future cross-cutting models.
@@ -1091,13 +1119,15 @@ Do not infer from this concept that LifeOS requires:
 - one row per sensor tick;
 - a universal `observations` table containing every domain fact;
 - a universal `subjects` wrapper table/root;
+- a universal `actors` table/root;
+- `persons.id = accounts.id`;
 - a universal `register_entries` table wrapping longitudinal records;
-- provider IDs as canonical identity;
+- provider IDs as canonical Person/Observation identity;
 - automatic persistence of every derived aggregate.
 
 High-volume telemetry, financial transactions, documents, and other specialist records may require different physical structures while still contributing Observations/derived views where semantically appropriate.
 
-Final heterogeneous Subject-reference mechanics depend on Person/Actor/Asset/Resource/Relationships review plus logical data-model pressure.
+Final heterogeneous Subject/Actor reference mechanics depend on Asset/Resource/Relationships and logical data-model pressure. The basic Person/Actor/Account boundary is already fixed conceptually.
 
 ---
 
@@ -1105,13 +1135,15 @@ Final heterogeneous Subject-reference mechanics depend on Person/Actor/Asset/Res
 
 The following remain open for later review:
 
-- Person / Actor / Account native identity boundaries;
 - Asset eligibility and identity;
-- Resource semantics and overlap with Subject-role eligibility;
+- Resource semantics and overlap with Subject/Actor role eligibility;
+- Principal/credential/Account physical security model;
 - focus/context/typed Relationship semantics beyond primary Subject aboutness;
 - typed categorical/rating/range/component representation;
 - data-quality/measurement-quality vocabulary;
 - Authority/Visibility/access semantics;
+- delegated/on-behalf-of action;
+- Person reconciliation/merge/split mechanics;
 - high-volume sampled-series physical model;
 - Version/correction persistence;
 - exact treatment of probabilistic inference versus derived Observation;
@@ -1124,7 +1156,11 @@ Resolved since the original Observation v0 acceptance:
 - Quantity is canonical reusable scalar value semantics;
 - Register as a kernel primitive is rejected;
 - universal RegisterEntry is rejected;
-- Subject is canonical semantic role/reference capability and independent Subject entity/root is rejected.
+- Subject is canonical semantic role/reference capability and independent Subject entity/root is rejected;
+- Person is canonical native human identity;
+- Actor is canonical semantic agency role/capability, not entity/root;
+- Account is conceptually distinct platform/access identity;
+- User is not a kernel domain primitive.
 
 These remaining dependencies are not reasons to weaken the current Observation boundary.
 
@@ -1137,10 +1173,11 @@ Reopen Observation v0 if later evidence shows that:
 1. another accepted semantic record can absorb Observation without losing identity, effective time, source/perspective, correction, conflict, Subject aboutness, or independent existence;
 2. Actual/Outcome can naturally represent spontaneous observed facts without semantic overload;
 3. Evidence requires source-fact identity to be modeled differently;
-4. Person/Actor/Asset/Resource/Relationship design proves the current Subject-role or Observation boundary redundant;
-5. high-volume implementation pressure requires a different semantic rather than merely different physical storage;
-6. ordinary product capture cannot remain simple without exposing Observation/Subject ontology;
-7. multi-actor conflicting assertions or subject-attribution corrections cannot be preserved naturally under the accepted model.
+4. Asset/Resource/Relationship design proves the current Subject-role or Observation boundary redundant;
+5. Person/Actor/Account logical implementation cannot preserve the accepted separation without changing Observation semantics;
+6. high-volume implementation pressure requires a different semantic rather than merely different physical storage;
+7. ordinary product capture cannot remain simple without exposing Observation/Subject ontology;
+8. multi-actor conflicting assertions, Actor attribution or Subject/Person corrections cannot be preserved naturally under the accepted model.
 
 A future product decision to call a screen `Register`, `Tracker`, `History`, `Progress`, or similar is not a reopening trigger by itself.
 
