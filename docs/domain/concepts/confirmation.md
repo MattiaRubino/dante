@@ -111,6 +111,18 @@ Authority determines who/what may establish, approve, override, or mutate canoni
 
 > **Confirmation != Authority.**
 
+Authority v0 now closes this boundary canonically: Confirmation is an attestation; Authority is scoped governance/effect power. A Confirmation may be one input to an authoritative decision, but does not manufacture Authority.
+
+## Confirmation versus Visibility
+
+Visibility controls bounded information exposure; Confirmation records an affirmation.
+
+```text
+Confirmation != Visibility
+```
+
+A target may be visible without its Confirmation history being visible, and a Confirmation may exist even when the recipient cannot inspect the private target/source. Visibility of a Confirmation does not grant Authority or make the attested target true.
+
 ---
 
 # 5. Awaiting confirmation is derived
@@ -139,6 +151,14 @@ AI may infer, propose, surface evidence, or ask for Confirmation. AI confidence 
 
 > **AI inference does not silently become Confirmation, canonical truth, or disclosure permission.**
 
+Authority v0 and Visibility v0 harden this further:
+
+```text
+AI can request/propose Confirmation
+!= AI has Authority to enact the target
+!= AI may disclose private source/Confirmation context
+```
+
 Future bounded machine attestations remain possible but must keep identity, authority, target version and Provenance explicit.
 
 ---
@@ -158,6 +178,8 @@ Subject, confirmer, recorder, observer, performer and authority actor may differ
 Conflicting Confirmations are legitimate records and must not be flattened automatically. Future Provenance/Authority/Version rules determine reconciliation and current canonical interpretation by context.
 
 Current access or participation does not erase historical Confirmation attribution.
+
+Visibility v0 additionally means target visibility does not imply visibility of all Confirmation/actor/history details.
 
 ---
 
@@ -224,6 +246,8 @@ External standards remain benchmark evidence, not design authority.
 15. Confirmation may be retracted/superseded without deleting material history.
 16. Purpose/context may limit where a Confirmation is sufficient.
 17. UI simplicity must not collapse high-consequence semantics in the kernel.
+18. Visibility of a target does not imply visibility of its Confirmation history.
+19. Visibility of a Confirmation does not imply visibility of every private source or grant re-disclosure Authority.
 
 ---
 
@@ -238,6 +262,7 @@ Rejected:
 - merge with Observation;
 - Confirmation = Acceptance/Acknowledgement;
 - Confirmation = Authority;
+- Confirmation = Visibility;
 - universal Attestation root at this stage.
 
 The generic Attestation abstraction is premature because acknowledgement, acceptance, approval, verification and Confirmation have different targets, effects, lifecycles and authority implications.
@@ -251,13 +276,14 @@ The generic Attestation abstraction is premature because acknowledgement, accept
 - material-version equivalence rules;
 - retraction/supersession lifecycle;
 - machine attestations/trusted automated verification;
-- Authority and canonical-state mutation;
 - Acknowledgement/common-ground model;
 - Acceptance/Agreement/Participation semantics;
 - Verification process/basis semantics;
 - conflict reconciliation;
 - specialist signature semantics;
 - retention requirements for sensitive/high-consequence Confirmations.
+
+Authority and Visibility boundaries are now canonical; detailed enforcement/persistence remains later logical/security work.
 
 ---
 
