@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Responsibility v0 PASS WITH HARDENING; Assignment/Claim/Hand-off classified as role-specific operations; Stewardship remains distinct SAFE DEFERRED  
+**Current revision:** 2026-08-12 — Participation v0 PASS WITH HARDENING; intended/response involvement separated from Actual Participation  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -86,6 +86,7 @@ Asset (current scoped native physical-object entity)
 Resource (semantic planning/execution role/capability, not entity)
 Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
 Responsibility (specific semantic relation family; not universal entity/root)
+Participation (specific semantic relation family; not entity/root)
 ```
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
@@ -95,6 +96,8 @@ Responsibility (specific semantic relation family; not universal entity/root)
 `Relationship` does **not** denote a universal domain entity. The accepted baseline is a modeling discipline: use the most specific truthful relation semantics; keep simple connections direct when semantically complete; introduce a domain-specific qualified relation only when the connection itself has materially relevant state/history/lifecycle/context. See `checkpoints/relationship-v0-validation.md`.
 
 `Responsibility` is canonical as the specific relation answering who is accountable for ensuring a bounded commitment is appropriately handled. It is not requester, expected performer, actual performer, Resource, Authority, Visibility, ownership or coordination Stewardship. See `concepts/responsibility.md` and `checkpoints/responsibility-v0-validation.md`.
+
+`Participation` is canonical as the specific relation family for expected/intended or Actual involvement in a bounded shared occurrence/interaction. Participant is a contextual role over native identity; response/intention and Actual Participation remain distinct. See `concepts/participation.md` and `checkpoints/participation-v0-validation.md`.
 
 ## DERIVED
 
@@ -162,6 +165,8 @@ Who's available?
 Assigned to
 Claim
 Hand off
+Going / Maybe / Can't go
+Attended
 ```
 
 `User` is deliberately product/implementation language. It must not be used as a universal domain synonym for Person, Actor, Account or Principal.
@@ -174,12 +179,13 @@ The word `Relationship` is not a required user-facing noun. UI should normally e
 
 `Assigned to`, `Claim`, and `Hand off` are valid product/action language, but each material action must map to a specific semantic role. The same word must not become a universal kernel object.
 
+`Going`, `Maybe`, `Can't go`, `Attended`, and similar labels may expose Participation response or Actual Participation. UI convenience must not collapse those two semantics.
+
 ## PROVISIONAL
 
 Recurring semantic need with meaningful evidence but an unfinished domain boundary.
 
 ```text
-Participation
 Stewardship
 Authority
 Visibility
@@ -224,6 +230,7 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 - historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower; a terminology-neutral cross-domain review rejected a universal `ManagedObject` root under current evidence. See `concepts/asset.md`, `checkpoints/asset-v0-validation.md`, and `checkpoints/data-subjects-v0.md`.
 - universal `Relationship` entity/root/supertype and semantic-free `related_to` as kernel truth are rejected. The accepted result is specific relation semantics plus qualification only where the relationship itself materially requires it. See `checkpoints/relationship-v0-validation.md`.
 - Assignment, Claim and Hand-off as standalone universal kernel primitives are rejected by Responsibility v0. They remain role-specific establishment/acquisition/transfer operations/workflows. See `checkpoints/responsibility-v0-validation.md`.
+- universal Participant/Participation/member/social-graph roots are rejected. Participant is a contextual role and Participation is a specific relation family. Invitation and Attendance are not standalone universal primitives. See `concepts/participation.md` and `checkpoints/participation-v0-validation.md`.
 
 ---
 
@@ -290,7 +297,7 @@ Activity != Actual
 Activity identity != requester/creator/responsible actor/expected performer/actual performer
 ```
 
-Responsibility v0 now closes the previously deferred responsibility-family semantics: ordinary responsibility transfer/reassignment preserves Activity identity; Assignment/Claim/Hand-off are role-specific operations/workflows rather than Activity state or standalone universal primitives.
+Responsibility v0 closes the responsibility-family semantics: ordinary responsibility transfer/reassignment preserves Activity identity; Assignment/Claim/Hand-off are role-specific operations/workflows rather than Activity state or standalone universal primitives.
 
 Possible UI: Task, Action, Workout, Study item, Maintenance action, Checklist item.
 
@@ -304,10 +311,13 @@ Possible UI: Task, Action, Workout, Study item, Maintenance action, Checklist it
 ```text
 Event != Activity
 Event != Schedule
-Event != participant response
-Event != attendance
+Event != Participation response
+Event != Actual Participation / attendance
 Event != Milestone
+Event identity != participant set/state
 ```
+
+Participation v0 closes the participant/attendance boundary: invitation/response and Actual Participation are actor-scoped relation semantics around one Event identity.
 
 Possible UI: Meeting, Appointment, Lesson, Exam, Concert, Flight, Shift, Interview, Race.
 
@@ -381,7 +391,7 @@ Schedule != Recurrence
 Schedule != Availability
 Schedule != Capacity claim
 Schedule != Session/Actual
-Schedule acceptance != participant acceptance
+Schedule acceptance != Participation response/acceptance
 ```
 
 ## Session
@@ -395,11 +405,11 @@ Schedule acceptance != participant acceptance
 Session != Schedule
 Session != Activity
 Session != Occurrence
-Session != Event attendance
+Session != Participation / Event attendance
 Session != broader Actual/Outcome
 ```
 
-Session identity follows logical execution continuity, not performer count.
+Session identity follows logical execution continuity, not performer or participant count. Attendance does not manufacture one Session per participant.
 
 ## Temporal Constraint
 
@@ -472,6 +482,7 @@ Actual != Observation
 Actual != Evidence
 Actual != Confirmation
 Actual != Provenance
+shared Actual != identical actor-specific Actual Participation
 reported/asserted reality != established Actual
 ```
 
@@ -745,6 +756,7 @@ Person != Asset
 Person may play Subject role
 Person may play Actor/specific action roles
 Person may play Resource role
+Person may play Participant role
 non-account Person is ordinary domain reality
 ```
 
@@ -754,9 +766,10 @@ Core guardrails:
 - Account creation/deletion does not automatically create/delete Person;
 - external/contact/profile representations may be identity evidence but not automatic equality;
 - Resource role does not replace Performer/Participant/Responsibility;
+- Participation does not create another Person identity;
 - Person merge/split/reconciliation must preserve material history;
 - identity linkage itself may be private;
-- AI can propose identity/resource matching but does not silently establish Person identity or allocation.
+- AI can propose identity/resource matching but does not silently establish Person identity, Participation or allocation.
 
 ## Actor
 
@@ -776,18 +789,20 @@ Actor != Resource
 Actor != Account
 Actor != Principal
 Actor != Responsibility
+Actor != Participation
 Actor != Authority
 Actor != specific performer/recorder/observer/confirmer/proposer relation
 ```
 
 Core guardrails:
 
-- **specific-role precedence:** use `performed_by`, `recorded_by`, `observed_by`, `confirmed_by`, `proposed_by`, `responsible_for`, etc. when known;
+- **specific-role precedence:** use `performed_by`, `recorded_by`, `observed_by`, `confirmed_by`, `proposed_by`, `responsible_for`, Participant/Participation, etc. when known;
 - Actor is a shared agency category/capability, not a semantic-free generic persisted edge;
 - Person may play Actor role, but Actor need not be Person;
-- no Account is required for historical Actor/Responsibility attribution;
+- no Account is required for historical Actor/Responsibility/Participation attribution;
 - Account authentication does not automatically establish semantic Actor;
-- agency does not imply Resource eligibility, permission, responsibility or Authority;
+- response Actor may differ from the participant whose response is being recorded;
+- agency does not imply Resource eligibility, permission, responsibility, participation or Authority;
 - AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors;
 - no universal `actors` table/root is pre-approved.
 
@@ -802,6 +817,7 @@ Core guardrails:
 Account != Person
 Account != Actor
 Account != Subject
+Account != Participant
 Account != Principal by default
 Account creation/deletion != human creation/deletion
 ```
@@ -869,21 +885,22 @@ Resource != candidate set
 Resource != Allocation
 Resource != Reservation / Capacity Claim
 Resource != actual use / consumption
-Resource != Responsibility / Performer / Participant
+Resource != Responsibility / Performer / Participant / Participation
 ```
 
 Core guardrails:
 
-- Person may play Resource role without losing Person identity;
+- Person may play Resource and Participant roles independently without identity collapse;
 - Asset may play Resource role without losing Asset identity;
 - future Place/service/pool/supply may play Resource role where independently justified;
 - consumable supply does not require per-unit or per-quantity identity;
 - eligibility is contextual to a Requirement;
 - a schedulable Resource is only the subset where time-dependent Availability/Capacity matters;
 - Requirement may remain abstract before concrete allocation;
-- reserved/allocated Resource does not prove actual use or Responsibility;
+- reserved/allocated Resource does not prove actual use, Responsibility or Participation;
+- provider `resource attendee` vocabulary does not make a room/equipment item a LifeOS Participant;
 - Money/Budget are not Resource by default;
-- Resource role grants no ownership, Responsibility, Authority, Visibility or consent;
+- Resource role grants no ownership, Responsibility, Participation, Authority, Visibility or consent;
 - no universal `resources` table/root or generic `resource_id` relation is pre-approved.
 
 Typical UI: Camera, Equipment, Room, Person name, Service, `Who's available?`, `Required equipment`, depending on context.
@@ -964,6 +981,20 @@ Interval geometry does not determine semantic meaning.
 **Status:** PRODUCT / IMPLEMENTATION TERM — NOT DOMAIN PRIMITIVE
 
 May refer contextually to a current Account holder/person using LifeOS, but must not become the common domain root for Person, Actor, Account, Principal, Participant or Subject.
+
+## Invitation / Attendance
+
+**Status:** PRODUCT / WORKFLOW LANGUAGE OVER PARTICIPATION SEMANTICS — NOT UNIVERSAL PRIMITIVES
+
+```text
+Invitation
+= proposal/request for intended Participation
+
+Attendance
+= Event-facing Actual Participation semantics
+```
+
+Neither implies a standalone kernel entity/table.
 
 ---
 
@@ -1071,18 +1102,19 @@ Final Decision/Version semantics belong to Relationships/Reasoning review.
 **Status:** CANONICAL NATIVE ENTITY  
 **See:** `concepts/person.md`
 
-Persistent human identity independent of Account, Subject role, Actor role, Resource role, participation, responsibility, authority and visibility.
+Persistent human identity independent of Account, Subject role, Actor role, Resource role, Participation, Responsibility, Authority and Visibility.
 
 ```text
 Person != Account
 Person != Subject
 Person != Actor
 Person != Resource
+Person != Participant
 Person != Principal
 Person != Asset
 ```
 
-A Person may exist without ever having a LifeOS Account and may play Resource role when operationally eligible.
+A Person may exist without ever having a LifeOS Account and may independently play Resource, Actor, Subject, Participant or Responsibility-holder roles where appropriate.
 
 ## Actor
 
@@ -1098,10 +1130,11 @@ Actor != Principal
 Actor != Subject
 Actor != Resource
 Actor != Responsibility
+Actor != Participation
 Actor != Authority
 ```
 
-Use specific roles such as performer/recorder/observer/confirmer/proposer/responsible actor when those semantics matter.
+Use specific roles such as performer/recorder/observer/confirmer/proposer/responsible actor/participant when those semantics matter.
 
 ## Account
 
@@ -1111,11 +1144,11 @@ Use specific roles such as performer/recorder/observer/confirmer/proposer/respon
 Account != Person
 Account != Actor
 Account != Subject
-Account != Principal by default
 Account != Participant
+Account != Principal by default
 ```
 
-Account lifecycle must not automatically erase native Person identity or historical Actor/Responsibility attribution.
+Account lifecycle must not automatically erase native Person identity or historical Actor/Responsibility/Participation attribution.
 
 ## Principal
 
@@ -1131,9 +1164,34 @@ Principal != Account by default
 
 ## Participant / Participation
 
-**Status:** PROVISIONAL
+**Status:** CANONICAL SPECIFIC SEMANTIC RELATION FAMILY  
+**Source:** `concepts/participation.md`  
+**Validation:** `checkpoints/participation-v0-validation.md` — PASS WITH HARDENING  
+**Question:** Who is expected/intended to be involved, or who actually participated, in this bounded shared occurrence/interaction?  
+**UI exposure:** CONTEXTUAL; Going / Maybe / Can't go / Attended / participant list where useful
 
-Actor/Person-scoped involvement/state around a shared object; exact eligible referents and lifecycle remain deferred.
+Participant is a contextual role over native identity. Participation contains distinct intended/response and Actual involvement semantics; it is not a Person/Actor/Account subtype or universal membership root.
+
+```text
+Participant != Person identity subtype
+Participation != Responsibility
+Participation != Performer
+Participation != Resource
+Participation != Organizer/requester
+Participation != Authority
+Participation != Visibility
+Participation != Session
+shared Event Actual != identical actor-specific Actual Participation
+
+Invitation != Acceptance
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+```
+
+A response Actor/Account/Principal may differ from the participant whose involvement is at stake. Provider attendance telemetry remains evidence/provenance until applicable reconciliation semantics establish current Participation truth.
 
 ## Responsibility
 
@@ -1148,6 +1206,7 @@ Responsibility != Actor identity/category
 Responsibility != requester
 Responsibility != expected performer
 Responsibility != actual performer
+Responsibility != Participation
 Responsibility != Resource
 Responsibility != Authority
 Responsibility != Visibility
@@ -1205,7 +1264,7 @@ Assignment != Stewardship transfer
 
 **Status:** SPECIFIC ACTOR ROLE — exact logical representation deferred
 
-Who actually performed work; not automatically requester/responsible actor/planned expected performer. Performer is a specific Actor role, not Actor or Resource identity.
+Who actually performed work; not automatically requester/responsible actor/planned expected performer. Performer is a specific Actor role, not Actor, Participant or Resource identity.
 
 ## Subject
 
@@ -1239,10 +1298,10 @@ Resource != Requirement
 Resource != Allocation
 Resource != Reservation
 Resource != actual use
-Resource != Responsibility/Performer
+Resource != Responsibility/Performer/Participation
 ```
 
-Resource may also apply to supplies/pools without manufacturing identity for them.
+Resource may also apply to supplies/pools without manufacturing identity for them. Resource reservation/candidacy does not establish Participation.
 
 ## Owner / Governor / Steward
 
@@ -1264,6 +1323,7 @@ Authority != Subject
 Authority != Actor
 Authority != Resource
 Authority != Responsibility
+Authority != Participation
 Authority != Account
 Authority != Asset ownership by default
 ```
@@ -1272,7 +1332,7 @@ Authority != Asset ownership by default
 
 **Status:** DEFERRED
 
-What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset/Responsibility attribution are distinct. Being Subject, Resource candidate, owner or responsible actor does not automatically grant visibility.
+What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset/Responsibility/Participation attribution are distinct. Being Subject, Resource candidate, participant, owner or responsible actor does not automatically grant visibility.
 
 ## Acknowledgement
 
@@ -1283,13 +1343,14 @@ Grounding/receipt/recognition semantics where consequence requires them.
 ```text
 Acknowledgement != Confirmation
 Acknowledgement != Acceptance
+Acknowledgement != Participation response by default
 ```
 
 ## Acceptance / Agreement
 
 **Status:** PROVISIONAL / DEFERRED
 
-Willingness/participation/proposal/responsibility semantics.
+Willingness/proposal/responsibility/participation semantics.
 
 ```text
 Acceptance != Confirmation
@@ -1297,6 +1358,7 @@ Acceptance != Actual
 Assignment != Acceptance by default
 Claim != Acceptance by default
 hand-off request != Acceptance by default
+Participation response may express contextual willingness without defining a universal Acceptance primitive
 ```
 
 ---
@@ -1357,7 +1419,7 @@ Actual use / consumption
 what was really used
 ```
 
-The exact identity/cardinality/persistence of these structures remains deferred. None implies Responsibility.
+The exact identity/cardinality/persistence of these structures remains deferred. None implies Responsibility or Participation.
 
 ## Asset scope / managed-referent taxonomy
 
@@ -1379,13 +1441,13 @@ Future Place/Property, living, Document, FinancialAccount, and service workflows
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Material version identity/history must later integrate with Confirmation, Evidence, Provenance, Responsibility history and Subject/Person/Asset attribution correction without replacing them.
+Material version identity/history must later integrate with Confirmation, Evidence, Provenance, Responsibility/Participation history and Subject/Person/Asset attribution correction without replacing them.
 
 ## Decision
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Decision rationale/authority is distinct from Provenance lineage and may be needed for contested/effective Responsibility changes.
+Decision rationale/authority is distinct from Provenance lineage and may be needed for contested/effective Responsibility or Participation reconciliation.
 
 ---
 
@@ -1417,7 +1479,7 @@ queryability/cardinality/database row id != domain identity
 orientation/symmetry/transitivity/inverse rules are relation-family-specific
 ```
 
-Responsibility v0 is the first major successful stress of this rule: simple responsibility may be direct, while rich/open/transfer/history cases may use a specific qualified Responsibility context.
+Responsibility and Participation are the first two major successful stresses of this rule: simple relations may remain direct, while material state/history/privacy/actuality can justify specific qualified relation contexts.
 
 A future generic Personal Knowledge link capability is separately SAFE DEFERRED and must not silently become Responsibility, Authority, Evidence, Participation, allocation or Actual semantics.
 
@@ -1441,7 +1503,9 @@ Plan != Routine
 Activity != Event
 Activity != Session
 Event != Schedule
-Event != attendance
+Event != Participation response
+Event != Actual Participation/attendance
+Event identity != participant set/state
 Routine != Recurrence
 Routine != observed habit
 Occurrence != Schedule
@@ -1450,12 +1514,15 @@ Schedule != Temporal Constraint
 Schedule != Availability
 Schedule != Capacity Reservation
 Schedule != Session/Actual
+Schedule acceptance != Participation response
 Session != Actual
+Session != Participation/attendance by default
 Actual != Outcome
 Actual != Observation
 Actual != Confirmation
 Actual != Evidence
 Actual != Provenance
+shared Actual != identical actor-specific Actual Participation
 reported/asserted reality != established Actual
 Outcome != lifecycle/operational state
 Outcome != Observation
@@ -1481,6 +1548,7 @@ Subject role != Subject entity/root
 Subject != generic related_to
 Person != Actor
 Person != Resource
+Person != Participant
 Person != Account
 Person != Principal
 Person != User domain primitive
@@ -1489,10 +1557,11 @@ Actor != Resource
 Actor != Account
 Actor != Principal
 Actor != Responsibility
+Actor != Participation
 Actor != Authority
 Actor role != Actor entity/root
 generic actor relation != specific action role
-Account != Person/Actor/Subject
+Account != Person/Actor/Subject/Participant
 User != universal domain root
 Asset != Subject
 Asset != Resource
@@ -1509,12 +1578,14 @@ Resource != candidate set
 Resource != Allocation
 Resource != Reservation/Capacity Claim
 Resource != actual use/consumption
-Resource != Responsibility/Performer/Participant
+Resource != Responsibility/Performer/Participant/Participation
 Resource role != synthetic provider identity
+Resource reservation != Participation
 Money/Budget != Resource by default
 Responsibility != requester
 Responsibility != expected performer
 Responsibility != actual performer
+Responsibility != Participation
 Responsibility != Resource
 Responsibility != Authority
 Responsibility != Visibility
@@ -1525,6 +1596,15 @@ Claim != standalone universal primitive
 Hand-off != standalone universal primitive
 Assignment/Claim/Hand-off must identify specific role
 hand-off request != effective transfer by default
+Participation != Responsibility/Performer/Resource/Organizer/Authority/Visibility/Session
+Participant != identity/entity
+Invitation != Acceptance/Actual Participation
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+Attendance != standalone universal primitive
 universal Relationship root = rejected
 semantic-free related_to as kernel truth = rejected
 specific relation semantics != generic Relationship wrapper
@@ -1564,11 +1644,12 @@ Person may exist without Account
 Person may play Subject role
 Person may play Actor/specific action role
 Person may play Resource role
+Person may play Participant role
 Actor != Account
 Actor != Principal
 Actor != Subject
 Actor != Resource
-Actor != Responsibility/Authority
+Actor != Responsibility/Participation/Authority
 Account != Participant
 Subject != Resource
 Asset != owner
@@ -1576,8 +1657,10 @@ Asset owner != holder/custodian/steward
 Asset ownership != Authority/Visibility
 Asset may play Subject role
 Asset may play Resource role
-Resource candidacy != Responsibility/consent/allocation Authority
+Resource candidacy != Responsibility/Participation/consent/allocation Authority
 Participant != Responsible actor
+Participant != Performer by default
+Organizer != Participant by default
 Responsible actor != expected performer
 Responsible actor != actual performer
 expected performer != actual performer
@@ -1590,25 +1673,32 @@ Claim != effective Responsibility by default
 hand-off request != effective role transfer by default
 Responsibility transfer != Activity replacement
 Responsibility != coordination Stewardship
-Participation response != Actual participation
-shared Actual != identical actor participation
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+shared Actual != identical actor Participation
 shared Outcome != identical actor consequence
 shared Asset != identical actor visibility/private overlays
 Observation Subject != observer/recorder/source/authority/viewer
 current Account != universal Subject
 current Account != semantic Actor automatically
 non-LifeOS Person may be Subject/Participant/Actor/Resource candidate/Responsibility holder where context allows
+response Actor != participant identity by default
 Confirmation by A != Confirmation by B
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
+provider attendance telemetry != canonical Participation automatically
 source actor != recorder != Subject by default
-Schedule acceptance != participant acceptance
+Schedule acceptance != Participation acceptance/response
 Delivery != acknowledgement
 Acknowledgement != agreement
 Agreement != authority
 Authority != Actual
 Authority != Confirmation
 Authority != Responsibility
+Authority != Participation
 Actor action != Authority
 relation existence/type != Authority
 relation existence/type != Visibility
@@ -1617,11 +1707,12 @@ AI inference != Confirmation
 AI inference != established Actual
 AI inferred relation != established relationship
 AI Responsibility suggestion != effective assignment/transfer
+AI Participation inference != established response/attendance
 AI Subject/Person/Asset guess != established identity
 AI Resource match != authoritative allocation
 AI Actor != human author/authority automatically
 AI provenance != disclosure permission
-future Account access revocation != deletion of historical Person/Actor/Responsibility attribution
+future Account access revocation != deletion of historical Person/Actor/Responsibility/Participation attribution
 Quantity display preference != canonical value mutation
 actor tracker preferences != shared fact mutation
 ```
@@ -1642,6 +1733,9 @@ Subject UI/context != Subject entity
 Actor UI label != Actor entity
 Resource UI label != Resource entity
 Relationship UI/link != universal Relationship entity
+Participant UI label != Participant entity/root
+Invitation UI/workflow != universal Invitation entity
+Attendance UI != universal Attendance entity
 Assigned-to UI != universal Assignment entity
 Claim UI action != universal Claim entity
 Hand-off UI action != universal HandOff entity
@@ -1695,6 +1789,42 @@ Luca -> Anna
 pending
 Luca remains current holder unless policy/Authority makes transfer effective
 ```
+
+## Shared dinner participation
+
+```text
+Event
+Dinner · Saturday 21:00
+
+Anna
+invited → accepted
+Actual Participation: attended
+
+Luca
+invited → declined
+Actual Participation: unknown / established absent only if evidence supports it
+
+Marco
+not invited
+Actual Participation: attended
+```
+
+Earlier response history is not rewritten to match later reality.
+
+## Partial meeting attendance
+
+```text
+Event Actual
+meeting occurred 10:00–12:00
+
+Anna Actual Participation
+10:00–12:00
+
+Luca Actual Participation
+10:35–11:10
+```
+
+No one-Session-per-attendee model is implied.
 
 ## Gym 3x/week
 
@@ -1797,7 +1927,7 @@ Person Anna
 Person Luca
 ```
 
-The people retain Person identity. Resource candidacy does not establish Responsibility or Performer status.
+The people retain Person identity. Resource candidacy does not establish Responsibility, Participation or Performer status.
 
 ## Company laptop
 
@@ -1832,7 +1962,7 @@ Person, Subject, Actor role and Account remain distinct.
 
 ```text
 Person Dr. Rossi
-Event participant / possible Responsibility holder in relevant context
+Event Participant / possible Responsibility holder in relevant context
 no LifeOS Account required
 ```
 
@@ -1851,11 +1981,14 @@ proposes A17 for requirement
 Responsibility planning
 proposes Anna as responsible
 
+Participation planning
+suggests inviting Luca
+
 service/security identity
 future Principal semantics
 ```
 
-AI proposal does not become allocation Authority, Responsibility, Acceptance or human Confirmation automatically.
+AI proposal does not become allocation Authority, Responsibility, Participation response, Acceptance or human Confirmation automatically.
 
 ## Quantity display conversion
 
@@ -1895,7 +2028,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage, Resource-match basis, Responsibility context or Subject association.
+Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage, Resource-match basis, Responsibility context, Participation state or Subject association.
 
 ---
 
@@ -1918,6 +2051,9 @@ Asset               → Car / Camera / Laptop / Bike / Gear / Equipment accordin
 Resource            → usually hidden; Camera / Room / Person / Service / Who's available? / Required equipment
 Relationship        → usually hidden; expose the specific verb/role instead
 Responsibility      → Responsible / Assigned to / Who's handling this? depending on context
+Participation       → Going / Maybe / Can't go / Attended / participant list according to context
+Invitation          → Invite / invited
+Attendance          → Attended / Partially attended / Did not attend where established
 Assignment          → Assign / Reassign action
 Claim               → I'll take it / Claim action
 Hand-off            → Hand off / Transfer / Ask someone else
@@ -1940,7 +2076,7 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Person, Actor, Account, Asset, Principal, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
+In particular Person, Actor, Account, Asset, Principal, Participant, Responsibility, Participation, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
@@ -1954,6 +2090,10 @@ Specific guardrails:
 - Resource does not imply a universal `resources` table/root, generic `resource_id`, or synthetic identity for supplies/pools;
 - Relationship modeling discipline does not imply a universal `relationships` table, graph edge root, Node supertype, or one polymorphic `related_to` mechanism;
 - Responsibility does not imply a universal `responsibilities` table, `assigned_to` field, or independent relation identity in every simple case;
+- Participation does not imply a universal `participants`/`participations` table/root, one participant-status enum, one Session per attendee, or independent relation identity in every simple case;
+- Invitation/Attendance do not imply standalone universal tables/entities;
+- planned/response Participation and Actual Participation must remain independently representable even if one future aggregate stores both facets;
+- provider attendee/attendance records do not define canonical LifeOS Participation automatically;
 - Assignment/Claim/Hand-off do not imply standalone tables/entities;
 - explicitly open/unassigned Responsibility must remain distinguishable from unknown, even if SQL later uses nullable references internally;
 - structured/qualified relation persistence does not by itself establish independent domain identity;
@@ -2018,6 +2158,7 @@ Deferred Dependency Closure     PASS
 Cross-Cluster Validation v4     PASS WITH HARDENING
 Relationship v0 review          PASS WITH HARDENING
 Responsibility v0 review        PASS WITH HARDENING
+Participation v0 review         PASS WITH HARDENING
 ```
 
 Current cross-cluster structural reopenings: **0**.
@@ -2029,9 +2170,11 @@ Normative transition/current references:
 - `checkpoints/cross-cluster-validation-v4.md`;
 - `checkpoints/relationship-v0-validation.md`;
 - `concepts/responsibility.md`;
-- `checkpoints/responsibility-v0-validation.md`.
+- `checkpoints/responsibility-v0-validation.md`;
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
 
-Relationships / Reasoning is **IN PROGRESS**. The next candidate must be selected by dependency leverage rather than roadmap order. `Participation` is currently the strongest likely next review because it pressures Event/Session/Actual plus actor-scoped invitation/response/attendance history, but it is not pre-accepted by this map.
+Relationships / Reasoning is **IN PROGRESS**. The next candidate must be reselected by dependency leverage rather than roadmap order. Responsibility and Participation now both place strong pressure on the common-ground/governance boundary — especially Authority, Visibility, Acceptance/Acknowledgement and delegation — but none of those terms is pre-accepted by this map.
 
 ---
 
