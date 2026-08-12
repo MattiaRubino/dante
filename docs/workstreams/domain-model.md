@@ -45,11 +45,13 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 23. [`../domain/checkpoints/evidence-v0-validation.md`](../domain/checkpoints/evidence-v0-validation.md)
 24. [`../domain/concepts/provenance.md`](../domain/concepts/provenance.md)
 25. [`../domain/checkpoints/provenance-v0-validation.md`](../domain/checkpoints/provenance-v0-validation.md)
-26. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-27. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-28. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-29. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-30. accepted architecture/DB ADRs.
+26. [`../domain/concepts/quantity.md`](../domain/concepts/quantity.md)
+27. [`../domain/checkpoints/quantity-v0-validation.md`](../domain/checkpoints/quantity-v0-validation.md)
+28. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+29. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+30. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+31. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+32. accepted architecture/DB ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -98,12 +100,13 @@ Observation v0                  ACCEPTED
 Confirmation v0                 ACCEPTED
 Evidence v0                     ACCEPTED
 Provenance v0                   ACCEPTED
+Quantity v0                     PASS WITH HARDENING / ACCEPTED
 ```
 
 First-three-cluster regression result:
 
 ```text
-18 accepted concepts retained
+18 accepted concepts retained before Cluster 4
 0 structural reopenings
 0 concept removals
 0 justified concept merges
@@ -179,6 +182,7 @@ Observation    -> canonical measurement/simple assertion
 Confirmation   -> canonical contextual attestation
 Evidence       -> canonical contextual evaluative role/relationship
 Provenance     -> canonical bounded contextual lineage capability
+Quantity       -> canonical reusable scalar amount value semantics
 ```
 
 ---
@@ -296,52 +300,83 @@ Do not jump to SQL/API design yet.
 
 ## Provisional topics
 
-- Quantity;
-- Register;
+- Quantity — accepted;
+- Register — active next review;
 - Subject;
 - Person / Actor boundary;
 - Asset;
 - Resource.
 
-## Current concept — Quantity
+## Accepted concept — Quantity v0
 
-Quantity is under read-only Methodology v3 review and is not yet canonical.
-
-Current candidate direction:
+> A Quantity is reusable scalar value semantics representing an amount through a numerical magnitude together with unit semantics sufficient to interpret that amount. It has no independent subject, property, time, identity, provenance, intention, observation history, or evaluative meaning.
 
 ```text
-Quantity
-= reusable scalar value semantics
-= numerical magnitude + unit semantics
-!= entity / observation / register / universal numeric wrapper
+Quantity != entity
+number != Quantity by default
+Quantity != Observation
+Quantity != Register / RegisterEntry
+property / quantity kind != unit
+compatible unit != semantic equivalence by itself
+same unit != universal aggregation permission
+Quantity != Range / Threshold / comparator / criterion
 ```
 
-Current adjacent questions to register during the transition cluster include:
+Critical hardenings:
+
+- source representation != normalized/display representation;
+- actor-specific display unit preference does not duplicate canonical facts;
+- custom unit label != global conversion rule;
+- Money/MonetaryAmount is not pre-collapsed into ordinary Quantity;
+- calendar-relative time is not pre-collapsed into fixed elapsed Quantity arithmetic;
+- precision/rounding must not be silently fabricated;
+- no standalone Quantity SQL table/entity is pre-approved.
+
+Checkpoint:
+
+- [`Quantity v0 Validation`](../domain/checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
+
+## ACTIVE NEXT REVIEW — Register
+
+Register must be evaluated from scratch rather than inheriting the historical product idea of a `universal Register + RegisterEntry` schema.
+
+Mandatory first boundaries:
 
 ```text
-Quantity vs Money / MonetaryAmount
-Quantity vs ratings / scales
-Quantity vs ratio / percentage / counts
-Quantity vs custom UnitDefinition semantics
-Quantity vs elapsed duration / calendar-relative time
-Quantity vs Range / Threshold / comparator semantics
+Register vs Observation
+Register vs source record / RegisterEntry
+Register vs query/view/dashboard
+Register vs transaction/movement specialist records
+Register aggregation policy vs Quantity semantics
+one source record appearing in multiple Registers without duplication
 ```
 
-Do not resolve these by silently broadening Quantity. Complete the remaining Data / Subjects reviews first unless one becomes a structural blocker.
+The review must also stress:
+
+- latest/sum/average/count/min/max/trend/balance semantics;
+- same-unit-but-non-aggregable values;
+- gaps/missing data;
+- multi-component records;
+- high-frequency/sample-series storage pressure;
+- manual/imported/derived records;
+- shared Register view vs actor-specific private filters/preferences;
+- privacy and selective disclosure;
+- whether Register deserves identity/lifecycle or is primarily a configured longitudinal view/capability.
 
 ## Mandatory inherited re-tests
 
 ```text
-Observation vs Quantity
-Observation vs Register/RegisterEntry
-sampled-series physical representation
+Observation vs Quantity — basic boundary RESOLVED by Quantity v0
+Observation vs Register/RegisterEntry — active
+Quantity vs Register aggregation — active
+sampled-series physical representation — active during Register/cluster
 Subject vs observer/recorder/source/transformer
 Availability/Capacity vs Resource
 Actor vs Subject vs Resource vs Account/Principal
 Provenance source/actor roles vs Subject/Person/Account
 ```
 
-The next concept remains read-only until it passes Methodology v3 and receives a separately approved Git write scope.
+The Register review remains read-only until it passes Methodology v3 and receives a separately approved Git write scope.
 
 ---
 
@@ -422,6 +457,7 @@ Session where executable episode exists
 Actual realization context
         ├─ Outcome where result/disposition matters
         └─ Observation(s) describing measured/asserted reality
+             └─ may use Quantity value semantics
 
 Confirmation
 = contextual affirmation of specific target/version/purpose
@@ -431,6 +467,9 @@ Evidence
 
 Provenance
 = bounded lineage explaining how records/material versions came to exist/change
+
+Quantity
+= reusable scalar amount value semantics also usable outside Observation
 ```
 
 This is not a mandatory parent/child chain and not a persistence schema.
@@ -443,7 +482,8 @@ The post-Cluster-4 closure pass must turn every still-material item into `RESOLV
 
 Known inherited items include:
 
-- Observation vs Quantity/Register;
+- Observation vs Register;
+- Quantity vs Register aggregation semantics;
 - Subject vs observer/recorder/source/transformer;
 - Availability/Capacity vs Resource;
 - Person vs Actor vs Subject vs Account/Principal;
@@ -464,7 +504,8 @@ Known inherited items include:
 - Quantity vs ratings/scales/ratio/percentage/count semantics;
 - Quantity vs custom unit-definition semantics;
 - Quantity vs elapsed duration/calendar-relative time;
-- Quantity vs Range/Threshold/comparator semantics.
+- Quantity vs Range/Threshold/comparator semantics;
+- Quantity decimal/unit physical representation.
 
 These are executable obligations, not generic `later` notes.
 
@@ -504,7 +545,8 @@ Observed Reality & Evidence v0 accepted
 Cross-Cluster Validation v3 PASS
 ↓
 Data / Subjects — ACTIVE
-  Quantity read-only review now
+  Quantity v0 accepted
+  Register read-only review next
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -530,4 +572,4 @@ logical/physical persistence and API stabilization
 - Phase 4 prototype branch not changed by this workstream;
 - repository visibility does not change the branch/write-scope operating rules.
 
-Continue from Methodology v3 + Execution Template v3 + Language Map + the three validated cluster checkpoints. Do not create a parallel validation standard, terminology tree or collaboration ontology.
+Continue from Methodology v3 + Execution Template v3 + Language Map + accepted Quantity v0 + the three validated cluster checkpoints. The active next concept is Register in read-only mode. Do not create a parallel validation standard, terminology tree or collaboration ontology.
