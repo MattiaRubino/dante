@@ -114,7 +114,25 @@ List targeted benchmark/research sources and classify each important finding:
 
 ---
 
-# 7. Adversarial scenario log
+# 7. Adjacent Dependency Sweep
+
+Mandatory before concept acceptance once the methodology transition rule applies. During the Data / Subjects transition cluster, record dependencies now and execute the full closure pass across clusters 1–4 after the cluster gate.
+
+For every material neighboring question classify the closure treatment exactly as `RESOLVED`, `SAFE DEFERRED`, or `REOPEN`.
+
+| Dependency / boundary | Why it matters | Closure class | Current resolution / why safe to defer | Owner / future concept or stage | Exact reopening trigger | Tests to rerun |
+|---|---|---|---|---|---|---|
+
+Rules:
+
+- `RESOLVED` must point to the invariant/hardening that closes the issue now.
+- `SAFE DEFERRED` must explain why current acceptance remains valid and identify an executable future trigger.
+- `REOPEN` blocks acceptance until the affected concept/boundary is redesigned and retested.
+- `TBD`, `review later`, or an unnamed future dependency is not a valid closure class.
+
+---
+
+# 8. Adversarial scenario log
 
 Record the hardest scenarios, especially failures or near-failures.
 
@@ -123,16 +141,17 @@ Record the hardest scenarios, especially failures or near-failures.
 
 ---
 
-# 8. Reopening / dependency register
+# 9. Reopening / dependency register
 
-| Finding | Severity | Current treatment | Reopening trigger |
-|---|---|---|---|
+| Finding | Severity | Closure class | Current treatment | Owner / future stage | Reopening trigger |
+|---|---|---|---|---|---|
 
-Severity: CRITICAL / STRUCTURAL / HARDENING / DEFERRED DEPENDENCY / PRODUCT-UX.
+Severity: CRITICAL / STRUCTURAL / HARDENING / DEFERRED DEPENDENCY / PRODUCT-UX.  
+Closure class for material dependency findings: RESOLVED / SAFE DEFERRED / REOPEN.
 
 ---
 
-# 9. Concept verdict
+# 10. Concept verdict
 
 Choose exactly one:
 
@@ -145,11 +164,17 @@ Choose exactly one:
 
 ## Hardenings incorporated before acceptance
 
+## Dependency-sweep summary
+
+- RESOLVED:
+- SAFE DEFERRED:
+- REOPEN:
+
 ## Mandatory future re-tests
 
 ---
 
-# 10. Cluster-only integration section
+# 11. Cluster-only integration section
 
 Use when this checkpoint validates a complete cluster.
 
@@ -171,6 +196,11 @@ Record at minimum applicable cases for shared state, reassignment/hand-off, exte
 | Scenario | Concepts exercised | Result | Finding |
 |---|---|---|---|
 
+## Cluster dependency closure summary
+
+| Dependency | Closure class | Owner/trigger | Effect on cluster verdict |
+|---|---|---|---|
+
 ## Cluster verdict
 
 - [ ] PASS
@@ -180,7 +210,7 @@ Record at minimum applicable cases for shared state, reassignment/hand-off, exte
 
 ---
 
-# 11. Regression corpus additions
+# 12. Regression corpus additions
 
 Add only scenarios that expose a new identity, history, authority, privacy, reconciliation, scale or UX boundary.
 
@@ -189,7 +219,7 @@ Add only scenarios that expose a new identity, history, authority, privacy, reco
 
 ---
 
-# 12. Documentation propagation
+# 13. Documentation propagation
 
 Before closing:
 
@@ -197,5 +227,7 @@ Before closing:
 - [ ] language map updated if terminology changed
 - [ ] cluster checkpoint updated if applicable
 - [ ] workstream handoff updated
-- [ ] deferrals/reopening triggers recorded
+- [ ] Adjacent Dependency Sweep completed or explicitly scheduled by the Data / Subjects transition rule
+- [ ] every material deferral has owner + reopening trigger
+- [ ] no unclassified dependency limbo remains at the applicable closure point
 - [ ] no old conflicting canonical wording left unqualified
