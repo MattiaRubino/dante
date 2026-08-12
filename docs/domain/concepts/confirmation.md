@@ -276,14 +276,14 @@ The generic Attestation abstraction is premature because acknowledgement, accept
 - material-version equivalence rules;
 - retraction/supersession lifecycle;
 - machine attestations/trusted automated verification;
-- Acknowledgement/common-ground model;
-- Acceptance/Agreement/Participation semantics;
+- Agreement/Consent semantics;
+- Decision/Approval/effective-change semantics;
 - Verification process/basis semantics;
 - conflict reconciliation;
 - specialist signature semantics;
 - retention requirements for sensitive/high-consequence Confirmations.
 
-Authority and Visibility boundaries are now canonical; detailed enforcement/persistence remains later logical/security work.
+Authority, Visibility and Acknowledgement boundaries are now canonical; detailed enforcement/persistence remains later logical/security work.
 
 ---
 
@@ -298,7 +298,7 @@ The logical model must eventually support, directly or through equivalent semant
 - relevant times;
 - superseded/retracted history where needed;
 - Provenance of the Confirmation itself;
-- Authority/Visibility separation;
+- Authority/Visibility/Acknowledgement separation;
 - conflicting Confirmations;
 - offline/sync reconciliation.
 
@@ -311,3 +311,40 @@ This does not yet imply a universal `confirmations` table or generic polymorphic
 Reopen Confirmation v0 if later Evidence/Provenance/Authority/Version work demonstrates that Confirmation is fully redundant, a materially stronger attestation abstraction emerges, specialist verification semantics require a different universal boundary, or persistence pressure exposes unacceptable generic-target coupling.
 
 Absent such evidence, Confirmation remains the current accepted baseline.
+
+---
+
+# 17. Downstream closure — Acknowledgement v0 (2026-08-12)
+
+The later common-ground review has now closed the previously deferred Acknowledgement boundary.
+
+Current canonical result:
+
+```text
+Acknowledgement
+= explicit actor-scoped taking-notice of a specific target/material version/change
+
+Acknowledgement != Confirmation
+```
+
+This does not change the historical Confirmation v0 verdict; it resolves a neighbor that was intentionally deferred at the time.
+
+Additional current rules:
+
+```text
+delivery/read/display telemetry != Acknowledgement
+Acknowledgement != understanding
+Acknowledgement != Participation response
+Acknowledgement != Responsibility
+Acknowledgement != Authority/Decision/effective change
+Acknowledgement != Actual
+```
+
+Generic cross-domain `Acceptance` was tested in the same review and rejected as a standalone kernel primitive. Positive `accepted` semantics remain owned by the relevant family/workflow, including Participation response and Responsibility-specific hand-off response.
+
+The earlier `Acknowledgement/common-ground model` and generic `Acceptance` entries in this document's deferred list are therefore **closed downstream**. Agreement, Consent, Decision, Version, Verification and specialist semantics remain separately owned dependencies.
+
+Normative downstream references:
+
+- `acknowledgement.md`;
+- `../checkpoints/acknowledgement-v0-validation.md`.
