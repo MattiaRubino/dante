@@ -708,3 +708,59 @@ Activity v0 does not decide:
 Activity v0 remains the accepted actionable-intention primitive.
 
 The 2026-08-11 hardening removes the accidental assumption that the person whose LifeOS contains the Activity must also be its requester, responsible actor and performer. It does not change the core Activity/Event/Plan/Schedule/Session boundaries.
+
+---
+
+# 2026-08-12 — Responsibility v0 closure amendment
+
+Responsibility v0 and its validation checkpoint close the previously deferred **semantic** Responsibility/Assignment/Claim/Hand-off boundary without changing Activity identity.
+
+Current authoritative interpretation:
+
+```text
+Activity
+= actionable intention identity
+
+Responsibility
+= specific semantic relation: who is accountable for ensuring the bounded commitment is appropriately handled
+
+Assignment
+= role-specific establishment/change operation
+NOT standalone universal primitive
+
+Claim
+= self-initiated role-acquisition operation
+NOT standalone universal primitive
+
+Hand-off
+= role-specific transfer workflow/pattern
+NOT standalone universal primitive
+
+Expected performer
+!= Responsibility
+
+Actual performer
+!= Responsibility
+
+Coordination Stewardship
+!= Responsibility
+standalone primitive SAFE DEFERRED
+```
+
+The older wording above referring to a **future Responsibility model** is superseded at the semantic level by `concepts/responsibility.md`. Physical identity/cardinality/state/version/API/SQL representation remains deferred to the logical model and later Authority/Acceptance/Visibility reviews.
+
+Additional canonical hardening:
+
+```text
+unknown responsible Actor
+!=
+explicitly open / unassigned / claimable
+```
+
+A hand-off request does not universally establish a transfer, Assignment does not universally imply Acceptance, and ordinary Responsibility change continues to preserve the same Activity identity.
+
+See:
+
+- `concepts/responsibility.md`;
+- `checkpoints/responsibility-v0-validation.md`;
+- `checkpoints/relationship-v0-validation.md`.
