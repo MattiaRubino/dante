@@ -8,46 +8,42 @@
 
 ## Canonical definition
 
-> **Visibility is the contextual information-exposure capability through which a bounded representation of a domain object, fact, relationship, state, or projection may be made available for inspection or receipt by a specific recipient/access context under an applicable basis. Visibility does not create recipient identity and does not by itself grant Authority to change the underlying domain, permission to use or re-disclose the information for another purpose, access to hidden source causes or related records, acknowledgement that the information was actually seen, or technical authorization identity.**
+> **Visibility is the contextual information-exposure capability through which a bounded representation of a domain object, fact, relationship, state, or projection may be made available for inspection or receipt by a specific recipient/access context under an applicable basis. Visibility does not create recipient identity and does not by itself grant Authority to change the underlying domain, permission to use or re-disclose the information for another purpose, access to hidden source causes or related records, Acknowledgement that the information was explicitly taken notice of, or technical authorization identity.**
 
 Visibility answers:
 
 > **What information may this recipient context be exposed to?**
 
-Visibility is therefore a **canonical cross-cutting information-exposure capability**, not a universal Access mega-concept and not an ACL entity/root.
+Visibility is a **canonical cross-cutting information-exposure capability**, not a universal Access mega-concept and not an ACL entity/root.
 
 ---
 
 # 1. Why Visibility exists
 
-LifeOS needs selective disclosure across one shared reality without duplicating domain objects per user.
+LifeOS needs selective disclosure across one shared reality without duplicating objects per user.
 
 Examples:
 
 - expose `Unavailable 18:00–20:00` without exposing the private Event causing it;
-- show a shared Asset without exposing serial number, purchase price, exact location, or private notes;
-- let two endpoints be individually visible while their sensitive relationship remains hidden;
-- allow an external Person to receive a bounded projection without having a LifeOS Account;
-- allow AI to use authorized private context for a safe derived answer without disclosing the private source.
+- show a shared Asset without exposing serial number, price, exact location or private notes;
+- let two endpoints be visible while a sensitive relationship between them remains hidden;
+- let an external Person receive a bounded projection without a LifeOS Account;
+- let AI use authorized private context for a safe derived answer without disclosing the private source.
 
-Without Visibility semantics, LifeOS would be pushed toward weak alternatives such as `shared=true`, object-wide ACL assumptions, per-user duplicated reality, or conflating read access with Authority.
+Without Visibility semantics LifeOS is pushed toward `shared=true`, object-wide ACL assumptions, per-user duplicated reality, or read access confused with Authority.
 
 ---
 
-# 2. Visibility is representation/projection scoped
+# 2. Representation / projection scope
 
-Visibility does not necessarily expose an entire domain object.
-
-A recipient may see:
+Visibility does not necessarily expose an entire object.
 
 ```text
-Asset: Sony A7 IV
+visible:
+Asset Sony A7 IV
 current availability
-```
 
-without seeing:
-
-```text
+not automatically visible:
 serial number
 purchase price
 private location
@@ -55,19 +51,13 @@ private notes
 ownership history
 ```
 
-Canonical rule:
-
-> **Visibility may apply to a bounded representation/projection rather than every facet/source of the underlying domain object.**
+> **Visibility may apply to a bounded representation/projection rather than every facet/source of the underlying object.**
 
 Exact field/facet policy belongs to later logical/security design.
 
 ---
 
 # 3. Projection visibility != source visibility
-
-A private source may legitimately produce a shareable consequence.
-
-Example:
 
 ```text
 PRIVATE SOURCE
@@ -79,20 +69,15 @@ Unavailable 18:30–19:30
 recipient-visible
 ```
 
-Therefore:
-
 ```text
-Visibility(projection)
-!= Visibility(source)
+Visibility(projection) != Visibility(source)
 ```
 
-A safe projection does not create a duplicate public copy of the private source.
+A safe projection does not create a duplicate public source object.
 
 ---
 
 # 4. Endpoint visibility != relationship visibility
-
-Two referents can each be visible while the relationship between them remains private.
 
 ```text
 Person Anna visible
@@ -100,44 +85,27 @@ Event E visible
 Participation(Anna, E) private
 ```
 
-Therefore:
-
 ```text
-Visibility(endpoint A)
-+
-Visibility(endpoint B)
-!=
-Visibility(relationship A↔B)
+Visibility(endpoint A) + Visibility(endpoint B)
+!= Visibility(relationship A↔B)
 ```
 
-This applies to Participation, Responsibility, Authority, ownership, Subject associations, Resource allocation, Provenance, and future relationship families.
+This applies to Participation, Responsibility, Authority, Acknowledgement, ownership, Subject associations, Resource allocation, Provenance and future relationship families.
 
 ---
 
 # 5. Visibility versus Authority
-
-Authority governs domain effects.
-
-Visibility governs information exposure.
 
 ```text
 Visibility != Authority
 can see != can change/govern
 ```
 
-The reverse is also not universal: an Actor may be empowered to approve an aggregate/consequence without seeing every private source behind it.
-
-See `authority.md`.
+Authority also grants no automatic Visibility. An Actor may approve an aggregate/consequence without seeing every private source.
 
 ---
 
 # 6. Visibility versus Account / Principal / technical read permission
-
-Account/Principal identify platform/security contexts.
-
-Technical read permission is enforcement.
-
-Visibility is domain/product information exposure semantics.
 
 ```text
 Account != Visibility
@@ -145,33 +113,36 @@ Principal != Visibility
 technical read permission != Visibility
 ```
 
-A backend/system administrator may be technically capable of reading storage without having ordinary domain Visibility in the product context.
+Account/Principal are platform/security contexts; technical read permission is enforcement; Visibility is domain/product exposure semantics.
 
 An external Person may receive an authorized projection without a native LifeOS Account.
 
 ---
 
-# 7. Visibility versus actual view / acknowledgement
+# 7. Visibility versus actual view / read / Acknowledgement
 
 Visibility means information **may be exposed**.
 
-It does not prove that the recipient actually saw or understood it.
-
 ```text
 may view
-!= actually viewed
-
-response delivered
-!= read
-!= understood
-!= acknowledged
+!= actually viewed/read
+!= explicitly acknowledged
 ```
 
-Actual access/view logs and Acknowledgement remain separate concerns.
+Provider/client read/display telemetry and explicit Acknowledgement are separate from standing Visibility.
+
+Acknowledgement v0 now closes the semantic boundary:
+
+```text
+Visibility != Acknowledgement
+read/display telemetry != Acknowledgement
+```
+
+A recipient can have Visibility without reading; can read without explicit Acknowledgement; can explicitly Acknowledge a specific version/change where the workflow supports it.
 
 ---
 
-# 8. Visibility versus knowledge
+# 8. Visibility versus knowledge and historical disclosure
 
 Revoking Visibility controls future LifeOS-mediated exposure. It does not erase human knowledge or external copies.
 
@@ -191,107 +162,76 @@ current Visibility = no
 but not:
 
 ```text
-recipient no longer knows the information
-past disclosure never occurred
-external screenshots/copies disappear
+recipient no longer knows
+past disclosure never happened
+external copies disappear
 ```
-
-Canonical rule:
 
 > **Visibility revocation does not rewrite historical disclosure or human knowledge.**
 
+Current Visibility and historical Visibility are different questions.
+
 ---
 
-# 9. Current Visibility != historical Visibility
-
-A later grant does not imply the recipient could always see the information.
-
-A later revocation does not imply the recipient never could.
+# 9. Not visible != nonexistent
 
 ```text
-current Visibility
-!= Visibility applicable at historical time T
+not visible != nonexistent
 ```
 
-Historical access/disclosure may require audit/provenance depending on consequence, but no universal view-event root is pre-approved.
+This matters for search, counts, relationships, notifications, AI answers, calendar projections and errors.
+
+Even revealing `1 hidden participant` is itself a disclosure choice.
 
 ---
 
-# 10. Not visible != nonexistent
-
-A recipient's inability to inspect information must not be interpreted as proof that the underlying information does not exist.
-
-```text
-not visible
-!= nonexistent
-```
-
-This matters for search, counts, relationship existence, notifications, AI answers, calendar projections, and error messages.
-
-Even disclosing `1 hidden participant` reveals information and must itself be treated as a projection/disclosure choice.
-
----
-
-# 11. Unknown/no grant != explicit prohibition
-
-Semantic states remain distinguishable:
+# 10. Unknown/no grant != explicit prohibition
 
 ```text
 Visibility unknown / no applicable grant found
 != explicit prohibition
 ```
 
-A security engine may default-deny without turning that enforcement default into a domain fact that a specific recipient is explicitly prohibited.
+An enforcement engine may default-deny without turning that default into a domain fact of explicit prohibition.
 
 ---
 
-# 12. Visibility versus Sharing / Disclosure
-
-Visibility is standing/current exposure capability.
-
-Sharing is a product/workflow action that may alter exposure.
-
-Disclosure is an act of making information available/sending it.
+# 11. Visibility versus Sharing / Disclosure
 
 ```text
 Visibility != Share
 Visibility != Disclosure event
 ```
 
-High-consequence disclosure may later require audit/history, but this review does not justify universal `Share` or `Disclosure` entities.
+Visibility is current exposure capability. Sharing may alter it. Disclosure is an act/event of making information available.
+
+No universal Share/Disclosure root is accepted by this concept.
 
 ---
 
-# 13. Visibility != Authority to re-disclose
-
-Being allowed to inspect information does not automatically allow re-sharing it.
+# 12. Visibility != Authority to re-disclose
 
 ```text
-can see X
-!= may disclose X to Y
+can see X != may disclose X to Y
 ```
 
-Re-disclosure is governed by separate Authority/privacy/policy semantics.
+Re-disclosure belongs to separate Authority/privacy/policy semantics.
 
 ---
 
-# 14. Visibility != downstream Use / purpose
-
-Inspection or receipt is not universal permission for arbitrary reuse.
-
-A source may be usable for one authorized computation but not directly visible to another Actor.
-
-A visible record may still be restricted from unrelated analytics, training, export, or secondary use.
+# 13. Visibility != downstream Use / purpose
 
 ```text
 Visibility != arbitrary data-use permission
 ```
 
-Consent / purpose limitation / processing policy remain separate SAFE DEFERRED dimensions.
+A visible record may still be restricted from unrelated analytics, training, export or secondary use.
+
+Consent, purpose limitation and processing policy remain separate candidate/deferred areas.
 
 ---
 
-# 15. Subject, Responsibility, Participation, Resource and ownership boundaries
+# 14. Subject / Responsibility / Participation / Resource / ownership boundaries
 
 None of the following automatically grants Visibility:
 
@@ -299,78 +239,54 @@ None of the following automatically grants Visibility:
 being Subject
 being Participant
 holding Responsibility
-being Resource candidate / allocated Resource
+being Resource candidate/allocated Resource
 owning an Asset
 creating an object
 organizing an Event
+acknowledging a change
 ```
 
 A relationship itself may be more sensitive than either endpoint.
 
-Visibility must therefore remain a separate contextual capability.
-
 ---
 
-# 16. Provenance boundary
-
-Visibility of a target does not imply visibility of its full Provenance.
-
-A recipient may see:
+# 15. Provenance / Actual / Evidence boundary
 
 ```text
-Result: passed
-```
-
-without receiving every private upstream Observation, identity linkage, source payload, correction actor, or provider record.
-
-Likewise access to some Provenance does not imply access to every upstream source.
-
-```text
-Visibility(target)
-!= Visibility(full lineage)
-```
-
----
-
-# 17. Actual / Evidence boundary
-
-Visibility does not establish truth, Actual, Confirmation, or Evidence strength.
-
-A private or hidden fact may still be true.
-
-A visible assertion may still be wrong or contested.
-
-```text
+Visibility(target) != Visibility(full Provenance)
 Visibility != truth
 Visibility != Actual
 Visibility != Confirmation
 Visibility != Evidence
 ```
 
+A private/hidden fact may still be true; a visible assertion may still be wrong or contested.
+
 ---
 
-# 18. Multi-actor implications
+# 16. Multi-actor implications
 
-Visibility supports one shared canonical reality plus actor-scoped exposure.
+Visibility supports one shared reality plus actor-scoped exposure.
 
 Key rules:
 
-- Accountless Person may receive a bounded projection;
+- Accountless Person may receive bounded projection;
 - Participation does not grant all Event-related information;
 - Responsibility does not grant all related private context;
 - Authority does not automatically grant Visibility;
+- Acknowledgement does not grant broader Visibility or re-disclosure;
 - ownership does not mean universal visibility;
 - historical Participation/Responsibility does not imply future Visibility;
 - revocation does not erase historical attribution;
-- a visible object does not expose every relationship/facet;
-- group/role membership may become one basis but never automatic universal visibility;
-- no per-user copies of shared facts are required merely to implement privacy.
+- visible object does not expose every relationship/facet;
+- group/role membership may be one basis, never universal exposure;
+- no per-user copies of shared facts are required merely for privacy.
 
 ---
 
-# 19. Unequal-power contexts
+# 17. Unequal-power contexts
 
-Guardian, caregiver, manager, teacher, or specialist relationships may justify bounded Visibility in specific contexts.
+Guardian, caregiver, manager, teacher or specialist relationships may justify bounded Visibility in specific contexts.
 
 They do not imply:
 
@@ -379,17 +295,11 @@ role = manager/guardian/etc.
 → see everything
 ```
 
-Visibility remains contextual, bounded, explainable, and separable from Authority.
+Visibility remains contextual, bounded, explainable and separable from Authority, Consent and Acknowledgement.
 
 ---
 
-# 20. AI / Context Builder boundary
-
-This is a critical LifeOS rule.
-
-An AI may be allowed to use private source context to compute a safe consequence while being forbidden to disclose the source.
-
-Example:
+# 18. AI / Context Builder boundary
 
 ```text
 private source
@@ -402,41 +312,38 @@ shared answer
 18:30–19:30 doesn't work
 ```
 
-The AI must not infer:
+AI must not infer:
 
 ```text
-may process source
-→ may reveal source
+may process source → may reveal source
 ```
-
-Canonical rule:
 
 > **AI source access/processing is not disclosure permission. Output Visibility must be evaluated independently.**
 
-Inference privacy also matters: a derived answer can disclose sensitive source information even if the source record itself is hidden.
+Inference privacy matters: a derived answer can leak source meaning even if the source record is hidden.
 
-Exact Context Builder enforcement remains later implementation/security work.
+Likewise AI read/access telemetry does not fabricate another actor's Acknowledgement.
 
 ---
 
-# 21. Scale and persistence
+# 19. Scale and persistence
 
-Visibility semantics do not require materializing every possible recipient×object×field ACL edge.
+Visibility semantics do not require materializing every recipient×object×field ACL edge.
 
-Future implementations may derive exposure from bounded policy, relationship, group, scope, projection, or explicit grant where appropriate.
+Future implementations may derive exposure from bounded policy, relationship, group, scope, projection or explicit grant.
 
 Canonical rules:
 
-- query frequency does not create a domain entity;
-- large-scale visibility checks do not justify universal ACL ontology;
-- field/facet/projection persistence is a logical/security decision;
-- no universal `visibility` table/root or one polymorphic `can_access` edge is pre-approved.
+- query frequency does not create domain identity;
+- visibility-check scale does not justify universal ACL ontology;
+- field/facet/projection persistence is logical/security design;
+- no universal `visibility` root or polymorphic `can_access` kernel edge is pre-approved.
 
 ---
 
-# 22. Simple UI versus kernel semantics
+# 20. Product / UI language
 
-Ordinary product surfaces may use natural labels:
+Typical UI:
 
 ```text
 Private
@@ -446,70 +353,66 @@ Available to household
 Show free/busy only
 ```
 
-The UI should not require users to understand `Visibility` as an ontology noun.
+The UI need not expose `Visibility` as ontology vocabulary.
 
-A product-level `Share` action may modify underlying visibility/policy without becoming a kernel entity.
+Actual read/acknowledgement flows may use different UI such as `Seen`, `Got it`, `Acknowledge`; those do not redefine Visibility.
 
 ---
 
-# 23. Relationship-modeling implication
+# 21. Relationship-modeling implication
 
-Visibility confirms Relationship v0.
-
-Simple cases may be derived/direct from bounded policy/context.
-
-Rich cases may require specific qualified visibility/exposure policy with target/projection, recipient context, scope, purpose/basis, effective period, or history.
+Simple cases may be direct/derived from bounded policy/context. Rich cases may require a specific qualified visibility/exposure context with target/projection, recipient, scope, purpose/basis, effective period or history.
 
 ```text
-qualified Visibility
-!= independent entity automatically
+qualified Visibility != independent entity automatically
 ```
 
 No universal Relationship/ACL root is required.
 
 ---
 
-# 24. Core invariants
+# 22. Core invariants
 
 1. **Visibility is contextual information-exposure capability, not identity.**
 2. **Visibility != Authority.**
 3. **Visibility != Account/Principal/technical read permission.**
 4. **Visibility != actual view/read/Acknowledgement.**
-5. **Visibility != knowledge.**
-6. **Visibility revocation != historical disclosure erasure.**
-7. **Current Visibility != historical Visibility.**
-8. **Not visible != nonexistent.**
-9. **No applicable grant != explicit prohibition semantically.**
-10. **Projection visibility != source visibility.**
-11. **Endpoint visibility != relationship visibility.**
-12. **Object visibility != every facet visibility.**
-13. **Visibility != permission to re-disclose.**
-14. **Visibility != arbitrary downstream Use/purpose.**
-15. **Participation/Responsibility/Subject/Resource/ownership do not automatically grant Visibility.**
-16. **Target visibility != full Provenance visibility.**
-17. **Visibility != truth/Actual/Confirmation/Evidence.**
-18. **AI may process authorized source != AI may disclose source.**
-19. **No universal Access mega-concept / ACL entity/root is accepted.**
-20. **Exact enforcement/persistence belongs to later logical/security design.**
+5. **Read/display telemetry != Acknowledgement.**
+6. **Visibility != knowledge.**
+7. **Visibility revocation != historical disclosure erasure.**
+8. **Current Visibility != historical Visibility.**
+9. **Not visible != nonexistent.**
+10. **No applicable grant != explicit prohibition semantically.**
+11. **Projection visibility != source visibility.**
+12. **Endpoint visibility != relationship visibility.**
+13. **Object visibility != every facet visibility.**
+14. **Visibility != permission to re-disclose.**
+15. **Visibility != arbitrary downstream Use/purpose.**
+16. **Participation/Responsibility/Subject/Resource/ownership/Acknowledgement do not automatically grant Visibility.**
+17. **Target visibility != full Provenance visibility.**
+18. **Visibility != truth/Actual/Confirmation/Evidence.**
+19. **AI may process authorized source != AI may disclose source.**
+20. **No universal Access mega-concept / ACL entity/root is accepted.**
+21. **Exact enforcement/persistence belongs to later logical/security design.**
 
 ---
 
-# 25. Adjacent Dependency Sweep
+# 23. Adjacent Dependency Sweep
 
 ## RESOLVED
 
 - Visibility ↔ Authority: information exposure != governance.
-- Visibility ↔ Account/Principal boundary: identity/enforcement != Visibility.
-- Visibility ↔ technical Read Permission: enforcement != domain exposure semantics.
+- Visibility ↔ Account/Principal: identity/enforcement != Visibility.
+- Visibility ↔ technical Read Permission: security enforcement != domain exposure.
 - Visibility ↔ Participation: involvement != access.
 - Visibility ↔ Responsibility: accountability != access.
 - Visibility ↔ Subject: aboutness != access.
 - Visibility ↔ Asset/ownership: identity/ownership != access.
 - Visibility ↔ Resource: eligibility/allocation != access.
 - Visibility ↔ source/projection: projection visibility != source visibility.
-- Visibility ↔ Disclosure/Share: operation/exposure event != standing visibility capability.
-- Visibility ↔ actual View: may see != did see.
-- Visibility ↔ Acknowledgement boundary: exposure != recognition.
+- Visibility ↔ Disclosure/Share: operation/event != standing capability.
+- Visibility ↔ actual View/read: may see != did see/read.
+- Visibility ↔ Acknowledgement: exposure/read evidence != explicit taking-notice.
 - Visibility ↔ Provenance: target visibility != full lineage visibility.
 
 ## SAFE DEFERRED
@@ -517,7 +420,7 @@ No universal Relationship/ACL root is required.
 ### Consent
 
 **Owner:** privacy/common-ground review.  
-**Why safe:** Consent may be one basis/constraint for exposure/use but is not Visibility itself.  
+**Why safe:** Consent may be one basis/constraint for exposure/use but is not Visibility.  
 **Reopening trigger:** privacy cannot be represented without collapsing Consent into Visibility.  
 **Tests to rerun:** CORE-04, MA-05, MA-07, MA-13, XCON-02, XCON-05.
 
@@ -538,96 +441,87 @@ No universal Relationship/ACL root is required.
 ### Principal / technical enforcement
 
 **Owner:** security logical model.  
-**Why safe:** domain Visibility and technical request authorization remain distinct.  
+**Why safe:** domain Visibility and technical authorization remain separate.  
 **Reopening trigger:** enforcement cannot preserve recipient/Actor/Account/Principal separation.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, MA-01, XCON-01.
 
 ### Group / public / link recipient scope
 
 **Owner:** multi-actor/security review.  
-**Why safe:** Visibility only requires a recipient/access context, not a final Group/public-link ontology.  
-**Reopening trigger:** ordinary sharing cannot represent recipient scope without a new native identity concept.  
+**Why safe:** recipient/access context does not require final Group/public-link ontology.  
+**Reopening trigger:** ordinary sharing cannot represent recipient scope without new native identity semantics.  
 **Tests to rerun:** CORE-04, CORE-10, MA-02, MA-09, XCON-01.
 
-### Sensitivity / information classification
+### Sensitivity / field/facet/projection policy
 
-**Owner:** privacy/logical model.  
-**Why safe:** current capability can expose bounded representations without one universal classification taxonomy.  
-**Reopening trigger:** selective disclosure cannot be derived without canonical classification semantics.  
-**Tests to rerun:** CORE-04, CORE-10, CORE-13, MA-07.
-
-### Field/facet/projection policy
-
-**Owner:** logical/security model.  
-**Why safe:** representation-scoped Visibility is fixed without choosing storage granularity.  
-**Reopening trigger:** persistence cannot represent source/projection/facet separation.  
-**Tests to rerun:** CORE-10, CORE-13, XCON-04.
+**Owner:** privacy/logical/security model.  
+**Why safe:** bounded representation exposure is fixed without selecting storage granularity/taxonomy.  
+**Reopening trigger:** selective disclosure cannot be represented without semantic redesign.  
+**Tests to rerun:** CORE-04, CORE-10, CORE-13, MA-07, XCON-04.
 
 ### Authority to disclose/re-share
 
 **Owner:** Authority + privacy policy.  
-**Why safe:** recipient Visibility explicitly grants no re-disclosure Authority.  
+**Why safe:** recipient Visibility grants no re-disclosure Authority.  
 **Reopening trigger:** re-sharing workflows require Visibility itself to carry governance power.  
 **Tests to rerun:** CORE-04, MA-06, MA-07, XCON-02.
 
-### Access/view audit / read receipt
+### Access/view audit / read receipt persistence
 
-**Owner:** Audit/Acknowledgement review.  
-**Why safe:** may-see and did-see are explicitly distinct.  
-**Reopening trigger:** product requires acknowledged/read history that cannot coexist with Visibility.  
-**Tests to rerun:** CORE-02, CORE-04, MA-05, XCON-03.
+**Owner:** Audit/integration/logical model.  
+**Why safe:** Acknowledgement v0 has now closed the semantic boundary; read/view telemetry remains distinct.  
+**Reopening trigger:** durable read/view evidence cannot coexist with the current Visibility/Acknowledgement separation.  
+**Tests to rerun:** CORE-02, CORE-04, CORE-10, CORE-13, MA-05, MA-07, MA-11, XCON-03.
 
-### Retention / deletion / cache / external copies
+### Retention / deletion / external copies
 
 **Owner:** privacy/retention review.  
-**Why safe:** revocation semantics are bounded to future LifeOS-mediated exposure.  
+**Why safe:** revocation is future LifeOS-mediated exposure, not retroactive knowledge erasure.  
 **Reopening trigger:** retention/deletion requirements force Visibility to represent copy lifecycle.  
 **Tests to rerun:** CORE-02, CORE-09, MA-11, XCON-03.
 
-### Qualified Visibility identity/persistence
+### Qualified Visibility identity / persistence
 
 **Owner:** logical data model.  
 **Why safe:** rich grants/policies may need structure/history without proving universal identity.  
 **Reopening trigger:** direct/derived/qualified representation cannot preserve scoped exposure/history.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
-No current dependency is a structural blocker.
+```text
+REOPEN                         0
+unclassified material items    0
+```
 
 ---
 
-# 26. Rejected alternatives
+# 24. Rejected alternatives
 
 Rejected:
 
-- generic `Access` mega-concept combining read/write/use/share/execute;
 - Visibility = Authority;
-- Visibility = Account/Principal;
-- Visibility = technical read permission;
-- Visibility = Participation;
-- Visibility = Responsibility;
-- Visibility = ownership;
-- Visibility = Subject;
-- Visibility = Sharing;
-- Visibility = actual View;
-- Visibility = Acknowledgement;
-- Visibility = Consent;
+- Visibility = Account/Principal/technical read permission;
+- Visibility = Participation/Responsibility/ownership/Subject/Resource;
+- Visibility = actual View/read/Acknowledgement;
 - Visibility = arbitrary downstream Use;
-- object-wide `shared=true` as canonical semantic model;
-- endpoint visibility automatically implying relationship visibility;
-- safe projection automatically exposing source;
-- universal ACL/Visibility entity/root.
+- universal Access mega-concept;
+- universal ACL/Visibility entity/root;
+- `shared=true` as complete privacy model;
+- visible endpoints imply visible relationship;
+- visible projection implies visible source;
+- revocation implies erased historical knowledge;
+- AI source processing implies disclosure permission.
 
 ---
 
-# 27. Reopening triggers
+# 25. Reopening triggers
 
 Reopen Visibility v0 if later evidence shows that:
 
-1. information exposure cannot remain separate from Authority or technical authorization;
-2. source/projection/relationship visibility cannot be represented without duplicate domain reality;
-3. Consent/use-purpose semantics prove inseparable from exposure capability;
-4. AI inference/privacy cannot preserve safe derived disclosure under this boundary;
-5. a universal Visibility identity/lifecycle is required across contexts;
-6. logical persistence cannot preserve scoped/current/historical visibility without a stronger concept.
+1. exposure and Authority cannot remain distinct;
+2. Consent/use semantics require Visibility to absorb a separate purpose/permission question;
+3. field/projection/inference privacy cannot be represented without changing the core capability;
+4. read/view/Acknowledgement persistence cannot preserve current semantic separation;
+5. Principal/enforcement requires identity collapse;
+6. logical persistence cannot preserve direct/derived/qualified Visibility/history.
 
-Until then, Visibility remains canonical **cross-cutting contextual information-exposure capability**, not entity/root or universal Access/ACL object.
+Until then, Visibility remains the current accepted **cross-cutting information-exposure capability**, not an ACL/root.
