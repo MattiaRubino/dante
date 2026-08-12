@@ -600,7 +600,7 @@ Resource role != Authority
 Resource role != Visibility
 ```
 
-Exact access, ownership, custody, stewardship and Authority relations remain deferred to Relationships / Reasoning.
+Authority v0 and Visibility v0 now close the governance/exposure boundaries: Resource candidacy, allocation, reservation or use creates neither governance power nor information exposure. Ownership/access/custody/Consent and exact technical enforcement remain separately modeled.
 
 ---
 
@@ -709,7 +709,7 @@ One provider may support:
 
 Key rules:
 
-- being Resource does not imply shared visibility;
+- being Resource does not imply shared Visibility;
 - one Actor allocating a Resource does not automatically authorize another Actor;
 - current reservation does not establish ownership;
 - one Person's Resource eligibility does not imply responsibility or consent;
@@ -738,11 +738,20 @@ Unavailable 18:00–20:00
 
 without exposing the private reason.
 
+Visibility v0 makes the boundary explicit:
+
+```text
+Visibility(free/busy or eligibility projection)
+!= Visibility(private source Event/Activity/Observation/reason)
+```
+
 Canonical rules:
 
-- Resource visibility != source-record visibility;
+- Resource Visibility != source-record Visibility;
 - free/busy projection != disclosure of underlying Event/Activity;
 - candidate matching does not automatically reveal private qualifications/history;
+- visible provider/Asset != visible Resource relationship/candidacy reason;
+- Authority to allocate != automatic Visibility of every private source;
 - AI may reason over authorized context but must not use eligibility as disclosure permission.
 
 ---
@@ -762,14 +771,16 @@ AI must not silently:
 
 - create Resource identity wrappers;
 - convert probabilistic suitability into authoritative allocation;
-- reserve shared capacity without the required authority;
+- reserve shared capacity without the required Authority;
 - infer ownership or responsibility from Resource use;
 - disclose private availability/reasons during optimization;
 - rewrite planned allocation history to match actual use.
 
-Canonical rule:
+Canonical rules:
 
 > **AI may propose resource matching and allocation; it does not inherit allocation Authority merely because it can optimize the plan.**
+
+> **AI may process authorized private eligibility/availability inputs without gaining Visibility/disclosure permission for those inputs.**
 
 ---
 
@@ -819,28 +830,13 @@ Canonical rule:
 
 External systems were used as benchmark evidence, not design authority.
 
-## Calendar / booking systems
+Useful lessons retained:
 
-Useful lessons:
-
-- rooms/equipment can be bookable without proving that `Resource` should be their native ontology identity;
-- people are often kept as staff/person objects while their availability is scheduled;
-- capacity and reservation semantics are operational layers over underlying identities.
-
-## Constraint/scheduling systems
-
-Useful lesson:
-
-- people, machines and other supplies can all be treated as resources in an optimization problem without requiring them to share one real-world identity type.
-
-## Project-management systems
-
-Useful lesson:
-
-- some systems use `Resource` broadly for people, equipment, material and cost because it is useful for project allocation;
-- that breadth is operational vocabulary, not evidence that LifeOS should make every such thing one kernel entity.
-
-LifeOS adapts the common operational role while preserving stronger native identities and bounded provider/value/supply semantics.
+- rooms/equipment can be bookable without proving Resource should be native identity;
+- people can remain Person/staff identities while their availability is scheduled;
+- capacity/reservation are operational layers over underlying identities;
+- heterogeneous supplies may be treated uniformly in optimization without sharing one native identity type;
+- broad provider vocabulary does not decide LifeOS ontology.
 
 ---
 
@@ -919,6 +915,8 @@ Preserves common allocation/capacity semantics without duplicate identity.
 19. **Resource substitution must not rewrite material planning/history.**
 20. **AI optimization does not grant allocation Authority.**
 21. **No universal `resources` table/root or one generic `resource_id` relation is pre-approved.**
+22. **Visible provider != visible Resource relation, private eligibility basis, or source reason.**
+23. **Authority to allocate != Visibility of every private source.**
 
 ---
 
@@ -937,7 +935,7 @@ It should be able to express where justified:
 - Capacity Reservations/Claims;
 - substitutions;
 - planned versus actual resource use;
-- actor-scoped visibility/Authority;
+- actor-scoped Visibility/Authority;
 - external-provider resource mappings without replacing native identity.
 
 Do not infer from Resource v0 that LifeOS requires:
@@ -960,7 +958,7 @@ Do not infer from Resource v0 that LifeOS requires:
 
 ### Resource vs Asset
 
-**Resolution:** Asset is native identity under its current scoped baseline; Asset may play Resource role. The terminology-neutral Asset review completed during Cluster-4 integration retained this separation.
+**Resolution:** Asset is native identity under its current scoped baseline; Asset may play Resource role.
 
 ### Resource vs Person
 
@@ -977,6 +975,14 @@ Do not infer from Resource v0 that LifeOS requires:
 ### Resource vs Availability / Capacity
 
 **Resolution:** Availability/Capacity applies to schedulable Resource-role cases; Resource identity is not created by those capabilities.
+
+### Resource vs Authority
+
+**Resolution:** Authority v0 defines bounded governance separately. Resource eligibility/candidacy/allocation/use creates no Authority; allocation Authority may be policy-derived without changing Resource identity.
+
+### Resource vs Visibility
+
+**Resolution:** Visibility v0 defines bounded information exposure separately. Resource/provider visibility, candidacy, availability projection and private source reasons can differ.
 
 ## SAFE DEFERRED
 
@@ -1015,11 +1021,11 @@ Do not infer from Resource v0 that LifeOS requires:
 **Reopening trigger:** capability/service workflows require a distinct native identity or common semantic not expressible under current model.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-06, CORE-12, XCON-01.
 
-### Ownership / access / Authority / Visibility
+### Ownership / custody / Consent / technical access
 
-**Owner:** Relationships / Reasoning.  
-**Why safe:** Resource v0 explicitly grants none of these semantics.  
-**Reopening trigger:** resource allocation rights cannot be represented without changing Resource identity/role.  
+**Owner:** future ownership/privacy/security logical reviews.  
+**Why safe:** Authority and Visibility are already separate; Resource role grants neither.  
+**Reopening trigger:** ownership/custody/Consent/enforcement cannot compose without changing Resource identity/role.  
 **Tests to rerun:** MA-06, MA-07, MA-13, MA-17, XCON-02.
 
 No current dependency is a structural blocker.
@@ -1040,6 +1046,8 @@ Rejected:
 - Resource = Allocation;
 - Resource = Reservation;
 - Resource = Responsibility/Performer;
+- Resource = Authority;
+- Resource = Visibility;
 - Resource = anything useful;
 - Money/Budget as Resource by default;
 - early concrete resource selection for every requirement;
@@ -1110,38 +1118,12 @@ responsible Actor != expected performer
 responsible Actor != actual performer
 ```
 
-Example:
+The word `Claim` has two bounded usages that must not be conflated:
 
-```text
-Activity
-Prepare report
+- **Responsibility Claim:** self-initiated attempt/action to acquire a named role;
+- **Capacity Claim / Reservation:** scheduling/capacity hold.
 
-Manager
-responsible
-
-Analyst
-Resource-eligible + expected performer
-
-Assistant
-actual substitute performer
-```
-
-All three roles can coexist without identity collapse.
-
-The word `Claim` also now has two bounded usages that must not be conflated by vocabulary:
-
-- **Responsibility Claim:** a self-initiated attempt/action to acquire a named role;
-- **Capacity Claim / Reservation:** a scheduling/capacity hold.
-
-They are separate semantic families despite sharing the English word `claim`.
-
-The older Resource wording that left precise responsibility semantics deferred is superseded by `concepts/responsibility.md`; Resource Requirement/Allocation/Reservation and actual-use modeling remain independently SAFE DEFERRED.
-
-See:
-
-- `concepts/responsibility.md`;
-- `checkpoints/responsibility-v0-validation.md`;
-- `checkpoints/relationship-v0-validation.md`.
+They are separate semantic families despite sharing the English word.
 
 ---
 
@@ -1149,11 +1131,8 @@ See:
 
 Participation v0 closes the Resource ↔ Participation boundary without changing Resource semantics.
 
-Canonical distinction:
-
 ```text
 Resource
-= what could satisfy an operational/execution need
 = eligibility / capability / availability-capacity role
 
 Participation
@@ -1170,11 +1149,23 @@ Resource reservation != Actual Participation
 Participation != Resource eligibility/capacity
 ```
 
-A Person may independently play both roles in the same context, but neither establishes the other. A room/equipment item may be represented by external calendar providers as a `resource attendee`; that provider vocabulary is an integration mapping choice, not evidence that LifeOS should treat the room/equipment as a Participant.
+A Person may independently play both roles, but neither establishes the other. Provider `resource attendee` vocabulary is an integration mapping choice, not LifeOS ontology.
 
-Actual human Participation must not be inferred from Resource reservation or capacity consumption, and Participation does not prove that the Person was an eligible/available Resource.
+---
 
-See:
+# 2026-08-12 — Authority + Visibility closure amendment
 
-- `concepts/participation.md`;
-- `checkpoints/participation-v0-validation.md`.
+Authority v0 and Visibility v0 close the governance/exposure side of Resource without changing planning/execution eligibility semantics.
+
+```text
+Resource
+= what could satisfy the requirement
+
+Authority
+= who/what may legitimately select/reserve/override under bounded policy
+
+Visibility
+= what provider/resource/projection/source information a recipient may inspect
+```
+
+Therefore eligibility, allocation, ownership, governance, and disclosure remain independently representable. An AI planner may use private availability/capability inputs to optimize without inheriting allocation Authority or permission to reveal those inputs.
