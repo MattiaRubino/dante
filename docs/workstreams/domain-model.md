@@ -1,29 +1,32 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active after Clusters 1–4 validation**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Acknowledgement v0 propagated, scope QA pending**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
+- Pre-scope validated commit for current Acknowledgement milestone: `68b63bd233b116699719e77449db2180338b1bba`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current completed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility**
-- Current next review: **re-score Acceptance / Acknowledgement as one common-ground candidate area; neither is pre-accepted**
+- Current completed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement**
+- Generic cross-domain **Acceptance is rejected as a standalone kernel primitive**; useful positive-response semantics remain family/workflow-specific.
+- Current exact task: **finish post-write QA for the Acknowledgement v0 propagation against `68b63bd...`**.
+- Next exact task after QA PASS: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect a next concept from roadmap vocabulary**.
 
 ## Purpose
 
-Turn LifeOS product requirements into an implementation-ready domain model without prematurely fixing specialist modules, collaboration infrastructure, final APIs or SQL tables.
+Turn LifeOS product requirements into the smallest implementation-ready semantic model that survives real workflows without prematurely fixing specialist modules, collaboration infrastructure, final APIs or SQL tables.
 
-Earlier product terminology is evidence, not automatic truth. Candidates are revalidated through real-world workflows, mature-product/standard benchmarks, adversarial reduction, history/correction tests, multi-actor stress and cross-concept consistency.
+Earlier product terminology is evidence, not automatic truth. Candidates are revalidated through real-world workflow inversion, discovery simulations, targeted mature-product/standard benchmarks, adversarial reduction, history/correction tests, multi-actor stress, cross-concept consistency and explicit dependency closure.
 
 > **Accepted means current best decision, not immutable decision.**
 
-A roadmap term is a candidate, not an object that must survive.
+A roadmap/product term is a candidate, not an object that must survive.
 
 ---
 
 # 1. Required reading — current handoff
 
-Read these first, in order:
+Read in this order:
 
 1. [`../domain/README.md`](../domain/README.md)
 2. [`../domain/language-map.md`](../domain/language-map.md)
@@ -34,59 +37,157 @@ Read these first, in order:
 7. [`../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
 8. [`../domain/checkpoints/cross-cluster-validation-v4.md`](../domain/checkpoints/cross-cluster-validation-v4.md)
 9. [`../domain/checkpoints/relationship-v0-validation.md`](../domain/checkpoints/relationship-v0-validation.md)
-10. [`../domain/concepts/responsibility.md`](../domain/concepts/responsibility.md)
-11. [`../domain/checkpoints/responsibility-v0-validation.md`](../domain/checkpoints/responsibility-v0-validation.md)
-12. [`../domain/concepts/participation.md`](../domain/concepts/participation.md)
-13. [`../domain/checkpoints/participation-v0-validation.md`](../domain/checkpoints/participation-v0-validation.md)
-14. [`../domain/concepts/authority.md`](../domain/concepts/authority.md)
-15. [`../domain/checkpoints/authority-v0-validation.md`](../domain/checkpoints/authority-v0-validation.md)
-16. [`../domain/concepts/visibility.md`](../domain/concepts/visibility.md)
-17. [`../domain/checkpoints/visibility-v0-validation.md`](../domain/checkpoints/visibility-v0-validation.md)
-18. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+10. [`../domain/concepts/responsibility.md`](../domain/concepts/responsibility.md) + validation
+11. [`../domain/concepts/participation.md`](../domain/concepts/participation.md) + validation
+12. [`../domain/concepts/authority.md`](../domain/concepts/authority.md) + validation
+13. [`../domain/concepts/visibility.md`](../domain/concepts/visibility.md) + validation
+14. [`../domain/concepts/acknowledgement.md`](../domain/concepts/acknowledgement.md)
+15. [`../domain/checkpoints/acknowledgement-v0-validation.md`](../domain/checkpoints/acknowledgement-v0-validation.md)
+16. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 
-Then inspect only the concept specs pressured by the immediate review.
+Then inspect only concept specs pressured by the next selected review.
 
-Do **not** redo Clusters 1–4 or the five completed Cluster-5 reviews unless stronger evidence exposes a real contradiction.
+Do **not** redo Clusters 1–4 or completed Cluster-5 reviews unless stronger evidence exposes an actual contradiction.
 
 ---
 
-# 2. Mandatory operating rules
+# 2. Mandatory operating procedure
 
-- Work one candidate/family at a time.
-- Use Methodology v3 for every review.
-- From Relationships / Reasoning onward, run the **Adjacent Dependency Sweep before every verdict**.
-- Run the whole v3 pipeline autonomously once a candidate starts; do not stop after each individual CORE/MA test merely to ask for `avanti` unless a real `REOPEN` or user decision is required.
-- Mature apps, standards and specialist systems are benchmark evidence, never design authority.
-- Benchmark behavior/lifecycle/failure modes, not nouns.
-- Allowed concept verdicts: `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
-- Dependency closure classes: `RESOLVED`, `SAFE DEFERRED`, `REOPEN`.
-- SAFE DEFERRED requires safety reason, owner/stage, exact reopening trigger and rerun tests.
-- No `TBD`, unnamed future dependency or generic `review later` for material issues.
-- Candidate rejection is valid when capability survives without a distinct primitive.
-- Preserve planned/current/actual/history distinctions.
-- Preserve identity versus contextual-role distinctions.
-- Preserve truth/Observation/Evidence/Confirmation/Provenance/Authority/Visibility distinctions.
-- Do not build the domain around `users.id`.
-- Do not collapse the domain into arbitrary JSON.
-- Do not create a universal graph/root merely for heterogeneous references.
-- Do not begin final SQL/API design until Relationships / Reasoning and whole-domain gates pass.
-- Reopen earlier concepts only for an actual contradiction, not because a later concept adds detail.
+One candidate/family at a time.
 
-## Git rule
+For every review execute, in order:
 
-Before **every future Git write**:
+```text
+candidate selection / re-score
+↓
+problem + evidence formation before nouns
+↓
+EV-01 internal evidence
+EV-02 real-world workflow inversion
+EV-03 targeted external benchmark
+      BORROW / ADAPT / ALREADY STRONGER /
+      ANTI-PATTERN / NOT APPLICABLE
+EV-04 smallest candidate
+↓
+identity / independence / boundaries / deliberate deferrals
+↓
+CORE-01..13
+↓
+MA-01..20
+↓
+XCON-01..06
+↓
+Adjacent Dependency Sweep
+RESOLVED / SAFE DEFERRED / REOPEN
+↓
+adversarial log
+reopening/dependency register
+regression corpus additions
+↓
+verdict
+↓
+documentation propagation analysis
+↓
+STOP BEFORE GIT WRITE
+```
 
-1. state exact branch + exact file scope;
-2. wait for explicit user approval;
-3. perform only that scope;
-4. QA against the pre-scope commit;
-5. treat approval as consumed after completion.
+A SAFE DEFERRED item must include:
 
-Never infer write approval from a previous scope.
+- unresolved question;
+- why current acceptance is safe;
+- owner/stage;
+- exact reopening trigger;
+- exact tests/boundaries to rerun.
+
+No `TBD`, unnamed future dependency or generic `review later` is valid for a material issue.
+
+Once a candidate review starts, execute the whole v3 pipeline autonomously. Do not stop after each CORE/MA test merely for `avanti`; stop only for a true REOPEN/user decision or at the Git write gate.
+
+After a coherent review:
+
+1. state exact branch;
+2. state exact pre-scope commit;
+3. state exact create/update file scope with propagation reason;
+4. wait for explicit user approval;
+5. write only approved paths;
+6. QA the full diff against the pre-scope commit;
+7. confirm no out-of-scope path changed;
+8. treat approval as consumed;
+9. only then re-score the next candidate.
+
+Canonical rule:
+
+```text
+V3 verdict in chat
+!= accepted Domain Atlas baseline
+
+accepted baseline
+= completed v3
++ hardenings incorporated
++ documentation propagation
++ approved Git write
++ post-write QA PASS
+```
 
 ---
 
-# 3. Current validated baseline
+# 3. Product / evidence rules
+
+LifeOS is a **personal-first adaptive personal operating system**, not a universal enterprise/specialist workflow suite.
+
+External apps, standards, APIs and specialist systems are **benchmark evidence, never design authority**.
+
+Preferred direction:
+
+```text
+LifeOS semantics
+↓
+strong internal model
+↓
+optional adapters/mappings
+↓
+external providers/standards
+```
+
+Benchmark behavior, lifecycle, correction/history, failure modes, privacy, Authority, sync and product cost — not nouns.
+
+A mature product feature is not proof of correct ontology. A technical security model being feasible is not proof LifeOS should adopt it. A provider enum/status does not become a kernel invariant merely through interoperability pressure.
+
+---
+
+# 4. Language / documentation rules
+
+`docs/domain/language-map.md` is the canonical quick terminology map:
+
+```text
+DOMAIN LANGUAGE
+↓
+PRODUCT LANGUAGE
+↓
+UI LANGUAGE
+↓
+IMPLEMENTATION LANGUAGE
+```
+
+A UI/product noun does not create a primitive.
+
+Terminology precedence:
+
+1. accepted concept spec;
+2. Language Map;
+3. validation/checkpoint guardrails;
+4. this workstream handoff;
+5. current product docs;
+6. historical product docs/glossaries;
+7. conversation memory.
+
+Historical checkpoints/evidence are not silently rewritten for vocabulary uniformity. Later resolutions close earlier deferrals through explicit downstream amendments/current docs.
+
+The old product glossary remains product/historical evidence; Domain Atlas semantics take precedence where they differ.
+
+---
+
+# 5. Current validated baseline
 
 ```text
 Intention & Execution v0        PASS
@@ -100,6 +201,8 @@ Responsibility v0 review        PASS WITH HARDENING
 Participation v0 review         PASS WITH HARDENING
 Authority v0 review             PASS WITH HARDENING
 Visibility v0 review            PASS WITH HARDENING
+Acknowledgement v0 review       PASS WITH HARDENING — hardenings incorporated
+Generic Acceptance primitive    REJECTED
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
 
@@ -107,9 +210,11 @@ structural reopenings           0
 unclassified material debt      0
 ```
 
+The Acknowledgement milestone is not considered operationally complete until the current post-write QA passes.
+
 ---
 
-# 4. Current accepted concept/capability set
+# 6. Current accepted concept/capability set
 
 ```text
 Goal
@@ -132,18 +237,19 @@ Evidence
 Provenance
 Quantity
 Subject          — semantic aboutness role
-Person           — native human entity
+Person           — native human identity
 Actor            — semantic agency capability
-Asset            — current scoped native physical-object entity
+Asset            — scoped native physical-object identity
 Resource         — semantic planning/execution role/capability
 Relationship modeling discipline — cross-cutting rule, not root
 Responsibility   — accountability relation family
 Participation    — involvement relation family
 Authority        — governance relation/capability
 Visibility       — information-exposure capability
+Acknowledgement  — explicit-taking-notice common-ground attestation/relation capability
 ```
 
-Accepted boundary, detailed security model deferred:
+Accepted security/access boundary, detailed model deferred:
 
 ```text
 Person != Account != Principal
@@ -152,436 +258,250 @@ Actor != Account/Principal
 
 ---
 
-# 5. Rejected kernel roots / primitives
+# 7. Current rejected kernel abstractions
+
+Includes:
 
 ```text
-Register
-universal RegisterEntry
-universal Subject entity/root
-universal Actor entity/root
-universal Resource entity/root
-universal User root
-universal ManagedObject root
-universal Relationship entity/root/supertype
-semantic-free related_to kernel truth
-universal Responsibility entity/root
-universal Assignment primitive
-universal Claim primitive
-universal Hand-off primitive
-universal Participant entity/root
-universal Participation/member/social-graph root
-universal Invitation primitive
-universal Attendance primitive
-universal Authority entity/root
-universal admin flag as domain governance
-universal Permission object as domain Authority
-universal Access mega-concept
-universal Visibility/ACL entity/root
+universal Register/RegisterEntry
+universal Subject/Actor/Resource/User/ManagedObject roots
+universal Relationship root / semantic-free related_to
+universal Responsibility/Assignment/Claim/Hand-off roots
+universal Participant/Participation/Invitation/Attendance roots
+universal Authority/admin/Permission root
+universal Access/Visibility ACL root
+universal delivery/read/Acknowledgement state machine
+universal cross-domain Acceptance / Assent root
+one generic accepted=true status across workflows
 ```
 
-No rejected primitive should be reintroduced under a new name without explicitly reopening the relevant checkpoint.
+Do not reintroduce a rejected abstraction under a new noun without explicitly reopening the relevant checkpoint with stronger evidence.
 
 ---
 
-# 6. Relationship modeling discipline
-
-Normative checkpoint: `relationship-v0-validation.md`.
+# 8. Current relationship/reasoning decomposition
 
 ```text
-specific meaning + semantically complete simple link
-→ direct specific relation may suffice
-
-specific meaning + material relation state/history/time/privacy/Authority/etc.
-→ specific qualified relation family may be justified
-
-universal Relationship wrapper
-→ rejected
+who acts?                Actor
+who is accountable?      Responsibility
+who is involved?         Participation
+who may govern?          Authority
+who may see?             Visibility
+who explicitly noticed?  Acknowledgement
+what actually happened?  Actual
 ```
 
-Hardening:
+Current non-collapse rules include:
 
 ```text
-qualified relation != independent entity automatically
-queryability/cardinality/row-id != domain identity
-orientation/symmetry/transitivity/inverse = family-specific
-binary source/target not mandatory if it destroys n-ary context
-```
-
-This discipline has survived four major stresses: Responsibility, Participation, Authority and Visibility.
-
----
-
-# 7. Responsibility v0
-
-Canonical question:
-
-> **Who is accountable for ensuring this bounded commitment is appropriately handled?**
-
-```text
-Responsibility
-specific semantic relation family
-simple/direct or specifically qualified when justified
-NOT universal entity/root
-
-Assignment
-role-specific establishment/change operation
-NOT standalone primitive
-
-Claim
-self-initiated role-acquisition operation
-NOT standalone primitive
-
-Hand-off
-role-specific transfer workflow
-NOT standalone primitive
-
-Coordination Stewardship
-semantically distinct
-standalone primitive SAFE DEFERRED
-```
-
-Mandatory distinctions:
-
-```text
-Responsibility != requester
-Responsibility != expected performer
-Responsibility != actual performer
-Responsibility != Resource
-Responsibility != Participation
-Responsibility != Authority
-Responsibility != Visibility
-Responsibility != ownership/custody/Stewardship
-unknown holder != explicitly open/unassigned
-```
-
-Operations must name the role being changed. Hand-off request != effective transfer by default.
-
-Authority v0 now owns governance/effect. Visibility v0 owns information exposure. Acceptance/Acknowledgement still owns willingness/common-ground questions.
-
----
-
-# 8. Participation v0
-
-Canonical questions:
-
-> **Who is expected/intended to be involved?**
-
-and independently:
-
-> **Who actually participated, and how/when where material?**
-
-```text
-Participation
-specific relation family
-intended/response and Actual facets distinct
-NOT entity/root/social graph
-
-Participant
-contextual role over native identity
-
-Invitation
-participation proposal/request
-
-Participation response
-actor-scoped intended/response state
-
-Attendance
-Event-facing Actual Participation semantics
-```
-
-Mandatory distinctions:
-
-```text
-Participation response != Actual Participation
-accepted != attended
-declined != proved absent
-no response != declined
-no attendance evidence != proved absence
-Participation != Session
-Participation != Responsibility/Performer/Resource
-Participation != Authority/Visibility
-shared Actual != identical actor-specific Actual Participation
-```
-
-Provider attendance telemetry is Evidence/Provenance until applicable reconciliation establishes current truth.
-
----
-
-# 9. Authority v0
-
-Canonical question:
-
-> **Who/what may legitimately make which bounded domain effect effective, on what target and under what scope/basis/context?**
-
-```text
-Authority
-CANONICAL cross-cutting governance relation/capability
-contextual + action/effect/target scoped
-may be direct/derived/qualified
-NOT native entity/root
-```
-
-Mandatory distinctions:
-
-```text
-Authority != Actor
-Authority != Person/Account/Principal
-Authority != Responsibility/Participation
-Authority != Visibility
-Authority != ownership
-Authority != Confirmation/Acceptance
-Authority != truth
-Authority != technical Permission/authorization
-```
-
-Hardening:
-
-```text
-Authority to X != Authority to Y
-current Authority != historical Authority at action time
-claimed Authority != established Authority
-Authority unknown != explicit no-Authority/prohibition
-revoked/expired != never existed
-```
-
-Delegation is a bounded Authority-establishment/entrustment pattern; it does not transfer everything and does not imply re-delegation.
-
-AI reasoning/action ability does not create Authority. Effective AI Authority cannot silently exceed applicable scope.
-
----
-
-# 10. Visibility v0
-
-Canonical question:
-
-> **What bounded information may this recipient/access context be exposed to?**
-
-```text
-Visibility
-CANONICAL cross-cutting information-exposure capability
-contextual + recipient/target/representation scoped
-may be direct/derived/qualified
-NOT native entity/root
-NOT universal Access/ACL object
-```
-
-Mandatory distinctions:
-
-```text
-Visibility != Authority
-Visibility != Account/Principal/technical read permission
-Visibility != Responsibility/Participation/ownership/Subject/Resource
-Visibility != Sharing/Disclosure operation
-Visibility != actual View
-Visibility != Acknowledgement
-Visibility != Consent
-Visibility != arbitrary downstream Use
-```
-
-Hardening:
-
-```text
-can see != can change
-can see != can re-disclose
-can see != can use for any purpose
-may see != actually saw
-visible endpoints != visible relationship
-visible projection != visible source
-current Visibility != historical Visibility
-revoked Visibility != erased past disclosure/knowledge
-not visible != nonexistent
-no applicable grant != explicit prohibition semantically
-```
-
-Critical AI rule:
-
-```text
-AI may process authorized source
-!= AI may disclose source
-```
-
-Inference/output privacy must be checked independently from input access.
-
----
-
-# 11. Cross-concept closure caused by Authority + Visibility
-
-The following old broad deferred boundaries are now semantically closed:
-
-```text
-Actor ↔ Authority/Visibility
-Responsibility ↔ Authority/Visibility
-Participation ↔ Authority/Visibility
-Confirmation ↔ Authority/Visibility
-Schedule ↔ Authority/Visibility
-Actual ↔ Authority/Visibility
-Subject ↔ Authority/Visibility
-Resource ↔ Authority/Visibility
-Asset ↔ Authority/Visibility
-Provenance ↔ Authority/Visibility
-```
-
-This does **not** mean final permissions/security/persistence are designed.
-
-Remaining detailed owners include Principal/enforcement, Consent/use purpose, Decision/reconciliation, detailed delegation, retention and logical persistence.
-
----
-
-# 12. Current identity / role separation
-
-```text
-Person
-= native human identity
-
-Asset
-= current scoped native physical-object identity
-
-Subject
-= contextual aboutness role
-
-Actor
-= contextual agency capability
-
-Resource
-= contextual operational eligibility/capability
-
-Responsibility
-= contextual accountability relation family
-
-Participation
-= contextual involvement relation family
-
-Authority
-= contextual governance capability
-
-Visibility
-= contextual information-exposure capability
-
-Account
-= platform/access identity boundary
-
-Principal
-= deferred authenticated/authorized security identity
-```
-
-None of these should be collapsed merely to simplify FKs.
-
----
-
-# 13. Current cross-cluster invariants
-
-Retain at least:
-
-```text
-planned != actual
-passage of time != completion/Actual
-Schedule != Session
-Schedule != Capacity Reservation
-Observation != Quantity
-Evidence != source information
-Provenance != truth / Authority / Visibility / Version / Audit
-Confirmation != Authority / Acknowledgement / Acceptance / Verification
-Subject != generic related_to
-Actor != generic action edge
-Resource != provider identity
-Account != Person
-
-universal Relationship root = rejected
-qualified relation != entity automatically
-queryability/cardinality != identity
-
-Responsibility != requester/expected performer/actual performer
-unknown Responsibility != explicitly open/unassigned
-Assignment/Claim/Hand-off must name role
-hand-off request != effective transfer by default
-
-Participant != identity/root
-Invitation != Acceptance/Actual Participation
-Participation response != Actual Participation
-accepted != attended
-declined != proved absent
-no response != declined
-no attendance evidence != proved absence
-
 Actor action != Authority
-Authority != technical authorization/truth
-Visibility != Authority
-Visibility != actual view
-visible projection != visible source
-visible endpoints != visible relationship
-AI source processing != disclosure permission
+Responsibility != Authority/Visibility/Acknowledgement
+Participation != Authority/Visibility/Acknowledgement
+Visibility != Authority/actual View/Acknowledgement
+Confirmation != Authority/Acknowledgement
+Acknowledgement != understanding/Confirmation/Participation response/Authority/Actual
+```
+
+Common-ground sequence where consequence requires it:
+
+```text
+proposed/sent
+!= delivered/read/displayed
+!= Acknowledgement
+!= family-specific response / future Agreement or Consent
+!= Authority / Decision / effective canonical change
+!= Actual
 ```
 
 ---
 
-# 14. Active stage — Relationships / Reasoning
+# 9. Acknowledgement v0 — last completed semantic review
 
-**Status:** IN PROGRESS.
+Canonical question:
 
-Completed:
+> **Who explicitly took notice of this specific target/material version/change/request in this context?**
+
+Classification:
 
 ```text
-Relationship v0      PASS WITH HARDENING
-Responsibility v0    PASS WITH HARDENING
-Participation v0     PASS WITH HARDENING
-Authority v0         PASS WITH HARDENING
-Visibility v0        PASS WITH HARDENING
+ACKNOWLEDGEMENT
+CANONICAL SPECIFIC CONTEXTUAL COMMON-GROUND ATTESTATION / RELATION CAPABILITY
+
+✅ actor-scoped
+✅ target/material-version scoped
+✅ optional / consequence-sensitive
+✅ history-sensitive where material
+✅ direct/simple or specifically qualified where justified
+
+❌ native entity/root
+❌ delivery/read/display receipt
+❌ understanding/comprehension
+❌ Confirmation
+❌ Acceptance/Agreement/Consent
+❌ Participation response
+❌ Responsibility
+❌ Authority/Decision/effective change
+❌ Actual
 ```
 
-Every current Cluster-5 checkpoint has:
+Key hardenings:
 
 ```text
+delivery/read/display telemetry != Acknowledgement
+Acknowledgement(v1) != Acknowledgement(v2) after material change
+silence/no response != Acknowledgement
+one Actor's Acknowledgement != another/group Ack
+assisted/on-behalf-of preserves actual Actor + represented party + basis
+correction preserves material Provenance/history
+future Visibility revocation != erased historical Acknowledgement
+AI/provider inference != human Acknowledgement
+```
+
+Generic cross-domain Acceptance failed v3 minimality/redundancy tests:
+
+```text
+invitation accepted
+→ Participation response
+
+Responsibility hand-off accepted
+→ role-specific response/operation
+
+Schedule/AI proposal accepted/applied
+→ proposal/effect-specific response/operation
+```
+
+No useful product capability is removed by rejecting the universal primitive.
+
+---
+
+# 10. Acknowledgement v0 evidence / validation summary
+
+Internal evidence:
+
+- Participation response already owns invitation `accepted`;
+- Responsibility hand-off request != effective transfer;
+- Confirmation already separated recognition from affirmation;
+- Visibility already separated exposure from actual view/recognition;
+- Authority already separated willingness from governance effect;
+- Multi-Actor Readiness required common-ground state separation.
+
+Targeted external evidence classifications:
+
+```text
+RFC 8098 displayed/read limits        ADAPT
+Matrix read/private/full-read states  ADAPT
+RFC 5545 attendee PARTSTAT            ALREADY STRONGER via Participation v0
+Microsoft Teams Shifts acceptance → manager approval → effect  ADAPT
+ActivityStreams generic Accept        NOT APPLICABLE as universal LifeOS primitive
+```
+
+Full CORE-01..13, MA-01..20, XCON-01..06 and Adjacent Dependency Sweep executed.
+
+Current result:
+
+```text
+PASS WITH HARDENING
+hardenings incorporated
 REOPEN = 0
 unclassified material dependencies = 0
 ```
 
-Do not treat remaining candidate space as a checklist.
-
----
-
-# 15. NEXT-CANDIDATE SELECTION
-
-The next high-leverage problem is **common ground** after governance and exposure have been separated.
-
-Current questions:
+Regression additions:
 
 ```text
-who can govern?       Authority        RESOLVED
-who can see?          Visibility       RESOLVED
-who received/knows?   Acknowledgement  OPEN
-who agrees/wants?     Acceptance       OPEN
+R-ACK-01 material change read/display → Ack → material revision → new Ack
+R-ACK-02 hand-off delivered → Ack → role response → approval/effect → different Actual performer
+R-ACK-03 assisted acknowledgement attribution
+R-ACK-04 acknowledgement under unequal power/coercion
 ```
 
-Next review must start by comparing **Acceptance / Acknowledgement together**, not by assuming either deserves a standalone concept.
+---
 
-Test at minimum:
+# 11. Current Acknowledgement SAFE DEFERRED dependencies
 
-- message delivered vs actually received/read;
-- acknowledgement vs Confirmation;
-- acknowledgement vs Participation response;
-- acceptance of invitation vs generic Acceptance;
-- acceptance of Responsibility hand-off vs effective transfer;
-- acceptance vs Authority/Approval;
-- acceptance vs Agreement/Consent;
-- silence vs acceptance;
-- delegated/on-behalf-of acceptance;
-- historical/retracted acceptance;
-- common-ground state vs product notification/read receipt;
-- simple personal UX vs formal high-consequence workflows.
+All are non-blocking with owners/triggers in the checkpoint:
 
-The result may be one family, two concepts, relation-specific states, operations, or product-only semantics. Do not pre-decide.
+```text
+Understanding / comprehension
+Agreement / Consent
+Decision / Approval / effective change
+Principal / delegation / on-behalf-of
+Version / material equivalence
+read/view audit persistence
+collective/group acknowledgement
+retention/deletion of acknowledgement history
+```
 
-After that, re-score again rather than following roadmap order.
+No material neighbor remains unclassified.
 
 ---
 
-# 16. Remaining demonstrated candidate/dependency space
+# 12. Current propagation scope
 
-Examples, not mandatory primitives:
+The Acknowledgement milestone intentionally propagated to:
 
 ```text
-Acceptance / Acknowledgement / Agreement
-Consent / use purpose
+concepts/acknowledgement.md
+checkpoints/acknowledgement-v0-validation.md
+language-map.md
+README.md
+multi-actor-readiness-v1.md
+concepts/confirmation.md
+checkpoints/confirmation-v0-validation.md
+concepts/participation.md
+checkpoints/participation-v0-validation.md
+concepts/responsibility.md
+checkpoints/responsibility-v0-validation.md
+concepts/authority.md
+checkpoints/authority-v0-validation.md
+concepts/visibility.md
+checkpoints/visibility-v0-validation.md
+concepts/schedule.md
+checkpoints/deferred-dependency-closure-clusters-1-4-v0.md
+this workstream handoff
+```
+
+Historical simulation/research/product-glossary files were not rewritten. Root `README.md` and `docs/PROJECT-STATUS.md` were not changed because this is branch-local incremental work, not a globally integrated project-state transition.
+
+---
+
+# 13. Current exact QA gate
+
+Before this milestone becomes the new validated branch baseline, verify against pre-scope commit:
+
+```text
+68b63bd233b116699719e77449db2180338b1bba
+```
+
+Required QA:
+
+- exactly the 18 approved paths changed;
+- no other path changed;
+- both new Acknowledgement files exist;
+- Language Map, Domain README and this handoff agree;
+- historical checkpoint amendments are explicitly downstream, not silent retroactive rewrites;
+- generic Acceptance is rejected consistently;
+- Participation `accepted` remains response semantics;
+- Responsibility hand-off sequence preserves request/Ack/response/effect;
+- Schedule `accepted` wording does not imply universal Acceptance;
+- Authority/Visibility/Confirmation boundaries remain intact;
+- `REOPEN = 0` and unclassified material dependencies = 0;
+- `main`, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend remain untouched;
+- branch remains coherent against current main baseline.
+
+If QA fails, repair only within the already-approved scope when the fix is truly part of this milestone; otherwise stop for a new write scope.
+
+---
+
+# 14. Next action after QA PASS
+
+Do **not** continue from the old roadmap order.
+
+Re-score the remaining demonstrated candidate/dependency space by dependency leverage. Examples include:
+
+```text
+Agreement
+Consent / purpose limitation
 Decision / reconciliation / Approval effect
 Principal / delegation / on-behalf-of
 Dependency
@@ -599,50 +519,32 @@ collective/group semantics
 Personal Knowledge generic link layer
 ```
 
-Each must earn its place under v3.
+These are **candidate space, not a checklist of primitives**.
+
+Do not preselect the next candidate until the current scope QA has passed.
 
 ---
 
-# 17. Deferred Dependency Closure registries
+# 15. Before broad implementation
 
-Clusters 1–4 normative register:
-
-- `deferred-dependency-closure-clusters-1-4-v0.md`.
-
-Cluster-5 current registers:
-
-- `relationship-v0-validation.md`;
-- `responsibility-v0-validation.md`;
-- `participation-v0-validation.md`;
-- `authority-v0-validation.md`;
-- `visibility-v0-validation.md`.
-
-Do not create a parallel unnamed watchlist. Use these checkpoints for exact owners, triggers and rerun tests.
-
----
-
-# 18. Before broad persistence/backend implementation
-
-Still mandatory after Relationships / Reasoning:
+Still mandatory:
 
 ```text
+finish Relationships / Reasoning candidate reviews
+↓
 Cluster-5 integration
 ↓
 Cluster-5 multi-actor stress
 ↓
-Cluster-5 deferred dependency closure
+Cluster-5 deferred-dependency closure
 ↓
 whole-domain semantic regression
 ↓
-destructive redundancy test
+destructive redundancy regression
 ↓
-deep historical reconstruction
+deep history/correction regression
 ↓
-whole-domain multi-actor stress
-↓
-privacy / Authority / Visibility stress
-↓
-AI stress
+whole-domain multi-actor/privacy/Authority/AI stress
 ↓
 simple-user regression
 ↓
@@ -650,37 +552,33 @@ specialist-system boundary
 ↓
 logical data model
 ↓
-physical PostgreSQL model
+physical PostgreSQL
 ↓
 API contracts
 ↓
-backend package architecture
-↓
-implementation / vertical slices / frontend integration
+backend packages / implementation
 ```
 
-Do not jump directly from Cluster 5 to SQL/API stabilization.
+No final SQL/API jump from the current semantic stage.
 
 ---
 
-# 19. Git / branch handoff
+# 16. Git / handoff discipline
 
-- active branch: `feature/domain-model`;
-- `main` remains at `c5120ff463e027c42f4a26fc613d0917596ca738` unless a later explicitly approved scope changes it;
-- no domain PR is currently required;
-- backend implementation is not changed by this workstream;
-- Phase-4 prototype branch is separate and must not be touched from domain-model scopes;
-- repository visibility does not change write-scope rules;
-- before any future Git write, state exact scope and wait for explicit approval.
+`main` remains the only integrated source of truth. This branch is newer only inside its scoped unmerged Domain Model work.
 
-## New-chat / continuation handoff
+For every future write:
 
-A continuing chat should:
+```text
+state branch + exact files + pre-scope SHA
+↓
+explicit user approval
+↓
+write only approved scope
+↓
+QA against pre-scope SHA
+↓
+approval consumed
+```
 
-1. read this workstream;
-2. read README + Language Map + Methodology v3;
-3. read Relationship/Responsibility/Participation/Authority/Visibility concept/checkpoints;
-4. verify `feature/domain-model` and `main` state read-only;
-5. begin Acceptance/Acknowledgement candidate formation read-only;
-6. do not redo earlier reviews unless a concrete contradiction appears;
-7. do not write Git until a new exact scope is explicitly approved.
+Do not place critical project state only in chat. Update this handoff after each meaningful validated milestone.
