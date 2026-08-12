@@ -7,235 +7,113 @@
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
+> **Historical checkpoint note:** the Visibility v0 validation result is preserved at the state known when it was accepted. Later Acknowledgement work is recorded only as an explicit downstream closure in section 14.
+
 ## 1. Scope
 
-- **Primary candidate:** Visibility / Access.
-- **Candidate pressure:** distinguish `can inspect`, `can receive`, `can use`, `can modify`, `can execute`, `can disclose`, and technical read capability.
-- **Selected semantic:** Visibility as bounded information-exposure capability.
-- **Rejected framing:** one universal `Access` mega-concept combining read/write/use/share/execute semantics.
-- **Not pre-accepted:** Consent, data-use/purpose limitation, Share, Disclosure, access-log/View/Acknowledgement, sensitivity taxonomy, Group/public-link recipient ontology, technical Permission/Principal model.
+- **Primary candidate:** Visibility / Access boundary.
+- **Family reviewed:** information exposure / technical read permission / Share-Disclosure / actual View / downstream Use / Authority boundary.
+- **Purpose:** determine whether LifeOS needs cross-cutting bounded information-exposure semantics without creating a universal Access/ACL domain root.
+- **Not pre-accepted:** Consent, purpose limitation, Principal/security enforcement, group/public-link recipient ontology, sensitivity taxonomy, read-receipt/Acknowledgement model.
 
-This checkpoint validates Visibility as a **cross-cutting contextual information-exposure capability**. It does not design ACL/RBAC/ABAC/ReBAC persistence, field-level security storage, final Principal/AuthN/AuthZ, Consent, legal retention, SQL/API shapes, or universal sharing objects.
+Visibility was validated as a **contextual information-exposure capability**, not identity, technical authorization or universal ACL object.
 
 ---
 
 # 2. Candidate conclusion
 
-> **Visibility is the contextual information-exposure capability through which a bounded representation of a domain object, fact, relationship, state, or projection may be made available for inspection or receipt by a specific recipient/access context under an applicable basis. Visibility does not create recipient identity and does not by itself grant Authority to change the underlying domain, permission to use or re-disclose the information for another purpose, access to hidden source causes or related records, acknowledgement that the information was actually seen, or technical authorization identity.**
-
-Current classification:
+> **Visibility is the contextual information-exposure capability through which a bounded representation of a domain object, fact, relationship, state, or projection may be made available for inspection or receipt by a specific recipient/access context under an applicable basis.**
 
 ```text
 VISIBILITY
 CANONICAL CROSS-CUTTING INFORMATION-EXPOSURE CAPABILITY
 contextual + recipient/representation scoped
-may be direct / derived / specifically qualified where justified
+may be direct/derived/specific qualified
 NOT native entity/root
 NOT universal Access/ACL object
-
-ACCESS
-TOO BROAD AS ONE DOMAIN NOUN
-read/write/use/share/execute remain separate questions
-
-SHARE / DISCLOSURE
-operations/exposure events
-NOT Visibility itself
-NOT standalone universal primitives by this review
 ```
 
 ---
 
-# 3. Core Semantic Validation Gate
+# 3. Evidence reviewed
+
+Internal evidence included shared-fact/private-overlay requirements, Availability/Capacity projection, Person/Actor/Subject/Asset/Resource boundaries, Participation/Responsibility, Authority, Provenance, Actual and AI Context Builder/privacy requirements.
+
+External evidence was behavioral only: mature products and authorization/privacy systems demonstrate scoped exposure, derived projections, field/relationship sensitivity and revocation, but provider ACL vocabulary or infrastructure models do not define LifeOS ontology.
+
+---
+
+# 4. Core Semantic Validation Gate
 
 | Test ID | Result | Finding |
 |---|---|---|
-| CORE-01 Workflow inversion | PASS | selective exposure/projection is a real need distinct from governance and technical access |
-| CORE-02 Deep chronology | PASS WITH HARDENING | grants, disclosure, view, revocation and historical visibility must not be conflated |
-| CORE-03 Reductio | PASS | Authority/Account/Permission/Participation/Responsibility/ownership cannot replace Visibility |
-| CORE-04 Redundancy / merge-split | PASS WITH HARDENING | Visibility survives; Share/Disclosure/View/Consent/Access mega-root do not |
-| CORE-05 Traceability | PASS | private source → authorized projection → recipient exposure remains explainable |
-| CORE-06 Orphan / independence | PASS | contextual capability, not native recipient/target identity |
-| CORE-07 External benchmark | PASS | mature systems separate scopes/permissions/projections rather than treating object existence as universal disclosure |
-| CORE-08 Anti-pattern | PASS | `shared=true`, endpoint visibility implies relation visibility, source visibility follows projection rejected |
-| CORE-09 Correction / epistemic integrity | PASS WITH HARDENING | not visible != nonexistent; revoked != never disclosed; no grant != explicit prohibition semantically |
-| CORE-10 Scale/history | PASS WITH HARDENING | do not materialize recipient×object×field edges as ontology by default |
-| CORE-11 Simple vs power user | PASS | ordinary UX can use Private/Shared/free-busy labels |
-| CORE-12 Product value/complexity | PASS | exposure sophistication appears only where useful |
-| CORE-13 Implementation pressure | PASS WITH HARDENING | domain Visibility remains distinct from security enforcement/storage |
+| CORE-01 Workflow inversion | PASS | real coordination needs bounded exposure distinct from governance |
+| CORE-02 Deep chronology | PASS WITH HARDENING | grants/revocation/history and past disclosure remain distinct |
+| CORE-03 Reductio | PASS | Authority, Account, ACL, Sharing, actual View and downstream Use fail as replacements |
+| CORE-04 Redundancy | PASS WITH HARDENING | Visibility survives; universal Access/ACL root does not |
+| CORE-05 Traceability | PASS | private source → safe projection → recipient exposure remains explainable |
+| CORE-06 Orphan/independence | PASS | contextual capability, not identity |
+| CORE-07 External benchmark | PASS | mature systems reinforce scoped exposure/projection patterns |
+| CORE-08 Anti-pattern | PASS | `shared=true`, endpoint leakage and universal ACL ontology rejected |
+| CORE-09 Correction/privacy integrity | PASS WITH HARDENING | not visible != nonexistent; revocation != erased knowledge/history |
+| CORE-10 Scale/history | PASS WITH HARDENING | no need to materialize every recipient×field edge |
+| CORE-11 Simple/power user | PASS | Private/Shared/free-busy UI can remain simple |
+| CORE-12 Product value/cost | PASS | selective exposure reduces coordination/privacy cost |
+| CORE-13 Implementation pressure | PASS WITH HARDENING | domain exposure remains separate from security enforcement/schema |
 
 **Core Gate:** PASS WITH HARDENING.
 
 ---
 
-# 4. Representative real-world inversions
-
-## 4.1 Private source, shared consequence
+# 5. Primary hardenings
 
 ```text
-Private Event
-Therapy 18:30–19:30
-        ↓ authorized computation
-Projection
-Unavailable 18:30–19:30
-        ↓
-shared recipient
-```
-
-The recipient may see the consequence without receiving the Event reason, location, notes, participants, or other source details.
-
-## 4.2 Visible endpoints, hidden relationship
-
-```text
-Person Anna visible
-Event E visible
-Participation(Anna,E) private
-```
-
-Endpoint visibility does not imply relationship visibility.
-
-## 4.3 Visible object, hidden facets
-
-```text
-Asset Sony A7 IV visible
-serial/location/private notes hidden
-```
-
-Object exposure need not be all-or-nothing.
-
-## 4.4 AI Context Builder
-
-AI may use authorized source context to derive a safe result without gaining permission to disclose the source.
-
-```text
-may process source
-!= may disclose source
+can see != can change/govern
+can see != can re-disclose
+can see != can use for every purpose
+may see != actually saw
+visible target != every related record
+visible endpoints != visible relationship
+visible projection != visible source
+current Visibility != historical Visibility
+revoked Visibility != erased past disclosure/knowledge
+not visible != nonexistent
+no applicable grant != explicit prohibition semantically
+AI may process source != AI may disclose source
 ```
 
 ---
 
-# 5. Deep chronology stress
-
-Representative chronology:
-
-```text
-T0  note hidden from Anna
-T1  note/projection shared with Anna
-T2  Anna views it
-T3  Visibility revoked
-T4  historical query asks what Anna could see at T1/T2
-```
-
-Required truths:
-
-- T3 stops/narrows future LifeOS-mediated exposure;
-- T3 does not rewrite T1/T2;
-- revocation does not erase human memory/screenshots/external copies;
-- current Visibility != historical Visibility;
-- actual view != mere visibility grant;
-- later sharing does not imply earlier visibility.
-
-**Result:** PASS WITH HARDENING.
-
----
-
-# 6. Reductio / candidate elimination
-
-```text
-REMOVE Visibility
-→ FAIL
-
-Visibility = Authority
-→ FAIL
-
-Visibility = Account / Principal
-→ FAIL
-
-Visibility = technical read Permission
-→ FAIL
-
-Visibility = Participation
-→ FAIL
-
-Visibility = Responsibility
-→ FAIL
-
-Visibility = ownership
-→ FAIL
-
-Visibility = Subject
-→ FAIL
-
-Visibility = Sharing / Disclosure
-→ FAIL
-
-Visibility = actual View
-→ FAIL
-
-Visibility = Acknowledgement
-→ FAIL
-
-Visibility = Consent
-→ FAIL
-
-Visibility = arbitrary downstream Use
-→ FAIL
-
-universal Access mega-concept
-→ FAIL
-
-contextual bounded Visibility capability
-→ PASS WITH HARDENING
-```
-
----
-
-# 7. Primary hardenings
-
-1. **Can see != can change/govern.**
-2. **Can see != can re-disclose.**
-3. **Can see != can use for any purpose.**
-4. **May see != actually saw.**
-5. **Visible target != visible related records.**
-6. **Visible endpoints != visible relationship.**
-7. **Visible projection != visible source.**
-8. **Current Visibility != historical Visibility.**
-9. **Revoked Visibility != erased past disclosure/knowledge.**
-10. **Not visible != nonexistent.**
-11. **No applicable grant != explicit prohibition semantically.**
-12. **AI may process source != AI may disclose source.**
-
----
-
-# 8. Multi-Actor Compatibility Gate
+# 6. Multi-Actor Compatibility Gate
 
 | Test ID | Result | Finding |
 |---|---|---|
-| MA-01 | PASS | Accountless Person may receive a bounded shared projection |
-| MA-02 | PASS | one shared reality supports actor-scoped exposure without per-user copies |
+| MA-01 | PASS | Accountless Person may receive bounded projection |
+| MA-02 | PASS | one shared reality supports actor-scoped exposure |
 | MA-03 | PASS | Responsibility does not grant all related information |
-| MA-04 | PASS | Stewardship/coordination burden does not grant universal Visibility |
-| MA-05 | PASS WITH HARDENING | exposure != read/acknowledgement/agreement |
-| MA-06 | PASS WITH HARDENING | Authority remains separate; re-disclosure may require Authority |
-| MA-07 | PASS WITH HARDENING | selective disclosure is explicit core pressure |
+| MA-04 | PASS | Stewardship does not grant universal Visibility |
+| MA-05 | PASS WITH HARDENING | exposure != read/Acknowledgement/agreement |
+| MA-06 | PASS WITH HARDENING | Authority separate; re-disclosure may require Authority |
+| MA-07 | PASS WITH HARDENING | selective disclosure is core pressure |
 | MA-08 | PASS WITH HARDENING | inference/output privacy distinct from source access |
-| MA-09 | PASS | non-LifeOS recipient can receive bounded projection |
-| MA-10 | PASS | acting/sharing Actor may differ from information Subject/recipient |
-| MA-11 | PASS WITH HARDENING | revocation affects future exposure, not historical disclosure/attribution |
+| MA-09 | PASS | non-LifeOS recipient may receive bounded projection |
+| MA-10 | PASS | sharing Actor may differ from Subject/recipient |
+| MA-11 | PASS WITH HARDENING | revocation affects future exposure, not past attribution |
 | MA-12 | PASS | disputed/unknown visibility bases can remain unresolved |
-| MA-13 | PASS WITH HARDENING | guardian/manager/caregiver access may be bounded/asymmetric, never god-mode by relation alone |
+| MA-13 | PASS WITH HARDENING | guardian/manager/caregiver relation is not god-mode |
 | MA-14 | PASS | Resource allocation/availability does not imply source visibility |
 | MA-15 | PASS | coordination responsibility does not imply private-source access |
-| MA-16 | PASS | simple UI can hide ontology and use Private/Shared/free-busy labels |
-| MA-17 | PASS WITH HARDENING | AI source processing does not imply output disclosure |
-| MA-18 | PASS | specialist access controls can remain external/adapted |
+| MA-16 | PASS | simple UI can hide ontology |
+| MA-17 | PASS WITH HARDENING | AI source processing != output disclosure |
+| MA-18 | PASS | specialist controls may remain external/adapted |
 | MA-19 | PASS | generic Access/ACL/Share roots not required |
-| MA-20 | PASS | private/visible state does not change underlying domain truth attribution |
+| MA-20 | PASS | exposure does not change underlying truth attribution |
 
 **Multi-Actor Gate:** PASS WITH HARDENING.
 
 ---
 
-# 9. Cross-Concept Consistency Gate
+# 7. Cross-Concept Consistency Gate
 
 ```text
 XCON-01 Identity                           PASS
@@ -246,107 +124,100 @@ XCON-05 Multi-actor                        PASS WITH HARDENING
 XCON-06 Language                           PASS
 ```
 
-No accepted prior concept requires structural reopening.
+No accepted prior concept required structural reopening.
 
 ---
 
-# 10. Adjacent Dependency Sweep
+# 8. Adjacent Dependency Sweep at validation time
 
 ## RESOLVED
 
 | Boundary | Resolution |
 |---|---|
 | Visibility ↔ Authority | information exposure != governance |
-| Visibility ↔ Account/Principal boundary | identity/enforcement != Visibility |
-| Visibility ↔ technical Read Permission | security enforcement != domain exposure semantics |
+| Visibility ↔ Account/Principal | identity/enforcement != Visibility |
+| Visibility ↔ technical Read Permission | security enforcement != domain exposure |
 | Visibility ↔ Participation | involvement != access |
 | Visibility ↔ Responsibility | accountability != access |
 | Visibility ↔ Subject | aboutness != access |
 | Visibility ↔ Asset/ownership | identity/ownership != access |
 | Visibility ↔ Resource | eligibility/allocation != access |
 | Visibility ↔ source/projection | projection visibility != source visibility |
-| Visibility ↔ Disclosure/Share | operation/exposure event != standing visibility capability |
+| Visibility ↔ Disclosure/Share | action/event != standing capability |
 | Visibility ↔ actual View | may see != did see |
 | Visibility ↔ Acknowledgement boundary | exposure != recognition |
 | Visibility ↔ Provenance | target visibility != full lineage visibility |
 
-## SAFE DEFERRED
+## SAFE DEFERRED at validation time
 
 ### Consent
 
 **Owner:** privacy/common-ground review.  
-**Safe because:** Consent may be one basis/constraint for exposure/use but is not Visibility itself.  
-**Reopening trigger:** privacy cannot be represented without collapsing Consent into Visibility.  
+**Why safe:** Consent may be a basis/constraint for exposure/use but is not Visibility.  
+**Trigger:** privacy cannot be represented without collapsing Consent into Visibility.  
 **Rerun:** CORE-04, MA-05, MA-07, MA-13, XCON-02, XCON-05.
 
 ### Data Use / purpose limitation
 
-**Owner:** Consent/privacy/policy review.  
-**Safe because:** inspection/receipt remains separate from downstream processing/reuse.  
-**Reopening trigger:** ordinary privacy workflows require Visibility to encode arbitrary purpose/use semantics.  
+**Owner:** Consent/privacy/policy.  
+**Why safe:** inspection/receipt separate from downstream processing/reuse.  
+**Trigger:** Visibility must encode arbitrary purpose/use semantics.  
 **Rerun:** CORE-03, CORE-04, MA-07, MA-08, MA-17.
 
 ### Inference privacy / derived disclosure
 
-**Owner:** AI Context Builder + privacy review.  
-**Safe because:** projection/source distinction is fixed.  
-**Reopening trigger:** safe AI output cannot be governed without changing Visibility semantics.  
+**Owner:** AI Context Builder + privacy.  
+**Why safe:** projection/source distinction fixed.  
+**Trigger:** safe output cannot be governed without changing Visibility.  
 **Rerun:** MA-07, MA-08, MA-17, CORE-09, CORE-13.
 
 ### Principal / technical enforcement
 
 **Owner:** security logical model.  
-**Safe because:** domain Visibility and technical request authorization remain distinct.  
-**Reopening trigger:** enforcement cannot preserve recipient/Actor/Account/Principal separation.  
+**Why safe:** domain Visibility and technical authorization separate.  
+**Trigger:** enforcement cannot preserve recipient/Actor/Account/Principal separation.  
 **Rerun:** CORE-06, CORE-10, CORE-13, MA-01, XCON-01.
 
 ### Group / public / link recipient scope
 
-**Owner:** multi-actor/security review.  
-**Safe because:** Visibility only requires a recipient/access context, not final Group/public-link ontology.  
-**Reopening trigger:** ordinary sharing cannot represent recipient scope without a new native identity concept.  
+**Owner:** multi-actor/security.  
+**Why safe:** recipient/access context does not require final Group/public-link ontology.  
+**Trigger:** ordinary sharing cannot represent recipient scope without new native identity semantics.  
 **Rerun:** CORE-04, CORE-10, MA-02, MA-09, XCON-01.
 
-### Sensitivity / information classification
+### Sensitivity / field/facet/projection policy
 
-**Owner:** privacy/logical model.  
-**Safe because:** bounded representation exposure does not require one universal sensitivity taxonomy now.  
-**Reopening trigger:** selective disclosure cannot be derived without canonical classification semantics.  
-**Rerun:** CORE-04, CORE-10, CORE-13, MA-07.
-
-### Field/facet/projection policy
-
-**Owner:** logical/security model.  
-**Safe because:** representation-scoped Visibility is fixed without choosing storage granularity.  
-**Reopening trigger:** persistence cannot represent source/projection/facet separation.  
-**Rerun:** CORE-10, CORE-13, XCON-04.
+**Owner:** privacy/logical/security.  
+**Why safe:** bounded exposure does not select storage/taxonomy.  
+**Trigger:** selective disclosure cannot be represented without semantic redesign.  
+**Rerun:** CORE-04, CORE-10, CORE-13, MA-07, XCON-04.
 
 ### Authority to disclose/re-share
 
 **Owner:** Authority + privacy policy.  
-**Safe because:** recipient Visibility explicitly grants no re-disclosure Authority.  
-**Reopening trigger:** re-sharing workflows require Visibility itself to carry governance power.  
+**Why safe:** recipient Visibility grants no re-disclosure Authority.  
+**Trigger:** re-sharing requires Visibility itself to carry governance power.  
 **Rerun:** CORE-04, MA-06, MA-07, XCON-02.
 
 ### Access/view audit / read receipt
 
-**Owner:** Audit/Acknowledgement review.  
-**Safe because:** may-see and did-see are explicitly distinct.  
-**Reopening trigger:** product requires acknowledged/read history that cannot coexist with Visibility.  
+**Owner at validation time:** Audit/Acknowledgement review.  
+**Why safe:** may-see and did-see explicitly distinct.  
+**Trigger:** acknowledged/read history cannot coexist with Visibility semantics.  
 **Rerun:** CORE-02, CORE-04, MA-05, XCON-03.
 
-### Retention / deletion / cache / external copies
+### Retention / deletion / external copies
 
-**Owner:** privacy/retention review.  
-**Safe because:** revocation is bounded to future LifeOS-mediated exposure.  
-**Reopening trigger:** retention/deletion requirements force Visibility to represent copy lifecycle.  
+**Owner:** privacy/retention.  
+**Why safe:** revocation concerns future LifeOS-mediated exposure.  
+**Trigger:** retention/deletion forces Visibility to represent copy lifecycle.  
 **Rerun:** CORE-02, CORE-09, MA-11, XCON-03.
 
 ### Qualified Visibility identity / persistence
 
 **Owner:** logical data model.  
-**Safe because:** rich grants/policies may need structure/history without proving universal identity.  
-**Reopening trigger:** direct/derived/qualified representation cannot preserve scoped exposure/history.  
+**Why safe:** rich policies/history do not prove universal identity.  
+**Trigger:** direct/derived/qualified representation cannot preserve scope/history.  
 **Rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
 ```text
@@ -356,7 +227,7 @@ unclassified material items    0
 
 ---
 
-# 11. Final verdict
+# 9. Final verdict
 
 ```text
 VISIBILITY
@@ -366,26 +237,17 @@ classification:
 CANONICAL CROSS-CUTTING INFORMATION-EXPOSURE CAPABILITY
 
 ✅ contextual
-✅ recipient-context scoped
-✅ target / representation scoped
-✅ may expose projection without source
-✅ may change/revoke over time
-✅ relationship itself may have independent visibility
-✅ compatible with direct/derived/qualified policy
+✅ recipient/representation scoped
+✅ may be direct/derived/qualified
+✅ supports safe projections
 
-❌ entity/root
-❌ Account / Principal
-❌ technical read permission
+❌ native entity/root
 ❌ Authority
-❌ Participation
-❌ Responsibility
-❌ ownership
-❌ Sharing operation
-❌ actual View
-❌ Acknowledgement
-❌ Consent
+❌ Account/Principal/technical read permission
+❌ Share/Disclosure operation
+❌ actual View/Acknowledgement
 ❌ arbitrary downstream Use
-❌ universal ACL object
+❌ universal Access/ACL object
 ```
 
 **Structural reopenings:** 0.  
@@ -393,37 +255,62 @@ CANONICAL CROSS-CUTTING INFORMATION-EXPOSURE CAPABILITY
 
 ---
 
-# 12. Documentation propagation
+# 10. Documentation propagation at acceptance time
 
-Required propagation for this accepted scope:
-
-- [x] `concepts/visibility.md`
-- [x] this checkpoint
-- [x] `concepts/authority.md`
-- [x] `concepts/participation.md`
-- [x] `concepts/responsibility.md`
-- [x] `concepts/subject.md`
-- [x] `concepts/asset.md`
-- [x] `concepts/resource.md`
-- [x] `concepts/provenance.md`
-- [x] `concepts/actual.md`
-- [x] `language-map.md`
-- [x] `README.md`
-- [x] `workstreams/domain-model.md`
-
-No `access.md`, `permission.md`, `sharing.md`, `disclosure.md`, `consent.md`, or `use-permission.md` is justified by this review.
+Visibility acceptance propagated to the concept/checkpoint and affected Authority/Participation/Responsibility/identity/reality/Provenance/Language Map/Domain README/workstream documents. No universal Access/ACL root was introduced.
 
 ---
 
-# 13. Next-stage implication
+# 11. Product / implementation implication
 
-With Authority and Visibility separated, the next high-leverage common-ground question is now clearer:
+Simple UI can use `Private`, `Shared with…`, `free/busy only` while the kernel preserves projection/source/relationship distinctions. Technical authorization, field/facet persistence and read-audit mechanics remain later design work.
+
+---
+
+# 12. Historical next-stage implication
+
+At Visibility acceptance time, Consent/use-purpose, Principal/enforcement, read/audit/Acknowledgement, inference privacy, group recipient scope and retention remained separately owned dependencies.
+
+---
+
+# 13. Historical preservation rule
+
+The checkpoint's original statement `Visibility ↔ Acknowledgement boundary: exposure != recognition` was already semantically correct. The later Acknowledgement review strengthens and names the neighboring concept; it does not alter the Visibility verdict.
+
+---
+
+# 14. Downstream closure — Acknowledgement v0 (2026-08-12)
+
+Acknowledgement v0 now closes the common-ground side of the existing boundary:
 
 ```text
-who can govern        Authority
-who can see           Visibility
-who received/knows?   Acknowledgement/common-ground still open
-who agrees/wants?     Acceptance/Agreement still open
+Visibility
+= may this bounded representation be exposed?
+
+Acknowledgement
+= did this Actor explicitly take notice of this specific target/material version/change/request?
 ```
 
-Acceptance / Acknowledgement should therefore be re-scored next, without presuming they are one concept or standalone primitives.
+Therefore:
+
+```text
+Visibility != actual View/read
+Visibility != Acknowledgement
+read/display telemetry != Acknowledgement
+```
+
+The prior `Access/view audit / read receipt` SAFE DEFERRED item is **partially resolved semantically** and remains SAFE DEFERRED only for persistence/audit mechanics:
+
+**Current owner:** Audit / Integration / logical model.  
+**Why still safe:** Acknowledgement semantics are canonical; provider/client read/view evidence remains a distinct integration/audit concern.  
+**Reopening trigger:** durable read/view evidence cannot coexist with the current Visibility/Acknowledgement separation.  
+**Tests to rerun:** CORE-02, CORE-04, CORE-10, CORE-13, MA-05, MA-07, MA-11, XCON-03.
+
+Generic cross-domain Acceptance is not part of Visibility and was rejected downstream as a standalone primitive.
+
+No Visibility hardening failed; structural REOPEN remains **0**.
+
+Normative downstream references:
+
+- `../concepts/acknowledgement.md`;
+- `acknowledgement-v0-validation.md`.
