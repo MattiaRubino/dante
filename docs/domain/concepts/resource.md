@@ -2,13 +2,14 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-12  
+**Current revision:** 2026-08-12 — Cluster-4 integration and Cross-Cluster v4 hardening  
 **Meaning of accepted:** best current decision; reopenable with stronger evidence  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
 ## Canonical definition
 
-> **Resource is the contextual planning/execution role through which a native referent, service, pool, supply, or other eligible capability-bearing thing is considered able to satisfy an execution requirement by providing usable availability, capacity, access, capability, or consumable supply. Resource does not create independent identity: the underlying Person, Asset, Place, service, pool, supply, or other eligible referent retains its native semantics and identity.**
+> **Resource is the contextual planning/execution role through which a native referent, service, pool, supply, or other eligible capability-bearing thing is considered able to satisfy an execution requirement by providing usable availability, capacity, access, capability, or consumable supply. Resource does not create independent identity: the provider retains whatever native identity, value, pool, supply, service, or other semantics it independently has.**
 
 Resource answers the bounded operational question:
 
@@ -37,7 +38,7 @@ Room 3
 Workshop
 ```
 
-The same underlying thing may exist outside any Resource role and may play other roles simultaneously.
+The same underlying provider may exist outside any Resource role and may play other roles simultaneously. A supply or pool does not need individual domain identity merely because it can satisfy a Requirement.
 
 ---
 
@@ -94,7 +95,9 @@ The wrapper would introduce duplicate identity, lifecycle and reconciliation wit
 
 Canonical rule:
 
-> **Resource-role assignment references or evaluates the native referent/capability; it does not manufacture parallel Resource identity.**
+> **Resource-role assignment references or evaluates the provider's independently justified semantics; it does not manufacture parallel Resource identity.**
+
+For a Person or Asset, those semantics include native identity. For a fungible supply, they may instead be Quantity/stock/supply semantics. For a pool or service, the future domain may or may not justify persistent identity independently of Resource role.
 
 A physical implementation may later require typed references, candidate sets, capacity providers or allocation records. Those mechanisms do not justify a universal `resources` root/table by themselves.
 
@@ -238,7 +241,7 @@ Asset may play Resource role
 
 Asset identity does not depend on current Resource eligibility or availability.
 
-The mandatory terminology-neutral Asset re-review remains in force. Resource v0 must still compose if Asset is later narrowed, renamed, generalized or rejected.
+The terminology-neutral Asset re-review completed during Cluster-4 integration retained this boundary: a universal ManagedObject root was rejected and the current physical-object identity need survived.
 
 ---
 
@@ -362,14 +365,14 @@ Scheduling Capacity
 = time-dependent ability of a schedulable resource to accept compatible commitments
 ```
 
-Resource v0 now clarifies the referent model behind that language.
+Resource v0 now clarifies the referent/provider model behind that language.
 
 A **schedulable Resource** is the subset of resource-role cases for which time-dependent capacity/availability matters.
 
 Conceptually:
 
 ```text
-native referent / capability-bearing supply
+native referent / service / pool / supply semantics
         ↓ Resource role
 eligible to satisfy execution need
         ↓ when scheduling matters
@@ -381,7 +384,7 @@ Reservation / Capacity Claim
 Canonical rules:
 
 - not every Resource use requires calendar availability;
-- not every eligible native referent needs a persisted capacity profile;
+- not every eligible provider needs a persisted capacity profile;
 - Availability/Capacity does not create Resource identity;
 - Capacity is contextual and may have multiple dimensions;
 - current free capacity is derived from rules, claims and compatibility rather than an intrinsic Resource status;
@@ -431,7 +434,7 @@ rental car
 ride-hailing service
 ```
 
-The service may play Resource role as an operational option while retaining its future service/provider semantics.
+The service may play Resource role as an operational option while retaining whatever future service/provider semantics are independently justified.
 
 Resource v0 does not introduce a universal Service entity.
 
@@ -489,7 +492,7 @@ Examples:
 
 Do not force early member selection merely to satisfy one `resource_id` field.
 
-A future logical model may represent:
+A future logical model may represent, if justified:
 
 - pool identity;
 - eligibility set;
@@ -499,7 +502,7 @@ A future logical model may represent:
 
 Resource v0 fixes only the semantic requirement that eligibility/capacity can exist before concrete allocation.
 
-It does not pre-approve a universal Pool entity.
+It does not pre-approve a universal Pool entity or require a pool identity where a quantity/candidate-set representation is sufficient.
 
 ---
 
@@ -532,6 +535,12 @@ each egg = Resource entity
 or:
 
 ```text
+500 ml oil = identity-bearing Resource
+```
+
+or:
+
+```text
 all inventory = Asset
 ```
 
@@ -539,7 +548,7 @@ The future inventory/supply model must preserve quantity, stock, movement and ac
 
 Canonical rule:
 
-> **Resource role may apply to consumable supply without manufacturing per-unit identity.**
+> **Resource role may apply to consumable supply without manufacturing per-unit or per-quantity identity.**
 
 ---
 
@@ -619,7 +628,7 @@ Similarly a Person may be available in time but lack the required qualification.
 
 Therefore:
 
-> **Resource eligibility is contextual; native identity alone does not establish suitability.**
+> **Resource eligibility is contextual; native identity or provider existence alone does not establish suitability.**
 
 This implies that future planners must consider requirement/resource compatibility rather than treating availability as sufficient.
 
@@ -690,7 +699,7 @@ Actor B
 can view availability but not private usage reason
 ```
 
-One native object may support:
+One provider may support:
 
 - shared canonical capacity facts;
 - actor-scoped preferences;
@@ -831,7 +840,7 @@ Useful lesson:
 - some systems use `Resource` broadly for people, equipment, material and cost because it is useful for project allocation;
 - that breadth is operational vocabulary, not evidence that LifeOS should make every such thing one kernel entity.
 
-LifeOS adapts the common operational role while preserving stronger native identities and bounded domain semantics.
+LifeOS adapts the common operational role while preserving stronger native identities and bounded provider/value/supply semantics.
 
 ---
 
@@ -839,7 +848,7 @@ LifeOS adapts the common operational role while preserving stronger native ident
 
 ## REMOVE Resource entity
 
-Person/Asset/Place/service/supply identities remain intact and can be referenced directly in typed requirement/allocation semantics.
+Person/Asset/Place/service/supply semantics remain intact and can be referenced directly in typed requirement/allocation semantics.
 
 **Result:** PASS — independent Resource entity is unnecessary.
 
@@ -890,7 +899,7 @@ Preserves common allocation/capacity semantics without duplicate identity.
 # 26. Core invariants
 
 1. **Resource is a contextual semantic planning/execution role/capability, not an independent universal entity/root.**
-2. **The underlying native referent/supply retains its own identity and semantics.**
+2. **Resource does not manufacture identity; the provider retains whatever native identity, value, pool, supply, service, or other semantics it independently has.**
 3. **Resource != Person, although Person may play Resource role.**
 4. **Resource != Asset, although Asset may play Resource role.**
 5. **Resource != Subject and Resource != Actor.**
@@ -904,7 +913,7 @@ Preserves common allocation/capacity semantics without duplicate identity.
 13. **Availability does not by itself establish requirement compatibility.**
 14. **Eligibility is contextual to the requirement.**
 15. **A schedulable Resource is a Resource-role case whose time-dependent Capacity/Availability matters; not every Resource needs calendar semantics.**
-16. **Consumable supply may satisfy Resource semantics without per-unit identity.**
+16. **Consumable supply may satisfy Resource semantics without per-unit or per-quantity identity.**
 17. **Money/Budget are not Resource by default.**
 18. **Requirements may remain abstract before concrete allocation.**
 19. **Resource substitution must not rewrite material planning/history.**
@@ -921,8 +930,8 @@ It should be able to express where justified:
 
 - requirements separate from concrete candidates;
 - candidate eligibility/compatibility;
-- references to native Person/Asset/future Place/service identities;
-- pool or quantity-based supply where needed;
+- references to native Person/Asset/future Place/service identities where those identities exist;
+- pool or quantity-based supply where needed without forced identity;
 - allocation/selection history;
 - Availability/Capacity for schedulable Resources;
 - Capacity Reservations/Claims;
@@ -940,6 +949,7 @@ Do not infer from Resource v0 that LifeOS requires:
 - a universal capacity unit;
 - one generic requirement/allocation/reservation table before logical-model pressure;
 - stock items becoming Assets/Resources individually;
+- supplies/pools receiving synthetic identity solely for Resource role;
 - money becoming Resource.
 
 ---
@@ -950,8 +960,7 @@ Do not infer from Resource v0 that LifeOS requires:
 
 ### Resource vs Asset
 
-**Resolution:** Asset is native identity under its current scoped baseline; Asset may play Resource role.  
-**Re-test:** mandatory terminology-neutral Asset revisit and cluster integration.
+**Resolution:** Asset is native identity under its current scoped baseline; Asset may play Resource role. The terminology-neutral Asset review completed during Cluster-4 integration retained this separation.
 
 ### Resource vs Person
 
@@ -988,7 +997,7 @@ Do not infer from Resource v0 that LifeOS requires:
 ### Consumable supply / inventory
 
 **Owner:** future concrete inventory/supply workflow review.  
-**Why safe:** Resource role can describe supply eligibility without approving stock ontology.  
+**Why safe:** Resource role can describe supply eligibility without approving stock ontology or identity.  
 **Reopening trigger:** ordinary execution needs require quantity/movement/consumption semantics that cannot compose cleanly.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-10, CORE-12, CORE-13.
 
@@ -1035,20 +1044,38 @@ Rejected:
 - Money/Budget as Resource by default;
 - early concrete resource selection for every requirement;
 - automatic actual-use inference from planned allocation/reservation;
-- universal `resource_id` implementation shortcut.
+- universal `resource_id` implementation shortcut;
+- synthetic identity for every supply/pool merely because it plays Resource role.
 
 ---
 
-# 30. Reopening triggers
+# 30. Cluster-4 integration hardening
+
+Data / Subjects integration and Cross-Cluster Validation v4 confirmed Resource v0 with two explicit hardenings:
+
+1. **Provider semantics are broader than native identity.** A Person/Asset/Place may bring native identity; a supply may bring Quantity/stock semantics; a pool/service may have its own future semantics only if independently justified. Resource role never creates identity.
+2. **Planning stages remain reconstructable.** Requirement, candidate, allocation, reservation/claim, and actual use/consumption must remain distinguishable even when a simple workflow collapses them operationally.
+
+Cluster-level result: **PASS WITH HARDENING; 0 structural reopenings**.
+
+See:
+
+- `checkpoints/data-subjects-v0.md`;
+- `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
+- `checkpoints/cross-cluster-validation-v4.md`.
+
+---
+
+# 31. Reopening triggers
 
 Reopen Resource v0 if later evidence shows that:
 
-1. a native Resource identity with distinct lifecycle is required and cannot be represented by native referent identities plus Resource role;
+1. a native Resource identity with distinct lifecycle is required and cannot be represented by provider semantics plus Resource role;
 2. Resource Requirement/Allocation/Reservation semantics cannot remain distinct without contradiction;
-3. Availability/Capacity cannot attach coherently to heterogeneous native referents without a stronger shared abstraction;
+3. Availability/Capacity cannot attach coherently to heterogeneous providers without a stronger shared abstraction;
 4. people/equipment/place/service/supply workflows require materially different meanings that make one Resource role misleading;
 5. consumable/inventory workflows reveal that the current supply treatment loses history or quantity truth;
-6. the terminology-neutral Asset revisit exposes a stronger managed/capability-bearing referent abstraction that changes Resource boundaries;
+6. a stronger managed/capability-bearing referent abstraction emerges and survives the same reductio tests;
 7. logical persistence pressure shows heterogeneous references are unacceptable and a different semantic model solves the problem more cleanly;
 8. Authority/privacy constraints require Resource itself to own rights rather than separate policy relationships.
 
