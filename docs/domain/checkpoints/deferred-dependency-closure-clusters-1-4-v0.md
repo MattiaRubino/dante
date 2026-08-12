@@ -6,13 +6,13 @@
 **Scope:** Intention & Execution, Time, Observed Reality & Evidence, Data / Subjects  
 **Branch:** `feature/domain-model`
 
+> **Historical checkpoint note:** this document records the one-time v3 dependency closure required before Relationships / Reasoning began. Later Cluster-5 work may resolve some SAFE DEFERRED items; those resolutions are appended downstream rather than retroactively rewriting the historical closure decision.
+
 ## 1. Purpose
 
-This checkpoint closes the transition rule introduced by Validation Methodology v3:
+No material dependency from Clusters 1–4 may remain as unnamed `later`, `TBD`, or ambiguous limbo before Cross-Cluster Validation v4.
 
-> no material dependency from Clusters 1–4 may remain in unnamed `later`, `TBD`, or ambiguous limbo before Cross-Cluster Validation v4.
-
-Every material boundary is classified as:
+Every material boundary was classified as:
 
 ```text
 RESOLVED
@@ -20,56 +20,45 @@ SAFE DEFERRED
 REOPEN
 ```
 
-`SAFE DEFERRED` is not a concept verdict. It means the current accepted concept remains safe because the unresolved neighboring detail has an explicit owner, reopening trigger, and regression tests.
+SAFE DEFERRED required:
+
+- why acceptance remained safe;
+- explicit owner/stage;
+- exact reopening trigger;
+- tests to rerun.
 
 ---
 
-## 2. Closure result
+# 2. Closure result
 
 ```text
 REOPEN                         0
 unclassified material items    0
 ```
 
-No accepted concept is structurally blocked by the remaining SAFE DEFERRED items.
+No accepted Cluster 1–4 concept was structurally blocked.
 
 ---
 
-# 3. RESOLVED boundaries
+# 3. Major RESOLVED boundaries
 
-The following boundaries are closed at the current semantic baseline.
+The historical closure fixed, among others:
 
-| Boundary | Resolution |
-|---|---|
-| Observation ↔ Quantity | Observation owns contextual assertion; Quantity is reusable scalar value semantics |
-| Observation ↔ Register/RegisterEntry | native records remain source truth; universal Register/RegisterEntry rejected |
-| Quantity ↔ Register aggregation | valid aggregate depends on source/property semantics; Register kernel not needed |
-| Subject entity vs role | role retained; universal Subject entity/root rejected |
-| Subject ↔ observer/recorder/source/transformer | aboutness and origin/action roles separated |
-| Subject ↔ Person | Person native identity may play Subject role |
-| Subject ↔ Actor | aboutness != agency |
-| Subject ↔ Account | Subject identity independent of platform access |
-| Subject ↔ Asset | Asset may play Subject role; no identity collapse |
-| Subject ↔ Resource | aboutness != execution-supply eligibility |
-| Person ↔ Actor | human identity != contextual agency |
-| Person ↔ Account | human identity != platform access identity |
-| Person ↔ Asset | human and current physical-object identity are separate |
-| Person ↔ Resource | Person may play Resource role without becoming Resource identity |
-| Actor ↔ Account | semantic agency != authentication/access identity |
-| Actor ↔ Resource | agency != execution-supply eligibility |
-| Asset ↔ fungible stock | physical existence alone does not require per-unit Asset identity |
-| Asset ↔ ownership identity | owner/holder/steward do not define Asset identity |
-| Asset ↔ Resource | Asset may play Resource role; Resource does not redefine Asset identity |
-| Availability/Capacity ↔ Resource | applies to schedulable Resource-role cases; no Resource entity required |
-| provider identifier ↔ Person identity | provider/contact/auth identifiers are reconciliation evidence, not canonical human identity |
-| provider identifier ↔ Asset identity | serial/VIN/provider identifiers are reconciliation evidence, not automatic canonical identity |
-| broad Asset / ManagedObject question | universal managed-object root rejected after terminology-neutral re-review |
-| universal User root | rejected; User is product/implementation language |
-| universal Actor root | rejected |
-| universal Resource root | rejected |
-| universal Subject root | rejected |
+```text
+Observation != Quantity
+Observation != universal RegisterEntry
+Subject = contextual aboutness role, not universal root
+Subject != Person / Actor / Account / Asset / Resource
+Person != Actor / Account / Asset / Resource role
+Actor != Account / Resource
+Asset != ownership identity / fungible stock / Resource role
+Resource role != provider identity
+Availability/Capacity applies to schedulable Resource-role cases
+provider identifier != canonical Person/Asset identity
+universal User / Actor / Resource / Subject / ManagedObject roots rejected
+```
 
-These may be reopened only by stronger later evidence, not by convenience during implementation.
+These remain reopenable only through stronger semantic evidence, not implementation convenience.
 
 ---
 
@@ -77,47 +66,40 @@ These may be reopened only by stronger later evidence, not by convenience during
 
 ## 4.1 Milestone ↔ GoalCriterion / Evidence
 
-**Why safe now:** Milestone identity and attainment semantics are already bounded; attainment must be evidence/evaluation-backed and does not duplicate Actual/Outcome/Observation truth.
-
-**Owner:** Relationships / Reasoning — GoalCriterion/Evidence/Decision review.
-
-**Reopening trigger:** criterion evaluation cannot determine/represent Milestone attainment without giving Milestone a separate competing reality store.
-
-**Tests to rerun:** CORE-04, CORE-05, CORE-09, XCON-03, XCON-04, CL-04, CL-05.
+**Why safe:** Milestone identity/attainment already bounded; attainment is Evidence/evaluation-backed, not duplicate Actual/Outcome truth.  
+**Owner:** Relationships / Reasoning — GoalCriterion/Evidence/Decision.  
+**Reopening trigger:** criterion evaluation cannot determine Milestone attainment without competing reality storage.  
+**Tests:** CORE-04, CORE-05, CORE-09, XCON-03, XCON-04, CL-04, CL-05.
 
 ## 4.2 Evidence ↔ GoalCriterion / Decision / typed Relationship / Version
 
-**Why safe now:** Evidence is already defined as contextual evaluative use of source information rather than criterion, decision, source copy, or version.
-
-**Owner:** Relationships / Reasoning.
-
-**Reopening trigger:** evaluation cannot preserve evidence direction/context/relevance without changing Evidence semantics.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-05, CORE-09, MA-06, XCON-04.
+**Why safe:** Evidence is contextual evaluative use of source information, not criterion/Decision/source copy/Version.  
+**Owner:** Relationships / Reasoning.  
+**Reopening trigger:** evaluation cannot preserve evidence direction/context/relevance without changing Evidence.  
+**Tests:** CORE-03, CORE-04, CORE-05, CORE-09, MA-06, XCON-04.
 
 ---
 
-# 5. SAFE DEFERRED — Confirmation / Authority / Agreement
+# 5. SAFE DEFERRED — Confirmation / Authority / Common Ground
 
 ## 5.1 Confirmation ↔ Authority
 
-**Why safe now:** Confirmation attests; Authority determines who may establish/change canonical state. Current concepts explicitly do not equate them.
+**Why safe at closure time:** Confirmation attests; Authority governs canonical effect.  
+**Owner:** Relationships / Reasoning — Authority.  
+**Reopening trigger:** ordinary canonical-change workflows require Confirmation itself to carry governance power.  
+**Tests:** CORE-04, MA-06, MA-13, MA-17, XCON-02, XCON-05.
 
-**Owner:** Relationships / Reasoning — Authority.
-
-**Reopening trigger:** ordinary canonical-change workflows require Confirmation itself to carry authority rather than a separate authority basis.
-
-**Tests to rerun:** CORE-04, MA-06, MA-13, MA-17, XCON-02, XCON-05.
+**Downstream status:** RESOLVED by Authority v0 — Confirmation != Authority.
 
 ## 5.2 Confirmation ↔ Acknowledgement ↔ Acceptance / Agreement ↔ Verification
 
-**Why safe now:** the current Confirmation boundary explicitly excludes receipt/recognition, willingness/agreement, and verification process semantics.
+**Why safe at closure time:** Confirmation explicitly excluded receipt/recognition, willingness/agreement and Verification process semantics.  
+**Owner:** Relationships / Reasoning.  
+**Reopening trigger:** concrete collaboration workflows cannot distinguish these states or require one stronger shared concept.  
+**Tests:** CORE-03, CORE-04, MA-03, MA-05, MA-11, XCON-04.
 
-**Owner:** Relationships / Reasoning.
-
-**Reopening trigger:** concrete collaboration workflows cannot distinguish these states or require one stronger shared concept.
-
-**Tests to rerun:** CORE-03, CORE-04, MA-03, MA-05, MA-11, XCON-04.
+**Historical classification:** SAFE DEFERRED at this checkpoint.  
+**Current downstream resolution:** see section 15.
 
 ---
 
@@ -125,101 +107,82 @@ These may be reopened only by stronger later evidence, not by convenience during
 
 ## 6.1 Provenance ↔ Version
 
-**Why safe now:** Provenance records materially relevant lineage; Version identifies material state revisions. Neither currently replaces the other.
-
-**Owner:** Relationships / Reasoning — Version.
-
-**Reopening trigger:** correction/history cannot identify what lineage belongs to which material state without changing Provenance semantics.
-
-**Tests to rerun:** CORE-02, CORE-05, CORE-09, XCON-03, XCON-04.
+**Why safe:** Provenance = lineage; Version = material state revision identity.  
+**Owner:** Relationships / Reasoning — Version.  
+**Trigger:** correction/history cannot identify lineage by material state without semantic change.  
+**Tests:** CORE-02, CORE-05, CORE-09, XCON-03, XCON-04.
 
 ## 6.2 Provenance ↔ Decision
 
-**Why safe now:** why/how a record came to exist is different from the authoritative choice/rationale establishing a state.
-
-**Owner:** Relationships / Reasoning — Decision.
-
-**Reopening trigger:** reconciliation/canonical-selection history cannot distinguish lineage from decision authority.
-
-**Tests to rerun:** CORE-04, CORE-05, CORE-09, MA-06, XCON-02, XCON-04.
+**Why safe:** why/how a record came to exist != authoritative choice/rationale establishing state.  
+**Owner:** Relationships / Reasoning — Decision.  
+**Trigger:** reconciliation/canonical-selection history cannot distinguish lineage from decision Authority.  
+**Tests:** CORE-04, CORE-05, CORE-09, MA-06, XCON-02, XCON-04.
 
 ## 6.3 Provenance ↔ Audit
 
-**Why safe now:** domain-material lineage is intentionally narrower than exhaustive technical audit logging.
-
-**Owner:** logical/security implementation design.
-
-**Reopening trigger:** compliance/history requirements prove material domain lineage cannot be separated from immutable audit semantics.
-
-**Tests to rerun:** CORE-10, CORE-13, MA-07, MA-11.
+**Why safe:** domain-material lineage is narrower than exhaustive technical audit logging.  
+**Owner:** logical/security implementation.  
+**Trigger:** compliance/history requires one inseparable immutable audit semantic.  
+**Tests:** CORE-10, CORE-13, MA-07, MA-11.
 
 ## 6.4 Provenance retention / privacy / deletion
 
-**Why safe now:** current Provenance semantics explicitly do not justify infinite retention or visibility of every upstream payload.
-
-**Owner:** Authority/Visibility + retention/privacy design.
-
-**Reopening trigger:** required deletion/anonymization makes current historical attribution impossible without semantic redesign.
-
-**Tests to rerun:** MA-07, MA-08, MA-11, MA-13, MA-17, XCON-05.
+**Why safe:** Provenance does not justify infinite retention or universal upstream Visibility.  
+**Owner:** privacy/retention/security.  
+**Trigger:** deletion/anonymization makes required historical attribution impossible.  
+**Tests:** MA-07, MA-08, MA-11, MA-13, MA-17, XCON-05.
 
 ---
 
-# 7. SAFE DEFERRED — Actual / participation / reconciliation
+# 7. SAFE DEFERRED — Actual / Participation / Reconciliation
 
 ## 7.1 Actual establishment ↔ Authority / Decision / reconciliation
 
-**Why safe now:** reported/asserted reality is explicitly not automatically established Actual; conflicting assertions can remain unresolved.
+**Why safe:** asserted/reported reality is not automatically established Actual; conflict may remain unresolved.  
+**Owner:** Relationships / Reasoning — Authority/Decision/reconciliation.  
+**Trigger:** contextual Actual cannot be established without competing Actual objects or assertion-history loss.  
+**Tests:** CORE-09, MA-06, MA-12, MA-17, MA-20, XCON-02, XCON-03.
 
-**Owner:** Relationships / Reasoning — Authority/Decision/reconciliation.
-
-**Reopening trigger:** no future authority/decision policy can establish contextual Actual without competing Actual objects or loss of assertion history.
-
-**Tests to rerun:** CORE-09, MA-06, MA-12, MA-17, MA-20, XCON-02, XCON-03.
+**Downstream status:** Authority side RESOLVED; Decision/reconciliation still owned downstream.
 
 ## 7.2 Session / Actual ↔ Participation
 
-**Why safe now:** Session logical execution continuity and Actual realization are separate from who participated and how.
+**Why safe:** Session continuity and Actual realization distinct from who participated/how.  
+**Owner:** Relationships / Reasoning — Participation.  
+**Trigger:** collaborative execution cannot represent actor-specific participation histories without changing Session/Actual identity.  
+**Tests:** CORE-03, MA-03, MA-09, MA-20, XCON-04, XCON-05.
 
-**Owner:** Relationships / Reasoning — Participation.
-
-**Reopening trigger:** collaborative execution cannot represent different participants or participation histories without changing Session/Actual identity.
-
-**Tests to rerun:** CORE-03, MA-03, MA-09, MA-20, XCON-04, XCON-05.
+**Downstream status:** RESOLVED by Participation v0 at semantic-boundary level.
 
 ## 7.3 shared Outcome ↔ actor-scoped consequence
 
-**Why safe now:** one contextual Outcome does not imply identical consequences/evaluation for every actor.
-
-**Owner:** Relationships / Reasoning / future evaluation semantics.
-
-**Reopening trigger:** ordinary shared workflows require actor-specific result identity that conflicts with current Outcome boundary.
-
-**Tests to rerun:** MA-02, MA-05, MA-20, XCON-03, XCON-05.
+**Why safe:** one contextual Outcome need not imply identical consequences/evaluation for every actor.  
+**Owner:** Relationships / Reasoning / evaluation semantics.  
+**Trigger:** shared workflows require actor-specific result identity conflicting with Outcome boundary.  
+**Tests:** MA-02, MA-05, MA-20, XCON-03, XCON-05.
 
 ---
 
-# 8. SAFE DEFERRED — Activity / responsibility / performer
+# 8. SAFE DEFERRED — Activity / Responsibility / Performer
 
 ## 8.1 Activity ↔ Responsibility / Assignment / Hand-off / Stewardship
 
-**Why safe now:** Activity identity is already independent of requester, assignee, responsible actor, performer and coordination burden.
+**Why safe:** Activity identity independent from requester, responsible actor, expected/Actual performer and coordination burden.  
+**Owner:** Relationships / Reasoning.  
+**Trigger:** assignment/transfer/claim cannot preserve one Activity identity while Responsibility changes.  
+**Tests:** CORE-02, CORE-03, MA-03, MA-04, MA-11, MA-15, XCON-04.
 
-**Owner:** Relationships / Reasoning.
+**Downstream status:** Responsibility/Assignment/Claim/Hand-off boundary RESOLVED; Stewardship primitive remains SAFE DEFERRED.
 
-**Reopening trigger:** assignment/transfer/claim workflows cannot preserve one Activity identity while responsibility changes.
+## 8.2 expected performer ↔ Actual performer
 
-**Tests to rerun:** CORE-02, CORE-03, MA-03, MA-04, MA-11, MA-15, XCON-04.
+**Why safe:** planned responsibility/performance distinct from Actual/Session actor attribution.  
+**Owner:** Participation/Responsibility + Actual.  
+**Trigger:** planned/Actual performer cannot be reconstructed without rewriting Activity/Actual.  
+**Tests:** CORE-02, CORE-05, MA-03, MA-20, XCON-03.
 
-## 8.2 expected performer ↔ actual performer
-
-**Why safe now:** planned responsibility/performance is distinct from Actual/Session actor attribution.
-
-**Owner:** Relationships / Reasoning — Participation/Responsibility.
-
-**Reopening trigger:** planned and actual performer cannot be reconstructed without rewriting Activity or Actual.
-
-**Tests to rerun:** CORE-02, CORE-05, MA-03, MA-20, XCON-03.
+**Downstream status:** semantically reinforced by Responsibility/Participation; physical attribution remains logical-model work.
 
 ---
 
@@ -227,47 +190,28 @@ These may be reopened only by stronger later evidence, not by convenience during
 
 ## 9.1 Recurrence ↔ Trigger
 
-**Why safe now:** Recurrence covers repeated temporal/generative patterns; arbitrary condition/event triggers are explicitly not collapsed into it.
-
-**Owner:** Relationships / Reasoning or dedicated automation/trigger review when concrete workflows require it.
-
-**Reopening trigger:** Actual/fact-driven recurrence or arbitrary conditional generation cannot be expressed without changing Recurrence identity/semantics.
-
-**Tests to rerun:** CORE-03, CORE-04, XCON-03, XCON-04.
+**Why safe:** Recurrence covers repeated temporal/generative pattern; arbitrary conditions/events remain outside it.  
+**Owner:** Relationships / Reasoning or dedicated Trigger/automation review.  
+**Trigger:** fact-driven generation cannot be represented without changing Recurrence identity.  
+**Tests:** CORE-03, CORE-04, XCON-03, XCON-04.
 
 ---
 
-# 10. SAFE DEFERRED — Person / Account / Principal / delegation
+# 10. SAFE DEFERRED — Person / Account / Principal / Delegation
 
 ## 10.1 Account ↔ Principal / credentials / provider identities
 
-**Why safe now:** Person != Account != Actor is fixed; Principal/security identity remains explicitly distinct.
-
-**Owner:** logical/security design + Relationships / Authority.
-
-**Reopening trigger:** authentication/authorization requires Person/Actor/Account identity collapse to preserve access history.
-
-**Tests to rerun:** CORE-02, CORE-09, MA-01, MA-06, MA-11, MA-17, XCON-01, XCON-02.
+**Why safe:** Person != Account != Actor fixed; Principal remains security identity.  
+**Owner:** logical/security design + Authority.  
+**Trigger:** authn/authz requires identity collapse to preserve access history.  
+**Tests:** CORE-02, CORE-09, MA-01, MA-06, MA-11, MA-17, XCON-01, XCON-02.
 
 ## 10.2 delegated / on-behalf-of Actor semantics
 
-**Why safe now:** Actor already allows semantic actor, authenticated Principal and on-behalf-of authority to differ.
-
-**Owner:** Relationships / Reasoning — delegation/Authority.
-
-**Reopening trigger:** delegated human/AI/service action cannot preserve actor attribution and authority chain under separate roles.
-
-**Tests to rerun:** MA-06, MA-10, MA-13, MA-17, XCON-02, XCON-04.
-
-## 10.3 Person reconciliation / merge / split
-
-**Why safe now:** Person identity independence and history requirements are fixed; mechanics are not.
-
-**Owner:** logical model + Provenance/Version/Decision.
-
-**Reopening trigger:** imported/contact/account identities cannot be reconciled while preserving historical attribution/privacy.
-
-**Tests to rerun:** CORE-02, CORE-09, MA-01, MA-07, MA-08, XCON-01, XCON-03.
+**Why safe:** semantic Actor, authenticated Principal and on-behalf-of Authority can differ.  
+**Owner:** Relationships / Reasoning — delegation/Authority.  
+**Trigger:** delegated human/AI/service action cannot preserve actor attribution/Authority chain.  
+**Tests:** MA-06, MA-10, MA-13, MA-17, XCON-02, XCON-04.
 
 ---
 
@@ -275,333 +219,163 @@ These may be reopened only by stronger later evidence, not by convenience during
 
 ## 11.1 Subject ↔ focus/context
 
-**Why safe now:** Subject is bounded primary aboutness and explicitly not universal `related_to`.
+**Why safe:** Subject is bounded primary aboutness and not universal `related_to`.  
+**Owner:** Relationships / Reasoning.  
+**Trigger:** ordinary records cannot distinguish primary Subject from focus/context without changing Subject.  
+**Tests:** CORE-04, CORE-05, XCON-04.
 
-**Owner:** Relationships / Reasoning.
+## 11.2 association privacy ↔ Visibility
 
-**Reopening trigger:** ordinary descriptive records cannot distinguish primary Subject from focus/context without changing Subject semantics.
+**Why safe:** identity/role association grants no disclosure permission.  
+**Owner:** Visibility/Authority.  
+**Trigger:** selective disclosure cannot hide association/detail independently.  
+**Tests:** MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
-**Tests to rerun:** CORE-04, CORE-05, XCON-04.
-
-## 11.2 Subject/Person/Actor/Asset association privacy ↔ Visibility
-
-**Why safe now:** identity/role association grants no disclosure permission.
-
-**Owner:** Relationships / Reasoning — Visibility/Authority.
-
-**Reopening trigger:** selective disclosure cannot hide association/detail independently without redefining identity/roles.
-
-**Tests to rerun:** MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
+**Downstream status:** semantic exposure side RESOLVED by Visibility v0; detailed field/facet policy remains deferred.
 
 ## 11.3 heterogeneous reference persistence
 
-**Why safe now:** domain semantics require native identities + contextual roles but deliberately do not pre-approve one SQL polymorphic root.
-
-**Owner:** logical data model.
-
-**Reopening trigger:** no persistence strategy can preserve integrity/queryability without a materially different semantic abstraction.
-
-**Tests to rerun:** CORE-10, CORE-13, XCON-01, XCON-04.
+**Why safe:** native identities + contextual roles do not require universal SQL root.  
+**Owner:** logical data model.  
+**Trigger:** no persistence strategy can preserve integrity/queryability without stronger semantic abstraction.  
+**Tests:** CORE-10, CORE-13, XCON-01, XCON-04.
 
 ---
 
 # 12. SAFE DEFERRED — Asset neighboring identities
 
-## 12.1 Asset ↔ Place / Location / Property
+Still separately owned after Asset's terminology-neutral review:
 
-**Why safe now:** current movable physical-object identity survives; property/place has additional spatial/legal semantics.
+```text
+Place / Location / Property
+living-entity identity
+Document / Artifact
+FinancialAccount / service/subscription
+Asset model/type/profile
+Asset merge/split/reconciliation
+```
 
-**Owner:** future Place/Property review.
-
-**Reopening trigger:** home/property workflows prove current Asset/Place split artificial or identity-duplicating.
-
-**Tests to rerun:** CORE-03, CORE-04, XCON-01, XCON-04, CL-03.
-
-## 12.2 Asset ↔ living-entity identity
-
-**Why safe now:** stable living identity need not be Asset; no current workflow requires collapse.
-
-**Owner:** concrete pet/plant/living workflow review.
-
-**Reopening trigger:** repeated workflows reveal one stronger native identity model with physical Assets and living referents.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-06, XCON-01.
-
-## 12.3 Asset ↔ Document / Artifact
-
-**Why safe now:** document/version/content/issuer/validity semantics are distinct from physical tracked-object identity.
-
-**Owner:** specialist document/artifact review.
-
-**Reopening trigger:** common identity/lifecycle semantics make separation artificial.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-12, XCON-01.
-
-## 12.4 Asset ↔ FinancialAccount / service/subscription
-
-**Why safe now:** financial/account/service lifecycles are materially distinct and the terminology-neutral review found no need for universal ManagedObject identity.
-
-**Owner:** future specialist domains.
-
-**Reopening trigger:** repeated workflows show one stronger native identity abstraction with lower complexity/no semantic loss.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-12, XCON-01.
-
-## 12.5 Asset model/type/profile
-
-**Why safe now:** individual Asset identity can exist without fixing catalog/model persistence.
-
-**Owner:** logical model / specialist profiles.
-
-**Reopening trigger:** identity/history cannot be maintained without model/type being part of identity.
-
-**Tests to rerun:** CORE-04, CORE-10, CORE-13.
-
-## 12.6 Asset merge/split/reconciliation
-
-**Why safe now:** provider IDs remain evidence and no silent merge is allowed.
-
-**Owner:** logical model + Provenance/Version/Decision.
-
-**Reopening trigger:** integrations cannot reconcile one real object while preserving history.
-
-**Tests to rerun:** CORE-02, CORE-09, XCON-01, XCON-03.
+Current Asset semantics remain safe because these domains have potentially distinct spatial/legal/content/financial/living/reconciliation lifecycles. Reopen only when concrete workflows prove a stronger shared identity model with less semantic loss.
 
 ---
 
 # 13. SAFE DEFERRED — Resource planning semantics
 
-## 13.1 Resource Requirement
-
-**Why safe now:** need and provider are explicitly separate; Resource role does not require final Requirement identity.
-
-**Owner:** Relationships / Reasoning + planner semantics.
-
-**Reopening trigger:** abstract needs, capability constraints, or late binding cannot be represented without changing Resource semantics.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-05, CORE-13, XCON-04.
-
-## 13.2 candidate eligibility / compatibility
-
-**Why safe now:** eligibility is contextual and Availability alone is insufficient.
-
-**Owner:** Relationships / Reasoning / planner.
-
-**Reopening trigger:** candidate logic requires Resource identity or a new primitive that conflicts with role semantics.
-
-**Tests to rerun:** CORE-04, CORE-12, CORE-13, MA-14, XCON-04.
-
-## 13.3 Allocation / Reservation / Capacity Claim
-
-**Why safe now:** selection/holding and Resource eligibility are distinct; Time cluster already separates Schedule from Capacity Claim.
-
-**Owner:** Relationships / Reasoning + scheduling logical model.
-
-**Reopening trigger:** allocation/reservation cannot preserve planned history or capacity without changing Resource/Availability semantics.
-
-**Tests to rerun:** CORE-02, CORE-04, MA-14, XCON-03, XCON-04.
-
-## 13.4 planned Resource ↔ actual use / consumption
-
-**Why safe now:** planned allocation is explicitly not proof of actual use.
-
-**Owner:** Actual/Session + future typed relationships/inventory.
-
-**Reopening trigger:** actual execution cannot reconstruct which resource/supply was actually used.
-
-**Tests to rerun:** CORE-02, CORE-05, XCON-03.
-
-## 13.5 pool / interchangeable capacity
-
-**Why safe now:** Resource role allows eligibility/capacity before member selection and does not pre-approve pool identity.
-
-**Owner:** planner/logical model.
-
-**Reopening trigger:** count/interchangeable capacity requires a persistent pool concept with independent lifecycle.
-
-**Tests to rerun:** CORE-03, CORE-10, CORE-13, MA-14.
-
-## 13.6 inventory / supply / consumption
-
-**Why safe now:** supply can satisfy a Requirement without manufacturing per-unit Asset/Resource identity.
-
-**Owner:** future concrete inventory/supply workflow.
-
-**Reopening trigger:** stock/movement/consumption history cannot compose with Quantity/Resource roles.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-10, CORE-12, CORE-13.
-
-## 13.7 service / capability / skill
-
-**Why safe now:** capability criteria and provider identity are already separated.
-
-**Owner:** Relationships / specialist planning.
-
-**Reopening trigger:** service/skill workflows reveal a missing native identity or semantic primitive.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-06, CORE-12, XCON-01.
-
----
-
-# 14. SAFE DEFERRED — Quantity neighboring semantics
-
-## 14.1 Money / MonetaryAmount
-
-**Why safe now:** currency semantics and FX context are explicitly not treated as ordinary physical Quantity conversion.
-
-**Owner:** future finance/value-semantics review.
-
-**Reopening trigger:** monetary workflows can be represented cleanly as ordinary Quantity without loss, or Quantity rules conflict with Money requirements.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-07, CORE-13.
-
-## 14.2 Rating / Scale
-
-**Why safe now:** ordinal/subjective scales are not automatically Quantity merely because encoded numerically.
-
-**Owner:** future value-semantics review when concrete use requires it.
-
-**Reopening trigger:** repeated rating workflows need reusable scale semantics that alter Quantity boundary.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-12.
-
-## 14.3 Ratio / Percentage / Count / dimensionless values
-
-**Why safe now:** number/unit shape alone does not determine semantic type; context controls valid operations.
-
-**Owner:** logical/value-semantics review.
-
-**Reopening trigger:** these values require reusable semantics not expressible as bounded Quantity/value structures.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-13.
-
-## 14.4 custom UnitDefinition
-
-**Why safe now:** custom labels do not imply global conversion rules.
-
-**Owner:** logical value/unit model.
-
-**Reopening trigger:** ordinary custom units require persistent definition/conversion identity.
-
-**Tests to rerun:** CORE-04, CORE-09, CORE-13.
-
-## 14.5 elapsed Duration ↔ calendar-relative period
-
-**Why safe now:** elapsed amount and calendar-relative temporal semantics are explicitly distinguished.
-
-**Owner:** Time/value logical model.
-
-**Reopening trigger:** duration calculations cannot preserve this distinction under current Quantity/Time semantics.
-
-**Tests to rerun:** CORE-03, CORE-04, XCON-03.
-
-## 14.6 Range / Threshold / comparator
-
-**Why safe now:** these are structures/criteria containing or comparing Quantities rather than one Quantity value.
-
-**Owner:** Relationships / criteria / logical value model.
-
-**Reopening trigger:** thresholds/ranges cannot be represented without embedding comparison semantics into Quantity itself.
-
-**Tests to rerun:** CORE-03, CORE-04, CORE-13.
-
-## 14.7 decimal / unit physical representation
-
-**Why safe now:** conceptual precision semantics are fixed without selecting SQL numeric/unit storage.
-
-**Owner:** logical/physical data model.
-
-**Reopening trigger:** feasible persistence cannot preserve precision/source representation/conversion semantics.
-
-**Tests to rerun:** CORE-09, CORE-10, CORE-13.
-
----
-
-# 15. SAFE DEFERRED — longitudinal projections
-
-## 15.1 query/materialization/cache / saved views
-
-**Why safe now:** Register rejection preserves native source records and allows derived/saved product configuration.
-
-**Owner:** logical/physical query + product design.
-
-**Reopening trigger:** performant longitudinal use requires a persisted source-of-truth layer with materially new semantics.
-
-**Tests to rerun:** CORE-04, CORE-10, CORE-12, CORE-13.
-
-## 15.2 aggregate visibility ↔ source-record visibility
-
-**Why safe now:** derived projection does not automatically grant access to underlying private records and vice versa.
-
-**Owner:** Visibility/Authority + query layer.
-
-**Reopening trigger:** selective disclosure cannot support aggregate/shared projections without semantic redesign.
-
-**Tests to rerun:** MA-07, MA-08, MA-17, XCON-05.
-
----
-
-# 16. SAFE DEFERRED — AI / privacy / retention
-
-## 16.1 AI context / inference / disclosure / Authority
-
-**Why safe now:** all current concepts explicitly separate AI inference/proposal from established identity, Actual, Confirmation, Authority and disclosure permission.
-
-**Owner:** Relationships / Reasoning + AI gateway/context-builder policy.
-
-**Reopening trigger:** AI workflows require inference to establish canonical state without an explicit authority/decision mechanism.
-
-**Tests to rerun:** MA-06, MA-07, MA-08, MA-17, XCON-02, XCON-05.
-
-## 16.2 retention / deletion / anonymization
-
-**Why safe now:** native identity/history semantics do not pre-commit indefinite data retention.
-
-**Owner:** privacy/security/legal product policy + logical model.
-
-**Reopening trigger:** required deletion/anonymization makes accepted identity/history invariants contradictory.
-
-**Tests to rerun:** CORE-02, CORE-09, MA-07, MA-08, MA-11, XCON-03, XCON-05.
-
----
-
-# 17. Non-pre-approved future concepts
-
-The following terms appeared during validation but are **not** promoted merely by appearing here:
+Still explicitly separated:
 
 ```text
-Transaction
-Movement
-Snapshot
-Place
-Organization
-Pool
-Requirement
-Allocation
-Decision
-Version
-Trigger
-GoalCriterion
+Resource Requirement
+candidate eligibility/compatibility
+Allocation / selection
+Reservation / Capacity Claim
+planned Resource != Actual use/consumption
+pool/interchangeable capacity
+inventory/supply/consumption
 ```
 
-Each must independently survive its future validation when/if concrete workflows justify it.
+Resource is contextual provider eligibility/capability, not any of these downstream selection/claim/use concepts.
+
+Owners/triggers remain planner/logical-model/specialist workflow stages with CORE-03/04/05/10/12/13, MA-14 and XCON-03/04 reruns as applicable.
 
 ---
 
-# 18. Closure verdict
-
-- [x] PASS
-- [ ] PASS WITH HARDENING
-- [ ] REOPEN
-- [ ] DEFERRED DEPENDENCY
+# 14. Historical closure verdict
 
 ```text
 DEFERRED DEPENDENCY CLOSURE — CLUSTERS 1–4
 PASS
 
-0 REOPEN
-0 unclassified material dependencies
-all SAFE DEFERRED items have owner + reason + reopening trigger + tests
+REOPEN                         0
+unclassified material items    0
 ```
 
-This permits Cross-Cluster Validation v4 to execute without hidden dependency debt.
+Every material item was either RESOLVED or SAFE DEFERRED with executable owner/trigger/tests, allowing Cross-Cluster Validation v4 and then Relationships / Reasoning to proceed.
+
+---
+
+# 15. Downstream resolution appendix — Acknowledgement v0 (2026-08-12)
+
+The later Acknowledgement v0 review resolves the Acknowledgement and generic Acceptance portions of historical section 5.2 without rewriting the original closure state.
+
+Current canonical decomposition:
+
+```text
+Confirmation
+= affirmation of a target/material version for purpose/context
+
+Acknowledgement
+= explicit actor-scoped taking-notice of a specific target/material version/change/request
+
+family-specific acceptance
+= response/willingness semantics owned by the relevant workflow
+```
+
+Therefore:
+
+```text
+Confirmation ↔ Acknowledgement
+RESOLVED
+recognition != affirmation
+
+Acknowledgement ↔ generic Acceptance
+RESOLVED
+explicit taking-notice != family-specific willingness/response
+
+Generic cross-domain Acceptance primitive
+REJECTED
+```
+
+Concrete mappings:
+
+```text
+Participation `accepted`
+→ Participation response
+
+Responsibility hand-off `accepted`
+→ Responsibility-specific response/operation
+
+proposal `accepted/applied`
+→ proposal/effect-specific response/operation
+```
+
+The historical combined dependency does **not** become fully closed because these neighboring questions remain independently owned:
+
+### Agreement
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** common-ground review.  
+**Why safe:** mutual/shared assent is not required to define Confirmation or Acknowledgement.  
+**Reopening trigger:** realistic workflows cannot represent mutual commitment without generic Acceptance/Attestation abstraction.  
+**Tests:** CORE-03, CORE-04, MA-05, MA-12, MA-19, XCON-04, XCON-05.
+
+### Consent / purpose limitation
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** privacy/common-ground review.  
+**Why safe:** bounded permission/use-purpose is separate from acknowledgement/affirmation.  
+**Reopening trigger:** privacy/action governance cannot be represented without collapsing Consent into Visibility/Authority/Acknowledgement.  
+**Tests:** CORE-04, MA-06, MA-07, MA-08, MA-13, XCON-02, XCON-05.
+
+### Verification
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** Verification/Evidence review.  
+**Why safe:** checking/basis process remains distinct from Confirmation/Acknowledgement.  
+**Reopening trigger:** specialist verification cannot remain separate from Confirmation/Evidence semantics.  
+**Tests:** CORE-03, CORE-04, CORE-09, MA-18, XCON-04.
+
+Current result after this downstream closure:
+
+```text
+Clusters 1–4 structural REOPEN        0
+unclassified material dependencies    0
+Acknowledgement dependency            RESOLVED
+universal Acceptance primitive        REJECTED
+Agreement / Consent / Verification    SAFE DEFERRED with owners/triggers
+```
+
+Normative downstream references:
+
+- `../concepts/acknowledgement.md`;
+- `acknowledgement-v0-validation.md`;
+- `../language-map.md`.
