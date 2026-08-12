@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Subject accepted as canonical semantic role; no Subject entity/root  
+**Current revision:** 2026-08-12 — Person accepted as native entity; Actor accepted as agency role; Account boundary separated  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -80,7 +80,11 @@ Evidence
 Provenance
 Quantity
 Subject (semantic role, not entity)
+Person (native human entity)
+Actor (semantic agency role/capability, not entity)
 ```
+
+`Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
 
 ## DERIVED
 
@@ -133,14 +137,16 @@ Register / Registro
 Tracker
 History / Storico
 Progress
+User
 ```
+
+`User` is deliberately product/implementation language. It must not be used as a universal domain synonym for Person, Actor, Account or Principal.
 
 ## PROVISIONAL
 
 Recurring semantic need with meaningful evidence but an unfinished domain boundary.
 
 ```text
-Actor
 Participation
 Responsibility
 Stewardship
@@ -164,12 +170,16 @@ Decision
 Version
 ```
 
+Detailed Account/credential/provider/security mechanics are deferred even though the Account != Person != Actor conceptual boundary is already fixed.
+
 ## HISTORICAL / SUPERSEDED
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
 
 - `Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
 - `Subject` as a universal entity/root/wrapper is rejected. The accepted meaning is a contextual semantic role over native referent identity. See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
+- universal `Actor` entity/root/wrapper is rejected. Actor is accepted as contextual agency semantics over native referent/system identity. See `concepts/actor.md`.
+- universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
 
 ---
 
@@ -470,12 +480,16 @@ Core guardrails:
 - query aggregates do not automatically become persisted Observations;
 - high-frequency streams do not imply row-per-sample persistence;
 - one Observation can appear in zero or many tracker/history/report views without duplication;
-- Subject is a role over native identity, not a wrapper entity.
+- Subject is a role over native identity, not a wrapper entity;
+- Person, Actor and Account are distinct when relevant to subject/recorder/authentication context.
 
 ```text
 Quantity      = reusable scalar amount value semantics
 Observation   = contextual observed/asserted record
 Subject       = native referent's contextual aboutness role
+Person        = native human identity
+Actor         = contextual agency semantics
+Account       = platform/access identity boundary
 Tracker/view  = product/query presentation over native records
 ```
 
@@ -557,7 +571,7 @@ Typical UI: Why is this progressing?, Based on…, Supporting data, Conflicting 
 **Question:** How did this specific record/material version come to exist, and what materially influenced its current form?  
 **UI exposure:** HIDDEN / ADVANCED / CONTEXTUAL
 
-Provenance is bounded contextual lineage covering materially relevant source entities, generation/import/derivation/transformation/correction activities, actors/systems/providers and times.
+Provenance is bounded contextual lineage covering materially relevant source entities, generation/import/derivation/transformation/correction activities, native actors/systems/providers and times.
 
 ```text
 Source != Provenance
@@ -576,15 +590,15 @@ Core guardrails:
 - correction preserves material prior lineage rather than rewriting origin;
 - derived/transformed records retain material source/process traceability;
 - AI/OCR/import pipelines must not launder authorship/source;
-- provider IDs do not define LifeOS identity;
-- Subject, source actor, observer, recorder, transformer, confirmer and authority may differ;
+- provider IDs do not define Person/Account/target identity;
+- Subject, Person, Actor role, source, observer, recorder, transformer, confirmer, Account/Principal context and authority may differ;
 - target visibility does not imply full Provenance visibility;
-- Provenance access does not imply access to every private upstream payload;
+- Provenance access does not imply access to every private upstream payload or identity linkage;
 - retention/history does not justify indefinite retention of deleted sensitive payloads;
 - material lineage, not maximal recursive lineage, is the default;
-- no universal provenance graph/table is pre-approved.
+- no universal provenance/actor graph or table is pre-approved.
 
-Typical UI: Source, Imported from…, Entered by…, Corrected by…, Derived from…, Why does LifeOS show this?, View history.
+Typical UI: Source, Imported from…, Entered by…, Corrected by…, Derived from…, Suggested by LifeOS AI, Why does LifeOS show this?, View history.
 
 ---
 
@@ -648,15 +662,93 @@ Subject != generic related_to
 
 Core guardrails:
 
-- current account holder is not the universal kernel-level Subject default;
+- current Account holder is not the universal kernel-level Subject default;
 - non-LifeOS people and non-person referents may play Subject role;
-- unknown/later-resolved/corrected subject attribution preserves material history;
-- subject association itself may be private;
-- AI may propose Subject resolution but does not automatically establish identity/authority;
+- unknown/later-resolved/corrected Subject attribution preserves material history;
+- Subject association itself may be private;
+- AI may propose Subject/Person resolution but does not automatically establish identity/authority;
 - focus/context/participant/source/etc. remain distinct where they answer different questions;
 - no universal `subjects` table or inheritance root is pre-approved.
 
-Typical UI usually shows the referent's natural name/context (`Maria`, `My car`) or hides self-subject entirely rather than exposing `Subject` as a noun.
+Typical UI usually shows the referent's natural name/context (`Maria`, `My car`) or hides self-Subject entirely rather than exposing `Subject` as a noun.
+
+## Person
+
+**Status:** CANONICAL NATIVE ENTITY  
+**Source:** `concepts/person.md`  
+**Validation:** `checkpoints/person-actor-account-v0-validation.md` — PASS WITH HARDENING  
+**Question:** Which human individual is represented?  
+**UI exposure:** DIRECT / CONTEXTUAL
+
+Person is the persistent native representation of a human individual in LifeOS reality. Person identity is independent of Accounts, credentials, contact/profile representations and contextual roles.
+
+```text
+Person != Subject
+Person != Actor
+Person != Account
+Person != Principal
+Person != User
+Person may play Subject role
+Person may play Actor/specific action roles
+non-account Person is ordinary domain reality
+```
+
+Core guardrails:
+
+- Person identity is not derived from name/email/phone/provider IDs;
+- Account creation/deletion does not automatically create/delete Person;
+- external/contact/profile representations may be identity evidence but not automatic equality;
+- Person merge/split/reconciliation must preserve material history;
+- identity linkage itself may be private;
+- AI can propose identity matching but does not silently establish Person identity.
+
+## Actor
+
+**Status:** CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY  
+**Source:** `concepts/actor.md`  
+**Validation:** `checkpoints/person-actor-account-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What native referent or system is acting in this context?  
+**UI exposure:** HIDDEN; expose specific action-role labels instead
+
+Actor is contextual agency semantics over a native Person/system/etc. identity. It is not an independent entity/root and does not replace specific roles.
+
+```text
+Actor entity/root = rejected
+Actor != Person
+Actor != Subject
+Actor != Account
+Actor != Principal
+Actor != Responsibility
+Actor != Authority
+Actor != specific performer/recorder/observer/confirmer/proposer relation
+```
+
+Core guardrails:
+
+- use the most specific meaningful action role;
+- Person may play Actor role, but Actor need not be Person;
+- no Account is required for historical Actor attribution;
+- Account authentication does not automatically establish semantic Actor;
+- agency does not imply permission, responsibility or Authority;
+- AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors;
+- no universal `actors` table/root is pre-approved.
+
+## Account boundary
+
+**Status:** CONCEPTUAL BOUNDARY ACCEPTED; DETAILED MODEL DEFERRED  
+**Validation:** `checkpoints/person-actor-account-v0-validation.md`  
+**Question:** Through which platform/access identity is LifeOS usage authenticated/managed?  
+**UI exposure:** DIRECT in account/settings/security contexts
+
+```text
+Account != Person
+Account != Actor
+Account != Subject
+Account != Principal by default
+Account creation/deletion != human creation/deletion
+```
+
+Exact Account/credential/provider/authentication schema belongs to later logical/security design. No standalone `account.md` is pre-approved by this boundary decision.
 
 ---
 
@@ -729,6 +821,12 @@ Interval geometry does not determine semantic meaning.
 **Status:** UI / DERIVED TERM  
 **Maps to:** projections of Availability + Capacity + claims + compatibility.
 
+## User
+
+**Status:** PRODUCT / IMPLEMENTATION TERM — NOT DOMAIN PRIMITIVE
+
+May refer contextually to a current Account holder/person using LifeOS, but must not become the common domain root for Person, Actor, Account, Principal, Participant or Subject.
+
 ---
 
 # 8. Historical V1 vocabulary crosswalk
@@ -767,7 +865,7 @@ Tag must not establish ownership, authority, lifecycle, scheduling or canonical 
 
 **Status:** HISTORICAL PRODUCT PHRASE
 
-Current mapping usually uses Activity/Event + future Person/Relationship semantics. The other person does not need a LifeOS Account and the item is not automatically shared.
+Current mapping usually uses Activity/Event + Person + future Relationship semantics. The other Person does not need a LifeOS Account and the item is not automatically shared.
 
 ## Shared Item
 
@@ -788,6 +886,7 @@ actor-scoped state/personal overlay
 Source != Provenance
 Source != truth
 Source != Authority
+Source != Person/Actor/Account identity
 ```
 
 ## Temporary Mode
@@ -810,47 +909,84 @@ Final Decision/Version semantics belong to Relationships/Reasoning review.
 
 ---
 
-# 9. Multi-actor terminology — tracked but not prematurely canonized
-
-## Actor
-
-**Status:** PROVISIONAL / DEFERRED — NEXT BOUNDARY REVIEW
-
-Entity/capability capable of acting, participating, holding responsibility or exercising authority depending on final accepted semantics. Do not equate Actor with `users.id`.
+# 9. Multi-actor terminology
 
 ## Person
 
-**Status:** DEFERRED — NEXT BOUNDARY REVIEW
+**Status:** CANONICAL NATIVE ENTITY  
+**See:** `concepts/person.md`
 
-Human represented in LifeOS reality; may exist without LifeOS Account and may play Subject and/or Actor roles contextually.
+Persistent human identity independent of Account, Subject role, Actor role, participation, responsibility, authority and visibility.
+
+```text
+Person != Account
+Person != Subject
+Person != Actor
+Person != Principal
+```
+
+A Person may exist without ever having a LifeOS Account.
+
+## Actor
+
+**Status:** CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY  
+**See:** `concepts/actor.md`
+
+Contextual agency of a native referent/system. Do not equate Actor with `users.id` or create a universal Actor wrapper/root.
+
+```text
+Actor != Person
+Actor != Account
+Actor != Principal
+Actor != Subject
+Actor != Responsibility
+Actor != Authority
+```
+
+Use specific roles such as performer/recorder/observer/confirmer/proposer when those semantics matter.
 
 ## Account
 
-**Status:** PRODUCT/IDENTITY CONCEPT — NEXT BOUNDARY REVIEW
+**Status:** PLATFORM / ACCESS IDENTITY BOUNDARY ACCEPTED; DETAILED MODEL DEFERRED
 
 ```text
 Account != Person
+Account != Actor
 Account != Subject
+Account != Principal by default
 Account != Participant
 ```
+
+Account lifecycle must not automatically erase native Person identity or historical Actor attribution.
 
 ## Principal
 
 **Status:** DEFERRED TECHNICAL/AUTHORITY CONCEPT
 
-Authenticated/acting identity semantics remain open.
+Authenticated/authorized security identity semantics remain open.
+
+```text
+Principal != Person
+Principal != Actor
+Principal != Account by default
+```
 
 ## Participant / Participation
 
 **Status:** PROVISIONAL
 
-Actor-scoped involvement/state around a shared object.
+Actor/Person-scoped involvement/state around a shared object; exact eligible referents and lifecycle remain deferred.
 
 ## Responsibility
 
 **Status:** PROVISIONAL — STRONG EVIDENCE
 
 Must be richer than one `assigned_to` field and may require accountability, expected performer, claimable/open responsibility, substitution and hand-off.
+
+```text
+Responsibility != Actor by default
+responsible actor != performer
+```
 
 ## Stewardship / Coordination Responsibility
 
@@ -862,7 +998,7 @@ Execution assignment can move while anticipation, reminding, monitoring and repa
 
 **Status:** RELATIONSHIP ROLE — exact model deferred
 
-Who actually performed work; not automatically requester/responsible actor/planned assignee.
+Who actually performed work; not automatically requester/responsible actor/planned assignee. Performer is a specific Actor role, not Actor identity.
 
 ## Subject
 
@@ -878,7 +1014,7 @@ Who/what a descriptive record primarily concerns. The native referent retains it
 Something whose availability/capacity/access may constrain execution/scheduling.
 
 ```text
-Actor != Subject
+Person may potentially play Resource role
 Actor != Resource
 Subject != Resource
 ```
@@ -887,7 +1023,7 @@ Subject != Resource
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use as synonyms for creator, participant, viewer, responsible actor, performer or Subject.
+Do not use as synonyms for creator, Account holder, participant, viewer, responsible actor, performer, Person or Subject.
 
 ## Authority
 
@@ -900,13 +1036,15 @@ Authority != Visibility
 Authority != Confirmation
 Authority != Provenance/source
 Authority != Subject
+Authority != Actor
+Authority != Account
 ```
 
 ## Visibility / Access
 
 **Status:** DEFERRED
 
-What an actor/principal may inspect/receive/use. Current access and historical attribution are distinct. Being Subject does not grant or imply visibility.
+What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor attribution are distinct. Being Subject does not grant or imply visibility.
 
 ## Acknowledgement
 
@@ -951,11 +1089,25 @@ Verification != Provenance
 
 The required product capability is validated, but exact query DSL, aggregate materialization, cache/history policy and saved-view persistence are implementation/product concerns rather than a kernel `Register` primitive.
 
+## Account / Principal / credential security model
+
+**Status:** DEFERRED LOGICAL / SECURITY MODEL
+
+The conceptual boundary is fixed:
+
+```text
+Person != Account
+Actor != Account
+Account != Principal by default
+```
+
+Exact login-provider identities, credentials, account linking, service principals, delegation and authentication/authorization representation remain open.
+
 ## Version
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject-attribution correction without replacing them.
+Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject/Person attribution correction without replacing them.
 
 ## Decision
 
@@ -980,7 +1132,7 @@ Trigger != Routine
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject is already one bounded semantic role and must not be generalized into every relationship.
+Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject and Actor are already bounded semantic roles and must not be generalized into every relationship.
 
 ## Dependency
 
@@ -1040,6 +1192,17 @@ Subject != Person/Actor/Account/Principal/Asset/Resource
 Subject != observer/recorder/source/transformer/authority/viewer
 Subject role != Subject entity/root
 Subject != generic related_to
+Person != Actor
+Person != Account
+Person != Principal
+Person != User domain primitive
+Actor != Account
+Actor != Principal
+Actor != Responsibility
+Actor != Authority
+Actor role != Actor entity/root
+Account != Person/Actor/Subject
+User != universal domain root
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
 view membership != duplicate native record
@@ -1070,9 +1233,15 @@ Capacity != universal busy/free boolean
 
 ```text
 Person != Account
-Account != Participant
+Person may exist without Account
+Person may play Subject role
+Person may play Actor/specific action role
+Actor != Account
+Actor != Principal
 Actor != Subject
 Actor != Resource
+Actor != Responsibility/Authority
+Account != Participant
 Subject != Resource
 Participant != Responsible actor
 Responsible actor != Performer
@@ -1085,7 +1254,8 @@ shared Actual != identical actor participation
 shared Outcome != identical actor consequence
 Observation Subject != observer/recorder/source/authority/viewer
 current Account != universal Subject
-non-LifeOS Person may be Subject
+current Account != semantic Actor automatically
+non-LifeOS Person may be Subject/Participant/Actor where context allows
 Confirmation by A != Confirmation by B
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
@@ -1096,12 +1266,14 @@ Acknowledgement != agreement
 Agreement != authority
 Authority != Actual
 Authority != Confirmation
+Actor action != Authority
 AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
-AI Subject guess != established Subject identity
+AI Subject/Person guess != established identity
+AI Actor != human author/authority automatically
 AI provenance != disclosure permission
-future access revocation != deletion of historical attribution
+future Account access revocation != deletion of historical Person/Actor attribution
 Quantity display preference != canonical value mutation
 actor tracker preferences != shared fact mutation
 ```
@@ -1119,6 +1291,9 @@ Module != domain entity
 Register/Tracker view != kernel Register entity
 RegisterEntry != universal semantic record
 Subject UI/context != Subject entity
+Actor UI label != Actor entity
+User UI/implementation term != universal domain entity
+Account settings object != Person identity
 Needs confirmation != Confirmation object by itself
 Source label != complete Provenance model
 Quantity UI value != standalone Quantity entity
@@ -1152,10 +1327,11 @@ Product: Project
 ## Exam result
 
 ```text
-Event
+Person student
++ Subject role on Observation
++ Event
 + Actual
 + Observation: score = 78/100
-+ Subject role -> Person/student
 + Outcome: passed
 + optional Confirmation
 + Evidence use toward Goal/Milestone
@@ -1186,11 +1362,40 @@ No universal Subject wrapper or RegisterEntry copy is created.
 Person Maria
         ↑ Subject role
 Observation: temperature = 38.2 °C
-observer/recorder = Anna
-account = Anna's account
+
+Person Anna
+        ↓ observer/recorder Actor roles
+
+Account Anna-A1
+        ↓ authenticates LifeOS access
 ```
 
-Subject, recorder and Account remain distinct.
+Person, Subject, Actor role and Account remain distinct.
+
+## External participant with no Account
+
+```text
+Person Dr. Rossi
+Event participant
+no LifeOS Account required
+```
+
+If Dr. Rossi later creates an Account, the human Person identity does not need to be recreated.
+
+## AI proposal
+
+```text
+AI Agent X
+Actor role: proposer
+
+service/security identity
+future Principal semantics
+
+human Person
+future delegated/on-behalf-of Authority context
+```
+
+AI agency does not become human Confirmation or Authority automatically.
 
 ## Quantity display conversion
 
@@ -1230,7 +1435,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared users do not automatically receive the private source reason, lineage or Subject association.
+Shared Actors do not automatically receive the private source reason, Person linkage, Actor/delegation lineage or Subject association.
 
 ---
 
@@ -1246,6 +1451,10 @@ Outcome             → Passed / Partial / Approved / Result details
 Observation         → Weight / Mood / Score / Odometer
 Quantity            → 66.4 kg / 5 km / 45 min
 Subject             → usually hidden; natural referent label such as Maria / My car
+Person              → natural human name/contact representation
+Actor               → hidden; expose role: Done by / Recorded by / Suggested by
+Account             → Account / Profile / Login in settings/security context
+User                → ordinary product language only where unambiguous
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
 Evidence            → Why? / Based on… / Supporting or conflicting data
@@ -1264,21 +1473,25 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Actor, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
+In particular Person, Actor, Account, Principal, Participant, Responsibility, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance, Quantity and Subject-role references must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
 - Observation does not imply one generic fact table or row per sensor tick;
 - Confirmation does not imply one universal polymorphic confirmation table;
 - Evidence does not imply one persisted edge/entity per evaluative use;
-- Provenance does not imply one universal provenance graph/table or event row for every technical operation;
+- Provenance does not imply one universal provenance/actor graph/table or event row for every technical operation;
 - Quantity does not imply a standalone table/entity for each scalar amount;
 - Subject does not imply a universal `subjects` table/root or every referent inheriting from Subject;
-- heterogeneous Subject references must preserve native identity and attribution history;
+- Actor does not imply a universal `actors` table/root or one generic `actor_id` relation everywhere;
+- Person does not imply `persons.id = accounts.id`;
+- Account does not imply final auth/provider/credential/Principal schema;
+- User must not become the universal implementation FK just because the UI uses the word;
+- heterogeneous Subject/Actor references must preserve native identity and attribution history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
-- provider/source identifiers do not define LifeOS identity;
+- provider/source/auth identifiers do not define Person/domain identity by default;
 - product aliases do not create duplicate persistence models.
 
 When implementation names later differ for good technical reasons, document the mapping here.
@@ -1297,6 +1510,8 @@ A term may enter when at least one holds:
 A term does not become canonical because a competitor uses it, a table would be convenient, a mockup contains it, an AI suggested it, or it makes the ontology look complete.
 
 A historical candidate may be rejected when validation shows that its useful behavior is better expressed through existing concepts plus product/query/application capability or a semantic role rather than a new entity.
+
+An implementation/security concept may have an accepted boundary without being promoted prematurely into a fully modeled domain concept. `Account` currently follows this rule.
 
 Change procedure:
 
