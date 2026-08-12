@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — first three clusters validated together under Methodology v3  
+**Current revision:** 2026-08-12 — Quantity v0 promoted as canonical value semantics  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -56,7 +56,7 @@ This map records decisions; it does not create primitives.
 
 ## CANONICAL
 
-Accepted Domain Atlas concept/capability with stable current semantics.
+Accepted Domain Atlas concept/capability/value semantics with stable current semantics.
 
 ```text
 Goal
@@ -78,6 +78,7 @@ Observation
 Confirmation
 Evidence
 Provenance
+Quantity
 ```
 
 ## DERIVED
@@ -148,7 +149,6 @@ Acceptance / Agreement
 Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Quantity
 Register
 Subject
 Resource
@@ -464,7 +464,7 @@ Core guardrails:
 - high-frequency streams do not imply row-per-sample persistence.
 
 ```text
-Quantity    = reusable value + unit semantics
+Quantity    = reusable scalar amount value semantics
 Observation = contextual record using a value
 Register    = longitudinal organization/analysis of records
 ```
@@ -575,6 +575,44 @@ Core guardrails:
 - no universal provenance graph/table is pre-approved.
 
 Typical UI: Source, Imported from…, Entered by…, Corrected by…, Derived from…, Why does LifeOS show this?, View history.
+
+---
+
+# 6A. Canonical Data / Subjects concepts
+
+## Quantity
+
+**Status:** CANONICAL VALUE SEMANTICS  
+**Source:** `concepts/quantity.md`  
+**Validation:** `checkpoints/quantity-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What scalar amount is represented, and under which unit semantics can it be interpreted?  
+**UI exposure:** HIDDEN / CONTEXTUAL
+
+Quantity is reusable scalar amount value semantics: numerical magnitude + unit semantics sufficient for interpretation. It is not an independently persistent domain entity.
+
+```text
+number != Quantity by default
+Quantity != Observation
+Quantity != Register / RegisterEntry
+property / quantity kind != unit
+compatible unit != semantic equivalence by itself
+same unit != universal aggregation permission
+Quantity != Range / Threshold / comparator / criterion
+```
+
+Core guardrails:
+
+- no independent Subject/property/time/Provenance/Confirmation/Evidence/ownership/history;
+- unit/dimensional compatibility alone does not establish domain-semantic interchangeability;
+- normalization/display conversion does not rewrite source representation;
+- actor-specific display unit preference does not duplicate canonical facts;
+- custom unit label does not create a global conversion rule;
+- Money/MonetaryAmount is not pre-collapsed into ordinary Quantity;
+- calendar-relative time is not pre-collapsed into fixed elapsed Quantity arithmetic;
+- precision/rounding must not be silently fabricated;
+- Quantity semantics do not imply a standalone SQL table/entity.
+
+Typical UI does not expose `Quantity` as a noun; users see values such as `66.4 kg`, `5 km`, `45 min` in the relevant context.
 
 ---
 
@@ -832,12 +870,6 @@ Verification != Confirmation
 Verification != Provenance
 ```
 
-## Quantity
-
-**Status:** DEFERRED — DATA/SUBJECT REVIEW
-
-Reusable measurement value + unit semantics.
-
 ## Register
 
 **Status:** DEFERRED — DATA/SUBJECT REVIEW
@@ -922,6 +954,13 @@ Observation != Register
 Observation != Confirmation
 Observation != Evidence
 Observation != Provenance
+Quantity != Observation
+Quantity != Register/RegisterEntry
+number != Quantity by default
+property/quantity-kind != unit
+compatible unit != semantic equivalence by itself
+same unit != universal aggregation permission
+Quantity != Range/Threshold/comparator/criterion
 Confirmation != Acknowledgement
 Confirmation != Acceptance/Agreement
 Confirmation != Verification
@@ -977,6 +1016,7 @@ AI inference != Confirmation
 AI inference != established Actual
 AI provenance != disclosure permission
 future access revocation != deletion of historical attribution
+Quantity display preference != canonical value mutation
 ```
 
 ## Product vs kernel
@@ -992,6 +1032,7 @@ Module != domain entity
 Register view != mandatory duplicate source record
 Needs confirmation != Confirmation object by itself
 Source label != complete Provenance model
+Quantity UI value != standalone Quantity entity
 ```
 
 ---
@@ -1048,6 +1089,21 @@ manual entry / device import / correction chain as applicable
 
 Possible product: Weight Register.
 
+## Quantity display conversion
+
+```text
+shared Observation
+value: 66.4 kg
+
+Actor A display
+66.4 kg
+
+Actor B display
+146.4 lb
+```
+
+One underlying fact; no per-actor Quantity/Observation duplication.
+
 ## Correction lineage
 
 ```text
@@ -1087,6 +1143,7 @@ Temporal Constraint → Deadline / Preferred time / Not before
 Actual              → What happened? / Actual time / Performed
 Outcome             → Passed / Partial / Approved / Result details
 Observation         → Weight / Mood / Score / Odometer
+Quantity            → 66.4 kg / 5 km / 45 min (contextual value; noun hidden)
 Confirmation        → Confirm / Looks correct / Needs confirmation
 Evidence            → Why? / Based on… / Supporting or conflicting data
 Provenance          → Source / Imported from / Corrected by / View history
@@ -1104,7 +1161,7 @@ Physical/API terminology remains intentionally incomplete until logical/physical
 
 Do not infer table/class names from this map.
 
-In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence and Provenance must not be translated prematurely into final SQL/cardinality choices.
+In particular Actor, Participant, Responsibility, Subject, Resource, Authority, Visibility, Actual, Outcome, Observation, Confirmation, Evidence, Provenance and Quantity must not be translated prematurely into final SQL/cardinality choices.
 
 Specific guardrails:
 
@@ -1112,6 +1169,8 @@ Specific guardrails:
 - Confirmation does not imply one universal polymorphic confirmation table;
 - Evidence does not imply one persisted edge/entity per evaluative use;
 - Provenance does not imply one universal provenance graph/table or event row for every technical operation;
+- Quantity does not imply a standalone table/entity for each scalar amount;
+- unit normalization does not erase source representation/provenance;
 - provider/source identifiers do not define LifeOS identity;
 - product aliases do not create duplicate persistence models.
 
