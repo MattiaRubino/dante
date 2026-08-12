@@ -2,6 +2,7 @@
 
 **Status:** Current mandatory validation standard  
 **Established:** 2026-08-11  
+**Current revision:** 2026-08-12 — dependency-closure discipline added  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`  
 **Supersedes for active work:** `validation-methodology-v2.md` plus `validation-methodology-v2-multi-actor-addendum.md`
@@ -22,7 +23,7 @@ This methodology remains cumulative. It preserves the strongest parts of the ori
 
 # 1. Validation architecture
 
-Every Domain Atlas concept passes through four ordered stages:
+Every Domain Atlas concept passes through four ordered semantic stages plus a dependency-closure step:
 
 ```text
 A. EVIDENCE + CANDIDATE FORMATION
@@ -32,6 +33,8 @@ B. CORE SEMANTIC VALIDATION GATE
 C. MULTI-ACTOR COMPATIBILITY GATE
               ↓
 D. CROSS-CONCEPT CONSISTENCY GATE
+              ↓
+E. ADJACENT DEPENDENCY SWEEP
               ↓
         CONCEPT VERDICT
 ```
@@ -45,6 +48,8 @@ CLUSTER MULTI-ACTOR STRESS GATE
         ↓
 CLUSTER VERDICT
 ```
+
+For the already-started Data / Subjects cluster, the project will finish the cluster using the current concept-by-concept sequence, then run a dedicated **Deferred Dependency Closure** across clusters 1–4 before Cross-Cluster Validation v4. From the following cluster onward, the Adjacent Dependency Sweep is mandatory before each concept is accepted, so unresolved adjacency does not accumulate silently.
 
 Before broad logical/physical persistence is treated as stable, the whole accepted model passes:
 
@@ -109,6 +114,10 @@ A new entity/value object/relationship is justified only by materially distinct 
 ## V3-GP-08 — No silent test omission
 
 An applicable registered test must receive an explicit result. `N/A` is allowed only with a written reason.
+
+## V3-GP-09 — No unclassified dependency limbo
+
+A neighboring semantic question discovered during validation must not survive merely as "review later". Before the applicable closure point it must be classified as `RESOLVED`, `SAFE DEFERRED`, or `REOPEN`, with an explicit owner/trigger for any deferral.
 
 ---
 
@@ -690,7 +699,67 @@ Kernel terminology, product profiles and UI aliases must remain correctly classi
 
 ---
 
-# 7. Concept verdicts
+# 7. Adjacent Dependency Sweep
+
+After the Cross-Concept Consistency Gate and before the final concept verdict, inspect every material boundary or neighboring semantic question exposed by the candidate.
+
+For each dependency ask:
+
+1. Does this dependency materially affect the candidate's identity, lifecycle, authority, history, privacy, arithmetic/evaluation behavior, or query semantics?
+2. Is there enough accepted evidence to resolve it now?
+3. Would deferring it force the candidate to guess a future model?
+4. Which future concept/cluster/logical-model stage owns the unresolved question?
+5. What exact trigger requires revalidation?
+
+Every material dependency must receive exactly one closure classification:
+
+### RESOLVED
+
+The neighboring question has enough evidence now and is resolved in the current concept/boundary. Record the resulting invariant/hardening.
+
+### SAFE DEFERRED
+
+The candidate remains valid without deciding the neighboring representation now. A SAFE DEFERRED item must record:
+
+- the unresolved question;
+- why it does not block current acceptance;
+- the owning future concept/cluster/stage;
+- the exact reopening trigger;
+- the tests/boundaries that must be rerun.
+
+`SAFE DEFERRED` is not permission to write `TBD` without ownership.
+
+### REOPEN
+
+The dependency exposes a material contradiction or missing semantic decision that prevents current acceptance. Reopen the affected candidate/previous concept immediately rather than carrying the problem forward.
+
+Canonical rule:
+
+> **No material dependency may remain in unclassified limbo at the applicable closure point.**
+
+## Transition rule for Data / Subjects
+
+Because clusters 1–3 were validated before this sweep became mandatory and Data / Subjects has already started, use the following one-time transition:
+
+```text
+finish Data / Subjects concept reviews
+        ↓
+Data / Subjects cluster integration + multi-actor stress
+        ↓
+DEFERRED DEPENDENCY CLOSURE — clusters 1–4
+        ↓
+resolve now / safe defer / reopen
+        ↓
+CROSS-CLUSTER VALIDATION v4 — clusters 1–4
+        ↓
+only after PASS: Relationships / Reasoning
+```
+
+From Relationships / Reasoning onward, execute the Adjacent Dependency Sweep before each concept verdict rather than accumulating a cluster-wide limbo backlog.
+
+---
+
+# 8. Concept verdicts
 
 Only four concept verdicts are allowed.
 
@@ -719,11 +788,13 @@ A deferred dependency must name:
 - whether the current concept may be accepted despite the dependency;
 - what test must be rerun later.
 
+The Adjacent Dependency Sweep adds the operational `SAFE DEFERRED` classification for dependencies that are explicitly non-blocking; this does not add a fifth concept verdict.
+
 `UNCHECKED`, `PROBABLY PASS`, `GOOD ENOUGH`, or silent omission are not valid final states.
 
 ---
 
-# 8. Mandatory validation coverage matrix
+# 9. Mandatory validation coverage matrix
 
 Every concept checkpoint must include a matrix using stable test IDs.
 
@@ -739,13 +810,14 @@ Rules:
 3. an unresolved applicable failure prevents PASS;
 4. a DEFERRED result must identify its reopening trigger;
 5. test evidence should point to concrete scenarios, not only general prose;
-6. repeated stable evidence may be referenced rather than rewritten in full.
+6. repeated stable evidence may be referenced rather than rewritten in full;
+7. every material adjacent dependency must be represented in the dependency sweep/register.
 
 This matrix exists to prevent validation by memory.
 
 ---
 
-# 9. Cluster Integration Gate
+# 10. Cluster Integration Gate
 
 After all concepts in a cluster are individually accepted, test them as one system.
 
@@ -783,7 +855,7 @@ Does integration create hidden combinatorial complexity or require simple users 
 
 ---
 
-# 10. Cluster Multi-Actor Stress Gate
+# 11. Cluster Multi-Actor Stress Gate
 
 Every cluster must then run integrated multi-actor scenarios separately from the ordinary cluster gate.
 
@@ -819,7 +891,7 @@ J. AI — reasons from private facts without disclosing private causes
 
 ---
 
-# 11. Cluster verdicts
+# 12. Cluster verdicts
 
 Cluster verdicts use the same four states:
 
@@ -836,9 +908,11 @@ A cluster PASS requires:
 - no unresolved applicable failure;
 - all deferred dependencies recorded with reopening triggers.
 
+A cluster PASS does not erase SAFE DEFERRED dependencies. They remain executable obligations and must be revisited at their registered trigger.
+
 ---
 
-# 12. Whole-Domain Gate
+# 13. Whole-Domain Gate
 
 Before broad logical/physical persistence is treated as stable, rerun the whole accepted model.
 
@@ -889,7 +963,7 @@ Confirm that LifeOS remains an integrating/personal coordination system rather t
 
 ---
 
-# 13. Reopening severity and handling
+# 14. Reopening severity and handling
 
 Findings are classified operationally as:
 
@@ -913,7 +987,7 @@ Effect: PASS WITH HARDENING until the hardening is written and retested.
 
 ## DEFERRED DEPENDENCY
 
-Requires an adjacent future model. Must have explicit reopening trigger.
+Requires an adjacent future model. Must have explicit reopening trigger and one of the dependency-sweep treatments (`SAFE DEFERRED` or `REOPEN`) at the applicable closure point.
 
 ## PRODUCT / UX
 
@@ -923,7 +997,7 @@ Effect: record for product work; does not by itself reopen the kernel.
 
 ---
 
-# 14. Regression corpus policy
+# 15. Regression corpus policy
 
 Important scenarios discovered during any concept/cluster validation become reusable regression evidence.
 
@@ -944,55 +1018,59 @@ The checkpoint should reference existing corpus scenarios whenever possible and 
 
 ---
 
-# 15. Validation execution discipline
+# 16. Validation execution discipline
 
-## 15.1 Candidate first, verdict later
+## 16.1 Candidate first, verdict later
 
 Do not write the desired verdict first and select confirming scenarios afterward.
 
-## 15.2 Evidence diversity
+## 16.2 Evidence diversity
 
 Use at least multiple domain families when the concept claims universal applicability.
 
-## 15.3 Negative cases are mandatory
+## 16.3 Negative cases are mandatory
 
 Include absent, skipped, unknown, conflict, failure, correction or rejection where applicable.
 
-## 15.4 Multi-actor gate is never inferred
+## 16.4 Multi-actor gate is never inferred
 
 A concept does not pass MA tests merely because its wording is actor-neutral. Execute the relevant scenarios.
 
-## 15.5 `N/A` is explicit
+## 16.5 `N/A` is explicit
 
 Not every concept needs every test, but omission requires a reason.
 
-## 15.6 Hardening is written before PASS
+## 16.6 Hardening is written before PASS
 
 Do not call the concept PASS and leave the required hardening only in conversation notes.
 
-## 15.7 Deferrals are executable obligations
+## 16.7 Deferrals are executable obligations
 
-Every deferral names the future trigger that forces revalidation.
+Every deferral names the future trigger that forces revalidation. From the point at which the Adjacent Dependency Sweep applies, every material deferral must also be classified `SAFE DEFERRED` or force `REOPEN`.
 
-## 15.8 Checkpoints are durable
+## 16.8 Checkpoints are durable
 
 The durable repository checkpoint, not conversation memory, is the authoritative record of what was actually tested.
 
----
+## 16.9 Dependency closure precedes forward motion
 
-# 16. Current applicability
-
-The first two accepted clusters were validated under v2 and subsequently passed the evidence-backed Multi-Actor Readiness review.
-
-They remain valid current baselines under v3 because the new pipeline integrates tests already applied to them rather than introducing a known contradictory semantic requirement.
-
-They may still be reopened by future cluster evidence or final whole-domain regression.
-
-The first concept to be developed natively under Validation Methodology v3 is expected to be `Actual` in the Observed Reality & Evidence cluster.
+Do not start a later cluster when the applicable closure plan requires a deferred-dependency sweep or cross-cluster regression first.
 
 ---
 
-# 17. Relationship to historical methodology documents
+# 17. Current applicability
+
+The first three accepted clusters are validated current baselines under v3 and Cross-Cluster Validation v3.
+
+Data / Subjects is the transition cluster for the new dependency discipline: finish its concept reviews and cluster gates, then execute a dedicated dependency closure across clusters 1–4 followed by Cross-Cluster Validation v4 before Relationships / Reasoning begins.
+
+From Relationships / Reasoning onward, the Adjacent Dependency Sweep is mandatory before every concept verdict.
+
+All accepted concepts remain reopenable when the sweep, later cluster evidence or final whole-domain regression exposes a material contradiction.
+
+---
+
+# 18. Relationship to historical methodology documents
 
 The following remain preserved for audit/history:
 
