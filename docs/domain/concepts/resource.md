@@ -1142,3 +1142,39 @@ See:
 - `concepts/responsibility.md`;
 - `checkpoints/responsibility-v0-validation.md`;
 - `checkpoints/relationship-v0-validation.md`.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 closes the Resource ↔ Participation boundary without changing Resource semantics.
+
+Canonical distinction:
+
+```text
+Resource
+= what could satisfy an operational/execution need
+= eligibility / capability / availability-capacity role
+
+Participation
+= expected/intended or Actual involvement in a bounded shared occurrence/interaction
+```
+
+Therefore:
+
+```text
+Resource != Participation
+Resource candidate != Participant
+Resource Allocation/Reservation != Participation
+Resource reservation != Actual Participation
+Participation != Resource eligibility/capacity
+```
+
+A Person may independently play both roles in the same context, but neither establishes the other. A room/equipment item may be represented by external calendar providers as a `resource attendee`; that provider vocabulary is an integration mapping choice, not evidence that LifeOS should treat the room/equipment as a Participant.
+
+Actual human Participation must not be inferred from Resource reservation or capacity consumption, and Participation does not prove that the Person was an eligible/available Resource.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
