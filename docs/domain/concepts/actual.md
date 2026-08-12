@@ -459,7 +459,9 @@ Canonical rule:
 
 > **Correction changes current accepted realized truth without silently deleting the assertion history that produced it.**
 
-Actual does not itself define the conflict-resolution algorithm. That belongs to authority/provenance/version/reconciliation design.
+Actual does not itself define the conflict-resolution algorithm. That belongs to Authority/Provenance/Version/Decision/reconciliation design.
+
+Authority v0 now fixes one part of that boundary: **Authority answers who/what may legitimately make a bounded reconciliation/correction effect effective; Authority does not itself prove which assertion is objectively true and does not replace Actual.**
 
 ---
 
@@ -567,11 +569,19 @@ unavailable 18:00-20:00
 
 The ability to compute or use the private Actual does not imply permission to disclose it.
 
+Visibility v0 now makes this boundary canonical:
+
+```text
+Visibility(derived projection)
+!= Visibility(private Actual)
+!= Visibility(underlying Observation/Evidence/Provenance/Participation)
+```
+
+A recipient may legitimately see the consequence without seeing the Actual or source cause. Conversely, a visible Actual does not automatically expose every supporting source, participant relation, or lineage detail.
+
 Canonical rule:
 
-> **AI/system knowledge of Actual does not create disclosure permission.**
-
-The final access/visibility model is deferred.
+> **AI/system knowledge or authorized processing of Actual does not create disclosure permission.**
 
 ---
 
@@ -688,17 +698,19 @@ FHIR Task intention/execution collapse            -> ANTI-PATTERN for LifeOS cor
 18. One Activity/Occurrence may use multiple Sessions while retaining one broader realization context.
 19. Ordinary Event occurrence does not require a redundant Session.
 20. Actual does not duplicate measurements whose proper identity belongs to Observation or other specialist facts.
-21. Actual does not own source/authority/confidence semantics that belong to Provenance/Confirmation.
+21. Actual does not own source/Authority/confidence semantics that belong to Provenance/Confirmation/governance.
 22. Correction updates current accepted realization while preserving relevant assertion history.
 23. Actual identity does not depend solely on timestamps or provider identity.
 24. Shared Actual does not establish identical actor-specific participation.
 25. Subject, recorder, responsible actor, expected performer and actual performer may differ.
 26. Private Actual may yield authorized derived projections without disclosing its source facts.
-27. AI knowledge of Actual does not create disclosure authority.
+27. AI knowledge of Actual does not create disclosure Authority or Visibility for a recipient.
 28. Later relevance does not fabricate historical intention.
 29. Replacement/substitution preserves the original expectation rather than rewriting it.
 30. Physical persistence/cardinality remains deferred until adjacent Reality/Evidence concepts are validated.
-31. Reported/asserted reality does not automatically establish Actual; conflicting assertions may remain unresolved until the applicable reconciliation/authority/policy context establishes a current realization.
+31. Reported/asserted reality does not automatically establish Actual; conflicting assertions may remain unresolved until the applicable reconciliation/Authority/policy context establishes a current realization.
+32. Authority to establish/correct a current Actual interpretation does not make that interpretation infallible truth.
+33. Visibility of an Actual/projection does not imply Visibility of all supporting sources, Provenance, Evidence, or Participation details.
 
 ---
 
@@ -721,7 +733,7 @@ Representative cases validated under Methodology v3 include:
 | Collaborative sofa move | shared execution context + actor-specific participation intervals |
 | Caregiver enters fact for cared-for person | subject/performer/recorder remain separable |
 | Private medical appointment | private Actual may support shareable unavailable projection |
-| AI infers likely completion | inference does not become canonical Actual without authority/policy |
+| AI infers likely completion | inference does not become canonical Actual without Authority/policy |
 
 No reviewed case requires Actual to become a universal fact object or to absorb Session, Outcome, Observation, Confirmation, or Provenance.
 
@@ -736,19 +748,16 @@ Actual v0 does not decide:
 - exact Evidence role/record model;
 - exact Confirmation/acknowledgement model;
 - exact Provenance/source/assertion model;
-- exact actor Participation model;
-- exact authority/conflict-resolution algorithm;
-- exact Subject/Resource model;
 - exact replacement Relationship type;
 - exact Version/Decision model;
 - exact physical cardinality/table shape;
 - whether some specialist domains use specialized realization records in addition to Actual;
 - API and PostgreSQL representation.
 
-Mandatory re-tests:
+Participation, Authority, and Visibility semantic boundaries are now resolved. Still mandatory later re-tests include:
 
-- Actual establishment under future Authority/Decision/reconciliation semantics;
-- Actual vs Subject/Actor/Participation after Data/Subjects and Relationships exist;
+- Actual establishment under future Decision/reconciliation semantics;
+- final Principal/enforcement mapping;
 - final whole-domain multi-actor and persistence-pressure gates.
 
 ---
@@ -799,7 +808,7 @@ Canonical rule:
 
 > **Reported or asserted reality is not automatically established Actual. Actual represents the currently established realization in context; conflicting assertions may coexist without creating multiple competing canonical Actuals or forcing premature resolution.**
 
-This hardening does not create a new primitive. The future Authority/Decision/reconciliation model must define how an applicable context establishes or revises Actual while preserving source assertion history.
+Authority v0 now supplies the governance boundary for who/what may legitimately make a bounded reconciliation effect effective; Decision/reconciliation still owns how competing evidence is adjudicated. Authority remains separate from truth and from Actual itself.
 
 ---
 
@@ -832,7 +841,7 @@ no attendance evidence != established absence
 
 Actual Participation may contain actor-specific actual state/intervals without becoming a Session by default. Provider attendance telemetry remains supporting source/Evidence/Provenance until the applicable reconciliation/Authority context establishes current Participation truth.
 
-The older `exact actor Participation model` deferral is superseded at the semantic level by `concepts/participation.md`. Exact direct/qualified persistence, Authority/Visibility, Acceptance/Acknowledgement integration, provider reconciliation and retention remain SAFE DEFERRED.
+The older `exact actor Participation model` deferral is superseded at the semantic level by `concepts/participation.md`. Exact direct/qualified persistence, Acceptance/Acknowledgement integration, provider reconciliation and retention remain SAFE DEFERRED.
 
 No Actual identity/cardinality rule changes: multiple actor Participation facets do not justify multiplying the shared Actual merely because reality has several participant-specific facets.
 
@@ -840,3 +849,33 @@ See:
 
 - `concepts/participation.md`;
 - `checkpoints/participation-v0-validation.md`.
+
+---
+
+# 2026-08-12 — Authority + Visibility closure amendment
+
+Authority v0 and Visibility v0 close two core Actual dependencies without changing Actual's realization semantics.
+
+```text
+Actual
+= currently established contextual realization
+
+Authority
+= who/what may legitimately make a bounded establishment/correction effect effective
+
+Visibility
+= what bounded representation of Actual or its projections may be exposed
+```
+
+Therefore:
+
+```text
+Authority != Actual
+Authority != truth
+Visibility != Actual
+visible projection != visible private Actual/source
+```
+
+A correction may be authoritative in context and still be historically traceable/correctable later. A recipient may see a safe consequence without seeing the private Actual, its participant relations, Evidence, or full Provenance. AI may process authorized source Actuals but must independently satisfy output Visibility before disclosing them or source-revealing inferences.
+
+Decision/reconciliation, detailed enforcement, and retention remain separately deferred.
