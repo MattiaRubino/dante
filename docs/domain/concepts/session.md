@@ -1693,3 +1693,39 @@ This separation preserves:
 - Event attendance without redundant Session records.
 
 Session is therefore accepted as the current Time-cluster baseline for actual execution slices, while exact lifecycle, persistence, and Actual/Evidence integration remain intentionally deferred.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 resolves the previously deferred Event-attendance relationship while preserving Session v0 unchanged in purpose.
+
+Canonical separation:
+
+```text
+Session
+= bounded actual execution/performed-behavior episode
+
+Actual Participation / Attendance
+= actor-scoped involvement in a shared Event/interaction
+```
+
+Therefore:
+
+```text
+Participation != Session
+Event attendance != Session by default
+one attendee != one Session
+partial attendance intervals != automatic Session splitting
+```
+
+A Session still exists when a distinct executable episode is genuinely present, for example hands-on work during a workshop. Attendance alone does not manufacture execution history.
+
+Provider join/leave intervals may support Actual Participation through Provenance/Evidence/reconciliation semantics; they are not automatically Session records or canonical human attendance truth.
+
+The older deferred question about `Session -> Event where distinct execution exists` remains valid; what is now resolved is that ordinary Event Participation/Attendance is a separate relation family rather than a Session subtype.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
