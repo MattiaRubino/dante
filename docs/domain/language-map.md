@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-11 — Provenance v0 promoted after Methodology v3 validation  
+**Current revision:** 2026-08-12 — first three clusters validated together under Methodology v3  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -276,9 +276,12 @@ Milestone != GoalCriterion
 Milestone != Activity
 Milestone != Event
 Milestone != Outcome
+Milestone != Actual
 Milestone != Deadline
 Milestone != Phase
 ```
+
+Core hardening: Milestone attainment is Evidence/evaluation-backed checkpoint state; it is not an independent duplicate source of Actual, Outcome, Observation or other underlying reality.
 
 ---
 
@@ -404,9 +407,10 @@ Actual != Observation
 Actual != Evidence
 Actual != Confirmation
 Actual != Provenance
+reported/asserted reality != established Actual
 ```
 
-Core guardrails: contextual rather than universal; absence does not imply failure; passage of time does not establish Actual; shared Actual does not imply identical actor participation.
+Core guardrails: contextual rather than universal; absence does not imply failure; passage of time does not establish Actual; conflicting assertions may remain unresolved; shared Actual does not imply identical actor participation.
 
 ## Outcome
 
@@ -906,11 +910,13 @@ Actual != Observation
 Actual != Confirmation
 Actual != Evidence
 Actual != Provenance
+reported/asserted reality != established Actual
 Outcome != lifecycle/operational state
 Outcome != Observation
 Outcome != Confirmation
 Outcome != Provenance
 Outcome != Evidence
+Milestone attainment != independent duplicate Actual/Outcome/Observation truth
 Observation != Quantity
 Observation != Register
 Observation != Confirmation
@@ -968,6 +974,7 @@ Authority != Actual
 Authority != Confirmation
 AI knowledge != disclosure permission
 AI inference != Confirmation
+AI inference != established Actual
 AI provenance != disclosure permission
 future access revocation != deletion of historical attribution
 ```
