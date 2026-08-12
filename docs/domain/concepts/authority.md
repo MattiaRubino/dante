@@ -8,13 +8,13 @@
 
 ## Canonical definition
 
-> **Authority is the contextual governance capability through which an eligible Actor or governed role is legitimately empowered, under an applicable basis, to establish, approve, change, override, revoke, or otherwise make a bounded domain effect effective for a defined target, scope, action, and context. Authority does not create Actor identity and does not by itself imply Responsibility, Participation, Visibility, ownership, Confirmation, truth, technical access, or actual performance.**
+> **Authority is the contextual governance capability through which an eligible Actor or governed role is legitimately empowered, under an applicable basis, to establish, approve, change, override, revoke, or otherwise make a bounded domain effect effective for a defined target, scope, action, and context. Authority does not create Actor identity and does not by itself imply Responsibility, Participation, Visibility, ownership, Confirmation, Acknowledgement, truth, technical access, or actual performance.**
 
-Authority answers the bounded governance question:
+Authority answers:
 
 > **Who or what may legitimately make which domain effect effective, on what target, under what scope/context/basis?**
 
-Authority is therefore a **canonical cross-cutting governance relation/capability**, not a native entity/root and not a generic administrator identity.
+Authority is a **canonical cross-cutting governance relation/capability**, not a native entity/root and not a generic administrator identity.
 
 ---
 
@@ -27,31 +27,29 @@ Examples:
 - an Actor may propose a Schedule change without being allowed to make it canonical;
 - a Responsibility holder may be accountable without being allowed to reassign everybody;
 - a participant may respond for themselves without being able to alter other participants;
-- a specialist may legitimately establish a bounded specialist state without becoming the owner of the underlying Person/Asset;
+- a specialist may legitimately establish a bounded specialist state without becoming owner of the underlying Person/Asset;
 - an external Person may hold domain Authority without a LifeOS Account;
 - an AI may reason or propose without being authorized to enact a shared-domain change.
 
-Without Authority semantics LifeOS would be forced to infer governance incorrectly from creator, owner, Account, Actor, Responsibility, Participation, Visibility, or technical permissions.
+Without Authority semantics LifeOS would infer governance incorrectly from creator, owner, Account, Actor, Responsibility, Participation, Visibility, Confirmation, Acknowledgement, or technical permissions.
 
 ---
 
-# 2. Authority is contextual and scoped
+# 2. Contextual and scoped
 
 Authority without an effect/target/scope is too vague.
 
-Conceptually, Authority must be able to distinguish dimensions such as:
+Conceptually distinguish:
 
 - eligible holder / Actor or governed role;
-- governed target/context;
+- target/context;
 - action or domain effect;
 - applicable scope;
 - effective period where relevant;
 - conditions/basis;
 - delegation constraints where relevant.
 
-This does **not** imply a universal Authority table or eight physical columns.
-
-Canonical rule:
+This does not imply a universal Authority table or fixed physical columns.
 
 > **Authority to do X does not imply Authority to do Y.**
 
@@ -59,36 +57,19 @@ Canonical rule:
 
 # 3. Authority versus Actor
 
-Actor answers:
-
-> **Who acted?**
-
-Authority answers:
-
-> **Was that Actor legitimately empowered to make this bounded effect effective?**
-
-Therefore:
-
 ```text
+Actor = who acted
+Authority = whether that Actor was legitimately empowered to make this bounded effect effective
+
 Actor != Authority
 acting != being authorized to govern
 ```
 
-A proposal may be meaningful Actor behavior without being a canonical state change.
+A proposal may be meaningful Actor behavior without being canonical state change.
 
 ---
 
 # 4. Authority versus Person / Account / Principal
-
-Person is native human identity.
-
-Account is the platform/access identity boundary.
-
-Principal is the future authenticated/authorized request identity/security concept.
-
-Authority is domain governance power.
-
-Therefore:
 
 ```text
 Person != Authority
@@ -96,15 +77,13 @@ Account != Authority
 Principal != Authority
 ```
 
-A Person may hold Authority without an Account. Account creation/deletion must not manufacture or erase historical Authority.
+Person is human identity. Account is platform/access identity boundary. Principal remains detailed security identity. Authority is domain governance.
 
-Exact Principal/AuthN/AuthZ enforcement remains deferred.
+A Person may hold Authority without an Account. Account lifecycle must not manufacture or erase historical Authority.
 
 ---
 
-# 5. Authority versus technical permission / authorization
-
-This boundary is canonical:
+# 5. Domain Authority versus technical authorization
 
 ```text
 DOMAIN AUTHORITY
@@ -114,35 +93,25 @@ TECHNICAL AUTHORIZATION
 whether an authenticated Principal/request may execute an operation now
 ```
 
-A system administrator may technically access infrastructure without gaining specialist/personal domain Authority.
+Technical ability to execute X is not the same as legitimate domain Authority for X.
 
-Conversely, a domain-authoritative Person may lack a current LifeOS Principal/access path.
-
-Canonical rule:
-
-> **Technical ability to execute X is not the same thing as legitimate domain Authority for X.**
+A system administrator may access infrastructure without gaining personal/specialist domain Authority; an authoritative Person may lack a current LifeOS Principal/access path.
 
 ---
 
 # 6. Authority versus Responsibility
 
-Responsibility answers who is accountable for ensuring a bounded commitment is handled.
-
-Authority answers who may govern an effect.
-
 ```text
 Responsibility != Authority
 ```
 
-A responsible Actor does not automatically gain rights to reassign, disclose, approve, delete, or alter unrelated state.
+Accountability does not grant automatic rights to reassign, disclose, approve, delete, or alter unrelated state.
 
-A manager/coordinator may have Authority to reassign Responsibility without becoming responsible for execution.
+An Authority holder may reassign Responsibility without becoming responsible for execution.
 
 ---
 
 # 7. Authority versus Participation
-
-Participation is contextual involvement.
 
 ```text
 Participation != Authority
@@ -154,53 +123,67 @@ Being invited, attending, organizing, or responding does not automatically grant
 
 # 8. Authority versus Visibility
 
-Visibility concerns bounded information exposure.
-
-Authority concerns governance/effect.
-
 ```text
 Authority != Visibility
 can see != can govern
 ```
 
-The reverse is also not universal: an Actor may be able to approve an aggregate/consequence without seeing every private underlying source.
-
-Authority grants no implicit read/disclosure rights.
-
-See `visibility.md`.
+Authority grants no implicit read/disclosure rights. Conversely, an Actor may approve an aggregate/consequence without seeing every private underlying source.
 
 ---
 
 # 9. Authority versus Confirmation
 
-Confirmation is contextual attestation.
-
-Authority is governance power.
-
 ```text
 Confirmation != Authority
 ```
 
-A Person may confirm a fact without having power to make it canonical for everyone. An authoritative source/process may establish state without a personal Confirmation.
+A Person may affirm a target without power to make it canonical for everyone. An authoritative source/process may establish state without personal Confirmation.
 
 ---
 
-# 10. Authority versus truth / Actual
+# 10. Authority versus Acknowledgement / family-specific acceptance
 
-Authority determines legitimate effect within a governed context; it does not make a proposition objectively true.
+Acknowledgement records explicit taking-notice. Family-specific acceptance records a response/willingness where the owning workflow defines that meaning. Authority determines legitimate effect.
+
+```text
+Acknowledgement != Authority
+family-specific accepted response != Authority
+```
+
+Examples:
+
+```text
+recipient acknowledges a Responsibility hand-off request
+!= recipient accepts the role
+!= manager/policy makes transfer effective
+```
+
+```text
+participant accepts invitation
+!= participant may reschedule everyone
+```
+
+The Acknowledgement v0 review also rejected generic cross-domain Acceptance as a standalone primitive. Authority must therefore not absorb willingness merely because the UI uses `Accept`.
+
+---
+
+# 11. Authority versus truth / Actual
 
 ```text
 Authority != truth
 Authority != Actual
 ```
 
-Authoritative effects may later be corrected, contested, superseded, or reconciled while preserving history.
+Authority determines legitimate effect within a governed context; it does not make a proposition objectively true.
+
+Authoritative effects may later be corrected, contested, superseded or reconciled while preserving history.
 
 ---
 
-# 11. Authority versus ownership
+# 12. Authority versus ownership
 
-Ownership may be one possible Authority basis in some contexts, but is never universal equality.
+Ownership may be one possible basis in some contexts but is never universal equality.
 
 ```text
 ownership != Authority
@@ -208,39 +191,28 @@ holder/custodian != Authority
 steward != Authority
 ```
 
-One Asset may simultaneously have different owner, holder, maintenance Responsibility, scheduling Authority, repair performer, and visibility contexts.
+One Asset may have different owner, holder, maintenance Responsibility, scheduling Authority, repair performer and Visibility contexts.
 
 ---
 
-# 12. Delegation
+# 13. Delegation
 
 Delegation is a bounded Authority-establishment/entrustment pattern, not a standalone universal root.
 
-Example:
-
-```text
-Anna
-Authority: reassign Team X work
-
-Delegates to Luca
-scope: same bounded authority
-period: 7 days
-```
-
 Required rules:
 
-- delegation identifies the Authority being delegated;
+- identify the Authority being delegated;
 - one delegated Authority does not transfer every other Authority;
-- delegated Authority does not imply Visibility, Responsibility, Participation, or ownership;
+- delegation does not imply Visibility, Responsibility, Participation or ownership;
 - re-delegation is not implied unless the governing basis permits it;
 - expiry/revocation narrows future Authority without rewriting historical validity;
-- current Authority != Authority that existed at historical action time.
+- current Authority != historical Authority at action time.
 
-No universal `Delegation` entity/root is pre-approved.
+Detailed Principal/on-behalf-of mechanics remain deferred.
 
 ---
 
-# 13. Approval and Decision boundary
+# 14. Approval and Decision boundary
 
 Approval may be an action/effect that exercises Authority.
 
@@ -248,38 +220,26 @@ Approval may be an action/effect that exercises Authority.
 Approval != Authority
 ```
 
-The future Decision/effective-change review will determine whether/how decisions, approvals, rationale, reconciliation, and effective state-change records require dedicated structures.
+Decision/effective-change review remains responsible for whether/how decisions, approvals, rationale, reconciliation and effective state-change records require dedicated semantics.
 
 Authority answers **who may make the effect effective**, not what a Decision record is.
 
 ---
 
-# 14. Authority claims and epistemic integrity
-
-A claim of Authority does not establish Authority.
+# 15. Authority claims and epistemic integrity
 
 ```text
-claimed Authority
-!= established/effective Authority
-```
-
-Similarly:
-
-```text
-Authority unknown
-!= established no Authority
-!= explicitly prohibited
+claimed Authority != established/effective Authority
+Authority unknown != established no Authority != explicitly prohibited
 ```
 
 A security engine may fail closed without collapsing those domain meanings.
 
-Provider role names, credentials, imported flags, or asserted mandates may be evidence/provenance toward Authority without becoming automatic equality.
+Provider role names, credentials, imported flags or asserted mandates may be Evidence/Provenance toward Authority without automatic equality.
 
 ---
 
-# 15. Historical Authority
-
-Authority is time/context sensitive where material.
+# 16. Historical Authority
 
 ```text
 T0 Authority exists
@@ -287,68 +247,54 @@ T1 Actor acts under it
 T2 Authority expires/revokes
 ```
 
-LifeOS must preserve that T1 may have been legitimate even though current Authority no longer exists.
-
-Canonical rules:
+Required rules:
 
 - revoked/expired != never existed;
-- current Authority != historical Authority at action time;
+- current Authority != Authority applicable at historical action time;
 - current Account state does not rewrite historical Authority attribution;
 - later discovery that a basis was invalid requires explicit reconciliation/correction, not silent history rewrite.
 
 ---
 
-# 16. Multi-actor implications
+# 17. Multi-actor implications
 
-Authority is inherently multi-actor-ready without requiring collaborative infrastructure now.
+Authority is multi-actor-ready without requiring collaboration infrastructure.
 
 Key rules:
 
 - Accountless Person may hold domain Authority;
-- asymmetric guardian/manager/caregiver/specialist Authority can exist when bounded/contextual;
+- asymmetric guardian/manager/caregiver/specialist Authority may exist when bounded/contextual;
 - relationship existence does not automatically create Authority;
-- Responsibility and Participation do not create Authority;
-- Authority does not create Visibility;
+- Responsibility, Participation, Visibility, Confirmation and Acknowledgement do not create Authority;
 - Authority can be contested or partially known;
 - access revocation does not erase historical attribution;
 - no per-user duplicate shared reality is required.
 
 ---
 
-# 17. AI boundary
+# 18. AI boundary
 
-AI reasoning capability does not create Authority.
+AI reasoning/action capability does not create Authority.
 
-AI may:
-
-- propose changes;
-- rank options;
-- prepare decisions;
-- suggest responsibility transfer;
-- suggest scheduling/resource actions;
-- explain applicable policy where authorized.
+AI may propose changes, rank options, prepare decisions, suggest Responsibility transfer, suggest scheduling/resource actions or explain policy where authorized.
 
 AI must not silently:
 
-- exceed the applicable Authority made available by its acting Principal/context/policy;
-- convert access to information into disclosure Authority;
+- exceed applicable Authority of its acting Principal/context/policy;
+- convert source access into disclosure Authority;
 - convert inference into established Authority;
-- establish a human Confirmation/Acceptance;
-- enact a shared-domain effect merely because it can reason about it.
-
-Canonical rule:
+- fabricate human Confirmation/Acknowledgement/family response;
+- enact shared-domain effect merely because it can reason about it.
 
 > **AI effective Authority must not silently exceed the granted/applicable scope.**
 
 ---
 
-# 18. Simple UI versus kernel semantics
+# 19. Product simplicity
 
-Ordinary personal UX may hide Authority completely.
+Ordinary personal UX may hide Authority completely. A personal object can be self-governed by simple product policy without displaying roles/grants.
 
-A personal object can be self-governed by a simple product policy without displaying roles/grants.
-
-But the kernel must not encode:
+The kernel must not encode:
 
 ```text
 creator_id = owner_id = authority_id = account_id
@@ -356,30 +302,23 @@ creator_id = owner_id = authority_id = account_id
 
 as universal truth.
 
-Shared, caregiver, external, specialist, and AI workflows require the boundaries to remain distinct.
+Shared, caregiver, external, specialist and AI workflows require the boundaries to remain distinct.
 
 ---
 
-# 19. Relationship-modeling implication
+# 20. Relationship-modeling implication
 
-Authority confirms Relationship v0.
-
-Simple cases may be direct/derived from bounded policy/context.
-
-Rich cases may require a specific qualified Authority relation/context containing material scope, basis, effective period, delegation, or history.
+Simple cases may be direct/derived from bounded policy/context. Rich cases may require a specific qualified Authority context containing material scope, basis, effective period, delegation or history.
 
 ```text
-qualified Authority
-!= independent entity automatically
+qualified Authority != independent entity automatically
 ```
 
-Query frequency, many-to-many cardinality, permission-check pressure, or row IDs do not create domain identity.
-
-No universal `Relationship` or `Authority` root is required.
+Query frequency, cardinality, permission-check pressure or row IDs do not create domain identity.
 
 ---
 
-# 20. Core invariants
+# 21. Core invariants
 
 1. **Authority is contextual scoped governance relation/capability, not native identity.**
 2. **Authority to do X != Authority to do Y.**
@@ -390,21 +329,23 @@ No universal `Relationship` or `Authority` root is required.
 7. **Participation != Authority.**
 8. **Visibility != Authority.**
 9. **Confirmation != Authority.**
-10. **Ownership != Authority.**
-11. **Authority does not establish truth/Actual by itself.**
-12. **Delegation is bounded to the delegated Authority; re-delegation is not implied.**
-13. **Current Authority != historical Authority at action time.**
-14. **Revoked/expired Authority != never existed.**
-15. **Claimed Authority != established Authority.**
-16. **Authority unknown != explicit no-Authority/prohibition.**
-17. **Authority grants no automatic Visibility/disclosure rights.**
-18. **AI reasoning/access does not manufacture Authority.**
-19. **No universal admin role / Permission object / Authority root is pre-approved.**
-20. **Exact persistence and enforcement belong to later logical/security design.**
+10. **Acknowledgement != Authority.**
+11. **Family-specific accepted response != Authority.**
+12. **Ownership != Authority.**
+13. **Authority does not establish truth/Actual by itself.**
+14. **Delegation is bounded; re-delegation is not implied.**
+15. **Current Authority != historical Authority at action time.**
+16. **Revoked/expired != never existed.**
+17. **Claimed Authority != established Authority.**
+18. **Authority unknown != explicit no-Authority/prohibition.**
+19. **Authority grants no automatic Visibility/disclosure rights.**
+20. **AI reasoning/access does not manufacture Authority.**
+21. **No universal admin role / Permission object / Authority root is pre-approved.**
+22. **Exact persistence/enforcement belongs to later logical/security design.**
 
 ---
 
-# 21. Adjacent Dependency Sweep
+# 22. Adjacent Dependency Sweep
 
 ## RESOLVED
 
@@ -412,12 +353,14 @@ No universal `Relationship` or `Authority` root is required.
 - Authority ↔ Person/Account: identity/access identity != Authority.
 - Authority ↔ Responsibility: accountability != governance.
 - Authority ↔ Participation: involvement != governance.
-- Authority ↔ Visibility boundary: access/disclosure != governance.
+- Authority ↔ Visibility: exposure != governance.
 - Authority ↔ Confirmation: attestation != governance power.
+- Authority ↔ Acknowledgement: explicit taking-notice != governance power.
+- Authority ↔ family-specific acceptance: willingness/response != governance power.
 - Authority ↔ ownership: may be basis, never universal equality.
 - Authority ↔ creator/organizer: creation/organization != automatic Authority.
-- Authority ↔ technical Permission: domain governance != current enforcement permission.
-- Authority ↔ Delegation: bounded Authority-establishment/entrustment pattern, not universal root.
+- Authority ↔ technical Permission: domain governance != enforcement permission.
+- Authority ↔ Delegation: bounded Authority establishment/entrustment pattern, not universal root.
 
 ## SAFE DEFERRED
 
@@ -425,21 +368,14 @@ No universal `Relationship` or `Authority` root is required.
 
 **Owner:** security/logical model.  
 **Why safe:** domain Authority and technical request authorization are explicitly separate.  
-**Reopening trigger:** LifeOS cannot enforce a domain Authority decision without collapsing Actor/Account/Principal.  
+**Reopening trigger:** LifeOS cannot enforce domain Authority without collapsing Actor/Account/Principal.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, MA-01, MA-17, XCON-01.
-
-### Acceptance / Acknowledgement
-
-**Owner:** common-ground review.  
-**Why safe:** willingness/receipt remains independent from Authority.  
-**Reopening trigger:** Responsibility/Participation changes require Authority to absorb participant willingness.  
-**Tests to rerun:** CORE-04, MA-03, MA-05, MA-06, XCON-04.
 
 ### Decision / Approval / effective canonical change
 
 **Owner:** Decision review.  
-**Why safe:** Authority answers who may cause an effect, not how the Decision/effect record is represented.  
-**Reopening trigger:** an authoritative action cannot be represented without making Authority itself the Decision.  
+**Why safe:** Authority answers who may cause an effect, not how Decision/effect record is represented.  
+**Reopening trigger:** authoritative action cannot be represented without making Authority itself the Decision.  
 **Tests to rerun:** CORE-02, CORE-04, CORE-09, MA-06, MA-12, XCON-03.
 
 ### Detailed delegation / on-behalf-of
@@ -449,32 +385,35 @@ No universal `Relationship` or `Authority` root is required.
 **Reopening trigger:** attribution/grant/revocation cannot preserve scope/history.  
 **Tests to rerun:** CORE-02, MA-01, MA-06, MA-10, MA-11, MA-13, MA-17.
 
-### Consent
+### Agreement / Consent
 
-**Owner:** Visibility/privacy/common-ground review.  
-**Why safe:** consent may establish/limit some Authority or access but is not Authority.  
-**Reopening trigger:** privacy/action governance cannot be expressed without merging Consent into Authority.  
-**Tests to rerun:** CORE-04, MA-06, MA-07, MA-13, XCON-02.
+**Owner:** common-ground/privacy review.  
+**Why safe:** mutual assent/permission may constrain some effects but are not Authority.  
+**Reopening trigger:** action/privacy governance cannot be expressed without merging Agreement/Consent into Authority.  
+**Tests to rerun:** CORE-04, MA-05, MA-06, MA-07, MA-13, XCON-02.
 
 ### Policy / Role / conditions
 
 **Owner:** logical/security/policy model.  
-**Why safe:** current semantics need a valid bounded basis/scope, not a universal Role ontology.  
+**Why safe:** valid bounded basis/scope does not require a universal Role ontology now.  
 **Reopening trigger:** ordinary Authority cannot be derived/reconstructed without one canonical policy primitive.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-10, CORE-13.
 
 ### Qualified Authority identity / persistence
 
 **Owner:** logical data model.  
-**Why safe:** rich grants/delegations may need structure/history without proving universal Authority identity.  
+**Why safe:** rich grants/delegations may need structure/history without proving universal identity.  
 **Reopening trigger:** direct/derived/qualified Authority cannot preserve revocation/history/scope.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
-No current dependency is a structural blocker.
+```text
+REOPEN                         0
+unclassified material items    0
+```
 
 ---
 
-# 22. Rejected alternatives
+# 23. Rejected alternatives
 
 Rejected:
 
@@ -484,24 +423,24 @@ Rejected:
 - Authority = Participation;
 - Authority = Visibility;
 - Authority = ownership;
-- Authority = Confirmation;
+- Authority = Confirmation/Acknowledgement/family-specific acceptance;
 - Authority = technical Permission;
 - universal administrator flag;
 - universal Authority entity/root;
 - unbounded delegation;
-- AI authority laundering;
+- AI Authority laundering;
 - current Authority applied retroactively to historical actions.
 
 ---
 
-# 23. Reopening triggers
+# 24. Reopening triggers
 
 Reopen Authority v0 if later evidence shows that:
 
-1. domain governance and technical authorization cannot remain separated without contradiction;
-2. a common Authority identity/lifecycle is required across families rather than contextual capability;
+1. domain governance and technical authorization cannot remain separate;
+2. one common Authority identity/lifecycle is required across families rather than contextual capability;
 3. delegation cannot preserve bounded scope/history without a stronger primitive;
-4. Visibility/Consent/Decision semantics require Authority to absorb another distinct question;
+4. Visibility/Consent/Decision/common-ground semantics require Authority to absorb another distinct question;
 5. specialist/external Authority cannot coexist with LifeOS governance without duplicate truth;
 6. logical persistence proves direct/derived/qualified Authority cannot preserve required history/revocation.
 
