@@ -2,13 +2,13 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-12  
-**Current revision:** 2026-08-12 — Person / Actor / Account boundary and Asset v0 current baseline finalized  
+**Current revision:** 2026-08-12 — Person / Actor / Account / Asset / Resource boundaries aligned  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
 ## Canonical definition
 
-> **Subject is the contextual semantic role played by a native referent when a descriptive record primarily concerns that referent's state, property, condition, or asserted fact. Subject does not create independent identity: the referenced Person, Asset, Event, Device, Location, or other eligible referent retains its native identity. Being the Subject does not imply authorship, observation, recording, ownership, responsibility, authority, visibility, participation, or account identity.**
+> **Subject is the contextual semantic role played by a native referent when a descriptive record primarily concerns that referent's state, property, condition, or asserted fact. Subject does not create independent identity: the referenced Person, Asset, Event, Device, Location, or other eligible referent retains its native identity. Being the Subject does not imply authorship, observation, recording, ownership, responsibility, authority, visibility, participation, Resource eligibility, or account identity.**
 
 Subject answers the bounded contextual question:
 
@@ -40,7 +40,7 @@ Subject is therefore a **canonical semantic role / relationship capability**, no
 
 # 1. Why Subject semantics exist
 
-LifeOS needs to distinguish what a descriptive fact concerns from who created, observed, recorded, performed, confirmed, owns, governs, or may see that fact.
+LifeOS needs to distinguish what a descriptive fact concerns from who created, observed, recorded, performed, confirmed, owns, governs, may use as a Resource, or may see that fact.
 
 Examples:
 
@@ -303,11 +303,17 @@ A subject may also be a source/Actor in a self-report, but that coincidence must
 
 # 8. Subject versus Resource
 
-Resource semantics concern whether something can supply capacity, be reserved/consumed/used, or otherwise constrain execution/scheduling.
+Resource v0 is accepted as a **contextual planning/execution role/capability**, not an entity/root.
 
-Subject semantics concern descriptive aboutness.
+Subject answers:
 
-One native object can play both roles:
+> who/what is this descriptive record about?
+
+Resource answers:
+
+> what could satisfy this execution need?
+
+One native referent can play both roles independently:
 
 ```text
 Asset Car A17
@@ -317,18 +323,24 @@ subject = A17
 odometer = 84,220 km
 
 Trip Activity
-required Resource = A17
+Resource Requirement
+transport with 4 seats
+
+A17
+candidate / selected Resource role
 ```
 
-These are independent semantic questions.
+Likewise a Person can be Subject in one context and Resource candidate in another.
 
 Therefore:
 
 ```text
 Subject != Resource
+Subject role does not imply Resource eligibility
+Resource role does not imply Subject aboutness
 ```
 
-Resource review must not collapse every possible Subject into Resource or vice versa.
+The basic Subject/Resource boundary is **RESOLVED** by `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
 
 ---
 
@@ -396,11 +408,11 @@ does not automatically establish guardian authority or visibility.
 subject = Asset A17
 ```
 
-does not establish who owns, holds, manages or may see that Asset.
+does not establish who owns, holds, manages, allocates as Resource, or may see that Asset.
 
 Canonical rule:
 
-> **Aboutness must not launder ownership, authority, visibility, responsibility, participation, possession, custody, or consent.**
+> **Aboutness must not launder ownership, authority, visibility, responsibility, participation, possession, custody, Resource eligibility, or consent.**
 
 Those semantics remain separately modeled/reviewed.
 
@@ -554,7 +566,7 @@ AI/system Actor
 derives Observation about Asset A17
 ```
 
-The domain must preserve who/what the record concerns separately from who entered, generated, transformed, confirmed, governed, authenticated, owns/holds the Asset, or may view it.
+The domain must preserve who/what the record concerns separately from who entered, generated, transformed, confirmed, governed, authenticated, owns/holds/allocates the Asset, or may view it.
 
 Key rules:
 
@@ -562,7 +574,7 @@ Key rules:
 
 > **Actor attribution and Account authentication must not replace Subject identity.**
 
-> **Asset ownership/possession must not replace Subject identity.**
+> **Asset ownership/possession or Resource role must not replace Subject identity.**
 
 Non-LifeOS subjects are ordinary domain reality, not exceptional placeholders.
 
@@ -580,6 +592,7 @@ Therefore:
 - visibility of a Person/Asset does not automatically imply visibility of all records about that referent;
 - authority over one context does not grant universal visibility into all records where the same referent is Subject;
 - identity linkage between records/contacts/accounts/assets/providers may itself be private;
+- Resource matching does not create visibility into private Subject records;
 - derived shared projections may conceal private source/subject detail where policy requires;
 - AI must not infer disclosure permission merely because it can resolve the Subject/referent internally.
 
@@ -602,11 +615,12 @@ AI must not silently:
 - merge two Person/Asset/native referents merely because names/identifiers/details look similar;
 - promote a probabilistic Subject/identity match into established identity without policy/authority appropriate to the context;
 - disclose private facts or identity linkage merely because it knows the Subject;
+- infer Resource allocation/eligibility from Subject status alone;
 - create a universal Subject object as a shortcut around native domain identity.
 
 Canonical rule:
 
-> **AI may propose subject or native-referent resolution; it does not automatically establish identity, authority, ownership, or disclosure rights.**
+> **AI may propose subject or native-referent resolution; it does not automatically establish identity, authority, ownership, Resource allocation, or disclosure rights.**
 
 ---
 
@@ -641,7 +655,7 @@ Power-user/history surfaces may expose attribution, Account/authentication conte
 
 Canonical rule:
 
-> **Kernel separation of Subject from Person/Account/Actor/Asset does not require every capture form to ask users to choose those ontology roles explicitly.**
+> **Kernel separation of Subject from Person/Account/Actor/Asset/Resource does not require every capture form to ask users to choose those ontology roles explicitly.**
 
 ---
 
@@ -687,7 +701,14 @@ The Asset review currently confirms:
 - not every physical or managed thing is an Asset;
 - the exact Asset scope must be re-tested terminology-neutrally before final Cluster-4 closure.
 
-See `concepts/person.md`, `concepts/actor.md`, `concepts/asset.md`, and the corresponding checkpoints.
+## Resource/scheduling systems
+
+Resource v0 adds the complementary lesson:
+
+- heterogeneous native things may be treated uniformly as operational providers in a planning problem without sharing one native identity type;
+- Resource is therefore contextual eligibility/capacity semantics rather than a universal wrapper entity.
+
+See `concepts/person.md`, `concepts/actor.md`, `concepts/asset.md`, `concepts/resource.md`, and the corresponding checkpoints.
 
 No external schema is adopted wholesale.
 
@@ -721,7 +742,7 @@ Passive subjects, objects, locations, animals and non-agent referents fail.
 
 ## MERGE Subject with Resource
 
-Aboutness and schedulable/usable capacity are independent.
+Aboutness and planning/execution eligibility are independent.
 
 **Result:** FAIL.
 
@@ -745,7 +766,7 @@ Every eligible referent must inherit from a role merely to be referenced; duplic
 
 ## Subject as contextual role over native identity
 
-Preserves aboutness without duplicate identity and composes with accepted Person/Actor/Account/Asset distinctions plus future Resource roles.
+Preserves aboutness without duplicate identity and composes with accepted Person/Actor/Account/Asset/Resource distinctions.
 
 **Result:** PASS.
 
@@ -760,11 +781,11 @@ Preserves aboutness without duplicate identity and composes with accepted Person
 5. **Subject != Person, although Person may play Subject role.**
 6. **Subject != Actor; Actor is contextual agency rather than identity.**
 7. **Person != Actor and Person != Account.**
-8. **Subject != Resource.**
+8. **Subject != Resource; Resource is contextual planning/execution eligibility/capacity.**
 9. **Subject != Asset; accepted Asset v0 may play Subject role while retaining native identity.**
 10. **Subject != Account/Principal.**
 11. **Subject != observer != recorder != source/provider/device != transformer != confirmer != authority != viewer.**
-12. **Being Subject does not imply ownership, possession, responsibility, participation, consent, authority, visibility, or benefit.**
+12. **Being Subject does not imply ownership, possession, responsibility, participation, Resource eligibility, consent, authority, visibility, or benefit.**
 13. **Current Account holder is not the universal default Subject at kernel level.**
 14. **Unknown Subject must not be replaced with invented certainty.**
 15. **Later Subject resolution/correction preserves material attribution history.**
@@ -789,7 +810,7 @@ It should be able to represent where needed:
 - one or more Subject-role references;
 - unresolved/unknown Subject where valid;
 - later correction/resolution with history;
-- distinction among Subject, Actor-specific roles, observer, recorder, source, performer, confirmer, authority and viewer;
+- distinction among Subject, Resource, Actor-specific roles, observer, recorder, source, performer, confirmer, authority and viewer;
 - references to non-account people and non-person referents;
 - Account/authentication context independently from Subject identity;
 - Asset ownership/possession/provider identifiers independently from Subject identity;
@@ -802,12 +823,13 @@ Do not infer from Subject v0 that LifeOS requires:
 - every domain entity inheriting from Subject;
 - Subject owning Observation lifecycle;
 - Subject defining permissions/ACLs;
-- Subject implying Account or Asset identity;
+- Subject implying Account, Asset or Resource identity;
 - `persons.id = accounts.id`;
 - an `actors` table;
-- every Subject becoming an Asset.
+- a `resources` table;
+- every Subject becoming an Asset or Resource.
 
-Final heterogeneous reference mechanics depend on the Resource review, Relationships/Authority semantics, the mandatory terminology-neutral Asset re-review and logical data-model pressure. The basic Person/Actor/Account and current Subject/Asset boundaries are resolved conceptually.
+Final heterogeneous reference mechanics depend on Relationships/Authority semantics, the mandatory terminology-neutral Asset re-review and logical data-model pressure. The basic Person/Actor/Account/Subject/Asset/Resource boundaries are resolved conceptually at the current baseline.
 
 ---
 
@@ -845,14 +867,15 @@ Resolved at the current Asset v0 baseline: Asset is native physical-object ident
 
 **Tests to rerun:** CORE-04, CORE-06, XCON-01, XCON-04.
 
-## SAFE DEFERRED
-
 ### Subject vs Resource
 
-**Owner:** Resource candidate review in this cluster.  
-**Why safe:** aboutness and resource/capacity roles are already independently meaningful.  
-**Reopening trigger:** Resource review claims every eligible Subject must be Resource or introduces conflicting generic identity.  
-**Tests to rerun:** CORE-04, MA-14, XCON-01.
+Resolved: Subject is descriptive aboutness; Resource is contextual planning/execution eligibility/capacity. The same native referent may play either or both roles independently.
+
+**Re-test trigger:** future Requirement/Allocation or heterogeneous-reference modeling proposes a generic role/root that would collapse aboutness and execution supply.
+
+**Tests to rerun:** CORE-04, MA-14, XCON-01, XCON-04.
+
+## SAFE DEFERRED
 
 ### Subject vs Principal / Authority / Visibility
 
@@ -908,6 +931,7 @@ Reopen Subject v0 if later evidence shows that:
 5. privacy/authority requires materially different Subject semantics rather than separate policy relationships;
 6. logical persistence cannot support heterogeneous Subject references without unacceptable correctness or query cost and a different semantic model solves that problem more cleanly;
 7. AI/import reconciliation exposes a contradiction between native identity and Subject attribution history;
-8. the mandatory terminology-neutral Asset review introduces a broader native-referent abstraction that materially changes the current Subject/Asset boundary.
+8. the mandatory terminology-neutral Asset review introduces a broader native-referent abstraction that materially changes the current Subject/Asset boundary;
+9. Resource Requirement/Allocation modeling requires a common identity abstraction that would materially change the current Subject/Resource separation.
 
 Until stronger evidence appears, Subject remains canonical **semantic role / relationship capability**, not an entity.
