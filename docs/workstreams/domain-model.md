@@ -12,9 +12,11 @@
 
 Turn LifeOS product requirements into an implementation-ready domain model without prematurely fixing specialist modules, collaboration infrastructure, API shapes or final SQL tables.
 
-Earlier product terminology is evidence, not automatic truth. Concepts are revalidated through real-world workflows, external benchmark/research, adversarial reduction, history/correction tests, explicit multi-actor stress and cross-concept consistency.
+Earlier product terminology is evidence, not automatic truth. Concepts are revalidated through real-world workflows, mature-product/standard benchmarks, adversarial reduction, history/correction tests, explicit multi-actor stress and cross-concept consistency.
 
 **Accepted means current best decision, not immutable decision.**
+
+A roadmap concept is a candidate to validate, not an object that must survive. Rejection is the correct result when the product capability can be preserved without an additional kernel primitive.
 
 ---
 
@@ -47,11 +49,12 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 25. [`../domain/checkpoints/provenance-v0-validation.md`](../domain/checkpoints/provenance-v0-validation.md)
 26. [`../domain/concepts/quantity.md`](../domain/concepts/quantity.md)
 27. [`../domain/checkpoints/quantity-v0-validation.md`](../domain/checkpoints/quantity-v0-validation.md)
-28. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-29. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-30. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-31. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-32. accepted architecture/DB ADRs.
+28. [`../domain/checkpoints/register-v0-validation.md`](../domain/checkpoints/register-v0-validation.md)
+29. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+30. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+31. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+32. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+33. accepted architecture/DB ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -59,11 +62,15 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 
 # Operating rules
 
-- Revalidate concepts one at a time, then run cluster-level integration.
+- Revalidate candidates one at a time, then run cluster-level integration.
 - Use Methodology v3 for every concept/cluster checkpoint.
+- Treat mature apps, specialist systems, standards and APIs as evidence, never as automatic design authority.
+- Benchmark broadly when another domain has likely learned hard product/semantic lessons already.
 - Record test IDs, evidence, result, hardening/dependency and justified `N/A`.
-- Allowed verdicts: `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
+- Allowed concept/cluster verdicts: `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
 - Dependency closure classes are `RESOLVED`, `SAFE DEFERRED`, `REOPEN`; they are not additional concept verdicts.
+- Candidate rejection is valid when no distinct identity/lifecycle/authority/invariant/query behavior justifies the primitive.
+- Preserve the useful product capability even when a historical kernel candidate is rejected.
 - Keep external standards/products as evidence, not design authorities.
 - Preserve planned/current/actual/history distinctions.
 - Preserve source/provenance/confirmation/evidence/authority distinctions.
@@ -101,6 +108,8 @@ Confirmation v0                 ACCEPTED
 Evidence v0                     ACCEPTED
 Provenance v0                   ACCEPTED
 Quantity v0                     PASS WITH HARDENING / ACCEPTED
+Register kernel candidate       REJECTED
+Universal RegisterEntry         REJECTED
 ```
 
 First-three-cluster regression result:
@@ -183,6 +192,8 @@ Confirmation   -> canonical contextual attestation
 Evidence       -> canonical contextual evaluative role/relationship
 Provenance     -> canonical bounded contextual lineage capability
 Quantity       -> canonical reusable scalar amount value semantics
+Register       -> possible product/UI label for longitudinal capability, not kernel primitive
+Tracker/History/Progress -> product/query views over native records
 ```
 
 ---
@@ -231,11 +242,13 @@ Outcome != Evidence
 Observation != Actual
 Observation != Outcome
 Observation != Quantity
-Observation != Register
+Observation != universal RegisterEntry
 Observation != Evidence
 Observation != Confirmation
 Observation != Provenance
 ```
+
+Longitudinal tracker/history/report views query native Observations and other native records without duplicating them into a universal entry layer.
 
 ## Confirmation v0
 
@@ -298,14 +311,19 @@ The first three clusters are validated together. **Data / Subjects is the active
 
 Do not jump to SQL/API design yet.
 
-## Provisional topics
+## Candidate status
 
-- Quantity — accepted;
-- Register — active next review;
-- Subject;
-- Person / Actor boundary;
-- Asset;
-- Resource.
+```text
+Quantity       ACCEPTED — canonical value semantics
+Register       REJECTED as kernel primitive
+RegisterEntry  REJECTED as universal semantic record
+Subject        ACTIVE NEXT REVIEW
+Person / Actor PENDING CANDIDATE
+Asset          PENDING CANDIDATE
+Resource       PENDING CANDIDATE
+```
+
+None of the pending candidates is guaranteed to survive.
 
 ## Accepted concept — Quantity v0
 
@@ -315,7 +333,6 @@ Do not jump to SQL/API design yet.
 Quantity != entity
 number != Quantity by default
 Quantity != Observation
-Quantity != Register / RegisterEntry
 property / quantity kind != unit
 compatible unit != semantic equivalence by itself
 same unit != universal aggregation permission
@@ -336,47 +353,83 @@ Checkpoint:
 
 - [`Quantity v0 Validation`](../domain/checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
 
-## ACTIVE NEXT REVIEW — Register
+## Rejected candidate — Register
 
-Register must be evaluated from scratch rather than inheriting the historical product idea of a `universal Register + RegisterEntry` schema.
+Historical discovery proposed a universal `Register + RegisterEntry` structure.
 
-Mandatory first boundaries:
+Current validation rejects that kernel design while preserving the user-facing need:
 
 ```text
-Register vs Observation
-Register vs source record / RegisterEntry
-Register vs query/view/dashboard
-Register vs transaction/movement specialist records
-Register aggregation policy vs Quantity semantics
-one source record appearing in multiple Registers without duplication
+native semantic records
+        ↓
+query / filtering / grouping
+        ↓
+valid aggregation / trend / comparison
+        ↓
+Register / Tracker / History / Progress product UI
 ```
 
-The review must also stress:
+Rules:
 
-- latest/sum/average/count/min/max/trend/balance semantics;
-- same-unit-but-non-aggregable values;
-- gaps/missing data;
-- multi-component records;
-- high-frequency/sample-series storage pressure;
-- manual/imported/derived records;
-- shared Register view vs actor-specific private filters/preferences;
-- privacy and selective disclosure;
-- whether Register deserves identity/lifecycle or is primarily a configured longitudinal view/capability.
+- no universal RegisterEntry;
+- no Register source-of-truth container;
+- one native record may appear in several views without duplication;
+- view deletion/filter changes do not modify source facts/history;
+- aggregation validity comes from source metric/record/evaluation semantics;
+- quick capture creates the native semantic record;
+- saved tracker configuration is product/application configuration unless future evidence proves distinct domain truth;
+- `Transaction`, `Movement`, `Snapshot`, or similar concepts are not pre-approved by examples from the old Register proposal.
+
+Checkpoint:
+
+- [`Register Candidate v0 Validation`](../domain/checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED / PRODUCT NEED RETAINED**.
+
+## ACTIVE NEXT REVIEW — Subject
+
+Subject must be tested from first principles rather than inherited from Observation wording or old `Asset/Soggetto` discovery language.
+
+Primary questions:
+
+```text
+Subject as entity vs semantic role
+Subject vs Person
+Subject vs Actor
+Subject vs Asset
+Subject vs Resource
+Subject vs Account / Principal
+subject/focus/context distinctions
+one record with multiple possible subjects/foci
+non-LifeOS person as subject
+animal/plant/object/account/location/document as possible subject
+subject identity/history when the same real thing changes roles
+privacy/authority: being the subject != owning/entering/viewing/authorizing the record
+```
+
+Required external/product benchmark families where useful:
+
+- FHIR subject/focus/reference patterns;
+- contact/person/account systems;
+- asset/device/CMMS or inventory systems;
+- health/fitness apps representing people/devices;
+- knowledge systems using subject/topic/focus;
+- other mature products only where they expose a real semantic problem.
+
+External shapes are evidence only. LifeOS should not create a universal Subject wrapper simply because another schema uses references.
 
 ## Mandatory inherited re-tests
 
 ```text
-Observation vs Quantity — basic boundary RESOLVED by Quantity v0
-Observation vs Register/RegisterEntry — active
-Quantity vs Register aggregation — active
-sampled-series physical representation — active during Register/cluster
-Subject vs observer/recorder/source/transformer
+Observation vs Quantity — RESOLVED by Quantity v0
+Observation vs Register/RegisterEntry — RESOLVED by Register rejection
+Quantity vs Register aggregation — RESOLVED at kernel level
+Subject vs observer/recorder/source/transformer — ACTIVE
+sampled-series physical representation — SAFE implementation dependency
 Availability/Capacity vs Resource
 Actor vs Subject vs Resource vs Account/Principal
 Provenance source/actor roles vs Subject/Person/Account
 ```
 
-The Register review remains read-only until it passes Methodology v3 and receives a separately approved Git write scope.
+The Subject review is read-only until it passes Methodology v3 and a separately stated Git write scope is explicitly approved.
 
 ---
 
@@ -470,6 +523,9 @@ Provenance
 
 Quantity
 = reusable scalar amount value semantics also usable outside Observation
+
+Longitudinal product views
+= queries/projections over native records, not a separate truth layer
 ```
 
 This is not a mandatory parent/child chain and not a persistence schema.
@@ -482,11 +538,9 @@ The post-Cluster-4 closure pass must turn every still-material item into `RESOLV
 
 Known inherited items include:
 
-- Observation vs Register;
-- Quantity vs Register aggregation semantics;
 - Subject vs observer/recorder/source/transformer;
-- Availability/Capacity vs Resource;
 - Person vs Actor vs Subject vs Account/Principal;
+- Availability/Capacity vs Resource;
 - Actual establishment under Authority/Decision/reconciliation semantics;
 - Confirmation vs Authority/Acknowledgement/Acceptance/Version;
 - Evidence vs GoalCriterion/Relationship/Decision/Version;
@@ -505,7 +559,17 @@ Known inherited items include:
 - Quantity vs custom unit-definition semantics;
 - Quantity vs elapsed duration/calendar-relative time;
 - Quantity vs Range/Threshold/comparator semantics;
-- Quantity decimal/unit physical representation.
+- Quantity decimal/unit physical representation;
+- longitudinal query/materialization/saved-view implementation;
+- aggregate visibility vs source-record visibility;
+- future transaction/movement/snapshot semantics only when concrete workflow evidence requires them.
+
+Resolved:
+
+- Observation vs Register/RegisterEntry;
+- Register as kernel primitive;
+- universal RegisterEntry;
+- Quantity vs generic Register aggregation at kernel level.
 
 These are executable obligations, not generic `later` notes.
 
@@ -546,7 +610,10 @@ Cross-Cluster Validation v3 PASS
 ↓
 Data / Subjects — ACTIVE
   Quantity v0 accepted
-  Register read-only review next
+  Register candidate rejected
+  Subject read-only review now
+↓
+remaining Data / Subjects candidates
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -572,4 +639,4 @@ logical/physical persistence and API stabilization
 - Phase 4 prototype branch not changed by this workstream;
 - repository visibility does not change the branch/write-scope operating rules.
 
-Continue from Methodology v3 + Execution Template v3 + Language Map + accepted Quantity v0 + the three validated cluster checkpoints. The active next concept is Register in read-only mode. Do not create a parallel validation standard, terminology tree or collaboration ontology.
+Continue from Methodology v3 + Execution Template v3 + Language Map + accepted Quantity v0 + Register rejection checkpoint + the three validated cluster checkpoints. The active next candidate is `Subject` in read-only mode. Do not create a parallel validation standard, terminology tree or collaboration ontology.
