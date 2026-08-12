@@ -2,6 +2,7 @@
 
 **Status:** Current accepted baseline  
 **Accepted:** 2026-08-12  
+**Current revision:** 2026-08-12 — Cluster-4 integration and Cross-Cluster v4 hardening  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Data / Subjects cluster
 
@@ -221,11 +222,13 @@ governor
 
 When the exact role matters, LifeOS should preserve it.
 
-Actor is the shared agency semantic that allows those relations to reference eligible native agents without creating an inheritance root.
+Actor is the shared agency semantic category that allows those relations to reference eligible native agents without creating an inheritance root.
 
 Canonical rule:
 
 > **Use the most specific meaningful action role; do not replace typed relations with a generic `actor` edge merely because all participants exhibit agency.**
+
+Cluster-4 integration strengthened this rule: Actor may be useful for validation, capability eligibility, common query semantics, or documenting that a referent can bear agency, but it must not become a semantic-free persisted relation when the concrete role is known.
 
 The exact Relationship model is deferred.
 
@@ -479,7 +482,7 @@ Confirmed by Luca
 
 rather than a generic `Actor` noun.
 
-Actor is primarily hidden/cross-cutting semantics enabling consistent identity references across those roles.
+Actor is primarily hidden/cross-cutting semantics enabling consistent agency constraints and native-identity references across those roles.
 
 ---
 
@@ -504,6 +507,12 @@ LifeOS adapts the separation of **agency, human identity, credentials, and autho
 Agency becomes scattered into Person/Account/User/source fields and cannot represent software/external actors coherently.
 
 **Result:** FAIL.
+
+## REMOVE generic `actor` relation while keeping specific action roles
+
+Specific roles such as recorder, performer, confirmer and proposer still represent concrete actions correctly. The shared Actor semantic remains useful as a category/capability constraint but does not require a universal persisted edge.
+
+**Result:** PASS — hardening confirms specific-role precedence.
 
 ## MAKE Actor a universal entity/root
 
@@ -535,7 +544,7 @@ Performance and permission/accountability collapse.
 
 **Result:** FAIL.
 
-## Actor as agency role over native identity
+## Actor as agency category over native identity + precise typed roles
 
 Preserves meaningful action attribution while allowing typed roles and separate authority/security semantics.
 
@@ -552,11 +561,13 @@ Preserves meaningful action attribution while allowing typed roles and separate 
 5. **Actor != Subject.**
 6. **Actor != Responsibility/Stewardship/Authority/Ownership.**
 7. **Actor does not replace specific roles such as performer, recorder, observer, confirmer or proposer.**
-8. **No Account is required to preserve agency attribution.**
-9. **Current access != historical Actor attribution.**
-10. **AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors.**
-11. **AI Actor attribution does not create human Confirmation, authority or responsibility.**
-12. **Visibility of a target does not imply visibility of all Actor/delegation details.**
+8. **When the concrete action role is known, use that role rather than a generic `actor` relation.**
+9. **No Account is required to preserve agency attribution.**
+10. **Current access != historical Actor attribution.**
+11. **AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors.**
+12. **AI Actor attribution does not create human Confirmation, authority or responsibility.**
+13. **Visibility of a target does not imply visibility of all Actor/delegation details.**
+14. **Actor semantics do not imply one persisted generic actor edge; they may constrain/organize several specific typed relations.**
 
 ---
 
@@ -575,6 +586,7 @@ Do not infer from Actor v0 that LifeOS requires:
 
 - one `actors` table;
 - one universal `actor_id` field on every record;
+- one generic `acted_by` edge replacing typed relations;
 - universal inheritance from Actor;
 - every automation/process becoming a domain Actor;
 - Actor = Person or Account;
@@ -598,14 +610,37 @@ These are dependencies, not reasons to create a universal Actor entity.
 
 ---
 
-# 24. Reopening triggers
+# 24. Cluster-4 integration hardening
+
+Data / Subjects integration and Cross-Cluster Validation v4 re-ran Actor under the destructive question:
+
+> If all concrete action roles already work, is Actor itself redundant?
+
+Result:
+
+- a universal Actor entity remains unnecessary;
+- a universal generic `actor` relation remains unnecessary;
+- the **agency semantic category remains useful** to state which native referents/systems may bear meaningful agency and to keep Person/Account/Principal/Subject/Resource distinctions explicit;
+- persistence and APIs should normally expose the most specific action role, not Actor as a catch-all relation.
+
+Cluster-level result: **PASS WITH HARDENING; 0 structural reopenings**.
+
+See:
+
+- `checkpoints/data-subjects-v0.md`;
+- `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
+- `checkpoints/cross-cluster-validation-v4.md`.
+
+---
+
+# 25. Reopening triggers
 
 Reopen Actor v0 if later evidence shows that:
 
-1. agency cannot be represented through typed contextual roles without a distinct Actor identity;
+1. agency cannot be represented through typed contextual roles plus a shared semantic category without a distinct Actor identity;
 2. a future Organization/system identity model requires a shared native entity that materially changes Actor semantics;
-3. Responsibility/Authority modeling proves Actor is redundant or incorrectly bounded;
+3. Responsibility/Authority modeling proves even the Actor semantic category is redundant or incorrectly bounded;
 4. logical persistence pressure requires a different semantic model rather than merely a different typed-reference mechanism;
 5. delegated AI/service action cannot preserve attribution and authority boundaries under this role-based model.
 
-Until then, Actor remains the current accepted semantic agency role/capability.
+Until then, Actor remains the current accepted semantic agency role/capability with **specific-role precedence**.
