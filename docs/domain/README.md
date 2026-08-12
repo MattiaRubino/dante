@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Quantity accepted; Register kernel candidate rejected; Subject next  
+**Current revision:** 2026-08-12 — Quantity and Subject accepted; Register kernel candidate rejected; Person / Actor boundary next  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -280,14 +280,19 @@ Provenance
 
 REUSABLE DATA VALUE SEMANTICS
 Quantity
+
+CONTEXTUAL ABOUTNESS ROLE
+Subject
 ```
 
-This is not a mandatory processing chain, parent tree or persistence schema.
+Subject is a semantic role over native referent identity, not a universal entity/root.
+
+This topology is not a mandatory processing chain, parent tree or persistence schema.
 
 Examples of valid minimal shapes:
 
 ```text
-weight measurement -> Observation using Quantity(66.4 kg)
+Person P17 --Subject role--> Observation(weight = Quantity(66.4 kg))
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
 longitudinal weight screen -> query over native Observations
@@ -316,6 +321,12 @@ Evidence
 
 Provenance
 = bounded contextual lineage of how a record/material version came to exist/change
+
+Quantity
+= reusable scalar amount value semantics
+
+Subject
+= contextual role identifying the native referent a descriptive record primarily concerns
 ```
 
 Critical non-collapse rules:
@@ -343,6 +354,15 @@ Observation != universal RegisterEntry
 Observation != Evidence
 Observation != Confirmation
 Observation != Provenance
+
+Subject entity/root = rejected
+Subject != Person
+Subject != Actor
+Subject != Account/Principal
+Subject != Asset
+Subject != Resource
+Subject != observer/recorder/source/transformer/authority/viewer
+Subject != generic related_to
 
 Confirmation != Actual
 Confirmation != Outcome
@@ -372,105 +392,41 @@ Provenance != Version
 Provenance != Audit
 ```
 
-## Actual invariants
+## Subject invariants now accepted
 
-- contextual realization, not universal reality object;
-- spontaneous reality may exist without Actual;
-- no Actual does not mean failed/skipped/missed;
-- known non-realization != unknown;
-- passage of time does not establish Actual;
-- reported/asserted reality does not automatically establish Actual;
-- conflicting assertions may remain unresolved;
-- shared Actual does not imply identical actor participation;
-- correction preserves material assertion/provenance history.
-
-## Outcome invariants
-
-- optional/contextual;
-- no universal Outcome enum;
-- lifecycle state remains separate;
-- absence of Outcome is not negative Outcome;
-- `unconfirmed` is epistemic, not Outcome semantics;
-- shared Outcome does not imply identical actor consequences.
-
-## Observation invariants
-
-- measurement/simple-assertion concept, not universal fact/blob;
-- may exist without prior intention/Actual/Goal/saved tracker;
-- effective time/context != recorded/ingested time;
-- missing Observation != explicit negative != failed measurement;
-- subjective/conflicting Observations may coexist;
-- derived Observations preserve traceability;
-- chart/query aggregates do not automatically become persisted Observations;
-- high-frequency sampling does not imply row-per-tick persistence;
-- subject != observer != recorder != source/provider/device != authority != viewer;
-- one Observation may surface in multiple longitudinal views without duplication.
-
-## Confirmation invariants
-
-- contextual and optional;
-- no Confirmation != false/rejected/incorrect/not performed;
-- target material version/context/purpose matters;
-- corrected target does not inherit prior Confirmation silently;
-- `awaiting confirmation` is derived workflow state;
-- imported/inferred/automatic/corrected are not Confirmation types;
-- automation/AI must not fabricate human Confirmation;
-- Confirmation by one actor does not imply Confirmation by another;
-- Confirmation does not create Authority.
-
-## Evidence invariants
-
-- information is not Evidence merely because it exists;
-- Evidence does not duplicate source identity/payload;
-- may support, contradict or qualify an evaluation;
-- Evidence existence does not establish truth;
-- no Evidence != Evidence against;
-- no LifeOS record != proof of non-occurrence without a justified completeness rule;
-- later relevance does not rewrite historical source purpose;
-- one source can serve several evaluations without duplication;
-- strength/certainty is contextual rather than one universal scalar;
-- conflicting Evidence remains representable;
-- private Evidence use does not create disclosure permission;
-- Evidence semantics do not pre-approve one persisted edge/entity per use.
-
-## Provenance invariants
-
-- source is one lineage dimension, not the whole concept;
-- Provenance != truth/Authority/Confirmation/Evidence/Version/Audit;
-- provider ID does not define LifeOS identity;
-- corrections preserve materially relevant prior lineage;
-- derived/transformed records retain material source/process traceability;
-- AI/OCR/import chains do not launder authorship/source;
-- subject/source/observer/recorder/transformer/confirmer/authority roles remain distinguishable;
-- external/non-account actors can be provenance sources/agents;
-- target visibility != full Provenance visibility;
-- Provenance access != access to all upstream private payloads;
-- retention/history does not justify keeping deleted sensitive payloads forever;
-- material lineage, not maximal recursive lineage, is the default;
-- no universal provenance graph/table is pre-approved.
+- Subject is a contextual semantic role, not independent identity;
+- native Person/Asset/etc. identity remains authoritative for the referent;
+- current Account is not the universal Subject default;
+- non-LifeOS people and non-person referents may play Subject role;
+- being Subject does not imply source, observer, recorder, owner, authority, visibility, participation, responsibility or benefit;
+- unknown/later-resolved/corrected Subject attribution preserves material history;
+- Subject must not become a universal `related_to` catch-all;
+- Subject association itself can be privacy-sensitive;
+- AI may propose Subject resolution but does not automatically establish identity/authority;
+- no universal `subjects` table/root is pre-approved.
 
 ---
 
 # Active cluster — Data / Subjects
 
-**Status:** IN PROGRESS — `Quantity v0` accepted; historical `Register` kernel candidate evaluated and rejected; `Subject` is the next read-only review.
+**Status:** IN PROGRESS — `Quantity v0` and `Subject v0` accepted; historical `Register` kernel candidate rejected; Person / Actor / Account boundary is next.
 
 Accepted in this cluster:
 
 1. [`Quantity v0`](concepts/quantity.md) — [`validation`](checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
+2. [`Subject v0`](concepts/subject.md) — [`validation`](checkpoints/subject-v0-validation.md) — **PASS WITH HARDENING; canonical semantic role, no Subject entity/root**.
 
 Rejected candidate with validated product need:
 
-2. [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
+3. [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
 
 Remaining candidate topics:
 
-- Subject;
-- Person / Actor boundary;
+- Person / Actor / Account boundary;
 - Asset;
 - Resource.
 
-The exact review order remains reopenable if concept evidence exposes a stronger dependency. None of these candidates is guaranteed to survive merely because it appears in the roadmap.
+None of these candidates is guaranteed to survive merely because it appears in the roadmap.
 
 ## Quantity current baseline
 
@@ -480,20 +436,6 @@ Quantity
 = magnitude + unit semantics sufficient for interpretation
 != independent entity / Observation / universal numeric wrapper
 ```
-
-Core hardenings:
-
-- number != Quantity by default;
-- property/quantity-kind != unit;
-- compatible units do not prove domain-semantic equivalence;
-- same/compatible unit does not grant universal aggregation semantics;
-- source representation != normalized/display representation;
-- actor display preference != canonical data mutation;
-- custom unit label != conversion rule;
-- Money/MonetaryAmount is not pre-collapsed into ordinary Quantity;
-- calendar-relative time is not pre-collapsed into fixed elapsed Quantity arithmetic;
-- Range/Threshold/comparator semantics remain outside basic Quantity;
-- Quantity does not imply a standalone SQL table/entity.
 
 Current Quantity dependency obligations include Money/MonetaryAmount, ratings/scales, percentages/ratios/counts, custom units, elapsed-duration versus calendar time, Range/Threshold semantics, and final decimal/unit persistence. They are explicitly registered for the post-Cluster-4 closure unless resolved earlier.
 
@@ -523,43 +465,84 @@ Guardrails:
 - Register is not a kernel source-of-truth container;
 - source records can appear in multiple views without duplication;
 - deleting/changing a view does not change source history;
-- valid aggregation follows the source metric/record semantics, not same-unit coincidence;
-- quick capture through a tracker creates the native semantic record;
+- valid aggregation follows source metric/record semantics;
+- quick capture creates the native semantic record;
 - saved tracker/view configuration may exist as product/application configuration without becoming independent domain truth;
 - `Transaction`, `Movement`, `Snapshot`, or other future native record types are **not pre-approved** merely because historical Register examples mentioned them.
+
+## Subject current baseline
+
+```text
+native referent
+Person / future Asset / Device / Location / other eligible concept
+        ↑
+     Subject role
+        │
+descriptive record / Observation
+```
+
+The Subject role answers who/what the descriptive record is primarily about. It does not manufacture parallel identity.
+
+Resolved at the basic boundary:
+
+```text
+Subject entity/root rejected
+Subject vs observer/recorder/source/transformer separated
+Subject vs current Account separated
+```
+
+Safe-deferred/retest owners:
+
+```text
+Subject vs Person/Actor         -> immediate next review
+Subject vs Asset                -> Asset review
+Subject vs Resource             -> Resource review
+Subject vs Principal/Authority/Visibility -> Relationships / Reasoning
+Subject vs focus/context        -> Relationships / Reasoning
+heterogeneous reference mechanics -> logical data model
+```
 
 ## Mandatory inherited re-tests
 
 ```text
 Observation vs Quantity — RESOLVED by Quantity v0
-Observation vs Register/RegisterEntry — RESOLVED: Register kernel candidate and universal RegisterEntry rejected
-Quantity vs Register aggregation — RESOLVED at kernel level: aggregation validity is source/metric contextual
-Subject vs observer/recorder/source/transformer — NEXT
-sampled-series physical representation — safe implementation dependency, retain for pressure test
+Observation vs Register/RegisterEntry — RESOLVED by Register rejection
+Quantity vs Register aggregation — RESOLVED at kernel level
+Subject vs observer/recorder/source/transformer — RESOLVED by Subject v0
+Subject entity vs semantic role — RESOLVED by Subject v0
+Subject vs current Account — basic boundary RESOLVED
+Person vs Actor vs Subject vs Account/Principal — NEXT
+sampled-series physical representation — safe implementation dependency
 Availability/Capacity vs Resource
-Actor vs Subject vs Resource vs Account/Principal
-Provenance source/actor roles vs Subject/Person/Account
+Provenance source/actor roles vs Person/Actor/Account
+Subject vs Asset/Resource — mandatory later in this cluster
 ```
 
-## Next candidate — Subject
+## Next candidate — Person / Actor / Account boundary
 
-Subject must be evaluated independently rather than assumed necessary because Observation currently uses the word `subject`.
+The next review must start from identity and agency rather than assuming `Person`, `Actor`, `User`, `Account` or `Principal` are synonyms.
 
-Initial questions:
+Primary questions:
 
 ```text
-Is Subject a true entity/identity?
-Is Subject only a semantic role played by Person/Asset/other domain objects?
-Does a universal Subject wrapper duplicate heterogeneous entities?
-Can one record have primary subject plus focus/context without a new root?
-Can non-account people, animals, places, assets, accounts or abstract things be subjects naturally?
-Subject vs Actor vs Resource vs Account/Principal
-Subject identity/history/privacy implications
+Does Person require canonical native identity?
+Is Actor an entity, capability/role, or a category of native referents?
+Can a Person exist without Account? (must survive external/caregiver scenarios)
+Can an Account exist without a Person or represent a service/system?
+What exactly is Principal and does it belong later with Authority rather than this cluster?
+Can one Person have multiple Accounts/credentials?
+Can multiple actors operate through one Account/context?
+How do bots/services/devices fit agency without becoming Persons?
+Person identity vs Contact/profile/provider identities
+Subject role vs Actor role over the same Person
+historical attribution when account access changes/revokes
 ```
 
-Benchmark evidence should include mature health/knowledge/asset/contact systems where useful, but external schemas remain evidence rather than authorities.
+Mature contact/person/account, identity, collaboration and specialist systems should be benchmarked as evidence, not copied as authority.
 
-## Mandatory closure after Data / Subjects
+---
+
+# Mandatory closure after Data / Subjects
 
 Before Relationships / Reasoning starts, perform one dedicated closure pass across all open dependencies from clusters 1–4.
 
@@ -591,7 +574,8 @@ Likely topics:
 - Authority / Visibility;
 - Decision;
 - Version;
-- AI Proposal.
+- AI Proposal;
+- Principal if its semantics are primarily acting/authority rather than person identity.
 
 Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
 
@@ -602,7 +586,9 @@ Mandatory inherited re-tests include:
 - Confirmation vs Authority/Acknowledgement/Acceptance;
 - competing assertions and canonical decision policy;
 - Milestone attainment/evaluation relationship;
-- collaborative Session/Actual attribution.
+- collaborative Session/Actual attribution;
+- Subject vs focus/context/Visibility;
+- historical Person/Actor attribution after account revocation.
 
 From this cluster onward the Adjacent Dependency Sweep is mandatory before each concept verdict.
 
@@ -627,6 +613,7 @@ Current known terminology refinements include:
 - Provenance is bounded lineage, not merely `source`, truth, Authority or Audit;
 - Quantity is bounded scalar value semantics, not a measurement entity or universal number wrapper;
 - historical `Register + RegisterEntry` is not a canonical kernel structure; longitudinal tracking remains a product/query capability over native records;
+- Subject is a canonical role over native identity, not an `Asset/Soggetto` universal wrapper/root;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage;
 - older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are redistributed into Provenance, automation/inference, Version and workflow semantics.
 
@@ -634,7 +621,7 @@ Historical docs should not be silently rewritten merely for vocabulary uniformit
 
 ---
 
-# Current accepted concepts
+# Current accepted concepts / capabilities
 
 ```text
 Goal
@@ -656,6 +643,7 @@ Confirmation
 Evidence
 Provenance
 Quantity
+Subject (semantic role)
 ```
 
 Rejected historical/current candidates are not counted as accepted concepts.
@@ -680,11 +668,12 @@ Schedule     -> current accepted temporal assignment
 Session      -> bounded actual execution episode
 Actual       -> realization of a specific expectation
 Outcome      -> result/disposition of realization
-Observation  -> measurement/simple assertion about subject/context
+Observation  -> measurement/simple assertion about Subject/context
 Confirmation -> contextual affirmation of target/version/purpose
 Evidence     -> contextual evaluative use of information
 Provenance   -> bounded origin/evolution lineage
 Quantity     -> reusable scalar amount value semantics
+Subject      -> contextual aboutness role over native referent identity
 ```
 
 Cross-cutting multi-actor direction:
@@ -694,12 +683,12 @@ shared canonical fact
 +
 actor-scoped personal state
 
-object identity
+object/native referent identity
 != account
 != participation
 != responsibility
 != performer
-!= subject
+!= Subject role
 != authority
 != visibility
 ```
@@ -720,11 +709,15 @@ Validation Methodology v3       — ACTIVE MANDATORY STANDARD
 Quantity v0                     — ACCEPTED
 Register kernel candidate       — REJECTED
 RegisterEntry universal         — REJECTED
+Subject v0                      — ACCEPTED SEMANTIC ROLE
+Subject universal entity/root   — REJECTED
 
 ↓ NOW
-Subject read-only review
+Person / Actor / Account boundary review
 ↓
-remaining Data / Subjects candidates
+Asset candidate
+↓
+Resource candidate
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -741,10 +734,14 @@ Relationships / Reasoning
 
 The following are executable obligations, not generic reminders. The post-Cluster-4 dependency closure must classify every still-material item as `RESOLVED`, `SAFE DEFERRED`, or `REOPEN` and give SAFE DEFERRED items an explicit owner/reopening trigger.
 
-Known inherited items include:
+Known inherited/current items include:
 
-- Subject vs observer/recorder/source/transformer semantics;
-- Person/Actor/Subject/Account/Principal boundaries;
+- Person/Actor/Subject/Account/Principal boundaries — active next review;
+- Subject vs Asset;
+- Subject vs Resource;
+- Subject vs focus/context/typed Relationship;
+- Subject association privacy vs Visibility;
+- heterogeneous Subject-reference persistence;
 - Availability/Capacity vs Resource;
 - Actual establishment under future Authority/Decision/reconciliation rules;
 - Confirmation target-version semantics vs future Version model;
@@ -774,7 +771,10 @@ Resolved and removed from limbo:
 - Observation vs Register/RegisterEntry;
 - Register as a kernel primitive;
 - universal RegisterEntry;
-- Quantity vs generic Register aggregation at the kernel level.
+- Quantity vs generic Register aggregation at kernel level;
+- Subject entity vs semantic role;
+- Subject vs observer/recorder/source/transformer;
+- Subject vs current Account at the basic identity boundary.
 
 The list is expected to evolve during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
 
