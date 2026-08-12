@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Quantity v0 promoted as canonical value semantics  
+**Current revision:** 2026-08-12 — Register kernel candidate rejected; longitudinal product capability retained  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -110,6 +110,7 @@ Program
 Workout
 Study plan
 Release plan
+saved longitudinal tracker/view
 ```
 
 ## PRODUCT / UI TERM
@@ -127,6 +128,10 @@ Busy
 This time
 Inbox
 Registra un dato
+Register / Registro
+Tracker
+History / Storico
+Progress
 ```
 
 ## PROVISIONAL
@@ -149,7 +154,6 @@ Acceptance / Agreement
 Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Register
 Subject
 Resource
 Relationship
@@ -163,6 +167,8 @@ Version
 ## HISTORICAL / SUPERSEDED
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
+
+`Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
 
 ---
 
@@ -447,7 +453,7 @@ A persistent contextual record of a measured, perceived, reported, or explicitly
 Observation != Actual
 Observation != Outcome
 Observation != Quantity
-Observation != Register
+Observation != universal RegisterEntry
 Observation != Evidence
 Observation != Confirmation
 Observation != Provenance
@@ -456,17 +462,18 @@ Observation != Provenance
 Core guardrails:
 
 - not a universal fact/blob primitive;
-- may exist without prior intention/Actual/Goal/Register;
+- may exist without prior intention/Actual/Goal/saved tracker;
 - effective time/context != recorded/ingested time;
 - missing Observation != observed negative != failed measurement;
 - subjective/conflicting Observations can coexist;
 - query aggregates do not automatically become persisted Observations;
-- high-frequency streams do not imply row-per-sample persistence.
+- high-frequency streams do not imply row-per-sample persistence;
+- one Observation can appear in zero or many tracker/history/report views without duplication.
 
 ```text
-Quantity    = reusable scalar amount value semantics
-Observation = contextual record using a value
-Register    = longitudinal organization/analysis of records
+Quantity      = reusable scalar amount value semantics
+Observation   = contextual observed/asserted record
+Tracker/view  = product/query presentation over native records
 ```
 
 ## Confirmation
@@ -593,7 +600,7 @@ Quantity is reusable scalar amount value semantics: numerical magnitude + unit s
 ```text
 number != Quantity by default
 Quantity != Observation
-Quantity != Register / RegisterEntry
+Quantity != universal RegisterEntry
 property / quantity kind != unit
 compatible unit != semantic equivalence by itself
 same unit != universal aggregation permission
@@ -632,6 +639,32 @@ Typical UI does not expose `Quantity` as a noun; users see values such as `66.4 
 
 **Status:** PRODUCT PROFILE / HISTORICAL KERNEL TERM  
 **Current mapping:** Plan profile emphasizing progression, stages, repeated policies, reviews or adaptation.
+
+## Register / Tracker / History / Progress
+
+**Status:** PRODUCT / UI CAPABILITY TERM — KERNEL CANDIDATE REJECTED  
+**Validation:** `checkpoints/register-v0-validation.md`
+
+Longitudinal tracking, filtering, trend analysis, valid aggregation, drill-down and quick capture are validated product needs. They operate over native semantic records rather than requiring a universal `Register` source-of-truth entity or `RegisterEntry` wrapper.
+
+```text
+native semantic records
+        ↓
+query / filtering / grouping
+        ↓
+valid aggregate / trend / comparison
+        ↓
+Register / Tracker / History / Progress UI
+```
+
+A saved tracker/view may later be persisted as application/product configuration. Persisted configuration does not automatically become independent domain truth.
+
+```text
+Register UI != kernel Register primitive
+RegisterEntry universal primitive = rejected
+changing/deleting saved view != changing/deleting source records
+same source record may appear in multiple views without duplication
+```
 
 ## Calendar Block
 
@@ -870,11 +903,11 @@ Verification != Confirmation
 Verification != Provenance
 ```
 
-## Register
+## Longitudinal query / aggregation / saved-view implementation
 
-**Status:** DEFERRED — DATA/SUBJECT REVIEW
+**Status:** PRODUCT + LOGICAL/PHYSICAL MODEL DEFERRED
 
-Longitudinal organization/analysis capability for records over time.
+The required product capability is validated, but exact query DSL, aggregate materialization, cache/history policy and saved-view persistence are implementation/product concerns rather than a kernel `Register` primitive.
 
 ## Version
 
@@ -950,17 +983,20 @@ Outcome != Provenance
 Outcome != Evidence
 Milestone attainment != independent duplicate Actual/Outcome/Observation truth
 Observation != Quantity
-Observation != Register
+Observation != universal RegisterEntry
 Observation != Confirmation
 Observation != Evidence
 Observation != Provenance
 Quantity != Observation
-Quantity != Register/RegisterEntry
+Quantity != universal RegisterEntry
 number != Quantity by default
 property/quantity-kind != unit
 compatible unit != semantic equivalence by itself
 same unit != universal aggregation permission
 Quantity != Range/Threshold/comparator/criterion
+Register/Tracker UI != kernel Register primitive
+saved longitudinal view != source of truth
+view membership != duplicate native record
 Confirmation != Acknowledgement
 Confirmation != Acceptance/Agreement
 Confirmation != Verification
@@ -1017,6 +1053,7 @@ AI inference != established Actual
 AI provenance != disclosure permission
 future access revocation != deletion of historical attribution
 Quantity display preference != canonical value mutation
+actor tracker preferences != shared fact mutation
 ```
 
 ## Product vs kernel
@@ -1029,7 +1066,8 @@ Calendar Block != mandatory time primitive
 Planning Item != current universal kernel root
 Shared Item != universal collaboration primitive
 Module != domain entity
-Register view != mandatory duplicate source record
+Register/Tracker view != kernel Register entity
+RegisterEntry != universal semantic record
 Needs confirmation != Confirmation object by itself
 Source label != complete Provenance model
 Quantity UI value != standalone Quantity entity
@@ -1074,20 +1112,27 @@ Event
 
 UI may show simply `78/100 · Passed`, with source/evidence/history on demand.
 
-## Weight log
+## Weight history
 
 ```text
-Observation
+Observation O1
+property: body weight
+value: Quantity(66.8 kg)
+
+Observation O2
+property: body weight
+value: Quantity(66.5 kg)
+
+Observation O3
 property: body weight
 value: Quantity(66.4 kg)
-effective: 08:00
-recorded: 18:00
-
-Provenance
-manual entry / device import / correction chain as applicable
+        ↓
+query / trend projection
+        ↓
+UI: Weight / History / Tracker / Progress
 ```
 
-Possible product: Weight Register.
+No universal RegisterEntry copy is created. `Register` may remain a product label if it is the clearest UX language.
 
 ## Quantity display conversion
 
@@ -1144,6 +1189,7 @@ Actual              → What happened? / Actual time / Performed
 Outcome             → Passed / Partial / Approved / Result details
 Observation         → Weight / Mood / Score / Odometer
 Quantity            → 66.4 kg / 5 km / 45 min (contextual value; noun hidden)
+Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
 Evidence            → Why? / Based on… / Supporting or conflicting data
 Provenance          → Source / Imported from / Corrected by / View history
@@ -1170,6 +1216,8 @@ Specific guardrails:
 - Evidence does not imply one persisted edge/entity per evaluative use;
 - Provenance does not imply one universal provenance graph/table or event row for every technical operation;
 - Quantity does not imply a standalone table/entity for each scalar amount;
+- longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
+- saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
 - provider/source identifiers do not define LifeOS identity;
 - product aliases do not create duplicate persistence models.
@@ -1189,10 +1237,12 @@ A term may enter when at least one holds:
 
 A term does not become canonical because a competitor uses it, a table would be convenient, a mockup contains it, an AI suggested it, or it makes the ontology look complete.
 
+A historical candidate may be rejected when validation shows that its useful behavior is better expressed through existing concepts plus product/query/application capability.
+
 Change procedure:
 
-1. review/change source concept first;
-2. preserve historical reasoning;
+1. review/change source concept or candidate first;
+2. preserve historical reasoning and rejection rationale;
 3. update this map;
 4. update checkpoints/handoffs;
 5. update implementation names only after persistence/API exists.
