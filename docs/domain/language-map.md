@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Data / Subjects closed; terminology-neutral Asset review and Cross-Cluster v4 completed  
+**Current revision:** 2026-08-12 — Relationships / Reasoning started; Relationship universal primitive rejected; specific direct/qualified relation discipline accepted  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -84,11 +84,14 @@ Person (native human entity)
 Actor (semantic agency role/capability, not entity)
 Asset (current scoped native physical-object entity)
 Resource (semantic planning/execution role/capability, not entity)
+Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
 ```
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
 
 `Asset` is canonical as the **current scoped baseline**. The mandatory terminology-neutral Cluster-4 review has been completed: a universal `ManagedObject` root was rejected under current evidence, the individually tracked physical-object identity need survived, and the exact internal noun `Asset` remains non-semantic/reopenable.
+
+`Relationship` does **not** denote a universal domain entity. The accepted baseline is a modeling discipline: use the most specific truthful relation semantics; keep simple connections direct when semantically complete; introduce a domain-specific qualified relation only when the connection itself has materially relevant state/history/lifecycle/context. See `checkpoints/relationship-v0-validation.md`.
 
 ## DERIVED
 
@@ -161,6 +164,8 @@ Terms such as `Gear`, `Equipment`, `Device`, `Things`, or `Inventory` may expose
 
 The word `Resource` itself should usually remain hidden when a more natural label such as Person, Room, Camera, Equipment, Service, or `Who's available?` is clearer.
 
+The word `Relationship` is not a required user-facing noun. UI should normally expose the specific meaning (`Done by`, `Depends on`, `Parent`, `Participant`, `Owner`, `Based on…`) rather than a generic relationship object.
+
 ## PROVISIONAL
 
 Recurring semantic need with meaningful evidence but an unfinished domain boundary.
@@ -182,7 +187,6 @@ Allocation / selection
 Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Relationship
 Principal
 Trigger
 Verification
@@ -197,6 +201,8 @@ inventory / supply / consumption semantics
 
 Detailed Account/credential/provider/security mechanics are deferred even though the Account != Person != Actor conceptual boundary is already fixed.
 
+A generic Personal Knowledge link layer remains separately deferred. Its future flexibility must not automatically acquire operational, evidentiary, authority, allocation, participation or Actual semantics.
+
 ## HISTORICAL / SUPERSEDED
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
@@ -207,6 +213,7 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 - universal `Resource` entity/root/wrapper is rejected. Resource is accepted as contextual planning/execution eligibility/capability over independently justified referent/value/pool/supply/service semantics. See `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
 - universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
 - historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower; a terminology-neutral cross-domain review rejected a universal `ManagedObject` root under current evidence. See `concepts/asset.md`, `checkpoints/asset-v0-validation.md`, and `checkpoints/data-subjects-v0.md`.
+- universal `Relationship` entity/root/supertype and semantic-free `related_to` as kernel truth are rejected. The accepted result is specific relation semantics plus qualification only where the relationship itself materially requires it. See `checkpoints/relationship-v0-validation.md`.
 
 ---
 
@@ -984,7 +991,7 @@ Tag must not establish ownership, authority, lifecycle, scheduling or canonical 
 
 **Status:** HISTORICAL PRODUCT PHRASE
 
-Current mapping usually uses Activity/Event + Person + future Relationship semantics. The other Person does not need a LifeOS Account and the item is not automatically shared.
+Current mapping usually uses Activity/Event + Person + future specific relationship semantics. The other Person does not need a LifeOS Account and the item is not automatically shared.
 
 ## Asset / Soggetto
 
@@ -1318,7 +1325,7 @@ Decision rationale/authority is distinct from Provenance lineage.
 
 ---
 
-# 11. Other high-value deferred terms
+# 11. Other high-value relationship terms
 
 ## Trigger
 
@@ -1331,15 +1338,27 @@ Trigger != Routine
 
 ## Relationship
 
-**Status:** DEFERRED — STRONG FUTURE NEED
+**Status:** CANONICAL MODELING CAPABILITY / SEMANTIC RULE — NOT ENTITY/ROOT  
+**Validation:** `checkpoints/relationship-v0-validation.md` — PASS WITH HARDENING
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject, Actor and Resource are already bounded semantic roles and Asset ownership/custody/Resource relationships must remain distinct.
+LifeOS uses the most specific truthful relation semantics. A semantically complete simple connection may remain direct. A relationship that itself has materially relevant state, lifecycle, history, temporal scope, authority, provenance, privacy, actor-scoped state or domain invariants may become a **specific qualified relation family**.
+
+```text
+universal Relationship entity/root = rejected
+semantic-free related_to as kernel truth = rejected
+specific relation semantics > generic edge
+qualified relation != entity automatically
+queryability/cardinality/database row id != domain identity
+orientation/symmetry/transitivity/inverse rules are relation-family-specific
+```
+
+A future generic Personal Knowledge link capability is separately SAFE DEFERRED and must not silently become Responsibility, Authority, Evidence, Participation, allocation or Actual semantics.
 
 ## Dependency
 
-**Status:** DEFERRED / likely Relationship specialization or typed semantic
+**Status:** DEFERRED / likely specific relationship family or typed semantic
 
-Represents coordination dependency where justified.
+Represents coordination dependency where justified. Exact directionality, history, waiver, lag and reasoning/transitivity rules require dedicated review rather than inheritance from `Relationship` generally.
 
 ---
 
@@ -1426,6 +1445,11 @@ Resource != actual use/consumption
 Resource != Responsibility/Performer/Participant
 Resource role != synthetic provider identity
 Money/Budget != Resource by default
+universal Relationship root = rejected
+semantic-free related_to as kernel truth = rejected
+specific relation semantics != generic Relationship wrapper
+qualified relation structure != independent entity automatically
+queryability/cardinality != domain identity
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
 view membership != duplicate native record
@@ -1498,9 +1522,12 @@ Agreement != authority
 Authority != Actual
 Authority != Confirmation
 Actor action != Authority
+relation existence/type != Authority
+relation existence/type != Visibility
 AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
+AI inferred relation != established relationship
 AI Subject/Person/Asset guess != established identity
 AI Resource match != authoritative allocation
 AI Actor != human author/authority automatically
@@ -1525,6 +1552,7 @@ RegisterEntry != universal semantic record
 Subject UI/context != Subject entity
 Actor UI label != Actor entity
 Resource UI label != Resource entity
+Relationship UI/link != universal Relationship entity
 User UI/implementation term != universal domain entity
 Account settings object != Person identity
 Asset UI profile != new Asset subtype primitive automatically
@@ -1764,6 +1792,7 @@ Actor               → hidden; expose role: Done by / Recorded by / Suggested b
 Account             → Account / Profile / Login in settings/security context
 Asset               → Car / Camera / Laptop / Bike / Gear / Equipment according to context
 Resource            → usually hidden; Camera / Room / Person / Service / Who's available? / Required equipment
+Relationship        → usually hidden; expose the specific verb/role instead
 User                → ordinary product language only where unambiguous
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
@@ -1795,6 +1824,9 @@ Specific guardrails:
 - Subject does not imply a universal `subjects` table/root or every referent inheriting from Subject;
 - Actor does not imply a universal `actors` table/root, generic `actor_id`, or replacement of specific action roles;
 - Resource does not imply a universal `resources` table/root, generic `resource_id`, or synthetic identity for supplies/pools;
+- Relationship modeling discipline does not imply a universal `relationships` table, graph edge root, Node supertype, or one polymorphic `related_to` mechanism;
+- structured/qualified relation persistence does not by itself establish independent domain identity;
+- queryability, cardinality and database row IDs do not create domain concepts;
 - Resource Requirement/Allocation/Reservation remain distinct logical-model questions;
 - Person does not imply `persons.id = accounts.id`;
 - Account does not imply final auth/provider/credential/Principal schema;
@@ -1802,7 +1834,7 @@ Specific guardrails:
 - Asset does not imply one universal managed-things table, one table per subtype, one row per physical unit, or inheritance into Resource;
 - Asset serial/provider identifiers do not define canonical Asset identity by default;
 - Asset model/type/profile semantics are not fixed yet;
-- heterogeneous Subject/Actor/Resource references must preserve native semantics and attribution/history;
+- heterogeneous Subject/Actor/Resource/relation references must preserve native semantics and attribution/history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
@@ -1853,17 +1885,19 @@ Observed Reality & Evidence v0  PASS
 Data / Subjects v0              PASS WITH HARDENING
 Deferred Dependency Closure     PASS
 Cross-Cluster Validation v4     PASS WITH HARDENING
+Relationship v0 review          PASS WITH HARDENING
 ```
 
 Current cross-cluster structural reopenings: **0**.
 
-Normative transition references:
+Normative transition/current references:
 
 - `checkpoints/data-subjects-v0.md`;
 - `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
-- `checkpoints/cross-cluster-validation-v4.md`.
+- `checkpoints/cross-cluster-validation-v4.md`;
+- `checkpoints/relationship-v0-validation.md`.
 
-Next domain review space is **Relationships / Reasoning**, where the Adjacent Dependency Sweep is mandatory before every concept verdict.
+Relationships / Reasoning is **IN PROGRESS**. The next high-leverage review family is Responsibility / Assignment / Claim / Hand-off / Stewardship; those nouns are not pre-accepted as separate primitives. The Adjacent Dependency Sweep remains mandatory before every verdict.
 
 ---
 
