@@ -644,3 +644,54 @@ Reopen Actor v0 if later evidence shows that:
 5. delegated AI/service action cannot preserve attribution and authority boundaries under this role-based model.
 
 Until then, Actor remains the current accepted semantic agency role/capability with **specific-role precedence**.
+
+---
+
+# 2026-08-12 — Responsibility v0 closure amendment
+
+Responsibility v0 resolves the previously deferred responsibility-family boundary while preserving Actor v0.
+
+Current authoritative separation:
+
+```text
+Actor
+= contextual agency category/capability
+
+Responsibility
+= specific semantic relation: accountability to ensure a bounded commitment is appropriately handled
+
+expected performer
+= specific planned Actor role
+
+actual performer
+= specific actual Actor role
+```
+
+Therefore:
+
+```text
+Actor != Responsibility
+Responsibility holder may be an eligible Actor/native referent
+responsible Actor != expected performer
+responsible Actor != actual performer
+Responsibility != Authority
+Responsibility != Resource
+Responsibility != coordination Stewardship
+```
+
+Assignment, Claim and Hand-off are now classified as **role-specific operations/workflows**, not Actor concepts and not standalone universal primitives. Every material operation must identify which semantic role is being established/acquired/transferred.
+
+The older statement above that Responsibility/Assignment/Hand-off/Stewardship “will be modeled later” is superseded as follows:
+
+- Responsibility semantic family: **RESOLVED / accepted baseline**;
+- Assignment/Claim/Hand-off standalone primitives: **REJECTED**;
+- Stewardship boundary: **RESOLVED as distinct from Responsibility**, standalone primitive SAFE DEFERRED;
+- Authority/Acceptance/Visibility/delegation and physical relationship representation remain deferred.
+
+Responsibility v0 also confirms rather than removes Actor's specific-role precedence: a generic `actor` edge must not replace `responsible_for`, `performed_by`, or other known concrete roles.
+
+See:
+
+- `concepts/responsibility.md`;
+- `checkpoints/responsibility-v0-validation.md`;
+- `checkpoints/relationship-v0-validation.md`.
