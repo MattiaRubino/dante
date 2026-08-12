@@ -627,3 +627,46 @@ Event v0 intentionally strengthens the previous LifeOS glossary definition by ma
 Validation Methodology v2 further clarifies that intrinsic temporal meaning does not require a current Schedule to exist continuously: a postponed/unresolved Event may retain identity and historical expectation while awaiting a new accepted placement.
 
 The older glossary remains preserved as source material until changes are propagated deliberately after adjacent concepts and the intention/execution cluster are reviewed.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 closes the previously deferred participant/attendance boundary without changing Event identity semantics.
+
+Current authoritative separation:
+
+```text
+Event
+= shared expected occurrence identity
+
+Participation
+= actor/referent-scoped involvement relation family
+
+Participation response
+= intended/expressed stance toward expected participation
+
+Actual Participation / Attendance
+= actor-scoped reality of involvement
+```
+
+Therefore:
+
+```text
+Event state != Participation response
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+Event identity != participant set/state
+```
+
+Invitation is classified as a participation proposal/request, not a standalone universal primitive. Attendance is Event-facing Actual Participation semantics, not a standalone universal primitive and not a Session by default.
+
+The older `exact participant and attendance state machines` deferral is now superseded at the semantic level: no universal state machine is accepted. Exact direct/qualified persistence, participant-role taxonomy, recurrence inheritance/override, Authority/Visibility and provider reconciliation remain SAFE DEFERRED.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`;
+- `checkpoints/relationship-v0-validation.md`.
