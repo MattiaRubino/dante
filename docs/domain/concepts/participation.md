@@ -8,7 +8,7 @@
 
 ## Canonical definition
 
-> **Participation is the contextual semantic relation family through which a native referent is represented as expected or intended to be involved, or as actually involved, in a bounded shared occurrence or interaction context. Intended/response participation and Actual participation are distinct semantic facets and may differ in state, time, role, provenance, authority and visibility. Participation does not create referent identity and does not by itself imply Responsibility, performance, organization, Authority, Visibility, Resource allocation, Acknowledgement, or Account identity.**
+> **Participation is the contextual semantic relation family through which a native referent is represented as expected or intended to be involved, or as actually involved, in a bounded shared occurrence or interaction context. Intended/response participation and Actual participation are distinct semantic facets and may differ in state, time, role, provenance, authority and visibility. Participation does not create referent identity and does not by itself imply Responsibility, performance, organization, Authority, Visibility, Resource allocation, or Account identity.**
 
 Participation answers bounded questions such as:
 
@@ -25,6 +25,8 @@ Participation is a **specific semantic relation family**, not a native entity/ro
 # 1. Why Participation exists
 
 LifeOS already distinguishes one shared Event/Activity/Actual from actor-scoped state.
+
+Representative chronology:
 
 ```text
 Event
@@ -47,7 +49,16 @@ not invited
 
 All three histories are valid.
 
-Without explicit Participation semantics, LifeOS is pushed toward weak alternatives such as one participant list/status, one Session per attendee, invitation/acceptance treated as Actual, decline treated as proved absence, Resource booking confused with involvement, or provider attendance telemetry treated as unquestioned human truth.
+Without explicit Participation semantics, LifeOS is pushed toward weak alternatives:
+
+1. one `participants` list that cannot distinguish invitation, response and reality;
+2. one attendee `status` that overwrites earlier intention when reality differs;
+3. one Session per attendee merely to record attendance;
+4. actual participant inferred from invitation/acceptance;
+5. decline inferred as proof of absence;
+6. Resource booking confused with participation;
+7. organizer/requester/responsible actor confused with participant;
+8. provider attendance telemetry treated as unquestioned canonical human reality.
 
 The actor-scoped semantic need is real; a universal Participant identity is not.
 
@@ -55,7 +66,7 @@ The actor-scoped semantic need is real; a universal Participant identity is not.
 
 # 2. Participant is a contextual role, not identity
 
-A Person does not become a second native domain object merely by being involved.
+A Person does not become a second domain object merely by being involved in an Event.
 
 ```text
 Person Anna
@@ -77,11 +88,29 @@ Canonical rule:
 
 A Person with no LifeOS Account may participate ordinarily.
 
-Eligible non-human referents, collective actors and exact typed-reference mechanics remain deferred.
+The exact future eligible non-human referents, collective actors and typed-reference mechanism remain deferred.
 
 ---
 
-# 3. Event identity is independent from Participation
+# 3. Participation versus Event identity
+
+Event identity is independent from participant relations and states.
+
+```text
+Event
+Project meeting
+```
+
+may retain one identity while:
+
+```text
+Anna accepts
+Luca declines
+Marco joins unexpectedly
+Sara is removed from expected participants
+```
+
+Therefore:
 
 ```text
 Event identity != participant set
@@ -91,13 +120,11 @@ Event identity != actual attendance
 
 Adding/removing/changing ordinary participant state does not automatically create a new Event.
 
-Organizer/requester identity also does not establish Participation.
-
 ---
 
-# 4. Intended/response Participation versus Actual Participation
+# 4. Intended/expected participation versus Actual participation
 
-This is the core invariant:
+This is the core Participation invariant.
 
 ```text
 planned / expected / response participation
@@ -114,21 +141,36 @@ T2 Event occurs
 T3 Anna does not attend
 ```
 
-Correct history:
+The correct history is not:
+
+```text
+accepted rewritten to declined
+```
+
+Instead:
 
 ```text
 historical response = accepted
-Actual participation = none / established absence only if evidence supports it
+Actual participation = none / established absence if evidence supports it
 ```
 
 Likewise:
 
 ```text
-declined → later attends
-never invited → later participates
+declined
+→ later attends anyway
+```
+
+and:
+
+```text
+never invited
+→ later participates
 ```
 
 are valid.
+
+Canonical rule:
 
 > **Later Actual participation must not rewrite earlier invitation/response history, and earlier invitation/response must not establish Actual participation.**
 
@@ -136,25 +178,40 @@ are valid.
 
 # 5. Invitation
 
-`Invitation` is participation-related proposal/request semantics, not a standalone universal primitive.
+`Invitation` is not accepted as a standalone universal kernel primitive.
 
-Invitation does not establish:
+Invitation is a participation-related proposal/request that a referent become an expected/intended participant in a bounded context.
+
+Conceptually:
 
 ```text
-intended acceptance
-Acknowledgement
-Actual participation
+Event
+        ↓ invitation/proposal
+Person Anna
 ```
 
-A product may persist invitation workflow state where consequence requires it, but no universal Invitation root/table/state machine is pre-approved.
+Invitation does not by itself establish:
+
+```text
+Anna intends to participate
+Anna accepted
+Anna will attend
+Anna actually attended
+```
+
+Canonical rule:
+
+> **Invitation != intended acceptance != Actual participation.**
+
+A future product may persist invitation workflow state where consequence requires it, but no universal Invitation root/table/state machine is pre-approved.
 
 ---
 
-# 6. Participation response and the Acceptance boundary
+# 6. Participation response
 
-A Participation response captures actor-scoped stance/intention toward expected participation.
+A Participation response captures actor-scoped response/intention toward expected participation.
 
-Contextual states may include, depending on product/domain:
+Possible contextual states may include, depending on domain/product:
 
 ```text
 needs action
@@ -165,156 +222,263 @@ conditional
 waitlisted
 ```
 
-No universal enum is accepted.
+No universal enum is accepted here.
 
-Response answers:
+Response answers something like:
 
 > **What is the participant's current expressed stance toward expected participation?**
 
-It does not answer whether the actor actually participated.
+It does not answer:
 
-```text
-accepted != attended
-accepted != Actual participation
-declined != proved absence
-no response != declined
-```
-
-The later Acknowledgement v0 review tested generic cross-domain `Acceptance` and rejected it as a standalone kernel primitive.
-
-Canonical current rule:
-
-> **`accepted` inside Participation is Participation-response semantics; it is not an instance of a universal Acceptance root.**
-
-Response history may be material and must not be silently overwritten.
-
----
-
-# 7. Participation versus Acknowledgement
-
-Acknowledgement records explicit taking-notice of a specific target/version/change/request.
-
-Participation response records willingness/intention toward involvement.
-
-```text
-acknowledged changed Event time
-!= accepted Participation
-```
-
-An actor may truthfully:
-
-```text
-acknowledge the new time
-+
-decline Participation
-```
+> **Did they actually participate?**
 
 Therefore:
 
 ```text
-Invitation != Acknowledgement
-Acknowledgement != Participation response
+accepted != attended
+accepted != Actual participation
+
+declined != proven absence
+no response != declined
 ```
 
-Acknowledgement is now a canonical neighboring concept; it is no longer an unresolved generic common-ground dependency for Participation.
+Response history may be material and must not be silently overwritten when changed.
 
 ---
 
-# 8. Attendance / Actual Participation
+# 7. Attendance
 
-`Attendance` is Event-facing product/domain language for Actual Participation, not a standalone universal primitive.
+`Attendance` is accepted as Event-facing product/domain language for Actual Participation semantics, not as a standalone universal kernel primitive.
 
-Actual participation may be full, partial, multi-interval, established absent, or unknown where the domain/evidence supports those distinctions.
+Example:
 
 ```text
-Event 10:00–12:00
-Anna Actual Participation 10:00–12:00
-Luca Actual Participation 10:35–11:10
+Event
+Workshop
+10:00–12:00
+
+Anna
+Actual Participation
+10:00–12:00
+
+Luca
+Actual Participation
+10:35–11:10
 ```
 
-Attendance is not the same semantic as invitation response.
+Attendance may be full, partial, absent where established, unknown, or represented through one or multiple actual participation intervals where justified.
+
+But the domain must not impose one universal attendance enum across every participation context.
+
+Canonical rule:
+
+> **Attendance is an Event-oriented expression of Actual Participation; it is not the same semantic as invitation response.**
 
 ---
 
-# 9. Participation versus Session and shared Actual
+# 8. Actual Participation versus Session
 
-Session is bounded performed/execution episode semantics.
+Session represents a bounded episode of performed behavior/execution.
 
-Participation is involvement in a shared occurrence/interaction.
+Actual Participation represents actor-scoped involvement in a shared occurrence/interaction.
+
+An ordinary Event does not require one Session per attendee.
+
+Rejected default shape:
+
+```text
+Event meeting
+
+Anna attendance → Session Anna
+Luca attendance → Session Luca
+Marco attendance → Session Marco
+```
+
+Correct conceptual separation:
+
+```text
+Event
+   ↓
+Actual Event realization
+   ├── Anna Actual Participation
+   ├── Luca Actual Participation
+   └── Marco Actual Participation
+```
+
+A Session may still exist when a distinct performed/execution episode is semantically real.
+
+Therefore:
 
 ```text
 Participation != Session
 Event attendance != Session by default
 ```
 
-Likewise:
+---
+
+# 9. Participation versus Actual
+
+Actual represents how a shared/intended expectation resolved overall.
+
+Participation represents actor-scoped involvement facets.
+
+Example:
 
 ```text
-shared Event Actual
-!= identical actor-specific Actual Participation
+Event Actual
+meeting occurred 10:08–11:23
+
+Anna Actual Participation
+10:08–11:23
+
+Luca Actual Participation
+10:08–10:45
+
+Sara Actual Participation
+established absent
 ```
 
-A shared Event may occur once while actors have different participation intervals or established/unknown attendance states.
+Therefore:
+
+> **Shared Actual != identical actor-specific Participation.**
+
+Actual Participation may contribute to/reconcile the broader Actual without becoming the same record or meaning.
 
 ---
 
 # 10. Participation versus performer
 
-`performed_by` answers who executed work/behavior. Participation answers who was involved.
+`performed_by` answers who executed work/behavior.
+
+Participation answers who was involved in a shared occurrence/interaction.
+
+Examples:
 
 ```text
-concert audience member = participant != performer
-meeting listener = participant != performer by default
+concert audience member
+= participant
+!= performer
 ```
 
-> **Use the most specific truthful actor role; Participation must not replace performer/recorder/confirmer/acknowledger/responsible/etc. when that narrower role is what matters.**
+```text
+meeting listener
+= participant
+!= performer by default
+```
+
+```text
+Activity execution
+Anna performed the work
+```
+
+Where performance is the real semantic question, `performed_by` is stronger than generic Participation.
+
+Canonical rule:
+
+> **Use the most specific truthful actor role; Participation must not replace performer/recorder/confirmer/responsible/etc. when that specific role is what matters.**
 
 ---
 
 # 11. Participation versus Responsibility
+
+Involvement and accountability are independent.
+
+```text
+Person Anna
+participates in meeting
+```
+
+does not imply:
+
+```text
+Anna responsible for meeting outcome
+```
+
+Likewise:
+
+```text
+Manager responsible for event logistics
+```
+
+does not prove actual participation.
+
+Therefore:
 
 ```text
 Participation != Responsibility
 Participant != responsible Actor
 ```
 
-Involvement does not establish accountability, and accountability does not prove actual participation.
-
-Responsibility changes may occur without changing Event/Activity identity or Participation.
+Responsibility transfer does not automatically alter Participation, and Participation does not grant responsibility.
 
 ---
 
 # 12. Participation versus Resource
+
+A Resource can be required/booked without participating.
+
+Example:
+
+```text
+Conference Room 3
+Resource for meeting
+```
+
+The room is not automatically a Participant merely because a calendar provider represents it as a resource attendee.
+
+Likewise a Person can be Resource-eligible for an activity without being a participant in a specific Event.
+
+Therefore:
 
 ```text
 Participation != Resource
 Resource allocation != Participation
 ```
 
-A room/equipment provider can be a Resource without being a participant merely because a calendar provider represents it as a resource attendee.
-
-Provider vocabulary does not decide LifeOS ontology.
+Specialist domains may later justify non-human participation semantics, but provider vocabulary does not decide LifeOS ontology.
 
 ---
 
-# 13. Participation versus Authority and Visibility
+# 13. Participation versus organizer/requester
 
-Participation grants neither governance nor universal exposure.
+Organizing or requesting an occurrence does not automatically imply participation.
 
 ```text
-Participation != Authority
-Participation != Visibility
+organizer != participant
+requester != participant
 ```
 
-Visibility of Person + Event does not imply visibility of their Participation relation, response, attendance interval, decline reason, or private note.
+A Person may organize an Event and not attend it.
 
-Authority v0 and Visibility v0 own those independent questions.
+A Person may participate without organizing/requesting anything.
+
+Do not derive Participation from organizer/creator fields.
 
 ---
 
-# 14. Response actor versus participant identity
+# 14. Participation versus Authority and Visibility
 
-The native referent whose participation is at stake may differ from the Actor/Principal submitting a response.
+Participation grants neither canonical-change Authority nor universal information exposure.
+
+```text
+Participant
+!= Authority holder
+!= viewer of every related fact
+```
+
+Likewise, visibility of Person + Event must not imply visibility of their Participation relation, response, attendance interval, reason for decline, or private note.
+
+Canonical rule:
+
+> **Endpoint visibility does not imply Participation-relation visibility, and Participation does not manufacture Authority.**
+
+Authority v0 and Visibility v0 close these boundaries independently. Participation may be a basis considered by policy, but it creates neither governance power nor automatic disclosure.
+
+---
+
+# 15. Response actor versus participant identity
+
+The Person whose participation is at stake may differ from the Actor/Principal submitting a response.
 
 Examples:
 
@@ -325,7 +489,7 @@ caregiver responds for cared-for Person
 service imports external response
 ```
 
-Conceptually distinguish:
+Therefore conceptually distinguish:
 
 ```text
 participant/native referent
@@ -334,38 +498,43 @@ Account/Principal used
 on-behalf-of/delegation basis
 ```
 
-Participation does not solve delegation; it preserves the boundary.
+Participation v0 does not solve delegation; it preserves the boundary.
 
 ---
 
-# 15. Actual Participation evidence and epistemic integrity
+# 16. Actual Participation evidence and epistemic integrity
 
-Provider attendance telemetry can be Evidence/Provenance without becoming unquestioned canonical Participation.
+Provider attendance telemetry can be strong evidence without becoming unquestioned canonical human Participation.
 
-Possible failure modes include stale connection, shared device/account, identity mismatch, duplicates, corrected timestamps and participant dispute.
+Possible problems include stale connection, shared device/account, provider identity mismatch, imported duplication, corrected timestamps, and participant dispute.
+
+Therefore:
 
 ```text
-provider attendance assertion
+provider attendance record
 +
 Provenance
 +
-applicable Evidence/reconciliation/Authority policy
+applicable Evidence/reconciliation policy
 ↓
-may establish/support current Actual Participation
+may establish or support Actual Participation
 ```
 
-Canonical rules:
+not:
 
 ```text
-no attendance evidence != proved absence
-provider telemetry != canonical human Participation universally
+provider telemetry = canonical Participation universally
 ```
+
+Canonical rule:
+
+> **No attendance evidence != proved absence, and provider attendance evidence does not bypass Provenance/Authority/reconciliation semantics.**
 
 ---
 
-# 16. Epistemic distinctions
+# 17. Epistemic distinctions
 
-Participation must preserve:
+Participation v0 requires these differences to remain representable:
 
 ```text
 not invited != invited + no response
@@ -378,13 +547,31 @@ removed from expected participants != historically never invited
 unknown Actual Participation != established non-participation
 ```
 
-Simple UI may hide these distinctions; the domain must not destroy them.
+These distinctions may be hidden in simple UI but must not be destroyed by the domain.
 
 ---
 
-# 17. Recurrence / occurrence-specific Participation
+# 18. Partial and interval participation
 
-Series-level participation expectation does not erase occurrence-specific response/state.
+Actual Participation may cover only part of a shared occurrence.
+
+```text
+Event
+10:00–12:00
+
+Luca
+participated 10:35–11:10
+```
+
+Some systems may provide multiple intervals. LifeOS must not create multiple Person identities or multiple Events merely because participation is discontinuous.
+
+The exact interval/segment persistence is deferred.
+
+---
+
+# 19. Recurrence and occurrence-specific Participation
+
+A response to a recurring series and a response to one occurrence need not be identical.
 
 ```text
 weekly meeting series
@@ -394,67 +581,73 @@ occurrence 17
 Anna declines only this one
 ```
 
+Participation v0 requires occurrence-specific state to remain representable without rewriting series-level expectation.
+
 Exact series inheritance/override persistence remains Recurrence/logical-model work.
 
 ---
 
-# 18. Large participant sets and provider incompleteness
+# 20. Large participant sets and incomplete provider representations
 
-External systems may omit/truncate/partially propagate participant data.
+External systems may omit, truncate or partially propagate participant data at scale.
 
 > **Absence from an incomplete provider payload does not establish non-participation or non-invitation.**
 
-Provider completeness is integration/Provenance evidence, not Participation truth.
+Provider completeness is Provenance/integration evidence, not Participation truth.
 
-Avoid materializing a universal social/member graph merely because a large Event exists.
+LifeOS should avoid materializing unnecessary full social/member graphs merely because a large Event exists.
 
 ---
 
-# 19. Multi-actor implications
+# 21. Multi-actor implications
 
-Participation supports, conceptually:
+Participation must support:
 
 - non-LifeOS Persons;
-- one shared object with actor-scoped Participation;
-- different actor responses;
+- one shared Event/Actual with actor-scoped Participation;
+- different responses from different people;
 - invitation without response;
 - response changed over time;
 - accepted but absent;
 - declined but later present;
 - uninvited actual participant;
-- partial/multi-interval participation;
-- on-behalf-of response with truthful attribution;
-- selective Visibility;
-- historical attribution after Account/access changes;
+- partial participation;
+- response submitted on behalf of another Person;
+- selective visibility of participant relation/state;
+- historical attribution after Account changes;
 - conflicting provider/user assertions;
-- Participation without Responsibility and vice versa.
+- participation without Responsibility;
+- Responsibility without actual participation.
 
 No per-actor duplicate Event is required for genuinely shared reality.
 
 ---
 
-# 20. AI boundary
+# 22. AI boundary
 
-AI may suggest likely participants, summarize response state, propose invitations, surface likely mismatches, reconcile evidence candidates, or derive safe aggregates where authorized.
+AI may suggest likely participants, summarize response state, propose invitations, identify likely attendance mismatches, reconcile provider attendance candidates, or derive safe aggregate participation projections where authorized.
 
 AI must not silently:
 
 - establish Participation from social inference;
-- turn Invitation into response;
-- turn `accepted` response into Actual participation;
+- turn an invitation into acceptance;
+- turn acceptance into Actual participation;
 - turn no telemetry into absence;
 - reveal private participation/reasons merely because endpoints are visible;
-- impersonate the participant when responding;
-- fabricate Acknowledgement from telemetry;
-- rewrite response history from later attendance.
+- impersonate the participant when submitting a response;
+- rewrite earlier response history from later attendance.
 
-> **AI may propose or interpret Participation; inference capability does not establish actor intent, Acknowledgement, Actual participation, Authority, or disclosure permission.**
+Canonical rule:
+
+> **AI may propose or interpret Participation; inference capability does not establish actor intent, Actual participation, Authority, or disclosure permission.**
+
+Visibility v0 strengthens this: authorized processing of private participation context does not permit disclosure of that context unless the recipient/output has its own valid Visibility basis.
 
 ---
 
-# 21. Product / UI language
+# 23. Simple UI versus kernel semantics
 
-Low-consequence UI may remain:
+Low-consequence Event UI may remain simple:
 
 ```text
 Going
@@ -469,62 +662,77 @@ Attended
 Didn't attend
 ```
 
-Power-user/specialist views may expose response history, role, Actual interval(s), on-behalf-of attribution, provider/source, reconciliation/conflict and selective Visibility.
+Power-user/specialist views may expose invited by, response history/time, required/optional role, actual interval(s), on-behalf-of response, provider/source, reconciliation/conflict, and selective visibility.
 
-The UI word `Accept` maps here to Participation response only when participation is the real domain question.
+The semantic distinction must not force enterprise wording into casual personal use.
 
 ---
 
-# 22. External benchmark synthesis
+# 24. External benchmark synthesis
 
-External products/standards remain evidence, not design authority.
+External systems are benchmark evidence only.
 
-Recurring useful patterns include separation of attendee identity, participation status, organizer, RSVP/delegation semantics, planned participation and attendance telemetry.
+Useful recurring patterns include iCalendar separating attendee identity/participation status/role/RSVP/delegation; calendar APIs separating organizer from attendee response; meeting platforms maintaining attendance telemetry separately; specialist systems separating planned participation from actual encounter participation; and large-scale calendars exposing incomplete propagation.
 
-LifeOS retains the stronger internal boundary:
+LifeOS adapts the recurring separation of **expected participation, response, and actual involvement** without importing provider-specific enums or treating provider attendance as unquestioned truth.
+
+---
+
+# 25. Adversarial reductio summary
 
 ```text
-expected participation
-!= response
-!= Acknowledgement
-!= Actual involvement
+REMOVE Participation                         FAIL
+Participant = Person subtype/entity          FAIL
+Participation = attendee list                FAIL
+Participation = response                     FAIL
+Participation = Actual                       FAIL
+Participation = Session                      FAIL
+Participation = performer                    FAIL
+Participation = Responsibility               FAIL
+Participation = Resource                     FAIL
+universal membership/member relation         FAIL
+specific Participation relation family       PASS WITH HARDENING
 ```
-
-without importing provider-specific enums as kernel truth.
 
 ---
 
-# 23. Core invariants
+# 26. Core invariants
 
-1. **Participation is a contextual specific relation family, not native entity/root.**
-2. **Participant is contextual role over native identity.**
-3. **Expected/intended/response and Actual Participation are distinct facets.**
-4. **Invitation is proposal/request semantics, not standalone universal primitive.**
-5. **Invitation != Acknowledgement != Participation response != Actual Participation.**
-6. **`accepted` is Participation-response semantics, not a universal Acceptance primitive.**
+1. **Participation is a contextual specific semantic relation family, not a native entity/root.**
+2. **Participant is a contextual role over native identity, not a Person subtype/root.**
+3. **Participation may represent expected/intended involvement and Actual involvement as distinct facets.**
+4. **Intended/response Participation != Actual Participation.**
+5. **Invitation is a participation proposal/request, not Actual participation or Acceptance.**
+6. **Participation response != Actual participation.**
 7. **Accepted != attended.**
-8. **Declined != proved absence.**
+8. **Declined != proven absence.**
 9. **No response != declined.**
 10. **No attendance evidence != proved absence.**
 11. **Event identity != participant set/state.**
-12. **Participation != Session/shared Actual/performer/Responsibility/Resource/organizer/requester.**
-13. **Participation != Authority/Visibility.**
-14. **Response Actor/Principal may differ from participant identity.**
-15. **Provider telemetry does not automatically establish canonical Participation.**
-16. **Partial/multi-interval involvement must not duplicate Event/Person identity.**
-17. **Later Actual participation does not rewrite earlier response history.**
-18. **Series-level participation does not erase occurrence-specific exceptions.**
-19. **Specific actor roles take precedence where semantically narrower.**
-20. **AI inference does not establish response, Acknowledgement, Actual attendance, Authority or disclosure permission.**
-21. **No universal Participant/Participation/member/social-graph root is pre-approved.**
+12. **Participation != Session.**
+13. **Shared Event Actual != identical actor-specific Participation.**
+14. **Participation != performer.**
+15. **Participation != Responsibility.**
+16. **Participation != Resource.**
+17. **Participation != organizer/requester.**
+18. **Participation != Authority or Visibility.**
+19. **Response Actor/Principal may differ from participant identity.**
+20. **Provider attendance telemetry does not automatically establish canonical human Participation.**
+21. **Partial/multi-interval actual involvement must not create duplicate Event/Person identity.**
+22. **Later Actual participation does not rewrite earlier response history.**
+23. **Series-level participation does not erase occurrence-specific exceptions.**
+24. **Specific actor roles take precedence over generic Participation when the narrower role is the real semantic question.**
+25. **AI inference does not establish Participation, response, Actual attendance, Authority or disclosure permission.**
+26. **No universal Participant/Participation root/table/member graph is pre-approved.**
+27. **Participation grants neither Visibility nor Authority to re-disclose by itself.**
 
 ---
 
-# 24. Relationship v0 compatibility
+# 27. Relationship v0 compatibility
 
 ```text
 simple expected involvement
-→ direct specific Participation relation may suffice
+→ direct specific participation relation may suffice
 
 material response/history/role/privacy semantics
 → specific qualified Participation context may be justified
@@ -533,102 +741,106 @@ Actual involvement
 → independently representable Participation facet/context
 
 universal Relationship wrapper
-→ unnecessary
+→ still unnecessary
 ```
 
-Qualified structure does not automatically imply independent native entity identity.
+The logical model may later choose one aggregate/record containing intended and Actual facets when it preserves their independent semantics. Participation v0 does not require two tables or two entity identities.
 
 ---
 
-# 25. Persistence/API implications — not physical design
+# 28. Persistence/API implications — deliberately not physical design
 
-Future logical modeling must support equivalent semantics where justified for:
+Future logical modeling must support, where justified:
 
 - native participant reference;
-- expected/intended state separate from Actual participation;
+- expected/intended participation separate from Actual participation;
 - invitation/proposal source;
-- actor-scoped response/history;
-- Actual state/interval(s);
-- occurrence-specific overrides;
+- actor-scoped response and response history;
+- actual participation state and optional interval(s);
+- occurrence-specific overrides for recurrence;
 - response Actor/Account/Principal separate from participant;
-- Provenance/provider reconciliation;
+- Provenance/provider mapping and reconciliation;
 - explicit unknown versus established non-participation;
-- selective Visibility;
-- Acknowledgement separation;
+- selective visibility;
 - direct simple versus richer qualified representation.
 
-Do not infer a universal participants/participations table, one status enum, Invitation entity, Attendance entity, one Session per attendee, participant=User/Account, or provider attendee vocabulary as ontology.
+Do not infer universal participants/participations roots, one status enum, Invitation entity, Attendance entity, one Session per attendee, participant=Account/User, provider attendee/resource ontology, response=Actual attendance, telemetry=canonical truth, or universal membership graph.
 
 ---
 
-# 26. Adjacent Dependency Sweep
+# 29. Adjacent Dependency Sweep
 
-## RESOLVED
+## RESOLVED NOW
 
 - Participation ↔ Event: Event identity independent from participant set/response/Actual involvement.
-- Participation ↔ Person/Actor/Account: contextual role; Account not required; response Actor may differ.
-- Participation ↔ Session: attendance does not require Session.
-- Participation ↔ Actual: shared Actual != actor-scoped Actual Participation.
-- Participation ↔ Invitation: proposal/request semantics; no universal primitive.
-- Participation ↔ response: response/intention != Actual involvement.
-- Participation ↔ Attendance: Event-facing Actual Participation; no universal primitive.
-- Participation ↔ performer: narrower execution role != generic involvement.
+- Participation ↔ Person/Actor/Account: contextual role; Account not required; response Actor/Principal may differ.
+- Participation ↔ Session: attendance/Actual involvement does not require Session.
+- Participation ↔ Actual: shared Event Actual distinct from actor-scoped Actual Participation.
+- Participation ↔ Invitation: participation proposal/request semantics, no universal primitive.
+- Participation ↔ response: response/intention distinct from Actual participation.
+- Participation ↔ Attendance: Event-facing Actual Participation semantics, no universal primitive.
+- Participation ↔ Performer: narrower execution role != generic involvement.
 - Participation ↔ Responsibility: involvement != accountability.
 - Participation ↔ Resource: eligibility/allocation != involvement.
-- Participation ↔ organizer/requester: organizing/requesting != participation.
-- Participation ↔ Authority: involvement creates no governance power.
-- Participation ↔ Visibility: involvement creates no universal exposure.
-- Participation ↔ Acknowledgement: explicit taking-notice != participation response.
-- Participation ↔ generic Acceptance: universal primitive rejected; `accepted` remains Participation response.
+- Participation ↔ organizer/requester: organizing/requesting != involvement.
+- Participation ↔ Authority: governance separately owned.
+- Participation ↔ Visibility: exposure separately owned.
 
 ## SAFE DEFERRED
+
+### Acceptance / Acknowledgement
+
+**Owner:** Relationships / Reasoning — collaboration-state review.  
+**Why safe:** Participation response is bounded without equating it with generic Acceptance/Acknowledgement across domains.  
+**Reopening trigger:** invitation/response cannot compose with future common-ground model without changing Participation meaning.  
+**Tests to rerun:** CORE-02, CORE-04, MA-05, MA-11, XCON-04, XCON-05.
 
 ### Participant role taxonomy
 
 **Owner:** product/specialist relationship review.  
-**Why safe:** specific roles can coexist without one universal enum.  
+**Why safe:** specific roles may coexist without one universal enum.  
 **Reopening trigger:** ordinary cross-domain workflows require stable shared role ontology changing Participation boundaries.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-12, XCON-04, XCON-06.
 
-### Group / collective participation
+### Group / collective invitation or participation
 
-**Owner:** collective/group review.  
-**Why safe:** current native-referent semantics do not require inventing Group identity.  
-**Reopening trigger:** ordinary workflows require one collective Participation identity not decomposable into referents.  
+**Owner:** collective/group actor review.  
+**Why safe:** current native-referent semantics do not require inventing Team identity.  
+**Reopening trigger:** common workflows require one collective Participation identity not decomposable into referents.  
 **Tests to rerun:** CORE-04, CORE-06, MA-01, MA-03, XCON-01, XCON-04.
 
 ### Delegation / on-behalf-of
 
 **Owner:** Principal/Authority/delegation review.  
-**Why safe:** participant identity and response Actor are already distinct.  
-**Reopening trigger:** response provenance/agency cannot be represented without changing Participation.  
+**Why safe:** participant identity and response Actor already separated.  
+**Reopening trigger:** response Provenance/agency cannot be represented without changing Participation.  
 **Tests to rerun:** MA-01, MA-06, MA-10, MA-13, MA-17, XCON-02.
 
 ### Recurring-series Participation
 
 **Owner:** Recurrence + logical model.  
-**Why safe:** series baseline and occurrence overrides remain separable.  
-**Reopening trigger:** occurrence-specific participation cannot override series expectation without identity/history loss.  
+**Why safe:** series baseline and occurrence override semantics preserved conceptually.  
+**Reopening trigger:** occurrence-specific Participation cannot override series expectations without identity/history loss.  
 **Tests to rerun:** CORE-02, XCON-03, XCON-04, CL-02, CL-06.
 
-### Provider attendance reconciliation
+### Provider attendance reconciliation / evidence threshold
 
 **Owner:** Provenance/Authority/Decision + Integration logical model.  
-**Why safe:** telemetry is Evidence/Provenance, not automatic truth.  
+**Why safe:** telemetry explicitly Evidence, not automatic canonical Participation.  
 **Reopening trigger:** provider facts cannot establish/correct Actual Participation without altering Participation semantics.  
 **Tests to rerun:** CORE-09, MA-10, MA-12, XCON-03, XCON-05.
 
 ### Retention / deletion
 
 **Owner:** privacy/retention review.  
-**Why safe:** Participation Visibility and history are separable.  
-**Reopening trigger:** deletion/revocation requires per-user duplicate truth or destructive history rewrite.  
+**Why safe:** Participation Visibility and history already separable.  
+**Reopening trigger:** deletion/revocation requires per-user duplicate reality or destructive history rewrite.  
 **Tests to rerun:** MA-07, MA-08, MA-11, XCON-05.
 
 ### Exact qualified Participation identity / persistence
 
 **Owner:** logical data model.  
-**Why safe:** semantic facets are fixed without pre-approving table/entity identity.  
+**Why safe:** semantic facets fixed without pre-approving table/entity identity.  
 **Reopening trigger:** persistence cannot preserve response/Actual/history/interval semantics under direct/qualified modeling.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
@@ -639,40 +851,107 @@ unclassified material items    0
 
 ---
 
-# 27. Rejected alternatives
+# 30. Rejected alternatives
 
 Rejected:
 
 - universal Participant entity/root;
 - universal Participation/member/social-graph root;
-- one Event `participants` list as complete truth;
+- one Event `participants` list as complete Participation truth;
 - Participation = response;
 - response = Actual attendance;
 - accepted = attended;
-- generic Acceptance root above Participation response;
 - declined = proved absent;
 - no response = declined;
 - no telemetry = proved absence;
 - Participation = Session/Event Actual/performer/Responsibility/Resource;
 - organizer = participant;
-- provider attendee/resource vocabulary as ontology;
+- resource attendee/provider vocabulary as ontology;
 - provider telemetry as universally authoritative truth;
 - retroactive response rewrite from attendance;
-- Invitation universal primitive;
-- Attendance universal primitive.
+- Invitation as standalone universal primitive;
+- Attendance as standalone universal primitive.
 
 ---
 
-# 28. Reopening triggers
+# 31. Deliberately deferred questions
+
+- generic Acceptance/Acknowledgement relationship to Participation response;
+- on-behalf-of/delegated response semantics;
+- participant role taxonomy;
+- collective/group participation;
+- recurring-series participation inheritance/override;
+- exact evidence/Authority threshold for established Actual Participation;
+- retention/deletion/privacy lifecycle;
+- exact qualified Participation identity/cardinality/persistence;
+- specialist interaction/encounter extensions;
+- final API/SQL representation.
+
+Authority and Visibility are no longer deferred at the semantic-boundary level; detailed policy/enforcement/persistence remains separately owned.
+
+---
+
+# 32. Reopening triggers
 
 Reopen Participation v0 if later evidence shows that:
 
 1. intended/response and Actual involvement cannot remain distinct without a materially different model;
-2. a stronger future common-ground model makes Participation response redundant or misplaced;
-3. Authority/Visibility/Acknowledgement cannot remain external to Participation;
-4. collective/group participation changes the relation-family identity;
+2. generic Acceptance/Acknowledgement semantics require response to move outside Participation entirely;
+3. Authority/Visibility cannot remain external to Participation;
+4. collective/group participation requires native identity semantics changing the relation family;
 5. Event/Session/Actual integration cannot preserve actor-scoped intervals without duplication;
 6. provider reconciliation consistently requires a different truth model;
 7. logical persistence cannot represent simple/direct and rich/qualified cases without contradiction.
 
 Until stronger evidence appears, Participation remains the current accepted **specific semantic relation family** for intended and Actual involvement, with their histories kept distinct.
+
+---
+
+# 2026-08-12 — Acknowledgement / generic Acceptance closure amendment
+
+Acknowledgement v0 resolves the common-ground dependency that Participation v0 intentionally left open.
+
+```text
+Acknowledgement
+= explicit actor-scoped taking-notice of a specific target/material version/change/request
+
+Acknowledgement != Participation response
+```
+
+Therefore the response sequence can be represented without collapsing states:
+
+```text
+Invitation
+!= delivered/read
+!= Acknowledgement
+!= Participation response
+!= Actual Participation
+```
+
+`accepted` inside Participation remains **Participation-response semantics**. The later common-ground review tested generic cross-domain `Acceptance` and rejected it as a standalone kernel primitive.
+
+Examples:
+
+```text
+acknowledge changed Event time
++
+decline Participation
+```
+
+and:
+
+```text
+accepted Participation
+→ later no-show
+```
+
+remain independently truthful.
+
+The historical `Acceptance / Acknowledgement` SAFE DEFERRED item is now downstream-closed as:
+
+```text
+Participation ↔ Acknowledgement     RESOLVED
+Participation ↔ generic Acceptance  RESOLVED — universal primitive rejected
+```
+
+Agreement/Consent, detailed delegation/on-behalf-of, Decision/effective change, collective semantics, provider reconciliation and persistence remain separately owned dependencies. No Participation reopening is required.
