@@ -7,27 +7,27 @@
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
+> **Historical checkpoint note:** this document preserves the Participation v0 validation result at the time it was made. Later common-ground decisions are recorded only as downstream closures in section 15.
+
 ## 1. Scope
 
-- **Primary candidate:** Participation
-- **Family reviewed together:** Participation / Participant / Invitation / Participation Response / Attendance / planned-intended participation / Actual participation
-- **Why reviewed as one family:** calendar/product language often collapses invitation, attendee response, presence and membership into one `participant`/`status` shape. Reviewing the nouns separately first would risk manufacturing several primitives before proving their semantic independence.
-- **Inherited pressure:** Event state vs participant response vs attendance; Session != Event attendance; shared Actual != actor-specific participation; Actor specific-role precedence; Responsibility/Resource separation; Relationship v0 direct-vs-qualified discipline.
+- **Primary candidate:** Participation.
+- **Family reviewed together:** Participation / Participant / Invitation / Participation Response / Attendance / planned-intended Participation / Actual Participation.
+- **Why one family:** calendar/product vocabulary often collapses invitation, response, presence and membership into one attendee/status shape; the review tested the family before manufacturing primitives.
+- **Inherited pressure:** Event state vs response vs attendance; Session != Event attendance; shared Actual != actor-specific Participation; Actor specific-role precedence; Responsibility/Resource separation; Relationship v0 discipline.
 
-This checkpoint validates Participation as a **specific semantic relation family**. It does not select final SQL/API/cardinality, create a universal Participant/Participation root, accept Invitation or Attendance as standalone universal primitives, or establish a universal participation-status enum.
+This checkpoint validates Participation as a **specific semantic relation family**. It does not select final SQL/API/cardinality, create a universal Participant/Participation root, accept Invitation or Attendance as standalone primitives, or establish one participation-status enum.
 
 ---
 
 # 2. Candidate conclusion
 
-> **Participation is the contextual semantic relation family through which a native referent is represented as expected or intended to be involved, or as actually involved, in a bounded shared occurrence or interaction context. Intended/response participation and Actual participation are distinct semantic facets and may differ in state, time, role, provenance, authority and visibility. Participation does not create referent identity and does not by itself imply Responsibility, performance, organization, Authority, Visibility, Resource allocation, or Account identity.**
-
-Current classification:
+> **Participation is the contextual semantic relation family through which a native referent is represented as expected or intended to be involved, or as actually involved, in a bounded shared occurrence or interaction context. Intended/response Participation and Actual Participation are distinct semantic facets and may differ in state, time, role, Provenance, Authority and Visibility.**
 
 ```text
 PARTICIPATION
 CANONICAL SPECIFIC SEMANTIC RELATION FAMILY
-may be direct or specifically qualified depending on consequence
+may be direct or specifically qualified
 NOT native entity/root
 
 PARTICIPANT
@@ -40,44 +40,22 @@ NOT standalone universal primitive
 
 PARTICIPATION RESPONSE
 actor-scoped intended/response state
-NOT Actual participation
+NOT Actual Participation
 
 ATTENDANCE
 Event-facing Actual Participation semantics
 NOT standalone universal primitive
-
-PLANNED / INTENDED PARTICIPATION
-!=
-ACTUAL PARTICIPATION
 ```
 
 ---
 
 # 3. Evidence reviewed
 
-## Internal
+Internal evidence included Event, Session, Actual, Actor, Responsibility, Resource, Relationship v0, Multi-Actor Readiness v1, evidence synthesis and social/work/care/meeting/shift/recurring scenarios.
 
-- Event v0, especially `Event state != participant response != actual attendance`;
-- Session v0, especially Event attendance not requiring Session;
-- Actual v0, especially shared Actual != actor-specific participation;
-- Actor v0 and specific-role precedence;
-- Responsibility v0;
-- Resource v0;
-- Multi-Actor Readiness v1 and evidence synthesis;
-- Relationship v0 validation;
-- personal, household, social, work, care, meeting, shift, webinar and recurring-event scenarios.
+External products/standards were benchmark evidence only. Recurring patterns included attendee identity separate from response/role/delegation, organizer separate from attendee response, attendance telemetry separate from invitation response, planned appointment participation separate from actual encounter participation, and incomplete attendee propagation at provider scale.
 
-## External benchmark patterns
-
-External systems were used as evidence, not schemas to copy. Recurring useful patterns included:
-
-- iCalendar separating attendee identity, participation status, role, RSVP and delegation/sent-by semantics;
-- calendar APIs separating organizer from attendee response state;
-- meeting systems maintaining actual attendance intervals separately from invitation response;
-- specialist interaction systems distinguishing planned appointment participation from actual encounter participation;
-- large-calendar provider behavior showing attendee representations may be incomplete or selectively propagated at scale.
-
-Provider enums/terminology are not LifeOS invariants.
+Provider enums remain non-authoritative for LifeOS ontology.
 
 ---
 
@@ -85,19 +63,19 @@ Provider enums/terminology are not LifeOS invariants.
 
 | Test ID | Result | Finding |
 |---|---|---|
-| CORE-01 Workflow inversion | PASS | Real workflows need actor-scoped expected and actual involvement distinct from Event identity. |
-| CORE-02 Deep chronology | PASS WITH HARDENING | invitation → response → changed response → actual presence/absence/partial presence must remain historically separable. |
-| CORE-03 Reductio | PASS | attendee list, response, Session, Actual, performer, Responsibility and Resource each fail as Participation replacement. |
-| CORE-04 Redundancy / merge-split | PASS WITH HARDENING | Participation survives; Participant is role; Invitation/Attendance do not justify universal standalone primitives. |
-| CORE-05 Traceability | PASS | invitation/response/intended/Actual involvement remains reconstructable without duplicate Event/Person. |
-| CORE-06 Orphan / independence | PASS | Participation is contextual relation semantics, not native identity; rich qualified form does not automatically imply entity identity. |
-| CORE-07 External benchmark | PASS | Mature systems repeatedly distinguish planned response from actual attendance/involvement. |
-| CORE-08 Anti-pattern | PASS | universal member/attendee/status/social graph and one-Session-per-attendee are rejected. |
-| CORE-09 Correction / epistemic integrity | PASS WITH HARDENING | no response != declined; no telemetry != absence; later attendance does not rewrite earlier response. |
-| CORE-10 Scale/history | PASS WITH HARDENING | incomplete provider participant payloads must not become negative facts; no full social graph required. |
-| CORE-11 Simple vs power user | PASS | casual UI may remain Going/Maybe/Can't go and Attended/Didn't attend. |
-| CORE-12 Product value/complexity | PASS | richer states remain progressive and consequence-driven. |
-| CORE-13 Implementation pressure | PASS WITH HARDENING | direct simple vs specific qualified Participation allowed; exact physical representation deferred. |
+| CORE-01 Workflow inversion | PASS | real workflows need actor-scoped expected and Actual involvement distinct from Event identity |
+| CORE-02 Deep chronology | PASS WITH HARDENING | invitation → response changes → Actual partial/absence history stays separable |
+| CORE-03 Reductio | PASS | attendee list/response/Session/Actual/performer/Responsibility/Resource fail as replacement |
+| CORE-04 Redundancy / merge-split | PASS WITH HARDENING | Participation survives; Participant is role; Invitation/Attendance no universal roots |
+| CORE-05 Traceability | PASS | invitation/response/Actual reconstructible without duplicate Event/Person |
+| CORE-06 Orphan / independence | PASS | contextual relation semantics, not native identity |
+| CORE-07 External benchmark | PASS | mature systems distinguish planned response from Actual involvement |
+| CORE-08 Anti-pattern | PASS | universal member/status/social graph and one-Session-per-attendee rejected |
+| CORE-09 Correction / epistemic integrity | PASS WITH HARDENING | no response != declined; no telemetry != absence; Actual does not rewrite response |
+| CORE-10 Scale/history | PASS WITH HARDENING | incomplete provider payload != negative fact; no full social graph required |
+| CORE-11 Simple vs power user | PASS | Going/Maybe/Can't go and Attended/Didn't attend can remain simple UI |
+| CORE-12 Product value/cost | PASS | richer states remain progressive/consequence-driven |
+| CORE-13 Implementation pressure | PASS WITH HARDENING | direct vs qualified relation allowed; physical shape deferred |
 
 **Core Gate:** PASS WITH HARDENING.
 
@@ -105,31 +83,29 @@ Provider enums/terminology are not LifeOS invariants.
 
 # 5. Deep chronology stress
 
-Representative chronology:
-
 ```text
-T0  Anna invited
-T1  Anna has not responded
-T2  Anna accepts
-T3  Anna later changes response to tentative
-T4  Event occurs
-T5  Anna participates only 10:30–11:15
-T6  provider reports 10:25–11:20
-T7  Anna corrects/disputes provider timing
-T8  later historical query
+T0 Anna invited
+T1 no response
+T2 accepts
+T3 changes to tentative
+T4 Event occurs
+T5 Anna participates 10:30–11:15
+T6 provider reports 10:25–11:20
+T7 Anna disputes/corrects provider timing
+T8 later historical query
 ```
 
 Required truths:
 
-- invitation does not establish acceptance;
-- no response does not establish decline;
-- response history remains historical intent/stance;
-- actual participation is distinct from response;
-- partial actual participation is valid;
-- provider telemetry is evidence/provenance, not unquestioned canonical truth;
-- Event identity survives all ordinary participant changes.
+```text
+Invitation != response
+no response != decline
+response history != Actual involvement
+provider telemetry = Evidence/Provenance, not unquestioned truth
+Event identity survives ordinary participant changes
+```
 
-Counter-chronologies also remain valid:
+Also valid:
 
 ```text
 declined → later attends
@@ -143,109 +119,34 @@ No retroactive fabricated invitation/response is created from later reality.
 
 # 6. Reductio / candidate elimination
 
-## Participant = Person subtype/entity
-
-Contextual involvement becomes native identity.
-
-**Result:** REJECTED.
-
-## Participation = Event attendee list
-
-Invitation/response/history/Actual involvement collapse.
-
-**Result:** REJECTED.
-
-## Participation = response
-
-Accepted/declined cannot represent Actual involvement.
-
-**Result:** REJECTED.
-
-## Participation = Event Actual
-
-Shared occurrence reality and actor-scoped involvement collapse.
-
-**Result:** REJECTED.
-
-## Participation = Session
-
-Attendance creates redundant execution episodes and breaks Session semantics.
-
-**Result:** REJECTED.
-
-## Participation = performer
-
-Non-performing attendees/listeners/audience cases fail.
-
-**Result:** REJECTED.
-
-## Participation = Responsibility
-
-Involvement becomes accountability.
-
-**Result:** REJECTED.
-
-## Participation = Resource
-
-Eligibility/bookability becomes involvement.
-
-**Result:** REJECTED.
-
-## Universal member/membership/social graph
-
-Bounded participation is confused with long-lived membership/social relationship.
-
-**Result:** REJECTED.
-
-## Participation as specific relation family
-
-Expected/intended/response and Actual facets remain distinct around one shared context.
-
-**Result:** PASS WITH HARDENING.
+```text
+Participant = Person subtype/entity            REJECTED
+Participation = attendee list                  REJECTED
+Participation = response                       REJECTED
+Participation = shared Event Actual            REJECTED
+Participation = Session                        REJECTED
+Participation = performer                      REJECTED
+Participation = Responsibility                 REJECTED
+Participation = Resource                       REJECTED
+universal membership/social graph             REJECTED
+specific Participation relation family        PASS WITH HARDENING
+```
 
 ---
 
 # 7. Key hardenings
 
-## 7.1 Response/intention != Actual participation
-
 ```text
 accepted != attended
 declined != proved absent
 no response != declined
+no attendance evidence != proved non-participation
+Invitation does not create response/Actual truth
+Participant is role, not identity
+Attendance = Event-facing Actual Participation, not universal primitive
+specific actor role > generic Participation where narrower semantics matter
+qualified relation != entity automatically
 ```
-
-Later actual reality does not rewrite earlier response history.
-
-## 7.2 No evidence != established absence
-
-```text
-no attendance telemetry
-!=
-proved non-participation
-```
-
-Evidence completeness/authority matters.
-
-## 7.3 Invitation does not create Participation truth
-
-Invitation is a proposal/request for intended involvement; it does not establish response or Actual participation.
-
-## 7.4 Participant is a role, not an identity
-
-No `Participant` wrapper/root is justified. Native referent identity remains authoritative.
-
-## 7.5 Attendance is Event-facing Actual Participation
-
-Attendance is not a universal separate primitive and does not require Session by default.
-
-## 7.6 Specific-role precedence survives
-
-Where the real semantic question is performer, recorder, confirmer, responsible actor, organizer, etc., use that specific role rather than generic Participation.
-
-## 7.7 Qualified relation != entity automatically
-
-Rich Participation may need response history, role, interval, provenance and privacy without proving a universal independent Participation identity/root.
 
 ---
 
@@ -253,26 +154,26 @@ Rich Participation may need response history, role, interval, provenance and pri
 
 | Test ID | Result | Finding |
 |---|---|---|
-| MA-01 Identity/account independence | PASS | Accountless Person can participate; Account lifecycle does not erase historical Participation. |
-| MA-02 Shared fact / actor overlay | PASS | one shared Event/Actual supports separate actor-scoped Participation. |
-| MA-03 Responsibility/assignment/claim | PASS | involvement remains distinct from accountability/role assignment. |
-| MA-04 Stewardship/mental load | PASS | participation does not imply coordination burden. |
-| MA-05 Common-ground states | PASS WITH HARDENING | invitation/delivery/response/acceptance/Actual involvement cannot be one universal state. |
-| MA-06 Authority/canonical change | PASS WITH HARDENING | Participation grants no Authority; delegated response remains contextual. |
-| MA-07 Selective disclosure | PASS WITH HARDENING | endpoint visibility != participation/response/attendance visibility. |
-| MA-08 Inference privacy | PASS WITH HARDENING | AI/social inference does not establish/disclose Participation. |
-| MA-09 Partial adoption | PASS | non-LifeOS Persons are ordinary participants. |
-| MA-10 Assisted participation/provenance | PASS WITH HARDENING | participant may differ from response Actor/Account/Principal. |
-| MA-11 Lifecycle/revocation | PASS WITH HARDENING | response/participation changes preserve material history. |
-| MA-12 Conflict/adversarial | PASS WITH HARDENING | provider/user participation assertions may remain unresolved pending reconciliation. |
-| MA-13 Unequal power | PASS WITH HARDENING | on-behalf-of/guardian/manager response requires contextual Authority, not universal assumptions. |
-| MA-14 Multi-resource/capacity | PASS | resource booking/capacity remains separate from participation. |
-| MA-15 Coordination burden | PASS | attendance/involvement does not establish stewardship. |
-| MA-16 Formality/progressive disclosure | PASS | simple participation UI remains possible. |
-| MA-17 AI authority | PASS WITH HARDENING | AI may propose/infer but does not establish response/attendance/Authority. |
-| MA-18 Specialist boundary | PASS | specialist encounter/attendance models remain adapters/extensions. |
-| MA-19 Primitive redundancy | PASS | Invitation/Attendance/Participant roots do not survive. |
-| MA-20 Actor-scoped reality attribution | PASS | shared Actual and actor-specific Actual Participation remain distinct. |
+| MA-01 | PASS | Accountless Person can participate |
+| MA-02 | PASS | one shared Event/Actual supports actor-scoped Participation |
+| MA-03 | PASS | involvement != accountability |
+| MA-04 | PASS | participation != Stewardship burden |
+| MA-05 | PASS WITH HARDENING | invitation/delivery/response/Acceptance/Actual cannot be one status |
+| MA-06 | PASS WITH HARDENING | Participation grants no Authority |
+| MA-07 | PASS WITH HARDENING | endpoints visible != Participation/response visible |
+| MA-08 | PASS WITH HARDENING | AI/social inference != Participation truth |
+| MA-09 | PASS | non-LifeOS Persons ordinary |
+| MA-10 | PASS WITH HARDENING | participant may differ from response Actor/Principal |
+| MA-11 | PASS WITH HARDENING | response/history preserved through changes/revocation |
+| MA-12 | PASS WITH HARDENING | provider/user conflict may remain unresolved |
+| MA-13 | PASS WITH HARDENING | on-behalf-of response requires contextual Authority |
+| MA-14 | PASS | Resource booking/Capacity separate |
+| MA-15 | PASS | involvement != coordination burden |
+| MA-16 | PASS | simple Participation UI remains possible |
+| MA-17 | PASS WITH HARDENING | AI may propose/infer but not establish response/attendance/Authority |
+| MA-18 | PASS | specialist encounter models remain adapters/extensions |
+| MA-19 | PASS | Invitation/Attendance/Participant roots do not survive |
+| MA-20 | PASS | shared Actual != actor-specific Actual Participation |
 
 **Multi-Actor Gate:** PASS WITH HARDENING.
 
@@ -289,105 +190,91 @@ XCON-05 Multi-actor                        PASS WITH HARDENING
 XCON-06 Language                           PASS
 ```
 
-No accepted Cluster 1–4 concept requires structural reopening.
-
-Event is strengthened: participant state remains independent from Event identity/state.
-
-Session is strengthened: attendance does not require Session by default.
-
-Actual is strengthened: shared Actual remains distinct from actor-scoped Actual Participation.
-
-Actor is strengthened: Participant is another specific contextual role, not Actor identity.
-
-Responsibility is strengthened: involvement != accountability.
-
-Resource is strengthened: eligibility/allocation != participation.
-
-Relationship v0 is confirmed again: direct/simple and richer qualified Participation can coexist without a universal Relationship root.
+No Cluster 1–4 concept required structural reopening.
 
 ---
 
-# 10. Adjacent Dependency Sweep
+# 10. Adjacent Dependency Sweep at validation time
 
 ## RESOLVED
 
 | Boundary | Resolution |
 |---|---|
 | Participation ↔ Event | Event identity independent from participant set/response/Actual involvement |
-| Participation ↔ Person/Actor/Account | Participant is contextual role over native identity; Account not required |
-| Participation ↔ Session | attendance/Actual involvement does not require Session |
+| Participation ↔ Person/Actor/Account | contextual role; Account not required |
+| Participation ↔ Session | attendance does not require Session |
 | Participation ↔ Actual | shared Actual != actor-scoped Actual Participation |
-| Participation ↔ Invitation | participation proposal/request; no universal standalone primitive |
-| Participation ↔ response | response/intention != Actual participation |
-| Participation ↔ Attendance | Event-facing Actual Participation; no universal standalone primitive |
+| Participation ↔ Invitation | proposal/request; no universal primitive |
+| Participation ↔ response | response/intention != Actual involvement |
+| Participation ↔ Attendance | Event-facing Actual Participation; no universal primitive |
 | Participation ↔ performer | narrower execution role != generic involvement |
 | Participation ↔ Responsibility | involvement != accountability |
 | Participation ↔ Resource | eligibility/allocation != involvement |
-| Participation ↔ organizer/requester | organizing/requesting != participation |
+| Participation ↔ organizer/requester | organizing/requesting != involvement |
 
-## SAFE DEFERRED
+## SAFE DEFERRED at validation time
 
 ### Acceptance / Acknowledgement
 
 **Owner:** collaboration-state review.  
-**Safe because:** Participation response is bounded without claiming a universal Acceptance/Acknowledgement model.  
-**Reopening trigger:** invitation/response cannot compose with common-ground semantics without changing Participation meaning.  
+**Why safe:** response bounded without universal Acceptance/Acknowledgement model.  
+**Reopening trigger:** invitation/response cannot compose with common-ground semantics without changing Participation.  
 **Rerun:** CORE-02, CORE-04, MA-05, MA-11, XCON-04, XCON-05.
 
 ### Authority / Visibility
 
 **Owner:** Authority/Visibility review.  
-**Safe because:** Participation explicitly grants neither.  
-**Reopening trigger:** participation state/access cannot be governed without making permission intrinsic to Participation.  
+**Why safe:** Participation grants neither.  
+**Reopening trigger:** response/access cannot be governed without making permission intrinsic to Participation.  
 **Rerun:** MA-06, MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Participant role taxonomy
 
 **Owner:** product/specialist relationship review.  
-**Safe because:** specific roles can remain contextual without one universal enum.  
-**Reopening trigger:** ordinary cross-domain workflows require a stable shared role ontology that changes Participation boundaries.  
+**Why safe:** specific roles remain contextual without universal enum.  
+**Trigger:** ordinary cross-domain workflows require stable shared role ontology changing Participation boundaries.  
 **Rerun:** CORE-03, CORE-04, CORE-12, XCON-04, XCON-06.
 
 ### Group / collective Participation
 
-**Owner:** collective/group actor review.  
-**Safe because:** no Team/group native identity is required by current cases.  
-**Reopening trigger:** common workflows require one collective Participation identity not decomposable into native referents.  
+**Owner:** collective/group review.  
+**Why safe:** current cases require no Group native identity.  
+**Trigger:** one collective Participation identity becomes non-decomposable.  
 **Rerun:** CORE-04, CORE-06, MA-01, MA-03, XCON-01, XCON-04.
 
 ### Delegation / on-behalf-of response
 
-**Owner:** Principal/Authority/delegation review.  
-**Safe because:** participant identity and response Actor are already separated.  
-**Reopening trigger:** response agency/provenance cannot be represented without changing Participation.  
+**Owner:** Principal/Authority/delegation.  
+**Why safe:** participant identity and response Actor already separate.  
+**Trigger:** response agency/Provenance cannot be represented without changing Participation.  
 **Rerun:** MA-01, MA-06, MA-10, MA-13, MA-17, XCON-02.
 
 ### Recurring-series Participation
 
 **Owner:** Recurrence + logical model.  
-**Safe because:** series expectation and occurrence override are conceptually separable now.  
-**Reopening trigger:** occurrence-specific participation cannot override series baseline without history/identity loss.  
+**Why safe:** series expectation and occurrence override separable.  
+**Trigger:** occurrence-specific state cannot override series baseline without history loss.  
 **Rerun:** CORE-02, XCON-03, XCON-04, CL-02, CL-06.
 
-### Provider attendance reconciliation / evidence threshold
+### Provider attendance reconciliation
 
-**Owner:** Provenance/Authority/Decision + Integration logical model.  
-**Safe because:** telemetry is explicitly evidence rather than automatic canonical truth.  
-**Reopening trigger:** provider facts cannot establish/correct Actual Participation without changing Participation semantics.  
+**Owner:** Provenance/Authority/Decision + Integration.  
+**Why safe:** telemetry = evidence, not automatic truth.  
+**Trigger:** provider facts cannot establish/correct Actual Participation without semantic change.  
 **Rerun:** CORE-09, MA-10, MA-12, XCON-03, XCON-05.
 
 ### Retention / deletion
 
-**Owner:** privacy/retention review.  
-**Safe because:** relation visibility/history are already separable from endpoints.  
-**Reopening trigger:** deletion/revocation requires per-user duplicate Event reality or destructive history rewriting.  
+**Owner:** privacy/retention.  
+**Why safe:** relation Visibility/history separate from endpoints.  
+**Trigger:** deletion/revocation forces duplicate Event truth or destructive rewrite.  
 **Rerun:** MA-07, MA-08, MA-11, XCON-05.
 
-### Qualified Participation identity / persistence
+### Qualified Participation persistence
 
 **Owner:** logical data model.  
-**Safe because:** semantic facets are fixed without claiming universal independent entity identity.  
-**Reopening trigger:** persistence cannot preserve response/Actual/history/interval semantics under direct/qualified modeling.  
+**Why safe:** semantic facets fixed without entity commitment.  
+**Trigger:** persistence cannot preserve response/Actual/history/interval semantics.  
 **Rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
 ```text
@@ -399,28 +286,18 @@ unclassified material items    0
 
 # 11. Relationship v0 regression
 
-The second major relation-family stress does **not** reopen Relationship v0.
+Participation did not reopen Relationship v0.
 
 ```text
-simple case
-Event --expected_participant--> Person
+simple expected involvement
+→ direct specific relation
 
-rich planned/response case
-Event
-  ↕
-specific qualified Participation context
-  ↕
-Person
+material response/history/privacy
+→ specific qualified Participation context
 
-actual case
-Event Actual
-  ↕
-actor-scoped Actual Participation
-  ↕
-Person
+Actual involvement
+→ independently representable Participation facet
 ```
-
-A future logical model may group planned/response and Actual facets into one aggregate/record only if it preserves their independent semantics and history.
 
 No universal Relationship/Participant/Participation root is justified.
 
@@ -433,23 +310,23 @@ PARTICIPATION FAMILY
 PASS WITH HARDENING
 
 Participation
-✅ canonical specific semantic relation family
-✅ intended/response and Actual facets remain distinct
-✅ direct/simple or specifically qualified/rich form
-❌ not native entity/root
-❌ not universal membership/social graph
+✅ canonical specific relation family
+✅ intended/response and Actual facets distinct
+✅ direct/simple or specifically qualified
+❌ native entity/root
+❌ universal membership/social graph
 
 Participant
 ✅ contextual role
 ❌ entity/root
 
 Invitation
-✅ participation proposal/request semantics
+✅ Participation proposal/request semantics
 ❌ standalone universal primitive
 
 Participation Response
 ✅ actor-scoped intended/response state
-❌ Actual participation
+❌ Actual Participation
 
 Attendance
 ✅ Event-facing Actual Participation semantics
@@ -461,28 +338,70 @@ Attendance
 
 ---
 
-# 13. Documentation propagation
+# 13. Documentation propagation at acceptance time
 
-Required current propagation:
+Participation acceptance propagated to the concept/checkpoint plus affected Event, Session, Actual, Actor, Responsibility, Resource, Language Map, Domain README and workstream documents.
 
-- [x] `concepts/participation.md`
-- [x] this checkpoint
-- [x] `concepts/event.md`
-- [x] `concepts/session.md`
-- [x] `concepts/actual.md`
-- [x] `concepts/actor.md`
-- [x] `concepts/responsibility.md`
-- [x] `concepts/resource.md`
-- [x] `language-map.md`
-- [x] `README.md`
-- [x] `workstreams/domain-model.md`
-
-No `participant.md`, `invitation.md`, or `attendance.md` is justified by this review.
+No `participant.md`, `invitation.md` or `attendance.md` was justified.
 
 ---
 
-# 14. Next-stage implication
+# 14. Next-stage implication at validation time
 
-After propagation, re-score remaining Relationships / Reasoning dependencies rather than following roadmap order.
+Responsibility and Participation exposed common-ground/governance questions. Authority/Visibility/Acceptance-Acknowledgement gained review leverage, but none was pre-accepted by this checkpoint.
 
-Responsibility and Participation now both expose unresolved common-ground and governance boundaries. Authority / Visibility / Acceptance-Acknowledgement therefore gain leverage, but none is pre-selected by this checkpoint.
+---
+
+# 15. Downstream closure — Acknowledgement v0 (2026-08-12)
+
+The later common-ground review resolves the historical `Acceptance / Acknowledgement` SAFE DEFERRED item **without reopening Participation**.
+
+Current closure:
+
+```text
+Acknowledgement
+= explicit actor-scoped taking-notice of a specific target/material version/change/request
+
+Acknowledgement != Participation response
+```
+
+Generic cross-domain `Acceptance` was tested and rejected as a standalone primitive. Therefore:
+
+```text
+Participation `accepted`
+= Participation-response semantics
+NOT instance of universal Acceptance
+```
+
+Current sequence where consequence requires the distinction:
+
+```text
+Invitation
+!= delivery/read
+!= Acknowledgement
+!= Participation response
+!= Actual Participation
+```
+
+Examples remain valid:
+
+```text
+acknowledge changed Event time + decline Participation
+accepted Participation + later no-show
+```
+
+The historical SAFE DEFERRED item is now classified downstream as:
+
+```text
+Participation ↔ Acknowledgement     RESOLVED
+Participation ↔ generic Acceptance  RESOLVED — universal primitive rejected
+```
+
+No Participation hardening failed. Structural REOPEN remains **0**.
+
+Still-owned neighboring dependencies include Agreement/Consent, delegated/on-behalf-of response, Decision/Authority effects, group semantics, role taxonomy, provider reconciliation, retention and logical persistence.
+
+Normative downstream references:
+
+- `../concepts/acknowledgement.md`;
+- `acknowledgement-v0-validation.md`.
