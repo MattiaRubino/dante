@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Quantity and Subject accepted; Register kernel candidate rejected; Person / Actor boundary next  
+**Current revision:** 2026-08-12 — Quantity, Subject and Person/Actor accepted; Register kernel candidate rejected; Asset next  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -283,9 +283,23 @@ Quantity
 
 CONTEXTUAL ABOUTNESS ROLE
 Subject
+
+NATIVE HUMAN IDENTITY
+Person
+
+CONTEXTUAL AGENCY
+Actor
+
+PLATFORM ACCESS IDENTITY BOUNDARY
+Account
 ```
 
-Subject is a semantic role over native referent identity, not a universal entity/root.
+Key interpretations:
+
+- Subject is a semantic role over native referent identity, not a universal entity/root;
+- Person is canonical native human identity;
+- Actor is contextual agency semantics, not a wrapper entity/root;
+- Account is a distinct platform/access identity boundary whose detailed security model remains deferred.
 
 This topology is not a mandatory processing chain, parent tree or persistence schema.
 
@@ -293,6 +307,8 @@ Examples of valid minimal shapes:
 
 ```text
 Person P17 --Subject role--> Observation(weight = Quantity(66.4 kg))
+Person Anna --recorder/Actor role--> Observation about Person Maria
+Account Anna-A1 authenticates access without becoming Person or Actor identity
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
 longitudinal weight screen -> query over native Observations
@@ -301,7 +317,7 @@ full goal workflow -> uses only the layers that add real meaning
 
 ---
 
-# Canonical boundaries — Observed Reality & Evidence
+# Canonical boundaries — current cross-cluster baseline
 
 ```text
 Actual
@@ -327,9 +343,18 @@ Quantity
 
 Subject
 = contextual role identifying the native referent a descriptive record primarily concerns
+
+Person
+= persistent native human identity
+
+Actor
+= contextual semantic agency role/capability over native identity
+
+Account
+= platform/access identity boundary; detailed auth/security model deferred
 ```
 
-Critical non-collapse rules:
+Critical non-collapse rules now include:
 
 ```text
 Actual != Session
@@ -364,6 +389,25 @@ Subject != Resource
 Subject != observer/recorder/source/transformer/authority/viewer
 Subject != generic related_to
 
+Person != Actor
+Person != Account
+Person != Principal
+Person != User domain primitive
+
+Actor entity/root = rejected
+Actor != Account
+Actor != Principal
+Actor != Responsibility
+Actor != Authority
+Actor != specific performer/recorder/observer/confirmer/proposer relation
+
+Account != Person
+Account != Actor
+Account != Subject
+Account != Principal by default
+
+User = product/implementation term, not domain root
+
 Confirmation != Actual
 Confirmation != Outcome
 Confirmation != Observation
@@ -392,7 +436,7 @@ Provenance != Version
 Provenance != Audit
 ```
 
-## Subject invariants now accepted
+## Subject invariants accepted
 
 - Subject is a contextual semantic role, not independent identity;
 - native Person/Asset/etc. identity remains authoritative for the referent;
@@ -402,31 +446,52 @@ Provenance != Audit
 - unknown/later-resolved/corrected Subject attribution preserves material history;
 - Subject must not become a universal `related_to` catch-all;
 - Subject association itself can be privacy-sensitive;
-- AI may propose Subject resolution but does not automatically establish identity/authority;
+- AI may propose Subject/Person resolution but does not automatically establish identity/authority;
 - no universal `subjects` table/root is pre-approved.
+
+## Person / Actor / Account invariants accepted
+
+- Person is native persistent human identity;
+- Person may exist without Account and may predate/outlive Account access;
+- Person may play Subject or Actor/specific action roles without identity change;
+- Actor is contextual agency semantics, not independent identity/root;
+- Actor does not replace precise roles such as performer, recorder, observer, confirmer, proposer or responsible actor;
+- Actor != Responsibility/Authority/ownership;
+- Account authentication/access identity does not define Person or semantic Actor;
+- current Account access != historical Person/Actor attribution;
+- provider/auth/contact identifiers are reconciliation/access evidence, not canonical Person identity by default;
+- User is not a kernel domain primitive;
+- Principal remains a distinct deferred security/Authority concept;
+- AI/software may be Actors where agency is materially relevant without becoming Person or Authority;
+- no universal `actors` table/root or `Person.id = Account.id` is pre-approved.
 
 ---
 
 # Active cluster — Data / Subjects
 
-**Status:** IN PROGRESS — `Quantity v0` and `Subject v0` accepted; historical `Register` kernel candidate rejected; Person / Actor / Account boundary is next.
+**Status:** IN PROGRESS — Quantity, Subject, Person and Actor baselines accepted; Register kernel candidate rejected; Account boundary fixed conceptually; `Asset` is next.
 
 Accepted in this cluster:
 
 1. [`Quantity v0`](concepts/quantity.md) — [`validation`](checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
 2. [`Subject v0`](concepts/subject.md) — [`validation`](checkpoints/subject-v0-validation.md) — **PASS WITH HARDENING; canonical semantic role, no Subject entity/root**.
+3. [`Person v0`](concepts/person.md) — [`Person / Actor / Account validation`](checkpoints/person-actor-account-v0-validation.md) — **PASS WITH HARDENING; canonical native human entity**.
+4. [`Actor v0`](concepts/actor.md) — [`Person / Actor / Account validation`](checkpoints/person-actor-account-v0-validation.md) — **PASS WITH HARDENING; canonical agency role/capability, no Actor entity/root**.
+
+Accepted conceptual boundary, detailed model deferred:
+
+- `Account != Person != Actor`; Account is platform/access identity. Exact credential/provider/Principal/security modeling is deferred.
 
 Rejected candidate with validated product need:
 
-3. [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
+5. [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
 
 Remaining candidate topics:
 
-- Person / Actor / Account boundary;
 - Asset;
 - Resource.
 
-None of these candidates is guaranteed to survive merely because it appears in the roadmap.
+None is guaranteed to survive merely because it appears in the roadmap.
 
 ## Quantity current baseline
 
@@ -483,24 +548,65 @@ descriptive record / Observation
 
 The Subject role answers who/what the descriptive record is primarily about. It does not manufacture parallel identity.
 
-Resolved at the basic boundary:
+Resolved:
 
 ```text
 Subject entity/root rejected
 Subject vs observer/recorder/source/transformer separated
-Subject vs current Account separated
+Subject vs Person separated
+Subject vs Actor separated
+Subject vs Account separated at conceptual level
 ```
 
-Safe-deferred/retest owners:
+Remaining retest owners:
 
 ```text
-Subject vs Person/Actor         -> immediate next review
 Subject vs Asset                -> Asset review
 Subject vs Resource             -> Resource review
 Subject vs Principal/Authority/Visibility -> Relationships / Reasoning
 Subject vs focus/context        -> Relationships / Reasoning
+Person identity reconciliation  -> logical model + Provenance/Version/Decision
 heterogeneous reference mechanics -> logical data model
 ```
+
+## Person / Actor / Account current baseline
+
+```text
+PERSON
+CANONICAL NATIVE ENTITY
+
+ACTOR
+CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY
+NOT ENTITY / ROOT
+
+ACCOUNT
+REAL PLATFORM / ACCESS IDENTITY BOUNDARY
+DETAILED AUTH MODEL DEFERRED
+
+USER
+PRODUCT / IMPLEMENTATION TERM ONLY
+NO DOMAIN PRIMITIVE
+
+PRINCIPAL
+SAFE DEFERRED
+AUTHORITY / SECURITY MODEL
+```
+
+Representative shape:
+
+```text
+Person Maria
+    ↑ Subject role
+Observation 38.2 °C
+    ↑ observed/recorded by
+Person Anna
+    ↓ Actor semantics through specific roles
+Account Anna-A1
+    ↓ authentication context
+future Principal/Authority semantics
+```
+
+No layer is allowed to launder the semantics of another.
 
 ## Mandatory inherited re-tests
 
@@ -510,35 +616,41 @@ Observation vs Register/RegisterEntry — RESOLVED by Register rejection
 Quantity vs Register aggregation — RESOLVED at kernel level
 Subject vs observer/recorder/source/transformer — RESOLVED by Subject v0
 Subject entity vs semantic role — RESOLVED by Subject v0
-Subject vs current Account — basic boundary RESOLVED
-Person vs Actor vs Subject vs Account/Principal — NEXT
+Subject vs Person/Actor/Account — RESOLVED at conceptual level
+Person vs Actor — RESOLVED
+Person vs Account — RESOLVED at conceptual level
+Actor vs Account — RESOLVED at conceptual level
+User universal kernel identity — REJECTED
+Principal/security identity — SAFE DEFERRED
+Person merge/split/reconciliation — SAFE DEFERRED
 sampled-series physical representation — safe implementation dependency
-Availability/Capacity vs Resource
-Provenance source/actor roles vs Person/Actor/Account
-Subject vs Asset/Resource — mandatory later in this cluster
+Availability/Capacity vs Resource — pending Resource review
+Subject vs Asset/Resource — mandatory remaining Cluster 4 tests
+Provenance actor/account/principal roles — basic Person/Actor/Account split RESOLVED; Authority/security details deferred
 ```
 
-## Next candidate — Person / Actor / Account boundary
+## Next candidate — Asset
 
-The next review must start from identity and agency rather than assuming `Person`, `Actor`, `User`, `Account` or `Principal` are synonyms.
+Asset must be evaluated from scratch rather than inherited from the old combined `Asset/Soggetto` discovery idea.
 
 Primary questions:
 
 ```text
-Does Person require canonical native identity?
-Is Actor an entity, capability/role, or a category of native referents?
-Can a Person exist without Account? (must survive external/caregiver scenarios)
-Can an Account exist without a Person or represent a service/system?
-What exactly is Principal and does it belong later with Authority rather than this cluster?
-Can one Person have multiple Accounts/credentials?
-Can multiple actors operate through one Account/context?
-How do bots/services/devices fit agency without becoming Persons?
-Person identity vs Contact/profile/provider identities
-Subject role vs Actor role over the same Person
-historical attribution when account access changes/revokes
+Does Asset deserve native persistent identity?
+What makes something an Asset rather than merely any Subject referent?
+Does Asset mean owned property, managed object, valuable object, maintained object, or broader managed external thing?
+Can Person ever be Asset? likely not by default — test explicitly
+Are animals/plants/homes/accounts/documents/devices all one Asset concept or several native types/profiles?
+Asset vs Resource
+Asset vs Subject role
+Asset vs inventory item / stock / document / account
+ownership vs stewardship vs possession vs responsibility
+lifecycle/history when sold, lost, retired, transferred or shared
+multi-actor authority/visibility around shared assets
+whether mature CMMS/inventory/home/finance apps reveal a stronger abstraction
 ```
 
-Mature contact/person/account, identity, collaboration and specialist systems should be benchmarked as evidence, not copied as authority.
+The review must reject Asset if its useful product behavior is better represented by native domain types + roles without a distinct Asset identity/invariant set.
 
 ---
 
@@ -575,7 +687,7 @@ Likely topics:
 - Decision;
 - Version;
 - AI Proposal;
-- Principal if its semantics are primarily acting/authority rather than person identity.
+- Principal / delegation / on-behalf-of where those semantics are primarily security/authority rather than human identity.
 
 Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
 
@@ -588,7 +700,9 @@ Mandatory inherited re-tests include:
 - Milestone attainment/evaluation relationship;
 - collaborative Session/Actual attribution;
 - Subject vs focus/context/Visibility;
-- historical Person/Actor attribution after account revocation.
+- Person/Actor specific roles vs Participation/Responsibility/Stewardship;
+- Account/Principal/Authority/delegation boundaries;
+- historical Person/Actor attribution after Account revocation/deletion.
 
 From this cluster onward the Adjacent Dependency Sweep is mandatory before each concept verdict.
 
@@ -614,6 +728,10 @@ Current known terminology refinements include:
 - Quantity is bounded scalar value semantics, not a measurement entity or universal number wrapper;
 - historical `Register + RegisterEntry` is not a canonical kernel structure; longitudinal tracking remains a product/query capability over native records;
 - Subject is a canonical role over native identity, not an `Asset/Soggetto` universal wrapper/root;
+- Person is canonical native human identity independent of Account;
+- Actor is canonical contextual agency semantics, not a universal entity/root;
+- Account is conceptually separate platform/access identity; detailed auth/security modeling is deferred;
+- User remains product/implementation language, not a domain root;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage;
 - older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are redistributed into Provenance, automation/inference, Version and workflow semantics.
 
@@ -644,6 +762,14 @@ Evidence
 Provenance
 Quantity
 Subject (semantic role)
+Person (native entity)
+Actor (semantic agency role/capability)
+```
+
+Accepted boundary but not yet a fully modeled concept:
+
+```text
+Account != Person != Actor
 ```
 
 Rejected historical/current candidates are not counted as accepted concepts.
@@ -674,6 +800,9 @@ Evidence     -> contextual evaluative use of information
 Provenance   -> bounded origin/evolution lineage
 Quantity     -> reusable scalar amount value semantics
 Subject      -> contextual aboutness role over native referent identity
+Person       -> persistent native human identity
+Actor        -> contextual agency role/capability over native identity
+Account      -> platform/access identity boundary, detailed model deferred
 ```
 
 Cross-cutting multi-actor direction:
@@ -689,6 +818,7 @@ object/native referent identity
 != responsibility
 != performer
 != Subject role
+!= Actor role
 != authority
 != visibility
 ```
@@ -711,11 +841,14 @@ Register kernel candidate       — REJECTED
 RegisterEntry universal         — REJECTED
 Subject v0                      — ACCEPTED SEMANTIC ROLE
 Subject universal entity/root   — REJECTED
+Person v0                       — ACCEPTED NATIVE ENTITY
+Actor v0                        — ACCEPTED SEMANTIC AGENCY ROLE
+Actor universal entity/root     — REJECTED
+Account boundary                — ACCEPTED / DETAILED MODEL DEFERRED
+User universal domain root      — REJECTED
 
 ↓ NOW
-Person / Actor / Account boundary review
-↓
-Asset candidate
+Asset read-only review
 ↓
 Resource candidate
 ↓
@@ -736,12 +869,17 @@ The following are executable obligations, not generic reminders. The post-Cluste
 
 Known inherited/current items include:
 
-- Person/Actor/Subject/Account/Principal boundaries — active next review;
 - Subject vs Asset;
 - Subject vs Resource;
+- Asset vs Resource;
+- Asset ownership/stewardship/possession/authority semantics;
+- Person as possible Resource role vs Person identity;
+- Principal/security identity and Account credential/provider mechanics;
+- delegated/on-behalf-of Actor semantics;
+- Person reconciliation/merge/split and identity-history persistence;
 - Subject vs focus/context/typed Relationship;
-- Subject association privacy vs Visibility;
-- heterogeneous Subject-reference persistence;
+- Subject/Person/Actor association privacy vs Visibility;
+- heterogeneous Subject/Actor-reference persistence;
 - Availability/Capacity vs Resource;
 - Actual establishment under future Authority/Decision/reconciliation rules;
 - Confirmation target-version semantics vs future Version model;
@@ -774,7 +912,13 @@ Resolved and removed from limbo:
 - Quantity vs generic Register aggregation at kernel level;
 - Subject entity vs semantic role;
 - Subject vs observer/recorder/source/transformer;
-- Subject vs current Account at the basic identity boundary.
+- Subject vs Person;
+- Subject vs Actor;
+- Subject vs Account at conceptual level;
+- Person vs Actor;
+- Person vs Account at conceptual level;
+- Actor vs Account at conceptual level;
+- User as universal kernel identity.
 
 The list is expected to evolve during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
 
