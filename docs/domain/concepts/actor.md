@@ -738,3 +738,51 @@ See:
 
 - `concepts/participation.md`;
 - `checkpoints/participation-v0-validation.md`.
+
+---
+
+# 2026-08-12 — Authority + Visibility closure amendment
+
+Authority v0 and Visibility v0 close two previously deferred Actor boundaries without changing Actor identity or specific-role precedence.
+
+Canonical separation:
+
+```text
+Actor
+= who/what acts semantically
+
+Authority
+= who/what may legitimately make a bounded domain effect effective
+
+Visibility
+= what bounded information may be exposed to a recipient/access context
+```
+
+Therefore:
+
+```text
+Actor != Authority
+Actor != Visibility
+acting != being authoritative
+acting != being allowed to inspect every related source
+technical Principal/Account != semantic Actor != Authority != Visibility
+```
+
+Authority or Visibility may be derived from bounded policy/relationship context, but neither is created merely because an Actor acts. An Actor may have Authority without broad Visibility, or Visibility without Authority to change/re-disclose.
+
+AI/software Actor semantics remain subject to both ceilings:
+
+```text
+AI can act/reason
+!= AI has Authority to enact
+!= AI may disclose every source it can process
+```
+
+On-behalf-of/delegation remains SAFE DEFERRED at the detailed relationship/security level; the semantic requirement is now stronger: preserve semantic Actor, Principal/authentication context, applicable Authority basis, and Visibility separately when material.
+
+See:
+
+- `concepts/authority.md`;
+- `checkpoints/authority-v0-validation.md`;
+- `concepts/visibility.md`;
+- `checkpoints/visibility-v0-validation.md`.
