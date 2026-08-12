@@ -7,28 +7,26 @@
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
+> **Historical checkpoint note:** the Responsibility v0 decision and its original dependency state are preserved here. Later common-ground work is recorded only as an explicit downstream closure in section 15.
+
 ## 1. Scope
 
-- **Primary candidate:** Responsibility
-- **Family reviewed together:** Responsibility / Assignment / Claim / Hand-off / Stewardship / expected performer / actual performer
-- **Why reviewed as one family:** these terms overlap strongly in product/task language. Reviewing them separately first would risk manufacturing five primitives from vocabulary before proving distinct identity/lifecycle semantics.
-- **Inherited pressure:** Activity identity independence; Actor specific-role precedence; Resource eligibility separation; Relationship v0 direct-vs-qualified discipline; multi-actor open/claim/transfer/actual-performer scenarios.
+- **Primary candidate:** Responsibility.
+- **Family reviewed together:** Responsibility / Assignment / Claim / Hand-off / Coordination Stewardship / expected performer / Actual performer.
+- **Reason:** operational vocabulary often collapses `assigned_to`, accountability, performer, hand-off, approval and mental load into one field/workflow.
+- **Inherited pressure:** Activity identity independence from requester/assignee/performer; Actor specific-role precedence; Resource/Participation separation; Relationship v0 discipline; multi-actor hand-off and open/claimable work.
 
-This checkpoint validates Responsibility as a **specific semantic relation family**. It does not select final SQL/API/cardinality, create a universal Responsibility root, accept Assignment/Claim/Hand-off as standalone primitives, or accept Stewardship as a standalone primitive.
+This checkpoint validates Responsibility as a **specific accountability relation family**, not a universal entity/root or workflow engine.
 
 ---
 
 # 2. Candidate conclusion
 
-> **Responsibility is the contextual semantic relation through which an eligible Actor bears the obligation/accountability to ensure that a bounded commitment is appropriately handled within a defined scope and context. Responsibility is independent of who requested the commitment, who is expected to perform it, who actually performs it, who coordinates it, who has Authority over it, and who may view it.**
-
-Current classification:
+> **Responsibility is the contextual semantic relation family through which an eligible native referent is accountable for ensuring that a bounded commitment is appropriately handled. Responsibility does not create referent identity and does not by itself imply requester status, expected or actual performance, Participation, Resource eligibility, Authority, Visibility, ownership, custody, or coordination Stewardship.**
 
 ```text
 RESPONSIBILITY
-CANONICAL SPECIFIC SEMANTIC RELATION FAMILY
-may be direct or specifically qualified depending on consequence
-NOT universal entity/root
+CANONICAL SPECIFIC ACCOUNTABILITY RELATION FAMILY
 
 ASSIGNMENT
 role-specific establishment/change operation
@@ -39,48 +37,21 @@ self-initiated role-acquisition operation
 NOT standalone universal primitive
 
 HAND-OFF
-role-specific transfer workflow/pattern
+role-specific transfer workflow
 NOT standalone universal primitive
 
 COORDINATION STEWARDSHIP
 semantically distinct from Responsibility
-standalone primitive SAFE DEFERRED
-
-EXPECTED PERFORMER
-specific planned Actor role
-NOT Responsibility
-
-ACTUAL PERFORMER
-specific actual Actor role
-NOT Responsibility
+standalone primitive status deferred
 ```
 
 ---
 
 # 3. Evidence reviewed
 
-## Internal
+Internal evidence included Activity/Actor/Resource baselines, multi-actor discovery/research/synthesis, Relationship v0 and scenarios across household work, project hand-offs, shifts, care, review/approval, open work and substitution.
 
-- Activity v0, especially identity independent of requester/responsible actor/performer;
-- Actor v0 and specific-role precedence;
-- Resource v0 and Requirement/candidate/Allocation/Reservation/Actual-use separation;
-- Multi-Actor Readiness v1 and evidence synthesis;
-- Deferred Dependency Closure — Clusters 1–4;
-- Cross-Cluster Validation v4;
-- Relationship v0 validation;
-- personal, household, care, work, maintenance, scheduling, shared-resource and external-participant scenarios.
-
-## External benchmark patterns
-
-External systems were used as evidence, not schemas to copy. Recurring useful patterns included:
-
-- specialist workflow systems separating requester, owner/responsible party, requested performer and actual performer;
-- task/work systems distinguishing candidates from assignee and preserving assignment history;
-- systems distinguishing claim from assignment as operations/events;
-- products allowing unassigned work and/or multiple assignees without defining a universal accountability ontology;
-- cognitive-labor research separating anticipation/monitoring/coordination burden from physical execution.
-
-External vocabulary/status taxonomies were not adopted as LifeOS invariants.
+External evidence was used behaviorally, not as ontology authority: mature work/shift/care systems repeatedly distinguish assignment, acceptance, approval, substitution, execution and historical responsibility.
 
 ---
 
@@ -88,19 +59,19 @@ External vocabulary/status taxonomies were not adopted as LifeOS invariants.
 
 | Test ID | Result | Finding |
 |---|---|---|
-| CORE-01 Workflow inversion | PASS | Real workflows repeatedly need accountability distinct from requester, expected performer and actual performer. |
-| CORE-02 Deep chronology | PASS WITH HARDENING | Open/claimable work, pending transfer, refusal, substitution and later history require current/history semantics that must not overwrite Activity identity. |
-| CORE-03 Reductio | PASS | Removing Responsibility collapses accountability into assignee/performer; merging with Resource/Authority/Stewardship fails; five standalone family primitives are unnecessary. |
-| CORE-04 Redundancy / merge-split | PASS WITH HARDENING | Responsibility survives; Assignment/Claim/Hand-off reduce to role-specific operations/workflows; Stewardship remains distinct but not yet standalone. |
-| CORE-05 Traceability | PASS | requester → Responsibility → expected performer → Actual performer remains reconstructable without duplicate Activity. |
-| CORE-06 Orphan / independence | PASS | Responsibility is contextual relation semantics, not native identity; richer qualified form may have persistent record semantics without universal entity identity. |
-| CORE-07 External benchmark | PASS | Mature systems repeatedly separate these roles/operations, but no universal provider schema dominates. |
-| CORE-08 Anti-pattern | PASS | universal `assigned_to`, Responsibility=root, Resource=responsible, handoff=request-immediate-transfer all rejected. |
-| CORE-09 Correction / epistemic integrity | PASS WITH HARDENING | `unknown holder != explicitly open/unassigned`; conflict/correction cannot silently rewrite historical responsibility. |
-| CORE-10 Scale/history | PASS | No universal responsibility-event graph required; material history can be retained selectively. |
-| CORE-11 Simple vs power user | PASS | casual UI may show `Assigned to Anna`; richer distinctions stay progressive. |
-| CORE-12 Product value/complexity | PASS | semantics add value in transfer/shared/high-consequence cases without forcing enterprise workflow into personal use. |
-| CORE-13 Implementation pressure | PASS WITH HARDENING | direct simple vs specific qualified Responsibility is allowed; exact identity/table/state representation remains logical-model work. |
+| CORE-01 Workflow inversion | PASS | real workflows need accountability distinct from requester/performer |
+| CORE-02 Deep chronology | PASS WITH HARDENING | open → assigned/claimed → transferred → historical roles must remain reconstructible |
+| CORE-03 Reductio | PASS | assignee/performer/Participation/Resource/Authority fail as replacements |
+| CORE-04 Redundancy / merge-split | PASS WITH HARDENING | Responsibility survives; Assignment/Claim/Hand-off do not justify universal roots |
+| CORE-05 Traceability | PASS | commitment → role operations → current Responsibility → Actual performer remains traceable |
+| CORE-06 Orphan / independence | PASS | contextual relation semantics; qualified relation != entity automatically |
+| CORE-07 External benchmark | PASS | assignment/transfer/approval patterns reinforce separation |
+| CORE-08 Anti-pattern | PASS | one `assigned_to`, ambiguous null, universal workflow rejected |
+| CORE-09 Correction / epistemic integrity | PASS WITH HARDENING | unknown != explicitly open; conflicting claims may remain unresolved |
+| CORE-10 Scale/history | PASS | history does not require universal Responsibility graph |
+| CORE-11 Simple vs power user | PASS | simple `Assigned to` UI compatible with richer kernel |
+| CORE-12 Product value/cost | PASS WITH HARDENING | avoid role/workflow bureaucracy where consequence is low |
+| CORE-13 Implementation pressure | PASS WITH HARDENING | direct vs qualified relation allowed; physical shape deferred |
 
 **Core Gate:** PASS WITH HARDENING.
 
@@ -108,123 +79,57 @@ External vocabulary/status taxonomies were not adopted as LifeOS invariants.
 
 # 5. Deep chronology stress
 
-Representative chronology:
-
 ```text
-T0  work explicitly open / claimable
-T1  Anna assigns Responsibility to Luca
-T2  Luca has not accepted under a policy that requires acceptance
-T3  Luca accepts; Responsibility effective
-T4  Luca requests hand-off to Maria
-T5  Maria has not responded; Luca remains current holder
-T6  Maria declines
-T7  authorized coordinator reassigns to Marco
-T8  Marco becomes responsible
-T9  Luca actually performs as substitute
-T10 later historical query
+T0 responsibility intentionally open
+T1 Anna is assigned / claims depending on context
+T2 request to transfer to Luca
+T3 request received
+T4 Luca positively responds where required
+T5 applicable Authority/policy makes transfer effective
+T6 Luca responsible
+T7 Actual performer later = Marco
+T8 historical query after correction/dispute
 ```
 
 Required truths:
 
-- T0 explicit openness is not unknown data;
-- assignment does not universally equal acceptance/effectiveness;
-- hand-off request does not universally transfer the role;
-- current Responsibility and actual performer may differ;
-- Activity identity survives ordinary transfer/reassignment;
-- history is not rewritten to make the eventual performer look responsible all along.
-
-A lower-consequence policy may collapse some of these moments; the kernel semantics must not force that collapse globally.
+```text
+open != unknown
+request != effective transfer
+responsible actor != expected/Actual performer
+current role != historical role
+```
 
 ---
 
 # 6. Reductio / candidate elimination
 
-## Responsibility = assignee / expected performer
-
-Fails delegated accountability and manager/worker cases.
-
-**Result:** REJECTED.
-
-## Responsibility = actual performer
-
-Fails substitution and historical accountability.
-
-**Result:** REJECTED.
-
-## Responsibility = Resource
-
-Eligibility/capability becomes obligation.
-
-**Result:** REJECTED.
-
-## Responsibility = Authority
-
-Accountability becomes permission/governance.
-
-**Result:** REJECTED.
-
-## Responsibility = Stewardship
-
-Execution accountability collapses into coordination/mental-load burden.
-
-**Result:** REJECTED.
-
-## Assignment / Claim / Hand-off as three standing universal entities
-
-Each is incomplete unless it identifies the semantic role being established/acquired/transferred.
-
-**Result:** REJECTED as universal primitives.
-
-## Responsibility as specific relation family
-
-Simple relationship may remain direct; material open/transfer/history semantics may justify a specific qualified Responsibility context.
-
-**Result:** PASS WITH HARDENING.
+```text
+Responsibility = requester            REJECTED
+Responsibility = expected performer   REJECTED
+Responsibility = Actual performer     REJECTED
+Responsibility = Participation        REJECTED
+Responsibility = Resource             REJECTED
+Responsibility = Authority            REJECTED
+Assignment universal primitive        REJECTED
+Claim universal primitive             REJECTED
+Hand-off universal primitive          REJECTED
+specific Responsibility relation      PASS WITH HARDENING
+```
 
 ---
 
 # 7. Key hardenings
 
-## 7.1 Unknown != explicitly open/unassigned
-
 ```text
-unknown responsibility holder
-!=
-intentionally no current holder / claimable
+unknown holder != explicitly open/unassigned
+Assignment must name role
+Claim must name role
+Hand-off must name role
+Assignment/Claim/Hand-off effect is contextual/policy/Authority dependent
+qualified relation != independent entity automatically
+Responsibility != coordination Stewardship
 ```
-
-A future physical model must not let one ambiguous null value erase this difference.
-
-## 7.2 Assignment must name the role
-
-```text
-assign Responsibility
-assign expected performer
-assign reviewer
-```
-
-`Assignment` without role semantics is insufficient.
-
-## 7.3 Claim must name the role
-
-Claim means self-initiated acquisition attempt/action for a specific role. Whether it becomes effective immediately is policy-dependent.
-
-## 7.4 Hand-off must name the role
-
-Transfer may concern Responsibility, expected performance, Stewardship, Authority or another role. Moving one must not silently move all.
-
-## 7.5 Assignment/Claim/Hand-off effect is policy/Authority/Acceptance dependent
-
-Neither of these is universal:
-
-```text
-assignment always requires acceptance
-assignment always changes responsibility immediately
-```
-
-## 7.6 Qualified relation != entity automatically
-
-Rich Responsibility may need state/effective interval/history while still not proving a universal independent Responsibility identity/root.
 
 ---
 
@@ -232,26 +137,26 @@ Rich Responsibility may need state/effective interval/history while still not pr
 
 | Test ID | Result | Finding |
 |---|---|---|
-| MA-01 Identity/account independence | PASS | Accountless Person can bear Responsibility; Account revocation does not erase historical attribution. |
-| MA-02 Shared fact / actor overlay | PASS | One Activity remains shared while Responsibility and private overlays vary. |
-| MA-03 Responsibility/assignment/claim | PASS WITH HARDENING | Open, assignment, claim and transfer semantics remain separable. |
-| MA-04 Stewardship/mental load | PASS WITH HARDENING | Responsibility != coordination Stewardship; standalone primitive remains deferred. |
-| MA-05 Common-ground states | PASS WITH HARDENING | assignment/proposal/receipt/acceptance/effective role change cannot be one universal state. |
-| MA-06 Authority/canonical change | PASS WITH HARDENING | Responsibility does not grant Authority; effective changes need policy/authority basis where consequence requires it. |
-| MA-07 Selective disclosure | PASS | Responsibility does not imply visibility of all related facts/reasons. |
-| MA-08 Inference privacy | PASS | AI/private inference does not establish or disclose Responsibility automatically. |
-| MA-09 Partial adoption | PASS | non-LifeOS Person can be requester/responsible/performer. |
-| MA-10 Assisted participation/provenance | PASS | recorder/requester/responsible/performer can differ truthfully. |
-| MA-11 Lifecycle/revocation | PASS WITH HARDENING | current role changes do not erase historical attribution. |
-| MA-12 Conflict/adversarial | PASS WITH HARDENING | conflicting claims about responsibility may remain unresolved pending Authority/Decision. |
-| MA-13 Unequal power | PASS WITH HARDENING | acceptance cannot be universal because authority may be asymmetric, but asymmetry is contextual. |
-| MA-14 Multi-resource/capacity | PASS | Resource candidate/availability remains independent of Responsibility. |
-| MA-15 Coordination burden | PASS WITH HARDENING | assignment/responsibility transfer does not prove mental-load transfer. |
-| MA-16 Formality/progressive disclosure | PASS | simple UI can collapse roles only under explicit low-consequence product policy. |
-| MA-17 AI authority | PASS WITH HARDENING | AI may propose but does not gain assignment/transfer Authority. |
-| MA-18 Specialist boundary | PASS | regulated accountability may remain externally authoritative without becoming LifeOS universal workflow. |
-| MA-19 Primitive redundancy | PASS | Assignment/Claim/Hand-off do not survive as universal independent primitives. |
-| MA-20 Actor-scoped reality attribution | PASS | responsible / planned performer / actual performer remain separately attributable. |
+| MA-01 | PASS | Accountless Person can bear Responsibility |
+| MA-02 | PASS | one Activity remains shared while Responsibility varies |
+| MA-03 | PASS WITH HARDENING | open/assignment/claim/transfer remain distinct |
+| MA-04 | PASS WITH HARDENING | Responsibility != Stewardship |
+| MA-05 | PASS WITH HARDENING | proposal/receipt/acceptance/effect cannot be one state |
+| MA-06 | PASS WITH HARDENING | Responsibility grants no Authority |
+| MA-07 | PASS | Responsibility grants no universal Visibility |
+| MA-08 | PASS | AI/private inference does not establish/disclose Responsibility |
+| MA-09 | PASS | non-LifeOS Person may be requester/responsible/performer |
+| MA-10 | PASS | recorder/requester/responsible/performer can differ |
+| MA-11 | PASS WITH HARDENING | role changes preserve history |
+| MA-12 | PASS WITH HARDENING | conflicting claims may remain unresolved |
+| MA-13 | PASS WITH HARDENING | acceptance/voluntariness cannot be universally assumed |
+| MA-14 | PASS | Resource candidate/Capacity distinct |
+| MA-15 | PASS WITH HARDENING | assignment does not prove mental-load transfer |
+| MA-16 | PASS | simple UI may collapse detail only where safe |
+| MA-17 | PASS WITH HARDENING | AI may propose but has no automatic transfer Authority |
+| MA-18 | PASS | specialist accountability can remain externally authoritative |
+| MA-19 | PASS | Assignment/Claim/Hand-off roots do not survive |
+| MA-20 | PASS | responsible/planned performer/Actual performer separately attributable |
 
 **Multi-Actor Gate:** PASS WITH HARDENING.
 
@@ -260,99 +165,77 @@ Rich Responsibility may need state/effective interval/history while still not pr
 # 9. Cross-Concept Consistency Gate
 
 ```text
-XCON-01 Identity                         PASS
-XCON-02 Ownership / Authority            PASS WITH HARDENING
+XCON-01 Identity                           PASS
+XCON-02 Ownership / Authority              PASS WITH HARDENING
 XCON-03 Planned / current / actual/history PASS
-XCON-04 Relationships                    PASS WITH HARDENING
-XCON-05 Multi-actor                      PASS WITH HARDENING
-XCON-06 Language                         PASS
+XCON-04 Relationships                      PASS WITH HARDENING
+XCON-05 Multi-actor                        PASS WITH HARDENING
+XCON-06 Language                           PASS
 ```
 
-No accepted Cluster 1–4 concept requires structural reopening.
-
-Activity is strengthened: ordinary Responsibility changes preserve Activity identity.
-
-Actor is strengthened: Responsibility is a specific role/relation, not Actor itself.
-
-Resource is strengthened: eligibility/capability does not imply accountability.
-
-Relationship v0 is confirmed: simple direct Responsibility and richer specific qualified Responsibility can coexist without a universal Relationship root.
+No Cluster 1–4 concept required structural reopening.
 
 ---
 
-# 10. Adjacent Dependency Sweep
+# 10. Adjacent Dependency Sweep at validation time
 
 ## RESOLVED
 
 | Boundary | Resolution |
 |---|---|
 | Responsibility ↔ Activity | ordinary responsibility change preserves Activity identity |
-| Responsibility ↔ Actor/Person/Account | responsibility holder is a role-bearing native Actor/referent; identity/access remain separate |
+| Responsibility ↔ Actor/Person/Account | role over native referent; Account not required |
 | Responsibility ↔ expected performer | accountability != planned execution |
-| Responsibility ↔ actual performer | accountability != actual execution |
+| Responsibility ↔ Actual performer | accountability != execution reality |
 | Responsibility ↔ Resource | eligibility/capability != obligation |
-| Responsibility ↔ Assignment | Assignment = role-specific establishment/change operation |
-| Responsibility ↔ Claim | Claim = self-initiated role-acquisition operation |
-| Responsibility ↔ Hand-off | Hand-off = role-specific transfer workflow; request != effective transfer by default |
-| Responsibility ↔ Stewardship boundary | coordination burden is semantically distinct; primitive status deferred |
+| Responsibility ↔ Assignment | role-specific establishment/change operation |
+| Responsibility ↔ Claim | role-specific self-acquisition operation |
+| Responsibility ↔ Hand-off | role-specific transfer workflow; request != effective transfer |
+| Responsibility ↔ Stewardship | semantically distinct; primitive status deferred |
 
-## SAFE DEFERRED
+## SAFE DEFERRED at validation time
 
 ### Authority / delegation
 
-**Owner:** Authority/Principal/delegation review.  
-**Safe because:** Responsibility explicitly grants no Authority.  
-**Reopening trigger:** responsibility cannot be established/transferred without embedding Authority into Responsibility.  
+**Owner:** Authority/Principal/delegation.  
+**Why safe:** Responsibility grants no Authority.  
+**Trigger:** role cannot be established/transferred without embedding Authority into Responsibility.  
 **Rerun:** CORE-04, MA-06, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Acceptance / Acknowledgement
 
 **Owner:** collaboration-state review.  
-**Safe because:** Assignment/Claim/Hand-off effect remains policy-dependent and Confirmation remains distinct.  
-**Reopening trigger:** ordinary transfer cannot distinguish proposal/receipt/willingness/effectiveness under current semantics.  
+**Why safe:** Assignment/Claim/Hand-off effect remained policy-dependent and Confirmation distinct.  
+**Trigger:** ordinary transfer cannot distinguish proposal/receipt/willingness/effectiveness.  
 **Rerun:** CORE-02, CORE-04, MA-03, MA-05, MA-11, XCON-04.
 
 ### Visibility
 
-**Owner:** Visibility/Authority review.  
-**Safe because:** Responsibility grants no disclosure semantics.  
-**Reopening trigger:** necessary role access cannot remain separate from Responsibility.  
+**Owner:** Visibility/Authority.  
+**Why safe:** Responsibility grants no disclosure semantics.  
+**Trigger:** necessary role access cannot remain separate.  
 **Rerun:** MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Version / Provenance / Decision / reconciliation
 
 **Owner:** Relationships / Reasoning + logical model.  
-**Safe because:** material history requirement is fixed without choosing version mechanics.  
-**Reopening trigger:** current/effective responsibility cannot be reconstructed after correction/conflict.  
+**Why safe:** material history requirement fixed without mechanics.  
+**Trigger:** current/effective Responsibility cannot be reconstructed after correction/conflict.  
 **Rerun:** CORE-02, CORE-05, CORE-09, MA-12, XCON-03, XCON-04.
 
 ### Coordination Stewardship primitive
 
-**Owner:** Relationships / Reasoning / product workflow validation.  
-**Safe because:** distinct semantics are protected; no standalone persistent primitive is yet required.  
-**Reopening trigger:** LifeOS must independently assign/transfer/query/measure coordination burden and cannot reconstruct it otherwise.  
+**Owner:** Relationships / Reasoning / product validation.  
+**Why safe:** distinct semantics protected without standalone primitive.  
+**Trigger:** LifeOS must independently assign/transfer/query/measure coordination burden and cannot reconstruct it otherwise.  
 **Rerun:** CORE-03, CORE-04, CORE-12, MA-04, MA-15, XCON-04.
 
 ### Collective/joint Responsibility
 
 **Owner:** collective/group/cardinality review.  
-**Safe because:** multiple holders are allowed without assuming joint vs individual accountability.  
-**Reopening trigger:** ordinary workflows require a collective responsibility identity/group actor.  
-**Rerun:** CORE-03, CORE-04, MA-03, MA-13, XCON-01, XCON-04.
-
-### Fallback/conditional Responsibility
-
-**Owner:** Trigger/policy review.  
-**Safe because:** fallback is not current Responsibility.  
-**Reopening trigger:** common fallback/rotation cannot be represented without generic condition logic embedded in Responsibility.  
-**Rerun:** CORE-02, CORE-04, XCON-03, XCON-04.
-
-### Qualified Responsibility identity/persistence
-
-**Owner:** logical data model.  
-**Safe because:** semantic richness is accepted without prematurely claiming universal identity.  
-**Reopening trigger:** persistence cannot preserve open/current/history semantics under the direct/qualified model.  
-**Rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
+**Why safe:** multiple holders allowed without assuming joint identity.  
+**Trigger:** ordinary workflows require collective Responsibility identity/group Actor.  
+**Rerun:** CORE-04, CORE-06, MA-03, MA-19, XCON-01, XCON-04.
 
 ```text
 REOPEN                         0
@@ -363,23 +246,18 @@ unclassified material items    0
 
 # 11. Relationship v0 regression
 
-The first major relation-family stress does **not** reopen Relationship v0.
+Responsibility confirmed the accepted Relationship discipline:
 
 ```text
-simple case
-Activity --responsible_for--> Actor
+simple semantically complete accountability
+→ direct specific relation
 
-rich case
-Activity
-  ↕
-specific qualified Responsibility context
-  ↕
-Actor
+material open/transfer/history/privacy/Authority state
+→ specific qualified Responsibility context
+
+universal Relationship/Responsibility wrapper
+→ unnecessary
 ```
-
-The richer form may preserve open state, effective interval, transfer/history or other material relation semantics when required.
-
-No universal `Relationship` wrapper or universal `responsibilities` root is justified.
 
 ---
 
@@ -390,31 +268,17 @@ RESPONSIBILITY FAMILY
 PASS WITH HARDENING
 
 Responsibility
-✅ canonical specific semantic relation family
-✅ direct/simple or specifically qualified/rich form
-❌ not universal entity/root
-❌ not assignee
-❌ not expected performer
-❌ not actual performer
-❌ not Resource
-❌ not Authority
-❌ not Stewardship
+✅ canonical accountability relation family
+✅ direct/simple or specifically qualified
+❌ native entity/root
 
-Assignment
-❌ standalone universal primitive
-✅ role-specific change/establishment operation
+Assignment / Claim / Hand-off
+✅ role-specific operations/workflows
+❌ universal standalone primitives
 
-Claim
-❌ standalone universal primitive
-✅ self-initiated role-acquisition operation
-
-Hand-off
-❌ standalone universal primitive
-✅ role-specific transfer workflow/pattern
-
-Stewardship
-✅ distinct semantic dimension
-⏳ standalone primitive SAFE DEFERRED
+Coordination Stewardship
+✅ semantically distinct
+⚠ standalone primitive SAFE DEFERRED
 ```
 
 **Structural reopenings:** 0.  
@@ -422,25 +286,54 @@ Stewardship
 
 ---
 
-# 13. Documentation propagation
+# 13. Documentation propagation at acceptance time
 
-Required current propagation:
-
-- [x] `concepts/responsibility.md`
-- [x] this checkpoint
-- [x] `concepts/activity.md`
-- [x] `concepts/actor.md`
-- [x] `concepts/resource.md`
-- [x] `language-map.md`
-- [x] `README.md`
-- [x] `workstreams/domain-model.md`
-
-No `assignment.md`, `claim.md`, `handoff.md`, or `stewardship.md` is justified by this review.
+The original Responsibility acceptance propagated its concept/checkpoint plus affected Activity, Actor, Resource, Language Map, Domain README and workstream state. It did not create Assignment/Claim/Hand-off roots.
 
 ---
 
-# 14. Next-stage implication
+# 14. Next-stage implication at validation time
 
-Do not select the next candidate merely from roadmap order.
+Responsibility increased pressure on common-ground, Authority/Visibility, Decision/reconciliation and Stewardship reviews without pre-accepting them.
 
-After documentation propagation, re-check dependency leverage across the remaining Relationships / Reasoning space. `Participation` is a strong likely next candidate because it pressures Event/Session/Actual, actor-scoped state, invitation/acceptance and historical participation, but it is not pre-selected by this checkpoint.
+---
+
+# 15. Downstream closure — Acknowledgement v0 (2026-08-12)
+
+The later common-ground review resolves the historical `Acceptance / Acknowledgement` SAFE DEFERRED item **without reopening Responsibility**.
+
+Current hand-off decomposition:
+
+```text
+hand-off requested
+!= delivered/read
+!= Acknowledgement
+!= role-specific positive/accepted response
+!= authoritative/effective Responsibility transfer
+!= Actual performer later
+```
+
+Canonical closure:
+
+```text
+Acknowledgement != Responsibility
+Acknowledgement != role-specific acceptance
+```
+
+Generic cross-domain `Acceptance` was tested and rejected as a standalone primitive. The useful positive-response semantics remain specific to the role/workflow being transferred.
+
+Therefore the historical deferred item is now:
+
+```text
+Responsibility ↔ Acknowledgement     RESOLVED
+Responsibility ↔ generic Acceptance  RESOLVED — universal primitive rejected
+```
+
+No Responsibility hardening failed; structural REOPEN remains **0**.
+
+Still-owned dependencies include Decision/Approval/effective transfer mechanics, Principal/delegation/on-behalf-of, Version/Provenance/reconciliation, Coordination Stewardship, collective Responsibility and logical persistence.
+
+Normative downstream references:
+
+- `../concepts/acknowledgement.md`;
+- `acknowledgement-v0-validation.md`.
