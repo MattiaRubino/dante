@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Asset v0 accepted as current scoped native entity; terminology-neutral re-review mandatory  
+**Current revision:** 2026-08-12 — Resource accepted as semantic planning/execution role; Cluster-4 candidate reviews complete  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -83,6 +83,7 @@ Subject (semantic role, not entity)
 Person (native human entity)
 Actor (semantic agency role/capability, not entity)
 Asset (current scoped native physical-object entity)
+Resource (semantic planning/execution role/capability, not entity)
 ```
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
@@ -150,11 +151,15 @@ Gear
 Device
 Equipment
 Inventory
+Required equipment
+Who's available?
 ```
 
 `User` is deliberately product/implementation language. It must not be used as a universal domain synonym for Person, Actor, Account or Principal.
 
 Terms such as `Gear`, `Equipment`, `Device`, `Things`, or `Inventory` may expose some Asset-backed experiences without redefining Asset semantics.
+
+The word `Resource` itself should usually remain hidden when a more natural label such as Person, Room, Camera, Equipment, Service, or `Who's available?` is clearer.
 
 ## PROVISIONAL
 
@@ -168,6 +173,8 @@ Authority
 Visibility
 Acknowledgement
 Acceptance / Agreement
+Resource Requirement
+Allocation / selection
 ```
 
 ## DEFERRED
@@ -175,7 +182,6 @@ Acceptance / Agreement
 Demonstrated semantic area intentionally postponed to a later review.
 
 ```text
-Resource
 Relationship
 Principal
 Trigger
@@ -186,6 +192,7 @@ Place / Location / Property semantics
 living-entity identity beyond Person
 Document / Artifact identity model
 FinancialAccount specialist model
+inventory / supply / consumption semantics
 ```
 
 Detailed Account/credential/provider/security mechanics are deferred even though the Account != Person != Actor conceptual boundary is already fixed.
@@ -197,6 +204,7 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 - `Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
 - `Subject` as a universal entity/root/wrapper is rejected. The accepted meaning is a contextual semantic role over native referent identity. See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
 - universal `Actor` entity/root/wrapper is rejected. Actor is accepted as contextual agency semantics over native referent/system identity. See `concepts/actor.md`.
+- universal `Resource` entity/root/wrapper is rejected. Resource is accepted as contextual planning/execution eligibility/capability over native referents/supplies. See `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
 - universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
 - historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower and explicitly reopenable. See `concepts/asset.md` and `checkpoints/asset-v0-validation.md`.
 
@@ -404,16 +412,16 @@ Recurrence != responsibility rotation
 
 **Status:** CANONICAL semantic capability  
 **Source:** `concepts/availability-capacity.md`  
-**Question:** When may a schedulable resource's capacity be used?  
+**Question:** When may a schedulable Resource's capacity be used?  
 **UI exposure:** DIRECT / CONFIGURATION / DERIVED
 
-Availability is resource-oriented. Subject-specific timing rules remain Temporal Constraints.
+Availability is Resource-oriented. Subject-specific timing rules remain Temporal Constraints.
 
 ## Capacity
 
 **Status:** CANONICAL semantic capability  
 **Source:** `concepts/availability-capacity.md`  
-**Question:** How much / what kind of compatible commitment can a schedulable resource sustain?  
+**Question:** How much / what kind of compatible commitment can a schedulable Resource sustain?  
 **UI exposure:** HIDDEN / DERIVED / ADVANCED
 
 ```text
@@ -422,6 +430,8 @@ overlap != universal conflict
 Capacity != universal busy/free boolean
 Capacity != universal scalar percentage
 ```
+
+Resource v0 clarifies that a schedulable Resource is a native referent/supply playing Resource role where time-dependent capacity matters; no Resource entity/root is implied.
 
 ---
 
@@ -500,7 +510,7 @@ Core guardrails:
 - high-frequency streams do not imply row-per-sample persistence;
 - one Observation can appear in zero or many tracker/history/report views without duplication;
 - Subject is a role over native identity, not a wrapper entity;
-- Person, Actor, Account and Asset remain distinct when relevant.
+- Person, Actor, Account, Asset and Resource roles remain distinct when relevant.
 
 ```text
 Quantity      = reusable scalar amount value semantics
@@ -510,6 +520,7 @@ Person        = native human identity
 Actor         = contextual agency semantics
 Account       = platform/access identity boundary
 Asset         = current scoped durable physical-object identity
+Resource      = contextual planning/execution eligibility role
 Tracker/view  = product/query presentation over native records
 ```
 
@@ -685,6 +696,7 @@ Core guardrails:
 - current Account holder is not the universal kernel-level Subject default;
 - non-LifeOS people and non-person referents may play Subject role;
 - accepted Asset v0 may play Subject role without identity collapse;
+- Resource v0 remains independent operational eligibility/capacity semantics;
 - unknown/later-resolved/corrected Subject attribution preserves material history;
 - Subject association itself may be private;
 - AI may propose native-referent resolution but does not automatically establish identity/authority;
@@ -706,12 +718,14 @@ Person is the persistent native representation of a human individual in LifeOS r
 ```text
 Person != Subject
 Person != Actor
+Person != Resource
 Person != Account
 Person != Principal
 Person != User
 Person != Asset
 Person may play Subject role
 Person may play Actor/specific action roles
+Person may play Resource role
 non-account Person is ordinary domain reality
 ```
 
@@ -720,9 +734,10 @@ Core guardrails:
 - Person identity is not derived from name/email/phone/provider IDs;
 - Account creation/deletion does not automatically create/delete Person;
 - external/contact/profile representations may be identity evidence but not automatic equality;
+- Resource role does not replace Performer/Participant/Responsibility;
 - Person merge/split/reconciliation must preserve material history;
 - identity linkage itself may be private;
-- AI can propose identity matching but does not silently establish Person identity.
+- AI can propose identity/resource matching but does not silently establish Person identity or allocation.
 
 ## Actor
 
@@ -738,6 +753,7 @@ Actor is contextual agency semantics over a native Person/system/etc. identity. 
 Actor entity/root = rejected
 Actor != Person
 Actor != Subject
+Actor != Resource
 Actor != Account
 Actor != Principal
 Actor != Responsibility
@@ -751,7 +767,7 @@ Core guardrails:
 - Person may play Actor role, but Actor need not be Person;
 - no Account is required for historical Actor attribution;
 - Account authentication does not automatically establish semantic Actor;
-- agency does not imply permission, responsibility or Authority;
+- agency does not imply Resource eligibility, permission, responsibility or Authority;
 - AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors;
 - no universal `actors` table/root is pre-approved.
 
@@ -800,7 +816,7 @@ Core guardrails:
 - individual identity must materially matter;
 - physical thing != Asset automatically;
 - managed thing != Asset automatically;
-- Asset may play Subject role and may later play Resource role;
+- Asset may play Subject role and Resource role without identity collapse;
 - ownership/possession/location/state do not define Asset identity;
 - provider/serial/VIN/MAC/barcode identifiers are reconciliation evidence, not automatic canonical identity;
 - fungible stock does not require one Asset per unit;
@@ -809,6 +825,46 @@ Core guardrails:
 - a **terminology-neutral managed/tracked-referent review is mandatory before final Cluster-4 closure**.
 
 Typical UI: My car, Sony A7 IV, Laptop, Bike, Equipment, Gear, Appliance, depending on product context. The word `Asset` itself need not appear.
+
+## Resource
+
+**Status:** CANONICAL SEMANTIC PLANNING / EXECUTION ROLE-CAPABILITY — NOT ENTITY/ROOT  
+**Source:** `concepts/resource.md`  
+**Validation:** `checkpoints/resource-v0-validation.md` — PASS WITH HARDENING  
+**Question:** What could provide what this execution context needs?  
+**UI exposure:** HIDDEN / CONTEXTUAL through natural provider labels
+
+Resource is contextual operational eligibility/capability over a native referent, service, pool, supply, or other eligible provider. It does not create independent identity.
+
+```text
+Resource entity/root = rejected
+Resource != Person
+Resource != Asset
+Resource != Subject
+Resource != Actor
+Resource != Requirement
+Resource != candidate set
+Resource != Allocation
+Resource != Reservation / Capacity Claim
+Resource != actual use / consumption
+Resource != Responsibility / Performer / Participant
+```
+
+Core guardrails:
+
+- Person may play Resource role without losing Person identity;
+- Asset may play Resource role without losing Asset identity;
+- future Place/service/pool/supply may play Resource role where justified;
+- eligibility is contextual to a Requirement;
+- a schedulable Resource is only the subset where time-dependent Availability/Capacity matters;
+- Requirement may remain abstract before concrete allocation;
+- reserved/allocated Resource does not prove actual use;
+- consumable supply does not require per-unit identity;
+- Money/Budget are not Resource by default;
+- Resource role grants no ownership, Responsibility, Authority, Visibility or consent;
+- no universal `resources` table/root or generic `resource_id` relation is pre-approved.
+
+Typical UI: Camera, Equipment, Room, Person name, Service, `Who's available?`, `Required equipment`, depending on context.
 
 ---
 
@@ -936,10 +992,10 @@ The old grouping of `auto, casa, attrezzo, animale, pianta, conto, documento, pe
 Current decomposition includes at minimum:
 
 ```text
-Person  -> native human identity
-Subject -> contextual aboutness role
-Asset   -> current scoped individually tracked non-human physical-object identity
-Resource -> still under review
+Person   -> native human identity
+Subject  -> contextual aboutness role
+Asset    -> current scoped individually tracked non-human physical-object identity
+Resource -> contextual planning/execution role over native providers
 ```
 
 Other referents are modeled only when their own semantics justify them. The Asset boundary remains subject to the mandatory terminology-neutral Cluster-4 re-review.
@@ -993,17 +1049,18 @@ Final Decision/Version semantics belong to Relationships/Reasoning review.
 **Status:** CANONICAL NATIVE ENTITY  
 **See:** `concepts/person.md`
 
-Persistent human identity independent of Account, Subject role, Actor role, participation, responsibility, authority and visibility.
+Persistent human identity independent of Account, Subject role, Actor role, Resource role, participation, responsibility, authority and visibility.
 
 ```text
 Person != Account
 Person != Subject
 Person != Actor
+Person != Resource
 Person != Principal
 Person != Asset
 ```
 
-A Person may exist without ever having a LifeOS Account.
+A Person may exist without ever having a LifeOS Account and may play Resource role when operationally eligible.
 
 ## Actor
 
@@ -1017,6 +1074,7 @@ Actor != Person
 Actor != Account
 Actor != Principal
 Actor != Subject
+Actor != Resource
 Actor != Responsibility
 Actor != Authority
 ```
@@ -1063,6 +1121,7 @@ Must be richer than one `assigned_to` field and may require accountability, expe
 
 ```text
 Responsibility != Actor by default
+Responsibility != Resource
 responsible actor != performer
 ```
 
@@ -1076,7 +1135,7 @@ Execution assignment can move while anticipation, reminding, monitoring and repa
 
 **Status:** RELATIONSHIP ROLE — exact model deferred
 
-Who actually performed work; not automatically requester/responsible actor/planned assignee. Performer is a specific Actor role, not Actor identity.
+Who actually performed work; not automatically requester/responsible actor/planned assignee. Performer is a specific Actor role, not Actor or Resource identity.
 
 ## Subject
 
@@ -1090,27 +1149,34 @@ Who/what a descriptive record primarily concerns. The native referent retains it
 **Status:** CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE  
 **See:** `concepts/asset.md`
 
-One individually tracked non-human physical object whose identity/history materially matter. Asset may be shared among actors, but ownership, holder, stewardship, Authority and Visibility are separate.
+One individually tracked non-human physical object whose identity/history materially matter. Asset may play Subject or Resource roles, but ownership, holder, stewardship, Authority and Visibility are separate.
 
 ## Resource
 
-**Status:** DEFERRED — NEXT DATA/SUBJECT REVIEW
+**Status:** CANONICAL SEMANTIC PLANNING / EXECUTION ROLE-CAPABILITY  
+**See:** `concepts/resource.md`
 
-Something whose availability/capacity/access may constrain execution/scheduling.
+Operational eligibility/capacity of a native referent/supply to satisfy an execution Requirement.
 
 ```text
-Person may potentially play Resource role
-Asset may potentially play Resource role
+Resource entity/root = rejected
+Person may play Resource role
+Asset may play Resource role
 Actor != Resource
 Subject != Resource
 Asset != Resource
+Resource != Requirement
+Resource != Allocation
+Resource != Reservation
+Resource != actual use
+Resource != Responsibility/Performer
 ```
 
 ## Owner / Governor / Steward
 
 **Status:** DEFERRED RELATIONSHIP/AUTHORITY SEMANTICS
 
-Do not use as synonyms for creator, Account holder, participant, viewer, responsible actor, performer, Person, Subject or Asset identity.
+Do not use as synonyms for creator, Account holder, participant, viewer, responsible actor, performer, Person, Subject, Resource or Asset identity.
 
 ## Authority
 
@@ -1124,6 +1190,7 @@ Authority != Confirmation
 Authority != Provenance/source
 Authority != Subject
 Authority != Actor
+Authority != Resource
 Authority != Account
 Authority != Asset ownership by default
 ```
@@ -1132,7 +1199,7 @@ Authority != Asset ownership by default
 
 **Status:** DEFERRED
 
-What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset attribution are distinct. Being Subject or owner does not automatically grant visibility.
+What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset attribution are distinct. Being Subject, Resource candidate or owner does not automatically grant visibility.
 
 ## Acknowledgement
 
@@ -1191,6 +1258,31 @@ Account != Principal by default
 
 Exact login-provider identities, credentials, account linking, service principals, delegation and authentication/authorization representation remain open.
 
+## Resource Requirement / Allocation / Reservation
+
+**Status:** SAFE DEFERRED — RELATIONSHIPS / PLANNING LOGICAL MODEL
+
+Resource v0 fixes the separation:
+
+```text
+Requirement
+what is needed
+        ↓
+Candidate
+what could satisfy it
+        ↓
+Allocation
+what is selected
+        ↓
+Reservation / Capacity Claim
+what capacity is held
+        ↓
+Actual use / consumption
+what was really used
+```
+
+The exact identity/cardinality/persistence of these structures remains deferred.
+
 ## Asset scope / managed-referent taxonomy
 
 **Status:** SAFE DEFERRED — MANDATORY CLUSTER-4 REVISIT
@@ -1241,7 +1333,7 @@ Trigger != Routine
 
 **Status:** DEFERRED — STRONG FUTURE NEED
 
-Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject and Actor are already bounded semantic roles and Asset ownership/custody/Resource relationships must remain distinct.
+Typed/directional semantics are likely needed. Do not collapse meaningful relations into semantic-free `related_to` when behavior/query meaning differs. Subject, Actor and Resource are already bounded semantic roles and Asset ownership/custody/Resource relationships must remain distinct.
 
 ## Dependency
 
@@ -1302,10 +1394,12 @@ Subject != observer/recorder/source/transformer/authority/viewer
 Subject role != Subject entity/root
 Subject != generic related_to
 Person != Actor
+Person != Resource
 Person != Account
 Person != Principal
 Person != User domain primitive
 Person != Asset
+Actor != Resource
 Actor != Account
 Actor != Principal
 Actor != Responsibility
@@ -1321,6 +1415,14 @@ Asset instance != product/model definition
 physical thing != Asset automatically
 managed thing != Asset automatically
 financial asset semantics != Asset entity
+Resource role != Resource entity/root
+Resource != Requirement
+Resource != candidate set
+Resource != Allocation
+Resource != Reservation/Capacity Claim
+Resource != actual use/consumption
+Resource != Responsibility/Performer/Participant
+Money/Budget != Resource by default
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
 view membership != duplicate native record
@@ -1354,6 +1456,7 @@ Person != Account
 Person may exist without Account
 Person may play Subject role
 Person may play Actor/specific action role
+Person may play Resource role
 Actor != Account
 Actor != Principal
 Actor != Subject
@@ -1365,7 +1468,8 @@ Asset != owner
 Asset owner != holder/custodian/steward
 Asset ownership != Authority/Visibility
 Asset may play Subject role
-Asset may potentially play Resource role
+Asset may play Resource role
+Resource candidacy != Responsibility/consent/allocation Authority
 Participant != Responsible actor
 Responsible actor != Performer
 Creator != Owner/Governor
@@ -1379,7 +1483,7 @@ shared Asset != identical actor visibility/private overlays
 Observation Subject != observer/recorder/source/authority/viewer
 current Account != universal Subject
 current Account != semantic Actor automatically
-non-LifeOS Person may be Subject/Participant/Actor where context allows
+non-LifeOS Person may be Subject/Participant/Actor/Resource candidate where context allows
 Confirmation by A != Confirmation by B
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
@@ -1395,6 +1499,7 @@ AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
 AI Subject/Person/Asset guess != established identity
+AI Resource match != authoritative allocation
 AI Actor != human author/authority automatically
 AI provenance != disclosure permission
 future Account access revocation != deletion of historical Person/Actor attribution
@@ -1416,6 +1521,7 @@ Register/Tracker view != kernel Register entity
 RegisterEntry != universal semantic record
 Subject UI/context != Subject entity
 Actor UI label != Actor entity
+Resource UI label != Resource entity
 User UI/implementation term != universal domain entity
 Account settings object != Person identity
 Asset UI profile != new Asset subtype primitive automatically
@@ -1497,15 +1603,39 @@ UI: Sony A7 IV / History
 
 The camera is one Asset identity; the Observations do not become Asset fields merely because the UI groups them.
 
-## Camera used for a shoot
+## Camera required for a shoot
 
 ```text
-Asset A17
-        ↓ future Resource role
 Activity: photo shoot
+
+Resource Requirement
+camera suitable for wildlife photography
+
+Candidates
+Asset A17
+Asset A18
+
+Allocation
+A17 selected
+
+Reservation
+A17 17:00–20:00
 ```
 
-Asset identity and Resource semantics remain distinct until Resource review finalizes the latter.
+Asset identity, Resource role, Requirement, Allocation and Reservation remain distinct.
+
+## Person required by capability
+
+```text
+Requirement
+Japanese B2+
+
+Candidates
+Person Anna
+Person Luca
+```
+
+The people retain Person identity. Resource candidacy does not establish Responsibility or Performer status.
 
 ## Company laptop
 
@@ -1550,6 +1680,9 @@ If Dr. Rossi later creates an Account, the human Person identity does not need t
 AI Agent X
 Actor role: proposer
 
+Resource matching
+proposes A17 for requirement
+
 service/security identity
 future Principal semantics
 
@@ -1557,7 +1690,7 @@ human Person
 future delegated/on-behalf-of Authority context
 ```
 
-AI agency does not become human Confirmation or Authority automatically.
+AI agency/resource matching does not become human Confirmation, allocation Authority or Responsibility automatically.
 
 ## Quantity display conversion
 
@@ -1597,7 +1730,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage or Subject association.
+Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage, Resource-match basis or Subject association.
 
 ---
 
@@ -1617,6 +1750,7 @@ Person              → natural human name/contact representation
 Actor               → hidden; expose role: Done by / Recorded by / Suggested by
 Account             → Account / Profile / Login in settings/security context
 Asset               → Car / Camera / Laptop / Bike / Gear / Equipment according to context
+Resource            → usually hidden; Camera / Room / Person / Service / Who's available? / Required equipment
 User                → ordinary product language only where unambiguous
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
@@ -1647,13 +1781,15 @@ Specific guardrails:
 - Quantity does not imply a standalone table/entity for each scalar amount;
 - Subject does not imply a universal `subjects` table/root or every referent inheriting from Subject;
 - Actor does not imply a universal `actors` table/root or one generic `actor_id` relation everywhere;
+- Resource does not imply a universal `resources` table/root or one generic `resource_id` relation everywhere;
+- Resource Requirement/Allocation/Reservation remain distinct logical-model questions;
 - Person does not imply `persons.id = accounts.id`;
 - Account does not imply final auth/provider/credential/Principal schema;
 - User must not become the universal implementation FK just because the UI uses the word;
 - Asset does not imply one universal managed-things table, one table per subtype, one row per physical unit, or inheritance into Resource;
 - Asset serial/provider identifiers do not define canonical Asset identity by default;
 - Asset model/type/profile semantics are not fixed yet;
-- heterogeneous Subject/Actor references must preserve native identity and attribution history;
+- heterogeneous Subject/Actor/Resource references must preserve native identity and attribution/history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
