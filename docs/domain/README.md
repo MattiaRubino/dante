@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Quantity v0 accepted in Data / Subjects  
+**Current revision:** 2026-08-12 — Quantity accepted; Register kernel candidate rejected; Subject next  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -19,6 +19,8 @@ Its job is to produce the strongest current domain model justified by product in
 A concept may be reopened when later scenarios, implementation pressure, external evidence, safety/privacy requirements or stronger abstractions expose a real contradiction. Changes must be deliberate and historical reasoning must not be silently erased.
 
 Earlier product documents, simulations, glossaries, ADRs, prototypes and conversation history are evidence inputs, not automatic truth.
+
+A roadmap item is a **candidate for validation**, not a checklist item that must survive. Candidate rejection is a valid and desirable result when the useful behavior is preserved more cleanly without an additional primitive.
 
 ---
 
@@ -63,7 +65,7 @@ Cluster verdict
 Data / Subjects is the one transition cluster because it began before the Adjacent Dependency Sweep was established. Its sequence is:
 
 ```text
-finish Data / Subjects concepts
+finish Data / Subjects candidate reviews
         ↓
 Data / Subjects cluster integration + multi-actor stress
         ↓
@@ -128,6 +130,8 @@ optional adapters / mappings
 external standards/providers
 ```
 
+Mature apps/products are also useful evidence because they expose product and workflow lessons accumulated through real usage. Their patterns may be borrowed, adapted, rejected, or deliberately contradicted when LifeOS has different semantics.
+
 Provider identifiers/status taxonomies and lossless external mapping are not kernel invariants by default.
 
 ---
@@ -151,6 +155,8 @@ Each accepted concept should document where relevant:
 - rejected alternatives;
 - deliberately deferred questions;
 - persistence/API implications without prematurely fixing tables.
+
+Rejected candidates should receive a durable checkpoint when their historical presence or future reintroduction risk is material.
 
 ---
 
@@ -284,6 +290,7 @@ Examples of valid minimal shapes:
 weight measurement -> Observation using Quantity(66.4 kg)
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
+longitudinal weight screen -> query over native Observations
 full goal workflow -> uses only the layers that add real meaning
 ```
 
@@ -332,7 +339,7 @@ Outcome != Milestone
 Milestone attainment != duplicate Actual/Outcome/Observation truth
 
 Observation != Quantity
-Observation != Register
+Observation != universal RegisterEntry
 Observation != Evidence
 Observation != Confirmation
 Observation != Provenance
@@ -389,14 +396,15 @@ Provenance != Audit
 ## Observation invariants
 
 - measurement/simple-assertion concept, not universal fact/blob;
-- may exist without prior intention/Actual/Goal/Register;
+- may exist without prior intention/Actual/Goal/saved tracker;
 - effective time/context != recorded/ingested time;
 - missing Observation != explicit negative != failed measurement;
 - subjective/conflicting Observations may coexist;
 - derived Observations preserve traceability;
 - chart/query aggregates do not automatically become persisted Observations;
 - high-frequency sampling does not imply row-per-tick persistence;
-- subject != observer != recorder != source/provider/device != authority != viewer.
+- subject != observer != recorder != source/provider/device != authority != viewer;
+- one Observation may surface in multiple longitudinal views without duplication.
 
 ## Confirmation invariants
 
@@ -445,23 +453,24 @@ Provenance != Audit
 
 # Active cluster — Data / Subjects
 
-**Status:** IN PROGRESS — `Quantity v0` accepted; `Register` is the next read-only concept review.
-
-The first three clusters are validated. Data / Subjects is now the transition cluster for the dependency-closure discipline.
+**Status:** IN PROGRESS — `Quantity v0` accepted; historical `Register` kernel candidate evaluated and rejected; `Subject` is the next read-only review.
 
 Accepted in this cluster:
 
 1. [`Quantity v0`](concepts/quantity.md) — [`validation`](checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
 
-Provisional remaining topics:
+Rejected candidate with validated product need:
 
-- Register;
+2. [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
+
+Remaining candidate topics:
+
 - Subject;
 - Person / Actor boundary;
 - Asset;
 - Resource.
 
-The exact review order remains reopenable if concept evidence exposes a stronger dependency.
+The exact review order remains reopenable if concept evidence exposes a stronger dependency. None of these candidates is guaranteed to survive merely because it appears in the roadmap.
 
 ## Quantity current baseline
 
@@ -469,7 +478,7 @@ The exact review order remains reopenable if concept evidence exposes a stronger
 Quantity
 = reusable scalar amount value semantics
 = magnitude + unit semantics sufficient for interpretation
-!= independent entity / Observation / Register / universal numeric wrapper
+!= independent entity / Observation / universal numeric wrapper
 ```
 
 Core hardenings:
@@ -486,24 +495,73 @@ Core hardenings:
 - Range/Threshold/comparator semantics remain outside basic Quantity;
 - Quantity does not imply a standalone SQL table/entity.
 
-Current dependency obligations include Money/MonetaryAmount, ratings/scales, percentages/ratios/counts, custom units, elapsed-duration versus calendar time, Range/Threshold semantics, and final decimal/unit persistence. They are explicitly registered for the post-Cluster-4 closure unless resolved earlier.
+Current Quantity dependency obligations include Money/MonetaryAmount, ratings/scales, percentages/ratios/counts, custom units, elapsed-duration versus calendar time, Range/Threshold semantics, and final decimal/unit persistence. They are explicitly registered for the post-Cluster-4 closure unless resolved earlier.
 
-Inherited mandatory re-tests:
+## Register candidate conclusion
+
+Historical proposal:
 
 ```text
-Observation vs Quantity — basic boundary RESOLVED by Quantity v0
-Observation vs Register/RegisterEntry — pending Register review
-Quantity vs Register aggregation — mandatory next re-test
-Subject vs observer/recorder/source/transformer
-sampled-series physical representation
+Register + universal RegisterEntry
+```
+
+Current conclusion:
+
+```text
+native semantic records
+        ↓
+query / filtering / grouping
+        ↓
+valid aggregation / trend / comparison
+        ↓
+Register / Tracker / History / Progress product UI
+```
+
+Guardrails:
+
+- no universal RegisterEntry;
+- Register is not a kernel source-of-truth container;
+- source records can appear in multiple views without duplication;
+- deleting/changing a view does not change source history;
+- valid aggregation follows the source metric/record semantics, not same-unit coincidence;
+- quick capture through a tracker creates the native semantic record;
+- saved tracker/view configuration may exist as product/application configuration without becoming independent domain truth;
+- `Transaction`, `Movement`, `Snapshot`, or other future native record types are **not pre-approved** merely because historical Register examples mentioned them.
+
+## Mandatory inherited re-tests
+
+```text
+Observation vs Quantity — RESOLVED by Quantity v0
+Observation vs Register/RegisterEntry — RESOLVED: Register kernel candidate and universal RegisterEntry rejected
+Quantity vs Register aggregation — RESOLVED at kernel level: aggregation validity is source/metric contextual
+Subject vs observer/recorder/source/transformer — NEXT
+sampled-series physical representation — safe implementation dependency, retain for pressure test
 Availability/Capacity vs Resource
 Actor vs Subject vs Resource vs Account/Principal
 Provenance source/actor roles vs Subject/Person/Account
 ```
 
+## Next candidate — Subject
+
+Subject must be evaluated independently rather than assumed necessary because Observation currently uses the word `subject`.
+
+Initial questions:
+
+```text
+Is Subject a true entity/identity?
+Is Subject only a semantic role played by Person/Asset/other domain objects?
+Does a universal Subject wrapper duplicate heterogeneous entities?
+Can one record have primary subject plus focus/context without a new root?
+Can non-account people, animals, places, assets, accounts or abstract things be subjects naturally?
+Subject vs Actor vs Resource vs Account/Principal
+Subject identity/history/privacy implications
+```
+
+Benchmark evidence should include mature health/knowledge/asset/contact systems where useful, but external schemas remain evidence rather than authorities.
+
 ## Mandatory closure after Data / Subjects
 
-Before Relationships / Reasoning starts, perform one dedicated closure pass across all open dependencies from clusters 1–4. At minimum revisit the known watchlist and any new Data / Subjects findings.
+Before Relationships / Reasoning starts, perform one dedicated closure pass across all open dependencies from clusters 1–4.
 
 Every material item must become:
 
@@ -568,6 +626,7 @@ Current known terminology refinements include:
 - Evidence is evaluative use/relationship, not duplicated source data;
 - Provenance is bounded lineage, not merely `source`, truth, Authority or Audit;
 - Quantity is bounded scalar value semantics, not a measurement entity or universal number wrapper;
+- historical `Register + RegisterEntry` is not a canonical kernel structure; longitudinal tracking remains a product/query capability over native records;
 - Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage;
 - older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are redistributed into Provenance, automation/inference, Version and workflow semantics.
 
@@ -598,6 +657,8 @@ Evidence
 Provenance
 Quantity
 ```
+
+Rejected historical/current candidates are not counted as accepted concepts.
 
 ---
 
@@ -657,11 +718,13 @@ Cross-Cluster Validation v3     — PASS
 Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
 Validation Methodology v3       — ACTIVE MANDATORY STANDARD
 Quantity v0                     — ACCEPTED
+Register kernel candidate       — REJECTED
+RegisterEntry universal         — REJECTED
 
 ↓ NOW
-Register read-only review
+Subject read-only review
 ↓
-remaining Data / Subjects concepts
+remaining Data / Subjects candidates
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -680,11 +743,9 @@ The following are executable obligations, not generic reminders. The post-Cluste
 
 Known inherited items include:
 
-- Observation vs Register;
-- Quantity vs Register aggregation semantics;
-- Availability/Capacity vs Resource;
 - Subject vs observer/recorder/source/transformer semantics;
 - Person/Actor/Subject/Account/Principal boundaries;
+- Availability/Capacity vs Resource;
 - Actual establishment under future Authority/Decision/reconciliation rules;
 - Confirmation target-version semantics vs future Version model;
 - Confirmation vs Authority/Acknowledgement/Acceptance;
@@ -703,9 +764,19 @@ Known inherited items include:
 - Quantity vs custom unit-definition semantics;
 - Quantity vs elapsed duration/calendar-relative time;
 - Quantity vs Range/Threshold/comparison semantics;
-- Quantity decimal/unit physical representation.
+- Quantity decimal/unit physical representation;
+- longitudinal query/materialization and saved-view implementation;
+- aggregate visibility vs source-record visibility;
+- future native transaction/movement/snapshot semantics only if concrete workflow evidence justifies them.
 
-The list is expected to grow during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
+Resolved and removed from limbo:
+
+- Observation vs Register/RegisterEntry;
+- Register as a kernel primitive;
+- universal RegisterEntry;
+- Quantity vs generic Register aggregation at the kernel level.
+
+The list is expected to evolve during Data / Subjects, but nothing may remain unclassified at the scheduled closure point.
 
 ---
 
