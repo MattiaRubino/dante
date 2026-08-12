@@ -264,11 +264,11 @@ Employee
 currently responsible
 ```
 
-Exact Authority scope, delegation and policy semantics remain a separate Relationships / Reasoning review.
-
 Canonical rule:
 
 > **Responsibility never manufactures Authority by itself.**
+
+Authority v0 now closes this boundary: effective assignment/claim/hand-off depends on whatever bounded Authority/policy/Acceptance basis applies, while Responsibility itself remains accountability semantics.
 
 ---
 
@@ -282,7 +282,15 @@ Likewise, being able to view a commitment does not establish Responsibility.
 Responsibility != Visibility
 ```
 
-Future policy may grant minimum access needed to perform a role, but that is an Authority/Visibility rule, not intrinsic Responsibility semantics.
+Visibility v0 now closes this boundary. A product/policy may grant a responsibility holder some minimum bounded projection needed to act, but:
+
+```text
+Responsibility
+!= Visibility
+!= Authority to re-disclose
+```
+
+The relationship itself may also be more sensitive than either endpoint.
 
 ---
 
@@ -647,6 +655,8 @@ Canonical rule:
 
 > **AI may propose Responsibility changes; proposal capability does not grant assignment/transfer Authority.**
 
+Visibility v0 further hardens this: AI may use an authorized private basis to propose a change without being permitted to disclose that basis.
+
 ---
 
 # 22. Simple UI versus kernel semantics
@@ -769,6 +779,7 @@ Simple cases stay direct; rich/open/transfer/history cases may use a specific qu
 22. **Simple UI may collapse roles only when product policy makes the meaning unambiguous.**
 23. **Qualified Responsibility structure does not automatically imply independent entity identity.**
 24. **No universal `responsibility_id`/`assigned_to`/Relationship wrapper is pre-approved.**
+25. **Responsibility grants neither Visibility nor re-disclosure Authority by itself.**
 
 ---
 
@@ -867,14 +878,15 @@ Do not infer from Responsibility v0 that LifeOS requires:
 
 **Resolution:** coordination Stewardship is semantically distinct from Responsibility; standalone primitive status remains SAFE DEFERRED.
 
+### Responsibility ↔ Authority
+
+**Resolution:** Authority v0 establishes governance/effect power independently; Responsibility creates no Authority. Effective assignment/transfer uses applicable Authority/policy without changing Responsibility semantics.
+
+### Responsibility ↔ Visibility
+
+**Resolution:** Visibility v0 establishes bounded information exposure independently; Responsibility creates no automatic visibility or re-disclosure right.
+
 ## SAFE DEFERRED
-
-### Authority / delegation
-
-**Owner:** Relationships / Reasoning — Authority/Principal/delegation review.  
-**Why safe:** Responsibility explicitly creates no Authority and can exist under several authority policies.  
-**Reopening trigger:** no authority model can establish/change Responsibility without embedding Authority into Responsibility itself.  
-**Tests to rerun:** CORE-04, MA-06, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Acceptance / Acknowledgement
 
@@ -882,13 +894,6 @@ Do not infer from Responsibility v0 that LifeOS requires:
 **Why safe:** assignment/claim/hand-off effects are explicitly policy-dependent and do not equate with Confirmation.  
 **Reopening trigger:** ordinary responsibility transfer cannot distinguish proposal, receipt, willingness and effective change without altering Responsibility semantics.  
 **Tests to rerun:** CORE-02, CORE-04, MA-03, MA-05, MA-11, XCON-04.
-
-### Visibility
-
-**Owner:** Relationships / Reasoning — Visibility/Authority review.  
-**Why safe:** Responsibility grants no disclosure semantics by itself.  
-**Reopening trigger:** minimum role access cannot be represented without making Visibility intrinsic to Responsibility.  
-**Tests to rerun:** MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
 ### Provenance / Version / Decision / reconciliation
 
@@ -962,9 +967,7 @@ Rejected:
 
 # 30. Deliberately deferred questions
 
-- Authority/Principal/delegation and who may establish/transfer Responsibility;
 - Acceptance/Acknowledgement and exact proposal-response semantics;
-- Visibility/access policy around responsibility context;
 - collective/group/joint accountability semantics;
 - fallback/conditional/rotation policy;
 - standalone coordination Stewardship primitive status;
@@ -972,6 +975,8 @@ Rejected:
 - exact qualified Responsibility identity/cardinality/persistence;
 - specialist regulated-accountability extensions;
 - final API/SQL shape.
+
+Authority and Visibility are no longer deferred at the semantic-boundary level; their exact enforcement/persistence still belongs to later logical/security design.
 
 ---
 
@@ -1018,9 +1023,11 @@ A responsible Actor may not participate in the Event/interaction. A Participant 
 
 Assignment/Claim/Hand-off remain role-specific: assigning Responsibility does not silently establish Participation, and changing Participation does not transfer Responsibility.
 
-Both Responsibility and Participation continue to expose the same unresolved adjacent governance/common-ground questions — Authority, Visibility, Acceptance/Acknowledgement, delegation and reconciliation — but neither absorbs them.
+Both Responsibility and Participation continue to expose the same unresolved adjacent common-ground questions — Acceptance/Acknowledgement, delegation/on-behalf-of and reconciliation — but neither absorbs them.
 
 See:
 
 - `concepts/participation.md`;
-- `checkpoints/participation-v0-validation.md`.
+- `checkpoints/participation-v0-validation.md`;
+- `concepts/authority.md`;
+- `concepts/visibility.md`.
