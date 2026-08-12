@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Resource accepted as semantic planning/execution role; Cluster-4 candidate reviews complete  
+**Current revision:** 2026-08-12 — Data / Subjects closed; terminology-neutral Asset review and Cross-Cluster v4 completed  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -88,7 +88,7 @@ Resource (semantic planning/execution role/capability, not entity)
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
 
-`Asset` is canonical only as the **current scoped baseline**. Its current `individually tracked non-human physical object` boundary must be re-tested terminology-neutrally before final Cluster-4 closure.
+`Asset` is canonical as the **current scoped baseline**. The mandatory terminology-neutral Cluster-4 review has been completed: a universal `ManagedObject` root was rejected under current evidence, the individually tracked physical-object identity need survived, and the exact internal noun `Asset` remains non-semantic/reopenable.
 
 ## DERIVED
 
@@ -203,10 +203,10 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 
 - `Register` as a universal kernel container and `RegisterEntry` as a universal semantic record are rejected historical candidates. See `checkpoints/register-v0-validation.md`.
 - `Subject` as a universal entity/root/wrapper is rejected. The accepted meaning is a contextual semantic role over native referent identity. See `concepts/subject.md` and `checkpoints/subject-v0-validation.md`.
-- universal `Actor` entity/root/wrapper is rejected. Actor is accepted as contextual agency semantics over native referent/system identity. See `concepts/actor.md`.
-- universal `Resource` entity/root/wrapper is rejected. Resource is accepted as contextual planning/execution eligibility/capability over native referents/supplies. See `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
+- universal `Actor` entity/root/wrapper is rejected. Actor is accepted as contextual agency semantics over native referent/system identity. Specific action roles remain preferred over a generic `actor` relation. See `concepts/actor.md`.
+- universal `Resource` entity/root/wrapper is rejected. Resource is accepted as contextual planning/execution eligibility/capability over independently justified referent/value/pool/supply/service semantics. See `concepts/resource.md` and `checkpoints/resource-v0-validation.md`.
 - universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
-- historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower and explicitly reopenable. See `concepts/asset.md` and `checkpoints/asset-v0-validation.md`.
+- historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower; a terminology-neutral cross-domain review rejected a universal `ManagedObject` root under current evidence. See `concepts/asset.md`, `checkpoints/asset-v0-validation.md`, and `checkpoints/data-subjects-v0.md`.
 
 ---
 
@@ -431,7 +431,7 @@ Capacity != universal busy/free boolean
 Capacity != universal scalar percentage
 ```
 
-Resource v0 clarifies that a schedulable Resource is a native referent/supply playing Resource role where time-dependent capacity matters; no Resource entity/root is implied.
+Resource v0 clarifies that a schedulable Resource is a provider playing Resource role where time-dependent capacity matters; Resource does not manufacture provider identity.
 
 ---
 
@@ -517,9 +517,9 @@ Quantity      = reusable scalar amount value semantics
 Observation   = contextual observed/asserted record
 Subject       = native referent's contextual aboutness role
 Person        = native human identity
-Actor         = contextual agency semantics
+Actor         = contextual agency semantics; specific role preferred
 Account       = platform/access identity boundary
-Asset         = current scoped durable physical-object identity
+Asset         = current scoped physical-object identity
 Resource      = contextual planning/execution eligibility role
 Tracker/view  = product/query presentation over native records
 ```
@@ -743,7 +743,7 @@ Core guardrails:
 
 **Status:** CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY  
 **Source:** `concepts/actor.md`  
-**Validation:** `checkpoints/person-actor-account-v0-validation.md` — PASS WITH HARDENING  
+**Validation:** `checkpoints/person-actor-account-v0-validation.md` plus `checkpoints/data-subjects-v0.md`  
 **Question:** What native referent or system is acting in this context?  
 **UI exposure:** HIDDEN; expose specific action-role labels instead
 
@@ -763,7 +763,8 @@ Actor != specific performer/recorder/observer/confirmer/proposer relation
 
 Core guardrails:
 
-- use the most specific meaningful action role;
+- **specific-role precedence:** use `performed_by`, `recorded_by`, `observed_by`, `confirmed_by`, `proposed_by`, etc. when known;
+- Actor is a shared agency category/capability, not a semantic-free generic persisted edge;
 - Person may play Actor role, but Actor need not be Person;
 - no Account is required for historical Actor attribution;
 - Account authentication does not automatically establish semantic Actor;
@@ -792,7 +793,7 @@ Exact Account/credential/provider/authentication schema belongs to later logical
 
 **Status:** CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE  
 **Source:** `concepts/asset.md`  
-**Validation:** `checkpoints/asset-v0-validation.md` — PASS WITH HARDENING  
+**Validation:** `checkpoints/asset-v0-validation.md` + Cluster-4 terminology-neutral review  
 **Question:** Which individually tracked non-human physical object is this, where its distinct identity and management history materially matter?  
 **UI exposure:** DIRECT / CONTEXTUAL through natural profiles
 
@@ -809,6 +810,7 @@ Asset != model/product definition
 Asset != every physical item
 Asset != every managed thing
 Asset != financial asset semantics
+universal ManagedObject root = rejected
 ```
 
 Core guardrails:
@@ -822,7 +824,8 @@ Core guardrails:
 - fungible stock does not require one Asset per unit;
 - living things, Documents, FinancialAccounts and services are not absorbed by default;
 - no universal Asset status or history-entry wrapper is pre-approved;
-- a **terminology-neutral managed/tracked-referent review is mandatory before final Cluster-4 closure**.
+- terminology-neutral review completed: universal ManagedObject rejected under current evidence;
+- exact noun `Asset` remains non-semantic/reopenable.
 
 Typical UI: My car, Sony A7 IV, Laptop, Bike, Equipment, Gear, Appliance, depending on product context. The word `Asset` itself need not appear.
 
@@ -830,11 +833,11 @@ Typical UI: My car, Sony A7 IV, Laptop, Bike, Equipment, Gear, Appliance, depend
 
 **Status:** CANONICAL SEMANTIC PLANNING / EXECUTION ROLE-CAPABILITY — NOT ENTITY/ROOT  
 **Source:** `concepts/resource.md`  
-**Validation:** `checkpoints/resource-v0-validation.md` — PASS WITH HARDENING  
+**Validation:** `checkpoints/resource-v0-validation.md` + `checkpoints/data-subjects-v0.md`  
 **Question:** What could provide what this execution context needs?  
 **UI exposure:** HIDDEN / CONTEXTUAL through natural provider labels
 
-Resource is contextual operational eligibility/capability over a native referent, service, pool, supply, or other eligible provider. It does not create independent identity.
+Resource is contextual operational eligibility/capability over a native referent, service, pool, supply, or other eligible provider. **Resource does not manufacture identity**: each provider retains whatever native identity, value, pool, supply, service, or other semantics it independently has.
 
 ```text
 Resource entity/root = rejected
@@ -854,12 +857,12 @@ Core guardrails:
 
 - Person may play Resource role without losing Person identity;
 - Asset may play Resource role without losing Asset identity;
-- future Place/service/pool/supply may play Resource role where justified;
+- future Place/service/pool/supply may play Resource role where independently justified;
+- consumable supply does not require per-unit or per-quantity identity;
 - eligibility is contextual to a Requirement;
 - a schedulable Resource is only the subset where time-dependent Availability/Capacity matters;
 - Requirement may remain abstract before concrete allocation;
 - reserved/allocated Resource does not prove actual use;
-- consumable supply does not require per-unit identity;
 - Money/Budget are not Resource by default;
 - Resource role grants no ownership, Responsibility, Authority, Visibility or consent;
 - no universal `resources` table/root or generic `resource_id` relation is pre-approved.
@@ -995,10 +998,10 @@ Current decomposition includes at minimum:
 Person   -> native human identity
 Subject  -> contextual aboutness role
 Asset    -> current scoped individually tracked non-human physical-object identity
-Resource -> contextual planning/execution role over native providers
+Resource -> contextual planning/execution role over independently justified provider semantics
 ```
 
-Other referents are modeled only when their own semantics justify them. The Asset boundary remains subject to the mandatory terminology-neutral Cluster-4 re-review.
+Other referents are modeled only when their own semantics justify them. The terminology-neutral review found no reason to replace this with a universal ManagedObject root.
 
 ## Shared Item
 
@@ -1067,7 +1070,7 @@ A Person may exist without ever having a LifeOS Account and may play Resource ro
 **Status:** CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY  
 **See:** `concepts/actor.md`
 
-Contextual agency of a native referent/system. Do not equate Actor with `users.id` or create a universal Actor wrapper/root.
+Contextual agency of a native referent/system. Do not equate Actor with `users.id`, create a universal Actor wrapper/root, or replace specific roles with one generic `actor` edge.
 
 ```text
 Actor != Person
@@ -1149,14 +1152,14 @@ Who/what a descriptive record primarily concerns. The native referent retains it
 **Status:** CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE  
 **See:** `concepts/asset.md`
 
-One individually tracked non-human physical object whose identity/history materially matter. Asset may play Subject or Resource roles, but ownership, holder, stewardship, Authority and Visibility are separate.
+One individually tracked non-human physical object whose identity/history materially matter. Asset may play Subject or Resource roles, but ownership, holder, stewardship, Authority and Visibility are separate. The exact noun `Asset` is not semantically mandatory.
 
 ## Resource
 
 **Status:** CANONICAL SEMANTIC PLANNING / EXECUTION ROLE-CAPABILITY  
 **See:** `concepts/resource.md`
 
-Operational eligibility/capacity of a native referent/supply to satisfy an execution Requirement.
+Operational eligibility/capacity of an independently meaningful provider to satisfy an execution Requirement.
 
 ```text
 Resource entity/root = rejected
@@ -1171,6 +1174,8 @@ Resource != Reservation
 Resource != actual use
 Resource != Responsibility/Performer
 ```
+
+Resource may also apply to supplies/pools without manufacturing identity for them.
 
 ## Owner / Governor / Steward
 
@@ -1285,24 +1290,19 @@ The exact identity/cardinality/persistence of these structures remains deferred.
 
 ## Asset scope / managed-referent taxonomy
 
-**Status:** SAFE DEFERRED — MANDATORY CLUSTER-4 REVISIT
+**Status:** RESOLVED AT CURRENT CLUSTER-4 BASELINE — REOPENABLE WITH STRONGER EVIDENCE
 
-Do not assume the current Asset boundary is final because CMMS/inventory products use similar terminology.
+The terminology-neutral review was completed across managed/tracked-referent product families.
 
-Before final Cluster-4 closure compare how mature products represent managed/tracked referents across:
+Current result:
 
 ```text
-personal possessions
-equipment/inventory
-smart-home/devices
-property/places
-documents/credentials
-finance/accounts
-pets/plants/living referents
-services/subscriptions
+universal ManagedObject root  REJECTED
+physical-object identity      RETAINED
+exact noun `Asset`            NON-SEMANTIC / reopenable
 ```
 
-The comparison must focus on identity/lifecycle/relationships/capabilities rather than names. Reopen Asset if a stronger abstraction explains the workflows with fewer exceptions.
+Future Place/Property, living, Document, FinancialAccount, and service workflows remain independently SAFE DEFERRED; they do not become primitives until concrete evidence justifies them.
 
 ## Version
 
@@ -1405,6 +1405,7 @@ Actor != Principal
 Actor != Responsibility
 Actor != Authority
 Actor role != Actor entity/root
+generic actor relation != specific action role
 Account != Person/Actor/Subject
 User != universal domain root
 Asset != Subject
@@ -1414,6 +1415,7 @@ Asset identity != owner/holder/steward
 Asset instance != product/model definition
 physical thing != Asset automatically
 managed thing != Asset automatically
+universal ManagedObject root = rejected
 financial asset semantics != Asset entity
 Resource role != Resource entity/root
 Resource != Requirement
@@ -1422,6 +1424,7 @@ Resource != Allocation
 Resource != Reservation/Capacity Claim
 Resource != actual use/consumption
 Resource != Responsibility/Performer/Participant
+Resource role != synthetic provider identity
 Money/Budget != Resource by default
 Register/Tracker UI != kernel Register primitive
 saved longitudinal view != source of truth
@@ -1624,6 +1627,15 @@ A17 17:00–20:00
 
 Asset identity, Resource role, Requirement, Allocation and Reservation remain distinct.
 
+## Consumable requirement
+
+```text
+Maintenance
+Requirement: 500 ml oil
+```
+
+The supply may satisfy Resource semantics without becoming an identity-bearing Resource entity.
+
 ## Person required by capability
 
 ```text
@@ -1678,7 +1690,8 @@ If Dr. Rossi later creates an Account, the human Person identity does not need t
 
 ```text
 AI Agent X
-Actor role: proposer
+specific role: proposer
+Actor semantics
 
 Resource matching
 proposes A17 for requirement
@@ -1780,8 +1793,8 @@ Specific guardrails:
 - Provenance does not imply one universal provenance/actor graph/table or event row for every technical operation;
 - Quantity does not imply a standalone table/entity for each scalar amount;
 - Subject does not imply a universal `subjects` table/root or every referent inheriting from Subject;
-- Actor does not imply a universal `actors` table/root or one generic `actor_id` relation everywhere;
-- Resource does not imply a universal `resources` table/root or one generic `resource_id` relation everywhere;
+- Actor does not imply a universal `actors` table/root, generic `actor_id`, or replacement of specific action roles;
+- Resource does not imply a universal `resources` table/root, generic `resource_id`, or synthetic identity for supplies/pools;
 - Resource Requirement/Allocation/Reservation remain distinct logical-model questions;
 - Person does not imply `persons.id = accounts.id`;
 - Account does not imply final auth/provider/credential/Principal schema;
@@ -1789,7 +1802,7 @@ Specific guardrails:
 - Asset does not imply one universal managed-things table, one table per subtype, one row per physical unit, or inheritance into Resource;
 - Asset serial/provider identifiers do not define canonical Asset identity by default;
 - Asset model/type/profile semantics are not fixed yet;
-- heterogeneous Subject/Actor/Resource references must preserve native identity and attribution/history;
+- heterogeneous Subject/Actor/Resource references must preserve native semantics and attribution/history;
 - longitudinal UI does not imply a universal `registers` + `register_entries` source-of-truth schema;
 - saved tracker/view configuration may be persisted without becoming domain truth;
 - unit normalization does not erase source representation/provenance;
@@ -1815,7 +1828,7 @@ A historical candidate may be rejected when validation shows that its useful beh
 
 An implementation/security concept may have an accepted boundary without being promoted prematurely into a fully modeled domain concept. `Account` currently follows this rule.
 
-A current baseline may also be accepted while carrying a **mandatory terminology-neutral re-review** when the chosen term itself may bias the abstraction. `Asset v0` currently follows this rule.
+A terminology-neutral revisit can resolve a naming-bias concern without freezing the noun forever. Asset v0 currently follows this rule: its cross-domain semantic test is complete, while the exact word `Asset` remains renameable.
 
 Change procedure:
 
@@ -1829,7 +1842,32 @@ Do not silently recycle one term with a new meaning.
 
 ---
 
-# 17. Maintenance rule
+# 17. Cluster-status reference
+
+Current integrated checkpoint set:
+
+```text
+Intention & Execution v0        PASS
+Time v0                         PASS
+Observed Reality & Evidence v0  PASS
+Data / Subjects v0              PASS WITH HARDENING
+Deferred Dependency Closure     PASS
+Cross-Cluster Validation v4     PASS WITH HARDENING
+```
+
+Current cross-cluster structural reopenings: **0**.
+
+Normative transition references:
+
+- `checkpoints/data-subjects-v0.md`;
+- `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
+- `checkpoints/cross-cluster-validation-v4.md`.
+
+Next domain review space is **Relationships / Reasoning**, where the Adjacent Dependency Sweep is mandatory before every concept verdict.
+
+---
+
+# 18. Maintenance rule
 
 This file is the semantic navigation layer, not a duplicate of every concept spec.
 
