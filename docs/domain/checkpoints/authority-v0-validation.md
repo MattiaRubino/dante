@@ -23,7 +23,7 @@ This checkpoint validates Authority as a **cross-cutting contextual governance r
 
 > **Authority is the contextual governance capability through which an eligible Actor or governed role is legitimately empowered, under an applicable basis, to establish, approve, change, override, revoke, or otherwise make a bounded domain effect effective for a defined target, scope, action, and context. Authority does not create Actor identity and does not by itself imply Responsibility, Participation, Visibility, ownership, Confirmation, truth, technical access, or actual performance.**
 
-Current classification at validation time:
+Current classification:
 
 ```text
 AUTHORITY
@@ -50,7 +50,7 @@ Decision/effective-change model deferred
 
 VISIBILITY
 DISTINCT from Authority
-separate review required at this checkpoint time
+separate review required
 ```
 
 ---
@@ -204,7 +204,7 @@ No accepted prior concept requires structural reopening.
 
 # 9. Adjacent Dependency Sweep
 
-## RESOLVED at validation time
+## RESOLVED
 
 | Boundary | Resolution |
 |---|---|
@@ -219,7 +219,7 @@ No accepted prior concept requires structural reopening.
 | Authority ↔ technical Permission | domain governance != current enforcement permission |
 | Authority ↔ Delegation | scoped Authority establishment/entrustment pattern, not universal root |
 
-## SAFE DEFERRED at validation time
+## SAFE DEFERRED
 
 ### Principal / enforcement model
 
@@ -311,23 +311,42 @@ CANONICAL CROSS-CUTTING GOVERNANCE RELATION / CAPABILITY
 
 # 11. Documentation propagation
 
-Required propagation for the Authority acceptance scope was completed at that milestone. Historical file paths are retained for audit.
+Required propagation for this accepted scope:
 
-No `permission.md`, `delegation.md`, `approval.md`, or `role.md` was justified by this review.
+- [x] `concepts/authority.md`
+- [x] this checkpoint
+- [x] `concepts/actor.md`
+- [x] `concepts/responsibility.md`
+- [x] `concepts/participation.md`
+- [x] `concepts/confirmation.md`
+- [x] `concepts/schedule.md`
+- [x] `concepts/actual.md`
+- [x] `concepts/resource.md`
+- [x] `concepts/asset.md`
+- [x] `language-map.md`
+- [x] `README.md`
+- [x] `workstreams/domain-model.md`
+
+No `permission.md`, `delegation.md`, `approval.md`, or `role.md` is justified by this review.
 
 ---
 
-# 12. Next-stage implication at validation time
+# 12. Next-stage implication
 
-Authority became the governance baseline. Visibility / Access was subsequently reviewed separately as information-exposure semantics.
+Authority is now the governance baseline. Visibility / Access is reviewed separately as information-exposure semantics, preserving:
 
-Acceptance/Acknowledgement, Decision/effective-change, Principal/enforcement, Consent, and detailed delegation remained separately owned dependencies at that time rather than being absorbed into Authority.
+```text
+can govern
+!= can see
+```
+
+Acceptance/Acknowledgement, Decision/effective-change, Principal/enforcement, Consent, and detailed delegation remain separately owned dependencies rather than being absorbed into Authority.
 
 ---
 
 # 13. Downstream closure — Acknowledgement v0 (2026-08-12)
 
-The later common-ground review resolved the checkpoint's `Acceptance / Acknowledgement` SAFE DEFERRED item without reopening Authority.
+The later common-ground review resolves the checkpoint's `Acceptance / Acknowledgement` SAFE DEFERRED item without reopening Authority.
 
 Current canonical closure:
 
