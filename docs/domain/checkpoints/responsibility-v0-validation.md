@@ -428,12 +428,12 @@ Required current propagation:
 
 - [x] `concepts/responsibility.md`
 - [x] this checkpoint
-- [ ] `concepts/activity.md`
-- [ ] `concepts/actor.md`
-- [ ] `concepts/resource.md`
-- [ ] `language-map.md`
-- [ ] `README.md`
-- [ ] `workstreams/domain-model.md`
+- [x] `concepts/activity.md`
+- [x] `concepts/actor.md`
+- [x] `concepts/resource.md`
+- [x] `language-map.md`
+- [x] `README.md`
+- [x] `workstreams/domain-model.md`
 
 No `assignment.md`, `claim.md`, `handoff.md`, or `stewardship.md` is justified by this review.
 
