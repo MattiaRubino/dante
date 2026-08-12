@@ -1,8 +1,8 @@
 # LifeOS Domain Atlas
 
-**Status:** In progress  
+**Status:** In progress — Clusters 1–4 validated together  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Data / Subjects candidate reviews complete through Resource v0; Cluster-4 integration is next  
+**Current revision:** 2026-08-12 — Data / Subjects PASS WITH HARDENING; deferred closure PASS; Cross-Cluster Validation v4 PASS WITH HARDENING  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -22,7 +22,7 @@ Earlier product documents, simulations, glossaries, ADRs, prototypes and convers
 
 A roadmap item is a **candidate for validation**, not a checklist item that must survive. Candidate rejection is a valid and desirable result when the useful behavior is preserved more cleanly without an additional primitive.
 
-A concept may also be accepted with an explicit mandatory re-review when the chosen terminology or benchmark family may itself bias the abstraction. `Asset v0` currently carries that obligation.
+A terminology-neutral review may also confirm that a concept is useful while leaving its exact noun renameable. Asset v0 currently follows this rule.
 
 ---
 
@@ -64,28 +64,23 @@ Cluster Multi-Actor Stress Gate
 Cluster verdict
 ```
 
-Data / Subjects is the one transition cluster because it began before the Adjacent Dependency Sweep was established. Its sequence is:
+The special Data / Subjects transition has now been executed in full:
 
 ```text
-finish Data / Subjects candidate reviews
+candidate reviews
         ↓
-Data / Subjects cluster integration + multi-actor stress
+Data / Subjects integration + multi-actor stress
         ↓
-provisional cluster verdict for transition purposes
+terminology-neutral Asset re-review
         ↓
 Deferred Dependency Closure — clusters 1–4
-(including mandatory terminology-neutral Asset revisit)
         ↓
-RESOLVED / SAFE DEFERRED / REOPEN for every material open boundary
+Cross-Cluster Validation v4
         ↓
-Cross-Cluster Validation v4 — clusters 1–4
-        ↓
-only after PASS: Relationships / Reasoning
+Relationships / Reasoning may begin
 ```
 
-For Asset specifically, the deferred-dependency closure must include a **terminology-neutral managed/tracked-referent benchmark** before the Cluster-4 baseline can be treated as consolidated.
-
-From Relationships / Reasoning onward, the Adjacent Dependency Sweep is mandatory before every concept verdict instead of accumulating unresolved adjacency until cluster end.
+From Relationships / Reasoning onward, the Adjacent Dependency Sweep is mandatory before **every** concept verdict instead of accumulating unresolved adjacency until cluster end.
 
 Before broad persistence/API stabilization:
 
@@ -105,6 +100,12 @@ Canonical references:
 - [`Validation Execution Template v3`](validation-execution-template-v3.md)
 - [`Multi-Actor Readiness v1`](multi-actor-readiness-v1.md)
 - [`Domain & Product Language Map`](language-map.md)
+
+Transition/checkpoint references now include:
+
+- [`Data / Subjects Cluster v0`](checkpoints/data-subjects-v0.md)
+- [`Deferred Dependency Closure — Clusters 1–4 v0`](checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
+- [`Cross-Cluster Validation v4`](checkpoints/cross-cluster-validation-v4.md)
 
 Validation Methodology v2 and its multi-actor addendum remain historical audit/evolution evidence.
 
@@ -171,7 +172,7 @@ Rejected candidates should receive a durable checkpoint when their historical pr
 
 # Current validated baselines
 
-## Intention & Execution — VALIDATED CURRENT BASELINE
+## Intention & Execution — PASS
 
 Accepted:
 
@@ -186,7 +187,7 @@ Checkpoint:
 
 - [`Intention & Execution Cluster v0`](checkpoints/intention-execution-v0.md)
 
-## Time — VALIDATED CURRENT BASELINE
+## Time — PASS
 
 Accepted:
 
@@ -201,11 +202,9 @@ Checkpoint:
 
 - [`Time Cluster v0`](checkpoints/time-v0.md)
 
-Retained hardenings include explicit quota-period semantics, Plan/Routine progression boundaries, Event identity/history surviving temporary absence of a current Schedule, and `scheduled != capacity consumed`.
+Resource v0 closes the previously deferred meaning of `schedulable resource`: a provider playing contextual Resource role where time-dependent Capacity/Availability matters; no Resource entity/root is introduced.
 
-Resource v0 now closes the previously deferred meaning of `schedulable resource`: a native referent/supply playing contextual Resource role where time-dependent Capacity/Availability matters; no Resource entity/root is introduced.
-
-## Observed Reality & Evidence — VALIDATED CURRENT BASELINE
+## Observed Reality & Evidence — PASS
 
 Accepted:
 
@@ -225,14 +224,63 @@ Integrated hardenings:
 - reported/asserted reality != established Actual;
 - Milestone attainment is Evidence/evaluation-backed checkpoint state, not duplicate reality storage.
 
-## Cross-cluster validation — VALIDATED CURRENT BASELINE
+## Data / Subjects — PASS WITH HARDENING
+
+Accepted current baselines:
+
+1. [`Quantity v0`](concepts/quantity.md) — reusable scalar value semantics;
+2. [`Subject v0`](concepts/subject.md) — contextual aboutness role, no Subject entity/root;
+3. [`Person v0`](concepts/person.md) — native human identity;
+4. [`Actor v0`](concepts/actor.md) — contextual agency semantics, specific-role precedence, no Actor entity/root;
+5. `Account` conceptual platform/access boundary — detailed model deferred;
+6. [`Asset v0`](concepts/asset.md) — current scoped physical-object native identity;
+7. [`Resource v0`](concepts/resource.md) — contextual planning/execution role/capability, no Resource entity/root.
+
+Rejected kernel candidates:
+
+- [`Register / RegisterEntry`](checkpoints/register-v0-validation.md) — longitudinal product/query capability retained;
+- universal Subject entity/root;
+- universal Actor entity/root;
+- universal Resource entity/root;
+- universal User root;
+- universal ManagedObject root.
+
+Cluster checkpoint:
+
+- [`Data / Subjects Cluster v0`](checkpoints/data-subjects-v0.md) — **PASS WITH HARDENING**.
+
+Key cluster hardenings:
+
+- Actor semantics do not replace specific relations such as `performed_by`, `recorded_by`, `confirmed_by`, `proposed_by`;
+- Resource does not manufacture identity; the provider retains whatever native identity/value/pool/supply/service semantics it independently has;
+- Requirement → candidate → Allocation → Reservation/Claim → Actual use/consumption remain distinguishable;
+- Register/Tracker/History stays a projection over native source records;
+- Asset terminology-neutral review rejected a universal ManagedObject root while retaining the physical-item identity need; the exact noun `Asset` remains renameable.
+
+## Deferred Dependency Closure — PASS
+
+Checkpoint:
+
+- [`Deferred Dependency Closure — Clusters 1–4 v0`](checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
+
+Result:
+
+```text
+REOPEN                         0
+unclassified material items    0
+```
+
+Every still-material deferred item is now either RESOLVED or SAFE DEFERRED with an explicit owner, safety reason, reopening trigger, and regression tests.
+
+## Cross-cluster validation — v4 CURRENT BASELINE
 
 Current checkpoint:
 
-- [`Cross-Cluster Validation v3`](checkpoints/cross-cluster-validation-v3.md) — **PASS**.
+- [`Cross-Cluster Validation v4`](checkpoints/cross-cluster-validation-v4.md) — **PASS WITH HARDENING**.
 
-Historical predecessor:
+Historical predecessors:
 
+- [`Cross-Cluster Validation v3`](checkpoints/cross-cluster-validation-v3.md) — previous Clusters 1–3 baseline;
 - [`Cross-Cluster Validation v2`](checkpoints/cross-cluster-validation-v2.md) — retained as audit/history evidence.
 
 Current result:
@@ -241,13 +289,13 @@ Current result:
 Intention & Execution v0        PASS
 Time v0                         PASS
 Observed Reality & Evidence v0  PASS
-Cross-Cluster Validation v3     PASS
+Data / Subjects v0              PASS WITH HARDENING
+Deferred Dependency Closure     PASS
+Cross-Cluster Validation v4     PASS WITH HARDENING
 
-18 accepted concepts retained before Cluster 4
-0 structural reopenings
-0 concept removals
-0 justified concept merges
-0 mandatory new primitives
+structural reopenings           0
+unclassified material debt      0
+mandatory new primitives in v4  0
 ```
 
 ## Multi-Actor Evidence Synthesis — VALIDATED CURRENT BASELINE
@@ -259,7 +307,7 @@ References:
 - [`Discovery Simulation`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
 - [`External Deep Research`](../product/multi-actor-collaboration-research-2026-08.md)
 
-The first three clusters remain compatible with the personal-first, structurally multi-actor-ready direction.
+All four current clusters remain compatible with the personal-first, structurally multi-actor-ready direction.
 
 ---
 
@@ -315,11 +363,10 @@ Key interpretations:
 
 - Subject is a semantic role over native referent identity, not a universal entity/root;
 - Person is canonical native human identity;
-- Actor is contextual agency semantics, not a wrapper entity/root;
+- Actor is contextual agency semantics, not a wrapper entity/root and not a generic replacement for specific action roles;
 - Account is a distinct platform/access identity boundary whose detailed security model remains deferred;
-- Asset is currently a native identity for individually tracked non-human physical objects whose distinct identity/history materially matter;
-- Asset's physical/durable scope is explicitly subject to terminology-neutral re-review before final Cluster-4 closure;
-- Resource is contextual planning/execution eligibility/capacity over native referents/supplies, not a Resource identity/root.
+- Asset is the current scoped physical-object identity baseline; the universal ManagedObject alternative was rejected after terminology-neutral testing;
+- Resource is contextual planning/execution eligibility/capability, not a Resource identity/root, and does not manufacture identity for supplies/pools/services.
 
 This topology is not a mandatory processing chain, parent tree or persistence schema.
 
@@ -327,11 +374,11 @@ Examples of valid minimal shapes:
 
 ```text
 Person P17 --Subject role--> Observation(weight = Quantity(66.4 kg))
-Person Anna --recorder/Actor role--> Observation about Person Maria
+Person Anna --recorded_by--> Observation about Person Maria
 Account Anna-A1 authenticates access without becoming Person or Actor identity
 Asset A17 --Subject role--> Observation(shutter count = 32,411)
-Asset A17 --Resource role--> photo-shoot Activity requirement/allocation context
-Person Anna --Resource role--> staffing/scheduling context without losing Person identity
+Asset A17 --Resource role--> photo-shoot requirement/allocation context
+500 ml oil --supply semantics + Resource role--> maintenance requirement, no synthetic identity
 spontaneous work -> Session
 ordinary meeting -> Event + Schedule + Actual
 longitudinal weight screen -> query over native Observations
@@ -340,237 +387,55 @@ full goal workflow -> uses only the layers that add real meaning
 
 ---
 
-# Canonical boundaries — current cross-cluster baseline
+# Canonical non-collapse rules — current cross-cluster baseline
 
 ```text
-Actual
-= contextual realization of a specific intention/expectation
-
-Outcome
-= contextual result/disposition of that realization
-
-Observation
-= contextual measurement/perception/report/derived simple assertion
-
-Confirmation
-= contextual attestation toward a specific target/material version/purpose
-
-Evidence
-= contextual evaluative role/use of existing information
-
-Provenance
-= bounded contextual lineage of how a record/material version came to exist/change
-
-Quantity
-= reusable scalar amount value semantics
-
-Subject
-= contextual role identifying the native referent a descriptive record primarily concerns
-
-Person
-= persistent native human identity
-
-Actor
-= contextual semantic agency role/capability over native identity
-
-Account
-= platform/access identity boundary; detailed auth/security model deferred
-
-Asset
-= current scoped identity of an individually tracked non-human physical object whose identity/history materially matter
-
-Resource
-= contextual planning/execution role under which a native referent/supply may satisfy an execution requirement
-```
-
-Critical non-collapse rules now include:
-
-```text
-Actual != Session
-Actual != Outcome
-Actual != Observation
-Actual != Confirmation
-Actual != Evidence
-Actual != Provenance
+Actual != Session / Outcome / Observation / Confirmation / Evidence / Provenance
 reported/asserted reality != established Actual
 
-Outcome != lifecycle/operational state
-Outcome != Observation
-Outcome != Confirmation
-Outcome != Evidence
-Outcome != Provenance
-Outcome != Milestone
-
+Outcome != lifecycle state / Observation / Confirmation / Evidence / Provenance / Milestone
 Milestone attainment != duplicate Actual/Outcome/Observation truth
 
-Observation != Quantity
-Observation != universal RegisterEntry
-Observation != Evidence
-Observation != Confirmation
-Observation != Provenance
+Observation != Quantity / universal RegisterEntry / Evidence / Confirmation / Provenance
 
 Subject entity/root = rejected
-Subject != Person
-Subject != Actor
-Subject != Account/Principal
-Subject != Asset
-Subject != Resource
-Subject != observer/recorder/source/transformer/authority/viewer
-Subject != generic related_to
+Subject != Person / Actor / Account / Principal / Asset / Resource
+Subject != observer / recorder / source / transformer / authority / viewer
 
-Person != Actor
-Person != Resource
-Person != Account
-Person != Principal
-Person != User domain primitive
-Person != Asset
+Person != Actor / Resource / Account / Principal / User / Asset
 
 Actor entity/root = rejected
-Actor != Resource
-Actor != Account
-Actor != Principal
-Actor != Responsibility
-Actor != Authority
+Actor != Resource / Account / Principal / Responsibility / Authority
 Actor != specific performer/recorder/observer/confirmer/proposer relation
+specific action role > generic actor edge when known
 
-Account != Person
-Account != Actor
-Account != Subject
-Account != Principal by default
+Account != Person / Actor / Subject / Principal by default
 
-Asset != Subject
-Asset != Resource
-Asset != Person
-Asset identity != owner/holder/custodian/steward
-Asset instance != product/model definition
+Asset != Subject / Resource / Person
+Asset identity != owner / holder / custodian / steward / model definition
 physical thing != Asset automatically
 managed thing != Asset automatically
-financial asset semantics != Asset entity
+universal ManagedObject root = rejected
 
 Resource entity/root = rejected
-Resource != Requirement
-Resource != candidate set
-Resource != Allocation
-Resource != Reservation/Capacity Claim
-Resource != actual use/consumption
-Resource != Responsibility/Performer/Participant
+Resource != Requirement / candidate set / Allocation / Reservation / actual use
+Resource != Responsibility / Performer / Participant
+Resource role != provider identity
 Money/Budget != Resource by default
 
 User = product/implementation term, not domain root
+Register/Tracker = product/query capability, not source-truth container
 
-Confirmation != Actual
-Confirmation != Outcome
-Confirmation != Observation
-Confirmation != Evidence
-Confirmation != Provenance
-Confirmation != Acknowledgement
-Confirmation != Acceptance/Agreement
-Confirmation != Verification
-Confirmation != Authority
-
-Evidence != source information
-Evidence != Observation
-Evidence != Actual
-Evidence != Outcome
-Evidence != Confirmation
-Evidence != Provenance
-Evidence != GoalCriterion
-Evidence != Milestone
-
-Source != Provenance
-Provenance != truth
-Provenance != Authority
-Provenance != Confirmation
-Provenance != Evidence
-Provenance != Version
-Provenance != Audit
+Confirmation != Acknowledgement / Acceptance / Verification / Authority
+Evidence != source information / Provenance / GoalCriterion
+Provenance != Source / truth / Authority / Version / Audit
 ```
-
-## Subject invariants accepted
-
-- Subject is a contextual semantic role, not independent identity;
-- native Person/Asset/etc. identity remains authoritative for the referent;
-- current Account is not the universal Subject default;
-- non-LifeOS people and non-person referents may play Subject role;
-- being Subject does not imply source, observer, recorder, owner, authority, visibility, participation, responsibility, Resource eligibility or benefit;
-- unknown/later-resolved/corrected Subject attribution preserves material history;
-- Subject must not become a universal `related_to` catch-all;
-- Subject association itself can be privacy-sensitive;
-- AI may propose native-referent resolution but does not automatically establish identity/authority;
-- no universal `subjects` table/root is pre-approved.
-
-## Person / Actor / Account invariants accepted
-
-- Person is native persistent human identity;
-- Person may exist without Account and may predate/outlive Account access;
-- Person may play Subject, Actor/specific action, or Resource roles without identity change;
-- Actor is contextual agency semantics, not independent identity/root;
-- Actor does not replace precise roles such as performer, recorder, observer, confirmer, proposer or responsible actor;
-- Actor != Responsibility/Authority/ownership/Resource;
-- Account authentication/access identity does not define Person or semantic Actor;
-- current Account access != historical Person/Actor attribution;
-- provider/auth/contact identifiers are reconciliation/access evidence, not canonical Person identity by default;
-- User is not a kernel domain primitive;
-- Principal remains a distinct deferred security/Authority concept;
-- AI/software may be Actors where agency is materially relevant without becoming Person or Authority;
-- no universal `actors` table/root or `Person.id = Account.id` is pre-approved.
-
-## Asset invariants accepted — current scoped baseline
-
-- Asset is native persistent identity, not a contextual role;
-- current scope is an individually tracked non-human physical object whose identity/history materially matter;
-- physical thing != Asset automatically;
-- managed thing != Asset automatically;
-- Person != Asset;
-- Asset may play Subject or Resource roles without becoming either;
-- ownership, possession, custody, stewardship, location and state do not define Asset identity;
-- provider/serial/VIN/MAC/barcode identifiers are reconciliation evidence, not canonical identity by default;
-- fungible stock does not require one Asset per unit;
-- living things, Documents, FinancialAccounts and services are not absorbed by default;
-- no universal Asset status/history wrapper/table hierarchy is pre-approved;
-- the Asset scope must be re-tested terminology-neutrally before final Cluster-4 closure.
-
-## Resource invariants accepted
-
-- Resource is contextual planning/execution role/capability, not independent identity/root;
-- native Person/Asset/Place/service/supply semantics remain authoritative;
-- Person and Asset may play Resource role without identity collapse;
-- Resource != Subject/Actor;
-- Resource != Requirement/candidate set/Allocation/Reservation/actual use;
-- Resource != Responsibility/Performer/Participant;
-- schedulable Resource means a Resource-role case whose time-dependent Availability/Capacity matters;
-- Requirement may remain abstract until later candidate selection/allocation;
-- allocated/reserved Resource != proof of actual use;
-- consumable supply may satisfy Resource semantics without per-unit identity;
-- Resource role grants no ownership, consent, Responsibility, Authority or Visibility;
-- no universal `resources` table/root or generic `resource_id` shortcut is pre-approved.
 
 ---
 
-# Active cluster — Data / Subjects
+# Data / Subjects integration notes
 
-**Status:** CANDIDATE REVIEWS COMPLETE — Cluster Integration Gate is next. This is not yet a cluster PASS.
-
-Accepted in this cluster:
-
-1. [`Quantity v0`](concepts/quantity.md) — [`validation`](checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
-2. [`Subject v0`](concepts/subject.md) — [`validation`](checkpoints/subject-v0-validation.md) — **PASS WITH HARDENING; canonical semantic role, no Subject entity/root**.
-3. [`Person v0`](concepts/person.md) — [`Person / Actor / Account validation`](checkpoints/person-actor-account-v0-validation.md) — **PASS WITH HARDENING; canonical native human entity**.
-4. [`Actor v0`](concepts/actor.md) — [`Person / Actor / Account validation`](checkpoints/person-actor-account-v0-validation.md) — **PASS WITH HARDENING; canonical agency role/capability, no Actor entity/root**.
-5. [`Asset v0`](concepts/asset.md) — [`validation`](checkpoints/asset-v0-validation.md) — **PASS WITH HARDENING; current scoped native physical-object entity; mandatory terminology-neutral re-review**.
-6. [`Resource v0`](concepts/resource.md) — [`validation`](checkpoints/resource-v0-validation.md) — **PASS WITH HARDENING; canonical planning/execution role/capability, no Resource entity/root**.
-
-Accepted conceptual boundary, detailed model deferred:
-
-- `Account != Person != Actor`; Account is platform/access identity. Exact credential/provider/Principal/security modeling is deferred.
-
-Rejected candidate with validated product need:
-
-- [`Register Candidate v0`](checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED; longitudinal product/query capability retained**.
-
-No remaining planned concept candidate is waiting for first-pass review in Cluster 4. The next step is integration, not another primitive by default.
-
-## Quantity current baseline
+## Quantity
 
 ```text
 Quantity
@@ -579,17 +444,9 @@ Quantity
 != independent entity / Observation / universal numeric wrapper
 ```
 
-Current Quantity dependency obligations include Money/MonetaryAmount, ratings/scales, percentages/ratios/counts, custom units, elapsed-duration versus calendar time, Range/Threshold semantics, and final decimal/unit persistence. They are explicitly registered for the post-Cluster-4 closure unless resolved earlier.
+SAFE DEFERRED neighbors include Money, Rating/Scale, Ratio/Percentage/Count, custom units, elapsed Duration vs calendar period, Range/Threshold/comparator, and physical decimal/unit representation. Exact ownership/triggers are in the dependency-closure checkpoint.
 
-## Register candidate conclusion
-
-Historical proposal:
-
-```text
-Register + universal RegisterEntry
-```
-
-Current conclusion:
+## Register rejection
 
 ```text
 native semantic records
@@ -598,7 +455,7 @@ query / filtering / grouping
         ↓
 valid aggregation / trend / comparison
         ↓
-Register / Tracker / History / Progress product UI
+Register / Tracker / History / Progress UI
 ```
 
 Guardrails:
@@ -607,87 +464,49 @@ Guardrails:
 - Register is not a kernel source-of-truth container;
 - source records can appear in multiple views without duplication;
 - deleting/changing a view does not change source history;
-- valid aggregation follows source metric/record semantics;
 - quick capture creates the native semantic record;
-- saved tracker/view configuration may exist as product/application configuration without becoming independent domain truth;
-- `Transaction`, `Movement`, `Snapshot`, or other future native record types are **not pre-approved** merely because historical Register examples mentioned them.
+- `Transaction`, `Movement`, `Snapshot` are not pre-approved merely because historical examples mentioned them.
 
-## Subject current baseline
+## Subject
 
 ```text
 native referent
-Person / Asset / future Location / other eligible concept
+Person / Asset / future eligible concept
         ↑
      Subject role
         │
 descriptive record / Observation
 ```
 
-Resolved:
+Subject ↔ Person/Actor/Account/Asset/Resource boundaries are resolved at current baseline. Focus/context and Visibility remain SAFE DEFERRED.
 
-```text
-Subject entity/root rejected
-Subject vs observer/recorder/source/transformer separated
-Subject vs Person separated
-Subject vs Actor separated
-Subject vs Account separated at conceptual level
-Subject vs Asset separated at current Asset v0 baseline
-Subject vs Resource separated
-```
-
-Remaining retest owners:
-
-```text
-Subject vs Principal/Authority/Visibility -> Relationships / Reasoning
-Subject vs focus/context        -> Relationships / Reasoning
-Person/Asset identity reconciliation -> logical model + Provenance/Version/Decision
-heterogeneous reference mechanics -> logical data model
-```
-
-## Person / Actor / Account current baseline
+## Person / Actor / Account
 
 ```text
 PERSON
 CANONICAL NATIVE ENTITY
 
 ACTOR
-CANONICAL SEMANTIC AGENCY ROLE / CAPABILITY
+CANONICAL AGENCY SEMANTICS
 NOT ENTITY / ROOT
+SPECIFIC ACTION ROLE PRECEDENCE
 
 ACCOUNT
-REAL PLATFORM / ACCESS IDENTITY BOUNDARY
+PLATFORM / ACCESS IDENTITY BOUNDARY
 DETAILED AUTH MODEL DEFERRED
 
 USER
 PRODUCT / IMPLEMENTATION TERM ONLY
-NO DOMAIN PRIMITIVE
 
 PRINCIPAL
-SAFE DEFERRED
-AUTHORITY / SECURITY MODEL
+SAFE DEFERRED SECURITY/AUTHORITY CONCEPT
 ```
 
-Representative shape:
-
-```text
-Person Maria
-    ↑ Subject role
-Observation 38.2 °C
-    ↑ observed/recorded by
-Person Anna
-    ↓ Actor semantics through specific roles
-Account Anna-A1
-    ↓ authentication context
-future Principal/Authority semantics
-```
-
-No layer is allowed to launder the semantics of another.
-
-## Asset current baseline
+## Asset
 
 ```text
 ASSET
-CANONICAL NATIVE ENTITY — CURRENT SCOPED BASELINE
+CURRENT SCOPED NATIVE ENTITY
 
 scope:
 individually tracked
@@ -695,61 +514,17 @@ non-human physical object
 identity/history materially matter
 ```
 
-Representative shape:
+Terminology-neutral Cluster-4 result:
 
 ```text
-Asset A17
-Sony A7 IV
-        ↑ Subject role
-Observation: shutter count = 32,411
-
-Activity: photo shoot
-Resource Requirement: suitable camera
-Candidate / allocated Resource role: Asset A17
+universal ManagedObject abstraction  REJECTED
+physical-item identity need           RETAINED
+exact noun `Asset`                    NON-SEMANTIC / reopenable
 ```
 
-Current exclusions are deliberate, not permanent ontology claims:
+Place/Property, living entity, Document/Artifact, FinancialAccount/service, Asset type/profile, and identity reconciliation remain SAFE DEFERRED under explicit owners/triggers.
 
-```text
-Person
-living subject by default
-Document / Artifact
-FinancialAccount
-service/subscription
-financial-asset semantics
-fungible stock unit by default
-```
-
-Identity guardrails:
-
-```text
-Asset != owner
-Asset != holder
-Asset != steward
-Asset != Resource
-Asset != Subject
-Asset != model/catalog definition
-provider identifier != canonical Asset identity automatically
-```
-
-### Mandatory Asset re-review
-
-During the dedicated post-Cluster-4 dependency closure, perform a terminology-neutral comparison of how mature products represent **managed/tracked referents**, focusing on what they persist and relate rather than what they call it.
-
-Required benchmark families include at least:
-
-- personal possessions / personal information managers;
-- equipment / IT asset / inventory;
-- smart home / devices;
-- property / place;
-- document / credential management;
-- finance / accounts;
-- pet/plant/living tracking;
-- services/subscriptions.
-
-Reopen Asset if a broader or different identity abstraction explains LifeOS workflows with fewer arbitrary exclusions and no semantic loss.
-
-## Resource current baseline
+## Resource
 
 ```text
 RESOURCE
@@ -757,163 +532,45 @@ CANONICAL SEMANTIC PLANNING / EXECUTION ROLE-CAPABILITY
 NOT ENTITY / ROOT
 ```
 
-Representative planning flow:
+Planning stages remain separate:
 
 ```text
 Requirement
-what is needed
-        ↓
-Candidate Resource-role providers
-what could satisfy it
-        ↓
-Allocation / selection
-what is chosen
-        ↓
-Reservation / Capacity Claim
-what capacity is held
-        ↓
-Actual use / consumption
-what really happened
+→ candidate(s)
+→ Allocation
+→ Reservation / Capacity Claim
+→ Actual use / consumption
 ```
 
-Guardrails:
-
-```text
-Resource != Person / Asset / Subject / Actor
-Person may play Resource role
-Asset may play Resource role
-Resource != Requirement
-Resource != candidate set
-Resource != Allocation
-Resource != Reservation
-Resource != Actual use
-Resource != Responsibility / Performer / Participant
-```
-
-Availability/Capacity now composes with Resource explicitly:
-
-```text
-native referent / supply
-        ↓ Resource role
-schedulable subset
-        ↓
-Availability + Capacity
-        ↓
-Reservation / Claim
-```
-
-The exact Requirement/Allocation/Reservation/pool/supply representation remains SAFE DEFERRED; no universal `resources` root/table is pre-approved.
-
-## Mandatory inherited re-tests now resolved by first-pass Cluster-4 concepts
-
-```text
-Observation vs Quantity — RESOLVED
-Observation vs Register/RegisterEntry — RESOLVED
-Quantity vs Register aggregation — RESOLVED at kernel level
-Subject entity vs semantic role — RESOLVED
-Subject vs observer/recorder/source/transformer — RESOLVED
-Subject vs Person — RESOLVED
-Subject vs Actor — RESOLVED
-Subject vs Account — RESOLVED at conceptual level
-Person vs Actor — RESOLVED
-Person vs Account — RESOLVED at conceptual level
-Actor vs Account — RESOLVED at conceptual level
-User universal kernel identity — REJECTED
-Subject vs Asset — RESOLVED at current Asset v0 baseline
-Person vs Asset — RESOLVED at current baseline
-Asset vs fungible stock — RESOLVED conceptually
-Asset vs Resource — RESOLVED at current baseline
-Subject vs Resource — RESOLVED
-Person vs Resource — RESOLVED
-Actor vs Resource — RESOLVED
-Availability/Capacity vs Resource — RESOLVED
-Resource universal entity/root — REJECTED
-```
-
-These resolutions remain subject to cluster integration and the mandatory Asset re-review where specifically noted.
-
-## Next step — Data / Subjects Cluster Integration Gate
-
-Do not invent another candidate merely because the roadmap looks short.
-
-The next review must stress the accepted/rejected Cluster-4 results together:
-
-```text
-Quantity
-Register rejection / longitudinal capability
-Subject
-Person
-Actor
-Account boundary
-Asset
-Resource
-```
-
-Required pressure includes:
-
-- representative workflow reconstruction;
-- deep chronology;
-- remove/merge/split reductio;
-- top-down traceability;
-- bottom-up reconstruction;
-- lateral propagation;
-- history/correction/reconciliation;
-- multi-actor identity/authority/privacy;
-- simple-user regression;
-- scale/performance pressure;
-- specialist-system boundary;
-- AI proposal/authority boundaries;
-- Resource Requirement / allocation / reservation pressure without prematurely modeling them;
-- Asset terminology-neutral scope pressure as a registered dependency, not hidden assumption.
-
-The cluster integration result is provisional for transition purposes until the dedicated dependency closure and Cross-Cluster v4 pass.
+Resource role preserves independently justified provider semantics and does not create identity.
 
 ---
 
-# Mandatory closure after Data / Subjects
+# Relationships / Reasoning — NEXT DOMAIN REVIEW SPACE
 
-The required transition is now:
+**Status:** NEXT. Do not pre-accept the candidate list.
 
-```text
-Data / Subjects cluster integration
-        ↓
-Data / Subjects multi-actor stress
-        ↓
-provisional cluster verdict
-        ↓
-Deferred Dependency Closure — clusters 1–4
-  includes mandatory Asset terminology-neutral re-review
-        ↓
-RESOLVED / SAFE DEFERRED / REOPEN for every material open boundary
-        ↓
-Cross-Cluster Validation v4 — clusters 1–4
-        ↓
-only after PASS: Relationships / Reasoning
-```
-
-Cluster 4 is not treated as definitively consolidated before dependency cleanup and Cross-Cluster v4.
-
----
-
-# Later Relationships / Reasoning review space
-
-Likely topics:
+Likely review space based on demonstrated dependencies:
 
 - semantic Relationship;
 - Dependency;
-- Responsibility / Assignment / Hand-off;
+- Responsibility / Assignment / Claim / Hand-off / Stewardship;
 - Contribution;
-- Goal relationships;
+- Goal relationships / GoalCriterion;
 - Evidence/Criterion relationships;
 - Participation;
 - Resource Requirement / Allocation / substitution where justified;
 - Authority / Visibility;
+- Acknowledgement / Acceptance / Agreement / Verification where concrete workflows require them;
 - Decision;
 - Version;
 - AI Proposal;
-- Principal / delegation / on-behalf-of where those semantics are primarily security/authority rather than human identity.
+- Principal / delegation / on-behalf-of security/authority semantics;
+- focus/context relationships.
 
-Strong evidence indicates typed/directional semantics will likely be necessary; one universal semantic-free `related_to` is insufficient.
+These are **candidates**, not a checklist of primitives that must survive.
+
+From this stage onward the Adjacent Dependency Sweep is mandatory before every concept verdict.
 
 Mandatory inherited re-tests include:
 
@@ -930,7 +587,77 @@ Mandatory inherited re-tests include:
 - Asset ownership/possession/custody/stewardship/location/Visibility;
 - historical Person/Actor/Asset/resource-allocation attribution after Account or relationship changes.
 
-From this cluster onward the Adjacent Dependency Sweep is mandatory before each concept verdict.
+Do not begin SQL/API design yet.
+
+---
+
+# Current modeling sequence
+
+```text
+Intention & Execution v0        — PASS
+Time v0                         — PASS
+Observed Reality & Evidence v0  — PASS
+Data / Subjects v0              — PASS WITH HARDENING
+Deferred Dependency Closure     — PASS
+Cross-Cluster Validation v4     — PASS WITH HARDENING
+
+0 structural reopenings
+0 unclassified material dependencies
+
+↓ NEXT
+Relationships / Reasoning
+  Adjacent Dependency Sweep mandatory per concept
+↓
+whole-domain semantic regression
+↓
+whole-domain multi-actor regression
+↓
+persistence/API pressure
+↓
+logical data model
+↓
+physical PostgreSQL model
+↓
+API contracts / backend packages / implementation
+```
+
+---
+
+# Reopen / deferred-dependency watchlist
+
+The authoritative dependency register is now:
+
+- [`Deferred Dependency Closure — Clusters 1–4 v0`](checkpoints/deferred-dependency-closure-clusters-1-4-v0.md).
+
+It contains exact owners, reasons, reopening triggers and regression tests for every still-material SAFE DEFERRED item.
+
+High-value groups include:
+
+- Milestone / GoalCriterion / Evidence / Decision;
+- Confirmation / Authority / Acknowledgement / Acceptance / Verification;
+- Provenance / Version / Decision / Audit / retention;
+- Actual establishment / Authority / reconciliation;
+- Session/Actual / Participation / actor-scoped consequences;
+- Activity / Responsibility / Assignment / Hand-off / Stewardship / Performer;
+- Recurrence / Trigger;
+- Account / Principal / credentials / delegation;
+- Person/Asset reconciliation;
+- Subject / focus / Visibility / heterogeneous references;
+- Asset / Place / living entities / Document / FinancialAccount / service / model/profile;
+- Resource Requirement / eligibility / Allocation / Reservation / actual use / pools / supply / skill;
+- Quantity / Money / Scale / Ratio / UnitDefinition / Duration / Range;
+- longitudinal materialization / aggregate visibility;
+- AI context/inference/disclosure/Authority;
+- retention/deletion/anonymization.
+
+Current transition result:
+
+```text
+REOPEN = 0
+unclassified material dependency = 0
+```
+
+No item may be silently converted from SAFE DEFERRED to implementation assumption.
 
 ---
 
@@ -952,18 +679,17 @@ Current known terminology refinements include:
 - Evidence is evaluative use/relationship, not duplicated source data;
 - Provenance is bounded lineage, not merely `source`, truth, Authority or Audit;
 - Quantity is bounded scalar value semantics, not a measurement entity or universal number wrapper;
-- historical `Register + RegisterEntry` is not a canonical kernel structure; longitudinal tracking remains a product/query capability over native records;
-- Subject is a canonical role over native identity, not an `Asset/Soggetto` universal wrapper/root;
-- Person is canonical native human identity independent of Account;
-- Actor is canonical contextual agency semantics, not a universal entity/root;
-- Account is conceptually separate platform/access identity; detailed auth/security modeling is deferred;
+- historical `Register + RegisterEntry` is rejected as canonical kernel structure;
+- Subject is a role over native identity, not an `Asset/Soggetto` universal wrapper/root;
+- Person is native human identity independent of Account;
+- Actor is contextual agency semantics with specific-role precedence, not a universal entity/root;
+- Account is separate platform/access identity; detailed auth/security modeling is deferred;
 - User remains product/implementation language, not a domain root;
-- historical `Asset/Soggetto` broad grouping is superseded;
-- Asset v0 currently means individually tracked non-human physical-object identity, not every managed thing, and remains explicitly reopenable after terminology-neutral review;
-- Resource is canonical contextual planning/execution role/capability, not a universal Resource entity/root;
-- Resource Requirement, allocation, reservation and actual use remain distinct semantics;
-- Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage;
-- older V1 `confirmation state` labels such as imported/inferred/automatic/corrected are redistributed into Provenance, automation/inference, Version and workflow semantics.
+- historical broad `Asset/Soggetto` grouping and universal ManagedObject root are rejected;
+- Asset v0 currently means individually tracked non-human physical-object identity; exact noun remains reopenable;
+- Resource is contextual planning/execution role/capability and does not manufacture identity;
+- Requirement, allocation, reservation and actual use remain distinct;
+- Milestone attainment is evaluation-backed checkpoint state rather than duplicate reality storage.
 
 Historical docs should not be silently rewritten merely for vocabulary uniformity. Current Domain Atlas + Language Map establish kernel precedence.
 
@@ -1008,180 +734,10 @@ Rejected historical/current candidates are not counted as accepted concepts.
 
 ---
 
-# Current structural direction
-
-```text
-Goal         -> what is wanted
-Plan         -> how it is pursued/organized
-Activity     -> actionable intended work/behavior
-Event        -> expected occurrence-centred thing
-Routine      -> intended repeated execution/behavior policy
-Milestone    -> meaningful contextual checkpoint
-Recurrence   -> repeated/generative pattern
-Occurrence   -> expected generated-instance identity
-Constraint   -> where/when placement is allowed/required/preferred
-Resource     -> what native provider/supply may satisfy an execution need in context
-Availability -> when schedulable Resource capacity may be used
-Capacity     -> compatible commitments a schedulable Resource can sustain
-Schedule     -> current accepted temporal assignment
-Session      -> bounded actual execution episode
-Actual       -> realization of a specific expectation
-Outcome      -> result/disposition of realization
-Observation  -> measurement/simple assertion about Subject/context
-Confirmation -> contextual affirmation of target/version/purpose
-Evidence     -> contextual evaluative use of information
-Provenance   -> bounded origin/evolution lineage
-Quantity     -> reusable scalar amount value semantics
-Subject      -> contextual aboutness role over native referent identity
-Person       -> persistent native human identity
-Actor        -> contextual agency role/capability over native identity
-Account      -> platform/access identity boundary, detailed model deferred
-Asset        -> current scoped individually tracked non-human physical-object identity
-```
-
-Cross-cutting multi-actor direction:
-
-```text
-shared canonical fact / native object identity
-+
-actor-scoped personal state
-
-native identity
-!= account
-!= participation
-!= responsibility
-!= performer
-!= Subject role
-!= Actor role
-!= ownership
-!= Resource role
-!= authority
-!= visibility
-```
-
-This is domain direction, not a persistence schema.
-
----
-
-# Current modeling sequence
-
-```text
-Intention & Execution v0        — PASS
-Time v0                         — PASS
-Observed Reality & Evidence v0  — PASS
-Cross-Cluster Validation v3     — PASS
-Multi-Actor Evidence Synthesis  — PASS WITH HARDENING
-Validation Methodology v3       — ACTIVE MANDATORY STANDARD
-Quantity v0                     — ACCEPTED
-Register kernel candidate       — REJECTED
-RegisterEntry universal         — REJECTED
-Subject v0                      — ACCEPTED SEMANTIC ROLE
-Subject universal entity/root   — REJECTED
-Person v0                       — ACCEPTED NATIVE ENTITY
-Actor v0                        — ACCEPTED SEMANTIC AGENCY ROLE
-Actor universal entity/root     — REJECTED
-Account boundary                — ACCEPTED / DETAILED MODEL DEFERRED
-User universal domain root      — REJECTED
-Asset v0                        — ACCEPTED CURRENT SCOPED NATIVE ENTITY
-Asset broad managed-object root — REJECTED
-Resource v0                     — ACCEPTED SEMANTIC PLANNING/EXECUTION ROLE
-Resource universal entity/root  — REJECTED
-
-↓ NOW
-Data / Subjects cluster integration + multi-actor stress
-↓
-provisional Cluster-4 verdict
-↓
-Deferred Dependency Closure — clusters 1–4
-  + mandatory terminology-neutral Asset re-review
-↓
-Cross-Cluster Validation v4 — clusters 1–4
-↓ only after PASS
-Relationships / Reasoning
-```
-
----
-
-# Reopen / deferred-dependency watchlist
-
-The following are executable obligations, not generic reminders. The post-Cluster-4 dependency closure must classify every still-material item as `RESOLVED`, `SAFE DEFERRED`, or `REOPEN` and give SAFE DEFERRED items an explicit owner/reopening trigger.
-
-Known inherited/current items include:
-
-- Asset scope vs terminology-neutral managed/tracked-referent model — **mandatory revisit**;
-- Asset vs Place/Location/Property;
-- Asset vs living-entity identity;
-- Asset vs Document/Artifact/FinancialAccount/service;
-- Asset model/type/profile semantics;
-- Asset ownership/stewardship/possession/Authority semantics;
-- Asset identity reconciliation/merge/split;
-- Resource Requirement / candidate / Allocation semantics;
-- Resource Reservation/Claim physical and relationship representation;
-- planned Resource vs actual use/consumption;
-- Resource pool / consumable supply / inventory semantics;
-- Resource vs Place/service/capability/skill future native concepts;
-- Resource allocation Authority / Visibility;
-- Principal/security identity and Account credential/provider mechanics;
-- delegated/on-behalf-of Actor semantics;
-- Person reconciliation/merge/split and identity-history persistence;
-- Subject vs focus/context/typed Relationship;
-- Subject/Person/Actor/Asset/Resource association privacy vs Visibility;
-- heterogeneous Subject/Actor/Resource-reference persistence;
-- Actual establishment under future Authority/Decision/reconciliation rules;
-- Confirmation target-version semantics vs future Version model;
-- Confirmation vs Authority/Acknowledgement/Acceptance;
-- Evidence vs GoalCriterion/typed Relationship/Decision/Version;
-- Milestone attainment vs Evidence/GoalCriterion/Decision;
-- Provenance vs Version/Decision/Audit/Authority/source precedence;
-- Provenance privacy/retention/deletion;
-- competing contextual assertions under Authority/Decision rules;
-- collaborative Session vs actor-scoped Actual participation;
-- Responsibility/Assignment/Hand-off/Stewardship;
-- Authority vs Visibility/governance;
-- AI context selection/inference/disclosure boundaries;
-- Recurrence vs Trigger where Actual/fact anchors or arbitrary conditions meet;
-- Quantity vs Money/MonetaryAmount;
-- Quantity vs rating/scale/ratio/percentage/count semantics;
-- Quantity vs custom unit-definition semantics;
-- Quantity vs elapsed duration/calendar-relative time;
-- Quantity vs Range/Threshold/comparison semantics;
-- Quantity decimal/unit physical representation;
-- longitudinal query/materialization and saved-view implementation;
-- aggregate visibility vs source-record visibility;
-- future native transaction/movement/snapshot semantics only if concrete workflow evidence justifies them.
-
-Resolved and removed from limbo at the current first-pass baseline:
-
-- Observation vs Register/RegisterEntry;
-- Register as a kernel primitive;
-- universal RegisterEntry;
-- Quantity vs generic Register aggregation at kernel level;
-- Subject entity vs semantic role;
-- Subject vs observer/recorder/source/transformer;
-- Subject vs Person;
-- Subject vs Actor;
-- Subject vs Account at conceptual level;
-- Person vs Actor;
-- Person vs Account at conceptual level;
-- Actor vs Account at conceptual level;
-- User as universal kernel identity;
-- Subject vs Asset at current Asset v0 baseline;
-- Person vs Asset at current baseline;
-- Asset vs fungible stock at conceptual level;
-- Asset identity vs ownership at conceptual level;
-- Asset vs Resource at current baseline;
-- Subject vs Resource;
-- Person vs Resource;
-- Actor vs Resource;
-- Availability/Capacity vs Resource;
-- universal Resource entity/root.
-
-The Asset terminology-neutral re-review can reopen current Asset-related resolved items if it materially changes Asset scope. Cluster integration may likewise expose new contradictions and must be allowed to reopen any first-pass concept.
-
----
-
 # Final validation rule
 
 A final whole-domain stress test remains mandatory before broad persistence implementation.
 
-Cluster PASS and Cross-Cluster v4 do not prevent later reopening when another cluster, physical data model, integration, implementation evidence, safety requirement or stronger real-world evidence exposes a genuine contradiction.
+Cross-Cluster v4 does not prevent later reopening when Relationships / Reasoning, the logical/physical data model, integrations, safety/privacy requirements, or stronger real-world evidence expose a genuine contradiction.
+
+Do not jump directly from Cross-Cluster v4 to SQL/API stabilization.
