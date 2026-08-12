@@ -800,3 +800,43 @@ Canonical rule:
 > **Reported or asserted reality is not automatically established Actual. Actual represents the currently established realization in context; conflicting assertions may coexist without creating multiple competing canonical Actuals or forcing premature resolution.**
 
 This hardening does not create a new primitive. The future Authority/Decision/reconciliation model must define how an applicable context establishes or revises Actual while preserving source assertion history.
+
+---
+
+# 2026-08-12 — Participation v0 closure amendment
+
+Participation v0 resolves the previously deferred actor-participation boundary while preserving Actual as shared/contextual realization.
+
+Current authoritative separation:
+
+```text
+Shared Event Actual
+= how the shared expected occurrence resolved
+
+Participation response
+= actor-scoped intended/expressed stance
+
+Actual Participation
+= actor-scoped reality of involvement
+```
+
+Therefore:
+
+```text
+shared Actual != identical actor-specific Actual Participation
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no attendance evidence != established absence
+```
+
+Actual Participation may contain actor-specific actual state/intervals without becoming a Session by default. Provider attendance telemetry remains supporting source/Evidence/Provenance until the applicable reconciliation/Authority context establishes current Participation truth.
+
+The older `exact actor Participation model` deferral is superseded at the semantic level by `concepts/participation.md`. Exact direct/qualified persistence, Authority/Visibility, Acceptance/Acknowledgement integration, provider reconciliation and retention remain SAFE DEFERRED.
+
+No Actual identity/cardinality rule changes: multiple actor Participation facets do not justify multiplying the shared Actual merely because reality has several participant-specific facets.
+
+See:
+
+- `concepts/participation.md`;
+- `checkpoints/participation-v0-validation.md`.
