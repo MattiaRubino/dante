@@ -209,7 +209,7 @@ Asset identity
 != governor
 ```
 
-Ownership, possession, custody, stewardship, responsibility and authority belong to future typed Relationship/Authority semantics.
+Authority v0 now closes the governance side of this boundary: ownership/possession/custody/stewardship may be inputs/bases in some policies but are never universally equal to Authority. Visibility v0 separately governs what Asset information may be exposed.
 
 ---
 
@@ -515,6 +515,8 @@ Canonical guardrails:
 - Account membership does not define Asset identity;
 - historical relationships may survive current-access changes where policy permits.
 
+Authority v0 and Visibility v0 now make the first two distinctions canonical instead of deferred.
+
 ---
 
 # 19. Privacy and selective disclosure
@@ -531,11 +533,11 @@ Examples:
 - purchase price;
 - private documents.
 
-Therefore:
+Visibility v0 closes this boundary:
 
-> **Visibility of an Asset does not automatically imply visibility of every Observation, document, location, owner, serial identifier or provenance fragment related to it.**
+> **Visibility of an Asset does not automatically imply visibility of every Observation, document, location, owner, serial identifier, Resource relation, or Provenance fragment related to it.**
 
-Exact Authority/Visibility semantics remain deferred.
+Likewise, seeing both an Asset and a Person does not imply visibility of ownership/holder/Resource/Responsibility relationships between them. Authority to manage/allocate the Asset does not automatically expose every private source/history field.
 
 ---
 
@@ -558,6 +560,14 @@ AI must not silently:
 - turn every physical referent into Asset automatically;
 - invent lifecycle transitions from absence of data;
 - convert candidate suitability into authoritative allocation/reservation.
+
+Canonical hardening:
+
+```text
+AI reconciliation proposal != established Asset identity merge
+AI Resource suggestion != allocation Authority
+AI source access != recipient Visibility/disclosure
+```
 
 ---
 
@@ -718,6 +728,8 @@ Identity/lifecycle reuse survives tested scenarios without absorbing unrelated d
 18. **AI may propose Asset reconciliation/resource candidacy but does not silently establish identity/ownership/Authority/allocation.**
 19. **Asset does not imply a final SQL table hierarchy, product taxonomy or visible UI label.**
 20. **The word `Asset` is not an ontology authority; renaming is allowed if semantics remain stronger and clearer.**
+21. **Ownership/possession/custody do not automatically create Authority.**
+22. **Visible Asset != visible private facets, relationships, location, identifiers, or history.**
 
 ---
 
@@ -734,7 +746,8 @@ The future logical model must be able to support where justified:
 - ownership/possession/custody/stewardship relationships without storing them as identity fields;
 - location/property relationships;
 - merge/split/reconciliation history;
-- specialist extensions without arbitrary universal JSON.
+- specialist extensions without arbitrary universal JSON;
+- Authority and Visibility independently from Asset identity/ownership.
 
 Do not infer from Asset v0 that LifeOS requires:
 
@@ -749,9 +762,10 @@ Do not infer from Asset v0 that LifeOS requires:
 - provider ID/serial as primary domain identity;
 - a universal `asset_history_entries` table;
 - Asset = Resource implementation inheritance;
-- a Resource wrapper or `resource_id` merely to make an Asset schedulable.
+- a Resource wrapper or `resource_id` merely to make an Asset schedulable;
+- ownership = Authority or Visibility.
 
-Final persistence depends on Relationships/Authority modeling and logical data-model pressure.
+Final persistence depends on later logical data-model pressure.
 
 ---
 
@@ -777,22 +791,26 @@ Resolved conceptually: individual identity must materially matter. Bulk/consumab
 
 ### Asset vs ownership
 
-Resolved at identity level: ownership does not define Asset identity. Exact ownership relation is deferred.
+Resolved at identity level: ownership does not define Asset identity. Exact ownership relation remains deferred.
 
-### Asset scope vs universal managed-referent model
+### Asset vs universal managed-referent model
 
-Resolved at current baseline through the mandatory terminology-neutral Cluster-4 re-review: a universal `ManagedObject` root does not improve the model under current evidence.
+Resolved at current baseline: universal `ManagedObject` root does not improve the model under current evidence.
 
-**Reopening trigger:** later concrete workflows show a stronger shared native identity abstraction across currently separate referent domains with fewer exceptions and no semantic loss.
+### Asset vs Authority
 
-**Tests to rerun:** CORE-03, CORE-04, CORE-06, CORE-07, CORE-08, CORE-12, CORE-13, MA-18, MA-19, XCON-01, XCON-04, CL-03, CL-04, CL-05, CL-06.
+Resolved: Authority v0 defines bounded governance independently. Ownership, possession, custody, stewardship or Resource use may be bases in specific policy but do not automatically grant Authority.
+
+### Asset vs Visibility
+
+Resolved: Visibility v0 defines bounded information exposure independently. Asset visibility does not expose all facets/relationships/history.
 
 ## SAFE DEFERRED
 
 ### Asset vs Place / Location / Property
 
 **Owner:** future Place/Location/Property review.  
-**Why safe:** ordinary movable-object Asset semantics do not require a final property/place ontology.  
+**Why safe:** ordinary movable-object Asset semantics do not require final property/place ontology.  
 **Reopening trigger:** property/home workflows cannot preserve identity without treating place and physical asset as one concept.  
 **Tests to rerun:** CORE-04, XCON-01, XCON-04.
 
@@ -800,13 +818,13 @@ Resolved at current baseline through the mandatory terminology-neutral Cluster-4
 
 **Owner:** future concrete pet/plant/living-entity workflow review.  
 **Why safe:** current Asset semantics do not need them and Person/Subject already prove stable identity can exist outside Asset.  
-**Reopening trigger:** recurring LifeOS workflows require a shared native identity abstraction across physical objects and living subjects.  
+**Reopening trigger:** recurring workflows require shared native identity abstraction across physical objects and living subjects.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-06, XCON-01.
 
 ### Asset vs Document / Artifact / FinancialAccount / service
 
 **Owner:** future specialist reviews if concrete workflow becomes material.  
-**Why safe:** each has materially different semantics and the terminology-neutral review found no need to force them into Asset.  
+**Why safe:** each has materially different semantics; no need to force them into Asset.  
 **Reopening trigger:** repeated cross-domain behavior shows one stronger shared native identity/lifecycle abstraction.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-12, XCON-01.
 
@@ -823,6 +841,13 @@ Resolved at current baseline through the mandatory terminology-neutral Cluster-4
 **Why safe:** identity invariants are fixed; physical reconciliation mechanics remain open.  
 **Reopening trigger:** imports/integrations cannot preserve identity/history under current semantics.  
 **Tests to rerun:** CORE-02, CORE-09, XCON-01, XCON-03.
+
+### Ownership / custody / stewardship / Consent / technical enforcement
+
+**Owner:** later relationship/privacy/security reviews.  
+**Why safe:** Asset identity is independent and Authority/Visibility boundaries are now fixed.  
+**Reopening trigger:** ordinary ownership/custody/privacy enforcement requires changing Asset identity semantics.  
+**Tests to rerun:** MA-06, MA-07, MA-13, XCON-02, XCON-05.
 
 No current dependency is a structural blocker.
 
@@ -848,12 +873,6 @@ universal ManagedObject: rejected
 exact naming: reopenable/non-semantic
 ```
 
-See:
-
-- `checkpoints/data-subjects-v0.md`;
-- `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
-- `checkpoints/cross-cluster-validation-v4.md`.
-
 ---
 
 # 28. Rejected alternatives
@@ -869,6 +888,7 @@ Rejected under current evidence:
 - Asset = every physical item;
 - Asset = financial asset;
 - Asset = document/account/service catch-all;
+- Asset = Authority/Visibility;
 - provider ID/serial as automatic canonical identity;
 - universal Asset status enum;
 - universal Asset-history wrapper.
@@ -885,7 +905,26 @@ Reopen Asset v0 if later evidence shows that:
 4. ordinary personal use cannot distinguish when a physical object deserves Asset identity without exposing arbitrary system rules;
 5. integration identity/reconciliation cannot be represented safely without a different native referent model;
 6. physical/logical persistence pressure requires one stronger cross-domain identity abstraction rather than profile-specific storage;
-7. multi-actor ownership/custody/visibility semantics contradict the current identity independence;
+7. multi-actor ownership/custody/Visibility semantics contradict the current identity independence;
 8. later whole-domain regression shows that the current physical-object boundary is terminology-driven rather than semantically necessary.
 
 Until stronger evidence changes it, Asset v0 remains the current accepted baseline; the exact noun remains open to future renaming.
+
+---
+
+# 2026-08-12 — Authority + Visibility closure amendment
+
+Authority v0 and Visibility v0 close the governance/exposure boundaries around Asset without changing native physical-object identity.
+
+```text
+Asset
+= which tracked physical object this is
+
+Authority
+= who/what may legitimately govern a bounded effect involving it
+
+Visibility
+= what bounded Asset representation/relationship/history may be exposed
+```
+
+Therefore ownership, possession, custody, Responsibility, Resource role, Authority and Visibility remain independently representable. A visible Asset does not reveal every private field/relation/source, and Authority to manage or allocate it does not automatically disclose those details.
