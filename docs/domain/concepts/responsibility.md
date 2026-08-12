@@ -739,7 +739,7 @@ The operations lack meaning without the specific role they act upon and create r
 
 Simple cases stay direct; rich/open/transfer/history cases may use a specific qualified Responsibility context.
 
-**Result:** PASS WITH HARDENING.**
+**Result:** PASS WITH HARDENING.
 
 ---
 
