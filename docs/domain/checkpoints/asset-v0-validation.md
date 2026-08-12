@@ -313,9 +313,9 @@ living entity by default
 Before closing:
 
 - [x] Asset concept created;
-- [ ] Subject wording aligned;
-- [ ] Language Map updated;
-- [ ] Domain README updated;
-- [ ] workstream handoff updated;
+- [x] Subject wording aligned;
+- [x] Language Map updated;
+- [x] Domain README updated;
+- [x] workstream handoff updated;
 - [x] terminology-neutral mandatory revisit recorded;
 - [x] no universal managed-object root or all-things Asset model pre-approved.
