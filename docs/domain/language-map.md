@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Relationships / Reasoning started; Relationship universal primitive rejected; specific direct/qualified relation discipline accepted  
+**Current revision:** 2026-08-12 — Responsibility v0 PASS WITH HARDENING; Assignment/Claim/Hand-off classified as role-specific operations; Stewardship remains distinct SAFE DEFERRED  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -56,7 +56,7 @@ This map records decisions; it does not create primitives.
 
 ## CANONICAL
 
-Accepted Domain Atlas concept/capability/value/role semantics with stable current semantics.
+Accepted Domain Atlas concept/capability/value/role/relation semantics with stable current semantics.
 
 ```text
 Goal
@@ -85,6 +85,7 @@ Actor (semantic agency role/capability, not entity)
 Asset (current scoped native physical-object entity)
 Resource (semantic planning/execution role/capability, not entity)
 Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
+Responsibility (specific semantic relation family; not universal entity/root)
 ```
 
 `Account` has an accepted conceptual boundary as platform/access identity but its detailed domain/security model is intentionally deferred; it is therefore not listed as a fully modeled canonical kernel concept yet.
@@ -92,6 +93,8 @@ Relationship modeling discipline (cross-cutting semantic rule; not entity/root)
 `Asset` is canonical as the **current scoped baseline**. The mandatory terminology-neutral Cluster-4 review has been completed: a universal `ManagedObject` root was rejected under current evidence, the individually tracked physical-object identity need survived, and the exact internal noun `Asset` remains non-semantic/reopenable.
 
 `Relationship` does **not** denote a universal domain entity. The accepted baseline is a modeling discipline: use the most specific truthful relation semantics; keep simple connections direct when semantically complete; introduce a domain-specific qualified relation only when the connection itself has materially relevant state/history/lifecycle/context. See `checkpoints/relationship-v0-validation.md`.
+
+`Responsibility` is canonical as the specific relation answering who is accountable for ensuring a bounded commitment is appropriately handled. It is not requester, expected performer, actual performer, Resource, Authority, Visibility, ownership or coordination Stewardship. See `concepts/responsibility.md` and `checkpoints/responsibility-v0-validation.md`.
 
 ## DERIVED
 
@@ -156,6 +159,9 @@ Equipment
 Inventory
 Required equipment
 Who's available?
+Assigned to
+Claim
+Hand off
 ```
 
 `User` is deliberately product/implementation language. It must not be used as a universal domain synonym for Person, Actor, Account or Principal.
@@ -166,13 +172,14 @@ The word `Resource` itself should usually remain hidden when a more natural labe
 
 The word `Relationship` is not a required user-facing noun. UI should normally expose the specific meaning (`Done by`, `Depends on`, `Parent`, `Participant`, `Owner`, `Based on…`) rather than a generic relationship object.
 
+`Assigned to`, `Claim`, and `Hand off` are valid product/action language, but each material action must map to a specific semantic role. The same word must not become a universal kernel object.
+
 ## PROVISIONAL
 
 Recurring semantic need with meaningful evidence but an unfinished domain boundary.
 
 ```text
 Participation
-Responsibility
 Stewardship
 Authority
 Visibility
@@ -203,6 +210,8 @@ Detailed Account/credential/provider/security mechanics are deferred even though
 
 A generic Personal Knowledge link layer remains separately deferred. Its future flexibility must not automatically acquire operational, evidentiary, authority, allocation, participation or Actual semantics.
 
+Coordination Stewardship is a demonstrated semantic dimension distinct from Responsibility, but standalone primitive status remains SAFE DEFERRED pending concrete workflows that require explicit independent assignment/transfer/query/history.
+
 ## HISTORICAL / SUPERSEDED
 
 Earlier terminology preserved in Git/docs but not authoritative for the current kernel.
@@ -214,6 +223,7 @@ Earlier terminology preserved in Git/docs but not authoritative for the current 
 - universal `User` domain root and `Person = Account` / `Actor = Account` identity models are rejected. See `checkpoints/person-actor-account-v0-validation.md`.
 - historical `Asset/Soggetto` language that grouped person, animal, plant, account, document, house and equipment under one generic managed-object umbrella is superseded. Current Asset v0 is narrower; a terminology-neutral cross-domain review rejected a universal `ManagedObject` root under current evidence. See `concepts/asset.md`, `checkpoints/asset-v0-validation.md`, and `checkpoints/data-subjects-v0.md`.
 - universal `Relationship` entity/root/supertype and semantic-free `related_to` as kernel truth are rejected. The accepted result is specific relation semantics plus qualification only where the relationship itself materially requires it. See `checkpoints/relationship-v0-validation.md`.
+- Assignment, Claim and Hand-off as standalone universal kernel primitives are rejected by Responsibility v0. They remain role-specific establishment/acquisition/transfer operations/workflows. See `checkpoints/responsibility-v0-validation.md`.
 
 ---
 
@@ -277,8 +287,10 @@ Activity != Event
 Activity != Plan
 Activity != Session
 Activity != Actual
-Activity identity != requester/creator/responsible actor/assignee/performer
+Activity identity != requester/creator/responsible actor/expected performer/actual performer
 ```
+
+Responsibility v0 now closes the previously deferred responsibility-family semantics: ordinary responsibility transfer/reassignment preserves Activity identity; Assignment/Claim/Hand-off are role-specific operations/workflows rather than Activity state or standalone universal primitives.
 
 Possible UI: Task, Action, Workout, Study item, Maintenance action, Checklist item.
 
@@ -770,10 +782,10 @@ Actor != specific performer/recorder/observer/confirmer/proposer relation
 
 Core guardrails:
 
-- **specific-role precedence:** use `performed_by`, `recorded_by`, `observed_by`, `confirmed_by`, `proposed_by`, etc. when known;
+- **specific-role precedence:** use `performed_by`, `recorded_by`, `observed_by`, `confirmed_by`, `proposed_by`, `responsible_for`, etc. when known;
 - Actor is a shared agency category/capability, not a semantic-free generic persisted edge;
 - Person may play Actor role, but Actor need not be Person;
-- no Account is required for historical Actor attribution;
+- no Account is required for historical Actor/Responsibility attribution;
 - Account authentication does not automatically establish semantic Actor;
 - agency does not imply Resource eligibility, permission, responsibility or Authority;
 - AI/software may be Actors when domain-material agency exists, but technical processes are not automatically domain Actors;
@@ -869,7 +881,7 @@ Core guardrails:
 - eligibility is contextual to a Requirement;
 - a schedulable Resource is only the subset where time-dependent Availability/Capacity matters;
 - Requirement may remain abstract before concrete allocation;
-- reserved/allocated Resource does not prove actual use;
+- reserved/allocated Resource does not prove actual use or Responsibility;
 - Money/Budget are not Resource by default;
 - Resource role grants no ownership, Responsibility, Authority, Visibility or consent;
 - no universal `resources` table/root or generic `resource_id` relation is pre-approved.
@@ -991,7 +1003,7 @@ Tag must not establish ownership, authority, lifecycle, scheduling or canonical 
 
 **Status:** HISTORICAL PRODUCT PHRASE
 
-Current mapping usually uses Activity/Event + Person + future specific relationship semantics. The other Person does not need a LifeOS Account and the item is not automatically shared.
+Current mapping usually uses Activity/Event + Person + specific Responsibility/Participation/etc. semantics where needed. The other Person does not need a LifeOS Account and the item is not automatically shared.
 
 ## Asset / Soggetto
 
@@ -1089,7 +1101,7 @@ Actor != Responsibility
 Actor != Authority
 ```
 
-Use specific roles such as performer/recorder/observer/confirmer/proposer when those semantics matter.
+Use specific roles such as performer/recorder/observer/confirmer/proposer/responsible actor when those semantics matter.
 
 ## Account
 
@@ -1103,7 +1115,7 @@ Account != Principal by default
 Account != Participant
 ```
 
-Account lifecycle must not automatically erase native Person identity or historical Actor attribution.
+Account lifecycle must not automatically erase native Person identity or historical Actor/Responsibility attribution.
 
 ## Principal
 
@@ -1125,27 +1137,75 @@ Actor/Person-scoped involvement/state around a shared object; exact eligible ref
 
 ## Responsibility
 
-**Status:** PROVISIONAL — STRONG EVIDENCE
-
-Must be richer than one `assigned_to` field and may require accountability, expected performer, claimable/open responsibility, substitution and hand-off.
+**Status:** CANONICAL SPECIFIC SEMANTIC RELATION FAMILY  
+**Source:** `concepts/responsibility.md`  
+**Validation:** `checkpoints/responsibility-v0-validation.md` — PASS WITH HARDENING  
+**Question:** Who is accountable for ensuring this bounded commitment is appropriately handled?  
+**UI exposure:** CONTEXTUAL; often `Responsible`, `Assigned to`, natural person/role label
 
 ```text
-Responsibility != Actor by default
+Responsibility != Actor identity/category
+Responsibility != requester
+Responsibility != expected performer
+Responsibility != actual performer
 Responsibility != Resource
-responsible actor != performer
+Responsibility != Authority
+Responsibility != Visibility
+Responsibility != ownership/custody
+Responsibility != coordination Stewardship
+unknown holder != explicitly open/unassigned
+```
+
+Simple cases may use a direct specific `responsible_for` relation. Rich/open/transfer/history cases may require a specific qualified Responsibility context. Qualified structure does not automatically imply independent entity identity.
+
+## Assignment
+
+**Status:** CANONICAL OPERATION SEMANTICS — NOT STANDALONE UNIVERSAL PRIMITIVE
+
+Assignment establishes/changes a **specific named role**. `Assignment` without the role is semantically incomplete.
+
+```text
+assign Responsibility
+assign expected performer
+assign reviewer
+```
+
+Whether Assignment immediately makes the role effective depends on policy/Authority/Acceptance semantics.
+
+## Claim
+
+**Status:** CANONICAL OPERATION SEMANTICS — NOT STANDALONE UNIVERSAL PRIMITIVE
+
+Self-initiated attempt/action to acquire a specific role. Whether the role becomes effective immediately is policy-dependent.
+
+Do not confuse **Responsibility Claim** with a Resource **Capacity Claim / Reservation** merely because the same English word is used.
+
+## Hand-off
+
+**Status:** CANONICAL TRANSFER-WORKFLOW SEMANTICS — NOT STANDALONE UNIVERSAL PRIMITIVE
+
+Hand-off transfers/proposes transfer of a specific named role. A request does not universally establish effective transfer.
+
+```text
+hand-off request != effective Responsibility transfer by default
 ```
 
 ## Stewardship / Coordination Responsibility
 
-**Status:** PROVISIONAL / RESEARCH-BACKED QUESTION
+**Status:** DISTINCT SEMANTIC DIMENSION — STANDALONE PRIMITIVE SAFE DEFERRED
 
-Execution assignment can move while anticipation, reminding, monitoring and repair burden remain elsewhere.
+Execution Responsibility can move while anticipation, reminding, monitoring and repair burden remain elsewhere.
+
+```text
+Responsibility != coordination Stewardship
+Assignment != Stewardship transfer
+```
 
 ## Performer
 
-**Status:** RELATIONSHIP ROLE — exact model deferred
+**Status:** SPECIFIC ACTOR ROLE — exact logical representation deferred
 
-Who actually performed work; not automatically requester/responsible actor/planned assignee. Performer is a specific Actor role, not Actor or Resource identity.
+Who actually performed work; not automatically requester/responsible actor/planned expected performer. Performer is a specific Actor role, not Actor or Resource identity.
 
 ## Subject
 
@@ -1203,6 +1263,7 @@ Authority != Provenance/source
 Authority != Subject
 Authority != Actor
 Authority != Resource
+Authority != Responsibility
 Authority != Account
 Authority != Asset ownership by default
 ```
@@ -1211,7 +1272,7 @@ Authority != Asset ownership by default
 
 **Status:** DEFERRED
 
-What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset attribution are distinct. Being Subject, Resource candidate or owner does not automatically grant visibility.
+What an Actor/Principal/Account context may inspect/receive/use. Current access and historical Person/Actor/Asset/Responsibility attribution are distinct. Being Subject, Resource candidate, owner or responsible actor does not automatically grant visibility.
 
 ## Acknowledgement
 
@@ -1233,6 +1294,9 @@ Willingness/participation/proposal/responsibility semantics.
 ```text
 Acceptance != Confirmation
 Acceptance != Actual
+Assignment != Acceptance by default
+Claim != Acceptance by default
+hand-off request != Acceptance by default
 ```
 
 ---
@@ -1293,7 +1357,7 @@ Actual use / consumption
 what was really used
 ```
 
-The exact identity/cardinality/persistence of these structures remains deferred.
+The exact identity/cardinality/persistence of these structures remains deferred. None implies Responsibility.
 
 ## Asset scope / managed-referent taxonomy
 
@@ -1315,13 +1379,13 @@ Future Place/Property, living, Document, FinancialAccount, and service workflows
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Material version identity/history must later integrate with Confirmation, Evidence, Provenance and Subject/Person/Asset attribution correction without replacing them.
+Material version identity/history must later integrate with Confirmation, Evidence, Provenance, Responsibility history and Subject/Person/Asset attribution correction without replacing them.
 
 ## Decision
 
 **Status:** DEFERRED — RELATIONSHIPS/REASONING REVIEW
 
-Decision rationale/authority is distinct from Provenance lineage.
+Decision rationale/authority is distinct from Provenance lineage and may be needed for contested/effective Responsibility changes.
 
 ---
 
@@ -1334,6 +1398,7 @@ Decision rationale/authority is distinct from Provenance lineage.
 ```text
 Trigger != Recurrence
 Trigger != Routine
+fallback/conditional Responsibility != current Responsibility
 ```
 
 ## Relationship
@@ -1351,6 +1416,8 @@ qualified relation != entity automatically
 queryability/cardinality/database row id != domain identity
 orientation/symmetry/transitivity/inverse rules are relation-family-specific
 ```
+
+Responsibility v0 is the first major successful stress of this rule: simple responsibility may be direct, while rich/open/transfer/history cases may use a specific qualified Responsibility context.
 
 A future generic Personal Knowledge link capability is separately SAFE DEFERRED and must not silently become Responsibility, Authority, Evidence, Participation, allocation or Actual semantics.
 
@@ -1445,6 +1512,19 @@ Resource != actual use/consumption
 Resource != Responsibility/Performer/Participant
 Resource role != synthetic provider identity
 Money/Budget != Resource by default
+Responsibility != requester
+Responsibility != expected performer
+Responsibility != actual performer
+Responsibility != Resource
+Responsibility != Authority
+Responsibility != Visibility
+Responsibility != Stewardship
+unknown responsibility != explicitly open/unassigned
+Assignment != standalone universal primitive
+Claim != standalone universal primitive
+Hand-off != standalone universal primitive
+Assignment/Claim/Hand-off must identify specific role
+hand-off request != effective transfer by default
 universal Relationship root = rejected
 semantic-free related_to as kernel truth = rejected
 specific relation semantics != generic Relationship wrapper
@@ -1498,11 +1578,18 @@ Asset may play Subject role
 Asset may play Resource role
 Resource candidacy != Responsibility/consent/allocation Authority
 Participant != Responsible actor
-Responsible actor != Performer
+Responsible actor != expected performer
+Responsible actor != actual performer
+expected performer != actual performer
 Creator != Owner/Governor
 Visibility != Authority
 Sharing != ownership
 Assignment != Activity identity
+Assignment != Acceptance by default
+Claim != effective Responsibility by default
+hand-off request != effective role transfer by default
+Responsibility transfer != Activity replacement
+Responsibility != coordination Stewardship
 Participation response != Actual participation
 shared Actual != identical actor participation
 shared Outcome != identical actor consequence
@@ -1510,7 +1597,7 @@ shared Asset != identical actor visibility/private overlays
 Observation Subject != observer/recorder/source/authority/viewer
 current Account != universal Subject
 current Account != semantic Actor automatically
-non-LifeOS Person may be Subject/Participant/Actor/Resource candidate where context allows
+non-LifeOS Person may be Subject/Participant/Actor/Resource candidate/Responsibility holder where context allows
 Confirmation by A != Confirmation by B
 conflicting Observation != automatic overwrite/average
 conflicting Confirmation != automatic canonical truth
@@ -1521,6 +1608,7 @@ Acknowledgement != agreement
 Agreement != authority
 Authority != Actual
 Authority != Confirmation
+Authority != Responsibility
 Actor action != Authority
 relation existence/type != Authority
 relation existence/type != Visibility
@@ -1528,11 +1616,12 @@ AI knowledge != disclosure permission
 AI inference != Confirmation
 AI inference != established Actual
 AI inferred relation != established relationship
+AI Responsibility suggestion != effective assignment/transfer
 AI Subject/Person/Asset guess != established identity
 AI Resource match != authoritative allocation
 AI Actor != human author/authority automatically
 AI provenance != disclosure permission
-future Account access revocation != deletion of historical Person/Actor attribution
+future Account access revocation != deletion of historical Person/Actor/Responsibility attribution
 Quantity display preference != canonical value mutation
 actor tracker preferences != shared fact mutation
 ```
@@ -1553,6 +1642,9 @@ Subject UI/context != Subject entity
 Actor UI label != Actor entity
 Resource UI label != Resource entity
 Relationship UI/link != universal Relationship entity
+Assigned-to UI != universal Assignment entity
+Claim UI action != universal Claim entity
+Hand-off UI action != universal HandOff entity
 User UI/implementation term != universal domain entity
 Account settings object != Person identity
 Asset UI profile != new Asset subtype primitive automatically
@@ -1572,6 +1664,36 @@ Quantity UI value != standalone Quantity entity
 ```text
 Domain: Activity
 Product/UI: Task / Buy milk
+```
+
+Simple personal policy may hide Responsibility entirely or show `Assigned to me`; the underlying Activity identity does not depend on Account coincidence.
+
+## Open household chore
+
+```text
+Activity
+Take recycling out
+
+Responsibility
+explicitly open / claimable
+```
+
+This is not the same as unknown Responsibility data.
+
+## Responsibility hand-off
+
+```text
+Activity
+Pick up prescription
+
+current responsible
+Luca
+
+hand-off request
+Luca -> Anna
+
+pending
+Luca remains current holder unless policy/Authority makes transfer effective
 ```
 
 ## Gym 3x/week
@@ -1653,7 +1775,7 @@ Reservation
 A17 17:00–20:00
 ```
 
-Asset identity, Resource role, Requirement, Allocation and Reservation remain distinct.
+Asset identity, Resource role, Requirement, Allocation, Reservation and Responsibility remain distinct.
 
 ## Consumable requirement
 
@@ -1684,9 +1806,11 @@ Asset L1
 owner = Company
 holder = Person Mattia
 maintenance responsibility = IT
+coordination Stewardship = possibly Anna
+actual repair performer = Technician
 ```
 
-One Asset identity; ownership, possession and responsibility are separate future relationships.
+One Asset identity; ownership, possession, Responsibility, Stewardship and performer are separate semantics.
 
 ## Caregiver measurement
 
@@ -1704,15 +1828,15 @@ Account Anna-A1
 
 Person, Subject, Actor role and Account remain distinct.
 
-## External participant with no Account
+## External participant/responsible Person with no Account
 
 ```text
 Person Dr. Rossi
-Event participant
+Event participant / possible Responsibility holder in relevant context
 no LifeOS Account required
 ```
 
-If Dr. Rossi later creates an Account, the human Person identity does not need to be recreated.
+If Dr. Rossi later creates an Account, the human Person identity and historical roles do not need to be recreated.
 
 ## AI proposal
 
@@ -1724,14 +1848,14 @@ Actor semantics
 Resource matching
 proposes A17 for requirement
 
+Responsibility planning
+proposes Anna as responsible
+
 service/security identity
 future Principal semantics
-
-human Person
-future delegated/on-behalf-of Authority context
 ```
 
-AI agency/resource matching does not become human Confirmation, allocation Authority or Responsibility automatically.
+AI proposal does not become allocation Authority, Responsibility, Acceptance or human Confirmation automatically.
 
 ## Quantity display conversion
 
@@ -1771,7 +1895,7 @@ authorized projection
 Unavailable 18:00–20:00
 ```
 
-Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage, Resource-match basis or Subject association.
+Shared Actors do not automatically receive the private source reason, Person/Asset linkage, Actor/delegation lineage, Resource-match basis, Responsibility context or Subject association.
 
 ---
 
@@ -1793,6 +1917,10 @@ Account             → Account / Profile / Login in settings/security context
 Asset               → Car / Camera / Laptop / Bike / Gear / Equipment according to context
 Resource            → usually hidden; Camera / Room / Person / Service / Who's available? / Required equipment
 Relationship        → usually hidden; expose the specific verb/role instead
+Responsibility      → Responsible / Assigned to / Who's handling this? depending on context
+Assignment          → Assign / Reassign action
+Claim               → I'll take it / Claim action
+Hand-off            → Hand off / Transfer / Ask someone else
 User                → ordinary product language only where unambiguous
 Register capability → History / Tracker / Progress / Register when useful
 Confirmation        → Confirm / Looks correct / Needs confirmation
@@ -1825,6 +1953,9 @@ Specific guardrails:
 - Actor does not imply a universal `actors` table/root, generic `actor_id`, or replacement of specific action roles;
 - Resource does not imply a universal `resources` table/root, generic `resource_id`, or synthetic identity for supplies/pools;
 - Relationship modeling discipline does not imply a universal `relationships` table, graph edge root, Node supertype, or one polymorphic `related_to` mechanism;
+- Responsibility does not imply a universal `responsibilities` table, `assigned_to` field, or independent relation identity in every simple case;
+- Assignment/Claim/Hand-off do not imply standalone tables/entities;
+- explicitly open/unassigned Responsibility must remain distinguishable from unknown, even if SQL later uses nullable references internally;
 - structured/qualified relation persistence does not by itself establish independent domain identity;
 - queryability, cardinality and database row IDs do not create domain concepts;
 - Resource Requirement/Allocation/Reservation remain distinct logical-model questions;
@@ -1849,7 +1980,7 @@ When implementation names later differ for good technical reasons, document the 
 
 A term may enter when at least one holds:
 
-1. it is an accepted Domain Atlas concept/capability/value/role semantics;
+1. it is an accepted Domain Atlas concept/capability/value/role/relation semantics;
 2. it is recurring product/UI language with clear mapping;
 3. omitting it creates material ambiguity;
 4. a demonstrated semantic need must be tracked as PROVISIONAL/DEFERRED.
@@ -1886,6 +2017,7 @@ Data / Subjects v0              PASS WITH HARDENING
 Deferred Dependency Closure     PASS
 Cross-Cluster Validation v4     PASS WITH HARDENING
 Relationship v0 review          PASS WITH HARDENING
+Responsibility v0 review        PASS WITH HARDENING
 ```
 
 Current cross-cluster structural reopenings: **0**.
@@ -1895,9 +2027,11 @@ Normative transition/current references:
 - `checkpoints/data-subjects-v0.md`;
 - `checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`;
 - `checkpoints/cross-cluster-validation-v4.md`;
-- `checkpoints/relationship-v0-validation.md`.
+- `checkpoints/relationship-v0-validation.md`;
+- `concepts/responsibility.md`;
+- `checkpoints/responsibility-v0-validation.md`.
 
-Relationships / Reasoning is **IN PROGRESS**. The next high-leverage review family is Responsibility / Assignment / Claim / Hand-off / Stewardship; those nouns are not pre-accepted as separate primitives. The Adjacent Dependency Sweep remains mandatory before every verdict.
+Relationships / Reasoning is **IN PROGRESS**. The next candidate must be selected by dependency leverage rather than roadmap order. `Participation` is currently the strongest likely next review because it pressures Event/Session/Actual plus actor-scoped invitation/response/attendance history, but it is not pre-accepted by this map.
 
 ---
 
