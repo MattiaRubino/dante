@@ -12,11 +12,11 @@
 
 Turn LifeOS product requirements into an implementation-ready domain model without prematurely fixing specialist modules, collaboration infrastructure, API shapes or final SQL tables.
 
-Earlier product terminology is evidence, not automatic truth. Concepts are revalidated through real-world workflows, mature-product/standard benchmarks, adversarial reduction, history/correction tests, explicit multi-actor stress and cross-concept consistency.
+Earlier product terminology is evidence, not automatic truth. Candidates are revalidated through real-world workflows, mature-product/standard benchmarks, adversarial reduction, history/correction tests, explicit multi-actor stress and cross-concept consistency.
 
 **Accepted means current best decision, not immutable decision.**
 
-A roadmap concept is a candidate to validate, not an object that must survive. Rejection is the correct result when the product capability can be preserved without an additional kernel primitive.
+A roadmap concept is a candidate to validate, not an object that must survive. Rejection is correct when the capability can be preserved more cleanly without an additional kernel primitive.
 
 ---
 
@@ -33,28 +33,23 @@ A roadmap concept is a candidate to validate, not an object that must survive. R
 9. [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
 10. [`../domain/checkpoints/observed-reality-evidence-v0.md`](../domain/checkpoints/observed-reality-evidence-v0.md)
 11. [`../domain/checkpoints/cross-cluster-validation-v3.md`](../domain/checkpoints/cross-cluster-validation-v3.md)
-12. [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md) — historical predecessor
-13. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
-14. [`../domain/concepts/actual.md`](../domain/concepts/actual.md)
-15. [`../domain/checkpoints/actual-v0-validation.md`](../domain/checkpoints/actual-v0-validation.md)
-16. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
-17. [`../domain/checkpoints/outcome-v0-validation.md`](../domain/checkpoints/outcome-v0-validation.md)
-18. [`../domain/concepts/observation.md`](../domain/concepts/observation.md)
-19. [`../domain/checkpoints/observation-v0-validation.md`](../domain/checkpoints/observation-v0-validation.md)
-20. [`../domain/concepts/confirmation.md`](../domain/concepts/confirmation.md)
-21. [`../domain/checkpoints/confirmation-v0-validation.md`](../domain/checkpoints/confirmation-v0-validation.md)
-22. [`../domain/concepts/evidence.md`](../domain/concepts/evidence.md)
-23. [`../domain/checkpoints/evidence-v0-validation.md`](../domain/checkpoints/evidence-v0-validation.md)
-24. [`../domain/concepts/provenance.md`](../domain/concepts/provenance.md)
-25. [`../domain/checkpoints/provenance-v0-validation.md`](../domain/checkpoints/provenance-v0-validation.md)
-26. [`../domain/concepts/quantity.md`](../domain/concepts/quantity.md)
-27. [`../domain/checkpoints/quantity-v0-validation.md`](../domain/checkpoints/quantity-v0-validation.md)
-28. [`../domain/checkpoints/register-v0-validation.md`](../domain/checkpoints/register-v0-validation.md)
-29. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-30. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-31. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-32. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-33. accepted architecture/DB ADRs.
+12. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+13. [`../domain/concepts/actual.md`](../domain/concepts/actual.md)
+14. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
+15. [`../domain/concepts/observation.md`](../domain/concepts/observation.md)
+16. [`../domain/concepts/confirmation.md`](../domain/concepts/confirmation.md)
+17. [`../domain/concepts/evidence.md`](../domain/concepts/evidence.md)
+18. [`../domain/concepts/provenance.md`](../domain/concepts/provenance.md)
+19. [`../domain/concepts/quantity.md`](../domain/concepts/quantity.md)
+20. [`../domain/checkpoints/quantity-v0-validation.md`](../domain/checkpoints/quantity-v0-validation.md)
+21. [`../domain/checkpoints/register-v0-validation.md`](../domain/checkpoints/register-v0-validation.md)
+22. [`../domain/concepts/subject.md`](../domain/concepts/subject.md)
+23. [`../domain/checkpoints/subject-v0-validation.md`](../domain/checkpoints/subject-v0-validation.md)
+24. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+25. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+26. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+27. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+28. accepted architecture/DB ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -70,14 +65,13 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 - Allowed concept/cluster verdicts: `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
 - Dependency closure classes are `RESOLVED`, `SAFE DEFERRED`, `REOPEN`; they are not additional concept verdicts.
 - Candidate rejection is valid when no distinct identity/lifecycle/authority/invariant/query behavior justifies the primitive.
-- Preserve the useful product capability even when a historical kernel candidate is rejected.
-- Keep external standards/products as evidence, not design authorities.
+- Preserve useful product capability even when a historical kernel candidate is rejected.
 - Preserve planned/current/actual/history distinctions.
 - Preserve source/provenance/confirmation/evidence/authority distinctions.
-- Do not fabricate historical intention from later relevance.
+- Do not fabricate historical intention or earlier knowledge from later relevance/resolution.
 - Do not create one table/entity per life topic.
-- Do not collapse semantics into arbitrary JSON or one universal graph/reality/fact object.
-- Do not let AI inference become confirmed/canonical truth automatically.
+- Do not collapse semantics into arbitrary JSON or one universal graph/reality/fact/subject object.
+- Do not let AI inference become confirmed/canonical truth or established identity automatically.
 - Preserve progressive disclosure.
 - Run the dedicated Multi-Actor Compatibility Gate after the Core Semantic Gate.
 - New primitives require materially distinct identity/lifecycle/authority/invariants/query behavior.
@@ -108,11 +102,13 @@ Confirmation v0                 ACCEPTED
 Evidence v0                     ACCEPTED
 Provenance v0                   ACCEPTED
 Quantity v0                     PASS WITH HARDENING / ACCEPTED
+Subject v0                      PASS WITH HARDENING / ACCEPTED SEMANTIC ROLE
 Register kernel candidate       REJECTED
 Universal RegisterEntry         REJECTED
+Universal Subject entity/root   REJECTED
 ```
 
-First-three-cluster regression result:
+First-three-cluster regression result remains:
 
 ```text
 18 accepted concepts retained before Cluster 4
@@ -122,7 +118,7 @@ First-three-cluster regression result:
 0 mandatory new primitives
 ```
 
-The two current cross-cluster hardenings are:
+The two existing cross-cluster hardenings remain:
 
 1. reported/asserted reality != established Actual;
 2. Milestone attainment is Evidence/evaluation-backed and must not duplicate underlying reality.
@@ -153,17 +149,28 @@ actor-scoped personal state
 
 is preferred over per-user semantic duplication.
 
-Non-collapse rules:
+Current non-collapse rules now include:
 
 ```text
-object identity
+native referent/object identity
 != account
 != participant
 != responsibility
 != performer
-!= subject
+!= Subject role
 != authority
 != visibility
+```
+
+Subject v0 further establishes:
+
+```text
+Subject role
+!= Person identity
+!= Actor role
+!= Account/Principal
+!= Resource role
+!= source/observer/recorder
 ```
 
 No Actor/Team/Organization/ACL/Stewardship primitive is pre-approved.
@@ -192,6 +199,7 @@ Confirmation   -> canonical contextual attestation
 Evidence       -> canonical contextual evaluative role/relationship
 Provenance     -> canonical bounded contextual lineage capability
 Quantity       -> canonical reusable scalar amount value semantics
+Subject        -> canonical contextual aboutness role over native identity; not entity
 Register       -> possible product/UI label for longitudinal capability, not kernel primitive
 Tracker/History/Progress -> product/query views over native records
 ```
@@ -224,19 +232,9 @@ reported/asserted reality != established Actual
 Outcome = contextual result/disposition of an Actual realization
 ```
 
-```text
-Outcome != lifecycle/operational state
-Outcome != Observation
-Outcome != artifact/output
-Outcome != Milestone
-Outcome != Confirmation
-Outcome != Provenance
-Outcome != Evidence
-```
-
 ## Observation v0
 
-> A persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a subject at an effective time or context.
+> A persistent contextual record of a measured, perceived, reported, or explicitly derived property, state, value, rating, or simple assertion about a Subject referent at an effective time or context.
 
 ```text
 Observation != Actual
@@ -250,50 +248,19 @@ Observation != Provenance
 
 Longitudinal tracker/history/report views query native Observations and other native records without duplicating them into a universal entry layer.
 
+Subject now references the native referent playing the aboutness role; Observation does not own a separate Subject entity.
+
 ## Confirmation v0
 
 > A persistent contextual attestation that a specific confirmer affirms a specific version of a confirmable target as sufficiently accepted for a defined purpose at that time.
-
-```text
-Confirmation != Actual
-Confirmation != Outcome
-Confirmation != Observation
-Confirmation != Provenance
-Confirmation != Evidence
-Confirmation != Acknowledgement
-Confirmation != Acceptance/Agreement
-Confirmation != Verification
-Confirmation != Authority
-```
 
 ## Evidence v0
 
 > Evidence is the contextual evaluative role played by information when that information materially bears on a specific claim, criterion, checkpoint, decision or other evaluation target.
 
-```text
-Evidence != source information itself
-Evidence != Observation
-Evidence != Actual
-Evidence != Outcome
-Evidence != Confirmation
-Evidence != Provenance
-Evidence != GoalCriterion
-Evidence != Milestone
-```
-
 ## Provenance v0
 
 > Provenance is bounded contextual lineage describing how a specific domain record/material version came to exist or change, including materially relevant source entities, activities, actors/systems/providers and times.
-
-```text
-Source != Provenance
-Provenance != truth
-Provenance != Authority
-Provenance != Confirmation
-Provenance != Evidence
-Provenance != Version
-Provenance != Audit
-```
 
 Cluster checkpoint:
 
@@ -317,8 +284,8 @@ Do not jump to SQL/API design yet.
 Quantity       ACCEPTED — canonical value semantics
 Register       REJECTED as kernel primitive
 RegisterEntry  REJECTED as universal semantic record
-Subject        ACTIVE NEXT REVIEW
-Person / Actor PENDING CANDIDATE
+Subject        ACCEPTED — canonical semantic role; entity/root rejected
+Person / Actor ACTIVE NEXT BOUNDARY REVIEW
 Asset          PENDING CANDIDATE
 Resource       PENDING CANDIDATE
 ```
@@ -328,6 +295,8 @@ None of the pending candidates is guaranteed to survive.
 ## Accepted concept — Quantity v0
 
 > A Quantity is reusable scalar value semantics representing an amount through a numerical magnitude together with unit semantics sufficient to interpret that amount. It has no independent subject, property, time, identity, provenance, intention, observation history, or evaluative meaning.
+
+Critical boundaries:
 
 ```text
 Quantity != entity
@@ -339,16 +308,6 @@ same unit != universal aggregation permission
 Quantity != Range / Threshold / comparator / criterion
 ```
 
-Critical hardenings:
-
-- source representation != normalized/display representation;
-- actor-specific display unit preference does not duplicate canonical facts;
-- custom unit label != global conversion rule;
-- Money/MonetaryAmount is not pre-collapsed into ordinary Quantity;
-- calendar-relative time is not pre-collapsed into fixed elapsed Quantity arithmetic;
-- precision/rounding must not be silently fabricated;
-- no standalone Quantity SQL table/entity is pre-approved.
-
 Checkpoint:
 
 - [`Quantity v0 Validation`](../domain/checkpoints/quantity-v0-validation.md) — **PASS WITH HARDENING**.
@@ -357,7 +316,7 @@ Checkpoint:
 
 Historical discovery proposed a universal `Register + RegisterEntry` structure.
 
-Current validation rejects that kernel design while preserving the user-facing need:
+Current validation rejects that kernel design while preserving:
 
 ```text
 native semantic records
@@ -384,37 +343,92 @@ Checkpoint:
 
 - [`Register Candidate v0 Validation`](../domain/checkpoints/register-v0-validation.md) — **KERNEL CANDIDATE REJECTED / PRODUCT NEED RETAINED**.
 
-## ACTIVE NEXT REVIEW — Subject
+## Accepted semantic role — Subject v0
 
-Subject must be tested from first principles rather than inherited from Observation wording or old `Asset/Soggetto` discovery language.
+> Subject is the contextual semantic role played by a native referent when a descriptive record primarily concerns that referent's state, property, condition, or asserted fact.
+
+Accepted shape:
+
+```text
+Person / future Asset / Device / Location / other native referent
+        ↑
+     Subject role
+        │
+Observation / descriptive record
+```
+
+Rejected shape:
+
+```text
+Subject entity/root
+    ↓ wraps
+Person / Asset / Device / ...
+```
+
+Core rules:
+
+```text
+Subject != Person
+Subject != Actor
+Subject != Account/Principal
+Subject != Asset
+Subject != Resource
+Subject != observer/recorder/source/transformer
+Subject != authority/visibility/owner
+Subject != generic related_to
+```
+
+Additional hardenings:
+
+- current Account is not universal Subject default;
+- non-LifeOS people and non-person referents may be Subject;
+- unknown/later-resolved/corrected subject attribution preserves material history;
+- subject association itself may be sensitive;
+- AI may propose Subject resolution but does not establish identity/authority automatically;
+- no universal `subjects` table/root is pre-approved.
+
+Checkpoint:
+
+- [`Subject v0 Validation`](../domain/checkpoints/subject-v0-validation.md) — **PASS WITH HARDENING**.
+
+## ACTIVE NEXT REVIEW — Person / Actor / Account boundary
+
+This review must not begin from `users.id` or assume a fixed inheritance tree.
 
 Primary questions:
 
 ```text
-Subject as entity vs semantic role
-Subject vs Person
-Subject vs Actor
-Subject vs Asset
-Subject vs Resource
-Subject vs Account / Principal
-subject/focus/context distinctions
-one record with multiple possible subjects/foci
-non-LifeOS person as subject
-animal/plant/object/account/location/document as possible subject
-subject identity/history when the same real thing changes roles
-privacy/authority: being the subject != owning/entering/viewing/authorizing the record
+Person = native human identity?
+Actor = entity, capability, role, or category of possible agents?
+Person can exist without Account? — must survive
+Account = login/credential container, product identity, or principal?
+Can one Person have several Accounts/credentials?
+Can Account represent service/system without Person?
+Can several Persons/actors ever operate through one account/context?
+Actor vs Person vs Organization/service/device agent
+Person vs contact/profile/provider duplicates and reconciliation
+Subject role over Person vs Actor role over same Person
+participant/responsible/performer roles vs Actor identity
+Principal belongs here or later with Authority?
+historical attribution when account is revoked/deleted/changed
+assisted participation and low-digital/non-account people
+AI/service acting identity without authority laundering
 ```
 
-Required external/product benchmark families where useful:
+Mandatory scenarios:
 
-- FHIR subject/focus/reference patterns;
-- contact/person/account systems;
-- asset/device/CMMS or inventory systems;
-- health/fitness apps representing people/devices;
-- knowledge systems using subject/topic/focus;
-- other mature products only where they expose a real semantic problem.
+- personal self-use where Person/Actor/Account coincide;
+- contact/person represented without account;
+- caregiver enters/acts for another Person;
+- external participant never joins LifeOS;
+- same Person changes email/account provider;
+- multiple credentials/accounts linked to one Person;
+- service/bot/device performs a system action;
+- account is disabled/revoked but historical attribution survives;
+- guardian/caregiver unequal authority;
+- AI acts on behalf of a principal but does not become authority itself.
 
-External shapes are evidence only. LifeOS should not create a universal Subject wrapper simply because another schema uses references.
+External benchmarks should include mature identity/contact/collaboration systems, but their resource taxonomy is evidence only.
 
 ## Mandatory inherited re-tests
 
@@ -422,14 +436,17 @@ External shapes are evidence only. LifeOS should not create a universal Subject 
 Observation vs Quantity — RESOLVED by Quantity v0
 Observation vs Register/RegisterEntry — RESOLVED by Register rejection
 Quantity vs Register aggregation — RESOLVED at kernel level
-Subject vs observer/recorder/source/transformer — ACTIVE
+Subject vs observer/recorder/source/transformer — RESOLVED by Subject v0
+Subject entity vs semantic role — RESOLVED by Subject v0
+Subject vs current Account — basic boundary RESOLVED
+Person vs Actor vs Subject vs Account/Principal — ACTIVE
 sampled-series physical representation — SAFE implementation dependency
 Availability/Capacity vs Resource
-Actor vs Subject vs Resource vs Account/Principal
-Provenance source/actor roles vs Subject/Person/Account
+Provenance source/actor roles vs Person/Actor/Account
+Subject vs Asset/Resource — mandatory later in this cluster
 ```
 
-The Subject review is read-only until it passes Methodology v3 and a separately stated Git write scope is explicitly approved.
+The Person / Actor / Account review is read-only until Methodology v3 passes and a separately stated Git write scope is explicitly approved.
 
 ---
 
@@ -453,7 +470,7 @@ Cross-Cluster Validation v4 — clusters 1–4
 Relationships / Reasoning
 ```
 
-The dependency closure must revisit inherited issues from the first three clusters as well as new Cluster 4 findings. Nothing material may remain as unowned limbo.
+The dependency closure must revisit inherited issues from the first three clusters as well as Cluster 4 findings. Nothing material may remain as unowned limbo.
 
 ---
 
@@ -471,7 +488,8 @@ Likely topics:
 - Authority / Visibility;
 - Decision;
 - Version;
-- AI Proposal.
+- AI Proposal;
+- Principal if the identity/authority review shows it belongs here rather than in Data / Subjects.
 
 Mandatory inherited re-tests:
 
@@ -480,7 +498,9 @@ Mandatory inherited re-tests:
 - Provenance vs Version / Decision / Audit;
 - Confirmation vs Authority / Acknowledgement / Acceptance;
 - competing assertions and canonical decision/reconciliation policy;
-- collaborative Session/Actual attribution.
+- collaborative Session/Actual attribution;
+- Subject vs focus/context/Visibility;
+- Person/Actor historical attribution after account revocation.
 
 From this cluster onward, the Adjacent Dependency Sweep is mandatory before each concept verdict.
 
@@ -509,8 +529,9 @@ Session where executable episode exists
         ↓
 Actual realization context
         ├─ Outcome where result/disposition matters
-        └─ Observation(s) describing measured/asserted reality
-             └─ may use Quantity value semantics
+        └─ Observation(s)
+             ├─ may use Quantity value semantics
+             └─ references native referent playing Subject role
 
 Confirmation
 = contextual affirmation of specific target/version/purpose
@@ -524,6 +545,9 @@ Provenance
 Quantity
 = reusable scalar amount value semantics also usable outside Observation
 
+Subject
+= contextual role over native referent identity
+
 Longitudinal product views
 = queries/projections over native records, not a separate truth layer
 ```
@@ -536,10 +560,17 @@ This is not a mandatory parent/child chain and not a persistence schema.
 
 The post-Cluster-4 closure pass must turn every still-material item into `RESOLVED`, `SAFE DEFERRED`, or `REOPEN`.
 
-Known inherited items include:
+Active/current items:
 
-- Subject vs observer/recorder/source/transformer;
-- Person vs Actor vs Subject vs Account/Principal;
+- Person vs Actor vs Subject vs Account/Principal — ACTIVE;
+- Person identity vs contact/profile/provider representation;
+- historical actor attribution after account change/revocation;
+- service/system/device acting identity;
+- Subject vs Asset;
+- Subject vs Resource;
+- Subject vs focus/context/typed Relationship;
+- Subject association privacy vs Visibility;
+- heterogeneous Subject-reference persistence;
 - Availability/Capacity vs Resource;
 - Actual establishment under Authority/Decision/reconciliation semantics;
 - Confirmation vs Authority/Acknowledgement/Acceptance/Version;
@@ -569,7 +600,10 @@ Resolved:
 - Observation vs Register/RegisterEntry;
 - Register as kernel primitive;
 - universal RegisterEntry;
-- Quantity vs generic Register aggregation at kernel level.
+- Quantity vs generic Register aggregation at kernel level;
+- Subject entity vs semantic role;
+- Subject vs observer/recorder/source/transformer;
+- Subject vs current Account at the basic identity boundary.
 
 These are executable obligations, not generic `later` notes.
 
@@ -580,7 +614,7 @@ These are executable obligations, not generic `later` notes.
 The full Domain Atlas must eventually establish:
 
 - conceptual model;
-- entity/value-object/relationship boundaries;
+- entity/value-object/semantic-role/relationship boundaries;
 - identity/invariants;
 - actor/context/authority model;
 - lifecycle/state distinctions;
@@ -611,9 +645,12 @@ Cross-Cluster Validation v3 PASS
 Data / Subjects — ACTIVE
   Quantity v0 accepted
   Register candidate rejected
-  Subject read-only review now
+  Subject v0 accepted as semantic role
+  Person / Actor / Account boundary review now
 ↓
-remaining Data / Subjects candidates
+Asset candidate
+↓
+Resource candidate
 ↓
 Data / Subjects cluster integration + multi-actor stress
 ↓
@@ -639,4 +676,4 @@ logical/physical persistence and API stabilization
 - Phase 4 prototype branch not changed by this workstream;
 - repository visibility does not change the branch/write-scope operating rules.
 
-Continue from Methodology v3 + Execution Template v3 + Language Map + accepted Quantity v0 + Register rejection checkpoint + the three validated cluster checkpoints. The active next candidate is `Subject` in read-only mode. Do not create a parallel validation standard, terminology tree or collaboration ontology.
+Continue from Methodology v3 + Execution Template v3 + Language Map + accepted Quantity v0 + Register rejection checkpoint + accepted Subject v0 + the three validated cluster checkpoints. The active next candidate is the `Person / Actor / Account` boundary in read-only mode. Do not create a parallel validation standard, terminology tree or collaboration ontology.
