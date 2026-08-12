@@ -29,25 +29,27 @@ Earlier product terminology is evidence, not automatic truth. Concepts are reval
 7. [`../domain/multi-actor-readiness-v1.md`](../domain/multi-actor-readiness-v1.md)
 8. [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
 9. [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
-10. [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md)
-11. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
-12. [`../domain/concepts/actual.md`](../domain/concepts/actual.md)
-13. [`../domain/checkpoints/actual-v0-validation.md`](../domain/checkpoints/actual-v0-validation.md)
-14. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
-15. [`../domain/checkpoints/outcome-v0-validation.md`](../domain/checkpoints/outcome-v0-validation.md)
-16. [`../domain/concepts/observation.md`](../domain/concepts/observation.md)
-17. [`../domain/checkpoints/observation-v0-validation.md`](../domain/checkpoints/observation-v0-validation.md)
-18. [`../domain/concepts/confirmation.md`](../domain/concepts/confirmation.md)
-19. [`../domain/checkpoints/confirmation-v0-validation.md`](../domain/checkpoints/confirmation-v0-validation.md)
-20. [`../domain/concepts/evidence.md`](../domain/concepts/evidence.md)
-21. [`../domain/checkpoints/evidence-v0-validation.md`](../domain/checkpoints/evidence-v0-validation.md)
-22. [`../domain/concepts/provenance.md`](../domain/concepts/provenance.md)
-23. [`../domain/checkpoints/provenance-v0-validation.md`](../domain/checkpoints/provenance-v0-validation.md)
-24. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-25. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-26. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
-27. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-28. accepted architecture/DB ADRs.
+10. [`../domain/checkpoints/observed-reality-evidence-v0.md`](../domain/checkpoints/observed-reality-evidence-v0.md)
+11. [`../domain/checkpoints/cross-cluster-validation-v3.md`](../domain/checkpoints/cross-cluster-validation-v3.md)
+12. [`../domain/checkpoints/cross-cluster-validation-v2.md`](../domain/checkpoints/cross-cluster-validation-v2.md) — historical predecessor
+13. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+14. [`../domain/concepts/actual.md`](../domain/concepts/actual.md)
+15. [`../domain/checkpoints/actual-v0-validation.md`](../domain/checkpoints/actual-v0-validation.md)
+16. [`../domain/concepts/outcome.md`](../domain/concepts/outcome.md)
+17. [`../domain/checkpoints/outcome-v0-validation.md`](../domain/checkpoints/outcome-v0-validation.md)
+18. [`../domain/concepts/observation.md`](../domain/concepts/observation.md)
+19. [`../domain/checkpoints/observation-v0-validation.md`](../domain/checkpoints/observation-v0-validation.md)
+20. [`../domain/concepts/confirmation.md`](../domain/concepts/confirmation.md)
+21. [`../domain/checkpoints/confirmation-v0-validation.md`](../domain/checkpoints/confirmation-v0-validation.md)
+22. [`../domain/concepts/evidence.md`](../domain/concepts/evidence.md)
+23. [`../domain/checkpoints/evidence-v0-validation.md`](../domain/checkpoints/evidence-v0-validation.md)
+24. [`../domain/concepts/provenance.md`](../domain/concepts/provenance.md)
+25. [`../domain/checkpoints/provenance-v0-validation.md`](../domain/checkpoints/provenance-v0-validation.md)
+26. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
+27. [`../product/multi-actor-collaboration-discovery-simulation-2026-08.md`](../product/multi-actor-collaboration-discovery-simulation-2026-08.md)
+28. [`../product/multi-actor-collaboration-research-2026-08.md`](../product/multi-actor-collaboration-research-2026-08.md)
+29. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
+30. accepted architecture/DB ADRs.
 
 Validation Methodology v2 and its multi-actor addendum are historical audit sources only. v3 is the mandatory active standard.
 
@@ -70,6 +72,7 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 - Run the dedicated Multi-Actor Compatibility Gate after the Core Semantic Gate.
 - New primitives require materially distinct identity/lifecycle/authority/invariants/query behavior.
 - Run Cluster Integration + Cluster Multi-Actor Stress before declaring a cluster complete.
+- Re-run prior clusters together when a new cluster resolves old deferred boundaries.
 - Run final whole-domain regression, multi-actor and persistence/API pressure before broad implementation is treated as stable.
 
 ---
@@ -79,19 +82,33 @@ Validation Methodology v2 and its multi-actor addendum are historical audit sour
 ```text
 Intention & Execution v0        PASS
 Time v0                         PASS
-Cross-Cluster Validation v2     PASS
+Observed Reality & Evidence v0  PASS
+Cross-Cluster Validation v3     PASS
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
 
-Actual v0                       PASS WITH HARDENING / ACCEPTED
-Outcome v0                      PASS WITH HARDENING / ACCEPTED
-Observation v0                  PASS WITH HARDENING / ACCEPTED
-Confirmation v0                 PASS WITH HARDENING / ACCEPTED
-Evidence v0                     PASS WITH HARDENING / ACCEPTED
-Provenance v0                   PASS WITH HARDENING / ACCEPTED
+Actual v0                       ACCEPTED
+Outcome v0                      ACCEPTED
+Observation v0                  ACCEPTED
+Confirmation v0                 ACCEPTED
+Evidence v0                     ACCEPTED
+Provenance v0                   ACCEPTED
 ```
 
-No current individual-concept structural reopening is required.
+First-three-cluster regression result:
+
+```text
+18 accepted concepts retained
+0 structural reopenings
+0 concept removals
+0 justified concept merges
+0 mandatory new primitives
+```
+
+The two current cross-cluster hardenings are:
+
+1. reported/asserted reality != established Actual;
+2. Milestone attainment is Evidence/evaluation-backed and must not duplicate underlying reality.
 
 ---
 
@@ -161,14 +178,14 @@ Provenance     -> canonical bounded contextual lineage capability
 
 ---
 
-# Active cluster — Observed Reality & Evidence
+# Closed cluster — Observed Reality & Evidence
 
-**Status:** IN PROGRESS — individual concept reviews complete; integrated gates are now the active task.
+**Status:** PASS — current validated cluster baseline.
 
 ## Actual v0
 
 ```text
-Actual = how a specific intention/expectation was realized
+Actual = how a specific intention/expectation was established as realized
 ```
 
 ```text
@@ -178,6 +195,7 @@ Actual != Observation
 Actual != Confirmation
 Actual != Evidence
 Actual != Provenance
+reported/asserted reality != established Actual
 ```
 
 ## Outcome v0
@@ -255,119 +273,60 @@ Provenance != Version
 Provenance != Audit
 ```
 
-Critical hardenings:
+Cluster checkpoint:
 
-- source is one provenance dimension;
-- correction does not rewrite historical origin;
-- derived/transformed information preserves material source/process lineage;
-- provider ID != LifeOS identity;
-- AI/OCR/import lineage must not launder authorship/source;
-- subject/source/observer/recorder/transformer/confirmer/authority may differ;
-- target visibility != Provenance visibility;
-- Provenance access != all upstream payload access;
-- retention/history != keep deleted sensitive payload forever;
-- material lineage != maximal infinite lineage;
-- no universal physical provenance graph/table is pre-approved.
+- [`Observed Reality & Evidence Cluster v0`](../domain/checkpoints/observed-reality-evidence-v0.md)
+
+Cross-cluster checkpoint:
+
+- [`Cross-Cluster Validation v3`](../domain/checkpoints/cross-cluster-validation-v3.md)
 
 ---
 
-# ACTIVE TASK — Reality/Evidence Cluster Integration
+# ACTIVE TASK — Data / Subjects
 
-All individual concepts are now accepted provisionally as one set. The cluster itself is **not yet validated**.
+The first three clusters are now validated together. **Data / Subjects is the next active domain cluster.**
 
-Run, in order:
+Do not jump to SQL/API design yet.
 
-```text
-Observed Reality & Evidence Cluster Integration Gate
-        ↓
-Observed Reality & Evidence Multi-Actor Stress Gate
-        ↓
-cluster verdict
-```
+## Provisional topics
 
-## Required integration scenarios
-
-At minimum stress:
-
-1. planned Activity → multi-session Actual → Observation(s) → partial Outcome → Confirmation → Evidence → Provenance;
-2. Event occurred but participant attendance differs per actor;
-3. expected Occurrence passes with no information: unknown remains unknown;
-4. explicit known non-performance distinguished from absent Actual;
-5. conflicting device/provider Observations;
-6. one actor confirms one version, then target is corrected;
-7. same source supports one criterion and contradicts another;
-8. historical information becomes Evidence later without rewriting original intent;
-9. imported source → transformation → AI extraction → user correction lineage;
-10. derived value recomputed after source correction without rewriting historical computation;
-11. caregiver/assisted participation with subject/source/recorder/observer/confirmer separation;
-12. shared target with private Evidence/Provenance sources;
-13. external/non-LifeOS participant/provider;
-14. high-conflict competing assertions/confirmations;
-15. Authority differs from source/creator/confirmer;
-16. AI can reason from private data but cannot disclose it or fabricate Confirmation;
-17. deletion/retention of sensitive upstream data with bounded lineage;
-18. high-volume imports/series without provenance/evidence row explosion;
-19. simple-user interaction vs high-consequence inspection/audit;
-20. historical reconstruction: what LifeOS believed then, why, and what changed later.
-
-## Required pairwise regression
-
-```text
-Session ↔ Actual
-Actual ↔ Outcome
-Actual ↔ Observation
-Outcome ↔ Observation
-Outcome ↔ Milestone
-Observation ↔ Confirmation
-Observation ↔ Evidence
-Observation ↔ Provenance
-Confirmation ↔ Evidence
-Confirmation ↔ Provenance
-Evidence ↔ Provenance
-Evidence ↔ GoalCriterion
-Provenance ↔ future Version/Audit/Authority boundary
-```
-
-## Multi-actor mandatory questions
-
-- shared reality != identical actor reality/participation;
-- source actor != subject != recorder != observer != confirmer != authority;
-- conflicting assertions can coexist;
-- one actor's Confirmation != group truth;
-- target visibility != Evidence/Provenance visibility;
-- private source use != disclosure permission;
-- external participants/providers do not require accounts;
-- access revocation != deletion of historical attribution;
-- AI authority <= acting principal/policy authority;
-- total coordination burden must not increase just to maintain epistemic metadata.
-
-A concept-level PASS does not substitute for this integrated gate.
-
----
-
-# Next cluster — NOT STARTED
-
-The provisional next cluster is **Data / Subjects** and must not start before an integrated Reality/Evidence PASS.
-
-Likely topics:
-
-- Register;
 - Quantity;
-- Asset;
+- Register;
 - Subject;
-- Person/Actor boundary;
+- Person / Actor boundary;
+- Asset;
 - Resource.
 
-Inherited re-tests:
+## Initial dependency question
+
+The first review should choose the smallest useful starting point between:
+
+```text
+Quantity <-> Observation/Register
+```
+
+and:
+
+```text
+Subject <-> Person/Actor/Resource
+```
+
+without assuming the final sequence before evidence is checked.
+
+## Mandatory inherited re-tests
 
 ```text
 Observation vs Quantity
 Observation vs Register/RegisterEntry
-Subject vs observer/recorder/source
 sampled-series physical representation
+Subject vs observer/recorder/source/transformer
+Availability/Capacity vs Resource
 Actor vs Subject vs Resource vs Account/Principal
 Provenance source/actor roles vs Subject/Person/Account
 ```
+
+The next concept remains read-only until it passes Methodology v3 and receives a separately approved Git write scope.
 
 ---
 
@@ -381,6 +340,7 @@ Likely topics:
 - Contribution;
 - Goal relationships;
 - Evidence/Criterion relationships;
+- Participation;
 - Authority / Visibility;
 - Decision;
 - Version;
@@ -389,9 +349,11 @@ Likely topics:
 Mandatory inherited re-tests:
 
 - Evidence vs typed Relationship semantics;
+- Milestone attainment vs Evidence/GoalCriterion/Decision;
 - Provenance vs Version / Decision / Audit;
 - Confirmation vs Authority / Acknowledgement / Acceptance;
-- competing assertions and canonical decision policy.
+- competing assertions and canonical decision/reconciliation policy;
+- collaborative Session/Actual attribution.
 
 ---
 
@@ -438,18 +400,19 @@ This is not a mandatory parent/child chain and not a persistence schema.
 
 Explicit future boundary tests:
 
-- integrated Actual/Outcome/Observation/Confirmation/Evidence/Provenance semantics;
 - Observation vs Quantity/Register;
+- Subject vs observer/recorder/source/transformer;
+- Availability/Capacity vs Resource;
+- Person vs Actor vs Subject vs Account/Principal;
+- Actual establishment under Authority/Decision/reconciliation semantics;
 - Confirmation vs Authority/Acknowledgement/Acceptance/Version;
 - Evidence vs GoalCriterion/Relationship/Decision/Version;
+- Milestone attainment vs Evidence/GoalCriterion/Decision;
 - Provenance vs Version/Decision/Audit/Authority;
 - provenance retention/privacy/deletion;
-- subject vs observer/recorder/source/transformer;
-- Milestone vs Outcome vs GoalCriterion;
 - contextual competing assertions under Authority rules;
 - collaborative Session vs actor-scoped Actual participation;
 - Responsibility vs Assignment vs Hand-off vs Stewardship;
-- Person vs Actor vs Subject vs Account/Principal;
 - Resource vs Actor;
 - Authority vs Visibility/governance;
 - AI Context Builder inference/disclosure boundaries.
@@ -483,28 +446,24 @@ Only after the domain is coherent should production persistence be treated as st
 # Current task / sequencing
 
 ```text
-Actual v0 accepted
+Intention & Execution v0 accepted
 ↓
-Outcome v0 accepted
+Time v0 accepted
 ↓
-Observation v0 accepted
+Observed Reality & Evidence v0 accepted
 ↓
-Confirmation v0 accepted
+Cross-Cluster Validation v3 PASS
 ↓
-Evidence v0 accepted
+Data / Subjects — ACTIVE NEXT CLUSTER
 ↓
-Provenance v0 accepted
+cluster integration + multi-actor stress
 ↓
-Reality/Evidence Cluster Integration — ACTIVE
+Relationships / Reasoning
 ↓
-Reality/Evidence Multi-Actor Stress
+final whole-domain gates
 ↓
-cluster verdict
-↓ only after PASS
-Data / Subjects
+logical/physical persistence and API stabilization
 ```
-
-Do not skip directly to Data/Subjects or SQL/API design.
 
 ---
 
@@ -512,9 +471,9 @@ Do not skip directly to Data/Subjects or SQL/API design.
 
 - active branch: `feature/domain-model`;
 - `main` remains the integrated repository source of truth for merged work;
-- multi-actor discovery/research is integrated into this branch through merge commit `08595f9526e08db53d9b446b8a7a76cd46adcd55`;
 - no PR for the domain branch yet;
 - backend implementation not changed here;
-- Phase 4 prototype branch not changed by this workstream.
+- Phase 4 prototype branch not changed by this workstream;
+- repository visibility does not change the branch/write-scope operating rules.
 
-Continue from Methodology v3 + Language Map + accepted concept specs. Do not create a parallel validation standard, terminology tree or collaboration ontology.
+Continue from Methodology v3 + Language Map + the three validated cluster checkpoints. Do not create a parallel validation standard, terminology tree or collaboration ontology.
