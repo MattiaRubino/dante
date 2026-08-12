@@ -467,15 +467,15 @@ Required current propagation:
 
 - [x] `concepts/participation.md`
 - [x] this checkpoint
-- [ ] `concepts/event.md`
-- [ ] `concepts/session.md`
-- [ ] `concepts/actual.md`
-- [ ] `concepts/actor.md`
-- [ ] `concepts/responsibility.md`
-- [ ] `concepts/resource.md`
-- [ ] `language-map.md`
-- [ ] `README.md`
-- [ ] `workstreams/domain-model.md`
+- [x] `concepts/event.md`
+- [x] `concepts/session.md`
+- [x] `concepts/actual.md`
+- [x] `concepts/actor.md`
+- [x] `concepts/responsibility.md`
+- [x] `concepts/resource.md`
+- [x] `language-map.md`
+- [x] `README.md`
+- [x] `workstreams/domain-model.md`
 
 No `participant.md`, `invitation.md`, or `attendance.md` is justified by this review.
 
