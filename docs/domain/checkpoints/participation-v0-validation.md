@@ -455,3 +455,48 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 17. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves Participation's material response-state dependency without reopening Participation.
+
+A response is historical state about the materially relevant Participation request/invitation/occurrence state it actually concerned:
+
+```text
+Response R1: accepted for state S1
+material change → S2
+→ R1 remains historical response to S1
+→ R1 does not silently become response to S2
+```
+
+Material equivalence is Participation-purpose specific. A harmless metadata/title correction may preserve applicability; a material time, place, role, requirement or other participation-relevant change may require renewed stance under the owning policy. Technical database/provider revisions, ETags, hashes or timestamps do not decide materiality.
+
+Series and occurrence scope remain independent:
+
+```text
+series-level response
+!= occurrence-specific response
+```
+
+and a material occurrence change does not silently rewrite the recurring-series expectation or response history.
+
+Downstream classification:
+
+```text
+Participation ↔ Version/material state       RESOLVED
+same Event identity ↔ response carry-forward RESOLVED — not automatic
+technical/provider revision ↔ materiality    RESOLVED — not equal
+```
+
+Version does not create a generic Acceptance primitive and does not determine actual attendance. Provider attendance reconciliation, group/role semantics, recurring-series persistence, retention and physical qualified Participation remain independently SAFE DEFERRED.
+
+AI may flag a stale response after a material change, but cannot infer a renewed human response.
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
