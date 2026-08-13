@@ -1,16 +1,16 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Acknowledgement v0 propagated, scope QA pending**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Acknowledgement v0 QA PASS; next-candidate re-score active**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
-- Pre-scope validated commit for current Acknowledgement milestone: `68b63bd233b116699719e77449db2180338b1bba`
+- Pre-scope validated commit for the completed Acknowledgement milestone: `68b63bd233b116699719e77449db2180338b1bba`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
 - Current completed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement**
 - Generic cross-domain **Acceptance is rejected as a standalone kernel primitive**; useful positive-response semantics remain family/workflow-specific.
-- Current exact task: **finish post-write QA for the Acknowledgement v0 propagation against `68b63bd...`**.
-- Next exact task after QA PASS: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect a next concept from roadmap vocabulary**.
+- Current exact task: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect a next concept from roadmap vocabulary**.
+- Next exact task after re-score: **select the highest-leverage candidate/family, execute the full read-only Methodology v3 cycle, and stop at the next Git write gate**.
 
 ## Purpose
 
@@ -201,7 +201,7 @@ Responsibility v0 review        PASS WITH HARDENING
 Participation v0 review         PASS WITH HARDENING
 Authority v0 review             PASS WITH HARDENING
 Visibility v0 review            PASS WITH HARDENING
-Acknowledgement v0 review       PASS WITH HARDENING — hardenings incorporated
+Acknowledgement v0 review       PASS WITH HARDENING — hardenings incorporated + post-write QA PASS
 Generic Acceptance primitive    REJECTED
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
@@ -210,7 +210,7 @@ structural reopenings           0
 unclassified material debt      0
 ```
 
-The Acknowledgement milestone is not considered operationally complete until the current post-write QA passes.
+The Acknowledgement milestone is operationally complete: post-write QA passed against the pre-scope baseline and the approved propagation scope is the current branch baseline.
 
 ---
 
@@ -402,6 +402,7 @@ Current result:
 ```text
 PASS WITH HARDENING
 hardenings incorporated
+post-write QA PASS
 REOPEN = 0
 unclassified material dependencies = 0
 ```
@@ -465,31 +466,32 @@ Historical simulation/research/product-glossary files were not rewritten. Root `
 
 ---
 
-# 13. Current exact QA gate
+# 13. Acknowledgement milestone QA — PASS
 
-Before this milestone becomes the new validated branch baseline, verify against pre-scope commit:
+QA was executed against pre-scope commit:
 
 ```text
 68b63bd233b116699719e77449db2180338b1bba
 ```
 
-Required QA:
+Verified:
 
-- exactly the 18 approved paths changed;
-- no other path changed;
-- both new Acknowledgement files exist;
-- Language Map, Domain README and this handoff agree;
-- historical checkpoint amendments are explicitly downstream, not silent retroactive rewrites;
-- generic Acceptance is rejected consistently;
-- Participation `accepted` remains response semantics;
-- Responsibility hand-off sequence preserves request/Ack/response/effect;
-- Schedule `accepted` wording does not imply universal Acceptance;
-- Authority/Visibility/Confirmation boundaries remain intact;
-- `REOPEN = 0` and unclassified material dependencies = 0;
-- `main`, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend remain untouched;
-- branch remains coherent against current main baseline.
+- [x] exactly the 18 approved paths changed;
+- [x] no out-of-scope path changed;
+- [x] both new Acknowledgement files exist;
+- [x] Language Map, Domain README and this handoff agree on the canonical outcome;
+- [x] historical checkpoint updates are downstream closures/amendments rather than silent retroactive semantic rewrites;
+- [x] generic cross-domain Acceptance is rejected consistently;
+- [x] Participation `accepted` remains actor-scoped Participation response semantics;
+- [x] Responsibility hand-off preserves request → Acknowledgement → role-specific response → applicable Authority/effective transfer;
+- [x] Schedule wording no longer requires a universal Acceptance primitive;
+- [x] Authority, Visibility and Confirmation boundaries remain intact;
+- [x] `REOPEN = 0` and unclassified material dependencies = 0;
+- [x] cumulative documents that were initially over-compressed during the write were restored/preserved before QA closure;
+- [x] `main`, prototype, root README, PROJECT-STATUS, historical product evidence, SQL/API/auth/backend remained out of scope;
+- [x] branch remains based on current `main` baseline with no semantic main overwrite.
 
-If QA fails, repair only within the already-approved scope when the fix is truly part of this milestone; otherwise stop for a new write scope.
+The approval for the Acknowledgement write scope is now **consumed**. Any future Git write requires a new exact branch + pre-scope SHA + file-scope declaration and explicit user approval.
 
 ---
 
@@ -521,7 +523,7 @@ Personal Knowledge generic link layer
 
 These are **candidate space, not a checklist of primitives**.
 
-Do not preselect the next candidate until the current scope QA has passed.
+Do not preselect the next candidate until the re-score is complete.
 
 ---
 
