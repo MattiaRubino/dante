@@ -2166,3 +2166,37 @@ recurring temporal constraints
 ```
 
 while preserving the already accepted distinctions among Routine, Event, Occurrence, Temporal Constraint, Schedule, Session, Actual, and future Trigger semantics.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 resolves Recurrence's former `effective version storage`, historical generation-context and concurrent-edit dependencies without changing Recurrence semantics.
+
+```text
+Recurring source identity
+!= Recurrence material state
+!= Occurrence identity
+
+Recurrence Version
+= materially relevant recurrence-rule/range/anchor state governing generation/applicability
+```
+
+A structural `this and future` change creates a later material Recurrence/source state effective from a defined boundary; historical Occurrences remain attributable to the prior state. One-off Occurrence exceptions do not create a Recurrence Version unless the generation policy itself changes.
+
+Purely virtual future candidates may be regenerated after a material revision. Future Occurrences with instance-specific history must instead be explicitly reconciled; they do not silently disappear because the new rule no longer expands to them.
+
+Completion-relative and anchor-stream histories bind to the material source/anchor states actually used. If an anchor Actual is corrected, downstream current expectations may be recomputed while historical generated/materialized states remain explainable.
+
+Concurrent/offline recurrence edits may branch from one base state. Version preserves the divergent bases and material states; Authority/Decision/reconciliation chooses or constructs the current rule. Provider RRULE revisions, ETags and series sequence values remain integration/concurrency metadata rather than semantic materiality authority.
+
+AI proposals to revise recurrence must retain the relevant material base state and be re-evaluated after material divergence.
+
+The historical version-storage dependency is now downstream-closed semantically. DSL/AST, DST/travel policy types, Event-series persistence, materialization horizon, Trigger boundary, provider sync and physical persistence remain separately owned.
+
+No Recurrence invariant failed. **Recurrence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
