@@ -1289,3 +1289,51 @@ Acknowledgement != Authority / Decision / effective change
 Generic cross-domain `Acceptance` was tested and rejected as a standalone kernel primitive. Scheduling UI such as `Accept`, `Apply`, or `Use this` maps to the relevant proposal/effect operation rather than a universal Acceptance object.
 
 Decision/Approval/effective-change persistence and Version/material-equivalence mechanics remain separately owned deferred dependencies. No Schedule reopening is required.
+
+---
+
+# 2026-08-13 — Decision / effective Schedule closure amendment
+
+Decision v0 resolves the semantic Decision/effective-change boundary for Schedule without changing temporal identity or accepted-placement semantics.
+
+Current chain where consequence requires explicit resolution:
+
+```text
+Scheduling proposal
+!= Acknowledgement
+!= family/proposal-specific positive response
+!= Approval / Decision
+!= current effective Schedule
+!= later Actual
+```
+
+Canonical separation:
+
+```text
+Decision
+= bounded resolution of the scheduling question/proposal
+
+Schedule
+= current accepted/effective temporal assignment
+```
+
+A Decision may approve, reject, defer or retain the current placement. Therefore a Decision does not imply that Schedule changed. Conversely, an already-authorized bounded automation policy may legitimately apply a Schedule change without fabricating a new human Decision.
+
+When a Decision does produce a Schedule change, the Schedule concept owns the resulting current temporal state and its effective history. Decision/Authority/Provenance explain the resolution, legitimacy and lineage where material.
+
+Material proposal/version changes do not inherit earlier Decision/Approval automatically. Decision time, effective Schedule time and Actual occurrence/execution time remain distinct.
+
+Provider reconciliation remains capable of retaining conflicting imported proposals/source states until a policy/reconciliation process establishes the current Schedule; last-write-wins is not a canonical rule.
+
+Downstream closure:
+
+```text
+Schedule ↔ Decision                 RESOLVED
+Schedule ↔ Approval                 RESOLVED
+Schedule ↔ effective change         RESOLVED — Schedule owns state
+Schedule ↔ Reconciliation boundary  RESOLVED semantically
+```
+
+Version/material-equivalence mechanics, proposal reusable identity, detailed provider/source-precedence reconciliation, technical Principal/enforcement, offline/sync conflicts and physical revision persistence remain independently deferred.
+
+**Schedule v0 verdict is unchanged. REOPEN = 0.**
