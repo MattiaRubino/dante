@@ -337,3 +337,52 @@ Normative downstream references:
 
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`.
+
+---
+
+# 16. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the Decision/effective-transfer portion of the historical `Version / Provenance / Decision / reconciliation` SAFE DEFERRED item without rewriting the original Responsibility validation.
+
+Current canonical chain:
+
+```text
+hand-off request
+!= delivered/read
+!= Acknowledgement
+!= role-specific positive response
+!= Approval / Decision where required
+!= effective Responsibility transfer
+!= later Actual performer
+```
+
+Decision answers the bounded transfer/role-change question. Approval is a scoped Decision/review result whose governance significance depends on applicable Authority/policy. Neither is the Responsibility relation itself and neither manufactures Authority.
+
+A Decision can reject/retain the current holder, producing no Responsibility change. An already-authorized bounded policy can make a transfer effective without fabricating a new human Decision. Effective current Responsibility remains owned by Responsibility semantics.
+
+Downstream classification:
+
+```text
+Responsibility ↔ Decision                RESOLVED
+Responsibility ↔ Approval                RESOLVED
+Responsibility ↔ effective transfer      RESOLVED
+Responsibility ↔ Reconciliation          RESOLVED at semantic boundary
+```
+
+Remaining independently owned dependencies:
+
+- Version/material-equivalence mechanics;
+- Provenance/correction lineage;
+- detailed reconciliation/source-precedence policy;
+- Principal/delegation/on-behalf-of;
+- Coordination Stewardship;
+- collective/joint Responsibility;
+- Trigger/fallback policy;
+- logical persistence.
+
+No Responsibility hardening failed; **Responsibility v0 remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
