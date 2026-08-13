@@ -405,3 +405,53 @@ Normative downstream references:
 
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`.
+
+---
+
+# 16. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the historical `Delegation / on-behalf-of response` dependency without reopening Participation.
+
+Current canonical separation:
+
+```text
+participant/native referent
+= whose involvement/response is at stake
+
+response Actor
+= who actually submitted/changed the response
+
+Representation / on-behalf-of
+= response Actor acted for a distinct represented participant/party in that bounded action/context
+
+Principal
+= technical request identity
+```
+
+Therefore:
+
+```text
+participant != response Actor by default
+response Actor != Principal
+Representation != Participation
+Representation != Participation response
+```
+
+A represented response may be effective for the participant only when applicable Authority/policy permits it. LifeOS still preserves who actually acted and does not rewrite the response Actor as the participant.
+
+Downstream classification:
+
+```text
+Participation ↔ Representation/on-behalf-of  RESOLVED
+universal Delegation primitive                REJECTED
+Principal as domain primitive                 REJECTED
+```
+
+Exact Principal/AuthN/AuthZ mechanics, legal/specialist representation validity, group/collective representation, provider evidence thresholds and persistence remain SAFE DEFERRED.
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
