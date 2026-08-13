@@ -1040,3 +1040,50 @@ The explicitly agreed next step is:
 > **user-led architecture/product brainstorming, additional questions, and any further stress tests before selecting the next Domain Atlas cluster.**
 
 If that review exposes stronger evidence, this checkpoint and any accepted concept remain reopenable under the Domain Atlas decision rule.
+
+---
+
+# 18. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 closes the Time cluster's semantic `Decision / reconciliation` boundary around accepted/current Schedule without changing the historical Time v0 verdict.
+
+Current scheduling chain where consequence requires explicit resolution:
+
+```text
+proposal
+!= Acknowledgement / family-specific response
+!= Approval / Decision
+!= current effective Schedule
+!= Session / Actual
+```
+
+A Decision may resolve a proposed Schedule change while leaving the current Schedule unchanged (reject/retain-current), so Decision is not temporal state. An already-authorized bounded automation policy may also change Schedule without fabricating a new human Decision.
+
+The affected Schedule owns its current/effective temporal assignment and revision history. Decision, Authority and Provenance remain separate resolution/governance/lineage semantics.
+
+Provider conflicts are not resolved by last-write-wins as a canonical rule. Reconciliation may retain conflict, apply deterministic policy, or culminate in a material Decision.
+
+Downstream classification:
+
+```text
+Time/Schedule ↔ Decision                 RESOLVED
+Time/Schedule ↔ effective change         RESOLVED — Schedule owns state
+Time/Schedule ↔ Reconciliation boundary  RESOLVED semantically
+```
+
+Still deferred from the original Time checkpoint:
+
+- Version/material-equivalence and revision mechanics;
+- detailed provider/source-precedence conflict policy;
+- Trigger/Reminder/automation;
+- offline/sync conflict mechanics;
+- exact recurrence/timezone/provider persistence;
+- logical/physical PostgreSQL/API mapping.
+
+No Time concept requires reopening. **Time v0 remains PASS.**
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `../concepts/schedule.md`;
+- `decision-v0-validation.md`.
