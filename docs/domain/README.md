@@ -2,7 +2,7 @@
 
 **Status:** In progress — Clusters 1–4 validated together; Relationships / Reasoning active  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-12 — Acknowledgement v0 PASS WITH HARDENING; generic cross-domain Acceptance rejected  
+**Current revision:** 2026-08-13 — Decision v0 PASS WITH HARDENING; Approval scoped; universal Reconciliation/EffectiveChange roots rejected  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -91,7 +91,7 @@ optional adapters/mappings
 external providers/standards
 ```
 
-A provider calling something `User`, `Asset`, `Resource`, `Attendee`, `Relationship`, `Role`, `Permission`, `Access`, `Accepted`, etc. does not make that term authoritative for LifeOS.
+A provider calling something `User`, `Asset`, `Resource`, `Attendee`, `Relationship`, `Role`, `Permission`, `Access`, `Accepted`, `Approved`, `Decision`, etc. does not make that term authoritative for LifeOS.
 
 Benchmark behavior, lifecycle, correction/history, failure modes, authority, privacy, sync and product cost rather than importing nouns.
 
@@ -179,9 +179,12 @@ Participation
 Authority
 Visibility
 Acknowledgement
+Decision
 ```
 
 Generic cross-domain `Acceptance` is explicitly **rejected as a standalone kernel primitive**. Useful positive-response semantics remain in the owning family/workflow.
+
+`Approval` is retained as scoped Decision/review-result semantics, not a universal primitive. `Reconciliation` remains a process/pattern and `EffectiveChange` remains owned by the affected domain concept; universal roots for either are rejected.
 
 ---
 
@@ -194,10 +197,10 @@ Routine != Recurrence
 Occurrence != Schedule != Session != Actual
 Schedule != Temporal Constraint / Availability / Capacity
 
-Actual != Outcome / Observation / Confirmation / Evidence / Provenance
+Actual != Outcome / Observation / Confirmation / Evidence / Provenance / Decision
 Observation != Quantity
-Evidence != source information
-Provenance != Source / truth / Authority / Visibility / Version / Audit
+Evidence != source information / Decision
+Provenance != Source / truth / Authority / Visibility / Version / Audit / Decision / Decision rationale
 
 Subject != Person / Actor / Account / Principal / Asset / Resource
 Person != Actor / Account / Principal / Asset
@@ -205,9 +208,9 @@ Actor != Account / Principal / Resource / Responsibility / Participation / Autho
 Asset != Subject / Resource / owner / holder
 Resource != Requirement / Allocation / Reservation / actual use
 
-Responsibility != requester / expected performer / actual performer / Resource / Participation / Authority / Visibility
-Participation != Responsibility / Performer / Resource / Organizer / Authority / Visibility / Session
-Authority != Actor / Account / Principal / Responsibility / Participation / Visibility / ownership / Confirmation / Acknowledgement / truth
+Responsibility != requester / expected performer / actual performer / Resource / Participation / Authority / Visibility / Decision
+Participation != Responsibility / Performer / Resource / Organizer / Authority / Visibility / Session / Decision
+Authority != Actor / Account / Principal / Responsibility / Participation / Visibility / ownership / Confirmation / Acknowledgement / Decision / truth
 Visibility != Authority / Account / Principal / technical read permission / Participation / Responsibility / ownership / actual View / Acknowledgement / Consent
 
 Delivery/read/display telemetry != Acknowledgement
@@ -217,6 +220,14 @@ Acknowledgement != Participation response
 Acknowledgement != Responsibility
 Acknowledgement != Authority / Decision / effective change
 Acknowledgement != Actual
+
+Decision != Authority
+Decision != effective domain change
+Decision != Actual / truth
+Decision != Provenance / rationale
+Decision != Evidence / evaluation
+Decision != Acknowledgement / Confirmation / family-specific Acceptance
+Decision != Agreement / Consent
 ```
 
 ---
@@ -285,20 +296,24 @@ Responsibility != Resource
 Responsibility != Participation
 Responsibility != Authority
 Responsibility != Visibility
+Responsibility != Decision
 Responsibility != coordination Stewardship
 unknown holder != explicitly open/unassigned
 hand-off request != effective transfer by default
 Responsibility transfer != Activity identity change
 ```
 
-Common-ground closure now adds:
+Common-ground/governance closure now adds:
 
 ```text
 hand-off request
 != Acknowledgement
 != role-specific accepted response
+!= Approval/Decision where required
 != effective transfer
 ```
+
+A Decision may resolve a transfer question; the resulting effective Responsibility state is still owned by Responsibility.
 
 Coordination Stewardship is semantically distinct but standalone primitive status remains SAFE DEFERRED.
 
@@ -342,7 +357,7 @@ no response != declined
 no attendance evidence != proved absence
 Event identity != participant set/state
 shared Actual != identical actor-specific Actual Participation
-Participation != Session / Responsibility / Performer / Resource / Authority / Visibility
+Participation != Session / Responsibility / Performer / Resource / Authority / Visibility / Decision
 ```
 
 `accepted` is contextual Participation-response semantics, not a generic Acceptance primitive.
@@ -379,6 +394,7 @@ Account/Principal != Authority
 Responsibility/Participation != Authority
 Visibility != Authority
 Acknowledgement != Authority
+Decision != Authority
 ownership != Authority
 Confirmation != Authority
 Authority != truth
@@ -390,7 +406,7 @@ revoked/expired Authority != never existed
 
 Delegation is a bounded Authority-establishment/entrustment pattern, not a universal root. Re-delegation is not implied.
 
-Approval may exercise Authority but is not Authority itself; Decision/effective-change semantics remain deferred.
+Approval may exercise Authority but is not Authority itself. Decision now owns the bounded-resolution question; the affected concept owns the resulting effective state.
 
 AI capability does not manufacture Authority; effective AI Authority cannot silently exceed applicable scope.
 
@@ -434,7 +450,7 @@ Visibility != Acknowledgement
 AI may process source != AI may disclose source
 ```
 
-A private source may produce a safe visible projection without creating a duplicate public source object.
+A private source may produce a safe visible projection without creating a duplicate public source object. Decision-result Visibility does not imply rationale/Evidence/Provenance Visibility.
 
 ---
 
@@ -492,41 +508,94 @@ proposal accepted / applied
 → proposal/effect-specific response/operation
 ```
 
-Future Agreement, Consent, Decision or other semantics must earn independent identity/lifecycle/invariants under v3 rather than inheriting a generic `Acceptance` supertype.
+Future Agreement/Consent semantics must earn independent identity/lifecycle/invariants under v3 rather than inheriting a generic `Acceptance` supertype.
 
 ---
 
-# 12. Cross-concept closure after Acknowledgement v0
+# 12. Decision v0
 
-The following old deferred boundaries are now semantically closed at current baseline:
+Normative references:
+
+- [`Decision`](concepts/decision.md)
+- [`validation`](checkpoints/decision-v0-validation.md)
+
+Verdict: **PASS WITH HARDENING**.
+
+Definition boundary:
 
 ```text
-Confirmation ↔ Acknowledgement
-Visibility ↔ Acknowledgement
-Participation ↔ Acknowledgement
-Responsibility ↔ Acknowledgement
-Authority ↔ Acknowledgement
-Participation accepted ↔ generic Acceptance
-Responsibility hand-off acceptance ↔ generic Acceptance
+Decision
+= contextual bounded-resolution semantics determining what bounded question
+  was resolved to what result, by whom/what, about which target/version/context
+```
+
+Decision is not a universal entity/root and is not required for every mutation.
+
+Key rules:
+
+```text
+Decision != Authority
+Decision != effective domain state/change
+Decision != Actual/objective truth
+Decision != Provenance/Decision rationale
+Decision != Evidence/evaluation
+Decision != Acknowledgement/Confirmation/family-specific Acceptance
+Decision != Agreement/Consent
+Decision(target v1) != Decision(target v2) after material change by default
+Decision time != effect time != Actual realization time
+Decision may cause zero/one/multiple effects
+effective change may occur without a new explicit human Decision under bounded authorized policy
+superseded/reversed Decision != never decided
+one Actor's Approval/Decision != collective Decision automatically
+Decision result Visibility != rationale/Evidence/Provenance Visibility
+AI proposal/recommendation != Decision
+```
+
+Approval is retained as scoped Decision/review-result semantics whose governance significance depends on applicable Authority/policy.
+
+Reconciliation remains a process/pattern that may select/merge/correct/split/supersede or remain unresolved; it may culminate in Decision but is not universally a Decision.
+
+The affected domain concept owns the resulting effective state transition. No universal `EffectiveChange`/state-transition root is accepted.
+
+---
+
+# 13. Cross-concept closure after Decision v0
+
+Current closed boundaries include:
+
+```text
+Authority ↔ Decision
+Actual ↔ Decision/reconciliation
+Responsibility ↔ Decision/effective transfer
+Schedule ↔ Decision/effective temporal change
+Provenance ↔ Decision/rationale
+Evidence ↔ Decision
+Confirmation ↔ Decision
+Acknowledgement ↔ Decision
+Approval ↔ Decision
+Reconciliation ↔ Decision
+Effective target state ↔ Decision
 ```
 
 Current decomposition:
 
 ```text
-who acts?                Actor
-who is accountable?      Responsibility
-who is involved?         Participation
-who can govern?          Authority
-who can see?             Visibility
-who explicitly noticed?  Acknowledgement
-what actually happened?  Actual
+who acts?                   Actor
+who is accountable?         Responsibility
+who is involved?            Participation
+who can govern?             Authority
+who can see?                Visibility
+who explicitly noticed?     Acknowledgement
+what bounded question was resolved? Decision
+what state is now effective? affected domain concept
+what actually happened?     Actual
 ```
 
-This does **not** mean final Agreement/Consent/Decision/Principal/Version/read-audit/security/persistence models are designed.
+This does **not** mean Agreement/Consent/Principal/Version/collective/evaluation/proposal/security/persistence models are finalized.
 
 ---
 
-# 13. Multi-actor baseline
+# 14. Multi-actor baseline
 
 LifeOS remains personal-first but structurally multi-actor-ready.
 
@@ -542,15 +611,16 @@ shared canonical fact != actor-scoped state
 Visibility != Authority
 current access != historical attribution
 non-LifeOS people are ordinary domain reality
-proposal != Acknowledgement != family-specific response != authoritative effect != Actual
+proposal != Acknowledgement != family-specific response != Decision/Approval != effective state != Actual
+shared Decision != every Actor's personal stance/agreement
 AI Authority/disclosure never exceeds applicable context
 ```
 
-No collaboration chat/ACL/read-receipt infrastructure is pre-approved merely by these semantic boundaries.
+No collaboration chat/ACL/read-receipt/approval-engine infrastructure is pre-approved merely by these semantic boundaries.
 
 ---
 
-# 14. Current semantic topology
+# 15. Current semantic topology
 
 ```text
 INTENTION / STRATEGY
@@ -606,13 +676,16 @@ Visibility
 
 COMMON GROUND / EXPLICIT NOTICE
 Acknowledgement
+
+BOUNDED RESOLUTION
+Decision
 ```
 
 This is not a parent tree, processing chain or SQL schema.
 
 ---
 
-# 15. Product simplicity rule
+# 16. Product simplicity rule
 
 Kernel sophistication must not force ontology vocabulary into ordinary UI.
 
@@ -624,16 +697,17 @@ Participation    → Going / Maybe / Can't go / Attended
 Authority        → normally hidden behind concrete allowed actions/approvals
 Visibility       → Private / Shared with… / free-busy only
 Acknowledgement  → Got it / Acknowledge / I've seen the change
+Decision         → Choose / Keep current / Approve / Reject / Finalize / Resolve / Decision history where consequential
 Subject          → usually natural referent name
-Actor            → Done by / Recorded by / Suggested by
+Actor            → Done by / Recorded by / Suggested by / Decided by
 Resource         → Camera / Room / Person / Who's available?
 ```
 
-Context-sensitive verbs such as `Accept`, `Apply`, `Use this`, `Agree`, `Allow`, `Approve` map to the real owning semantic family/effect. A UX label never creates a new kernel concept by itself.
+Context-sensitive verbs such as `Accept`, `Apply`, `Use this`, `Agree`, `Allow`, `Approve`, `Reject`, `Keep current`, `Finalize` map to the real owning semantic family/effect. A UX label never creates a new kernel concept by itself.
 
 ---
 
-# 16. Persistence / API guardrails
+# 17. Persistence / API guardrails
 
 Do not begin final SQL/API design yet.
 
@@ -653,16 +727,22 @@ one universal authority/permission table as ontology
 one universal visibility/ACL object as ontology
 one universal acknowledgement/receipt root
 one universal acceptance/assent workflow root
+one universal approval root
+one universal reconciliation root
+one universal EffectiveChange/state-transition root
+one Decision row for every mutation
 shared=true as full privacy model
 related_to + metadata as the kernel
 arbitrary JSON as primary domain model
 ```
 
+The affected concept owns effective state. Decision, Authority and Provenance must remain semantically separable in later logical design.
+
 Logical modeling comes **after Relationships / Reasoning and whole-domain regression**.
 
 ---
 
-# 17. Cluster-5 status and next action
+# 18. Cluster-5 status and next action
 
 Relationships / Reasoning is **IN PROGRESS**.
 
@@ -676,6 +756,10 @@ Authority v0          PASS WITH HARDENING
 Visibility v0         PASS WITH HARDENING
 Acknowledgement v0    PASS WITH HARDENING
 Generic Acceptance    REJECTED as standalone primitive
+Decision v0           PASS WITH HARDENING
+Universal Approval    REJECTED as standalone primitive
+Universal Reconciliation REJECTED
+Universal EffectiveChange REJECTED
 ```
 
 Each accepted/current review has:
@@ -685,14 +769,16 @@ REOPEN = 0
 unclassified material dependencies = 0
 ```
 
-**Next:** after documentation propagation and Git QA, re-score the remaining candidate/dependency space by dependency leverage. Do not select the next concept merely from historical roadmap order.
+**Next:** after Decision documentation propagation and Git QA, re-score the remaining candidate/dependency space by dependency leverage. Do not select the next concept merely from historical roadmap order.
 
 Demonstrated remaining areas include:
 
 - Agreement;
 - Consent / purpose limitation;
-- Decision / reconciliation / Approval effect;
 - Principal / delegation / on-behalf-of;
+- Version / material equivalence;
+- Proposal / request reusable identity;
+- detailed reconciliation / source-precedence policy;
 - Dependency;
 - Coordination Stewardship standalone question;
 - Contribution;
@@ -700,18 +786,17 @@ Demonstrated remaining areas include:
 - Evidence ↔ Criterion/evaluation;
 - Resource Requirement / Allocation / Reservation / substitution;
 - Verification;
-- Version;
 - AI Proposal;
 - focus/context relationships;
 - Trigger/policy;
-- collective/group semantics;
+- collective/group/collective-Decision semantics;
 - generic Personal Knowledge links.
 
 These remain **candidates, not a checklist of primitives**.
 
 ---
 
-# 18. Before broad implementation
+# 19. Before broad implementation
 
 Still mandatory:
 
@@ -745,7 +830,7 @@ backend packages / implementation
 
 ---
 
-# 19. Documentation rule
+# 20. Documentation rule
 
 Concept specs/checkpoints hold detailed evidence and history. This README is the current navigation and integration summary; `language-map.md` is the fast terminology map; `docs/workstreams/domain-model.md` is the operational handoff.
 
