@@ -473,3 +473,49 @@ Mandatory new primitives  0
 ```
 
 The cluster remains reopenable when later Data/Subjects, Relationships/Reasoning, persistence/API or implementation evidence exposes a real contradiction.
+
+---
+
+# 2026-08-13 — Downstream closure: Version / Material-State v0
+
+This historical cluster checkpoint explicitly deferred Version. Version / Material-State v0 now closes the semantic state-binding dependency while preserving the original cluster validation record.
+
+The original correction scenario:
+
+```text
+Observation v1 = 66.4 kg
+Evaluation E1 used v1
+Confirmation C1 targeted v1
+
+later
+Observation v2 = 64.6 kg
+```
+
+now has a shared canonical discipline:
+
+- Observation identity may remain stable while a materially different state is created by correction;
+- C1 remains bound to v1 and does not silently transfer to materially changed v2;
+- historical E1 remains explainable from the source/rule material states used then;
+- current evaluation may use v2 without rewriting E1;
+- Provenance explains how v2 arose from/corrected v1, while Version identifies the state to which semantic actions/evaluations applied;
+- Actual/Outcome corrections follow the same state/history discipline without Version deciding which assertion becomes current truth;
+- concurrent provider/user states may coexist until Authority/Decision/reconciliation resolves or preserves the conflict;
+- materiality is purpose-specific rather than every storage/provider/ETag revision.
+
+Therefore:
+
+```text
+Version != Provenance
+Version != Confirmation
+Version != Evidence
+Version != Decision / Authority / reconciliation
+technical revision != semantic material state
+current state != historical evaluation basis
+```
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
+
+The Observed Reality & Evidence cluster remains **PASS**, with `REOPEN = 0`. Detailed source precedence/reconciliation policy and exact persistence remain independently SAFE DEFERRED.
