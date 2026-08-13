@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-13 — Representation / on-behalf-of v0 PASS WITH HARDENING; hardenings incorporated; post-write QA PASS  
+**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; hardenings incorporated; final post-write QA pending  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -78,6 +78,7 @@ Decision            — contextual bounded-resolution family/capability
 Agreement           — contextual multi-party mutual-assent relation/capability
 Consent             — contextual actor-scoped bounded-permission relation/capability
 Representation      — contextual action-scoped on-behalf-of relation/capability
+Version             — contextual material-state reference capability; not a universal root/table
 ```
 
 `Account` is an accepted platform/access identity boundary; its detailed security model remains deferred.
@@ -133,6 +134,9 @@ Share
 Delegate
 Representative
 On behalf of
+Version
+Revision
+History
 ```
 
 The owning semantic family determines the meaning.
@@ -146,16 +150,17 @@ session/token
 technical Permission
 authorization policy/enforcement
 impersonation mechanism
+storage row version
+provider revision / ETag / sync token
 ```
 
-`Principal` means technical authenticated/authorized request identity. It is **not** a LifeOS domain primitive.
+`Principal` means technical authenticated/authorized request identity. It is **not** a LifeOS domain primitive. Technical/provider revision identifiers may support concurrency/lineage but are not semantic Version by themselves.
 
 ## PROVISIONAL / SAFE DEFERRED
 
 Current examples:
 
 ```text
-Version / material equivalence
 Proposal / request reusable identity
 Detailed reconciliation / source-precedence policy
 Dependency
@@ -175,6 +180,7 @@ exact Principal/AuthN/AuthZ mechanics
 action-specific delegation policy
 legal/specialist representation capacity
 multi-hop delegation persistence
+exact Version persistence / snapshot-delta/event-history strategy
 ```
 
 Candidates/dependencies are not a checklist of primitives.
@@ -210,6 +216,10 @@ universal Delegation root
 technical impersonation as domain attribution truth
 blanket delegation
 automatic re-delegation
+universal Version root/entity/table
+one global material-equivalence rule
+technical/provider/ETag revision as domain Version truth
+mandatory event sourcing/version graph for all concepts
 ```
 
 A rejected abstraction requires explicit reopening with stronger evidence before reintroduction.
@@ -292,6 +302,7 @@ what bounded question was resolved?             Decision
 which parties mutually assented?                Agreement
 who permitted bounded use/action/exposure?      Consent
 who actually acted for which distinct party?    Representation / on-behalf-of
+which material state is being referenced?       Version
 what state is now effective?                    affected domain concept
 what actually happened?                         Actual
 how did this record/action/result arise?         Provenance
@@ -357,6 +368,7 @@ Authority != Visibility
 Authority != Acknowledgement/Agreement/Consent
 Authority != Decision
 Authority != Representation
+Authority != Version
 Authority != truth
 Authority != technical Permission
 ```
@@ -389,6 +401,7 @@ Visibility != Authority
 Visibility != technical read Permission
 Visibility != actual View/Acknowledgement
 Visibility != Consent
+Visibility != Version
 ```
 
 ```text
@@ -397,6 +410,7 @@ can see != can re-disclose
 can see != can use for every purpose
 may see != actually saw
 visible target != visible source/related records
+visible projection state != source material state automatically
 ```
 
 ## Consent
@@ -414,6 +428,7 @@ Consent != technical Permission
 Consent != Agreement
 Consent != Decision
 Consent != Representation
+Consent != Version
 Consent != legal-validity/capacity proof
 ```
 
@@ -440,7 +455,7 @@ Acknowledgement != Authority/Decision/effect
 Acknowledgement != Actual
 ```
 
-Represented Acknowledgement preserves the actual Actor.
+Represented Acknowledgement preserves the actual Actor. A material target-state change does not silently inherit prior Acknowledgement unless purpose-specific material equivalence preserves the relevant state.
 
 ## Decision
 
@@ -457,9 +472,10 @@ Decision != Provenance/rationale
 Decision != Evidence/evaluation
 Decision != Agreement/Consent
 Decision != Representation
+Decision != Version
 ```
 
-Approval is scoped Decision/review-result semantics. Reconciliation is a process/pattern. Effective target state remains owned by the affected concept.
+Approval is scoped Decision/review-result semantics. Reconciliation is a process/pattern. Effective target state remains owned by the affected concept. Decision binds to the material state/question actually resolved.
 
 ## Agreement
 
@@ -478,6 +494,7 @@ Agreement != Consent
 Agreement != legal Contract
 Agreement != Actual
 Agreement != Representation
+Agreement != Version
 ```
 
 Representative assent does not automatically become represented-party Agreement.
@@ -608,6 +625,14 @@ AI/service action != represented human authorship/will
 
 Where AI/service acts for another party, preserve the actual AI/service Actor, represented party and bounded basis where material.
 
+Version hardening adds:
+
+```text
+AI proposal/effect binds to a material base state where stale application could matter
+material divergence requires re-evaluation rather than silent stale application
+Version does not grant AI Authority
+```
+
 ---
 
 # 15. Product/UI mappings
@@ -626,12 +651,13 @@ Decision            → Choose / Keep / Approve / Reject / Resolve
 Agreement           → Agree to terms / Agreed with…
 Consent             → Allow / Permit / Share for… / Stop allowing
 Representation      → On behalf of… / Done by X for Y / Managed by…
+Version             → Version / Revision / Changed since… / Based on version…
 Confirmation        → Confirm / Looks correct
 Evidence            → Why? / Based on…
 Provenance          → Source / Imported from / Corrected by / History
 ```
 
-`Delegate`, `Represent`, `Approve`, `Accept`, `Agree`, `Allow`, `Share` map to the actual owning semantics rather than universal backend types.
+`Delegate`, `Represent`, `Approve`, `Accept`, `Agree`, `Allow`, `Share`, `Version`, `Revision` map to the actual owning semantics rather than universal backend types.
 
 ---
 
@@ -648,6 +674,9 @@ universal acknowledgements/acceptances/approvals roots
 universal decisions/state-transition root
 universal agreements/contracts/consent-permission root
 universal representatives/principals/delegations root
+universal Version root/table/graph
+global material-equivalence enum/rule
+mandatory event sourcing/snapshot table for all concepts
 one actor_id / principal_id / on_behalf_of_id everywhere
 Person.id = Account.id
 Account = Principal
@@ -655,11 +684,59 @@ User as universal FK
 arbitrary JSON replacing typed semantics
 ```
 
-Domain Authority != technical authorization. Domain Visibility != technical read permission. Domain Representation != authentication impersonation. Effective state belongs to the affected concept.
+Domain Authority != technical authorization. Domain Visibility != technical read permission. Domain Representation != authentication impersonation. Domain Version != provider/storage revision. Effective state belongs to the affected concept.
 
 ---
 
-# 17. Current cluster status
+# 17. Version / material equivalence
+
+**Status:** CANONICAL — PASS WITH HARDENING; hardenings incorporated; final post-write QA pending.  
+**Source:** `concepts/version.md`  
+**Validation:** `checkpoints/version-material-equivalence-v0-validation.md`
+
+> **Version is the contextual capability to identify and reference a materially relevant state of a domain target when changes to that state matter for interpretation, applicability, history, concurrency, reconciliation, or downstream action.**
+
+Canonical question:
+
+> **Which materially relevant state of this target is being referred to for this purpose/facet?**
+
+Core separation:
+
+```text
+native identity
+!= material state
+!= Version reference
+!= provider/storage revision
+```
+
+Canonical hardenings:
+
+```text
+materiality is purpose/facet scoped
+field/byte/hash change != material change automatically
+no field/byte/hash change != semantic equivalence automatically
+prior Ack/Confirmation/Decision/Agreement/Consent does not silently carry across material change
+non-linear/offline divergent history is valid
+Version does not choose canonical truth/current state/winner
+Authority/Decision/reconciliation + owning concept establish effective state
+AI stale-base proposals/effects require re-evaluation after material divergence
+visible projection Version != source Version automatically
+historical reconstructibility != indefinite sensitive-payload retention
+```
+
+Rejected:
+
+```text
+universal Version entity/root/table
+global version number semantics
+provider ETag/sequence/storage row version as domain truth
+mandatory event sourcing
+one universal material-equivalence function
+```
+
+---
+
+# 18. Current cluster status
 
 ```text
 Intention & Execution v0        PASS
@@ -689,6 +766,8 @@ Principal domain primitive      REJECTED
 Universal Agent/Representative  REJECTED
 Universal Delegation            REJECTED
 Impersonation-as-domain-truth    REJECTED
+Version v0                      PASS WITH HARDENING — FINAL QA PENDING
+Universal Version root/table    REJECTED
 ```
 
 ```text
@@ -698,14 +777,13 @@ unclassified material debt     0
 
 ---
 
-# 18. Next-selection pressure
+# 19. Next-selection pressure
 
 Do not continue by roadmap vocabulary order.
 
-After Representation QA closure, run a fresh re-score among remaining demonstrated pressure such as:
+After Version post-write QA closure, run a fresh re-score among remaining demonstrated pressure such as:
 
 ```text
-Version / material equivalence
 Proposal / request reusable identity
 Detailed reconciliation / source-precedence policy
 Dependency
@@ -728,7 +806,7 @@ These are candidates/dependencies, not pre-approved primitives.
 
 ---
 
-# 19. Maintenance rule
+# 20. Maintenance rule
 
 This file answers:
 
