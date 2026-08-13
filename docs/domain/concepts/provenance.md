@@ -726,3 +726,42 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 resolves Provenance's former `Version / material-version mechanics` semantic dependency while preserving the canonical distinction:
+
+```text
+Version
+= which materially relevant state of a target is being referenced
+
+Provenance
+= how that state came to exist or change
+```
+
+Therefore:
+
+```text
+Version != Provenance
+version identifier != lineage explanation
+technical/provider revision != semantic Version automatically
+```
+
+A material target state may reference its prior material state(s), source states, derivation/transform rule state and action-time context through Provenance. Corrections and derivations preserve the exact source Version(s) that actually influenced the historical result; later corrections do not retroactively change that lineage.
+
+Non-linear history is valid. Two branches may derive from the same prior state and retain independent Provenance until reconciliation; Version does not choose the winner, while Provenance does not decide Authority or truth. Merge/reconciliation may itself create a later state with lineage to several predecessors where material.
+
+Purpose-specific material equivalence may determine whether a prior Confirmation/Decision/Consent remains applicable, but Provenance only records the relevant lineage/basis; it does not make that policy decision.
+
+Provider versions, ETags, hashes and storage row versions may be retained as provenance/integration metadata where useful without becoming the semantic Version model. Historical lineage remains subject to privacy/retention/minimization and does not mandate indefinite source-payload retention.
+
+The historical Version dependency is now downstream-closed at the semantic boundary. Detailed source-precedence/reconciliation policy, Principal/security, Verification/signature, retention/audit and physical lineage representation remain independently owned.
+
+No Provenance hardening failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
