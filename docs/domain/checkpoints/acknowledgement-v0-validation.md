@@ -697,3 +697,41 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 20. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 resolves the checkpoint's former `Agreement / Consent` SAFE DEFERRED dependency without reopening Acknowledgement.
+
+Current canonical separation:
+
+```text
+Acknowledgement
+= explicit taking-notice of a target/material version/change/request
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Acknowledgement ↔ Agreement  RESOLVED
+Acknowledgement ↔ Consent    RESOLVED
+```
+
+The prior adversarial scenario `manager forces employee to click Ack` remains a regression guardrail: Acknowledgement proves only taking-notice and must not be promoted into Agreement or legally/voluntarily sufficient Consent.
+
+Generic cross-domain Acceptance/Assent remains rejected. Current SAFE DEFERRED dependencies are now Understanding/comprehension, Principal/delegation/on-behalf-of, Version/material equivalence, read/view audit, collective/group Acknowledgement and retention/deletion.
+
+No Acknowledgement hardening failed; **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/agreement.md`;
+- `../concepts/consent.md`;
+- `agreement-consent-v0-validation.md`.
