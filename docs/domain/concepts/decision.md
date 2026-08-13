@@ -671,3 +671,51 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 24. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves Decision's former `Version / material-equivalence mechanics` dependency without changing Decision semantics.
+
+A consequential Decision/Approval remains bound to the materially relevant state it actually resolved:
+
+```text
+Decision D1 approves Proposal state P4
+Proposal materially changes to P5
+→ D1 remains historical resolution of P4
+→ D1 does not silently approve P5
+```
+
+A later state that is materially equivalent for the specific Decision/Approval purpose may remain covered where applicable policy says so. Materiality must not be inferred merely from storage revision, provider sequence/ETag, content hash or reuse of the same target ID.
+
+Version also clarifies but does not absorb reconciliation:
+
+```text
+divergent states S2A / S2B
+→ Version preserves/reconstructs divergence
+→ reconciliation/Decision/Authority may select, merge or leave unresolved
+```
+
+No universal last-write-wins rule is accepted, and Version does not decide the winner.
+
+Canonical downstream separation:
+
+```text
+Version != Decision / Approval
+Version != Authority
+Version != reconciliation
+Version != Provenance
+technical revision != material Decision target state
+```
+
+Remaining SAFE DEFERRED Decision dependencies include proposal/request reusable identity, detailed source-precedence/reconciliation policy, collective/quorum/voting semantics, GoalCriterion/evaluation, exact persistence/API and specialist approval/signature/legal validity.
+
+AI/system Decision proposals must also preserve a material base state where consequence requires it; a materially changed target before effect requires re-evaluation rather than blind stale application.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
