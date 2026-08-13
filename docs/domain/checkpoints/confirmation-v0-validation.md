@@ -358,3 +358,41 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 15. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 resolves the historical `Agreement` and `Consent` neighbor semantics without reopening Confirmation.
+
+Current canonical separation:
+
+```text
+Confirmation
+= contextual affirmation toward a target/version/purpose
+
+Agreement
+= contextual multi-party mutual assent to materially same terms/version
+
+Consent
+= contextual actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Confirmation ↔ Agreement  RESOLVED
+Confirmation ↔ Consent    RESOLVED
+```
+
+Agreement or Consent may refer to terms/facts that are separately confirmed, but neither implies that each party confirmed every supporting proposition as true. A Confirmation may likewise exist alongside disagreement/refusal/no Consent.
+
+The generic Assent/Acceptance supertype remains rejected. Version/material equivalence, Verification, Principal/delegation, specialist signature/legal-validity and retention remain independently owned.
+
+No Confirmation hardening failed; **Confirmation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/agreement.md`;
+- `../concepts/consent.md`;
+- `agreement-consent-v0-validation.md`.
