@@ -817,3 +817,92 @@ Normative downstream references:
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`;
 - `../language-map.md`.
+
+---
+
+# 19. Downstream resolution appendix — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the historical material-state/version dependencies in sections 4.2, 6.1, 16, 17 and 18 without rewriting the original Clusters 1–4 closure.
+
+Current canonical decomposition:
+
+```text
+native domain identity
+!= material state of that identity
+!= provider/storage revision
+
+Version
+= purpose/facet-scoped reference to a materially relevant state when consequence requires that state to remain addressable/reconstructible
+```
+
+Downstream RESOLVED semantic boundaries:
+
+```text
+Provenance ↔ Version
+RESOLVED
+lineage explains how a material state arose; Version identifies the state being referenced
+
+Evidence ↔ Version
+RESOLVED at semantic boundary
+historical evaluation binds to the material source/target/rule states actually used
+
+Acknowledgement / Confirmation / Decision ↔ material target state
+RESOLVED
+prior semantic action does not silently carry across material target change
+
+Agreement / Consent ↔ material terms/scope/purpose state
+RESOLVED
+applicability requires materially same relevant terms/scope/purpose unless explicit policy establishes otherwise
+
+Representation / delegated Authority ↔ material scope/target/action state
+RESOLVED
+Version preserves which state the represented/delegated action concerned; it does not create Authority
+
+Routine / Recurrence / Occurrence / Schedule history ↔ Version
+RESOLVED
+historical temporal expectations remain bound to the material policy/instance/placement states that governed them
+
+Observation correction history ↔ Version
+RESOLVED
+correction of one Observation may change material state without becoming a new Observation; re-observation remains separate identity
+
+Outcome correction history ↔ Version
+RESOLVED
+later material correction does not rewrite prior evaluation/Decision/Evidence use
+```
+
+Version does not select canonical truth, Authority, winner, current state or reconciliation result. Non-linear/offline divergent history is valid; Authority/Decision/reconciliation and the owning concept determine current/effective state.
+
+Technical/provider versions, hashes, ETags, sync revisions and storage row versions may support concurrency or lineage but do not define semantic materiality automatically. Material equivalence is purpose/facet scoped, not a universal byte/field-equality rule.
+
+This closure does not introduce a universal Version root/table, event sourcing, immutable snapshot mandate, one versions graph, or indefinite retention of sensitive historical payloads.
+
+Remaining independently SAFE DEFERRED debt includes:
+
+- detailed reconciliation/source precedence;
+- GoalCriterion/evaluation semantics;
+- Proposal/request reusable identity;
+- Trigger/conditional policy;
+- Principal/AuthN/AuthZ/enforcement;
+- Verification/comprehension;
+- collective/group/quorum semantics;
+- legal/specialist validity/capacity;
+- retention/audit/privacy;
+- exact logical/physical/API representation.
+
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+Version/material-state boundary              RESOLVED
+universal Version root/table                 REJECTED
+technical/provider revision as domain truth  REJECTED
+Remaining debt                               SAFE DEFERRED with owners/triggers/tests
+```
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`;
+- `../language-map.md`.
