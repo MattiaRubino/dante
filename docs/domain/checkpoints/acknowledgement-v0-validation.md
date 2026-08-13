@@ -638,3 +638,62 @@ Required post-write checks:
 - no SQL/API/auth/backend/prototype/global-status changes.
 
 Do not re-score/select the next candidate until this QA passes.
+
+---
+
+# 19. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the checkpoint's `Decision / Approval / effective change` SAFE DEFERRED item without reopening Acknowledgement.
+
+Current separation:
+
+```text
+Acknowledgement
+= explicit actor-scoped taking-notice of a specific target/material version/change/request
+
+Decision
+= bounded contextual resolution to a specific result
+
+Approval
+= scoped Decision/review result depending on applicable Authority/policy
+
+Effective target state
+= owned by the affected domain concept
+```
+
+Therefore:
+
+```text
+Acknowledgement != Decision
+Acknowledgement != Approval
+Acknowledgement != effective change
+```
+
+Acknowledgement can coexist with reject/decline/disagreement/refusal. A Decision can exist without every affected Actor acknowledging it, and one shared Decision does not fabricate per-Actor Acknowledgement.
+
+Target-version applicability remains independently scoped: Ack(v1) and Decision/Approval(v1) each do not silently apply to materially changed v2 by default.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Decision          RESOLVED
+Acknowledgement ↔ Approval          RESOLVED
+Acknowledgement ↔ effective change  RESOLVED
+```
+
+Still SAFE DEFERRED with their existing owner/trigger/tests:
+
+- Understanding/comprehension;
+- Agreement/Consent;
+- Principal/delegation/on-behalf-of;
+- Version/material equivalence;
+- read/view audit storage;
+- collective/group Acknowledgement;
+- retention/deletion.
+
+No Acknowledgement hardening failed; **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
