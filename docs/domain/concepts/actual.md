@@ -879,3 +879,55 @@ visible projection != visible private Actual/source
 A correction may be authoritative in context and still be historically traceable/correctable later. A recipient may see a safe consequence without seeing the private Actual, its participant relations, Evidence, or full Provenance. AI may process authorized source Actuals but must independently satisfy output Visibility before disclosing them or source-revealing inferences.
 
 Decision/reconciliation, detailed enforcement, and retention remain separately deferred.
+
+---
+
+# 2026-08-13 — Decision / reconciliation closure amendment
+
+Decision v0 closes the semantic part of the earlier `Decision/reconciliation` dependency without changing what Actual means.
+
+Current canonical separation:
+
+```text
+assertions / Observations / source reports
+→ may conflict
+
+Reconciliation
+= process/pattern for comparing/selecting/merging/correcting/splitting or retaining conflict
+
+Decision
+= bounded contextual resolution to a specific result where an explicit material resolution occurs
+
+Actual
+= current established contextual realization
+```
+
+Therefore:
+
+```text
+Decision != Actual
+Decision != objective truth
+Reconciliation != Actual
+Authority != Decision
+Authority != Actual
+```
+
+A Decision may establish/correct which interpretation becomes current under the applicable Authority/policy, but it does not make that interpretation infallible and does not erase the competing assertions that led to it.
+
+A deterministic reconciliation rule may update the current Actual under already-authorized policy without fabricating a human Decision. Conversely, a Decision may reject a proposed correction and leave the current Actual unchanged.
+
+Required history remains:
+
+```text
+prior assertions/versions
++ reconciliation basis/process where material
++ Decision where material
++ resulting current Actual
++ later correction/reversal
+```
+
+The affected `Actual` concept owns its current realized-state transition. No universal `EffectiveChange` object is introduced.
+
+Version/material-equivalence mechanics, detailed reconciliation/source-precedence policy, Principal/enforcement and physical Actual persistence remain SAFE DEFERRED.
+
+**Actual v0 verdict is unchanged. REOPEN = 0.**
