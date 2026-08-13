@@ -697,3 +697,123 @@ Normative downstream references:
 - `../concepts/consent.md`;
 - `agreement-consent-v0-validation.md`;
 - `../language-map.md`.
+
+---
+
+# 18. Downstream resolution appendix — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the historical `delegated / on-behalf-of Actor semantics` dependency in section 10.2 and narrows the historical Principal/delegation debt without rewriting the original closure.
+
+Current canonical decomposition:
+
+```text
+Person
+= native human identity
+
+Actor
+= actual contextual semantic agency
+
+Representation / on-behalf-of
+= actual Actor acts for a distinct represented party in a bounded action/context
+
+Principal
+= technical security/request identity
+
+Authority / Delegation
+= bounded legitimacy/entrustment for a specific governed action/effect
+```
+
+Downstream RESOLVED semantic boundaries:
+
+```text
+Actor ↔ represented party
+RESOLVED
+actual Actor != represented party
+
+Participation response Actor ↔ represented participant
+RESOLVED via Representation/on-behalf-of
+
+Acknowledgement/Confirmation/Decision actor attribution ↔ represented party
+RESOLVED
+represented effect does not rewrite the actual Actor
+
+Agreement/Consent on-behalf-of attribution
+RESOLVED at semantic boundary
+actual Actor + represented party + basis remain distinct
+
+Provenance ↔ Representation
+RESOLVED
+lineage may record Representation; lineage != Representation
+
+Principal as LifeOS domain primitive
+REJECTED
+
+Universal Delegation primitive/root
+REJECTED
+bounded Authority-establishment/entrustment pattern retained
+
+Technical impersonation as domain attribution truth
+REJECTED
+```
+
+The historical section 10.1 `Account ↔ Principal / credentials / provider identities` does **not** become fully resolved at the technical level. Current status is narrowed to:
+
+### Exact Principal / AuthN / AuthZ / enforcement
+
+**Why safe:** Person/Actor/Account/Principal/Representation/Authority semantic boundaries are now explicit and do not require a security schema.  
+**Owner:** security + logical model.  
+**Reopening trigger:** authentication/authorization implementation cannot preserve actual Actor, represented party, Account/Principal and Authority attribution without changing the accepted domain semantics.  
+**Tests:** CORE-04, CORE-05, CORE-10, CORE-13, MA-01, MA-06, MA-10, MA-17, XCON-01, XCON-02.
+
+### Action-specific delegation / re-delegation
+
+**Why safe:** Delegation is bounded to the specific Authority/action/scope and re-delegation is explicitly not implied.  
+**Owner:** Authority/policy + owning semantic family + security/logical model.  
+**Reopening trigger:** ordinary represented workflows require one stronger cross-domain Delegation lifecycle to remain correct.  
+**Tests:** CORE-02, CORE-03, CORE-04, CORE-13, MA-03, MA-06, MA-11, MA-13, MA-17, XCON-02, XCON-04.
+
+### Legal / specialist representation capacity and represented Consent/Agreement validity
+
+**Why safe:** LifeOS records actor/represented-party/basis semantics without claiming universal legal/clinical authority or capacity.  
+**Owner:** specialist/legal/product policy.  
+**Reopening trigger:** ordinary LifeOS product must itself certify legally/clinically authoritative representation or represented assent/Consent.  
+**Tests:** CORE-03, CORE-04, CORE-09, CORE-12, MA-06, MA-10, MA-13, MA-18, XCON-02.
+
+### Version / material scope
+
+**Why safe:** represented actions/delegation bases are semantically bound to relevant action/target/scope/time; exact Version mechanics remain separate.  
+**Owner:** Version + logical model.  
+**Reopening trigger:** system cannot determine whether a representation/delegation basis still applies after material change.  
+**Tests:** CORE-02, CORE-05, CORE-09, CORE-10, CORE-13, MA-11, MA-12, XCON-03.
+
+### Multi-hop delegation / Organization / collective representation
+
+**Why safe:** re-delegation is not implied and no universal Organization/Party/Group root is introduced.  
+**Owner:** Authority/security/logical model + collective/native-identity review.  
+**Reopening trigger:** common workflows require material delegation chains or collective representation that cannot be represented with bounded relations and native referents.  
+**Tests:** CORE-04, CORE-06, CORE-10, CORE-12, CORE-13, MA-02, MA-05, MA-06, MA-11, MA-19, MA-20, XCON-01, XCON-04, XCON-05.
+
+### Verification of representation basis / retention / audit
+
+**Why safe:** representation claim, established Authority and technical audit remain separate questions; historical attribution does not require retaining all sensitive basis payloads forever.  
+**Owner:** Verification/Evidence/Authority + privacy/retention/security/logical model.  
+**Reopening trigger:** consequential represented actions cannot distinguish claimed versus established basis or privacy deletion destroys required material actor history.  
+**Tests:** CORE-02, CORE-04, CORE-05, CORE-09, CORE-10, MA-06, MA-07, MA-08, MA-11, MA-12, MA-13, MA-18, XCON-02, XCON-03, XCON-04.
+
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+Representation/on-behalf-of boundary        RESOLVED
+Principal domain primitive                  REJECTED
+Universal Delegation primitive              REJECTED
+Impersonation-as-domain-attribution          REJECTED
+Remaining security/specialist/version debt  SAFE DEFERRED with owners/triggers/tests
+```
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`;
+- `../language-map.md`.
