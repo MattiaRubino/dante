@@ -816,3 +816,35 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 closes Outcome's detailed conflicting-assertion/current-result dependency without changing Outcome semantics.
+
+Canonical separation:
+
+```text
+competing Outcome assertions/material states
+!= Reconciliation process
+!= current Outcome state
+
+Outcome
+= contextual result/disposition owned by Outcome semantics
+```
+
+Reconciliation may preserve competing Outcome assertions unresolved, apply a bounded source-of-record/Authority policy, use Evidence/Provenance, culminate in Decision, or deterministically establish/correct the current Outcome under already-authorized policy. Source recency, provider identity and AI confidence are not universal winner rules.
+
+One Actor's asserted Outcome does not become canonical for every context merely because that Actor is newer, more powerful or the object creator. An authoritative bounded result also does not rewrite other Actors' historical assertions or imply Agreement.
+
+Where reconciliation establishes a materially different current Outcome, Version preserves state history and Provenance preserves the materially relevant basis/lineage. Conflict/source/rationale Visibility remains independently governed.
+
+The detailed reconciliation/source-precedence dependency is now downstream-closed at the semantic boundary. Exact result-family policy, specialist source-of-record mappings, retention and physical representation remain separately owned.
+
+No Outcome hardening failed. **Outcome remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.

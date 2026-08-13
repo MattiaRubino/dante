@@ -381,3 +381,38 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 14. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's detailed result-conflict/source-precedence dependency without changing the original Outcome validation result.
+
+Current closure:
+
+```text
+competing result assertions / Outcome states
+!= Reconciliation process
+!= current Outcome
+```
+
+Reconciliation may keep conflicting assertions unresolved, apply a bounded specialist/source-of-record or Authority policy, use Evidence/Provenance, culminate in a Decision, or deterministically establish/correct current Outcome under already-authorized policy. It does not fabricate a human Decision and does not use global last-write-wins/newest/provider/user precedence.
+
+A current authorized result does not erase other Actors' historical assertions or manufacture Agreement. Source identity, Authority, source precedence and objective truth remain separate dimensions. When resolution creates a materially different Outcome state, Version preserves the relevant state history and Provenance preserves the materially relevant basis/lineage.
+
+Downstream classification:
+
+```text
+Outcome ↔ detailed Reconciliation        RESOLVED
+Outcome ↔ Source Precedence              RESOLVED — bounded policy only
+Reconciliation ↔ Outcome current state   RESOLVED — process vs owner
+```
+
+Exact result-family policy, specialist mappings, retention and physical representation remain separately owned.
+
+No original Outcome hardening failed. **Outcome remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.

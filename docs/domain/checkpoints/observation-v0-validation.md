@@ -385,3 +385,42 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 14. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's historical conflict/source-precedence dependency without changing the original Observation validation result.
+
+Current closure:
+
+```text
+Observation identities
+= independent measurement/assertion acts
+
+Reconciliation
+= contextual process/capability that handles material competition among those acts for a bounded purpose
+```
+
+Conflicting Observation records do not become Versions of one record merely because they overlap in Subject/property/time. Reconciliation may preserve both unresolved, apply bounded specialist/source-of-record policy, use Evidence/Provenance/Authority, culminate in Decision, identify justified duplicate/correction semantics, or create a separate derived interpretation where the owning domain permits.
+
+Universal recency, provider priority, user priority, silent averaging and overwrite remain rejected. Source identity, source precedence, Authority and objective truth stay distinct. AI confidence may support a proposal but cannot become universal precedence.
+
+Where a resolution creates a new material state or derived interpretation, Version and Provenance preserve the materially relevant predecessor/basis without deleting the source observations.
+
+Downstream classification:
+
+```text
+Observation ↔ detailed Reconciliation        RESOLVED
+Observation ↔ Source Precedence              RESOLVED — bounded policy only
+Reconciliation ↔ Observation identity        RESOLVED — distinct
+```
+
+Per-domain precedence, native-identity merge/split, typed values/series, retention and physical representation remain separately owned.
+
+No original Observation hardening failed. **Observation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.

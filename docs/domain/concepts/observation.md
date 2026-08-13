@@ -1226,3 +1226,44 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 resolves Observation's detailed conflict/source-precedence dependency without changing Observation identity or correction semantics.
+
+Canonical separation:
+
+```text
+Observation O1
+Observation O2
+= distinct observational/assertion identities
+
+Reconciliation
+= process/capability for handling their material competition for a bounded target/facet/purpose
+```
+
+Therefore:
+
+```text
+conflicting Observations != Versions of one Observation by default
+Reconciliation != Observation
+source identity != source precedence != truth
+newest Observation != preferred Observation automatically
+```
+
+Reconciliation may preserve both Observations unresolved, apply a bounded specialist/source-of-record policy, use Evidence/Provenance/Authority, culminate in a Decision, identify a justified duplicate/correction relationship, or produce a separate derived interpretation where the owning semantics permit. It must not silently average, discard or overwrite competing Observation identities.
+
+A correction of one observational act still preserves that Observation identity; reconciling two independently valid observation acts is a different problem. Native Person/Asset identity deduplication remains separately owned and is not implied by Observation reconciliation.
+
+Conflict/source/basis Visibility is independently governed. AI may detect or propose resolution but confidence/recency cannot become universal precedence.
+
+The detailed reconciliation/source-precedence dependency is now downstream-closed at the semantic boundary. Exact per-domain precedence, native-identity merge/split, typed-value evolution, retention and physical representation remain independently owned.
+
+No Observation hardening failed. **Observation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
