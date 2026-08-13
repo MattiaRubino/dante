@@ -1,17 +1,18 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Decision v0 propagated, post-write QA PASS**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Agreement / Consent v0 propagated, post-write QA pending**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
-- Pre-scope validated commit for the completed Decision milestone: `e353e2756bd159b582122c4fd73b5d5d63529b30`
+- Pre-scope validated commit for the current Agreement / Consent milestone: `0d4bb2458082f9a6d4e752d83960cea9033a05ad`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current completed Cluster-5 semantic reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision**
-- Generic cross-domain **Acceptance is rejected as a standalone kernel primitive**; useful positive-response semantics remain family/workflow-specific.
-- Universal **Approval**, **Reconciliation**, and **EffectiveChange/state-transition** roots are rejected; Approval remains scoped Decision/review semantics, Reconciliation a process/pattern, and effective state belongs to the affected domain concept.
-- Current exact task: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect the next concept from roadmap vocabulary**.
-- Next exact task after re-score: **select the highest-leverage demonstrated candidate/family and execute one complete Methodology v3 cycle through documentation propagation analysis, then stop before Git write**.
+- Current completed QA-closed Cluster-5 semantic reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision**
+- Current milestone under post-write QA: **Agreement / Consent v0 — PASS WITH HARDENING, hardenings incorporated, propagation complete pending diff QA**.
+- Generic cross-domain **Acceptance / Assent is rejected as a standalone kernel primitive**; useful response/mutual-assent/permission semantics remain family-specific.
+- Universal **Approval**, **Reconciliation**, **EffectiveChange/state-transition**, **Contract**, and **Consent/Permission** roots are rejected; scoped useful semantics remain in Decision, affected target state, Agreement, Consent, specialist integration and policy/enforcement boundaries.
+- Current exact task: **finish post-write QA for the approved 18-path Agreement / Consent v0 propagation against `0d4bb245...`; do not re-score another candidate before QA PASS**.
+- Next exact task after QA PASS: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect a next concept from roadmap vocabulary**.
 
 ## Purpose
 
@@ -43,9 +44,11 @@ Read in this order:
 12. [`../domain/concepts/authority.md`](../domain/concepts/authority.md) + validation
 13. [`../domain/concepts/visibility.md`](../domain/concepts/visibility.md) + validation
 14. [`../domain/concepts/acknowledgement.md`](../domain/concepts/acknowledgement.md) + validation
-15. [`../domain/concepts/decision.md`](../domain/concepts/decision.md)
-16. [`../domain/checkpoints/decision-v0-validation.md`](../domain/checkpoints/decision-v0-validation.md)
-17. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+15. [`../domain/concepts/decision.md`](../domain/concepts/decision.md) + validation
+16. [`../domain/concepts/agreement.md`](../domain/concepts/agreement.md)
+17. [`../domain/concepts/consent.md`](../domain/concepts/consent.md)
+18. [`../domain/checkpoints/agreement-consent-v0-validation.md`](../domain/checkpoints/agreement-consent-v0-validation.md)
+19. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 
 Then inspect only concept specs pressured by the next selected review.
 
@@ -209,6 +212,10 @@ Decision v0 review              PASS WITH HARDENING — hardenings incorporated 
 Universal Approval primitive    REJECTED
 Universal Reconciliation root   REJECTED
 Universal EffectiveChange root  REJECTED
+Agreement / Consent v0 review   PASS WITH HARDENING — hardenings incorporated; post-write QA pending
+Generic Assent root             REJECTED
+Universal Contract root         REJECTED
+Universal Consent/Permission root REJECTED
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
 
@@ -216,11 +223,13 @@ structural reopenings           0
 unclassified material debt      0
 ```
 
-Decision v0 is operationally complete and is part of the current validated branch baseline.
+Agreement / Consent v0 is **not yet** the validated branch baseline until this milestone's post-write QA passes against `0d4bb245...`.
 
 ---
 
-# 6. Current accepted concept/capability set
+# 6. Current accepted / candidate concept-capability set
+
+QA-closed current baseline:
 
 ```text
 Goal
@@ -256,6 +265,13 @@ Acknowledgement  — explicit-taking-notice common-ground attestation/relation c
 Decision         — contextual bounded-resolution semantic family/capability
 ```
 
+Current Agreement / Consent candidate milestone pending QA:
+
+```text
+Agreement        — contextual multi-party mutual-assent relation/capability
+Consent          — contextual actor-scoped bounded-permission relation/capability
+```
+
 Accepted security/access boundary, detailed model deferred:
 
 ```text
@@ -285,6 +301,11 @@ universal Reconciliation root
 universal EffectiveChange / StateTransition root
 one universal approved=true status
 Decision object for every mutation
+universal Agreement / Contract root
+universal Consent / Permission root
+membership = Consent
+Agreement = Decision
+Consent = Visibility / Authority / technical permission
 ```
 
 Do not reintroduce a rejected abstraction under a new noun without explicitly reopening the relevant checkpoint with stronger evidence.
@@ -294,15 +315,17 @@ Do not reintroduce a rejected abstraction under a new noun without explicitly re
 # 8. Current relationship/reasoning decomposition
 
 ```text
-who acts?                   Actor
-who is accountable?         Responsibility
-who is involved?            Participation
-who may govern?             Authority
-who may see?                Visibility
-who explicitly noticed?     Acknowledgement
-what bounded question was resolved? Decision
-what state is now effective? affected domain concept
-what actually happened?     Actual
+who acts?                                  Actor
+who is accountable?                       Responsibility
+who is involved?                          Participation
+who may govern?                           Authority
+who may see?                              Visibility
+who explicitly noticed?                   Acknowledgement
+what bounded question was resolved?       Decision
+which parties mutually assented to terms? Agreement
+who permitted bounded use/action/exposure? Consent
+what state is now effective?              affected domain concept
+what actually happened?                   Actual
 ```
 
 Current non-collapse rules include:
@@ -311,33 +334,37 @@ Current non-collapse rules include:
 Actor action != Authority
 Responsibility != Authority/Visibility/Acknowledgement/Decision
 Participation != Authority/Visibility/Acknowledgement/Decision
-Visibility != Authority/actual View/Acknowledgement
-Confirmation != Authority/Acknowledgement/Decision
-Acknowledgement != understanding/Confirmation/Participation response/Authority/Decision/Actual
+Visibility != Authority/actual View/Acknowledgement/Consent
+Confirmation != Authority/Acknowledgement/Decision/Agreement/Consent
+Acknowledgement != understanding/Confirmation/Participation response/Agreement/Consent/Authority/Decision/Actual
 Decision != Authority/effective target state/Actual/Provenance/Evidence/Agreement/Consent
+Agreement != one Actor's response/Decision/Authority/Responsibility/Consent/Contract/Actual
+Consent != Visibility/Authority/technical Permission/Agreement/Decision/Actual
 ```
 
-Common-ground/governance sequence where consequence requires it:
+Consequence-sensitive sequence:
 
 ```text
 proposed/sent
 != delivered/read/displayed
 != Acknowledgement
-!= family-specific response / future Agreement or Consent
+!= family-specific response
+!= Agreement
+!= Consent
 != Approval / Decision
-!= effective target state
+!= Authority / effective target state
 != Actual
 ```
 
+This is not a mandatory product workflow; simple UX may collapse irrelevant stages without destroying kernel semantics.
+
 ---
 
-# 9. Acknowledgement v0 — last common-ground milestone
+# 9. Acknowledgement v0 — QA-closed common-ground milestone
 
 Canonical question:
 
 > **Who explicitly took notice of this specific target/material version/change/request in this context?**
-
-Current result:
 
 ```text
 PASS WITH HARDENING
@@ -347,17 +374,15 @@ REOPEN = 0
 unclassified material dependencies = 0
 ```
 
-Generic cross-domain Acceptance remains rejected. See `concepts/acknowledgement.md` and `checkpoints/acknowledgement-v0-validation.md` for the full normative baseline.
+Generic cross-domain Acceptance remains rejected.
 
 ---
 
-# 10. Decision v0 — completed milestone
+# 10. Decision v0 — QA-closed milestone
 
 Canonical question:
 
 > **What bounded question was resolved to what result, by whom/what, about which target/version/context?**
-
-Classification:
 
 ```text
 DECISION
@@ -378,19 +403,6 @@ CANONICAL CONTEXTUAL BOUNDED-RESOLUTION SEMANTIC FAMILY / CAPABILITY
 ❌ Acknowledgement/Confirmation/Acceptance/Agreement/Consent
 ```
 
-Key hardenings:
-
-```text
-Decision(v1) != Decision(v2) after material change by default
-Decision time != effect time != Actual time
-Decision may cause zero/one/multiple effects
-state change may occur without a new explicit human Decision under bounded authorized policy
-superseded/reversed Decision != never decided
-one Actor's Approval/Decision != collective Decision automatically
-Decision result Visibility != rationale/Evidence/Provenance Visibility
-AI proposal/recommendation != Decision
-```
-
 Related disposition:
 
 ```text
@@ -408,10 +420,6 @@ Effective canonical change
 → no universal root/object
 ```
 
-Full CORE-01..13, MA-01..20, XCON-01..06 and Adjacent Dependency Sweep executed.
-
-Current result:
-
 ```text
 PASS WITH HARDENING
 hardenings incorporated
@@ -420,82 +428,206 @@ REOPEN = 0
 unclassified material dependencies = 0
 ```
 
+---
+
+# 11. Agreement / Consent v0 — current milestone
+
+## Agreement
+
+Canonical question:
+
+> **Which parties mutually assented to which materially specific terms, in which bounded context?**
+
+```text
+AGREEMENT
+SPECIFIC CONTEXTUAL MULTI-PARTY MUTUAL-ASSENT RELATION / CAPABILITY
+
+✅ applicable party set
+✅ materially same terms/version
+✅ history-sensitive where material
+✅ direct/derived or qualified where justified
+
+❌ native entity/root
+❌ generic Acceptance/Assent
+❌ Decision
+❌ Authority
+❌ Responsibility/resulting state
+❌ Consent
+❌ legal Contract/enforceability proof
+❌ compliance/Actual proof
+```
+
+Key hardenings:
+
+```text
+one party assent != Agreement for everyone
+silence/no response != Agreement
+Agreement(v1) != materially changed terms v2 by default
+current no Agreement != never agreed historically
+Agreement grants no blanket Visibility/re-disclosure rights
+AI inference != human Agreement
+```
+
+## Consent
+
+Canonical question:
+
+> **Who explicitly permitted what bounded action/use/exposure concerning what target, for which scope/purpose/context?**
+
+```text
+CONSENT
+SPECIFIC CONTEXTUAL ACTOR-SCOPED BOUNDED-PERMISSION RELATION / CAPABILITY
+
+✅ target/action/use/exposure scoped
+✅ purpose/context sensitive where material
+✅ lifecycle/history sensitive
+✅ may be one policy basis/constraint
+
+❌ universal Permission
+❌ technical authorization
+❌ Visibility
+❌ Authority
+❌ Agreement
+❌ Decision
+❌ legal-validity/capacity proof
+❌ proof permitted action occurred
+```
+
+Key hardenings:
+
+```text
+silence/behavior/membership != Consent
+Consent to X != Consent to Y
+purpose A != materially different purpose B
+material scope/version v1 != v2 by default
+withdrawal changes future applicability != erases historical grant/use/disclosure
+helper action != represented person's Consent automatically
+AI source access/inference != human Consent or enlarged scope
+```
+
+Family verdict:
+
+```text
+PASS WITH HARDENING
+hardenings incorporated
+REOPEN = 0
+unclassified material dependencies = 0
+post-write QA pending
+```
+
+Rejected in this review:
+
+```text
+generic Assent / Acceptance supertype
+universal Contract root
+universal Consent / Permission root
+Agreement = Decision
+Agreement = Consent
+Consent = Visibility / Authority / technical Permission
+```
+
 Regression additions:
 
 ```text
-R-DEC-01 material version change invalidates inherited approval by default
-R-DEC-02 shift swap response → Approval/Decision → effective transfer → later Actual
-R-DEC-03 conflicting assertions → reconciliation → explicit Decision → corrected current Actual with history preserved
-R-DEC-04 reject/retain-current Decision without target mutation
-R-DEC-05 bounded authorized deterministic effect without fabricated human Decision
-R-DEC-06 shared Decision + different actor stances + selective rationale/Evidence Visibility
+R-AGR-01 terms v1 → material v2 → prior Agreement not inherited
+R-AGR-02 mutual shift-swap Agreement → manager Approval/effect still required
+R-AGR-03 partial party assent → no fabricated full Agreement
+R-CON-01 free/busy trip Consent → unrelated AI-training purpose not covered
+R-CON-02 grant → use/disclosure → withdrawal → future changes, history preserved
+R-CON-03 helper/guardian/caregiver on-behalf-of attribution preserved
+R-AGR-CON-01 service Agreement != image/data-use Consent
+R-CON-04 power-imbalanced Ack/accept click != valid Consent automatically
 ```
 
 ---
 
-# 11. Current Decision SAFE DEFERRED dependencies
+# 12. Agreement / Consent SAFE DEFERRED dependencies
 
-All remain non-blocking with owners/triggers/tests in the Decision checkpoint:
+All remain non-blocking with owner/trigger/tests in the Agreement/Consent checkpoint:
 
 ```text
-Agreement / Consent
+Principal / delegation / representation
 Version / material-equivalence mechanics
-Principal / delegation / on-behalf-of
+Consent validity / capacity / legal basis
+Purpose/use technical policy enforcement
+Collective/group/quorum party identity
+Formal signature / Contract lifecycle
 Proposal / request reusable identity
-Detailed reconciliation / source-precedence policy
-Collective Decision / quorum / voting
-GoalCriterion / evaluation
-exact persistence/cardinality/API representation
-specialist approval/signature/legal workflows
+Retention / deletion
+Verification / comprehension remains separately owned from earlier common-ground work
 ```
 
 No material neighbor remains unclassified.
 
 ---
 
-# 12. Completed Decision propagation scope
+# 13. Current Agreement / Consent propagation scope
 
-The Decision milestone propagated to exactly:
+The approved milestone intentionally propagates to exactly:
 
 ```text
-concepts/decision.md
-checkpoints/decision-v0-validation.md
+concepts/agreement.md
+concepts/consent.md
+checkpoints/agreement-consent-v0-validation.md
 language-map.md
 README.md
 this workstream handoff
 multi-actor-readiness-v1.md
-concepts/authority.md
-checkpoints/authority-v0-validation.md
-concepts/actual.md
-checkpoints/actual-v0-validation.md
-concepts/responsibility.md
-checkpoints/responsibility-v0-validation.md
-concepts/provenance.md
-checkpoints/provenance-v0-validation.md
-concepts/evidence.md
-checkpoints/evidence-v0-validation.md
-concepts/schedule.md
-checkpoints/time-v0.md
-concepts/confirmation.md
-checkpoints/confirmation-v0-validation.md
 concepts/acknowledgement.md
 checkpoints/acknowledgement-v0-validation.md
+concepts/decision.md
+checkpoints/decision-v0-validation.md
+concepts/visibility.md
+checkpoints/visibility-v0-validation.md
+concepts/authority.md
+checkpoints/authority-v0-validation.md
+concepts/confirmation.md
+checkpoints/confirmation-v0-validation.md
 checkpoints/deferred-dependency-closure-clusters-1-4-v0.md
 ```
 
-Historical discovery/research/product-glossary files, Cross-Cluster v4, root `README.md`, `docs/PROJECT-STATUS.md`, prototype, SQL/API/auth/backend were intentionally left untouched.
+Historical discovery/research/product-glossary files, Participation, Responsibility, Relationship, Provenance, Actual, Schedule, Time checkpoint, Multi-Actor Evidence Synthesis, Cross-Cluster v4, root `README.md`, `docs/PROJECT-STATUS.md`, prototype, SQL/API/auth/backend are intentionally out of scope.
 
 ---
 
-# 13. Decision post-write QA — PASS
+# 14. Current Agreement / Consent QA gate
 
-Validated against pre-scope commit:
+Before Agreement / Consent v0 becomes the next validated branch baseline, verify against:
+
+```text
+0d4bb2458082f9a6d4e752d83960cea9033a05ad
+```
+
+Required QA:
+
+- exactly the approved 18 unique paths changed;
+- exactly 3 new files and 15 modified files;
+- no out-of-scope path changed;
+- Agreement/Consent checkpoint contains complete V3 and complete propagation checklist;
+- Language Map, Domain README, Multi-Actor Readiness and workstream agree;
+- historical checkpoints preserve original state plus explicit downstream closure;
+- Agreement != Decision/Authority/Responsibility/Consent/Contract/Actual;
+- Consent != Visibility/Authority/technical Permission/Agreement/Decision;
+- generic Acceptance/Assent remains rejected;
+- Participation `accepted` remains family-specific response semantics;
+- purpose/scope, withdrawal/history, unequal-power and on-behalf-of hardenings remain visible;
+- `REOPEN = 0`, unclassified material dependencies = 0;
+- main/prototype/SQL/API/auth/backend/global-status/product evidence remain untouched;
+- branch remains behind main by 0.
+
+Do not re-score another candidate until this gate passes.
+
+---
+
+# 15. Decision post-write QA — historical completed milestone
+
+Decision v0 was validated against:
 
 ```text
 e353e2756bd159b582122c4fd73b5d5d63529b30
 ```
 
-QA result:
+Result:
 
 ```text
 approved paths changed               23 / 23
@@ -503,36 +635,23 @@ out-of-scope paths                    0
 new Decision files                    2 / 2
 structural REOPEN                     0
 unclassified material dependencies   0
-current main baseline                 c5120ff463e027c42f4a26fc613d0917596ca738
-branch behind current main            0
+main                                  c5120ff463e027c42f4a26fc613d0917596ca738
+branch behind main                    0
 ```
 
-Validated conditions:
-
-- Language Map, Domain README, Multi-Actor Readiness and workstream agree;
-- historical concept/checkpoint material is preserved with explicit downstream Decision closures rather than silent historical rewrites;
-- Approval remains scoped Decision/review semantics and is not Authority/effect/root;
-- Reconciliation remains a process/pattern, not a universal root;
-- effective state remains owned by the affected domain concept;
-- Authority, Actual, Responsibility, Provenance, Evidence, Schedule, Confirmation and Acknowledgement boundaries remain intact;
-- Agreement/Consent, Version, Principal/delegation, proposal identity, collective Decision, evaluation and detailed reconciliation remain classified SAFE DEFERRED with executable owners/triggers/tests;
-- generic Acceptance remains rejected;
-- no universal Approval/Reconciliation/EffectiveChange root was introduced;
-- main, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend were not touched by this milestone.
-
-The Decision write approval is consumed after this QA PASS.
+The Decision write approval was consumed after that QA PASS.
 
 ---
 
-# 14. Current next action
+# 16. Next action after current QA
 
-Do **not** continue from the old roadmap order.
+Do **not** continue from old roadmap order.
 
-Re-score the remaining demonstrated candidate/dependency space by dependency leverage. Examples now include:
+After Agreement / Consent post-write QA PASS, re-score the remaining demonstrated candidate/dependency space by dependency leverage.
+
+Candidate/dependency space includes, among others:
 
 ```text
-Agreement
-Consent / purpose limitation
 Principal / delegation / on-behalf-of
 Version / material equivalence
 Proposal / request reusable identity
@@ -543,23 +662,24 @@ Contribution
 GoalCriterion / Goal relationships
 Evidence ↔ Criterion/evaluation
 Resource Requirement / Allocation / Reservation / substitution
-Verification
+Verification / comprehension
 AI Proposal
 focus/context relationships
 Trigger / conditional policy
-collective/group/collective-Decision semantics
+collective/group/quorum semantics
+Consent validity / purpose-use enforcement
+formal Contract/signature specialist boundary
+retention/deletion
 Personal Knowledge generic link layer
 ```
 
-These are **candidate space, not a checklist of primitives**.
+These are **candidate/dependency space, not a checklist of primitives**.
 
 Selection must use dependency leverage, existing SAFE DEFERRED pressure, product value, cross-cluster impact, implementation-readiness blocking risk and ontology/specialist-system cost.
 
-After selecting one candidate/family, execute one full v3 cycle autonomously and stop at the next Git write gate.
-
 ---
 
-# 15. Before broad implementation
+# 17. Before broad implementation
 
 Still mandatory:
 
@@ -597,7 +717,7 @@ No final SQL/API jump from the current semantic stage.
 
 ---
 
-# 16. Git / handoff discipline
+# 18. Git / handoff discipline
 
 `main` remains the only integrated source of truth. This branch is newer only inside its scoped unmerged Domain Model work.
 
