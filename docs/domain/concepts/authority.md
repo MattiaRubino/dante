@@ -248,7 +248,7 @@ Approval may be an action/effect that exercises Authority.
 Approval != Authority
 ```
 
-The future Decision/effective-change review will determine whether/how decisions, approvals, rationale, reconciliation, and effective state-change records require dedicated structures.
+Decision v0 closes this boundary canonically: Approval is scoped Decision/review-result semantics whose governance significance depends on applicable Authority/policy; the resulting effective state remains owned by the affected domain concept.
 
 Authority answers **who may make the effect effective**, not what a Decision record is.
 
@@ -308,6 +308,8 @@ Key rules:
 - asymmetric guardian/manager/caregiver/specialist Authority can exist when bounded/contextual;
 - relationship existence does not automatically create Authority;
 - Responsibility and Participation do not create Authority;
+- Agreement does not automatically create Authority;
+- Consent may be one applicable basis/constraint for a bounded effect but does not manufacture general Authority;
 - Authority does not create Visibility;
 - Authority can be contested or partially known;
 - access revocation does not erase historical attribution;
@@ -333,7 +335,7 @@ AI must not silently:
 - exceed the applicable Authority made available by its acting Principal/context/policy;
 - convert access to information into disclosure Authority;
 - convert inference into established Authority;
-- establish a human Confirmation/Acceptance;
+- establish a human Confirmation/Acceptance/Agreement/Consent;
 - enact a shared-domain effect merely because it can reason about it.
 
 Canonical rule:
@@ -373,6 +375,8 @@ qualified Authority
 != independent entity automatically
 ```
 
+Agreement or Consent may be policy inputs/bases in some contexts without becoming Authority.
+
 Query frequency, many-to-many cardinality, permission-check pressure, or row IDs do not create domain identity.
 
 No universal `Relationship` or `Authority` root is required.
@@ -390,17 +394,19 @@ No universal `Relationship` or `Authority` root is required.
 7. **Participation != Authority.**
 8. **Visibility != Authority.**
 9. **Confirmation != Authority.**
-10. **Ownership != Authority.**
-11. **Authority does not establish truth/Actual by itself.**
-12. **Delegation is bounded to the delegated Authority; re-delegation is not implied.**
-13. **Current Authority != historical Authority at action time.**
-14. **Revoked/expired Authority != never existed.**
-15. **Claimed Authority != established Authority.**
-16. **Authority unknown != explicit no-Authority/prohibition.**
-17. **Authority grants no automatic Visibility/disclosure rights.**
-18. **AI reasoning/access does not manufacture Authority.**
-19. **No universal admin role / Permission object / Authority root is pre-approved.**
-20. **Exact persistence and enforcement belong to later logical/security design.**
+10. **Agreement != Authority.**
+11. **Consent != Authority; Consent may be one bounded basis/constraint under applicable policy.**
+12. **Ownership != Authority.**
+13. **Authority does not establish truth/Actual by itself.**
+14. **Delegation is bounded to the delegated Authority; re-delegation is not implied.**
+15. **Current Authority != historical Authority at action time.**
+16. **Revoked/expired Authority != never existed.**
+17. **Claimed Authority != established Authority.**
+18. **Authority unknown != explicit no-Authority/prohibition.**
+19. **Authority grants no automatic Visibility/disclosure rights.**
+20. **AI reasoning/access does not manufacture Authority, Agreement or Consent.**
+21. **No universal admin role / Permission object / Authority root is pre-approved.**
+22. **Exact persistence and enforcement belong to later logical/security design.**
 
 ---
 
@@ -414,10 +420,13 @@ No universal `Relationship` or `Authority` root is required.
 - Authority ↔ Participation: involvement != governance.
 - Authority ↔ Visibility boundary: access/disclosure != governance.
 - Authority ↔ Confirmation: attestation != governance power.
+- Authority ↔ Agreement: mutual assent != governance power.
+- Authority ↔ Consent: bounded permission may be basis/constraint but != governance capability.
 - Authority ↔ ownership: may be basis, never universal equality.
 - Authority ↔ creator/organizer: creation/organization != automatic Authority.
 - Authority ↔ technical Permission: domain governance != current enforcement permission.
 - Authority ↔ Delegation: bounded Authority-establishment/entrustment pattern, not universal root.
+- Authority ↔ Decision/Approval/effective target state: governance capability != resolution != resulting state.
 
 ## SAFE DEFERRED
 
@@ -428,33 +437,12 @@ No universal `Relationship` or `Authority` root is required.
 **Reopening trigger:** LifeOS cannot enforce a domain Authority decision without collapsing Actor/Account/Principal.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, MA-01, MA-17, XCON-01.
 
-### Acceptance / Acknowledgement
-
-**Owner:** common-ground review.  
-**Why safe:** willingness/receipt remains independent from Authority.  
-**Reopening trigger:** Responsibility/Participation changes require Authority to absorb participant willingness.  
-**Tests to rerun:** CORE-04, MA-03, MA-05, MA-06, XCON-04.
-
-### Decision / Approval / effective canonical change
-
-**Owner:** Decision review.  
-**Why safe:** Authority answers who may cause an effect, not how the Decision/effect record is represented.  
-**Reopening trigger:** an authoritative action cannot be represented without making Authority itself the Decision.  
-**Tests to rerun:** CORE-02, CORE-04, CORE-09, MA-06, MA-12, XCON-03.
-
 ### Detailed delegation / on-behalf-of
 
 **Owner:** Principal/delegation review.  
 **Why safe:** bounded delegation semantics are fixed.  
 **Reopening trigger:** attribution/grant/revocation cannot preserve scope/history.  
 **Tests to rerun:** CORE-02, MA-01, MA-06, MA-10, MA-11, MA-13, MA-17.
-
-### Consent
-
-**Owner:** Visibility/privacy/common-ground review.  
-**Why safe:** consent may establish/limit some Authority or access but is not Authority.  
-**Reopening trigger:** privacy/action governance cannot be expressed without merging Consent into Authority.  
-**Tests to rerun:** CORE-04, MA-06, MA-07, MA-13, XCON-02.
 
 ### Policy / Role / conditions
 
@@ -463,12 +451,26 @@ No universal `Relationship` or `Authority` root is required.
 **Reopening trigger:** ordinary Authority cannot be derived/reconstructed without one canonical policy primitive.  
 **Tests to rerun:** CORE-03, CORE-04, CORE-10, CORE-13.
 
+### Version / material equivalence
+
+**Owner:** Version/logical model.  
+**Why safe:** Authority/Decision/Consent/Agreement applicability already requires material-scope/version sensitivity where relevant.  
+**Reopening trigger:** historical/current Authority basis cannot be reconstructed after material target/policy changes.  
+**Tests to rerun:** CORE-02, CORE-09, CORE-10, CORE-13, MA-11, XCON-03.
+
 ### Qualified Authority identity / persistence
 
 **Owner:** logical data model.  
 **Why safe:** rich grants/delegations may need structure/history without proving universal Authority identity.  
 **Reopening trigger:** direct/derived/qualified Authority cannot preserve revocation/history/scope.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
+
+### Consent purpose/use enforcement
+
+**Owner:** Consent/privacy/policy/security logical model.  
+**Why safe:** Consent semantics are now distinct and may constrain Authority/effect under policy without becoming Authority.  
+**Reopening trigger:** enforcement requires Consent and Authority to collapse into one semantic concept.  
+**Tests to rerun:** CORE-04, CORE-10, CORE-13, MA-06, MA-07, MA-13, MA-17, XCON-02.
 
 No current dependency is a structural blocker.
 
@@ -483,6 +485,8 @@ Rejected:
 - Authority = Responsibility;
 - Authority = Participation;
 - Authority = Visibility;
+- Authority = Agreement;
+- Authority = Consent;
 - Authority = ownership;
 - Authority = Confirmation;
 - Authority = technical Permission;
@@ -501,7 +505,7 @@ Reopen Authority v0 if later evidence shows that:
 1. domain governance and technical authorization cannot remain separated without contradiction;
 2. a common Authority identity/lifecycle is required across families rather than contextual capability;
 3. delegation cannot preserve bounded scope/history without a stronger primitive;
-4. Visibility/Consent/Decision semantics require Authority to absorb another distinct question;
+4. Visibility/Consent/Agreement/Decision semantics require Authority to absorb another distinct question despite current closures;
 5. specialist/external Authority cannot coexist with LifeOS governance without duplicate truth;
 6. logical persistence proves direct/derived/qualified Authority cannot preserve required history/revocation.
 
@@ -590,3 +594,41 @@ Authority ↔ effective target state       RESOLVED
 Principal/enforcement/detailed delegation, Consent, Agreement, Policy/Role conditions, Version/material equivalence and qualified Authority persistence remain independently owned dependencies.
 
 **Authority v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Agreement / Consent downstream closure amendment
+
+Agreement / Consent v0 closes Authority's former Agreement/Consent semantic dependencies without changing Authority.
+
+```text
+Authority
+= legitimate bounded governance capability
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Authority ↔ Agreement  RESOLVED
+Authority ↔ Consent    RESOLVED
+```
+
+Agreement may exist without Authority to make the agreed downstream effect effective. Authority may exist without mutual Agreement of all affected parties. Consent may establish or constrain a bounded basis under applicable policy, but does not create general Authority and does not imply unrelated Visibility or technical authorization.
+
+Consent withdrawal may change future governed action/use where policy makes Consent relevant; it does not rewrite Authority/action history that was legitimate at the historical time under the applicable basis.
+
+Generic Assent/Acceptance remains rejected. Principal/enforcement/detailed delegation, Policy/Role conditions, Version/material equivalence, qualified Authority persistence and purpose/use enforcement remain separately SAFE DEFERRED.
+
+No Authority hardening failed; **Authority remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `agreement.md`;
+- `consent.md`;
+- `../checkpoints/agreement-consent-v0-validation.md`.
