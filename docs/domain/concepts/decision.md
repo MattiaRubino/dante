@@ -719,3 +719,44 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 25. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves Decision's historical detailed reconciliation/source-precedence dependency without changing Decision semantics.
+
+Canonical separation:
+
+```text
+Reconciliation
+= process/capability for handling materially competing states/assertions
+
+Decision
+= explicit bounded resolution to a specific result where that resolution itself is material
+```
+
+A Reconciliation may culminate in a Decision, but unresolved conflict and deterministic authorized reconciliation remain valid without a fabricated human Decision. Conversely, many Decisions have no preceding conflict or reconciliation process.
+
+Evidence, Provenance, Authority and contextual Source Precedence may inform the reconciliation/Decision basis while remaining distinct. Decision does not create Authority or objective truth, and source recency/identity does not manufacture a Decision result.
+
+Where a reconciliation Decision leads to an effective change, the affected domain concept owns the resulting current state and Version/Provenance preserve the material predecessor/basis history. A later reversal or correction does not rewrite the prior Decision as though it never occurred.
+
+Decision-result Visibility remains separate from conflict, rationale, Evidence, Provenance and source Visibility.
+
+Downstream classification:
+
+```text
+Decision ↔ Reconciliation        RESOLVED
+Decision ↔ Source Precedence     RESOLVED — basis, not identity
+Decision ↔ effective state       RESOLVED — not owner
+```
+
+Remaining SAFE DEFERRED dependencies include Proposal/request reusable identity, collective/quorum/voting semantics, GoalCriterion/evaluation, Trigger/policy mechanics, exact persistence/API and specialist approval/signature/legal validity.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
