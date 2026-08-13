@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; hardenings incorporated; final post-write QA pending  
+**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; post-write QA PASS  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -690,7 +690,7 @@ Domain Authority != technical authorization. Domain Visibility != technical read
 
 # 17. Version / material equivalence
 
-**Status:** CANONICAL — PASS WITH HARDENING; hardenings incorporated; final post-write QA pending.  
+**Status:** CANONICAL — PASS WITH HARDENING; post-write QA PASS.  
 **Source:** `concepts/version.md`  
 **Validation:** `checkpoints/version-material-equivalence-v0-validation.md`
 
@@ -766,7 +766,7 @@ Principal domain primitive      REJECTED
 Universal Agent/Representative  REJECTED
 Universal Delegation            REJECTED
 Impersonation-as-domain-truth    REJECTED
-Version v0                      PASS WITH HARDENING — FINAL QA PENDING
+Version v0                      PASS WITH HARDENING — QA PASS
 Universal Version root/table    REJECTED
 ```
 
@@ -779,9 +779,7 @@ unclassified material debt     0
 
 # 19. Next-selection pressure
 
-Do not continue by roadmap vocabulary order.
-
-After Version post-write QA closure, run a fresh re-score among remaining demonstrated pressure such as:
+Version post-write QA is closed. The exact next step is a fresh re-score among remaining demonstrated pressure such as:
 
 ```text
 Proposal / request reusable identity
@@ -802,7 +800,7 @@ retention/audit
 Personal Knowledge generic link layer
 ```
 
-These are candidates/dependencies, not pre-approved primitives.
+These are candidates/dependencies, not pre-approved primitives. No next candidate is preselected.
 
 ---
 
