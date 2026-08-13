@@ -597,3 +597,46 @@ branch behind main                       0
 ```
 
 Representation / on-behalf-of v0 is therefore part of the current accepted Domain Atlas branch baseline.
+
+---
+
+# 26. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves Representation's former `Version / material scope` SAFE DEFERRED dependency without changing Representation semantics.
+
+A represented action remains attributable to the material action/target/scope state the actual Actor acted against:
+
+```text
+Representation R1
+actual Actor = Luca
+represented party = Anna
+action/target/scope state = S1
+
+later material target/scope change -> S2
+→ R1 remains historical attribution for S1
+→ R1 is not silently rewritten as action against S2
+```
+
+A materially changed Authority/delegation/policy basis may also affect whether a later represented action is legitimate, while the historical action and basis state remain reconstructible. Version identifies/reconstructs those states; Authority/policy decides legitimacy/effect; Provenance explains lineage.
+
+Materiality is action/scope specific. Technical storage/provider revisions, ETags/MVCC tokens, hashes or same target ID do not determine whether a represented action/basis remains applicable.
+
+Canonical separation:
+
+```text
+Version != Representation
+Version != Authority / Delegation / Principal
+Version != Provenance / Decision / reconciliation
+same represented party/target identity != automatic scope carry-forward
+```
+
+AI/service represented actions follow the same stale-base rule: where material, the system must preserve the state it acted against and re-evaluate before effect if target, scope or Authority/policy basis materially diverges.
+
+Remaining SAFE DEFERRED Representation dependencies include exact Principal/AuthN/AuthZ enforcement, action-specific delegability/policy, legal/specialist capacity/validity, represented Agreement/Consent legal validity, multi-hop delegation persistence, Verification of basis, collective/Organization representation, retention/audit/privacy, AI/service delegation chain and exact persistence/API representation.
+
+No Representation hardening failed. **Representation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
