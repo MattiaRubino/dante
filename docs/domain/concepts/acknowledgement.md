@@ -574,3 +574,62 @@ Reopen Acknowledgement v0 if later evidence demonstrates that:
 6. product evidence shows that durable Acknowledgement creates coordination burden without enough value even in high-consequence scenarios.
 
 Until such evidence appears, Acknowledgement remains the current accepted contextual common-ground attestation/relation capability, while generic cross-domain Acceptance remains rejected as a standalone kernel primitive.
+
+---
+
+# 2026-08-13 — Decision / Approval downstream closure amendment
+
+Decision v0 closes Acknowledgement's `Decision / Approval / effective change` SAFE DEFERRED item without changing Acknowledgement semantics.
+
+Current canonical separation:
+
+```text
+Acknowledgement
+= explicit taking-notice of a specific target/material version/change/request
+
+Decision
+= bounded contextual resolution of a question to a specific result
+
+Approval
+= scoped Decision/review result whose governance significance depends on Authority/policy
+
+Effective target state
+= owned by the affected domain concept
+```
+
+Therefore:
+
+```text
+Acknowledgement != Decision
+Acknowledgement != Approval
+Acknowledgement != effective domain change
+```
+
+Acknowledgement may coexist with rejection, disagreement, decline, or refusal. A Decision may also exist under an applicable process without every affected Actor having acknowledged it. A shared Decision does not imply Acknowledgement by every participant/recipient.
+
+Target/version applicability remains independent: an Acknowledgement of v1 and a Decision/Approval of v1 each do not silently carry to materially changed v2 by default.
+
+Downstream closure:
+
+```text
+Acknowledgement ↔ Decision          RESOLVED
+Acknowledgement ↔ Approval          RESOLVED
+Acknowledgement ↔ effective change  RESOLVED
+```
+
+Still SAFE DEFERRED:
+
+- Understanding/comprehension;
+- Agreement/Consent;
+- Principal/delegation/on-behalf-of;
+- Version/material equivalence;
+- read/view audit storage;
+- collective/group Acknowledgement;
+- retention/deletion.
+
+No Acknowledgement hardening failed; **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `decision.md`;
+- `../checkpoints/decision-v0-validation.md`.
