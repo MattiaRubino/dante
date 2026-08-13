@@ -656,3 +656,40 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 11. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the historical `evaluation snapshots/versioning` dependency without changing the original Evidence validation result.
+
+A consequential historical evaluation must be able to bind, directly or reconstructibly, to:
+
+```text
+material source state(s)
+material evaluation-target state
+material rule/policy state
+evaluation time/context
+```
+
+Later material correction of source, target or rule does not silently rewrite the earlier Evidence basis or conclusion. Non-material equivalence may preserve applicability only for the purpose/facet that remained unchanged.
+
+Version is not admissibility, relevance, certainty, truth, weighting or Authority. It identifies the material state being reasoned over; evaluation/policy semantics still determine what that state means for the question.
+
+Derived Evidence may rely on a reconstructible source-set/rule state instead of forcing one persisted edge per query. Provider versions, hashes, ETags and storage revisions may support concurrency/lineage but do not establish semantic materiality by themselves. Historical reconstruction does not mandate indefinite retention of all sensitive payloads.
+
+Downstream classification:
+
+```text
+Evidence ↔ Version/evaluation history   RESOLVED
+Version ↔ Evidence meaning/weight       RESOLVED — not owner
+```
+
+GoalCriterion/evaluation, weighting/admissibility, detailed reconciliation, privacy/retention and physical materialization remain independently owned.
+
+No original Evidence hardening failed. **Evidence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
