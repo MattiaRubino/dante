@@ -566,3 +566,47 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 18. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the historical Authority/source-precedence dependency without reopening Authority.
+
+Current separation:
+
+```text
+Authority
+= legitimate bounded governance capability
+
+Reconciliation
+= contextual process/capability for handling materially competing states/assertions
+
+Source Precedence
+= bounded contextual policy/basis where justified
+```
+
+Authority may participate in the applicable reconciliation basis, but it remains scoped by target/action/purpose/context/time and does not manufacture objective truth or a global source ranking. Specialist source-of-record precedence is valid only inside the bounded authoritative context that justifies it.
+
+Reconciliation may preserve conflict unresolved where Authority or policy is insufficient/contested. An already-authorized deterministic rule may establish a bounded result without fabricating a human Decision; material judgment may instead culminate in a separate Decision.
+
+The affected domain concept owns the resulting current/effective state. Historical Authority-at-action-time, competing assertions and prior resolution basis remain reconstructible after later correction or reversal.
+
+Technical Principal/access, provider role, creator status and recency do not become Authority or source precedence automatically. Conflict/basis/rationale Visibility remains separately governed.
+
+Downstream classification:
+
+```text
+Authority ↔ Reconciliation        RESOLVED
+Authority ↔ Source Precedence     RESOLVED — bounded basis only
+Authority ↔ objective truth       RESOLVED — not equal
+```
+
+Exact Principal/AuthN/AuthZ enforcement, Policy/Role/conditions, specialist validity, retention/audit and physical representation remain independently SAFE DEFERRED.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
