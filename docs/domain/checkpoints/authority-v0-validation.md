@@ -519,3 +519,50 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 17. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves the checkpoint's historical `Version / material equivalence` dependency without reopening Authority.
+
+Historical legitimacy remains tied to the material target/scope/policy/basis state that actually applied:
+
+```text
+Authority basis B1 applies at T1
+Actor performs governed action at T1
+later B2 narrows/revokes Authority
+→ T1 remains evaluated against B1
+→ B2 does not rewrite B1 out of history
+```
+
+Likewise B1 cannot silently govern a materially changed B2 target/scope merely because a technical Principal remains able to submit the same request.
+
+Materiality is domain-purpose scoped. Technical versions, provider revision IDs, ETags/MVCC tokens, hashes and timestamps do not define Authority semantics.
+
+Downstream classification:
+
+```text
+Authority ↔ Version/material state       RESOLVED
+Version ↔ technical authorization        RESOLVED — not equal
+Version ↔ Decision/Reconciliation        RESOLVED — not equal
+Version ↔ Provenance                     RESOLVED — state vs lineage
+```
+
+Remaining SAFE DEFERRED Authority dependencies:
+
+- exact Principal/AuthN/AuthZ enforcement;
+- Policy/Role/conditions;
+- qualified Authority persistence;
+- Consent purpose/use enforcement;
+- specific delegation policy/re-delegation;
+- legal/specialist representation validity.
+
+AI/system governed action must re-evaluate a materially changed Authority/policy base state before effect where consequence requires it; technical request capability does not preserve stale domain Authority.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
