@@ -396,3 +396,52 @@ Normative downstream references:
 - `../concepts/agreement.md`;
 - `../concepts/consent.md`;
 - `agreement-consent-v0-validation.md`.
+
+---
+
+# 16. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical acting-Actor / represented-party / Principal boundary without reopening Confirmation.
+
+Current canonical separation:
+
+```text
+actual confirmer Actor
+= who performed the affirmation
+
+Representation / on-behalf-of
+= the actual confirmer acted for a distinct represented party in that bounded context
+
+Principal
+= technical request identity
+
+Authority / delegation basis
+= whether the represented confirmation has bounded legitimate effect where applicable
+```
+
+Therefore:
+
+```text
+actual confirmer Actor != represented party by default
+Representation != Confirmation
+Principal != semantic confirmer
+```
+
+A represented Confirmation may have effect for another party under applicable Authority/policy while retaining truthful attribution to the actual confirmer Actor. Technical impersonation or shared credentials must not rewrite that attribution.
+
+Downstream classification:
+
+```text
+Confirmation ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive                REJECTED
+universal Delegation primitive               REJECTED
+```
+
+Version/material equivalence, Verification, legal/specialist representation/signature validity, Principal/AuthN/AuthZ enforcement and retention remain SAFE DEFERRED.
+
+No Confirmation hardening failed. **Confirmation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
