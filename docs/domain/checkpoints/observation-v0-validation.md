@@ -349,3 +349,39 @@ Acceptance pass scope:
 - workstream handoff records Observation acceptance and next review;
 - Quantity/Register/Confirmation/Provenance reopening triggers remain explicit;
 - no persistence schema is fixed.
+
+---
+
+# 13. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the checkpoint's historical `source / correction / derived-from history` Version dependency without changing the original Observation validation result.
+
+Current closure:
+
+```text
+Observation identity
+!= material state of that Observation
+!= provider/storage revision
+```
+
+A typo correction may preserve one Observation identity while changing its material state. A remeasurement remains a separate Observation identity. Historical Confirmations, Evidence evaluations, Decisions and derivations remain bound to the material state actually used and are not silently rewritten by later correction.
+
+Distinct conflicting observations from different sensors/actors/providers remain separate assertion identities rather than Versions of one record solely because Subject/property/time overlap. Reconciliation owns duplicate/conflict resolution; Version owns only state reference/history within a given identity.
+
+Material equivalence is purpose/facet scoped. Technical client versions, hashes, ETags and storage revisions may assist concurrency or lineage but do not define semantic materiality automatically. Historical reconstruction also does not require indefinite retention of all sensitive source payloads.
+
+Downstream classification:
+
+```text
+Observation ↔ Version/correction persistence   RESOLVED
+Version ↔ observation identity                 RESOLVED — distinct
+```
+
+Detailed reconciliation/source precedence, typed values/series, retention and physical persistence remain independently owned.
+
+No original Observation hardening failed. **Observation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
