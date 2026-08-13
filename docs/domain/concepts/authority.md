@@ -632,3 +632,56 @@ Normative downstream references:
 - `agreement.md`;
 - `consent.md`;
 - `../checkpoints/agreement-consent-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Representation / delegation downstream closure amendment
+
+Representation v0 closes Authority's previously deferred detailed on-behalf-of semantic boundary without changing Authority itself.
+
+Canonical separation:
+
+```text
+Actor
+= who/what actually acts semantically
+
+Representation / on-behalf-of
+= actual Actor acts for a distinct represented party for a bounded action/context
+
+Authority
+= whether that Actor/role may legitimately make the bounded governed effect effective
+
+Principal
+= technical security identity used for request authentication/authorization
+```
+
+Therefore:
+
+```text
+Representation != Authority
+represented party != Authority holder automatically
+Principal != Authority
+claim of Representation != established Authority
+```
+
+Delegation remains **bounded Authority-establishment / entrustment semantics** rather than a universal root. The delegated scope names the Authority/action being entrusted; it does not transfer all Authority, Responsibility, Visibility, Agreement/Consent capacity or re-delegation rights.
+
+The former `Detailed delegation / on-behalf-of` SAFE DEFERRED item is now:
+
+```text
+Representation / on-behalf-of semantic relation   RESOLVED
+Delegation universal primitive                    REJECTED
+exact Principal/AuthN/AuthZ enforcement            SAFE DEFERRED
+specific delegation-policy mechanics               SAFE DEFERRED
+legal/specialist representation validity           SAFE DEFERRED
+multi-hop re-delegation persistence                 SAFE DEFERRED
+```
+
+Historical action-time Authority remains reconstructible after expiry/revocation. A later invalid action can preserve the attempted Representation attribution without making the attempted effect legitimate.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
