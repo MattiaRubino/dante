@@ -622,3 +622,50 @@ Reopen Person v0 if later evidence shows that:
 6. Resource/Responsibility/Participation modeling requires human identity to be represented differently rather than by contextual roles over Person.
 
 Until then, Person remains the current accepted native human-identity concept.
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes the generic Person-versus-representative boundary while preserving Person as native human identity.
+
+Canonical separation:
+
+```text
+Person
+= persistent human identity
+
+Actor
+= actual contextual semantic agent
+
+Representation / on-behalf-of
+= actual Actor acts for a distinct represented party in a bounded action/context
+
+Principal
+= technical security identity
+```
+
+Therefore:
+
+```text
+Person != Representative role
+represented Person != actual Actor automatically
+represented Person != Principal
+represented Person requires no Account
+Representation != Subject/beneficiary
+```
+
+The existence of a parent, caregiver, guardian, assistant, manager or household relationship does not by itself prove that the Person is being represented for every action or that the representative expresses the Person's personal will.
+
+The older `consent/guardian/legal-representative semantics` deferral is now split:
+
+- generic Representation/on-behalf-of semantic relation: **RESOLVED**;
+- legal capacity, guardianship, power-of-attorney and specialist representation validity: **SAFE DEFERRED** to specialist/legal/product policy;
+- Principal/AuthN/AuthZ mechanics and physical typed-reference model: **SAFE DEFERRED** to security/logical design.
+
+No Person invariant is reopened. **Person remains the canonical native human-identity entity, REOPEN = 0.**
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
