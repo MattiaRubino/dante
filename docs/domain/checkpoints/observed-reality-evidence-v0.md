@@ -519,3 +519,49 @@ Normative downstream references:
 - `version-material-equivalence-v0-validation.md`.
 
 The Observed Reality & Evidence cluster remains **PASS**, with `REOPEN = 0`. Detailed source precedence/reconciliation policy and exact persistence remain independently SAFE DEFERRED.
+
+---
+
+# 2026-08-13 — Downstream closure: Reconciliation / Source Precedence v0
+
+Reconciliation v0 resolves the cluster's historical detailed source-precedence/reconciliation dependency while preserving the original cluster verdict and its two integrated hardenings.
+
+Current integrated separation:
+
+```text
+asserted/reported reality
+!= established Actual
+
+competing material states/assertions
+!= Reconciliation process
+!= current/effective state
+
+Evidence
+!= winner selection
+
+Provenance
+!= source precedence
+
+Authority
+!= objective truth
+
+Version
+!= reconciliation
+```
+
+Reconciliation now owns the cross-cutting process discipline for preserving and handling material competition. It may leave conflict unresolved, apply bounded specialist/source-of-record policy, use Evidence/Confirmation/Provenance, culminate in Decision, combine semantically independent changes, or deterministically establish/correct a current state under already-authorized policy. The affected domain concept still owns the current/effective state.
+
+The original cluster conflict cases therefore no longer depend on an unnamed future mechanism. Competing Actual assertions, Observations, Outcome claims, Confirmations, Evidence and provider states can remain separately attributable while a bounded reconciliation basis determines whether and how current state changes.
+
+Universal last-write-wins, newest-source-wins, provider-always-wins, user-always-wins, silent averaging and source identity as truth remain rejected. A specialist source-of-record has precedence only in its actual bounded authoritative context.
+
+Historical assertions and material states remain reconstructible after resolution/correction. Conflict/source/Evidence/Provenance/rationale Visibility is independently governed, and AI confidence cannot create Authority or universal precedence.
+
+Remaining independently SAFE DEFERRED debt includes GoalCriterion/evaluation, per-domain precedence rules, native identity merge/split, Trigger/policy mechanics, Principal/enforcement, specialist mappings, retention/audit and physical/API representation.
+
+The Observed Reality & Evidence cluster remains **PASS**, `REOPEN = 0`; no concept is removed or merged.
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
