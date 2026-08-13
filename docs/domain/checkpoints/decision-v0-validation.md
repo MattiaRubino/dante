@@ -1,6 +1,6 @@
 # Decision / Approval / Reconciliation / Effective Change v0 — Validation Checkpoint
 
-**Status:** PASS WITH HARDENING — hardenings incorporated; pending post-write scope QA  
+**Status:** PASS WITH HARDENING — hardenings incorporated + post-write QA PASS  
 **Validated:** 2026-08-13  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Relationships / Reasoning  
@@ -526,7 +526,7 @@ unclassified material dependencies = 0
 
 # 14. Documentation propagation — approved scope
 
-The approved Decision v0 milestone propagation is:
+The approved Decision v0 milestone propagation was:
 
 ### CREATE
 
@@ -560,31 +560,66 @@ The approved Decision v0 milestone propagation is:
 - `docs/domain/checkpoints/acknowledgement-v0-validation.md`
 - `docs/domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`
 
-Historical product discovery/research, old product glossary, cross-cluster v4, root README and PROJECT-STATUS are intentionally not rewritten.
+Historical product discovery/research, old product glossary, cross-cluster v4, root README and PROJECT-STATUS were intentionally not rewritten.
 
 ---
 
-# 15. Post-write QA gate
+# 15. Post-write QA — PASS
 
-Before this milestone becomes the new validated branch baseline, QA must verify against:
+Validated against:
 
 ```text
 e353e2756bd159b582122c4fd73b5d5d63529b30
 ```
 
-Required:
+QA result at Decision milestone closure:
 
-- exactly the 23 approved paths changed;
-- no out-of-scope paths;
-- two new Decision files exist;
-- all mandatory V3 sections/hardenings are present;
-- Language Map, Domain README, multi-actor guardrail and workstream agree;
-- historical checkpoints are preserved with explicit downstream amendments rather than silently rewritten;
-- Authority/Actual/Responsibility/Provenance/Evidence/Schedule/Confirmation/Acknowledgement boundaries remain intact;
-- generic Approval/Reconciliation/EffectiveChange roots remain rejected;
-- Agreement/Consent/Version/Principal/collective/evaluation dependencies remain SAFE DEFERRED with owner/trigger/tests;
-- `REOPEN = 0` and unclassified material debt = 0;
-- main, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend remain untouched;
-- branch remains coherent against current main.
+```text
+approved paths changed               23 / 23
+out-of-scope paths                    0
+new Decision files                    2 / 2
+structural REOPEN                     0
+unclassified material dependencies   0
+main unchanged
+branch behind main                    0
+```
 
-Only after QA PASS may this approval be consumed and the remaining candidate space be re-scored.
+Authority/Actual/Responsibility/Provenance/Evidence/Schedule/Confirmation/Acknowledgement boundaries remained intact; generic Approval/Reconciliation/EffectiveChange roots remained rejected; historical material was preserved through downstream amendments rather than silent rewrite.
+
+---
+
+# 16. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 resolves the Decision checkpoint's historical `Agreement / Consent` SAFE DEFERRED item without reopening Decision.
+
+Current canonical separation:
+
+```text
+Decision
+= bounded contextual resolution to a specific result
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Decision ↔ Agreement  RESOLVED
+Decision ↔ Consent    RESOLVED
+```
+
+The prior adversarial case `manager decides while employee disagrees` remains a regression guardrail: valid Decision does not fabricate Agreement/Consent. Conversely, mutual Agreement may exist before an Authority-dependent effect, and Consent may constrain future action/use without becoming the Decision.
+
+The historical Agreement/Consent dependency is now closed downstream. Remaining SAFE DEFERRED Decision dependencies are Version/material equivalence, Principal/delegation, Proposal identity, detailed reconciliation/source precedence, collective Decision/quorum/voting, GoalCriterion/evaluation, exact persistence/API, and specialist approval/signature/legal workflows.
+
+No Decision hardening failed; **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/agreement.md`;
+- `../concepts/consent.md`;
+- `agreement-consent-v0-validation.md`.
