@@ -99,7 +99,7 @@ These remain reopenable only through stronger semantic evidence, not implementat
 **Tests:** CORE-03, CORE-04, MA-03, MA-05, MA-11, XCON-04.
 
 **Historical classification:** SAFE DEFERRED at this checkpoint.  
-**Current downstream resolution:** see sections 15 and 17.
+**Current downstream resolution:** see section 15.
 
 ---
 
@@ -144,7 +144,7 @@ These remain reopenable only through stronger semantic evidence, not implementat
 **Trigger:** contextual Actual cannot be established without competing Actual objects or assertion-history loss.  
 **Tests:** CORE-09, MA-06, MA-12, MA-17, MA-20, XCON-02, XCON-03.
 
-**Downstream status:** Authority and Decision semantic boundaries RESOLVED; detailed reconciliation/source precedence remains SAFE DEFERRED.
+**Downstream status:** Authority side RESOLVED; Decision/reconciliation still owned downstream.
 
 ## 7.2 Session / Actual ↔ Participation
 
@@ -231,7 +231,7 @@ These remain reopenable only through stronger semantic evidence, not implementat
 **Trigger:** selective disclosure cannot hide association/detail independently.  
 **Tests:** MA-07, MA-08, MA-13, MA-17, XCON-02, XCON-05.
 
-**Downstream status:** semantic exposure side RESOLVED by Visibility v0; Consent/use-purpose boundary subsequently RESOLVED by Agreement/Consent v0; detailed policy/enforcement remains deferred.
+**Downstream status:** semantic exposure side RESOLVED by Visibility v0; detailed field/facet policy remains deferred.
 
 ## 11.3 heterogeneous reference persistence
 
@@ -338,7 +338,41 @@ proposal `accepted/applied`
 → proposal/effect-specific response/operation
 ```
 
-At this point in history Agreement, Consent and Verification were still separately deferred. Agreement/Consent are subsequently resolved in section 17; Verification remains SAFE DEFERRED.
+The historical combined dependency does **not** become fully closed because these neighboring questions remain independently owned:
+
+### Agreement
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** common-ground review.  
+**Why safe:** mutual/shared assent is not required to define Confirmation or Acknowledgement.  
+**Reopening trigger:** realistic workflows cannot represent mutual commitment without generic Acceptance/Attestation abstraction.  
+**Tests:** CORE-03, CORE-04, MA-05, MA-12, MA-19, XCON-04, XCON-05.
+
+### Consent / purpose limitation
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** privacy/common-ground review.  
+**Why safe:** bounded permission/use-purpose is separate from acknowledgement/affirmation.  
+**Reopening trigger:** privacy/action governance cannot be represented without collapsing Consent into Visibility/Authority/Acknowledgement.  
+**Tests:** CORE-04, MA-06, MA-07, MA-08, MA-13, XCON-02, XCON-05.
+
+### Verification
+
+**Classification:** SAFE DEFERRED.  
+**Owner:** Verification/Evidence review.  
+**Why safe:** checking/basis process remains distinct from Confirmation/Acknowledgement.  
+**Reopening trigger:** specialist verification cannot remain separate from Confirmation/Evidence semantics.  
+**Tests:** CORE-03, CORE-04, CORE-09, MA-18, XCON-04.
+
+Current result after this downstream closure:
+
+```text
+Clusters 1–4 structural REOPEN        0
+unclassified material dependencies    0
+Acknowledgement dependency            RESOLVED
+universal Acceptance primitive        REJECTED
+Agreement / Consent / Verification    SAFE DEFERRED with owners/triggers
+```
 
 Normative downstream references:
 
@@ -431,8 +465,10 @@ No universal `Approval`, `Reconciliation`, or `EffectiveChange/StateTransition` 
 
 ### Agreement / Consent / purpose limitation
 
-**Historical Decision-stage classification:** SAFE DEFERRED.  
-**Current downstream status:** RESOLVED semantically by Agreement / Consent v0; see section 17.
+**Why safe:** mutual assent/commitment and voluntary bounded permission remain distinct from Decision, Approval, Confirmation and Acknowledgement.  
+**Owner:** common-ground/privacy review.  
+**Reopening trigger:** realistic collaboration/privacy flows cannot represent mutual commitment or permission without Decision/Acknowledgement/Visibility/Authority absorbing those semantics.  
+**Tests:** CORE-03, CORE-04, CORE-09, MA-05, MA-06, MA-07, MA-08, MA-13, MA-19, MA-20, XCON-02, XCON-04, XCON-05.
 
 ### GoalCriterion / evaluation
 
@@ -473,11 +509,29 @@ No universal `Approval`, `Reconciliation`, or `EffectiveChange/StateTransition` 
 
 All original technical/security/privacy/logical-model debts remain owned by their historical stages. Decision v0 does not convert lineage, audit, retention or persistence mechanics into domain resolution semantics.
 
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+Decision semantic boundaries                RESOLVED where listed above
+Universal Approval primitive                REJECTED
+Universal Reconciliation primitive          REJECTED
+Universal EffectiveChange/StateTransition   REJECTED
+Remaining debt                              SAFE DEFERRED with owners/triggers/tests
+```
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`;
+- `../language-map.md`.
+
 ---
 
 # 17. Downstream resolution appendix — Agreement / Consent v0 (2026-08-13)
 
-Agreement / Consent v0 resolves the remaining mutual-assent and actor-scoped permission semantics that were deliberately left SAFE DEFERRED by earlier Confirmation/Acknowledgement/Authority/Visibility/Decision work.
+Agreement / Consent v0 resolves the mutual-assent and bounded-permission semantics that were deliberately left SAFE DEFERRED by earlier common-ground, governance, privacy and Decision work, while preserving all historical sections above unchanged.
 
 Current canonical decomposition:
 
@@ -489,7 +543,8 @@ Agreement
 = multi-party mutual assent to materially same terms/version among the applicable party set
 
 Consent
-= actor-scoped bounded permission for action/use/exposure concerning a defined target under defined scope/purpose/context
+= actor-scoped bounded permission for action/use/exposure concerning a target
+  under defined scope/purpose/context where Consent is an applicable basis
 
 Decision
 = bounded contextual resolution to a specific result
@@ -508,13 +563,17 @@ Confirmation ↔ Agreement
 RESOLVED
 affirmation != mutual assent
 
+Confirmation ↔ Consent
+RESOLVED
+affirmation != bounded permission
+
 Acknowledgement ↔ Agreement
 RESOLVED
 taking notice != mutual assent
 
 Acknowledgement ↔ Consent
 RESOLVED
-taking notice != bounded permission
+taking notice != permission
 
 Agreement ↔ Decision
 RESOLVED
