@@ -1,6 +1,6 @@
 # Version / Material Equivalence v0 Validation — Methodology v3
 
-**Status:** PASS WITH HARDENING — candidate baseline written; post-write propagation QA pending  
+**Status:** PASS WITH HARDENING — accepted current baseline; post-write propagation QA PASS  
 **Validated:** 2026-08-13  
 **Concept:** Version / Material-State v0  
 **Validation standard:** `../validation-methodology-v3.md`  
@@ -925,7 +925,7 @@ unclassified    0
 - whole-domain multi-actor regression;
 - AI stale-base write/effect policy.
 
-This verdict is not canonical branch acceptance until the approved 42-path documentation propagation and post-write QA complete.
+The approved 42-path documentation propagation and post-write QA completed successfully; this verdict is the accepted current branch baseline.
 
 ---
 
@@ -1084,9 +1084,25 @@ Before Version v0 becomes canonical accepted baseline, verify:
 - `main`, prototype, SQL/API/backend/auth untouched;
 - compare to `main`: branch behind = 0.
 
-Until that QA passes:
+## Post-write QA result — PASS
+
+Validated against pre-scope `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`.
 
 ```text
-V3 verdict = PASS WITH HARDENING
-accepted Domain Atlas baseline = NOT YET
+branch                           feature/domain-model
+approved unique paths changed   42 / 42
+new files                        2 / 2
+modified files                  40 / 40
+out-of-scope paths               0
+preservation                     PASS
+CORE / MA / XCON / ADS           COMPLETE
+RESOLVED                         19
+SAFE DEFERRED                    6
+REOPEN                           0
+unclassified                     0
+branch behind main               0
 ```
+
+Historical checkpoints remain reconstructible; old product glossary, root README, PROJECT-STATUS, main, prototype, SQL/API/backend/auth remain untouched by this scope.
+
+Version v0 is the current accepted Domain Atlas baseline.
