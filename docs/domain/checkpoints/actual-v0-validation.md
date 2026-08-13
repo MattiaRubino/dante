@@ -415,3 +415,46 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 15. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's historical detailed reconciliation/source-precedence dependency without changing the original Actual validation result.
+
+Current closure:
+
+```text
+competing assertions / material states
+!= Reconciliation process
+!= current Actual
+
+Reconciliation
+= contextual process/capability that preserves and handles material competition under a bounded basis
+
+Actual
+= current established contextual realization owned by Actual semantics
+```
+
+Reconciliation may preserve conflict unresolved, apply bounded source-of-record policy, use Evidence/Provenance, culminate in Decision, or deterministically establish/correct current Actual under already-authorized policy. It does not fabricate human Decision and does not use universal last-write-wins, provider-always-wins or user-always-wins.
+
+Source identity, Provenance, Authority and truth remain distinct. A newer source does not become current Actual by recency alone. Where reconciliation yields a new material Actual state, Version preserves the relevant predecessor/state binding and Provenance preserves the materially relevant basis/lineage.
+
+Earlier assertions remain historical facts even after current Actual changes. Conflict/source/basis Visibility remains independently governed.
+
+Downstream classification:
+
+```text
+Actual ↔ detailed Reconciliation        RESOLVED
+Actual ↔ Source Precedence              RESOLVED — bounded policy only
+Reconciliation ↔ Actual                 RESOLVED — process vs owned current state
+```
+
+Per-domain precedence rules, Principal/enforcement, native identity deduplication, retention and physical representation remain separately owned.
+
+No original Actual hardening failed. **Actual remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.

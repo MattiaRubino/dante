@@ -973,3 +973,46 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 closes Actual's former detailed reconciliation/source-precedence semantic dependency without changing Actual identity or realization semantics.
+
+Canonical separation:
+
+```text
+competing assertions / material states
+= candidate accounts of the same bounded realization
+
+Reconciliation
+= process/capability that handles their competition under an applicable bounded basis
+
+Actual
+= current established contextual realization owned by Actual semantics
+```
+
+Therefore:
+
+```text
+Reconciliation != Actual
+source recency != Actual truth
+source identity != Authority != truth
+unresolved conflict is valid
+```
+
+Reconciliation may preserve competing assertions unresolved, apply bounded source-of-record policy, use Evidence and Provenance, culminate in a Decision, or deterministically establish/correct the current Actual under already-authorized policy. It must not fabricate a human Decision or silently use last-write-wins, provider-always-wins or user-always-wins.
+
+Where resolution establishes a new material Actual state, Version preserves the predecessor/current state relationship and Provenance preserves the materially relevant basis/lineage. Earlier assertions remain historical facts; later correction does not rewrite what those sources originally asserted.
+
+The affected Actual owns the resulting current/effective realization. Reconciliation owns neither Actual identity nor universal truth. Conflict/source/basis Visibility remains independently governed.
+
+The historical detailed reconciliation/source-precedence dependency is now downstream-closed at the semantic boundary. Per-domain precedence policy, Principal/enforcement, native-identity deduplication, retention and physical persistence remain separately owned.
+
+No Actual hardening failed. **Actual remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
