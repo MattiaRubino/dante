@@ -944,3 +944,53 @@ This also strengthens several existing readiness questions without changing thei
 - section 31 questions 8–9 must treat generic `accepted` as family-specific response rather than one universal kernel status.
 
 Agreement, Consent, Decision, Principal/delegation, Version, collective semantics and read/view audit persistence remain independently reviewable. This amendment introduces no collaboration infrastructure and requires no reopening of the evidence-backed readiness baseline.
+
+---
+
+# 2026-08-13 — Decision / Approval / Reconciliation downstream hardening
+
+Decision v0 closes another multi-actor separation that this readiness baseline intentionally left provisional.
+
+Current canonical resolution chain where consequence requires it:
+
+```text
+proposal / request
+!= delivered/read
+!= Acknowledgement
+!= family-specific response / future Agreement or Consent
+!= Approval / Decision
+!= effective target state
+!= Actual
+```
+
+Canonical Decision boundary:
+
+```text
+Decision
+= bounded contextual resolution to a specific result
+  for a defined target/material version/context
+
+Decision != Authority
+Decision != effective target state
+Decision != Actual/truth
+Decision != Provenance/rationale
+Decision != Evidence
+Decision != Agreement/Consent
+```
+
+Multi-actor hardenings:
+
+- one Actor's position/Approval does not automatically become the shared Decision;
+- a shared Decision does not imply every Actor agreed or consented;
+- an authoritative manager/guardian/specialist Decision must not be laundered into another person's Agreement/Consent;
+- Approval is scoped Decision/review-result semantics whose effect depends on applicable Authority/policy;
+- Decision result Visibility can differ from rationale/Evidence/Provenance Visibility;
+- assisted/on-behalf-of flows must preserve the actual decision Actor/process, represented party and applicable basis;
+- reversed/superseded Decisions remain historical facts where material;
+- AI recommendation/proposal is not a human Decision;
+- AI/system Decision semantics require explicit bounded policy/Authority and truthful attribution;
+- low-consequence collaboration must not be inflated into mandatory approval/Decision bureaucracy.
+
+Reconciliation remains a process/pattern, not a universal primitive. It may culminate in a Decision or remain unresolved. The affected domain concept owns any effective state change; no universal `EffectiveChange` root is introduced.
+
+Agreement/Consent, Principal/delegation, Version/material equivalence, collective Decision formation, proposal identity, detailed reconciliation policy and evaluation semantics remain independently reviewable. No prior multi-actor readiness invariant is reopened.
