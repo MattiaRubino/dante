@@ -379,3 +379,150 @@ Normative downstream references:
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`;
 - `../language-map.md`.
+
+---
+
+# 16. Downstream resolution appendix — Decision v0 (2026-08-13)
+
+Decision v0 resolves the semantic Decision/Approval/reconciliation/effective-change portions of several historical Clusters 1–4 SAFE DEFERRED boundaries while preserving the original closure decision and every still-open owner/trigger/test.
+
+Current canonical Decision boundary:
+
+```text
+Decision
+= bounded contextual resolution of a question to a specific result
+
+Approval
+= scoped Decision/review result whose governance significance depends on Authority/policy
+
+Reconciliation
+= process/pattern that may culminate in Decision, apply deterministic policy, or remain unresolved
+
+Effective target state
+= owned by the affected domain concept
+```
+
+## Downstream RESOLVED semantic boundaries
+
+```text
+Authority ↔ Decision / Approval / effect
+RESOLVED
+who may govern != what was resolved != resulting target state
+
+Actual ↔ Decision / reconciliation
+RESOLVED at semantic boundary
+current contextual realization != resolution process/result
+
+Responsibility ↔ Decision / Approval / effective transfer
+RESOLVED
+role-change resolution != accountability state
+
+Schedule ↔ Decision / Approval / effective change
+RESOLVED
+scheduling resolution != current temporal assignment
+
+Provenance ↔ Decision / rationale
+RESOLVED
+lineage != bounded resolution != rationale
+
+Evidence ↔ Decision
+RESOLVED
+evaluative input/use != resolution
+
+Confirmation ↔ Decision / Approval
+RESOLVED
+attestation != resolution/review result
+
+Acknowledgement ↔ Decision / Approval / effect
+RESOLVED
+explicit taking-notice != resolution/review/effective state
+```
+
+No universal `Approval`, `Reconciliation`, or `EffectiveChange/StateTransition` root is introduced. The affected concept owns its effective state transition. Last-write-wins is not accepted as a universal reconciliation rule.
+
+## Remaining SAFE DEFERRED debt — preserved and executable
+
+### Version / material equivalence
+
+**Why safe:** Decision/Approval/Acknowledgement/Confirmation target-version binding is now mandatory semantically, but physical/version-equivalence mechanics are not selected.  
+**Owner:** Relationships / Reasoning — Version + logical model.  
+**Reopening trigger:** the system cannot determine which reviewed/acknowledged/confirmed/decided state a later material change supersedes or whether prior applicability survives.  
+**Tests:** CORE-02, CORE-05, CORE-09, CORE-10, CORE-13, MA-11, MA-12, XCON-03, XCON-04.
+
+### Detailed reconciliation / source precedence
+
+**Why safe:** Reconciliation process semantics are separated from Decision/Authority/Provenance/Actual without selecting one universal policy engine.  
+**Owner:** reasoning/policy + logical model.  
+**Reopening trigger:** current state/truth cannot be established or reconstructed without giving Reconciliation a stronger independent identity/lifecycle.  
+**Tests:** CORE-02, CORE-04, CORE-09, CORE-13, MA-06, MA-12, MA-18, XCON-03.
+
+### Principal / delegation / on-behalf-of
+
+**Why safe:** semantic Actor, represented party, Account/Principal and Authority remain distinct; Decision v0 preserves actual decision Actor/process separately.  
+**Owner:** Principal/delegation/security review.  
+**Reopening trigger:** delegated human/AI/service acknowledgement, Decision or Authority cannot preserve truthful attribution/scope/history without identity collapse.  
+**Tests:** CORE-06, CORE-09, CORE-13, MA-01, MA-06, MA-10, MA-11, MA-13, MA-17, XCON-01, XCON-02.
+
+### Agreement / Consent / purpose limitation
+
+**Why safe:** mutual assent/commitment and voluntary bounded permission remain distinct from Decision, Approval, Confirmation and Acknowledgement.  
+**Owner:** common-ground/privacy review.  
+**Reopening trigger:** realistic collaboration/privacy flows cannot represent mutual commitment or permission without Decision/Acknowledgement/Visibility/Authority absorbing those semantics.  
+**Tests:** CORE-03, CORE-04, CORE-09, MA-05, MA-06, MA-07, MA-08, MA-13, MA-19, MA-20, XCON-02, XCON-04, XCON-05.
+
+### GoalCriterion / evaluation
+
+**Why safe:** Evidence remains evaluative input/use and Decision remains bounded resolution; attainment/evaluation semantics are not forced into either.  
+**Owner:** GoalCriterion / evaluation review.  
+**Reopening trigger:** Goal/Milestone attainment cannot be represented without making Decision the evaluation engine or duplicating reality.  
+**Tests:** CORE-03, CORE-04, CORE-05, CORE-09, MA-06, MA-19, XCON-03, XCON-04, CL-04, CL-05.
+
+### Proposal / request reusable identity
+
+**Why safe:** current families can own proposal/request semantics while Decision binds to the materially relevant target/version.  
+**Owner:** proposal/reasoning logical review.  
+**Reopening trigger:** cross-family proposal history is duplicated or Decision cannot target the exact proposal/version without a stronger abstraction.  
+**Tests:** CORE-03, CORE-04, CORE-06, CORE-13, MA-05, MA-19, XCON-04.
+
+### Collective / group / collective Decision
+
+**Why safe:** one shared Decision can remain distinct from individual Actor stances without a universal Group/quorum/voting primitive.  
+**Owner:** collective/group semantics.  
+**Reopening trigger:** ordinary LifeOS workflows require persistent collective Actor/quorum/voting identity to establish a Decision or Responsibility/Acknowledgement state.  
+**Tests:** CORE-04, CORE-06, CORE-12, MA-02, MA-03, MA-05, MA-06, MA-13, MA-19, MA-20, XCON-01, XCON-04, XCON-05.
+
+### Trigger / conditional policy
+
+**Why safe:** Recurrence/fallback/automation conditions remain distinct from Decision; an already-authorized bounded policy may produce an effect without fabricating a human Decision.  
+**Owner:** Trigger/automation/policy review.  
+**Reopening trigger:** fact-driven generation/fallback/effect cannot be represented without embedding generic condition logic inside existing concepts.  
+**Tests:** CORE-02, CORE-03, CORE-04, CORE-13, MA-06, MA-17, XCON-03, XCON-04.
+
+### Verification
+
+**Why safe:** check/basis process remains distinct from Confirmation, Evidence and Decision.  
+**Owner:** Verification/Evidence review.  
+**Reopening trigger:** specialist verification cannot remain separate from Confirmation/Evidence/Decision semantics.  
+**Tests:** CORE-03, CORE-04, CORE-09, MA-18, XCON-04.
+
+### Audit / retention / privacy / physical representation
+
+All original technical/security/privacy/logical-model debts remain owned by their historical stages. Decision v0 does not convert lineage, audit, retention or persistence mechanics into domain resolution semantics.
+
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+Decision semantic boundaries                RESOLVED where listed above
+Universal Approval primitive                REJECTED
+Universal Reconciliation primitive          REJECTED
+Universal EffectiveChange/StateTransition   REJECTED
+Remaining debt                              SAFE DEFERRED with owners/triggers/tests
+```
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`;
+- `../language-map.md`.
