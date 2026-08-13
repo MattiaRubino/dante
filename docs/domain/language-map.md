@@ -2,45 +2,36 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; post-write QA PASS  
+**Current revision:** 2026-08-13 — Reconciliation / Source Precedence v0 semantic propagation complete; final branch QA pending corrective probe removal and upstream `main` sync  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
 ## Purpose
 
-This is the fast canonical navigation layer for LifeOS terminology. Detailed lifecycle, chronology, benchmark evidence, adversarial tests, dependency owners/triggers and persistence pressure belong in concept specs/checkpoints.
+LifeOS uses the same ordinary words at several semantic layers. Without explicit separation, product language, UI labels, external provider vocabulary, code names, persistence artifacts, and domain concepts can silently redefine each other.
+
+This map is the current terminology authority for the Domain Atlas.
+
+It governs the distinction between:
 
 ```text
-DOMAIN LANGUAGE
-        ↓
-PRODUCT LANGUAGE
-        ↓
-UI LANGUAGE
-        ↓
-IMPLEMENTATION LANGUAGE
+DOMAIN
+PRODUCT
+UI
+IMPLEMENTATION
 ```
 
-> **A domain concept does not require a dedicated UI object, and a visible product/UI noun or verb does not automatically justify a domain primitive.**
+A word may legitimately appear at more than one layer while meaning different things. The layer must be explicit whenever ambiguity matters.
 
 ---
 
-# 1. Terminology precedence
+# 1. Language hierarchy
 
-1. accepted Domain Atlas concept specification;
-2. this Language Map;
-3. current validation/checkpoint guardrails;
-4. active workstream handoff;
-5. current durable product behavior docs;
-6. historical product docs/glossaries;
-7. conversation history.
+## DOMAIN
 
-Historical docs remain evidence, not current ontology authority.
+The semantic meaning required for LifeOS to preserve reality, intention, history, identity, responsibility, relationships, evidence, authority, and time correctly.
 
----
-
-# 2. Status classes
-
-## CANONICAL
+Examples:
 
 ```text
 Goal
@@ -52,764 +43,629 @@ Milestone
 Occurrence
 Schedule
 Session
-Temporal Constraint
-Recurrence
-Availability
-Capacity
+Observation
 Actual
 Outcome
-Observation
-Confirmation
 Evidence
 Provenance
-Quantity
-Subject             — contextual aboutness role, not root
-Person              — native human entity
-Actor               — contextual agency capability, not root
-Asset               — scoped native physical-object entity
-Resource            — contextual planning/execution role, not root
-Relationship discipline — cross-cutting rule, not root
-Responsibility      — specific accountability relation family
-Participation       — specific involvement relation family
-Authority           — contextual governance capability
-Visibility          — contextual information-exposure capability
-Acknowledgement     — contextual explicit-taking-notice relation/capability
-Decision            — contextual bounded-resolution family/capability
-Agreement           — contextual multi-party mutual-assent relation/capability
-Consent             — contextual actor-scoped bounded-permission relation/capability
-Representation      — contextual action-scoped on-behalf-of relation/capability
-Version             — contextual material-state reference capability; not a universal root/table
-```
-
-`Account` is an accepted platform/access identity boundary; its detailed security model remains deferred.
-
-## DERIVED / PROJECTION
-
-Examples:
-
-```text
-free capacity
-availability windows
-current status/progress summaries
-register/tracker/history views
-approval-requirements-satisfied
-needs confirmation
-needs acknowledgement
-```
-
-A projection is not automatically a new source of truth.
-
-## PRODUCT PROFILE / PACKAGING
-
-Examples:
-
-```text
-Project
-Program
-Area
-Calendar Block
-Dashboard
-Tracker
-History
-Routine template
-```
-
-These may package canonical semantics without becoming kernel primitives.
-
-## PRODUCT / UI TERMS
-
-Context-sensitive examples:
-
-```text
-User
-Owner
-Member
-Assignee
-Attendee
-Accept
-Approve
-Agree
-Allow
-Share
-Delegate
-Representative
-On behalf of
-Version
-Revision
-History
-```
-
-The owning semantic family determines the meaning.
-
-## DEFERRED SECURITY / IMPLEMENTATION
-
-```text
-Principal
-credential/authenticator
-session/token
-technical Permission
-authorization policy/enforcement
-impersonation mechanism
-storage row version
-provider revision / ETag / sync token
-```
-
-`Principal` means technical authenticated/authorized request identity. It is **not** a LifeOS domain primitive. Technical/provider revision identifiers may support concurrency/lineage but are not semantic Version by themselves.
-
-## PROVISIONAL / SAFE DEFERRED
-
-Current examples:
-
-```text
-Proposal / request reusable identity
-Detailed reconciliation / source-precedence policy
-Dependency
-Coordination Stewardship standalone status
-Contribution
-GoalCriterion / evaluation relationships
-Resource Requirement / Allocation / Reservation / substitution
-Verification / comprehension
-AI Proposal
-focus/context relationships
-Trigger / conditional policy
-collective/group/quorum semantics
-formal legal Contract/signature integration
-retention/audit details
-native Organization/system/AI identity shapes
-exact Principal/AuthN/AuthZ mechanics
-action-specific delegation policy
-legal/specialist representation capacity
-multi-hop delegation persistence
-exact Version persistence / snapshot-delta/event-history strategy
-```
-
-Candidates/dependencies are not a checklist of primitives.
-
----
-
-# 3. Rejected universal abstractions
-
-```text
-universal Register/RegisterEntry root
-universal User root
-universal Subject root
-universal Actor root/entity
-universal Resource root/entity
-universal ManagedObject root
-universal Relationship graph/root
-semantic-free related_to kernel relation
-universal Participant/member/social-graph root
-universal Responsibility/Assignment/Claim/Hand-off root
-universal Authority/admin/Permission root
-universal Access/Visibility ACL root
-universal delivery/read/Acknowledgement state machine
-universal cross-domain Acceptance/Assent root
-universal Approval root
-universal Reconciliation root
-universal EffectiveChange/StateTransition root
-Decision object for every mutation
-universal Agreement/Contract root
-universal Consent/Permission root
-Principal as LifeOS domain root
-universal Agent/Representative identity root
-universal Delegation root
-technical impersonation as domain attribution truth
-blanket delegation
-automatic re-delegation
-universal Version root/entity/table
-one global material-equivalence rule
-technical/provider/ETag revision as domain Version truth
-mandatory event sourcing/version graph for all concepts
-```
-
-A rejected abstraction requires explicit reopening with stronger evidence before reintroduction.
-
----
-
-# 4. Identity / agency / security / representation map
-
-```text
-Person
-= persistent native human identity
-
-Account
-= platform/access identity boundary
-
-Principal
-= technical security/request identity
-
-Actor
-= contextual semantic agency capability
-
-Subject
-= contextual aboutness role
-
-Resource
-= contextual planning/execution eligibility/capability role
-
-Representative
-= contextual role of an Actor inside a specific Representation/on-behalf-of relation
-```
-
-Canonical non-collapse:
-
-```text
-Person != Account != Principal
-Person != Actor
-Actor != Account/Principal
-Actor != Subject
-Actor != Resource
-actual Actor != represented party
-represented party != Subject/beneficiary automatically
-Representative != native Person subtype
-```
-
-No Account is required for a Person, Actor, participant, representative, Agreement party or Consent-giver to exist in domain reality.
-
----
-
-# 5. Relationship modeling discipline
-
-```text
-universal Relationship entity/root/supertype   REJECTED
-semantic-free related_to kernel truth           REJECTED
-specific relation semantics                     REQUIRED
-specific qualified relation                     ALLOWED WHEN JUSTIFIED
-```
-
-Use the most specific truthful semantics.
-
-A direct relation is sufficient when it fully represents meaning. A specifically qualified relation may be justified where the relation itself has material lifecycle, history, scope, Authority, Provenance, privacy/Visibility or invariants.
-
-```text
-qualified relation != independent entity automatically
-```
-
-SQL row IDs/cardinality/query frequency do not create domain identity.
-
----
-
-# 6. Core multi-actor questions
-
-```text
-who/what acts?                                  Actor
-who is accountable?                             Responsibility
-who is involved?                                Participation
-who may govern?                                 Authority
-what may be exposed?                            Visibility
-who explicitly took notice?                     Acknowledgement
-what bounded question was resolved?             Decision
-which parties mutually assented?                Agreement
-who permitted bounded use/action/exposure?      Consent
-who actually acted for which distinct party?    Representation / on-behalf-of
-which material state is being referenced?       Version
-what state is now effective?                    affected domain concept
-what actually happened?                         Actual
-how did this record/action/result arise?         Provenance
-```
-
-Coincidence in simple flows is convenience, not ontology.
-
----
-
-# 7. Responsibility / Participation
-
-## Responsibility
-
-```text
+Relationship
 Responsibility
-= accountability to ensure a bounded commitment is appropriately handled
-
-Assignment
-= role-specific establishment/change operation
-Claim
-= self-initiated role-acquisition operation
-Hand-off
-= role-specific transfer workflow
-```
-
-No universal Assignment/Claim/Hand-off root.
-
-```text
-hand-off request
-!= Acknowledgement
-!= role-specific response
-!= Agreement automatically
-!= Approval/Decision where required
-!= effective Responsibility transfer
-```
-
-## Participation
-
-```text
-Participant = contextual role
-Invitation = Participation proposal/request
-Participation response != Actual Participation
-accepted != attended
-declined != proved absent
-no response != declined
-```
-
-A response Actor may act for a different participant; Representation preserves that fact without rewriting the Actor as the participant.
-
----
-
-# 8. Authority
-
-```text
+Participation
 Authority
-= contextual scoped governance capability
-```
-
-```text
-Authority != Actor/Person/Account/Principal
-Authority != Responsibility/Participation
-Authority != Visibility
-Authority != Acknowledgement/Agreement/Consent
-Authority != Decision
-Authority != Representation
-Authority != Version
-Authority != truth
-Authority != technical Permission
-```
-
-Delegation:
-
-```text
-bounded establishment / entrustment of a specific Authority
-```
-
-not `delegate everything`.
-
-```text
-Authority to X != Authority to Y
-current Authority != historical action-time Authority
-claimed Authority != established Authority
-re-delegation is not implied
-Representation claim != established Authority
-```
-
----
-
-# 9. Visibility / Consent
-
-## Visibility
-
-```text
-Visibility = contextual information-exposure capability
-Visibility != Authority
-Visibility != technical read Permission
-Visibility != actual View/Acknowledgement
-Visibility != Consent
-Visibility != Version
-```
-
-```text
-can see != can change
-can see != can re-disclose
-can see != can use for every purpose
-may see != actually saw
-visible target != visible source/related records
-visible projection state != source material state automatically
-```
-
-## Consent
-
-```text
-Consent
-= contextual actor-scoped bounded permission for action/use/exposure
-  concerning a defined target/scope/purpose/context
-```
-
-```text
-Consent != Visibility
-Consent != Authority
-Consent != technical Permission
-Consent != Agreement
-Consent != Decision
-Consent != Representation
-Consent != Version
-Consent != legal-validity/capacity proof
-```
-
-A representative action does not fabricate represented Consent. Effect requires an applicable action-specific basis/policy/specialist rule.
-
----
-
-# 10. Acknowledgement / Decision / Agreement
-
-## Acknowledgement
-
-```text
+Visibility
 Acknowledgement
-= explicit actor-scoped taking-notice of a specific target/material version/change/request
-```
-
-```text
-Acknowledgement != delivery/read/display
-Acknowledgement != understanding
-Acknowledgement != Confirmation
-Acknowledgement != Participation response
-Acknowledgement != Agreement/Consent
-Acknowledgement != Authority/Decision/effect
-Acknowledgement != Actual
-```
-
-Represented Acknowledgement preserves the actual Actor. A material target-state change does not silently inherit prior Acknowledgement unless purpose-specific material equivalence preserves the relevant state.
-
-## Decision
-
-```text
 Decision
-= contextual bounded resolution to a specific result
-```
-
-```text
-Decision != Authority
-decision != effective target state
-Decision != Actual/truth
-Decision != Provenance/rationale
-Decision != Evidence/evaluation
-Decision != Agreement/Consent
-Decision != Representation
-Decision != Version
-```
-
-Approval is scoped Decision/review-result semantics. Reconciliation is a process/pattern. Effective target state remains owned by the affected concept. Decision binds to the material state/question actually resolved.
-
-## Agreement
-
-```text
 Agreement
-= contextual multi-party mutual assent to materially same terms/version
+Consent
+Representation
+Version / Material-State
+Reconciliation
 ```
 
+Domain terminology is selected only through explicit semantic validation.
+
+## PRODUCT
+
+A product capability, configuration, projection, mode, helper, workflow, or feature that may combine several domain concepts.
+
+Examples:
+
 ```text
-Agreement != one Actor's response
-Agreement != Acknowledgement
-Agreement != Decision
-Agreement != Authority
-Agreement != Responsibility
+Tracker
+Register
+Calendar Block
+Temporary Mode
+Life Area
+Inbox
+Weekly Review
+Focus Mode
+Progress View
+Shared Plan
+```
+
+Product terms may be useful and persistent without becoming kernel primitives.
+
+## UI
+
+Words shown to users because they are understandable and actionable.
+
+Examples:
+
+```text
+Done
+Skip
+Accept
+Decline
+Confirm
+Apply
+Use this
+Moved
+Busy
+Free
+Share
+Owner
+Assigned to
+```
+
+UI vocabulary optimizes comprehension. It does not define ontology by itself.
+
+## IMPLEMENTATION
+
+Technical concepts required for storage, APIs, security, providers, synchronization, framework code, or deployment.
+
+Examples:
+
+```text
+Account
+Principal
+JWT subject
+OAuth token
+provider event ID
+sync token
+row version
+ETag
+foreign key
+join table
+polymorphic reference
+materialized view
+```
+
+Implementation language must not silently become domain meaning.
+
+---
+
+# 2. Terminology precedence
+
+When terminology conflicts, apply this order:
+
+1. accepted Domain Atlas concept;
+2. this Language Map;
+3. current validation/checkpoint guardrails;
+4. active workstream handoff;
+5. current product-behavior documentation;
+6. historical product documents/glossaries;
+7. conversation wording.
+
+Historical terminology remains useful evidence but cannot override later accepted semantic boundaries.
+
+---
+
+# 3. Status classes
+
+Terms are classified as:
+
+```text
+CANONICAL
+DERIVED / PROJECTION
+PRODUCT PROFILE
+PRODUCT / UI TERM
+PROVISIONAL / SAFE-DEFERRED
+DEFERRED SPECIALIST / LOGICAL / SECURITY
+HISTORICAL / REJECTED
+```
+
+These classifications are semantic, not database-table instructions.
+
+---
+
+# 4. Canonical Domain concepts
+
+## Intention & Execution
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Goal | CANONICAL | desired condition/direction with independent identity and history |
+| Plan | CANONICAL | coordinated execution strategy/path supporting one or more intentions |
+| Activity | CANONICAL | actionable intention that can be performed/executed |
+| Event | CANONICAL | occurrence-centred intention/fact whose temporal occurrence matters intrinsically |
+| Routine | CANONICAL | persistent recurring execution/behavior policy |
+| Milestone | CANONICAL | contextual meaningful checkpoint on a broader path; attainment must remain evidence/evaluation-backed |
+
+## Time
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Occurrence | CANONICAL | stable expected/generated instance identity, independent from current Schedule |
+| Schedule | CANONICAL | current accepted temporal assignment of a schedulable subject |
+| Session | CANONICAL | bounded actual execution episode/slice |
+| Temporal Constraint | CANONICAL | rule/bound governing where/when scheduling is allowed, required, bounded or preferred |
+| Recurrence | CANONICAL | reusable repeating/generative temporal pattern semantics |
+| Availability & Capacity | CANONICAL | schedulable-resource feasibility/ability to accept temporal commitment, distinct from Schedule |
+
+## Observed Reality & Evidence
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Actual | CANONICAL | contextual established representation of how a specific expectation/intention resolved in reality |
+| Outcome | CANONICAL | contextual result/disposition of a specific Actual realization |
+| Observation | CANONICAL | persistent contextual measurement/perception/report/simple assertion about a Subject referent |
+| Confirmation | CANONICAL | contextual attestation by a confirmer toward a materially specific target/version/purpose |
+| Evidence | CANONICAL | contextual evaluative role/use of information bearing on a claim/criterion/checkpoint/Decision/evaluation |
+| Provenance | CANONICAL | bounded contextual lineage explaining how a record/material state came to exist or change |
+
+## Data / Subjects
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Quantity | CANONICAL VALUE SEMANTICS | scalar amount + unit semantics reusable across contexts; not a universal record/entity |
+| Subject | CANONICAL CONTEXTUAL ROLE | primary aboutness/referent role over native identities; not a root entity |
+| Person | CANONICAL NATIVE IDENTITY | human identity independent from Account, Actor role, Subject role, Resource role, Asset role |
+| Actor | CANONICAL CONTEXTUAL ROLE/CAPABILITY | native referent/system acting semantically in context; not universal actor root |
+| Account | CANONICAL IMPLEMENTATION/PLATFORM BOUNDARY | LifeOS access/platform identity, distinct from Person/Actor and future Principal |
+| Asset | CANONICAL NATIVE IDENTITY FAMILY | persistent physical thing with independent identity/history where materially justified |
+| Resource | CANONICAL CONTEXTUAL ROLE/CAPABILITY | referent usable/providing capability/capacity for an Activity/Event/Goal/Plan/context; not universal identity root |
+
+## Relationships / Reasoning
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Relationship | CANONICAL CONTEXTUAL SEMANTIC FAMILY | typed/contextual semantic relation over native referents/concepts; no universal Relationship root required |
+| Responsibility | CANONICAL CONTEXTUAL RELATION/CAPABILITY | accountable-for-bounded-commitment semantics; not ownership/Authority/Participation/Actor identity |
+| Participation | CANONICAL CONTEXTUAL RELATION/CAPABILITY | actor involvement in shared Activity/Event/Occurrence/Session/context; actor-specific state/history preserved |
+| Authority | CANONICAL CROSS-CUTTING RELATION/CAPABILITY | scoped legitimate governance/effect power for bounded target/action/context; distinct from technical authorization |
+| Visibility | CANONICAL CROSS-CUTTING RELATION/CAPABILITY | bounded information-exposure semantics by recipient/scope/context; distinct from Authority and technical permission |
+| Acknowledgement | CANONICAL CONTEXTUAL RELATION/CAPABILITY | explicit actor-scoped taking-notice of a specific target/material state/change/request |
+| Decision | CANONICAL CONTEXTUAL REASONING FAMILY/CAPABILITY | bounded explicit resolution of a question to a specific result where the resolution itself matters; distinct from Authority/effective state/Actual |
+| Agreement | CANONICAL CONTEXTUAL RELATION/CAPABILITY | multi-party mutual assent to materially same terms/version for a bounded context |
+| Consent | CANONICAL CONTEXTUAL RELATION/CAPABILITY | actor-scoped bounded permission for action/use/exposure concerning a target under defined scope/purpose/context where Consent applies |
+| Representation / On-Behalf-Of | CANONICAL CONTEXTUAL RELATION/CAPABILITY | actual Actor acts for a distinct represented party in a bounded action/context; preserves actual Actor, represented party and basis separately |
+| Version / Material-State | CANONICAL CROSS-CUTTING CAPABILITY/DISCIPLINE | identifies/reconstructs materially relevant target state and purpose-specific material equivalence; distinct from identity, Provenance, technical revision and reconciliation |
+| Reconciliation | CANONICAL CROSS-CUTTING REASONING/PROCESS CAPABILITY | handles materially competing states/assertions under a bounded context/basis while preserving Version/Provenance/Evidence/Actor/Authority; may resolve, combine, correct, defer, escalate or remain unresolved; does not own current state or objective truth |
+| Source Precedence | CANONICAL BOUNDED POLICY/BASIS | contextual rule/basis that may influence Reconciliation for a specific target/facet/purpose/context/time; never a universal global source ranking |
+| Conflict | DERIVED / CONTEXTUAL CONDITION | material incompatibility/competition among otherwise preserved states/assertions; may remain unresolved and is not a universal root/entity |
+
+---
+
+# 5. Derived / projection semantics
+
+The following are meaningful but are usually derived from stronger source semantics rather than independent kernel identity by default.
+
+| Term | Status | Derivation / boundary |
+|---|---|---|
+| Tracker / History / Progress view | DERIVED / PROJECTION | queries native records such as Observation, Actual, Outcome, Session and future domain records; not source truth |
+| Busy / Free | DERIVED / PROJECTION | derived from Availability/Capacity/Schedule/participation/policy context; not universal stored truth |
+| Moved earlier / later | DERIVED | Schedule revision comparison |
+| Overrun / underrun | DERIVED | Schedule vs Session/Actual comparison |
+| Awaiting confirmation | DERIVED WORKFLOW STATE | required Confirmation absent under applicable policy |
+| Approval requirements satisfied | DERIVED / POLICY STATE | policy/Decision/Authority evaluation; not universal `approved=true` |
+| Current effective availability | DERIVED | Availability/Capacity + constraints + accepted commitments + policy |
+| Goal progress | DERIVED / EVALUATION | Evidence/Actual/Outcome/Milestone/criterion semantics; no automatic universal percentage |
+| Conflict detected | DERIVED / CONTEXTUAL CONDITION | two or more material states/assertions are incompatible for the bounded question/facet; detection does not imply resolution |
+| Current reconciled interpretation | DERIVED / OWNED STATE | result established by the affected domain concept under applicable Reconciliation/Authority/Decision/policy; not owned by Reconciliation itself |
+
+---
+
+# 6. Product profiles / product capabilities
+
+These may be durable product structures/configuration without becoming native domain truth.
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Register | PRODUCT PROFILE / VIEW | saved longitudinal configuration/view over native records; universal Register primitive rejected |
+| Calendar Block | PRODUCT / UI PROFILE | user-facing time/capacity representation; must not wrap/duplicate every temporal object |
+| Life Area | PRODUCT PROFILE / CLASSIFICATION | organizational lens/classification, not current kernel primitive |
+| Temporary Mode | PRODUCT CAPABILITY / PROVISIONAL | bounded temporary adaptation across planning/routine/capacity/context; not yet validated as kernel concept |
+| Inbox | PRODUCT / UI | capture/review queue; not domain source identity by itself |
+| Weekly Review | PRODUCT WORKFLOW | review/evaluation surface over domain records |
+| Shared Plan / shared context | PRODUCT CAPABILITY | collaboration projection/workflow over accepted multi-actor-ready kernel semantics |
+
+---
+
+# 7. Explicitly rejected kernel defaults
+
+The following must **not** be introduced as universal kernel primitives merely because they are convenient nouns or implementation abstractions:
+
+```text
+Universal User root
+Universal Subject entity/root
+Universal Actor entity/root
+Universal Resource entity/root
+Universal Relationship entity/root
+Universal Participant/Participation root table
+Universal Responsibility root table
+Universal Authority entity/root
+Universal Visibility/ACL root
+Universal Acceptance / Assent primitive
+Universal Approval primitive
+Universal Reconciliation entity/root
+Universal Conflict entity/root
+Universal SourcePrecedence hierarchy/table
+Universal EffectiveChange / StateTransition root
+Universal Delegation primitive/root
+Universal Principal as LifeOS domain primitive
+Universal Version entity/root/table
+Universal Register / RegisterEntry primitive
+Universal ManagedObject root
+Universal Fact / Reality / EvidenceRecord mega-object
+Universal Permission object
+Universal Attestation root
+Universal Contract/legal-consent engine
+Universal globally linear history
+Universal last-write-wins / newest-source-wins / provider-always-wins / user-always-wins
+```
+
+These may exist later as implementation helpers, specialist concepts, qualified relations, policy records, projections, or domain-specific structures only when independently justified.
+
+---
+
+# 8. Critical non-equivalences
+
+The following distinctions are canonical and must survive logical/persistence/API design:
+
+```text
+Person != Account
+Person != Actor
+Actor != Account
+Actor != Principal
+Subject != Actor
+Subject != Account
+Subject != Resource
+Asset != Resource
+Resource role != provider identity
+
+Activity != Event
+Routine != Recurrence
+Occurrence != Schedule
+Schedule != Actual
+Schedule != Session
+Schedule != Availability / Capacity
+Temporal Constraint != Schedule
+
+Observation != Actual
+Observation != Outcome
+Observation != Evidence
+Evidence != Provenance
+Confirmation != Evidence
+Confirmation != Authority
+
+Relationship != universal entity/root
+Responsibility != Participation
+Responsibility != Authority
+Participation != Authority
+Visibility != Authority
+Acknowledgement != Confirmation
+Acknowledgement != Agreement
+Acknowledgement != Consent
+Decision != Agreement
+Decision != Consent
+Decision != Authority
+Decision != effective target state
 Agreement != Consent
-Agreement != legal Contract
-Agreement != Actual
-Agreement != Representation
-Agreement != Version
-```
+Consent != Visibility
+Consent != technical Permission
+Representation != Decision / Agreement / Consent / Participation / Responsibility / Authority
+actual Actor != represented party by default
+Principal != semantic Actor
 
-Representative assent does not automatically become represented-party Agreement.
+Version != target identity
+Version != Provenance
+Version != Decision / Authority / reconciliation
+semantic Version != technical/provider/storage revision
+material equivalence != universal byte/field equality
 
----
-
-# 11. Representation / on-behalf-of
-
-**Status:** CANONICAL — PASS WITH HARDENING; post-write QA PASS.  
-**Source:** `concepts/representation.md`  
-**Validation:** `checkpoints/representation-delegation-principal-v0-validation.md`
-
-> **Representation is the contextual action-scoped relation/capability through which an actual Actor performs a bounded semantic action while acting for a distinct represented party in a defined context.**
-
-Question:
-
-> **Who actually acted, and for which distinct party was that action performed or asserted in this bounded context?**
-
-```text
-actual Actor != represented party
-Representation != Actor identity
-Representation != Subject/beneficiary
-Representation != Authority
-Representation != Responsibility
-Representation != Participation
-Representation != Acknowledgement/Confirmation/Decision
-Representation != Agreement/Consent
-Representation != Provenance
-Representation != Principal
-technical impersonation != domain attribution truth
-```
-
-Critical action-specific scope rule:
-
-```text
-Authority to schedule for Anna
-!= Authority to consent for Anna
-!= Authority to agree for Anna
-!= Authority to acknowledge for Anna
-!= Authority to disclose Anna's private data
-!= Authority to re-delegate
-```
-
-### Representative
-
-Contextual role only, not native identity/type.
-
-### Principal
-
-```text
-Principal = technical authenticated/authorized request identity
-Principal != Person/Actor/represented party/Authority/Representation
-```
-
-### Delegation
-
-```text
-Delegation = bounded Authority-establishment / entrustment pattern
-```
-
-No universal root, blanket transfer or implied re-delegation.
-
-### Impersonation
-
-Possible future security mechanism only:
-
-```text
-technical impersonation != semantic truth about who actually acted
+Reconciliation != Decision universally
+Reconciliation != Authority
+Reconciliation != Version
+Reconciliation != Provenance
+Reconciliation != Evidence
+Reconciliation != Actual/current state
+Source identity != Source Precedence != Authority != truth
+conflict detected != conflict resolved
+unresolved conflict != error by definition
 ```
 
 ---
 
-# 12. Provenance
+# 9. Common-ground / governance sequence
+
+A useful canonical sequence for shared changes is:
 
 ```text
-Provenance = bounded contextual origin/evolution lineage
-Provenance != Source alone
-Provenance != truth
-Provenance != Authority
-Provenance != Confirmation/Evidence
-Provenance != Version
-Provenance != Decision/rationale
-Provenance != Representation
+proposed / requested
+!= delivered / read / displayed
+!= Acknowledgement
+!= family-specific response
+!= Agreement or Consent where applicable
+!= Approval / Decision where applicable
+!= Authority/effect validation
+!= effective target state
+!= Actual
 ```
 
-Material provenance may record Actor, represented party, Principal/auth context, Authority/delegation basis, source/process/version/time without collapsing those semantics into Provenance.
+Not every workflow uses every stage.
+
+A deterministic authorized process may move from policy/condition to an effective state without fabricating a human Decision, Agreement, Consent or Confirmation.
+
+Reconciliation is orthogonal to that sequence: when materially competing states/assertions exist, Reconciliation may use Evidence, Provenance, Confirmation, Authority and contextual Source Precedence and may culminate in Decision or remain unresolved. Reconciliation never rewrites the sequence into one generic `accepted/resolved=true` state.
 
 ---
 
-# 13. Acceptance / Assent disposition
+# 10. History / correction discipline
 
-Generic cross-domain `Acceptance` / `Assent` is rejected.
+Canonical rules:
 
 ```text
-invitation accepted
-→ Participation response
-
-Responsibility hand-off accepted
-→ Responsibility-specific response
-
-proposal accepted/applied
-→ proposal/effect-specific response
-
-all applicable parties assent to same terms
-→ Agreement
-
-actor permits bounded action/use/exposure
-→ Consent
+current != historical
+correction != silent rewrite
+re-observation != correction
+state change != new identity automatically
+material target change != automatic carry-forward of prior Ack/Confirmation/Agreement/Consent/Decision/response
+technical revision != semantic material change
 ```
 
-A UX label never creates a universal domain type.
+When conflict/reconciliation occurs:
+
+```text
+competing assertions/states remain attributable
+Reconciliation may establish a later current/effective interpretation
+prior assertions/resolutions remain historical facts
+Source Precedence must be bounded and explainable
+```
+
+Where consequence warrants it, Version/Provenance/Decision/Authority/owning concept semantics must preserve the material basis needed for reconstruction.
 
 ---
 
-# 14. AI guardrails
+# 11. AI language boundary
+
+AI may propose, summarize, rank, infer, detect conflict, discover candidate Evidence, suggest reconciliation, or prepare a Decision.
+
+AI must not silently manufacture:
 
 ```text
-AI inference != established identity
-AI inference != Actual
-AI inference != human Acknowledgement
-AI inference != human Agreement
-AI inference != human Consent
-AI proposal != human Decision
-AI capability != Authority
-AI source access != disclosure permission
-AI/service action != represented human authorship/will
+human Acknowledgement
+human Confirmation
+human Agreement
+human Consent
+human Decision
+Authority
+objective truth
+universal source precedence
+current state merely from confidence
 ```
 
-Where AI/service acts for another party, preserve the actual AI/service Actor, represented party and bounded basis where material.
-
-Version hardening adds:
-
-```text
-AI proposal/effect binds to a material base state where stale application could matter
-material divergence requires re-evaluation rather than silent stale application
-Version does not grant AI Authority
-```
+A bounded system/AI process may produce an effect only under explicit applicable policy/Authority and truthful attribution.
 
 ---
 
-# 15. Product/UI mappings
+# 12. Provider / interoperability language boundary
+
+External provider nouns and identifiers are integration evidence, not LifeOS ontology authority.
+
+Canonical direction:
 
 ```text
-Occurrence          → This time / This workout / This meeting
-Actual              → What happened? / Actual time / Performed
-Outcome             → Result / Passed / Partial
-Observation         → Weight / Mood / Score / Odometer
-Quantity            → 66.4 kg / 5 km / 45 min
-Responsibility      → Responsible / Assigned to / Who's handling this?
-Participation       → Going / Maybe / Can't go / Attended
-Visibility          → Private / Shared with… / free-busy only
-Acknowledgement     → Got it / Acknowledge / I've seen the change
-Decision            → Choose / Keep / Approve / Reject / Resolve
-Agreement           → Agree to terms / Agreed with…
-Consent             → Allow / Permit / Share for… / Stop allowing
-Representation      → On behalf of… / Done by X for Y / Managed by…
-Version             → Version / Revision / Changed since… / Based on version…
-Confirmation        → Confirm / Looks correct
-Evidence            → Why? / Based on…
-Provenance          → Source / Imported from / Corrected by / History
+LifeOS semantics
+→ internal model
+→ provider/standard adapter
 ```
 
-`Delegate`, `Represent`, `Approve`, `Accept`, `Agree`, `Allow`, `Share`, `Version`, `Revision` map to the actual owning semantics rather than universal backend types.
-
----
-
-# 16. Implementation-language guardrails
-
-Do not infer final tables/classes/FKs from this map.
-
-Explicitly not pre-approved:
+not:
 
 ```text
-universal subjects/actors/resources/relationships/participants roots
-universal authority/visibility ACL domain roots
-universal acknowledgements/acceptances/approvals roots
-universal decisions/state-transition root
-universal agreements/contracts/consent-permission root
-universal representatives/principals/delegations root
-universal Version root/table/graph
-global material-equivalence enum/rule
-mandatory event sourcing/snapshot table for all concepts
-one actor_id / principal_id / on_behalf_of_id everywhere
-Person.id = Account.id
-Account = Principal
-User as universal FK
-arbitrary JSON replacing typed semantics
+provider/standard schema
+→ LifeOS ontology
 ```
 
-Domain Authority != technical authorization. Domain Visibility != technical read permission. Domain Representation != authentication impersonation. Domain Version != provider/storage revision. Effective state belongs to the affected concept.
-
----
-
-# 17. Version / material equivalence
-
-**Status:** CANONICAL — PASS WITH HARDENING; post-write QA PASS.  
-**Source:** `concepts/version.md`  
-**Validation:** `checkpoints/version-material-equivalence-v0-validation.md`
-
-> **Version is the contextual capability to identify and reference a materially relevant state of a domain target when changes to that state matter for interpretation, applicability, history, concurrency, reconciliation, or downstream action.**
-
-Canonical question:
-
-> **Which materially relevant state of this target is being referred to for this purpose/facet?**
-
-Core separation:
+Examples:
 
 ```text
-native identity
-!= material state
-!= Version reference
-!= provider/storage revision
-```
-
-Canonical hardenings:
-
-```text
-materiality is purpose/facet scoped
-field/byte/hash change != material change automatically
-no field/byte/hash change != semantic equivalence automatically
-prior Ack/Confirmation/Decision/Agreement/Consent does not silently carry across material change
-non-linear/offline divergent history is valid
-Version does not choose canonical truth/current state/winner
-Authority/Decision/reconciliation + owning concept establish effective state
-AI stale-base proposals/effects require re-evaluation after material divergence
-visible projection Version != source Version automatically
-historical reconstructibility != indefinite sensitive-payload retention
-```
-
-Rejected:
-
-```text
-universal Version entity/root/table
-global version number semantics
-provider ETag/sequence/storage row version as domain truth
-mandatory event sourcing
-one universal material-equivalence function
+provider event ID != Event identity
+provider person/contact ID != Person identity
+provider revision != semantic Version automatically
+ETag/MVCC != semantic Version
+provider role/title != Authority automatically
+provider source != truth automatically
 ```
 
 ---
 
-# 18. Current cluster status
+# 13. Deferred specialist / logical / security terms
+
+The following remain deliberately outside the current canonical kernel unless/until separately validated:
 
 ```text
-Intention & Execution v0        PASS
-Time v0                         PASS
-Observed Reality & Evidence v0  PASS
-Data / Subjects v0              PASS WITH HARDENING
-Deferred Dependency Closure     PASS
-Cross-Cluster Validation v4     PASS WITH HARDENING
-
-Relationships / Reasoning       IN PROGRESS
-Relationship v0                 PASS WITH HARDENING
-Responsibility v0               PASS WITH HARDENING
-Participation v0                PASS WITH HARDENING
-Authority v0                    PASS WITH HARDENING
-Visibility v0                   PASS WITH HARDENING
-Acknowledgement v0              PASS WITH HARDENING — QA PASS
-Generic Acceptance/Assent       REJECTED
-Decision v0                     PASS WITH HARDENING — QA PASS
-Universal Approval              REJECTED
-Universal Reconciliation        REJECTED
-Universal EffectiveChange       REJECTED
-Agreement / Consent v0          PASS WITH HARDENING — QA PASS
-Universal Contract              REJECTED
-Universal Consent/Permission    REJECTED
-Representation v0               PASS WITH HARDENING — QA PASS
-Principal domain primitive      REJECTED
-Universal Agent/Representative  REJECTED
-Universal Delegation            REJECTED
-Impersonation-as-domain-truth    REJECTED
-Version v0                      PASS WITH HARDENING — QA PASS
-Universal Version root/table    REJECTED
-```
-
-```text
-structural REOPEN              0
-unclassified material debt     0
-```
-
----
-
-# 19. Next-selection pressure
-
-Version post-write QA is closed. The exact next step is a fresh re-score among remaining demonstrated pressure such as:
-
-```text
-Proposal / request reusable identity
-Detailed reconciliation / source-precedence policy
-Dependency
-Coordination Stewardship
-Contribution
-GoalCriterion / evaluation
-Resource Requirement / Allocation / Reservation / substitution
-Verification / comprehension
-AI Proposal
-focus/context relationships
+GoalCriterion / evaluation model
 Trigger / conditional policy
-collective/group/quorum semantics
-Principal/AuthN/AuthZ implementation boundary
-legal/specialist representation capacity
-retention/audit
-Personal Knowledge generic link layer
+Verification / comprehension
+Proposal / Request reusable identity
+Collective Actor / Group / quorum / voting
+Organization identity
+Place / Location / Property identity
+Document / Artifact identity
+FinancialAccount / service/subscription identity
+living-entity identity
+Principal/AuthN/AuthZ details
+Credential
+Audit/security history
+retention/anonymization classes
+Resource Requirement
+Allocation
+Reservation / Capacity Claim
+inventory/supply/consumption
+per-family material-equivalence rules
+exact effective dating
+native identity merge/split/deduplication
+per-domain/specialist source-precedence policies
+physical reconciliation/sync/CRDT strategy
 ```
 
-These are candidates/dependencies, not pre-approved primitives. No next candidate is preselected.
+These are explicit future owners/dependencies, not silent omissions.
 
 ---
 
-# 20. Maintenance rule
+# 14. UI wording rules
 
-This file answers:
+UI may use ordinary language even when the kernel is more precise.
 
-> **What does the term mean, what does it not mean, what status does it have, and what might a user see?**
+Examples:
 
-Detailed evidence, chronology, ADS owners/triggers, benchmark classifications and persistence pressure remain in concept specs/checkpoints.
+```text
+UI: Accept
+```
 
-Do not rewrite historical evidence for vocabulary uniformity; close old boundaries through downstream amendments and current docs.
+may map to:
+
+- Participation response;
+- Responsibility hand-off response;
+- proposal/effect application;
+- Agreement assent;
+- another family-specific operation.
+
+It does **not** justify a universal Acceptance entity.
+
+```text
+UI: Confirm
+```
+
+may map to Confirmation, Acknowledgement, review, or another bounded action depending on context; labels must not collapse semantics.
+
+```text
+UI: Resolve conflict / Use this version
+```
+
+may invoke Reconciliation or a bounded Decision/effect but does not create a universal Reconciliation/Conflict object.
+
+Simple user-facing language should remain natural while advanced/history views may expose source, version, actor, authority and reconciliation basis where authorized.
+
+---
+
+# 15. Product terminology guardrails
+
+Product documentation may keep historical/useful nouns such as:
+
+```text
+Register
+Tracker
+Calendar Block
+Owner
+Assigned
+Shared
+Accepted
+Confirmed
+Resolved
+```
+
+but must not silently promote them into domain primitives.
+
+Where old product docs conflict with the current Domain Atlas, update only current durable docs that have become misleading. Preserve historical evidence/checkpoints so the project remains reconstructible.
+
+---
+
+# 16. Persistence guardrails derived from language
+
+The Language Map does not dictate tables, but it prohibits semantic shortcuts such as:
+
+```text
+persons.id = accounts.id
+actor_id = user_id everywhere
+subject_id points only to users
+resource_id implies native Resource root
+visibility_acl = source of domain Visibility truth without review
+permission row = domain Authority
+accepted boolean = Agreement/Consent/Decision/Participation interchangeably
+latest row wins = canonical Reconciliation
+updated_at/ETag = semantic Version
+provider source rank = universal Source Precedence
+```
+
+Logical modeling must preserve the accepted distinctions first, then choose the smallest queryable persistence structure that survives them.
+
+---
+
+# 17. Reopening rule
+
+A canonical term may be reopened only when stronger semantic evidence shows one of the following:
+
+- identity/history cannot be preserved;
+- ordinary workflows become unnatural or impossible;
+- a neighboring concept fully absorbs it without information loss;
+- multi-actor/privacy/Authority boundaries fail;
+- implementation pressure reveals a genuine semantic contradiction rather than mere schema inconvenience;
+- specialist-system evidence proves the current abstraction is structurally insufficient.
+
+Vocabulary preference, provider naming, UI convenience, or table-count reduction is not enough.
+
+---
+
+# 18. Current Relationships / Reasoning position
+
+Current accepted Cluster-5 candidate baselines:
+
+```text
+Relationship
+Responsibility
+Participation
+Authority
+Visibility
+Acknowledgement
+Decision
+Agreement
+Consent
+Representation / On-Behalf-Of
+Version / Material-State
+Reconciliation / Source Precedence
+```
+
+Still not justified as universal primitives:
+
+```text
+Acceptance / Assent
+Approval
+EffectiveChange / StateTransition
+Delegation
+Principal
+Version root/table
+Reconciliation root
+Conflict root
+SourcePrecedence hierarchy
+```
+
+Cluster 5 remains open until the remaining candidate/dependency space is freshly re-scored and later integrated/stressed as a cluster.
+
+---
+
+# 19. Current Reconciliation / Source Precedence v0 amendment
+
+Reconciliation v0 is the current semantic baseline for conflict/source-precedence reasoning on `feature/domain-model`.
+
+Current invariant set:
+
+```text
+material competition may remain unresolved
+newer != truer
+source identity != Authority != truth
+Source Precedence is bounded by target/facet/purpose/context/time
+Reconciliation may select/combine/correct/supersede/escalate/defer/remain unresolved
+Decision may result but is not mandatory
+current/effective state remains owned by the affected concept
+Version preserves material states/divergence
+Provenance preserves lineage
+Evidence informs but does not select by itself
+Visibility of conflict/source/basis remains independent
+AI confidence/access does not create precedence or Authority
+```
+
+This amendment does not introduce a global reconciliation engine or physical schema. Per-domain precedence policies, native identity merge/split, GoalCriterion/evaluation, Trigger/policy mechanics, Principal/enforcement, retention/audit and logical/physical/API/sync representation remain explicitly deferred.
+
+**Propagation status:** semantic 28-path Reconciliation scope is being completed on the active branch. Final branch-level QA remains pending the separately scoped removal of the accidental technical probe and synchronization with the newer accepted `main` baseline.
