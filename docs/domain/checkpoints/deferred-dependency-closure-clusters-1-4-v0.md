@@ -906,3 +906,98 @@ Normative downstream references:
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`;
 - `../language-map.md`.
+
+---
+
+# 20. Downstream resolution appendix — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the historical detailed reconciliation/source-precedence semantic debt from sections 6, 7, 12, 16, 17, 18 and 19 without rewriting the original Clusters 1–4 closure.
+
+Current canonical decomposition:
+
+```text
+materially competing states/assertions
+!= Reconciliation process
+!= current/effective state
+
+Reconciliation
+= contextual process/capability handling material competition
+
+Source Precedence
+= bounded contextual policy/basis
+```
+
+Downstream RESOLVED semantic boundaries include:
+
+```text
+Actual ↔ Reconciliation
+RESOLVED
+assertions may compete while Actual owns the current established contextual realization
+
+Observation / Outcome ↔ Reconciliation
+RESOLVED
+competing source assertions/results remain distinct records/states until bounded resolution
+
+Evidence ↔ Reconciliation
+RESOLVED
+Evidence may support/contradict/qualify; it does not choose the winner by itself
+
+Provenance ↔ Source Precedence
+RESOLVED
+lineage/source identity != precedence != truth
+
+Authority ↔ Reconciliation / precedence
+RESOLVED
+Authority may provide a bounded basis but does not manufacture objective truth or global source ranking
+
+Decision ↔ Reconciliation
+RESOLVED
+material reconciliation may culminate in Decision; deterministic authorized reconciliation or unresolved conflict need not fabricate one
+
+Version ↔ Reconciliation
+RESOLVED
+Version preserves material divergence/history; reconciliation handles the competition
+
+Schedule / Time ↔ Reconciliation
+RESOLVED
+provider/user/organizer/offline temporal conflicts do not collapse Schedule/current state with source arrival order
+```
+
+Universal last-write-wins, newest-source-wins, provider-always-wins, user-always-wins, organizer-always-wins, silent averaging and source identity as truth remain rejected. Specialist source-of-record precedence is valid only inside the bounded target/facet/purpose/context/time for which the relevant Authority/policy actually applies.
+
+Conflict may remain unresolved. Resolution may select, combine compatible changes, correct/supersede, escalate or defer. The affected domain concept owns the resulting current/effective state; Reconciliation does not become a universal state root.
+
+Historical competing assertions/states, material predecessors and materially relevant basis remain reconstructible through Version/Provenance as applicable. Conflict/source/basis Visibility remains separately governed; AI may detect or propose reconciliation but cannot create Authority or universal precedence from confidence/access.
+
+This closure does not introduce universal Reconciliation/Conflict/SourcePrecedence entities, a generic policy engine, CRDT/MVCC/ETag semantics as domain truth, or a universal merge algorithm.
+
+Remaining independently SAFE DEFERRED debt includes:
+
+- per-domain/specialist precedence rules;
+- native Person/Asset identity merge/split/deduplication;
+- GoalCriterion/evaluation semantics;
+- Proposal/request identity;
+- Trigger/conditional policy;
+- exact Principal/AuthN/AuthZ/enforcement;
+- Verification/comprehension;
+- collective/group/quorum semantics;
+- retention/audit/privacy;
+- exact logical/physical/API/sync representation.
+
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+Reconciliation semantic boundary            RESOLVED
+Source Precedence boundary                  RESOLVED — bounded contextual policy only
+universal Reconciliation/Conflict roots      REJECTED
+universal source ranking / LWW               REJECTED
+Remaining debt                               SAFE DEFERRED with owners/triggers/tests
+```
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`;
+- `../language-map.md`.
