@@ -285,7 +285,7 @@ Responsibility hand-off accepted
 → Responsibility-specific response/operation
 
 proposal accepted/applied
-→ proposal/effect-specific response/operation
+→ proposal/effect-specific semantics
 ```
 
 This resolves only the generic Acceptance abstraction. `Agreement`, `Consent`, `Decision/Approval`, `Verification`, Version mechanics and specialist signature/attestation semantics remain independently owned dependencies.
@@ -445,3 +445,47 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 17. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves the historical `material-version equivalence` dependency without reopening Confirmation.
+
+The original validation rule now has a shared state discipline:
+
+```text
+Confirmation C1 -> target state S1
+material target change -> S2
+→ S1 remains reconstructible
+→ C1 remains historical affirmation of S1
+→ C1 does not silently become Confirmation(S2)
+```
+
+Materiality is purpose/facet scoped. Technical storage revision, provider sequence/ETag, `updated_at` or content/hash differences do not by themselves determine whether C1 remains applicable. Conversely, reusing the same target ID does not prove carry-forward.
+
+A materially equivalent later state for the Confirmation purpose may preserve applicability without fabricating another attestation.
+
+Downstream classification:
+
+```text
+Confirmation ↔ Version/material state            RESOLVED
+technical/provider revision ↔ semantic Version   RESOLVED — not equal
+Version ↔ Provenance                             RESOLVED — state vs lineage
+Version ↔ Authority/Decision/reconciliation      RESOLVED — state vs governance/resolution
+```
+
+Remaining SAFE DEFERRED dependencies include Verification process/basis, exact retraction/supersession persistence, legal/specialist representation/signature validity, Principal/AuthN/AuthZ enforcement and retention policy.
+
+Mandatory regression reuse:
+
+- `R-VER-01` technical-only revision;
+- `R-VER-06` concurrent divergent states;
+- historical evaluation/Confirmation binding after correction.
+
+No Confirmation hardening failed. **Confirmation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
