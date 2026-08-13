@@ -524,3 +524,42 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 24. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves Agreement's former `Version / material terms` SAFE DEFERRED dependency.
+
+Agreement remains bound to the materially specific terms state to which the applicable party set assented:
+
+```text
+Agreement G1 -> terms state T1
+materially changed terms state T2
+→ G1 remains historical Agreement to T1
+→ G1 does not silently become Agreement to T2
+```
+
+A later state may remain materially equivalent for the Agreement purpose when only irrelevant/presentation details changed, but equivalence is not inferred from a storage revision, provider version, ETag/hash or same target ID. Conversely, a substantive change such as price, obligation, cancellation condition or another material term requires renewed applicable assent under the owning Agreement/policy semantics.
+
+Version does not create Agreement or a generic Assent root. It supplies the state discipline that lets Agreement determine whether all parties assented to the **same materially relevant terms**.
+
+Canonical separation:
+
+```text
+Version != Agreement
+material equivalence != mutual assent
+Version != Provenance / Decision / Authority / reconciliation
+technical revision != Agreement amendment by definition
+```
+
+Remaining SAFE DEFERRED Agreement dependencies include collective/quorum/voting semantics, formal signature/Contract/legal validity, Proposal/request reusable identity, specialist capacity/validity, exact persistence/API and retention policy.
+
+AI may compare terms states and flag material differences but must not infer renewed human Agreement from similarity or prior assent.
+
+No Agreement hardening failed. **Agreement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
