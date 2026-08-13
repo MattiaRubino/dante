@@ -2,7 +2,7 @@
 
 **Status:** In progress — Clusters 1–4 integrated; Relationships / Reasoning active  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; hardenings incorporated; final post-write QA pending  
+**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; post-write QA PASS  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -99,7 +99,7 @@ branch + pre-scope SHA + exact paths
 ↓
 explicit user approval
 ↓
-write only approved scope
+write only approved paths
 ↓
 QA against pre-scope SHA
 ↓
@@ -511,7 +511,7 @@ Normative references:
 - [`Version`](concepts/version.md)
 - [`validation`](checkpoints/version-material-equivalence-v0-validation.md)
 
-**PASS WITH HARDENING — hardenings incorporated; final post-write QA pending.**
+**PASS WITH HARDENING — hardenings incorporated; post-write QA PASS.**
 
 > **Version is the contextual capability to identify and reference a materially relevant state of a domain target when changes to that state matter for interpretation, applicability, history, concurrency, reconciliation, or downstream action.**
 
@@ -699,15 +699,15 @@ The Representation write approval is consumed.
 
 ---
 
-# 22. Version v0 write status
+# 22. Version v0 post-write QA — PASS
 
-Pre-scope:
+Validated against pre-scope:
 
 ```text
 1008aeb0367de4ae73a8e8d41a76aee9e0493f34
 ```
 
-Approved scope:
+Approved and validated scope:
 
 ```text
 42 unique paths
@@ -715,17 +715,23 @@ Approved scope:
 40 UPDATE
 ```
 
-Current state at this document revision:
+Result:
 
 ```text
-V3 verdict                 PASS WITH HARDENING
-hardenings                 incorporated
-propagation                written across approved semantic consumers
-final post-write Git QA    pending
-accepted branch baseline   NOT YET until final QA PASS
+approved unique paths changed          42 / 42
+new files                                2 / 2
+modified files                          40 / 40
+out-of-scope paths                       0
+preservation                             PASS
+CORE / MA / XCON / ADS                   COMPLETE
+RESOLVED                                19
+SAFE DEFERRED                            6
+REOPEN                                   0
+unclassified material dependencies      0
+branch behind main                       0
 ```
 
-No next Relationships / Reasoning candidate may start before that QA closes.
+Version v0 is now the current accepted Domain Atlas baseline. The Version write approval is consumed after this final QA PASS.
 
 ---
 
@@ -733,7 +739,7 @@ No next Relationships / Reasoning candidate may start before that QA closes.
 
 Relationships / Reasoning remains **IN PROGRESS**.
 
-QA-closed reviews before Version:
+QA-closed reviews:
 
 ```text
 Relationship
@@ -745,11 +751,10 @@ Acknowledgement
 Decision
 Agreement / Consent
 Representation / on-behalf-of
+Version / material equivalence
 ```
 
-Version is currently at the final post-write QA gate.
-
-After Version QA PASS, the next step is a **fresh re-score** of the remaining demonstrated candidate/dependency space. No candidate is preselected.
+The exact next step is a **fresh re-score** of the remaining demonstrated candidate/dependency space. No candidate is preselected.
 
 Examples of remaining pressure:
 
