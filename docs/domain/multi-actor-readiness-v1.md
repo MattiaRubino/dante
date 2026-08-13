@@ -943,7 +943,7 @@ This also strengthens several existing readiness questions without changing thei
 - section 27 progressive disclosure may expose `Got it` without forcing formal workflow everywhere;
 - section 31 questions 8–9 must treat generic `accepted` as family-specific response rather than one universal kernel status.
 
-Agreement, Consent, Decision, Principal/delegation, Version, collective semantics and read/view audit persistence remain independently reviewable. This amendment introduces no collaboration infrastructure and requires no reopening of the evidence-backed readiness baseline.
+Agreement, Consent, Decision, Principal/delegation, Version, collective semantics and read/view audit persistence remained independently reviewable at this milestone. This amendment introduces no collaboration infrastructure and requires no reopening of the evidence-backed readiness baseline.
 
 ---
 
@@ -993,4 +993,139 @@ Multi-actor hardenings:
 
 Reconciliation remains a process/pattern, not a universal primitive. It may culminate in a Decision or remain unresolved. The affected domain concept owns any effective state change; no universal `EffectiveChange` root is introduced.
 
-Agreement/Consent, Principal/delegation, Version/material equivalence, collective Decision formation, proposal identity, detailed reconciliation policy and evaluation semantics remain independently reviewable. No prior multi-actor readiness invariant is reopened.
+Agreement/Consent, Principal/delegation, Version/material equivalence, collective Decision formation, proposal identity, detailed reconciliation policy and evaluation semantics remained independently reviewable at this milestone. No prior multi-actor readiness invariant is reopened.
+
+---
+
+# 34. 2026-08-13 — Agreement / Consent downstream hardening
+
+Agreement / Consent v0 closes the mutual-assent and bounded-permission distinctions that were intentionally left open by earlier common-ground, governance and privacy work.
+
+Current consequence-sensitive sequence becomes:
+
+```text
+proposal / request
+!= delivered/read
+!= Acknowledgement
+!= one Actor's family-specific response
+!= Agreement
+!= Consent
+!= Approval / Decision
+!= Authority / effective target state
+!= Actual
+```
+
+This is a semantic decomposition, not a mandatory UI state machine.
+
+## 34.1 Agreement guardrail
+
+```text
+Agreement
+= multi-party mutual assent among the applicable party set
+  to materially same terms/version
+```
+
+Mandatory multi-actor rules:
+
+- one Actor's assent does not establish Agreement for everyone;
+- silence/no response does not establish Agreement;
+- materially different terms/versions do not produce one shared Agreement;
+- Agreement may exist before an Authority-dependent Decision/effect;
+- an authoritative Decision may exist without Agreement of all affected parties;
+- Agreement terms may influence Responsibility but are not the resulting Responsibility state;
+- Agreement does not create blanket Visibility or re-disclosure Authority;
+- Agreement is not legal Contract/enforceability proof;
+- later termination/amendment does not erase historical Agreement;
+- AI must not infer human Agreement from behavior or probability.
+
+## 34.2 Consent guardrail
+
+```text
+Consent
+= actor-scoped explicit bounded permission for an action/use/exposure
+  concerning a defined target under defined scope/purpose/context
+  where Consent is an applicable basis
+```
+
+Mandatory multi-actor/privacy rules:
+
+- silence, continued participation, membership, Acknowledgement or behavior do not establish Consent by themselves;
+- Consent to X does not imply Consent to Y;
+- Consent for purpose A does not silently cover materially different purpose B;
+- material scope/target/version changes do not inherit earlier Consent automatically;
+- Consent is not Visibility, Authority or technical authorization;
+- one Actor's Consent is not collective/group Consent automatically;
+- withdrawal changes future applicability without rewriting historical grant/use/disclosure;
+- Consent records can have their own Visibility/privacy constraints;
+- AI source access/processing does not create or enlarge human Consent;
+- a LifeOS Consent record does not certify universal legal/clinical validity or capacity.
+
+## 34.3 Unequal-power hardening
+
+In manager/employee, guardian/minor, caregiver/vulnerable-person and similar asymmetric contexts:
+
+```text
+clicked acknowledge
+clicked accept
+continued using system
+complied with instruction
+relationship membership
+```
+
+must not be automatically promoted into voluntary/legal Agreement or Consent.
+
+Where validity/capacity/coercion/formality matters, specialist/product policy remains responsible for that stronger claim.
+
+## 34.4 Assisted / on-behalf-of hardening
+
+For Agreement/Consent flows preserve where material:
+
+```text
+actual acting Actor
+represented party/Person
+applicable Authority/delegation basis
+Provenance
+material terms/scope/version
+```
+
+A helper interacting with the UI must not silently become the represented person's personal assent or Consent.
+
+## 34.5 AI/privacy hardening
+
+AI may propose terms, request bounded Consent, compare versions and compute safe derived coordination results where authorized.
+
+AI must not:
+
+- infer Agreement/Consent from likelihood;
+- convert recommendation into human assent;
+- broaden consented purpose/scope for convenience;
+- leak private reasons in explanations/tool calls;
+- manufacture Consent/Agreement on behalf of another Actor;
+- treat Agreement as Authority or Consent as Visibility.
+
+## 34.6 Specialist boundary
+
+Formal Contract/signature/enforceability and regulated consent validity/capacity remain specialist boundaries. LifeOS may coordinate around or reference externally authoritative records without becoming the legal/clinical source of truth.
+
+## 34.7 Updated mandatory validation questions
+
+Future multi-actor reviews must additionally ask, where applicable:
+
+26. Are multiple actors assenting to **the same materially specific terms/version**, or merely giving separate responses?
+27. Does one Actor's assent get incorrectly generalized into group Agreement?
+28. What exact action/use/exposure is being consented to, for which target/scope/purpose/context?
+29. Does a new purpose or material scope/version require renewed Consent/assent?
+30. Can Consent be withdrawn for future use without destroying historical attribution?
+31. Is power imbalance being mistaken for voluntariness?
+32. Is a helper/representative's action being misattributed to the represented person?
+33. Does AI inference or broad context access silently expand Agreement/Consent/disclosure?
+34. Is specialist legal/clinical validity being incorrectly claimed by LifeOS?
+
+Agreement/Consent introduce no universal Contract engine, Permission root, group hierarchy, ACL architecture or mandatory ceremony. They strengthen the existing personal-first, multi-actor-ready foundation without reopening any prior accepted concept.
+
+```text
+Agreement / Consent v0 readiness impact
+PASS WITH HARDENING
+structural REOPEN = 0
+unclassified material dependencies = 0
+```
