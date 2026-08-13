@@ -623,3 +623,55 @@ Normative downstream references:
 - `../concepts/agreement.md`;
 - `../concepts/consent.md`;
 - `agreement-consent-v0-validation.md`.
+
+---
+
+# 17. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical `Principal / delegation / on-behalf-of` dependency without reopening Decision.
+
+Canonical separation:
+
+```text
+actual decision Actor/process
+= who/what actually performed the bounded resolution
+
+Representation / on-behalf-of
+= actual decision Actor/process acted for a distinct represented party in that bounded context
+
+Authority / delegation basis
+= whether the Decision/effect is legitimate for the represented context
+
+Principal
+= technical authenticated/authorized request identity
+```
+
+Therefore:
+
+```text
+actual decision Actor != represented party by default
+Representation != Decision
+Representation != Authority
+Principal != Decision Actor
+```
+
+A represented Decision can govern another party's context only when the applicable Authority/process permits it. Even then, the represented party is not rewritten as the historical decision-maker and the action does not imply their personal Agreement, Consent, Acknowledgement or Confirmation.
+
+AI/service Decision processes preserve the same attribution rule: when they actually perform the bounded process under valid policy, they remain the attributable Actor/process rather than being laundered into a human Decision.
+
+Downstream classification:
+
+```text
+Decision ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive            REJECTED
+universal Delegation primitive           REJECTED
+```
+
+Exact Principal/AuthN/AuthZ enforcement, action-specific delegability, Version/material equivalence, Proposal identity, detailed reconciliation/source precedence, collective Decision, GoalCriterion/evaluation and specialist approval/signature/legal validity remain SAFE DEFERRED.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
