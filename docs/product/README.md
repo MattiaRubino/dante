@@ -6,8 +6,8 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 
 ## Foundation
 
-- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Proposed** canonical LifeOS product identity / North Star; pending final review before it supersedes narrower high-level vision wording
-- [`vision.md`](vision.md) — current accepted product vision until the North Star proposal is explicitly accepted
+- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Accepted living product definition** for LifeOS identity, mission, capability boundaries and foundational principles; it guides current product direction while remaining deliberately versionable as LifeOS evolves
+- [`vision.md`](vision.md) — earlier product vision; retain for historical/detail context where not superseded by the accepted North Star
 - [`scope.md`](scope.md) — early scope foundation
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
 - [`v1-scope.md`](v1-scope.md) — detailed V1 scope
@@ -47,4 +47,4 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 
 ## Reading rule
 
-When product documents overlap, use the more specific accepted V1 document for product behavior, then check accepted ADR/architecture constraints and the active workstream handoff. When terminology itself conflicts with an accepted Domain Atlas concept, the Domain Atlas concept specification and [`../domain/language-map.md`](../domain/language-map.md) take precedence. Preserve older documents and Git history rather than silently rewriting their historical context.
+Use the accepted Product Identity / North Star for current high-level product identity and intent. Use the more specific accepted V1 document for detailed product behavior, then check accepted ADR/architecture constraints and the active workstream handoff. When terminology itself conflicts with an accepted Domain Atlas concept, the Domain Atlas concept specification and [`../domain/language-map.md`](../domain/language-map.md) take precedence. Preserve older documents and Git history rather than silently rewriting their historical context.
