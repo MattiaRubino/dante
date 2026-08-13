@@ -464,3 +464,42 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Version / Material-State downstream closure
+
+Version / Material-State v0 resolves Confirmation's previously deferred material-version-equivalence semantics.
+
+Confirmation remains bound to the materially relevant target state it actually affirmed:
+
+```text
+Confirmation C1 -> target state S1
+materially changed target state S2
+→ C1 remains historical affirmation of S1
+→ C1 does not silently confirm S2
+```
+
+Materiality is purpose/facet scoped. A technical storage revision, provider sequence/ETag change, metadata-only correction or byte/hash difference does not by itself invalidate Confirmation. Reuse of the same target identity likewise does not prove carry-forward after a material change.
+
+A later state that is materially equivalent for the Confirmation purpose may preserve applicability without fabricating a new attestation.
+
+Canonical downstream separation:
+
+```text
+Version != Confirmation
+Version != Provenance
+Version != Authority / Decision / reconciliation
+technical revision != semantic Confirmation target state
+```
+
+Version identifies/reconstructs the state to which Confirmation applied; Provenance explains how that state arose; Authority/Decision/reconciliation may govern which interpretation becomes current without rewriting the Confirmation history.
+
+Remaining SAFE DEFERRED concerns include exact retraction/supersession persistence, Verification process/basis, specialist signature/legal validity, exact Principal/AuthN/AuthZ enforcement and retention policy.
+
+No Confirmation invariant failed. **Confirmation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
