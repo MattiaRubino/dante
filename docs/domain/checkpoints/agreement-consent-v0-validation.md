@@ -774,3 +774,76 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 21. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves the checkpoint's historical `Version / material terms/scope` SAFE DEFERRED dependency without reopening Agreement or Consent.
+
+For Agreement:
+
+```text
+all required parties assent to material terms state T1
+→ Agreement G1 exists for T1
+
+terms materially change to T2
+→ G1 remains historical Agreement to T1
+→ no automatic Agreement(T2)
+```
+
+For Consent:
+
+```text
+Consent C1 permits bounded scope/purpose S1
+material scope/purpose expands to S2
+→ C1 remains historical permission for S1
+→ no automatic Consent(S2)
+```
+
+Material equivalence is evaluated by the owning semantic purpose. It is not a global object-equality flag and cannot be inferred from technical row version, provider revision, ETag/MVCC token, byte/content hash or reuse of the same target ID. A non-material equivalent later state may remain applicable without fabricating renewed human assent/permission.
+
+Critical boundary preserved:
+
+```text
+Version/material equivalence
+= which state was relevant / whether later state is equivalent for this purpose
+
+Agreement/Consent
+= whether the required human/party assent or permission exists
+```
+
+Therefore Version can never manufacture, renew or expand Agreement/Consent merely by judging two states similar/equivalent.
+
+Downstream classification:
+
+```text
+Agreement ↔ Version/material terms       RESOLVED
+Consent ↔ Version/material scope         RESOLVED
+technical/provider revision ↔ materiality RESOLVED — not equal
+Version ↔ Agreement/Consent              RESOLVED — state != assent/permission
+```
+
+Still SAFE DEFERRED:
+
+- exact Principal/AuthN/AuthZ/security mechanics;
+- legal/specialist capacity and represented Agreement/Consent validity;
+- purpose/use technical enforcement;
+- collective/group/quorum semantics;
+- formal Contract/signature lifecycle;
+- Proposal/request reusable identity;
+- retention/deletion;
+- exact persistence/API representation.
+
+Mandatory regression reuse:
+
+- `R-AGR-01` material Agreement amendment;
+- `R-CON-01` Consent purpose expansion;
+- `R-VER-08` private source revision with materially equivalent exposed projection.
+
+No Agreement/Consent hardening failed. **Agreement / Consent remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
