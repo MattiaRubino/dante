@@ -529,3 +529,40 @@ Reopen Consent v0 if later evidence shows that:
 6. product evidence shows explicit Consent structure creates more risk/burden than value in ordinary LifeOS coordination.
 
 Until then Consent remains the current specific contextual actor-scoped permission relation/capability.
+
+---
+
+# 24. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves Consent's previous on-behalf-of attribution dependency while preserving the distinction between an action performed for someone and that person's own permission.
+
+```text
+Consent-giver / represented party
+= whose bounded permission is at stake
+
+actual Consent Actor
+= who actually performed the permission declaration
+
+Representation / on-behalf-of
+= actual Actor acted for a distinct represented party in that bounded Consent context
+```
+
+A representative action does not automatically become the represented person's personal Consent. It may count as effective represented Consent only where an applicable action-specific basis/policy/specialist rule permits that result. LifeOS preserves actual Actor, represented party, scope/purpose/version and basis either way.
+
+Therefore:
+
+```text
+actual Consent Actor != represented party by default
+Representation != Consent
+Representation != Authority
+Principal != Consent-giver/Actor by definition
+```
+
+Principal remains technical security identity and Delegation remains bounded Authority-establishment semantics, not a universal primitive. Specialist validity/capacity, Version/material scope, purpose/use enforcement, collective Consent and retention remain SAFE DEFERRED.
+
+No Consent hardening failed. **Consent remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
