@@ -735,3 +735,54 @@ Normative downstream references:
 - `../concepts/agreement.md`;
 - `../concepts/consent.md`;
 - `agreement-consent-v0-validation.md`.
+
+---
+
+# 21. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical `Principal / delegation / on-behalf-of` semantic dependency without reopening Acknowledgement.
+
+Canonical separation:
+
+```text
+actual acknowledging Actor
+= who explicitly performed the taking-notice action
+
+Representation / on-behalf-of
+= actual Actor acted for a distinct represented party in that bounded acknowledgement context
+
+Principal
+= technical request identity
+
+Authority / delegation basis
+= whether the represented action is applicable/effective for the represented party where relevant
+```
+
+Therefore:
+
+```text
+actual acknowledging Actor != represented party by default
+Representation != Acknowledgement
+Principal != semantic acknowledging Actor
+```
+
+A helper/representative may perform an effective represented acknowledgement under applicable Authority/policy, but LifeOS must retain the actual Actor, represented party and basis instead of rewriting the history as a personal acknowledgement by the represented party.
+
+Technical impersonation, shared credentials, service execution and AI inference do not fabricate human Acknowledgement.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive                   REJECTED
+universal Delegation primitive                  REJECTED
+```
+
+Exact Principal/AuthN/AuthZ mechanics, legal/specialist representation validity, Version/material equivalence, understanding/comprehension, read/view audit, collective Acknowledgement and retention remain SAFE DEFERRED.
+
+No Acknowledgement hardening failed. **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
