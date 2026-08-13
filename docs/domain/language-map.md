@@ -2,7 +2,7 @@
 
 **Status:** Canonical terminology reference for the active Domain Atlas  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-12 — Acknowledgement v0 PASS WITH HARDENING; generic cross-domain Acceptance rejected  
+**Current revision:** 2026-08-13 — Decision v0 PASS WITH HARDENING; Approval scoped; universal Reconciliation/EffectiveChange roots rejected  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -80,6 +80,7 @@ Participation       — specific involvement relation family
 Authority           — cross-cutting governance relation/capability
 Visibility          — cross-cutting information-exposure capability
 Acknowledgement     — contextual explicit-taking-notice attestation/relation capability
+Decision            — contextual bounded-resolution semantic family/capability
 ```
 
 `Account` has an accepted platform/access identity boundary but its detailed security model remains deferred.
@@ -97,6 +98,7 @@ needs confirmation
 free/busy
 safe availability projection
 some progress percentages
+approval requirements satisfied
 ```
 
 Derived state does not automatically become a new domain source-of-truth object.
@@ -146,11 +148,14 @@ Shared with…
 Free/busy only
 Got it / Acknowledge / I've seen the change
 Accept / Apply / Use this
+Approve / Reject / Keep current / Finalize / Resolve
 ```
 
 UI language must map to precise semantics without broadening them.
 
 `Accept` is especially context-sensitive: it maps to the owning semantic family/workflow and is **not** a universal domain primitive.
+
+`Approve`, `Reject`, `Keep current`, `Finalize`, `Resolve`, `Apply` and similar verbs may map to Decision/review semantics, proposal/effect semantics, or direct bounded target mutation depending on the real workflow. The UI label does not create a new primitive.
 
 ## PROVISIONAL / SAFE-DEFERRED SEMANTIC AREAS
 
@@ -159,7 +164,6 @@ Coordination Stewardship standalone primitive question
 Understanding / comprehension common-ground semantics
 Agreement
 Consent / purpose limitation
-Decision / reconciliation / Approval effect
 Principal / delegation / on-behalf-of
 Resource Requirement
 Allocation / selection
@@ -172,7 +176,9 @@ Version
 Verification
 Trigger / policy
 focus/context relationships
-group / collective actor semantics
+group / collective actor / collective Decision semantics
+Proposal / request reusable identity
+Detailed reconciliation / source-precedence policy
 Personal Knowledge generic link layer
 ```
 
@@ -182,9 +188,12 @@ These are demonstrated questions, not pre-approved primitives.
 
 ```text
 Acceptance / Assent root
+Approval root
+Reconciliation root
+EffectiveChange / universal state-transition root
 ```
 
-Useful acceptance semantics remain inside the specific family/workflow that gives them meaning.
+Useful acceptance/approval/reconciliation/effect semantics remain inside the precise family/process/target semantics that give them meaning.
 
 ## DEFERRED SPECIALIST / LOGICAL / SECURITY AREAS
 
@@ -234,6 +243,11 @@ universal Visibility/ACL entity/root
 universal delivery/read/Acknowledgement mega-state
 universal Acceptance / Assent primitive/root
 one universal accepted=true status across unrelated workflows
+universal Approval primitive/root
+universal Reconciliation primitive/root
+universal EffectiveChange / StateTransition root
+one universal approved=true status across unrelated workflows
+Decision record for every mutation
 ```
 
 Rejected means the useful capability is preserved through smaller, more precise semantics.
@@ -352,7 +366,7 @@ Schedule proposal != accepted Schedule
 
 `accepted Schedule` means the current canonical temporal assignment under the applicable governing context/policy. It does **not** mean every participant accepted Participation and it does not imply a universal Acceptance primitive.
 
-A material proposal becomes current Schedule only through the applicable proposal/effect + Authority/policy semantics. Authority to change Schedule does not imply Visibility of private sources; free/busy projection may be visible while the underlying Schedule/Event remains private.
+A material proposal becomes current Schedule only through applicable proposal/Decision/effect + Authority/policy semantics. A Decision about Schedule does not replace Schedule's own current state, and a rejected Decision may leave Schedule unchanged. Authority to change Schedule does not imply Visibility of private sources; free/busy projection may be visible while the underlying Schedule/Event remains private.
 
 ## Session
 
@@ -414,13 +428,14 @@ Actual != Observation
 Actual != Evidence
 Actual != Confirmation
 Actual != Provenance
+Actual != Decision
 shared Actual != identical actor-specific Actual Participation
 reported/asserted reality != established Actual
 Authority != Actual/truth
 Acknowledgement != Actual
 ```
 
-Authority may govern establishment/correction of the current interpretation; it does not create reality. Visibility of a safe consequence does not imply Visibility of the private Actual or its sources.
+Authority may govern establishment/correction of the current interpretation; Decision/reconciliation may explain how a bounded conflict was resolved; neither creates objective reality. Visibility of a safe consequence does not imply Visibility of the private Actual or its sources.
 
 ## Outcome
 
@@ -460,6 +475,7 @@ Confirmation != Acceptance/Agreement
 Confirmation != Verification
 Confirmation != Authority
 Confirmation != Visibility
+Confirmation != Decision
 ```
 
 Target Visibility does not expose Confirmation history automatically.
@@ -473,9 +489,10 @@ Evidence != source information
 Evidence != Observation/Actual/Outcome
 Evidence != Confirmation/Provenance
 Evidence != GoalCriterion
+Evidence != Decision
 ```
 
-Private Evidence use does not create disclosure permission.
+Private Evidence use does not create disclosure permission. Evidence may inform a Decision without becoming the resolution.
 
 ## Provenance
 
@@ -487,9 +504,10 @@ Provenance != truth
 Provenance != Authority
 Provenance != Visibility
 Provenance != Confirmation/Evidence/Version/Audit
+Provenance != Decision / Decision rationale
 ```
 
-Creator/source/recorder does not create Authority. Target Visibility does not imply full lineage Visibility.
+Creator/source/recorder does not create Authority or Decision. A Decision may have Provenance. Target Visibility does not imply full lineage Visibility.
 
 ---
 
@@ -546,7 +564,7 @@ Actor != Resource/Responsibility/Participation
 Actor != Authority/Visibility
 ```
 
-Use the specific role (`performed_by`, `recorded_by`, `confirmed_by`, `acknowledged_by`, `responsible_for`, etc.) when known.
+Use the specific role (`performed_by`, `recorded_by`, `confirmed_by`, `acknowledged_by`, `decided_by`, `responsible_for`, etc.) when known.
 
 ## Account boundary
 
@@ -634,14 +652,17 @@ Hand-off = role-specific transfer workflow
 
 None is a standalone universal primitive.
 
-Current common-ground boundary:
+Current common-ground/governance boundary:
 
 ```text
 hand-off request
 != Acknowledgement
 != role-specific accepted response
+!= Decision/Approval where required
 != effective transfer
 ```
+
+A Decision may resolve a transfer question but does not become Responsibility; the resulting Responsibility state remains owned by Responsibility.
 
 ## Participation
 
@@ -676,6 +697,7 @@ Authority = contextual scoped governance relation/capability
 Authority != Actor/Person/Account/Principal
 Authority != Responsibility/Participation
 Authority != Visibility/ownership/Confirmation/Acknowledgement/Acceptance
+Authority != Decision
 Authority != truth
 Authority != technical Permission
 ```
@@ -690,7 +712,7 @@ claimed Authority != established Authority
 revoked/expired != never existed
 ```
 
-Delegation is a bounded Authority-establishment/entrustment pattern, not a universal root. Approval may exercise Authority but is not Authority itself.
+Delegation is a bounded Authority-establishment/entrustment pattern, not a universal root. Approval may exercise Authority but is not Authority itself. Decision answers what was resolved, not who had governance power.
 
 ## Visibility
 
@@ -763,6 +785,42 @@ future access revocation != erased historical Acknowledgement
 
 `Acknowledgement` is optional and consequence-sensitive; LifeOS must not force read-receipt/acknowledgement bureaucracy into ordinary low-risk use.
 
+## Decision
+
+**Status:** CANONICAL — PASS WITH HARDENING.  
+**Source:** `concepts/decision.md`  
+**Validation:** `checkpoints/decision-v0-validation.md`
+
+**Question:** What bounded question was resolved to what result, by whom/what, about which target/version/context?
+
+```text
+Decision
+= contextual bounded-resolution semantic family/capability
+
+Decision != Authority
+Decision != effective domain change
+Decision != Actual/truth
+Decision != Provenance / rationale
+Decision != Evidence/evaluation
+Decision != Acknowledgement/Confirmation/family-specific Acceptance
+Decision != Agreement/Consent
+```
+
+Key rules:
+
+```text
+Decision(target v1) != Decision(target v2) after material change by default
+Decision time != effect time != Actual time
+Decision may cause zero/one/multiple effects
+effective change may occur without a new explicit human Decision under bounded authorized policy
+superseded/reversed Decision != never decided
+one Actor's Approval/Decision != collective Decision automatically
+Decision result Visibility != rationale/Evidence/Provenance Visibility
+AI proposal/recommendation != Decision
+```
+
+Approval is scoped Decision/review-result semantics whose effect depends on applicable Authority/policy. Reconciliation is a process/pattern that may culminate in Decision but is not universally a Decision. Effective state change remains owned by the affected domain concept.
+
 ## Acceptance disposition
 
 Generic cross-domain `Acceptance` is **not** a canonical standalone primitive.
@@ -778,7 +836,7 @@ proposal accepted / applied
 → proposal/effect-specific response/operation
 ```
 
-Future Agreement, Consent, and Decision semantics remain separately reviewable rather than being collapsed into one Assent/Acceptance root.
+Future Agreement and Consent semantics remain separately reviewable rather than being collapsed into one Assent/Acceptance root. Decision does not turn those semantics into a generic acceptance type.
 
 ---
 
@@ -794,6 +852,10 @@ Authority != technical permission
 Visibility != Authority
 Visibility != actual view
 Authority != truth
+Authority != Decision
+Decision != effective target state
+Decision != Actual/truth
+Decision != Provenance/rationale
 Responsibility != Authority/Visibility
 Participation != Authority/Visibility
 Subject != Authority/Visibility
@@ -808,7 +870,8 @@ Assignment != Acceptance by default
 Claim != effective Responsibility by default
 hand-off request != Acknowledgement
 Acknowledgement != role-specific acceptance
-role-specific acceptance != effective role transfer
+role-specific acceptance != Decision/Approval by default
+Decision/Approval != effective role transfer by default
 Invitation != Participation response
 Participation response != Actual Participation
 Schedule acceptance != Participation response
@@ -816,6 +879,7 @@ Delivery/read/display != Acknowledgement
 Acknowledgement != Confirmation
 Acknowledgement != Agreement/Consent
 Agreement/Consent != Authority
+Decision != Agreement/Consent
 ```
 
 ---
@@ -832,13 +896,15 @@ AI proposal != Responsibility transfer
 AI participation inference != response/attendance truth
 AI Resource match != authoritative Allocation
 AI ability to act/reason != Authority
+AI proposal/recommendation != Decision
+AI system Decision != human Decision
 AI source access/processing != disclosure Visibility
 AI provenance != disclosure permission
 ```
 
 AI authority must remain bounded by the applicable Principal/context/policy, and output disclosure must be evaluated independently from input access.
 
-An AI may acknowledge as its own semantic Actor only when that is the real actor/context; it must not manufacture another actor's acknowledgement.
+An AI may acknowledge as its own semantic Actor only when that is the real actor/context; it must not manufacture another actor's acknowledgement. An AI/system may participate in a bounded Decision process only under explicit applicable policy/Authority, with correct attribution and without laundering the result into a human Decision.
 
 ---
 
@@ -852,7 +918,7 @@ Outcome             → Passed / Partial / Result
 Observation         → Weight / Mood / Score / Odometer / Shutter count
 Quantity            → 66.4 kg / 5 km / 45 min
 Subject             → usually hidden; natural referent label
-Actor               → hidden; expose Done by / Recorded by / Suggested by
+Actor               → hidden; expose Done by / Recorded by / Suggested by / Decided by
 Account             → Account / Profile / Login in settings
 Asset               → Car / Camera / Laptop / Bike / Gear
 Resource            → Camera / Room / Person / Service / Who's available?
@@ -862,6 +928,7 @@ Participation       → Going / Maybe / Can't go / Attended
 Authority           → normally hidden; expose specific action/approval rights
 Visibility          → Private / Shared with… / free-busy only / visibility settings
 Acknowledgement     → Got it / Acknowledge / I've seen the change / Received
+Decision            → Choose / Keep current / Approve / Reject / Finalize / Resolve / Decision history where consequential
 Assignment          → Assign / Reassign
 Claim               → I'll take it / Claim
 Hand-off            → Hand off / Transfer
@@ -879,9 +946,13 @@ Use this
 Approve
 Agree
 Allow
+Reject
+Keep current
+Finalize
+Resolve
 ```
 
-must map to their actual semantic family/effect. They do not create a universal Acceptance/Assent type.
+must map to their actual semantic family/effect. They do not create a universal Acceptance/Assent/Approval/Decision-transition type.
 
 > **A UX label does not automatically create or broaden a backend/domain type.**
 
@@ -893,7 +964,8 @@ Do not infer final tables/classes/FKs from this map.
 
 In particular:
 
-- no universal `subjects`, `actors`, `resources`, `relationships`, `participants`, `authorities`, `visibility_acl`, `acknowledgements`, or `acceptances` root is pre-approved;
+- no universal `subjects`, `actors`, `resources`, `relationships`, `participants`, `authorities`, `visibility_acl`, `acknowledgements`, `acceptances`, `approvals`, `reconciliations`, `effective_changes`, or universal state-transition root is pre-approved;
+- Decision semantics do not pre-approve one row for every mutation or one polymorphic `decisions` table;
 - `Person.id = Account.id` is not accepted;
 - `Account = Principal` is not accepted by default;
 - `User` must not become the universal FK merely because UI uses the word;
@@ -901,8 +973,10 @@ In particular:
 - explicit open Responsibility must remain distinguishable from unknown;
 - planned/response Participation and Actual Participation must remain independently representable;
 - Acknowledgement must remain distinguishable from provider read/display telemetry;
-- generic `accepted=true` must not become a cross-domain workflow field;
+- generic `accepted=true` or `approved=true` must not become cross-domain workflow fields;
 - Authority semantics must remain separate from technical authorization/enforcement;
+- Decision semantics must remain separate from Authority, Provenance, target state and Actual;
+- the affected domain concept owns its effective state transition;
 - Visibility semantics must remain separate from technical read permission and arbitrary data Use;
 - target/projection Visibility must not force source disclosure;
 - no per-recipient duplicate canonical reality is required;
@@ -930,6 +1004,10 @@ Authority v0 review             PASS WITH HARDENING
 Visibility v0 review            PASS WITH HARDENING
 Acknowledgement v0 review       PASS WITH HARDENING
 Generic Acceptance primitive    REJECTED
+Decision v0 review              PASS WITH HARDENING
+Universal Approval primitive    REJECTED
+Universal Reconciliation root   REJECTED
+Universal EffectiveChange root  REJECTED
 ```
 
 Current structural reopenings: **0**.  
@@ -942,7 +1020,8 @@ Normative Cluster-5 references:
 - `concepts/participation.md` + validation;
 - `concepts/authority.md` + validation;
 - `concepts/visibility.md` + validation;
-- `concepts/acknowledgement.md` + validation.
+- `concepts/acknowledgement.md` + validation;
+- `concepts/decision.md` + validation.
 
 ---
 
@@ -950,24 +1029,30 @@ Normative Cluster-5 references:
 
 Do not continue by historical roadmap order and do not preselect the next primitive from vocabulary.
 
-The common-ground review closed:
+The current Relationships / Reasoning decomposition now includes:
 
 ```text
 who can govern?          Authority        RESOLVED
 who can see?             Visibility       RESOLVED
 who explicitly noticed?  Acknowledgement  RESOLVED
 universal Acceptance?    REJECTED
+what bounded question was resolved? Decision RESOLVED
+universal Approval?      REJECTED
+universal Reconciliation? REJECTED
+universal EffectiveChange? REJECTED
 ```
 
-The next step is **re-score of the remaining demonstrated candidate/dependency space by dependency leverage** after the Acknowledgement propagation/QA is complete.
+The next step after Decision v0 propagation/QA is a **fresh re-score of the remaining demonstrated candidate/dependency space by dependency leverage**.
 
 Still-material areas include, among others:
 
 ```text
 Agreement
 Consent / purpose limitation
-Decision / reconciliation / Approval effect
 Principal / delegation / on-behalf-of
+Version / material equivalence
+Proposal / request reusable identity
+Detailed reconciliation / source-precedence policy
 Dependency
 Coordination Stewardship standalone question
 Contribution
@@ -975,11 +1060,10 @@ GoalCriterion / Goal relationships
 Evidence ↔ Criterion/evaluation
 Resource Requirement / Allocation / Reservation / substitution
 Verification
-Version
 AI Proposal
 focus/context relationships
 Trigger / conditional policy
-collective/group semantics
+collective/group/collective-Decision semantics
 Personal Knowledge generic link layer
 ```
 
