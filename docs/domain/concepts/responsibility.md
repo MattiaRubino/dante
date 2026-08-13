@@ -936,3 +936,51 @@ Responsibility ↔ generic Acceptance  RESOLVED — universal primitive rejected
 ```
 
 Decision/Approval/effective-transfer mechanics, Principal/delegation/on-behalf-of, Version/Provenance/reconciliation, Stewardship, collective Responsibility and physical persistence remain separately owned dependencies. No Responsibility reopening is required.
+
+---
+
+# 2026-08-13 — Decision / Approval / effective-transfer closure amendment
+
+Decision v0 closes the semantic Decision/effective-transfer portion of Responsibility's `Provenance / Version / Decision / reconciliation` deferral without changing Responsibility semantics.
+
+Current transfer decomposition:
+
+```text
+hand-off requested
+!= delivered/read/displayed
+!= Acknowledgement
+!= Responsibility-specific positive/accepted response
+!= Approval / Decision where required
+!= effective Responsibility transfer
+!= later Actual performer
+```
+
+Canonical separation:
+
+```text
+Decision
+= bounded resolution of the transfer/role-change question
+
+Approval
+= scoped Decision/review result whose significance depends on applicable Authority/policy
+
+Responsibility
+= current accountability relation state
+```
+
+Decision/Approval do not create Authority or Responsibility merely by existing. A Decision may reject a transfer and leave current Responsibility unchanged. Conversely, an already-authorized bounded policy may make a transfer effective without fabricating a new human Decision.
+
+The affected Responsibility semantics own the effective transfer/current holder. No universal `EffectiveChange` object is introduced.
+
+Downstream closure:
+
+```text
+Responsibility ↔ Decision                    RESOLVED
+Responsibility ↔ Approval                    RESOLVED
+Responsibility ↔ effective transfer          RESOLVED
+Responsibility ↔ Reconciliation boundary     RESOLVED semantically
+```
+
+Version/Provenance mechanics, detailed reconciliation policy, Principal/delegation/on-behalf-of, Coordination Stewardship, collective/joint Responsibility, Trigger/fallback policy and physical persistence remain independently deferred.
+
+**Responsibility v0 verdict is unchanged. REOPEN = 0.**
