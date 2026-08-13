@@ -1132,3 +1132,43 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 20. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the Time checkpoint's historical detailed provider/source-precedence and offline conflict dependency without changing the original Time-cluster verdict.
+
+Canonical temporal separation now includes:
+
+```text
+competing temporal proposals / material states
+!= Reconciliation process
+!= current accepted Schedule
+!= Session / Actual
+```
+
+Reconciliation may handle conflicting provider/user/organizer/AI/offline temporal states by selecting, combining compatible changes, correcting/superseding, escalating, deferring or preserving conflict unresolved under applicable bounded policy/Authority. No provider, organizer, user, timestamp or arrival order receives universal precedence.
+
+Schedule remains owner of current accepted temporal assignment. Version preserves the materially relevant competing/predecessor states; Provenance preserves source/lineage; Decision may record a material bounded resolution where needed. An already-authorized deterministic rule may reconcile a low-consequence scheduling conflict without fabricating a human Decision.
+
+Availability, Capacity and Temporal Constraints may determine feasibility or supply Evidence/constraints, but they do not become universal source-precedence rules. Actual execution remains a later reality layer rather than a mechanism for rewriting the schedule conflict that preceded it.
+
+Technical ETags, sync tokens, CRDTs or MVCC mechanisms may prevent lost writes or support synchronization but do not define domain Reconciliation. Source/conflict/rationale Visibility remains independent, including privacy-safe free/busy projections.
+
+Downstream classification:
+
+```text
+Time/Schedule ↔ Reconciliation       RESOLVED
+Time/Schedule ↔ Source Precedence    RESOLVED — bounded policy only
+technical sync ↔ domain resolution   RESOLVED — distinct
+```
+
+Still independently SAFE DEFERRED are exact DST/travel policy types, Trigger/Reminder automation, provider mapping, materialization horizon, Principal/enforcement, Participation/attendance implementation details, retention and final logical/physical/API representation.
+
+No Time hardening failed. **Time v0 remains PASS, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
