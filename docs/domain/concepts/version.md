@@ -931,3 +931,47 @@ unclassified material items     0
 ```
 
 The hardenings above are incorporated. The approved 42-path documentation propagation and post-write QA against pre-scope commit `1008aeb0367de4ae73a8e8d41a76aee9e0493f34` passed; Version v0 is the current accepted Domain Atlas baseline.
+
+---
+
+# 30. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves Version's historical `Branch / merge / source-precedence mechanics` dependency at the semantic-boundary level without changing Version semantics.
+
+Canonical separation:
+
+```text
+Version / Material-State
+= identify and reconstruct materially relevant target states, including divergence
+
+Reconciliation
+= contextual process/capability for handling materially competing states/assertions
+
+Source Precedence
+= bounded contextual policy/basis where justified
+```
+
+Version preserves states such as `S2A` and `S2B`; it does not select, merge, correct or rank them merely because one arrived later or has a higher technical/provider revision. Reconciliation may select, combine, correct, supersede, escalate, defer or preserve the conflict unresolved under applicable bounded policy/Authority.
+
+No universal last-write-wins, globally linear semantic history, newest-source-wins, provider-always-wins or user-always-wins rule is accepted. Technical ETags/MVCC/CRDT/sync mechanisms may support concurrency but do not become domain Reconciliation or Source Precedence.
+
+Where reconciliation produces a new material state, Version may preserve multiple predecessor states while Provenance records materially relevant lineage. The owning domain concept still owns which state is current/effective under applicable Authority/Decision/policy.
+
+History/source/conflict Visibility remains separately governed. AI may detect divergence or propose a merge, but cannot silently erase a competing state or exceed applicable policy/Authority.
+
+Downstream classification:
+
+```text
+Version ↔ Reconciliation          RESOLVED
+Version ↔ Source Precedence       RESOLVED — not owner
+Version ↔ technical concurrency   RESOLVED — distinct
+```
+
+Per-family material-equivalence rules, exact effective dating, provider mapping, retention/deletion, versioned evaluation/rule snapshots and identity-replacement thresholds remain independently SAFE DEFERRED.
+
+No Version hardening failed. **Version remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
