@@ -728,3 +728,47 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 resolves Authority's conflict/source-precedence dependency without changing Authority semantics.
+
+Canonical separation:
+
+```text
+Authority
+= legitimate bounded power to make a governed effect effective
+
+Reconciliation
+= contextual process/capability for handling materially competing states/assertions
+
+Source Precedence
+= bounded contextual policy/basis where justified
+```
+
+Authority may be one input/basis used by Reconciliation, but it is not objective truth and does not create a universal source hierarchy. An authoritative specialist source may have precedence only for the target/facet/purpose/context/time for which that Authority actually applies.
+
+Reconciliation may remain unresolved when applicable Authority/policy is insufficient or contested. Where an already-authorized deterministic rule establishes a result, no fabricated human Decision is required. Where judgment/resolution is material, a Decision may occur separately.
+
+The affected domain concept still owns the resulting current/effective state. Later correction/reversal preserves prior Authority-at-action-time and resolution history.
+
+Technical access, Principal identity, provider role names, source recency and creator status do not become Authority or source precedence automatically. Conflict/basis/rationale Visibility remains independently governed.
+
+Downstream classification:
+
+```text
+Authority ↔ Reconciliation       RESOLVED
+Authority ↔ Source Precedence    RESOLVED — bounded basis only
+Authority ↔ objective truth      RESOLVED — not equal
+```
+
+Exact Principal/AuthN/AuthZ enforcement, Policy/Role/conditions, specialist validity, retention/audit and physical representation remain independently SAFE DEFERRED.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
