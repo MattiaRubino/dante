@@ -999,3 +999,47 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Version / Material-State downstream closure
+
+Version / Material-State v0 resolves Participation's material response-state dependency without turning `accepted` into a generic Acceptance concept.
+
+A Participation response remains bound to the materially relevant invitation / occurrence / shared-event state it actually concerned:
+
+```text
+Participation response R1 = accepted for Event state S1
+Event materially changes to S2
+→ R1 remains historical response to S1
+→ R1 does not silently become response to S2
+```
+
+Whether a later state is materially equivalent for Participation is owned by Participation/product policy. For example, a harmless title correction may leave the response applicable, while a material time/location/role change may require renewed stance. Technical row/provider/ETag/hash changes do not decide this by themselves.
+
+Series/occurrence scope is also preserved:
+
+```text
+series response != one occurrence response
+occurrence state change != automatic series policy rewrite
+```
+
+Canonical separation:
+
+```text
+Version != Participation
+Version != Participation response
+material equivalence != willingness/intention
+same Event identity != automatic response carry-forward
+```
+
+Remaining SAFE DEFERRED Participation dependencies include participant role taxonomy, collective/group participation, exact recurring-series inheritance/override persistence, provider attendance evidence threshold/reconciliation, retention/deletion, exact qualified persistence and specialist extensions.
+
+AI may detect that a response is stale after a material change but must not infer renewed human acceptance/decline.
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
