@@ -685,3 +685,46 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Version / Material-State downstream closure amendment
+
+Version / Material-State v0 resolves Authority's former `Version / material equivalence` SAFE DEFERRED dependency without changing Authority semantics.
+
+Where Authority depends on a materially specific target/scope/policy/basis state, historical legitimacy must be evaluated against the state that actually applied at action time:
+
+```text
+Authority basis/policy state B1
+Actor acts at T1 under B1
+later material state B2 narrows/revokes scope
+→ T1 is evaluated under B1
+→ B2 does not rewrite T1 as though B1 never existed
+```
+
+Conversely a materially changed policy/target state does not silently inherit old Authority scope merely because target identity or technical access remains the same.
+
+Materiality is purpose/scope specific. Technical row versions, provider revision IDs, ETags/MVCC tokens, content hashes or `updated_at` values do not define domain Authority applicability.
+
+Canonical separation:
+
+```text
+Version != Authority
+Version != technical authorization
+Version != Decision / reconciliation
+Version != Provenance
+current Authority state != historical Authority state at action time
+```
+
+Version supplies reconstructible state binding; Authority still answers who/what may legitimately govern the bounded effect. The owning domain + Authority/Decision/policy still determine effective state.
+
+Remaining SAFE DEFERRED Authority dependencies include exact Principal/AuthN/AuthZ enforcement, Policy/Role/conditions, qualified Authority persistence, Consent purpose/use enforcement, specific delegation-policy mechanics and specialist validity.
+
+AI/system effective action must preserve/re-evaluate its material Authority/policy base state where consequence requires it; a materially changed basis cannot be ignored merely because the technical Principal can still issue a request.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
