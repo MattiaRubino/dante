@@ -2,7 +2,7 @@
 
 **Status:** In progress — Clusters 1–4 integrated; Relationships / Reasoning active  
 **Started:** 2026-08-10  
-**Current revision:** 2026-08-13 — Representation / on-behalf-of v0 PASS WITH HARDENING; post-write QA PASS  
+**Current revision:** 2026-08-13 — Version / material-equivalence v0 PASS WITH HARDENING; hardenings incorporated; final post-write QA pending  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
@@ -215,7 +215,7 @@ Asset          scoped native physical-object identity
 Resource       planning/execution role, not root
 ```
 
-## Relationships / reasoning — QA-closed so far
+## Relationships / reasoning — validated so far
 
 ```text
 Relationship modeling discipline
@@ -228,9 +228,10 @@ Decision
 Agreement
 Consent
 Representation / on-behalf-of
+Version / material-state reference
 ```
 
-Current rejected abstractions include generic Acceptance/Assent, universal Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative and Delegation roots.
+Current rejected abstractions include generic Acceptance/Assent, universal Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative, Delegation and universal Version roots/tables.
 
 ---
 
@@ -255,13 +256,13 @@ Account != Principal
 
 Responsibility != performer / Resource / Participation / Authority / Decision
 Participation != Responsibility / Performer / Resource / Authority / Visibility / Session / Decision
-Authority != Actor / Account / Principal / Responsibility / Participation / Visibility / Agreement / Consent / Decision / Representation / truth
-Visibility != Authority / technical read Permission / actual View / Acknowledgement / Consent
+Authority != Actor / Account / Principal / Responsibility / Participation / Visibility / Agreement / Consent / Decision / Representation / Version / truth
+Visibility != Authority / technical read Permission / actual View / Acknowledgement / Consent / Version
 
 Acknowledgement != delivery/read/display / understanding / Confirmation / Agreement / Consent / Decision / Actual
-Decision != Authority / effective state / Actual / Provenance / Evidence / Agreement / Consent / Representation
-Agreement != response / Decision / Authority / Responsibility / Consent / Contract / Actual / Representation
-Consent != Visibility / Authority / technical Permission / Agreement / Decision / Actual / Representation
+Decision != Authority / effective state / Actual / Provenance / Evidence / Agreement / Consent / Representation / Version
+Agreement != response / Decision / Authority / Responsibility / Consent / Contract / Actual / Representation / Version
+Consent != Visibility / Authority / technical Permission / Agreement / Decision / Actual / Representation / Version
 
 Representation != Actor identity
 Representation != Subject/beneficiary
@@ -274,6 +275,11 @@ Representation != Provenance
 Representation != Principal
 actual Actor != represented party
 technical impersonation != domain attribution truth
+
+native identity != material state != Version reference
+Version != provider/storage revision
+Version != Provenance / Authority / Decision / current-state selection
+material equivalence != universal field/hash equality
 ```
 
 ---
@@ -355,6 +361,7 @@ Authority != Visibility
 Authority != Agreement/Consent
 Authority != Decision
 Authority != Representation
+Authority != Version
 Authority != technical Permission
 ```
 
@@ -384,9 +391,10 @@ can see != use for every purpose
 may see != actually saw
 visible target != visible source
 Visibility != Consent
+Visibility != Version
 ```
 
-Representation/delegation basis may be less visible than the resulting shared effect.
+Representation/delegation basis may be less visible than the resulting shared effect. A visible projection may remain materially equivalent for its audience while a private source state changes; projection Version and source Version are not automatically identical.
 
 ---
 
@@ -399,7 +407,7 @@ Acknowledgement
 = explicit actor-scoped taking-notice of a specific target/material version/change/request
 ```
 
-Represented effect does not rewrite the actual acknowledging Actor as the represented party.
+Represented effect does not rewrite the actual acknowledging Actor as the represented party. A material target-state change does not silently inherit prior Acknowledgement unless the relevant purpose/facet is materially equivalent.
 
 Generic cross-domain Acceptance remains rejected.
 
@@ -416,7 +424,7 @@ Decision
 
 Approval remains scoped Decision/review-result semantics. Reconciliation remains a process/pattern. Effective state remains owned by the affected concept.
 
-Represented Decision preserves actual decision Actor/process, represented party and Authority/delegation basis separately.
+Represented Decision preserves actual decision Actor/process, represented party and Authority/delegation basis separately. Decision remains bound to the material state/question actually resolved.
 
 ---
 
@@ -433,7 +441,7 @@ Consent
   under target/scope/purpose/context
 ```
 
-Representative assent/Consent does not automatically become the represented party's personal Agreement/Consent. LifeOS does not certify universal legal capacity/enforceability.
+Representative assent/Consent does not automatically become the represented party's personal Agreement/Consent. LifeOS does not certify universal legal capacity/enforceability. Material changes to terms/scope/purpose do not silently inherit prior Agreement/Consent.
 
 ---
 
@@ -496,7 +504,47 @@ AI/service actor remains attributable as itself and cannot fabricate human autho
 
 ---
 
-# 16. Multi-actor baseline
+# 16. Version / material-equivalence v0
+
+Normative references:
+
+- [`Version`](concepts/version.md)
+- [`validation`](checkpoints/version-material-equivalence-v0-validation.md)
+
+**PASS WITH HARDENING — hardenings incorporated; final post-write QA pending.**
+
+> **Version is the contextual capability to identify and reference a materially relevant state of a domain target when changes to that state matter for interpretation, applicability, history, concurrency, reconciliation, or downstream action.**
+
+Canonical question:
+
+> **Which materially relevant state of this target is being referred to for this purpose/facet?**
+
+Core rules:
+
+```text
+native identity != material state != Version reference
+technical/provider/storage revision != semantic Version automatically
+materiality is purpose/facet specific
+material change invalidates prior semantic applicability where the relevant facet changed
+non-linear/offline divergent history is valid
+Version does not choose current truth/winner/effective state
+AI stale-base action/proposal requires re-evaluation after material divergence
+source Version != visible projection Version automatically
+historical reconstruction != indefinite sensitive payload retention
+```
+
+Rejected:
+
+```text
+universal Version root/entity/table
+global material-equivalence rule
+provider ETag/sequence/storage row version as domain truth
+mandatory event sourcing or one universal versions graph
+```
+
+---
+
+# 17. Multi-actor baseline
 
 LifeOS remains personal-first but structurally multi-actor-ready.
 
@@ -513,13 +561,14 @@ non-LifeOS people are ordinary reality
 proposal != Ack != response != Agreement/Consent != Decision != effect != Actual
 actual Actor != represented party
 AI access/agency != Authority/disclosure/human will
+semantic action applies to the material target state it actually concerned
 ```
 
-No collaboration/IAM/ACL/workflow infrastructure is pre-approved merely by these semantics.
+No collaboration/IAM/ACL/workflow/version-infrastructure is pre-approved merely by these semantics.
 
 ---
 
-# 17. Current semantic topology
+# 18. Current semantic topology
 
 ```text
 INTENTION / STRATEGY
@@ -566,13 +615,16 @@ Consent
 
 REPRESENTED ACTION
 Representation / on-behalf-of
+
+MATERIAL STATE REFERENCE
+Version / material equivalence
 ```
 
 This is not a parent tree, processing pipeline or SQL schema.
 
 ---
 
-# 18. Product simplicity rule
+# 19. Product simplicity rule
 
 Kernel precision must not force ontology wording into ordinary UI.
 
@@ -587,13 +639,14 @@ Decision         → Choose / Approve / Reject / Resolve
 Agreement        → Agree to terms
 Consent          → Allow / Permit / Share for…
 Representation   → Done by X for Y / On behalf of…
+Version          → Version / Revision / Changed since… / Based on version…
 ```
 
 A visible label does not create a new kernel type.
 
 ---
 
-# 19. Persistence / API guardrails
+# 20. Persistence / API guardrails
 
 Do not begin final SQL/API design yet.
 
@@ -608,6 +661,9 @@ universal responsibilities/participants/authority/visibility roots
 universal Ack/Acceptance/Approval/Decision workflow root
 universal Agreement/Contract or Consent/Permission root
 universal Principal/Agent/Representative/Delegation root
+universal Version root/table/graph
+one global material-equivalence enum/function
+mandatory event sourcing/snapshot history for every concept
 one actor_id / principal_id / on_behalf_of_id everywhere
 shared=true as privacy model
 related_to + metadata as kernel
@@ -618,7 +674,7 @@ The logical model follows completion of Relationships / Reasoning and whole-doma
 
 ---
 
-# 20. Representation v0 post-write QA
+# 21. Representation v0 post-write QA
 
 Validated against pre-scope:
 
@@ -639,15 +695,45 @@ main baseline                           c5120ff463e027c42f4a26fc613d0917596ca738
 branch behind main                       0
 ```
 
-The write approval is consumed.
+The Representation write approval is consumed.
 
 ---
 
-# 21. Cluster-5 status and next action
+# 22. Version v0 write status
+
+Pre-scope:
+
+```text
+1008aeb0367de4ae73a8e8d41a76aee9e0493f34
+```
+
+Approved scope:
+
+```text
+42 unique paths
+2 CREATE
+40 UPDATE
+```
+
+Current state at this document revision:
+
+```text
+V3 verdict                 PASS WITH HARDENING
+hardenings                 incorporated
+propagation                written across approved semantic consumers
+final post-write Git QA    pending
+accepted branch baseline   NOT YET until final QA PASS
+```
+
+No next Relationships / Reasoning candidate may start before that QA closes.
+
+---
+
+# 23. Cluster-5 status and next action
 
 Relationships / Reasoning remains **IN PROGRESS**.
 
-QA-closed reviews:
+QA-closed reviews before Version:
 
 ```text
 Relationship
@@ -661,12 +747,13 @@ Agreement / Consent
 Representation / on-behalf-of
 ```
 
-The next step is a **fresh re-score** of the remaining demonstrated candidate/dependency space. No candidate is preselected.
+Version is currently at the final post-write QA gate.
+
+After Version QA PASS, the next step is a **fresh re-score** of the remaining demonstrated candidate/dependency space. No candidate is preselected.
 
 Examples of remaining pressure:
 
 ```text
-Version / material equivalence
 Proposal / request reusable identity
 Detailed reconciliation / source-precedence policy
 Dependency
@@ -689,7 +776,7 @@ These are candidates/dependencies, not a checklist of primitives.
 
 ---
 
-# 22. Before broad implementation
+# 24. Before broad implementation
 
 Still mandatory:
 
@@ -725,7 +812,7 @@ backend implementation
 
 ---
 
-# 23. Documentation rule
+# 25. Documentation rule
 
 Concept specs/checkpoints hold detailed evidence/history. This README is current navigation/integration summary; `language-map.md` is terminology navigation; `docs/workstreams/domain-model.md` is the operational save-game.
 
