@@ -1080,3 +1080,37 @@ It is:
 > **Preserve stable identity for one expected generated instance without forcing every one-off Activity/Event into an Occurrence wrapper and without requiring infinite eager persistence of future instances.**
 
 This is the current accepted baseline entering the Schedule review.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 closes Occurrence's former source-version / `this and future` / offline-edit semantic dependencies without changing Occurrence identity.
+
+```text
+Occurrence identity
+= which expected generated instance
+
+Occurrence material state
+= materially relevant occurrence-specific state/exception
+
+Source Version
+= materially relevant state of the Routine/Event-series/generative policy that governed the instance
+```
+
+Historical Occurrences remain attributable to the source Version that generated/governed them. Re-expanding a newer source Version must not mutate their original expectation. A material source-policy revision can apply from a defined boundary without turning earlier Occurrences into descendants of the new policy state.
+
+Occurrence-specific edits such as reschedule, skip, cancellation or assignment exception may have their own material state history while preserving the same Occurrence identity. `This occurrence` and `this and future` remain different operations: the latter changes source-policy state; the former changes the instance state unless policy explicitly says otherwise.
+
+Offline/concurrent edits may branch from one material Occurrence or source state. Version preserves the competing bases; reconciliation/Authority/Decision selects or constructs current accepted state. Technical/provider occurrence revisions and original-start identifiers remain integration/concurrency metadata, not LifeOS semantic Version identity.
+
+AI/system proposals affecting an Occurrence or future policy must retain the material base state where stale-base application would be unsafe.
+
+The historical source-version and concurrent-edit dependencies are now downstream-closed semantically. Exact virtual occurrence addressing/materialization, recurrence generation, lifecycle vocabulary, external mapping and physical persistence remain separately owned.
+
+No Occurrence invariant failed. **Occurrence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
