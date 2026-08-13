@@ -376,3 +376,42 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 14. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the checkpoint's historical `Version / material-equivalence` dependency without changing the original Actual validation result.
+
+Current closure:
+
+```text
+Actual identity
+!= materially relevant Actual state
+!= technical/provider record revision
+
+Version
+= purpose/facet-scoped reference to the materially relevant Actual state
+```
+
+A Confirmation, Decision, Evidence evaluation or reconciliation result that concerned Actual state v1 remains attributable to v1. A material correction to v2 does not silently rewrite the historical evaluation or make it applicable to v2 by default. Non-material equivalence may preserve applicability only when the relevant purpose/facet is unchanged.
+
+Conflicting/offline assertions may diverge from one prior state and remain historically valid as competing branches. Version preserves those state references but does not choose current truth; current Actual selection still belongs to the applicable reconciliation/Authority/Decision policy.
+
+Provider revision IDs, ETags, hashes and storage row versions may support concurrency or lineage but do not define semantic Actual materiality automatically. Historical references also do not require retaining every sensitive source payload indefinitely.
+
+Downstream classification:
+
+```text
+Actual ↔ Version/material equivalence   RESOLVED
+Version ↔ current truth selection       RESOLVED — not owner
+```
+
+Detailed reconciliation/source precedence, Principal/enforcement, retention and physical representation remain separately owned.
+
+No original Actual hardening failed. **Actual remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
