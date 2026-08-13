@@ -631,3 +631,37 @@ No reviewed case requires representing Routine as Activity-with-repeat, per-acto
 Routine v0 remains the accepted recurring behavioral/execution-policy primitive.
 
 The 2026-08-11 hardening generalizes the policy beyond one mandatory performer while preserving all prior Time/Occurrence/Recurrence/history boundaries.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 resolves Routine's former `exact version persistence` semantic dependency without changing Routine identity.
+
+```text
+Routine identity
+= persistent recurring behavioral/execution policy
+
+Routine material state
+= materially relevant policy state governing future/occurrence generation
+
+Version
+= reference to that material state for the relevant purpose
+```
+
+A material policy revision (for example 30m → 45m, cadence change, eligibility or structural rule change) produces a later material Routine state while preserving the same Routine identity unless the change actually redefines the policy into a different Routine. Past Occurrences remain bound to the Routine state that generated/governed them.
+
+Occurrence-specific exceptions do not become Routine Versions by default. A one-off reschedule or performer substitution stays occurrence-specific unless the persistent policy itself changes.
+
+Non-material edits may preserve applicability where the relevant policy facet is unchanged. Technical row versions/provider revisions do not define Routine materiality automatically. Routine Version history may branch under offline/concurrent edits; reconciliation/Authority/Decision choose current policy, not Version itself.
+
+AI proposals to revise a Routine should preserve the material base state; stale proposals must be re-evaluated after material divergence rather than silently applied.
+
+The historical version-persistence dependency is now downstream-closed semantically. Lifecycle state, Responsibility/rotation, shared governance, Trigger boundary, materialization horizon and physical persistence remain separately owned.
+
+No Routine hardening failed. **Routine remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
