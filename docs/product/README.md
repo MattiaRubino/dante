@@ -4,14 +4,15 @@ Use [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md) for the current project state
 
 ## Foundation
 
-- [`vision.md`](vision.md) — product vision
+- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Accepted** current living definition of LifeOS product identity and North Star; use this for high-level product meaning and direction
+- [`vision.md`](vision.md) — earlier product vision; remains useful context where not superseded by the accepted North Star
 - [`scope.md`](scope.md) — early scope foundation
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
 - [`v1-scope.md`](v1-scope.md) — detailed V1 scope
 
 ## Canonical domain and execution behavior
 
-- [`v1-core-domain-glossary.md`](v1-core-domain-glossary.md) — canonical meanings of core concepts
+- [`v1-core-domain-glossary.md`](v1-core-domain-glossary.md) — canonical meanings of core concepts on current `main`; later accepted Domain Atlas terminology takes precedence once integrated
 - [`v1-goal-and-program-creation.md`](v1-goal-and-program-creation.md)
 - [`v1-goal-and-program-lifecycle.md`](v1-goal-and-program-lifecycle.md)
 - [`v1-scheduling-flexibility.md`](v1-scheduling-flexibility.md)
@@ -44,4 +45,4 @@ Use [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md) for the current project state
 
 ## Reading rule
 
-If two product documents appear to overlap, use the more specific V1 document for behavior, then check accepted ADR/architecture constraints and the active workstream handoff. Do not discard older docs solely because a newer navigation layer exists; Git and the repository preserve the evolution of the product definition.
+For high-level product identity, start with the accepted [`product-identity-and-north-star.md`](product-identity-and-north-star.md). For detailed behavior, use the more specific V1 product document, then check accepted domain/architecture decisions and the active workstream handoff. Do not discard older docs solely because a newer product definition exists; Git and the repository preserve the evolution of LifeOS.

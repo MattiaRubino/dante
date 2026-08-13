@@ -1,8 +1,8 @@
 # Project Status
 
-- Last updated: 2026-08-11
+- Last updated: 2026-08-13
 - Canonical branch: `main`
-- Current product stage: V1 product definition complete; Phase 4 UX prototyping in progress; backend/domain foundation ready to start in parallel; multi-actor discovery/research evidence integrated into `main`
+- Current product stage: accepted LifeOS Product Identity / North Star established; Phase 4 UX moving into structural rebaseline; Core Domain Model progressing in parallel on its active branch
 - Production application code: not started yet
 - Documentation/governance consolidation: **COMPLETE on `main`**
 
@@ -22,7 +22,8 @@ Conversation history is useful context but is not the canonical project state wh
 
 ## Completed / accepted foundations
 
-- Product vision and V1 scope are defined.
+- [`docs/product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) is the **Accepted current living definition of LifeOS product identity and North Star**. It defines what LifeOS is, its whole-life orchestration direction, capability boundaries and non-negotiable product principles without freezing final UX, autonomy, pricing, providers or release scope.
+- Product vision and V1 scope are defined; older high-level vision wording remains useful context where it does not conflict with the accepted North Star.
 - Detailed V1 product-definition documents are integrated into `main`.
 - Core V1 concepts and user flows are documented, including Goal, Program, Project, Routine, Activity/Event, reminders, planned-versus-actual execution, confirmations, provenance, onboarding, learning, health/wellness boundaries and work/meeting lifecycle.
 - Web direction: Next.js + React + TypeScript.
@@ -42,12 +43,12 @@ Conversation history is useful context but is not the canonical project state wh
 
 ### Phase 4 — Home / Today UX
 
-- Status: **IN PROGRESS**
+- Status: **IN PROGRESS — structural frontend rebaseline is the next design step**
 - Branch: `prototype/phase-4-today-home`
 - Pull request: #2
 - Handoff: [`docs/workstreams/today-home.md`](workstreams/today-home.md)
-- Detailed Phase 4 prototype documentation remains on its active branch until accepted and merged.
-- Branch-local `docs/phase-4/frontend-master.md` is the exact operational source for the latest Phase 4 iteration.
+- The approved Home + Today visual/mechanical baseline remains preserved while the product structure is reassessed against the accepted Product Identity / North Star.
+- The next question is no longer merely how to refine Calendar/Today, but what graphical/product structure correctly represents LifeOS as a whole-life operating system.
 
 ### Backend Foundation
 
@@ -57,9 +58,11 @@ Conversation history is useful context but is not the canonical project state wh
 
 ### Core Domain Model
 
-- Status: **READY TO START / may progress with backend foundation**
-- Preferred initial execution: bounded slice inside `feature/backend-foundation` if both tracks would otherwise edit the same core files
-- Handoff: [`docs/workstreams/domain-model.md`](workstreams/domain-model.md)
+- Status: **IN PROGRESS on unmerged branch `feature/domain-model`**
+- Active branch: `feature/domain-model`
+- Branch baseline: current `main`; branch-local domain documentation is authoritative only within that workstream until integrated
+- Handoff: branch-local [`docs/workstreams/domain-model.md`](workstreams/domain-model.md)
+- Current domain work is validating Relationships / Reasoning semantics and related dependencies before implementation; accepted branch-local Domain Atlas terminology must not be copied piecemeal into `main` before normal integration/coherence review.
 
 ## Completed evidence workstreams
 
@@ -75,13 +78,12 @@ Conversation history is useful context but is not the canonical project state wh
 
 ## Immediate next work
 
-1. Continue Phase 4 UX independently on its prototype branch.
-2. Start the backend foundation from current `main` without waiting for final visual design.
-3. Define Domain Model v0 and invariants before committing to the complete SQL schema.
-4. Implement the first vertical slice only after the core domain model is coherent: Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation.
-5. Add registers, assets, skills, requirements/capabilities and semantic relations incrementally rather than designing every specialist module upfront.
-6. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
-7. Treat the integrated multi-actor simulation/research as evidence only. If the project intentionally chooses to act on it, start a separate evidence-synthesis / Multi-Actor Readiness workstream rather than continuing generic research or promoting research vocabulary directly into binding domain decisions.
+1. Use the accepted Product Identity / North Star as the basis for a **structural frontend rebaseline** before further redesign: determine what graphical/product structure represents LifeOS beyond a Calendar/Goals-centered mental model.
+2. Preserve the approved Home + Today prototype baseline while this structural review is performed; do not redesign by accumulation of badges, controls or isolated modules.
+3. Continue the Core Domain Model work independently on `feature/domain-model` under its V3 validation/write-gate process.
+4. Start/continue backend implementation only after the relevant domain slices are coherent and integrated through the normal workflow.
+5. Replace Phase 4 mock data progressively with versioned backend APIs when both sides are ready.
+6. Treat product simulations and multi-actor research as evidence rather than automatic implementation commitments.
 
 ## Repository coherence baseline
 
@@ -102,6 +104,7 @@ This is a dated baseline, not a permanent assumption. Before future merges or ha
 - `main` is the integrated source of truth; feature/fix/docs/prototype branches feed it through PRs.
 - Current accepted `main` takes precedence over historical branches and conversation memory.
 - A branch is authoritative only for its scoped unmerged work; it does not override unrelated accepted decisions.
+- The accepted Product Identity / North Star is a **living definition**: it guides current product work but may be deliberately revised, documented and versioned when stronger evidence or product understanding justifies change.
 - DEV, UAT and PROD are environments, not permanent Git branches.
 - Do not create per-user database tables or databases.
 - Do not turn the entire product into arbitrary JSON or one universal graph table.
@@ -123,6 +126,7 @@ Incremental progress normally updates the workstream handoff, not this global st
 - `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are integrated into `main`.
 - completed `docs/project-governance*` helper branches: historical/obsolete after consolidation; no unique accepted work ahead of `main` at the last audit.
 - `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
+- `feature/domain-model`: active unmerged Core Domain Model workstream; branch-local domain decisions do not become `main` truth until normal integration.
 - `docs/multi-actor-discovery`: historical evidence branch after PR #6 merge; its accepted evidence is now integrated into `main` and `main` is authoritative.
 
-Historical branches and Git history are retained. Consolidation did not delete prior documentation or history.
+Historical branches and Git history are retained. Consolidation does not require deleting prior documentation or history.
