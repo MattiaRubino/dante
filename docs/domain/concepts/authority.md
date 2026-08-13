@@ -544,3 +544,49 @@ Authority ↔ family-specific acceptance  RESOLVED
 ```
 
 Decision/Approval/effective canonical change, Principal/enforcement/detailed delegation, Agreement/Consent, Policy/Role conditions and qualified Authority persistence remain independently owned dependencies. No Authority reopening is required.
+
+---
+
+# 2026-08-13 — Decision / Approval / effective-change closure amendment
+
+Decision v0 resolves the previously deferred `Decision / Approval / effective canonical change` boundary without changing Authority semantics.
+
+Current canonical separation:
+
+```text
+Authority
+= who/what may legitimately make a bounded governed effect effective
+
+Decision
+= what bounded question was resolved to what result
+
+Effective target state
+= owned by the affected domain concept
+```
+
+Therefore:
+
+```text
+Decision != Authority
+Approval != Authority
+Authority != Decision record/result
+Authority != effective state itself
+```
+
+Approval is now classified as **scoped Decision/review-result semantics**. An Approval may exercise or depend on Authority, but the existence of an Approval does not create Authority, and satisfying an approval requirement does not itself prove that the governed target state has already changed.
+
+A material target/version change does not inherit prior Approval/Decision automatically. Decision time, effective-change time and later Actual time remain separable.
+
+Reconciliation is a process/pattern that may culminate in Decision; it is not a universal primitive. The affected concept owns the resulting transition, so no universal `EffectiveChange` root is introduced.
+
+The historical Authority SAFE DEFERRED item is downstream-closed as:
+
+```text
+Authority ↔ Decision                     RESOLVED
+Authority ↔ Approval                     RESOLVED
+Authority ↔ effective target state       RESOLVED
+```
+
+Principal/enforcement/detailed delegation, Consent, Agreement, Policy/Role conditions, Version/material equivalence and qualified Authority persistence remain independently owned dependencies.
+
+**Authority v0 verdict is unchanged. REOPEN = 0.**
