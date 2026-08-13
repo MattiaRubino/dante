@@ -1373,3 +1373,51 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 closes Schedule's detailed provider/source-precedence and conflict-resolution semantic dependency without changing Schedule identity or temporal semantics.
+
+Canonical separation:
+
+```text
+competing Schedule proposals / material states
+!= Reconciliation
+!= current accepted Schedule
+!= later Actual
+
+Reconciliation
+= contextual process/capability handling material competition
+
+Schedule
+= owner of the current accepted/effective temporal assignment
+```
+
+A provider placement, user edit, organizer proposal, AI proposal or offline branch does not become current merely because it is newer, arrived last, comes from a particular provider, or was created by the organizer. Source Precedence is valid only when a bounded policy/Authority establishes it for the relevant target/facet/context/time.
+
+Reconciliation may select one state, combine compatible temporal changes, correct/supersede a state, defer, escalate or leave the conflict unresolved. An already-authorized deterministic scheduling rule may reconcile a bounded conflict without fabricating a human Decision; a material judgment may instead culminate in a separate Decision.
+
+Availability, Capacity and Temporal Constraints may inform feasibility/evaluation, but none is a universal winner-selection rule. The resulting current Schedule remains owned by Schedule; Actual later records what really occurred rather than being used as reconciliation history.
+
+Version preserves competing/predecessor material Schedule states and Provenance preserves materially relevant lineage/basis. Conflict/source/rationale Visibility remains independently governed, including safe free/busy projections.
+
+Universal last-write-wins, newest-provider-wins, organizer-always-wins and user-always-wins remain rejected.
+
+Downstream classification:
+
+```text
+Schedule ↔ Reconciliation       RESOLVED
+Schedule ↔ Source Precedence    RESOLVED — bounded policy only
+Schedule ↔ Actual               RESOLVED — expectation vs reality unchanged
+```
+
+Proposal reusable identity, exact effective dating, provider mapping, Principal/enforcement, retention and physical sync/persistence remain independently SAFE DEFERRED.
+
+No Schedule hardening failed. **Schedule remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
