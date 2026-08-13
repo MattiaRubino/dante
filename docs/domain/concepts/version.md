@@ -1,6 +1,6 @@
 # Version / Material-State v0
 
-**Status:** Proposed baseline — PASS WITH HARDENING; post-write QA pending  
+**Status:** Current accepted baseline — PASS WITH HARDENING; post-write QA PASS  
 **Validated:** 2026-08-13  
 **Validation standard:** Domain Validation Methodology v3  
 **Cluster:** Relationships / Reasoning v0  
@@ -917,7 +917,7 @@ Normative validation checkpoint:
 
 - `../checkpoints/version-material-equivalence-v0-validation.md`
 
-Read-only V3 result before this write:
+V3 and post-write result:
 
 ```text
 VERSION / MATERIAL EQUIVALENCE v0
@@ -930,4 +930,4 @@ REOPEN                          0
 unclassified material items     0
 ```
 
-The hardenings above are incorporated into this candidate baseline. Canonical acceptance still depends on completing the approved documentation propagation and post-write QA against pre-scope commit `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`.
+The hardenings above are incorporated. The approved 42-path documentation propagation and post-write QA against pre-scope commit `1008aeb0367de4ae73a8e8d41a76aee9e0493f34` passed; Version v0 is the current accepted Domain Atlas baseline.
