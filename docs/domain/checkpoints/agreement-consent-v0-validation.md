@@ -1,6 +1,6 @@
 # Agreement / Consent v0 — Validation Checkpoint
 
-**Status:** PASS WITH HARDENING — hardenings incorporated and documentation propagation complete; pending post-write scope QA  
+**Status:** PASS WITH HARDENING — hardenings incorporated + post-write QA PASS  
 **Validated:** 2026-08-13  
 **Validation standard:** [Domain Validation Methodology v3](../validation-methodology-v3.md)  
 **Cluster:** Relationships / Reasoning v0  
@@ -564,7 +564,7 @@ AGREEMENT / CONSENT FAMILY
 PASS WITH HARDENING
 ```
 
-Current result pending post-write QA:
+Accepted baseline result:
 
 ```text
 Agreement
@@ -627,7 +627,7 @@ Do not reopen by vocabulary alone.
 
 # 17. Cluster integration
 
-Not applicable yet: Cluster 5 remains open and must continue candidate re-scoring **only after this milestone reaches post-write QA PASS**.
+Not applicable yet: Cluster 5 remains open and must continue candidate re-scoring only after this milestone reaches post-write QA PASS.
 
 ---
 
@@ -670,28 +670,42 @@ Root `README.md`, `docs/PROJECT-STATUS.md`, prototype, SQL/API/auth/backend are 
 
 ---
 
-# 19. Git QA gate
+# 19. Post-write QA — PASS
 
-The milestone becomes an accepted Domain Atlas baseline only after full diff QA against:
+Validated against pre-scope commit:
 
 ```text
 0d4bb2458082f9a6d4e752d83960cea9033a05ad
 ```
 
-Required checks:
+QA result:
 
-- exactly the approved 18 unique paths changed;
-- 3 new files + 15 modified files;
-- no out-of-scope path changed;
-- Language Map, Domain README, Multi-Actor Readiness and workstream agree;
-- historical checkpoint material is preserved with explicit downstream closure rather than silent rewrite;
-- Agreement != Decision/Authority/Responsibility/Consent/Contract/Actual;
-- Consent != Visibility/Authority/technical Permission/Agreement/Decision;
-- generic Assent/Acceptance remains rejected;
-- Participation `accepted` remains family-specific response semantics;
-- purpose/scope, withdrawal/history, unequal-power and on-behalf-of hardenings remain visible;
-- `REOPEN = 0`, unclassified material dependencies = 0;
-- no main/prototype/SQL/API/auth/backend/global-status/product-evidence changes;
-- branch remains behind current main by 0.
+```text
+approved unique paths changed          18 / 18
+new files                               3 / 3
+modified files                         15 / 15
+out-of-scope paths                      0
+structural REOPEN                       0
+unclassified material dependencies     0
+main baseline                           c5120ff463e027c42f4a26fc613d0917596ca738
+branch behind main                      0
+```
 
-Do not re-score/select the next candidate until this QA passes.
+Validated conditions:
+
+- `language-map.md`, Domain README, Multi-Actor Readiness and workstream agree on Agreement/Consent meanings and milestone state;
+- the historical Clusters 1–4 deferred-dependency checkpoint is preserved byte-for-semantic-history with only an additive Agreement/Consent downstream appendix in this scope;
+- historical concept/checkpoint semantics remain reconstructible and downstream closures are explicit;
+- Agreement remains distinct from one-Actor response, Acknowledgement, Decision, Authority, Responsibility, Consent, Contract and Actual;
+- Consent remains distinct from Visibility, Authority, technical authorization/Permission, Agreement, Decision, Acknowledgement/Confirmation/family response and legal-validity proof;
+- Participation `accepted` remains family-specific response semantics and Participation itself was not modified by this milestone;
+- generic cross-domain Acceptance/Assent remains rejected;
+- universal Contract and universal Consent/Permission roots remain rejected;
+- purpose/scope, withdrawal/history, unequal-power, on-behalf-of and AI no-inference hardenings remain explicit;
+- all SAFE DEFERRED items have owner, exact reopening trigger and tests;
+- main, prototype, SQL, API, auth, backend, root README, PROJECT-STATUS and historical product evidence are untouched;
+- branch is current with main (`behind = 0`).
+
+**Agreement / Consent v0 is now part of the validated branch baseline.**
+
+The write approval for this scope is consumed. The next valid operation is a fresh read-only re-score of the remaining Relationships / Reasoning candidate/dependency space.
