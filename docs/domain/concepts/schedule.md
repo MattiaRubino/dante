@@ -1337,3 +1337,39 @@ Schedule ↔ Reconciliation boundary  RESOLVED semantically
 Version/material-equivalence mechanics, proposal reusable identity, detailed provider/source-precedence reconciliation, technical Principal/enforcement, offline/sync conflicts and physical revision persistence remain independently deferred.
 
 **Schedule v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 closes Schedule's former `Version / material-equivalence`, revision-history and stale-base conflict dependencies without changing Schedule identity or temporal semantics.
+
+```text
+Schedule identity/context
+= the accepted temporal-assignment context for a schedulable subject
+
+Schedule material state
+= the materially relevant accepted placement state at a point in its history
+
+Version
+= a reference to that material state for the purpose/facet being evaluated
+```
+
+A material reschedule, unscheduling, precision change, or materially different placement creates a later material Schedule state while preserving the same Schedule/subject identity unless the operation establishes a genuinely different independent placement. Historical proposals, Acknowledgements, Participation responses, Decisions, Confirmations and evaluations remain bound to the Schedule state they actually concerned.
+
+Prior semantic state does not silently carry across a material Schedule change. Non-material equivalence may preserve applicability only when the relevant temporal facet/purpose is unchanged. Provider `SEQUENCE`, ETag, sync revision, hash or storage row version may support integration/concurrency but does not define LifeOS semantic Schedule Version automatically.
+
+Concurrent/offline Schedule edits may branch from one material base state. Version preserves those divergent states and bases; Authority/Decision/reconciliation determines which state becomes current or whether a merged/reconciled state is created. Version itself does not choose the winner and last-write-wins is not a canonical rule.
+
+AI/system scheduling proposals and material mutations must retain the material base state where stale application could overwrite newer intent. After material divergence, a stale proposal/action must be re-evaluated rather than silently applied.
+
+Schedule history may remain reconstructible without requiring universal event sourcing, one versions table, or indefinite retention of all private source payloads. Visibility of a Schedule projection remains separate from Visibility of hidden source state/history.
+
+The historical Version/revision/offline-conflict dependency is now downstream-closed semantically. Proposal reusable identity, detailed provider/source-precedence reconciliation, Principal/enforcement, retention and physical persistence remain independently owned.
+
+No Schedule hardening failed. **Schedule remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
