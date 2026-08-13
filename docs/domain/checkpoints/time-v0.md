@@ -1087,3 +1087,48 @@ Normative downstream references:
 - `../concepts/decision.md`;
 - `../concepts/schedule.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 19. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the Time checkpoint's historical `Version / revision policy` and offline/sync material-state dependencies without changing the original Time-cluster verdict.
+
+Canonical temporal state separation:
+
+```text
+source identity
+!= source material state
+!= generated Occurrence identity
+!= Occurrence material exception/state
+!= accepted Schedule material state
+!= Session / Actual realization
+```
+
+For Routine/Recurrence, structural future-policy changes create later material policy/rule states. Historical Occurrences retain the source Version that generated or governed them. `This occurrence` changes the instance state; `this and future` changes the source/Recurrence state from a defined boundary.
+
+For Occurrence, one-off reschedule/skip/cancel/assignment exceptions can evolve as material state without changing Occurrence identity. Concurrent/offline edits may branch from one base and remain reconstructible until reconciliation.
+
+For Schedule, material rescheduling/unscheduling/precision changes create later material accepted-placement states. Acknowledgements, Participation responses, Decisions, Confirmations and evaluations remain bound to the Schedule state actually concerned; prior semantic state does not silently carry across material change.
+
+Version does not choose current policy, placement, truth or winning branch. Authority/Decision/reconciliation and the owning temporal concept establish current/effective state. Provider `SEQUENCE`, series revision, ETag, sync token, hash or storage row version may support integration/concurrency but do not define semantic Version automatically.
+
+Purpose/facet-specific material equivalence allows irrelevant metadata changes to preserve applicability without pretending that all field changes are semantically equal. AI/system proposals and mutations must retain a material base state where stale application could overwrite newer user/domain intent.
+
+This closure does **not** mandate event sourcing, one versions table, snapshot/delta persistence, eager Occurrence materialization, or indefinite retention of private source payloads.
+
+Downstream classification:
+
+```text
+Time cluster ↔ Version/material equivalence    RESOLVED
+Version ↔ current temporal-state selection     RESOLVED — not owner
+```
+
+Still independently SAFE DEFERRED are exact DST/travel policy types, Trigger boundary, Event-series persistence, materialization horizon, Principal/enforcement, Participation/attendance implementation details, retention and final physical/API representation.
+
+No Time hardening failed. **Time v0 remains PASS, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
