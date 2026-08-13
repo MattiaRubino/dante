@@ -354,3 +354,58 @@ Before closing:
 - [x] workstream handoff updated;
 - [x] no universal `users.id`, User root or Actor entity pre-approved;
 - [x] dependency owners/reopening triggers recorded.
+
+---
+
+# 13. Downstream closure — Representation / Principal boundary (2026-08-13)
+
+Representation v0 resolves the historical `delegated/on-behalf-of action` semantic dependency and narrows the historical `Principal` deferral without changing the original identity verdict.
+
+Current canonical separation:
+
+```text
+Person
+= native human identity
+
+Actor
+= actual contextual semantic agency
+
+Account
+= platform/access identity
+
+Representation / on-behalf-of
+= actual Actor acts for a distinct represented party for a bounded semantic action/context
+
+Principal
+= technical authenticated/authorized security identity
+```
+
+Therefore:
+
+```text
+Person != Actor != Account != Principal
+actual Actor != represented party
+Representation != Principal
+Representation != Authority
+```
+
+Downstream classification:
+
+```text
+delegated/on-behalf-of semantic relation   RESOLVED by Representation v0
+Principal as LifeOS domain primitive       REJECTED
+exact Principal/AuthN/AuthZ mechanics      SAFE DEFERRED to security/logical model
+```
+
+A caregiver/helper/AI/service may act for another party while preserving its own actual Actor identity. The represented party requires no synthetic Account and does not become the actual Actor merely because an effect is produced for them.
+
+Delegation remains bounded Authority-establishment/entrustment semantics; it does not become a universal cross-domain primitive or imply Responsibility transfer/re-delegation.
+
+Legal capacity/guardianship/power-of-attorney validity and physical typed-reference/security representation remain separately SAFE DEFERRED.
+
+No Person/Actor/Account hardening failed. **Checkpoint remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
