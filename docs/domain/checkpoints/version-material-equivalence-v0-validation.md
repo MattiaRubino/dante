@@ -798,7 +798,7 @@ No accepted concept requires structural reopening.
 | per-family material-equivalence rules | materiality differs by purpose | SAFE DEFERRED | global flag rejected; owning semantics already define consequence | owning concept/product policy | a family cannot decide carry-forward without changing Version semantics | CORE-02/04/09/13, MA-05/06/11/17 |
 | branch/merge algorithm | concurrent states need operational handling | SAFE DEFERRED | divergence can remain unresolved; Version need not merge | reconciliation/logical | concurrency cannot be represented without universal LWW/merge inside Version | CORE-02/09/10/13, MA-12/18 |
 | exact effective dating | must know which state governed time T | SAFE DEFERRED | historical/action-time distinction fixed | Time/logical | action-time state cannot be reconstructed | CORE-02/09/13, MA-11, XCON-03 |
-| provider mapping | external histories differ | SAFE DEFERRED | native/provider identity separation fixed | integration/Provenance | provider mapping creates duplicate/overwrite ambiguity | CORE-09/13, MA-09/18 |
+| provider mapping | external histories differ | SAFE DEFERRED | native/provider IDs distinct | integration/Provenance | provider mapping creates duplicate/overwrite ambiguity | CORE-09/13, MA-09/18 |
 | retention/redaction | history vs privacy tension | SAFE DEFERRED | history does not mandate full payload retention | privacy/retention | deletion makes required applicability impossible | CORE-02/09/10, MA-07/08/11/13 |
 | versioned evaluation/rule snapshots | historical reasoning may need rules | SAFE DEFERRED | only consequential evaluations need material basis | GoalCriterion/Trigger/evaluation | current rules rewrite historical conclusions | CORE-02/09/10/13 |
 
@@ -1106,3 +1106,47 @@ branch behind main               0
 Historical checkpoints remain reconstructible; old product glossary, root README, PROJECT-STATUS, main, prototype, SQL/API/backend/auth remain untouched by this scope.
 
 Version v0 is the current accepted Domain Atlas baseline.
+
+---
+
+# 14. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's historical `branch / merge / source-precedence mechanics` dependency without reopening Version.
+
+Current separation:
+
+```text
+Version / Material-State
+= identify/reconstruct materially relevant states and divergence
+
+Reconciliation
+= contextual process/capability handling materially competing states/assertions
+
+Source Precedence
+= bounded contextual policy/basis
+```
+
+Version preserves divergent states such as `S2A` and `S2B`; it does not choose a winner because one arrived later, has a larger provider revision, or is the latest technical write. Reconciliation may select, combine, correct, supersede, escalate, defer or preserve conflict unresolved under applicable bounded policy and Authority.
+
+Universal last-write-wins, newest-source-wins, provider-always-wins, user-always-wins and globally linear semantic history remain rejected. ETag, MVCC, CRDT and synchronization mechanisms may support technical concurrency but do not become domain Reconciliation or Source Precedence.
+
+Where Reconciliation produces a later material state, Version may preserve multiple material predecessors while Provenance preserves lineage. The owning domain concept remains owner of the resulting current/effective state under applicable Authority/Decision/policy.
+
+History, source, conflict and reconciliation-basis Visibility remain independently governed. AI may detect divergence or propose a merge, but may not silently erase a competing state or exceed applicable policy/Authority.
+
+Downstream classification:
+
+```text
+Version ↔ Reconciliation          RESOLVED
+Version ↔ Source Precedence       RESOLVED — not owner
+Version ↔ technical concurrency   RESOLVED — distinct
+```
+
+Per-family material-equivalence rules, exact effective dating, provider mapping, retention/deletion, versioned evaluation/rule snapshots and identity-replacement thresholds remain independently SAFE DEFERRED.
+
+No Version hardening failed. **Version remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
