@@ -1,7 +1,7 @@
 # Decision v0
 
-**Status:** Current accepted baseline candidate — pending post-write QA  
-**Validated:** 2026-08-13  
+**Status:** Current accepted baseline  
+**Accepted:** 2026-08-13  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Relationships / Reasoning
 
@@ -256,17 +256,24 @@ Generic cross-domain Acceptance remains rejected.
 
 Family-specific positive response may contribute to a later Decision but does not become Decision automatically.
 
-Likewise future Agreement and Consent semantics must remain able to answer different questions:
+Agreement and Consent are now separate canonical semantic families:
 
 ```text
 Decision
-what was resolved?
+what bounded question was resolved?
 
 Agreement
-what materially specific terms did parties mutually assent/commit to?
+which applicable parties mutually assented to the same materially specific terms/version?
 
 Consent
-what bounded action/use/exposure did an eligible actor permit?
+what bounded action/use/exposure did an eligible actor explicitly permit for which scope/purpose/context?
+```
+
+Therefore:
+
+```text
+Decision != Agreement
+Decision != Consent
 ```
 
 A manager may decide something without employee Agreement. Two parties may agree before an authorized third-party Decision/effect. Consent withdrawal may affect future action without erasing historical Decisions.
@@ -339,6 +346,8 @@ A shared Decision may coexist with:
 
 - different actor stances;
 - different Acknowledgement states;
+- Agreement or lack of Agreement;
+- actor-scoped Consent states;
 - unequal Authority;
 - accountless external approvers;
 - represented parties;
@@ -385,6 +394,7 @@ AI must not silently:
 
 - turn a recommendation into a human Decision;
 - infer a human Decision from behavior;
+- infer Agreement or Consent from a Decision;
 - exceed applicable Authority;
 - expose private rationale/Evidence merely because it was used;
 - rewrite a prior human Decision to match later Actual;
@@ -425,7 +435,7 @@ Decision result visible
 != Provenance visible
 ```
 
-AI explanations must respect the same boundary and avoid inferential disclosure.
+Agreement/Consent existence and histories also have their own Visibility. AI explanations must respect these boundaries and avoid inferential disclosure.
 
 ---
 
@@ -539,7 +549,6 @@ Rejected:
 
 Decision v0 deliberately leaves the following independently owned areas open:
 
-- Agreement / Consent;
 - exact Version / material-equivalence mechanics;
 - Principal / delegation / on-behalf-of;
 - proposal/request reusable identity;
@@ -549,7 +558,9 @@ Decision v0 deliberately leaves the following independently owned areas open:
 - exact persistence/cardinality/API representation;
 - specialist approval/signature/legal workflows.
 
-Each has an owner/reopening trigger/test set in `checkpoints/decision-v0-validation.md`.
+Agreement / Consent is now downstream RESOLVED at the semantic-boundary level and is no longer an open Decision dependency.
+
+Each remaining dependency has an owner/reopening trigger/test set in `checkpoints/decision-v0-validation.md`.
 
 ---
 
@@ -570,3 +581,41 @@ optional governed effect(s) owned by affected concepts
 It does not accept a universal workflow/state-transition ontology.
 
 Future evidence may reopen the boundary, but any broader proposal must demonstrate that the narrow model loses required identity, history, Authority, privacy, queryability or product value.
+
+---
+
+# 22. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 closes Decision's former `Agreement / Consent` SAFE DEFERRED dependency without changing Decision semantics.
+
+Current canonical decomposition:
+
+```text
+Decision
+= bounded contextual resolution to a result
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Decision ↔ Agreement  RESOLVED
+Decision ↔ Consent    RESOLVED
+```
+
+A shared Decision may exist without Agreement of all affected parties. Agreement may exist before any governed effect or authoritative Decision. Consent may be a precondition/basis for some actions but is neither the Decision nor Authority and can later be withdrawn for future use without erasing historical Decisions.
+
+Generic cross-domain Assent/Acceptance remains rejected. Remaining Decision dependencies are Version/material equivalence, Principal/delegation, Proposal identity, detailed reconciliation/source precedence, collective Decision, GoalCriterion/evaluation, exact persistence/API and specialist approval/signature/legal workflows.
+
+No Decision hardening failed; **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `agreement.md`;
+- `consent.md`;
+- `../checkpoints/agreement-consent-v0-validation.md`.
