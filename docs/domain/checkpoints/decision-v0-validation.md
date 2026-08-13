@@ -675,3 +675,71 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 18. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves the checkpoint's historical `Version / material-equivalence mechanics` SAFE DEFERRED dependency without reopening Decision.
+
+The original V3 rule now has an explicit shared state model:
+
+```text
+Decision D1 / Approval A1 -> materially reviewed state S1
+later materially changed state S2
+→ S1 remains reconstructible
+→ D1/A1 remain historical decisions about S1
+→ D1/A1 do not silently apply to S2
+```
+
+Materiality is purpose/facet scoped and cannot be inferred from a database update, provider revision, ETag/MVCC token, content hash or same target ID. A materially equivalent later state may remain covered where the owning policy explicitly supports that equivalence.
+
+Version also strengthens the existing Reconciliation boundary:
+
+```text
+state S1
+├─ divergent S2A
+└─ divergent S2B
+
+Version/material-state
+= preserve/reconstruct the divergence
+
+Reconciliation / Decision / Authority
+= determine select/merge/correct/retain-unresolved behavior where applicable
+```
+
+No universal last-write-wins or globally linear history is accepted.
+
+Downstream classification:
+
+```text
+Decision/Approval ↔ Version/material state       RESOLVED
+Version ↔ Reconciliation                         RESOLVED — not equal
+Version ↔ Authority                              RESOLVED — not equal
+Version ↔ Provenance                             RESOLVED — state vs lineage
+technical/provider revision ↔ material Version   RESOLVED — not equal
+```
+
+Remaining SAFE DEFERRED Decision dependencies:
+
+- proposal/request reusable identity;
+- detailed reconciliation/source-precedence policy;
+- collective Decision/quorum/voting;
+- GoalCriterion/evaluation;
+- exact persistence/cardinality/API;
+- specialist approval/signature/legal workflows.
+
+AI/system decision proposals/actions must retain their material base state where consequence requires it. If the target materially changes before effect, blind stale application is prohibited; applicability must be re-evaluated under the owning policy/Authority.
+
+Mandatory regression reuse:
+
+- `R-DEC-01` proposal v1 approval → material v2;
+- `R-VER-06` concurrent divergent edits;
+- `R-VER-07` stale-base AI proposal.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
