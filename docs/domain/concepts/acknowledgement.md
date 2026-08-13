@@ -664,3 +664,54 @@ Normative downstream references:
 - `agreement.md`;
 - `consent.md`;
 - `../checkpoints/agreement-consent-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes Acknowledgement's former `Principal / delegation / on-behalf-of` semantic dependency without changing Acknowledgement.
+
+Current canonical separation:
+
+```text
+Acknowledgement
+= explicit taking-notice by the actual acknowledging Actor
+
+Representation / on-behalf-of
+= that actual Actor acted for a distinct represented party in the bounded acknowledgement action/context
+
+Principal
+= technical request identity
+
+Authority / delegation basis
+= whether the represented action is legitimate/effective for the represented party where applicable
+```
+
+Therefore:
+
+```text
+Representation != Acknowledgement
+actual acknowledging Actor != represented party by default
+Principal != acknowledging Actor
+```
+
+A representative pressing `Acknowledge` does **not** silently become a personal Acknowledgement by the represented party. If applicable Authority/policy treats the represented action as effective for a bounded workflow, LifeOS still preserves the actual Actor, represented party and basis rather than rewriting authorship.
+
+Technical impersonation, shared credentials or AI/service execution cannot fabricate a human Acknowledgement. AI/service actors remain attributable as themselves where material.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive                   REJECTED
+universal Delegation primitive                  REJECTED
+```
+
+Exact Principal/AuthN/AuthZ mechanics, legal/specialist representation validity, Version/material equivalence, understanding/comprehension, audit storage, collective acknowledgement and retention remain SAFE DEFERRED.
+
+No Acknowledgement hardening failed. **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
