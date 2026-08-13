@@ -609,3 +609,41 @@ Normative downstream references:
 
 - `../concepts/representation.md`;
 - `representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 12. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the checkpoint's historical `Version/material-version mechanics` dependency without changing the original Provenance validation result.
+
+Canonical separation:
+
+```text
+Version
+= materially relevant target state reference
+
+Provenance
+= lineage explaining how that state came to exist/change
+```
+
+Historical corrections and derivations preserve the exact material predecessor/source states that actually influenced the result. A later source correction does not retroactively rewrite the provenance of an earlier derived value or Decision.
+
+Non-linear branch history is valid: two offline/concurrent descendants may both retain lineage to a common prior state. A later merge/reconciliation may produce a new state with several material predecessors. Version does not select the winner; Provenance does not establish truth or Authority.
+
+Technical/provider versions, hashes, ETags and storage revisions may remain useful provenance/concurrency metadata but do not define semantic Version materiality automatically. Historical lineage also remains subject to retention/minimization constraints.
+
+Downstream classification:
+
+```text
+Provenance ↔ Version/material state   RESOLVED
+Version ↔ Provenance                  RESOLVED — distinct
+```
+
+Audit/security history, detailed source precedence/reconciliation, Principal/security, Verification/signature, retention and physical lineage representation remain independently owned.
+
+No original Provenance hardening failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
