@@ -1,17 +1,18 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Representation / on-behalf-of v0 post-write QA PASS**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Version / material-equivalence v0 propagation written; final post-write QA in progress**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
-- Completed Representation pre-scope baseline: `b6c53ffa40ba7c1c1408f583856617a0e000f31b`
+- Version pre-scope baseline: `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current QA-closed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision, Agreement / Consent, Representation / on-behalf-of**
+- Current QA-closed Cluster-5 reviews before Version: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision, Agreement / Consent, Representation / on-behalf-of**
+- Version v0: **PASS WITH HARDENING — hardenings incorporated; approved 42-path propagation written; final QA pending**
 - Generic cross-domain **Acceptance / Assent remains rejected**.
-- Universal **Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative and Delegation roots remain rejected**.
-- Current exact task: **fresh re-score of the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; no next candidate is preselected**.
-- After re-score: **select one highest-leverage candidate/family, execute one full Methodology v3 cycle through propagation analysis, then stop before Git write**.
+- Universal **Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative, Delegation and Version roots/tables remain rejected**.
+- Current exact task: **complete final Version post-write QA against `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`; verify exactly 42 approved paths, preservation, final HEAD and main comparison**.
+- After QA PASS only: **consume the Version write approval, move the workstream baseline to final HEAD, then run a fresh re-score of remaining Relationships / Reasoning candidate/dependency space; no next candidate is preselected**.
 
 ## Purpose
 
@@ -45,7 +46,9 @@ Read in order:
 16. Agreement + Consent concepts + joint checkpoint
 17. [`../domain/concepts/representation.md`](../domain/concepts/representation.md)
 18. [`../domain/checkpoints/representation-delegation-principal-v0-validation.md`](../domain/checkpoints/representation-delegation-principal-v0-validation.md)
-19. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+19. [`../domain/concepts/version.md`](../domain/concepts/version.md)
+20. [`../domain/checkpoints/version-material-equivalence-v0-validation.md`](../domain/checkpoints/version-material-equivalence-v0-validation.md)
+21. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 
 Then inspect only concepts pressured by the newly selected review.
 
@@ -202,6 +205,8 @@ Principal domain primitive      REJECTED
 Universal Agent/Representative  REJECTED
 Universal Delegation            REJECTED
 Impersonation-as-domain-truth    REJECTED
+Version v0                      PASS WITH HARDENING — FINAL QA PENDING
+Universal Version root/table    REJECTED
 
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
 Validation Methodology v3       ACTIVE MANDATORY STANDARD
@@ -225,6 +230,7 @@ what bounded question was resolved?       Decision
 which parties mutually assented?          Agreement
 who permitted bounded use/action?         Consent
 who actually acted for which party?       Representation / on-behalf-of
+which material target state matters?      Version / material equivalence
 what state is now effective?              affected domain concept
 what actually happened?                   Actual
 how did it arise/change?                   Provenance
@@ -235,6 +241,14 @@ Security identity remains separate:
 ```text
 Person != Account != Principal
 Actor != Account/Principal
+```
+
+Material-state identity remains separate:
+
+```text
+native identity != material state != Version reference
+Version != provider/storage revision
+Version != current-state selection / Authority / Decision
 ```
 
 ---
@@ -264,6 +278,10 @@ universal Agent/Representative root
 universal Delegation root
 blanket delegation
 technical impersonation as domain attribution truth
+universal Version entity/root/table
+global material-equivalence rule
+provider/ETag/storage revision as semantic Version truth
+mandatory event sourcing/version graph for all concepts
 ```
 
 Do not reintroduce a rejected abstraction without explicit reopening and stronger evidence.
@@ -394,7 +412,6 @@ technical impersonation mechanics
 action-specific delegability/policy
 legal/specialist representation capacity
 represented Agreement/Consent legal validity
-Version/material scope
 multi-hop delegation persistence
 Verification of representation basis
 Organization/group/collective representation
@@ -402,6 +419,8 @@ retention/audit/privacy
 AI/service delegation chain
 exact persistence/cardinality/API representation
 ```
+
+The former Version/material-scope dependency is now semantically resolved by Version v0.
 
 ---
 
@@ -540,14 +559,112 @@ Associated rejected universal abstractions remain rejected.
 
 ---
 
-# 16. Current next action
+# 16. Version / material-equivalence v0 — current milestone
 
-Run a **fresh re-score** of the remaining demonstrated candidate/dependency space.
+Canonical question:
 
-Examples:
+> **Which materially relevant state of this target is being referred to for this purpose/facet?**
+
+Current canonical separation:
 
 ```text
-Version / material equivalence
+native identity
+!= material state
+!= Version reference
+!= provider/storage revision
+```
+
+Version hardenings:
+
+```text
+materiality is purpose/facet scoped
+prior semantic state does not silently carry across material change
+non-linear/offline divergent history is valid
+Version does not choose current truth/winner/effective state
+Authority/Decision/reconciliation + owning concept select/establish current state
+AI proposals/effects preserve material base state where stale application matters
+source Version != projection Version automatically
+historical reconstructibility != indefinite sensitive-payload retention
+```
+
+Rejected:
+
+```text
+universal Version root/entity/table
+global material-equivalence rule
+provider/ETag/storage revision as semantic Version
+mandatory event sourcing or universal Version graph
+```
+
+V3 result:
+
+```text
+CORE-01..13    PASS / PASS WITH HARDENING
+MA-01..20      PASS / PASS WITH HARDENING
+XCON-01..06    PASS / PASS WITH HARDENING
+ADS            complete
+REOPEN         0
+unclassified   0
+```
+
+---
+
+# 17. Version propagation / QA gate
+
+Approved pre-scope:
+
+```text
+1008aeb0367de4ae73a8e8d41a76aee9e0493f34
+```
+
+Approved scope:
+
+```text
+42 unique paths
+2 CREATE
+40 UPDATE
+```
+
+Current write state:
+
+```text
+concept/checkpoint          written
+hardenings                  incorporated
+semantic downstream closure written
+navigation/handoff          being finalized
+post-write QA               pending
+approval                    NOT YET consumed
+```
+
+Final QA requirements remain exactly those recorded in `version-material-equivalence-v0-validation.md`, including exact 42-path diff, preservation, final HEAD, main behind=0 and no out-of-scope implementation/product-history changes.
+
+---
+
+# 18. Current next action
+
+Complete Version v0 final post-write QA.
+
+Only after QA PASS:
+
+```text
+consume Version write approval
+↓
+record final branch HEAD as new validated baseline
+↓
+fresh re-score of remaining demonstrated candidate/dependency space
+↓
+one full V3 cycle
+↓
+propagation analysis
+↓
+STOP BEFORE NEXT GIT WRITE
+```
+
+No next candidate is preselected.
+
+Examples remaining for the future re-score include:
+
+```text
 Proposal / request reusable identity
 Detailed reconciliation / source-precedence policy
 Dependency
@@ -567,21 +684,9 @@ retention/audit
 Personal Knowledge generic link layer
 ```
 
-No candidate is preselected. Version ranked second before Representation but must compete again against the updated dependency graph.
-
-After selection:
-
-```text
-one full V3 cycle
-↓
-propagation analysis
-↓
-STOP BEFORE NEXT GIT WRITE
-```
-
 ---
 
-# 17. Before broad implementation
+# 19. Before broad implementation
 
 ```text
 finish Relationships / Reasoning candidate reviews
@@ -617,7 +722,7 @@ No final SQL/API jump from the current semantic stage.
 
 ---
 
-# 18. Git / handoff discipline
+# 20. Git / handoff discipline
 
 `main` remains integrated source of truth. `feature/domain-model` is newer only inside its unmerged Domain Model scope.
 
