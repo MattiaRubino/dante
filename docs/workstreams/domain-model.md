@@ -1,60 +1,52 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Version / material-equivalence v0 QA PASS; next exact step = fresh candidate/dependency re-score**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Reconciliation / Source Precedence v0 propagation complete; final QA pending**
 - Active branch: `feature/domain-model`
-- Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
-- Version pre-scope baseline: `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`
+- Current upstream `main`: `2739e96955974d1273e704905ace03f9ac478e05`
+- Current branch pre-this-scope HEAD: `c06eab35b46fd043c1438cdd5a2d97885195650a`
+- Reconciliation pre-scope baseline: `f2c28d0f4fe6ec6afe1b5934ec4279422a09605a`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current QA-closed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision, Agreement / Consent, Representation / on-behalf-of, Version / material equivalence**
-- Version v0: **PASS WITH HARDENING — hardenings incorporated; approved 42-path propagation complete; post-write QA PASS; current accepted Domain Atlas baseline**
-- Generic cross-domain **Acceptance / Assent remains rejected**.
-- Universal **Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative, Delegation and Version roots/tables remain rejected**.
-- Version QA result: **42 / 42 approved paths; 2 CREATE + 40 UPDATE; out-of-scope paths 0; preservation PASS; CORE/MA/XCON/ADS complete; RESOLVED 19; SAFE DEFERRED 6; REOPEN 0; unclassified 0; branch behind main 0**.
-- Version write approval: **consumed after QA PASS**.
-- Current exact task: **fresh re-score of remaining demonstrated Relationships / Reasoning candidate/dependency space; no next candidate is preselected**.
-- After re-score: **select one candidate/family only, execute one complete V3 cycle, calculate propagation, then STOP BEFORE the next Git write gate**.
+- Accidental probe cleanup: **QA PASS** at `c06eab35b46fd043c1438cdd5a2d97885195650a`
+- Reconciliation v0: **PASS WITH HARDENING — hardenings incorporated; 28-path propagation now complete; final diff/semantic QA pending**
+- Current exact task: **run Reconciliation post-write QA against `f2c28d0...`, verify exactly 28 approved paths, no extras, preservation/coherence, V3 completeness, current-doc markers and main freshness**
+- `main` contains one newer product-direction/North-Star commit. Its semantic impact was reviewed read-only and did not reopen Reconciliation; branch synchronization remains a separate Git scope.
+- After Reconciliation QA PASS: **consume Reconciliation write approval, then resolve the separate main-sync gate before starting the next candidate review**.
 
 ## Purpose
 
 Turn LifeOS product requirements into the smallest implementation-ready semantic model that survives real workflows without prematurely fixing specialist modules, collaboration/IAM infrastructure, final APIs or SQL tables.
 
-Earlier product terminology is evidence, not automatic truth.
+Earlier product terminology and current product-direction documents are evidence inputs, not automatic ontology truth.
 
 > **Accepted means current best decision, not immutable decision.**
 
 ---
 
-# 1. Required reading — current handoff
+# 1. Required reading
 
 Read in order:
 
-1. [`../domain/README.md`](../domain/README.md)
-2. [`../domain/language-map.md`](../domain/language-map.md)
-3. [`../domain/validation-methodology-v3.md`](../domain/validation-methodology-v3.md)
-4. [`../domain/validation-execution-template-v3.md`](../domain/validation-execution-template-v3.md)
-5. [`../domain/multi-actor-readiness-v1.md`](../domain/multi-actor-readiness-v1.md)
-6. [`../domain/checkpoints/data-subjects-v0.md`](../domain/checkpoints/data-subjects-v0.md)
-7. [`../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
-8. [`../domain/checkpoints/cross-cluster-validation-v4.md`](../domain/checkpoints/cross-cluster-validation-v4.md)
-9. [`../domain/checkpoints/relationship-v0-validation.md`](../domain/checkpoints/relationship-v0-validation.md)
-10. Responsibility concept + checkpoint
-11. Participation concept + checkpoint
-12. Authority concept + checkpoint
-13. Visibility concept + checkpoint
-14. Acknowledgement concept + checkpoint
-15. Decision concept + checkpoint
-16. Agreement + Consent concepts + joint checkpoint
-17. [`../domain/concepts/representation.md`](../domain/concepts/representation.md)
-18. [`../domain/checkpoints/representation-delegation-principal-v0-validation.md`](../domain/checkpoints/representation-delegation-principal-v0-validation.md)
-19. [`../domain/concepts/version.md`](../domain/concepts/version.md)
-20. [`../domain/checkpoints/version-material-equivalence-v0-validation.md`](../domain/checkpoints/version-material-equivalence-v0-validation.md)
-21. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
+1. `docs/domain/README.md`
+2. `docs/domain/language-map.md`
+3. `docs/domain/validation-methodology-v3.md`
+4. `docs/domain/validation-execution-template-v3.md`
+5. `docs/domain/multi-actor-readiness-v1.md`
+6. `docs/domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`
+7. `docs/domain/checkpoints/cross-cluster-validation-v4.md`
+8. Relationship / Responsibility / Participation / Authority / Visibility concepts + checkpoints
+9. Acknowledgement concept + checkpoint
+10. Decision concept + checkpoint
+11. Agreement / Consent concepts + joint checkpoint
+12. Representation concept + checkpoint
+13. Version concept + checkpoint
+14. Reconciliation concept + checkpoint
+15. `docs/domain/checkpoints/multi-actor-evidence-synthesis-v0.md`
 
 Then inspect only concepts pressured by the newly selected review.
 
-Do not redo Clusters 1–4 or QA-closed Cluster-5 reviews unless stronger evidence exposes an actual contradiction.
+Do not redo QA-closed concepts unless stronger evidence exposes an actual contradiction.
 
 ---
 
@@ -65,13 +57,11 @@ One candidate/family at a time.
 ```text
 fresh candidate selection / re-score
 ↓
-problem + evidence formation before nouns
+problem + evidence formation
 ↓
 EV-01 internal evidence
 EV-02 workflow inversion
-EV-03 external benchmark
-      BORROW / ADAPT / ALREADY STRONGER /
-      ANTI-PATTERN / NOT APPLICABLE
+EV-03 external benchmark classification
 EV-04 smallest candidate
 ↓
 identity / independence / boundaries / deferrals
@@ -87,7 +77,7 @@ RESOLVED / SAFE DEFERRED / REOPEN
 ↓
 adversarial log
 reopening/dependency register
-regression corpus additions
+regression additions
 ↓
 verdict
 ↓
@@ -104,81 +94,29 @@ A SAFE DEFERRED item requires:
 - exact reopening trigger;
 - exact tests/boundaries to rerun.
 
-No material `TBD`/generic `review later` is valid.
-
-Once a candidate review begins, execute the whole V3 autonomously. Stop only for a real REOPEN/user decision or at the Git write gate.
+No material `TBD` or generic `review later` is valid.
 
 After a coherent read-only review:
 
-1. state branch;
-2. state exact pre-scope SHA;
-3. state exact create/update path scope;
-4. wait for explicit approval;
-5. write only approved paths;
-6. QA full diff against pre-scope;
-7. confirm no out-of-scope path;
-8. consume approval after QA PASS;
-9. only then fresh re-score.
-
-Canonical rule:
-
 ```text
-V3 verdict in chat
-!= accepted Domain Atlas baseline
-
-accepted baseline
-= complete V3
-+ hardenings incorporated
-+ propagation
-+ approved write
-+ post-write QA PASS
+state branch
++ exact pre-scope SHA
++ exact file scope
+↓
+explicit approval
+↓
+write only approved scope
+↓
+QA against pre-scope
+↓
+approval consumed only after QA PASS
+↓
+fresh re-score only then
 ```
 
-Historical checkpoints remain reconstructible; later resolutions use explicit downstream amendments.
-
 ---
 
-# 3. Product / evidence rules
-
-LifeOS is a **personal-first adaptive personal operating system**, not an enterprise workflow suite, IAM product, contract platform, clinical system or provider clone.
-
-External systems are benchmark evidence, never design authority.
-
-Preferred direction:
-
-```text
-LifeOS semantics
-↓
-strong internal model
-↓
-optional adapters
-↓
-external systems
-```
-
-Benchmark behavior, lifecycle, history/correction, failure modes, privacy, Authority, sync and product cost — not nouns.
-
----
-
-# 4. Language / documentation rules
-
-Canonical quick terminology source: `docs/domain/language-map.md`.
-
-Precedence:
-
-1. accepted concept spec;
-2. Language Map;
-3. current checkpoint guardrails;
-4. this handoff;
-5. current product docs;
-6. historical product docs/glossaries;
-7. conversation memory.
-
-A UI/product noun does not create a primitive. Historical checkpoint material is not silently rewritten for vocabulary uniformity.
-
----
-
-# 5. Current validated baseline
+# 3. Current validated baseline
 
 ```text
 Intention & Execution v0        PASS
@@ -194,512 +132,259 @@ Participation v0                PASS WITH HARDENING
 Authority v0                    PASS WITH HARDENING
 Visibility v0                   PASS WITH HARDENING
 Acknowledgement v0              PASS WITH HARDENING — QA PASS
-Generic Acceptance / Assent     REJECTED
 Decision v0                     PASS WITH HARDENING — QA PASS
-Universal Approval              REJECTED
-Universal Reconciliation        REJECTED
-Universal EffectiveChange       REJECTED
 Agreement / Consent v0          PASS WITH HARDENING — QA PASS
+Representation v0               PASS WITH HARDENING — QA PASS
+Version v0                      PASS WITH HARDENING — QA PASS
+Reconciliation v0               PASS WITH HARDENING — FINAL QA PENDING
+
+Generic Acceptance / Assent     REJECTED
+Universal Approval              REJECTED
+Universal EffectiveChange       REJECTED
 Universal Contract              REJECTED
 Universal Consent/Permission    REJECTED
-Representation v0               PASS WITH HARDENING — QA PASS
 Principal domain primitive      REJECTED
 Universal Agent/Representative  REJECTED
 Universal Delegation            REJECTED
 Impersonation-as-domain-truth    REJECTED
-Version v0                      PASS WITH HARDENING — QA PASS
 Universal Version root/table    REJECTED
-
-Multi-Actor Evidence Synthesis  PASS WITH HARDENING
-Validation Methodology v3       ACTIVE MANDATORY STANDARD
-
-structural reopenings           0
-unclassified material debt      0
+Universal Reconciliation root   REJECTED
+Universal Conflict root         REJECTED
+Universal SourcePrecedence rank REJECTED
+Universal LWW/newest-wins       REJECTED
 ```
 
 ---
 
-# 6. Current concept/capability decomposition
+# 4. Current Relationships / Reasoning decomposition
 
 ```text
-who acts?                                  Actor
-who is accountable?                       Responsibility
-who is involved?                          Participation
-who may govern?                           Authority
-what may be exposed?                      Visibility
-who explicitly noticed?                   Acknowledgement
-what bounded question was resolved?       Decision
-which parties mutually assented?          Agreement
-who permitted bounded use/action?         Consent
-who actually acted for which party?       Representation / on-behalf-of
-which material target state matters?      Version / material equivalence
-what state is now effective?              affected domain concept
-what actually happened?                   Actual
-how did it arise/change?                   Provenance
-```
+who acts?
+→ Actor
 
-Security identity remains separate:
+who is accountable?
+→ Responsibility
 
-```text
-Person != Account != Principal
-Actor != Account/Principal
-```
+who is involved?
+→ Participation
 
-Material-state identity remains separate:
+who may legitimately govern/effect?
+→ Authority
 
-```text
-native identity != material state != Version reference
-Version != provider/storage revision
-Version != current-state selection / Authority / Decision
+what may be exposed?
+→ Visibility
+
+who explicitly took notice?
+→ Acknowledgement
+
+what bounded question was resolved?
+→ Decision
+
+which parties mutually assented?
+→ Agreement
+
+who permitted bounded action/use/exposure?
+→ Consent
+
+who actually acted for which distinct party?
+→ Representation / on-behalf-of
+
+which material target state matters?
+→ Version / material equivalence
+
+how are materially competing states/assertions handled?
+→ Reconciliation / Source Precedence discipline
+
+what state becomes effective/current?
+→ affected domain concept
+
+what actually happened?
+→ Actual
+
+how did the record/state arise?
+→ Provenance
 ```
 
 ---
 
-# 7. Current rejected kernel abstractions
-
-Includes:
-
-```text
-universal Register/RegisterEntry
-universal Subject/Actor/Resource/User/ManagedObject roots
-universal Relationship root / semantic-free related_to
-universal Responsibility/Assignment/Claim/Hand-off roots
-universal Participant/Invitation/Attendance roots
-universal Authority/admin/Permission root
-universal Access/Visibility ACL root
-universal delivery/read/Acknowledgement state machine
-universal cross-domain Acceptance/Assent root
-universal Approval root
-universal Reconciliation root
-universal EffectiveChange/StateTransition root
-Decision object for every mutation
-universal Agreement/Contract root
-universal Consent/Permission root
-Principal as LifeOS domain primitive
-universal Agent/Representative root
-universal Delegation root
-blanket delegation
-technical impersonation as domain attribution truth
-universal Version entity/root/table
-global material-equivalence rule
-provider/ETag/storage revision as semantic Version truth
-mandatory event sourcing/version graph for all concepts
-```
-
-Do not reintroduce a rejected abstraction without explicit reopening and stronger evidence.
-
----
-
-# 8. Representation / on-behalf-of v0 — completed milestone
+# 5. Reconciliation / Source Precedence v0
 
 Canonical question:
 
-> **Who actually acted, and for which distinct party was that action performed or asserted in this bounded context?**
+> **Which materially competing states/assertions concern this bounded target/question, what applicable resolution basis exists, and what — if anything — becomes current/effective without rewriting history?**
+
+Current classification:
 
 ```text
-Representation / on-behalf-of
-CANONICAL CONTEXTUAL ACTION-SCOPED RELATION / CAPABILITY
+Reconciliation
+= CANONICAL cross-cutting reasoning/process capability
 
-✅ actual Actor preserved
-✅ represented party distinct
-✅ action/context scoped
-✅ Authority/delegation/policy/basis separable
-✅ history-sensitive where material
+Conflict
+= contextual/derived condition
+!= universal root
 
-❌ native entity/root
-❌ Principal
-❌ Authority
-❌ Responsibility
-❌ Subject/beneficiary
-❌ Provenance
-❌ represented-person will by implication
+Source Precedence
+= contextual bounded policy/basis when justified
+!= universal source ranking
 ```
 
-`Representative` is contextual role language, not identity.
-
-### Delegation
+Core non-collapse:
 
 ```text
-bounded Authority-establishment / entrustment pattern
+Reconciliation != Decision
+Reconciliation != Authority
+Reconciliation != Actual
+Reconciliation != Version
+Reconciliation != Provenance
+Reconciliation != Evidence
+Reconciliation != technical merge/sync
 ```
 
-No universal root, blanket transfer or automatic re-delegation.
+Mandatory hardenings include:
 
-### Principal
-
-```text
-technical authenticated/authorized request identity
-```
-
-Security/logical-model only; not a domain primitive.
-
-### Impersonation
-
-Possible technical mechanism only:
-
-```text
-technical impersonation != domain attribution truth
-```
+- conflict detection != conflict resolution;
+- unresolved conflict is valid;
+- newer/more frequent/more recent does not automatically win;
+- source identity/Provenance/recency do not create Authority or truth;
+- Source Precedence is bounded to target/facet/purpose/context/time;
+- no universal source ranking;
+- effective/current state remains owned by the affected concept;
+- deterministic authorized resolution need not fabricate a human Decision;
+- historical competing states/assertions remain reconstructible;
+- result Visibility does not imply source/conflict/rationale Visibility;
+- AI may detect/compare/propose but cannot silently invent canonical precedence;
+- specialist source-of-record precedence remains context-bounded;
+- CRDT/merge/ETag/MVCC/sync mechanics remain implementation concerns.
 
 ---
 
-# 9. Representation hardenings
+# 6. Reconciliation V3 result
 
 ```text
-actual Actor != represented party
-represented party != Subject/beneficiary automatically
-Representation != Authority
-Representation claim != established Authority
-Representation != Responsibility
-Representation != Provenance
-Principal != Actor
-Account != Principal
-represented Person requires no synthetic Account
-re-delegation not implied
-revoked/expired basis != never existed
-AI/service action != human action/will
-```
-
-Action-specific scope:
-
-```text
-Authority to schedule for Anna
-!= Authority to consent for Anna
-!= Authority to agree for Anna
-!= Authority to acknowledge for Anna
-!= Authority to disclose Anna's private data
-!= Authority to re-delegate
-```
-
-Representative action does not fabricate represented-party Acknowledgement, Confirmation, Agreement, Consent or Decision. Any represented effect requires an applicable action-specific basis while truthful Actor attribution remains intact.
-
----
-
-# 10. Representation V3 / external evidence
-
-Selection came from a fresh dependency-leverage re-score, narrowly ahead of Version/material equivalence.
-
-Benchmark classifications:
-
-```text
-RFC 8693 delegation actor/subject separation        ADAPT
-RFC 8693 impersonation as domain truth              ANTI-PATTERN
-FHIR Provenance who/onBehalfOf                       ADAPT
-W3C PROV actedOnBehalfOf                             ADAPT
-W3C Authority/Responsibility coupling                ANTI-PATTERN if copied literally
-NIST security-identity separation                    ALREADY STRONGER / confirmation
-IAM Principal as domain primitive                    NOT APPLICABLE
-```
-
-V3 result:
-
-```text
-CORE-01..13    PASS / PASS WITH HARDENING
-MA-01..20      PASS / PASS WITH HARDENING
-XCON-01..06    PASS / PASS WITH HARDENING
-ADS            complete
-REOPEN         0
-unclassified   0
-```
-
----
-
-# 11. Representation SAFE DEFERRED dependencies
-
-All are non-blocking with owner/trigger/tests in the Representation checkpoint:
-
-```text
-exact Principal/AuthN/AuthZ/enforcement
-technical impersonation mechanics
-action-specific delegability/policy
-legal/specialist representation capacity
-represented Agreement/Consent legal validity
-multi-hop delegation persistence
-Verification of representation basis
-Organization/group/collective representation
-retention/audit/privacy
-AI/service delegation chain
-exact persistence/cardinality/API representation
-```
-
-The former Version/material-scope dependency is now semantically resolved by Version v0.
-
----
-
-# 12. Representation regression additions
-
-```text
-R-REP-01 valid bounded Representation → revocation → later attempt
-R-REP-02 represented Person != actual Actor != Account != Principal != Authority basis
-R-REP-03 guardian/parent Authority concerning child != child's personal Agreement/Consent/will
-R-REP-04 helper records statement without automatic Representation
-R-REP-05 AI/service policy → AI Actor preserved; no human authorship/Decision
-R-REP-06 unauthorized re-delegation
-R-REP-07 technical impersonation/shared credential → actual Actor preserved
-R-REP-08 shared represented effect + private representation/delegation basis
-```
-
----
-
-# 13. Representation propagation scope — completed
-
-Pre-scope:
-
-```text
-b6c53ffa40ba7c1c1408f583856617a0e000f31b
-```
-
-Approved unique paths: **25**.
-
-### CREATE
-
-```text
-docs/domain/concepts/representation.md
-docs/domain/checkpoints/representation-delegation-principal-v0-validation.md
-```
-
-### UPDATE — current state
-
-```text
-docs/domain/language-map.md
-docs/domain/README.md
-docs/workstreams/domain-model.md
-docs/domain/multi-actor-readiness-v1.md
-```
-
-### UPDATE — downstream closures
-
-```text
-docs/domain/concepts/person.md
-docs/domain/concepts/actor.md
-docs/domain/checkpoints/person-actor-account-v0-validation.md
-docs/domain/concepts/authority.md
-docs/domain/checkpoints/authority-v0-validation.md
-docs/domain/concepts/participation.md
-docs/domain/checkpoints/participation-v0-validation.md
-docs/domain/concepts/acknowledgement.md
-docs/domain/checkpoints/acknowledgement-v0-validation.md
-docs/domain/concepts/confirmation.md
-docs/domain/checkpoints/confirmation-v0-validation.md
-docs/domain/concepts/decision.md
-docs/domain/checkpoints/decision-v0-validation.md
-docs/domain/concepts/agreement.md
-docs/domain/concepts/consent.md
-docs/domain/checkpoints/agreement-consent-v0-validation.md
-docs/domain/concepts/provenance.md
-docs/domain/checkpoints/provenance-v0-validation.md
-docs/domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md
-```
-
-Intentionally untouched:
-
-```text
-Visibility concept/checkpoint
-Responsibility concept/checkpoint
-Actual
-Schedule/Time
-Resource
-Cross-Cluster v4
-product discovery/research/simulations
-old product glossary
-root README
-PROJECT-STATUS
-main
-prototype
-SQL/API/auth/backend implementation
-Version concept
-```
-
----
-
-# 14. Representation post-write QA — PASS
-
-Validated against `b6c53ffa40ba7c1c1408f583856617a0e000f31b`.
-
-```text
-approved unique paths changed          25 / 25
-new files                                2 / 2
-modified files                          23 / 23
-out-of-scope paths                       0
-structural REOPEN                        0
-unclassified material dependencies      0
-main                                    c5120ff463e027c42f4a26fc613d0917596ca738
-branch behind main                       0
-```
-
-Validated:
-
-- full V3 coverage;
-- hardenings incorporated;
-- every SAFE DEFERRED item has owner/trigger/test set;
-- actual Actor != represented party;
-- Person/Actor/Account/Principal split intact;
-- Representation != Authority/Responsibility/Subject/Provenance;
-- representative action does not fabricate Ack/Confirmation/Agreement/Consent/Decision;
-- Delegation remains bounded Authority semantics;
-- Principal remains security-only;
-- technical impersonation is not domain truth;
-- historical checkpoints retain original material plus downstream amendments;
-- Clusters 1–4 checkpoint preserves historical content and adds Representation appendix;
-- no out-of-scope implementation/global/product-evidence changes;
-- branch behind main = 0.
-
-The Representation write approval is **consumed**.
-
----
-
-# 15. Previous QA-closed milestones
-
-```text
-Acknowledgement v0    PASS WITH HARDENING — QA PASS
-Decision v0           PASS WITH HARDENING — QA PASS
-Agreement/Consent v0  PASS WITH HARDENING — QA PASS
-Representation v0     PASS WITH HARDENING — QA PASS
-```
-
-Associated rejected universal abstractions remain rejected.
-
----
-
-# 16. Version / material-equivalence v0 — completed milestone
-
-Canonical question:
-
-> **Which materially relevant state of this target is being referred to for this purpose/facet?**
-
-Current canonical separation:
-
-```text
-native identity
-!= material state
-!= Version reference
-!= provider/storage revision
-```
-
-Version hardenings:
-
-```text
-materiality is purpose/facet scoped
-prior semantic state does not silently carry across material change
-non-linear/offline divergent history is valid
-Version does not choose current truth/winner/effective state
-Authority/Decision/reconciliation + owning concept select/establish current state
-AI proposals/effects preserve material base state where stale application matters
-source Version != projection Version automatically
-historical reconstructibility != indefinite sensitive-payload retention
-```
-
-Rejected:
-
-```text
-universal Version root/entity/table
-global material-equivalence rule
-provider/ETag/storage revision as semantic Version
-mandatory event sourcing or universal Version graph
-```
-
-V3 result:
-
-```text
-CORE-01..13    PASS / PASS WITH HARDENING
-MA-01..20      PASS / PASS WITH HARDENING
-XCON-01..06    PASS / PASS WITH HARDENING
-ADS            complete
-RESOLVED       19
-SAFE DEFERRED   6
+CORE-01..13     PASS / PASS WITH HARDENING
+MA-01..20       PASS / PASS WITH HARDENING
+XCON-01..06     PASS / PASS WITH HARDENING
+ADS             complete
 REOPEN          0
 unclassified    0
 ```
 
+Regression additions cover:
+
+- user correction vs newer provider state;
+- credible conflicting sources with no sufficient winner;
+- independent concurrent changes;
+- same-facet unresolved conflict;
+- bounded specialist source-of-record;
+- deterministic authorized resolution without fabricated human Decision;
+- stale-base AI proposal after material divergence;
+- historical resolution under later-revoked Authority;
+- shared result with private competing source;
+- authoritative Decision without fabricated Agreement;
+- high-frequency source unable to win by recency/count;
+- reconciliation creating a new material Version with predecessor history.
+
 ---
 
-# 17. Version propagation / post-write QA — PASS
+# 7. Reconciliation propagation scope
 
 Approved pre-scope:
 
 ```text
-1008aeb0367de4ae73a8e8d41a76aee9e0493f34
+f2c28d0f4fe6ec6afe1b5934ec4279422a09605a
 ```
 
 Approved scope:
 
 ```text
-42 unique paths
+28 unique paths
 2 CREATE
-40 UPDATE
+26 UPDATE
 ```
 
-Validated result:
+Current propagation includes:
 
-```text
-approved unique paths changed          42 / 42
-new files                                2 / 2
-modified files                          40 / 40
-out-of-scope paths                       0
-preservation                             PASS
-CORE / MA / XCON / ADS                   COMPLETE
-RESOLVED                                19
-SAFE DEFERRED                            6
-REOPEN                                   0
-unclassified material dependencies      0
-main baseline                           c5120ff463e027c42f4a26fc613d0917596ca738
-branch behind main                       0
-```
+- Reconciliation concept + V3 checkpoint;
+- current Language Map / Domain README / Multi-Actor Readiness / this handoff;
+- Actual / Observation / Outcome;
+- Evidence / Provenance / Confirmation;
+- Authority / Decision / Version;
+- Schedule / Time;
+- integrated Observed Reality & Evidence checkpoint;
+- historical Clusters 1–4 deferred-closure amendment.
 
-Historical checkpoints remain reconstructible. The old product glossary, root README, PROJECT-STATUS, main, prototype, SQL/API/backend/auth implementation were untouched by the Version scope.
-
-The Version write approval is **consumed**. Version v0 is the current accepted Domain Atlas baseline.
+The accidental `__schema_probe_do_not_create__` file was outside the Reconciliation semantic scope and has been removed in a separately approved cleanup commit.
 
 ---
 
-# 18. Current next action
+# 8. Reconciliation SAFE DEFERRED debt
 
-Run a **fresh re-score** of remaining demonstrated Relationships / Reasoning candidate/dependency space.
-
-Then:
+Still independently owned:
 
 ```text
-select one candidate/family only
-↓
-execute full V3 autonomously
-↓
-calculate documentation propagation
-↓
-STOP BEFORE NEXT GIT WRITE
-```
-
-No next candidate is preselected.
-
-Examples remaining for the re-score include:
-
-```text
-Proposal / request reusable identity
-Detailed reconciliation / source-precedence policy
-Dependency
-Coordination Stewardship
-Contribution
+per-domain/source precedence policies
 GoalCriterion / evaluation
-Evidence ↔ Criterion/evaluation
-Resource Requirement / Allocation / Reservation / substitution
-Verification / comprehension
-AI Proposal
-focus/context relationships
+Proposal / request reusable identity
 Trigger / conditional policy
-collective/group/quorum semantics
-Principal/AuthN/AuthZ implementation boundary
-legal/specialist representation capacity
-retention/audit
-Personal Knowledge generic link layer
+technical merge / CRDT / sync algorithms
+native-identity duplicate merge/split
+specialist source-of-record mappings
+collective/quorum resolution
+Principal/AuthN/AuthZ enforcement
+retention/audit of competing historical payloads
+physical representation/cardinality/API
 ```
 
-These are candidates/dependencies, not a checklist of primitives.
+Each remains subject to its owner/reopening triggers in the Reconciliation checkpoint.
 
 ---
 
-# 19. Before broad implementation
+# 9. Product / North-Star evidence rule
+
+The current `main` includes a newer LifeOS product-direction/North-Star document.
+
+It is treated as product evidence, not Domain Atlas authority.
+
+Read-only review found it consistent with the current semantic direction, including:
 
 ```text
-finish Relationships / Reasoning candidate reviews
+history is not silently rewritten
+plan != reality
+external/source authorship remains attributable
+user Authority remains bounded
+conflict is coordinated rather than hidden
+Effort != Execution != Outcome != Goal Progress
+```
+
+The last distinction materially increases future pressure on GoalCriterion/evaluation, but does not reopen Reconciliation.
+
+Branch synchronization to that `main` commit is intentionally a separate Git scope.
+
+---
+
+# 10. Current exact next steps
+
+```text
+1. complete Reconciliation post-write QA against f2c28d0...
+2. verify exactly 28 approved paths, no extras
+3. verify concept/checkpoint V3 + hardenings + ADS
+4. verify current docs coherent
+5. verify historical checkpoints preserved
+6. verify probe absent
+7. compare against current main
+8. if QA PASS, consume Reconciliation write approval
+9. STOP before main synchronization
+10. present separate main-sync scope
+```
+
+No next Relationships / Reasoning candidate may begin before the Reconciliation gate and main-freshness gate are closed.
+
+---
+
+# 11. Before broad implementation
+
+```text
+finish remaining Relationships / Reasoning candidate reviews
 ↓
 Cluster-5 integration
 ↓
@@ -732,22 +417,22 @@ No final SQL/API jump from the current semantic stage.
 
 ---
 
-# 20. Git / handoff discipline
+# 12. Git / handoff discipline
 
-`main` remains integrated source of truth. `feature/domain-model` is newer only inside its unmerged Domain Model scope.
+`main` is the integrated source of truth. `feature/domain-model` may be newer only inside its scoped unmerged Domain Model work.
 
-For every future write:
+For every write:
 
 ```text
-state branch + exact files + pre-scope SHA
+branch + pre-scope + exact paths
 ↓
 explicit approval
 ↓
 write only approved scope
 ↓
-QA against pre-scope SHA
+QA against pre-scope
 ↓
-approval consumed
+approval consumed only after clean QA
 ```
 
-Do not place critical project state only in chat. Update this handoff after every validated milestone.
+Do not keep critical project state only in chat.
