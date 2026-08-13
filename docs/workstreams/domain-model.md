@@ -1,17 +1,17 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Decision v0 propagated, scope QA pending**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Decision v0 propagated, post-write QA PASS**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
-- Pre-scope validated commit for the current Decision milestone: `e353e2756bd159b582122c4fd73b5d5d63529b30`
+- Pre-scope validated commit for the completed Decision milestone: `e353e2756bd159b582122c4fd73b5d5d63529b30`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
 - Current completed Cluster-5 semantic reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision**
 - Generic cross-domain **Acceptance is rejected as a standalone kernel primitive**; useful positive-response semantics remain family/workflow-specific.
 - Universal **Approval**, **Reconciliation**, and **EffectiveChange/state-transition** roots are rejected; Approval remains scoped Decision/review semantics, Reconciliation a process/pattern, and effective state belongs to the affected domain concept.
-- Current exact task: **finish the approved 23-path Decision v0 documentation propagation and post-write QA against `e353e275...`**.
-- Next exact task after QA PASS: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect a next concept from roadmap vocabulary**.
+- Current exact task: **re-score the remaining Relationships / Reasoning candidate/dependency space by dependency leverage; do not preselect the next concept from roadmap vocabulary**.
+- Next exact task after re-score: **select the highest-leverage demonstrated candidate/family and execute one complete Methodology v3 cycle through documentation propagation analysis, then stop before Git write**.
 
 ## Purpose
 
@@ -205,7 +205,7 @@ Authority v0 review             PASS WITH HARDENING
 Visibility v0 review            PASS WITH HARDENING
 Acknowledgement v0 review       PASS WITH HARDENING — hardenings incorporated + post-write QA PASS
 Generic Acceptance primitive    REJECTED
-Decision v0 review              PASS WITH HARDENING — hardenings incorporated; current propagation QA pending
+Decision v0 review              PASS WITH HARDENING — hardenings incorporated + post-write QA PASS
 Universal Approval primitive    REJECTED
 Universal Reconciliation root   REJECTED
 Universal EffectiveChange root  REJECTED
@@ -216,7 +216,7 @@ structural reopenings           0
 unclassified material debt      0
 ```
 
-Decision v0 is not operationally complete until the current post-write QA passes against `e353e275...`.
+Decision v0 is operationally complete and is part of the current validated branch baseline.
 
 ---
 
@@ -331,7 +331,7 @@ proposed/sent
 
 ---
 
-# 9. Acknowledgement v0 — last fully QA-closed milestone
+# 9. Acknowledgement v0 — last common-ground milestone
 
 Canonical question:
 
@@ -351,7 +351,7 @@ Generic cross-domain Acceptance remains rejected. See `concepts/acknowledgement.
 
 ---
 
-# 10. Decision v0 — current milestone
+# 10. Decision v0 — completed milestone
 
 Canonical question:
 
@@ -410,16 +410,15 @@ Effective canonical change
 
 Full CORE-01..13, MA-01..20, XCON-01..06 and Adjacent Dependency Sweep executed.
 
-Current semantic result:
+Current result:
 
 ```text
 PASS WITH HARDENING
 hardenings incorporated
+post-write QA PASS
 REOPEN = 0
 unclassified material dependencies = 0
 ```
-
-Post-write scope QA remains pending.
 
 Regression additions:
 
@@ -436,7 +435,7 @@ R-DEC-06 shared Decision + different actor stances + selective rationale/Evidenc
 
 # 11. Current Decision SAFE DEFERRED dependencies
 
-All are non-blocking with owners/triggers in the Decision checkpoint:
+All remain non-blocking with owners/triggers/tests in the Decision checkpoint:
 
 ```text
 Agreement / Consent
@@ -454,9 +453,9 @@ No material neighbor remains unclassified.
 
 ---
 
-# 12. Current Decision propagation scope
+# 12. Completed Decision propagation scope
 
-The approved Decision milestone intentionally propagates to exactly:
+The Decision milestone propagated to exactly:
 
 ```text
 concepts/decision.md
@@ -484,39 +483,48 @@ checkpoints/acknowledgement-v0-validation.md
 checkpoints/deferred-dependency-closure-clusters-1-4-v0.md
 ```
 
-Historical discovery/research/product-glossary files, Cross-Cluster v4, root `README.md`, `docs/PROJECT-STATUS.md`, prototype, SQL/API/auth/backend are intentionally out of scope.
+Historical discovery/research/product-glossary files, Cross-Cluster v4, root `README.md`, `docs/PROJECT-STATUS.md`, prototype, SQL/API/auth/backend were intentionally left untouched.
 
 ---
 
-# 13. Current exact QA gate
+# 13. Decision post-write QA — PASS
 
-Before Decision v0 becomes the next validated branch baseline, verify against:
+Validated against pre-scope commit:
 
 ```text
 e353e2756bd159b582122c4fd73b5d5d63529b30
 ```
 
-Required QA:
+QA result:
 
-- exactly the 23 approved paths changed;
-- no other path changed;
-- both new Decision files exist;
-- Language Map, Domain README, Multi-Actor Readiness and this handoff agree;
-- historical concept/checkpoint amendments are additive/downstream, not destructive rewrites;
-- Approval remains scoped Decision/review semantics, not Authority/effect/root;
-- Reconciliation remains a process/pattern, not universal root;
-- effective state remains owned by affected domain concept;
-- Authority/Actual/Responsibility/Provenance/Evidence/Schedule/Confirmation/Acknowledgement boundaries remain intact;
-- Agreement/Consent/Version/Principal/proposal/collective/evaluation dependencies remain SAFE DEFERRED with owner/trigger/tests;
-- `REOPEN = 0` and unclassified material dependencies = 0;
-- main, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend remain untouched;
-- branch remains coherent against current main baseline.
+```text
+approved paths changed               23 / 23
+out-of-scope paths                    0
+new Decision files                    2 / 2
+structural REOPEN                     0
+unclassified material dependencies   0
+current main baseline                 c5120ff463e027c42f4a26fc613d0917596ca738
+branch behind current main            0
+```
 
-If QA fails, repair only within the already-approved scope when the fix is truly part of this milestone; otherwise stop for a new write scope.
+Validated conditions:
+
+- Language Map, Domain README, Multi-Actor Readiness and workstream agree;
+- historical concept/checkpoint material is preserved with explicit downstream Decision closures rather than silent historical rewrites;
+- Approval remains scoped Decision/review semantics and is not Authority/effect/root;
+- Reconciliation remains a process/pattern, not a universal root;
+- effective state remains owned by the affected domain concept;
+- Authority, Actual, Responsibility, Provenance, Evidence, Schedule, Confirmation and Acknowledgement boundaries remain intact;
+- Agreement/Consent, Version, Principal/delegation, proposal identity, collective Decision, evaluation and detailed reconciliation remain classified SAFE DEFERRED with executable owners/triggers/tests;
+- generic Acceptance remains rejected;
+- no universal Approval/Reconciliation/EffectiveChange root was introduced;
+- main, prototype, root README, PROJECT-STATUS, product evidence, SQL/API/auth/backend were not touched by this milestone.
+
+The Decision write approval is consumed after this QA PASS.
 
 ---
 
-# 14. Next action after Decision QA PASS
+# 14. Current next action
 
 Do **not** continue from the old roadmap order.
 
@@ -545,7 +553,9 @@ Personal Knowledge generic link layer
 
 These are **candidate space, not a checklist of primitives**.
 
-Do not preselect the next candidate until the current Decision scope QA has passed.
+Selection must use dependency leverage, existing SAFE DEFERRED pressure, product value, cross-cluster impact, implementation-readiness blocking risk and ontology/specialist-system cost.
+
+After selecting one candidate/family, execute one full v3 cycle autonomously and stop at the next Git write gate.
 
 ---
 
