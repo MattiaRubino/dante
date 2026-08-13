@@ -1096,3 +1096,46 @@ Product guardrail:
 Principal/AuthN/AuthZ implementation, action-specific policy mechanics, legal capacity/power-of-attorney, multi-hop delegation, Version/material scope, collective representation, Verification of basis and retention/audit remain independently SAFE DEFERRED.
 
 No prior Multi-Actor Readiness invariant is reopened.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream hardening
+
+Version v0 closes the cross-cutting material-state ambiguity that already appeared throughout multi-actor coordination without turning collaboration state into a universal workflow/version engine.
+
+Canonical separation:
+
+```text
+shared/native object identity
+!= material state of that object
+!= actor-scoped semantic state
+!= provider/storage revision
+
+Version
+= reference to the materially relevant state for the purpose/facet that currently matters
+```
+
+Mandatory multi-actor hardenings:
+
+- a shared object's material revision does not silently carry every participant response, Acknowledgement, Confirmation, Agreement, Consent or Decision to the new state;
+- actor-scoped states remain bound to the material target state they actually concerned;
+- one actor/provider's newer technical revision does not automatically become shared canonical truth;
+- non-linear/offline divergent states may coexist until applicable reconciliation/Authority/Decision establishes or constructs current state;
+- Version itself never selects the winning actor/provider state and never creates Authority;
+- a visible derived projection may remain materially equivalent for the recipient even when a hidden private source changes, so projection Version != private source Version automatically;
+- selective disclosure of current state does not imply access to all historical Versions, source payloads, conflicting branches, delegation basis or private rationale;
+- revocation/relationship change may alter future access without erasing materially required historical state attribution;
+- AI proposals/effects must preserve the material base state where stale application could overwrite newer actor/domain intent; after material divergence they require re-evaluation rather than silent application;
+- represented/on-behalf-of actions bind to the materially relevant target/scope state without turning Version into Representation or Authority;
+- provider ETags, sync revisions, storage row versions and hashes may support concurrency/lineage but are not semantic Version by themselves;
+- historical reconstructibility does not justify indefinite retention of sensitive payloads.
+
+Product guardrail:
+
+> **Version semantics should normally remain invisible unless the user needs to understand a meaningful change, conflict, stale proposal, prior assent, correction, or historical basis.**
+
+The readiness baseline still does not pre-approve universal Version tables, event sourcing, CRDT/collaborative-editor architecture, provider-specific sequence semantics, one global material-equivalence function, or a generic collaboration workflow state machine.
+
+Detailed reconciliation/source precedence, Proposal/request identity, GoalCriterion/evaluation, Trigger/automation, Principal/AuthN/AuthZ, collective/group/quorum semantics, Verification/comprehension, retention/audit and physical persistence remain independently reviewable.
+
+No prior Multi-Actor Readiness invariant is reopened.
