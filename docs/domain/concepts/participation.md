@@ -955,3 +955,47 @@ Participation ↔ generic Acceptance  RESOLVED — universal primitive rejected
 ```
 
 Agreement/Consent, detailed delegation/on-behalf-of, Decision/effective change, collective semantics, provider reconciliation and persistence remain separately owned dependencies. No Participation reopening is required.
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes Participation's explicit response-Actor / participant / Principal / on-behalf-of semantic boundary without changing Participation itself.
+
+Canonical separation:
+
+```text
+participant/native referent
+= whose involvement/response is at stake
+
+response Actor
+= who actually submitted/changed the Participation response
+
+Representation / on-behalf-of
+= response Actor acted for a distinct represented participant/party in that bounded action/context
+
+Principal
+= technical security identity used for the request
+```
+
+Therefore:
+
+```text
+participant != response Actor by default
+response Actor != Principal
+Representation != Participation
+Representation != Participation response
+```
+
+A represented response may have effect for the participant under applicable Authority/policy, but LifeOS does not rewrite the actual response Actor as if the participant personally performed the action.
+
+The former `Delegation / on-behalf-of` SAFE DEFERRED item is **RESOLVED at the semantic relation boundary**. Exact Principal/AuthN/AuthZ mechanics, legal/specialist representative validity, collective representation, provider evidence thresholds and physical persistence remain independently SAFE DEFERRED.
+
+AI/service submission follows the same rule: the AI/service remains the actual Actor where material and cannot manufacture a human response merely by prediction or technical access.
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
