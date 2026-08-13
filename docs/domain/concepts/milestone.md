@@ -623,3 +623,48 @@ It is not accepted as a universal standalone objective or as a synonym for progr
 The first-three-cluster Validation Methodology v3 regression confirms that Milestone remains distinct after Actual, Outcome, Observation, Confirmation, Evidence and Provenance were introduced.
 
 Any future model that stores Milestone attainment independently of its evaluation/evidence basis must explicitly reopen this boundary.
+
+---
+
+# 2026-08-13 — Downstream closure: Version / Material-State v0
+
+Version / Material-State v0 resolves the previously deferred semantic part of Milestone version/replacement behavior while preserving Milestone's accepted identity rules.
+
+```text
+Milestone identity
+!= Milestone material state
+```
+
+Ordinary changes such as target-date movement, label correction, supporting-Evidence updates or readiness changes may produce historical/material state where consequence requires it without creating a new Milestone identity.
+
+However Version does not make every redefinition a revision of the same checkpoint. The existing identity rule remains decisive:
+
+```text
+Milestone: B1 reached
+→ redefined as: C1 reached
+```
+
+may represent a different checkpoint rather than `Milestone v2`.
+
+Canonical downstream hardenings:
+
+- Version may preserve materially relevant Milestone state/history only while the checkpoint's identity remains coherent;
+- materiality is purpose-specific and is not every storage/provider/ETag revision;
+- prior Decision/Agreement/Acknowledgement/Confirmation/Evidence binding to a Milestone state does not silently float to a materially different state;
+- historical attainment/evaluation basis remains reconstructible even when the current Milestone state or Evidence changes;
+- Version does not replace Milestone lifecycle, Evidence, Decision, Provenance or GoalCriterion semantics.
+
+Therefore:
+
+```text
+Version != Milestone
+material Milestone revision != automatic new Milestone identity
+identity-breaking Milestone redefinition != merely another Version
+```
+
+Normative references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+Milestone v0 remains accepted with `REOPEN = 0`.
