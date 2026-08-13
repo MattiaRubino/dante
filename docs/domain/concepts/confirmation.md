@@ -391,3 +391,33 @@ Confirmation ↔ Approval  RESOLVED
 Agreement/Consent, Version/material equivalence, Verification, detailed reconciliation, specialist signature semantics and persistence remain independently deferred.
 
 **Confirmation v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Agreement / Consent downstream closure
+
+Agreement / Consent v0 resolves the remaining mutual-assent/permission boundary without changing Confirmation semantics.
+
+```text
+Confirmation
+= contextual affirmation of a target/version for a purpose/context
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Confirmation != Agreement
+Confirmation != Consent
+```
+
+A confirmer may affirm that terms or facts are accurately stated while refusing those terms or withholding Consent. Conversely, a party may agree to terms or grant Consent without personally confirming every supporting fact as universally true.
+
+The historical `Agreement/Consent semantics` deferral is now downstream-closed at the semantic-boundary level. Version/material equivalence, Verification, specialist signatures/legal validity, Principal/delegation and retention remain separately owned.
+
+**Confirmation v0 verdict remains unchanged. REOPEN = 0.**
