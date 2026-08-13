@@ -765,3 +765,46 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 resolves Provenance's detailed source-precedence/reconciliation dependency without changing lineage semantics.
+
+Canonical separation:
+
+```text
+Provenance
+= how a state/assertion/result came to exist or change
+
+Source Precedence
+= bounded contextual policy/basis determining how a source may be treated for a specific target/facet/purpose/context/time
+
+Reconciliation
+= process/capability handling materially competing states/assertions under the applicable bounded basis
+```
+
+Therefore:
+
+```text
+Provenance != Source Precedence
+Provenance != Reconciliation
+known source != preferred source automatically
+newer lineage != truer state automatically
+```
+
+Reconciliation may inspect Provenance to understand origin, Actor, provider, Version, derivation and correction history, but lineage does not choose a winner. A specialist source-of-record may have bounded precedence only through an applicable policy/Authority context, not because it appears in Provenance or has a provider identifier.
+
+When reconciliation establishes or constructs a new material state, Provenance may preserve competing predecessor states, the materially relevant resolution basis/process, Decision where applicable, Actor/Authority context and resulting state lineage. Earlier losing/rejected assertions remain historically attributable; resolution must not falsify their origin.
+
+Conflict/source/basis/rationale Visibility remains independently governed, and retention/minimization may limit payload history without changing the lineage-vs-precedence boundary. AI may use Provenance to propose or explain reconciliation but confidence/recency does not create precedence.
+
+The detailed source-precedence/reconciliation dependency is now downstream-closed at the semantic boundary. Exact per-domain precedence policy, native-identity merge/split, Principal/security, Verification, retention/audit and physical lineage representation remain independently owned.
+
+No Provenance hardening failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.

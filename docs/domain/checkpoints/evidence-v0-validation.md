@@ -252,12 +252,7 @@ Result: **PASS**.
 
 ## CORE-07 — External Cross-Domain Benchmark
 
-External systems support separation of:
-
-- source/claim;
-- provenance;
-- evidence/supporting information;
-- certainty/interpretation.
+External systems support separation of source/claim, provenance, evidence/supporting information, and certainty/interpretation.
 
 LifeOS adopts the separation but rejects specialist research schemas as universal kernel design.
 
@@ -693,3 +688,42 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 12. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's detailed conflict/source-precedence dependency without changing the original Evidence validation result.
+
+Canonical separation:
+
+```text
+Evidence
+= contextual evaluative input/relevance
+
+Reconciliation
+= contextual process/capability handling materially competing states/assertions under an applicable bounded basis
+```
+
+Conflicting Evidence remains Evidence; reconciliation does not erase it or convert it into one universal score. Evidence can support, contradict or qualify while Version/Provenance/Confirmation/Authority and applicable policy provide additional context. No evidence score, source recency, provider identity or AI confidence becomes universal precedence.
+
+Reconciliation may leave conflict unresolved, apply bounded specialist/source-of-record policy, culminate in Decision or deterministically resolve under already-authorized policy. Evidence itself does not select the winner or establish objective truth.
+
+A reconciled result may be visible while underlying contradictory/private Evidence remains hidden. Historical Evidence uses and source material states remain reconstructible where consequential; later resolution does not rewrite what was considered earlier.
+
+Downstream classification:
+
+```text
+Evidence ↔ detailed Reconciliation   RESOLVED
+Evidence ↔ Source Precedence         RESOLVED — bounded policy only
+Evidence ↔ winner/truth              RESOLVED — not owner
+```
+
+GoalCriterion/evaluation, weighting/admissibility, specialist policy, retention and physical representation remain independently owned.
+
+No original Evidence hardening failed. **Evidence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.

@@ -878,3 +878,43 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure amendment
+
+Reconciliation v0 closes Evidence's detailed conflict/source-precedence boundary without turning Evidence into a winner-selection or truth engine.
+
+Canonical separation:
+
+```text
+Evidence
+= information bearing on a bounded evaluation/question
+
+Reconciliation
+= process/capability handling materially competing states/assertions under an applicable bounded basis
+```
+
+Therefore:
+
+```text
+Evidence != Reconciliation
+Evidence strength/confidence != source precedence automatically
+conflicting Evidence != automatic Decision/result
+Evidence existence != objective truth
+```
+
+Reconciliation may consider supporting, contradicting and qualifying Evidence together with Version, Provenance, Confirmation, Authority and applicable policy. It may leave conflict unresolved, apply bounded specialist/source-of-record policy, culminate in Decision or deterministically resolve under already-authorized rules. No universal evidence score, recency rule or source rank becomes canonical.
+
+Evidence remains reusable across multiple evaluations and retains its source identity. A reconciliation result does not delete contradictory Evidence or rewrite the historical evaluation context. Where a new material state/result is established, Version and Provenance preserve materially relevant state/basis lineage.
+
+Conflict/Evidence/source/rationale Visibility remains independently governed; a shareable reconciled result does not expose private Evidence automatically. AI may identify contradictions or propose a resolution, but confidence alone does not establish precedence or Authority.
+
+The detailed reconciliation/source-precedence dependency is now downstream-closed at the semantic boundary. GoalCriterion/evaluation semantics, admissibility/weighting, specialist policy, retention and physical Evidence representation remain independently owned.
+
+No Evidence hardening failed. **Evidence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.

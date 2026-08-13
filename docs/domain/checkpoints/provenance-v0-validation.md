@@ -647,3 +647,45 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 13. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's historical detailed source-precedence/reconciliation dependency without changing the original Provenance validation result.
+
+Canonical separation:
+
+```text
+Provenance
+= lineage/origin/evolution context
+
+Reconciliation
+= process/capability handling material competition
+
+Source Precedence
+= bounded contextual policy/basis, where justified
+```
+
+Provenance may supply source, Actor, provider, Version, transformation/correction and action-time context to reconciliation, but it does not choose a winner. Source identity and recency do not become precedence merely because lineage is known. Bounded specialist source-of-record status must come from applicable policy/Authority semantics.
+
+Reconciliation may remain unresolved, apply bounded policy, culminate in Decision or deterministically construct a later state under already-authorized rules. Where a new material state is established, Provenance preserves materially relevant predecessors, process/basis, Actor/Authority context and resulting lineage without rewriting losing/rejected source assertions.
+
+Conflict/source/basis Visibility remains independent, and retention/minimization does not change the semantic separation. AI may use lineage to propose/explain reconciliation but cannot turn confidence or recency into universal source priority.
+
+Downstream classification:
+
+```text
+Provenance ↔ detailed Reconciliation   RESOLVED
+Provenance ↔ Source Precedence         RESOLVED — distinct/bounded
+source identity ↔ winner/truth         RESOLVED — not equivalent
+```
+
+Exact per-domain precedence, native identity merge/split, Principal/security, Verification, audit/retention and physical lineage representation remain separately owned.
+
+No original Provenance hardening failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
