@@ -631,3 +631,47 @@ Visibility
 ```
 
 Therefore creator/source/recorder does not become authoritative merely by appearing in lineage; an authorized correction does not erase its prior provenance; and a visible target or safe projection does not disclose full lineage/private sources automatically. AI may use authorized Provenance internally for explanation/reconciliation while output disclosure is evaluated independently.
+
+---
+
+# 2026-08-13 — Decision / rationale closure amendment
+
+Decision v0 closes the semantic `Decision rationale versus lineage` boundary while preserving Provenance as origin/evolution semantics.
+
+Canonical separation:
+
+```text
+Provenance
+= how this Decision/record/version came to exist or change
+
+Decision
+= what bounded question was resolved to what result
+
+Decision rationale
+= why that result was selected where materially relevant
+```
+
+Therefore:
+
+```text
+Provenance != Decision
+Provenance != Decision rationale
+Decision != Provenance
+```
+
+A Decision may have its own Provenance. A target-state change following a Decision may also preserve Provenance identifying the deciding Actor/process, prior target version, applied process, external source and relevant times. None of that makes lineage the resolution or rationale.
+
+A rationale may cite Evidence, constraints, policy or alternatives without turning those sources into Provenance of the target unless they materially influenced its generation/change in the provenance sense.
+
+Decision-result Visibility, rationale Visibility and Provenance Visibility remain independently governed. A visible result does not disclose private lineage or private rationale automatically.
+
+Downstream closure:
+
+```text
+Provenance ↔ Decision            RESOLVED
+Provenance ↔ Decision rationale  RESOLVED
+```
+
+Version/material-version mechanics, detailed source-precedence/reconciliation policy, Principal/delegation, signature/Verification, retention and physical lineage representation remain independently deferred.
+
+**Provenance v0 verdict is unchanged. REOPEN = 0.**
