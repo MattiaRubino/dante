@@ -287,7 +287,7 @@ A visible record may still be restricted from unrelated analytics, training, exp
 Visibility != arbitrary data-use permission
 ```
 
-Consent / purpose limitation / processing policy remain separate SAFE DEFERRED dimensions.
+Consent now owns the actor-scoped bounded permission question where Consent is an applicable basis, including materially relevant purpose/scope. Policy/enforcement remains separate downstream work.
 
 ---
 
@@ -366,6 +366,8 @@ Key rules:
 - group/role membership may become one basis but never automatic universal visibility;
 - no per-user copies of shared facts are required merely to implement privacy.
 
+Consent is similarly actor-scoped and never inferred from group/relationship membership merely because Visibility exists.
+
 ---
 
 # 19. Unequal-power contexts
@@ -379,7 +381,7 @@ role = manager/guardian/etc.
 → see everything
 ```
 
-Visibility remains contextual, bounded, explainable, and separable from Authority.
+Visibility remains contextual, bounded, explainable, and separable from Authority and Consent.
 
 ---
 
@@ -413,9 +415,11 @@ Canonical rule:
 
 > **AI source access/processing is not disclosure permission. Output Visibility must be evaluated independently.**
 
+Consent strengthens the boundary: an AI must not enlarge a consented purpose/scope merely because broader private context would improve a result.
+
 Inference privacy also matters: a derived answer can disclose sensitive source information even if the source record itself is hidden.
 
-Exact Context Builder enforcement remains later implementation/security work.
+Exact Context Builder/policy enforcement remains later implementation/security work.
 
 ---
 
@@ -423,7 +427,7 @@ Exact Context Builder enforcement remains later implementation/security work.
 
 Visibility semantics do not require materializing every possible recipient×object×field ACL edge.
 
-Future implementations may derive exposure from bounded policy, relationship, group, scope, projection, or explicit grant where appropriate.
+Future implementations may derive exposure from bounded policy, relationship, group, scope, projection, explicit grant or applicable Consent where appropriate.
 
 Canonical rules:
 
@@ -448,7 +452,7 @@ Show free/busy only
 
 The UI should not require users to understand `Visibility` as an ontology noun.
 
-A product-level `Share` action may modify underlying visibility/policy without becoming a kernel entity.
+A product-level `Share` action may modify underlying visibility/policy and may request/record Consent where semantically applicable without turning either into a universal UI workflow/entity.
 
 ---
 
@@ -464,6 +468,8 @@ Rich cases may require specific qualified visibility/exposure policy with target
 qualified Visibility
 != independent entity automatically
 ```
+
+Consent may be one basis/constraint in such a policy; it remains a separate semantic family.
 
 No universal Relationship/ACL root is required.
 
@@ -485,12 +491,14 @@ No universal Relationship/ACL root is required.
 12. **Object visibility != every facet visibility.**
 13. **Visibility != permission to re-disclose.**
 14. **Visibility != arbitrary downstream Use/purpose.**
-15. **Participation/Responsibility/Subject/Resource/ownership do not automatically grant Visibility.**
-16. **Target visibility != full Provenance visibility.**
-17. **Visibility != truth/Actual/Confirmation/Evidence.**
-18. **AI may process authorized source != AI may disclose source.**
-19. **No universal Access mega-concept / ACL entity/root is accepted.**
-20. **Exact enforcement/persistence belongs to later logical/security design.**
+15. **Visibility != Consent; Consent may be one applicable basis/constraint.**
+16. **Participation/Responsibility/Subject/Resource/ownership do not automatically grant Visibility or Consent.**
+17. **Target visibility != full Provenance visibility.**
+18. **Visibility != truth/Actual/Confirmation/Evidence.**
+19. **AI may process authorized source != AI may disclose source.**
+20. **AI may process source != Consent may be enlarged beyond its scope/purpose.**
+21. **No universal Access mega-concept / ACL entity/root is accepted.**
+22. **Exact enforcement/persistence belongs to later logical/security design.**
 
 ---
 
@@ -511,28 +519,16 @@ No universal Relationship/ACL root is required.
 - Visibility ↔ actual View: may see != did see.
 - Visibility ↔ Acknowledgement boundary: exposure != recognition.
 - Visibility ↔ Provenance: target visibility != full lineage visibility.
+- Visibility ↔ Consent: exposure capability != actor-scoped bounded permission.
+- Visibility ↔ arbitrary downstream Use: inspection/receipt != universal reuse permission; Consent/policy own scope/purpose where applicable.
 
 ## SAFE DEFERRED
-
-### Consent
-
-**Owner:** privacy/common-ground review.  
-**Why safe:** Consent may be one basis/constraint for exposure/use but is not Visibility itself.  
-**Reopening trigger:** privacy cannot be represented without collapsing Consent into Visibility.  
-**Tests to rerun:** CORE-04, MA-05, MA-07, MA-13, XCON-02, XCON-05.
-
-### Data Use / purpose limitation
-
-**Owner:** Consent/privacy/policy review.  
-**Why safe:** inspection/receipt remains separate from downstream processing/reuse.  
-**Reopening trigger:** ordinary privacy workflows require Visibility to encode arbitrary purpose/use semantics.  
-**Tests to rerun:** CORE-03, CORE-04, MA-07, MA-08, MA-17.
 
 ### Inference privacy / derived disclosure
 
 **Owner:** AI Context Builder + privacy review.  
-**Why safe:** projection/source distinction is fixed.  
-**Reopening trigger:** safe AI output cannot be governed without changing Visibility semantics.  
+**Why safe:** projection/source and Consent scope/purpose distinctions are fixed.  
+**Reopening trigger:** safe AI output cannot be governed without changing Visibility/Consent semantics.  
 **Tests to rerun:** MA-07, MA-08, MA-17, CORE-09, CORE-13.
 
 ### Principal / technical enforcement
@@ -591,6 +587,13 @@ No universal Relationship/ACL root is required.
 **Reopening trigger:** direct/derived/qualified representation cannot preserve scoped exposure/history.  
 **Tests to rerun:** CORE-06, CORE-10, CORE-13, XCON-01, XCON-04.
 
+### Purpose/use enforcement
+
+**Owner:** Consent/privacy/policy/security logical model.  
+**Why safe:** Consent now owns actor-scoped purpose/scope permission semantics; Visibility remains exposure.  
+**Reopening trigger:** enforcement requires Visibility and Consent to collapse into one concept.  
+**Tests to rerun:** CORE-04, CORE-10, CORE-13, MA-06, MA-07, MA-08, MA-17, XCON-02, XCON-04.
+
 No current dependency is a structural blocker.
 
 ---
@@ -625,8 +628,8 @@ Reopen Visibility v0 if later evidence shows that:
 
 1. information exposure cannot remain separate from Authority or technical authorization;
 2. source/projection/relationship visibility cannot be represented without duplicate domain reality;
-3. Consent/use-purpose semantics prove inseparable from exposure capability;
-4. AI inference/privacy cannot preserve safe derived disclosure under this boundary;
+3. Consent/use-purpose semantics prove inseparable from exposure capability despite the current closure;
+4. AI inference/privacy cannot preserve safe derived disclosure under the Visibility/Consent boundary;
 5. a universal Visibility identity/lifecycle is required across contexts;
 6. logical persistence cannot preserve scoped/current/historical visibility without a stronger concept.
 
@@ -662,3 +665,42 @@ The existing `Access/view audit / read receipt` SAFE DEFERRED item remains open 
 **Tests to rerun:** CORE-02, CORE-04, CORE-10, CORE-13, MA-05, MA-07, MA-11, XCON-03.
 
 Generic cross-domain `Acceptance` was rejected downstream as a standalone kernel primitive and is not part of Visibility. No Visibility reopening is required.
+
+---
+
+# 2026-08-13 — Agreement / Consent downstream closure amendment
+
+Agreement / Consent v0 resolves Visibility's historical `Consent` and `Data Use / purpose limitation` semantic dependencies without reopening Visibility.
+
+Current canonical separation:
+
+```text
+Visibility
+= what bounded representation may this recipient/access context be exposed to?
+
+Consent
+= what bounded action/use/exposure did this eligible actor explicitly permit for which target/scope/purpose/context?
+
+Agreement
+= which applicable parties mutually assented to the same materially specific terms/version?
+```
+
+Therefore:
+
+```text
+Visibility ↔ Consent  RESOLVED
+Visibility ↔ Agreement  RESOLVED where relevant
+Visibility != arbitrary downstream Use
+```
+
+Consent may be one basis/constraint for exposure/use, but does not become Visibility. Visibility may exist under another applicable basis where Consent is not the relevant basis. Agreement does not grant blanket Visibility or re-disclosure rights.
+
+Purpose/use **semantics** are now owned by Consent where applicable; exact policy/technical enforcement remains SAFE DEFERRED under privacy/policy/security logical design. Inference privacy remains independently open because even a consented/visible derived result can leak private causes.
+
+No Visibility hardening failed; **Visibility remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `agreement.md`;
+- `consent.md`;
+- `../checkpoints/agreement-consent-v0-validation.md`.
