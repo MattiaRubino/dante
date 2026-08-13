@@ -252,7 +252,12 @@ Result: **PASS**.
 
 ## CORE-07 — External Cross-Domain Benchmark
 
-External systems support separation of source/claim, provenance, evidence/supporting information, and certainty/interpretation.
+External systems support separation of:
+
+- source/claim;
+- provenance;
+- evidence/supporting information;
+- certainty/interpretation.
 
 LifeOS adopts the separation but rejects specialist research schemas as universal kernel design.
 
