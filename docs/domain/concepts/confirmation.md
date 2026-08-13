@@ -348,3 +348,46 @@ Normative downstream references:
 
 - `acknowledgement.md`;
 - `../checkpoints/acknowledgement-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Decision / Approval closure amendment
+
+Decision v0 closes the previously deferred Decision/Approval semantic boundary without changing Confirmation.
+
+Canonical separation:
+
+```text
+Confirmation
+= contextual attestation toward a specific target/version/purpose
+
+Decision
+= bounded contextual resolution of a question to a specific result
+
+Approval
+= scoped Decision/review result whose governance significance depends on Authority/policy
+```
+
+Therefore:
+
+```text
+Confirmation != Decision
+Confirmation != Approval
+```
+
+A Confirmation may be used as Evidence/input in a Decision, but affirming that a target is accurately stated does not choose among alternatives or approve a governed effect. Conversely, a Decision/Approval does not imply that the decision-maker confirmed every underlying fact as universally true.
+
+Material target/version changes do not silently inherit either Confirmation or Decision/Approval. Their applicability/lifecycles remain distinct even when one UI action creates more than one semantic consequence in a particular workflow.
+
+Conflicting Confirmations may remain representable while a Decision/reconciliation process establishes a bounded current interpretation under applicable Authority. That resolution does not erase the Confirmation history.
+
+Downstream closure:
+
+```text
+Confirmation ↔ Decision  RESOLVED
+Confirmation ↔ Approval  RESOLVED
+```
+
+Agreement/Consent, Version/material equivalence, Verification, detailed reconciliation, specialist signature semantics and persistence remain independently deferred.
+
+**Confirmation v0 verdict is unchanged. REOPEN = 0.**
