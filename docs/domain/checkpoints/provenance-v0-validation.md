@@ -504,3 +504,49 @@ Acceptance requires:
 - Domain Atlas README update;
 - workstream handoff update;
 - immediate Observed Reality & Evidence cluster integration and multi-actor stress before starting Data/Subjects.
+
+---
+
+# 10. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the checkpoint's historical `Provenance vs Decision rationale` deferred boundary without changing the original Provenance verdict.
+
+Canonical separation:
+
+```text
+Provenance
+= origin/evolution lineage of a record/version/Decision
+
+Decision
+= bounded contextual resolution to a result
+
+Decision rationale
+= why a result was selected where material
+```
+
+A Decision may have Provenance, and a target change produced after Decision may preserve lineage referring to the deciding Actor/process and prior target version. That lineage does not become the Decision/result/rationale.
+
+Decision-result Visibility, rationale Visibility and Provenance Visibility may differ. The existence of a visible Decision result does not expose private sources or lineage automatically.
+
+Downstream classification:
+
+```text
+Provenance ↔ Decision            RESOLVED
+Provenance ↔ Decision rationale  RESOLVED
+```
+
+Still deferred:
+
+- Version/material-version mechanics;
+- Audit/security history;
+- detailed source-precedence/reconciliation policy;
+- Principal/delegation;
+- retention/anonymization;
+- physical provenance representation.
+
+No Provenance hardening failed; **Provenance remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
