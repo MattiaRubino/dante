@@ -605,3 +605,54 @@ Acceptance requires:
 - Domain Atlas README update;
 - workstream handoff update;
 - Provenance left as the final individual concept before cluster integration.
+
+---
+
+# 10. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 closes the semantic `Evidence vs Decision` boundary while preserving the original Evidence validation.
+
+Canonical separation:
+
+```text
+Evidence
+= contextual evaluative relevance/use of information
+
+Decision
+= bounded contextual resolution to a result
+```
+
+Evidence may support, contradict, qualify or otherwise inform a Decision. It does not become the resolution merely because a decision-maker relied on it, and conflicting Evidence need not be collapsed before a Decision can record a bounded resolution.
+
+```text
+Evidence != Decision
+Evidence exists != target decided
+Decision result != supporting Evidence
+```
+
+A visible Decision result does not make all supporting Evidence visible. Authority to decide also does not arise from supplying Evidence.
+
+Decision v0 deliberately leaves GoalCriterion/evaluation semantics independent: deterministic evaluation may derive a current result without an explicit Decision, and a material Decision may incorporate judgment/policy without becoming a universal criterion engine.
+
+Downstream classification:
+
+```text
+Evidence ↔ Decision  RESOLVED
+```
+
+Still deferred:
+
+- GoalCriterion/evaluation model;
+- evaluation snapshots/versioning;
+- Evidence weighting/admissibility;
+- typed Relationship representation;
+- detailed reconciliation/source-precedence policy;
+- privacy/retention;
+- logical/physical Evidence materialization.
+
+No Evidence hardening failed; **Evidence remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
