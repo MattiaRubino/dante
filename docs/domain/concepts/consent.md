@@ -566,3 +566,58 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 25. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves Consent's former `Version / material scope` SAFE DEFERRED dependency.
+
+Consent remains bound to the materially relevant target/action/scope/purpose state explicitly permitted by the consent-giver:
+
+```text
+Consent C1 -> scope/purpose state S1
+material expansion/change -> S2
+→ C1 remains historical permission for S1
+→ C1 does not silently authorize S2
+```
+
+Materiality is Consent-purpose specific. A technical storage/provider/ETag/hash revision does not by itself invalidate Consent, and same target identity does not prove permission carry-forward. A materially equivalent change for the relevant permission may remain covered without fabricating a new human Consent.
+
+Example:
+
+```text
+C1 permits free/busy projection for Trip A
+private source note changes, exposed projection/purpose unchanged
+→ source technical/material history may change
+→ C1 need not automatically be invalidated for the bounded projection purpose
+```
+
+But:
+
+```text
+free/busy / Trip A
+→ full private calendar / unrelated AI training
+```
+
+is materially different and cannot inherit C1.
+
+Canonical separation:
+
+```text
+Version != Consent
+material equivalence != permission
+Version != Visibility / Authority / technical authorization
+Version != Provenance / Decision / reconciliation
+```
+
+Remaining SAFE DEFERRED Consent dependencies include regulated validity/capacity/legal basis, purpose/use enforcement, collective/group Consent, exact policy/persistence, Principal/AuthN/AuthZ enforcement and retention/deletion.
+
+AI may compare states or detect scope expansion but must not infer renewed/expanded human Consent from similarity, access or prior permission.
+
+No Consent hardening failed. **Consent remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
