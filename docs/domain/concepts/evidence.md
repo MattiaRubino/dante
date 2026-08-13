@@ -805,3 +805,43 @@ Reopen Evidence v0 if later Provenance, GoalCriterion, Relationship, Decision, A
 - evidence/privacy/retention requirements expose a structural contradiction.
 
 Absent such evidence, Evidence remains the current accepted semantic baseline as a **canonical evaluative role/relationship**, with physical representation intentionally deferred.
+
+---
+
+# 2026-08-13 — Decision closure amendment
+
+Decision v0 closes the exact `Evidence-to-Decision` semantic boundary without turning Evidence into a decision engine.
+
+Canonical separation:
+
+```text
+Evidence
+= information bearing on an evaluation/question in context
+
+Decision
+= bounded contextual resolution of a question to a specific result
+```
+
+Therefore:
+
+```text
+Evidence != Decision
+Evidence existence != Decision result
+conflicting Evidence != automatically reconciled Decision
+```
+
+A Decision may use supporting, contradicting or qualifying Evidence while preserving those source records and their evaluative roles. The same Evidence can support several different Decisions/evaluations without duplication.
+
+A Decision result may be visible while supporting Evidence remains private. Conversely, an Actor allowed to inspect Evidence does not automatically have Authority to decide the target question.
+
+Decision does not replace GoalCriterion/evaluation semantics: deterministic evaluation may derive a result without an explicit material Decision, while a material Decision may consider Evidence without being reducible to a criterion calculation.
+
+Downstream closure:
+
+```text
+Evidence ↔ Decision  RESOLVED
+```
+
+GoalCriterion/evaluation, evaluation snapshot/versioning, weighting/admissibility, detailed reconciliation policy, privacy/retention and physical Evidence representation remain independently deferred.
+
+**Evidence v0 verdict is unchanged. REOPEN = 0.**
