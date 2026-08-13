@@ -845,3 +845,36 @@ Evidence ↔ Decision  RESOLVED
 GoalCriterion/evaluation, evaluation snapshot/versioning, weighting/admissibility, detailed reconciliation policy, privacy/retention and physical Evidence representation remain independently deferred.
 
 **Evidence v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 resolves Evidence's former `evaluation snapshot / versioning` semantic dependency without turning Evidence into a universal persisted graph.
+
+Canonical binding when consequential:
+
+```text
+source material state(s)
++ evaluation target material state
++ evaluation rule/policy material state
++ evaluation time/context
+→ historical Evidence use / conclusion
+```
+
+Therefore a historical evaluation remains about the exact source/target/rule states it actually used. If an Observation, Outcome, criterion or rule later changes materially, the earlier Evidence relationship/evaluation is not silently rewritten and does not automatically apply to the new state.
+
+Version does not decide whether information is admissible, relevant, strong, true or authoritative. Those remain evaluation/policy/Authority questions. Version only makes the material state being evaluated referenceable and reconstructible where consequence requires it.
+
+Materiality is purpose-specific: an irrelevant metadata change need not invalidate an Evidence use, while a change to the value, target meaning, applicable window or evaluation rule that the conclusion depends on generally does. Hash/ETag/storage-version equality is insufficient to decide this universally.
+
+Derived Evidence may bind to a reconstructible source-set/rule state rather than force persistence of every query edge. Non-linear source history and later corrections are valid; historical reproducibility does not require retaining every sensitive payload indefinitely.
+
+The historical evaluation-version dependency is now downstream-closed at the semantic boundary. GoalCriterion/evaluation semantics, weighting/admissibility, detailed reconciliation, privacy/retention and physical Evidence persistence remain independently owned.
+
+No Evidence hardening failed. **Evidence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
