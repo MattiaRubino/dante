@@ -333,3 +333,46 @@ Completed in the Actual v0 acceptance pass:
 - workstream handoff updated;
 - reopening triggers recorded;
 - Methodology v3 remains the mandatory standard.
+
+---
+
+# 13. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the later semantic part of Actual's reconciliation dependency without changing the historical Actual v0 test result.
+
+Current closure:
+
+```text
+competing assertion/report
+!= Decision
+!= current Actual
+
+Decision
+= explicit bounded resolution when materially relevant
+
+Actual
+= current established contextual realization
+```
+
+A Decision may select/correct the current interpretation under applicable Authority/policy, while earlier assertions and their Provenance remain reconstructible. A Decision does not create objective reality and does not replace Actual.
+
+Reconciliation remains a process/pattern and may be deterministic or remain unresolved; it is not a universal entity. An already-authorized deterministic reconciliation may change current Actual without fabricating a new human Decision. A Decision may also reject a proposed correction and leave Actual unchanged.
+
+The affected Actual owns its effective state transition. No universal `EffectiveChange` root is required.
+
+Downstream classification:
+
+```text
+Actual ↔ Decision             RESOLVED
+Actual ↔ Reconciliation       RESOLVED at semantic boundary
+Decision ↔ objective truth    RESOLVED — not equal
+```
+
+Version/material-equivalence mechanics, detailed reconciliation/source-precedence policy, Principal/enforcement and physical Actual representation remain independently deferred.
+
+**Actual v0 remains PASS WITH HARDENING. REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
