@@ -211,3 +211,37 @@ Occurrence
 ```
 
 The sequence may change if Occurrence review reveals a stronger dependency.
+
+---
+
+# 2026-08-13 — Downstream closure: Version / Material-State v0
+
+This historical cluster checkpoint originally left lifecycle/version/replacement mechanics deferred. Version / Material-State v0 now closes the semantic part of that dependency without rewriting the original 2026-08-11 cluster test.
+
+Current closure:
+
+```text
+stable Goal / Plan / Routine / Milestone identity
+!= current material state
+
+material state revision
+!= automatic new target identity
+
+identity-breaking redefinition
+!= merely another Version
+```
+
+For this cluster specifically:
+
+- future structural Routine changes may remain material-state revisions while earlier Occurrences retain the policy state that governed them;
+- Milestone target/date/label changes may preserve Milestone identity, while a change that replaces the checkpoint's substantive meaning may require a new Milestone rather than `v2`;
+- later Evidence/evaluation relevance never rewrites the state or intention that existed earlier;
+- materiality is purpose-specific and must not be inferred from every storage write, provider revision, `updated_at`, ETag or content hash;
+- exact persistence/effective-dating remains logical-model work rather than a cluster semantic failure.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
+
+The original Intention & Execution verdict remains **PASS**. No accepted Goal, Plan, Activity, Event, Routine or Milestone identity is structurally reopened by Version v0.
