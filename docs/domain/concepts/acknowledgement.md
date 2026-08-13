@@ -167,7 +167,7 @@ Examples:
 
 Generic cross-domain `Acceptance` is not accepted as a standalone LifeOS kernel primitive. `Accepted` semantics remain owned by the specific family/workflow that gives the response meaning, such as Participation response or a Responsibility-specific hand-off response.
 
-Agreement and Consent remain separate candidate areas and must earn their own semantics under v3.
+Agreement and Consent are now separately validated downstream semantic families; neither changes the meaning of Acknowledgement.
 
 ---
 
@@ -222,7 +222,7 @@ Acknowledgement != effective domain change
 
 An actor can acknowledge a proposal while lacking Authority to approve or apply it.
 
-Decision/Approval/effective-change semantics remain separately owned downstream dependencies.
+Decision/Approval/effective-change semantics are separately owned downstream concepts.
 
 ---
 
@@ -436,8 +436,14 @@ Responsibility hand-off accepted
 Schedule / AI proposal accepted or applied
 → proposal/effect-specific response/operation
 
-future Agreement / Consent / Decision
-→ separately reviewed semantics if independently justified
+Agreement
+→ multi-party mutual assent to materially same terms/version
+
+Consent
+→ actor-scoped bounded permission for action/use/exposure under scope/purpose/context
+
+Decision
+→ bounded contextual resolution
 ```
 
 Canonical rule:
@@ -457,6 +463,8 @@ Canonical rule:
 - Acknowledgement ↔ Responsibility: taking notice != accountability.
 - Acknowledgement ↔ Authority: awareness != governance.
 - Acknowledgement ↔ Actual: recognition != real-world realization.
+- Acknowledgement ↔ Agreement: taking notice != mutual assent.
+- Acknowledgement ↔ Consent: taking notice != permission.
 - generic Acceptance primitive: rejected; family-specific response semantics retained.
 - Participation `accepted`: remains Participation response.
 - Responsibility hand-off acceptance: remains role-specific response/operation; effect remains policy/Authority dependent.
@@ -470,20 +478,6 @@ Canonical rule:
 **Why safe:** Acknowledgement explicitly claims no comprehension.  
 **Reopening trigger:** consequential LifeOS workflows require proof/check of understanding distinct from Confirmation/Acknowledgement.  
 **Tests to rerun:** CORE-04, CORE-09, CORE-12, MA-05, MA-13, MA-16, MA-18, XCON-04, XCON-05.
-
-### Agreement / Consent
-
-**Owner:** later common-ground/privacy review.  
-**Why safe:** mutual assent and bounded permission are not required to define Acknowledgement or family-specific response.  
-**Reopening trigger:** real workflows cannot represent mutual commitment or permission without a generic Acceptance supertype.  
-**Tests to rerun:** CORE-03, CORE-04, MA-05, MA-06, MA-07, MA-13, MA-19, XCON-02, XCON-04, XCON-05.
-
-### Decision / Approval / effective change
-
-**Owner:** Decision review.  
-**Why safe:** acknowledgement/response remains separate from canonical effect.  
-**Reopening trigger:** applying a response requires Acknowledgement/Acceptance itself to become Decision/Authority.  
-**Tests to rerun:** CORE-02, CORE-04, CORE-09, MA-05, MA-06, MA-12, XCON-02, XCON-03.
 
 ### Principal / delegation / on-behalf-of
 
@@ -620,7 +614,6 @@ Acknowledgement ↔ effective change  RESOLVED
 Still SAFE DEFERRED:
 
 - Understanding/comprehension;
-- Agreement/Consent;
 - Principal/delegation/on-behalf-of;
 - Version/material equivalence;
 - read/view audit storage;
@@ -633,3 +626,41 @@ Normative downstream references:
 
 - `decision.md`;
 - `../checkpoints/decision-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Agreement / Consent downstream closure amendment
+
+Agreement / Consent v0 closes Acknowledgement's former `Agreement / Consent` SAFE DEFERRED item without changing Acknowledgement.
+
+Current canonical separation:
+
+```text
+Acknowledgement
+= explicit taking-notice of a specific target/material version/change/request
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Acknowledgement ↔ Agreement  RESOLVED
+Acknowledgement ↔ Consent    RESOLVED
+```
+
+Acknowledgement can coexist with disagreement, refusal, decline or absence of Consent. Agreement/Consent each require their own materially relevant scope/version and cannot be inferred from read/display/Acknowledgement state.
+
+The generic Assent/Acceptance supertype remains rejected. Principal/delegation, Version/material equivalence, understanding/comprehension, read/view audit, collective Acknowledgement and retention remain separately SAFE DEFERRED.
+
+No Acknowledgement hardening failed; **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `agreement.md`;
+- `consent.md`;
+- `../checkpoints/agreement-consent-v0-validation.md`.
