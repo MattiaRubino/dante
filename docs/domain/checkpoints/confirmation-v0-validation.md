@@ -310,3 +310,51 @@ Normative downstream references:
 
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`.
+
+---
+
+# 14. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the historical Decision/Approval neighbor without reopening Confirmation.
+
+Current canonical separation:
+
+```text
+Confirmation
+= contextual attestation toward a specific target/version/purpose
+
+Decision
+= bounded contextual resolution of a question to a specific result
+
+Approval
+= scoped Decision/review result whose governance significance depends on Authority/policy
+```
+
+Therefore:
+
+```text
+Confirmation != Decision
+Confirmation != Approval
+```
+
+A Confirmation may be Evidence/input for a Decision, but affirming that a target is accurately stated does not choose among alternatives or approve a governed effect. Conversely, a Decision/Approval does not imply that the decision-maker confirmed every underlying fact as universally true.
+
+Material target/version changes invalidate applicability independently: neither Confirmation nor Decision/Approval silently carries to a materially changed target by default.
+
+Conflicting Confirmations may remain representable while a Decision/reconciliation process establishes a bounded current interpretation under applicable Authority. That resolution does not erase Confirmation history.
+
+Downstream classification:
+
+```text
+Confirmation ↔ Decision  RESOLVED
+Confirmation ↔ Approval  RESOLVED
+```
+
+Agreement/Consent, Version/material equivalence, Verification, detailed reconciliation, specialist signature semantics and persistence remain independently deferred.
+
+No Confirmation hardening failed; **Confirmation remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
