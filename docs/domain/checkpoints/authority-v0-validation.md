@@ -428,3 +428,43 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 15. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 resolves the historical Agreement/Consent neighbor without reopening Authority.
+
+Current canonical separation:
+
+```text
+Authority
+= legitimate bounded governance capability
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined scope/purpose/context
+```
+
+Therefore:
+
+```text
+Authority ↔ Agreement  RESOLVED
+Authority ↔ Consent    RESOLVED
+```
+
+Agreement may exist without Authority to make an agreed downstream effect effective. Authority may legitimately exist without Agreement of all affected parties. Consent may be one bounded basis/constraint under applicable policy but does not manufacture general Authority, automatic Visibility or technical authorization.
+
+Consent withdrawal may constrain future governed actions/use when the applicable policy relies on Consent; it does not rewrite a historically legitimate Authority/action that existed under the applicable basis at that time.
+
+The old Consent dependency is now closed at the semantic-boundary level. Principal/enforcement/detailed delegation, Policy/Role conditions, Version/material equivalence, qualified Authority persistence and purpose/use enforcement remain independently SAFE DEFERRED.
+
+No Authority hardening failed; **Authority remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/agreement.md`;
+- `../concepts/consent.md`;
+- `agreement-consent-v0-validation.md`.
