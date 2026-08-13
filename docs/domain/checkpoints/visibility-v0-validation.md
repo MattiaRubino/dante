@@ -7,7 +7,7 @@
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
-> **Historical checkpoint note:** the Visibility v0 validation result is preserved at the state known when it was accepted. Later Acknowledgement work is recorded only as an explicit downstream closure in section 14.
+> **Historical checkpoint note:** the Visibility v0 validation result is preserved at the state known when it was accepted. Later Acknowledgement and Agreement/Consent work is recorded only as explicit downstream closure; it does not retroactively change the original validation result.
 
 ## 1. Scope
 
@@ -314,3 +314,43 @@ Normative downstream references:
 
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`.
+
+---
+
+# 15. Downstream closure — Agreement / Consent v0 (2026-08-13)
+
+Agreement / Consent v0 resolves the historical `Consent` and `Data Use / purpose limitation` semantic dependencies without reopening Visibility.
+
+Current canonical separation:
+
+```text
+Visibility
+= bounded information-exposure capability for a recipient/access context
+
+Consent
+= actor-scoped bounded permission for action/use/exposure under defined target/scope/purpose/context
+
+Agreement
+= multi-party mutual assent to materially same terms/version
+```
+
+Therefore:
+
+```text
+Visibility ↔ Consent   RESOLVED
+Visibility ↔ Agreement RESOLVED where relevant
+```
+
+Consent may be one basis/constraint for Visibility/use but is not Visibility itself. Visibility can exist under another applicable basis where Consent is not the governing basis. Agreement creates no automatic information exposure or re-disclosure right.
+
+The original `Data Use / purpose limitation` semantic boundary is also downstream-closed: Consent owns actor-scoped purpose/scope permission where applicable, while technical policy/enforcement remains separately SAFE DEFERRED. Inference privacy remains independently open because derived answers can leak private causes even when source exposure and Consent semantics are otherwise correct.
+
+Current remaining Visibility dependencies include inference privacy, Principal/enforcement, recipient/group scope, sensitivity/facet policy, re-disclosure Authority, view audit, retention/copies, qualified persistence and purpose/use enforcement mechanics.
+
+No Visibility hardening failed; **Visibility remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/agreement.md`;
+- `../concepts/consent.md`;
+- `agreement-consent-v0-validation.md`.
