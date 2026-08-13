@@ -503,3 +503,32 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Reconciliation / Source Precedence downstream closure
+
+Reconciliation v0 closes Confirmation's historical conflict-reconciliation dependency without changing Confirmation semantics.
+
+Canonical separation:
+
+```text
+Confirmation
+= actor/context-scoped attestation toward a materially specific target state
+
+Reconciliation
+= contextual process/capability for handling materially competing states/assertions
+```
+
+Conflicting Confirmations remain legitimate attributed records. Reconciliation may consider Confirmation together with Version, Provenance, Evidence, Authority and applicable bounded policy, but it does not transform one confirmer's stance into another's, fabricate consensus, or make source recency equivalent to truth.
+
+A bounded reconciliation result may establish or correct the owning target's current interpretation, while every material Confirmation remains bound to the state/purpose it actually affirmed. Later resolution or reversal does not rewrite historical Confirmation attribution.
+
+Source Precedence is contextual and cannot be inferred from `confirmed`, provider identity, actor identity, recency, Account status or technical access. Visibility of conflict, confirmation history and resolution basis remains independently governed.
+
+No Confirmation invariant failed. **Confirmation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `reconciliation.md`;
+- `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
