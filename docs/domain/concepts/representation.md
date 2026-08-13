@@ -1,26 +1,20 @@
 # Representation / On-Behalf-Of v0
 
-**Status:** PASS WITH HARDENING — pending post-write scope QA  
+**Status:** Current accepted baseline — PASS WITH HARDENING; hardenings incorporated; post-write QA PASS  
 **Validated:** 2026-08-13  
+**Validation standard:** Domain Validation Methodology v3  
 **Cluster:** Relationships / Reasoning v0  
 **Workstream:** Core Domain Model v0  
-**Branch:** `feature/domain-model`
+**Branch:** `feature/domain-model`  
+**Pre-scope validated baseline:** `b6c53ffa40ba7c1c1408f583856617a0e000f31b`
 
-## Purpose
-
-LifeOS must preserve who actually acted when one person, service or AI acts for another party, without collapsing identity, authentication, authority, responsibility, consent, agreement, provenance or resulting domain state.
-
-The concept exists to answer one bounded semantic question:
-
-> **Who actually acted, and for which distinct party was that action performed or asserted in this bounded context?**
-
-Representation is deliberately narrower than legal representation, identity impersonation, delegation engines, agency law, IAM principals or generic party models.
-
----
-
-# 1. Canonical definition
+## Canonical definition
 
 > **Representation is the contextual action-scoped relation/capability through which an actual Actor performs a bounded semantic action while acting for a distinct represented party in a defined context. Representation preserves the actual Actor and represented party separately and, where legitimacy or effect matters, preserves the applicable Authority, delegation, policy, Consent or other basis separately. Representation does not by itself create Authority, Responsibility, Agreement, Consent, Acknowledgement, Confirmation, authorship, truth, technical Principal identity, or an effective domain change.**
+
+Canonical question:
+
+> **Who actually acted, and for which distinct party was that action performed or asserted in this bounded context?**
 
 Classification:
 
@@ -28,639 +22,578 @@ Classification:
 REPRESENTATION / ON-BEHALF-OF
 CANONICAL CONTEXTUAL ACTION-SCOPED RELATION / CAPABILITY
 
-not native entity/root
-not universal Agent/Representative identity
-not Principal
-not Authority
-not Responsibility
-not Subject/beneficiary
-not Provenance
-not impersonation
+✅ actual Actor preserved
+✅ represented party preserved separately
+✅ bounded action / target / context
+✅ applicable Authority / delegation / policy / Consent / other basis remains separate
+✅ history-sensitive where material
+✅ direct/simple or specifically qualified when lifecycle/history/basis matters
+
+❌ native entity/root
+❌ universal Agent/Representative identity
+❌ Principal
+❌ Authority
+❌ Responsibility
+❌ Subject/beneficiary
+❌ Provenance
+❌ impersonation
+❌ represented-party will by implication
 ```
 
-A `Representative` is therefore a contextual role in a specific representation context, not a Person subtype or universal native identity.
+`Representative` is contextual role language over a Representation relation. It is not a Person subtype or universal party identity.
 
 ---
 
-# 2. Why this survives independently
+# 1. Why Representation exists
 
-These facts are not equivalent:
-
-```text
-who authenticated the request?
-who actually acted?
-for whom was the action performed?
-who had Authority to make the effect legitimate?
-who is responsible for the outcome?
-what does the record concern?
-who agreed or consented?
-how did the record/effect come to exist?
-```
-
-Existing LifeOS concepts already own most of these questions:
+LifeOS already separates:
 
 ```text
-Principal / Account security context  → security/logical model
-Actor                                 → actual semantic agency
-Representation                        → for whom the action was performed
-Authority                             → bounded governance legitimacy
-Responsibility                        → accountability
-Subject                               → aboutness
-Agreement / Consent                   → assent / bounded permission
-Provenance                            → material lineage
+Person != Actor != Account != Principal
+Actor != Authority
+Actor != Responsibility
+Actor != Subject
 ```
 
-Without Representation, LifeOS is forced either to misattribute the action to the represented party or to hide the represented-party context inside generic provenance/security metadata.
+Those distinctions still leave a material question:
+
+```text
+Who actually acted?
+```
+
+is not the same as:
+
+```text
+For whom was this bounded action performed/asserted?
+```
+
+Representative workflows include assistants, caregivers, parents/guardians, external helpers, services and AI operating under bounded policy. Without Representation, implementations are pushed toward false shortcuts such as recording the represented party as the Actor, using Account/Principal as domain attribution, or overloading Authority/Provenance.
+
+Canonical rule:
+
+> **Representation owns the bounded actual-Actor ↔ represented-party relation without manufacturing a new identity root.**
 
 ---
 
-# 3. Core non-collapse rules
+# 2. Actual Actor and represented party
+
+Where representation is material:
 
 ```text
 actual Actor != represented party
-represented party != Subject/beneficiary automatically
-represented party != Principal automatically
-Principal != Actor
-Account != Principal
-Representation != Authority
-Representation != Responsibility
-Representation != Delegation
-Representation != Provenance
-Representation != Agreement
-Representation != Consent
-Representation != Acknowledgement
-Representation != Confirmation
-Representation != Decision
-technical impersonation != domain attribution truth
 ```
 
-A represented party may also be Subject, beneficiary, responsible Actor, Agreement party or Consent-giver in a concrete workflow, but those coincidences are contextual facts rather than ontology.
+`Luca acted for Anna` must not become `Anna acted`.
+
+The represented party may be an eligible native referent; Representation never creates a wrapper identity.
 
 ---
 
-# 4. Representation versus Actor
-
-Actor answers:
-
-> Who/what performed the semantic action?
-
-Representation answers:
-
-> For which distinct party was that Actor acting in this bounded context?
-
-Example:
+# 3. Representation versus Subject / beneficiary
 
 ```text
-Luca uses his own Account to move Anna's Schedule item
-under a bounded delegation.
-
-actual Actor      = Luca
-represented party = Anna
+acting about X
+acting for the benefit of X
+acting for X
 ```
 
-Anna does not become the actual Actor merely because the effect concerns or benefits her.
+are not automatically equivalent.
 
-Representation does not create a second wrapper Actor identity around Luca or Anna.
-
----
-
-# 5. Representation versus Subject / beneficiary
-
-Acting concerning someone is not the same as acting for them.
-
-Example:
+Examples:
 
 ```text
 parent schedules child's appointment
 ```
 
-The child may be:
+may be:
 
 ```text
-Subject
-beneficiary
-participant
+parent = actual Actor
+child = Subject / beneficiary
 ```
 
-without the parent necessarily expressing the child's personal will.
+without asserting that the parent expressed the child's personal will.
 
-Likewise:
+Likewise a caregiver recording another Person's statement may be recorder Actor while the Person is source/Subject, with no Representation relation required.
 
 ```text
-caregiver records Maria's verbal statement
+Representation != Subject/beneficiary
 ```
-
-may be modeled as:
-
-```text
-caregiver = recorder Actor
-Maria     = source / Subject
-```
-
-with no Representation relation at all unless the caregiver is actually acting in a representational capacity for the bounded action.
-
-Canonical rule:
-
-> **Do not infer Representation merely from aboutness, benefit, care, household membership, guardianship label, organizational role or proximity.**
 
 ---
 
-# 6. Representation versus Authority
+# 4. Representation versus Authority
 
-Representation records for whom an Actor acts. It does not establish whether the Actor is legitimately empowered to create the requested effect.
-
-```text
-Representation claim
-!= established Authority
-```
-
-An Actor may truthfully claim to act for Anna while lacking Authority to perform the attempted operation.
-
-Conversely, an Actor may hold Authority over a domain action without representing the affected person at all.
-
-Example:
+Representation is attribution, not legitimacy.
 
 ```text
-manager decides employee shift
+Actor claims to act for X
+!= Actor has Authority to produce the effect for X
 ```
 
-The manager may have Authority to govern the shift while not representing the employee's personal will.
+Where legitimacy matters, preserve the applicable Authority/delegation/policy/Consent/other basis separately.
 
-Authority remains action/target/scope/context specific.
+```text
+Representation != Authority
+claimed Representation != established Authority
+```
+
+This preserves disputed, expired, revoked, exceeded-scope and hostile cases.
 
 ---
 
-# 7. Delegation disposition
+# 5. Delegation disposition
 
-`Delegation` is **not** accepted as a universal cross-domain root.
+`Delegation` is **not** a universal cross-domain primitive/root.
 
-Current canonical disposition:
+Current canonical meaning:
 
-> **Delegation is a bounded Authority-establishment / entrustment pattern for a specific action, target, scope and context.**
+> **Delegation is a bounded Authority-establishment / entrustment pattern for a specific governed action/effect/scope.**
 
 Therefore:
 
 ```text
-delegated Authority to schedule
-!= delegated Authority to consent
-!= delegated Authority to agree
-!= delegated Authority to disclose private data
-!= delegated Responsibility
-!= automatic right to re-delegate
+delegation of Authority X
+!= transfer of Responsibility
+!= transfer of Participation
+!= transfer of Agreement/Consent
+!= blanket authority to act
 ```
 
-Where Responsibility transfers, Responsibility/Hand-off owns that semantic change.
+Responsibility Hand-off remains Responsibility-specific. Participation operations remain Participation-specific. Agreement/Consent remain separate semantic families.
 
-Where Participation response is submitted for another participant, Participation owns the response semantics while Representation preserves the response Actor versus represented participant.
-
-Where Agreement/Consent is at stake, those concepts own the assent/permission semantics and specialist/legal validity may still remain external.
-
-No generic `delegate everything` capability is accepted.
+```text
+re-delegation is not implied
+```
 
 ---
 
-# 8. Principal / Account boundary
-
-`Principal` remains a technical security identity concept rather than a LifeOS domain primitive.
-
-Future security design may need to answer:
+# 6. Principal / Account boundary
 
 ```text
-which authenticated/authorized Principal made the request?
+Person
+= native human identity
+
+Account
+= platform/access identity boundary
+
+Principal
+= authenticated/authorized security identity in a technical request/security context
+
+Actor
+= semantic agency attribution
+
+Representation
+= action-scoped on-behalf-of relation
+
+Authority
+= legitimacy/governance capability for bounded effect
 ```
 
-while the domain independently answers:
+Canonical separation:
 
 ```text
-who actually acted semantically?
-for whom did they act?
-what Authority/basis applied?
-```
-
-Canonical rules:
-
-```text
-Person != Account != Principal
-Actor != Account/Principal
+Account != Principal
+Principal != Actor
 Principal != represented party
 Principal != Authority
-Principal authentication != semantic Representation
+Principal != Representation
 ```
+
+`Principal` remains security/logical-model language and is **not a LifeOS domain primitive**.
 
 A represented Person requires no synthetic Account.
 
 ---
 
-# 9. Technical impersonation boundary
+# 7. Technical impersonation
 
-A future security mechanism may permit technical impersonation, delegated tokens, service accounts or session switching.
-
-Those mechanisms do not define domain attribution truth.
-
-```text
-request technically executes as B
-```
-
-does not justify recording:
-
-```text
-B actually performed the semantic action
-```
-
-when LifeOS materially knows that A performed the action for B.
+Security infrastructure may later support impersonation/token exchange/session switching.
 
 Canonical rule:
 
-> **Security-layer impersonation must not erase materially relevant actual-Actor attribution.**
+```text
+technical impersonation
+!= domain attribution truth
+```
+
+Where the material actual Actor is known, authentication mechanics must not rewrite history as if the represented party personally acted.
 
 ---
 
-# 10. Representation versus Responsibility
-
-Acting for someone does not make the representative responsible for the underlying commitment, nor does Responsibility imply Representation.
-
-Example:
-
-```text
-assistant submits manager's approved travel booking
-```
-
-Possible facts:
-
-```text
-assistant = actual booking Actor
-manager   = represented party
-manager   = Responsibility holder
-```
-
-or a different workflow may assign Responsibility to the assistant while no Representation exists.
-
-Therefore:
+# 8. Responsibility and Participation
 
 ```text
 Representation != Responsibility
 Delegation of Authority != Responsibility transfer
 ```
 
----
-
-# 11. Representation versus Acknowledgement / Confirmation / Agreement / Consent / Decision
-
-Representation preserves attribution; it does not fabricate the represented party's mental, common-ground or permission state.
-
-Canonical rules:
+A response Actor may also differ from the participant whose Participation state is being changed.
 
 ```text
-representative clicked Acknowledge
-!= represented Person personally Acknowledged by default
-
-representative affirmed a fact
-!= represented Person personally Confirmed by default
-
-representative assented to terms
-!= represented Person's Agreement by default
-
-representative permitted use
-!= represented Person's Consent by default
-
-representative made a Decision
-!= represented Person personally made the Decision by default
+participant/native referent
+!= actual response Actor
 ```
 
-A representative action may have effect for the represented party when applicable Authority/policy/specialist rules allow it. That still does not rewrite the identity of the actual Actor.
-
-For Agreement/Consent especially, LifeOS records its domain semantics without claiming that a representation basis is legally sufficient in every jurisdiction/context.
+Representation owns the on-behalf-of relation; Participation owns the response/involvement semantics.
 
 ---
 
-# 12. Representation versus Provenance
+# 9. Acknowledgement / Confirmation
 
-Provenance may record that a record/effect came from an action performed by a representative under a particular source, process or security context.
-
-That lineage does not make Representation redundant.
+A representative may perform a bounded acknowledgement or confirmation action where the workflow permits represented effect, but LifeOS preserves the actual Actor.
 
 ```text
-Provenance
-= how the target/action/result came to exist or change
+representative Acknowledgement
+!= represented party personally acknowledged
 
-Representation
-= actual Actor acted for a distinct represented party
+representative Confirmation
+!= represented party personally confirmed
 ```
 
-A Representation relation may itself have Provenance.
-
-Do not hide represented-party semantics inside arbitrary provenance metadata when the distinction materially affects history, Authority or interpretation.
+Applicable Authority/policy may determine effect; Representation itself does not manufacture it.
 
 ---
 
-# 13. Action-specific scope and delegability
+# 10. Agreement / Consent
 
-Representation and delegation are bounded by the semantic action family.
+Agreement requires mutual assent to materially same terms/version. Consent is actor-scoped bounded permission.
 
-The following implication is rejected:
-
-```text
-Actor may do one thing for Anna
-→ Actor may do every thing for Anna
-```
-
-Examples:
+Representative action does not automatically become represented-party Agreement or Consent.
 
 ```text
 Authority to schedule for Anna
-!= Authority to consent for Anna
 != Authority to agree for Anna
-!= Authority to acknowledge for Anna
-!= Authority to disclose Anna's private source
-!= Authority to re-delegate
+!= Authority to consent for Anna
 ```
 
-The exact delegability rules remain policy/specialist dependent. The domain invariant is that scope cannot be silently broadened.
+Represented Agreement/Consent may have valid effect only under an applicable action-specific basis/policy/specialist rule. LifeOS preserves actual Actor, represented party, scope/version/purpose and basis while avoiding claims of universal legal validity.
 
 ---
 
-# 14. Lifecycle and history
+# 11. Decision
 
-Representation may be bounded by time, context, action scope or a delegation/Authority basis.
+A representative may make/participate in a Decision for another party only where applicable Authority/process permits it.
 
-A material history may need to reconstruct:
-
-```text
-T0 representation/delegation established
-T1 Actor acts for represented party
-T2 effect becomes effective
-T3 representation/delegation expires or is revoked
-T4 later action attempted
-```
-
-Canonical rules:
+Preserve separately:
 
 ```text
-revoked/expired basis != never existed
-current Representation/Authority != historical action-time basis
-past valid representation != standing future authority
+actual decision Actor/process
+represented party
+Authority/delegation basis
+Decision result
+resulting target state
 ```
 
-If a representation claim is later disputed or corrected, LifeOS preserves materially relevant attribution/provenance rather than silently rewriting history.
+A represented Decision does not mean the represented party personally deliberated, agreed, consented, acknowledged or confirmed.
 
 ---
 
-# 15. Conflict and epistemic integrity
+# 12. Provenance
 
-The following states may differ:
+Representation is not Provenance, but materially relevant representation should be traceable through Provenance/history.
 
-```text
-Actor claims to represent B
-source/provider says Actor represented B
-B disputes representation
-Authority evidence is incomplete
-current policy cannot establish legitimacy
-```
-
-LifeOS may preserve an unresolved representation claim or disputed basis where reality cannot yet be established.
-
-Do not infer:
-
-```text
-record exists
-→ representation was valid
-```
-
-or:
-
-```text
-effect occurred
-→ representative had legitimate Authority
-```
-
-Actual occurrence, Attribution and Authority remain separable.
-
----
-
-# 16. Multi-hop delegation / re-delegation
-
-A chain such as:
-
-```text
-Anna → Luca → Service X
-```
-
-must not be assumed valid merely because Anna delegated something to Luca.
-
-Canonical rule:
-
-> **Re-delegation is not implied.**
-
-Where a multi-hop chain is legitimate, later security/logical design must preserve the materially relevant chain, scope reductions and action-time basis without requiring one universal Delegation graph/root.
-
----
-
-# 17. AI / software representation
-
-AI or software may be the actual Actor when material semantic agency exists.
-
-Example:
-
-```text
-AI proposes a Schedule change under a user's bounded policy.
-```
-
-Canonical rules:
-
-```text
-AI Actor != human Actor
-AI proposal != human Decision
-AI access != Authority to disclose
-AI acting under policy != unlimited representation
-AI action != human Agreement/Consent/Acknowledgement/Confirmation
-```
-
-If an AI/service actually executes a bounded action for a user under valid policy, the AI/service Actor, represented party and applicable Authority/policy basis remain separately attributable where material.
-
-Do not launder AI/service behavior into human authorship.
-
----
-
-# 18. Visibility / privacy
-
-The existence of Representation does not mean every actor may see its basis or full chain.
-
-Possible separation:
-
-```text
-shared resulting Schedule change          visible
-actual representative identity            restricted
-private delegation/guardian basis         more restricted
-supporting Evidence                        separately governed
-```
-
-Canonical rule:
-
-> **Result Visibility, Representation Visibility, delegation/Authority-basis Visibility and Evidence/Provenance Visibility may differ.**
-
-Representation itself may reveal sensitive relationships or capacity/legal context and must remain subject to contextual Visibility/retention rules.
-
----
-
-# 19. Specialist boundaries
-
-LifeOS does not determine universal legal capacity, power-of-attorney validity, guardianship law, clinical consent authority, corporate agency law or regulated authorization.
-
-External specialist systems/documents may remain authoritative sources for those questions.
-
-LifeOS needs only enough semantic structure to preserve:
+Possible material lineage:
 
 ```text
 actual Actor
 represented party
-bounded action/context
-claimed/established applicable basis where material
-source/Provenance
-resulting effect separately
+Account/Principal context
+Authority/delegation/policy basis
+target/material version
+time
+correction/revocation context
 ```
-
-without asserting more legal validity than the evidence supports.
-
----
-
-# 20. Product / UI implications
-
-Ordinary self-use should expose no representation machinery.
-
-Simple assisted workflows may show natural language such as:
 
 ```text
-Added by Luca for Anna
-Responded by Sara on behalf of Marco
-Scheduled by assistant
+Representation != Provenance
+Representation may have Provenance
 ```
 
-High-consequence views may expose:
+---
+
+# 13. Chronology / lifecycle
+
+Representative chronology must preserve action-time truth:
 
 ```text
-acting person/service
-represented party
-scope
-basis
-validity period
-revocation/history
-source/evidence
+T1 bounded delegation granted
+T2 actual Actor authenticates
+T3 represented action occurs
+T4 resulting domain concept owns effect
+T5 delegation revoked
+T6 later represented attempt occurs
 ```
 
-Kernel precision must not produce enterprise proxy-management UI everywhere.
+Required rules:
+
+```text
+current Authority != historical action-time Authority
+past valid Representation != standing future Authority
+revoked/expired basis != never existed
+attempted Representation != legitimate/effective result automatically
+```
+
+Historical queries must reconstruct who acted, for whom, under which basis, whether the basis applied then, and what effect became effective.
 
 ---
 
-# 21. Core invariants
+# 14. Dispute / correction
 
-1. Actual semantic Actor is preserved where material.
-2. Actual Actor != represented party.
-3. Represented party != Subject/beneficiary automatically.
-4. Representation != Authority.
-5. Claiming representation != established right to act.
-6. Representation != Delegation.
-7. Delegation is action/target/scope/context bounded.
-8. Delegated Authority for X does not imply Authority for Y.
-9. Delegated Authority != Responsibility transfer.
-10. Re-delegation is not implied.
-11. Representative action does not automatically become represented party's Acknowledgement.
-12. Representative action does not automatically become represented party's Confirmation.
-13. Representative assent does not automatically become represented party's Agreement.
-14. Representative permission does not automatically become represented party's Consent.
-15. Representative Decision/action preserves actual decision/action Actor.
-16. Principal != Actor.
-17. Account != Principal.
-18. Represented Person requires no Account.
-19. Technical impersonation does not rewrite domain attribution truth.
-20. Revoked/expired basis does not erase historical representation.
-21. Disputed representation may remain unresolved.
-22. AI/service action must not be laundered into human authorship or will.
-23. Result Visibility does not imply Visibility of representation/delegation basis.
-24. Persistence/formality is consequence-sensitive.
+A party may dispute that an Actor was authorized to act for them.
+
+LifeOS may need to preserve:
+
+```text
+claimed Representation
+Evidence / Provenance
+claimed or established Authority basis
+Decision/reconciliation if later resolved
+unresolved conflict if not resolved
+```
+
+No universal last-write-wins rule is accepted.
+
+Misattribution may be corrected without erasing material history.
 
 ---
 
-# 22. Rejected alternatives
+# 15. Re-delegation / chains
+
+Representation is not transitively delegable.
+
+```text
+A authorizes B
+```
+
+does not imply:
+
+```text
+B may authorize C
+```
+
+Multi-hop delegation requires explicit applicable basis. Exact chain persistence remains security/logical-model work.
+
+---
+
+# 16. AI / service boundary
+
+AI/software may be actual Actors where agency is domain-material.
+
+AI/service may act under bounded policy/Authority, but must not:
+
+- be recorded as the represented human;
+- fabricate human Acknowledgement/Confirmation/Agreement/Consent/Decision;
+- infer or enlarge delegation scope;
+- assume re-delegation;
+- hide a materially relevant representation chain.
+
+```text
+AI/service agency != human authorship/will
+```
+
+---
+
+# 17. Visibility / privacy
+
+Representation/delegation can itself be sensitive.
+
+```text
+visible result
+!= visible Representation relation
+!= visible Authority/delegation basis
+!= visible Principal/authentication details
+```
+
+A representative may receive only a safe projection rather than all private source context.
+
+---
+
+# 18. Product simplicity
+
+Representation precision belongs in the kernel but should be exposed only where consequence warrants it.
+
+Possible natural UI:
+
+```text
+Done by Luca for Anna
+Responded by caregiver
+Managed by assistant
+```
+
+High-consequence history may expose actor, represented party, action/scope, basis, time and revocation status.
+
+Ordinary self-use must not become proxy/delegation bureaucracy.
+
+---
+
+# 19. External benchmark disposition
+
+Benchmark findings used by the V3 review:
+
+```text
+RFC 8693 delegation actor/subject separation        ADAPT
+RFC 8693 impersonation as domain attribution        ANTI-PATTERN
+FHIR Provenance who/onBehalfOf                       ADAPT
+W3C PROV actedOnBehalfOf                             ADAPT
+W3C authority/responsibility coupling                ANTI-PATTERN if copied literally
+NIST digital-identity role separation                ALREADY STRONGER / boundary confirmation
+generic IAM Principal as domain primitive            NOT APPLICABLE
+```
+
+External standards are evidence, not ontology authority.
+
+---
+
+# 20. Canonical invariants
+
+1. Representation is contextual action-scoped semantics, not identity/root.
+2. Actual Actor and represented party remain distinct.
+3. Representation != Actor identity.
+4. Representation != Subject/beneficiary.
+5. Representation != Authority.
+6. Claimed Representation != established legitimacy.
+7. Representation != Responsibility.
+8. Representation != Principal/Account.
+9. Representation != Provenance.
+10. Technical impersonation does not replace truthful domain attribution.
+11. Delegation is bounded Authority-establishment/entrustment, not universal primitive.
+12. Authority to X does not imply Authority to Y.
+13. Delegation of Authority does not transfer Responsibility automatically.
+14. Re-delegation is not implied.
+15. Representative action does not fabricate represented-party Acknowledgement.
+16. Representative action does not fabricate represented-party Confirmation.
+17. Representative action does not fabricate represented-party Agreement.
+18. Representative action does not fabricate represented-party Consent.
+19. Representative Decision preserves actual decision Actor/process.
+20. Revocation/expiry changes future applicability without deleting history.
+21. Disputed Representation may remain unresolved.
+22. AI/service action does not become human authorship/will.
+23. Representation/basis Visibility is independent from result Visibility.
+24. Representation persistence/formality is consequence-sensitive.
+25. A LifeOS Representation relation does not prove legal/clinical capacity or validity.
+
+---
+
+# 21. Rejected alternatives
 
 Rejected:
 
-- `Principal` as a LifeOS domain root;
-- universal `Agent` / `Representative` entity hierarchy;
-- generic Delegation root for every transferred role/permission;
-- blanket `acts_for` relationship implying all actions;
-- `user_id` / authenticated Principal as semantic Actor truth;
-- technical impersonation as domain attribution;
-- household/member/guardian label as blanket representation;
-- acting for someone = Subject/beneficiary;
-- acting for someone = Authority;
-- acting for someone = Responsibility;
-- acting for someone = represented person's Agreement/Consent/Acknowledgement/Confirmation/Decision;
-- automatic re-delegation;
-- one universal delegation graph/table pre-approved by semantics.
-
----
-
-# 23. Deliberately deferred questions
-
-- exact Principal/AuthN/AuthZ/security identity model;
-- technical impersonation/token-exchange/session mechanics;
-- exact action-specific delegation policy representation;
-- legal capacity/guardian/power-of-attorney validity;
-- whether a representative may create legally/clinically valid Agreement/Consent in a concrete specialist domain;
-- material Version/scope-equivalence mechanics;
-- multi-hop delegation-chain persistence;
-- Verification of representation/delegation basis;
-- Organization/group/collective representation;
-- retention/audit/anonymization;
-- AI/service native identity and delegation mechanics;
-- exact logical/physical typed-reference representation.
-
-All are SAFE DEFERRED only while the invariants above remain representable without identity/Authority collapse.
-
----
-
-# 24. Persistence / API pressure without physical commitment
-
-Future logical design must be able to represent, where material:
-
 ```text
-actual Actor
-represented party
-specific action/role
-bounded target/context
-relevant time
-Account/Principal authentication context if needed
-Authority/delegation/policy/Consent basis if applicable
-source/Provenance
-revocation/expiry/history
-resulting target state separately
+universal Principal domain root
+universal Agent/Representative root
+universal Delegation root
+represented party substituted as actual Actor
+Account = Actor
+Principal = Actor
+Representation = Authority
+Representation = Responsibility
+Representation = Subject/beneficiary
+Representation = Provenance
+technical impersonation as domain truth
+blanket delegability
+implicit re-delegation
+Representation as legal-validity proof
+AI inference as representation/Authority basis
 ```
 
-This concept does **not** pre-approve:
+---
+
+# 22. SAFE DEFERRED dependencies
+
+Still independently owned:
 
 ```text
-representations table
-principals table as domain ontology
-delegations table for every role
-polymorphic party root
-universal actor_id
-universal on_behalf_of FK
-universal authorization graph
+exact Principal/AuthN/AuthZ/enforcement
+technical impersonation mechanics
+action-specific delegability/policy
+legal/specialist representation capacity
+represented Agreement/Consent legal validity
+Version/material scope
+multi-hop delegation persistence
+Verification of representation basis
+Organization/group/collective representation
+retention/audit/privacy
+AI/service delegation chain
+exact persistence/cardinality/API representation
 ```
 
-Physical representation is deferred until whole-domain semantic and multi-actor gates are complete.
+Every material item has owner, reopening trigger and test set in `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+```text
+REOPEN                         0
+unclassified material items    0
+```
 
 ---
 
-# 25. Reopening triggers
+# 23. Persistence/API implications — no physical commitment
 
-Reopen Representation v0 if later evidence proves that:
+Future logical modeling must support, where material:
 
-1. actual Actor + represented party can be represented losslessly by an already accepted concept with lower semantic cost;
-2. Representation cannot remain distinct from Authority in real workflows;
-3. specialist legal/clinical representation requires a stronger universal semantic boundary for ordinary LifeOS use;
-4. logical persistence cannot preserve action-scoped history without introducing an identity/lifecycle contradiction rather than an implementation inconvenience;
-5. AI/service delegation requires a materially different semantic model;
-6. collective/organization representation demonstrates that the current party/action relation is structurally insufficient.
+- actual Actor/native identity;
+- represented party/native identity;
+- bounded action/target/context;
+- material scope/version/time;
+- applicable Authority/delegation/policy/Consent/other basis;
+- Account/Principal context separately where material;
+- history/revocation/correction;
+- Provenance/Evidence/dispute;
+- independent Visibility/retention.
 
-Until then, Representation/on-behalf-of is the current accepted semantic candidate pending full propagation and post-write QA.
+This does **not** pre-approve:
+
+```text
+one representatives table
+one universal principal_id domain FK
+universal on_behalf_of_id on every record
+universal delegation graph
+policy-engine schema
+Party/Agent superclass
+generic polymorphic target JSON
+final AuthN/AuthZ implementation
+```
+
+---
+
+# 24. Reopening triggers
+
+Reopen Representation v0 only if later evidence shows that:
+
+1. Actor + Authority + Provenance can represent the relation losslessly with lower complexity;
+2. represented-party relation gains independent stable identity/lifecycle requiring a different family;
+3. specialist representation workflows expose a structural contradiction;
+4. collective/Organization identity materially changes represented-party semantics;
+5. Principal/AuthN/AuthZ implementation proves the accepted separation contradictory rather than merely inconvenient;
+6. Version/material-scope mechanics cannot preserve action-specific history;
+7. whole-domain regression exposes real redundancy with another accepted concept.
+
+Vocabulary difference alone is never sufficient.
+
+---
+
+# 25. Validation / QA result
+
+Normative validation:
+
+- `../checkpoints/representation-delegation-principal-v0-validation.md`
+
+Post-write QA against:
+
+```text
+b6c53ffa40ba7c1c1408f583856617a0e000f31b
+```
+
+resulted in:
+
+```text
+approved unique paths changed          25 / 25
+new files                                2 / 2
+modified files                          23 / 23
+out-of-scope paths                       0
+structural REOPEN                        0
+unclassified material dependencies      0
+branch behind main                       0
+```
+
+Representation / on-behalf-of v0 is therefore part of the current accepted Domain Atlas branch baseline.
