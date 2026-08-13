@@ -421,3 +421,46 @@ A confirmer may affirm that terms or facts are accurately stated while refusing 
 The historical `Agreement/Consent semantics` deferral is now downstream-closed at the semantic-boundary level. Version/material equivalence, Verification, specialist signatures/legal validity, Principal/delegation and retention remain separately owned.
 
 **Confirmation v0 verdict remains unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes Confirmation's acting-confirmer / represented-party boundary without changing Confirmation semantics.
+
+Current canonical separation:
+
+```text
+Confirmation
+= contextual affirmation performed by the actual confirmer Actor
+
+Representation / on-behalf-of
+= that actual Actor acted for a distinct represented party in the bounded confirmation context
+
+Principal
+= technical request identity
+
+Authority / delegation basis
+= whether the represented confirmation action is legitimate/effective for the represented party where applicable
+```
+
+Therefore:
+
+```text
+actual confirmer Actor != represented party by default
+Representation != Confirmation
+Principal != semantic confirmer
+```
+
+A representative may submit a Confirmation with effect for another party where applicable Authority/policy permits it. LifeOS still preserves the actual confirmer Actor, represented party and basis; it does not rewrite the record as if the represented party personally made the affirmation.
+
+Representation does not establish the truth of the confirmed target, and a valid representation basis does not create Confirmation unless an actual confirmation action occurs.
+
+Exact Principal/AuthN/AuthZ mechanics, legal/specialist representation validity, Version/material equivalence, Verification, specialist signatures and retention remain independently SAFE DEFERRED.
+
+No Confirmation invariant failed. **Confirmation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
