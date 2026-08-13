@@ -6,7 +6,8 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 
 ## Foundation
 
-- [`vision.md`](vision.md) — product vision
+- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Proposed** canonical LifeOS product identity / North Star; pending final review before it supersedes narrower high-level vision wording
+- [`vision.md`](vision.md) — current accepted product vision until the North Star proposal is explicitly accepted
 - [`scope.md`](scope.md) — early scope foundation
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
 - [`v1-scope.md`](v1-scope.md) — detailed V1 scope
