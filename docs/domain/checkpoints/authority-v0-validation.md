@@ -468,3 +468,54 @@ Normative downstream references:
 - `../concepts/agreement.md`;
 - `../concepts/consent.md`;
 - `agreement-consent-v0-validation.md`.
+
+---
+
+# 16. Downstream closure — Representation / Principal v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical `Detailed Delegation / on-behalf-of` semantic dependency without reopening Authority.
+
+Current canonical separation:
+
+```text
+Actor
+= who/what actually acts
+
+Representation / on-behalf-of
+= actual Actor acts for a distinct represented party for a bounded action/context
+
+Authority
+= whether the bounded represented action may legitimately produce its governed effect
+
+Principal
+= technical authenticated/authorized request identity
+```
+
+Therefore:
+
+```text
+Representation != Authority
+Representation != Principal
+Principal != Authority
+claim of Representation != established Authority
+```
+
+Delegation remains a bounded Authority-establishment/entrustment pattern rather than a universal primitive. It does not imply blanket transfer, Responsibility transfer, Visibility, represented-party Agreement/Consent or re-delegation.
+
+Downstream status:
+
+```text
+Representation / on-behalf-of semantic relation   RESOLVED
+universal Delegation primitive                    REJECTED
+Principal as LifeOS domain primitive              REJECTED
+exact Principal/AuthN/AuthZ enforcement           SAFE DEFERRED
+specific delegation policy / re-delegation        SAFE DEFERRED
+legal/specialist representation validity          SAFE DEFERRED
+```
+
+No original Authority test or hardening failed. **Authority v0 remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
