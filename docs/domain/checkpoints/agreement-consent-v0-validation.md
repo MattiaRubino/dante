@@ -709,3 +709,68 @@ Validated conditions:
 **Agreement / Consent v0 is now part of the validated branch baseline.**
 
 The write approval for this scope is consumed. The next valid operation is a fresh read-only re-score of the remaining Relationships / Reasoning candidate/dependency space.
+
+---
+
+# 20. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical `Principal / delegation / representation` semantic dependency without changing the Agreement / Consent verdict.
+
+Canonical separation:
+
+```text
+actual assent / Consent Actor
+= who actually performed the declaration/action
+
+represented Agreement / Consent party
+= distinct party for whom the Actor acted in the bounded context
+
+Representation / on-behalf-of
+= relation connecting actual Actor to represented party for that specific action/context
+
+Principal
+= technical security/request identity
+
+Authority / delegation / specialist basis
+= whether the represented assent/permission may legitimately count for the represented party
+```
+
+Therefore:
+
+```text
+actual Actor != represented party by default
+Representation != Agreement
+Representation != Consent
+Representation != Authority
+Principal != semantic assent/Consent Actor
+```
+
+A representative action does not automatically establish the represented party's personal Agreement or Consent. It can have represented effect only where an applicable action-specific Authority/policy/specialist rule permits that effect, while LifeOS preserves the actual Actor, represented party, scope/version and basis.
+
+Downstream classification:
+
+```text
+Agreement/Consent ↔ Representation/on-behalf-of   RESOLVED
+Principal as LifeOS domain primitive              REJECTED
+universal Delegation primitive                    REJECTED
+```
+
+The previous Principal/delegation/representation SAFE DEFERRED item is therefore closed at the semantic relation boundary. Still SAFE DEFERRED with their existing or newly narrowed owners/triggers/tests:
+
+- exact Principal/AuthN/AuthZ/security mechanics;
+- Version/material-equivalence mechanics;
+- legal/specialist capacity and represented Agreement/Consent validity;
+- purpose/use technical enforcement;
+- collective/group/quorum semantics;
+- formal Contract/signature lifecycle;
+- Proposal/request identity;
+- retention/deletion.
+
+The existing unequal-power and `R-CON-03` regression cases remain mandatory: guardian/caregiver/helper action requires truthful actor/represented-party/basis attribution and must not be laundered into personal voluntary Consent merely because Representation exists.
+
+No Agreement or Consent hardening failed. **Agreement / Consent remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
