@@ -386,3 +386,52 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 17. Downstream closure — Version / Material-State v0 (2026-08-13)
+
+Version / Material-State v0 resolves the state/version portion of the checkpoint's historical `Version / Provenance / Decision / reconciliation` dependency without reopening Responsibility.
+
+A response or resolution remains tied to the materially relevant role/request state it actually concerned:
+
+```text
+Hand-off H1: bounded Responsibility scope S1
+Anna responds positively to H1
+
+later H2 materially expands scope to S2
+→ H1 response remains historical
+→ H1 response does not silently accept H2
+```
+
+Current Responsibility may evolve through several material states while the underlying commitment identity remains stable. Historical holder, request, response, Decision and effective intervals must remain reconstructible where consequence requires it.
+
+Materiality is role/scope specific. Technical storage/provider revisions, ETags/MVCC tokens, hashes or timestamps do not determine Responsibility response applicability. Same commitment identity does not imply response/Approval carry-forward after a material scope change.
+
+Downstream classification:
+
+```text
+Responsibility ↔ Version/material state       RESOLVED
+Version ↔ Assignment/Claim/Hand-off           RESOLVED — state != operation
+Version ↔ Decision/Authority/Reconciliation   RESOLVED — state != resolution/governance
+Version ↔ Provenance                          RESOLVED — state != lineage
+```
+
+Remaining SAFE DEFERRED dependencies:
+
+- detailed source-precedence/reconciliation policy;
+- Principal/delegation/on-behalf-of;
+- Coordination Stewardship;
+- collective/joint Responsibility;
+- Trigger/fallback/rotation policy;
+- qualified persistence/API;
+- specialist regulated-accountability extensions.
+
+AI may flag a stale hand-off/assignment proposal after a material scope change but cannot infer renewed human willingness or silently transfer Responsibility.
+
+No Responsibility hardening failed. **Responsibility remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
