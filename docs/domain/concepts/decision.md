@@ -619,3 +619,55 @@ Normative downstream references:
 - `agreement.md`;
 - `consent.md`;
 - `../checkpoints/agreement-consent-v0-validation.md`.
+
+---
+
+# 23. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 closes Decision's former `Principal / delegation / on-behalf-of` semantic dependency without changing Decision.
+
+Canonical separation:
+
+```text
+actual decision Actor/process
+= who/what actually performed the bounded resolution
+
+Representation / on-behalf-of
+= the actual decision Actor acted for a distinct represented party in that bounded decision context
+
+Authority / delegation basis
+= whether the decision/effect is legitimate for the represented context
+
+Principal
+= technical request identity
+```
+
+Therefore:
+
+```text
+actual decision Actor != represented party by default
+Representation != Decision
+Representation != Authority
+Principal != decision Actor
+```
+
+A representative may make a Decision with effect for another party when applicable Authority/process permits it. That does not turn the represented party into the historical decision-maker and does not imply the represented party personally agreed, consented, acknowledged or confirmed.
+
+AI/service actors follow the same rule: if they perform the decision process under bounded policy, they remain attributable as the actual Actor/process rather than being laundered into a human Decision.
+
+Downstream classification:
+
+```text
+Decision ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive            REJECTED
+universal Delegation primitive           REJECTED
+```
+
+Exact Principal/AuthN/AuthZ mechanics, action-specific delegability, Version/material equivalence, collective Decision, proposal identity, detailed reconciliation, GoalCriterion/evaluation and specialist legal/signature validity remain SAFE DEFERRED.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
