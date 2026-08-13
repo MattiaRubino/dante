@@ -550,3 +550,62 @@ Normative downstream references:
 
 - `../concepts/decision.md`;
 - `decision-v0-validation.md`.
+
+---
+
+# 11. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves the checkpoint's historical Principal/delegation/on-behalf-of semantic dependency without changing Provenance.
+
+Canonical separation:
+
+```text
+Provenance
+= origin/evolution lineage of the action/record/result
+
+Representation / on-behalf-of
+= actual Actor acted for a distinct represented party in a bounded action/context
+
+Principal
+= technical request/authentication identity
+
+Authority / delegation basis
+= legitimacy of the represented action/effect where applicable
+```
+
+Therefore:
+
+```text
+Provenance != Representation
+actual Actor != represented party by default
+Principal != semantic Actor
+```
+
+A provenance chain may include actual Actor, represented party, Account/Principal context, Authority/delegation basis and relevant source/process/time where material. That does not make Provenance the Representation relation, and Representation itself may have Provenance.
+
+Technical impersonation/shared credentials and AI/service execution must not rewrite materially known actual-Actor attribution.
+
+Downstream classification:
+
+```text
+Provenance ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive              REJECTED
+universal Delegation primitive             REJECTED
+```
+
+Still SAFE DEFERRED:
+
+- exact Principal/AuthN/AuthZ mechanics;
+- Version/material-version mechanics;
+- Audit/security history;
+- detailed source-precedence/reconciliation policy;
+- Verification/signature semantics;
+- retention/anonymization;
+- physical Provenance/typed-reference representation.
+
+No Provenance hardening failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `../concepts/representation.md`;
+- `representation-delegation-principal-v0-validation.md`.
