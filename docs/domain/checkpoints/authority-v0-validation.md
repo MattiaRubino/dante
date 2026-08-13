@@ -385,3 +385,46 @@ Normative downstream references:
 
 - `../concepts/acknowledgement.md`;
 - `acknowledgement-v0-validation.md`.
+
+---
+
+# 14. Downstream closure — Decision v0 (2026-08-13)
+
+Decision v0 resolves the historical `Decision / Approval / effective canonical change` SAFE DEFERRED item without altering the original Authority test result.
+
+Current canonical closure:
+
+```text
+Authority
+= legitimate bounded governance capability
+
+Decision
+= bounded contextual resolution to a specific result
+
+Approval
+= scoped Decision/review result whose governance significance depends on Authority/policy
+
+Effective target state
+= owned by the affected domain concept
+```
+
+Therefore:
+
+```text
+Authority ↔ Decision                 RESOLVED
+Authority ↔ Approval                 RESOLVED
+Authority ↔ effective target state   RESOLVED
+```
+
+The review also rejects universal standalone `Approval`, `Reconciliation`, and `EffectiveChange` roots. Reconciliation remains a process/pattern that may culminate in Decision or remain unresolved.
+
+Material target/version changes do not inherit prior Approval/Decision automatically. Decision time, effect time and Actual time remain separable. Authority to govern an effect still grants no automatic Visibility of private rationale/Evidence.
+
+No original Authority hardening failed; **Authority v0 remains PASS WITH HARDENING, REOPEN = 0**.
+
+Dependencies that remain independently owned include Principal/enforcement/detailed delegation, Agreement/Consent, Version/material equivalence, Policy/Role conditions and qualified Authority persistence.
+
+Normative downstream references:
+
+- `../concepts/decision.md`;
+- `decision-v0-validation.md`.
