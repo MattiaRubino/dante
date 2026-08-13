@@ -780,3 +780,39 @@ The accepted model deliberately rejects:
 - treating one actor/provider assertion as universal truth.
 
 The concept remains reopenable if Observation, Confirmation, Provenance, Relationship, or persistence modeling demonstrates that a simpler structure preserves all required semantics without loss.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 closes Outcome's former `Outcome correction / version persistence` dependency without changing Outcome semantics.
+
+Canonical separation:
+
+```text
+Outcome meaning/identity
+= contextual result/disposition for the realization
+
+Outcome material state
+= the materially relevant result state currently represented
+
+Version
+= purpose/facet-scoped reference to that material state
+```
+
+A correction from `passed` to `failed`, or another materially different result, creates a new material state of the same Outcome context unless evidence shows the earlier record concerned a different result identity/context. Historical assertions, Confirmation, Evidence use and Decisions remain bound to the Outcome state they actually concerned.
+
+A later material Outcome revision does not silently rewrite earlier evaluations. Conversely, metadata-only or irrelevant-facet changes need not invalidate every dependent semantic action. Material equivalence is therefore purpose/facet scoped, not global field equality.
+
+Competing actor/provider Outcome assertions are not automatically Versions of one canonical Outcome. They may remain distinct attributed assertions until reconciliation establishes whether they concern the same result context and which state becomes current. Version preserves state history; Authority/Decision/reconciliation own current-state selection.
+
+Provider revisions, hashes, ETags and storage versions may support lineage/concurrency but do not define semantic Outcome materiality. Retaining historical state references does not mandate indefinite retention of all sensitive supporting payloads.
+
+The historical Outcome correction/version dependency is now downstream-closed at the semantic boundary. Detailed reconciliation/source precedence, result-family typing, retention and physical persistence remain independently owned.
+
+No Outcome hardening failed. **Outcome remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
