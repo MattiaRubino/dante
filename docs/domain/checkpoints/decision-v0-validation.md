@@ -743,3 +743,44 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 19. Downstream closure — Reconciliation / Source Precedence v0 (2026-08-13)
+
+Reconciliation v0 resolves the checkpoint's historical detailed reconciliation/source-precedence dependency without reopening Decision.
+
+Current separation:
+
+```text
+Reconciliation
+= process/capability for handling materially competing states/assertions
+
+Decision
+= explicit bounded resolution to a specific result where the resolution itself is material
+```
+
+A Reconciliation may culminate in a Decision, but unresolved conflict and deterministic already-authorized reconciliation remain valid without fabricating a human Decision. Many Decisions also have no preceding conflict/reconciliation.
+
+Evidence, Provenance, Authority and contextual Source Precedence may inform the basis while remaining distinct. Source identity/recency does not become Decision; Decision does not create Authority or objective truth.
+
+If reconciliation leads to an effective change, the affected domain concept owns current state. Version/Provenance preserve materially relevant predecessor/basis history, and later reversal/correction does not rewrite the prior Decision.
+
+Decision-result Visibility remains distinct from conflict, rationale, Evidence, Provenance and source Visibility.
+
+Downstream classification:
+
+```text
+Decision ↔ Reconciliation        RESOLVED
+Decision ↔ Source Precedence     RESOLVED — basis, not identity
+Decision ↔ effective state       RESOLVED — not owner
+```
+
+Remaining SAFE DEFERRED dependencies include Proposal/request reusable identity, collective/quorum/voting semantics, GoalCriterion/evaluation, Trigger/policy mechanics, exact persistence/API and specialist approval/signature/legal validity.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/reconciliation.md`;
+- `reconciliation-source-precedence-v0-validation.md`.
