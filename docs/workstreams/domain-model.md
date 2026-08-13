@@ -1,18 +1,20 @@
 # Workstream — Core Domain Model v0
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Version / material-equivalence v0 propagation written; final post-write QA in progress**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Version / material-equivalence v0 QA PASS; next exact step = fresh candidate/dependency re-score**
 - Active branch: `feature/domain-model`
 - Upstream baseline: `main` at `c5120ff463e027c42f4a26fc613d0917596ca738`
 - Version pre-scope baseline: `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`
 - PR: none
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
-- Current QA-closed Cluster-5 reviews before Version: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision, Agreement / Consent, Representation / on-behalf-of**
-- Version v0: **PASS WITH HARDENING — hardenings incorporated; approved 42-path propagation written; final QA pending**
+- Current QA-closed Cluster-5 reviews: **Relationship, Responsibility, Participation, Authority, Visibility, Acknowledgement, Decision, Agreement / Consent, Representation / on-behalf-of, Version / material equivalence**
+- Version v0: **PASS WITH HARDENING — hardenings incorporated; approved 42-path propagation complete; post-write QA PASS; current accepted Domain Atlas baseline**
 - Generic cross-domain **Acceptance / Assent remains rejected**.
 - Universal **Approval, Reconciliation, EffectiveChange, Contract, Consent/Permission, Principal, Agent/Representative, Delegation and Version roots/tables remain rejected**.
-- Current exact task: **complete final Version post-write QA against `1008aeb0367de4ae73a8e8d41a76aee9e0493f34`; verify exactly 42 approved paths, preservation, final HEAD and main comparison**.
-- After QA PASS only: **consume the Version write approval, move the workstream baseline to final HEAD, then run a fresh re-score of remaining Relationships / Reasoning candidate/dependency space; no next candidate is preselected**.
+- Version QA result: **42 / 42 approved paths; 2 CREATE + 40 UPDATE; out-of-scope paths 0; preservation PASS; CORE/MA/XCON/ADS complete; RESOLVED 19; SAFE DEFERRED 6; REOPEN 0; unclassified 0; branch behind main 0**.
+- Version write approval: **consumed after QA PASS**.
+- Current exact task: **fresh re-score of remaining demonstrated Relationships / Reasoning candidate/dependency space; no next candidate is preselected**.
+- After re-score: **select one candidate/family only, execute one complete V3 cycle, calculate propagation, then STOP BEFORE the next Git write gate**.
 
 ## Purpose
 
@@ -205,7 +207,7 @@ Principal domain primitive      REJECTED
 Universal Agent/Representative  REJECTED
 Universal Delegation            REJECTED
 Impersonation-as-domain-truth    REJECTED
-Version v0                      PASS WITH HARDENING — FINAL QA PENDING
+Version v0                      PASS WITH HARDENING — QA PASS
 Universal Version root/table    REJECTED
 
 Multi-Actor Evidence Synthesis  PASS WITH HARDENING
@@ -559,7 +561,7 @@ Associated rejected universal abstractions remain rejected.
 
 ---
 
-# 16. Version / material-equivalence v0 — current milestone
+# 16. Version / material-equivalence v0 — completed milestone
 
 Canonical question:
 
@@ -603,13 +605,15 @@ CORE-01..13    PASS / PASS WITH HARDENING
 MA-01..20      PASS / PASS WITH HARDENING
 XCON-01..06    PASS / PASS WITH HARDENING
 ADS            complete
-REOPEN         0
-unclassified   0
+RESOLVED       19
+SAFE DEFERRED   6
+REOPEN          0
+unclassified    0
 ```
 
 ---
 
-# 17. Version propagation / QA gate
+# 17. Version propagation / post-write QA — PASS
 
 Approved pre-scope:
 
@@ -625,44 +629,48 @@ Approved scope:
 40 UPDATE
 ```
 
-Current write state:
+Validated result:
 
 ```text
-concept/checkpoint          written
-hardenings                  incorporated
-semantic downstream closure written
-navigation/handoff          being finalized
-post-write QA               pending
-approval                    NOT YET consumed
+approved unique paths changed          42 / 42
+new files                                2 / 2
+modified files                          40 / 40
+out-of-scope paths                       0
+preservation                             PASS
+CORE / MA / XCON / ADS                   COMPLETE
+RESOLVED                                19
+SAFE DEFERRED                            6
+REOPEN                                   0
+unclassified material dependencies      0
+main baseline                           c5120ff463e027c42f4a26fc613d0917596ca738
+branch behind main                       0
 ```
 
-Final QA requirements remain exactly those recorded in `version-material-equivalence-v0-validation.md`, including exact 42-path diff, preservation, final HEAD, main behind=0 and no out-of-scope implementation/product-history changes.
+Historical checkpoints remain reconstructible. The old product glossary, root README, PROJECT-STATUS, main, prototype, SQL/API/backend/auth implementation were untouched by the Version scope.
+
+The Version write approval is **consumed**. Version v0 is the current accepted Domain Atlas baseline.
 
 ---
 
 # 18. Current next action
 
-Complete Version v0 final post-write QA.
+Run a **fresh re-score** of remaining demonstrated Relationships / Reasoning candidate/dependency space.
 
-Only after QA PASS:
+Then:
 
 ```text
-consume Version write approval
+select one candidate/family only
 ↓
-record final branch HEAD as new validated baseline
+execute full V3 autonomously
 ↓
-fresh re-score of remaining demonstrated candidate/dependency space
-↓
-one full V3 cycle
-↓
-propagation analysis
+calculate documentation propagation
 ↓
 STOP BEFORE NEXT GIT WRITE
 ```
 
 No next candidate is preselected.
 
-Examples remaining for the future re-score include:
+Examples remaining for the re-score include:
 
 ```text
 Proposal / request reusable identity
@@ -683,6 +691,8 @@ legal/specialist representation capacity
 retention/audit
 Personal Knowledge generic link layer
 ```
+
+These are candidates/dependencies, not a checklist of primitives.
 
 ---
 
