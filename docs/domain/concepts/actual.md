@@ -931,3 +931,45 @@ The affected `Actual` concept owns its current realized-state transition. No uni
 Version/material-equivalence mechanics, detailed reconciliation/source-precedence policy, Principal/enforcement and physical Actual persistence remain SAFE DEFERRED.
 
 **Actual v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 closes Actual's former `Version / material-equivalence` semantic dependency without changing Actual's realization meaning.
+
+Canonical separation:
+
+```text
+Actual identity
+= the contextual realization being established/reconciled
+
+Actual material state
+= the materially relevant current representation of that realization
+
+Version
+= a reference to that materially relevant state for a defined purpose/facet
+```
+
+Therefore:
+
+```text
+Actual identity != Actual Version
+correction != new Actual identity by default
+provider/ETag revision != material Actual revision automatically
+```
+
+Where an assertion, Confirmation, Decision, reconciliation result or derived comparison concerns a particular Actual state, it binds to the material state it actually evaluated. A later material correction does not silently rewrite the earlier evaluation or make it apply to the corrected state by default.
+
+Competing Actual assertions may diverge from a shared prior state and remain simultaneously attributable until the applicable reconciliation/Authority/Decision policy selects or constructs the current interpretation. Version therefore preserves divergence/history; it does not choose the winner.
+
+Materiality is purpose/facet scoped: a metadata-only or unrelated private-facet change need not invalidate every use of the Actual, while a change to the fact relied upon by an evaluation does. Historical state references may remain reconstructible without retaining every sensitive payload indefinitely.
+
+The historical `Version / material-equivalence` dependency is now downstream-closed at the semantic boundary. Detailed reconciliation/source precedence, Principal/enforcement, retention and physical persistence remain independently owned.
+
+No Actual hardening failed. **Actual remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
