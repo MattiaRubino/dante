@@ -1182,3 +1182,47 @@ Reopen Observation v0 if later evidence shows that:
 A future product decision to call a screen `Register`, `Tracker`, `History`, `Progress`, or similar is not a reopening trigger by itself.
 
 Until stronger evidence appears, Observation remains the current accepted bounded measurement/simple-assertion concept.
+
+---
+
+# 2026-08-13 — Version / material-equivalence downstream closure amendment
+
+Version v0 resolves Observation's former `Version / correction persistence` dependency without changing Observation identity semantics.
+
+Canonical separation:
+
+```text
+Observation identity
+= one observational/assertion act
+
+Observation material state
+= materially relevant content/subject/source-context state of that same Observation
+
+Version
+= purpose/facet-scoped reference to that state
+```
+
+Therefore:
+
+```text
+correction of O17 != new Observation automatically
+re-observation != correction
+provider/ETag revision != semantic Observation revision automatically
+```
+
+A correction may move the same Observation from material state v1 to v2 while preserving the original assertion and correction lineage. A new measurement/re-observation remains a distinct Observation identity even if values happen to match.
+
+Evidence, Confirmation, Decision, derived Observation, reconciliation and AI reasoning bind to the material Observation state they actually used. A later material correction does not silently rewrite a historical evaluation or make prior assent/decision applicable to the new state. Non-material equivalence is purpose/facet scoped rather than global.
+
+Conflicting Observations remain distinct records, not competing Versions of one Observation merely because they concern the same Subject/property/time. Version preserves state history inside one Observation; reconciliation decides whether separate records are duplicates, conflicts or independent observations.
+
+Provider IDs, hashes, storage revisions and ETags may support lineage/concurrency but do not define LifeOS Observation materiality. Historical state references also do not imply indefinite retention of sensitive payloads.
+
+The historical Version/correction dependency is now downstream-closed at the semantic boundary. Detailed reconciliation/source precedence, typed-value evolution, retention and physical persistence remain separately owned.
+
+No Observation hardening failed. **Observation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
