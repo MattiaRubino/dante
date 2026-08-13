@@ -675,3 +675,54 @@ Provenance ↔ Decision rationale  RESOLVED
 Version/material-version mechanics, detailed source-precedence/reconciliation policy, Principal/delegation, signature/Verification, retention and physical lineage representation remain independently deferred.
 
 **Provenance v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes Provenance's delegated/on-behalf-of semantic dependency without turning lineage into the representation relation.
+
+Canonical separation:
+
+```text
+Provenance
+= how an action/record/result came to exist or change
+
+Representation / on-behalf-of
+= the actual Actor acted for a distinct represented party in a bounded action/context
+
+Principal
+= technical authentication/authorization identity
+
+Authority / delegation basis
+= whether the represented action may legitimately produce its governed effect
+```
+
+Therefore:
+
+```text
+Provenance != Representation
+actual Actor != represented party by default
+Principal != semantic Actor
+```
+
+Provenance may record the actual Actor, represented party, Principal/authentication context, Authority/delegation basis, source/process and relevant times where materially useful. Representation itself may also have Provenance. None of those facts make lineage the represented-party relation or make the represented party the actual Actor.
+
+Technical impersonation/shared credentials must not overwrite materially known actual-Actor attribution in domain history. AI/service actions follow the same rule and must not be laundered into human authorship.
+
+Downstream classification:
+
+```text
+Provenance ↔ Representation/on-behalf-of   RESOLVED
+Principal as domain primitive              REJECTED
+universal Delegation primitive             REJECTED
+```
+
+Exact Principal/AuthN/AuthZ mechanics, Version/material-version mechanics, detailed source-precedence/reconciliation policy, Verification/signature semantics, retention/audit and physical lineage representation remain SAFE DEFERRED.
+
+No Provenance invariant failed. **Provenance remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
