@@ -786,3 +786,48 @@ See:
 - `checkpoints/authority-v0-validation.md`;
 - `concepts/visibility.md`;
 - `checkpoints/visibility-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Representation / on-behalf-of downstream closure
+
+Representation v0 closes the previously deferred on-behalf-of semantic relation without changing Actor identity or specific-role precedence.
+
+Current canonical decomposition:
+
+```text
+Actor
+= who/what actually acts semantically
+
+Representation / on-behalf-of
+= contextual action-scoped relation recording that the actual Actor acted for a distinct represented party
+
+Principal
+= technical security identity; not a domain primitive
+
+Authority / delegation basis
+= whether the bounded represented action may legitimately produce its governed effect
+```
+
+Therefore:
+
+```text
+Actor != represented party
+Actor != Principal
+Representation != Actor
+Representation != Authority
+Representation != Responsibility
+Representation != Provenance
+technical impersonation != domain attribution truth
+```
+
+The actor performing an action remains the actual Actor even when the resulting effect is for another party. The represented party is not silently substituted into recorder, performer, confirmer, decision-maker or other typed actor roles.
+
+The older `delegated/on-behalf-of authority` deferral is **RESOLVED at the semantic relation boundary**. Exact Principal/AuthN/AuthZ mechanics, action-specific delegation policy, legal representation validity, multi-hop delegation-chain persistence and physical typed-reference representation remain SAFE DEFERRED.
+
+AI/service actors remain subject to the same rule: acting under bounded human policy may establish Representation and Authority where applicable, but it does not manufacture human authorship, Agreement, Consent, Acknowledgement, Confirmation or Decision.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
