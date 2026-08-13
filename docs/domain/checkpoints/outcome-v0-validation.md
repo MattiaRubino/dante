@@ -343,3 +343,41 @@ Completed in Outcome v0 acceptance pass:
 - workstream handoff updated;
 - reopening triggers recorded;
 - Methodology v3 remains mandatory standard.
+
+---
+
+# 13. Downstream closure — Version / material-equivalence v0 (2026-08-13)
+
+Version v0 resolves the checkpoint's historical `Outcome correction / version persistence` dependency without changing the original Outcome validation result.
+
+Current closure:
+
+```text
+Outcome identity/context
+!= material Outcome state
+!= provider/storage revision
+```
+
+A material correction such as `passed → failed` creates a later material state of the same Outcome context unless a different Outcome identity/context is established. Historical Confirmations, Evidence uses, Decisions and source assertions remain bound to the exact state they evaluated.
+
+A later material revision does not silently rewrite earlier evaluation. Non-material equivalence may preserve applicability only for the purpose/facet that remained unchanged; hash equality or technical row version cannot decide this universally.
+
+Competing actor/provider result assertions remain separately attributable until reconciliation determines whether they represent alternative claims about one Outcome context. Version preserves state history but does not select canonical truth or Authority.
+
+Provider IDs, ETags and storage revisions may support concurrency/lineage but remain implementation/integration evidence rather than semantic materiality authority. Historical state references do not require indefinite retention of all sensitive supporting payloads.
+
+Downstream classification:
+
+```text
+Outcome ↔ Version/material equivalence   RESOLVED
+Version ↔ current Outcome selection      RESOLVED — not owner
+```
+
+Detailed reconciliation/source precedence, result typing, retention and physical persistence remain separately owned.
+
+No original Outcome hardening failed. **Outcome remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/version.md`;
+- `version-material-equivalence-v0-validation.md`.
