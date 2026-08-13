@@ -984,3 +984,48 @@ Responsibility ↔ Reconciliation boundary     RESOLVED semantically
 Version/Provenance mechanics, detailed reconciliation policy, Principal/delegation/on-behalf-of, Coordination Stewardship, collective/joint Responsibility, Trigger/fallback policy and physical persistence remain independently deferred.
 
 **Responsibility v0 verdict is unchanged. REOPEN = 0.**
+
+---
+
+# 2026-08-13 — Version / Material-State downstream closure
+
+Version / Material-State v0 resolves the state/version portion of Responsibility's historical `Provenance / Version / Decision / reconciliation` dependency without changing Responsibility semantics.
+
+A role-specific request/response/Decision remains bound to the materially relevant Responsibility/hand-off state it actually concerned:
+
+```text
+hand-off request H1
+scope: Responsibility for bounded commitment C
+Anna accepts H1
+
+later request H2 materially expands scope/duties
+→ Anna's H1 response remains historical
+→ H1 response does not silently accept H2
+```
+
+Likewise a current Responsibility holder state may change over time while prior holders, requests, responses and effective intervals remain reconstructible. The underlying Activity/commitment identity need not change merely because Responsibility state changes.
+
+Materiality is role/scope specific. Technical row/provider/ETag/hash revisions do not decide whether a prior hand-off response or Approval still applies; same commitment identity does not guarantee carry-forward after material role/scope change.
+
+Canonical separation:
+
+```text
+Version != Responsibility
+Version != Assignment / Claim / Hand-off
+Version != Decision / Authority / reconciliation
+Version != Provenance
+material-equivalent state != role acceptance by itself
+```
+
+Version identifies/reconstructs the state to which response/Decision applied; Responsibility still owns the current accountability relation; Provenance explains lineage; Decision/Authority/reconciliation govern applicable resolution/effect.
+
+Remaining SAFE DEFERRED Responsibility dependencies include detailed source-precedence/reconciliation policy, Principal/delegation/on-behalf-of, Coordination Stewardship, collective/joint Responsibility, Trigger/fallback/rotation policy, qualified persistence/API and specialist accountability extensions.
+
+AI may detect that a proposed hand-off/assignment has become stale after a material scope change but must not infer renewed human acceptance or silently transfer Responsibility.
+
+No Responsibility hardening failed. **Responsibility remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
