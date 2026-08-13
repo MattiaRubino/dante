@@ -715,3 +715,53 @@ Normative downstream references:
 
 - `representation.md`;
 - `../checkpoints/representation-delegation-principal-v0-validation.md`.
+
+---
+
+# 2026-08-13 — Version / Material-State downstream closure
+
+Version / Material-State v0 closes Acknowledgement's former `Version / material-equivalence mechanics` SAFE DEFERRED item.
+
+The existing Acknowledgement rule now has a shared canonical state discipline:
+
+```text
+Ack(target material state S1)
+materially changed target state S2
+→ Ack(S1) remains historical
+→ Ack(S1) does not silently become Ack(S2)
+```
+
+Materiality is evaluated for the acknowledgement purpose/facet rather than from every technical write. A storage update, provider revision, ETag change, metadata correction or content-hash difference does not by itself require renewed Acknowledgement. Conversely, reusing the same target ID does not carry Ack forward after a material change.
+
+A non-material equivalent revision may preserve applicability without fabricating a new human action.
+
+Therefore:
+
+```text
+Acknowledgement != Version
+technical revision != material Acknowledgement target state
+same target identity != automatic Ack carry-forward
+```
+
+Version does not change Acknowledgement's Actor attribution, optionality, Visibility, understanding, Agreement/Consent, Decision or Actual boundaries.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Version/material equivalence  RESOLVED
+```
+
+Still SAFE DEFERRED:
+
+- Understanding/comprehension;
+- exact Principal/AuthN/AuthZ enforcement;
+- read/view audit storage;
+- collective/group Acknowledgement;
+- retention/deletion details.
+
+No Acknowledgement hardening failed. **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `version.md`;
+- `../checkpoints/version-material-equivalence-v0-validation.md`.
