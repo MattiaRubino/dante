@@ -487,3 +487,40 @@ Reopen Agreement v0 if later evidence shows that:
 6. product evidence shows Agreement persistence adds burden without material coordination value.
 
 Until then Agreement remains the current specific contextual multi-party mutual-assent relation/capability.
+
+---
+
+# 23. Downstream closure — Representation / on-behalf-of v0 (2026-08-13)
+
+Representation v0 resolves Agreement's previous on-behalf-of attribution dependency.
+
+```text
+Agreement party
+= party whose assent is required
+
+actual assent Actor
+= who actually performed the assent action
+
+Representation / on-behalf-of
+= that Actor acted for a distinct represented Agreement party in the bounded assent context
+```
+
+A representative assent does not automatically become the represented party's personal Agreement. It counts for the represented party only where an applicable action-specific basis/policy permits that effect; LifeOS still preserves the actual Actor, represented party and basis.
+
+Therefore:
+
+```text
+actual assent Actor != represented party by default
+Representation != Agreement
+Representation != Authority
+Principal != Agreement party/assent Actor by definition
+```
+
+Principal remains technical security identity, and Delegation remains bounded Authority-establishment semantics rather than a universal primitive. Specialist capacity/validity, Version/material terms, collective/quorum rules, formal Contract validity and Proposal identity remain SAFE DEFERRED.
+
+No Agreement hardening failed. **Agreement remains PASS WITH HARDENING, REOPEN = 0**.
+
+Normative downstream references:
+
+- `representation.md`;
+- `../checkpoints/representation-delegation-principal-v0-validation.md`.
