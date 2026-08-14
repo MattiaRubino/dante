@@ -520,9 +520,12 @@ Instead:
 
 # 8. Draft Interaction Architecture Contract — candidate invariants
 
-**Status: WORKING DRAFT. Not yet accepted. Discuss principle by principle before promotion.**
+**Status: WORKING DRAFT. Review principle by principle; accepted decisions are marked explicitly below.**
 
 ## IA-01 — The persistent model is richer than the persistent UI
+
+### Decision
+**ACCEPTED — 2026-08-14**
 
 ### Principle
 Existing in the model does not grant an entity a permanent surface.
@@ -538,6 +541,9 @@ Knowledge can become contextual, on-demand, inspectable and correctable.
 ---
 
 ## IA-02 — Stability belongs to recurring user needs, not entity types
+
+### Decision
+**ACCEPTED — 2026-08-14**
 
 ### Principle
 The predictable part of LifeOS should serve recurring interaction needs.
@@ -561,11 +567,41 @@ Which of these needs deserve persistent top-level access versus contextual acces
 
 ## IA-03 — One reality, multiple projections
 
+### Decision
+**ACCEPTED — 2026-08-14**
+
 ### Principle
-Calendar, history, attention, Actual, trajectory, search results and an on-demand car view should not behave like disconnected copies.
+LifeOS maintains one persistent semantic reality that can be exposed through multiple projections and surfaces.
+
+Calendar, history, attention, Actual, trajectory, search results, conversational interaction and contextual/on-demand views must not behave like disconnected copies.
 
 ### Invariant
-Different interfaces must refer to the same underlying semantic reality and history.
+Changes to semantic reality must remain coherent across projections and surfaces, including Web, Mobile, GUI and natural-language interaction.
+
+Each projection may independently choose what to show, omit, emphasize or aggregate, but must refer to the same underlying semantic state and history.
+
+Presentation state must not become a competing source of truth.
+
+### Does not imply
+Every projection shows everything.
+
+A fact may be central in one view, contextual in another, and completely omitted in a third.
+
+### State distinction
+Keep separate:
+
+```text
+STATE OF REALITY
+persistent semantic state shared across projections
+
+vs
+
+STATE OF VIEW
+zoom, focus, expansion, grouping, layout or other presentation state
+```
+
+### Open question
+How strongly should continuity between projections be made visually explicit without exposing unnecessary domain/model structure?
 
 ---
 
