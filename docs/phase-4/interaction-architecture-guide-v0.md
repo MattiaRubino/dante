@@ -573,50 +573,47 @@ Which of these needs deserve persistent top-level access versus contextual acces
 ### Principle
 LifeOS maintains one persistent semantic reality that can be exposed through multiple projections and surfaces.
 
-Calendar, history, attention, Actual, trajectory, search results, conversational interaction and contextual/on-demand views must not behave like disconnected copies.
+Calendar, history, attention, Actual, trajectory, search results, contextual views, natural-language interaction, Web and Mobile must not behave like disconnected copies.
 
 ### Invariant
-Changes to semantic reality must remain coherent across projections and surfaces, including Web, Mobile, GUI and natural-language interaction.
-
-Each projection may independently choose what to show, omit, emphasize or aggregate, but must refer to the same underlying semantic state and history.
+Changes to semantic reality must remain coherent across projections, while each projection may independently choose what to show, omit, emphasize or aggregate.
 
 Presentation state must not become a competing source of truth.
 
 ### Does not imply
-Every projection shows everything.
-
-A fact may be central in one view, contextual in another, and completely omitted in a third.
-
-### State distinction
-Keep separate:
-
-```text
-STATE OF REALITY
-persistent semantic state shared across projections
-
-vs
-
-STATE OF VIEW
-zoom, focus, expansion, grouping, layout or other presentation state
-```
+Every projection must show the same information or expose the same level of detail.
 
 ### Open question
-How strongly should continuity between projections be made visually explicit without exposing unnecessary domain/model structure?
+How much visual continuity is required between projections so the user perceives semantic continuity without exposing the underlying domain graph?
 
 ---
 
 ## IA-04 — Time is primary but not sovereign
 
+### Decision
+**ACCEPTED — 2026-08-14**
+
 ### Principle
-Time is one of the strongest ways to operate on life, but existence does not depend on calendar placement.
+Time is a first-class dimension and one of LifeOS's strongest operational projections, but it is not the universal container of the personal model.
+
+Persistent realities may exist without scheduling.
 
 ### Invariant
-A persistent thing must be able to exist without a schedule.
+A persistent thing must be able to exist without a schedule or calendar block.
+
+Temporal projections must preserve the distinction between what is planned in time and what actually exists or happened.
+
+Changing the schedule of something must not automatically change its identity, purpose or historical truth.
 
 ### Does not imply
 Calendar is secondary or weak.
 
-Today/Calendar may remain one of the strongest operational surfaces in the product.
+Today/Calendar may remain one of the strongest operational surfaces in the product, with different presentation affordances across Mobile and Web.
+
+### Open question
+How much temporally relevant reality that is not a classic calendar block — deadlines, windows, availability, temporal constraints, dependency timing, "by Friday" risk — should appear inside temporal projections?
+
+Do not answer this by forcing every temporal fact into a scheduled block.
 
 ---
 
