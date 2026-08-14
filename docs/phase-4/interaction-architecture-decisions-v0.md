@@ -278,6 +278,69 @@ Repeated use alone must not silently promote a temporary view into permanent pro
 
 ---
 
+## IA-11 — Resolution policy and attention policy are separate
+
+**ACCEPTED — 2026-08-14**
+
+When uncertainty matters to LifeOS, the system must distinguish the unresolved semantic state, the path or timing by which it may be resolved, and the way attention is delivered to the user.
+
+### Invariants
+
+- attention delivery does not define what is true;
+- consequential unresolved state must have an appropriate resolution path, next-check condition or explicit reason why no further resolution is required;
+- resolution may come from explicit user confirmation, live/quick Actual capture, trusted integration or evidence, a user-authorized default policy, or a later review/check;
+- a user-authorized automatic rule may establish or infer state, but provenance must preserve that the result came from that policy rather than direct confirmation;
+- `later`, snooze or dismiss-for-now changes attention unless an explicitly authorized policy gives it additional semantic meaning;
+- some situations legitimately require no confirmation when confirmation adds no useful information or sufficiently trusted evidence already exists;
+- attention frequency, escalation and delivery mechanism are separate policy choices and may vary by context or user preference.
+
+### Does not imply
+
+- every unknown must be resolved immediately;
+- every unresolved matter must generate a notification;
+- LifeOS should repeatedly ask until the user responds;
+- one global confirmation policy must apply to all types of reality.
+
+### Interaction-pattern note
+
+Fast mobile capture such as `Start`, `Stop`, `Done`, `Partial`, `Skip` or equivalent controls is a strong candidate pattern for reducing retrospective confirmation burden, but it is an interaction-design hypothesis to validate later, not an IA-11 requirement or a commitment to a specific widget/platform API.
+
+---
+
+# Deduplication of remaining draft candidates
+
+The draft guide originally numbered additional candidate principles IA-12 onward. From this point, numbering is preserved for traceability, but a candidate is **not** kept as a separate IA principle when its substance is already authoritative elsewhere or already guaranteed by accepted IA rules.
+
+## IA-12 — Intention structure develops progressively
+
+**NOT RETAINED AS A SEPARATE IA PRINCIPLE — REFERENCED EXISTING RULE**
+
+The substance is already established by the accepted Product Identity / North Star and Domain Model direction: vague intentions may remain vague, structure is added when useful, a Goal need not immediately create a Plan, and the user must not be forced through an ontology workflow.
+
+Interaction Architecture should test this behavior in traces, but does not need to duplicate it as a second architectural invariant.
+
+---
+
+## IA-13 — Internal ontology is not required user vocabulary
+
+**MERGED — IA-01 + IA-06**
+
+No separate principle is retained.
+
+IA-01 already prevents the internal model from dictating persistent UI, while IA-06 explicitly allows users to communicate naturally without first classifying input into Goal, Plan, Activity, Preference, relationship, Observation or another Domain Model concept.
+
+---
+
+## IA-14 — Planned, Actual, Outcome and Evidence remain distinct
+
+**NOT RETAINED AS A SEPARATE IA PRINCIPLE — REFERENCED AUTHORITATIVE SEMANTICS**
+
+This distinction is already an accepted Product Identity / North Star and Domain Model rule and is already relied upon by IA-03, IA-04, IA-08 and IA-11.
+
+Interaction Architecture must preserve and expose the distinction when relevant, but must not re-approve or redefine those domain semantics here.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -378,10 +441,12 @@ Only after Forward + Reverse + Adversarial review is coherent enough should the 
 
 # Review position
 
-Accepted through: **IA-10**.
+Accepted through: **IA-11**.
 
-Next principle for discussion: **IA-11 — Unresolved state is not attention policy**.
+Draft candidates **IA-12, IA-13 and IA-14 have been deduplicated rather than re-approved**: IA-12 and IA-14 remain referenced existing rules; IA-13 is merged into IA-01 + IA-06.
 
-Final whole-contract validation is already required after the last principle: forward review → reverse reasoning → adversarial contradiction pass.
+Next candidate requiring a real delta check: **IA-15 — Hidden knowledge must remain inspectable and correctable**.
+
+Final whole-contract validation is already required after the last retained principle: forward review → reverse reasoning → adversarial contradiction pass.
 
 No frontend/prototype mutation is authorized by these decisions.
