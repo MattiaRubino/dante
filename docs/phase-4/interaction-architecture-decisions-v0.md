@@ -203,6 +203,40 @@ Working shorthand:
 
 ---
 
+## IA-09 — Adaptive UI uses a controlled interaction grammar
+
+**ACCEPTED — 2026-08-14**
+
+Adaptive and contextual UI must operate through a controlled interaction grammar.
+
+LifeOS may dynamically select, combine, order, emphasize or suppress approved presentation primitives according to context, while core semantics and interaction meaning remain stable and predictable.
+
+### Invariants
+
+- content may be highly adaptive;
+- composition may adapt within an approved grammar of components/patterns;
+- core states, scope, authority, confirmation, privacy, reversibility and interaction semantics must not be reinvented by generated/contextual UI;
+- adaptation may change relevance, density, ordering, grouping and emphasis, but must not continuously relocate or reinterpret fundamental interaction anchors;
+- progressive disclosure is allowed and encouraged, but contextual filtering must not make underlying information irretrievable or uncontrollable;
+- users must be able to deepen, expand or inspect beyond the initially surfaced subset when useful;
+- operational generated UI should use approved components/patterns rather than arbitrary newly invented controls or semantics;
+- purely explanatory/non-operational content may allow substantially more generative freedom;
+- Mobile and Web may compose the same grammar at different density and depth;
+- when AI is unavailable, standard/predefined compositions must preserve the essential semantic and control paths.
+
+### Does not imply
+
+- every screen has a fixed layout;
+- contextual/on-demand views are forbidden from being novel compositions;
+- the product may never evolve its component grammar;
+- every hidden item must always be shown simultaneously.
+
+Working shorthand:
+
+> **The page may be new; the interaction language must remain learnable.**
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -243,10 +277,70 @@ The exact authentication, permissions, tool contracts, context-request UX and pr
 
 ---
 
+# Contract validation after forward review
+
+After all candidate Interaction Architecture principles have been reviewed from IA-01 through the final principle, do **not** immediately derive Information Architecture.
+
+A mandatory whole-contract validation pass comes first.
+
+## Pass A — Forward coherence review
+
+Read the accepted contract from beginning to end and check:
+
+- whether later principles contradict or weaken earlier ones;
+- whether two principles are duplicates that should be merged;
+- whether an accepted invariant has acquired an unintended consequence as later principles were added;
+- whether important evidence from the corpus is no longer represented;
+- whether Web/Mobile, GUI/NL, AI-on/AI-off and single-/multi-actor behavior remain coherent.
+
+## Pass B — Reverse reasoning review
+
+Then reason **from the desired final experience back toward the foundations** rather than only from IA-01 forward.
+
+For representative end states and user outcomes, ask:
+
+```text
+What must the user be able to understand / decide / do here?
+        ↓
+What surface or interaction capability would make that possible?
+        ↓
+What semantic behavior must exist underneath?
+        ↓
+Which accepted IA principle guarantees it?
+        ↓
+Does that principle depend coherently on the earlier foundations?
+```
+
+Also read the accepted principles in reverse order and test whether each one still makes sense when treated as a consequence of the principles beneath it.
+
+The reverse pass is specifically intended to detect:
+
+- missing architectural guarantees;
+- principles accepted individually that do not compose well as a system;
+- assumptions that only work in the forward explanation;
+- unnecessary principles;
+- circular reasoning;
+- desktop-centric or AI-centric leakage;
+- gaps between the North Star and the resulting interaction behavior.
+
+## Pass C — Adversarial contradiction pass
+
+Actively try to disprove the contract using the corpus and the agreed stress cases rather than trying to make every case fit.
+
+If a case requires a special-screen exception merely to save the architecture, reopen the relevant principle instead of hiding the failure in later UI design.
+
+## Gate
+
+Only after Forward + Reverse + Adversarial review is coherent enough should the workstream proceed to full interaction traces and then derive Information Architecture.
+
+---
+
 # Review position
 
-Accepted through: **IA-08**.
+Accepted through: **IA-09**.
 
-Next principle for discussion: **IA-09 — Adaptive UI must use a controlled grammar**.
+Next principle for discussion: **IA-10 — Contextual views may be ephemeral**.
+
+Final whole-contract validation is already required after the last principle: forward review → reverse reasoning → adversarial contradiction pass.
 
 No frontend/prototype mutation is authorized by these decisions.
