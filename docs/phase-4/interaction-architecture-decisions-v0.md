@@ -341,6 +341,45 @@ Interaction Architecture must preserve and expose the distinction when relevant,
 
 ---
 
+## IA-15 — Hidden knowledge remains governable
+
+**ACCEPTED — 2026-08-14**
+
+Knowledge may remain hidden by default, but if LifeOS uses personal knowledge, assumptions or inferred context to materially influence an answer, proposal or decision, the user must be able to inspect and correct that underlying knowledge when appropriate.
+
+### Invariants
+
+- hidden by default does not mean uninspectable or uncontrollable;
+- when relevant, the user must be able to understand what LifeOS is using or assuming and where it came from;
+- declared, observed, imported and inferred knowledge must not be silently collapsed into the same epistemic status;
+- correcting durable knowledge must update the underlying LifeOS reality so future behavior can change, rather than merely patching one generated answer;
+- provenance should be available when it materially affects trust, conflict resolution, authority or correction;
+- inspectability must respect privacy and authority boundaries: explaining a consequence must not expose private information the user is not entitled to see;
+- natural-language inspection/correction and structured GUI control may both satisfy this requirement according to context.
+
+### Does not imply
+
+- all stored knowledge must be displayed continuously;
+- LifeOS needs a raw database browser or navigation derived from internal ontology;
+- every low-consequence answer must expose full provenance by default;
+- inferred knowledge may never be useful before explicit confirmation.
+
+The exact secondary transparency/control surface remains an Information Architecture question.
+
+---
+
+## IA-16 — Modification scope must be explicit when consequential or ambiguous
+
+**MERGED — IA-06 + IA-08**
+
+No separate principle is retained.
+
+IA-06 already requires materially consequential ambiguity to trigger clarification, preview or narrowed scope rather than a silent broad change. IA-08 already requires intent, target and scope to be resolved before equivalent semantic state transitions occur across GUI, native AI or external AI.
+
+The original IA-16 scenarios — `only today`, `this occurrence`, `this week`, `this series`, `this Plan`, `until I say otherwise`, or broader affected commitments — remain required stress-test cases, but do not add a new architectural invariant beyond IA-06 and IA-08.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -441,11 +480,11 @@ Only after Forward + Reverse + Adversarial review is coherent enough should the 
 
 # Review position
 
-Accepted through: **IA-11**.
+Accepted retained principles through: **IA-15**.
 
-Draft candidates **IA-12, IA-13 and IA-14 have been deduplicated rather than re-approved**: IA-12 and IA-14 remain referenced existing rules; IA-13 is merged into IA-01 + IA-06.
+Deduplicated candidates: **IA-12** referenced existing rule; **IA-13** merged into IA-01 + IA-06; **IA-14** referenced authoritative semantics; **IA-16** merged into IA-06 + IA-08.
 
-Next candidate requiring a real delta check: **IA-15 — Hidden knowledge must remain inspectable and correctable**.
+Next candidate requiring a real delta check: **IA-17 — Attention and autonomy are separate axes**.
 
 Final whole-contract validation is already required after the last retained principle: forward review → reverse reasoning → adversarial contradiction pass.
 
