@@ -147,6 +147,32 @@ From relevant contexts, users must be able to naturally ask, report, correct, ex
 
 ---
 
+## IA-07 — GUI remains a first-class interaction language
+
+**ACCEPTED — 2026-08-14**
+
+GUI remains a first-class interaction language for understanding, inspecting and directly controlling LifeOS.
+
+Frequent, state-oriented or precision-sensitive operations must have usable structured interaction paths and must not depend exclusively on AI prompting.
+
+### Invariants
+
+- the user must be able to understand essential LifeOS state without having to ask an AI what is happening;
+- direct manipulation should remain available where it is clearer or faster than conversation, such as precise scheduling, scope selection, state inspection, comparison, undo and correction;
+- AI output that changes LifeOS must become inspectable structured state rather than remaining only an opaque conversational claim;
+- Mobile must not solve limited screen space by forcing routine control into prompting; core frequent actions still require good touch-oriented GUI paths;
+- AI unavailability must not remove the user's ability to understand and control the operational core.
+
+### Does not imply
+
+- every possible natural-language intent needs a dedicated button, form or screen;
+- GUI must replicate arbitrary composite reasoning workflows manually;
+- conversational/AI interaction is secondary or optional in the wider product experience.
+
+Novel, ambiguous or highly composite reasoning tasks may legitimately be much better served by natural language/AI while still producing controllable LifeOS state.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -157,31 +183,40 @@ This is an implementation/product-delivery assumption, **not an Interaction Arch
 
 For v0, LifeOS does not need to natively host every long-form AI discussion, large reasoning workflow or complex plan-generation session.
 
+The preferred external-reasoning model is **scoped retrieval through controlled LifeOS APIs/tools**, not a broad export of the user's personal model.
+
 A practical initial model may be:
 
 1. LifeOS handles lightweight/contextual interaction and structured state where appropriate;
-2. deeper discussions, extensive reasoning or large plan/program generation may be handed off to an external AI service/tool;
-3. results may return to LifeOS directly when integration exists, or indirectly through pasted text, files or other import mechanisms;
-4. imported results are interpreted into LifeOS's own structured model with provenance and, where consequential, user review/confirmation;
-5. future versions may move more of this reasoning natively inside LifeOS when cost, quality and sustainability justify it;
-6. external-AI interoperability should remain possible even if native AI later becomes comprehensive.
+2. deeper discussions, extensive reasoning or large plan/program generation may use an external AI service/tool such as ChatGPT, Claude or another compatible system;
+3. when supported, the external AI obtains only the relevant LifeOS context it needs by calling controlled APIs/tools on demand — for example current state, the relevant Plan, constraints, recent Actuals or other scoped information;
+4. the external AI may request additional context progressively as the reasoning requires it rather than receiving the entire personal model up front;
+5. proposed results return to LifeOS through structured integration when available;
+6. pasted text, files or explicit export/import remain valid fallback paths when direct tool/API integration is unavailable;
+7. returned results are interpreted into LifeOS's own structured model with provenance and, where consequential, user review/confirmation;
+8. future versions may move more reasoning natively inside LifeOS when cost, quality and sustainability justify it;
+9. external-AI interoperability should remain possible even if native AI later becomes comprehensive.
 
 ### Important boundary
 
-LifeOS must not let a temporary external-AI limitation define its permanent architecture.
+LifeOS remains the authoritative owner of persistent personal state. External AI systems are reasoning/interaction clients over controlled LifeOS context, not alternative sources of canonical personal truth.
 
-Likewise, an external AI transcript/output is not automatically authoritative LifeOS state. Durable changes should be imported/translated into LifeOS semantics with appropriate provenance, scope and confirmation.
+A temporary limitation in native AI capability or cost must not define LifeOS's permanent interaction architecture.
 
-### Privacy implication to preserve later
+Likewise, an external AI transcript/output is not automatically authoritative LifeOS state. Durable changes must be translated into LifeOS semantics with appropriate provenance, scope and confirmation.
 
-When LifeOS hands context to an external AI, the architecture should support explicit/scoped context transfer rather than assuming the whole personal model is silently shared. Exact UX and policy remain to be designed later.
+### Privacy / context boundary to preserve later
+
+External AI access should be **scoped and purpose-relevant**. The architecture should support controlled retrieval of the information necessary for the current reasoning task rather than silently exposing the complete personal model.
+
+The exact authentication, permissions, tool contracts, context-request UX and provider-specific implementation remain later integration/security decisions.
 
 ---
 
 # Review position
 
-Accepted through: **IA-06**.
+Accepted through: **IA-07**.
 
-Next principle for discussion: **IA-07 — GUI remains a first-class language**.
+Next principle for discussion: **IA-08 — Natural language and GUI must be semantically equivalent**.
 
 No frontend/prototype mutation is authorized by these decisions.
