@@ -173,6 +173,36 @@ Novel, ambiguous or highly composite reasoning tasks may legitimately be much be
 
 ---
 
+## IA-08 — Natural language and GUI are semantically equivalent where capabilities overlap
+
+**ACCEPTED — 2026-08-14**
+
+When different interaction channels resolve to the same user intent, target and scope, they must converge on the same LifeOS semantic operation and underlying reality.
+
+GUI, native AI and external AI must not create competing meanings or privileged state-transition paths.
+
+### Invariants
+
+- equivalence applies to semantic meaning, not identical interaction steps or presentation;
+- once intent, target and scope are resolved, the same operation must follow the same validation, authority, provenance, consequential-confirmation, history and reversibility rules regardless of channel;
+- natural-language interaction must not create a parallel `chat state` when the same fact or action has a structured LifeOS meaning;
+- native or external AI must not gain privileged direct-write semantics that bypass LifeOS state-transition rules;
+- equivalent reads must interrogate the same underlying reality and filters, even when Mobile, Web or conversational presentation differs;
+- natural language may require interpretation or clarification before semantic equivalence can be established, while GUI controls may make scope explicit earlier;
+- an ambiguous command must not be treated as equivalent to a precise GUI action until the ambiguity that materially affects meaning is resolved.
+
+### Does not imply
+
+Semantic equivalence does **not** require interaction symmetry.
+
+A novel, ambiguous or highly composite natural-language request does not need a one-to-one GUI representation with every possible parameter exposed as controls. AI may interpret a complex request, produce a structured proposal, and then use GUI for inspection, adjustment or confirmation.
+
+Working shorthand:
+
+> **Semantic equivalence where capabilities overlap; not interaction symmetry everywhere.**
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -215,8 +245,8 @@ The exact authentication, permissions, tool contracts, context-request UX and pr
 
 # Review position
 
-Accepted through: **IA-07**.
+Accepted through: **IA-08**.
 
-Next principle for discussion: **IA-08 — Natural language and GUI must be semantically equivalent**.
+Next principle for discussion: **IA-09 — Adaptive UI must use a controlled grammar**.
 
 No frontend/prototype mutation is authorized by these decisions.
