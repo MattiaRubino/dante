@@ -119,10 +119,69 @@ Whether current situation becomes one dedicated surface, part of another surface
 
 ---
 
+## IA-06 — Natural language is a global interaction layer
+
+**ACCEPTED — 2026-08-14**
+
+Natural language is a global interaction layer over LifeOS's structured reality.
+
+From relevant contexts, users must be able to naturally ask, report, correct, express intentions, negotiate exceptions and request changes without first classifying their input into Domain Model objects or navigating to a technical form.
+
+### Invariants
+
+- natural-language interaction operates on the **same semantic reality** as GUI interaction;
+- `global` does not mean that LifeOS must be organized around one permanent Chat page or one infinite transcript;
+- the current surface/context may help resolve likely referents and meaning;
+- materially consequential ambiguity must not justify silent broad changes: LifeOS should clarify, preview or narrow scope when needed;
+- a conversational question does not automatically create persistent state;
+- when a conversation changes durable reality, the resulting semantic state/history must become product truth rather than existing only inside the transcript;
+- the user does not need to classify input as Goal, Plan, Activity, Preference, Person relationship, Observation or another internal concept before communicating it;
+- Mobile and Web share the capability even if their concrete input affordances later differ.
+
+### Does not imply
+
+- every operation must be conversational;
+- all AI reasoning must be implemented natively inside LifeOS v0;
+- a dedicated conversational workspace is forbidden;
+- proactive behavior or notification policy is decided by this principle.
+
+---
+
+# V0 AI delivery / external-reasoning strategy
+
+## V0-AI-01 — External deep reasoning is an allowed extension path
+
+**WORKING V0 DELIVERY DECISION — 2026-08-14**
+
+This is an implementation/product-delivery assumption, **not an Interaction Architecture invariant**.
+
+For v0, LifeOS does not need to natively host every long-form AI discussion, large reasoning workflow or complex plan-generation session.
+
+A practical initial model may be:
+
+1. LifeOS handles lightweight/contextual interaction and structured state where appropriate;
+2. deeper discussions, extensive reasoning or large plan/program generation may be handed off to an external AI service/tool;
+3. results may return to LifeOS directly when integration exists, or indirectly through pasted text, files or other import mechanisms;
+4. imported results are interpreted into LifeOS's own structured model with provenance and, where consequential, user review/confirmation;
+5. future versions may move more of this reasoning natively inside LifeOS when cost, quality and sustainability justify it;
+6. external-AI interoperability should remain possible even if native AI later becomes comprehensive.
+
+### Important boundary
+
+LifeOS must not let a temporary external-AI limitation define its permanent architecture.
+
+Likewise, an external AI transcript/output is not automatically authoritative LifeOS state. Durable changes should be imported/translated into LifeOS semantics with appropriate provenance, scope and confirmation.
+
+### Privacy implication to preserve later
+
+When LifeOS hands context to an external AI, the architecture should support explicit/scoped context transfer rather than assuming the whole personal model is silently shared. Exact UX and policy remain to be designed later.
+
+---
+
 # Review position
 
-Accepted through: **IA-05**.
+Accepted through: **IA-06**.
 
-Next principle for discussion: **IA-06 — Natural language is a global interaction layer**.
+Next principle for discussion: **IA-07 — GUI remains a first-class language**.
 
 No frontend/prototype mutation is authorized by these decisions.
