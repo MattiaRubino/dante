@@ -237,6 +237,47 @@ Working shorthand:
 
 ---
 
+## IA-10 — Contextual views may be ephemeral
+
+**ACCEPTED — 2026-08-14**
+
+LifeOS may create a focused contextual projection for a temporary question, situation, decision or investigation without creating a permanent application destination.
+
+Ephemerality applies to the presentation, not to durable semantic changes produced through it.
+
+### Invariants
+
+- contextual views operate on the same underlying LifeOS reality rather than detached copies of state;
+- a temporary view may disappear while durable corrections, decisions, Plan changes, Schedule changes, Actuals, provenance and history produced through it remain persistent where semantically appropriate;
+- contextual views may originate from natural-language requests, search, direct navigation, situational surfacing, LifeOS proposals, drill-down or other interaction paths;
+- temporary/contextual presentation must not automatically create new permanent navigation, sections or product nouns;
+- an ephemeral surface must still make its current context understandable and preserve clear return/back behavior;
+- consequential actions performed through an ephemeral view must remain inspectable and historically traceable after the view disappears;
+- Mobile and Web may express the same contextual view at different depth or density without creating different underlying meaning.
+
+### Does not imply
+
+- contextual views are disposable copies of data;
+- temporary presentation means semantic changes are temporary;
+- recurring views can never become persistent;
+- a contextual view must originate from AI or conversation.
+
+### Open question
+
+A recurring contextual view may eventually deserve to become user-saved or more persistent, but the criteria and UX for that promotion remain unresolved.
+
+Keep conceptually distinct:
+
+```text
+ephemeral contextual view
+→ user-saved view
+→ persistent product surface
+```
+
+Repeated use alone must not silently promote a temporary view into permanent product structure.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -337,9 +378,9 @@ Only after Forward + Reverse + Adversarial review is coherent enough should the 
 
 # Review position
 
-Accepted through: **IA-09**.
+Accepted through: **IA-10**.
 
-Next principle for discussion: **IA-10 — Contextual views may be ephemeral**.
+Next principle for discussion: **IA-11 — Unresolved state is not attention policy**.
 
 Final whole-contract validation is already required after the last principle: forward review → reverse reasoning → adversarial contradiction pass.
 
