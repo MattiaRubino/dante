@@ -1,6 +1,6 @@
 # Reconciliation / Source Precedence v0 Validation — Methodology v3
 
-**Status:** PASS WITH HARDENING — hardenings incorporated; propagation QA pending  
+**Status:** PASS WITH HARDENING — hardenings incorporated; post-write QA PASS  
 **Validated:** 2026-08-13  
 **Concept:** Reconciliation / Source Precedence v0  
 **Validation standard:** `../validation-methodology-v3.md`  
@@ -916,7 +916,7 @@ unclassified material dependencies      0
 
 No prior accepted concept requires structural reopening.
 
-The hardenings are incorporated and retested read-only. Acceptance becomes canonical only after the approved propagation and post-write QA pass.
+The hardenings are incorporated and retested read-only. The approved propagation is complete and final post-write QA passes; acceptance is canonical on the active branch.
 
 ---
 
@@ -1000,7 +1000,7 @@ Propagation rule:
 
 # 15. Post-write QA requirements
 
-Before Reconciliation becomes canonical accepted baseline, verify:
+Final post-write QA verified:
 
 ```text
 branch = feature/domain-model
@@ -1028,7 +1028,28 @@ technical merge/CRDT remains implementation-only
 historical checkpoints preserved
 workstream current
 root README / PROJECT-STATUS / product glossary / main / prototype / SQL/API/backend/auth untouched
-compare to main: branch behind = 0
+compare to main: divergence recorded; synchronization is separately gated and is not a blocker for continued Cluster-5 semantic review
 ```
 
 Approval is consumed only after final clean QA.
+
+---
+
+# 16. Final post-write QA closure — 2026-08-14
+
+The original Reconciliation semantic milestone is closed against its approved pre-scope `f2c28d0f4fe6ec6afe1b5934ec4279422a09605a` with exactly the approved 28-path propagation (`2 CREATE + 26 UPDATE`) and no semantic out-of-scope path. The later preservation-first documentation reconstruction was reviewed for semantic neutrality: it preserved the Reconciliation invariants, SAFE DEFERRED ownership, regression corpus and rejected universal defaults.
+
+Current closure:
+
+```text
+Reconciliation / Source Precedence v0   PASS WITH HARDENING — POST-WRITE QA PASS
+CORE                                    PASS WITH HARDENING
+MA                                      PASS WITH HARDENING
+XCON                                    PASS WITH HARDENING
+ADS                                     COMPLETE
+REC-01..28                              PRESENT
+REOPEN                                  0
+unclassified                            0
+```
+
+The active branch may remain diverged from `main` while Relationships / Reasoning is completed. Upstream synchronization is a separate future scope and is not required to begin the next fresh candidate re-score. No next candidate is preselected.

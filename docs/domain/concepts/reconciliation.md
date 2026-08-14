@@ -1,6 +1,6 @@
 # Reconciliation / Source Precedence v0
 
-**Status:** Proposed accepted baseline — PASS WITH HARDENING; propagation QA pending  
+**Status:** Current accepted baseline — PASS WITH HARDENING; hardenings incorporated; post-write QA PASS  
 **Validated:** 2026-08-13  
 **Validation standard:** Domain Validation Methodology v3  
 **Cluster:** Relationships / Reasoning v0  
@@ -470,4 +470,4 @@ REOPEN                          0
 unclassified material items     0
 ```
 
-The hardenings above are incorporated and retested read-only. The concept becomes the accepted branch baseline only after the approved 28-path propagation and post-write QA pass.
+The hardenings above are incorporated and retested. The approved 28-path propagation and final post-write QA are complete; Reconciliation / Source Precedence v0 is the current accepted branch baseline.

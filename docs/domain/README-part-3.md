@@ -317,7 +317,7 @@ Conflict
 ❌ universal entity/root
 ```
 
-The 28-path semantic propagation is complete on the active branch. The accidental out-of-scope technical probe was already removed through its own approved corrective scope. Final branch-level Reconciliation QA remains intentionally open until this current-document reconstruction is completed and the separately gated synchronization with the newer accepted `main` North Star commit is performed, followed by semantic freshness/coherence QA.
+The 28-path semantic propagation is complete on the active branch. The accidental out-of-scope technical probe was already removed through its own approved corrective scope. Final branch-level Reconciliation post-write QA is complete; synchronization with `main` remains a separately gated future scope and does not block continued Cluster-5 semantic review.
 
 ### Rejected universal primitives so far
 ```text
@@ -449,7 +449,7 @@ retention/audit/privacy
 logical/physical/API/sync representation
 ```
 
-A future candidate is selected only through a fresh re-score against the current accepted baseline. The new accepted product North Star on `main` is relevant evidence — especially the explicit distinction `Effort != Execution != Outcome != Goal Progress` — but no candidate is preselected before the active branch is cleanly synchronized and Reconciliation QA is actually closed.
+A future candidate is selected only through a fresh re-score against the current accepted baseline. The newer Product North Star on `main` has already been reviewed read-only as relevant product evidence — including `Effort != Execution != Outcome != Goal Progress` — but no candidate is preselected and branch synchronization is not a prerequisite for continuing the current Cluster-5 semantic work.
 
 ---
 
@@ -526,26 +526,27 @@ Approval is consumed only after successful write and clean QA.
 
 
 ## Current position
-The active Domain Atlas branch has semantically propagated **Reconciliation / Source Precedence v0** across the exact approved 28-path milestone.
+The active Domain Atlas branch has semantically propagated **Reconciliation / Source Precedence v0** across the exact approved 28-path milestone and the final post-write QA is complete.
 
-The next repository actions are deliberately separate from that semantic scope:
+Current sequence:
 
 ```text
-1. complete and QA this preservation-first current-document reconstruction
-2. confirm the probe remains absent and the preservation audit remains intact
-3. obtain separate approval to sync current `main`
-4. integrate the accepted Product North Star commit
-5. run semantic freshness/coherence + final Reconciliation QA
-6. consume Reconciliation write approval only after that clean result
-7. fresh-score remaining Relationships / Reasoning candidate space
+1. preservation-first current-document reconstruction — COMPLETE
+2. probe absence + preservation audit — VERIFIED
+3. Reconciliation 28-path propagation + post-write QA — PASS
+4. fresh-score remaining Relationships / Reasoning candidate space
+5. validate the selected candidate with full Methodology v3
+6. continue until Relationships / Reasoning candidate space is complete
+7. Cluster-5 integration / multi-actor stress / deferred-dependency closure
+8. upstream `main` synchronization remains a separate future scope; it is not a prerequisite for the steps above
 ```
 
-Until those steps complete, do not claim the branch-level Reconciliation milestone is finally QA-clean and do not preselect the next candidate.
+Do not preselect the next candidate before the fresh re-score.
 
 ---
 
 # 2026-08-14 — Repository-state correction
 
-The active branch is `feature/domain-model` at pre-write HEAD `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0`. The accidental technical probe was already removed and QA-closed before this reconstruction. The historical-preservation audit was completed at the current HEAD. Reconciliation semantic propagation is complete; final Reconciliation branch QA remains pending this current-document reconstruction and the separately gated synchronization with current `main`.
+The preservation-first reconstruction was completed from pre-write HEAD `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0` and QA-closed on the active `feature/domain-model` branch. The accidental technical probe was already removed and QA-closed before that reconstruction. The historical-preservation audit remains intact. Reconciliation semantic propagation and final post-write QA are complete. The current operating decision is to finish Relationships / Reasoning and the required cluster validations before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.

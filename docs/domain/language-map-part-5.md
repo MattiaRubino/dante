@@ -530,12 +530,12 @@ AI confidence/access does not create precedence or Authority
 
 This amendment does not introduce a global reconciliation engine or physical schema. Per-domain precedence policies, native identity merge/split, GoalCriterion/evaluation, Trigger/policy mechanics, Principal/enforcement, retention/audit and logical/physical/API/sync representation remain explicitly deferred.
 
-**Propagation status:** semantic 28-path Reconciliation scope is complete on the active branch. The accidental technical probe was already removed and QA-closed. Final branch-level QA remains pending completion of this current-document reconstruction and the separately gated synchronization with the newer accepted `main` baseline.
+**Propagation status:** semantic 28-path Reconciliation scope is complete on the active branch and final post-write QA is PASS. The accidental technical probe was already removed and QA-closed. Synchronization with the newer accepted `main` baseline remains a separately gated future scope and is not a prerequisite for continuing Relationships / Reasoning.
 
 ---
 
 # 2026-08-14 — Repository-state correction
 
-The active branch is `feature/domain-model` at pre-write HEAD `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0`. The accidental technical probe was already removed and QA-closed before this reconstruction. The historical-preservation audit was completed at the current HEAD. Reconciliation semantic propagation is complete; final Reconciliation branch QA remains pending this current-document reconstruction and the separately gated synchronization with current `main`.
+The preservation-first current-document reconstruction is complete and QA-closed on `feature/domain-model`. The accidental technical probe was already removed and QA-closed before reconstruction, and the historical-preservation audit remains intact. Reconciliation semantic propagation and final branch-level QA are complete. The current operating decision is to finish Relationships / Reasoning and the required Cluster-5 validations before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.

@@ -185,7 +185,7 @@ Do **not** redo Clusters 1–4, Relationship v0, Responsibility v0 or Participat
 This amendment is part of the same canonical document. It preserves downstream current-state sections without deleting the full pre-compaction baseline above. A current section is retained in full whenever it contains material text not already present verbatim in the baseline, so heading/list/example context is preserved. Where a later status, closure, or repository-state statement conflicts with an earlier one, the later amendment is authoritative; earlier rationale, examples, rejected alternatives, tests, and boundary detail remain preserved unless explicitly superseded.
 
 
-- Status: **IN PROGRESS — Relationships / Reasoning active; Reconciliation / Source Precedence v0 propagation complete; final QA pending**
+- Status: **IN PROGRESS — Relationships / Reasoning active; Reconciliation / Source Precedence v0 post-write QA PASS**
 - Active branch: `feature/domain-model`
 - Current upstream `main`: `2739e96955974d1273e704905ace03f9ac478e05`
 - Current branch pre-reconstruction HEAD: `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0`
@@ -194,10 +194,10 @@ This amendment is part of the same canonical document. It preserves downstream c
 - Work type: domain modeling / invariants / persistence preparation
 - Backend implementation: not started in this branch
 - Accidental probe cleanup: **QA PASS** at `c06eab35b46fd043c1438cdd5a2d97885195650a`
-- Reconciliation v0: **PASS WITH HARDENING — hardenings incorporated; 28-path propagation now complete; final diff/semantic QA pending**
-- Current exact task: **complete and QA the preservation-first reconstruction of the six current documents/concepts, then stop before the separately gated `main` synchronization**
-- `main` contains one newer product-direction/North-Star commit. Its semantic impact was reviewed read-only and did not reopen Reconciliation; branch synchronization remains a separate Git scope.
-- After current-document reconstruction QA PASS: **stop, present the separate main-sync gate, then run semantic freshness/coherence + final Reconciliation QA before starting the next candidate review**.
+- Reconciliation v0: **PASS WITH HARDENING — hardenings incorporated; 28-path propagation complete; final post-write QA PASS**
+- Current exact task: **fresh re-score the remaining Relationships / Reasoning candidate space; do not preselect the next candidate**
+- `main` contains one newer product-direction/North-Star commit. Its semantic impact was reviewed read-only and did not reopen Reconciliation. Synchronization remains a separate future Git scope and does not block completion of the current cluster.
+- Current continuation rule: **finish Relationships / Reasoning candidate reviews and required Cluster-5 validation first; do not present or perform a `main` sync gate now**.
 
 ## Purpose
 
@@ -321,7 +321,7 @@ Decision v0                     PASS WITH HARDENING — QA PASS
 Agreement / Consent v0          PASS WITH HARDENING — QA PASS
 Representation v0               PASS WITH HARDENING — QA PASS
 Version v0                      PASS WITH HARDENING — QA PASS
-Reconciliation v0               PASS WITH HARDENING — FINAL QA PENDING
+Reconciliation v0               PASS WITH HARDENING — QA PASS
 
 Generic Acceptance / Assent     REJECTED
 Universal Approval              REJECTED
@@ -543,26 +543,25 @@ Effort != Execution != Outcome != Goal Progress
 
 The last distinction materially increases future pressure on GoalCriterion/evaluation, but does not reopen Reconciliation.
 
-Branch synchronization to that `main` commit is intentionally a separate Git scope.
+Branch synchronization to that `main` commit remains a separately gated future Git scope and is not a prerequisite for completing Relationships / Reasoning.
 
 ---
 
 
 ## 10. Current exact next steps
 ```text
-1. complete Reconciliation post-write QA against f2c28d0...
-2. verify exactly 28 approved paths, no extras
-3. verify concept/checkpoint V3 + hardenings + ADS
-4. verify current docs coherent
-5. verify historical checkpoints preserved
-6. verify probe absent
-7. compare against current main
-8. if QA PASS, consume Reconciliation write approval
-9. STOP before main synchronization
-10. present separate main-sync scope
+1. fresh-score the remaining Relationships / Reasoning candidate space against the full accepted baseline
+2. select the next candidate by dependency leverage, with no preselection
+3. execute the complete Methodology v3 cycle
+4. stop at the next Git write gate
+5. repeat until the Relationships / Reasoning candidate space is complete
+6. run Cluster-5 integration
+7. run Cluster-5 multi-actor stress
+8. run Cluster-5 deferred-dependency closure
+9. keep `main` synchronization as a separate later scope; do not block steps 1–8 on it
 ```
 
-No next Relationships / Reasoning candidate may begin before the Reconciliation gate and main-freshness gate are closed.
+Reconciliation is QA-closed. No next candidate is preselected.
 
 ---
 
@@ -626,6 +625,6 @@ Do not keep critical project state only in chat.
 
 # 2026-08-14 — Repository-state correction
 
-The active branch is `feature/domain-model` at pre-write HEAD `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0`. The accidental technical probe was already removed and QA-closed before this reconstruction. The historical-preservation audit was completed at the current HEAD. Reconciliation semantic propagation is complete; final Reconciliation branch QA remains pending this current-document reconstruction and the separately gated synchronization with current `main`.
+The preservation-first reconstruction is complete and QA-closed on `feature/domain-model`. The accidental technical probe was already removed and QA-closed before reconstruction, and the historical-preservation audit remains intact. Reconciliation semantic propagation and final post-write QA are complete. The current operating decision is to finish Relationships / Reasoning plus the required Cluster-5 integration/stress/dependency closure before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.

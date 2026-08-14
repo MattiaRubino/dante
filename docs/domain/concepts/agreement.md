@@ -1,6 +1,6 @@
 # Agreement v0
 
-**Status:** Current accepted candidate pending post-write QA  
+**Status:** Current accepted baseline — PASS WITH HARDENING; hardenings incorporated; post-write QA PASS  
 **Reviewed:** 2026-08-13  
 **Validation standard:** Domain Validation Methodology v3  
 **Workstream:** Core Domain Model v0 — Relationships / Reasoning
