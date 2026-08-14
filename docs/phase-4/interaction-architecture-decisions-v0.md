@@ -380,6 +380,32 @@ The original IA-16 scenarios — `only today`, `this occurrence`, `this week`, `
 
 ---
 
+## IA-17 — Attention priority and action authority are separate
+
+**ACCEPTED — 2026-08-14**
+
+How strongly LifeOS should surface something to the user and how much authority LifeOS has to act on it are independent dimensions.
+
+### Invariants
+
+- high relevance or urgency does not grant permission to act;
+- prior authority to perform an action does not require continuous user attention when the action is low-risk, expected and appropriately governed;
+- AI confidence does not substitute for user authority;
+- attention policy may escalate visibility or interruption without increasing action authority;
+- authorized automation must still obey semantic scope, provenance, history, privacy and applicable reversibility/confirmation rules;
+- low-attention automation must remain inspectable and correctable where appropriate.
+
+### Does not imply
+
+- all automation should be silent;
+- high-impact actions can never be automated when the user has explicitly granted suitable authority;
+- one fixed autonomy level applies to the whole product;
+- exact attention or autonomy scales are fixed by this principle.
+
+The exact policy levels, thresholds and UI for granting/revoking authority remain later design/governance decisions.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -480,11 +506,11 @@ Only after Forward + Reverse + Adversarial review is coherent enough should the 
 
 # Review position
 
-Accepted retained principles through: **IA-15**.
+Accepted retained principles through: **IA-17**.
 
 Deduplicated candidates: **IA-12** referenced existing rule; **IA-13** merged into IA-01 + IA-06; **IA-14** referenced authoritative semantics; **IA-16** merged into IA-06 + IA-08.
 
-Next candidate requiring a real delta check: **IA-17 — Attention and autonomy are separate axes**.
+Next candidate requiring a real delta check: **IA-18 — Shared reality and personal context remain separable**.
 
 Final whole-contract validation is already required after the last retained principle: forward review → reverse reasoning → adversarial contradiction pass.
 
