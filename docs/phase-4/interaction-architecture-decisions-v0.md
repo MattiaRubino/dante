@@ -406,6 +406,32 @@ The exact policy levels, thresholds and UI for granting/revoking authority remai
 
 ---
 
+## IA-18 — Shared reality and personal context remain separable
+
+**NOT RETAINED AS A SEPARATE IA PRINCIPLE — REFERENCED EXISTING MULTI-ACTOR / VISIBILITY RULE**
+
+The underlying rule is already established by the multi-actor research and collaboration semantics: shared coordination may require the consequence of private personal context without requiring disclosure of the private cause.
+
+For example, a participant's private context may justify exposing `unavailable 14:00–16:00` without exposing why they are unavailable.
+
+Interaction Architecture must preserve this boundary in presentation, explanation, inspection and adaptive/contextual UI, but does not need to re-approve the underlying visibility/privacy semantics as a separate architectural invariant.
+
+---
+
+## IA-19 — LifeOS remains useful without AI
+
+**MERGED — IA-07**
+
+No separate principle is retained.
+
+IA-07 already requires the operational core to remain understandable and controllable without AI, including structured GUI paths for frequent, state-oriented and precision-sensitive operations and continued access to essential state when AI is unavailable.
+
+IA-09 additionally requires standard/predefined compositions to preserve essential semantic and control paths when AI is unavailable.
+
+The original IA-19 scenarios remain part of AI-off stress testing, but do not add a new architectural invariant.
+
+---
+
 # V0 AI delivery / external-reasoning strategy
 
 ## V0-AI-01 — External deep reasoning is an allowed extension path
@@ -506,12 +532,12 @@ Only after Forward + Reverse + Adversarial review is coherent enough should the 
 
 # Review position
 
-Accepted retained principles through: **IA-17**.
+Accepted retained principles: **IA-01 through IA-11, plus IA-15 and IA-17**.
 
-Deduplicated candidates: **IA-12** referenced existing rule; **IA-13** merged into IA-01 + IA-06; **IA-14** referenced authoritative semantics; **IA-16** merged into IA-06 + IA-08.
+Deduplicated/referenced candidates: **IA-12** referenced existing rule; **IA-13** merged into IA-01 + IA-06; **IA-14** referenced authoritative semantics; **IA-16** merged into IA-06 + IA-08; **IA-18** referenced existing multi-actor / visibility semantics; **IA-19** merged into IA-07.
 
-Next candidate requiring a real delta check: **IA-18 — Shared reality and personal context remain separable**.
+The candidate forward review is complete.
 
-Final whole-contract validation is already required after the last retained principle: forward review → reverse reasoning → adversarial contradiction pass.
+Next gate: whole-contract validation — forward coherence review → reverse reasoning review → adversarial contradiction pass.
 
 No frontend/prototype mutation is authorized by these decisions.
