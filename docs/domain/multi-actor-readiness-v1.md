@@ -1,367 +1,503 @@
+<!-- LIFEOS-CANONICAL-SPLIT document="multi-actor-readiness-v1.md" part="1" total="3" -->
+> **Canonical document split — Part 1 of 3.** Parts 1–3 together form one authoritative document; this is a physical split only, not a summary/reference hierarchy. The payload preserves the full pre-compaction baseline first and later downstream amendments in sequence; later explicit amendments override stale status/deferral wording without deleting the earlier rationale. Navigation: **Part 1** · [Part 2](multi-actor-readiness-v1-part-2.md) · [Part 3](multi-actor-readiness-v1-part-3.md)
+
+<!-- LIFEOS-CANONICAL-PAYLOAD -->
 # Multi-Actor Readiness v1
 
-**Status:** Current cross-cutting domain guardrail  
+**Status:** Current evidence-backed cross-cutting domain guardrail  
 **Established:** 2026-08-11  
-**Current revision:** 2026-08-13 — Reconciliation / Source Precedence v0 incorporated  
+**Supersedes for current work:** `multi-actor-readiness-v0.md`  
 **Workstream:** Core Domain Model v0  
 **Branch:** `feature/domain-model`
 
 ## Purpose
 
-LifeOS is personal-first in product experience while the domain kernel remains structurally capable of representing multiple independent actors, shared facts, actor-scoped context, partial adoption, selective disclosure, bounded Authority, represented action, material-state divergence and unresolved conflict.
+LifeOS remains **personal-first in product experience**, but its domain kernel must be structurally capable of representing reality involving multiple people, external actors, shared facts, shared resources, unequal authority, partial adoption and private personal context.
 
-This document is the current operational guardrail. Historical evidence remains in the dedicated discovery, research and validation checkpoints.
+Version 1 is evidence-backed by:
 
-> **Coordinate shared reality without merging independent actors into one identity, one truth, one privacy boundary or one universal workflow.**
+- the accepted first two Domain Atlas clusters;
+- the initial Multi-Actor Readiness v0 hardening;
+- `multi-actor-collaboration-discovery-simulation-2026-08.md`;
+- `multi-actor-collaboration-research-2026-08.md`;
+- adversarial/safety evidence on revocation, high-conflict relationships, guardian/minor asymmetry, assisted participation and AI-mediated privacy.
+
+The purpose remains deliberately narrower than implementing collaboration:
+
+> **Preserve the semantic foundations required for future collaboration without prematurely designing organizations, ACL infrastructure, chat, enterprise workflow or a universal social layer.**
 
 ---
 
-# 1. Core non-collapse baseline
+# 1. Evidence-backed product hypothesis
+
+The strongest supported direction is:
+
+> **LifeOS should coordinate shared reality among independent personal systems rather than merge multiple people's personal operating systems into one shared account or workspace by default.**
+
+A multi-actor feature is valuable only when its coordination benefit exceeds the social, cognitive, privacy, accessibility and maintenance costs it creates for the actors involved.
+
+This yields two simultaneous requirements:
 
 ```text
-Person != Account != Principal
-Actor != Account / Principal
-actual Actor != represented party
-Subject != Actor
-Participation != Responsibility
-Authority != Visibility
-Authority != truth
-Visibility != Consent
-Acknowledgement != Agreement / Consent
-Decision != Agreement / Consent
-Version != current-state selection
-Provenance != source precedence
-Reconciliation != Decision / Authority / Actual / Version
+coordination must be expressive enough
 ```
 
-Coincidence in simple personal flows is convenience, not ontology.
-
----
-
-# 2. Shared fact + actor-scoped state
-
-A shared real-world object should normally remain one shared object while actor-specific context stays separate.
-
-Actor-scoped state may include:
-
-- Participation response;
-- private constraints/preferences;
-- private notes/reminders;
-- actor-specific Acknowledgement;
-- individual Agreement/Consent state;
-- private Visibility choices;
-- competing assertions or stances.
-
-> **A shared current result does not imply every actor saw, asserted, accepted, agreed, consented or decided the same thing.**
-
----
-
-# 3. Account independence / partial adoption
-
-Relevant Persons and Actors can exist without LifeOS Accounts.
-
-Core semantics must support full users, occasional users, external responders, represented parties and external systems without fabricating Accounts merely for domain representation.
-
----
-
-# 4. Participation and Responsibility
+and
 
 ```text
-Invitation / proposal
-!= Participation response
-!= Actual Participation
+coordination must not become bureaucracy or surveillance
 ```
 
-```text
-Responsibility
-!= actual performer
-!= Participation
-!= Authority
-```
-
-Activity identity must survive reassignment, claim, substitution and hand-off where the Activity itself remains the same.
-
-Open/claimable Responsibility is legitimate. A transfer request is not automatically an effective transfer.
-
-Coordination burden may remain with a different actor than execution Responsibility. `Coordination Stewardship` remains a review target, not an accepted standalone primitive.
+The kernel therefore preserves distinctions; the product exposes only the amount of structure justified by consequence and context.
 
 ---
 
-# 5. Common-ground separation
+# 2. Core non-collapse rule
 
-Where consequence requires precision:
+The domain must not collapse the following dimensions into one `user_id`, one `owner`, one `member`, or one universal status field:
+
+```text
+object identity
+person / actor identity
+account / authenticated principal
+subject / beneficiary
+ownership / governance / stewardship
+participation
+participation response
+responsibility
+assignment
+performer / actual contributor
+coordination stewardship
+visibility / access
+authority
+provenance / source
+capacity/resource relationship
+```
+
+These dimensions may coincide in a simple personal case. Their coincidence is convenience, **not ontology**.
+
+Canonical rule:
+
+> **Domain object identity must not be defined by one account or actor merely because the initial product experience is personal-first.**
+
+---
+
+# 3. Shared canonical fact + personal overlay
+
+When several actors coordinate around the same real-world object, LifeOS should normally preserve one shared canonical fact and separate actor-scoped personal context.
+
+Example:
+
+```text
+Shared Event
+Dinner · Saturday · 21:00 · Restaurant X
+```
+
+Possible shared facts:
+
+```text
+Event identity
+accepted shared Schedule
+place
+shared description
+shared lifecycle/disposition
+```
+
+Possible actor-scoped context:
+
+```text
+participation response
+personal capacity impact
+private constraints
+travel/preparation
+personal reminder
+private note
+private Goal relation
+local organizational area
+visibility choices
+```
+
+Preferred pattern:
+
+```text
+Shared object
+        ├── canonical/shared facts
+        ├── Actor A scoped state
+        ├── Actor B scoped state
+        └── Actor C scoped state
+```
+
+Avoid semantic duplication such as one independent copy of the same dinner/meeting/shift for every user unless the records genuinely represent independently governed realities or provider replicas.
+
+---
+
+# 4. Account, person, actor and subject are not interchangeable
+
+A relevant person may exist in LifeOS domain reality without holding a LifeOS account.
+
+Examples:
+
+- friend invited to dinner;
+- colleague attending a meeting;
+- child or cared-for person;
+- patient;
+- mechanic;
+- teacher;
+- customer;
+- contractor;
+- supplier;
+- model/subject in a photography job.
+
+Therefore:
+
+> **Participation and representation must not require universal LifeOS account adoption.**
+
+Likewise, the person performing an action may differ from the person/thing the information concerns.
+
+Examples:
+
+```text
+caregiver acts
+older adult is subject
+```
+
+```text
+parent coordinates
+child is subject
+```
+
+```text
+technician acts
+vehicle is subject
+```
+
+The exact future `Person`, `Actor`, `Account`, `Principal`, `Subject`, `Resource`, `Organization` and `Team` boundaries remain deferred to dedicated reviews.
+
+---
+
+# 5. Shared object identity is independent from actor relationships
+
+Current cross-cutting invariants:
+
+```text
+Goal identity       != governor / stakeholder / subject
+Plan identity       != coordinator / contributor / responsible actor
+Activity identity   != requester / assignee / performer
+Event identity      != organizer / participant / participant response
+Routine identity    != performer
+Milestone identity  != stakeholder / approver / governor
+Occurrence identity != assigned actor
+Schedule identity   != participant acceptance / capacity owner
+Session identity    != performer count
+Constraint identity != authority actor
+Recurrence identity != assignment rotation
+Capacity identity   != one mandatory person/account
+```
+
+Actor relationships may change while object identity remains stable.
+
+---
+
+# 6. Participation is stateful, temporal and context-specific
+
+Research strongly rejects `member / not member` as a sufficient universal model.
+
+Depending on context, useful participation semantics may include:
+
+```text
+invited
+unseen
+needs action
+tentative
+accepted
+declined
+conditional
+waitlisted
+substituted
+removed
+attended
+partially attended
+absent
+unknown
+```
+
+No universal enum is accepted here.
+
+Canonical rule:
+
+> **Participation intention/response and actual participation must remain distinguishable where both matter.**
+
+For Events this reinforces the existing separation:
+
+```text
+Event state
+!= participant response
+!= actual attendance
+```
+
+---
+
+# 7. Proposal, common ground, authority and reality are different
+
+The multi-actor evidence materially strengthens this state separation:
 
 ```text
 proposed / sent
-!= delivered / displayed
+!= delivered
 != seen
-!= Acknowledgement
-!= family-specific response
-!= Agreement / Consent
-!= Approval / Decision
-!= effective target state
-!= Actual
+!= understood
+!= acknowledged
+!= accepted / agreed
+!= authoritative / canonically confirmed
+!= acted upon
+!= actual outcome
 ```
 
-Ordinary UI may collapse low-consequence steps, but the kernel must not lose the semantic distinction.
+Not every dinner or casual plan needs eight visible statuses.
 
----
+The distinction is semantic, with product exposure proportional to consequence.
 
-# 6. Authority and represented action
+Examples:
 
-Authority is contextual and bounded.
+### Casual dinner
+
+A simple `accepted / declined / maybe` experience may be enough.
+
+### Shift swap
 
 ```text
-Authority != Actor / Account / Principal
-Authority != Responsibility / Participation
-Authority != Visibility
-Authority != Agreement / Consent
-Authority != Decision
-Authority != truth
+worker requests
+→ recipient accepts
+→ authorized manager approves
+→ canonical shift assignment changes
+→ Actual attendance later recorded
 ```
 
-Representation preserves the actual Actor and the distinct represented party.
+### Care hand-off
+
+Sending a request does not prove another caregiver accepted responsibility.
+
+Canonical rule:
+
+> **Delivery, acknowledgement, agreement, authority confirmation and Actual must not be collapsed when failure to distinguish them can change responsibility or safety.**
+
+---
+
+# 8. Schedule acceptance is not participant acceptance
+
+A shared Event can have one canonical Schedule while actors hold different participation states.
 
 ```text
-Authority to action X
-!= Authority to action Y
+Meeting
+Schedule: 15:00-16:00
+
+A: accepted
+B: tentative
+C: declined
 ```
 
-Represented action does not fabricate the represented party's personal Acknowledgement, Confirmation, Agreement, Consent or Decision.
+Therefore:
 
-Re-delegation is not implied.
+> **The accepted Schedule is the currently canonical temporal assignment under the relevant governing authority/context; it does not mean every participant has accepted participation.**
+
+This remains compatible with the existing Schedule v0 semantics.
 
 ---
 
-# 7. Visibility and inference privacy
+# 9. Responsibility is richer than one assignee
+
+The discovery simulation and external research repeatedly expose materially different responsibility questions:
 
 ```text
-can see != can change
-can see != can re-disclose
-can see != use for every purpose
-may see != actually saw
-visible result != visible source
-visible current state != visible full history
+Who is accountable for the outcome?
+Who is expected to perform the work?
+Who can claim currently open work?
+Who approves it?
+Who is temporarily substituting?
+Who must acknowledge a hand-off?
+Who remains responsible if nobody acts?
 ```
 
-Useful coordination may expose a bounded consequence while private source context remains hidden.
+Canonical hardening:
 
-AI explanations and derived outputs must be reviewed for inference leakage, not only direct field exposure.
+> **Activity identity must not be defined by one assignee, and future responsibility semantics must be capable of representing reassignment, claim, substitution and hand-off without rewriting Activity identity/history.**
+
+This does **not** yet justify one universal Responsibility entity or workflow engine.
 
 ---
 
-# 8. Version / material state
+# 10. Execution responsibility and coordination stewardship differ
+
+External research introduces an important qualification.
+
+A visible task can be delegated while another person continues to perform the invisible coordination work:
+
+- anticipating that it will be needed;
+- remembering deadlines/preferences;
+- prompting another person;
+- monitoring whether the work happened;
+- resolving failure;
+- repairing the surrounding plan.
+
+Example:
 
 ```text
-shared/native identity
-!= material state
-!= actor-scoped semantic state
-!= provider/storage revision
+Activity
+Book child dentist appointment
+
+Execution responsibility
+Luca
+
+Coordination stewardship
+Mattia still remembers, reminds, monitors and replans
 ```
 
-Rules:
+The phenomenon is real and must be preserved as a validation question.
 
-- semantic acts remain bound to the material state they actually concerned;
-- materiality is purpose/facet specific;
-- provider/storage revisions are not semantic Version by default;
-- divergent/offline states may coexist;
-- projection Version and source Version may differ;
-- stale-base AI/system effects require re-evaluation when material divergence matters;
-- history does not imply indefinite retention of sensitive payloads.
+Current decision:
 
-Version identifies competing states; it does not choose the winner.
+> **Do not equate task assignment with transfer of coordination burden.**
+
+However, `Coordination Stewardship` is **not yet accepted as a dedicated kernel primitive**. It may later become a relationship, responsibility dimension, derived measure, or product-evaluation concept.
 
 ---
 
-# 9. Reconciliation / Source Precedence
+# 11. Open / claimable responsibility is legitimate
 
-Reconciliation v0 provides the current conflict-handling discipline.
+Some real situations correctly begin as:
 
 ```text
-Version
-= identifies materially competing states
-
-Provenance
-= explains origin/evolution
-
-Evidence
-= may support or contradict interpretations
-
-Authority
-= determines legitimate bounded effect
-
-Decision
-= one possible bounded resolution path
-
-Reconciliation
-= handles materially competing states/assertions under an applicable bounded basis
+Someone eligible/willing needs to take this
 ```
 
-Mandatory rules:
-
-1. conflict detection != conflict resolution;
-2. unresolved conflict is valid reality;
-3. newer/more recent/more frequent input does not automatically win;
-4. source identity, Provenance and recency do not create Authority or truth;
-5. Source Precedence, when justified, is target/facet/purpose/context/time scoped;
-6. there is no global source ranking;
-7. a shared current result does not erase actor-specific assertions or historical competing Versions;
-8. compatible independent changes may be combined where semantics permit;
-9. material same-facet conflicts require explicit handling or remain unresolved;
-10. deterministic resolution may occur without fabricating a human Decision only under explicit bounded policy and applicable Authority;
-11. represented Reconciliation preserves actual Actor, represented party and basis;
-12. result Visibility does not automatically expose private competing sources, rationale or Provenance;
-13. AI may detect, compare and propose, but may not silently invent precedence or canonical truth;
-14. specialist source-of-record precedence remains bounded to its actual context;
-15. technical merge/sync/concurrency mechanics do not become domain Reconciliation semantics.
-
-Rejected universal rules:
+rather than:
 
 ```text
-last-write-wins
-newest-source-wins
-provider-always-wins
-user-always-wins
-AI-confidence-wins
-universal Reconciliation root
-universal Conflict root
-universal SourcePrecedence hierarchy
+assigned_to = X
 ```
 
----
+Examples:
 
-# 10. Lifecycle / revocation / disagreement
+- household chore;
+- caregiving help request;
+- open shift;
+- volunteer role;
+- shared trip responsibility.
 
-Participation, Responsibility, Visibility, Authority, Representation and Consent have separate lifecycles.
-
-- ending future access does not erase truthful historical attribution;
-- historical participation does not imply future Visibility or Authority;
-- revocation changes future capability without rewriting past valid action;
-- disagreement may remain explicitly unresolved;
-- auditability must not become unlimited surveillance.
+The future model must not require a mandatory assignee merely to represent a valid open responsibility state.
 
 ---
 
-# 11. Groups and Resource coordination
+# 12. Hand-off needs acceptance where responsibility matters
 
-Group membership must not imply access, Participation, Agreement, Consent or governance over every object.
-
-`Group`, `Household`, `Team`, `Organization` and `Workspace` remain separately reviewable.
-
-Resource/Capacity truth remains separate from Participation, Responsibility, Schedule and Authority. Requirement/allocation/reservation/substitution remain future review targets.
-
----
-
-# 12. AI guardrails
+A hand-off has at least a potential distinction between:
 
 ```text
-AI proposal != human Decision
-AI inference != human Agreement / Consent / Acknowledgement
-AI capability != Authority
-AI confidence != source precedence
-AI source access != disclosure permission
+transfer requested
+transfer received
+transfer accepted
+transfer authoritative/effective
 ```
 
-AI may detect conflict, compare Evidence, summarize changes, propose options and request missing human action.
+For low-consequence contexts the product may collapse this interaction.
 
-AI may not exceed bounded Authority, fabricate human state, apply stale-base effects after material divergence without re-evaluation, or convert uncertainty into false certainty.
+For care, shift work, child pickup, important deliverables or external service work, a requested transfer must not automatically be treated as effective responsibility transfer.
 
 ---
 
-# 13. Product simplicity / coordination burden
+# 13. Availability may be shared without private calendar disclosure
 
-Kernel precision must not force enterprise workflow into ordinary UI.
+Canonical rule:
 
-For every collaborative capability ask:
+> **Useful coordination may expose the consequence of private context without exposing the private source.**
+
+Example:
 
 ```text
-Who sets it up?
-Who maintains it?
-Who gets notified?
-Who must review/acknowledge?
-Who monitors failure?
-Who repairs exceptions?
-Who receives the benefit?
+Private Event
+Therapy 18:30-19:30
 ```
 
-Expose collaboration/reconciliation machinery only when consequence, uncertainty, trust or user choice justifies it.
-
----
-
-# 14. Mandatory validation questions
-
-Every future multi-actor concept/feature must answer the applicable subset:
-
-1. Can relevant actors exist without Accounts?
-2. What is the shared canonical fact/object?
-3. What remains actor-private?
-4. Who is Actor, Subject, participant, responsible party, performer and Authority holder?
-5. Can those roles change without changing object identity?
-6. What actor-scoped state exists separately from shared state?
-7. Did a proposed hand-off actually become effective?
-8. Which material Version did each semantic act concern?
-9. What may be exposed versus inferred?
-10. Who actually acted if the action was on behalf of another party?
-11. What happens when actors/providers disagree?
-12. Is there a valid bounded source-precedence policy or must conflict remain unresolved?
-13. Does a shared result preserve individual assertions/states?
-14. Is an external specialist system authoritative for this bounded facet?
-15. Does AI have sufficient Authority and safe disclosure scope?
-16. Can revocation change future capability without deleting truthful history?
-17. Is retention proportional to purpose?
-18. Does the feature reduce total coordination burden?
-19. Can low-consequence UX hide unnecessary machinery?
-20. Does any implementation convenience accidentally create a universal root/ranking/workflow?
-
----
-
-# 15. Explicitly deferred architecture
-
-This readiness baseline does not select:
-
-- final Person/Actor/Account/Principal physical model;
-- organization/team/household hierarchy;
-- ACL/RBAC/ABAC/ReBAC architecture or vendor;
-- universal workflow/collaboration graph;
-- CRDT/OT/merge implementation;
-- universal source ranking;
-- messaging/federation architecture;
-- AI multi-agent orchestration;
-- universal audit retention;
-- final SQL/API representation.
-
----
-
-# 16. Current canonical direction
+Safe shared projection:
 
 ```text
-PERSONAL-FIRST PRODUCT
-+
-MULTI-ACTOR-READY DOMAIN
-+
-SHARED FACTS WITH ACTOR-SCOPED OVERLAYS
-+
-SELECTIVE / PURPOSE-AWARE DISCLOSURE
-+
-TRUTHFUL ACTOR / REPRESENTATION / AUTHORITY / PROVENANCE
-+
-VERSION-AWARE HISTORY
-+
-CONFLICT-PRESERVING RECONCILIATION
-+
-PARTIAL-ADOPTION SUPPORT
-+
-PROGRESSIVE DISCLOSURE
-=
-CURRENT LIFEOS MULTI-ACTOR FOUNDATION
+Unavailable 18:30-19:30
 ```
 
-No prior accepted concept is reopened by this revision.
+Not automatically safe:
+
+```text
+Unavailable because of therapy
+```
+
+This applies beyond calendar data to health, finance, preferences, relationships, location and AI inference.
 
 ---
 
-# 17. Reopening rule
+# 14. Privacy includes inference, not only direct visibility
 
-Reopen only when stronger evidence shows that a current non-collapse rule is wrong, an accepted concept cannot naturally represent realistic multi-actor behavior, a missing concept has materially independent semantics, or later logical/API/privacy/safety pressure exposes an actual semantic contradiction.
+A system can hide raw source fields and still leak sensitive meaning through:
 
-Provider/framework vocabulary alone is never sufficient.
+- explanations;
+- recommendations;
+- availability patterns;
+- notification wording;
+- AI responses;
+- tool/API parameters;
+- status changes;
+- derived rankings.
+
+Therefore:
+
+> **Who may see a fact and who may infer a fact are distinct privacy questions.**
+
+And:
+
+> **AI informational access does not imply permission to disclose the information or its private cause.**
+
+This becomes a mandatory future AI/context-builder validation dimension.
+
+---
+
+# 15. Authority is contextual and must not be laundered
+
+Item creation, participation, visibility and ownership labels do not automatically grant real-world authority.
+
+Examples:
+
+- dinner organizer cannot expose guests' private reasons;
+- parent/guardian authority may be legitimate in one child-safety context but not unlimited across every domain;
+- manager may control a work shift without access to unrelated private health reasons;
+- caregiver observation is not automatically clinical truth;
+- AI proposal is not authoritative because the AI has broad context.
+
+Canonical rule:
+
+> **Authority must be represented according to the relevant relationship/context rather than inferred from who created the object or who can see it.**
+
+---
+
+# 16. AI authority is bounded
+
+Canonical rule:
+
+> **AI effective authority must not exceed the authority of the principal/context/policy under which it acts.**
+
+AI may:
+
+- calculate mutual feasibility from private projections;
+- propose a common Schedule;
+- highlight conflicts;
+- request confirmation;
+- explain safe high-level reasons.
+
+AI may not automatically:
+
+- reveal another actor's private source context;
+- convert a proposal into agreement;
+- treat optimization as institutional authority;
+- modify a shared fact beyond the acting principal's authority;
+- infer Actual merely because an expected time passed.
+
+---
+
