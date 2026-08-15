@@ -975,3 +975,43 @@ Normative downstream references:
 
 - `reconciliation.md`;
 - `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 31. Downstream closure — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 resolves Version's historical `Versioned evaluation / rule snapshots` dependency at the semantic-boundary level without turning Version into the evaluator or into a universal Version entity.
+
+Canonical historical evaluation basis where consequence requires reconstruction:
+
+```text
+material target state
++ applicable Criterion state
++ relevant Evidence/source state or reconstructible basis
++ evaluation context / applicable time
+→ Evaluation
+```
+
+A historical Evaluation remains about the exact material target/rule/evidence states that actually applied. Later Criterion revisions, corrected Evidence, target changes or source reconciliation may produce a later Evaluation without retroactively rewriting the earlier one.
+
+Version does not decide whether a Criterion applies, whether Evidence is sufficient/admissible, or what assessment follows. Those are Criterion/Evaluation and applicable policy/Authority/Reconciliation questions. Version provides the material-state binding needed for truthful reconstruction.
+
+A transient Evaluation need not force a persisted Version row or snapshot for every input. Direct references, qualified state references, reconstructible source-set/rule bases or consequence-sensitive materialized snapshots remain implementation choices.
+
+Downstream classification:
+
+```text
+Version ↔ Criterion state        RESOLVED
+Version ↔ Evaluation history     RESOLVED
+universal rule-Version root      REJECTED
+universal Evaluation snapshot    REJECTED
+```
+
+The former SAFE DEFERRED item `Versioned evaluation / rule snapshots` is therefore closed at the semantic level. Retention/materialization strategy and physical/API representation remain downstream concerns.
+
+No Version hardening failed. **Version remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `criterion-evaluation.md`;
+- `../checkpoints/criterion-evaluation-v0-validation.md`.
