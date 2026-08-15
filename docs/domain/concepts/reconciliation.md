@@ -471,3 +471,52 @@ unclassified material items     0
 ```
 
 The hardenings above are incorporated and retested. The approved 28-path propagation and final post-write QA are complete; Reconciliation / Source Precedence v0 is the current accepted branch baseline.
+
+---
+
+# 27. Downstream closure — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 closes Reconciliation's deferred GoalCriterion/evaluation boundary without turning Evaluation into reconciliation or source-precedence selection.
+
+Canonical separation:
+
+```text
+Evaluation
+= contextual application of applicable Criterion state to relevant Evidence
+
+Reconciliation
+= handling materially competing states/assertions under an applicable bounded basis
+```
+
+Therefore:
+
+```text
+Evaluation != Reconciliation
+Criterion != Source Precedence
+conflicting Evidence != automatic Evaluation result
+latest Evidence != automatic winner
+```
+
+An Evaluation may remain unknown/insufficient or explicitly indeterminate when relevant Evidence conflicts and no sufficient bounded resolution basis exists. Reconciliation may first resolve, qualify, defer or preserve that conflict; the resulting Evaluation then applies the Criterion to the material Evidence/basis that is legitimately available for that evaluation context.
+
+Where a specialist or bounded source-of-record policy is authoritative for one evaluative facet, that precedence remains contextual. It does not become a universal rule for every Criterion or source. A later reconciliation/correction may support a later Evaluation while preserving the earlier Evaluation basis and result where history matters.
+
+AI may surface contradictions or calculate an Evaluation under an authorized Criterion and authorized reconciliation basis, but AI confidence, recency or convenience does not create Source Precedence, Authority or certainty.
+
+Downstream classification:
+
+```text
+Reconciliation ↔ Criterion/Evaluation    RESOLVED
+conflicting Evidence handling            RESOLVED
+universal Evaluation winner rule         REJECTED
+universal SourcePrecedence rank           REJECTED
+```
+
+The previously SAFE DEFERRED GoalCriterion/evaluation dependency is semantically closed. Per-domain/source-precedence policy, specialist mappings, retention/materialization and physical/API representation remain separate downstream concerns.
+
+No Reconciliation hardening failed. **Reconciliation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `criterion-evaluation.md`;
+- `../checkpoints/criterion-evaluation-v0-validation.md`.
