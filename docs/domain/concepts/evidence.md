@@ -918,3 +918,48 @@ Normative downstream references:
 
 - `reconciliation.md`;
 - `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 2026-08-15 — Criterion / Evaluation downstream closure amendment
+
+Criterion / Evaluation v0 closes Evidence's remaining `GoalCriterion / evaluation` semantic dependency while preserving Evidence as contextual evaluative role rather than a second source-of-truth record.
+
+Canonical separation:
+
+```text
+Criterion
+= contextual evaluative specification/capability
+
+Evidence
+= information bearing on the bounded evaluation
+
+Evaluation
+= contextual application of applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+```
+
+Therefore:
+
+```text
+Criterion != Evidence
+Evaluation != Evidence
+Evidence existence != satisfied Criterion
+missing Evidence != failed Criterion
+missing Evidence != negative Evidence by default
+```
+
+Where Evidence is incomplete, unavailable, conflicting, outside the applicable window, or not admissible under the relevant bounded policy, Evaluation may remain unknown/insufficient rather than inventing failure or certainty.
+
+A historical Evaluation that matters consequentially must remain reconstructible against the material target state, applicable Criterion state, Evidence/source basis and evaluation context that actually applied. Later Evidence, corrections or Criterion revisions may support a later re-evaluation without retroactively rewriting the earlier evaluation basis.
+
+Private Evidence may support an authorized bounded result without granting viewers access to the underlying source information. Sharing an Evaluation result does not automatically share its Evidence. AI may discover candidate Evidence or calculate under an authorized Criterion, but it cannot fabricate Evidence, Authority, Criterion adoption or certainty.
+
+This amendment supersedes the earlier deferred `exact evaluation/evaluand model` and `GoalCriterion final representation` only at the semantic level resolved by Criterion / Evaluation v0. Weighting/admissibility policy, retention, specialist evidence models, materialization strategy and physical/API representation remain separately deferred.
+
+**Evidence v0 remains PASS WITH HARDENING. REOPEN = 0.**
+
+Normative downstream references:
+
+- `criterion-evaluation.md`;
+- `../checkpoints/criterion-evaluation-v0-validation.md`.
