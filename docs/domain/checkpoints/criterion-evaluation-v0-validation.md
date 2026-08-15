@@ -712,3 +712,41 @@ marker-closure path      = docs/domain/checkpoints/criterion-evaluation-v0-valid
 ```
 
 No next Relationships / Reasoning candidate is selected here. The next semantic action is a fresh re-score of the remaining candidate space under Methodology v3.
+
+---
+
+# 16. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the remaining Proposal/Request dependency recorded by Criterion / Evaluation v0.
+
+```text
+Proposal of a Criterion
+!= adopted/applicable Criterion
+
+Request to change/review/evaluate
+!= Criterion state
+!= Evaluation result
+!= Decision
+!= effective target state
+```
+
+The new Proposal and Request families provide reusable identity/attribution for the candidate act or bounded ask while preserving the existing Criterion/Evaluation owner boundaries. A materially changed candidate is a distinct Proposal and does not silently inherit prior acknowledgement, response, assent or Decision.
+
+The existing AI regression remains mandatory: an AI-proposed Criterion is attributable to the AI/system proposal act and is not retroactive evidence that the human intended or adopted that Criterion.
+
+Downstream classification:
+
+```text
+Criterion/Evaluation ↔ Proposal / Request       RESOLVED
+Proposal of Criterion = Criterion adoption      REJECTED
+Request for Evaluation = Evaluation             REJECTED
+Proposal/Request = Decision/effective state     REJECTED
+```
+
+No Criterion/Evaluation hardening failed. **Criterion / Evaluation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
