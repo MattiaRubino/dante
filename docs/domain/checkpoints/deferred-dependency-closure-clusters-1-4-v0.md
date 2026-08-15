@@ -1001,3 +1001,113 @@ Normative downstream references:
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`;
 - `../language-map.md`.
+
+---
+
+# 21. Downstream resolution appendix — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 resolves the historical `GoalCriterion / evaluation` semantic debt recorded in sections 4, 7.3, 16, 19 and 20 without rewriting the original Clusters 1–4 dependency-closure verdict.
+
+Current canonical decomposition:
+
+```text
+Goal / Milestone / other bounded target
+!= Criterion
+!= Evidence
+!= Evaluation
+
+Criterion
+= contextual evaluative specification/capability
+
+GoalCriterion
+= Criterion applied/scoped to a Goal
+= not a separate universal primitive/root
+
+Evaluation
+= contextual application of applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+
+Goal Progress
+= derived/projection semantics
+= not universal stored percentage/status
+```
+
+Downstream RESOLVED semantic boundaries include:
+
+```text
+Milestone ↔ Criterion / Evidence
+RESOLVED
+checkpoint identity != evaluation rule != evidentiary basis
+
+Evidence ↔ Criterion
+RESOLVED
+evaluative input/use != evaluative rule
+
+Evidence ↔ Evaluation
+RESOLVED
+source information/use != assessment process/result
+
+Outcome ↔ actor-scoped Evaluation
+RESOLVED at semantic boundary
+one contextual Outcome need not imply identical assessment for every Actor
+
+Decision ↔ Evaluation
+RESOLVED
+bounded resolution != criterion application; either may exist without fabricating the other
+
+Version ↔ historical Evaluation/rule state
+RESOLVED
+consequential evaluation binds/reconstructs the material target, Criterion and Evidence/source states that actually applied
+
+Reconciliation ↔ Evaluation
+RESOLVED
+conflict handling != criterion application; unresolved Evidence may yield unknown/insufficient/indeterminate assessment
+```
+
+Canonical hardenings preserved across Clusters 1–4:
+
+- missing Evidence does not establish failure/non-occurrence;
+- multiple Criteria do not imply a universal AND, average, score or percentage;
+- later Criterion revision does not retroactively rewrite historical Evaluation;
+- later Evidence may support correction/re-evaluation without fabricating earlier intention;
+- private Evidence may produce an authorized bounded shareable result without granting source visibility;
+- specialist source-of-record precedence remains bounded to the relevant facet/context;
+- AI may propose Criteria or calculate under authorized semantics but cannot invent Evidence, Authority, Criterion adoption or certainty.
+
+This closure does **not** introduce a universal Evaluation entity/root/workflow, universal GoalCriterion root, universal `target_value`, `progress_percentage`, scoring model or generic evaluation DSL.
+
+Remaining independently SAFE DEFERRED debt includes:
+
+- Trigger / conditional policy;
+- reusable comparator/Range/Threshold value representation;
+- criterion-combination/composite-expression representation;
+- Verification/comprehension;
+- specialist evaluation/adjudication models;
+- retention/materialized Evaluation snapshots;
+- Proposal/Request review;
+- per-domain/source precedence rules;
+- Principal/AuthN/AuthZ/enforcement;
+- collective/group/quorum semantics;
+- exact logical/physical/API representation.
+
+Current downstream result:
+
+```text
+Clusters 1–4 structural REOPEN              0
+unclassified material dependencies          0
+GoalCriterion / evaluation semantics        RESOLVED
+Criterion                                   CANONICAL contextual evaluative specification/capability
+GoalCriterion                               Goal-scoped Criterion semantics only
+Evaluation                                  contextual process/result semantics
+Goal Progress                               derived/projection semantics
+universal Evaluation / target-value roots   REJECTED
+remaining debt                              SAFE DEFERRED with explicit owners/triggers
+```
+
+The historical Clusters 1–4 closure remains **PASS**. No accepted Goal, Milestone, Evidence, Outcome, Version, Reconciliation or other Cluster 1–4 concept is structurally reopened.
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`;
+- `../language-map.md`.
