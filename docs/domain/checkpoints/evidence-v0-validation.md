@@ -732,3 +732,52 @@ Normative downstream references:
 
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 13. Downstream closure — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 closes the checkpoint's remaining GoalCriterion/evaluation semantic dependency while preserving the original Evidence verdict.
+
+Canonical separation is now explicit:
+
+```text
+Criterion
+= contextual evaluative specification/capability
+
+Evidence
+= contextual information bearing on the evaluation
+
+Evaluation
+= contextual application of applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+```
+
+Regression results:
+
+- Evidence remains distinct from Criterion and Evaluation;
+- missing Evidence does not imply failed Criterion;
+- unknown/insufficient Evidence remains a valid Evaluation outcome/state;
+- conflicting Evidence does not permit an invented average, score or winner;
+- a consequential historical Evaluation remains reconstructible against material target, Criterion and Evidence/source state;
+- later source correction or Criterion revision may cause re-evaluation without rewriting the earlier basis;
+- private Evidence may support an authorized shareable bounded result without raw-source disclosure;
+- AI may discover candidate Evidence or calculate under an authorized Criterion but cannot fabricate Evidence, Authority, Criterion adoption or certainty.
+
+Downstream classification:
+
+```text
+Evidence ↔ Criterion             RESOLVED — distinct
+Evidence ↔ Evaluation            RESOLVED — input/use, not identity
+GoalCriterion final semantics    RESOLVED — Goal-scoped Criterion
+Evaluation history basis         RESOLVED — Version/material-state binding where consequential
+```
+
+Weighting/admissibility policy, specialist evidence models, retention/materialization and physical/API representation remain separate downstream concerns.
+
+No original Evidence hardening failed. **Evidence remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`.
