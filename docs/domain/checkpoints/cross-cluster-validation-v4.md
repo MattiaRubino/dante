@@ -506,3 +506,68 @@ Relationships / Reasoning
 ```
 
 Likely Cluster-5 review space remains candidate space rather than a checklist: Relationship, Dependency, Responsibility/Assignment/Hand-off, Contribution, Participation, Authority/Visibility, Decision, Version, AI Proposal, Goal/Evidence/Criterion relationships, Principal/delegation and any other concept that concrete scenarios prove necessary.
+
+---
+
+# 19. Downstream integration amendment — Criterion / Evaluation v0 (2026-08-15)
+
+Cross-Cluster Validation v4 remains a historical Clusters 1–4 integration checkpoint. Criterion / Evaluation v0 adds a downstream semantic closure that extends — but does not retroactively rewrite — the integrated topology above.
+
+Current downstream topology now includes:
+
+```text
+EVALUATIVE SPECIFICATION
+Criterion
+  └─ GoalCriterion = Goal-scoped Criterion semantics, not a separate universal root
+
+EVALUATION
+applicable material target state
++ applicable Criterion state
++ relevant Evidence/source basis
++ evaluation context / time
+→ contextual Evaluation
+→ optional derived Goal Progress / assessment projection
+```
+
+This downstream addition preserves the v4 separations:
+
+```text
+Goal / Milestone != Criterion
+Criterion != Evidence
+Evaluation != Evidence
+Evaluation != Actual / Outcome
+Evaluation != Decision
+Evaluation != Confirmation
+Evaluation != Reconciliation
+Goal Progress != universal stored percentage/status
+```
+
+Cross-cluster regressions remain coherent under the accepted Criterion / Evaluation hardenings:
+
+- no Evidence does not automatically mean failure or non-occurrence;
+- unknown/insufficient Evidence is a valid evaluation condition;
+- multiple Criteria do not imply a universal AND/average/score;
+- frequency/duration/range/threshold/maintenance semantics use the applicable Criterion and time window rather than one universal Goal field;
+- materially consequential historical Evaluation remains reconstructible against the target, Criterion and Evidence/source states that actually applied;
+- later Criterion change, source correction or Reconciliation may produce a later Evaluation without rewriting historical intention, Evidence basis or prior result;
+- shared Goal does not imply same Evidence visibility, same personal assessment or automatic Agreement on the Criterion;
+- private Evidence may yield an authorized bounded shareable result without raw-source disclosure;
+- AI may propose Criteria or calculate under authorized semantics but cannot fabricate Evidence, Criterion adoption, Authority or certainty;
+- no universal Evaluation root/workflow, target-value field, progress percentage, source rank or evaluation DSL is introduced.
+
+Downstream status:
+
+```text
+Cross-Cluster v4 historical verdict        PASS WITH HARDENING — unchanged
+Criterion / Evaluation semantic closure    INTEGRATED downstream
+structural reopenings                      0
+unclassified material dependencies         0
+```
+
+This amendment does not close Relationships / Reasoning as a cluster and does not preselect the next Cluster-5 candidate. The remaining candidate space must still be freshly re-scored under Methodology v3 before the next individual review.
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`;
+- `deferred-dependency-closure-clusters-1-4-v0.md`.
