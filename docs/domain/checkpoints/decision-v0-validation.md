@@ -784,3 +784,51 @@ Normative downstream references:
 
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 20. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the checkpoint's historical `Proposal / request representation` SAFE DEFERRED dependency without rewriting the original Decision validation.
+
+```text
+Proposal
+= materially specific candidate put forward for consideration
+
+Request
+= bounded ask directed to Actor(s)/system
+
+Decision
+= bounded resolution to a result
+```
+
+Canonical chain:
+
+```text
+Proposal / Request
+!= delivery / Acknowledgement
+!= family-specific response
+!= Decision / Approval
+!= effective target state
+!= Actual
+```
+
+A Decision can resolve a Proposal/Request without making the proposal/request itself the Decision. A materially different counter-Proposal is separately attributable and does not silently mutate the previous candidate or inherit its response/Decision.
+
+Withdrawal/expiry of Proposal/Request affects future applicability but does not erase historical Decisions or reverse an already-effective target state automatically.
+
+Downstream classification:
+
+```text
+Decision ↔ Proposal / Request    RESOLVED
+Proposal / Request = Decision    REJECTED
+generic Acceptance / Response    REJECTED as universal primitives
+```
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
