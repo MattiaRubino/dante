@@ -621,3 +621,44 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 26. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 makes the permission-request boundary explicit without changing Consent semantics.
+
+Canonical sequence:
+
+```text
+Request for Consent / permission
+!= delivery / view / Acknowledgement
+!= Consent
+!= Authority / technical authorization
+!= permitted action/use actually occurring
+```
+
+A Request may ask an eligible Actor to grant Consent; the request itself grants nothing. A Proposal may present a candidate scope/purpose/use for consideration; presenting or viewing it does not establish Consent.
+
+Consent still requires the eligible consent-giver's explicit bounded permission under the applicable context. Silence, relationship membership, continued participation, read telemetry, Acknowledgement or AI inference remain insufficient.
+
+A materially changed scope/purpose requires a materially relevant new Proposal/Request and cannot silently inherit prior Consent. Withdrawal/expiry of a request is distinct from withdrawal of already-granted Consent; likewise withdrawing Consent does not erase the historical request or legitimate historical actions.
+
+Downstream classification:
+
+```text
+Consent ↔ Proposal / Request          RESOLVED
+Request for Consent = Consent         REJECTED
+Proposal of permission terms = Consent REJECTED
+generic Acceptance / Permission root  REJECTED
+```
+
+Regulated validity/capacity/legal basis, purpose/use enforcement, collective Consent, exact persistence/API and retention remain separately owned dependencies.
+
+No Consent hardening failed. **Consent remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
