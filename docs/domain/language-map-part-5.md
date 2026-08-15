@@ -539,3 +539,64 @@ This amendment does not introduce a global reconciliation engine or physical sch
 The preservation-first current-document reconstruction is complete and QA-closed on `feature/domain-model`. The accidental technical probe was already removed and QA-closed before reconstruction, and the historical-preservation audit remains intact. Reconciliation semantic propagation and final branch-level QA are complete. The current operating decision is to finish Relationships / Reasoning and the required Cluster-5 validations before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.
+
+---
+
+# 2026-08-15 — Criterion / Evaluation v0 language-map amendment
+
+Criterion / Evaluation v0 supersedes the earlier `GoalCriterion / evaluation model` deferral in section 13 at the semantic level. The historical line remains preserved above because this split document is append-only/current-state preserving; this amendment is authoritative where the two conflict.
+
+## Current canonical vocabulary
+
+| Term | Status | Current meaning |
+|---|---|---|
+| Criterion | CANONICAL CONTEXTUAL EVALUATIVE SPECIFICATION/CAPABILITY | defines the condition, rule, threshold, pattern, checkpoint, assessment or combination relevant to evaluating a bounded target for a defined purpose/context |
+| GoalCriterion | CANONICAL SCOPED USE / NOT SEPARATE ROOT | Criterion applied/scoped to a Goal; not a separate universal primitive/entity/root |
+| Evaluation | CANONICAL CONTEXTUAL REASONING / PROCESS-RESULT SEMANTICS | applies the applicable Criterion state to relevant Evidence under material target/rule/context/time; may be reconstructed or materialized where consequence requires, but is not a universal entity/root/workflow |
+| Goal Progress | DERIVED / EVALUATION PROJECTION | projection derived from applicable Evaluation semantics; not universal stored percentage/status |
+
+## Canonical non-equivalences
+
+```text
+Goal != Criterion
+Milestone != Criterion
+Criterion != Evidence
+Evaluation != Evidence
+Evaluation != Actual
+Evaluation != Outcome
+Evaluation != Decision
+Evaluation != Confirmation
+Evaluation != Reconciliation
+Goal Progress != universal stored percentage/status
+```
+
+## Current evaluation guardrails
+
+```text
+missing Evidence != failed Criterion
+unknown / insufficient Evidence is valid
+multiple Criteria != universal AND / average / score
+Criterion change v1 -> v2 != retroactive rewrite of v1 Evaluation
+historical Evaluation may require material target + Criterion + Evidence/source basis + context reconstruction
+private Evidence may support shareable bounded Evaluation without source disclosure
+AI proposal/calculation != Criterion adoption / Agreement / Decision / Authority / Evidence / certainty
+```
+
+The following universal defaults are rejected:
+
+```text
+Universal GoalCriterion entity/root
+Universal Evaluation entity/root/workflow
+Universal target_value field
+Universal progress_percentage
+Universal score/confidence model
+Universal evaluation DSL
+```
+
+Section 18 current accepted Cluster-5 baselines is extended downstream to include:
+
+```text
+Criterion / Evaluation
+```
+
+No next Cluster-5 candidate is selected by this language-map amendment. Trigger/conditional policy, reusable comparator/Range/Threshold representation, criterion-combination representation, Verification/comprehension, specialist evaluation/adjudication, Evaluation retention/materialization, Proposal/Request and the other explicitly deferred owners remain subject to fresh candidate re-score or their designated later stages.
