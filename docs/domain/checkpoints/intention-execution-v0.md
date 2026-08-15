@@ -245,3 +245,55 @@ Normative downstream references:
 - `version-material-equivalence-v0-validation.md`.
 
 The original Intention & Execution verdict remains **PASS**. No accepted Goal, Plan, Activity, Event, Routine or Milestone identity is structurally reopened by Version v0.
+
+---
+
+# 2026-08-15 — Downstream closure: Criterion / Evaluation v0
+
+This historical checkpoint originally referred to `GoalCriterion` and deferred detailed evaluation semantics. Criterion / Evaluation v0 closes that semantic dependency without changing the original 2026-08-11 cluster verdict or retroactively rewriting the earlier validation.
+
+Current separation:
+
+```text
+Goal
+= desired outcome / condition / pattern
+
+Milestone
+= meaningful contextual checkpoint
+
+Criterion
+= contextual evaluative specification/capability
+
+GoalCriterion
+= Criterion applied/scoped to a Goal
+= not a separate universal primitive/root
+
+Evaluation
+= contextual application of the applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+
+Goal Progress
+= derived/projection semantics
+= not universal stored percentage/status
+```
+
+For Intention & Execution this means:
+
+- `Goal != Criterion` and `Milestone != Criterion`; desired state/checkpoint and evaluation rule remain distinct;
+- a Goal may have zero or more applicable Criteria without a universal `target_value` shape;
+- Milestone attainment remains evaluation/evidence-backed and does not become a second source of Actual/Outcome reality;
+- absence of Evidence does not itself establish Goal failure or Milestone non-attainment; Evaluation may remain unknown/insufficient;
+- multiple Criteria do not imply a universal AND, average, score or percentage;
+- frequency, duration, range, threshold and sustained-maintenance semantics are evaluated under the applicable Criterion/time window rather than being encoded as one universal Goal status;
+- where history matters, Evaluation remains reconstructible against the material Goal/Milestone state, Criterion state, Evidence basis and evaluation context that actually applied;
+- later Criterion revisions or later-discovered Evidence may produce a new Evaluation without rewriting prior intention or historical evaluation;
+- AI may propose Criteria or calculate under an authorized Criterion but cannot invent Evidence, Criterion adoption, Authority or certainty.
+
+The earlier GoalCriterion/evaluation semantic dependency is therefore closed. Trigger/policy machinery, physical persistence/API representation and other separately owned deferred questions remain deferred.
+
+The original **Intention & Execution v0 verdict remains PASS**. No Goal, Plan, Activity, Event, Routine or Milestone identity is structurally reopened by Criterion / Evaluation v0.
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`.
