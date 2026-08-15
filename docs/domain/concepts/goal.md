@@ -497,3 +497,45 @@ No reviewed case requires changing the fundamental Goal primitive.
 Goal v0 remains the accepted desired-state primitive.
 
 The 2026-08-11 hardening changes **who/what may govern or be subject to a Goal**, not Goal's core semantic identity. The previous personal-first wording is therefore superseded without introducing a new Goal type.
+
+---
+
+## 2026-08-15 downstream closure — Criterion / Evaluation v0
+
+Criterion / Evaluation v0 closes the previously deferred Goal evaluation semantics without changing Goal identity.
+
+Current authority is:
+
+```text
+Goal
+= what is intentionally desired
+
+Criterion
+= the contextual evaluative specification/capability defining how a bounded target is evaluated
+
+GoalCriterion
+= Criterion applied/scoped to a Goal
+= not a separate universal primitive/root
+
+Evaluation
+= the contextual application of the applicable Criterion state to relevant Evidence under material target/rule/context/time
+
+Goal Progress
+= derived/projection semantics from applicable evaluation
+= not a universal stored percentage/status
+```
+
+The following hardenings now apply to Goal:
+
+1. `Goal != Criterion`; the desired state and the rule used to assess it remain independently meaningful.
+2. A Goal may have zero or more applicable Criteria; no universal target-value shape is required.
+3. `GoalCriterion` is a Goal-scoped use of Criterion, not a new universal domain root.
+4. Missing Evidence does not mean the Goal failed or the Criterion is unsatisfied; evaluation may be unknown/insufficient.
+5. Multiple Criteria do not imply a universal AND, average, score or progress percentage.
+6. Progress is an evaluative/derived projection and must not become canonical Goal identity merely because the product displays it.
+7. Where history or consequence matters, an Evaluation must remain reconstructible against the material Goal state, Criterion state, Evidence basis and evaluation context that actually applied.
+8. A later Criterion change must not retroactively rewrite historical Goal evaluation under an earlier Criterion state.
+9. Evidence acquired after the fact may support later correction/re-evaluation without rewriting the original Goal intention.
+10. AI may propose or calculate under an authorized Criterion, but it cannot invent Evidence, Criterion adoption, Authority or certainty.
+
+This downstream closure supersedes the earlier `GoalCriterion model` and `exact progress/evaluation implementation` semantic deferrals only to the extent resolved by `docs/domain/concepts/criterion-evaluation.md` and `docs/domain/checkpoints/criterion-evaluation-v0-validation.md`. Persistence/API/SQL representation remains deferred.
