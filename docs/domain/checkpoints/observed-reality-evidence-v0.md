@@ -565,3 +565,53 @@ Normative downstream references:
 
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 2026-08-15 — Downstream closure: Criterion / Evaluation v0
+
+Criterion / Evaluation v0 closes the cluster's historical GoalCriterion/evaluation semantic dependency while preserving the original Observed Reality & Evidence validation and its two integrated hardenings.
+
+Current integrated separation:
+
+```text
+Actual / Outcome / Observation
+= underlying reality/result/assertion semantics
+
+Evidence
+= contextual evaluative use of relevant information
+
+Criterion
+= contextual evaluative specification/capability
+
+Evaluation
+= contextual application of applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+
+Reconciliation
+= contextual handling of materially competing states/assertions
+
+Version / Material-State
+= reconstructible state binding where consequence requires it
+```
+
+This closes the prior unnamed evaluation boundary without collapsing any accepted concept:
+
+- `Criterion != Evidence`; the rule/question and the information used to assess it remain distinct;
+- `Evaluation != Evidence`, `Actual`, `Outcome`, `Observation`, `Confirmation`, `Provenance` or `Reconciliation`;
+- absence of Evidence does not establish non-occurrence, failure or a false Criterion result; Evaluation may remain unknown/insufficient;
+- conflicting Evidence may require Reconciliation or remain unresolved/indeterminate rather than being silently averaged or ranked by recency;
+- Milestone attainment remains evaluation/evidence-backed checkpoint state, not duplicate underlying reality;
+- consequential historical Evaluation remains reconstructible against the material target state, Criterion state, Evidence/source basis and evaluation context that actually applied;
+- later Evidence correction, Reconciliation or Criterion change may produce a later Evaluation without rewriting the original source assertion, historical Evidence use or previous evaluation basis;
+- private Evidence may yield an authorized bounded shareable result without exposing source data or reconciliation rationale;
+- AI may discover candidate Evidence or calculate under an authorized Criterion but cannot fabricate source facts, Authority, Criterion adoption or certainty.
+
+The cluster's original **PASS** remains unchanged. `REOPEN = 0`; no Actual, Outcome, Observation, Confirmation, Evidence or Provenance concept is removed or merged.
+
+Weighting/admissibility policy, specialist evaluation models, Trigger/policy machinery, retention/materialization and physical/API representation remain separately owned downstream concerns.
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`.
