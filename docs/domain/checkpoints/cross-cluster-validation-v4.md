@@ -571,3 +571,58 @@ Normative downstream references:
 - `../concepts/criterion-evaluation.md`;
 - `criterion-evaluation-v0-validation.md`;
 - `deferred-dependency-closure-clusters-1-4-v0.md`.
+
+---
+
+# 20. Downstream integration amendment — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 adds the reusable candidate/ask semantics needed across the existing clusters without changing the historical Clusters 1–4 verdict.
+
+Current cross-cluster separation now includes:
+
+```text
+Proposal
+= materially specific candidate put forward for consideration
+
+Request
+= directed bounded ask for action / information / response / change
+
+Proposal != Request
+Proposal / Request != Message / Notification
+created != delivered != viewed != Acknowledgement
+Acknowledgement != positive response
+Proposal != Agreement / Decision / effective state
+Request != Responsibility / Participation / Authority / Consent / effective state
+requested action != Actual execution
+```
+
+Cross-cluster regressions remain coherent:
+
+- Intention & Execution may originate, receive or act on Proposals/Requests without relabeling them Goal, Plan, Decision or Actual;
+- Time may carry proposed/requested Schedule changes while current accepted Schedule remains separately owned;
+- Observed Reality & Evidence may preserve Proposal/Request provenance and history without treating the Proposal/Request as proof that the requested action occurred;
+- Data / Subjects preserves proposer, requester, recipient, Subject, responsible Actor, actual performer and represented party as independently meaningful roles; Account is not required;
+- materially consequential Proposal/Request semantics bind to the applicable Version/material state and prior responses do not silently carry across material change;
+- Authority, Visibility, Acknowledgement, Decision, Agreement/Consent, Representation and Reconciliation remain independent semantics;
+- silence does not become generic acceptance/rejection;
+- a real counter-proposal is a distinct Proposal rather than silent mutation;
+- AI/system proposals and requests retain actual attribution and do not become human intention, Decision, Agreement or Consent automatically;
+- no universal ProposalRequest, Interaction, Message, Generic Acceptance or Generic Response root is introduced.
+
+Downstream status:
+
+```text
+Cross-Cluster v4 historical verdict        PASS WITH HARDENING — unchanged
+Proposal / Request semantic closure        INTEGRATED downstream
+structural reopenings                      0
+unclassified material dependencies         0
+```
+
+This amendment does not close Relationships / Reasoning as a cluster and does not preselect the next candidate. Candidate space must be freshly re-scored after the current milestone is fully closed under Methodology v3.
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md` and canonical continuation parts;
+- `deferred-dependency-closure-clusters-1-4-v0.md` and canonical continuation parts.
