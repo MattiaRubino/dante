@@ -668,3 +668,22 @@ Normative references:
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
 
 Milestone v0 remains accepted with `REOPEN = 0`.
+
+---
+
+## 2026-08-15 downstream closure — Criterion / Evaluation v0
+
+Criterion / Evaluation v0 resolves the previously deferred semantic boundary around Milestone attainment and GoalCriterion without changing Milestone identity.
+
+Current rules:
+
+- `Milestone != Criterion`; a meaningful checkpoint is not the rule used to assess a target.
+- `Milestone != Evidence`; the checkpoint is not the factual basis used to establish attainment.
+- a Criterion may reference a Milestone or use Milestone attainment as part of a broader evaluation without collapsing the concepts;
+- Milestone attainment remains evaluation/evidence-backed rather than a second independent source of reality;
+- absence of Evidence does not itself establish that a Milestone was not reached; an Evaluation may remain unknown/insufficient;
+- where consequence/history matters, attainment must be reconstructible against the applicable Milestone material state, Criterion state, Evidence basis and evaluation context;
+- later Criterion revisions do not retroactively rewrite historical Milestone assessment under the earlier rule;
+- readiness/progress remains derived and must not become a universal canonical percentage.
+
+`GoalCriterion` is now understood as Goal-scoped Criterion semantics rather than a separate universal primitive/root. The earlier open questions for GoalCriterion persistence and the Evidence/evaluation relationship are therefore semantically closed to the extent resolved by the Criterion / Evaluation v0 concept and checkpoint; physical persistence and Trigger behavior remain deferred.
