@@ -276,7 +276,7 @@ Decision != Agreement
 Decision != Consent
 ```
 
-A manager may decide something without employee Agreement. Two parties may agree before an authorized third-party Decision/effect. Consent withdrawal may affect future action without erasing historical Decisions.
+A manager may decide something without employee Agreement. Two parties may agree before any authorized third-party Decision/effect. Consent withdrawal may affect future action without erasing historical Decisions.
 
 Decision must not absorb those semantics.
 
@@ -760,3 +760,56 @@ Normative downstream references:
 
 - `reconciliation.md`;
 - `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 26. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves Decision's historical reusable proposal/request dependency without changing Decision identity.
+
+Canonical separation:
+
+```text
+Proposal
+= candidate action/state/terms/option/change put forward for consideration
+
+Request
+= bounded ask directed to Actor(s)/system for action, information, response, Decision or change
+
+Decision
+= bounded resolution of a decision question to a specific result
+```
+
+Therefore:
+
+```text
+Proposal != Decision
+Request != Decision
+Request for a Decision != Decision
+Acknowledgement of Proposal/Request != Decision
+family-specific response != Decision automatically
+```
+
+A Decision may accept, reject, select among, modify, or retain current state in response to a Proposal/Request. A counter-Proposal that materially offers a different candidate is a distinct Proposal; it is not silently the Decision on the prior Proposal unless an applicable decision process actually resolves that question.
+
+Proposal/Request creation does not make the proposed/requested state effective. Where a Decision results in an effect, the affected domain concept still owns the effective state and applicable Authority/policy remains separate.
+
+Material changes remain version-sensitive: a Decision about Proposal P1 does not silently decide materially changed P2. Withdrawal or expiry of a Proposal/Request changes future applicability without erasing historical Decision/basis records.
+
+Downstream classification:
+
+```text
+Decision ↔ Proposal / Request     RESOLVED
+Proposal / Request = Decision     REJECTED
+generic Response / Acceptance     REJECTED as universal roots
+```
+
+Collective/quorum/voting semantics, Trigger/policy mechanics, exact persistence/API and specialist approval/signature/legal validity remain separately owned dependencies.
+
+No Decision hardening failed. **Decision remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
