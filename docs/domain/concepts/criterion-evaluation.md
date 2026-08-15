@@ -791,3 +791,49 @@ unclassified material items     0
 ```
 
 No next Relationships / Reasoning candidate is selected by this document. After post-write QA, candidate selection must return to a fresh re-score of the remaining candidate space.
+
+---
+
+# 29. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves Criterion/Evaluation's historical `Proposal/Request identity for proposed Criterion changes` SAFE DEFERRED dependency without changing Criterion or Evaluation semantics.
+
+Canonical separation:
+
+```text
+Proposal of Criterion C2
+!= adopted/applicable Criterion C2
+
+Request to change a Criterion
+!= Criterion change
+
+Request to evaluate/re-evaluate
+!= Evaluation result
+!= Decision
+!= effective target state
+```
+
+A Proposal may put a materially specific candidate Criterion into consideration. A Request may ask an Actor/system to create, review, change, or apply a Criterion/Evaluation. Neither act creates the applicable rule, fabricates human intention, creates Evidence, or makes any assessment/effect authoritative by itself.
+
+A materially changed counter-Proposal is a distinct Proposal and does not silently inherit prior Acknowledgement, Agreement, Decision or adoption. Where a Criterion is actually adopted, the applicable owning governance/Decision/policy and Version semantics determine when it becomes material/current and historical Evaluation remains bound to the rule state that actually applied.
+
+AI may propose Criterion changes or request review while remaining the actual proposer/requester Actor. An AI Proposal is not retroactive evidence of user intention and cannot silently become the user's adopted Criterion.
+
+Downstream classification:
+
+```text
+Criterion/Evaluation ↔ Proposal / Request     RESOLVED
+Proposal of Criterion = Criterion adoption    REJECTED
+Request for Evaluation = Evaluation result    REJECTED
+Proposal/Request = Decision/effective state   REJECTED
+```
+
+Trigger/policy, comparator/range/threshold representation, composite Criterion representation, Verification/comprehension, specialist adjudication, retention/materialization and logical/physical/API representation remain separately SAFE DEFERRED.
+
+No Criterion/Evaluation hardening failed. **Criterion / Evaluation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
