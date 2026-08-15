@@ -518,3 +518,58 @@ Reopen only when stronger evidence shows that a current non-collapse rule is wro
 
 Provider/framework vocabulary alone is never sufficient.
 
+---
+
+# 2026-08-15 — Criterion / Evaluation downstream multi-actor hardening
+
+Criterion / Evaluation v0 closes the multi-actor evaluation boundary while preserving the existing readiness baseline and its non-collapse rules.
+
+Current canonical separation:
+
+```text
+shared Goal / bounded target
+!= applicable Criterion state
+!= actor-visible Evidence set
+!= actor-specific assessment where context legitimately differs
+!= Agreement on the Criterion
+
+Criterion
+= contextual evaluative specification/capability
+
+GoalCriterion
+= Goal-scoped Criterion semantics
+
+Evaluation
+= contextual application of the applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+```
+
+Mandatory multi-actor hardenings:
+
+- one shared Goal does not imply that every Actor sees the same Evidence;
+- one shared Goal does not imply that every Actor independently reaches the same assessment where their authorized Evidence/context differs;
+- one Actor's Criterion proposal/adoption does not manufacture Agreement by other parties;
+- group/household/team membership does not imply agreement to, authority over, or visibility into every Criterion/Evaluation;
+- Criterion adoption/effect must follow the applicable Authority/Agreement/Decision/policy semantics rather than AI suggestion or mere access;
+- private Evidence may contribute to an authorized bounded Evaluation or shareable result without exposing the raw Evidence or private reason;
+- an external specialist system may remain authoritative for one bounded evaluative facet without becoming universally authoritative over the Goal or every source;
+- conflicting Evidence may remain unresolved or yield unknown/insufficient/indeterminate Evaluation; recency, update count and AI confidence do not create precedence;
+- consequential historical Evaluation preserves the material target state, Criterion state, Evidence/source basis and evaluation context that actually applied;
+- later Criterion revision or source correction changes later evaluation capability without rewriting actor-specific historical assessments or prior attribution;
+- Representation/on-behalf-of preserves the actual Actor, represented party and applicable basis when a Criterion is proposed/adopted or an Evaluation is performed for another party;
+- revocation changes future Authority/access/use without erasing truthful historical evaluation attribution;
+- AI may propose a Criterion, surface relevant Evidence or calculate under an authorized Criterion, but cannot fabricate human Agreement, Decision, Authority, Evidence, personal stance or certainty;
+- simple personal use should normally hide multi-actor/evaluation machinery unless consequence, privacy, uncertainty or user choice requires it.
+
+Current guardrail shorthand:
+
+```text
+shared Goal
+!= same Evidence visibility for everyone
+!= same personal assessment
+!= automatic Agreement on Criterion
+```
+
+No `SharedCriterion`, `ActorEvaluation`, `GroupEvaluation` or other collaboration-specific universal primitive is introduced. Physical security, specialist adjudication, retention/materialization, collective/quorum and logical/API representation remain separately owned downstream concerns.
+
+No prior Multi-Actor Readiness invariant is reopened.
