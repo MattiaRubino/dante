@@ -500,3 +500,39 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 18. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the reusable invitation/proposal/request semantics without changing Participation identity or response ownership.
+
+```text
+Invitation / Participation Request
+!= delivery / view
+!= Acknowledgement
+!= Participation response
+!= Agreement / Consent / Decision
+!= Actual Participation
+```
+
+Invitation remains contextual Proposal/Request semantics, not a standalone universal primitive. `Going`, `Maybe`, `Declined` remain Participation-specific responses; silence remains neither acceptance nor rejection.
+
+A materially changed time/place/role/requirement may require a new Proposal/Request. Earlier Acknowledgement or response remains historical and does not silently apply to a materially changed candidate state.
+
+Downstream classification:
+
+```text
+Participation ↔ Proposal / Request      RESOLVED
+Invitation universal primitive          REJECTED
+generic Acceptance / Response root      REJECTED
+Proposal / Request = Actual involvement REJECTED
+```
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
