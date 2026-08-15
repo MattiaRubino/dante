@@ -610,3 +610,39 @@ Normative downstream references:
 
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 19. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves Authority's reusable request/proposal boundary without reopening Authority.
+
+```text
+Proposal / Request
+!= Authority
+!= technical authorization
+!= Decision
+!= effective target state
+```
+
+A proposer/requester may or may not hold the Authority required for the requested/proposed effect. Authority continues to derive from its bounded applicable basis/scope, not from creator status, imperative language, request routing or technical ability to submit an operation.
+
+Where an Authority holder issues a Proposal/Request, that fact may be relevant Provenance/context but does not collapse the Proposal/Request into Authority. AI/service Proposal or Request similarly preserves actual Actor attribution and cannot manufacture human Authority/intention.
+
+Material target/scope changes remain version-sensitive; stale requests or prior responses do not silently preserve governing applicability after material change.
+
+Downstream classification:
+
+```text
+Authority ↔ Proposal / Request    RESOLVED
+requester/proposer = Authority    REJECTED
+Request = governed effect         REJECTED
+```
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
