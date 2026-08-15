@@ -1053,3 +1053,54 @@ unclassified                            0
 ```
 
 The active branch may remain diverged from `main` while Relationships / Reasoning is completed. Upstream synchronization is a separate future scope and is not required to begin the next fresh candidate re-score. No next candidate is preselected.
+
+---
+
+# 17. Downstream closure — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 closes the checkpoint's former SAFE DEFERRED `GoalCriterion / evaluation` dependency without changing the accepted Reconciliation semantics or historical verdict.
+
+Canonical separation:
+
+```text
+Criterion
+= contextual evaluative specification/capability
+
+Evaluation
+= contextual application of the applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+
+Reconciliation
+= contextual handling of materially competing states/assertions under an applicable bounded basis
+```
+
+Consequences:
+
+- `Evaluation != Reconciliation`; applying a Criterion is not the same operation as resolving conflict among competing source states/assertions.
+- `Criterion != Source Precedence`; a Criterion may depend on bounded admissibility/source policy without creating a universal source hierarchy.
+- conflicting Evidence does not imply an automatic pass/fail, average, newest-source winner or confidence-weighted winner;
+- when the relevant Evidence remains materially unresolved and no sufficient bounded resolution basis exists, an Evaluation may remain `unknown`, `insufficient` or otherwise indeterminate according to the applicable Criterion semantics;
+- a specialist source-of-record may legitimately govern one bounded evaluative facet without gaining universal precedence;
+- consequential historical Evaluation remains reconstructible against the material target state, Criterion state, Evidence/source basis and evaluation context that actually applied;
+- later reconciliation, source correction or Criterion revision may produce a later Evaluation without rewriting the earlier evaluation/resolution history;
+- a shareable Evaluation result does not automatically expose private Evidence, competing source states or reconciliation rationale;
+- AI may identify conflict, propose a reconciliation or calculate under an authorized Criterion, but confidence/recency cannot create Source Precedence, Authority or certainty.
+
+Downstream classification:
+
+```text
+Reconciliation ↔ Criterion/Evaluation   RESOLVED
+GoalCriterion/evaluation dependency     RESOLVED at semantic boundary
+conflicting Evidence handling           RESOLVED
+universal evaluation winner rule        REJECTED
+universal source rank                   REJECTED
+```
+
+Per-domain/source-precedence policy, specialist mappings, Trigger/policy machinery, retention/materialization and physical/API representation remain separately owned downstream concerns.
+
+No Reconciliation hardening failed. **Reconciliation remains PASS WITH HARDENING, REOPEN = 0, unclassified = 0.**
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`.
