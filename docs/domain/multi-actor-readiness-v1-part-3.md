@@ -573,3 +573,61 @@ shared Goal
 No `SharedCriterion`, `ActorEvaluation`, `GroupEvaluation` or other collaboration-specific universal primitive is introduced. Physical security, specialist adjudication, retention/materialization, collective/quorum and logical/API representation remain separately owned downstream concerns.
 
 No prior Multi-Actor Readiness invariant is reopened.
+
+---
+
+# 2026-08-15 — Proposal / Request downstream multi-actor hardening
+
+Proposal / Request v0 closes the reusable multi-actor candidate/ask boundary while preserving the existing readiness baseline and its non-collapse rules.
+
+Current canonical separation:
+
+```text
+Proposal
+= Actor puts forward a materially specific candidate for consideration
+
+Request
+= Actor directs a bounded ask to one or more Actors/systems
+
+Proposal != Request
+created != delivered != viewed != Acknowledgement
+Acknowledgement != positive response
+Proposal != Agreement / Decision / effective state
+Request != Responsibility / Participation / Authority / Consent / effective state
+requested action != Actual execution
+```
+
+Mandatory multi-actor hardenings:
+
+- proposer, requester, recipient, responsible Actor, participant, actual performer, Subject and Authority holder remain independently representable roles;
+- one Actor may propose while another requests, decides, acts or bears Responsibility;
+- a Request does not manufacture Responsibility merely because a recipient was asked to act;
+- a participation invitation/request does not manufacture Participation or actual attendance;
+- a request for permission/Consent is not Consent;
+- a Proposal sent to several Actors does not manufacture Agreement among them;
+- delivery/view state is not Acknowledgement and Acknowledgement is not acceptance;
+- silence does not establish acceptance, rejection, Agreement, Consent or Decision;
+- actor-scoped responses remain bound to the material Proposal/Request state they actually concerned; material changes do not silently carry old responses forward;
+- a genuine counter-proposal is a distinct Proposal with truthful Actor attribution rather than silent mutation of the earlier Proposal;
+- withdrawal/expiry changes future applicability without erasing who proposed/requested what or prior responses/history;
+- represented/on-behalf-of Proposal/Request flows preserve actual Actor, represented party and applicable basis; representation does not fabricate the represented party's personal assent, Decision or authorship;
+- relevant Persons/Actors may participate without LifeOS Accounts;
+- Visibility of Proposal/Request content, response state, rationale and history remains independently governed;
+- AI/system Proposals and Requests retain actual AI/system attribution where material and do not become human intention, Agreement, Consent or Decision merely because the AI acted for the user under bounded policy;
+- group/household/team membership does not imply that every member may propose/request for every target or that every recipient has Authority to make the requested change;
+- ordinary personal UX may collapse low-consequence communication mechanics, but the kernel preserves the semantic boundaries where consequence requires it.
+
+Current guardrail shorthand:
+
+```text
+someone asked
+!= someone became responsible
+!= someone agreed
+!= someone consented
+!= someone decided
+!= requested effect happened
+```
+
+No universal `ProposalRequest`, `Interaction`, `Message`, `Generic Acceptance`, `Generic Response`, `GroupProposal` or `ActorRequest` root is introduced. Messaging transport, specialist legal/order/directive semantics, collective/quorum rules, Verification/comprehension and final persistence/API representation remain independently reviewable.
+
+No prior Multi-Actor Readiness invariant is reopened.
