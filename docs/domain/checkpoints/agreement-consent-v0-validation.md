@@ -847,3 +847,53 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 22. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the checkpoint's historical `Proposal / request reusable identity` SAFE DEFERRED dependency without reopening Agreement or Consent.
+
+Canonical separation:
+
+```text
+Proposal of terms / permission scope
+!= Acknowledgement
+!= one Actor's response
+!= Agreement
+!= Consent
+
+Request to agree / consent / respond
+!= Agreement
+!= Consent
+```
+
+Agreement still requires the applicable party set to assent to the same materially relevant terms. Consent still requires an eligible consent-giver's explicit bounded permission for the relevant action/use/exposure, scope, purpose and context.
+
+A materially different counter-Proposal is a distinct Proposal. Earlier assent, Consent, Acknowledgement or response does not silently carry to the changed candidate. Withdrawal/expiry of a Proposal/Request changes that Proposal/Request's future applicability without rewriting already-established Agreement/Consent history or automatically undoing their separate lifecycle/effect.
+
+Downstream classification:
+
+```text
+Agreement/Consent ↔ Proposal / Request      RESOLVED
+Proposal / Request = Agreement / Consent    REJECTED
+generic Acceptance / Assent / Permission    REJECTED as universal roots
+```
+
+Still SAFE DEFERRED:
+
+- exact Principal/AuthN/AuthZ/security mechanics;
+- legal/specialist capacity and represented Agreement/Consent validity;
+- purpose/use technical enforcement;
+- collective/group/quorum semantics;
+- formal Contract/signature lifecycle;
+- retention/deletion;
+- exact persistence/API representation.
+
+No Agreement/Consent hardening failed. **Agreement / Consent remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
