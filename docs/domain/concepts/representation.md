@@ -640,3 +640,55 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 27. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 applies the accepted Representation boundary to proposal/request acts without changing Representation semantics.
+
+Where one Actor proposes or requests something for a distinct represented party:
+
+```text
+actual proposer/requester Actor
+!= represented party by default
+```
+
+Representation records the bounded on-behalf-of relation; it does not rewrite the represented party as the actual proposer/requester and does not fabricate that party's personal intention, Agreement, Consent, Acknowledgement or Decision.
+
+Canonical separation:
+
+```text
+Proposal / Request
+= actual bounded semantic act
+
+Representation
+= for-whom relation for that act when a distinct represented party exists
+
+Authority / delegation / policy / Consent / specialist basis
+= whether represented effect is legitimate where applicable
+```
+
+A represented Request may legitimately trigger or request action for another party under applicable Authority/policy while preserving who actually issued it. A claimed Representation without valid basis remains attributable but does not make the requested effect legitimate.
+
+AI/service Proposal or Request follows the same rule: if the AI/service actually issues it, it remains the Actor and cannot be recorded as the human merely because it acts for the human.
+
+Materially changed proposal/request scope remains version-sensitive; prior representation/basis applicability is not silently enlarged.
+
+Downstream classification:
+
+```text
+Representation ↔ Proposal / Request     RESOLVED
+represented party = proposer/requester  REJECTED by default
+Proposal/Request = Authority            REJECTED
+```
+
+Exact Principal/AuthN/AuthZ enforcement, action-specific delegability, legal/specialist capacity/validity, multi-hop delegation, collective representation and physical persistence remain separately owned dependencies.
+
+No Representation hardening failed. **Representation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
