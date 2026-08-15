@@ -1015,3 +1015,42 @@ Normative downstream references:
 
 - `criterion-evaluation.md`;
 - `../checkpoints/criterion-evaluation-v0-validation.md`.
+
+---
+
+# 32. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 makes reusable the candidate/ask identity that Version already had to bind materially.
+
+Canonical separation:
+
+```text
+Proposal / Request identity
+!= target material state
+!= Version
+!= Decision / Authority / effective state
+```
+
+A Proposal is bound to the materially specific candidate it puts forward. A materially different counter-Proposal is a distinct Proposal rather than a silent mutation that inherits prior responses. A Request likewise remains attributable to the materially relevant ask/target/scope state it concerned; a material change cannot silently carry prior Acknowledgement, response, Agreement, Consent or Decision forward.
+
+Version preserves/reconstructs the material state a Proposal/Request concerned; it does not create the Proposal/Request, decide its response, or make its requested/proposed effect effective. Technical row/provider revisions remain separate from semantic materiality.
+
+Withdrawal/expiry of a Proposal/Request changes future applicability of that semantic act without erasing its historical material-state binding or automatically undoing effects already established by other owning concepts.
+
+Downstream classification:
+
+```text
+Version ↔ Proposal / Request            RESOLVED
+Version = Proposal / Request            REJECTED
+technical revision = Proposal version   REJECTED by default
+```
+
+Per-family material-equivalence rules, exact effective dating, provider mapping, retention/deletion, identity-replacement thresholds and physical/API representation remain independently SAFE DEFERRED.
+
+No Version hardening failed. **Version remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
