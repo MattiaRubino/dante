@@ -1150,3 +1150,44 @@ Normative downstream references:
 
 - `../concepts/reconciliation.md`;
 - `reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 15. Downstream closure — Criterion / Evaluation v0 (2026-08-15)
+
+Criterion / Evaluation v0 closes the checkpoint's former SAFE DEFERRED `versioned evaluation / rule snapshots` item at the semantic boundary.
+
+A consequential Evaluation must be able to bind or reconstruct:
+
+```text
+material target state
++ applicable Criterion state
++ relevant Evidence/source state or reconstructible basis
++ evaluation context / applicable time
+→ Evaluation result
+```
+
+This closes the ambiguity that previously remained under `GoalCriterion / Trigger / evaluation`: the rule state used for a historical Evaluation is part of its material reasoning basis when consequence requires reconstruction. A later Criterion revision, target change, source correction or reconciliation may yield a new Evaluation, but does not rewrite the historical one as if the newer rule/source state had always applied.
+
+Version remains state-reference/material-equivalence discipline only. It does not decide Criterion applicability, Evidence sufficiency/admissibility, evaluation result, progress, certainty or Authority. Likewise Criterion/Evaluation does not turn every technical revision into a semantic Version.
+
+No universal Evaluation entity, universal rule-Version root or mandatory snapshot-per-evaluation is introduced. Direct state references, qualified references, reconstructible source/rule bases and consequence-sensitive materialization remain valid future implementation choices.
+
+Downstream classification:
+
+```text
+versioned evaluation/rule snapshots   RESOLVED at semantic boundary
+Version ↔ Criterion state              RESOLVED
+Version ↔ Evaluation history           RESOLVED
+universal rule-Version primitive       REJECTED
+universal Evaluation snapshot          REJECTED
+```
+
+The remaining SAFE DEFERRED Version items are per-family material-equivalence rules, branch/merge implementation, exact effective dating, provider mapping, retention/redaction and owning-concept identity-replacement thresholds.
+
+No Version hardening failed. **Version remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/criterion-evaluation.md`;
+- `criterion-evaluation-v0-validation.md`.
