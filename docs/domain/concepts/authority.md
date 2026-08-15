@@ -772,3 +772,51 @@ Normative downstream references:
 
 - `reconciliation.md`;
 - `../checkpoints/reconciliation-source-precedence-v0-validation.md`.
+
+---
+
+# 2026-08-15 — Proposal / Request downstream closure amendment
+
+Proposal / Request v0 closes Authority's reusable request/proposal boundary without changing Authority semantics.
+
+```text
+Proposal / Request
+= meaningful Actor intent/action directed at consideration or a bounded ask
+
+Authority
+= legitimate bounded governance capability
+```
+
+Therefore:
+
+```text
+proposer/requester != Authority holder by default
+Proposal != Authority
+Request != Authority
+request wording / politeness != Authority
+technical ability to send a Request != domain Authority
+```
+
+An Actor with no governing Authority may still make a valid Proposal or Request. Conversely, an Authority holder may issue a Request/Proposal, but the Authority derives from the applicable basis/scope — not from the fact that a request exists or uses imperative language.
+
+A Proposal/Request may be one input to a Decision, Agreement, Consent or affected-domain effect. It does not itself make the requested/proposed effect effective. AI/system Proposal or Request likewise preserves its actual Actor attribution and cannot be laundered into human Authority or intention.
+
+Material changes to the requested/proposed target/scope remain version-sensitive, and old responses/bases do not silently carry forward.
+
+Downstream classification:
+
+```text
+Authority ↔ Proposal / Request     RESOLVED
+Proposal / Request = Authority     REJECTED
+requester/proposer = Authority     REJECTED
+```
+
+Exact Principal/AuthN/AuthZ enforcement, Policy/Role/conditions, specialist validity, qualified Authority persistence and Trigger/policy mechanics remain separately owned dependencies.
+
+No Authority hardening failed. **Authority remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
