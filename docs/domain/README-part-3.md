@@ -550,3 +550,101 @@ Do not preselect the next candidate before the fresh re-score.
 The preservation-first reconstruction was completed from pre-write HEAD `0e2f4b621e640421e2d5c9c0dc80fb20ff79b4a0` and QA-closed on the active `feature/domain-model` branch. The accidental technical probe was already removed and QA-closed before that reconstruction. The historical-preservation audit remains intact. Reconciliation semantic propagation and final post-write QA are complete. The current operating decision is to finish Relationships / Reasoning and the required cluster validations before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.
+
+---
+
+# 2026-08-15 — Criterion / Evaluation v0 current-state amendment
+
+Criterion / Evaluation v0 is now part of the accepted Relationships / Reasoning semantic baseline.
+
+Normative concept and validation checkpoint:
+
+- [`concepts/criterion-evaluation.md`](concepts/criterion-evaluation.md)
+- [`checkpoints/criterion-evaluation-v0-validation.md`](checkpoints/criterion-evaluation-v0-validation.md)
+
+Current semantic verdict:
+
+```text
+CRITERION / EVALUATION v0
+PASS WITH HARDENING
+
+Criterion
+✅ canonical contextual evaluative specification/capability
+
+GoalCriterion
+✅ Criterion applied/scoped to a Goal
+❌ separate universal primitive/root
+
+Evaluation
+✅ contextual reasoning/process-result semantics
+✅ may be reconstructed/materialized where consequence requires
+❌ universal entity/root/workflow
+
+Goal Progress
+✅ derived/evaluative projection
+❌ universal stored percentage/status
+
+REOPEN       0
+unclassified 0
+```
+
+The current Cluster-5 decomposition is extended with:
+
+```text
+Under which applicable rule should this bounded target be evaluated,
+using which relevant Evidence and material states,
+and what assessment follows for this evaluation context?
+→ Criterion / Evaluation
+```
+
+Canonical cross-cutting additions:
+
+```text
+Goal != Criterion
+Milestone != Criterion
+Criterion != Evidence
+Evaluation != Evidence / Actual / Outcome / Decision / Confirmation / Reconciliation
+missing Evidence != failed Criterion
+multiple Criteria != universal AND / average / score
+later Criterion state != retroactive rewrite of historical Evaluation
+Goal Progress = derived projection, not universal stored percentage
+```
+
+The older `GoalCriterion / evaluation` entry under explicit deferred owners is superseded at the semantic level by this amendment. Remaining explicit deferred space includes:
+
+```text
+Proposal / Request reusable identity
+Trigger / conditional policy
+Verification / comprehension
+Collective / Group / quorum / voting
+coordination Stewardship
+Resource Requirement / Allocation / Reservation
+reusable comparator / Range / Threshold value representation
+criterion-combination / composite-expression representation
+specialist evaluation / adjudication models
+Evaluation retention / materialization strategy
+per-family material-equivalence rules
+exact effective dating
+native identity merge/split/deduplication
+per-domain/specialist source-precedence policies
+Principal/AuthN/AuthZ/enforcement
+retention/audit/privacy
+logical/physical/API/sync representation
+```
+
+Current sequence after Criterion / Evaluation propagation QA:
+
+```text
+1. preservation-first current-document reconstruction — COMPLETE
+2. probe absence + preservation audit — VERIFIED
+3. Reconciliation propagation + post-write QA — PASS
+4. Criterion / Evaluation v0 semantic validation — PASS WITH HARDENING
+5. Criterion / Evaluation current-state propagation — completed by the approved corrective scope; QA required before milestone closure
+6. fresh-score remaining Relationships / Reasoning candidate space
+7. validate one selected candidate with full Methodology v3
+8. continue until candidate space is complete
+9. Cluster-5 integration / dedicated multi-actor stress / deferred-dependency closure
+10. upstream `main` synchronization remains separately gated and is not a prerequisite
+```
+
+No next candidate is preselected by this amendment. `docs/domain/concepts/relationship.md` remains absent by design.
