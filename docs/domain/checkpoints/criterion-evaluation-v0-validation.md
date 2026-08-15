@@ -1,6 +1,6 @@
 # Criterion / Evaluation v0 Validation — Methodology v3
 
-**Status:** PASS WITH HARDENING — hardenings incorporated; pending post-write propagation QA  
+**Status:** PASS WITH HARDENING — hardenings incorporated; post-write propagation QA PASS  
 **Validated:** 2026-08-15  
 **Concept / family:** Criterion / Evaluation v0  
 **Cluster:** Relationships / Reasoning v0  
@@ -651,3 +651,64 @@ Semantic/document checks:
 - `main`, prototype, SQL/API/backend/auth untouched.
 
 Only after those checks pass may this checkpoint be marked `post-write QA PASS` and the approval considered consumed.
+
+---
+
+# 15. Final post-write QA closure — 2026-08-15
+
+Criterion / Evaluation v0 is QA-closed on `feature/domain-model`.
+
+The original approved semantic scope began at:
+
+```text
+1cf754e32286814d6ac873bf78bcb1c4c876416d
+```
+
+The two new canonical files were created first, leaving the branch at:
+
+```text
+bf5c9bd497af699f61ac6c80177117b6a6bbf175
+```
+
+The approved 16-path propagation was then completed and remotely verified at:
+
+```text
+47fce09ee7bc546485c1c91b13ee52aea629fade
+```
+
+Final semantic-scope QA:
+
+```text
+approved unique paths          18 / 18
+CREATE                           2 / 2
+UPDATE                          16 / 16
+DELETE                           0
+out-of-scope paths               0
+historical preservation          PASS
+REOPEN                           0
+unclassified material items      0
+```
+
+The apparent single-line deletions reported by Git on ten append-only files were verified as EOF newline normalization: the former final content line was reinserted unchanged before the downstream amendment. No historical reasoning, verdict, scenario, hardening, SAFE DEFERRED item or QA evidence was removed.
+
+Repository guards were also verified:
+
+```text
+main = 2739e96955974d1273e704905ace03f9ac478e05
+main changed by this scope = no
+docs/domain/concepts/relationship.md = absent by design
+backend / SQL / API / auth / prototype = untouched
+next candidate = not preselected
+```
+
+The status marker in this checkpoint is therefore promoted from `pending post-write propagation QA` to `post-write propagation QA PASS` without changing the accepted Criterion / Evaluation semantics.
+
+This marker-closure write is separately scoped from propagation itself:
+
+```text
+marker-closure pre-scope = 47fce09ee7bc546485c1c91b13ee52aea629fade
+marker-closure paths     = 1 UPDATE
+marker-closure path      = docs/domain/checkpoints/criterion-evaluation-v0-validation.md
+```
+
+No next Relationships / Reasoning candidate is selected here. The next semantic action is a fresh re-score of the remaining candidate space under Methodology v3.
