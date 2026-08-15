@@ -628,3 +628,108 @@ Do not keep critical project state only in chat.
 The preservation-first reconstruction is complete and QA-closed on `feature/domain-model`. The accidental technical probe was already removed and QA-closed before reconstruction, and the historical-preservation audit remains intact. Reconciliation semantic propagation and final post-write QA are complete. The current operating decision is to finish Relationships / Reasoning plus the required Cluster-5 integration/stress/dependency closure before any separately gated synchronization with `main`.
 
 `Relationship v0` remains a checkpoint-backed typed/specific relationship modeling discipline. `docs/domain/concepts/relationship.md` does not exist by design and must not be recreated merely to satisfy navigation symmetry.
+
+---
+
+# 2026-08-15 — Criterion / Evaluation v0 current-state handoff amendment
+
+Criterion / Evaluation v0 is now the latest accepted semantic family in Relationships / Reasoning, subject to completion of the current corrective propagation QA.
+
+Normative references:
+
+- `docs/domain/concepts/criterion-evaluation.md`
+- `docs/domain/checkpoints/criterion-evaluation-v0-validation.md`
+
+Current classification:
+
+```text
+Criterion
+= CANONICAL contextual evaluative specification/capability
+
+GoalCriterion
+= Criterion applied/scoped to Goal
+!= separate universal primitive/root
+
+Evaluation
+= contextual reasoning/process-result semantics
+= application of applicable Criterion state to relevant Evidence
+  under material target/rule/context/time
+!= universal entity/root/workflow
+
+Goal Progress
+= derived/evaluative projection
+!= universal stored percentage/status
+```
+
+V3 semantic result:
+
+```text
+EV-01 PASS
+EV-02 PASS
+EV-03 PASS WITH HARDENING
+EV-04 PASS
+CORE   PASS WITH HARDENING
+MA     PASS WITH HARDENING
+XCON   PASS WITH HARDENING
+ADS    complete
+REOPEN 0
+unclassified 0
+```
+
+Key integrated rules:
+
+```text
+Goal != Criterion
+Milestone != Criterion
+Criterion != Evidence
+Evaluation != Evidence / Actual / Outcome / Decision / Confirmation / Reconciliation
+missing Evidence != failed Criterion
+unknown/insufficient Evidence is valid
+multiple Criteria != universal AND / average / score
+Criterion v1 -> v2 != retroactive rewrite of historical Evaluation
+shared Goal != same Evidence visibility != same personal assessment != automatic Agreement on Criterion
+private Evidence may yield authorized bounded shareable result without raw-source visibility
+AI may propose/calculate but cannot invent Evidence / Criterion adoption / Agreement / Decision / Authority / certainty
+```
+
+The historical Reconciliation SAFE DEFERRED `GoalCriterion / evaluation` item and matching Clusters 1–4 semantic debt are closed by the Criterion / Evaluation concept/checkpoint and their downstream amendments. Remaining candidate/dependency space includes, without preselection:
+
+```text
+Proposal / Request reusable identity
+Trigger / conditional policy
+Verification / comprehension
+Dependency
+Coordination Stewardship
+Contribution
+Resource Requirement / Allocation / Reservation / substitution
+Collective / Group / quorum semantics
+focus/context relations
+reusable comparator / Range / Threshold representation
+criterion-combination / composite-expression representation
+specialist evaluation / adjudication models
+Evaluation retention / materialization
+per-family material-equivalence rules
+exact effective dating
+native-identity merge/split/deduplication
+per-domain/source-precedence policy
+Principal/AuthN/AuthZ enforcement
+retention/audit/privacy
+logical/physical/API/sync representation
+```
+
+Current exact next sequence after a clean corrective propagation QA:
+
+```text
+1. fresh re-score the remaining Relationships / Reasoning candidate space
+2. select exactly one next candidate/family by current evidence + dependency leverage
+3. execute full Methodology v3
+4. STOP BEFORE GIT WRITE and present exact gate
+5. repeat until candidate space is complete
+6. Cluster-5 integration
+7. dedicated Cluster-5 multi-actor stress
+8. Cluster-5 deferred-dependency closure
+9. whole-domain gates
+10. logical model only after semantic closure
+```
+
+**No next candidate is preselected.** Upstream `main` synchronization remains a separately gated future scope and does not block continued Cluster-5 semantic work. Backend, SQL/API/auth and prototype remain outside the current semantic branch scope.
