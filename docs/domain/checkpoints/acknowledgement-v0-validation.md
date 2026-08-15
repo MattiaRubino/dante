@@ -835,3 +835,38 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 23. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the reusable `proposal/request` side of the common-ground chain without changing the Acknowledgement verdict.
+
+```text
+Proposal / Request
+!= delivery / read
+!= Acknowledgement
+!= family-specific response
+!= Agreement / Consent / Decision
+!= effective state
+!= Actual
+```
+
+Acknowledgement binds to the materially relevant Proposal/Request state. A material change does not silently inherit the old Ack, and one Actor's Ack does not become another Actor's response or group state.
+
+Generic cross-domain Acceptance and generic Response remain rejected as universal primitives. The owning family still determines the meaning of any positive/negative response.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Proposal / Request    RESOLVED
+Proposal / Request ↔ Acknowledgement    DISTINCT
+```
+
+No Acknowledgement hardening failed. **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
