@@ -702,3 +702,44 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 21. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves how represented proposal/request acts are attributed without reopening Representation.
+
+Canonical separation:
+
+```text
+actual proposer/requester Actor
+!= represented party by default
+
+Representation
+= bounded on-behalf-of relation for the act
+
+Authority / delegation / policy / Consent / specialist basis
+= legitimacy/effect basis where required
+```
+
+A represented Proposal/Request remains the actual Actor's semantic action. The represented party is not rewritten as proposer/requester and does not acquire fabricated personal intention, Acknowledgement, Agreement, Consent or Decision.
+
+A claim to issue a request for someone can remain attributable even where the applicable Authority/basis is disputed or invalid; attribution does not make the requested effect legitimate. AI/service requests preserve the same actual-Actor rule.
+
+Material changes to action/target/scope remain Version-sensitive and cannot silently enlarge the represented basis.
+
+Downstream classification:
+
+```text
+Representation ↔ Proposal / Request      RESOLVED
+represented party = actual proposer      REJECTED by default
+represented party = actual requester     REJECTED by default
+```
+
+No Representation hardening failed. **Representation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
