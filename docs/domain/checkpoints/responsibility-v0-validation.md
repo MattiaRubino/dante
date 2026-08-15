@@ -435,3 +435,40 @@ Normative downstream references:
 
 - `../concepts/version.md`;
 - `version-material-equivalence-v0-validation.md`.
+
+---
+
+# 18. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves the reusable proposal/request semantics that Responsibility previously carried only as family-local hand-off language.
+
+```text
+hand-off Request
+!= delivery / view
+!= Acknowledgement
+!= Responsibility-specific response
+!= Decision / Approval where required
+!= effective Responsibility transfer
+!= Actual performance
+```
+
+A Request may target a Responsibility change without creating that Responsibility state. A Proposal may put a materially specific alternative scope/holder/terms into consideration without making it effective. A materially different counter-Proposal is a distinct proposal act/state, and prior Acknowledgement or response does not silently carry forward.
+
+Withdrawal/expiry changes future applicability of the Proposal/Request but preserves history and does not automatically reverse an already-effective transfer.
+
+Downstream classification:
+
+```text
+Responsibility ↔ Request                 RESOLVED
+Responsibility ↔ Proposal                RESOLVED
+generic ProposalRequest root             REJECTED
+generic Acceptance / Response root       REJECTED
+```
+
+No Responsibility hardening failed. **Responsibility remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `../concepts/proposal.md`;
+- `../concepts/request.md`;
+- `proposal-request-v0-validation.md`.
