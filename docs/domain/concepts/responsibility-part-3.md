@@ -462,3 +462,46 @@ Normative downstream references:
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
 
+---
+
+# 2026-08-15 — Proposal / Request downstream closure amendment
+
+Proposal / Request v0 closes Responsibility's remaining generic proposal/request boundary without changing Responsibility identity or effective-state ownership.
+
+Canonical decomposition:
+
+```text
+Request to take Responsibility
+!= delivery / view
+!= Acknowledgement
+!= Responsibility-specific positive response
+!= Decision / Approval where required
+!= effective Responsibility transfer
+!= later Actual performance
+```
+
+A Responsibility hand-off request is therefore a **Request applied to a Responsibility change**, not the transfer itself. The requester, current responsible Actor, requested future holder, approver and actual performer may all differ.
+
+A counter-offer about scope, timing or terms is a distinct Proposal where it materially proposes a different candidate state; it does not silently mutate the prior request or carry forward prior Acknowledgement/response after a material change.
+
+Withdrawal or expiry of the Request affects future applicability of that request. It does not erase historical attribution and does not automatically undo a Responsibility transfer that already became effective under the applicable Authority/policy.
+
+Downstream classification:
+
+```text
+Responsibility ↔ Request                 RESOLVED
+Responsibility ↔ Proposal                RESOLVED
+Request = effective Responsibility       REJECTED
+Proposal = effective Responsibility      REJECTED
+generic Acceptance primitive             REJECTED
+```
+
+Coordination Stewardship, collective/joint Responsibility, Trigger/fallback policy, specialist accountability and exact logical/physical persistence remain separately owned dependencies.
+
+No Responsibility hardening failed. **Responsibility remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
