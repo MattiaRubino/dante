@@ -534,3 +534,45 @@ Normative downstream references:
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
 
+---
+
+# 2026-08-15 — Proposal / Request downstream closure amendment
+
+Proposal / Request v0 makes explicit the invitation/proposal boundary already anticipated by Participation without changing Participation semantics.
+
+Canonical decomposition:
+
+```text
+Participation invitation / request
+!= delivery / view
+!= Acknowledgement
+!= Participation response
+!= Agreement / Consent / Decision
+!= Actual Participation
+```
+
+An invitation is a Request and/or Proposal applied to Participation context depending on whether it asks the recipient to act/respond, proposes a candidate participation state/terms, or both. This does **not** create a universal Invitation entity or a generic Acceptance state.
+
+A response such as `going`, `maybe`, or `declined` remains Participation-specific response semantics. Silence remains neither acceptance nor rejection. A material change to event time/location/role may require a new Proposal or Request and does not silently inherit the previous response.
+
+Where an Actor responds on behalf of another participant, Representation preserves the actual response Actor and represented party. Account membership is not required.
+
+Downstream classification:
+
+```text
+Participation ↔ Proposal / Request      RESOLVED
+Invitation universal primitive          REJECTED
+generic Acceptance / Response root      REJECTED
+Proposal / Request = Participation      REJECTED
+Proposal / Request = Actual attendance  REJECTED
+```
+
+Collective/group participation, role taxonomy, recurring-series inheritance, provider evidence threshold, retention and physical representation remain separately owned dependencies.
+
+No Participation hardening failed. **Participation remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
