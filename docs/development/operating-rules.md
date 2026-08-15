@@ -159,3 +159,25 @@ If that information exists only in the conversation, the handoff is incomplete.
 As of 2026-08-10, the historical documentation branches have been integrated into `main` and no longer contain unique accepted work ahead of it. The active `prototype/phase-4-today-home` branch is intentionally ahead only for Phase 4 UX/prototype/test work and is synchronized with the current accepted project baseline.
 
 Future contributors must re-check this statement against Git rather than assuming it remains true forever.
+
+---
+
+## 12. 2026-08-15 mandatory agent-execution hardening
+
+The stricter cross-session execution standard is now defined in [`agent-operating-manual.md`](agent-operating-manual.md) and applies together with this file.
+
+Every AI agent or human contributor performing repository work must follow that manual before remote writes. In particular, the following are mandatory and are not optional conventions:
+
+- exact Git write gate with branch, pre-scope SHA, exact CREATE/UPDATE/DELETE paths, purpose and explicit out-of-scope;
+- re-fetch of branch HEAD before the first approved write; SHA drift requires STOP/re-gate;
+- post-write compare against the approved pre-scope; unexpected physical paths are QA failure;
+- no silent out-of-scope fixes or scope expansion;
+- preservation-first documentation updates and truthful historical amendments;
+- no truncation/knowledge loss because of connector/context limits;
+- canonical split documents count as one logical document while their physical paths remain individually auditable in Git scope/QA;
+- new chronological amendments belong at the end of the logical canonical document, including a new continuation part when required;
+- explicit STOP/report behavior for Git/connector/network/tool failures instead of repeated blind retries or risky workarounds;
+- remote repository evidence, not attempted tool calls, determines whether a write is complete;
+- workstream-specific mandatory methodologies remain binding, including Domain Validation Methodology v3 for active Domain Atlas validation.
+
+The bootstrap order in Section 10 should therefore be read as including `docs/development/agent-operating-manual.md` before workstream execution. The detailed manual is authoritative for these stricter execution mechanics unless a higher-authority accepted project decision explicitly supersedes it.
