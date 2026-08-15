@@ -135,3 +135,61 @@ Before handing a workstream to another chat/agent or merging it:
 - [ ] No older shared document overwrites a newer accepted decision.
 - [ ] `PROJECT-STATUS.md` reflects globally meaningful changes only.
 - [ ] Significant durable decisions have an ADR.
+
+---
+
+## 2026-08-15 — Cross-session handoff hardening
+
+[`agent-operating-manual.md`](agent-operating-manual.md) is now mandatory reading for new AI/human sessions before workstream execution. It records the stricter repository-write, preservation, split-document and tool-failure rules that make handoffs independently resumable.
+
+The canonical reading order for an execution session is therefore hardened to include:
+
+```text
+root README.md
+→ docs/README.md
+→ docs/PROJECT-STATUS.md
+→ docs/development/agent-operating-manual.md
+→ docs/development/operating-rules.md
+→ docs/development/documentation-and-handoff.md
+→ docs/development/branching-and-environments.md
+→ active workstream logical document (all required canonical split parts)
+→ linked accepted docs / ADRs / methodologies
+→ relevant code / tests / checkpoints
+→ verified Git branch and remote compare
+```
+
+### Handoff precision requirements
+
+A handoff must distinguish intended work from repository-proven work. For an incomplete approved Git scope it should preserve, when applicable:
+
+- approved pre-scope SHA;
+- current verified branch HEAD;
+- exact physical paths already written successfully;
+- exact physical paths still missing;
+- logical documents affected;
+- physical split/continuation mapping;
+- failed/no-op writes and concrete tool errors;
+- QA already performed and QA still required;
+- explicit out-of-scope boundaries.
+
+A tool call that failed or returned a conflict is not a completed repository change.
+
+### Split-document handoff rule
+
+A canonical split is one logical document. Its parts are physical storage/operational units only. Handoffs and project summaries must not inflate document counts because a file was split.
+
+For example:
+
+```text
+domain-model.md + domain-model-part-2.md + domain-model-part-3.md
+= 1 logical workstream document
+= 3 physical Git paths
+```
+
+Git write gates and Git QA still enumerate each physical path independently.
+
+A new session must read the complete logical sequence, especially the last continuation part containing the newest downstream amendments. It must not treat Part 1 as current merely because it carries the original filename.
+
+### Tool-limit handoff rule
+
+When an agent stops because Git/GitHub/connector/network capabilities prevent a safe write, the handoff must state that limitation explicitly and leave a recoverable next step. It must not mark the work as closed, nor invent a semantic workaround for a technical limitation.
