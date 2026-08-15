@@ -563,3 +563,45 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 25. Downstream closure — Proposal / Request v0 (2026-08-15)
+
+Proposal / Request v0 resolves Agreement's historical reusable proposal/request dependency.
+
+Canonical sequence:
+
+```text
+Proposal of terms
+!= delivery / Acknowledgement
+!= one party's response
+!= Agreement
+!= Decision / Authority
+!= effective downstream state
+```
+
+A Proposal may identify the materially specific terms under consideration, but Agreement exists only when the applicable required parties have mutually assented to the same materially relevant terms. A Request to agree/respond likewise does not create Agreement.
+
+A materially different counter-Proposal is a distinct Proposal and does not silently inherit prior party assent. Silence, read/view state, Acknowledgement and one Actor's positive response remain insufficient for multi-party Agreement.
+
+Withdrawal/expiry of a Proposal affects future applicability of that proposal; it does not erase historical Agreement or automatically terminate an Agreement that was already established under its own semantics/policy.
+
+Downstream classification:
+
+```text
+Agreement ↔ Proposal / Request       RESOLVED
+Proposal = Agreement                 REJECTED
+Request for Agreement = Agreement    REJECTED
+generic Acceptance / Assent root     REJECTED
+```
+
+Collective/quorum/voting, formal Contract/signature/legal validity, specialist capacity/validity, exact persistence/API and retention remain separately owned dependencies.
+
+No Agreement hardening failed. **Agreement remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
