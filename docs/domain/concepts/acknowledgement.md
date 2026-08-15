@@ -765,3 +765,44 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+---
+
+# 2026-08-15 — Proposal / Request downstream closure amendment
+
+Proposal / Request v0 closes the remaining reusable target/request distinction already assumed by Acknowledgement.
+
+Canonical sequence where consequence requires it:
+
+```text
+Proposal / Request created
+!= delivered / displayed / read
+!= Acknowledgement
+!= family-specific response
+!= Agreement / Consent / Decision
+!= effective state
+!= Actual
+```
+
+Acknowledgement continues to mean only explicit taking-notice of the materially relevant Proposal/Request state. It does not answer whether the Actor agrees, consents, accepts a role, decides, or causes an effect.
+
+A materially changed Proposal/Request does not silently inherit prior Acknowledgement. Acknowledgement of one Actor also does not imply Acknowledgement or response by another Actor or group.
+
+Downstream classification:
+
+```text
+Acknowledgement ↔ Proposal / Request    RESOLVED
+Acknowledgement = response              REJECTED
+Acknowledgement = effect                REJECTED
+generic Acceptance / Response root      REJECTED
+```
+
+Understanding/comprehension, read/view audit, collective acknowledgement, retention and exact logical persistence remain separately owned dependencies.
+
+No Acknowledgement hardening failed. **Acknowledgement remains PASS WITH HARDENING, REOPEN = 0.**
+
+Normative downstream references:
+
+- `proposal.md`;
+- `request.md`;
+- `../checkpoints/proposal-request-v0-validation.md`.
