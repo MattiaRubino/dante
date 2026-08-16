@@ -6,7 +6,8 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 
 ## Foundation
 
-- [`vision.md`](vision.md) — product vision
+- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Accepted** current living definition of LifeOS product identity and North Star; use this for high-level product meaning and direction
+- [`vision.md`](vision.md) — earlier product vision; remains useful context where not superseded by the accepted North Star
 - [`scope.md`](scope.md) — early scope foundation
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
 - [`v1-scope.md`](v1-scope.md) — detailed V1 scope
@@ -46,4 +47,4 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 
 ## Reading rule
 
-When product documents overlap, use the more specific accepted V1 document for product behavior, then check accepted ADR/architecture constraints and the active workstream handoff. When terminology itself conflicts with an accepted Domain Atlas concept, the Domain Atlas concept specification and [`../domain/language-map.md`](../domain/language-map.md) take precedence. Preserve older documents and Git history rather than silently rewriting their historical context.
+For high-level product identity, start with the accepted [`product-identity-and-north-star.md`](product-identity-and-north-star.md). For detailed product behavior, use the more specific accepted V1 document. For kernel terminology and semantic distinctions, then check the accepted Domain Atlas, [`../domain/language-map.md`](../domain/language-map.md), accepted ADR/architecture constraints and the active workstream handoff. When terminology conflicts, the accepted Domain Atlas takes precedence. Preserve older documents and Git history rather than silently rewriting their historical context.
