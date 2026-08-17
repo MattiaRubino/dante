@@ -1,6 +1,6 @@
 # Physical Benchmark Scenario Corpus
 
-- Status: **CURRENT — Phase 10 scenario-method content; closure pending remote QA**
+- Status: **CURRENT — Phase 10 QA PASS**
 - Stage: Pre-Physical Repository & Architecture Coherence
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Business forecast: **NOT ASSERTED BY THIS DOCUMENT**
