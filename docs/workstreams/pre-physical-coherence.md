@@ -1,9 +1,10 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **IN PROGRESS — Phase 0 + Phase 1 current**
+- Status: **IN PROGRESS — Phase 0 + Phase 1 QA PASS; Phase 2 read-only next**
 - Branch: `chore/pre-physical-coherence`
-- Base / PRE-SCOPE: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
+- Base / original Phase 0+1 PRE-SCOPE: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Started: 2026-08-17
+- Phase 0+1 content HEAD before this closure marker: `b8b568f4542b40e730ab529d04377ab4bb67cbc9`
 - Production backend code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Core Domain Model / Domain Atlas: **CLOSED / unchanged**
@@ -13,13 +14,11 @@
 
 This workstream is the deliberate bridge between the closed Domain + Logical Models and any later Physical Model authorization.
 
-It exists to make the repository reconstructible and internally coherent before persistence/runtime design begins, to reconcile older architecture material with the closed semantic model, to identify downstream technical requirements that can materially constrain a future Physical Model, and to define technology benchmarks without prematurely implementing or selecting them.
+It exists to make the repository reconstructible and internally coherent before persistence/runtime design begins, reconcile older architecture material with the closed semantic model, identify downstream technical requirements that can materially constrain a future Physical Model, and define technology benchmarks without prematurely implementing or selecting them.
 
 This workstream does **not** reopen Domain or Logical semantics by default. If a material semantic contradiction is discovered, stop, record the finding, and open a separate explicit reopen scope rather than silently changing accepted model truth.
 
-## Authority and source-of-truth boundary
-
-Current accepted baseline:
+## Current accepted baseline
 
 ```text
 PRODUCT / NORTH STAR
@@ -37,6 +36,8 @@ WL-H01..WL-H12: active downstream hardenings
 
 PRE-PHYSICAL COHERENCE
 ACTIVE on this branch
+PHASE 0 + PHASE 1: QA PASS
+PHASE 2: READ-ONLY INVENTORY NEXT
 
 PHYSICAL MODEL
 NOT STARTED / requires separate future authorization
@@ -49,17 +50,19 @@ NOT STARTED
 
 ## Mandatory operating rules
 
-Before any write in this workstream:
+Before any later write in this workstream:
 
-1. read `docs/development/agent-operating-manual.md`;
-2. read `docs/development/operating-rules.md`;
-3. read `docs/development/documentation-and-handoff.md`;
-4. read `docs/development/branching-and-environments.md`;
-5. read this complete handoff;
-6. verify the branch ref and compare against current `main`;
-7. present an exact Git write gate with branch, PRE-SCOPE, CREATE/UPDATE/DELETE, purpose and explicit out-of-scope;
-8. re-fetch the branch HEAD before the first approved write;
-9. after writes, run remote path/delta/readback QA before claiming PASS/CLOSED.
+1. read `README.md`, `docs/README.md` and `docs/PROJECT-STATUS.md`;
+2. read `docs/development/agent-operating-manual.md`;
+3. read `docs/development/operating-rules.md`;
+4. read `docs/development/documentation-and-handoff.md`;
+5. read `docs/development/branching-and-environments.md`;
+6. read this complete handoff;
+7. verify the branch ref and compare/reconstruct its relation to current `main`;
+8. perform the next phase read-only analysis before proposing writes where the roadmap requires it;
+9. present an exact Git write gate with branch, PRE-SCOPE, CREATE/UPDATE/DELETE, purpose and explicit out-of-scope;
+10. re-fetch the branch HEAD before the first approved write;
+11. after writes, run remote path/delta/readback QA before claiming PASS/CLOSED.
 
 Historical checkpoints and canonical continuation chains are evidence. Do not rewrite them merely to make history look current.
 
@@ -75,10 +78,10 @@ They converged on the following major conclusions:
 - PostgreSQL remains the current preferred Physical baseline but is not yet a final Physical selection;
 - TypeDB remains a mandatory Physical benchmark challenger;
 - generic EAV / generic edge / universal meta-model approaches remain rejected for the canonical kernel;
-- modular-monolith, Python, FastAPI/Pydantic and the provider-neutral architecture remain sensible current directions, without authorizing implementation;
+- modular-monolith, Python, FastAPI/Pydantic and provider-neutral boundaries remain sensible current directions without authorizing implementation;
 - AuthN/AuthZ, security/privacy, consistency/side-effects, durable workflow/async behavior, AI context/runtime boundaries, integrations, search, observability and non-functional requirements need explicit downstream contracts before or around the Physical stage;
 - durable workflow technology deserves an explicit benchmark rather than assuming a lightweight worker or adopting Temporal automatically;
-- repository current truth must be repaired before any Physical Model work starts.
+- repository current truth must be repaired before Physical Model work starts.
 
 ## Semantic non-reopen result
 
@@ -124,23 +127,21 @@ Any later architecture/Physical/runtime work must preserve:
 
 The work is intentionally separated into **cleanup**, **architecture requirements**, **technology benchmark preparation**, and only later a separately authorized **Physical Model**.
 
-### Phase 0 — Freeze and current-state inventory
+### Phase 0 — Freeze and current-state inventory — PASS
 
-Goal: establish a verified baseline before edits.
+Completed for the mandatory bootstrap/current-state surface used to open this workstream:
 
-- verify `main` and active branch refs;
-- confirm Domain/Logical closure and Physical/backend non-started state;
-- inventory mandatory bootstrap/global documents;
-- classify stale/current/historical/superseded statements;
-- do not edit architecture semantics during inventory.
+- verified `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`;
+- confirmed Domain/Logical closure and Physical/backend non-started state;
+- inventoried mandatory bootstrap/global documents;
+- identified stale Domain/Backend sequencing and pre-Logical technology wording;
+- did not alter Domain or Logical semantic documents.
 
-**Current state:** performed sufficiently to open Phase 1. Full repository-wide coherence QA remains a later closure step.
+A broader clean-room/repository-wide inventory remains part of final Phase 12 closure rather than being falsely claimed complete here.
 
-### Phase 1 — Global current-truth documentation alignment
+### Phase 1 — Global current-truth documentation alignment — QA PASS
 
-Goal: make the mandatory repository entry path safe and current.
-
-Current approved scope:
+Approved/final physical path set:
 
 ```text
 CREATE
@@ -159,7 +160,7 @@ DELETE
 none
 ```
 
-Required truth after Phase 1:
+Resulting current truth across the mandatory entry path:
 
 ```text
 Domain CLOSED
@@ -171,30 +172,72 @@ repository PUBLIC
 main remains canonical
 ```
 
-Phase 1 must remove stale operational instructions that still say Domain Model v0 is future work or should be developed inside Backend Foundation.
+The old operational instruction that Domain Model v0 should start in parallel with or inside Backend Foundation has been removed/qualified from the mandatory bootstrap path. Backend Foundation is now explicitly deferred pending this workstream and later accepted prerequisites.
 
-### Phase 2 — Architecture supersession cleanup
+#### Phase 0+1 remote QA evidence
 
-Candidate targets, subject to a separate exact write gate:
+The normal GitHub compare endpoint for `base=148a4cb5...` vs `head=chore/pre-physical-coherence` returned `404`; this failure was **not** counted as PASS.
+
+Fallback remote QA used repository evidence instead:
+
+- branch creation was verified from the exact approved PRE-SCOPE;
+- GitHub commit-list readback showed a linear chain from `148a4cb5...` through the eight Phase-1 content commits to `b8b568f...`;
+- each content commit was fetched individually and changed exactly one approved physical path;
+- first content commit added `docs/workstreams/pre-physical-coherence.md`;
+- seven subsequent content commits modified the seven approved existing files;
+- no delete commit or unapproved path was observed;
+- `main` remained exactly `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` after the writes;
+- branch ref after the eight content writes was `b8b568f4542b40e730ab529d04377ab4bb67cbc9`;
+- remote payload readback confirmed README, PROJECT-STATUS, ROADMAP and this handoff expose the aligned state and future sequence.
+
+Scope result before this same-path closure update:
+
+```text
+added      1
+modified   7
+deleted    0
+unexpected 0
+content commits ahead of PRE-SCOPE 8
+```
+
+This closure update changes only the already-approved newly created handoff path and does not alter the final physical-path classification above. Its resulting commit/HEAD must be verified after write before relying on this closure record.
+
+### Phase 2 — Architecture supersession cleanup — NEXT, READ-ONLY FIRST
+
+Before any Phase-2 write, perform a fresh read-only inventory of at least:
 
 - `docs/architecture/personal-data-ai-integration.md`;
 - `docs/architecture/technical-decisions.md`;
 - `docs/architecture/system-overview.md`;
-- ADR/current index supersession pointers as required.
+- relevant architecture/index material;
+- ADR-003, ADR-005, ADR-006, ADR-007 and any later relevant ADR/current Logical decisions.
 
-Goals:
+Classify findings as:
+
+```text
+CURRENT / KEEP
+QUALIFY
+PARTIALLY SUPERSEDED
+SUPERSEDED
+HISTORICAL / KEEP
+DECISION REQUIRED
+NO ISSUE
+```
+
+Only then propose the exact Phase-2 write gate.
+
+Phase-2 goals:
 
 - preserve historical reasoning;
 - make later Domain/Logical authority explicit;
-- prevent `entity_relations`, generic Relation/property fallback or generic-first wording from being interpreted as the current canonical ontology;
+- prevent `entity_relations`, generic Relation/property fallback or generic-first wording from being interpreted as current canonical ontology;
 - distinguish technical shared registries/edges from semantic owners/relations;
-- explicitly mark older accepted architecture as partially superseded/qualified where appropriate.
-
-No silent retrospective rewrite of historical checkpoints.
+- explicitly mark older accepted architecture as partially superseded/qualified where appropriate;
+- do not rewrite historical checkpoints retroactively.
 
 ### Phase 3 — Backend Foundation handoff cleanup
 
-Candidate target: `docs/workstreams/backend-foundation.md` under a separate write gate.
+Candidate target under a separate exact write gate: `docs/workstreams/backend-foundation.md`.
 
 Backend Foundation must eventually consume:
 
@@ -212,7 +255,7 @@ It must no longer instruct contributors to create Domain Model v0 as part of bac
 
 ### Phase 4 — Current Pre-Physical Architecture Baseline
 
-Create one current bridge source that states:
+Create one current bridge source stating:
 
 - what is already decided;
 - what is semantically prohibited;
@@ -226,43 +269,14 @@ Create one current bridge source that states:
 
 Define requirements, not implementations, for:
 
-1. **AuthN/AuthZ contract**
-   - `Person != Account != Principal != Actor`;
-   - represented party, service/external-agent identity, session/device context;
-   - Authority/Consent/Visibility remain Domain truth while technical AuthZ is enforcement evidence;
-   - policy/version and authorization provenance requirements.
-
-2. **Security/privacy technical baseline**
-   - data classification;
-   - sensitive-data handling;
-   - encryption/key/secret boundaries;
-   - isolation requirements;
-   - retention/redaction/deletion propagation;
-   - audit/log minimization;
-   - backup/recovery implications;
-   - AI/provider data minimization.
-
-3. **Transaction/consistency/side-effect contract**
-   - expected state;
-   - transaction ownership/boundaries;
-   - idempotency;
-   - outbox/publication pressure;
-   - external effect acknowledgement;
-   - staged partial state;
-   - reconciliation/compensation;
-   - derived-state freshness.
-
-4. **Non-functional/recovery envelope**
-   - scale/concurrency assumptions;
-   - latency classes where material;
-   - long-term history expectations;
-   - multi-device conflict assumptions;
-   - online/offline posture;
-   - RPO/RTO/restore expectations.
+1. **AuthN/AuthZ contract** — `Person != Account != Principal != Actor`; represented party, service/external-agent identity, session/device context; Authority/Consent/Visibility remain Domain truth; policy/version and AuthZ provenance requirements.
+2. **Security/privacy technical baseline** — data classification, sensitive handling, encryption/key/secret boundaries, isolation, retention/redaction/deletion propagation, audit/log minimization, backup/recovery implications, AI/provider minimization.
+3. **Transaction/consistency/side-effect contract** — expected state, transaction boundaries, idempotency, outbox/publication pressure, external acknowledgement, partial state, reconciliation/compensation, derived-state freshness.
+4. **Non-functional/recovery envelope** — scale/concurrency assumptions, latency classes where material, long-term history, multi-device conflict assumptions, online/offline posture, RPO/RTO/restore expectations.
 
 ### Phase 6 — AI, runtime and integration boundaries
 
-Define technical separation between:
+Preserve explicit technical separation among:
 
 ```text
 canonical state
@@ -274,7 +288,7 @@ candidate/unresolved state
 transient LLM working context
 ```
 
-Define technical runtime families without creating new Domain owners:
+Define runtime families without promoting them to Domain owners:
 
 - agent/workflow execution;
 - automation definition vs automation execution;
@@ -328,13 +342,13 @@ HTTP route / UI button / AuthZ action string
 Define requirements and benchmark inputs, not premature infrastructure:
 
 - search/retrieval projection separate from canonical truth;
-- PostgreSQL structured/full-text baseline and pgvector as a bounded semantic-retrieval candidate;
+- PostgreSQL structured/full-text baseline and pgvector as bounded semantic-retrieval candidate;
 - dedicated search/vector infrastructure only on demonstrated benefit;
 - OpenTelemetry-first or equivalent standard instrumentation direction with privacy-minimized AI telemetry;
 - iCalendar, JSCalendar, Google Calendar and Microsoft Graph semantics as interoperability pressure tests, not ontology;
 - deterministic solvers/services for deterministic constraints, calculations, authorization and state transitions;
-- AI reserved for ambiguity, interpretation, explanation and cross-domain reasoning where useful;
-- planner outputs must support truthful feasible/infeasible/uncertain/at-risk/conflicting/partially-feasible results with explanations.
+- AI for ambiguity, interpretation, explanation and cross-domain reasoning where useful;
+- planner outputs support truthful feasible/infeasible/uncertain/at-risk/conflicting/partially-feasible results with explanations.
 
 ### Phase 10 — Physical benchmark specification/register
 
@@ -363,7 +377,7 @@ pgvector
 BOUNDED semantic-retrieval candidate
 ```
 
-The benchmark must use destructive LifeOS scenarios such as concurrent consequential edits, multi-owner changes, selective disclosure, provider divergence, redaction/history reconstruction, recurrence across DST, stale availability, AuthZ provenance, search inference leakage, AI proposal→approval→effect, revoked consent during execution, long-running crash/restart, restore, and schema evolution over historical state.
+Benchmark destructive LifeOS scenarios including concurrent consequential edits, multi-owner changes, selective disclosure, provider divergence, redaction/history reconstruction, recurrence across DST, stale availability, AuthZ provenance, search inference leakage, AI proposal→approval→effect, revoked consent during execution, long-running crash/restart, restore and schema evolution over historical state.
 
 ### Phase 11 — Repository engineering safety alignment
 
@@ -418,53 +432,43 @@ Current evaluation principle:
 
 > Specialized infrastructure requires demonstrated benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability, or cost/risk of later migration.
 
-This rule is intended to avoid both premature complexity and waiting until a preventable architectural problem becomes expensive.
+This avoids both premature complexity and waiting until a preventable architectural problem becomes expensive.
 
-## Explicit out of scope for the current Phase 0 + Phase 1 write
+## Explicit out of scope until separately gated
 
-- `docs/workstreams/backend-foundation.md` rewrite;
-- `docs/architecture/personal-data-ai-integration.md`;
-- `docs/architecture/technical-decisions.md`;
-- `docs/architecture/system-overview.md`;
-- ADR supersession edits;
-- new Domain primitives or Domain semantic changes;
-- Logical Model semantic changes;
-- AuthN/AuthZ architecture design;
-- AI/runtime/integration architecture design;
-- technology benchmark execution or selection;
-- Physical Model design/implementation;
+- new Domain primitives or silent Domain semantic changes;
+- silent Logical Model semantic changes;
+- Physical Model implementation;
 - SQL, schema, indexes, migrations;
 - concrete API endpoints;
 - production FastAPI/backend implementation;
 - concrete Auth provider integration;
 - provider adapters;
-- frontend/prototype changes;
+- frontend/prototype changes inside this backend/coherence workstream;
 - historical branch deletion/cleanup;
 - direct modification of `main`.
 
-## Current exact task
+Specific architecture/Auth/AI/runtime/integration documents are only writable when their phase receives an exact approved gate.
 
-Complete and remotely QA Phase 0 + Phase 1 against the approved PRE-SCOPE `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`.
+## Exact continuation point
 
-After Phase 1 QA PASS, the next expected work is a **read-only Phase 2 architecture supersession inventory**, followed by a separate exact Git write gate. Do not begin Phase 2 writes merely because Phase 1 closes.
+**Phase 0 + Phase 1 are closed at the content/path level and have remote fallback QA PASS.**
 
-## QA contract for Phase 0 + Phase 1
-
-Expected delta from PRE-SCOPE:
+Next action after verifying this closure commit:
 
 ```text
-added      1
-modified   7
-deleted    0
-unexpected 0
+PHASE 2
+READ-ONLY ARCHITECTURE SUPERSESSION INVENTORY
+
+NO WRITES YET
 ```
 
-Expected physical paths are exactly the paths listed under Phase 1 above.
-
-Readback must prove that mandatory entry documents no longer instruct a new agent that Domain Model v0 is future parallel backend work and that the workstream/roadmap state is reconstructible without conversation history.
+A new chat should begin by reading this file, verifying the current branch HEAD and current `main`, then reading the Phase-2 candidate architecture/ADR sources listed above. It should not ask the user to reconstruct the two earlier reviews from conversation history.
 
 ## Tool incident record
 
-During branch setup, the first GitHub branch-creation attempt returned an upstream `502`. A direct ref read immediately afterward returned `404`, proving that attempt had not created the branch. After re-verifying that `main` still matched the approved PRE-SCOPE, a single retry created `chore/pre-physical-coherence` successfully from the exact approved SHA.
+During branch setup, the first GitHub branch-creation attempt returned upstream `502`. A direct ref read immediately afterward returned `404`, proving that attempt had not created the branch. After re-verifying that `main` still matched the approved PRE-SCOPE, a single retry created `chore/pre-physical-coherence` successfully from the exact approved SHA.
+
+The normal compare endpoint later returned `404`. This was treated as a connector/API limitation, not a successful compare. Phase-0/1 QA therefore used commit-chain, per-commit changed-file, ref and payload-readback evidence instead.
 
 No `main` write occurred.
