@@ -1,10 +1,12 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **IN PROGRESS — Phase 2 QA PASS; Phase 3 read-only audit next**
+- Status: **IN PROGRESS — Phase 3 QA PASS; Phase 4 read-only baseline inventory next**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Phase 2 PRE-SCOPE: `d9610a7da4fe8fc759e9809843d989f1befcda5c`
 - Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`
+- Phase 3 PRE-SCOPE: `d2f190de06bf0e4e1e491c0c2dc601eb48668da9`
+- Phase 3 content HEAD before this closure marker: `50731dbee3d2cc661972700ef0bce521b67098c6`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
@@ -40,13 +42,14 @@ ACTIVE
 Phase 0 PASS
 Phase 1 QA PASS
 Phase 2 QA PASS
-Phase 3 READ-ONLY AUDIT NEXT
+Phase 3 QA PASS
+Phase 4 READ-ONLY BASELINE INVENTORY NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
-BACKEND PRODUCTION IMPLEMENTATION
-NOT STARTED
+BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
+NOT STARTED / DEFERRED
 ```
 
 ## Mandatory bootstrap
@@ -62,9 +65,10 @@ Before later work:
 7. read `docs/development/branching-and-environments.md`;
 8. read this complete handoff;
 9. read `docs/architecture/README.md` and linked current model/architecture sources;
-10. read relevant ADR/evidence/methodology;
-11. verify current branch/ref and relation to `main`;
-12. before any new write phase, issue a fresh exact PRE-SCOPE/write gate.
+10. read complete canonical split/continuation chains where a logical document is physically split;
+11. read relevant ADR/evidence/methodology;
+12. verify current branch/ref and relation to `main`;
+13. before any new write phase, issue a fresh exact PRE-SCOPE/write gate.
 
 ## Documentation lifecycle rule
 
@@ -95,6 +99,8 @@ references/navigation repaired = PASS
 ```
 
 The objective is clean current documentation **without losing useful knowledge**.
+
+A physical split does not create separate logical authority. `*-part-N` continuation chains must be read as the complete logical document before current-state conclusions are drawn.
 
 ## Current architecture navigation
 
@@ -132,6 +138,8 @@ Later architecture/Physical/runtime work must preserve:
 Do not create universal Domain owners merely because a product/runtime term is useful.
 
 Unless separately revalidated, terms such as Memory, Agent, Automation, Job, Workflow, Notification, Reminder, Priority, Preference, Context, Task, Workspace, Risk, Focus Time, Out of Office and Working Location remain product/runtime/composition/profile/projection/policy concepts rather than new universal Domain roots.
+
+Product labels such as `Project` and `Program` do not create kernel owners by naming alone; current Domain language maps them to accepted semantics such as a `Plan` profile according to the actual case.
 
 ## Completed work
 
@@ -206,15 +214,7 @@ unexpected              0
 main changed            0
 ```
 
-The native GitHub compare endpoint returned `404` and was **not** counted as PASS. Equivalent scope was proven through:
-
-- remote branch/main refs;
-- a bounded linear commit chain from the exact PRE-SCOPE;
-- one approved physical path per content commit;
-- per-commit added/modified/removed status;
-- remote payload readback of current architecture/governance/ADR sources;
-- remote `404` proving the retired file is absent;
-- readback proving historical readiness evidence retained its original blob.
+The native GitHub compare endpoint returned `404` and was **not** counted as PASS. Equivalent scope was proven through remote branch/main refs, a bounded linear commit chain, one approved physical path per content commit, per-commit path status, remote payload readback, remote absence of the retired file and proof that historical readiness evidence retained its original blob.
 
 ### Phase 2 architecture result
 
@@ -248,49 +248,6 @@ ADR status is now explicit:
 
 The retired `docs/architecture/personal-data-ai-integration.md` was deleted only after all meaningful content was classified.
 
-Valid knowledge retained:
-
-```text
-AI/external source != canonical truth
-→ current system overview + ADR-005 + Logical hardenings
-
-provider provenance / deduplication / reconciliation
-→ current system overview + technical decisions + later integration requirements
-
-Context Builder / minimal relevant context
-→ ADR-005 + technical decisions + Phase 6
-
-deterministic vs AI responsibility
-→ system overview + technical decisions
-
-planned/current/actual/derived/raw distinctions
-→ Domain/Logical + technical decisions
-
-file/object storage abstraction
-→ ADR-004 + current architecture
-
-history/version/correction/reconciliation
-→ Domain/Logical + WL-H hardenings
-
-specialist extension boundary
-→ Domain/Logical specialist boundary + current technical direction
-
-open Physical/runtime requirements
-→ retained in this workstream/roadmap for later explicit phases
-```
-
-Superseded/rejected content intentionally not carried into current specifications:
-
-```text
-universal grammar / generic Entity-Relation ontology
-generic entity_relations canonical semantic layer
-generic relation/property AI fallback
-generic-model-first semantic rule
-old Program/Project/Skill/Register/etc. kernel owner list
-PostgreSQL final-selection claim
-measured-workload-only specialized-infrastructure rule
-```
-
 Final coverage verdict:
 
 ```text
@@ -305,53 +262,178 @@ Domain reopen = 0
 Logical reopen = 0
 ```
 
-## Current exact task — Phase 3 read-only audit
+### Phase 3 — Backend Foundation handoff cleanup — QA PASS
 
-Next work is **read-only**. Do not write yet.
+#### Read-only audit result
 
-Audit `docs/workstreams/backend-foundation.md` against:
+The complete current Backend Foundation handoff was audited against current entry points, current architecture, current ADR statuses, the closed Whole Logical Model, its final decision/hardening register and closure evidence, and the current accepted Domain Atlas/language disposition including relevant continuation parts.
 
-- current `README.md` / `docs/README.md` / `PROJECT-STATUS.md` / `ROADMAP.md`;
-- `docs/architecture/README.md`;
-- current `system-overview.md` and `technical-decisions.md`;
-- accepted Domain Atlas;
-- closed Whole Logical Model + `WL-H01..WL-H12`;
-- current ADR status;
-- later Pre-Physical stages in this handoff.
-
-Classify every meaningful Backend Foundation statement as:
+The audit confirmed:
 
 ```text
-CURRENT / KEEP
-MOVE TO CURRENT PREREQUISITE
-QUALIFY
-SUPERSEDED
-DEFER TO PHYSICAL
-DEFER TO LATER RUNTIME/SECURITY/INTEGRATION PHASE
-IMPLEMENTATION DETAIL — KEEP FOR FUTURE BACKEND
-DUPLICATE / DROP
-DECISION REQUIRED
+Domain reopen required                 0
+Logical reopen required                0
+unclassified meaningful content        0
+valid future requirement lost          0
+stale execution assumptions identified PASS
+current prerequisite chain identified  PASS
 ```
 
-Only after the read-only inventory may a **separate exact Phase 3 write gate** be presented.
+Key classification:
 
-Backend Foundation must eventually consume:
+```text
+old READY TO START
+SUPERSEDED
+
+Domain Model v0 inside Backend Foundation
+SUPERSEDED / REMOVE
+
+Python + FastAPI + Pydantic
+KEEP CURRENT DIRECTION
+
+modular monolith first
+KEEP CURRENT DIRECTION
+
+pytest / testability / config / error+logging baseline
+KEEP FOR FUTURE BACKEND
+
+Storage provider abstraction
+KEEP
+
+SQLAlchemy / Alembic
+DEFER / CONDITIONAL ON ACCEPTED PHYSICAL MODEL
+
+PostgreSQL local bootstrap / relational migrations
+DEFER / PHYSICAL-DEPENDENT
+
+concrete versioned API routes / DTOs
+DEFER TO GOVERNED API CONTRACT
+
+Auth runtime / workflow / outbox / provider adapters
+DEFER TO APPLICABLE ACCEPTED RUNTIME/SECURITY/INTEGRATION CONTRACTS
+
+old Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation slice
+SUPERSEDED AS CANONICAL BACKEND/DOMAIN CONTRACT
+
+Phase-4 UI must not dictate backend schema
+KEEP
+
+API/persistence layers != Domain Model
+KEEP / HARDEN
+```
+
+Older product docs remain useful product evidence/requirements input where applicable, but they do not override accepted Domain/Logical/current architecture truth.
+
+#### Approved Phase 3 write gate
+
+```text
+BRANCH
+chore/pre-physical-coherence
+
+PRE-SCOPE
+d2f190de06bf0e4e1e491c0c2dc601eb48668da9
+
+CREATE
+none
+
+UPDATE
+docs/workstreams/backend-foundation.md
+docs/workstreams/pre-physical-coherence.md
+docs/workstreams/README.md
+docs/README.md
+docs/PROJECT-STATUS.md
+docs/ROADMAP.md
+
+DELETE
+none
+```
+
+Phase 3 content HEAD before this closure marker:
+
+`50731dbee3d2cc661972700ef0bce521b67098c6`
+
+The five preceding content commits modify one approved path each. This handoff update is the sixth approved physical path and serves as the Phase 3 closure marker.
+
+#### Phase 3 result
+
+`docs/workstreams/backend-foundation.md` is now a **current deferred future handoff**, not a stale executable plan.
+
+It establishes the future prerequisite chain:
 
 ```text
 CLOSED Domain Atlas
 +
 CLOSED Logical Model
 +
-future accepted Physical Model
+CLOSED Pre-Physical Coherence
 +
-current architecture/runtime/security/integration contracts
+separately accepted Physical Model
++
+applicable accepted runtime/security/integration/API contracts
+        ↓
+Backend Foundation may become READY TO START
+        ↓
+fresh branch + fresh PRE-SCOPE/write gate
+        ↓
+implementation
 ```
 
-It must not create Domain Model v0 inside backend bootstrap or execute pre-Domain persistence assumptions.
+It explicitly does **not** authorize creating `feature/backend-foundation` now.
+
+Valid future bootstrap requirements were retained without preselecting Physical/runtime mechanisms. The old Domain-v0-inside-backend and fixed product-label slice instructions were removed from current execution authority.
+
+Phase 3 remote scope/readback QA activates this `QA PASS` state when the exact PRE-SCOPE→closure delta contains only the six approved modified paths, `main` remains unchanged, and the current payloads read back coherently.
+
+## Current exact task — Phase 4 read-only baseline inventory
+
+Next work is **read-only**. Do not write yet.
+
+Phase 4 must determine the exact contents and ownership of one current **Pre-Physical Architecture Baseline** bridge source.
+
+Inventory at minimum:
+
+- `docs/architecture/README.md`;
+- `docs/architecture/system-overview.md`;
+- `docs/architecture/technical-decisions.md`;
+- current ADR statuses;
+- complete accepted Domain Atlas sources/continuations needed for current semantics;
+- closed Whole Logical Model, final decision/assumption register continuation and remote closure;
+- this workstream's open Phase 5–10 obligations;
+- the cleaned deferred `backend-foundation.md` as a downstream consumer, not an authority over the baseline.
+
+Classify candidate baseline statements as:
+
+```text
+DECIDED / CURRENT
+SEMANTICALLY PROHIBITED
+MANDATORY DOWNSTREAM HARDENING
+OPEN / REQUIREMENT NEEDED
+OPEN / BENCHMARK NEEDED
+RUNTIME / TECHNICAL — NOT DOMAIN
+PHYSICAL — NOT YET AUTHORIZED
+EVIDENCE / NOT CURRENT SPEC
+DUPLICATE / DO NOT COPY
+DECISION REQUIRED
+```
+
+The Phase 4 bridge should make it possible to answer, from one current source plus linked authorities:
+
+```text
+what is already decided?
+what is prohibited?
+what is still open?
+which WL-H01..WL-H12 constraints must downstream work preserve?
+which concepts are runtime/backend rather than Domain owners?
+which choices require requirements first?
+which choices require Physical/runtime benchmark evidence?
+what remains explicitly unauthorized?
+```
+
+Only after the read-only inventory may a **separate exact Phase 4 write gate** be presented.
 
 ## Remaining roadmap
 
-### Phase 4 — current Pre-Physical Architecture Baseline
+### Phase 4 — current Pre-Physical Architecture Baseline — NEXT
 
 Create one current bridge source stating decided/open/prohibited architecture, `WL-H01..WL-H12`, runtime-vs-Domain boundaries and future benchmark obligations.
 
@@ -475,11 +557,11 @@ Specialized infrastructure requires demonstrated benefit. Evidence may come from
 ## Exact continuation
 
 ```text
-PHASE 2
+PHASE 3
 QA PASS
 
 NEXT
-PHASE 3 — READ-ONLY BACKEND FOUNDATION HANDOFF AUDIT
+PHASE 4 — READ-ONLY CURRENT PRE-PHYSICAL ARCHITECTURE BASELINE INVENTORY
 
-NO PHASE 3 WRITES YET
+NO PHASE 4 WRITES YET
 ```
