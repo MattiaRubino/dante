@@ -29,7 +29,12 @@ Phase 3 Backend Foundation handoff cleanup — QA PASS
 Phase 4 Current Pre-Physical Architecture Baseline — QA PASS
 Phase 5 requirements that can constrain Physical design — QA PASS
 Phase 6 AI/context/runtime/integration boundaries — QA PASS
-Coordinated Phase 7–9 architecture tranche — NEXT
+Phase 7 durable workflow/async benchmark — QA PASS WITH CONDITIONAL RANKING
+Phase 8 governed API/command/effect contract — QA PASS
+Phase 9 search/observability/calendar/solver pressure — QA PASS
+
+NEXT
+Phase 10 Physical benchmark specification/register — READ-ONLY FIRST
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -50,9 +55,10 @@ Phase 4 UX remains a separate active product/design workstream.
 6. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
 7. [`development/branching-and-environments.md`](development/branching-and-environments.md)
 8. active workstream handoff
-9. [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md), [`architecture/requirements/README.md`](architecture/requirements/README.md), [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md), [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md) and [`architecture/README.md`](architecture/README.md) with linked current sources
-10. relevant ADR/evidence/methodology
-11. relevant implementation/tests
+9. current architecture navigation beginning at [`architecture/README.md`](architecture/README.md) and [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md)
+10. complete Phase 5 requirement package + Phase 6–9 contracts
+11. relevant ADR/evidence/methodology
+12. relevant implementation/tests
 
 Conversation history is secondary to repository truth.
 
@@ -69,12 +75,13 @@ A split caused only by size/tool limits is a lossless physical partition of the 
 - [`architecture/requirements/README.md`](architecture/requirements/README.md) + four linked Phase 5 packages — **CURRENT** requirements constraining later Physical/runtime/API/backend design.
 - [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md) — **CURRENT** Phase 6 AI/context/runtime contract.
 - [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md) — **CURRENT** Phase 6 five-mode Integration Hub/provider contract.
+- [`architecture/durable-execution-benchmark.md`](architecture/durable-execution-benchmark.md) — **CURRENT** Phase 7 benchmark/posture.
+- [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md) — **CURRENT** Phase 8 consequential-operation contract.
+- [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md) — **CURRENT** Phase 9 pressure contract.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
 - SQLAlchemy/Alembic — conditional candidates depending on accepted Physical persistence.
-- AI — replaceable/provider-neutral gateway + bounded Context Builder + governed proposals/effects.
-- Integration/provider state remains distinct from canonical LifeOS state.
 - DEV/UAT/PROD are deployment environments, not permanent Git branches.
 - Repository visibility: **public**.
 
@@ -98,8 +105,6 @@ Current constraints include, among others:
 - expected-state writes, idempotency != identity, no silent material last-write-wins, truthful multi-owner atomic/staged consistency and canonical/provider-effect separation;
 - multi-device divergence, operation-specific offline semantics, truthful degraded/provider state, long-history/current-state access and recovery testing;
 - RPO/RTO/latency/availability/scale/offline-duration values remain explicit open parameters, not invented Phase 5 constants.
-
-Mechanisms such as Auth provider/policy engine, token/session store, encryption/KMS, outbox/inbox/queue/workflow, CRDT/OT, database schema, replication/failover and concrete offline-sync technology remain later decisions.
 
 ## Current Phase 6 boundary inputs
 
@@ -127,8 +132,6 @@ tool invocation != authorization
 tool/protocol action != canonical governed operation
 ```
 
-Non-human Principals, delayed tool effects, provider fallback and external/retrieved instructions remain subject to Phase 5 governance/privacy/consistency requirements.
-
 ### Integration Hub
 
 Five current modes:
@@ -149,7 +152,83 @@ provider state/effect != canonical LifeOS state/effect automatically
 
 Sync conflict does not use universal last-write-wins; live-read failure can remain unknown/degraded; indexes/projections remain derived/deletion-aware; external effects preserve idempotency, ambiguous-outcome and reconciliation truth. MCP/A2A/future protocols remain adapters, not ontology/governance.
 
-AI provider/model, agent framework, provider adapters, MCP/A2A adoption and durable workflow mechanisms remain deferred.
+## Current Phase 7–9 architecture inputs
+
+### Phase 7 — durable execution / async
+
+LifeOS distinguishes bounded background work from material long-running durable coordination.
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style remains a valid baseline mechanism class
+
+DEDICATED DURABLE EXECUTION
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+```
+
+Dedicated durable execution is structurally justified for classes involving material long waits, human review, callbacks, crash-resume, cancellation/timeouts, compensation or reconciliation.
+
+Runtime completion/cancellation is not Domain truth by identity. No runtime creates exactly-once external reality automatically.
+
+### Phase 8 — governed operation / effect
+
+Current contract preserves as applicable:
+
+```text
+contract/version
+semantic target/facet
+requested effect
+input/candidate
+purpose/context
+material/expected state
+derived/live basis + freshness
+Principal / actual Actor / represented party
+governance basis
+autonomy / preview / confirmation
+idempotency
+correlation/causation
+execution class
+deadline/expiry/cancellation semantics
+canonical result
+provider result
+runtime result
+conflict/partial/reconciliation/provenance
+```
+
+```text
+HTTP route / UI button / tool / AuthZ action / workflow step
+!= canonical governed operation/effect
+```
+
+A single `success`/generic status cannot replace distinct request/canonical/provider/runtime/domain result axes. Concrete route/DTO/API design remains deferred.
+
+### Phase 9 — search / observability / calendar / solver
+
+Current posture:
+
+```text
+SEARCH
+structured + lexical/full-text = baseline
+semantic/vector = bounded candidate
+pgvector = bounded candidate if PostgreSQL selected
+no dedicated search/vector infrastructure by default
+
+OBSERVABILITY
+OpenTelemetry-first / equivalent
+no vendor selected
+
+CALENDAR
+iCalendar / JSCalendar / provider APIs
+= interoperability/adaptor pressure, not ontology
+
+SOLVER
+simple deterministic rules / heuristics = baseline
+OR-Tools CP-SAT = preferred specialized benchmark candidate — NOT implemented
+```
+
+Search miss != canonical nonexistence; vector similarity != semantic truth; telemetry != Domain Provenance/audit by identity; provider calendar tokens/IDs != LifeOS native/material identity; solver `UNKNOWN != INFEASIBLE`; solver result != accepted canonical effect.
 
 ## Current Physical benchmark posture
 
@@ -159,6 +238,7 @@ No Physical technology is finally selected.
 - TypeDB — mandatory challenger;
 - Neo4j/property graph — serious secondary/read-projection candidate;
 - event/document mechanisms — bounded candidates;
+- pgvector — bounded semantic-retrieval candidate;
 - generic EAV/generic-edge/universal meta-model — hard reject for canonical kernel.
 
 Physical selection requires a later separate user authorization and benchmark/design scope.
@@ -177,13 +257,19 @@ Physical selection requires a later separate user authorization and benchmark/de
 - Phase 3: **QA PASS** — Backend Foundation handoff cleaned against closed Domain/Logical/current architecture.
 - Phase 4: **QA PASS** — current Pre-Physical Architecture Baseline established and made mandatory downstream input without authorizing Physical/backend implementation.
 - Phase 4 content HEAD before global closure markers: `d67cd83f462611b2cc6d341937432e705f7a8682`.
-- Phase 5: **QA PASS** — four requirement packages plus index established; baseline/backend handoff/navigation propagated; lossless size/tool-limit split rule hardened.
+- Phase 5: **QA PASS** — four requirement packages plus index established; lossless size/tool-limit split rule hardened.
 - Phase 5 PRE-SCOPE: `e26f95af6d46292bf0f42aa43fa67b1f9f4fc05f`.
-- Phase 5 content HEAD before global closure markers: `c29cfe4bde47d5df4f46507a5f1717acd1903112`.
-- Phase 6: **QA PASS** — AI/context/runtime + Integration Hub boundary contracts established and propagated without provider/runtime/protocol selection.
+- Phase 5 content HEAD: `c29cfe4bde47d5df4f46507a5f1717acd1903112`.
+- Phase 6: **QA PASS** — AI/context/runtime + Integration Hub contracts established.
 - Phase 6 PRE-SCOPE: `40728080ae7a69703d40d14dd256a556516ccc58`.
-- Phase 6 content HEAD before global closure markers: `67d6a0d63ecaf39379912606dcf5113550718594`.
-- Next: **coordinated Phase 7–9 architecture tranche**, preserving internal dependency order `7 → 8 → 9`.
+- Phase 6 content HEAD: `67d6a0d63ecaf39379912606dcf5113550718594`.
+- Coordinated Phase 7–9 PRE-SCOPE: `2cf77ea7e3d548147bbe2b0d87304b4d5393ff5f`.
+- Phase 7 checkpoint HEAD: `022131c2568c0375e74563e46a22c9347b277fc5`.
+- Phase 8 checkpoint HEAD: `1d92f9e77ecc808095086fc5497eaac88e2039fa`.
+- Phase 9 checkpoint HEAD: `95df2a17b1187a590b5cba646ba0e107c038e5d3`.
+- Coordinated Phase 7–9 content HEAD: `4cbf50ec23ede3b02a49c75bc52fa57c3b192a6d`.
+- Content QA: **PASS** — 8 commits, 3 added, 5 modified, 0 deleted, 0 unexpected, behind 0.
+- Next: **Phase 10 — Physical benchmark specification/register, READ-ONLY FIRST**.
 - Domain/Logical remain closed/unchanged.
 
 ### Phase 4 — Home / Today UX
@@ -198,15 +284,16 @@ Physical selection requires a later separate user authorization and benchmark/de
 ### Physical Model
 
 - **NOT STARTED / NOT AUTHORIZED**.
-- May start only after Pre-Physical Coherence closes and the user approves a separate branch/PRE-SCOPE/write gate/benchmark/validation boundary.
+- Phase 10 prepares benchmark specification/register only; it does not start the Physical Model.
+- A separate explicit user authorization remains required before a Physical Model workstream can begin.
 
 ### Backend Foundation
 
 - **NOT STARTED / DEFERRED**.
 - Current future handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-- The current handoff consumes the Pre-Physical Architecture Baseline, Phase 5 requirements and Phase 6 boundary contracts and remains intentionally non-executable.
+- The handoff consumes the Pre-Physical Architecture Baseline, Phase 5 requirements and Phase 6–9 contracts and remains intentionally non-executable.
 - Backend Foundation may start only after Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable accepted Physical/runtime/security/integration/API prerequisites exist.
-- Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/backend/Auth/provider implementation or a persistence-specific bootstrap from this status.
+- Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/backend/Auth/provider/runtime implementation or persistence-specific bootstrap from this status.
 
 ## Current architecture documentation policy
 
@@ -214,19 +301,17 @@ Current specifications contain current truth only. ADRs preserve rationale + exp
 
 Stale current docs are replaced/deleted only after knowledge coverage proves meaningful content is safely mapped.
 
-Current architecture navigation starts at [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md), [`architecture/requirements/README.md`](architecture/requirements/README.md), [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md), [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md) and [`architecture/README.md`](architecture/README.md).
+Current architecture navigation starts at [`architecture/README.md`](architecture/README.md) and includes all Phase 5–9 current sources linked there.
 
-## Phase 2 verified result
+## Verified earlier phase results
 
-Approved Phase 2 PRE-SCOPE:
+### Phase 2
 
-`d9610a7da4fe8fc759e9809843d989f1befcda5c`
+Approved PRE-SCOPE: `d9610a7da4fe8fc759e9809843d989f1befcda5c`.
 
-Verified content HEAD before closure markers:
+Verified content HEAD: `dfc1f4e124f362d342c336485e166c8ac57afba4`.
 
-`dfc1f4e124f362d342c336485e166c8ac57afba4`
-
-Remote fallback QA result:
+Remote fallback QA:
 
 ```text
 linear content commits 17
@@ -237,49 +322,19 @@ unexpected              0
 main changed            0
 ```
 
-The native GitHub compare endpoint returned `404` and was not counted as PASS. Equivalent scope was proven through remote refs, the bounded linear commit chain, per-commit single-path/status evidence and remote payload readback.
+The native compare endpoint returned `404`; equivalent remote evidence was used and explicitly recorded. Knowledge coverage for retired `architecture/personal-data-ai-integration.md` passed with zero unclassified meaningful content and zero valid requirement loss.
 
-Knowledge coverage for the retired `architecture/personal-data-ai-integration.md` passed:
+### Phase 3
 
-```text
-unclassified meaningful content = 0
-valid requirement lost = 0
-current truth represented = PASS
-rationale worth retaining mapped = PASS
-references/navigation repaired = PASS
-```
+Backend Foundation handoff was cleaned against current Domain/Logical/architecture truth and remains deferred/non-executable.
 
-The retired file is absent from the active branch. Historical `domain-model-logical-readiness*` evidence was not modified.
+### Phase 4
 
-## Phase 3 result
+The current Pre-Physical Architecture Baseline was established without reopening Domain/Logical or authorizing Physical/runtime implementation.
 
-The Backend Foundation cleanup preserves useful future implementation requirements while removing or deferring stale assumptions.
+### Phase 5
 
-Current future handoff establishes Domain + Logical as consumed closed authorities, Physical/runtime/API prerequisites as later gates, SQLAlchemy/Alembic as conditional implementation candidates, and no canonical first slice based on old product-label ontology.
-
-Exact Phase 3 PRE-SCOPE and remote closure evidence are recorded in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
-
-## Phase 4 result
-
-[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) is the current bridge source for:
-
-- decided current direction versus implementation authorization;
-- semantic non-collapse/prohibited shortcuts;
-- `LR-01..LR-13` / discriminated-reference and state-layer boundaries;
-- mandatory `WL-H01..WL-H12` downstream hardenings;
-- runtime/product/technical concepts that are not Domain owners by default;
-- AI/integration current boundaries;
-- Physical and durable-workflow benchmark posture;
-- Phase 5–12 ownership of still-open obligations;
-- explicit non-authorization of Physical/schema/API/Auth/runtime/provider/backend implementation.
-
-It coordinates current authority; it does not duplicate or reopen Domain/Logical semantics.
-
-## Phase 5 result
-
-Phase 5 converted already-supported Domain/Logical/product/security pressure into four current Pre-Physical requirement packages without selecting implementation mechanisms.
-
-Remote content QA from Phase 5 PRE-SCOPE to content HEAD returned:
+Remote content QA:
 
 ```text
 ahead_by       10
@@ -291,7 +346,7 @@ deleted          0
 unexpected       0
 ```
 
-The five created paths are the requirement index plus four packages. The five content-local updates are architecture navigation/baseline, Backend Foundation handoff and the two workflow documents that state explicitly:
+The split rule was hardened explicitly:
 
 ```text
 SIZE / TOOL-LIMIT SPLIT
@@ -299,16 +354,9 @@ SIZE / TOOL-LIMIT SPLIT
 != SUMMARY / CONDENSATION / HIDDEN CONTENT REWRITE
 ```
 
-No Domain/Logical/ADR/Physical/backend implementation path was changed by the Phase 5 content package.
+### Phase 6
 
-## Phase 6 result
-
-Phase 6 creates two current boundary contracts:
-
-- [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md);
-- [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md).
-
-The Phase 6 content package passed remote compare from PRE-SCOPE to content HEAD:
+Remote content QA:
 
 ```text
 ahead_by        8
@@ -320,35 +368,63 @@ deleted           0
 unexpected        0
 ```
 
-The six content-local updates are architecture navigation/baseline/system/technical, ADR-005 and Backend Foundation. No Domain/Logical/Physical/backend implementation path was changed.
+Phase 6 selected no AI provider/model, agent framework, workflow engine, MCP/A2A implementation or provider adapter.
 
-Phase 6 selects no AI provider/model, agent framework, workflow engine, MCP/A2A implementation or provider adapter.
+## Coordinated Phase 7–9 result
 
-## Immediate next work — coordinated Phase 7–9 tranche
-
-Treat Phases 7, 8 and 9 as one coordinated Pre-Physical architecture tranche to reduce repeated global-document churn, while preserving three ordered internal checkpoints:
+Internal checkpoints were executed and remotely verified in dependency order:
 
 ```text
-Phase 7
-Durable workflow / async benchmark
-        ↓ accepted benchmark result / constraints
-Phase 8
-Governed API / command / effect contract
-        ↓ accepted operation/effect surface
-Phase 9
-Search / observability / calendar / solver pressure
+PHASE 7
+Durable execution benchmark
+commit 022131c2568c0375e74563e46a22c9347b277fc5
+PASS WITH CONDITIONAL RANKING
+        ↓
+PHASE 8
+Governed operation/effect contract
+commit 1d92f9e77ecc808095086fc5497eaac88e2039fa
+PASS
+        ↓
+PHASE 9
+Search/observability/calendar/solver pressure
+commit 95df2a17b1187a590b5cba646ba0e107c038e5d3
+PASS
 ```
 
-The tranche may share one outer read-only inventory and, after a separately approved exact gate, one bounded propagation scope. However:
+The three current contracts were then integrated into five architecture/backend consumers.
 
-- Phase 8 must consume Phase 7 results rather than assuming a workflow mechanism;
-- Phase 9 must consume the accepted Phase 8 effect/disclosure boundary;
-- each internal checkpoint gets its own QA/verdict before the next is treated as accepted;
-- no failure in one checkpoint is hidden by the outer combined scope;
-- no Physical technology is selected by the tranche.
+Content HEAD:
 
-Phase 7 begins read-only with the current requirements and Phase 6 contracts.
+`4cbf50ec23ede3b02a49c75bc52fa57c3b192a6d`
+
+Remote content integration QA from Phase 7–9 PRE-SCOPE:
+
+```text
+ahead_by       8
+behind_by      0
+total_commits  8
+added           3
+modified        5
+deleted         0
+unexpected      0
+```
+
+No Domain/Logical/ADR/Physical/backend implementation path was changed by the content package.
+
+## Immediate next work
+
+```text
+PHASE 10
+PHYSICAL BENCHMARK SPECIFICATION / REGISTER
+READ-ONLY FIRST
+```
+
+Phase 10 must consume the complete current architecture plus Phase 5 open parameters and either resolve or explicitly scenario-model values that materially affect candidate ranking.
+
+It must define benchmark cases/register/acceptance logic without starting a Physical schema/model or selecting a database by convenience.
 
 ## Non-negotiable downstream obligations
 
-`WL-H01..WL-H12`, all accepted Phase 5 requirements and both Phase 6 boundary contracts must survive later architecture/Physical/runtime work. Open parameters/decisions must be resolved at the appropriate later gate rather than silently defaulted.
+`WL-H01..WL-H12`, all accepted Phase 5 requirements, both Phase 6 boundary contracts and all three Phase 7–9 current architecture contracts must survive Phase 10 and later Physical/runtime work.
+
+Open parameters/decisions must be resolved at the appropriate later gate rather than silently defaulted.
