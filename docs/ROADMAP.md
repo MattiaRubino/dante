@@ -58,6 +58,9 @@ Phase 3 — Backend Foundation handoff cleanup
 QA PASS
 
 Phase 4 — Current Pre-Physical Architecture Baseline
+QA PASS
+
+Phase 5 — requirements that can constrain Physical design
 NEXT
 ```
 
@@ -91,7 +94,7 @@ rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
 ```
 
-When a canonical document is physically split, the complete continuation chain is one logical document and must be read before drawing current-state conclusions.
+When a canonical document is physically split, the complete continuation chain is one logical document and must be read before drawing current-state conclusions. Physical splitting is a tooling/layout mechanism, not a reason to create parallel authority.
 
 ## Pre-Physical sequence
 
@@ -99,8 +102,8 @@ When a canonical document is physically split, the complete continuation chain i
 2. **Phase 1 — global entry-point/current-truth alignment** — QA PASS.
 3. **Phase 2 — architecture supersession/current-truth cleanup** — QA PASS.
 4. **Phase 3 — Backend Foundation handoff cleanup** — QA PASS.
-5. **Phase 4 — current Pre-Physical Architecture Baseline** — NEXT.
-6. **Phase 5 — requirements that can constrain Physical design**:
+5. **Phase 4 — current Pre-Physical Architecture Baseline** — QA PASS.
+6. **Phase 5 — requirements that can constrain Physical design** — NEXT:
    - AuthN/AuthZ;
    - security/privacy/retention/recovery;
    - transaction/consistency/outbox/side effects;
@@ -118,9 +121,12 @@ When a canonical document is physically split, the complete continuation chain i
 
 Current navigation:
 
+- [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md)
 - [`architecture/README.md`](architecture/README.md)
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
+
+The Pre-Physical Architecture Baseline is the current bridge for decided/prohibited/open/mandatory downstream constraints and authorization boundaries. It coordinates but does not replace Domain/Logical/ADR authority.
 
 The old mixed `architecture/personal-data-ai-integration.md` current specification has been retired after knowledge-coverage QA. Its surviving valid knowledge is carried by current architecture, ADR, Logical and Pre-Physical sources; the old payload remains recoverable in Git history.
 
@@ -157,20 +163,23 @@ Current result:
 
 Backend Foundation may become executable only after Pre-Physical closure, separate Physical acceptance and the applicable accepted runtime/security/integration/API prerequisites.
 
-## Phase 4 — current Pre-Physical Architecture Baseline — NEXT
+## Phase 4 — current Pre-Physical Architecture Baseline — QA PASS
 
-Create one current bridge source stating:
+[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) now provides one current bridge source for:
 
-- what is decided;
-- what is semantically prohibited;
-- what remains open;
-- which `WL-H01..WL-H12` constraints are mandatory;
-- what is runtime/backend rather than Domain;
-- what must be benchmarked during Physical design.
+- decided current direction versus implementation authorization;
+- semantic prohibitions/non-collapse guardrails;
+- Logical representation/reference and state-layer boundaries;
+- mandatory `WL-H01..WL-H12` downstream constraints;
+- runtime/product/technical concepts that are not Domain owners by default;
+- AI/context/integration boundaries already decided versus still open;
+- Physical and durable-workflow benchmark posture;
+- explicit Phase 5–12 ownership of unresolved requirements/benchmark work;
+- explicit non-authorization of Physical/schema/API/Auth/runtime/provider/backend implementation.
 
-Phase 4 begins read-only. Inventory current architecture/model/ADR/workstream sources first, classify the bridge content, then present a separate exact write gate.
+Backend Foundation now names this baseline as mandatory downstream reading. Domain and Logical semantics were not reopened or rewritten.
 
-## Phase 5 — requirements before Physical
+## Phase 5 — requirements before Physical — NEXT
 
 Define requirements, not implementation, for:
 
