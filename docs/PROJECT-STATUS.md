@@ -24,7 +24,8 @@ WD-05 PASS
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
 Phase 0 + Phase 1 QA PASS
-Phase 2 architecture supersession/current-truth cleanup — CONTENT WRITTEN / FINAL QA PENDING
+Phase 2 architecture supersession/current-truth cleanup — QA PASS
+Phase 3 Backend Foundation handoff cleanup — READ-ONLY AUDIT NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -86,7 +87,8 @@ Physical selection requires a later separate user authorization and benchmark/de
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md)
 - Phase 0 + 1: **QA PASS**.
-- Phase 2: architecture current-truth/supersession cleanup content written; final remote scope/coverage QA pending.
+- Phase 2: **QA PASS** — current architecture/supersession cleanup completed with exact remote path QA and knowledge-coverage QA.
+- Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`.
 - Domain/Logical remain closed/unchanged.
 
 ### Phase 4 — Home / Today UX
@@ -107,7 +109,7 @@ Physical selection requires a later separate user authorization and benchmark/de
 
 - **NOT STARTED / DEFERRED**.
 - Existing handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-- Existing handoff still requires its separately gated Phase 3 cleanup before execution.
+- Phase 3 will first audit that handoff read-only, then propose a separate exact write gate.
 - Backend Foundation must eventually consume closed Domain + Logical, accepted Physical Model and current runtime/security/integration contracts.
 
 ## Current architecture documentation policy
@@ -118,12 +120,50 @@ Stale current docs are replaced/deleted only after knowledge coverage proves mea
 
 Current architecture navigation: [`architecture/README.md`](architecture/README.md).
 
+## Phase 2 verified result
+
+Approved Phase 2 PRE-SCOPE:
+
+`d9610a7da4fe8fc759e9809843d989f1befcda5c`
+
+Verified content HEAD before closure markers:
+
+`dfc1f4e124f362d342c336485e166c8ac57afba4`
+
+Remote fallback QA result:
+
+```text
+linear content commits 17
+added                  1
+modified              15
+deleted                 1
+unexpected              0
+main changed            0
+```
+
+The native GitHub compare endpoint returned `404` and was not counted as PASS. Equivalent scope was proven through remote refs, the bounded linear commit chain, per-commit single-path/status evidence and remote payload readback.
+
+Knowledge coverage for the retired `architecture/personal-data-ai-integration.md` passed:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
+
+The retired file is absent from the active branch. Historical `domain-model-logical-readiness*` evidence was not modified.
+
 ## Immediate next work
 
-1. Complete Phase 2 final remote physical-path + knowledge-coverage QA.
-2. Only after Phase 2 QA PASS, move to **Phase 3 — Backend Foundation handoff cleanup**, beginning with read-only review and a separate exact write gate.
-3. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
-4. Continue Phase 4 UX independently.
+1. **Phase 3 — read-only Backend Foundation handoff audit.**
+2. Compare `docs/workstreams/backend-foundation.md` against current Domain + Logical + architecture truth.
+3. Classify every stale/current requirement before proposing changes.
+4. Then present a **separate exact Phase 3 write gate**.
+5. Do not start Phase 3 writes from the consumed Phase 2 gate.
+6. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
+7. Continue Phase 4 UX independently.
 
 ## Non-negotiable downstream Logical obligations
 
