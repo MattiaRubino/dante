@@ -1,125 +1,610 @@
+<!-- LIFEOS-CANONICAL-SPLIT document="domain-model.md" part="1" total="2" -->
+> **Canonical document split — Part 1 of 2.** Parts 1–2 together form one authoritative document; this is a physical split only, not a summary/reference hierarchy. The payload preserves the full pre-compaction baseline first and later downstream amendments in sequence; later explicit amendments override stale status/deferral wording without deleting the earlier rationale. Navigation: **Part 1** · [Part 2](domain-model-part-2.md)
+
+<!-- LIFEOS-CANONICAL-PAYLOAD -->
 # Workstream — Core Domain Model v0
 
-- Status: **READY TO START**
-- Preferred initial execution: bounded sub-scope of `feature/backend-foundation`
-- Separate branch later if needed: `feature/domain-model`
+- Status: **IN PROGRESS — Relationships / Reasoning active after Clusters 1–4 validation**
+- Active branch: `feature/domain-model`
+- Current upstream baseline: `main` integrated through `c5120ff463e027c42f4a26fc613d0917596ca738`
+- Main-to-domain merge commit: `08595f9526e08db53d9b446b8a7a76cd46adcd55`
+- PR: none yet
 - Work type: domain modeling / invariants / persistence preparation
+- Backend implementation: not started in this branch
+- Current next review: **reselect by dependency leverage after Participation; strongest current pressure area is Authority / Visibility / Acceptance-Acknowledgement / delegation**
 
 ## Purpose
 
-Turn the accepted LifeOS product vocabulary into an implementation-ready domain model without prematurely designing every specialist module or every final SQL table.
+Turn LifeOS product requirements into an implementation-ready domain model without prematurely fixing specialist modules, collaboration infrastructure, API shapes or final SQL tables.
 
-## Required reading
+Earlier product terminology is evidence, not automatic truth. Candidates are revalidated through real-world workflows, mature-product/standard benchmarks, adversarial reduction, history/correction tests, explicit multi-actor stress and cross-concept consistency.
 
-1. [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md)
-2. [`../development/operating-rules.md`](../development/operating-rules.md)
-3. [`../product/v1-core-domain-glossary.md`](../product/v1-core-domain-glossary.md)
-4. [`../product/v1-goal-and-program-lifecycle.md`](../product/v1-goal-and-program-lifecycle.md)
-5. [`../product/v1-execution-status.md`](../product/v1-execution-status.md)
-6. [`../product/v1-confirmation-and-reminders.md`](../product/v1-confirmation-and-reminders.md)
-7. [`../product/v1-scheduling-flexibility.md`](../product/v1-scheduling-flexibility.md)
-8. [`../product/v1-data-history-and-privacy.md`](../product/v1-data-history-and-privacy.md)
-9. [`../product/feature-discovery-simulation-2026-08.md`](../product/feature-discovery-simulation-2026-08.md)
-10. [`../architecture/personal-data-ai-integration.md`](../architecture/personal-data-ai-integration.md)
-11. [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md)
-12. [`../decisions/ADR-006-hybrid-personal-data-model.md`](../decisions/ADR-006-hybrid-personal-data-model.md)
+**Accepted means current best decision, not immutable decision.**
 
-## Where to work
+A roadmap concept is a candidate to validate, not an object that must survive. Rejection is correct when the capability can be preserved more cleanly without an additional kernel primitive.
 
-Because Domain Model v0 and Backend Foundation will initially touch the same package boundaries, persistence mapping and tests, the default is to develop Domain Model v0 **inside `feature/backend-foundation` first**.
+---
 
-Open a separate `feature/domain-model` branch only when:
+# Required reading — current handoff
 
-- Backend Foundation has merged and Domain Model work continues independently; or
-- there is a clearly separated documentation/modeling slice that will not edit the same implementation files in parallel.
+Read these first, in order:
 
-Do not run two branches against the same domain files merely to make the workstreams look separate on paper.
+1. [`../domain/README.md`](../domain/README.md)
+2. [`../domain/language-map.md`](../domain/language-map.md)
+3. [`../domain/validation-methodology-v3.md`](../domain/validation-methodology-v3.md)
+4. [`../domain/validation-execution-template-v3.md`](../domain/validation-execution-template-v3.md)
+5. [`../domain/multi-actor-readiness-v1.md`](../domain/multi-actor-readiness-v1.md)
+6. [`../domain/checkpoints/intention-execution-v0.md`](../domain/checkpoints/intention-execution-v0.md)
+7. [`../domain/checkpoints/time-v0.md`](../domain/checkpoints/time-v0.md)
+8. [`../domain/checkpoints/observed-reality-evidence-v0.md`](../domain/checkpoints/observed-reality-evidence-v0.md)
+9. [`../domain/checkpoints/data-subjects-v0.md`](../domain/checkpoints/data-subjects-v0.md)
+10. [`../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
+11. [`../domain/checkpoints/cross-cluster-validation-v4.md`](../domain/checkpoints/cross-cluster-validation-v4.md)
+12. [`../domain/checkpoints/relationship-v0-validation.md`](../domain/checkpoints/relationship-v0-validation.md)
+13. [`../domain/concepts/responsibility.md`](../domain/concepts/responsibility.md)
+14. [`../domain/checkpoints/responsibility-v0-validation.md`](../domain/checkpoints/responsibility-v0-validation.md)
+15. [`../domain/concepts/participation.md`](../domain/concepts/participation.md)
+16. [`../domain/checkpoints/participation-v0-validation.md`](../domain/checkpoints/participation-v0-validation.md)
+17. [`../domain/checkpoints/multi-actor-evidence-synthesis-v0.md`](../domain/checkpoints/multi-actor-evidence-synthesis-v0.md)
 
-The Domain Model handoff remains separate even when the code lives on the Backend Foundation branch, so its decisions/questions can be resumed independently.
+Then inspect the concept specs relevant to the immediate question. Do not rely on old product glossaries as current ontology authority.
 
-## Concepts expected to be evaluated
+Validation Methodology v2 and its addendum are historical audit sources only. v3 is mandatory.
 
-The accepted vocabulary includes or strongly suggests:
+---
 
-- User / Workspace;
-- Goal;
-- Program;
-- Project;
-- Activity / Task;
-- Event;
-- Routine;
-- Reminder;
-- Milestone;
-- Schedule occurrence / Calendar block;
-- Actual session/result;
-- Confirmation / provenance / source;
-- Register / RegisterEntry / Quantity;
-- Asset / Subject;
-- Skill / skill state;
-- Requirement / Capability;
-- Dependency;
-- semantic Relation;
-- Version / Decision / AuditEvent;
-- Integration / external record;
-- Template / Review Queue / Trigger where justified by V1 sequencing.
+# Operating rules
 
-This list is a modeling input, not a command to create one SQL table per bullet.
+- Work one candidate/boundary at a time, then run the required integration gates.
+- Use Methodology v3 for every concept and cluster checkpoint.
+- From **Relationships / Reasoning onward, the Adjacent Dependency Sweep is mandatory before every concept verdict**.
+- Treat mature apps, specialist systems, standards and APIs as evidence, never automatic design authority.
+- Benchmark behavior, identity, lifecycle, relationships, product friction and failure modes — not merely vocabulary.
+- A competitor calling something `User`, `Actor`, `Asset`, `Resource`, `Item`, `Relationship`, `Assignment`, `Participant`, etc. is not an ontology decision for LifeOS.
+- Allowed concept/cluster verdicts remain `PASS`, `PASS WITH HARDENING`, `REOPEN`, `DEFERRED DEPENDENCY`.
+- Dependency closure classes remain `RESOLVED`, `SAFE DEFERRED`, `REOPEN`.
+- `SAFE DEFERRED` requires: why current acceptance is safe, future owner/stage, exact reopening trigger, tests to rerun.
+- No `TBD`, unnamed `future`, or generic `review later` for material dependencies.
+- Candidate rejection is valid when no distinct identity/lifecycle/authority/invariant/query behavior justifies a primitive.
+- Preserve useful product capability even when a historical kernel candidate is rejected.
+- Preserve planned/current/actual/history distinctions.
+- Preserve source/provenance/confirmation/evidence/authority distinctions.
+- Preserve native identity versus contextual-role distinctions.
+- Do not build the domain around `users.id`.
+- Do not create universal Subject, Actor, Resource, User, ManagedObject, RegisterEntry, Relationship, Responsibility, Participant/Participation, or semantic-free graph roots for implementation convenience.
+- Prefer the most specific truthful relation semantics over generic edges.
+- A semantically complete simple connection may remain direct; a materially rich connection may become a **specific qualified relation family**.
+- Qualified/structured relation != independent domain entity automatically.
+- Queryability, many-to-many cardinality, graph traversal and database row IDs do not create domain identity.
+- Relation orientation, symmetry, inverse and transitivity/propagation rules belong to the specific relation family, never to `Relationship` generally.
+- Assignment/Claim/Hand-off are not generic objects: every material operation must identify the specific semantic role being established/acquired/transferred.
+- Unknown Responsibility holder != explicitly open/unassigned/claimable Responsibility.
+- Assignment != Acceptance by default; hand-off request != effective transfer by default.
+- Responsibility != requester / expected performer / actual performer / Participation / Resource / Authority / Visibility / coordination Stewardship.
+- Participant is contextual involvement over native identity, not a Person/Actor/Account subtype/root.
+- Invitation is a Participation proposal/request, not Acceptance or Actual Participation.
+- Participation response != Actual Participation; `accepted != attended`, `declined != proved absent`, `no response != declined`, `no attendance evidence != proved absence`.
+- Participation != Session / Responsibility / Performer / Resource / Organizer / Authority / Visibility.
+- Shared Actual != identical actor-specific Actual Participation.
+- Provider attendance telemetry remains Evidence/Provenance until applicable reconciliation/Authority semantics establish current Participation truth.
+- Do not fabricate historical intention, allocation, identity, authority, relationship/responsibility/participation state, or earlier knowledge from later correction/relevance.
+- Do not create one table/entity per life topic.
+- Do not collapse the domain into arbitrary JSON.
+- Do not let AI inference become established identity, Actual, Confirmation, relationship, Responsibility, Participation, allocation, Authority, or disclosure permission automatically.
+- Preserve progressive disclosure; kernel terminology need not appear in ordinary UI.
+- Re-run earlier clusters when Relationships / Reasoning materially pressures accepted boundaries.
+- Do not begin final SQL/API design until Relationships / Reasoning plus whole-domain gates have passed.
 
-## Questions Domain Model v0 must answer
+---
 
-- What is an entity versus a value object or enum/state?
-- What is owned directly by a workspace?
-- Which relationships are structural invariants and should become explicit relational references?
-- Which relationships are personal/emergent and belong to the semantic relation layer?
-- Which values require provenance or confirmation state?
-- What is planned state versus actual state?
-- What changes create a new version versus a normal mutable update?
-- What is canonical fact versus derived summary?
-- Which flexible properties are appropriate for metadata/JSONB?
-- What information must be present for safe deduplication/import?
-- What invariants must be enforceable without AI?
+# Current validated baseline
 
-## Rules
+```text
+Intention & Execution v0        PASS
+Time v0                         PASS
+Observed Reality & Evidence v0  PASS
+Data / Subjects v0              PASS WITH HARDENING
+Deferred Dependency Closure     PASS
+Cross-Cluster Validation v4     PASS WITH HARDENING
+Relationship v0 review          PASS WITH HARDENING
+Responsibility v0 review        PASS WITH HARDENING
+Participation v0 review         PASS WITH HARDENING
+Multi-Actor Evidence Synthesis  PASS WITH HARDENING
+Validation Methodology v3       ACTIVE MANDATORY STANDARD
 
-- Do not model one table per life topic (`english`, `photography`, `farming`, etc.).
-- Do not collapse everything into one `entities` table or arbitrary JSON blob.
-- Do not treat AI inference as confirmed truth.
-- Keep operational policy separate from domain/topic type where behavior differs by user/program.
-- Preserve planned/actual/history distinctions.
-- Prefer progressive formalization: generic first when genuinely unpredictable; promote repeated/query-heavy concepts through reviewed migrations.
-- Do not reopen the accepted hybrid data architecture merely because a first implementation mapping is inconvenient; propose a deliberate ADR change only with strong new evidence.
+structural reopenings           0
+unclassified material debt      0
+```
 
-## Output expected before broad persistence implementation
+Current accepted concept/capability set includes:
 
-- concise conceptual model;
-- entity/value-object boundaries;
-- key invariants;
-- ownership model;
-- lifecycle/state distinctions;
-- structural relationship map;
-- dynamic relationship/provenance rules;
-- first persistence mapping for the initial vertical slice;
-- explicit list of questions intentionally deferred.
+```text
+Goal
+Plan
+Activity
+Event
+Routine
+Milestone
+Occurrence
+Schedule
+Session
+Temporal Constraint
+Recurrence
+Availability & Capacity
+Actual
+Outcome
+Observation
+Confirmation
+Evidence
+Provenance
+Quantity
+Subject        — semantic aboutness role
+Person         — native human entity
+Actor          — semantic agency category/capability
+Asset          — current scoped native physical-object entity
+Resource       — semantic planning/execution role/capability
+Relationship modeling discipline — cross-cutting semantic rule, not entity/root
+Responsibility — specific semantic accountability relation family, not entity/root
+Participation — specific semantic involvement relation family, not entity/root
+```
 
-## First implementation target
+Accepted conceptual boundary, detailed model deferred:
 
-The model should become concrete enough to implement:
+```text
+Account != Person != Actor
+Principal remains separate and deferred
+```
 
-`Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation`
+Rejected kernel candidates / roots:
 
-without requiring completion of every domain extension.
+```text
+Register
+universal RegisterEntry
+universal Subject entity/root
+universal Actor entity/root
+universal Resource entity/root
+universal User root
+universal ManagedObject root
+universal Relationship entity/root/supertype
+semantic-free related_to as kernel truth
+universal Responsibility entity/root
+universal Assignment primitive
+universal Claim primitive
+universal Hand-off primitive
+universal Participant entity/root
+universal Participation/member/social-graph root
+universal Invitation primitive
+universal Attendance primitive
+```
 
-## Next exact step
+---
 
-When Backend Foundation starts, mark this workstream **IN PROGRESS** on the same branch and begin with a conceptual/invariant pass before broad SQL mapping.
+# Cluster-4 closure — important final hardenings
 
-## Handoff maintenance
+## Actor
 
-Once modeling begins, record:
+Actor remains useful as the semantic category of meaningful agency, but specific roles such as:
 
-- actual branch/PR being used;
-- last validated commit/document revision;
-- resolved decisions;
-- unresolved questions;
-- current modeling task;
-- next exact modeling task.
+```text
+recorded_by
+performed_by
+observed_by
+confirmed_by
+proposed_by
+transformed_by
+responsible_for
+participant / Participation
+```
+
+are stronger than one generic `actor` edge when the specific role is known.
+
+## Resource
+
+Resource is contextual planning/execution eligibility/capability and **does not manufacture provider identity, Responsibility or Participation**.
+
+A provider may independently have Person identity, Asset identity, future Place/service identity, pool semantics, or Quantity/stock/supply semantics.
+
+Planning stages remain distinct:
+
+```text
+Requirement
+→ candidate(s)
+→ Allocation
+→ Reservation / Capacity Claim
+→ Actual use / consumption
+```
+
+None of these stages automatically establishes Responsibility or Participation.
+
+## Asset
+
+The mandatory terminology-neutral review is complete:
+
+```text
+universal ManagedObject root  REJECTED
+physical-object identity      RETAINED
+exact noun `Asset`            NON-SEMANTIC / reopenable
+```
+
+## Register
+
+Longitudinal product capability remains:
+
+```text
+native records
+→ query/filter/group
+→ valid aggregate/trend/comparison
+→ Tracker / History / Progress / Register UI
+```
+
+No universal RegisterEntry copy/source-truth layer.
+
+---
+
+# Relationship modeling discipline — current Cluster-5 baseline
+
+Normative checkpoint:
+
+- [`Relationship v0 validation`](../domain/checkpoints/relationship-v0-validation.md) — **PASS WITH HARDENING**.
+
+Current decision:
+
+```text
+UNIVERSAL Relationship ENTITY / ROOT / SUPERTYPE
+REJECTED
+
+semantic-free related_to as kernel truth
+REJECTED
+
+specific relation meaning + complete simple semantics
+→ direct typed/specific relation
+
+specific relation meaning + materially rich connection
+→ candidate specific qualified relation family
+```
+
+Key hardenings:
+
+- no forced direction: orientation semantics are relation-specific; symmetric relations remain possible;
+- qualified/structured relation does not automatically have independent domain identity;
+- query/cardinality/database pressure does not create identity;
+- binary source/target representation is not mandatory when it loses naturally n-ary context;
+- transitivity, symmetry, inverse semantics and propagation/reasoning are family-specific;
+- Subject, Evidence, Confirmation, Provenance, Actor roles, Resource stages, Responsibility, Participation and future Authority semantics must not be flattened into one `type + metadata` graph;
+- generic Personal Knowledge links remain separately SAFE DEFERRED and may not silently become operational/evidentiary/authority semantics;
+- AI-inferred relationships remain proposals/inferences unless the specific family/context establishes them through valid authority/decision semantics.
+
+This discipline must be re-tested by every material relation-family review.
+
+---
+
+# Responsibility v0 — current Cluster-5 baseline
+
+Normative references:
+
+- [`Responsibility v0`](../domain/concepts/responsibility.md);
+- [`Responsibility v0 validation`](../domain/checkpoints/responsibility-v0-validation.md) — **PASS WITH HARDENING**.
+
+Canonical question:
+
+> **Who is accountable for ensuring this bounded commitment is appropriately handled in this context?**
+
+Current decision:
+
+```text
+RESPONSIBILITY
+specific semantic relation family
+simple direct or specifically qualified when justified
+NOT universal entity/root
+
+ASSIGNMENT
+role-specific establishment/change operation
+NOT standalone universal primitive
+
+CLAIM
+self-initiated role-acquisition operation
+NOT standalone universal primitive
+
+HAND-OFF
+role-specific transfer workflow/pattern
+NOT standalone universal primitive
+
+COORDINATION STEWARDSHIP
+distinct semantic dimension
+standalone primitive SAFE DEFERRED
+```
+
+Key non-collapse rules:
+
+```text
+Responsibility != requester
+Responsibility != expected performer
+Responsibility != actual performer
+Responsibility != Participation
+Responsibility != Resource
+Responsibility != Authority
+Responsibility != Visibility
+Responsibility != ownership/custody
+Responsibility != coordination Stewardship
+unknown holder != explicitly open/unassigned
+```
+
+Important operational rules:
+
+- every Assignment/Claim/Hand-off must name the role it changes;
+- Assignment does not universally require Acceptance and does not universally make Responsibility effective immediately;
+- Claim effect is policy-dependent;
+- hand-off request does not universally equal effective transfer;
+- transfer of Responsibility does not silently transfer expected performer, Stewardship, Participation, Authority, Visibility or any other role;
+- ordinary Responsibility change preserves the underlying Activity identity;
+- eventual actual performer/participant does not rewrite historical Responsibility;
+- Accountless Person may bear Responsibility;
+- AI may propose but does not establish/transfer Responsibility without the required policy/Authority.
+
+Responsibility v0 confirmed the Relationship direct-vs-specific-qualified discipline; it produced no structural reopening.
+
+---
+
+# Participation v0 — current Cluster-5 baseline
+
+Normative references:
+
+- [`Participation v0`](../domain/concepts/participation.md);
+- [`Participation v0 validation`](../domain/checkpoints/participation-v0-validation.md) — **PASS WITH HARDENING**.
+
+Canonical questions:
+
+> **Who is expected/intended to be involved in this bounded shared occurrence/interaction?**
+
+and, independently:
+
+> **Who actually participated, and in what way/interval where that matters?**
+
+Current decision:
+
+```text
+PARTICIPATION
+specific semantic relation family
+intended/response and Actual involvement facets remain distinct
+simple direct or specifically qualified when justified
+NOT entity/root
+NOT universal membership/social graph
+
+PARTICIPANT
+contextual role over native identity
+NOT entity/root
+
+INVITATION
+participation proposal/request semantics
+NOT standalone universal primitive
+
+PARTICIPATION RESPONSE
+actor-scoped intended/response state
+NOT Actual Participation
+
+ATTENDANCE
+Event-facing Actual Participation semantics
+NOT standalone universal primitive
+```
+
+Key non-collapse rules:
+
+```text
+Event identity != participant set/state
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+Participation != Session
+Participation != Responsibility
+Participation != Performer
+Participation != Resource
+Participation != Organizer/requester
+Participation != Authority/Visibility
+shared Actual != identical actor-specific Actual Participation
+```
+
+Important operational rules:
+
+- later Actual Participation does not rewrite earlier response history;
+- declined may later attend; accepted may later be absent; uninvited participation is representable without fabricated history;
+- actual participation may be partial or represented by multiple intervals without creating duplicate Event/Person identity;
+- provider attendance telemetry is supporting Evidence/Provenance rather than automatic canonical human Participation;
+- participant identity may differ from the Actor/Account/Principal that submits a response;
+- Resource reservation/allocation does not establish Participation;
+- Accountless Person may participate;
+- AI may propose/infer but does not establish response, Actual Participation, Authority or disclosure permission.
+
+Participation v0 is the second major successful stress of Relationship v0 and confirms its direct-vs-specific-qualified discipline.
+
+Still SAFE DEFERRED around Participation:
+
+- Authority/Visibility;
+- Acceptance/Acknowledgement;
+- participant role taxonomy;
+- group/collective Participation;
+- delegation/on-behalf-of response;
+- recurring-series Participation inheritance/override;
+- provider attendance reconciliation/evidence threshold;
+- retention/deletion;
+- exact qualified Participation identity/cardinality/persistence.
+
+---
+
+# Canonical identity / role separation
+
+```text
+Person
+= native human identity
+
+Asset
+= current scoped native physical-object identity
+
+Subject
+= contextual aboutness role
+
+Actor
+= contextual agency category/capability
+
+Resource
+= contextual planning/execution eligibility/capability
+
+Responsibility
+= contextual accountability relation family
+
+Participation
+= contextual involvement relation family
+
+Account
+= platform/access identity boundary
+
+Principal
+= deferred security/authorization identity
+```
+
+Key non-collapse rules:
+
+```text
+Person != Account
+Person != Actor
+Person != Subject
+Person != Resource
+Person != Participant
+Person != Asset
+
+Asset != Subject
+Asset != Resource
+Asset != owner/holder/steward
+
+Subject != Actor
+Subject != Resource
+
+Actor != Resource
+Actor != Authority
+Actor != Responsibility
+Actor != Participation
+Actor != Account/Principal
+
+Resource != Requirement
+Resource != Allocation
+Resource != Reservation
+Resource != actual use
+Resource != Responsibility/Performer/Participation
+
+Responsibility != requester
+Responsibility != expected performer
+Responsibility != actual performer
+Responsibility != Participation
+Responsibility != Authority/Visibility/Stewardship
+
+Participation != Session
+Participation != Performer
+Participation != Resource
+Participation != Organizer
+Participation != Authority/Visibility
+
+Account authentication != semantic Actor
+visibility != authority
+ownership != visibility
+
+specific relationship != universal Relationship wrapper
+relation existence/type != Authority/Visibility/consent by default
+```
+
+---
+
+# Current cross-cluster invariants
+
+Retain at least these during Cluster 5:
+
+```text
+reported/asserted reality != established Actual
+passage of time != completion/Actual
+planned != actual
+Schedule != Session
+Schedule != Capacity Reservation
+Milestone attainment != duplicate Actual/Outcome/Observation truth
+Observation != Quantity
+Observation != RegisterEntry
+Evidence != source information
+Provenance != truth / Authority / Version / Audit
+Confirmation != Authority / Acknowledgement / Acceptance / Verification
+Subject != generic related_to
+Actor != generic action edge
+Resource != provider identity
+Account != Person
+universal Relationship root = rejected
+semantic-free related_to = rejected
+qualified relation != entity automatically
+queryability/cardinality != domain identity
+Responsibility != requester/expected performer/actual performer/Participation
+unknown Responsibility != explicitly open/unassigned
+Assignment/Claim/Hand-off must name the role they change
+hand-off request != effective transfer by default
+Responsibility transfer != Activity identity change
+Participant != identity/root
+Invitation != Acceptance/Actual Participation
+Participation response != Actual Participation
+accepted != attended
+declined != proved absent
+no response != declined
+no attendance evidence != proved absence
+Participation != Session/Responsibility/Performer/Resource/Authority/Visibility
+shared Actual != identical actor-specific Actual Participation
+```
+
+---
+
+# Deferred Dependency Closure — authoritative registries
+
+Clusters 1–4 normative checkpoint:
+
+- [`Deferred Dependency Closure — Clusters 1–4 v0`](../domain/checkpoints/deferred-dependency-closure-clusters-1-4-v0.md)
+
+Cluster-5 current checkpoints:
+
+- [`Relationship v0 validation`](../domain/checkpoints/relationship-v0-validation.md)
+- [`Responsibility v0 validation`](../domain/checkpoints/responsibility-v0-validation.md)
+- [`Participation v0 validation`](../domain/checkpoints/participation-v0-validation.md)
+
+Current result:
+
+```text
+REOPEN                         0
+unclassified material items    0
+```
+
+Do **not** recreate a parallel unnamed watchlist. Use the checkpoints as sources of exact owners, triggers and rerun tests.
+
+The old broad Activity ↔ Responsibility/Assignment/Hand-off deferred dependency is resolved at the semantic level by Responsibility v0.
+
+The old Event/Session/Actual ↔ Participation deferred pressure is resolved at the semantic level by Participation v0.
+
+Remaining high-value SAFE DEFERRED groups include:
+
+- Responsibility / Authority / Acceptance / Visibility / delegation;
+- Participation / Authority / Visibility / Acceptance-Acknowledgement / delegation / reconciliation;
+- standalone coordination Stewardship;
+- collective/joint/fallback Responsibility;
+- participant role taxonomy / group Participation / recurrence override;
+- Milestone / GoalCriterion / Evidence / Decision;
+- Confirmation / Authority / Acknowledgement / Acceptance / Verification;
+- Provenance / Version / Decision / Audit / retention;
+- Actual establishment / Authority / reconciliation;
+- Recurrence / Trigger;
+- Account / Principal / credentials / delegation;
+- Person/Asset reconciliation;
+- Subject / focus / Visibility / heterogeneous references;
+- Asset / Place / living entities / Document / FinancialAccount / service / type-profile;
+- Resource Requirement / eligibility / Allocation / Reservation / actual use / pools / supply / skill;
+- Quantity / Money / Scale / Ratio / UnitDefinition / Duration / Range;
+- longitudinal materialization / aggregate visibility;
+- generic Personal Knowledge links;
+- AI context/inference/disclosure/Authority;
+- retention/deletion/anonymization.
+
+Nothing here is pre-approved as a new primitive.
+
+---
+

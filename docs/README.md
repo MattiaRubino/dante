@@ -5,6 +5,7 @@ This directory is the durable project memory for LifeOS. It is designed so a new
 ## Start here
 
 - [`PROJECT-STATUS.md`](PROJECT-STATUS.md) — current global state, active workstreams and next steps
+- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — mandatory cross-session bootstrap, exact Git write gate, preservation/split-document discipline, QA and tool-failure behavior
 - [`development/operating-rules.md`](development/operating-rules.md) — mandatory authority order, where to work, branch/path ownership and coherence gates
 - [`ROADMAP.md`](ROADMAP.md) — current delivery sequence and boundaries
 - [`workstreams/`](workstreams/) — operational handoffs for active pieces of work
@@ -18,6 +19,7 @@ This directory is the durable project memory for LifeOS. It is designed so a new
 
 ## Development process
 
+- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — mandatory execution standard for new chats/agents; includes exact write gates, remote QA, canonical split counting, preservation rules and safe-stop behavior for Git/tool limits
 - [`development/operating-rules.md`](development/operating-rules.md) — where work happens, which source wins, parallel-work rules and pre/post-merge coherence checks
 - [`development/branching-and-environments.md`](development/branching-and-environments.md) — Git workflow and DEV/UAT/PROD policy
 - [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md) — mandatory documentation and AI/human handoff protocol
