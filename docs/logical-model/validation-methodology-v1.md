@@ -1,6 +1,6 @@
 # LifeOS Logical Model Validation Methodology v1
 
-**Status:** Stage-0H hardened normative foundation  
+**Status:** Stage-0H hardened normative foundation + cumulative integration hardening  
 **Date:** 2026-08-17  
 **Scope:** logical representation design between the closed Domain Atlas and later physical persistence/API implementation
 
@@ -302,6 +302,109 @@ Before final Whole-Logical closure, reconstruct the model from canonical documen
 
 If correct interpretation requires unwritten assumptions, closure fails.
 
+### LM-WF-20 — Cumulative Integrated Checkpoint
+
+After every slice reaches local PASS/PASS WITH HARDENING and exact remote QA, validate **the entire accepted Logical Model accumulated so far** before the next slice starts.
+
+Required scope:
+
+```text
+Stage 0 / Stage 0H
++
+all accepted slices through current Slice N
++
+all cumulative invariants
++
+all affected Product Reality scenarios
++
+all registered assumptions/deferrals
+```
+
+The checkpoint must look specifically for defects that local slice reviews can miss:
+
+```text
+cross-slice type/addressability gaps
+contradictory identity assumptions
+owner/role/state ambiguity created only by composition
+missing lineage between slices
+history/audit gaps caused by selective materialization
+reference-contract gaps
+governance leakage
+simple-case ceremony introduced cumulatively
+physical-feasibility assumptions that no longer remain plausible
+```
+
+Workflow:
+
+```text
+Slice N local PASS
+-> Slice N remote QA
+-> cumulative integrated checkpoint
+-> classify findings
+-> bounded hardening write if required
+-> remote QA
+-> rerun cumulative checkpoint
+-> only then Slice N+1 may begin
+```
+
+A future slice is not authorized merely because the immediately preceding slice passed locally.
+
+### LM-WF-21 — Mechanism / Technology Reconsideration
+
+A selected representation mechanism must not receive permanent preference merely because it passed earlier.
+
+Trigger this step when new evidence materially changes the trade-off, including:
+
+```text
+cumulative checkpoint finds a new gap/hardening
+later slice requires a capability handled awkwardly by the selected mechanism
+new current external evidence challenges the mechanism
+physical-feasibility evidence invalidates an assumption
+scale/concurrency/privacy/history pressure changes materially
+```
+
+At Logical Model stage, `technology` means **representation mechanism / architecture pattern**, not final database/API/runtime technology.
+
+Required candidate set:
+
+```text
+current selected mechanism
+strongest previously rejected-but-not-logically-impossible alternative(s)
+new plausible mechanism(s) not previously considered
+current external structural patterns / negative benchmarks relevant to the new pressure
+```
+
+Re-score the candidates against:
+
+```text
+semantic preservation
+reverse mapping
+history/correction
+privacy/governance
+queryability
+simple-case ceremony
+worst-case complexity
+scale/concurrency plausibility
+evolution/migration risk
+physical implementation freedom
+external evidence freshness
+```
+
+Allowed verdicts:
+
+```text
+RETAIN
+HARDEN
+REPLACE
+BLOCKED
+```
+
+`RETAIN` is not the default. The previously selected candidate carries no privileged status.
+
+If the answer is `REPLACE`, classify the change R1/R2/R3 as applicable and rerun every affected cumulative regression before proceeding.
+
+At the later Physical Model stage, the same discipline applies to concrete technologies/implementations rather than only logical mechanisms.
+
 ---
 
 ## 8. Logical Model gates
@@ -437,6 +540,42 @@ Concrete product scenarios can be mapped to Domain owners and logical capabiliti
 
 An independent reader can recover the model's accepted meaning and decision basis from canonical documentation without undocumented designer memory.
 
+### LM-24 — Cumulative Integrated Coherence
+
+The full accepted Logical Model through the current slice must remain coherent when reconstructed and tested as one system.
+
+A local slice PASS is insufficient if composition introduces:
+
+```text
+new unresolved addressability
+identity/state ambiguity
+history/audit loss
+reference eligibility ambiguity
+governance leakage
+unclassified cross-slice lineage
+or contradiction with an earlier accepted invariant
+```
+
+The next slice remains blocked until all material integrated findings are classified, hardened where required, written, remotely QA-verified and the cumulative checkpoint reruns successfully.
+
+### LM-25 — Mechanism / Technology Reconsideration Integrity
+
+When LM-WF-21 is triggered, acceptance requires evidence that the current mechanism was legitimately re-compared with strong alternatives and new plausible mechanisms under the **new** constraints.
+
+A PASS requires:
+
+```text
+candidate set reopened
+strong prior alternative reconsidered
+new plausible alternative search performed
+current external evidence refreshed where material
+trade-offs re-scored
+RETAIN / HARDEN / REPLACE / BLOCKED verdict explicit
+regression impact classified
+```
+
+Failure to reconsider architecture after materially changed constraints is itself a validation failure.
+
 ---
 
 ## 9. Verdict vocabulary
@@ -522,7 +661,8 @@ For fast-changing products/providers, official evidence is refreshed when:
 - starting the relevant slice;
 - a material candidate is selected;
 - final Whole-Logical regression runs;
-- a later provider/API change directly challenges an accepted assumption.
+- a later provider/API change directly challenges an accepted assumption;
+- LM-WF-21 mechanism/technology reconsideration is triggered and the evidence could affect the result.
 
 Stable standards are checked against the latest published/current version, but historical versions may be retained as interoperability evidence.
 
@@ -550,10 +690,12 @@ simple-case / worst-case paired tests
 reverse mapping
 cross-slice regression impact + replay
 Product Reality pressure where relevant
-LM-01..23 gate matrix
+LM-01..25 gate matrix where applicable
 open/deferred physical decisions
 remote Git QA when written
 ```
+
+After the first accepted slice, the evidence chain also includes the latest cumulative integrated checkpoint. LM-25 is applicable only when LM-WF-21 is triggered.
 
 Missing required evidence yields `BLOCKED`, not optimistic PASS.
 
@@ -566,6 +708,8 @@ Logical Model may close only when:
 ```text
 all accepted Domain Atlas owners have explicit logical disposition
 all slices pass applicable LM gates
+all cumulative integrated checkpoints through the final slice pass
+all triggered mechanism/technology reconsiderations are closed
 whole-logical cross-slice regression passes
 clean-room reconstruction passes
 WD-03 -> PASS
