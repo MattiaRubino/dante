@@ -1,6 +1,6 @@
 # Physical Benchmark Register
 
-- Status: **CURRENT — Phase 10 candidate/register content; closure pending remote QA**
+- Status: **CURRENT — Phase 10 QA PASS**
 - Stage: Pre-Physical Repository & Architecture Coherence
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Technology selection: **NONE**
