@@ -9,6 +9,8 @@ These rules define where work happens, which source wins when information confli
 
 The stricter execution mechanics in [`agent-operating-manual.md`](agent-operating-manual.md) are mandatory and apply together with this file.
 
+Repository-level enforcement and the lifecycle for branch protection/rulesets/required checks/security settings are defined in [`repository-engineering-safety.md`](repository-engineering-safety.md). That file implements this workflow at GitHub level; it does not create a separate source-precedence or branching model.
+
 ## 1. Authority order
 
 When two sources disagree, use this order unless a newer accepted decision explicitly supersedes it:
@@ -32,6 +34,8 @@ An ADR may preserve original rationale while being superseded/qualified for curr
 - Exploratory UX/technical experiments may use `prototype/*`.
 - One primary branch per workstream where practical.
 - Do not work directly on `main` except an explicitly approved emergency repair.
+- Changes integrate to `main` through pull requests under the current repository-safety policy.
+- Do not bypass an active `main` ruleset merely to avoid normal review/coherence checks.
 - DEV/UAT/PROD are environments, not branches.
 
 ## 3. Workstream path ownership
@@ -58,12 +62,13 @@ Before changes:
 4. read `docs/development/agent-operating-manual.md`;
 5. read this file + `documentation-and-handoff.md`;
 6. read `branching-and-environments.md`;
-7. read the complete active workstream handoff;
-8. read current model/architecture index and linked current sources;
-9. read relevant ADRs/evidence/methodologies;
-10. inspect branch/PR and relation to current `main`;
-11. inspect relevant implementation/tests before assuming something is missing;
-12. check whether the requested decision already exists.
+7. read `repository-engineering-safety.md` when repository/CI/integration controls are relevant;
+8. read the complete active workstream handoff;
+9. read current model/architecture index and linked current sources;
+10. read relevant ADRs/evidence/methodologies;
+11. inspect branch/PR and relation to current `main`;
+12. inspect relevant implementation/tests before assuming something is missing;
+13. check whether the requested decision already exists.
 
 Do not start from an old branch merely because it contains a familiar file.
 
@@ -78,6 +83,7 @@ Do not start from an old branch merely because it contains a familiar file.
 - Do not create schema/provider/cross-cutting conventions solely because an AI suggested them.
 - Do not force-push shared history for cosmetic cleanliness.
 - Do not treat runtime/technical convenience as new Domain ownership.
+- Do not invent required CI/status checks before the real workflow/check context exists and has been validated.
 
 ### Current documentation rule
 
@@ -105,6 +111,8 @@ The workstream handoff is the live save-game.
 
 The same discipline applies to root README, docs index, roadmap, architecture indexes and ADRs.
 
+Repository settings/rulesets are operational state, not documentation state. A document saying a protection **should** exist is not evidence that it **does** exist; read back the remote setting before declaring the corresponding safety milestone PASS.
+
 ## 7. Documentation status semantics
 
 - **Accepted** — durable decision/current baseline at its stated scope; later supersession may qualify it.
@@ -129,7 +137,9 @@ Before merge:
 6. verify handoff/tests/validation;
 7. update global status only if globally meaningful;
 8. check secrets/personal production data/local artifacts;
-9. merge through PR only after semantic/documentation coherence.
+9. verify any repository-required checks that actually exist are passing;
+10. verify blocking review conversations are resolved where the active main rules require it;
+11. merge through PR only after semantic/documentation coherence.
 
 A clean Git merge is not enough.
 
@@ -139,7 +149,8 @@ A clean Git merge is not enough.
 - refresh global status if required;
 - update workstream completion/next phase;
 - synchronize long-running overlapping branches;
-- old branches/history cease to be authoritative once accepted work is integrated.
+- old branches/history cease to be authoritative once accepted work is integrated;
+- allow repository auto-delete of merged head branches where enabled, except when a branch is intentionally retained as active/historical evidence for a documented reason.
 
 Historical files need not remain in the current working tree merely to preserve history if Git/ADR/evidence already retains the useful knowledge and deletion is explicitly gated.
 
@@ -183,7 +194,8 @@ Until this workstream closes:
 - no implicit Domain/Logical reopen;
 - genuine semantic contradiction → record + separate reopen scope;
 - architecture/ADR cleanup may replace stale current prose while keeping meaningful rationale/evidence recoverable;
-- benchmark preparation may evaluate technologies without adopting them.
+- benchmark preparation may evaluate technologies without adopting them;
+- repository-safety work may configure GitHub integration controls without starting production backend/Physical implementation.
 
 Active detailed roadmap: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
 
@@ -202,3 +214,10 @@ The agent operating manual is authoritative for:
 - truthful tool-failure reporting;
 - remote evidence for PASS/CLOSED;
 - Domain Validation Methodology v3 for any separately authorized Domain reopen/new validation.
+
+The repository engineering safety contract additionally governs:
+
+- effective `main` ruleset/protection verification;
+- required-check activation only after real stable check contexts exist;
+- branch-hygiene deletion only after unique-work classification;
+- repository security settings whose state must be verified rather than inferred.
