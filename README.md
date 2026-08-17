@@ -19,8 +19,8 @@ WD-05: PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS on chore/pre-physical-coherence
-Phase 0–5 QA PASS
-Phase 6 AI/context/runtime/integration boundaries NEXT
+Phase 0–6 QA PASS
+Coordinated Phase 7–9 architecture tranche NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -130,21 +130,39 @@ HARD REJECT FOR CANONICAL KERNEL
 
 Object/file storage remains behind a provider abstraction. Content Artifact identity is not the same thing as blob/path/URL/provider identity.
 
-### AI
+### AI / context / runtime
 
-AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder. AI produces structured proposals/candidates or governed-effect requests; it does not become canonical truth by producing output.
+AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
+
+Current Phase 6 boundary keeps distinct:
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+AI output is classified as answer/explanation, candidate/unresolved interpretation, structured extraction, Proposal/proposal-like candidate, scenario/recommendation or governed-effect request as applicable. It does not become canonical truth/effect merely because a model produced it.
+
+Runtime Agent/Principal is not Domain Actor automatically; tool invocation/protocol action is not authorization or the canonical governed operation. LifeOS does not use a generic second `AI memory` store as canonical truth.
 
 ### Integrations
 
 Provider adapters preserve provenance and distinguish canonical LifeOS state from provider state, derived/read projections and unresolved/candidate state.
 
-Current integration-mode distinction:
+Current Integration Hub distinction:
 
 1. canonical import;
 2. synchronized/mirrored provider state;
 3. live federated read;
 4. retrieval/index projection;
 5. action/tool integration.
+
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider success/failure does not automatically determine canonical effect truth. MCP/A2A/future protocols remain adapters, not ontology/governance.
 
 ### Specialized infrastructure
 
@@ -158,6 +176,8 @@ Current architecture navigation starts at:
 
 - [`docs/architecture/pre-physical-architecture-baseline.md`](docs/architecture/pre-physical-architecture-baseline.md)
 - [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) and all four Phase 5 requirement packages
+- [`docs/architecture/ai-context-runtime-boundaries.md`](docs/architecture/ai-context-runtime-boundaries.md)
+- [`docs/architecture/integration-hub-boundaries.md`](docs/architecture/integration-hub-boundaries.md)
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
@@ -176,7 +196,7 @@ Relevant ADRs include:
 - [`ADR-002`](docs/decisions/ADR-002-backend.md) — backend platform direction, qualified at ORM/migration boundary;
 - [`ADR-003`](docs/decisions/ADR-003-primary-database.md) — historical PostgreSQL selection rationale, superseded as final selection;
 - [`ADR-004`](docs/decisions/ADR-004-storage.md) — storage abstraction;
-- [`ADR-005`](docs/decisions/ADR-005-ai-gateway.md) — replaceable AI gateway;
+- [`ADR-005`](docs/decisions/ADR-005-ai-gateway.md) — replaceable AI gateway, qualified by Phase 6 runtime boundaries;
 - [`ADR-006`](docs/decisions/ADR-006-hybrid-personal-data-model.md) — superseded generic hybrid semantic model;
 - [`ADR-007`](docs/decisions/ADR-007-domain-model-informed-persistence-boundaries.md) — current semantic persistence guardrail, qualified for Physical posture.
 
@@ -199,7 +219,9 @@ The closed Logical Model activates `WL-H01..WL-H12`, including:
 - reconstructible consequential AuthZ provenance;
 - non-interference/inference-leakage protection.
 
-Phase 5 additionally establishes current requirement packages for AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery. Open parameters recorded there remain explicit downstream obligations; they are not permission for implementation to pick arbitrary defaults.
+Phase 5 establishes current requirement packages for AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery. Open parameters recorded there remain explicit downstream obligations; they are not permission for implementation to pick arbitrary defaults.
+
+Phase 6 establishes current AI/context/runtime and Integration Hub boundary contracts. Provider/model/agent/protocol/workflow mechanisms remain deferred and must not redefine these contracts.
 
 Future Physical/API/runtime work must preserve these constraints rather than reinterpret semantics for implementation convenience.
 
