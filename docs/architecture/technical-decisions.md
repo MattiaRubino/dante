@@ -111,7 +111,7 @@ See [`../decisions/ADR-004-storage.md`](../decisions/ADR-004-storage.md).
 
 External systems are isolated behind provider/capability boundaries. Provider-specific concepts must not leak into canonical LifeOS semantics.
 
-Current mode distinction:
+Current Integration Hub mode distinction:
 
 1. canonical import;
 2. synchronized/mirrored provider state;
@@ -119,41 +119,90 @@ Current mode distinction:
 4. retrieval/index projection;
 5. action/tool integration.
 
-Imported/synchronized data requires provenance, external identifiers/revisions as appropriate, deduplication/reconciliation semantics, and explicit separation from canonical LifeOS state.
+Each material flow must identify its mode or bounded composition. Imported/synchronized data requires provenance, external identifiers/revisions as appropriate, deduplication/reconciliation semantics, and explicit separation from canonical LifeOS state.
 
-Protocol surfaces such as MCP/A2A/future tool protocols are adapters, not LifeOS ontology.
+Current hard boundaries:
 
-## AI
+```text
+ExternalRef != NativeRef
+provider revision != MaterialStateRef by identity
+provider state != canonical LifeOS state
+provider/tool operation string != canonical governed effect
+```
+
+Canonical import requires explicit acceptance/mapping. Sync direction/conflict behavior is bounded per integration rather than universal last-write-wins. Live reads retain freshness/source/unknown state. Retrieval/index projections remain derived and deletion-aware. Action/tool integrations preserve AuthZ, expected-state, idempotency, external-effect and reconciliation semantics.
+
+Callbacks/webhooks/polling/push are adapter mechanisms and do not create canonical truth by arrival order.
+
+Protocol surfaces such as MCP/A2A/future tool protocols are adapters, not LifeOS ontology or governance.
+
+See [`integration-hub-boundaries.md`](integration-hub-boundaries.md).
+
+## AI / context / runtime
 
 AI access is isolated behind a replaceable/provider-neutral gateway and bounded Context Builder.
+
+The runtime preserves these categories:
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+The Context Builder applies purpose, minimization, disclosure, provenance and freshness constraints before context is exposed to a model/tool/provider. It does not treat whole-user-history access as the default.
+
+LifeOS does not establish a generic second canonical store called `AI memory`. Durable information receives an explicit accepted representation: canonical state, material history, candidate/unresolved, derived projection, source/content artifact, provider/external state or another bounded accepted form.
 
 AI may:
 
 - interpret natural language/ambiguous input;
 - produce structured proposals/candidates;
 - support planning/replanning/explanation;
-- request additional context through bounded tools/contracts.
+- request additional context through bounded tools/contracts;
+- request governed effects through technical contracts.
 
 AI may not:
 
 - invent physical schema;
 - bypass authorization/governance;
 - convert uncertainty directly into canonical truth;
-- treat conversation memory as authoritative LifeOS state.
+- treat conversation memory as authoritative LifeOS state;
+- treat a model/tool call as authorization or as the canonical effect itself.
 
-Persistent canonical state, material history, retrieved context, derived context, live external context, candidate/unresolved state and transient LLM working context remain distinct.
+AI output must be classified appropriately as answer/explanation, candidate/unresolved interpretation, structured extraction, Proposal/proposal-like candidate, scenario/recommendation or governed-effect request. Model output does not become an accepted target state merely because it is structured or high-confidence.
 
-See [`../decisions/ADR-005-ai-gateway.md`](../decisions/ADR-005-ai-gateway.md).
+Configurable autonomy is consequence/governance/policy based; AI does not require universal confirmation, nor may autonomy bypass stronger constraints for sensitive/destructive/shared consequences.
+
+Runtime Agent, Tool, Workflow, Automation, Job, service account and provider callback are technical/runtime concepts unless a separately accepted semantic role applies.
+
+```text
+runtime Agent / Principal != Domain Actor automatically
+tool invocation != canonical governed operation
+protocol scope != Authority / Consent / Visibility
+```
+
+External/retrieved content cannot self-authorize actions or expand Authority merely by containing instructions.
+
+Provider/model routing, fallback, quota/cost handling and transport adaptation live in the AI Gateway. A fallback must not silently widen privacy/provider eligibility.
+
+See [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) and [`../decisions/ADR-005-ai-gateway.md`](../decisions/ADR-005-ai-gateway.md).
 
 ## Governed effects
 
-A concrete API route, UI action or AuthZ action string is not the canonical semantic meaning of an operation.
+A concrete API route, UI action, tool name or AuthZ action string is not the canonical semantic meaning of an operation.
 
 Later API/runtime design must preserve the Logical governed-operation/effect contract, including semantic target, effect, material/expected state where required, input/context/purpose, governance basis, idempotency/correlation and result/provenance semantics.
 
+AI/tool callers use the same governed boundary as other callers. A governed-effect request is a request to the application/effect boundary, not the effect itself.
+
 ## Security and authorization boundary
 
-Detailed AuthN/AuthZ architecture is not yet fixed.
+Detailed AuthN/AuthZ implementation is not fixed.
 
 Later technical design must preserve at least:
 
@@ -164,7 +213,7 @@ Consent != Authority
 Visibility != Authority
 ```
 
-Consequential AuthZ decisions must be reconstructible where audit/consequence requires, without turning technical enforcement state into Domain governance identity.
+Consequential AuthZ decisions must be reconstructible where audit/consequence requires, without turning technical enforcement state into Domain governance identity. Non-human Principals do not bypass the same semantic governance requirements.
 
 ## Search / projections / observability
 
@@ -178,11 +227,13 @@ Current direction:
 - dedicated search/vector infrastructure is not assumed;
 - OpenTelemetry-first or equivalent standards-based instrumentation is the preferred observability direction, subject to privacy/data-minimization constraints.
 
+Phase 9 owns the detailed search/observability/calendar/solver pressure contract.
+
 ## Durable execution
 
 No workflow engine is selected.
 
-A later benchmark must compare at least:
+Phase 7 must compare at least:
 
 - PostgreSQL + worker + transactional outbox;
 - Temporal;
@@ -190,6 +241,8 @@ A later benchmark must compare at least:
 - DBOS.
 
 Selection must be based on LifeOS long-running/provider/human-approval/retry/reconciliation/crash-recovery pressure.
+
+Phase 6 contracts require any candidate to preserve delayed target/governance revalidation, ambiguous external outcomes, idempotency/replay behavior and truthful partial/reconciliation state.
 
 ## Development / deployment
 
@@ -206,6 +259,8 @@ Specialized infrastructure requires demonstrated benefit. Evidence may come from
 ```text
 Domain CLOSED
 Logical CLOSED
+Phase 5 requirements CURRENT
+Phase 6 AI/context/runtime/integration boundaries CURRENT
 Pre-Physical Coherence IN PROGRESS
 Physical NOT STARTED / NOT AUTHORIZED
 Backend production implementation NOT STARTED
