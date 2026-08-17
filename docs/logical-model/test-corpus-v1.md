@@ -892,3 +892,204 @@ SLICE-A REGRESSION FAILURE
 NEW DOMAIN REOPEN EVIDENCE
 0
 ```
+
+---
+
+## O. Integrated A+B cumulative regression expansion
+
+These tests were added because the first mandatory cumulative checkpoint found issues that local Slice-A and Slice-B validation did not fully expose in isolation. They remain permanent regression pressure for every later slice that touches shared identity/reference/history/governance mechanisms.
+
+### TC-O01 — Canonical Activity vs transient suggested action
+
+AI proposes `call the mechanic tomorrow` during exploration. The user does not retain/adopt it. Later the user explicitly creates `Call mechanic` as an Activity.
+
+Required:
+
+```text
+transient suggestion != canonical Activity
+canonical persisted Activity -> stable LR-01 identity
+```
+
+The system must avoid both false persistence and storage-driven identity loss.
+
+### TC-O02 — Canonical Event vs transient/import candidate
+
+A provider payload looks event-like but remains unresolved/import-candidate state. Later reconciliation establishes a canonical Event.
+
+Required:
+
+```text
+provider/transient candidate != Event automatically
+canonical Event identity != provider ExternalRef
+canonical persisted Event -> LR-01
+```
+
+### TC-O03 — Milestone address without NativeRef promotion
+
+A Decision and Criterion both need to reference a persistent Milestone `Design approved`.
+
+Required:
+
+```text
+Milestone may use ScopedRecordRef
+Milestone does not become native referent/Entity merely because it is addressable
+Reference Contract still constrains valid target semantics
+```
+
+### TC-O04 — Decision record address vs Decision material state
+
+A materialized Decision D1 is later corrected/superseded. Another record must refer to:
+
+1. the Decision semantic record itself; and
+2. the material state of D1 that was reviewed at T.
+
+Required:
+
+```text
+ScopedRecordRef(D1)
+!= MaterialStateRef(D1, state-at-T)
+```
+
+Exact MaterialStateRef mechanism remains Slice D.
+
+### TC-O05 — Direct personal instruction vs unauthorized shared mutation
+
+Case A:
+
+```text
+user: "Move my private Activity to 16:00"
+applicable governance: user controls it
+```
+
+Case B:
+
+```text
+user: "Move the company-wide Event to 16:00"
+applicable governance: user lacks Authority
+```
+
+Required:
+
+```text
+explicit instruction may remove redundant confirmation in A
+same linguistic form does not manufacture Authority in B
+Request/instruction != Authority / Consent
+```
+
+### TC-O06 — Dependency on existence vs attainment
+
+Activity A depends on Milestone M being **attained**, not merely existing.
+
+Required:
+
+```text
+ReferenceAddress(M)
++
+facet = attainment
++
+condition = attained
+```
+
+The model must distinguish:
+
+```text
+M exists
+!= M attained
+```
+
+without introducing one universal predicate language.
+
+### TC-O07 — No standalone Request/Decision, but audit survives
+
+The user directly instructs a permitted personal schedule change. No standalone Request or Decision record is materialized.
+
+Required:
+
+```text
+no standalone semantic-act record
+!= no history
+```
+
+Where consequential, later reconstruction can still identify the changed target state, actor/source, direct-instruction basis and applicable chronology under Slice-D/F mechanisms.
+
+### TC-O08 — Possibility maturation lineage vs retyping
+
+Possibility P1 is adopted into Goal G1.
+
+Candidate A stores the same row and changes `kind=goal`.
+Candidate B preserves P1 and G1 with typed adoption/origin lineage.
+
+Required:
+
+```text
+Candidate A FAIL
+Candidate B PASS
+pre-adoption history remains truthful
+```
+
+### TC-O09 — Plan revision vs distinct replacement lineage
+
+Plan A receives one ordinary operational edit, then months later strategy changes materially and Plan B replaces it.
+
+Required:
+
+```text
+ordinary edit may remain Plan A material revision
+Plan B may be distinct identity
+Plan B --replacement/continuation--> Plan A
+replacement lineage != Version identity automatically
+```
+
+### TC-O10 — Mechanism/technology reconsideration after new gap
+
+A cumulative checkpoint exposes a representation gap in a previously accepted shared mechanism.
+
+Required procedure:
+
+```text
+reopen current candidate set
+reconsider strongest previously rejected-but-not-logically-impossible alternative
+search for new plausible mechanisms
+refresh current external structural/negative evidence where material
+re-score trade-offs under new constraints
+explicitly verdict RETAIN / HARDEN / REPLACE / BLOCKED
+```
+
+Expected failure:
+
+```text
+"keep current design because it already passed"
+```
+
+is not valid evidence.
+
+### Integrated A+B high-value queries
+
+43. Given a ReferenceAddress, which address space is it: NativeRef, ScopedRecordRef, MaterialStateRef or ExternalRef?
+44. Can a Reference Contract reject a resolvable address because its variant/owner/facet is semantically ineligible?
+45. Can a materialized Milestone/Proposal/Request/Decision be referenced stably without promoting it to native referent identity?
+46. Can a caller distinguish a semantic-record address from the material state/version of that same record?
+47. Can LifeOS determine whether an explicit instruction is sufficient to act without treating the instruction itself as Authority?
+48. Can a Dependency identify the exact prerequisite facet/state/result/transition rather than only the whole endpoint?
+49. Can a consequential target change remain auditable when no standalone Request/Decision record was justified?
+50. Can Possibility→Goal and Plan-replacement lineage be queried without generic `related_to` semantics or identity retyping?
+51. When an integrated hardening changes architecture constraints, can the repository reconstruct which mechanisms were reconsidered and why the current one still won or was replaced?
+
+### Integrated A+B regression result
+
+```text
+TC-O01..O10
+PASS / PASS WITH explicitly stage-bound Slice-D/F physical-history/governance dependencies
+
+INTEGRATED MUTATION TESTS
+10 / 10 PASS
+
+INTEGRATED COUNTERFACTUAL FAMILIES
+9 / 9 PASS
+
+TECHNOLOGY / MECHANISM RECONSIDERATION
+RETAIN + HARDEN
+
+DOMAIN REOPEN REQUIRED
+0
+```
