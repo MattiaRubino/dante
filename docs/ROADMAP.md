@@ -52,8 +52,10 @@ Phase 1 — global current-truth entry-point alignment
 QA PASS
 
 Phase 2 — architecture supersession/current-truth cleanup
-CONTENT WRITTEN
-FINAL REMOTE PATH + KNOWLEDGE-COVERAGE QA PENDING
+QA PASS
+
+Phase 3 — Backend Foundation handoff cleanup
+READ-ONLY AUDIT NEXT
 ```
 
 This workstream does **not** itself start the Physical Model.
@@ -90,8 +92,8 @@ references/navigation repaired = PASS
 
 1. **Phase 0 — freeze/current-state inventory** — PASS.
 2. **Phase 1 — global entry-point/current-truth alignment** — QA PASS.
-3. **Phase 2 — architecture supersession/current-truth cleanup** — content written, final QA pending.
-4. **Phase 3 — Backend Foundation handoff cleanup** — next only after Phase 2 QA PASS.
+3. **Phase 2 — architecture supersession/current-truth cleanup** — QA PASS.
+4. **Phase 3 — Backend Foundation handoff cleanup** — read-only audit next, then separate exact write gate.
 5. **Phase 4 — current Pre-Physical Architecture Baseline**.
 6. **Phase 5 — requirements that can constrain Physical design**:
    - AuthN/AuthZ;
@@ -115,7 +117,7 @@ Current navigation:
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
 
-The old mixed `architecture/personal-data-ai-integration.md` current specification is being retired in Phase 2 after knowledge coverage; current surviving requirements are carried into the appropriate current architecture/ADR/Logical/Pre-Physical sources.
+The old mixed `architecture/personal-data-ai-integration.md` current specification has been retired after knowledge-coverage QA. Its surviving valid knowledge is carried by current architecture, ADR, Logical and Pre-Physical sources; the old payload remains recoverable in Git history.
 
 The `architecture/domain-model-logical-readiness*` chain remains historical transition/validation evidence, not a current architecture specification.
 
@@ -134,7 +136,9 @@ Technology selection must use LifeOS-specific correctness/history/governance/con
 
 ## Phase 3 — Backend Foundation handoff cleanup
 
-After Phase 2 QA PASS, review and rewrite `docs/workstreams/backend-foundation.md` under its own exact write gate.
+Next action is a **read-only audit** of `docs/workstreams/backend-foundation.md` against the current closed Domain + Logical models and the current architecture sources.
+
+Only after that inventory may a separate exact Phase 3 write gate be proposed.
 
 Backend Foundation must eventually consume:
 
