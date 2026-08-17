@@ -27,7 +27,8 @@ Phase 0 + Phase 1 QA PASS
 Phase 2 architecture supersession/current-truth cleanup — QA PASS
 Phase 3 Backend Foundation handoff cleanup — QA PASS
 Phase 4 Current Pre-Physical Architecture Baseline — QA PASS
-Phase 5 requirements that can constrain Physical design — NEXT
+Phase 5 requirements that can constrain Physical design — QA PASS
+Phase 6 AI/context/runtime/integration boundaries — NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -48,7 +49,7 @@ Phase 4 UX remains a separate active product/design workstream.
 6. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
 7. [`development/branching-and-environments.md`](development/branching-and-environments.md)
 8. active workstream handoff
-9. [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) and [`architecture/README.md`](architecture/README.md) with linked current sources
+9. [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md), [`architecture/requirements/README.md`](architecture/requirements/README.md) and [`architecture/README.md`](architecture/README.md) with linked current sources
 10. relevant ADR/evidence/methodology
 11. relevant implementation/tests
 
@@ -56,12 +57,15 @@ Conversation history is secondary to repository truth.
 
 When a canonical document is physically split, read the complete split/continuation chain rather than treating the first path or newest part as the whole logical document.
 
+A split caused only by size/tool limits is a lossless physical partition of the complete logical payload. It is not a summary/condensation or a hidden semantic rewrite.
+
 ## Accepted/current foundations
 
 - [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current product identity/North Star.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**, with `WL-H01..WL-H12` active downstream constraints.
 - [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — **CURRENT** Pre-Physical bridge; `DECIDED != AUTHORIZED TO IMPLEMENT`.
+- [`architecture/requirements/README.md`](architecture/requirements/README.md) + four linked Phase 5 packages — **CURRENT** requirements constraining later Physical/runtime/API/backend design.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
@@ -70,6 +74,29 @@ When a canonical document is physically split, read the complete split/continuat
 - Integration/provider state remains distinct from canonical LifeOS state.
 - DEV/UAT/PROD are deployment environments, not permanent Git branches.
 - Repository visibility: **public**.
+
+## Current Phase 5 requirement inputs
+
+The Phase 5 package defines requirements, open parameters and deferred mechanisms separately.
+
+Current packages:
+
+- [`architecture/requirements/authn-authz.md`](architecture/requirements/authn-authz.md);
+- [`architecture/requirements/security-privacy-retention-recovery.md`](architecture/requirements/security-privacy-retention-recovery.md);
+- [`architecture/requirements/consistency-side-effects.md`](architecture/requirements/consistency-side-effects.md);
+- [`architecture/requirements/nonfunctional-multidevice-recovery.md`](architecture/requirements/nonfunctional-multidevice-recovery.md).
+
+Current constraints include, among others:
+
+- `Person != Account != Principal != Actor` and technical allow/deny != canonical Authority/Consent/Visibility;
+- actual Actor and represented party remain distinct;
+- consequential AuthZ/effect provenance and delayed-governance revalidation;
+- purpose-aware minimization, sensitive-data handling, truthful deletion/redaction/tombstone semantics and secure restore without forbidden-data resurrection;
+- expected-state writes, idempotency != identity, no silent material last-write-wins, truthful multi-owner atomic/staged consistency and canonical/provider-effect separation;
+- multi-device divergence, operation-specific offline semantics, truthful degraded/provider state, long-history/current-state access and recovery testing;
+- RPO/RTO/latency/availability/scale/offline-duration values remain explicit open parameters, not invented Phase 5 constants.
+
+Mechanisms such as Auth provider/policy engine, token/session store, encryption/KMS, outbox/inbox/queue/workflow, CRDT/OT, database schema, replication/failover and concrete offline-sync technology remain later decisions.
 
 ## Current Physical benchmark posture
 
@@ -96,8 +123,11 @@ Physical selection requires a later separate user authorization and benchmark/de
 - Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`.
 - Phase 3: **QA PASS** — Backend Foundation handoff cleaned against closed Domain/Logical/current architecture.
 - Phase 4: **QA PASS** — current Pre-Physical Architecture Baseline established and made mandatory downstream input without authorizing Physical/backend implementation.
-- Phase 4 content HEAD before global closure markers: `cb7f9701fa21ebb4e771acef33088ee325e5e7f8`.
-- Next: **Phase 5 — requirements that can constrain Physical design**.
+- Phase 4 content HEAD before global closure markers: `d67cd83f462611b2cc6d341937432e705f7a8682`.
+- Phase 5: **QA PASS** — four requirement packages plus index established; baseline/backend handoff/navigation propagated; lossless size/tool-limit split rule hardened.
+- Phase 5 PRE-SCOPE: `e26f95af6d46292bf0f42aa43fa67b1f9f4fc05f`.
+- Phase 5 content HEAD before global closure markers: `c29cfe4bde47d5df4f46507a5f1717acd1903112`.
+- Next: **Phase 6 — AI/context/runtime/integration boundaries**.
 - Domain/Logical remain closed/unchanged.
 
 ### Phase 4 — Home / Today UX
@@ -118,7 +148,7 @@ Physical selection requires a later separate user authorization and benchmark/de
 
 - **NOT STARTED / DEFERRED**.
 - Current future handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-- The current handoff consumes the Pre-Physical Architecture Baseline and remains intentionally non-executable.
+- The current handoff consumes the Pre-Physical Architecture Baseline plus Phase 5 requirements and remains intentionally non-executable.
 - Backend Foundation may start only after Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable accepted Physical/runtime/security/integration/API prerequisites exist.
 - Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/backend/Auth/provider implementation or a persistence-specific bootstrap from this status.
 
@@ -128,7 +158,7 @@ Current specifications contain current truth only. ADRs preserve rationale + exp
 
 Stale current docs are replaced/deleted only after knowledge coverage proves meaningful content is safely mapped.
 
-Current architecture navigation starts at [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) and [`architecture/README.md`](architecture/README.md).
+Current architecture navigation starts at [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md), [`architecture/requirements/README.md`](architecture/requirements/README.md) and [`architecture/README.md`](architecture/README.md).
 
 ## Phase 2 verified result
 
@@ -189,14 +219,41 @@ Exact Phase 3 PRE-SCOPE and remote closure evidence are recorded in [`workstream
 
 It coordinates current authority; it does not duplicate or reopen Domain/Logical semantics.
 
+## Phase 5 result
+
+Phase 5 converted already-supported Domain/Logical/product/security pressure into four current Pre-Physical requirement packages without selecting implementation mechanisms.
+
+Remote content QA from Phase 5 PRE-SCOPE to content HEAD returned:
+
+```text
+ahead_by       10
+behind_by       0
+total_commits   10
+added            5
+modified         5
+deleted          0
+unexpected       0
+```
+
+The five created paths are the requirement index plus four packages. The five content-local updates are architecture navigation/baseline, Backend Foundation handoff and the two workflow documents that now state explicitly:
+
+```text
+SIZE / TOOL-LIMIT SPLIT
+= LOSSLESS PHYSICAL PARTITION
+!= SUMMARY / CONDENSATION / HIDDEN CONTENT REWRITE
+```
+
+No Domain/Logical/ADR/Physical/backend implementation path was changed by the Phase 5 content package.
+
 ## Immediate next work
 
-1. **Phase 5 — requirements that can constrain Physical design.**
-2. Define requirements, not implementation, for AuthN/AuthZ; security/privacy/retention/recovery; transaction/consistency/outbox/side effects; and non-functional/multi-device/recovery.
-3. Begin Phase 5 read-only classification before any new exact write gate.
-4. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
-5. Continue the separate Phase 4 Home/Today UX workstream independently.
+1. **Phase 6 — AI/context/runtime/integration boundaries.**
+2. Begin read-only from current Phase 5 requirements + current architecture + closed Domain/Logical.
+3. Preserve distinctions among canonical state, material history, retrieved context, derived context, live external context, candidate/unresolved state and transient LLM working context.
+4. Define runtime/integration boundaries without promoting Agent/Workflow/Automation/Notification or MCP/A2A/provider protocols into Domain ontology.
+5. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
+6. Continue the separate Phase 4 Home/Today UX workstream independently.
 
-## Non-negotiable downstream Logical obligations
+## Non-negotiable downstream obligations
 
-`WL-H01..WL-H12` must survive later architecture/Physical/runtime work: governed effects, disclosure surfaces, unknown/absence semantics, expected-state mutation, idempotency separation, truthful multi-owner consistency, provider/canonical separation, derived-state freshness, retention/tombstone integrity, AuthZ provenance and inference-leakage protection.
+`WL-H01..WL-H12` plus all accepted Phase 5 requirements must survive later architecture/Physical/runtime work. Open Phase 5 parameters must be resolved at the appropriate later gate rather than silently defaulted.
