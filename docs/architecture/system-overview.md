@@ -16,8 +16,11 @@ CLOSED
 
 Pre-Physical Repository & Architecture Coherence
 IN PROGRESS
-Phase 5 requirements accepted
-Phase 6 AI/context/runtime/integration boundaries established on active branch
+Phase 5 requirements CURRENT
+Phase 6 AI/context/runtime/integration boundaries CURRENT
+Phase 7 durable-execution benchmark CURRENT
+Phase 8 governed-operation/effect contract CURRENT
+Phase 9 search/observability/calendar/solver pressure CURRENT
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
@@ -35,14 +38,17 @@ Web client (Next.js) -----------------------\
                                              \
 Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundary
                                                   |-- authentication context / AuthZ enforcement
-                                                  |-- governed domain operations and validation
+                                                  |-- governed operation/effect boundary
                                                   |-- scheduling / planning / reasoning services
+                                                  |-- deterministic solver boundary
                                                   |-- provenance / history / reconciliation services
                                                   |-- projection / disclosure services
+                                                  |-- search / retrieval projection services
                                                   |-- Integration Hub / provider adapters
                                                   |-- AI Gateway + Context Builder
                                                   |-- provider-neutral tool/action interfaces
-                                                  |-- observability / operational runtime boundaries
+                                                  |-- bounded async + durable-execution runtime boundary
+                                                  |-- observability / operational controls
                                                             |
                                                             v
                                                 Physical persistence/runtime
@@ -51,34 +57,100 @@ Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundar
                                                 StorageProvider / object storage
 ```
 
-External providers, assistants, caches, indexes, projections and device-local stores are not alternate canonical LifeOS truth merely because they contain data.
+External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical LifeOS truth merely because they contain data.
 
 ## Client responsibilities
 
 Clients are responsible for presentation, navigation, local interaction state, secure session handling, platform-specific capabilities and collection of user intent/confirmation where required.
 
-A later multi-device/offline contract may authorize bounded local caches, queues or synchronization behavior. This document does not preselect those semantics beyond the Phase 5 requirement envelope.
+A later multi-device/offline implementation may authorize bounded local caches, queues or synchronization behavior. This document does not preselect those semantics beyond the Phase 5 requirement envelope.
 
 Clients do not hold primary persistence credentials and do not own critical authorization or canonical domain invariants.
+
+Client/UI actions may request governed operations but UI labels/buttons do not define semantic operation identity.
 
 ## Backend responsibilities
 
 The backend boundary is responsible for enforcing accepted Domain/Logical semantics through technical services, including:
 
 - validation of semantic target and operation intent;
+- governed operation/effect admission and result semantics;
 - authorization enforcement without collapsing Principal, Actor, Authority, Consent or Visibility into one concept;
 - expected-state/conflict handling for consequential writes where required;
+- autonomy/preview/confirmation handling according to consequence and governance;
 - provenance, history, correction and reconciliation behavior;
 - truthful multi-owner consistency or explicit staged/partial outcomes;
 - provider-state versus canonical-state separation;
 - selective projection/disclosure enforcement;
 - scheduling/reasoning/replanning services;
 - deterministic calculations and constraint handling where appropriate;
-- AI context construction, proposal/effect validation and provider routing;
+- optional specialized solver invocation producing candidates rather than direct canonical writes;
+- AI context construction, proposal/effect-request validation and provider routing;
 - integration/provider orchestration;
-- technical observability and operational controls.
+- bounded background work and durable long-running coordination according to operation class;
+- search/retrieval projections separated from canonical state;
+- privacy-safe technical observability and operational controls.
 
-Concrete API routes, DTOs, transaction mechanics, AuthZ engine, workflow engine and persistence structures remain later stage decisions.
+Concrete API routes, DTOs, transaction mechanics, AuthZ engine, durable-execution engine binding and persistence structures remain later stage decisions.
+
+## Governed operation/effect responsibility
+
+Consequential callers converge on the current [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) rather than bypassing semantics through transport-specific operations.
+
+Where material, the boundary preserves:
+
+```text
+contract/version
+semantic target/facet
+requested effect
+input / candidate
+purpose/context
+material/expected state
+derived/live input basis + freshness
+Principal / actual Actor / represented party
+governance basis
+autonomy / preview / confirmation
+idempotency
+correlation/causation
+execution class
+deadline/expiry/cancellation semantics
+canonical result
+provider result
+runtime result
+conflict/partial/reconciliation/provenance
+```
+
+```text
+request accepted != effect completed
+provider acknowledgement != canonical completion automatically
+runtime cancellation != Domain cancellation automatically
+```
+
+One generic status/success flag is not sufficient for materially consequential operations.
+
+## Durable execution responsibility
+
+The system distinguishes bounded asynchronous work from material long-running durable processes.
+
+Current Phase 7 posture:
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style remains valid baseline mechanism class
+
+DEDICATED DURABLE EXECUTION
+Restate  preferred structural-fit candidate — NOT selected
+Temporal strongest mandatory challenger — NOT selected
+DBOS     conditional PostgreSQL-dependent challenger — NOT selected
+```
+
+Dedicated durable execution is justified where correctness materially depends on long waits/timers, human review, provider callbacks, crash-resume, material cancellation/timeouts, compensation or multi-step reconciliation.
+
+No runtime creates exactly-once external reality by itself. Provider ambiguity/idempotency/reconciliation remain explicit.
+
+Runtime workflow/job IDs are technical references and do not become Domain identity or material-state identity.
+
+See [`durable-execution-benchmark.md`](durable-execution-benchmark.md).
 
 ## Canonical-state responsibility
 
@@ -134,6 +206,8 @@ Canonical import requires explicit validation/mapping/acceptance. Sync/mirror pr
 
 Provider callbacks/webhooks/polling are adapter mechanisms; duplicate/out-of-order delivery does not create latest-arrival canonical truth.
 
+Calendar provider synchronization additionally remains adapter state: provider sync/delta tokens, recurrence IDs and API status do not become canonical LifeOS identity/material state.
+
 See [`integration-hub-boundaries.md`](integration-hub-boundaries.md).
 
 ## AI responsibility
@@ -166,7 +240,65 @@ MCP/A2A/future tool/agent protocols are adapters, not ontology or LifeOS governa
 
 See [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
 
-Deterministic calculations, constraints, authorization decisions and straightforward state transitions should remain deterministic services where appropriate.
+## Search / retrieval responsibility
+
+Search/index state is a downstream projection, not canonical truth.
+
+Current posture:
+
+```text
+structured filters + lexical/full-text
+BASELINE
+
+semantic/vector retrieval
+BOUNDED CANDIDATE
+
+pgvector
+BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
+
+dedicated search/vector infrastructure
+NOT ASSUMED
+```
+
+Search ranking, snippets, counts, autocomplete, candidate lists and errors are disclosure surfaces subject to `WL-H12`. Search miss != canonical nonexistence; embedding similarity != truth.
+
+Actions from search results re-resolve/revalidate through the governed-operation boundary rather than mutating from stale index payload.
+
+## Calendar interoperability responsibility
+
+LifeOS scheduling/time semantics remain Domain/Logical-owned.
+
+```text
+iCalendar / JSCalendar / provider APIs
+= interoperability + adapter pressure
+!= LifeOS ontology
+```
+
+Adapters must pressure-test recurrence exceptions/overrides, source/occurrence history, all-day/floating/zoned time, DST transitions, provider token invalidation/full resync and provider deletion/cancellation without collapsing provider representation into canonical state.
+
+Free/busy remains a bounded disclosure projection that may hide private source/reason detail.
+
+## Solver responsibility
+
+Deterministic calculations, constraints and straightforward planning logic remain deterministic services where appropriate.
+
+Current posture:
+
+```text
+simple rules / heuristics
+BASELINE
+
+OR-Tools CP-SAT
+PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
+
+AI
+interpretation / ambiguity / explanation / cross-domain reasoning
+NOT deterministic constraint authority
+```
+
+Solver results preserve states such as feasible/infeasible/unknown where applicable. `UNKNOWN != INFEASIBLE`.
+
+A solver produces candidate/scenario output bound to an input/material basis. Accepted Schedule/Plan/etc state changes only through the governed-operation contract.
 
 ## Storage responsibility
 
@@ -174,13 +306,30 @@ Large object/file bytes remain behind a provider abstraction rather than normal 
 
 The current storage abstraction direction remains compatible with local development and future S3-compatible/cloud object storage.
 
+## Observability responsibility
+
+Current direction is OpenTelemetry-first or equivalent standards-based instrumentation without selecting a telemetry vendor.
+
+```text
+trace/span/request/workflow ids
+!= NativeRef / MaterialStateRef / ExternalRef
+```
+
+Telemetry may be sampled/expired and does not replace Domain Provenance, security audit or required material effect history by identity.
+
+Observability must support diagnosis of conflicts, retries, durable waits, provider failures/unknown outcomes, sync/reconciliation lag, index/deletion propagation, solver status and recovery pressure without indiscriminate sensitive payload logging.
+
 ## Scalability and specialized infrastructure
 
 The current backend architecture direction is a modular monolith.
 
 Specialized infrastructure is introduced only when it demonstrates material benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
 
-Search/vector stores, caches, graph stores, analytics/time-series systems, workflow engines, policy engines, event infrastructure and similar systems are therefore evaluated as bounded mechanisms rather than assumed defaults.
+Search/vector stores, caches, graph stores, analytics/time-series systems, workflow engines, policy engines, event infrastructure and solver runtimes are therefore evaluated as bounded mechanisms rather than assumed defaults.
+
+Phase 7 establishes structural justification for dedicated durable execution in material long-running classes; this does not justify routing every job through such an engine.
+
+Phase 9 establishes OR-Tools CP-SAT as a preferred specialized solver benchmark candidate and does not yet justify a dedicated search/vector service.
 
 ## Non-negotiable Logical hardenings
 
@@ -199,7 +348,7 @@ Any later Physical/API/runtime architecture must preserve `WL-H01..WL-H12`, incl
 - reconstructible consequential AuthZ provenance;
 - non-interference/inference-leakage protection.
 
-Phase 5 requirement packages and the Phase 6 AI/context/runtime + Integration Hub contracts are mandatory downstream constraints.
+Phase 5 requirement packages, Phase 6 AI/context/runtime + Integration Hub contracts, and Phase 7–9 architecture contracts are mandatory downstream constraints.
 
 See [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md).
 
