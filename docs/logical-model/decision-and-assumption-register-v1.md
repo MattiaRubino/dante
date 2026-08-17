@@ -264,3 +264,370 @@ unsafe physical deferrals              0
 ```
 
 The final clean-room reconstruction must be able to understand why the major representation choices were made using this register plus the traceability ledger, without relying on undocumented conversation history.
+
+---
+
+## 12. Slice A — accepted decisions
+
+### DEC-A01 — Layered Typed Identity & Reference Model
+
+```text
+SLICE / SCOPE
+A — Identity / Reference
+
+QUESTION
+How can heterogeneous native identities be addressed and referenced across LifeOS without a universal semantic Entity/Thing root or role-wrapper identities?
+
+SELECTED CANDIDATE
+Layered Typed Identity & Reference Model
+
+CORE LOGICAL SHAPE
+native owner identity
++
+logical NativeRef addressability
++
+Reference Contract
++
+separate ExternalRef / Account / Principal identity spaces
++
+history-preserving Reconciliation
++
+separate Version/material-state reference
++
+visibility-safe exposure boundary
+
+WHY SELECTED
+preserves Domain ownership while enabling reusable cross-domain addressability;
+keeps role/relationship semantics in typed contracts;
+survives provider migration, identity correction, privacy and future native-owner extension;
+leaves multiple physical implementations available.
+
+TRACE / TEST REFERENCES
+TA-01..TA-17
+INV-041..INV-060
+TC-A01..A10
+TC-L01..L12
+Slice-A mutation/counterfactual package
+
+REGRESSION IMPACT
+R3 WHOLE-LOGICAL
+
+STATUS
+ACCEPTED WITH HARDENING — activation conditional on Slice-A remote QA
+```
+
+### DEC-A02 — NativeRef is addressability, not ontology
+
+```text
+QUESTION
+Does common native-reference infrastructure imply a common semantic superclass?
+
+DECISION
+NO.
+
+NativeRef identifies which already-justified native identity is addressed.
+It creates no independent Domain entity and carries no generic relationship semantics.
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-A03 — Reference Contracts own semantic eligibility
+
+```text
+QUESTION
+Where is the meaning of a heterogeneous reference preserved?
+
+DECISION
+In the containing slot/relation Reference Contract, including semantic role and eligible target families.
+
+CONSEQUENCE
+polymorphic technical reference != any-object semantic relation
+
+STATUS
+ACCEPTED
+```
+
+### DEC-A04 — ExternalRef is a separate scoped identity space
+
+```text
+QUESTION
+How are provider/source IDs represented?
+
+DECISION
+As scoped ExternalRef/provider identity mappings distinct from NativeRef.
+
+MINIMUM SCOPE
+provider/source
++ realm/tenant/account/integration instance where required
++ provider object type where required
++ opaque external ID
++ version/revision where material
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-A05 — identity reconciliation is explicit and correctable
+
+```text
+QUESTION
+How are duplicate native identities / later identity matches handled?
+
+DECISION
+Represent equivalence/redirect/current resolution through explicit Reconciliation/history rather than destructive proof-erasing rewrite.
+
+HARDENING
+obsolete/superseded identity handle is not reused;
+wrong merge/link can be corrected/revoked;
+historical references are not automatically rewritten to claim final knowledge existed earlier.
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-A06 — identity != Version/material state
+
+```text
+DECISION
+NativeRef identifies the continuing referent; material Version/state addressing is a separate logical concern.
+
+STATUS
+ACCEPTED WITH Slice-D deferral
+```
+
+### DEC-A07 — internal identity != universal disclosure handle
+
+```text
+DECISION
+LifeOS may maintain one internal native identity while authorized API/product contexts expose scoped handles or no cross-context linkage.
+
+STATUS
+ACCEPTED WITH Slice-F/API-security deferral
+```
+
+---
+
+## 13. Slice A — rejected / retained alternatives
+
+### ALT-A01 — Universal semantic Entity/Object root
+
+```text
+WHY PLAUSIBLE
+maximum polymorphism and cross-domain query convenience
+
+FAILURE
+reintroduces forbidden universal semantic root;
+encourages generic relation/property fallback;
+blurs native/product/provider identity.
+
+FAILED
+INV-007, INV-008, INV-039, INV-041, INV-045, INV-046
+
+CLASS
+LOGICALLY REJECTED
+
+RETEST
+only if Domain Atlas itself is legitimately reopened under the Domain reopen gate
+```
+
+### ALT-A02 — Owner/role-specific reference families only
+
+```text
+WHY PLAUSIBLE
+strongest direct type safety and ordinary FK-friendly representation
+
+RESULT
+VIABLE STRONG ALTERNATIVE
+
+WHY NOT SELECTED AS LOGICAL BASELINE
+repeats common heterogeneous-addressability/reconciliation/provider mechanics;
+expands unions/reference families as native owners grow;
+Reference Contracts provide equivalent semantic guardrails while retaining reusable addressability.
+
+CLASS
+NOT LOGICALLY INVALID
+
+RETEST
+if common NativeRef addressability creates material complexity/leakage or Physical Model proves owner-specific references materially superior without logical cost
+```
+
+### ALT-A03 — Mandatory global identity-registry root
+
+```text
+WHY PLAUSIBLE
+single FK target, global lookup, shared history hooks
+
+FAILURE AS LOGICAL REQUIREMENT
+risks turning technical registry into ontology;
+may force native identity onto role/value/dependent/supply/provider representations that do not justify it.
+
+CLASS
+LOGICALLY REJECTED AS REQUIREMENT
+
+RETEST
+may reappear as PHYSICAL technical anchor if it preserves DEC-A01/02 and all Slice-A invariants
+```
+
+### ALT-A04 — encoded typed IDs as the semantic contract
+
+```text
+WHY PLAUSIBLE
+Shopify/Atlassian/AWS/OCI/Twilio-style operational convenience
+
+FAILURE
+ID format migrations can break semantic consumers; GitHub provides direct negative evidence.
+
+CLASS
+LOGICALLY REJECTED
+
+RETEST
+encoded type may be a redundant transport hint only if semantic owner/type remains independently contracted
+```
+
+### ALT-A05 — provider-ID-driven automatic merge
+
+```text
+WHY PLAUSIBLE
+simpler ingestion/dedup
+
+FAILURE
+provider scope/identity churn, wrong merges, Home Assistant source-of-truth counterexample, Person/privacy risk.
+
+CLASS
+LOGICALLY REJECTED
+```
+
+---
+
+## 14. Slice A — assumptions / evidence dependencies
+
+### ASM-A01 — multiple physical representations remain feasible
+
+```text
+STATEMENT
+The accepted logical contract can later be implemented through a technical anchor/registry, owner-specific FK structures, composite typed references or a hybrid without changing Slice-A meaning.
+
+EVIDENCE
+PostgreSQL constraint model + candidate analysis
+
+CONFIDENCE
+HIGH
+
+STABILITY
+EVOLVING until Physical Model validation
+
+FAILURE CONSEQUENCE
+targeted Slice-A logical reopen if every feasible physical representation breaks a required invariant
+
+REFRESH TRIGGER
+Physical Model start and WD-05 final pressure
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED WORKING ASSUMPTION — not UNPROVEN for logical meaning, but must be physically demonstrated later
+```
+
+### ASM-A02 — external identifier scope is provider-contract-specific
+
+```text
+STATEMENT
+ExternalRef uniqueness cannot use one universal LifeOS scope formula; adapters must honor the provider's documented issuer/tenant/account/resource scope.
+
+EVIDENCE
+OIDC, SCIM, Apple, Entra, cloud/provider references
+
+CONFIDENCE
+HIGH
+
+STABILITY
+STABLE principle / provider details EVOLVING
+
+REFRESH TRIGGER
+provider integration design or provider contract change
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED
+```
+
+### ASM-A03 — internal identity linkage can require scoped external exposure
+
+```text
+STATEMENT
+A single internal identity may need context-specific public/API handles to prevent correlation/privacy leakage.
+
+EVIDENCE
+OIDC pairwise subjects, SCIM privacy direction, Apple transfer identifiers
+
+CONFIDENCE
+HIGH
+
+STABILITY
+STABLE principle
+
+FAILURE CONSEQUENCE
+API/security design could leak cross-context identity
+
+REFRESH TRIGGER
+Slice F and API/security stage
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED WITH LATER IMPLEMENTATION DEFERRAL
+```
+
+No Slice-A PASS depends on a material `UNPROVEN` assumption.
+
+---
+
+## 15. Slice A — external evidence register
+
+```text
+EVID-A01 OpenID Connect pairwise sub          STRUCTURAL PRINCIPLE / PRIVACY
+EVID-A02 SCIM id vs externalId                STRUCTURAL PRINCIPLE / INTEROP
+EVID-A03 Auth0 link/unlink identities         CURRENT PRODUCT + STRUCTURAL PRINCIPLE
+EVID-A04 Sign in with Apple transfer ID       CURRENT PRODUCT + MIGRATION PRINCIPLE
+EVID-A05 Microsoft Entra pairwise sub/oid     CURRENT PRODUCT + STRUCTURAL PRINCIPLE
+EVID-A06 Outlook Immutable ID                 CURRENT PRODUCT / SCOPE-LIFETIME PRESSURE
+EVID-A07 FHIR Reference/type/targetProfile    STRUCTURAL PRINCIPLE
+EVID-A08 FHIR Person pressure                 SPECIALIST BOUNDARY EVIDENCE
+EVID-A09 Salesforce polymorphic refs          STRUCTURAL PRINCIPLE
+EVID-A10 Shopify GID                          CURRENT PRODUCT / TYPED ADDRESSABILITY
+EVID-A11 Asana gid + resource_type            CURRENT PRODUCT / TYPED ADDRESSABILITY
+EVID-A12 Atlassian ARI                        CURRENT PRODUCT / GLOBAL SCOPED ADDRESS
+EVID-A13 AWS ARN                              INFRASTRUCTURE ADDRESSABILITY
+EVID-A14 OCI OCID                             INFRASTRUCTURE ADDRESSABILITY
+EVID-A15 Kubernetes UID/resourceVersion       STRUCTURAL PRINCIPLE / VERSION SEPARATION
+EVID-A16 Git refs/object IDs                  STRUCTURAL PRINCIPLE / ALIAS-VERSION PRESSURE
+EVID-A17 GitHub node-ID migration             NEGATIVE BENCHMARK / OPAQUE ID
+EVID-A18 Google People sources/linking        CURRENT PRODUCT / SOURCE-AGGREGATION PRESSURE
+EVID-A19 Wikidata merge/redirect/unmerge      STRUCTURAL PRINCIPLE / CORRECTION
+EVID-A20 Home Assistant 2026.8 device split   NEGATIVE BENCHMARK / SOURCE-OF-TRUTH
+EVID-A21 Twilio SID                           CURRENT PRODUCT / TYPE-PREFIX COUNTERPOINT
+EVID-A22 PostgreSQL inheritance constraints   PHYSICAL FEASIBILITY EVIDENCE
+```
+
+Canonical details and source URLs: `benchmarks/identity-reference-v1.md`.
+
+---
+
+## 16. Slice A — physical deferrals
+
+```text
+DEFER-A01 exact PostgreSQL native-reference anchor/registry shape
+DEFER-A02 owner-specific FK vs composite vs hybrid strategy
+DEFER-A03 native key data type / generation algorithm
+DEFER-A04 index/partition strategy
+DEFER-A05 ORM polymorphism mapping
+DEFER-A06 public/API identity-handle serialization
+DEFER-A07 runtime authorization/identity-resolution enforcement
+```
+
+All are `STAGE-DEFERRED PHYSICAL`. None may later weaken NativeRef/Reference Contract/ExternalRef/Reconciliation invariants.
