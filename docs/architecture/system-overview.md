@@ -15,22 +15,25 @@ Logical Model
 CLOSED
 
 Pre-Physical Repository & Architecture Coherence
-IN PROGRESS
+FINAL CLOSURE CANDIDATE
 Phase 5 requirements CURRENT
 Phase 6 AI/context/runtime/integration boundaries CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver pressure CURRENT
 Phase 10 Physical benchmark method CURRENT
+Phase 11 repository engineering safety QA PASS
+Phase 12 clean-room QA closing on this branch
+independent total repository audit still required before definitive whole-workstream closure
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
 
 Backend production implementation
-NOT STARTED
+NOT STARTED / DEFERRED
 ```
 
-Domain semantics are defined by the accepted Domain Atlas. Logical representation and downstream hardenings are defined by the closed Logical Model. This overview must not introduce a universal semantic Entity/Relationship root, a generic canonical property model, or a concrete persistence design by convenience.
+Domain semantics are defined by the accepted CLOSED Domain Atlas and its final closure/status continuations. Logical representation and downstream hardenings are defined by the CLOSED Whole Logical Model plus its separate remote-QA closure record. This overview does not introduce new semantic owners or Physical mechanisms.
 
 ## Logical architecture
 
@@ -62,124 +65,133 @@ External providers, assistants, caches, indexes, projections, solver candidates,
 
 ## Client responsibilities
 
-Clients are responsible for presentation, navigation, local interaction state, secure session handling, platform-specific capabilities and collection of user intent/confirmation where required.
+Clients own presentation, navigation, local interaction state, secure session handling, platform capabilities and collection of user intent/confirmation where required.
 
-A later multi-device/offline implementation may authorize bounded local caches, queues or synchronization behavior. This document does not preselect those semantics beyond the Phase 5 requirement envelope.
+A later multi-device/offline implementation may authorize bounded local caches, queues or synchronization behavior according to the Phase 5 requirement envelope. Clients do not hold primary persistence credentials and do not own critical authorization or canonical Domain invariants.
 
-Clients do not hold primary persistence credentials and do not own critical authorization or canonical domain invariants.
+UI actions may request governed operations; UI labels/buttons do not define semantic operation identity.
 
-Client/UI actions may request governed operations but UI labels/buttons do not define semantic operation identity.
+## Backend boundary responsibilities
 
-## Backend responsibilities
+The future backend boundary is responsible for enforcing accepted Domain/Logical semantics through technical services, including:
 
-The backend boundary is responsible for enforcing accepted Domain/Logical semantics through technical services, including:
-
-- validation of semantic target and operation intent;
-- governed operation/effect admission and result semantics;
-- authorization enforcement without collapsing Principal, Actor, Authority, Consent or Visibility into one concept;
-- expected-state/conflict handling for consequential writes where required;
-- autonomy/preview/confirmation handling according to consequence and governance;
-- provenance, history, correction and reconciliation behavior;
+- semantic target and operation validation;
+- governed operation/effect admission and multi-axis result semantics;
+- authorization enforcement without collapsing Principal, Actor, Authority, Consent or Visibility;
+- expected-state/conflict handling for consequential writes;
+- autonomy/preview/confirmation according to consequence/governance;
+- provenance, material history, correction and reconciliation;
 - truthful multi-owner consistency or explicit staged/partial outcomes;
 - provider-state versus canonical-state separation;
 - selective projection/disclosure enforcement;
 - scheduling/reasoning/replanning services;
-- deterministic calculations and constraint handling where appropriate;
-- optional specialized solver invocation producing candidates rather than direct canonical writes;
-- AI context construction, proposal/effect-request validation and provider routing;
-- integration/provider orchestration;
-- bounded background work and durable long-running coordination according to operation class;
+- deterministic calculations/constraints;
+- optional solver invocation producing candidates rather than direct canonical writes;
+- AI context construction and provider-neutral routing;
+- provider/integration orchestration;
+- bounded background work and durable long-running coordination by operation class;
 - search/retrieval projections separated from canonical state;
-- privacy-safe technical observability and operational controls.
+- privacy-safe observability and operational controls.
 
-Concrete API routes, DTOs, transaction mechanics, AuthZ engine, durable-execution engine binding and persistence structures remain later stage decisions.
+Concrete routes, DTOs, transaction mechanics, AuthZ engine, durable-runtime binding and persistence structures remain later decisions.
 
 ## Governed operation/effect responsibility
 
-Consequential callers converge on the current [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) rather than bypassing semantics through transport-specific operations.
+Consequential callers converge on [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md).
 
 Where material, the boundary preserves:
 
 ```text
-contract/version
-semantic target/facet
+contract / operation version
+semantic target / facet
 requested effect
 input / candidate
-purpose/context
-material/expected state
-derived/live input basis + freshness
+purpose / context
+material / expected state
+freshness/material basis
 Principal / actual Actor / represented party
 governance basis
 autonomy / preview / confirmation
-idempotency
-correlation/causation
+idempotency + operation equivalence
+correlation / causation
 execution class
-deadline/expiry/cancellation semantics
+deadline / expiry / technical cancellation
 canonical result
-provider result
+provider/external result
 runtime result
-conflict/partial/reconciliation/provenance
+conflict / partial / reconciliation / provenance
 ```
 
 ```text
 request accepted != effect completed
 provider acknowledgement != canonical completion automatically
+workflow completion != Domain Actual automatically
 runtime cancellation != Domain cancellation automatically
 ```
 
-One generic status/success flag is not sufficient for materially consequential operations.
+One generic success/status flag is insufficient for materially consequential work.
 
 ## Durable execution responsibility
 
-The system distinguishes bounded asynchronous work from material long-running durable processes.
-
-Current Phase 7 posture:
+LifeOS distinguishes bounded asynchronous work from material long-running durable processes.
 
 ```text
 BOUNDED ASYNC
 DB + worker/outbox style remains valid baseline mechanism class
 
 DEDICATED DURABLE EXECUTION
-Restate  preferred structural-fit candidate — NOT selected
-Temporal strongest mandatory challenger — NOT selected
-DBOS     conditional PostgreSQL-dependent challenger — NOT selected
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional PostgreSQL-dependent challenger — NOT selected
 ```
 
-Dedicated durable execution is justified where correctness materially depends on long waits/timers, human review, provider callbacks, crash-resume, material cancellation/timeouts, compensation or multi-step reconciliation.
+Dedicated durable execution is structurally justified where correctness depends on long waits/timers, human review, provider callbacks, crash-resume, material cancellation/timeouts, compensation or multi-step reconciliation.
 
-No runtime creates exactly-once external reality by itself. Provider ambiguity/idempotency/reconciliation remain explicit.
-
-Runtime workflow/job IDs are technical references and do not become Domain identity or material-state identity.
+No runtime creates exactly-once external reality by itself. Runtime workflow/job IDs remain technical references and do not become Domain identity/material-state identity.
 
 See [`durable-execution-benchmark.md`](durable-execution-benchmark.md).
 
 ## Canonical-state responsibility
 
-LifeOS owns canonical state and its material history. Physical representation remains open until the separately authorized Physical Model benchmark/design stage.
+LifeOS owns canonical state and its material history. Physical representation remains open until separately authorized Physical Model work.
 
-Any future persistence must preserve the closed Logical Model, including:
+Any future persistence must preserve:
 
-- owner-specific identity and lifecycle boundaries;
-- discriminated references rather than a universal semantic root;
+- owner-specific identity/lifecycle boundaries;
+- discriminated reference families rather than a universal semantic root;
 - planned/current/actual/observed/derived distinctions;
 - specific relationship/governance semantics;
-- provider identity/state as external representation rather than automatic canonical identity/truth;
+- provider identity/state as external representation, not automatic canonical identity/truth;
 - material history, correction, reconciliation and retention/tombstone integrity;
 - bounded flexible/provider metadata without generic semantic fallback;
-- unresolved/candidate interpretation where meaning is not yet established.
+- unresolved/candidate interpretation where meaning is not established.
 
-Current Physical benchmark posture:
+```text
+Person != Account != Principal != Actor
+Person != Living Referent != Asset
+Subject / Actor / Resource contextual roles != native universal identities
+provider state != canonical state
+derived projection != canonical truth
+absence / unknown != false
+AI / solver inference != accepted canonical effect
+```
+
+All `WL-H01..WL-H12` remain mandatory downstream constraints.
+
+## Physical benchmark posture
+
+Current role-specific posture:
 
 ```text
 PRIMARY CANONICAL LANE
 PostgreSQL hybrid
-CURRENT PREFERRED BASELINE — not final selection
+CURRENT PREFERRED BASELINE — NOT selected
 
 TypeDB
-MANDATORY CHALLENGER
+MANDATORY CHALLENGER — NOT selected
 
 SECONDARY GRAPH LANE
-primary-only/no-specialized-store baseline
+primary/no-specialized-store baseline
 vs Neo4j / property graph
 
 SEARCH / SEMANTIC RETRIEVAL LANE
@@ -187,7 +199,7 @@ structured + lexical/full-text baseline
 vs bounded pgvector where applicable
 
 EVENT / DOCUMENT
-bounded mechanisms only unless explicit gap/benefit admits a specialized candidate
+bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
 
 generic EAV / generic edge / universal meta-model
 REJECTED FOR CANONICAL KERNEL
@@ -195,47 +207,33 @@ REJECTED FOR CANONICAL KERNEL
 
 ## Phase 10 benchmark-method responsibility
 
-The current Phase 10 package defines the future Physical decision method:
+The Phase 10 package is:
 
 - [`physical-benchmark-specification.md`](physical-benchmark-specification.md);
 - [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md);
 - [`physical-benchmark-register.md`](physical-benchmark-register.md).
 
-It does **not** create Physical schemas or select a technology.
-
-The method enforces:
+It defines **how** later Physical evidence is produced and judged. It does not select a database or create schemas.
 
 ```text
 hard semantic/correctness gates
         ↓
-role-specific weighted scoring
+role-specific scoring
         ↓
-low/base/high + NFR sensitivity review
+LOW / BASE / HIGH + NFR sensitivity
         ↓
-version/edition/deployment-pinned evidence
+version / edition / deployment-pinned evidence
         ↓
-future PREFERRED / PASS-CONDITIONAL / HOLD / REJECT result
+PREFERRED / PASS-CONDITIONAL / HOLD / REJECT / SENSITIVITY-DEPENDENT
 ```
 
-Primary-candidate hard gates cover semantic ownership, reference families, typed/n-ary relation fidelity, expected-state concurrency, multi-owner consistency, history/reconciliation, state-layer separation, governance/disclosure, retention/restore, temporal fidelity, schema evolution and recoverability.
-
-A candidate that fails a non-compensable hard gate cannot win by being faster.
-
-Low/base/high dataset values are synthetic qualification envelopes, not business/user-growth forecasts. Open RPO/RTO/latency/availability/scale targets remain sensitivity inputs until accepted values exist.
-
-Every future benchmark subject is pinned as:
-
-```text
-product + exact version + edition/license + deployment mode
-```
-
-The benchmark must use common semantic assertions with candidate-idiomatic physical mappings rather than forcing all technologies into one storage shape.
+A candidate failing a non-compensable hard gate cannot win through throughput/latency. Synthetic tiers are qualification envelopes, not business forecasts. Candidate mappings are idiomatic but must satisfy common semantic assertions. `PREFERRED != SELECTED`.
 
 ## Integration responsibility
 
-External applications and services are isolated behind provider/capability boundaries. Provider-specific payloads do not define LifeOS ontology.
+External systems are isolated behind provider/capability boundaries. Provider-specific payloads do not define LifeOS ontology.
 
-The current Integration Hub contract preserves five distinct modes:
+Five current Integration Hub modes remain distinct:
 
 1. canonical import;
 2. synchronized/mirrored provider state;
@@ -243,25 +241,15 @@ The current Integration Hub contract preserves five distinct modes:
 4. retrieval/index projection;
 5. action/tool integration.
 
-Each flow must identify the applicable mode or bounded composition rather than treating all integrations as equivalent.
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider acknowledgement/result != canonical effect completion automatically.
 
-External identifiers, revisions and source data retain enough provenance for reconciliation and remain distinguishable from canonical LifeOS identity/state. `ExternalRef != NativeRef`; provider revision/token != `MaterialStateRef` by identity.
+Provider callbacks/webhooks/replays are technical inputs requiring authentication/validation/dedup/mapping. MCP/A2A/future protocols remain adapters rather than ontology/governance.
 
-Canonical import requires explicit validation/mapping/acceptance. Sync/mirror preserves canonical and provider apply states separately. Live reads retain source/freshness/unknown state. Retrieval/index state remains derived and deletion-aware. Action/tool integration preserves governance, idempotency, ambiguous-outcome and reconciliation truth.
+## AI / Context Builder responsibility
 
-Provider callbacks/webhooks/polling are adapter mechanisms; duplicate/out-of-order delivery does not create latest-arrival canonical truth.
+AI remains behind a provider-neutral/replaceable gateway. The Context Builder is purpose-, disclosure-, provenance- and freshness-aware.
 
-Calendar provider synchronization additionally remains adapter state: provider sync/delta tokens, recurrence IDs and API status do not become canonical LifeOS identity/material state.
-
-See [`integration-hub-boundaries.md`](integration-hub-boundaries.md).
-
-## AI responsibility
-
-AI access remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
-
-AI may interpret ambiguous input, help reason across domains, generate proposals and support explanation. It does not become canonical truth by producing output and does not bypass domain validation, governance, expected-state checks or confirmation/autonomy policy.
-
-The runtime keeps distinct:
+Runtime context categories remain distinct:
 
 ```text
 canonical state
@@ -273,43 +261,24 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-The Context Builder is purpose-, disclosure-, provenance- and freshness-aware. It does not default to unrestricted database or complete-history exposure.
+AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. LifeOS does not create a second generic AI-memory source of truth.
 
-LifeOS does not maintain a generic second source of truth called `AI memory`: durable AI-relevant information must be classified into an accepted canonical/history/candidate/derived/source/provider representation.
+## Search responsibility
 
-AI output is classified according to task: answer/explanation, candidate/unresolved interpretation, structured extraction, Proposal/proposal-like candidate, scenario/recommendation or governed-effect request. Model output is not an accepted effect merely because it is structured.
-
-Runtime Agent, service Principal, Tool, Workflow or Automation state remains technical/product/runtime state unless a separate accepted semantic role applies. `Principal != Actor`; tool/protocol action strings != canonical governed operation.
-
-MCP/A2A/future tool/agent protocols are adapters, not ontology or LifeOS governance.
-
-See [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
-
-## Search / retrieval responsibility
-
-Search/index state is a downstream projection, not canonical truth.
-
-Current posture:
+Current baseline:
 
 ```text
-structured filters + lexical/full-text
+structured queries / filters + lexical/full-text search
 BASELINE
 
 semantic/vector retrieval
-BOUNDED CANDIDATE
+BOUNDED CAPABILITY
 
-pgvector
-BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
-
-dedicated search/vector infrastructure
-NOT ASSUMED
+dedicated search infrastructure
+ONLY ON DEMONSTRATED BENEFIT
 ```
 
-Search ranking, snippets, counts, autocomplete, candidate lists and errors are disclosure surfaces subject to `WL-H12`. Search miss != canonical nonexistence; embedding similarity != truth.
-
-Actions from search results re-resolve/revalidate through the governed-operation boundary rather than mutating from stale index payload.
-
-Phase 10 additionally requires vector/search quality to be measured after scope/Visibility filtering and through deletion/redaction/index-staleness scenarios rather than top-k latency alone.
+Search ranking, snippets, counts, suggestions and errors are disclosure surfaces. Search miss != canonical nonexistence; similarity != truth. Search/index state is derived projection and remains deletion/freshness aware.
 
 ## Calendar interoperability responsibility
 
@@ -317,92 +286,81 @@ LifeOS scheduling/time semantics remain Domain/Logical-owned.
 
 ```text
 iCalendar / JSCalendar / provider APIs
-= interoperability + adapter pressure
+= interoperability / adapter pressure
 != LifeOS ontology
 ```
 
-Adapters must pressure-test recurrence exceptions/overrides, source/occurrence history, all-day/floating/zoned time, DST transitions, provider token invalidation/full resync and provider deletion/cancellation without collapsing provider representation into canonical state.
-
-Free/busy remains a bounded disclosure projection that may hide private source/reason detail.
+Adapters must handle recurrence exceptions/overrides, all-day/floating/zoned time, DST transitions, provider resync/token invalidation and provider deletion/cancellation without collapsing provider representation into canonical state. Provider sync token != `MaterialStateRef`.
 
 ## Solver responsibility
 
-Deterministic calculations, constraints and straightforward planning logic remain deterministic services where appropriate.
-
-Current posture:
-
 ```text
-simple rules / heuristics
+simple deterministic rules / heuristics
 BASELINE
 
 OR-Tools CP-SAT
 PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
 
 AI
-interpretation / ambiguity / explanation / cross-domain reasoning
+interpretation / ambiguity / explanation
 NOT deterministic constraint authority
 ```
 
-Solver results preserve states such as feasible/infeasible/unknown where applicable. `UNKNOWN != INFEASIBLE`.
-
-A solver produces candidate/scenario output bound to an input/material basis. Accepted Schedule/Plan/etc state changes only through the governed-operation contract.
-
-Phase 10 uses stale-snapshot and solver-status scenarios as Physical support pressure; the primary database is not expected to become the solver itself.
-
-## Storage responsibility
-
-Large object/file bytes remain behind a provider abstraction rather than normal domain rows. Domain semantics refer to accepted Content Artifact identity/meaning; blob path, URL, provider object or storage identifier is representation/integration state, not automatically domain identity.
-
-The current storage abstraction direction remains compatible with local development and future S3-compatible/cloud object storage.
+`UNKNOWN != INFEASIBLE`. Solver output is a candidate bound to an input/material/model/objective basis and crosses the governed-operation boundary before any canonical schedule/plan effect.
 
 ## Observability responsibility
 
-Current direction is OpenTelemetry-first or equivalent standards-based instrumentation without selecting a telemetry vendor.
+OpenTelemetry-first or equivalent is current direction without vendor selection.
 
 ```text
 trace/span/request/workflow ids
-!= NativeRef / MaterialStateRef / ExternalRef
+!= NativeRef / MaterialStateRef / ExternalRef / idempotency identity
 ```
 
-Telemetry may be sampled/expired and does not replace Domain Provenance, security audit or required material effect history by identity.
+Telemetry may be sampled/expired and does not replace Domain Provenance, security audit or required material effect history. Observability must support diagnosis without indiscriminate sensitive-payload logging.
 
-Observability must support diagnosis of conflicts, retries, durable waits, provider failures/unknown outcomes, sync/reconciliation lag, index/deletion propagation, solver status and recovery pressure without indiscriminate sensitive payload logging.
+## Storage responsibility
+
+Large object bytes remain behind a StorageProvider abstraction. Content Artifact identity is not identical to blob path, URL, provider object or storage identifier. Local development and future S3-compatible/cloud storage remain compatible directions; provider selection is not fixed here.
+
+## Repository engineering safety
+
+Phase 11 verified effective `main` protections remotely. Current owner-driven posture:
+
+```text
+PR required
+main deletion blocked
+force-push/non-fast-forward blocked
+review-thread resolution required
+0 required approvals while no independent reviewer exists
+0 required checks until real stable check contexts exist
+merge-commit history preserved by current policy
+```
+
+Repository settings must be read back before being used as evidence. Connector-unverifiable security settings remain explicitly unverifiable rather than fabricated as PASS.
+
+## Phase 12 / final-verification responsibility
+
+Phase 12 is the repository-first clean-room coherence check. It may repair stale current navigation/status but does not reopen the accepted Domain/Logical semantics.
+
+Current user-required boundary after Phase 12 QA PASS:
+
+```text
+DO NOT MERGE TO MAIN
+DO NOT DECLARE THE ENTIRE PRE-PHYSICAL WORKSTREAM DEFINITIVELY CLOSED YET
+
+NEXT
+run one independent total repository audit for mistakes, contradictions, lost knowledge and scope damage
+
+only if that passes
+→ definitive Pre-Physical closure
+→ later separately authorized PR/main integration
+```
 
 ## Scalability and specialized infrastructure
 
-The current backend architecture direction is a modular monolith.
-
-Specialized infrastructure is introduced only when it demonstrates material benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
-
-Search/vector stores, caches, graph stores, analytics/time-series systems, workflow engines, policy engines, event infrastructure and solver runtimes are therefore evaluated as bounded mechanisms rather than assumed defaults.
-
-Phase 7 establishes structural justification for dedicated durable execution in material long-running classes; this does not justify routing every job through such an engine.
-
-Phase 9 establishes OR-Tools CP-SAT as a preferred specialized solver benchmark candidate and does not yet justify a dedicated search/vector service.
-
-Phase 10 adds an explicit candidate-admission rule: a new specialized stateful product enters later benchmarking only when it addresses an accepted gap or demonstrates strong structural/measured benefit over the baseline for its role.
-
-## Non-negotiable Logical hardenings
-
-Any later Physical/API/runtime architecture must preserve `WL-H01..WL-H12`, including:
-
-- justified material Agreement terms;
-- governed operation/effect semantics;
-- bounded projection/disclosure surfaces;
-- absence/unknown not collapsing to false;
-- expected-state consequential writes;
-- idempotency distinct from identity;
-- truthful multi-owner consistency;
-- canonical/provider-state separation;
-- derived-state freshness/material basis;
-- retention/redaction/tombstone integrity;
-- reconstructible consequential AuthZ provenance;
-- non-interference/inference-leakage protection.
-
-Phase 5 requirement packages, Phase 6 AI/context/runtime + Integration Hub contracts, Phase 7–9 architecture contracts and the Phase 10 benchmark-method package are mandatory downstream constraints.
-
-See [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md).
+The backend direction remains modular-monolith-first. Caches, graph stores, search/vector services, analytics/time-series systems, workflow engines, policy engines, event infrastructure and solver runtimes are bounded mechanisms admitted only for demonstrated structural or measured benefit.
 
 ## Current navigation
 
-For architecture navigation and the distinction between current specifications and historical transition evidence, read [`README.md`](README.md).
+For the complete authority map, Domain/Logical closure discoverability and current-vs-history rules, read [`README.md`](README.md). For detailed final-verification state read [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
