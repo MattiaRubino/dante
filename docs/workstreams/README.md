@@ -24,7 +24,7 @@ A workstream handoff must contain, where applicable:
 
 ## Deferred / not currently executable workstreams
 
-- [`backend-foundation.md`](backend-foundation.md) — **NOT STARTED / DEFERRED** until Pre-Physical Coherence closes and later Physical/runtime prerequisites are explicitly accepted. Its existing pre-Domain/Logical assumptions are scheduled for bounded cleanup; do not execute old Domain/persistence instructions as current truth.
+- [`backend-foundation.md`](backend-foundation.md) — **NOT STARTED / DEFERRED**. Its pre-Domain/pre-Logical instructions were cleaned during Pre-Physical Phase 3. The current handoff now preserves valid future bootstrap requirements while explicitly requiring closed Pre-Physical Coherence, a separately accepted Physical Model, and applicable current security/runtime/integration/API prerequisites before implementation may start. Do not create `feature/backend-foundation` or execute backend/schema/API instructions yet.
 
 ## Completed model workstreams
 
