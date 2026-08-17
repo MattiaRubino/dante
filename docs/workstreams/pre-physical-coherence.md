@@ -1,9 +1,10 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **IN PROGRESS — Phase 2 content written; final remote path + knowledge-coverage QA pending**
+- Status: **IN PROGRESS — Phase 2 QA PASS; Phase 3 read-only audit next**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Phase 2 PRE-SCOPE: `d9610a7da4fe8fc759e9809843d989f1befcda5c`
+- Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
@@ -14,9 +15,9 @@
 
 This workstream bridges the closed Domain + Logical Models and any later Physical Model authorization.
 
-It exists to make repository/current architecture truth coherent, define pre-Physical technical requirements and benchmark inputs, and close with a clean-room QA before any Physical Model begins.
+It makes repository/current architecture truth coherent, defines pre-Physical technical requirements and benchmark inputs, and will close with a clean-room QA before any Physical Model begins.
 
-A genuine material semantic contradiction triggers a separate explicit Domain/Logical reopen. Documentation cleanup must not silently alter closed semantics.
+A genuine material semantic contradiction triggers a separate explicit Domain/Logical reopen. Cleanup or implementation convenience must not silently alter closed semantics.
 
 ## Current accepted stage
 
@@ -38,7 +39,8 @@ PRE-PHYSICAL COHERENCE
 ACTIVE
 Phase 0 PASS
 Phase 1 QA PASS
-Phase 2 CONTENT WRITTEN / FINAL QA PENDING
+Phase 2 QA PASS
+Phase 3 READ-ONLY AUDIT NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -62,7 +64,7 @@ Before later work:
 9. read `docs/architecture/README.md` and linked current model/architecture sources;
 10. read relevant ADR/evidence/methodology;
 11. verify current branch/ref and relation to `main`;
-12. before writes, issue a new exact PRE-SCOPE/write gate unless an approved gate is still in flight.
+12. before any new write phase, issue a fresh exact PRE-SCOPE/write gate.
 
 ## Documentation lifecycle rule
 
@@ -131,23 +133,23 @@ Do not create universal Domain owners merely because a product/runtime term is u
 
 Unless separately revalidated, terms such as Memory, Agent, Automation, Job, Workflow, Notification, Reminder, Priority, Preference, Context, Task, Workspace, Risk, Focus Time, Out of Office and Working Location remain product/runtime/composition/profile/projection/policy concepts rather than new universal Domain roots.
 
-## Phase 0 — freeze/current-state inventory — PASS
+## Completed work
 
-Verified the integrated main baseline, Domain/Logical closure, Physical/backend non-started state and stale global/architecture sequencing before writes.
+### Phase 0 — freeze/current-state inventory — PASS
 
-A broader clean-room repository-wide audit remains part of Phase 12 closure.
+The workstream opened from the integrated Domain+Logical baseline with Physical/backend implementation not started. A broader repository-wide clean-room audit remains part of Phase 12 closure.
 
-## Phase 1 — global current-truth entry-point alignment — QA PASS
+### Phase 1 — global current-truth entry-point alignment — QA PASS
 
 Original Phase 0+1 PRE-SCOPE:
 
 `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 
-Phase 0+1 final branch HEAD:
+Phase 0+1 final HEAD:
 
 `d9610a7da4fe8fc759e9809843d989f1befcda5c`
 
-Physical path classification:
+Verified physical classification:
 
 ```text
 added      1
@@ -156,19 +158,19 @@ deleted    0
 unexpected 0
 ```
 
-The native GitHub compare endpoint was unavailable; fallback remote QA used verified refs, a bounded linear commit chain, per-commit changed-path evidence and remote payload readback. `main` remained unchanged.
+### Phase 2 — architecture supersession/current-truth cleanup — QA PASS
 
-## Phase 2 — architecture supersession/current-truth cleanup — CONTENT WRITTEN / QA PENDING
+Approved Phase 2 PRE-SCOPE:
 
-### Approved Phase 2 gate
+`d9610a7da4fe8fc759e9809843d989f1befcda5c`
+
+Verified content HEAD before closure markers:
+
+`dfc1f4e124f362d342c336485e166c8ac57afba4`
+
+Approved/final physical path set:
 
 ```text
-BRANCH
-chore/pre-physical-coherence
-
-PRE-SCOPE
-d9610a7da4fe8fc759e9809843d989f1befcda5c
-
 CREATE
 docs/architecture/README.md
 
@@ -193,26 +195,60 @@ DELETE
 docs/architecture/personal-data-ai-integration.md
 ```
 
-### Phase 2 current results
+Verified content delta:
 
-- current architecture navigation is explicit;
-- current system overview no longer selects Physical persistence prematurely;
-- current technical decisions distinguish decided direction from benchmark/open choices;
-- PostgreSQL is a preferred Physical baseline, not final selection;
-- TypeDB remains mandatory challenger;
+```text
+linear content commits 17
+added                  1
+modified              15
+deleted                 1
+unexpected              0
+main changed            0
+```
+
+The native GitHub compare endpoint returned `404` and was **not** counted as PASS. Equivalent scope was proven through:
+
+- remote branch/main refs;
+- a bounded linear commit chain from the exact PRE-SCOPE;
+- one approved physical path per content commit;
+- per-commit added/modified/removed status;
+- remote payload readback of current architecture/governance/ADR sources;
+- remote `404` proving the retired file is absent;
+- readback proving historical readiness evidence retained its original blob.
+
+### Phase 2 architecture result
+
+Current architecture now states only current truth:
+
+- Physical persistence is open/benchmark-driven rather than already selected;
+- PostgreSQL hybrid is preferred baseline, not final selection;
+- TypeDB is mandatory challenger;
+- Neo4j/property graph remains a secondary/read-projection candidate;
+- event/document mechanisms remain bounded candidates;
 - generic EAV/generic-edge/universal meta-model remains rejected;
-- ADR-002 is qualified at ORM/migration boundary;
-- ADR-003 is superseded as final database selection but keeps useful PostgreSQL rationale;
-- ADR-005 remains accepted with Logical/governed-effect qualification;
-- ADR-006 is superseded as canonical generic hybrid semantic architecture;
-- ADR-007 remains accepted as semantic guardrail but is qualified for Physical posture;
-- documentation governance now requires current-truth-only specifications + knowledge coverage before replace/delete;
-- root README ADR-007 path is corrected to the actual file;
-- historical Domain→Logical readiness chain remains evidence, not current architecture.
+- Python + FastAPI + Pydantic remain backend direction;
+- SQLAlchemy/Alembic are conditional on accepted Physical design;
+- AI remains provider-neutral, proposal/candidate/governed-effect bounded;
+- provider state remains distinct from canonical LifeOS state;
+- integration modes are separated;
+- specialized infrastructure uses the demonstrated-benefit rule;
+- historical Domain→Logical readiness files are explicitly evidence, not current architecture.
 
-### Knowledge coverage for retiring `personal-data-ai-integration.md`
+ADR status is now explicit:
 
-Meaningful content was classified as follows:
+- ADR-001 — accepted;
+- ADR-002 — accepted with ORM/migration qualification;
+- ADR-003 — superseded as final database selection, PostgreSQL rationale retained;
+- ADR-004 — accepted;
+- ADR-005 — accepted/current with Logical-model qualification;
+- ADR-006 — superseded as canonical generic hybrid semantic architecture;
+- ADR-007 — accepted semantic guardrail, qualified for Physical posture.
+
+### Phase 2 knowledge-coverage verdict
+
+The retired `docs/architecture/personal-data-ai-integration.md` was deleted only after all meaningful content was classified.
+
+Valid knowledge retained:
 
 ```text
 AI/external source != canonical truth
@@ -222,16 +258,16 @@ provider provenance / deduplication / reconciliation
 → current system overview + technical decisions + later integration requirements
 
 Context Builder / minimal relevant context
-→ ADR-005 + current technical decisions + later Phase 6
+→ ADR-005 + technical decisions + Phase 6
 
 deterministic vs AI responsibility
-→ current system overview + technical decisions
+→ system overview + technical decisions
 
 planned/current/actual/derived/raw distinctions
-→ Domain/Logical current semantics + technical decisions
+→ Domain/Logical + technical decisions
 
 file/object storage abstraction
-→ ADR-004 + current system overview/technical decisions
+→ ADR-004 + current architecture
 
 history/version/correction/reconciliation
 → Domain/Logical + WL-H hardenings
@@ -239,32 +275,23 @@ history/version/correction/reconciliation
 specialist extension boundary
 → Domain/Logical specialist boundary + current technical direction
 
-universal grammar / generic Entity-Relation ontology
-→ SUPERSEDED / REJECTED
-
-entity_relations-style canonical semantic layer
-→ SUPERSEDED / REJECTED
-
-generic relation/property AI fallback
-→ SUPERSEDED / REJECTED
-
-generic-model-first semantic rule
-→ SUPERSEDED / REJECTED
-
-old kernel owner list using Program/Project/Skill/Register/etc.
-→ SUPERSEDED by Domain Atlas
-
-PostgreSQL final selection
-→ SUPERSEDED by Physical benchmark posture
-
-measured-workload-only infrastructure rule
-→ REPLACED by demonstrated-benefit rule
-
 open Physical/runtime requirements
-→ retained in this roadmap/workstream for later explicit phases
+→ retained in this workstream/roadmap for later explicit phases
 ```
 
-Required final coverage verdict after remote deletion/readback:
+Superseded/rejected content intentionally not carried into current specifications:
+
+```text
+universal grammar / generic Entity-Relation ontology
+generic entity_relations canonical semantic layer
+generic relation/property AI fallback
+generic-model-first semantic rule
+old Program/Project/Skill/Register/etc. kernel owner list
+PostgreSQL final-selection claim
+measured-workload-only specialized-infrastructure rule
+```
+
+Final coverage verdict:
 
 ```text
 unclassified meaningful content = 0
@@ -272,32 +299,41 @@ valid requirement lost = 0
 current truth represented = PASS
 rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
+retired file absent = PASS
+historical evidence unchanged = PASS
+Domain reopen = 0
+Logical reopen = 0
 ```
 
-### Phase 2 final QA requirements
+## Current exact task — Phase 3 read-only audit
 
-Before Phase 2 can be called PASS:
+Next work is **read-only**. Do not write yet.
+
+Audit `docs/workstreams/backend-foundation.md` against:
+
+- current `README.md` / `docs/README.md` / `PROJECT-STATUS.md` / `ROADMAP.md`;
+- `docs/architecture/README.md`;
+- current `system-overview.md` and `technical-decisions.md`;
+- accepted Domain Atlas;
+- closed Whole Logical Model + `WL-H01..WL-H12`;
+- current ADR status;
+- later Pre-Physical stages in this handoff.
+
+Classify every meaningful Backend Foundation statement as:
 
 ```text
-expected physical paths == actual physical paths
-CREATE 1
-UPDATE 15
-DELETE 1
-unexpected 0
-main unchanged
-remote payload readback current docs PASS
-retired file absent on branch
-knowledge coverage PASS
-historical readiness evidence unchanged
-Domain reopen 0
-Logical reopen 0
+CURRENT / KEEP
+MOVE TO CURRENT PREREQUISITE
+QUALIFY
+SUPERSEDED
+DEFER TO PHYSICAL
+DEFER TO LATER RUNTIME/SECURITY/INTEGRATION PHASE
+IMPLEMENTATION DETAIL — KEEP FOR FUTURE BACKEND
+DUPLICATE / DROP
+DECISION REQUIRED
 ```
 
-## Phase 3 — Backend Foundation handoff cleanup — NEXT ONLY AFTER PHASE 2 QA PASS
-
-Candidate target under a separate exact write gate:
-
-`docs/workstreams/backend-foundation.md`
+Only after the read-only inventory may a **separate exact Phase 3 write gate** be presented.
 
 Backend Foundation must eventually consume:
 
@@ -311,13 +347,15 @@ future accepted Physical Model
 current architecture/runtime/security/integration contracts
 ```
 
-The stale handoff must not instruct contributors to create Domain Model v0 inside backend bootstrap or execute pre-Domain persistence assumptions.
+It must not create Domain Model v0 inside backend bootstrap or execute pre-Domain persistence assumptions.
 
-## Phase 4 — current Pre-Physical Architecture Baseline
+## Remaining roadmap
+
+### Phase 4 — current Pre-Physical Architecture Baseline
 
 Create one current bridge source stating decided/open/prohibited architecture, `WL-H01..WL-H12`, runtime-vs-Domain boundaries and future benchmark obligations.
 
-## Phase 5 — requirements that can constrain Physical design
+### Phase 5 — requirements that can constrain Physical design
 
 Define requirements, not implementation, for:
 
@@ -335,7 +373,7 @@ Consent != Authority
 Visibility != Authority
 ```
 
-## Phase 6 — AI/context/runtime/integration boundaries
+### Phase 6 — AI/context/runtime/integration boundaries
 
 Keep distinct:
 
@@ -361,7 +399,7 @@ Integration modes:
 
 Protocols such as MCP/A2A/future equivalents are adapters, not ontology.
 
-## Phase 7 — durable workflow / async benchmark
+### Phase 7 — durable workflow / async benchmark
 
 Compare at least:
 
@@ -372,20 +410,20 @@ Compare at least:
 
 No winner is preselected.
 
-## Phase 8 — governed API/command/effect contract
-
-Define consequential-operation contract before concrete routes.
+### Phase 8 — governed API/command/effect contract
 
 ```text
 HTTP route / UI button / AuthZ action string
 != canonical Governed Operation
 ```
 
-## Phase 9 — search/observability/calendar/solver pressure
+Define the consequential-operation contract before concrete routes.
+
+### Phase 9 — search/observability/calendar/solver pressure
 
 Define requirements/benchmark pressure without premature infrastructure selection.
 
-## Phase 10 — Physical benchmark specification/register
+### Phase 10 — Physical benchmark specification/register
 
 Current posture:
 
@@ -400,13 +438,11 @@ generic EAV/generic edge/universal meta-model — hard reject
 
 Use destructive LifeOS scenarios: consequential concurrency, multi-owner mutation, selective disclosure, provider divergence, redaction/history, DST recurrence, stale derived state, AuthZ provenance, search inference leakage, AI proposal→approval→effect, revoked governance during execution, crash/restart, restore and schema evolution.
 
-## Phase 11 — repository engineering safety
+### Phase 11 — repository engineering safety
 
 Establish appropriate main protection/ruleset/CI/required checks before production backend implementation.
 
-## Phase 12 — clean-room QA and closure
-
-A new agent without chat context must reconstruct current truth, closed Domain/Logical, current architecture, downstream requirements/candidates and what remains unauthorized.
+### Phase 12 — clean-room QA and closure
 
 Target:
 
@@ -416,6 +452,8 @@ DOMAIN UNCHANGED / CLOSED
 LOGICAL UNCHANGED / CLOSED
 PHYSICAL READY FOR SEPARATE AUTHORIZATION / NOT STARTED
 ```
+
+Only after Phase 12 closure may the user separately decide whether to authorize a Physical Model workstream.
 
 ## Specialized infrastructure rule
 
@@ -434,11 +472,7 @@ Specialized infrastructure requires demonstrated benefit. Evidence may come from
 - historical branch cleanup/deletion;
 - direct modification of `main`.
 
-## Current exact continuation
-
-Complete Phase 2 remote physical-path + knowledge-coverage QA.
-
-Only if that passes:
+## Exact continuation
 
 ```text
 PHASE 2
@@ -446,15 +480,6 @@ QA PASS
 
 NEXT
 PHASE 3 — READ-ONLY BACKEND FOUNDATION HANDOFF AUDIT
-THEN A SEPARATE EXACT WRITE GATE
+
+NO PHASE 3 WRITES YET
 ```
-
-Do not begin Phase 3 writes from this gate.
-
-## Tool incident record relevant to current continuation
-
-- Before Phase 2 real writes, three malformed/no-op test operations were rejected (`409` bad blob SHA; `404` nonexistent path/branch). They did not move the branch or change content.
-- Two same-SHA `update_ref` calls left the branch at the identical PRE-SCOPE and created no content commit.
-- One initial ADR-007 update returned upstream `502`; remote readback proved the old blob remained unchanged, so the write was retried once and succeeded.
-
-Only remote repository state counts as completion.
