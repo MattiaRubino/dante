@@ -61,6 +61,9 @@ Phase 4 — Current Pre-Physical Architecture Baseline
 QA PASS
 
 Phase 5 — requirements that can constrain Physical design
+QA PASS
+
+Phase 6 — AI/context/runtime/integration boundaries
 NEXT
 ```
 
@@ -96,6 +99,8 @@ references/navigation repaired = PASS
 
 When a canonical document is physically split, the complete continuation chain is one logical document and must be read before drawing current-state conclusions. Physical splitting is a tooling/layout mechanism, not a reason to create parallel authority.
 
+A split performed only because of file size/tool/connector limits is a **lossless physical partition of the complete logical payload**. It must not summarize, condense, omit or hide a semantic rewrite. Chronological/evidence continuation is a distinct case and may append genuine later evidence after the previous payload.
+
 ## Pre-Physical sequence
 
 1. **Phase 0 — freeze/current-state inventory** — PASS.
@@ -103,12 +108,12 @@ When a canonical document is physically split, the complete continuation chain i
 3. **Phase 2 — architecture supersession/current-truth cleanup** — QA PASS.
 4. **Phase 3 — Backend Foundation handoff cleanup** — QA PASS.
 5. **Phase 4 — current Pre-Physical Architecture Baseline** — QA PASS.
-6. **Phase 5 — requirements that can constrain Physical design** — NEXT:
+6. **Phase 5 — requirements that can constrain Physical design** — QA PASS:
    - AuthN/AuthZ;
-   - security/privacy/retention/recovery;
-   - transaction/consistency/outbox/side effects;
-   - non-functional/multi-device/recovery envelope.
-7. **Phase 6 — AI/context/runtime/integration boundaries**.
+   - security/privacy/retention/security-aware recovery;
+   - consistency/side effects;
+   - non-functional/multi-device/operational recovery.
+7. **Phase 6 — AI/context/runtime/integration boundaries** — NEXT.
 8. **Phase 7 — durable workflow / async benchmark**.
 9. **Phase 8 — governed API/command/effect contract**.
 10. **Phase 9 — search/observability/calendar/solver pressure tests**.
@@ -122,11 +127,14 @@ When a canonical document is physically split, the complete continuation chain i
 Current navigation:
 
 - [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md)
+- [`architecture/requirements/README.md`](architecture/requirements/README.md) plus all four Phase 5 requirement packages
 - [`architecture/README.md`](architecture/README.md)
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
 
 The Pre-Physical Architecture Baseline is the current bridge for decided/prohibited/open/mandatory downstream constraints and authorization boundaries. It coordinates but does not replace Domain/Logical/ADR authority.
+
+The Phase 5 requirement package defines what later Physical/runtime/API/backend design must satisfy while separating accepted requirements, explicit open parameters and implementation-deferred mechanisms.
 
 The old mixed `architecture/personal-data-ai-integration.md` current specification has been retired after knowledge-coverage QA. Its surviving valid knowledge is carried by current architecture, ADR, Logical and Pre-Physical sources; the old payload remains recoverable in Git history.
 
@@ -165,7 +173,7 @@ Backend Foundation may become executable only after Pre-Physical closure, separa
 
 ## Phase 4 — current Pre-Physical Architecture Baseline — QA PASS
 
-[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) now provides one current bridge source for:
+[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) provides one current bridge source for:
 
 - decided current direction versus implementation authorization;
 - semantic prohibitions/non-collapse guardrails;
@@ -177,11 +185,13 @@ Backend Foundation may become executable only after Pre-Physical closure, separa
 - explicit Phase 5–12 ownership of unresolved requirements/benchmark work;
 - explicit non-authorization of Physical/schema/API/Auth/runtime/provider/backend implementation.
 
-Backend Foundation now names this baseline as mandatory downstream reading. Domain and Logical semantics were not reopened or rewritten.
+Backend Foundation names this baseline as mandatory downstream reading. Domain and Logical semantics were not reopened or rewritten.
 
-## Phase 5 — requirements before Physical — NEXT
+## Phase 5 — requirements before Physical — QA PASS
 
-Define requirements, not implementation, for:
+Current requirement index: [`architecture/requirements/README.md`](architecture/requirements/README.md).
+
+Phase 5 establishes four distinct current logical requirement documents:
 
 ### AuthN/AuthZ
 
@@ -190,23 +200,52 @@ Person != Account != Principal != Actor
 Authority != AuthZ decision
 Consent != Authority
 Visibility != Authority
+actual Actor != represented party automatically
 ```
 
-Include represented party, session/device/service/external-agent context and reconstructible consequential AuthZ provenance.
+Consequential effects must preserve bounded governance/authorization provenance, non-human Principals do not bypass governance, delayed effects require valid governance-time semantics, and selective disclosure includes inference/non-interference surfaces.
 
-### Security/privacy/retention/recovery
+Provider, protocol, MFA/passkey/password, token/session, policy-engine and enforcement-mechanism choices remain deferred/open where marked.
 
-Data classification, sensitive-data handling, encryption/key/secret boundaries, isolation, retention/redaction/deletion propagation, audit/log minimization, backup/recovery and AI/provider minimization.
+### Security/privacy/retention/security-aware recovery
 
-### Transaction/consistency/side effects
+Requirements now cover purpose-aware minimization, sensitive-data handling, credential/secret isolation, privacy-minimized observability, category/purpose-sensitive retention, truthful deletion/redaction/anonymization, non-reused identity, propagation to derived/external state, protected/audited backup access and restore behavior that does not resurrect forbidden data.
 
-Expected state, transaction boundaries, idempotency, outbox/publication pressure, external acknowledgement, staged partial state, reconciliation/compensation and derived-state freshness.
+Exact legal basis, retention schedules, final data classification, residency/processor obligations and concrete security technologies remain explicit later decisions rather than Phase 5 guesses.
 
-### Non-functional/multi-device/recovery
+### Consistency/side effects
 
-Scale/concurrency assumptions, material latency classes, long-term history, multi-device conflicts, online/offline posture and RPO/RTO/restore expectations.
+Requirements now cover expected state, idempotency distinct from identity, no silent material last-write-wins, unresolved conflict, semantic multi-owner atomicity where required, truthful staged/partial distributed state, canonical/provider-effect separation, ambiguous-failure retry safety, derived-state freshness, delayed target/governance validation, publication/replay pressure and reconciliation/compensation truthfulness.
 
-## Phase 6 — AI/runtime/integration boundaries
+Transaction isolation, locks, outbox/inbox, queue/event bus, workflow, saga and CRDT/OT mechanisms remain deferred.
+
+### Non-functional/multi-device/operational recovery
+
+Requirements now cover multi-device divergence, operation-specific offline behavior, consequence-specific consistency/availability classes, truthful provider/degraded state, efficient current-state access alongside long history, temporal/DST preservation, privacy-safe observability, capacity/backpressure, recovery testing and explicit RPO/RTO/latency/availability/scale benchmark inputs.
+
+No arbitrary numeric RPO/RTO/SLA/latency/scale/offline-duration values were invented. They are recorded as mandatory open parameters/scenario inputs for later gates.
+
+### Phase 5 remote content QA
+
+```text
+PRE-SCOPE
+ e26f95af6d46292bf0f42aa43fa67b1f9f4fc05f
+
+CONTENT HEAD BEFORE GLOBAL CLOSURE MARKERS
+ c29cfe4bde47d5df4f46507a5f1717acd1903112
+
+ahead_by       10
+behind_by       0
+total_commits   10
+added            5
+modified         5
+deleted          0
+unexpected       0
+```
+
+No Domain/Logical/ADR/Physical/backend implementation path was changed by the Phase 5 content package.
+
+## Phase 6 — AI/context/runtime/integration boundaries — NEXT
 
 Keep distinct:
 
@@ -220,9 +259,11 @@ candidate/unresolved state
 transient LLM working context
 ```
 
+Phase 6 must define what may enter AI/runtime context, which state is durable/canonical vs derived/live/transient, how tool/agent actions cross the governed-effect boundary, how provider/runtime identity and provenance are preserved, and how integration modes behave under the Phase 5 security/AuthZ/consistency requirements.
+
 Runtime concepts such as Agent/Workflow/Automation/Notification remain technical/product concepts unless separate semantic evidence proves otherwise.
 
-Integration modes:
+Integration modes remain:
 
 1. canonical import;
 2. synchronized/mirrored provider state;
@@ -280,7 +321,13 @@ Benchmark destructive LifeOS scenarios including:
 - revoked consent/authority during execution;
 - long-running crash/restart;
 - backup/restore;
-- schema evolution over historical state.
+- schema evolution over historical state;
+- multi-device/offline divergence;
+- ambiguous external-effect failure/replay;
+- restore after deletion/redaction;
+- explicit low/base/high scale and performance scenarios where exact forecasts remain open.
+
+Phase 10 must resolve or scenario-model Phase 5 open parameters when their values materially affect candidate scoring.
 
 ## Phase 11 — repository engineering safety
 
@@ -322,7 +369,7 @@ NOT STARTED
 
 Backend Foundation and production implementation are **NOT STARTED / DEFERRED**.
 
-Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Physical/current runtime contracts rather than old product-label schemas.
+Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Phase 5 requirements + Physical/current runtime contracts rather than old product-label schemas.
 
 ## Explicitly rejected/deferred by default
 
