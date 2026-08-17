@@ -1,6 +1,6 @@
 # LifeOS Logical Representation Framework v1
 
-**Status:** Stage-0H hardened normative foundation  
+**Status:** Stage-0H hardened normative foundation + Slice-A contract  
 **Date:** 2026-08-17  
 **Purpose:** provide a controlled vocabulary for classifying logical representation choices without equating representation shape with domain ontology
 
@@ -594,3 +594,152 @@ Collective
 ```
 
 The roadmap may be subdivided for manageability, but accepted Domain Atlas ownership is not changed by slice grouping.
+
+---
+
+## 14. Accepted Slice-A identity/reference contract
+
+This section is activated with `slices/identity-reference-v1.md` and its validation checkpoint after exact remote QA.
+
+### 14.1 Layered separation
+
+```text
+native identity
+!= NativeRef addressability
+!= Reference Contract meaning
+!= ExternalRef/provider identity
+!= Account / Principal identity
+!= Reconciliation state
+!= Version/material state
+!= disclosure/public handle
+```
+
+### 14.2 NativeRef
+
+`NativeRef` is the logical address of an independently justified native Domain identity.
+
+Requirements:
+
+```text
+owner/type deterministically recoverable
+opaque identity key
+key not reused for another native referent
+no semantic Entity/Thing superclass implied
+```
+
+NativeRef is a representation mechanism, not a Domain owner.
+
+### 14.3 Reference Contract
+
+A heterogeneous reference is canonical only under a containing contract that preserves:
+
+```text
+semantic role/family
+eligible target families
+cardinality/directionality where required
+unresolved-target behavior
+history/materiality rules
+specialist/extension boundary
+```
+
+A technically valid NativeRef can still be semantically invalid for a particular slot.
+
+### 14.4 Role references
+
+```text
+Actor / Subject / Resource
+!= wrapper identity
+```
+
+When the referenced target has native identity, the role/typed relation points to that native referent directly through the applicable contract.
+
+Not every valid role target is required to possess NativeRef/native identity; bounded service/pool/supply/value/specialist representations remain allowed where truthful.
+
+### 14.5 ExternalRef
+
+Provider/source identity lives in a separate scoped reference space.
+
+Logical scope may require:
+
+```text
+provider/source
+realm/tenant/account/integration instance
+provider object type
+opaque external ID
+provider revision/version where material
+```
+
+Exact scope is adapter/provider-contract specific.
+
+```text
+ExternalRef != NativeRef
+```
+
+### 14.6 Identity mapping/reconciliation
+
+```text
+ExternalRef -> Reconciliation/Mapping -> NativeRef
+```
+
+or native-native duplicate resolution is explicit logical state where material.
+
+Required properties:
+
+```text
+unresolved mapping allowed
+candidate != accepted equivalence
+accepted equivalence != irreversible rewrite
+merge/supersession preserves historical addressability
+wrong merge/link can be corrected/revoked
+current resolution does not rewrite what was historically known
+```
+
+### 14.7 Identity vs Version
+
+```text
+NativeRef
+= which continuing referent
+
+Version/material-state reference
+= which consequential state of that referent
+```
+
+Exact Version mechanism remains Slice-D work.
+
+### 14.8 Privacy/correlation
+
+```text
+internal identity equality
+!= public correlation permission
+!= Visibility
+!= Authority
+```
+
+One native referent may be exposed through context-scoped handles later without duplicating canonical identity.
+
+### 14.9 Physical freedom
+
+The accepted logical contract deliberately leaves open:
+
+```text
+technical anchor/registry
+owner-specific FKs
+composite typed references
+hybrid model
+key generation/data type
+public ID serialization
+```
+
+Physical design may choose any sound implementation that preserves the contract.
+
+PostgreSQL inheritance or one global table is not assumed or required.
+
+### 14.10 Canonical Slice-A references
+
+- `slices/identity-reference-v1.md`
+- `checkpoints/identity-reference-v1-validation.md`
+- `benchmarks/identity-reference-v1.md`
+- `traceability-and-regression-ledger-v1.md` TA-01..TA-17 / INV-041..060
+- `decision-and-assumption-register-v1.md` DEC-A / ALT-A / ASM-A entries
+
+Later slices must not silently weaken this contract. Changes affecting it are at least R2 and normally R3 regression impact.
