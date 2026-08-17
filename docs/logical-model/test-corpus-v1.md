@@ -1,6 +1,6 @@
 # LifeOS Logical Model Test Corpus v1
 
-**Status:** Stage-0 foundation  
+**Status:** Stage-0H hardened normative foundation  
 **Date:** 2026-08-17  
 **Purpose:** minimum adversarial simulation corpus for Logical Model slices and final integrated regression
 
@@ -41,6 +41,26 @@ A document moves from one provider/storage object to another while its LifeOS Co
 A Place is first created manually, then matched to one external place provider, later rematched after provider ID/schema changes.
 
 Provider identity must not become canonical Place identity.
+
+### TC-A07 — Collective membership changes
+A household/team-like Collective retains identity while ordinary membership changes over time.
+
+The current member set must not become the Collective's identity.
+
+### TC-A08 — Same provider identifier shape, different semantic owner
+A provider exposes opaque IDs for a person profile, calendar event, place and file.
+
+A shared technical reference mechanism must not imply that all four are one semantic superclass or that provider IDs become LifeOS canonical identities.
+
+### TC-A09 — Person identity merge then correction
+Two Person records are merged after strong evidence, then later evidence shows the merge was wrong.
+
+The representation must support explaining the historical identity assertion and subsequent correction rather than silently rewriting all prior references.
+
+### TC-A10 — Role without wrapper identity
+The same Person is Subject in one context, Actor/recorder in another and Resource candidate in a third.
+
+No independent Subject/Actor/Resource wrapper identity may be required merely to reference the roles.
 
 ---
 
@@ -335,6 +355,132 @@ Different domain owners cannot share one generic lifecycle merely because UIs us
 
 ---
 
+## K. Product Reality / cross-domain retrieval scenarios
+
+These scenarios validate that LifeOS can connect relevant life context without turning every requested capability into a new Domain primitive.
+
+### TC-K01 — Reading history -> later recommendation
+The user records books, ratings/reviews, abandoned books and explicit likes/dislikes over years.
+
+Later the user asks for a reading recommendation.
+
+Must distinguish:
+
+```text
+user-declared evaluation/preference evidence
+observed reading history
+AI-derived taste/profile
+current recommendation
+```
+
+AI inference must not rewrite the user's own historical statements.
+
+### TC-K02 — Photography interest + eclipse discovery
+LifeOS knows the user has an established photography interest. External data reveals a future eclipse relevant to the user's likely location/time.
+
+The eclipse may become a `Possibility` worth surfacing, but not automatically a Goal, Decision, Plan or calendar commitment.
+
+### TC-K03 — Photography equipment feasibility
+For the same eclipse, LifeOS knows the user's tracked camera/lenses/filters/tripod and can compare them with activity requirements.
+
+Must preserve:
+
+```text
+Asset identity
+Resource role
+Requirement
+eligibility
+availability
+allocation
+actual use
+```
+
+A suitable Asset is not automatically allocated or actually used.
+
+### TC-K04 — Travel intention -> Rome plan
+The user says they would like to go to Rome.
+
+LifeOS must be able to keep this vague initially, evaluate constraints/options and later create more concrete Goal/Decision/Plan/Activities/Schedule only when justified.
+
+### TC-K05 — Persistent personal fact becomes relevant later
+A materially relevant user fact is established in one context. Months later a different workflow needs it.
+
+The system must be able to retrieve the authorized, current/relevant state without treating raw chat history as the only memory source.
+
+### TC-K06 — Health-relevant fact -> later diet planning
+A health/specialist-relevant fact exists with source/history/visibility context. Later the user asks for food/diet planning.
+
+LifeOS must use the relevant authorized context while preserving specialist/safety boundaries and not flattening the fact into an untyped Person property.
+
+### TC-K07 — Weight/goal history -> later renewed goal
+A user has prior weight Observations, previous Goals, plans, Actual behavior, Outcomes and periods where context changed. Months later they want to lose weight again.
+
+The new evaluation may use history without rewriting old Goal/Plan/Outcome identity or claiming causation unsupported by Evidence.
+
+### TC-K08 — Cross-domain knowledge retrieval without global leakage
+An item learned in one life domain becomes useful in another. The retrieval engine may use it only if materially relevant and visible/authorized in the new context.
+
+```text
+stored != always surfaced
+known internally != disclosure permitted
+past fact != current fact automatically
+AI inference != confirmed fact
+```
+
+---
+
+## L. Mandatory mutation and counterfactual seed tests
+
+### TC-L01 — Remove native Person identity
+Attempt to model human continuity only with Account/contact/provider identities.
+
+Expected: FAIL.
+
+### TC-L02 — Universal Entity registry becomes semantic root
+Use one technical reference registry and treat its common ID/type as proof that every referent is semantically one `Entity` kind.
+
+Expected: FAIL.
+
+### TC-L03 — Universal generic relation
+Replace typed roles/relationships with `from -> related_to -> to` plus optional text/JSON.
+
+Expected: FAIL.
+
+### TC-L04 — Current-only state
+Keep only the latest Responsibility/Schedule/provider mapping and overwrite previous accepted state.
+
+Expected: FAIL where material history is required.
+
+### TC-L05 — Provider-ID substitution
+Use an external/provider ID as canonical Person/Asset/Place/Artifact identity.
+
+Expected: FAIL.
+
+### TC-L06 — Per-user duplication of shared object
+Represent one shared Asset/Collective/Event/other reality as separate canonical copies solely because multiple actors view it.
+
+Expected: FAIL when shared canonical identity is required.
+
+### TC-L07 — Scheduled + done vs scheduled + not done
+The representation must distinguish both without a derived guess.
+
+### TC-L08 — Declared preference vs AI inference
+Both may mention the same topic, but they must remain epistemically distinguishable.
+
+### TC-L09 — Same Asset changed possession vs replacement Asset
+Ordinary custody change preserves identity; physical replacement may require a different Asset identity.
+
+### TC-L10 — Same Living Referent changed caregiver vs replacement organism
+Care relation change preserves identity; a genuinely different organism must not inherit prior identity because name/container/owner is the same.
+
+### TC-L11 — Same Artifact provider migration vs independent fork
+Storage migration may preserve Artifact identity; an independent content lifecycle may create a new Artifact.
+
+### TC-L12 — Existing Person gains Account vs new Person
+Linking an Account to a represented human must not look identical to creating a genuinely new human referent.
+
+---
+
 # Mandatory high-value query corpus
 
 Each integrated candidate must demonstrate logical feasibility for at least these questions:
@@ -354,6 +500,13 @@ Each integrated candidate must demonstrate logical feasibility for at least thes
 13. Can a simple appointment exist without artificial Goal/Plan scaffolding?
 14. Can a specialist transaction/inventory record be linked without pretending it is a generic Observation lifecycle?
 15. Can the current state be answered without replaying the entire lifetime history in application memory?
+16. Which native referent does this typed role/reference point to, without a semantic Entity superclass?
+17. Which external/provider identifiers currently or historically mapped to this LifeOS identity?
+18. Can we explain an identity merge/split/correction without pretending the corrected mapping was always known?
+19. Which personal facts/preferences are explicit, inferred, historical, current, source-backed or unresolved?
+20. Which relevant cross-domain context may be used for this request under current Visibility/Authority?
+21. Can LifeOS explain why a recommendation/opportunity was surfaced without converting the recommendation into user intent?
+22. Can an equipment/resource feasibility check distinguish requirement, candidate, selection and actual use?
 
 ---
 
@@ -362,3 +515,5 @@ Each integrated candidate must demonstrate logical feasibility for at least thes
 A scenario that passes once remains in the regression set for every later slice whose changes could affect it.
 
 If a later slice invalidates an earlier PASS, the earlier slice is reopened at the **logical** level first. Domain Atlas reopen requires the separate evidence bar in `validation-methodology-v1.md`.
+
+Every material candidate must also use the mutation/counterfactual families defined in `traceability-and-regression-ledger-v1.md`. Product Reality examples are pressure tests and must be classified as Domain coverage, logical requirement, capability gap, specialist boundary or genuine targeted reopen evidence rather than being accepted as ontology by request.
