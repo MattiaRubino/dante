@@ -21,6 +21,8 @@ Long-running exploratory/model branches may exist temporarily, but durable accep
 
 Detailed source precedence, path ownership, write gates and coherence rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md).
 
+Repository-level enforcement and the lifecycle for branch rules, CI checks and security settings are defined in [`repository-engineering-safety.md`](repository-engineering-safety.md). Repository settings must enforce this Git model where practical, but a documented policy is not considered applied until the remote setting is verified.
+
 ## Starting a branch
 
 1. Start normal new work from current `main`.
@@ -106,6 +108,26 @@ Parallel branches must minimize shared-file churn.
 - Do not force-push shared active branches or rewrite history merely to make synchronization look cleaner.
 - If a shared file is stale, fix it inside an explicit scope rather than opportunistically while working on unrelated code.
 
+## Main-branch enforcement
+
+The repository safety target for `main` is deliberately aligned with this workflow rather than a separate Git model.
+
+At the current owner-driven stage, the intended effective rules are:
+
+```text
+pull request required before merge
+force-push blocked
+delete protected main blocked
+review-thread resolution required
+required approvals = 0 while no independent reviewer exists
+required status checks = none until real stable checks exist
+merge commits allowed/required by current merge policy
+```
+
+Do not manufacture a required status check before the corresponding workflow/check context exists and has run successfully. When real CI is introduced, promote checks into required-main rules only after their exact stable context names and blocking value are verified.
+
+Do not treat repository rules/settings as active merely because their intended configuration is documented. The effective remote rules must be read back before a workstream claims repository-safety `PASS`.
+
 ## Current stage boundary
 
 As of 2026-08-17:
@@ -132,6 +154,14 @@ This stage note is a current operational baseline, not a permanent branching rul
 9. After an important merge, synchronize long-running branches that share changed global files.
 10. Delete or archive obsolete working branches later according to repository housekeeping policy; never delete history merely to hide prior reasoning.
 
+Repository hygiene rules:
+
+- enabling automatic deletion of merged head branches is preferred once repository settings allow it;
+- unmerged active branches are never auto-classified as obsolete by age alone;
+- an old/historical branch is deleted only after proving it contains no unique accepted/active work that still requires integration;
+- obviously accidental refs may be deleted after ancestry/content verification shows no unique branch-only work;
+- branch deletion is not a substitute for Git history/evidence retention.
+
 ## Definition of Done for a PR
 
 As applicable:
@@ -148,8 +178,11 @@ As applicable:
 - overlapping shared docs checked for semantic freshness;
 - no secrets or personal production data committed;
 - environment/deployment impact noted;
+- any required repository/CI checks that actually exist are passing;
 - remote readback/QA supports any PASS/CLOSED claim.
 
 ## Emergency production fixes
 
 When production exists, urgent fixes should still originate from the canonical history and be merged back into `main`. Do not create permanent environment branches that require repeated manual cherry-picking.
+
+If an emergency direct-main repair is ever explicitly approved because normal PR flow is unavailable or would worsen an active incident, record the reason and resulting commit, then restore normal protected-branch discipline immediately after the repair. Emergency exception language must not become a standing bypass.
