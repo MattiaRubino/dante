@@ -1,6 +1,6 @@
 # LifeOS Logical Model Traceability & Regression Ledger v1
 
-**Status:** Stage-0H normative foundation  
+**Status:** Stage-0H normative foundation + Slice-A + Slice-B regression state  
 **Date:** 2026-08-17  
 **Purpose:** make semantic preservation, regression impact and falsification evidence auditable across every Logical Model slice
 
@@ -453,3 +453,82 @@ DOMAIN REOPEN REQUIRED        0
 ```
 
 Later slices that touch identity/reference/provider/reconciliation/visibility/version infrastructure must replay applicable TA entries and INV-041..060.
+
+---
+
+## 13. Slice B — Intention / Execution trace entries
+
+| Trace | Owner / invariant | Logical disposition | Required proof | Test pressure | Verdict |
+|---|---|---|---|---|---|
+| TB-01 | Possibility != Goal | LR-01 retained candidate + distinct Goal creation/link | pre-adoption history remains Possibility after later adoption | TC-B01..B03, TC-N01, MUT-B01 | PASS |
+| TB-02 | Goal identity independent from Plan | LR-01 Goal + typed support links | replacement Plan does not replace Goal | TC-B05, TC-N04 | PASS |
+| TB-03 | Plan != Activity | LR-01 Plan strategy + LR-01 Activity work | standalone Activity and multi-Goal Plan remain representable | TC-B05/B06, TC-N05 | PASS |
+| TB-04 | Activity != Event | separate owner semantics | scheduling an Activity does not retype it into Event | TC-N06 | PASS WITH Slice-C dependency |
+| TB-05 | Routine != Recurrence/Occurrence | LR-01 Routine + later LR-05/LR-06 temporal structures | skipped/moved instance leaves Routine policy intact | TC-C01..C03, TC-N07 | PASS WITH Slice-C dependency |
+| TB-06 | Milestone contextual checkpoint | normally LR-02 | addressable checkpoint without Goal/Event/Outcome subtype | TC-N08 | PASS WITH Criterion/Evaluation dependency |
+| TB-07 | Proposal != effective target state | LR-02 selective materialization | proposal can be rejected/withdrawn without target mutation | TC-B04, TC-N09 | PASS |
+| TB-08 | Request != Actual/fulfilment | LR-02 selective materialization | acknowledged request may remain unfulfilled | TC-N10 | PASS |
+| TB-09 | Decision != target effect | LR-02 resolution + separate effect links | Decision may have zero/one/many effects | TC-N11/N12 | PASS |
+| TB-10 | version-bound approval/applicability | material target-state reference | prior approval does not automatically survive material target change | TC-N13 | PASS WITH Slice-D dependency |
+| TB-11 | Plan revision != Plan replacement | owner identity + material state + predecessor/continuation links | minor revision vs new strategy remains distinguishable | TC-N04/N14 | PASS WITH Slice-D dependency |
+| TB-12 | no universal lifecycle/status | owner-specific disposition + LR-08 product projections | generic status cannot replace owner semantics | TC-J05, TC-N15 | PASS |
+| TB-13 | Dependency typed contingency | LR-03 | hierarchy/order does not imply dependency; current blocked derived | TC-N16/N17 | PASS |
+| TB-14 | Conditional Policy activation != Decision/effect owner | LR-05 policy + typed response/effect | activation may propose/request/change only under affected owner semantics | TC-N18 | PASS WITH Slice-F/D dependency |
+| TB-15 | AI candidate/proposal != adoption/Decision | source/candidate + typed owner boundaries | AI-generated candidate remains non-canonical intent unless adopted | TC-D03, K02/K04, N19 | PASS |
+| TB-16 | simple-case compactness | selective materialization | Buy milk does not require Goal/Plan/Proposal/Decision graph | TC-B06, N20 | PASS |
+| TB-17 | governed-by material state | later Version reference from execution/Occurrence | execution can identify applicable Plan/Routine/Policy state | TC-N21 | PASS WITH Slice-C/D dependency |
+| TB-18 | Slice-A reference contract preserved | NativeRef/Reference Contract reused without WorkItem root | persistent B owners/relations remain type-safe without Entity superclass | Slice-A TA replay + N22 | PASS |
+
+### Slice-B invariant additions
+
+```text
+INV-061  no universal Intention / WorkItem / WorkflowNode semantic root
+INV-062  Possibility maturation != historical retyping
+INV-063  Goal pursuit/disposition != Evaluation/progress/Outcome
+INV-064  Plan strategy identity != Activity execution identity
+INV-065  Plan revision != Plan replacement automatically
+INV-066  material replacement preserves predecessor/continuation history
+INV-067  owner identity != material state/version
+INV-068  no universal canonical lifecycle/status enum
+INV-069  product/UI status may be derived without becoming canonical lifecycle
+INV-070  Proposal != target state/effect
+INV-071  Request acknowledgement/response != Actual automatically
+INV-072  Decision != target mutation/effect
+INV-073  one Decision may produce zero/one/many effects
+INV-074  effective authorized policy action != mandatory fresh Decision
+INV-075  Proposal/Request/Decision materialization is conditional on independent semantic lifecycle/history need
+INV-076  explicit user request may itself authorize the bounded requested action
+INV-077  materially reviewed target state/version matters to approval/Decision applicability
+INV-078  material target change != automatic inheritance of prior approval
+INV-079  Dependency != hierarchy/containment/pure temporal order
+INV-080  Dependency != universal DAG requirement
+INV-081  current blocked/satisfied Dependency view is normally derived
+INV-082  Milestone date passage != attainment automatically
+INV-083  Routine != mutable recurring Activity advanced forever
+INV-084  execution/Occurrence may require governing material Plan/Routine/Policy state
+```
+
+### Slice-B counters
+
+```text
+TRACE ENTRIES REQUIRED       18
+TRACE ENTRIES CLOSED         18
+TRACE ENTRIES UNRESOLVED      0
+
+NEW INVARIANTS               24
+NEW INVARIANTS FAIL           0
+
+MUTATION TESTS APPLICABLE    20
+MUTATION PASS                20
+MUTATION FAIL                 0
+
+COUNTERFACTUAL FAMILIES      15
+COUNTERFACTUAL PASS          15
+COUNTERFACTUAL FAIL           0
+
+SLICE-A REGRESSION FAIL       0
+REGRESSION IMPACT            R3 WHOLE-LOGICAL
+DOMAIN REOPEN REQUIRED        0
+```
+
+Later slices that touch time/reality, Version/history, resource feasibility or governance must replay applicable TB entries and INV-061..084 in addition to the Slice-A cumulative ledger.
