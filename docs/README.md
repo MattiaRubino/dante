@@ -34,12 +34,14 @@ WD-05 PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
+Phase 0–3 QA PASS
+Phase 4 Current Pre-Physical Architecture Baseline NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND PRODUCTION IMPLEMENTATION
-NOT STARTED
+NOT STARTED / DEFERRED
 ```
 
 Active handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
@@ -47,10 +49,10 @@ Active handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physic
 ## Current semantic/model sources
 
 - [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current product identity/North Star.
-- [`domain/README.md`](domain/README.md) — Domain Atlas entry point.
-- [`domain/language-map.md`](domain/language-map.md) — current Domain language map.
+- [`domain/README.md`](domain/README.md) — Domain Atlas entry point. Read the complete canonical continuation chain when the document is physically split.
+- [`domain/language-map.md`](domain/language-map.md) — current Domain language map. Read its complete canonical continuation chain where required.
 - [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — closed Whole Logical Model.
-- [`logical-model/decision-and-assumption-register-v1-part-9.md`](logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions/hardenings/deferrals.
+- [`logical-model/decision-and-assumption-register-v1-part-9.md`](logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions/hardenings/deferrals; earlier register parts remain part of the canonical chain unless explicitly superseded.
 - [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical closure evidence.
 
 Product/UI terminology does not override accepted Domain/Logical semantics.
@@ -103,9 +105,9 @@ HARD REJECT FOR CANONICAL KERNEL
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 4 is next after Phase 3 Backend Foundation handoff cleanup QA.
 - [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — deferred/stale handoff; do not execute until its later bounded cleanup and prerequisites.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. Phase 3 removed its stale pre-Domain/pre-Logical instructions. It must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
 - Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
 
 ## Documentation lifecycle rule
