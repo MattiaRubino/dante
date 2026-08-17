@@ -1,47 +1,81 @@
 # ADR-006: Hybrid Personal Data and Semantic Relationship Model
 
-- Status: Accepted
+- Status: **Superseded as canonical semantic/data-model architecture**
 - Date: 2026-08-10
+- Superseded for current execution: 2026-08-17
+- Current authority: accepted Domain Atlas + closed Logical Model + future separately authorized Physical Model
 
-## Context
+## Original context
 
-LifeOS must represent a personal domain that is broad, user-specific and impossible to enumerate exhaustively in advance. It also requires strong consistency for scheduling, programs, progress, permissions and history. A purely rigid relational schema would require constant migrations for unpredictable user concepts; a purely schemaless/document or graph model would weaken constraints, queryability and transactional domain rules.
+LifeOS needed to represent broad, user-specific personal data while retaining strong consistency for planning, history, permissions and cross-domain behavior. The original design therefore proposed PostgreSQL with a hybrid typed/flexible/graph-like model rather than either a rigid table-per-domain approach or an unstructured document store.
 
-## Decision
+## Original decision
 
-Use PostgreSQL as the primary system of record with a hybrid model:
+The original architecture proposed:
 
-1. a typed relational core for stable LifeOS concepts and structural relationships;
-2. metadata and JSONB for genuinely flexible or provider-specific properties;
-3. a graph-like relationship layer for personal, emergent or uncertain semantic links;
-4. provenance/status for AI-inferred or observed facts and relationships;
-5. version/audit/event history that preserves planned state, actual outcomes and later changes.
+1. typed relational structures for stable concepts;
+2. metadata/JSONB for genuinely flexible or provider-specific properties;
+3. a graph-like relationship layer for personal/emergent/uncertain links;
+4. provenance/status for inferred or observed facts/relationships;
+5. version/audit/event history;
+6. shared schema rather than per-user/per-domain databases.
 
-The schema is shared across users/workspaces. LifeOS never creates a table or database per user or per newly discovered life domain.
+It also proposed beginning new domains with a generic model and progressively formalizing repeated/high-value concepts.
 
-Stable, frequently used relationships remain normal foreign keys/dedicated relational structures. The dynamic relationship layer is not a replacement for ordinary relational modeling.
+## Why this ADR is superseded
 
-AI may create structured semantic candidates inside the supported model, but may not invent physical tables, columns, SQL or migrations. The backend validates entity/relation types, ownership, duplicates, constraints and confirmation requirements before persistence.
+Subsequent Domain Validation Methodology v3 and Whole-Logical work established a materially more precise semantic architecture.
 
-New domains should use the generic model first where appropriate. Repeated, important and query-heavy concepts may later be promoted to first-class structures through reviewed migrations. Specialized databases are introduced only when measured workloads justify them.
+The following implications of this ADR are no longer current:
 
-## Rationale
+- a universal or generic semantic relationship layer as canonical fallback;
+- generic-model-first semantics for unknown domains;
+- promotion to first-class semantic ownership based mainly on repeated usage/query pressure;
+- AI persisting uncertainty through generic canonical entities/relations/properties;
+- PostgreSQL being final merely because the hybrid model was originally framed around it.
 
-This gives LifeOS the required combination of:
+The accepted architecture now requires:
 
-- relational consistency and transactions;
-- user-specific extensibility;
-- AI-assisted semantic discovery;
-- cross-domain relationships;
-- evolvability without per-user schema fragmentation;
-- a realistic V1 implementation path using one primary database;
-- a clean path to later partitioning, analytics stores, graph projections or other specialized infrastructure if real scale requires them.
+```text
+technical shared representation != universal semantic owner
+technical edge/reference != universal semantic Relationship
+flexible metadata != semantic-debt storage
+AI uncertainty != fabricated generic canonical truth
+query/storage convenience != ontology authority
+```
 
-## Consequences
+## Knowledge retained from the original ADR
 
-- Detailed schema design must follow the architecture in `docs/architecture/personal-data-ai-integration.md`.
-- Exact table count, relation vocabulary and JSONB boundaries are intentionally deferred to detailed domain modeling.
-- Generic representation is not an excuse to store the entire product as arbitrary JSON.
-- Domain concepts that become important enough must be formalized rather than remaining permanently generic.
-- AI inference must retain provenance and must not silently become an operational rule when confirmation is appropriate.
-- PostgreSQL remains authoritative unless a later ADR explicitly supersedes this decision.
+Several technical principles remain valid and are carried by current architecture/Logical sources:
+
+- avoid per-user/per-domain schema proliferation;
+- preserve strong typed/invariant-bearing semantics where required;
+- allow bounded metadata/JSON/provider-specific extension where semantics permit;
+- preserve provenance and reconciliation for external/inferred data;
+- preserve material history/correction/version semantics;
+- provider abstraction remains separate from canonical LifeOS meaning;
+- AI cannot invent physical schema;
+- specialized infrastructure requires demonstrated benefit rather than fashion-driven adoption.
+
+These retained principles no longer imply the old generic semantic model.
+
+## Current replacement
+
+Current semantic authority:
+
+- [`../domain/README.md`](../domain/README.md)
+- [`../domain/language-map.md`](../domain/language-map.md)
+- [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md)
+- [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md)
+
+Current architecture summary:
+
+- [`../architecture/README.md`](../architecture/README.md)
+- [`../architecture/system-overview.md`](../architecture/system-overview.md)
+- [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md)
+
+## Physical boundary
+
+This supersession does not select a Physical database or schema.
+
+PostgreSQL hybrid remains the current preferred Physical baseline, TypeDB is a mandatory challenger, and bounded graph/event/document mechanisms remain candidates. Generic EAV/generic-edge/universal meta-model design remains rejected for the canonical kernel.
