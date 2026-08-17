@@ -60,17 +60,122 @@ Bounded generic technical registries, discriminators, references, JSON/provider 
 
 No Physical Model is currently selected or authorized.
 
-Benchmark posture entering later Physical work:
+Current role-specific benchmark posture:
 
-- PostgreSQL hybrid — current preferred baseline;
-- TypeDB — mandatory challenger;
-- Neo4j/property graph — serious secondary/read-projection candidate;
-- event-stream/event-store — bounded history/integration candidate, not primary ontology;
-- document store — bounded provider/specialist/flexible candidate, not canonical kernel;
-- pgvector — bounded semantic-retrieval candidate;
-- generic EAV/generic edge/universal meta-model — hard reject for canonical kernel.
+```text
+PRIMARY CANONICAL PERSISTENCE
+PostgreSQL hybrid — current preferred baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH / TRAVERSAL
+no-specialized-store baseline
+vs Neo4j/property graph
+
+SEARCH / SEMANTIC RETRIEVAL
+structured + lexical/full-text baseline
+vs bounded pgvector where PostgreSQL is applicable
+
+EVENT / DOCUMENT
+bounded native mechanisms first
+specialized candidate only on demonstrated gap/structural benefit
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
 
 The Physical benchmark must test LifeOS-specific correctness/history/governance/concurrency/runtime/search/solver pressure, not only synthetic throughput.
+
+Current Phase 10 benchmark-method sources:
+
+- [`physical-benchmark-specification.md`](physical-benchmark-specification.md);
+- [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md);
+- [`physical-benchmark-register.md`](physical-benchmark-register.md).
+
+These documents select the **method**, not a technology.
+
+## Phase 10 benchmark method
+
+Primary candidates must pass non-compensable hard gates before any weighted score counts.
+
+Hard gates cover at minimum:
+
+```text
+semantic ownership / no generic meta-model collapse
+reference-family integrity
+typed / n-ary relation fidelity
+expected-state consequential concurrency
+truthful multi-owner consistency
+history / correction / reconciliation reconstructibility
+canonical / provider / derived / candidate separation
+governance / selective disclosure / WL-H12
+retention / redaction / tombstone / restore integrity
+temporal / recurrence / timezone fidelity
+schema/data evolution integrity
+recoverability / reproducible evidence
+```
+
+A hard-gate failure cannot be compensated by throughput, latency or operational familiarity.
+
+### Fair candidate mapping
+
+The later Physical workstream uses:
+
+```text
+same logical corpus
+same semantic assertions
+same operation/scenario semantics
+
++
+
+idiomatic candidate-specific physical mapping
+```
+
+It must not force TypeDB into a relational imitation, force PostgreSQL into a generic edge/EAV structure, or allow Neo4j/search/vector projections to own canonical truth merely to make a candidate look stronger.
+
+### Synthetic tiers vs forecasts
+
+Phase 10 defines LOW / BASE / HIGH synthetic qualification envelopes in the scenario corpus.
+
+```text
+benchmark tier != business forecast
+```
+
+The existing open RPO/RTO/availability/latency/scale values remain scenario/sensitivity inputs until accepted product/operational targets exist.
+
+If candidate preference changes materially across those scenarios, the result is `SENSITIVITY-DEPENDENT` rather than one averaged winner.
+
+### Evidence pinning
+
+Every future benchmark subject is pinned to:
+
+```text
+product
+exact version
+edition/license class
+deployment mode/topology
+driver/runtime version
+```
+
+and each run records source/benchmark commits, hardware, configuration, physical mapping revision, fixture seed/tier, scenario IDs, correctness assertions, performance/recovery evidence, manual tuning and raw artifact locations.
+
+A generic product capability claim does not satisfy a version/edition-dependent operational hard gate.
+
+### Result vocabulary
+
+The future Physical benchmark uses:
+
+```text
+PASS
+PASS-CONDITIONAL
+HOLD
+REJECT
+SENSITIVITY-DEPENDENT
+PREFERRED
+```
+
+`PREFERRED != SELECTED`.
+
+Actual selection remains a later separately authorized Physical Model decision.
 
 ## Data semantics and history
 
@@ -289,7 +394,7 @@ No workflow engine is implemented or adopted by this ranking.
 
 External provider reality remains outside exactly-once guarantees of any runtime. Durable replay must preserve idempotency, unknown outcome and reconciliation semantics.
 
-If the later Physical choice/RPO/RTO/SLO/deployment assumptions materially change the coupling or operating cost, Phase 10 must pressure-test this ranking again.
+The later Physical benchmark must record coupling/operational effects without treating a workflow runtime as primary persistence ontology.
 
 ## Search / retrieval projections
 
@@ -318,7 +423,7 @@ Search ranking is derived state, not canonical priority/truth. Search miss != ca
 
 Search result inclusion, counts, ranking, snippets, autocomplete, explanations and timing remain disclosure/non-interference surfaces under `WL-H12`.
 
-Approximate vector search must be benchmarked under authorization/scope filters, recall and deletion/redaction propagation before adoption.
+Approximate vector search must be benchmarked under authorization/scope filters, recall and deletion/redaction propagation before adoption. Phase 10 explicitly requires filtered recall and stale/deletion scenarios rather than raw top-k latency alone.
 
 See [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md).
 
@@ -366,6 +471,8 @@ Adapters must preserve recurrence exceptions/overrides, all-day/floating/zoned t
 
 Provider sync token invalidation/full resync does not invalidate or erase canonical LifeOS history.
 
+Phase 10 includes recurrence/DST/override/provider-resync scenarios in the common corpus so the future primary mapping must support the accepted semantics without adopting provider ontology.
+
 ## Solver / planning engine
 
 Current posture:
@@ -405,7 +512,9 @@ Current application of the rule:
 - dedicated durable execution is structurally justified for material long-running classes, but no engine is selected;
 - dedicated search/vector infrastructure is not justified by default;
 - OR-Tools CP-SAT is a preferred specialized solver benchmark candidate where deterministic scheduling/constraint pressure warrants it;
-- policy engines, graph stores, analytics/time-series systems and other specialized systems remain bounded candidates requiring their own evidence.
+- Neo4j/property graph remains a serious secondary/read-projection candidate that must beat the no-specialized-store G0 baseline on net benefit;
+- event/document products are not shortlisted without a concrete admitted role/gap;
+- policy engines, analytics/time-series systems and other specialized systems remain bounded candidates requiring their own evidence.
 
 ## Current stage
 
@@ -417,11 +526,12 @@ Phase 6 AI/context/runtime/integration boundaries CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver contract CURRENT
+Phase 10 Physical benchmark method CURRENT
 Pre-Physical Coherence IN PROGRESS
 Physical NOT STARTED / NOT AUTHORIZED
 Backend production implementation NOT STARTED
 ```
 
-Next architecture stage after coordinated Phase 7–9 closure is Phase 10 — Physical benchmark specification/register — read-only first. This does not start or authorize the Physical Model.
+After Phase 10 remote QA, the next Pre-Physical stage is Phase 11 — repository engineering safety — read-only first. The Physical Model remains separately authorized later.
 
 See [`README.md`](README.md) for current architecture navigation.
