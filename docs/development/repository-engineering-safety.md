@@ -1,6 +1,6 @@
 # Repository Engineering Safety
 
-- Status: **CURRENT — Phase 11 content; GitHub settings application/verification pending**
+- Status: **CURRENT — Phase 11 QA PASS**
 - Scope: repository integration safety before Physical/backend production implementation
 - Repository: `MattiaRubino/lifeos`
 - Default branch: `main`
@@ -11,15 +11,13 @@
 
 Make the repository enforce the Git discipline LifeOS already documents without inventing premature CI, enterprise ceremony or implementation infrastructure.
 
-This contract separates:
-
 ```text
 DOCUMENTED REPOSITORY POLICY
 !=
 GITHUB SETTING ACTUALLY APPLIED
 ```
 
-Phase 11 is not complete merely because this file or a ruleset JSON exists. Closure requires remote evidence that the applicable GitHub settings are actually active.
+Phase 11 closes only because both the policy and the applicable GitHub-side protections were verified where the connector permits verification.
 
 ## Authority
 
@@ -42,69 +40,74 @@ no force-push of shared history for cosmetic cleanup
 remote evidence required before PASS / CLOSED
 ```
 
-## Phase 11 observed repository state
+## Phase 11 verified repository state
 
-Observed remotely on 2026-08-17 before Phase 11 writes:
+Verified on 2026-08-17 after GitHub-side application:
 
 ```text
 repository visibility              public
 default branch                     main
-main protected                     false
-repository rulesets                0
+ruleset                            lifeos-main-safety
+ruleset enforcement                active
+ruleset target                     ~DEFAULT_BRANCH
+ruleset bypass                     none
+main deletion                      blocked
+main non-fast-forward / force push blocked
+pull request before merge          required
+required approving reviews         0
+review-thread resolution           required
+allowed merge method               merge
 required status checks             0
 GitHub Actions workflows           0
-Dependabot alerts                  disabled
-pull request template              present
-CODEOWNERS                          absent
-.github/dependabot.yml             absent
-SECURITY.md                         absent
+auto-delete merged head branches  enabled
+confirmed accidental refs          absent
+Physical Model                     NOT STARTED / NOT AUTHORIZED
+Backend Foundation                 NOT STARTED / DEFERRED
 ```
 
-Secret-scanning/code-scanning alert APIs were not readable through the connected GitHub integration, so their dashboard state was **not inferred**.
+The ruleset was verified remotely through GitHub's repository ruleset API. The three confirmed accidental refs `__do_not_create__`, `__noop_should_fail__` and `__tmp_should_not_create__` were verified absent after cleanup. The earlier `__no-op__` ref was already absent before Phase 11 closure.
 
-The connector exposed no mutation for repository rulesets/settings and no delete-ref action. These GitHub-side settings therefore require an authenticated user/admin action outside the connector followed by remote verification.
+Dependabot and secret/code-scanning alert state is not readable through the connected GitHub integration because the relevant endpoints return `403 Resource not accessible by integration`. The user/admin applied the requested repository security settings, but this connector limitation is recorded rather than converted into false API evidence.
 
 ## Current safety objective
 
-The repository is currently owner-driven. Safety should prevent accidental corruption without creating gates that require nonexistent reviewers or nonexistent CI.
+The repository is currently owner-driven. Safety prevents destructive mistakes without creating gates that require nonexistent reviewers or nonexistent CI.
 
-Therefore the immediate target is:
+Current main protection therefore is:
 
 ```text
 protect main from deletion
-protect main from force-push
+protect main from force-push / non-fast-forward updates
 require integration through pull request
 require review conversations to be resolved
-require zero approvals while the repository has no independent reviewer
+require zero approvals while no independent reviewer exists
 require zero status checks while no stable checks exist
 preserve merge commits/history
 ```
 
-This is deliberately strong against destructive mistakes and deliberately light on ceremony that would provide no real safety today.
+## Main branch ruleset
 
-# Main branch ruleset
-
-Canonical importable definition:
+Canonical repository definition:
 
 `github-main-ruleset.json`
 
-Expected ruleset identity:
+Current verified identity:
 
 ```text
 name        lifeos-main-safety
 target      branch
 enforcement active
 condition   ~DEFAULT_BRANCH
-bypass      none by default
+bypass      none
 ```
 
-Expected effective rules:
+Current effective rules:
 
 ```text
 DELETE TARGET REF
 blocked
 
-FORCE PUSH
+FORCE PUSH / NON-FAST-FORWARD
 blocked
 
 PULL REQUEST BEFORE MERGE
@@ -125,22 +128,22 @@ none until real stable checks exist
 
 ## Why zero approvals is intentional
 
-A required approval only adds real safety when an independent reviewer can provide it. In the current owner-driven repository, requiring one approval would either block legitimate work or force an artificial bypass.
+A required approval adds real safety only when an independent reviewer can provide it. In the current owner-driven repository, requiring one approval would either block legitimate work or force an artificial bypass.
 
-The review count MUST be reconsidered when:
+Reconsider the review count when:
 
 - another regular human maintainer/reviewer exists; or
 - an accepted governance process assigns independent approval responsibility.
 
-At that point, changing `0 → 1+` is a repository-policy change and should be gated/documented.
+Changing `0 → 1+` is a repository-policy change and should be gated/documented.
 
 ## Why required checks are empty now
 
-Phase 11 observed:
+Phase 11 verified:
 
 ```text
 GitHub Actions workflows = 0
-commit status contexts   = 0
+required status checks   = 0
 ```
 
 A required check MUST NOT be configured merely because a future check name sounds desirable.
@@ -156,11 +159,11 @@ check exists
 → MAY become required
 ```
 
-No required check should be created that makes `main` unmergeable because the underlying workflow does not exist.
+No required check should make `main` unmergeable because the underlying workflow does not exist.
 
 ## Future check classes
 
-The following are categories, not current check names or implementation authorization:
+These are categories, not current workflow names or implementation authorization:
 
 ```text
 backend tests
@@ -194,84 +197,58 @@ Before adding a status check to the main ruleset:
 
 ## Merge/history posture
 
-LifeOS currently preserves workstream PRE-SCOPEs, checkpoint SHAs and intermediate evidence in Git history.
+LifeOS preserves workstream PRE-SCOPEs, checkpoint SHAs and intermediate evidence in Git history.
 
-Therefore the current ruleset permits only:
-
-```text
-merge commits
-```
-
-for protected-main pull-request integration.
-
-This avoids silently destroying intermediate evidence through mandatory squash/rebase. A future change to merge policy requires explicit evaluation of evidence/history consequences.
+The current ruleset therefore allows only merge commits for protected-main pull-request integration. A future merge-policy change requires explicit evaluation of evidence/history consequences.
 
 # Security posture
 
 ## Secrets
 
-Repository rules already prohibit secrets and personal production data in commits.
+Repository rules prohibit secrets and personal production data in commits.
 
-GitHub secret scanning / push protection SHOULD be enabled where available for this public repository. Phase 11 closure must verify their repository/security setting state manually or through an API with sufficient permissions; absence of connector visibility is not proof of either enabled or disabled state.
+Secret scanning / push protection should remain enabled where available for this public repository. Their dashboard/API state could not be independently read through the current connector, so future security audits should re-check them using an API/session with sufficient permissions.
 
-Do not place production secrets in:
-
-- repository files;
-- example config values that are real credentials;
-- Actions workflow source;
-- CI logs/artifacts;
-- benchmark fixtures.
+Do not place production secrets in repository files, real example credentials, Actions workflow source, CI logs/artifacts or benchmark fixtures.
 
 ## Dependabot
 
-Observed current state:
+Dependabot alerts were disabled at the initial Phase 11 inventory. The requested admin action was applied by the repository owner, but the connector cannot independently verify the resulting state because the vulnerability-alerts endpoint is inaccessible to the integration.
 
-```text
-Dependabot alerts = disabled
-```
-
-Phase 11 target:
-
-```text
-Dependabot alerts = enabled
-```
-
-Do **not** create `.github/dependabot.yml` yet merely to populate the repository. Dependency-update scheduling belongs when actual package ecosystems/manifests exist.
+Do not create `.github/dependabot.yml` merely to populate the repository. Dependency-update scheduling belongs when actual package ecosystems/manifests exist.
 
 ## Code scanning
 
 No code-scanning workflow is created by Phase 11.
 
-Code scanning / CodeQL becomes relevant when actual production source code exists and the concrete language/build topology is known. Any future code-scanning gate must first produce real results before it can be made a required main check.
+Code scanning / CodeQL becomes relevant when actual production source code exists and the concrete language/build topology is known. A future code-scanning gate must produce real results before becoming a required main check.
 
 ## CODEOWNERS
 
-`CODEOWNERS` is intentionally not created now. A single owner naming himself as code owner does not create independent review safety.
-
-Introduce CODEOWNERS when ownership/reviewer responsibility becomes meaningfully distributed.
+`CODEOWNERS` is intentionally not created now. A single owner naming himself as code owner does not create independent review safety. Introduce CODEOWNERS when ownership/reviewer responsibility becomes meaningfully distributed.
 
 ## SECURITY.md
 
-Phase 11 does not create a public security-contact/vulnerability policy before a production/released security process exists. Revisit before a public production release or when external vulnerability reporting becomes operationally meaningful.
+Phase 11 does not create a public vulnerability-reporting policy before a production/released security process exists. Revisit before public production release or when external vulnerability reporting becomes operationally meaningful.
 
 # Branch hygiene
 
 ## Active branches
 
-Do not delete branches merely because they are old-looking.
+Do not delete branches merely because they look old.
 
-Known active bounded branches at Phase 11 inventory include:
+Known active bounded branches include:
 
 ```text
 chore/pre-physical-coherence
 prototype/phase-4-today-home
 ```
 
-The active prototype also has an open draft pull request and must not be removed.
+The prototype branch has an open draft pull request and must not be removed while active.
 
 ## Historical branches
 
-Historical/model/documentation branches may be deleted only after proving that:
+Historical/model/documentation branches may be deleted only after proving:
 
 ```text
 unique accepted work not integrated       0
@@ -283,29 +260,20 @@ Deletion is hygiene, not a way to hide project history.
 
 ## Confirmed accidental refs
 
-Phase 11 inventory found these accidental branches:
+Phase 11 classified and cleaned:
 
 ```text
-__do_not_create__
-__noop_should_fail__
-__tmp_should_not_create__
+__do_not_create__          absent
+__noop_should_fail__       absent
+__tmp_should_not_create__  absent
+__no-op__                  already absent before closure
 ```
 
-For each, remote comparison showed its tip is an ancestor of `main`; no unique branch-only project history must be preserved.
-
-Disposition:
-
-```text
-SAFE TO DELETE
-```
-
-The earlier accidental `__no-op__` ref is already absent at Phase 11 inventory time.
-
-The available connector cannot delete refs, so deletion of the three remaining accidental branches is a required external/manual repository-hygiene step before Phase 11 closure.
+Each confirmed accidental ref that still existed was an ancestor of `main`, so no unique branch-only project history was lost.
 
 ## Automatic merged-branch cleanup
 
-Target repository setting:
+Verified repository setting:
 
 ```text
 Automatically delete head branches after merge = enabled
@@ -313,90 +281,46 @@ Automatically delete head branches after merge = enabled
 
 This reduces stale working-branch accumulation without deleting unmerged active branches.
 
-# GitHub-side application checklist
+# Phase 11 verification evidence
 
-Phase 11 remains **PENDING SETTINGS VERIFICATION** until all applicable items below are checked.
-
-## A — import main ruleset
-
-Import:
-
-`docs/development/github-main-ruleset.json`
-
-Expected result:
+Core repository-safety verification:
 
 ```text
-lifeos-main-safety
-active
-~DEFAULT_BRANCH
-PR required
-0 approvals
-review-thread resolution required
-deletion blocked
-force-push blocked
-merge only
-no required status checks yet
+ruleset lifeos-main-safety present                 PASS
+ruleset enforcement active                        PASS
+ruleset target ~DEFAULT_BRANCH                    PASS
+bypass actors none                                PASS
+main deletion protection                          PASS
+main non-fast-forward/force-push protection       PASS
+pull request required                             PASS
+required approvals = 0                            PASS
+review-thread resolution required                 PASS
+allowed merge method = merge                      PASS
+required status checks = 0                        PASS / expected today
+auto-delete merged branches = true                PASS
+__do_not_create__                                 404 / PASS
+__noop_should_fail__                              404 / PASS
+__tmp_should_not_create__                         404 / PASS
+main SHA unchanged during settings application    PASS
 ```
 
-## B — repository branch cleanup setting
-
-Enable automatic deletion of merged head branches.
-
-## C — dependency alerts
-
-Enable Dependabot alerts.
-
-## D — secret security
-
-Verify secret scanning and push protection in repository security settings; enable where available/applicable for the public repository.
-
-## E — delete confirmed accidental refs
-
-Delete exactly:
+Connector-limited security verification:
 
 ```text
-__do_not_create__
-__noop_should_fail__
-__tmp_should_not_create__
+Dependabot alerts API           403 / connector-unverifiable
+secret scanning alert API       403 / connector-unverifiable
+code scanning alert API         403 / connector-unverifiable
 ```
 
-Do not bulk-delete other branches as part of this action.
-
-# Phase 11 verification contract
-
-After the settings are applied, verify remotely where possible:
-
-```text
-repository rulesets contains lifeos-main-safety     PASS
-ruleset enforcement active                          PASS
-main effective rules include PR/deletion/force-push PASS
-required status checks                              0 expected today
-Dependabot alerts enabled                           PASS
-accidental ref __do_not_create__                    404
-accidental ref __noop_should_fail__                  404
-accidental ref __tmp_should_not_create__             404
-auto-delete merged branches                         true
-main SHA/content                                     unchanged by settings
-```
-
-Secret scanning / push protection may require UI evidence if the connector lacks permission to read their state; record the limitation truthfully rather than inferring it.
-
-Only after this verification may repository/global current state say:
-
-```text
-PHASE 11
-QA PASS
-```
+These connector permission limits do not invalidate the verified branch-integration protections; they remain explicit future audit items rather than inferred PASS/FAIL values.
 
 # Future production readiness
 
-Before production backend work begins, repository safety must evolve with the codebase rather than remain frozen at this documentation-only stage.
-
-Expected progression:
+Repository safety must evolve with the codebase rather than remain frozen at this documentation-only stage.
 
 ```text
 now
-main ruleset + PR discipline + security alerts
+main ruleset + PR discipline + branch hygiene/security settings
 
 first implementation
 real tests/lint/types/security workflows
@@ -415,24 +339,30 @@ Release tags, deployment environments, merge queues and environment approvals ar
 
 # Phase 11 acceptance
 
-Content readiness requires:
-
 ```text
 repository inventory complete                 PASS
 ruleset definition complete                   PASS
+ruleset applied and remotely verified         PASS
 future-check activation policy complete       PASS
-security-setting plan complete                PASS
 branch-hygiene classification complete        PASS
-manual/external settings steps explicit       PASS
+confirmed accidental refs removed             PASS
+auto-delete merged branches                   PASS
+security-setting connector limits recorded    PASS
+Domain reopen required                        0
+Logical reopen required                       0
+Physical Model started                        0
+Backend implementation started                0
 ```
 
-Final Phase 11 closure additionally requires GitHub-side application and remote verification.
-
-Until then:
+Final state:
 
 ```text
 PHASE 11
-CONTENT READY / SETTINGS VERIFICATION PENDING
+QA PASS
+
+NEXT
+PHASE 12 — CLEAN-ROOM REPOSITORY / ARCHITECTURE COHERENCE QA
+READ-ONLY FIRST
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
