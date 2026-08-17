@@ -35,7 +35,8 @@ WD-05 PASS
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
 Phase 0–9 QA PASS
-Phase 10 Physical benchmark specification/register NEXT — READ-ONLY FIRST
+Phase 10 Physical benchmark method package CURRENT / content QA PASS
+Phase 11 repository engineering safety NEXT after Phase 10 closure
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -72,6 +73,9 @@ Start with:
 - [`architecture/durable-execution-benchmark.md`](architecture/durable-execution-benchmark.md) — current Phase 7 durable execution benchmark and runtime-class/candidate posture;
 - [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md) — current Phase 8 transport-/engine-neutral consequential-operation contract;
 - [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md) — current Phase 9 search/observability/calendar/solver pressure contract;
+- [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md) — current Phase 10 benchmark methodology;
+- [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md) — current Phase 10 common semantic/destructive scenario corpus and synthetic qualification tiers;
+- [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md) — current Phase 10 candidate-role/evidence register and future result slots;
 - [`architecture/README.md`](architecture/README.md) — architecture navigation and current/evidence separation;
 - [`architecture/system-overview.md`](architecture/system-overview.md);
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md).
@@ -190,6 +194,43 @@ PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
 
 Hard constraints are not silently relaxed; `UNKNOWN != INFEASIBLE`; solver output remains candidate/scenario until accepted through the Phase 8 governed-effect boundary.
 
+## Phase 10 Physical benchmark method
+
+Phase 10 defines the future comparison method, not the winner.
+
+Current package:
+
+- [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md);
+- [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md);
+- [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md).
+
+Current candidate roles:
+
+```text
+PRIMARY
+PostgreSQL hybrid — mandatory preferred baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
+
+SEARCH / VECTOR
+structured + lexical/full-text baseline vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms first; specialized product only on demonstrated gap/benefit
+```
+
+The future Physical benchmark must pass semantic/correctness hard gates before candidate scoring. A faster candidate cannot compensate for semantic collapse, unsafe disclosure, false history or unproven recoverability.
+
+The scenario corpus uses deterministic semantic/destructive fixtures and LOW/BASE/HIGH synthetic qualification envelopes. These numbers are not business forecasts. Open Phase 5 NFR values remain explicit sensitivity inputs.
+
+Future evidence is pinned to exact product/version/edition/deployment mode and records mapping revision, fixture seed/tier, hardware/config, raw correctness/performance/recovery evidence and caveats.
+
+Result vocabulary includes `PASS`, `PASS-CONDITIONAL`, `HOLD`, `REJECT`, `SENSITIVITY-DEPENDENT` and `PREFERRED`; `PREFERRED != SELECTED`.
+
+No Phase 10 document authorizes Physical schema design, benchmark execution or backend implementation.
+
 ## Historical/current-document boundary
 
 The old mixed `personal-data-ai-integration.md` current specification has been retired after knowledge coverage; its useful current content is carried by current architecture/ADR/Logical sources, and its old payload remains recoverable in Git history.
@@ -216,10 +257,10 @@ No ADR is created merely because a benchmark candidate is currently preferred. P
 
 ```text
 PostgreSQL hybrid
-CURRENT PREFERRED BASELINE — not final selection
+CURRENT PREFERRED PRIMARY BASELINE — not final selection
 
 TypeDB
-MANDATORY CHALLENGER
+MANDATORY PRIMARY CHALLENGER
 
 Neo4j / property graph
 SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
@@ -227,17 +268,20 @@ SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
 event/document mechanisms
 BOUNDED CANDIDATES
 
+pgvector
+BOUNDED SEMANTIC-RETRIEVAL CANDIDATE WHERE APPLICABLE
+
 generic EAV / generic edge / universal meta-model
 HARD REJECT FOR CANONICAL KERNEL
 ```
 
-Phase 10 prepares the detailed Physical benchmark specification/register and must consume Phase 5 open parameters plus Phase 6–9 pressure. The Physical Model remains separately unauthorized.
+The Phase 10 method is now a current Pre-Physical input. The Physical Model remains separately unauthorized.
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 0–9 are QA-closed and Phase 10 Physical benchmark specification/register is next, read-only first.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 0–9 are QA-closed, Phase 10 method content is current/content-QA-passed, and the handoff owns final Phase 10 closure status before Phase 11 begins.
 - [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline, Phase 5 requirements and Phase 6–9 contracts, and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline, Phase 5 requirements, Phase 6–9 contracts, Phase 10 benchmark method and later accepted Physical result, and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
 - Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
 
 ## Documentation lifecycle rule
