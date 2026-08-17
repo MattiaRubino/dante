@@ -1,6 +1,6 @@
 # LifeOS Logical Representation Framework v1
 
-**Status:** Stage-0H hardened normative foundation + Slice-A + Slice-B contracts  
+**Status:** Stage-0H hardened normative foundation + Slice-A + Slice-B + integrated A+B contract  
 **Date:** 2026-08-17  
 **Purpose:** provide a controlled vocabulary for classifying logical representation choices without equating representation shape with domain ontology
 
@@ -403,7 +403,7 @@ VERDICT
 SELECTED / REJECTED / BLOCKED / RETEST
 ```
 
-At least one rejected alternative should normally be materially plausible; straw-man comparison does not satisfy the methodology.
+At least one rejected candidate should normally be materially plausible; straw-man comparison does not satisfy the methodology.
 
 ---
 
@@ -770,12 +770,14 @@ retain their accepted Domain ownership. Shared representation mechanisms do not 
 
 ### 15.2 Owner dispositions
 
+The integrated A+B checkpoint hardens the original Slice-B wording. Once a canonical owner exists as a persisted LifeOS semantic object, its Domain identity classification is not optional merely because a storage strategy could embed it.
+
 ```text
-Possibility  -> LR-01 when persistently retained
+Possibility  -> LR-01 when it has become a retained canonical Possibility
 Goal         -> LR-01
 Plan         -> LR-01
-Activity     -> LR-01 when persistent independent identity is required
-Event        -> LR-01 when persistent independent identity is required
+Activity     -> LR-01 for canonical persisted Activity
+Event        -> LR-01 for canonical persisted Event
 Routine      -> LR-01
 Milestone    -> normally LR-02 dependent semantic record
 Proposal     -> LR-02 conditionally materialized
@@ -784,7 +786,9 @@ Decision     -> LR-02 conditionally materialized
 Dependency   -> LR-03 typed association/relation
 ```
 
-Persistent addressability of LR-02 does not itself imply native Domain identity.
+Transient suggestions/candidates do not become Possibility/Activity/Event merely because they resemble their content.
+
+Persistent addressability of LR-02/LR-03 does not itself imply native Domain identity.
 
 ### 15.3 Layered separation
 
@@ -815,6 +819,15 @@ material consequence
 
 A trivial synchronous interaction does not require synthetic semantic records merely to satisfy architectural ceremony.
 
+However:
+
+```text
+no standalone semantic-act record
+!= no lineage/provenance/history for consequential target change
+```
+
+Selective materialization must not become selective auditability.
+
 ### 15.5 Lifecycle rule
 
 There is no universal canonical status enum.
@@ -825,13 +838,13 @@ Each owner preserves its own material lifecycle/disposition dimensions. Product/
 
 ```text
 Possibility P1
--> later adoption/origin link
+-> typed adoption/origin lineage
 -> Goal G1
 
 P1 != G1
 ```
 
-Later adoption never retypes pre-adoption history.
+Later adoption never retypes pre-adoption history and the lineage must not degrade to a generic `related_to` edge.
 
 ### 15.7 Plan revision/replacement
 
@@ -842,6 +855,8 @@ ordinary operational revision
 materially different execution strategy
 may create linked replacement/continuation Plan
 ```
+
+Where a distinct replacement Plan is justified, the predecessor/successor relation is typed lineage and does not imply `old Plan v2` automatically.
 
 Exact material Version mechanics remain Slice D.
 
@@ -865,7 +880,29 @@ Decision
 
 A Decision may have zero/one/many effects; effective state remains owned by the affected concept. Previously authorized Conditional Policy may produce permitted effects without manufacturing a new Decision for each mutation.
 
-### 15.10 Dependency
+### 15.10 Request / instruction / Authority boundary
+
+The earlier shorthand that an explicit request can `authorize` the requested action is superseded.
+
+Correct rule:
+
+```text
+explicit user instruction/request
+may establish that Actor's bounded intent/instruction
+and may remove redundant confirmation ceremony
+```
+
+but:
+
+```text
+Request != Authority
+Request != Consent
+requester != Authority holder automatically
+```
+
+A shared/governed effect still requires independently applicable Authority/Consent/policy semantics.
+
+### 15.11 Dependency
 
 ```text
 Dependency
@@ -876,9 +913,19 @@ Dependency
 != universal DAG edge
 ```
 
+Where consequence depends on one facet/state/result/transition rather than the whole target, the logical endpoint must preserve:
+
+```text
+ReferenceAddress(target)
++
+materially relevant facet/state/result/transition/condition
+```
+
 Current `blocked/satisfied/eligible` state is normally derived from the Dependency plus relevant prerequisite/target state.
 
-### 15.11 Routine/instance barrier
+No universal predicate/expression language is introduced by this requirement.
+
+### 15.12 Routine/instance barrier
 
 ```text
 Routine != Recurrence != Occurrence != Actual
@@ -886,18 +933,150 @@ Routine != Recurrence != Occurrence != Actual
 
 A recurring owner must not be modeled as one mutable Activity whose date advances forever when occurrence/history distinctions matter.
 
-### 15.12 Governed-by material state
+### 15.13 Governed-by material state
 
 Where consequence requires, later Occurrence/execution must be able to identify the material Plan/Routine/Policy state that governed it.
 
 Slice C owns exact instance/execution representation; Slice D owns exact Version/history representation.
 
-### 15.13 Canonical Slice-B references
+### 15.14 Canonical Slice-B references
 
 - `slices/intention-execution-v1.md`
 - `checkpoints/intention-execution-v1-validation.md`
 - `benchmarks/intention-execution-v1.md`
-- `traceability-and-regression-ledger-v1.md` Slice-B entries
-- `decision-and-assumption-register-v1.md` Slice-B entries
+- `checkpoints/integrated-a-b-v1-validation.md`
+- `traceability-and-regression-ledger-v1.md` Slice-B + integrated entries
+- `decision-and-assumption-register-v1.md` Slice-B + integrated entries
 
-Later slices must replay applicable Slice-A and Slice-B invariants rather than silently superseding them.
+Later slices must replay applicable Slice-A, Slice-B and cumulative integrated invariants rather than silently superseding them.
+
+---
+
+## 16. Integrated reference-address hardening
+
+The A+B checkpoint exposed a referenceability gap between native identities and persistently addressable non-native semantic records.
+
+### 16.1 ReferenceAddress
+
+LifeOS therefore uses a **discriminated logical address family**:
+
+```text
+ReferenceAddress
+=
+  NativeRef
+  OR ScopedRecordRef
+  OR MaterialStateRef
+  OR ExternalRef
+  OR another later explicitly accepted bounded address variant
+```
+
+`ReferenceAddress` is representation vocabulary only.
+
+```text
+ReferenceAddress != Entity
+ReferenceAddress != Thing
+ReferenceAddress != Object superclass
+ReferenceAddress != Relationship
+ReferenceAddress != lifecycle
+```
+
+### 16.2 NativeRef
+
+```text
+NativeRef
+= address of independently justified native Domain identity
+```
+
+Examples include current accepted native owners when their semantics require stable independent identity.
+
+### 16.3 ScopedRecordRef
+
+```text
+ScopedRecordRef
+= stable logical address of a materialized semantic record whose identity/history is scoped/dependent rather than native-referent identity
+```
+
+Current pressure includes:
+
+```text
+Milestone
+materialized Proposal
+materialized Request
+materialized Decision
+qualified Dependency when relation history/addressability matters
+```
+
+`ScopedRecordRef` does not promote those semantics to native referent identity.
+
+### 16.4 MaterialStateRef
+
+```text
+MaterialStateRef
+= address of the materially relevant state/version of a target
+```
+
+It remains distinct from the target's own continuing address. Exact Version/material-state construction is Slice D.
+
+### 16.5 ExternalRef
+
+```text
+ExternalRef
+= provider/source-scoped identity
+```
+
+It remains outside canonical native/scoped-record identity unless reconciliation establishes an applicable mapping.
+
+### 16.6 Address-space non-collapse
+
+```text
+NativeRef != ScopedRecordRef
+NativeRef != MaterialStateRef
+NativeRef != ExternalRef
+ScopedRecordRef != MaterialStateRef
+ScopedRecordRef != ExternalRef
+MaterialStateRef != ExternalRef
+```
+
+A future technical envelope/registry may carry these variants, but it may not erase the distinction.
+
+### 16.7 Reference Contract extension
+
+A Reference Contract now constrains, where applicable:
+
+```text
+semantic role/family
+eligible address variants
+eligible target owner/family
+scope/context
+cardinality/directionality
+unresolved-target behavior
+material-state/facet binding
+history/materiality rules
+Visibility/Authority implications
+specialist/extension boundary
+```
+
+Resolvable/addressable does not imply semantically eligible.
+
+### 16.8 Technology/mechanism reconsideration result
+
+The integrated checkpoint reopened:
+
+```text
+owner-specific reference families
+global Node/Entity registry
+one undifferentiated TypedRef(kind,id)
+discriminated ReferenceAddress family + Reference Contract
+```
+
+Current verdict:
+
+```text
+SELECTED FAMILY
+ReferenceAddress discriminated family + Reference Contract
+
+TECHNOLOGY / MECHANISM VERDICT
+RETAIN + HARDEN
+```
+
+Owner-specific references remain a strong Physical Model ingredient. A technical registry may still be used later if it stays representation-only. A global semantic Node/Entity root remains rejected.
