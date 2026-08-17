@@ -1,6 +1,6 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **IN PROGRESS — Phase 7–9 QA PASS; Phase 10 read-only benchmark-specification inventory next**
+- Status: **IN PROGRESS — Phase 10 QA PASS; Phase 11 repository-engineering-safety read-only next**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Phase 2 PRE-SCOPE: `d9610a7da4fe8fc759e9809843d989f1befcda5c`
@@ -20,7 +20,10 @@
 - Phase 8 checkpoint HEAD: `1d92f9e77ecc808095086fc5497eaac88e2039fa`
 - Phase 9 checkpoint HEAD: `95df2a17b1187a590b5cba646ba0e107c038e5d3`
 - Phase 7–9 content HEAD before global closure markers: `4cbf50ec23ede3b02a49c75bc52fa57c3b192a6d`
-- Phase 7–9 propagation HEAD before this handoff marker: `d930ef5818df566a3bf9c5b2b36e9ba38e4e7b8a`
+- Phase 7–9 propagation HEAD before handoff marker: `d930ef5818df566a3bf9c5b2b36e9ba38e4e7b8a`
+- Phase 10 PRE-SCOPE: `01df10a4267880a213ede8582b0193ff616f9a70`
+- Phase 10 content HEAD before global closure markers: `057df9bdc19d89ea74fcee0e5d999ebc34cf93dc`
+- Phase 10 propagation HEAD before this handoff marker: `0a9d80fa9d2ecaf373f0d5ad22b7953b73412a8c`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
@@ -63,9 +66,10 @@ Phase 6 QA PASS
 Phase 7 QA PASS WITH CONDITIONAL RANKING
 Phase 8 QA PASS
 Phase 9 QA PASS
+Phase 10 QA PASS
 
 NEXT
-Phase 10 — Physical benchmark specification/register
+Phase 11 — repository engineering safety
 READ-ONLY FIRST
 
 PHYSICAL MODEL
@@ -94,10 +98,13 @@ Before later work:
 13. read `docs/architecture/durable-execution-benchmark.md`;
 14. read `docs/architecture/governed-operation-effect-contract.md`;
 15. read `docs/architecture/search-observability-calendar-solver-boundaries.md`;
-16. read complete canonical split/continuation chains where a logical document is physically split;
-17. read relevant ADR/evidence/methodology;
-18. verify current branch/ref and relation to `main`;
-19. before any new write phase, issue a fresh exact PRE-SCOPE/write gate.
+16. read `docs/architecture/physical-benchmark-specification.md`;
+17. read `docs/architecture/physical-benchmark-scenario-corpus.md`;
+18. read `docs/architecture/physical-benchmark-register.md`;
+19. read complete canonical split/continuation chains where a logical document is physically split;
+20. read relevant ADR/evidence/methodology;
+21. verify current branch/ref and relation to `main`;
+22. before any new write phase, issue a fresh exact PRE-SCOPE/write gate.
 
 ## Documentation lifecycle rule
 
@@ -158,6 +165,9 @@ Current sources include:
 - `docs/architecture/durable-execution-benchmark.md`;
 - `docs/architecture/governed-operation-effect-contract.md`;
 - `docs/architecture/search-observability-calendar-solver-boundaries.md`;
+- `docs/architecture/physical-benchmark-specification.md`;
+- `docs/architecture/physical-benchmark-scenario-corpus.md`;
+- `docs/architecture/physical-benchmark-register.md`;
 - `docs/architecture/README.md`;
 - `docs/architecture/system-overview.md`;
 - `docs/architecture/technical-decisions.md`;
@@ -185,7 +195,7 @@ Later architecture/Physical/runtime work must preserve:
 - `WL-H11` — reconstructible consequential AuthZ provenance;
 - `WL-H12` — selective disclosure includes non-interference/inference leakage.
 
-Phase 5 requirement packages, Phase 6 boundary contracts and Phase 7–9 architecture contracts add current downstream requirements without replacing these hardenings.
+Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts and the Phase 10 benchmark-method package add current downstream requirements without replacing these hardenings.
 
 ## Semantic non-reopen boundary
 
@@ -209,6 +219,7 @@ runtime workflow completion != Actual automatically
 technical cancellation != Domain cancellation automatically
 search miss != canonical nonexistence
 telemetry != Domain Provenance / audit automatically
+preferred / registered benchmark candidate != selected technology
 ```
 
 ## Completed work
@@ -720,7 +731,7 @@ After content QA passed, current state was propagated to:
 - `docs/PROJECT-STATUS.md`;
 - `docs/ROADMAP.md`.
 
-Propagation HEAD before this handoff marker:
+Propagation HEAD before handoff marker:
 
 `d930ef5818df566a3bf9c5b2b36e9ba38e4e7b8a`
 
@@ -758,84 +769,331 @@ ADR CHANGED                         0
 
 Preferred benchmark candidate remains distinct from implementation selection.
 
-## Current exact task — Phase 10 read-only Physical benchmark specification/register
+## Phase 10 — Physical benchmark specification/register — QA PASS
 
-Next work is **read-only**. Do not start a Physical Model and do not write Phase 10 until a fresh exact gate is presented and approved.
+### Purpose / non-authority
 
-Phase 10 owns the specification/register that a later separately authorized Physical Model benchmark can execute.
+Phase 10 defines the **method** a later separately authorized Physical Model workstream must execute.
 
-The read-only inventory must at minimum determine:
+```text
+PHASE 10
+HOW TO BENCHMARK
 
-1. exact Physical candidate set and role being benchmarked;
-2. hard rejection criteria derived from Domain/Logical and Phase 5–9 contracts;
-3. explicit low/base/high workload/scale scenarios where exact forecasts remain unknown;
-4. which Phase 5 open parameters must be resolved now versus scenario-modeled;
-5. required benchmark datasets/corpora/scenario fixtures;
-6. query/mutation/history/governance/search/runtime cases to execute against each candidate;
-7. destructive cases and failure/recovery scenarios;
-8. scoring dimensions and whether any are hard gates rather than weighted scores;
-9. required evidence format/reproducibility/source mapping;
-10. treatment of PostgreSQL hybrid baseline, TypeDB mandatory challenger, Neo4j secondary/read-projection candidate, bounded event/document mechanisms and bounded pgvector role;
-11. how Phase 7 runtime candidate coupling affects Physical ranking without making workflow runtime the persistence ontology;
-12. how search/vector and solver pressure affect Physical support requirements without preselecting specialized infrastructure;
-13. explicit result vocabulary: PASS / REJECT / HOLD / conditional/sensitivity result as appropriate;
-14. what outcome is sufficient to declare Physical **READY FOR SEPARATE AUTHORIZATION** without actually starting it.
+!=
 
-Phase 10 must include destructive LifeOS pressure at least across:
+PHYSICAL MODEL
+WHAT TO SELECT / DESIGN
+```
 
-- concurrent consequential edits;
-- expected-state conflicts;
-- multi-owner atomic/staged changes;
-- selective disclosure/inference leakage;
-- provider divergence/reconciliation;
-- redaction/history reconstruction;
-- recurrence/DST/timezone/history;
-- stale LR-08/availability/Authority/Visibility state;
-- consequential AuthZ provenance;
-- AI Proposal → approval/confirmation → governed effect;
+Phase 10 did not create a Physical schema, benchmark harness implementation or database selection.
+
+### Approved Phase 10 write gate
+
+```text
+BRANCH
+chore/pre-physical-coherence
+
+PRE-SCOPE
+01df10a4267880a213ede8582b0193ff616f9a70
+
+CREATE
+docs/architecture/physical-benchmark-specification.md
+docs/architecture/physical-benchmark-scenario-corpus.md
+docs/architecture/physical-benchmark-register.md
+
+UPDATE
+docs/architecture/README.md
+docs/architecture/pre-physical-architecture-baseline.md
+docs/architecture/system-overview.md
+docs/architecture/technical-decisions.md
+docs/workstreams/backend-foundation.md
+README.md
+docs/README.md
+docs/PROJECT-STATUS.md
+docs/ROADMAP.md
+docs/workstreams/pre-physical-coherence.md
+
+DELETE
+none
+```
+
+### Phase 10 core package
+
+Created as three distinct logical documents, with no size/tool split required:
+
+1. `docs/architecture/physical-benchmark-specification.md`;
+2. `docs/architecture/physical-benchmark-scenario-corpus.md`;
+3. `docs/architecture/physical-benchmark-register.md`.
+
+Core create HEAD:
+
+`d4ff738b3e722b412ca5800b6cede2d86673d95c`
+
+Remote core QA from Phase 10 PRE-SCOPE:
+
+```text
+ahead_by       3
+behind_by      0
+total_commits  3
+added           3
+modified        0
+deleted         0
+unexpected      0
+```
+
+### Phase 10 accepted benchmark method
+
+#### Candidate competition by role
+
+```text
+PRIMARY CANONICAL PERSISTENCE
+P0 PostgreSQL hybrid — mandatory preferred baseline, NOT selected
+P1 TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH / TRAVERSAL
+G0 no-specialized-store / primary-only baseline
+G1 Neo4j — serious specialized secondary challenger
+
+SEARCH / SEMANTIC RETRIEVAL
+S0 structured + lexical/full-text baseline
+S1 bounded pgvector where PostgreSQL is applicable
+
+EVENT / DOCUMENT
+bounded native mechanisms first
+specialized product admitted only on explicit requirement gap / structural benefit
+```
+
+A candidate competes in the role it claims to fill. Neo4j cannot become primary merely by winning traversal benchmarks; pgvector cannot become semantic/canonical truth by winning retrieval benchmarks.
+
+#### Hard-gate-first rule
+
+Primary candidates must pass non-compensable hard gates for:
+
+```text
+HG-01 semantic ownership / no generic meta-model collapse
+HG-02 reference-family integrity
+HG-03 typed / n-ary relation fidelity
+HG-04 expected-state consequential concurrency
+HG-05 truthful multi-owner consistency
+HG-06 history / correction / reconciliation reconstructibility
+HG-07 state-layer separation
+HG-08 governance / selective disclosure / WL-H12
+HG-09 retention / redaction / tombstone / restore integrity
+HG-10 temporal / recurrence / timezone fidelity
+HG-11 schema/data evolution integrity
+HG-12 recoverability / evidence quality
+```
+
+A hard-gate failure cannot be compensated by latency, throughput or operational familiarity.
+
+Secondary/search candidates inherit applicable non-canonical-state, deletion/access-propagation, non-interference and freshness gates.
+
+#### Fairness
+
+The future Physical benchmark uses:
+
+```text
+SAME logical corpus
+SAME semantic assertions
+SAME operation/scenario semantics
+
++
+
+IDIOMATIC candidate-specific Physical mapping
+```
+
+Do not force TypeDB into a relational imitation; do not force PostgreSQL into a universal edge/EAV shape; do not allow Neo4j/search/vector projections to redefine canonical truth.
+
+#### Scenario corpus
+
+The common corpus includes:
+
+- all 57 Domain concepts and critical Logical representation/relationship/governance cases;
+- deep personal history and efficient current-state access;
+- population + hot-target concurrency;
+- Authority/Consent/Visibility/Representation disclosure pressure;
+- ExternalRef/provider divergence/reconciliation;
+- recurrence, occurrence overrides, timezone/DST history;
+- structured/full-text/vector retrieval with access filtering;
+- backup/restore/deletion/redaction/evolution;
+- expected-state races;
+- idempotency conflicting reuse;
+- atomic multi-owner mutation;
+- provider unknown outcome and callback replay;
 - revoked governance during delayed execution;
-- durable crash/restart and in-flight version evolution;
-- ambiguous external effect/retry;
-- backup restore after deletion/redaction;
-- multi-device/offline divergence;
-- long-history current-state access;
-- search/index/vector filtering, recall, staleness and deletion propagation;
-- provider calendar resync/token invalidation;
-- solver input snapshot/status/freshness;
-- schema/data evolution over historical references/material states;
-- explicit low/base/high scale/performance sensitivity scenarios.
+- stale LR-08 basis;
+- offline multi-device divergence;
+- search/index deletion/staleness;
+- provider calendar sync-token invalidation;
+- solver stale snapshot / UNKNOWN vs INFEASIBLE;
+- crash between canonical and external effect;
+- in-flight durable execution across version change;
+- schema/mapping evolution with historical references;
+- capacity/backpressure failure.
 
-No Phase 10 write is authorized yet.
+#### Synthetic qualification tiers
+
+The scenario corpus defines LOW / BASE / HIGH qualification envelopes.
+
+These values are explicitly:
+
+```text
+BENCHMARK ENVELOPES
+!= BUSINESS / USER-GROWTH FORECASTS
+```
+
+They exist to make scale sensitivity reproducible until accepted product evidence exists.
+
+Phase 5 open RPO/RTO/availability/latency/scale/offline values remain sensitivity dimensions rather than invented permanent targets.
+
+If candidate preference changes materially across accepted scenarios, the future result is `SENSITIVITY-DEPENDENT`.
+
+#### Evidence contract
+
+Every future benchmark subject is pinned to:
+
+```text
+product
+exact version
+edition/license class
+deployment mode/topology
+driver/runtime version
+```
+
+Every run records source/benchmark commits, hardware/configuration, candidate mapping revision, deterministic fixture seed/tier, scenario IDs/load profile, correctness results, performance/resource evidence, backup/recovery/evolution evidence, manual tuning, caveats and raw artifact locations.
+
+Materially contradictory/unstable capability evidence becomes `HOLD`/conditional until verified rather than receiving assumed points.
+
+#### Result vocabulary
+
+```text
+PASS
+PASS-CONDITIONAL
+HOLD
+REJECT
+SENSITIVITY-DEPENDENT
+PREFERRED
+```
+
+`PREFERRED != SELECTED`.
+
+Selection belongs only to the later separately authorized Physical Model workstream.
+
+### Phase 10 current technical-evidence caveats
+
+The Phase 10 register records current evidence areas that must be pinned/revalidated at execution time rather than treated as timeless claims.
+
+Examples:
+
+- TypeDB must be benchmarked as exact version + edition + deployment mode, especially where cluster/HA/backup maturity materially affects scoring;
+- Neo4j must be benchmarked using the then-current schema/constraint capability and exact edition rather than an outdated “schemaless graph” assumption;
+- pgvector ANN/search must be judged after actual scope/Visibility filtering and deletion/staleness pressure rather than unfiltered top-k latency alone.
+
+These are benchmark questions/caveats, not candidate rejection or selection.
+
+### Phase 10 content integration
+
+The core package was integrated into:
+
+- `docs/architecture/README.md`;
+- `docs/architecture/pre-physical-architecture-baseline.md`;
+- `docs/architecture/system-overview.md`;
+- `docs/architecture/technical-decisions.md`;
+- `docs/workstreams/backend-foundation.md`.
+
+Content HEAD:
+
+`057df9bdc19d89ea74fcee0e5d999ebc34cf93dc`
+
+Remote content QA from Phase 10 PRE-SCOPE:
+
+```text
+ahead_by       8
+behind_by      0
+total_commits  8
+added           3
+modified        5
+deleted         0
+unexpected      0
+```
+
+### Phase 10 global propagation
+
+After content QA passed, current state was propagated to:
+
+- root `README.md`;
+- `docs/README.md`;
+- `docs/PROJECT-STATUS.md`;
+- `docs/ROADMAP.md`.
+
+Propagation HEAD before this handoff marker:
+
+`0a9d80fa9d2ecaf373f0d5ad22b7953b73412a8c`
+
+Remote compare at propagation point:
+
+```text
+ahead_by       12
+behind_by      0
+total_commits  12
+added           3
+modified        9
+deleted         0
+unexpected      0
+```
+
+The only approved gated path not included at that point was this workstream save-game itself, intentionally written as the final closure marker.
+
+### Phase 10 non-reopen / non-authorization result
+
+```text
+DOMAIN REOPEN REQUIRED                  0
+LOGICAL REOPEN REQUIRED                 0
+NEW DOMAIN OWNER REQUIRED               0
+PHYSICAL MODEL SELECTED                 0
+PHYSICAL SCHEMA DESIGNED                0
+DATABASE SELECTED                       0
+POSTGRESQL MAPPING IMPLEMENTED          0
+TYPEDB MAPPING IMPLEMENTED              0
+NEO4J PROJECTION IMPLEMENTED            0
+PGVECTOR INDEX IMPLEMENTED              0
+BENCHMARK HARNESS IMPLEMENTED           0
+BACKEND IMPLEMENTATION STARTED          0
+ADR CHANGED                             0
+```
+
+Phase 10 is method/acceptance preparation only.
+
+## Current exact task — Phase 11 repository engineering safety read-only inventory
+
+Next work is **read-only**. Do not write Phase 11 until a fresh exact gate is presented and approved.
+
+Phase 11 owns repository engineering safety needed before future production backend/Physical implementation can be safely integrated.
+
+The read-only inventory must determine at minimum:
+
+1. current GitHub repository visibility/settings that materially affect controls;
+2. current default branch and existing branch/ruleset protection state;
+3. existing CI/workflows/check names, if any;
+4. which checks can be mandatory **now** versus only after backend implementation exists;
+5. pull-request/review requirements appropriate to the current project/team mode;
+6. force-push/deletion/direct-push protection posture for `main`;
+7. secret scanning / push protection / dependency/security update posture available to the repository;
+8. test/lint/type/security check categories future backend work must provide before they can become required checks;
+9. artifact/evidence retention expectations for important CI/benchmark runs;
+10. release/tag/environment protections that are useful now versus premature;
+11. branch naming/temporary branch cleanup and stale-branch hygiene;
+12. how the accidental `__no-op__` ref should be removed without changing project truth;
+13. whether repository settings require user-side/manual action because the connector cannot perform them;
+14. exact Phase 11 output and acceptance conditions without inventing CI jobs or implementation that do not exist.
+
+Phase 11 must not start backend code, Physical benchmark execution, schema design or deployment infrastructure.
 
 ## Remaining roadmap
 
-### Phase 10 — Physical benchmark specification/register — NEXT
+### Phase 11 — repository engineering safety — NEXT
 
-Read-only first. Produces benchmark specification/register and acceptance logic only.
-
-```text
-PostgreSQL hybrid
-preferred Physical baseline — NOT selected
-
-TypeDB
-mandatory challenger
-
-Neo4j/property graph
-secondary/read-projection candidate
-
-event/document mechanisms
-bounded candidates
-
-pgvector
-bounded semantic-retrieval candidate
-
-generic EAV/generic edge/universal meta-model
-HARD REJECT
-```
-
-### Phase 11 — repository engineering safety
-
-Establish appropriate main protection/ruleset/CI/required checks before production backend implementation.
+Read-only first. Produce the bounded safety/rules/checks plan and only write after a fresh exact gate.
 
 ### Phase 12 — clean-room QA and closure
 
@@ -854,11 +1112,13 @@ Only after Phase 12 closure may the user separately decide whether to authorize 
 
 Specialized infrastructure requires demonstrated benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
 
-Current Phase 7–9 application:
+Current application:
 
 - dedicated durable execution is structurally justified for material long-running operation classes, but no engine is selected;
 - dedicated search/vector infrastructure is not justified by default;
-- OR-Tools CP-SAT is a preferred specialized solver benchmark candidate, not an implementation selection.
+- OR-Tools CP-SAT is a preferred specialized solver benchmark candidate, not an implementation selection;
+- Neo4j must beat a no-specialized-store graph/traversal baseline on net benefit before adoption;
+- specialized event/document products are not shortlisted until a concrete gap/benefit admission trigger exists.
 
 ## Explicitly out of scope until separately gated
 
@@ -866,7 +1126,9 @@ Current Phase 7–9 application:
 - Logical semantic changes;
 - Domain/Logical split rewriting;
 - Physical Model or concrete schema;
-- SQL/tables/keys/indexes/constraints/migrations;
+- SQL/TypeQL/Cypher schema/query implementation;
+- tables/keys/indexes/constraints/migrations;
+- Physical benchmark execution/harness;
 - concrete API/backend implementation;
 - concrete Auth provider/runtime selection;
 - Restate/Temporal/DBOS adoption;
@@ -896,17 +1158,20 @@ QA PASS
 COORDINATED PHASE 7–9 TRANCHE
 QA PASS
 
-CURRENT PHASE 7–9 SOURCES
-docs/architecture/durable-execution-benchmark.md
-docs/architecture/governed-operation-effect-contract.md
-docs/architecture/search-observability-calendar-solver-boundaries.md
+PHASE 10
+QA PASS
+
+CURRENT PHASE 10 SOURCES
+docs/architecture/physical-benchmark-specification.md
+docs/architecture/physical-benchmark-scenario-corpus.md
+docs/architecture/physical-benchmark-register.md
 
 NEXT
-PHASE 10 — PHYSICAL BENCHMARK SPECIFICATION / REGISTER
+PHASE 11 — REPOSITORY ENGINEERING SAFETY
 READ-ONLY FIRST
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
-NO PHASE 10 WRITES YET
+NO PHASE 11 WRITES YET
 ```
