@@ -13,13 +13,15 @@ Current specifications must describe the architecture as it is understood now. T
 
 Read these for the current architecture state:
 
-1. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
-2. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
-3. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics;
-4. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) — accepted Logical Model;
-5. [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md) — current downstream hardenings, assumptions, rejected alternatives and Physical/runtime deferrals;
+1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — current Pre-Physical bridge: decided/prohibited/open/mandatory downstream constraints and authorization boundary;
+2. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
+3. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
+4. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
+5. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
 6. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
-7. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical architecture/repository workstream.
+7. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
+
+A physically split canonical document is **one logical document**. Never treat the first path, the newest continuation or an isolated `*-part-N` file as complete authority.
 
 ## Current stage boundary
 
@@ -32,12 +34,13 @@ CLOSED
 
 Pre-Physical Repository & Architecture Coherence
 IN PROGRESS
+Phase 4 baseline established
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
 
 Backend production implementation
-NOT STARTED
+NOT STARTED / DEFERRED
 ```
 
 The current persistence posture is a benchmark posture, not a final Physical selection:
