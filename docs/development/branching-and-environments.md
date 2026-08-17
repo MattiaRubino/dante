@@ -1,24 +1,25 @@
 # Branching and Environments
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-10
+- Last updated: 2026-08-17
 
 ## Git model
 
 `main` is the single integrated source of truth for accepted code, documentation and decisions.
 
-Normal work uses short-lived branches such as:
+Normal work uses bounded branches such as:
 
 - `feature/*` — production features or foundations;
 - `fix/*` — bug fixes;
 - `docs/*` — documentation/governance work;
+- `chore/*` — bounded repository/coherence/maintenance work;
 - `prototype/*` — bounded exploratory work that is not yet production implementation.
 
 Changes reach `main` through pull requests. A branch should not become a permanent second source of project truth.
 
-Long-running exploratory branches may exist temporarily, but durable decisions/documentation discovered there must eventually be integrated into `main`.
+Long-running exploratory/model branches may exist temporarily, but durable accepted decisions/documentation discovered there must eventually be integrated into `main` or explicitly closed as rejected/historical.
 
-Detailed source precedence, path ownership and coherence rules are defined in [`operating-rules.md`](operating-rules.md).
+Detailed source precedence, path ownership, write gates and coherence rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md).
 
 ## Starting a branch
 
@@ -26,13 +27,16 @@ Detailed source precedence, path ownership and coherence rules are defined in [`
 2. Use an existing non-main branch only when the active workstream handoff explicitly identifies it as the current branch for that work.
 3. Before editing overlapping/shared files, compare the active branch with current `main` and synchronize it when practical.
 4. Keep one primary branch per workstream where possible.
-5. If two proposed workstreams would modify the same core files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
+5. If two proposed workstreams would modify the same core/shared files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
+6. Before the first remote write, follow the exact PRE-SCOPE/write-gate protocol in the agent operating manual.
 
-For example, if Domain Model v0 is being built as part of Backend Foundation, it should normally live in `feature/backend-foundation` until the foundation boundary is stable rather than simultaneously editing the same files from `feature/domain-model`.
+For example, while `chore/pre-physical-coherence` owns the current architecture/documentation reconciliation, a future Backend Foundation or Physical Model branch must not simultaneously rewrite the same architecture sources. Finish/merge the prerequisite work or explicitly synchronize/re-scope first.
+
+Closed Domain/Logical branches are historical evidence, not starting points for new backend work. Any genuine semantic reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
 
 ## Why there is no permanent `develop` branch
 
-A permanent `develop` branch would create a second integrated state that can drift from `main`. LifeOS instead uses `main` plus short-lived branches and deployment environments.
+A permanent `develop` branch would create a second integrated state that can drift from `main`. LifeOS instead uses `main` plus bounded branches and deployment environments.
 
 If future release management creates a measured need for release branches, that decision can be added later. It is not the default.
 
@@ -77,7 +81,7 @@ Production releases should be traceable to a Git commit and later to a release t
 Conceptually:
 
 ```text
-feature/fix/docs/prototype branch
+feature/fix/docs/chore/prototype branch
           ↓ PR + validation
          main
           ↓
@@ -95,38 +99,56 @@ The exact CI/CD provider is intentionally not fixed yet.
 Parallel branches must minimize shared-file churn.
 
 - Workstream-local progress belongs in the workstream's own code/docs/handoff paths.
-- `PROJECT-STATUS.md`, root `README.md`, broad architecture docs and ADRs are global coordination files; do not modify them for every local iteration.
+- `PROJECT-STATUS.md`, root `README.md`, `docs/README.md`, `docs/ROADMAP.md`, broad architecture docs and ADRs are global coordination/current-truth files; do not modify them for every local iteration.
 - A prototype branch may contain newer prototype-specific decisions without becoming authoritative for unrelated backend/domain decisions.
+- A model/architecture branch may contain newer bounded decisions only inside its explicit workstream scope; it does not become a second global truth.
 - Before copying files from historical branches, compare them against `main` and preserve newer accepted semantics.
 - Do not force-push shared active branches or rewrite history merely to make synchronization look cleaner.
+- If a shared file is stale, fix it inside an explicit scope rather than opportunistically while working on unrelated code.
+
+## Current stage boundary
+
+As of 2026-08-17:
+
+- Core Domain Model / Domain Atlas is closed and integrated into `main`;
+- Logical Model is closed and integrated into `main`;
+- `chore/pre-physical-coherence` is the active bounded backend/architecture preparation branch;
+- Physical Model is not started and requires separate future authorization;
+- Backend Foundation/production implementation is not started and must not be initiated from its stale historical assumptions;
+- Phase 4 UX continues separately on `prototype/phase-4-today-home`.
+
+This stage note is a current operational baseline, not a permanent branching rule. Future agents must re-check `docs/PROJECT-STATUS.md`, the active handoff and Git refs.
 
 ## Branch lifecycle
 
-1. Start from current `main` unless the workstream explicitly requires another active prototype base.
-2. Keep scope bounded.
-3. Commit code/tests/docs for the same change together logically.
-4. Open a PR early when useful; draft PRs are appropriate for work in progress.
-5. Keep the branch synchronized enough to expose conflicts before merge.
-6. Before merge, run the semantic/documentation coherence gate from `operating-rules.md`.
-7. Merge only when implementation and required documentation/handoff are coherent.
-8. After an important merge, synchronize long-running branches that share changed global files.
-9. Delete or archive obsolete working branches later according to repository housekeeping policy; never delete history merely to hide prior reasoning.
+1. Start from current `main` unless the workstream explicitly requires another active base.
+2. Establish the workstream/handoff and exact PRE-SCOPE where required.
+3. Keep scope bounded.
+4. Commit code/tests/docs for the same change together logically where practical.
+5. Open a PR early when useful; draft PRs are appropriate for work in progress.
+6. Keep the branch synchronized enough to expose conflicts before merge.
+7. Before merge, run the semantic/documentation coherence gate from `operating-rules.md` plus the exact post-write/compare QA required by the agent operating manual.
+8. Merge only when implementation/design and required documentation/handoff are coherent.
+9. After an important merge, synchronize long-running branches that share changed global files.
+10. Delete or archive obsolete working branches later according to repository housekeeping policy; never delete history merely to hide prior reasoning.
 
 ## Definition of Done for a PR
 
 As applicable:
 
-- implementation/design change complete;
+- implementation/design/documentation scope complete;
+- approved PRE-SCOPE delta matches expected paths;
 - tests/validation complete;
-- migrations and rollback implications considered;
+- migrations and rollback implications considered when relevant;
 - relevant durable documentation updated;
 - workstream handoff updated;
 - `PROJECT-STATUS.md` updated only if global state changed;
-- ADR added/updated for significant architectural decisions;
+- ADR/current-baseline/supersession treatment added for significant architectural decisions;
 - branch compared against current `main` before merge;
 - overlapping shared docs checked for semantic freshness;
 - no secrets or personal production data committed;
-- environment/deployment impact noted.
+- environment/deployment impact noted;
+- remote readback/QA supports any PASS/CLOSED claim.
 
 ## Emergency production fixes
 
