@@ -66,9 +66,9 @@ Read current sources, including complete canonical split/continuation chains whe
 5. [`../development/operating-rules.md`](../development/operating-rules.md);
 6. [`../development/documentation-and-handoff.md`](../development/documentation-and-handoff.md);
 7. [`../development/branching-and-environments.md`](../development/branching-and-environments.md);
-8. current [`../architecture/README.md`](../architecture/README.md), [`../architecture/system-overview.md`](../architecture/system-overview.md) and [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md);
+8. current [`../architecture/pre-physical-architecture-baseline.md`](../architecture/pre-physical-architecture-baseline.md), [`../architecture/README.md`](../architecture/README.md), [`../architecture/system-overview.md`](../architecture/system-overview.md) and [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md);
 9. the complete accepted Domain Atlas beginning at [`../domain/README.md`](../domain/README.md), including its canonical continuation parts where required;
-10. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), final decision/hardening register [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md), and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
+10. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), its complete decision/assumption-register chain, and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
 11. the then-current accepted Physical Model sources and closure evidence, once they exist;
 12. the then-current accepted security/runtime/integration/API contracts relevant to the first slice;
 13. current ADRs under [`../decisions/`](../decisions/), using their current qualification/supersession status rather than historical labels.
@@ -87,7 +87,8 @@ Unless separately reviewed through the normal decision process:
 - Storage remains behind a provider abstraction;
 - provider/external state remains distinct from canonical LifeOS state;
 - DEV/UAT/PROD are deployment environments, not permanent Git branches;
-- accepted Domain + Logical semantics, including `WL-H01..WL-H12`, are implementation constraints rather than suggestions.
+- accepted Domain + Logical semantics, including `WL-H01..WL-H12`, are implementation constraints rather than suggestions;
+- the current Pre-Physical Architecture Baseline is a mandatory downstream bridge and does not itself authorize implementation.
 
 ## Physical-dependent implementation candidates
 
@@ -248,5 +249,5 @@ CURRENT PROJECT ACTION
 continue Pre-Physical Coherence
 
 NEXT PRE-PHYSICAL PHASE
-Phase 4 — Current Pre-Physical Architecture Baseline
+Phase 5 — Requirements That Can Constrain Physical Design
 ```
