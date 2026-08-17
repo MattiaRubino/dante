@@ -1,6 +1,6 @@
 # Logical Model Workstream
 
-**Status:** Stage 0 + Stage 0H remote QA PASS — Slice A activation conditional on remote QA  
+**Status:** Stage 0 + Stage 0H + Slice A active; Slice B write complete — activation conditional on remote QA; integrated checkpoint required before Slice C  
 **Started:** 2026-08-17  
 **Branch:** `feature/logical-model`  
 **Base main:** `068da4cc66620b3f3811051170e4913097091a04`
@@ -217,6 +217,8 @@ Logical stage target:
 
 Slice A proves identity/reconciliation chronology but does not fully discharge WD-03; exact Version/Provenance history remains primarily Slice D + final regression.
 
+Slice B adds explicit material-version/governed-by/approval-applicability requirements but likewise does not fully discharge WD-03.
+
 ### WD-05 — persistence/API pressure
 
 Current Domain verdict:
@@ -225,7 +227,11 @@ Current Domain verdict:
 PASS WITH HARDENING
 ```
 
-Slice A proves identity/reference logical feasibility against realistic persistence/API pressure while deliberately retaining more than one physical implementation option. Full WD-05 discharge remains integrated Whole-Logical work.
+Slice A proves identity/reference logical feasibility against realistic persistence/API pressure while deliberately retaining more than one physical implementation option.
+
+Slice B proves intention/execution feasibility without requiring universal WorkItem/status/workflow storage and preserves several physical implementation options.
+
+Full WD-05 discharge remains integrated Whole-Logical work.
 
 Neither target authorizes physical implementation.
 
@@ -278,15 +284,21 @@ REMOTE QA PASS / ACTIVE
 
 SLICE A
 Identity / Reference
-WRITE COMPLETE
-ACTIVATION CONDITIONAL ON REMOTE QA
+PASS WITH HARDENING
+REMOTE QA PASS / ACTIVE
 
 SLICE B
 Intention / Execution
-NOT STARTED BY SLICE-A WRITE
+WRITE COMPLETE
+ACTIVATION CONDITIONAL ON REMOTE QA
+
+INTEGRATED CHECKPOINT A+B
+MANDATORY BEFORE SLICE C
+READ-ONLY FIRST
 
 SLICE C
 Time / Reality
+NOT STARTED
 
 SLICE D
 Evidence / Knowledge / History
@@ -387,12 +399,120 @@ shared native identity != per-actor duplicate canonical identity
 physical representation remains open
 ```
 
-Canonical Slice-A files after successful activation:
+Canonical Slice-A files:
 
 ```text
 docs/logical-model/slices/identity-reference-v1.md
 docs/logical-model/checkpoints/identity-reference-v1-validation.md
 docs/logical-model/benchmarks/identity-reference-v1.md
+```
+
+Trace/register/framework/corpus/workstream integrate the same accepted contract.
+
+### Slice-A effective state
+
+The approved Slice-A scope passed exact remote QA before Slice-B work began.
+
+```text
+SLICE A — IDENTITY / REFERENCE
+PASS WITH HARDENING
+REMOTE QA PASS
+ACTIVE
+
+HEAD AFTER SLICE-A CHECKPOINT
+30190d2f54d8e7a3bf079f1ae1d9dc910da2d392
+
+DOMAIN REOPEN REQUIRED 0
+```
+
+---
+
+## Slice B — Intention / Execution
+
+### Read-only design/falsification completed
+
+```text
+B0  canonical reconstruction                         DONE
+B1  requirements + high-value query corpus           DONE
+B2  multiple candidate architectures                 DONE
+B3  owner/identity/material-state pressure            DONE
+B4  lifecycle + version/replacement pressure          DONE
+B5  Proposal / Request / Decision pressure            DONE
+B6  Dependency / Milestone / Routine pressure         DONE
+B7  Product Reality + multi-actor pressure            DONE
+B8  scale / evolution / broad external benchmark      DONE
+B9  mutation / counterfactual / Slice-A regression    DONE
+B10 reverse mapping + LM gate review                  DONE
+```
+
+### Selected candidate
+
+```text
+Layered Typed Intention & Execution Model
+```
+
+Core separation:
+
+```text
+semantic owner
+!= material state/version
+!= typed link / semantic act
+!= occurrence/schedule/execution
+!= Actual
+!= Outcome
+!= derived operational status
+```
+
+Primary dispositions:
+
+```text
+Possibility  -> LR-01 when persistently retained
+Goal         -> LR-01
+Plan         -> LR-01
+Activity     -> LR-01 when persistent independent identity is required
+Event        -> LR-01 when persistent independent identity is required
+Routine      -> LR-01
+Milestone    -> normally LR-02
+Proposal     -> LR-02 conditionally materialized
+Request      -> LR-02 conditionally materialized
+Decision     -> LR-02 conditionally materialized
+Dependency   -> LR-03
+```
+
+Critical hardenings:
+
+```text
+no universal WorkItem/Intent/WorkflowNode root
+no universal canonical lifecycle/status enum
+Possibility maturation creates/links Goal; no historical retyping
+Goal pursuit != evaluation/outcome
+Plan revision != Plan replacement automatically
+material replacement preserves predecessor history
+owner identity != material state/version
+Proposal/Request/Decision use selective materialization
+Decision != effect
+material target change may stale prior approval/Decision applicability
+previously authorized policy effect != mandatory fresh Decision
+explicit bounded user request may itself authorize requested action
+Dependency != hierarchy/order/DAG
+blocked/satisfied normally derived
+Milestone date passage != attainment
+Routine != Recurrence != Occurrence != Actual
+execution may require governing material Plan/Routine/Policy state
+AI candidate/proposal != user adoption/Decision
+```
+
+Canonical Slice-B files after successful activation:
+
+```text
+docs/logical-model/slices/intention-execution-v1.md
+docs/logical-model/checkpoints/intention-execution-v1-validation.md
+docs/logical-model/benchmarks/intention-execution-v1.md
+```
+
+Cumulative records updated by the same gate:
+
+```text
 docs/logical-model/traceability-and-regression-ledger-v1.md
 docs/logical-model/decision-and-assumption-register-v1.md
 docs/logical-model/test-corpus-v1.md
@@ -400,103 +520,71 @@ docs/logical-model/representation-framework-v1.md
 docs/workstreams/logical-model.md
 ```
 
-### Candidate comparison
+### Slice-B trace/regression state
 
 ```text
-Universal semantic Entity/Object root
-REJECTED LOGICALLY
+TB-01..TB-18
+Slice-B trace entries
 
-Owner/role-specific reference families only
-VIABLE STRONG ALTERNATIVE
-not selected as logical baseline; retained as physical ingredient/retest comparator
+INV-061..INV-084
+Slice-B invariant additions
 
-Mandatory global identity registry as logical root
-REJECTED AS LOGICAL REQUIREMENT
-technical anchor/registry remains possible physically
+TC-N01..TC-N22
+permanent Slice-B regression scenarios
 
-Layered Typed Identity & Reference Model
-SELECTED — PASS WITH HARDENING
-activation conditional on remote QA
-```
+MUTATION TESTS
+20 / 20 PASS
 
-### Broad external benchmark
+COUNTERFACTUAL FAMILIES
+15 / 15 PASS
 
-Slice A deliberately researched large systems and unrelated domains, using current official/primary documentation, including:
-
-```text
-OpenID Connect
-SCIM
-Auth0
-Sign in with Apple
-Microsoft Entra
-Microsoft Graph / Outlook
-FHIR
-Salesforce
-Shopify
-Asana
-Atlassian ARI
-AWS ARN
-OCI OCID
-Kubernetes
-Git
-GitHub GraphQL
-Google People
-Wikidata
-Home Assistant
-Twilio
-PostgreSQL
-```
-
-The adopted LifeOS model is a synthesis of transferable structural lessons, not a vendor schema copy.
-
-Benchmark evidence is canonical in:
-
-```text
-docs/logical-model/benchmarks/identity-reference-v1.md
-```
-
-### Traceability / regression state
-
-```text
-TA-01..TA-17
-Slice-A trace entries
-
-INV-041..INV-060
-Slice-A invariant additions
-
-TC-M01..TC-M12
-new permanent Slice-A regression scenarios
-
-REGRESSION IMPACT
-R3 WHOLE-LOGICAL
+SLICE-A REGRESSION FAIL
+0
 
 DOMAIN REOPEN REQUIRED
 0
 ```
 
-### Physical decisions deliberately deferred
+### Broad external benchmark
+
+Research included direct, adjacent, specialist, infrastructure and unrelated structural systems including:
 
 ```text
-technical anchor/registry vs owner-specific FK vs typed composite vs hybrid
-native key technology/data type
-indexing/partitioning
-ORM mapping
-API/public identity-handle format
-runtime authorization enforcement
+Terraform
+Kubernetes
+Apache Airflow
+AWS Step Functions
+Google Cloud Workflows
+GitHub review/approval
+SAP approval workflow pressure
+FHIR
+Jira Product Discovery
+Aha!
+Motion
+Reclaim
+Todoist
+iCalendar RFC 5545
+Stripe PaymentIntent
+Notion
+BPMN / DMN
 ```
 
-PostgreSQL inheritance/global-parent-table behavior is not assumed to solve heterogeneous referential integrity.
+Canonical details/sources:
+
+```text
+docs/logical-model/benchmarks/intention-execution-v1.md
+```
 
 ---
 
-## Slice-A approved write gate
+## Slice-B approved write gate
 
 ```text
 BRANCH
 feature/logical-model
 
 PRE-SCOPE
-0076b02715acf418cd9ef2840ed719b4201c8730
+30190d2f54d8e7a3bf079f1ae1d9dc910da2d392
 
 CREATE
 3
@@ -511,9 +599,9 @@ DELETE
 CREATE:
 
 ```text
-docs/logical-model/slices/identity-reference-v1.md
-docs/logical-model/checkpoints/identity-reference-v1-validation.md
-docs/logical-model/benchmarks/identity-reference-v1.md
+docs/logical-model/slices/intention-execution-v1.md
+docs/logical-model/checkpoints/intention-execution-v1-validation.md
+docs/logical-model/benchmarks/intention-execution-v1.md
 ```
 
 UPDATE:
@@ -532,24 +620,26 @@ Explicitly out of scope:
 Domain Model changes
 SQL / physical tables
 UUID/key choice
-registry/FK implementation
+event-sourcing implementation
 migrations
 API/backend
 AuthN/AuthZ runtime
 frontend
 main
-Slice B
+Slice C
+exact Version persistence mechanism
+exact Occurrence/Schedule/Session/Actual model
 ```
 
 ---
 
-## Slice-A remote activation condition
+## Slice-B remote activation condition
 
 No status-only write is required if all conditions below are satisfied:
 
 ```text
 1 PRE-SCOPE immediately before first write was exactly
-  0076b02715acf418cd9ef2840ed719b4201c8730
+  30190d2f54d8e7a3bf079f1ae1d9dc910da2d392
 
 2 compare from PRE-SCOPE contains exactly 8 approved paths
 
@@ -564,18 +654,69 @@ No status-only write is required if all conditions below are satisfied:
 When satisfied, effective state becomes:
 
 ```text
-SLICE A — IDENTITY / REFERENCE
+SLICE B — INTENTION / EXECUTION
 PASS WITH HARDENING
 REMOTE QA PASS
 ACTIVE
 
 DOMAIN REOPEN REQUIRED 0
 LOGICAL STRUCTURAL BLOCKER 0
-
-NEXT
-SLICE B — INTENTION / EXECUTION
-READ-ONLY ONLY AFTER DISTINCT CONTINUATION AUTHORIZATION
 ```
+
+---
+
+## Mandatory integrated checkpoint before Slice C
+
+User direction after Slice-B approval:
+
+> after each accepted slice, review everything completed so far together before starting the next slice, to detect contradictions, omissions or interactions that are invisible when slices are reviewed individually.
+
+Therefore **Slice C must not start immediately after Slice-B activation**.
+
+The next work is a read-only integrated checkpoint covering:
+
+```text
+Stage 0 + Stage 0H
++
+Slice A — Identity / Reference
++
+Slice B — Intention / Execution
+```
+
+The checkpoint must test at minimum:
+
+```text
+cumulative invariant coherence
+A<->B reverse mapping
+identity vs material-state boundaries
+native vs dependent addressability
+Reference Contract compatibility with B typed links/acts
+Possibility→Goal historical continuity
+Goal/Plan/Activity/Event/Routine identity interactions
+Plan revision/replacement and NativeRef/Version separation
+Proposal/Request/Decision version-target pressure
+Dependency reference eligibility
+simple-case compactness across both slices
+provider/AI/source separation
+scale/evolution pressure
+cross-slice mutation/counterfactual replay
+Product Reality scenarios using both slices
+clean-room reconstruction from repository only
+hidden later-slice dependency inventory
+```
+
+Verdict vocabulary:
+
+```text
+PASS
+PASS WITH HARDENING
+LOGICAL REOPEN SLICE A
+LOGICAL REOPEN SLICE B
+DOMAIN REOPEN REQUIRED
+BLOCKED BY LATER SLICE — only if semantics already clear and exact mechanism is genuinely stage-bound
+```
+
+No write for this integrated checkpoint is pre-authorized. Read-only review comes first; any hardening/write must receive its own exact scope gate.
 
 ---
 
