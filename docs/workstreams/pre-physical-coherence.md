@@ -1,6 +1,6 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **IN PROGRESS — Phase 11 QA PASS; Phase 12 clean-room coherence QA next**
+- Status: **FINAL CLOSURE CANDIDATE — Phase 12 activation pending final remote gate QA**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Started: 2026-08-17
@@ -8,14 +8,13 @@
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Core Domain Model / Domain Atlas: **CLOSED / unchanged**
 - Logical Model: **CLOSED / unchanged**
+- Main integration: **NOT AUTHORIZED YET**
 
 ## Purpose
 
-Bridge the closed Domain + Logical Models and any later separately authorized Physical Model.
+Bridge the closed Domain + Logical Models and any later separately authorized Physical Model by making repository/current architecture truth coherent, establishing pre-Physical technical requirements and benchmark inputs, hardening repository integration safety and proving clean-room recoverability from repository truth.
 
-This workstream makes repository/current architecture truth coherent, establishes pre-Physical technical requirements and benchmark inputs, hardens repository integration safety, and closes only after a clean-room Phase 12 QA.
-
-A genuine material semantic contradiction triggers a separate explicit Domain/Logical reopen. Cleanup or implementation convenience must not silently alter closed semantics.
+A genuine semantic contradiction requires a separate explicit Domain/Logical reopen. Cleanup, Physical design or implementation convenience must never silently alter closed semantics.
 
 ## Current accepted stage
 
@@ -25,6 +24,7 @@ CURRENT
 
 DOMAIN MODEL / DOMAIN ATLAS
 CLOSED
+Whole-Domain PASS WITH HARDENING / POST-WRITE QA PASS
 
 LOGICAL MODEL
 CLOSED
@@ -34,7 +34,7 @@ WD-05 PASS
 WL-H01..WL-H12 active
 
 PRE-PHYSICAL COHERENCE
-ACTIVE
+FINAL CLOSURE CANDIDATE
 Phase 0 PASS
 Phase 1 QA PASS
 Phase 2 QA PASS
@@ -47,10 +47,13 @@ Phase 8 QA PASS
 Phase 9 QA PASS
 Phase 10 QA PASS
 Phase 11 QA PASS
+Phase 12 closure record written / activation pending final exact remote gate QA
 
-NEXT
-Phase 12 — CLEAN-ROOM REPOSITORY / ARCHITECTURE COHERENCE QA
-READ-ONLY FIRST
+AFTER PHASE 12 ACTIVATION
+independent total repository audit REQUIRED before definitive whole-workstream closure
+
+MAIN INTEGRATION
+NOT AUTHORIZED
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -61,7 +64,7 @@ NOT STARTED / DEFERRED
 
 ## Mandatory bootstrap
 
-Before Phase 12 or later work:
+Before any further work:
 
 1. read root `README.md`;
 2. read `docs/README.md`;
@@ -72,18 +75,41 @@ Before Phase 12 or later work:
 7. read `docs/development/branching-and-environments.md`;
 8. read `docs/development/repository-engineering-safety.md`;
 9. read this complete handoff;
-10. read `docs/architecture/README.md` and all linked current architecture sources;
+10. read `docs/architecture/README.md` and linked current architecture sources;
 11. read `docs/architecture/pre-physical-architecture-baseline.md`;
-12. read `docs/architecture/requirements/README.md` + all four Phase 5 packages;
-13. read Phase 6 AI/context/runtime + Integration Hub contracts;
-14. read Phase 7 durable-execution benchmark;
-15. read Phase 8 governed-operation/effect contract;
-16. read Phase 9 search/observability/calendar/solver contract;
-17. read all three Phase 10 Physical benchmark-method documents;
-18. read complete canonical split/continuation chains where a logical document is physically split;
-19. read relevant ADR/evidence/methodology;
-20. verify current branch/ref and relation to `main`;
-21. before any write phase, issue a fresh exact PRE-SCOPE/write gate.
+12. read `docs/architecture/pre-physical-clean-room-qa.md`;
+13. read all Phase 5 requirement packages;
+14. read Phase 6 AI/context/runtime + Integration Hub contracts;
+15. read Phase 7 durable-execution benchmark;
+16. read Phase 8 governed-operation/effect contract;
+17. read Phase 9 search/observability/calendar/solver contract;
+18. read all three Phase 10 Physical benchmark-method documents;
+19. read complete cumulative/split Domain/Logical authority where material;
+20. read relevant ADR/evidence/methodology;
+21. verify current branch/ref and relation to `main` before any write;
+22. issue a fresh exact PRE-SCOPE/write gate for any new write scope.
+
+## Domain / Logical closure discoverability
+
+Do not stop at an early cumulative payload carrying truthful historical state.
+
+Domain closure authority includes:
+
+- `docs/domain/README.md` — entry payload;
+- `docs/domain/README-part-20.md` — final corrected closure/status continuation;
+- `docs/domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md` — final closure evidence;
+- `docs/domain/language-map.md` + `docs/domain/language-map-part-22.md` — language authority/final disposition.
+
+Logical closure authority includes:
+
+- `docs/logical-model/whole-logical-model-v1.md` — canonical content payload;
+- complete `docs/logical-model/decision-and-assumption-register-v1*` logical chain;
+- `docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md` — separate closure activation.
+
+```text
+DOMAIN REOPEN REQUIRED 0
+LOGICAL REOPEN REQUIRED 0
+```
 
 ## Documentation lifecycle rule
 
@@ -92,12 +118,12 @@ CURRENT SPECIFICATION
 = current truth only
 
 ADR
-= rationale + explicit status/supersession
+= rationale + explicit status/supersession/qualification
 
 HISTORICAL / VALIDATION EVIDENCE
 = truthful chronology
 
-GIT
+GIT / PR HISTORY
 = recoverable history
 ```
 
@@ -111,11 +137,7 @@ rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
 ```
 
-Phase 11 closure propagation cleaned repeated historical narrative from current entry-point/status documents. Knowledge coverage passed because current technical requirements remain in their canonical architecture/development sources, exact continuation state remains in this handoff, and historical prose/changes remain recoverable in Git.
-
 ### Size/tool-limit split rule — mandatory
-
-A physical split does not create separate logical authority.
 
 ```text
 ONE COMPLETE LOGICAL PAYLOAD
@@ -123,38 +145,11 @@ ONE COMPLETE LOGICAL PAYLOAD
 → ONE COMPLETE LOGICAL PAYLOAD
 ```
 
-A size/tool-limit split is **not** summarization, condensation, omission, paraphrase-as-compression or hidden semantic cleanup.
-
-If content itself needs revision, that is a separate content/current-truth operation. Chronological/evidence continuation is distinct and may append genuine later evidence after the previous payload.
-
-## Current architecture navigation
-
-Current sources include:
-
-- `docs/architecture/pre-physical-architecture-baseline.md`;
-- `docs/architecture/requirements/README.md` + all four Phase 5 packages;
-- `docs/architecture/ai-context-runtime-boundaries.md`;
-- `docs/architecture/integration-hub-boundaries.md`;
-- `docs/architecture/durable-execution-benchmark.md`;
-- `docs/architecture/governed-operation-effect-contract.md`;
-- `docs/architecture/search-observability-calendar-solver-boundaries.md`;
-- `docs/architecture/physical-benchmark-specification.md`;
-- `docs/architecture/physical-benchmark-scenario-corpus.md`;
-- `docs/architecture/physical-benchmark-register.md`;
-- `docs/architecture/README.md`;
-- `docs/architecture/system-overview.md`;
-- `docs/architecture/technical-decisions.md`;
-- `docs/development/repository-engineering-safety.md`;
-- accepted complete Domain Atlas + Language Map logical documents;
-- closed Whole Logical Model + complete decision/assumption-register logical document + remote closure evidence;
-- current ADR statuses;
-- this handoff for still-open Pre-Physical obligations.
-
-Historical `docs/architecture/domain-model-logical-readiness*` files remain transition/validation evidence, not current architecture specifications.
+A size/tool-limit split is **not** summarization, condensation, omission, paraphrase-as-compression or hidden semantic cleanup. If content itself changes, that is a separate content/current-truth operation. Chronological/evidence continuation may append genuine later evidence and is distinct from a transport split.
 
 ## Non-negotiable downstream hardenings
 
-Later architecture/Physical/runtime work must preserve `WL-H01..WL-H12`, including:
+Later architecture/Physical/runtime/backend work must preserve all `WL-H01..WL-H12`, including:
 
 - justified material Agreement terms;
 - governed operation/effect semantics;
@@ -169,15 +164,7 @@ Later architecture/Physical/runtime work must preserve `WL-H01..WL-H12`, includi
 - reconstructible consequential AuthZ provenance;
 - selective disclosure including non-interference/inference leakage.
 
-Phase 5 requirements, Phase 6 boundary contracts, Phase 7–9 architecture contracts, the Phase 10 benchmark method and Phase 11 repository safety add current downstream constraints without replacing those hardenings.
-
-## Semantic non-reopen boundary
-
-Do not create universal Domain owners because a product/runtime term is useful.
-
-Unless separately revalidated, terms such as Memory, Agent, Automation, Job, Workflow, Notification, Reminder, Priority, Preference, Context, Task, Workspace, Risk, Focus Time, Out of Office and Working Location remain product/runtime/composition/profile/projection/policy concepts rather than new universal Domain roots.
-
-Current high-risk invariants include:
+Current high-risk non-collapse rules include:
 
 ```text
 Person != Account != Principal != Actor
@@ -245,7 +232,7 @@ RESULT
 QA PASS
 ```
 
-Backend Foundation remains current but deferred/non-executable.
+Backend Foundation remains deferred/non-executable.
 
 ### Phase 4 — Current Pre-Physical Architecture Baseline
 
@@ -260,14 +247,9 @@ RESULT
 QA PASS
 ```
 
-```text
-DECIDED CURRENT DIRECTION != IMPLEMENTATION AUTHORIZATION
-PREFERRED BENCHMARK BASELINE != TECHNOLOGY SELECTION
-```
+The old accidental `__no-op__` ref is absent.
 
-The old accidental `__no-op__` ref created during this period is now absent and is no longer a repository-hygiene residual.
-
-### Phase 5 — requirements that can constrain Physical
+### Phase 5 — requirements constraining Physical
 
 ```text
 PRE-SCOPE
@@ -299,11 +281,14 @@ CONTENT HEAD
 PROPAGATION HEAD BEFORE HANDOFF
 5f9c2285f0de4a0f7c497ad36c12fae9b7548f1f
 
+FINAL PHASE-6 HEAD
+2cf77ea7e3d548147bbe2b0d87304b4d5393ff5f
+
 RESULT
 QA PASS
 ```
 
-Current context categories:
+Context categories:
 
 ```text
 canonical state
@@ -315,9 +300,7 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-Integration Hub preserves five modes: canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration.
-
-No AI provider/model, agent framework, memory store, MCP/A2A implementation, workflow engine or provider adapter was selected.
+Integration Hub preserves five modes. No AI provider/model, agent framework, generic AI-memory truth store, MCP/A2A implementation, workflow engine or provider adapter was selected.
 
 ### Coordinated Phase 7–9 tranche
 
@@ -351,7 +334,7 @@ Current durable-execution posture:
 
 ```text
 BOUNDED ASYNC
-DB + worker/outbox style = valid baseline mechanism class
+DB + worker/outbox style = valid baseline class
 
 DEDICATED DURABLE EXECUTION
 Restate   preferred structural-fit candidate — NOT selected
@@ -359,9 +342,7 @@ Temporal  strongest mandatory challenger — NOT selected
 DBOS      conditional PostgreSQL-dependent challenger — NOT selected
 ```
 
-Phase 8 keeps governed operation/effect meaning independent of HTTP/UI/tool/AuthZ/workflow implementation. Phase 9 keeps search/vector/telemetry/calendar/solver state from becoming canonical truth by convenience.
-
-### Phase 10 — Physical benchmark specification/register
+### Phase 10 — Physical benchmark method
 
 ```text
 PRE-SCOPE
@@ -370,7 +351,7 @@ PRE-SCOPE
 CONTENT HEAD
 057df9bdc19d89ea74fcee0e5d999ebc34cf93dc
 
-PROPAGATION HEAD BEFORE HANDOFF
+PROPAGATION HEAD
 0a9d80fa9d2ecaf373f0d5ad22b7953b73412a8c
 
 FINAL VERIFIED PHASE-10 HEAD
@@ -382,8 +363,6 @@ QA PASS
 
 Phase 10 defines **how** the later Physical benchmark must run, not which technology wins.
 
-Current role posture:
-
 ```text
 PRIMARY
 PostgreSQL hybrid — preferred mandatory baseline, NOT selected
@@ -394,234 +373,287 @@ no-specialized-store baseline vs Neo4j
 
 SEARCH / VECTOR
 structured + lexical/full-text baseline vs bounded pgvector
-
-EVENT / DOCUMENT
-bounded native mechanisms first; specialized products only on demonstrated gap/benefit
 ```
 
-Hard correctness gates precede weighted scoring; LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts; `PREFERRED != SELECTED`.
+Hard correctness gates precede scoring; synthetic tiers are not forecasts; exact version/edition/deployment evidence is required; `PREFERRED != SELECTED`.
 
-### Phase 11 — repository engineering safety — QA PASS
-
-Approved Phase 11 gate:
+### Phase 11 — repository engineering safety
 
 ```text
 PRE-SCOPE
 7a87cba891c24e58e4448faf20c9feb30c1559bf
 
+STEP-A CONTENT / POLICY HEAD
+62d9118def30c8545b9db2de49d654b4b74e55ab
+
+CLOSURE PROPAGATION HEAD
+c1ea90f417d3b680b1815c46b2b05b85295afb7c
+
+FINAL VERIFIED PHASE-11 HEAD
+d7fe582872be97ddb9c7a4e322918fccbb3e26e0
+
+RESULT
+QA PASS
+```
+
+Phase 11 final physical result:
+
+```text
+ahead_by      13
+behind_by      0
+unique_paths  12
+added          2
+modified      10
+deleted        0
+unexpected     0
+```
+
+Effective GitHub state verified:
+
+```text
+lifeos-main-safety active
+main protected
+PR required
+deletion blocked
+force-push / non-fast-forward blocked
+review-thread resolution required
+required approvals 0
+required checks 0 while no real stable contexts exist
+auto-delete merged branches enabled
+confirmed accidental refs absent
+```
+
+Dependabot/secret/code-scanning endpoints remain connector-unverifiable because of integration permissions; no independent API PASS was fabricated.
+
+## Phase 12 — clean-room repository / architecture QA
+
+Approved Phase 12 gate:
+
+```text
+PRE-SCOPE
+d7fe582872be97ddb9c7a4e322918fccbb3e26e0
+
 CREATE
-docs/development/repository-engineering-safety.md
-docs/development/github-main-ruleset.json
+1
+
+docs/architecture/pre-physical-clean-room-qa.md
 
 UPDATE
-.github/pull_request_template.md
-docs/development/branching-and-environments.md
-docs/development/operating-rules.md
-docs/development/agent-operating-manual.md
-docs/workstreams/backend-foundation.md
+10
+
+CONTRIBUTING.md
 README.md
 docs/README.md
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
+docs/architecture/README.md
+docs/architecture/pre-physical-architecture-baseline.md
+docs/architecture/system-overview.md
+docs/workstreams/backend-foundation.md
 docs/workstreams/pre-physical-coherence.md
 
 DELETE
-none
+0
+
+UNIQUE PATHS
+11
 ```
 
-Step-A content/policy HEAD before GitHub settings application:
-
-`62d9118def30c8545b9db2de49d654b4b74e55ab`
-
-Step-A remote QA:
+### Initial read-only clean-room verdict
 
 ```text
-ahead_by       7
+PASS WITH BOUNDED REPAIR
+
+DOMAIN REOPEN REQUIRED                 0
+LOGICAL REOPEN REQUIRED                0
+NEW DOMAIN OWNER REQUIRED              0
+SEMANTIC CONTRADICTION                 0
+ARCHITECTURAL CONTRADICTION            0
+PHYSICAL MODEL STARTED                 0
+BACKEND STARTED                        0
+BOUNDED CURRENT-TRUTH REPAIRS          5
+```
+
+Repairs discovered:
+
+1. architecture navigation had not consumed Phase 11 and did not make cumulative Domain closure sufficiently discoverable;
+2. Pre-Physical baseline still treated Phase 11 as open/next;
+3. system overview stopped at Phase 10;
+4. Backend handoff still said GitHub settings verification pending;
+5. `CONTRIBUTING.md` retained an obsolete instruction that could imply Domain work inside Backend Foundation.
+
+No Domain/Logical semantic payload was changed.
+
+### Phase 12 repair HEAD
+
+```text
+4d4c5eaccd97096e55a0736b18ef836e6c9fa673
+```
+
+Repair compare from PRE-SCOPE:
+
+```text
+ahead_by       5
 behind_by      0
-total_commits  7
-added           2
-modified        5
-deleted         0
-unexpected      0
+total_commits  5
+added          0
+modified       5
+deleted        0
+unexpected     0
 ```
 
-GitHub-side verification after admin application:
+### Post-repair clean-room rerun
 
 ```text
-ruleset lifeos-main-safety present                 PASS
-ruleset enforcement active                        PASS
-ruleset target ~DEFAULT_BRANCH                    PASS
-ruleset bypass none                               PASS
-main deletion blocked                             PASS
-main force-push/non-fast-forward blocked          PASS
-pull request required                             PASS
-required approvals = 0                            PASS
-review-thread resolution required                 PASS
-allowed merge method = merge                      PASS
-required status checks = 0                        PASS / expected today
-GitHub Actions workflows = 0                      PASS / observed baseline
-auto-delete merged head branches = true           PASS
-__do_not_create__                                 404 / PASS
-__noop_should_fail__                              404 / PASS
-__tmp_should_not_create__                         404 / PASS
-main SHA unchanged                                PASS
+Domain closure discoverable               PASS
+Logical closure discoverable              PASS
+Phase 11 consumed by current architecture PASS
+Backend still NOT STARTED                 PASS
+Physical still NOT STARTED                PASS
+PREFERRED != SELECTED                     PASS
+current-vs-history distinction             PASS
+ruleset still active                      PASS
+remaining Phase-12 repair blocker         0
 ```
 
-Dependabot/secret/code-scanning API endpoints remain `403 Resource not accessible by integration`. The repository owner applied the requested security settings; the connector limitation is recorded explicitly and not misreported as independent API evidence.
+### Phase 12 closure evidence
 
-Closure propagation HEAD before this handoff marker:
-
-`c1ea90f417d3b680b1815c46b2b05b85295afb7c`
-
-Remote compare at propagation point from Phase 11 PRE-SCOPE:
+Created:
 
 ```text
-ahead_by       12
-behind_by      0
-total_commits  12
+docs/architecture/pre-physical-clean-room-qa.md
+```
+
+Evidence commit:
+
+```text
+ab945295fe4e84d2ec86a75f577a19cff1fae320
+```
+
+The evidence record is conditionally activating and is not self-validating.
+
+### Phase 12 propagation point before final save-game
+
+```text
+PROPAGATION HEAD
+73be96456b3f30cb9d13d41f55324a2f85daa774
+
+compare PRE-SCOPE -> PROPAGATION HEAD
+status          ahead
+ahead_by        10
+behind_by       0
+total_commits   10
+unique_paths    10
+added            1
+modified         9
+deleted          0
+unexpected       0
+```
+
+At that point the **only approved path not yet written was this save-game**.
+
+## Phase 12 activation contract
+
+After this save-game write, do **no further content write** before QA.
+
+Phase 12 becomes operative as:
+
+```text
+PHASE 12
+QA PASS / CLOSED
+```
+
+only if final remote QA proves:
+
+```text
+branch         chore/pre-physical-coherence
+base           d7fe582872be97ddb9c7a4e322918fccbb3e26e0
 unique_paths   11
-added           2
-modified        9
+added           1
+modified       10
 deleted         0
 unexpected      0
+behind_by       0
+main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
+critical Phase-12/current closure payloads remotely readable
 ```
 
-At that point the only approved physical path not yet included was this save-game itself.
+If any condition fails, do not call Phase 12 closed.
 
-Phase 11 introduced no fake CI workflow/check, no Domain/Logical change, no Physical schema/benchmark execution and no backend implementation.
+## Boundary after successful Phase 12 activation
 
-## Current repository engineering safety
+Current explicit user instruction changes the previous immediate-merge plan.
 
-Current policy source:
-
-`docs/development/repository-engineering-safety.md`
-
-Canonical ruleset source:
-
-`docs/development/github-main-ruleset.json`
-
-Current main protection:
+Successful Phase 12 means:
 
 ```text
-lifeos-main-safety
-active
-~DEFAULT_BRANCH
-no bypass
-main deletion blocked
-force-push/non-fast-forward blocked
-pull request required
-required approvals = 0 while owner-driven
-review-thread resolution required
-merge commits only
-required status checks = 0 until real stable checks exist
-auto-delete merged head branches enabled
-```
+PHASE 12
+QA PASS / CLOSED
 
-Future implementation must create real tests/lint/types/security/Physical checks first, prove stable unique check contexts, then separately promote material checks into the main ruleset.
+DOMAIN
+UNCHANGED / CLOSED
 
-## Phase 12 — exact next task
-
-Phase 12 is **read-only first**. No Phase 12 write gate exists yet.
-
-It is a clean-room final coherence audit. The reviewing agent should behave as if it does not have conversation history and must reconstruct current truth only from the repository.
-
-At minimum verify:
-
-1. root/doc/status/roadmap/workstream navigation agrees;
-2. current vs ADR vs historical/evidence authority is unambiguous;
-3. all complete canonical split chains needed for conclusions are read;
-4. Product/North Star remains current;
-5. Domain Atlas remains closed and internally reachable from navigation;
-6. Logical Model remains closed and `WL-H01..WL-H12` are consistently propagated;
-7. Phase 5 requirements are complete/current and their open parameters remain explicit;
-8. Phase 6 AI/context/runtime/integration boundaries remain coherent;
-9. Phase 7 durable-execution candidate posture remains candidate-only;
-10. Phase 8 governed-operation/effect contract remains transport/runtime neutral;
-11. Phase 9 search/observability/calendar/solver pressure remains bounded and non-canonical where required;
-12. Phase 10 benchmark method is complete, executable in principle and still distinct from technology selection;
-13. Phase 11 repository safety is applied and current;
-14. Backend Foundation remains deferred/non-executable;
-15. Physical Model remains not started/not authorized;
-16. no stale current source contradicts the accepted current state;
-17. no unresolved repository anomaly materially blocks closure;
-18. a new agent can identify the exact next safe action without chat memory.
-
-Phase 12 target:
-
-```text
-REPOSITORY / ARCHITECTURE COHERENCE PASS
-DOMAIN UNCHANGED / CLOSED
-LOGICAL UNCHANGED / CLOSED
-PHYSICAL MODEL READY FOR SEPARATE AUTHORIZATION / NOT STARTED
-```
-
-Only after Phase 12 closure may the user separately decide whether to authorize a Physical Model workstream.
-
-## Specialized infrastructure rule
-
-Specialized infrastructure requires demonstrated benefit from measured workload **or** sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
-
-Current application:
-
-- dedicated durable execution is structurally justified for material long-running operation classes, but no engine is selected;
-- dedicated search/vector infrastructure is not justified by default;
-- OR-Tools CP-SAT is a preferred specialized solver benchmark candidate, not an implementation selection;
-- Neo4j must beat a no-specialized-store graph/traversal baseline on net benefit before adoption;
-- specialized event/document products need a concrete gap/benefit admission trigger.
-
-## Explicitly out of scope until separately gated
-
-- Domain semantic changes;
-- Logical semantic changes;
-- Domain/Logical split rewriting;
-- Physical Model or concrete schema;
-- SQL/TypeQL/Cypher schema/query implementation;
-- tables/keys/indexes/constraints/migrations;
-- Physical benchmark execution/harness;
-- concrete API/backend implementation;
-- concrete Auth provider/runtime selection;
-- Restate/Temporal/DBOS adoption;
-- bounded worker/outbox implementation;
-- AI provider/model/agent implementation;
-- MCP/A2A adoption/implementation;
-- provider adapters;
-- dedicated search/vector deployment;
-- observability vendor deployment;
-- calendar provider implementation;
-- solver implementation;
-- frontend/prototype changes inside this workstream;
-- direct modification of `main`.
-
-## Exact continuation
-
-```text
-PHASE 7
-QA PASS WITH CONDITIONAL RANKING
-
-PHASE 8
-QA PASS
-
-PHASE 9
-QA PASS
-
-COORDINATED PHASE 7–9 TRANCHE
-QA PASS
-
-PHASE 10
-QA PASS
-
-PHASE 11
-QA PASS
-
-NEXT
-PHASE 12 — CLEAN-ROOM REPOSITORY / ARCHITECTURE COHERENCE QA
-READ-ONLY FIRST
+LOGICAL
+UNCHANGED / CLOSED
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
-BACKEND FOUNDATION
+BACKEND
 NOT STARTED / DEFERRED
-
-NO PHASE 12 WRITES YET
 ```
+
+But the **whole Pre-Physical workstream remains a final-closure candidate**, not definitively closed yet:
+
+```text
+PRE-PHYSICAL COHERENCE
+FINAL CLOSURE CANDIDATE
+NOT YET DEFINITIVELY CLOSED
+```
+
+The next exact activity is:
+
+```text
+INDEPENDENT TOTAL REPOSITORY AUDIT
+READ-ONLY FIRST
+```
+
+That audit must inspect the complete relevant repository/workstream for mistakes, contradictions, stale current instructions, knowledge loss, erroneous supersession/current-vs-history classification, unintended scope changes, false PASS/CLOSED claims, branch/PR/ruleset inconsistencies and any implicit Physical/backend start.
+
+Only after that total audit passes may the user separately authorize definitive Pre-Physical closure.
+
+## Explicitly out of scope until that audit/authorization
+
+```text
+PR / merge of chore/pre-physical-coherence into main
+main writes
+Physical Model start
+PostgreSQL / TypeDB / Neo4j selection
+Physical schema / benchmark implementation
+SQL / TypeQL / Cypher implementation
+Backend Foundation branch/code
+concrete API routes / DTOs
+Auth implementation
+Restate / Temporal / DBOS adoption
+queue/outbox implementation
+provider adapters
+AI provider/model/agent framework
+MCP/A2A adoption
+dedicated search/vector deployment
+observability vendor
+solver implementation
+Domain / Logical semantic changes
+```
+
+## Next safe action
+
+Immediately after this save-game write:
+
+1. re-fetch branch HEAD;
+2. compare Phase-12 PRE-SCOPE to final HEAD;
+3. verify exact 11-path physical delta;
+4. re-fetch `main` and prove unchanged;
+5. read back `docs/architecture/pre-physical-clean-room-qa.md` and current status/navigation markers;
+6. if and only if all activation conditions pass, report **Phase 12 QA PASS / CLOSED**;
+7. do **not** merge or definitively close the whole Pre-Physical workstream;
+8. next begin the separately requested independent total repository audit read-only.
