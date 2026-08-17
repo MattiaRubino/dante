@@ -1,6 +1,6 @@
 # Logical Model Workstream
 
-**Status:** Stage 0 remote QA PASS — Stage 0H hardening activation conditional on remote QA  
+**Status:** Stage 0 + Stage 0H remote QA PASS — Slice A activation conditional on remote QA  
 **Started:** 2026-08-17  
 **Branch:** `feature/logical-model`  
 **Base main:** `068da4cc66620b3f3811051170e4913097091a04`
@@ -51,9 +51,9 @@ Canonical split Domain files remain physically split and logically unified accor
 
 ---
 
-## Stage-0 foundation scope and completed QA
+## Stage-0 foundation — completed QA
 
-Initial foundation write scope:
+Initial foundation scope:
 
 ```text
 5 CREATE
@@ -71,7 +71,7 @@ docs/logical-model/representation-framework-v1.md
 docs/workstreams/logical-model.md
 ```
 
-Verified remote result from base main:
+Verified remote result:
 
 ```text
 Stage-0 HEAD
@@ -99,11 +99,9 @@ LOGICAL MODEL STAGE 0
 REMOTE QA PASS
 ```
 
-Stage 0 intentionally contains no concrete owner mapping and no table/schema design.
-
 ---
 
-## Stage-0H methodology hardening scope
+## Stage-0H methodology hardening — completed QA
 
 Approved PRE-SCOPE:
 
@@ -119,14 +117,14 @@ Approved physical scope:
 0 DELETE
 ```
 
-CREATE:
+Created:
 
 ```text
 docs/logical-model/traceability-and-regression-ledger-v1.md
 docs/logical-model/decision-and-assumption-register-v1.md
 ```
 
-UPDATE:
+Updated:
 
 ```text
 docs/logical-model/validation-methodology-v1.md
@@ -135,90 +133,71 @@ docs/logical-model/representation-framework-v1.md
 docs/workstreams/logical-model.md
 ```
 
-Purpose:
+Verified Stage-0H result:
 
 ```text
-elevate Logical Model validation beyond Domain V3 baseline
-mandatory traceability matrix + invariant ledger
+HEAD
+0076b02715acf418cd9ef2840ed719b4201c8730
+
+from PRE-SCOPE
+commits         6
+added           2
+modified        4
+deleted         0
+unexpected      0
+remote readback 6 / 6
+main unchanged
+```
+
+Therefore:
+
+```text
+LOGICAL MODEL STAGE 0H
+HARDENED FOUNDATION
+REMOTE QA PASS
+ACTIVE
+```
+
+The active validation standard is:
+
+```text
+LM-WF-01..19
+LM-01..23
++
+traceability matrix
+cumulative invariant ledger
 mutation/destructive testing
 counterfactual testing
 cross-slice regression
 rejected-alternative register
 assumption/freshness register
-simple-case vs worst-case pairing
-Product Reality / cross-domain retrieval pressure
+simple-case / worst-case pairing
+Product Reality pressure
 final clean-room reconstruction
-record Stage-0 remote QA PASS
-```
-
-Explicitly out of scope:
-
-```text
-Domain Atlas changes/reopen
-Slice A mapping decisions
-SQL / schema / migrations
-API / backend / AuthN/AuthZ
-frontend
-main
 ```
 
 ---
 
 ## Foundational operating rules
 
-### 1. Domain Atlas is authoritative
-Logical discomfort is not semantic evidence by itself. A Domain reopen requires the strict evidence bar in `validation-methodology-v1.md`.
-
-### 2. Falsification before acceptance
-Every material logical candidate is attacked before optimization.
-
-### 3. Multiple candidate representations
-Where materially different options exist, compare at least two before acceptance.
-
-### 4. Mandatory traceability
-Every material Domain owner/invariant must trace to logical representation, query/operation, tests and verdict.
-
-### 5. Cumulative invariant ledger
-A passed invariant remains part of later regression pressure; later slices cannot silently weaken it.
-
-### 6. Mutation / destructive testing
-Remove, merge, genericize, overwrite or provider-identify structures to prove why distinctions matter.
-
-### 7. Counterfactual testing
-Near-identical cases with different accepted meaning must remain logically distinguishable.
-
-### 8. Retroactive / cross-slice regression
-Every later slice reruns earlier scenarios/invariants it can affect. A locally correct slice may still fail integrated regression.
-
-### 9. Rejected alternatives are preserved
-A selected candidate must be compared with plausible alternatives and failed alternatives remain documented with rationale.
-
-### 10. Assumptions are explicit
-Material decisions cannot depend on hidden, stale or unproven assumptions.
-
-### 11. Fresh external research
-Benchmark direct, adjacent, specialist and infrastructure systems relevant to the problem, including structurally useful systems outside the obvious product category.
-
-### 12. External evidence is not authority
-Borrow mechanisms/invariants where useful; do not copy ontology/schema by popularity.
-
-### 13. Negative benchmarks are mandatory
-Record external behaviors LifeOS must explicitly reject, not only patterns to adopt.
-
-### 14. Simple and worst cases both matter
-Internal precision must not make trivial use pathological, while simple-case elegance must not fail under long history/scale/multi-actor/provider conflict.
-
-### 15. Product Reality cases are tests, not commands
-Concrete desired behaviors are classified into Domain coverage, Logical requirement, capability/algorithm gap, specialist boundary or true semantic contradiction.
-
-### 16. No semantic-free escape hatch
-Required meaning cannot be hidden in generic relations/properties/JSON because classification is inconvenient.
-
-### 17. Clean-room closure
-Final Logical Model meaning must be reconstructible from canonical documentation without designer memory/chat context.
-
-### 18. Remote Git truth
-No logical checkpoint is CLOSED/PASS until remote compare and actual payload readback succeed.
+1. **Domain Atlas is authoritative.** Logical discomfort or implementation convenience is not Domain-reopen evidence.
+2. **Falsification before acceptance.** Every material logical candidate is attacked before optimization.
+3. **Multiple plausible alternatives.** Strong alternatives are compared rather than constructing straw men.
+4. **Mandatory traceability.** Every material owner/invariant traces to representation, query/operation, tests and verdict.
+5. **Cumulative invariant ledger.** Later slices cannot silently weaken earlier accepted invariants.
+6. **Mutation/destructive testing.** Remove, merge, genericize, overwrite or provider-identify structures to prove necessity.
+7. **Counterfactual testing.** Near-identical cases with different accepted meaning must remain distinguishable.
+8. **Retroactive/cross-slice regression.** Later shared-mechanism changes replay earlier affected tests.
+9. **Rejected alternatives remain documented.** Do not rediscover failed architecture without new evidence.
+10. **Assumptions are explicit and freshness-scoped.** No final PASS depends materially on stale or unproven assumptions.
+11. **Fresh external research.** Search direct, adjacent, specialist, infrastructure and structurally useful unrelated systems.
+12. **External evidence is not ontology authority.** LifeOS may fuse useful mechanisms but must not copy vendor taxonomy by popularity.
+13. **Negative benchmarks are mandatory.** Learn from architectural reversals/failure patterns as well as successful patterns.
+14. **Simple and worst cases both matter.** Avoid both toy architecture and needless universal complexity.
+15. **Product Reality cases are tests, not commands.** Separate Domain coverage, logical requirement, capability gap and specialist boundary.
+16. **No semantic-free escape hatch.** Required meaning cannot disappear into generic relations/properties/JSON.
+17. **Clean-room closure.** Final meaning must be reconstructible from repository documentation without chat/designer memory.
+18. **Remote Git truth.** No checkpoint is active/closed until exact remote compare + payload readback succeed.
 
 ---
 
@@ -232,15 +211,11 @@ Current Domain verdict:
 PASS WITH HARDENING
 ```
 
-Logical stage obligation:
+Logical stage target:
 
-> demonstrate material historical reconstruction against the actual integrated logical representation.
+> demonstrate material historical reconstruction against the integrated logical representation.
 
-Target:
-
-```text
-WD-03 PASS
-```
+Slice A proves identity/reconciliation chronology but does not fully discharge WD-03; exact Version/Provenance history remains primarily Slice D + final regression.
 
 ### WD-05 — persistence/API pressure
 
@@ -250,15 +225,7 @@ Current Domain verdict:
 PASS WITH HARDENING
 ```
 
-Logical stage obligation:
-
-> pressure-test the actual integrated logical representation against identity, history, semantic boundaries, multi-actor state, provider mapping and high-value operations.
-
-Target:
-
-```text
-WD-05 PASS
-```
+Slice A proves identity/reference logical feasibility against realistic persistence/API pressure while deliberately retaining more than one physical implementation option. Full WD-05 discharge remains integrated Whole-Logical work.
 
 Neither target authorizes physical implementation.
 
@@ -294,9 +261,7 @@ LM-22 Product Reality coherence
 LM-23 Clean-room reconstructibility
 ```
 
-The mandatory workflow is LM-WF-01..19.
-
-Verdicts and reopen rules are normative in `docs/logical-model/validation-methodology-v1.md`.
+The mandatory workflow is `LM-WF-01..19`.
 
 ---
 
@@ -309,13 +274,16 @@ REMOTE QA PASS
 
 STAGE 0H
 methodology hardening / ledgers / regression discipline
-activation conditional on remote QA
+REMOTE QA PASS / ACTIVE
 
 SLICE A
 Identity / Reference
+WRITE COMPLETE
+ACTIVATION CONDITIONAL ON REMOTE QA
 
 SLICE B
 Intention / Execution
+NOT STARTED BY SLICE-A WRITE
 
 SLICE C
 Time / Reality
@@ -341,84 +309,273 @@ Slice grouping is operational only and does not create new semantic clusters.
 
 ---
 
-## Slice A — exact read-only start
+## Slice A — Identity / Reference
 
-Slice A may begin read-only once Stage 0 is active. No Slice A decision is created by Stage 0H hardening.
+### Read-only work completed
 
-Pressure owners/families:
-
-```text
-Person
-Living Referent
-Asset
-Place
-Content Artifact
-Collective
-Actor role
-Subject role
-Resource role
-Account / Principal boundary
-provider identity mapping
-```
-
-Primary question:
-
-> How can LifeOS share technical identity/reference infrastructure across independently meaningful native referents and contextual roles without creating a universal semantic Entity/Thing root or parallel role-wrapper identities?
-
-Required phases:
+Required phases were completed before canonical write:
 
 ```text
-A0 canonical reconstruction
-A1 identity/reference query + requirement corpus
-A2 multiple candidate reference architectures
-A3 native identity pressure
-A4 Actor/Subject/Resource role-reference pressure
-A5 provider identity + reconciliation
-A6 merge/split/correction/history
-A7 multi-actor/privacy
-A8 scale + external benchmark
-A9 mutation/counterfactual/cross-slice regression
-A10 reverse mapping + LM gate verdict
+A0 canonical reconstruction                         DONE
+A1 identity/reference requirement + query corpus    DONE
+A2 multiple candidate reference architectures       DONE
+A3 native identity pressure                         DONE
+A4 Actor/Subject/Resource role-reference pressure   DONE
+A5 provider identity + reconciliation               DONE
+A6 merge/split/correction/history                   DONE
+A7 multi-actor/privacy                              DONE
+A8 scale/evolution/external benchmark               DONE
+A9 mutation/counterfactual/cross-slice regression   DONE
+A10 reverse mapping + LM gate review                DONE
 ```
 
-No Slice A write occurs until the read-only evidence/candidates are presented under a separate explicit gate.
+The assistant stopped before write, presented the complete result/candidate comparison to the user, and received explicit approval before the write gate was executed.
+
+### Selected logical model
+
+```text
+Layered Typed Identity & Reference Model
+```
+
+Canonical separation:
+
+```text
+NATIVE IDENTITY
+!= NativeRef / technical addressability
+!= Reference Contract semantic meaning
+!= ExternalRef / provider identity
+!= Account / Principal identity
+!= identity Reconciliation state
+!= Version / material-state reference
+!= disclosure/public correlation handle
+```
+
+Primary contract:
+
+```text
+native Domain owner identity
+        ↓
+logical NativeRef addressability
+        ↓
+slot/relation-specific Reference Contract
+
+ExternalRef / Account / Principal
+remain separate scoped identity spaces
+
+Reconciliation/history
+links identities without destructive semantic collapse
+```
+
+Critical hardenings:
+
+```text
+NativeRef != Entity / Thing
+owner/type deterministically recoverable
+native key opaque and non-reused
+Reference Contract owns semantic target eligibility
+polymorphic technical ref != any-object semantic relation
+Actor / Subject / Resource do not create wrapper identity
+not every valid role target requires native identity
+ExternalRef != NativeRef
+unresolved mapping is valid
+identity merge/link is explicit, history-preserving and correctable
+current identity resolution != historically always known
+NativeRef != Version
+internal native identity != universal public/API handle
+referenceability != Visibility != Authority
+shared native identity != per-actor duplicate canonical identity
+physical representation remains open
+```
+
+Canonical Slice-A files after successful activation:
+
+```text
+docs/logical-model/slices/identity-reference-v1.md
+docs/logical-model/checkpoints/identity-reference-v1-validation.md
+docs/logical-model/benchmarks/identity-reference-v1.md
+docs/logical-model/traceability-and-regression-ledger-v1.md
+docs/logical-model/decision-and-assumption-register-v1.md
+docs/logical-model/test-corpus-v1.md
+docs/logical-model/representation-framework-v1.md
+docs/workstreams/logical-model.md
+```
+
+### Candidate comparison
+
+```text
+Universal semantic Entity/Object root
+REJECTED LOGICALLY
+
+Owner/role-specific reference families only
+VIABLE STRONG ALTERNATIVE
+not selected as logical baseline; retained as physical ingredient/retest comparator
+
+Mandatory global identity registry as logical root
+REJECTED AS LOGICAL REQUIREMENT
+technical anchor/registry remains possible physically
+
+Layered Typed Identity & Reference Model
+SELECTED — PASS WITH HARDENING
+activation conditional on remote QA
+```
+
+### Broad external benchmark
+
+Slice A deliberately researched large systems and unrelated domains, using current official/primary documentation, including:
+
+```text
+OpenID Connect
+SCIM
+Auth0
+Sign in with Apple
+Microsoft Entra
+Microsoft Graph / Outlook
+FHIR
+Salesforce
+Shopify
+Asana
+Atlassian ARI
+AWS ARN
+OCI OCID
+Kubernetes
+Git
+GitHub GraphQL
+Google People
+Wikidata
+Home Assistant
+Twilio
+PostgreSQL
+```
+
+The adopted LifeOS model is a synthesis of transferable structural lessons, not a vendor schema copy.
+
+Benchmark evidence is canonical in:
+
+```text
+docs/logical-model/benchmarks/identity-reference-v1.md
+```
+
+### Traceability / regression state
+
+```text
+TA-01..TA-17
+Slice-A trace entries
+
+INV-041..INV-060
+Slice-A invariant additions
+
+TC-M01..TC-M12
+new permanent Slice-A regression scenarios
+
+REGRESSION IMPACT
+R3 WHOLE-LOGICAL
+
+DOMAIN REOPEN REQUIRED
+0
+```
+
+### Physical decisions deliberately deferred
+
+```text
+technical anchor/registry vs owner-specific FK vs typed composite vs hybrid
+native key technology/data type
+indexing/partitioning
+ORM mapping
+API/public identity-handle format
+runtime authorization enforcement
+```
+
+PostgreSQL inheritance/global-parent-table behavior is not assumed to solve heterogeneous referential integrity.
 
 ---
 
-## Stage-0 external calibration already performed
-
-Current official documentation was checked to seed the benchmark policy with positive and negative patterns including:
+## Slice-A approved write gate
 
 ```text
-Google Calendar
-recurring master / instance / originalStartTime separation
+BRANCH
+feature/logical-model
 
-Todoist
-work date != fixed deadline
-floating time != fixed timezone-aware time
+PRE-SCOPE
+0076b02715acf418cd9ef2840ed719b4201c8730
 
-Motion
-adaptive schedule derived from constraints/availability
+CREATE
+3
 
-Reclaim
-recurring default != adaptive conflict policy != scheduled instance
-negative case: elapsed scheduled task event may be assumed done
+UPDATE
+5
 
-Notion
-flexible property/relation/rollup mechanisms
-without making them LifeOS semantic authority
-
-Plaid
-pending/posting specialist linkage pressure
-
-Odoo Inventory
-physical count != inventory movement/adjustment lifecycle
-
-FHIR Provenance
-version-specific lineage/history pressure
+DELETE
+0
 ```
 
-These are calibration evidence only; every slice must refresh the external set relevant to its own decisions.
+CREATE:
+
+```text
+docs/logical-model/slices/identity-reference-v1.md
+docs/logical-model/checkpoints/identity-reference-v1-validation.md
+docs/logical-model/benchmarks/identity-reference-v1.md
+```
+
+UPDATE:
+
+```text
+docs/logical-model/traceability-and-regression-ledger-v1.md
+docs/logical-model/decision-and-assumption-register-v1.md
+docs/logical-model/test-corpus-v1.md
+docs/logical-model/representation-framework-v1.md
+docs/workstreams/logical-model.md
+```
+
+Explicitly out of scope:
+
+```text
+Domain Model changes
+SQL / physical tables
+UUID/key choice
+registry/FK implementation
+migrations
+API/backend
+AuthN/AuthZ runtime
+frontend
+main
+Slice B
+```
+
+---
+
+## Slice-A remote activation condition
+
+No status-only write is required if all conditions below are satisfied:
+
+```text
+1 PRE-SCOPE immediately before first write was exactly
+  0076b02715acf418cd9ef2840ed719b4201c8730
+
+2 compare from PRE-SCOPE contains exactly 8 approved paths
+
+3 added = 3
+4 modified = 5
+5 deleted = 0
+6 unexpected = 0
+7 all 8 current payloads are fetched/read remotely
+8 main remains 068da4cc66620b3f3811051170e4913097091a04
+```
+
+When satisfied, effective state becomes:
+
+```text
+SLICE A — IDENTITY / REFERENCE
+PASS WITH HARDENING
+REMOTE QA PASS
+ACTIVE
+
+DOMAIN REOPEN REQUIRED 0
+LOGICAL STRUCTURAL BLOCKER 0
+
+NEXT
+SLICE B — INTENTION / EXECUTION
+READ-ONLY ONLY AFTER DISTINCT CONTINUATION AUTHORIZATION
+```
 
 ---
 
@@ -438,36 +595,3 @@ frontend/prototype changes
 ```
 
 Physical feasibility may be researched/tested conceptually when needed, but no physical representation becomes authoritative before the logical gate passes.
-
----
-
-## Stage-0H activation condition
-
-No additional write is required to activate Stage 0H if the following remote conditions are all satisfied:
-
-```text
-1 branch PRE-SCOPE was exactly 3dc8fdb869e445b84255fb881c0e11da76cf2a43 before first write
-2 compare from PRE-SCOPE shows exactly 6 approved physical paths
-3 added = 2
-4 modified = 4
-5 deleted = 0
-6 unexpected = 0
-7 all 6 current payloads are fetched/read remotely
-8 main remains 068da4cc66620b3f3811051170e4913097091a04
-```
-
-When satisfied, this document's effective current state is:
-
-```text
-LOGICAL MODEL STAGE 0
-REMOTE QA PASS
-
-LOGICAL MODEL STAGE 0H
-HARDENED FOUNDATION
-REMOTE QA PASS
-ACTIVE
-
-NEXT
-SLICE A — IDENTITY / REFERENCE
-READ-ONLY ANALYSIS
-```
