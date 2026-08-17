@@ -39,7 +39,7 @@ All of the following must be true before a backend implementation branch is crea
 1. Pre-Physical Repository & Architecture Coherence is closed with clean-room QA PASS;
 2. the user has separately authorized and accepted the Physical Model workstream/result;
 3. accepted Physical persistence/runtime boundaries exist for the implementation being started;
-4. current AuthN/AuthZ, security/privacy/retention/recovery and consistency/side-effect requirements that constrain implementation are accepted;
+4. the current Phase 5 requirement packages for AuthN/AuthZ, security/privacy/retention/recovery, consistency/side effects and non-functional/multi-device/operational recovery are accepted and any implementation-dependent open parameters are resolved at the appropriate later gate;
 5. current AI/context/runtime/integration boundaries are accepted where the first implementation slice touches them;
 6. the governed API/command/effect contract is accepted before concrete consequential routes are stabilized;
 7. repository engineering safety/CI requirements needed before production backend work are in place;
@@ -67,11 +67,12 @@ Read current sources, including complete canonical split/continuation chains whe
 6. [`../development/documentation-and-handoff.md`](../development/documentation-and-handoff.md);
 7. [`../development/branching-and-environments.md`](../development/branching-and-environments.md);
 8. current [`../architecture/pre-physical-architecture-baseline.md`](../architecture/pre-physical-architecture-baseline.md), [`../architecture/README.md`](../architecture/README.md), [`../architecture/system-overview.md`](../architecture/system-overview.md) and [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md);
-9. the complete accepted Domain Atlas beginning at [`../domain/README.md`](../domain/README.md), including its canonical continuation parts where required;
-10. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), its complete decision/assumption-register chain, and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
-11. the then-current accepted Physical Model sources and closure evidence, once they exist;
-12. the then-current accepted security/runtime/integration/API contracts relevant to the first slice;
-13. current ADRs under [`../decisions/`](../decisions/), using their current qualification/supersession status rather than historical labels.
+9. the complete current Phase 5 requirement set beginning at [`../architecture/requirements/README.md`](../architecture/requirements/README.md), including all four linked requirement packages;
+10. the complete accepted Domain Atlas beginning at [`../domain/README.md`](../domain/README.md), including its canonical continuation parts where required;
+11. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), its complete decision/assumption-register chain, and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
+12. the then-current accepted Physical Model sources and closure evidence, once they exist;
+13. the then-current accepted AI/runtime/integration/API contracts relevant to the first slice;
+14. current ADRs under [`../decisions/`](../decisions/), using their current qualification/supersession status rather than historical labels.
 
 Older product documents such as `v1-core-domain-glossary.md`, `v1-execution-status.md` and `v1-data-history-and-privacy.md` may remain useful **product evidence/requirements input**. They do not override the accepted Domain Atlas, closed Logical Model, later Physical Model or current architecture contracts.
 
@@ -88,7 +89,20 @@ Unless separately reviewed through the normal decision process:
 - provider/external state remains distinct from canonical LifeOS state;
 - DEV/UAT/PROD are deployment environments, not permanent Git branches;
 - accepted Domain + Logical semantics, including `WL-H01..WL-H12`, are implementation constraints rather than suggestions;
-- the current Pre-Physical Architecture Baseline is a mandatory downstream bridge and does not itself authorize implementation.
+- the current Pre-Physical Architecture Baseline and Phase 5 requirements are mandatory downstream inputs and do not themselves authorize implementation.
+
+## Phase 5 requirements that future implementation must consume
+
+Backend Foundation must implement, test and preserve the accepted requirement contracts rather than choose mechanisms that redefine them.
+
+At minimum:
+
+- AuthN/AuthZ preserves `Person != Account != Principal != Actor`, `Authority != AuthZ decision`, actual Actor vs represented party, consequential AuthZ provenance, non-human Principal governance, delayed-effect governance revalidation and non-interference/disclosure constraints;
+- security/privacy supports purpose-aware minimization, secret isolation, sensitive-data handling, category-sensitive retention, truthful deletion/redaction/tombstone semantics, derived/external deletion propagation and secure recovery without forbidden-data resurrection;
+- consistency/side effects preserves expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, semantic multi-owner atomicity where required, truthful staged/partial state, canonical/provider separation, ambiguous-failure safety and effect/reconciliation provenance;
+- non-functional/multi-device/recovery preserves multi-device divergence, operation-specific offline semantics, truthful degraded/provider state, long-history/current-state access, temporal/DST semantics, safe observability, recovery testing and later accepted RPO/RTO/latency/availability/scale targets.
+
+Open parameters in the Phase 5 packages are future decisions to resolve before the dependent implementation/benchmark; they are not permission to ignore the requirement.
 
 ## Physical-dependent implementation candidates
 
@@ -169,7 +183,7 @@ Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation
 
 is superseded as a backend/domain contract. `Workspace` is not an accepted universal Domain owner, while `Project`/`Program` product vocabulary maps to accepted semantics such as a `Plan` profile according to the actual case rather than manufacturing new kernel roots.
 
-When backend implementation is eventually authorized, the first slice must be chosen from the accepted Domain + Logical + Physical + runtime/API contracts and current product need. It should be narrow enough to validate the architecture end to end without using product labels as an ontology shortcut.
+When backend implementation is eventually authorized, the first slice must be chosen from the accepted Domain + Logical + Phase 5 requirements + Physical + runtime/API contracts and current product need. It should be narrow enough to validate the architecture end to end without using product labels as an ontology shortcut.
 
 ## Future tests / validation baseline
 
@@ -184,6 +198,8 @@ When applicable to the accepted implementation design, validate at minimum:
 - provider partial failure/divergence is represented truthfully where relevant;
 - history/provenance/correction requirements survive persistence translation;
 - selective disclosure and inference-leakage constraints are tested where the slice exposes governed data;
+- applicable Phase 5 open parameters have been resolved rather than silently defaulted;
+- recovery/degraded/multi-device tests appropriate to the slice exercise the accepted requirement contracts;
 - migrations/rollback are tested **only if** the accepted Physical implementation uses migration-based persistence;
 - database connectivity/config tests are added **only for** the accepted Physical persistence;
 - required CI/repository checks pass before integration.
@@ -205,7 +221,7 @@ idempotency != identity
 HTTP route / UI button / AuthZ action string != canonical governed effect
 ```
 
-And all `WL-H01..WL-H12` remain active downstream constraints.
+And all `WL-H01..WL-H12` plus the accepted Phase 5 requirement packages remain active downstream constraints.
 
 ## Where to work when eventually authorized
 
@@ -248,6 +264,6 @@ NO IMPLEMENTATION ACTION
 CURRENT PROJECT ACTION
 continue Pre-Physical Coherence
 
-NEXT PRE-PHYSICAL PHASE
-Phase 5 — Requirements That Can Constrain Physical Design
+AFTER PHASE 5 REMOTE QA
+Phase 6 — AI / Context / Runtime / Integration Boundaries
 ```
