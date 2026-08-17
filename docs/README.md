@@ -34,8 +34,8 @@ WD-05 PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
-Phase 0–5 QA PASS
-Phase 6 AI/context/runtime/integration boundaries NEXT
+Phase 0–6 QA PASS
+Coordinated Phase 7–9 architecture tranche NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -67,6 +67,8 @@ Start with:
 
 - [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — current Pre-Physical bridge for decided/prohibited/open/mandatory downstream constraints;
 - [`architecture/requirements/README.md`](architecture/requirements/README.md) — current Phase 5 requirement-package index; read all four linked requirement packages;
+- [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md) — current Phase 6 AI/context/runtime contract;
+- [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md) — current Phase 6 Integration Hub/provider contract;
 - [`architecture/README.md`](architecture/README.md) — architecture navigation and current/evidence separation;
 - [`architecture/system-overview.md`](architecture/system-overview.md);
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md).
@@ -80,6 +82,28 @@ The Phase 5 requirement package constrains later Physical/runtime/API/backend wo
 
 Open parameters inside those packages are explicit downstream obligations and must not be silently defaulted by implementation.
 
+Phase 6 additionally establishes:
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+plus the five Integration Hub modes:
+
+1. canonical import;
+2. synchronized/mirrored provider state;
+3. live federated read;
+4. retrieval/index projection;
+5. action/tool integration.
+
+AI/provider/runtime/protocol choices remain deferred. Runtime Agent/Principal is not Domain Actor automatically; tool/protocol actions are not canonical governed effects; `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`.
+
 The old mixed `personal-data-ai-integration.md` current specification has been retired after knowledge coverage; its useful current content is carried by the current architecture/ADR/Logical sources, and its old payload remains recoverable in Git history.
 
 Historical `domain-model-logical-readiness*` files remain truthful transition/validation evidence and are **not** current architecture specifications.
@@ -92,7 +116,7 @@ ADRs preserve rationale and explicit current status:
 - ADR-002 — accepted backend platform direction, qualified at ORM/migration boundary;
 - ADR-003 — superseded as final database selection; retained PostgreSQL rationale;
 - ADR-004 — accepted storage abstraction;
-- ADR-005 — accepted replaceable AI gateway, Logical-qualified;
+- ADR-005 — accepted replaceable AI gateway, Logical + Phase 6 boundary-qualified;
 - ADR-006 — superseded as canonical generic hybrid semantic model;
 - ADR-007 — accepted semantic persistence guardrail, qualified for Physical posture.
 
@@ -119,9 +143,9 @@ HARD REJECT FOR CANONICAL KERNEL
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 5 requirements are QA-closed and Phase 6 AI/context/runtime/integration boundaries are next.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 0–6 are QA-closed and the coordinated Phase 7–9 architecture tranche is next.
 - [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline plus the complete Phase 5 requirement package and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline, complete Phase 5 requirements and both Phase 6 boundary contracts, and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
 - Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
 
 ## Documentation lifecycle rule
