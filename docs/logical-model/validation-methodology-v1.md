@@ -1,6 +1,6 @@
 # LifeOS Logical Model Validation Methodology v1
 
-**Status:** Stage-0 foundation  
+**Status:** Stage-0H hardened normative foundation  
 **Date:** 2026-08-17  
 **Scope:** logical representation design between the closed Domain Atlas and later physical persistence/API implementation
 
@@ -238,6 +238,70 @@ If a candidate survives only after adding an invariant/boundary, that invariant 
 
 Repository state is not accepted until the actual remote compare and payload are read and verified.
 
+### LM-WF-12 — Traceability closure
+
+Use `traceability-and-regression-ledger-v1.md` to map each in-scope Domain owner/invariant to:
+
+```text
+logical disposition
+representation
+high-value query/operation
+falsification tests
+verdict/hardening
+```
+
+A slice cannot PASS with material trace entries unresolved or represented only by generic `covered` claims.
+
+### LM-WF-13 — Mutation / destructive test
+
+Deliberately mutate the preferred candidate by removing, merging, genericizing, overwriting, provider-identifying, duplicating or over-materializing structures where applicable.
+
+The test asks whether the logical distinction is demonstrably necessary to preserve accepted meaning.
+
+### LM-WF-14 — Counterfactual test
+
+Run near-identical scenario pairs whose correct meaning differs materially.
+
+If the logical representation cannot preserve the distinction without relying on undocumented interpretation, the candidate fails.
+
+### LM-WF-15 — Decision / assumption registration
+
+Every material selected candidate, rejected plausible alternative, external dependency and non-Domain assumption is registered in `decision-and-assumption-register-v1.md` or its accepted continuation.
+
+Material decisions may not rely on stale, hidden or unproven assumptions.
+
+### LM-WF-16 — Simple / worst-case paired pressure
+
+The same candidate must survive both ordinary compact use and long-lived/high-volume/multi-actor/provider-conflict pressure.
+
+A candidate optimized only for either extreme fails.
+
+### LM-WF-17 — Cross-slice regression
+
+Classify change impact as R0/R1/R2/R3 under the traceability ledger and replay every previously accepted test/invariant the change could affect.
+
+A later slice cannot silently supersede an earlier PASS.
+
+### LM-WF-18 — Product Reality pressure
+
+Use concrete product/user scenarios as falsification pressure, not automatic ontology requirements.
+
+For every scenario distinguish:
+
+```text
+Domain coverage
+Logical requirement
+Capability/algorithm gap
+Specialist boundary
+True semantic contradiction, if any
+```
+
+### LM-WF-19 — Clean-room reconstruction
+
+Before final Whole-Logical closure, reconstruct the model from canonical documentation and ledgers without relying on designer memory or chat history.
+
+If correct interpretation requires unwritten assumptions, closure fails.
+
 ---
 
 ## 8. Logical Model gates
@@ -341,6 +405,38 @@ The gate asks whether the logical design preserves semantic distinctions, identi
 
 It does not authorize SQL or API implementation.
 
+### LM-17 — Traceability completeness
+
+Every material in-scope Domain owner/invariant is linked to its logical representation, required query/operation, test evidence and verdict.
+
+Unclassified trace gaps prevent PASS.
+
+### LM-18 — Mutation / inverse-necessity survival
+
+The selected representation survives destructive pressure and demonstrates why removing/merging/genericizing the relevant logical distinction would create material semantic or operational loss.
+
+### LM-19 — Counterfactual distinguishability
+
+Near-identical cases that carry different accepted meaning remain distinguishable in the logical representation.
+
+### LM-20 — Decision / assumption integrity
+
+Material accepted/rejected decisions, assumptions, freshness dependencies and physical deferrals are registered and auditable.
+
+No final PASS may depend materially on an `UNPROVEN` or stale assumption.
+
+### LM-21 — Cross-slice regression integrity
+
+A logical change cannot PASS while an affected earlier accepted invariant/test regresses.
+
+### LM-22 — Product Reality coherence
+
+Concrete product scenarios can be mapped to Domain owners and logical capabilities without forcing semantic distortion; capability gaps remain distinguishable from logical/domain gaps.
+
+### LM-23 — Clean-room reconstructibility
+
+An independent reader can recover the model's accepted meaning and decision basis from canonical documentation without undocumented designer memory.
+
 ---
 
 ## 9. Verdict vocabulary
@@ -430,9 +526,40 @@ For fast-changing products/providers, official evidence is refreshed when:
 
 Stable standards are checked against the latest published/current version, but historical versions may be retained as interoperability evidence.
 
+Material external assumptions must also be registered with stability, failure consequence and refresh trigger under `decision-and-assumption-register-v1.md`.
+
 ---
 
-## 12. Final Logical Model closure target
+## 12. Mandatory evidence package for a slice PASS
+
+A slice may be presented for PASS only with an evidence package containing at least:
+
+```text
+owner + invariant inventory
+traceability matrix
+high-value query corpus
+candidate comparison
+rejected-alternative register
+assumption register
+external benchmark findings
+historical replay
+fresh adversarial simulations
+mutation/destructive tests
+counterfactual tests
+simple-case / worst-case paired tests
+reverse mapping
+cross-slice regression impact + replay
+Product Reality pressure where relevant
+LM-01..23 gate matrix
+open/deferred physical decisions
+remote Git QA when written
+```
+
+Missing required evidence yields `BLOCKED`, not optimistic PASS.
+
+---
+
+## 13. Final Logical Model closure target
 
 Logical Model may close only when:
 
@@ -440,11 +567,18 @@ Logical Model may close only when:
 all accepted Domain Atlas owners have explicit logical disposition
 all slices pass applicable LM gates
 whole-logical cross-slice regression passes
+clean-room reconstruction passes
 WD-03 -> PASS
 WD-05 -> PASS
 LOGICAL REQUIRED NOW unresolved 0
 LOGICAL UNCLASSIFIED 0
 LOGICAL UNRESOLVED 0
+TRACE ENTRIES unresolved 0
+REGRESSION FAIL 0
+MUTATION FAIL 0
+COUNTERFACTUAL FAIL 0
+UNREGISTERED MATERIAL ASSUMPTIONS 0
+STALE MATERIAL EXTERNAL DEPENDENCIES 0
 DOMAIN REOPEN 0
 remote post-write QA PASS
 ```
