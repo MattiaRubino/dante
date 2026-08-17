@@ -378,3 +378,78 @@ DOMAIN REOPEN REQUIRED
 ```
 
 A PASS with hidden/unclassified counters is not allowed.
+
+---
+
+## 12. Slice A — Identity / Reference trace entries
+
+The following entries become active with the Slice-A checkpoint after its remote QA succeeds.
+
+| Trace | Owner / invariant | Logical disposition | Required proof | Test pressure | Verdict |
+|---|---|---|---|---|---|
+| TA-01 | Person independent from Account/Actor/Subject/Resource | native identity + NativeRef | Person survives no Account/provider changes/role changes | TC-A01, A02, A10, L01, L12 | PASS |
+| TA-02 | Living Referent identity | native identity + NativeRef | caregiver/name/location/provider change does not replace referent | TC-A03, L10 | PASS |
+| TA-03 | Asset identity | native identity + NativeRef | possession/location/resource role change does not replace Asset | TC-A04, L09 | PASS |
+| TA-04 | Place identity | native identity + NativeRef | provider/address correction distinct from new Place | TC-A06 + Slice-A counterfactual | PASS |
+| TA-05 | Content Artifact identity | native identity where accepted + NativeRef | provider/storage migration distinct from independent fork | TC-A05, L11 | PASS |
+| TA-06 | Collective identity | native identity + NativeRef | membership change != Collective replacement | TC-A07 | PASS |
+| TA-07 | Actor | role/reference contract; no wrapper identity | native/system referent can act under specific action role | TC-A10, MUT-A09 | PASS WITH Slice-F dependency |
+| TA-08 | Subject | role/reference contract; no wrapper identity | aboutness references native referent without Subject entity | TC-A10, MUT-A09 | PASS |
+| TA-09 | Resource | contextual target contract; NativeRef only where provider has native identity | supply/service/pool cases do not manufacture native identity | TC-F01, K03, MUT-A12 | PASS WITH Slice-E dependency |
+| TA-10 | Person != Account != Principal | separate logical identity spaces + explicit linkage | non-account Person; provider/security migration | TC-A01, A02, L12 | PASS WITH security-stage dependency |
+| TA-11 | provider ID != canonical identity | scoped ExternalRef + mapping | provider replacement/churn/removal does not replace native identity | TC-A06, G03, G06, I05, J04, L05 | PASS |
+| TA-12 | correction != silent overwrite | Reconciliation/history | wrong merge/link is explainable and correctable | TC-A09, MUT-A06, MUT-A07 | PASS WITH Slice-D history dependency |
+| TA-13 | NativeRef != Version | separate identity vs material-state addressing | same referent can have many material versions/states | Slice-A mutation + future Slice-D tests | PASS WITH Slice-D dependency |
+| TA-14 | identity linkage privacy | internal identity != public correlation handle | same referent across contexts without universal disclosure | TC-E06, K08, MUT-A11 | PASS WITH Slice-F dependency |
+| TA-15 | shared reality != per-actor duplicate | one native identity + actor-scoped overlays | multiple actors/providers do not create duplicate canonical referent | TC-E07, I05, L06 | PASS |
+| TA-16 | future native-owner extensibility | owner-typed NativeRef + Reference Contracts | new owner family can join without changing prior owner meaning | evolution pressure | PASS WITH HARDENING |
+| TA-17 | physical feasibility freedom | logical contract independent from registry/FK/composite/hybrid | later PostgreSQL design can preserve contract without logical rewrite | PostgreSQL benchmark + WD-05 pressure | PASS WITH HARDENING |
+
+### Slice-A invariant additions
+
+```text
+INV-041  NativeRef != semantic Entity / Thing
+INV-042  NativeRef owner/type must be deterministically recoverable
+INV-043  native identity key is opaque to semantic consumers
+INV-044  native identity key must not be reused for a different referent
+INV-045  Reference Contract meaning/eligibility != NativeRef addressability
+INV-046  polymorphic technical reference != unconstrained any-object relation
+INV-047  Actor / Subject / Resource role reference != wrapper identity
+INV-048  valid role target != requirement for native identity in every case
+INV-049  ExternalRef != NativeRef
+INV-050  ExternalRef uniqueness scope includes provider/source/tenant/account/type where required
+INV-051  unresolved identity mapping is valid
+INV-052  identity reconciliation != destructive canonical rewrite
+INV-053  merged/superseded identity handle must not be reused for another referent
+INV-054  wrong identity merge/link must remain correctable
+INV-055  current resolved identity != what LifeOS historically knew automatically
+INV-056  NativeRef != Version / material-state reference
+INV-057  internal native identity != universal public/API correlation handle
+INV-058  referenceability != Visibility != Authority
+INV-059  identity equality internally known != permission to disclose linkage
+INV-060  physical reference strategy != logical identity ontology
+```
+
+### Slice-A counters
+
+```text
+TRACE ENTRIES REQUIRED       17
+TRACE ENTRIES CLOSED         17
+TRACE ENTRIES UNRESOLVED      0
+
+NEW INVARIANTS               20
+NEW INVARIANTS FAIL           0
+
+MUTATION TESTS APPLICABLE    12
+MUTATION PASS                12
+MUTATION FAIL                 0
+
+COUNTERFACTUAL FAMILIES      11
+COUNTERFACTUAL PASS          11
+COUNTERFACTUAL FAIL           0
+
+REGRESSION IMPACT            R3 WHOLE-LOGICAL
+DOMAIN REOPEN REQUIRED        0
+```
+
+Later slices that touch identity/reference/provider/reconciliation/visibility/version infrastructure must replay applicable TA entries and INV-041..060.
