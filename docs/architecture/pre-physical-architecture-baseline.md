@@ -1,24 +1,25 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — Phase 4 bridge baseline**
+- Status: **CURRENT — Phase 5 requirements incorporated**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Backend: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md` or `technical-decisions.md`; it states the downstream assumptions, prohibitions, mandatory hardenings, open owners and authorization boundary.
+Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md` or the detailed Phase 5 requirement packages; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement inputs, open owners and authorization boundary.
 
 ## Authority
 
-Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, this baseline, then the active workstream for open obligations.
+Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, this baseline, then the active workstream for open obligations.
 
-A physical `*-part-N` chain is one logical document. Never infer current state from only the first or last physical part.
+A physical `*-part-N` chain is one logical document. Never infer current state from only the first or last physical part. A tool/size split preserves the complete logical payload losslessly and is not a summary/condensation operation.
 
 ## Decided != authorized
 
 ```text
 DECIDED CURRENT DIRECTION != IMPLEMENTATION AUTHORIZATION
 PREFERRED BENCHMARK BASELINE != TECHNOLOGY SELECTION
+ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ```
 
 Current stage:
@@ -107,6 +108,43 @@ Phase 6 must additionally distinguish retrieved context, live external context a
 - **H11** consequential AuthZ provenance reconstructs Actor, represented party, Principal/security context, Authority/Consent/Visibility basis, policy/model version and effect.
 - **H12** non-interference/inference leakage includes existence, counts, ranking, errors, timing, free-busy, candidates, explanations and aggregates.
 
+## Phase 5 current requirement package
+
+The current detailed requirements live under [`requirements/README.md`](requirements/README.md) and its four packages.
+
+### AuthN/AuthZ
+
+Later implementation must preserve at least:
+
+```text
+Person != Account != Principal != Actor
+Authority != AuthZ decision
+actual Actor != represented party automatically
+technical allow/deny != canonical governance truth
+```
+
+Consequential authorization/effect provenance must be reconstructible where required; non-human Principals do not bypass governance; delayed effects must not rely indefinitely on stale governance state; disclosure enforcement includes inference/non-interference surfaces.
+
+Provider/protocol/session/policy-engine and enforcement mechanism selection remains deferred.
+
+### Security / privacy / retention / security-aware recovery
+
+Later design must support purpose-aware minimization, sensitive-data handling, secure secret/credential isolation, privacy-minimized observability, category/purpose-sensitive retention, truthful deletion/redaction/anonymization, non-reused native identity, propagation to derived/external state, security-governed backup/restore and prevention of unauthorized resurrection after restore.
+
+Exact legal basis, retention durations, final classification catalogue, residency/processor obligations and concrete security mechanisms remain explicit open decisions.
+
+### Consistency / side effects
+
+Later design must preserve expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, unresolved conflict, semantic multi-owner atomicity where required, truthful staged/partial state where distributed atomicity is impossible, canonical/provider-effect separation, ambiguous-failure retry safety, derived-state freshness, delayed target/governance revalidation, publication/replay integrity and reconstructible consequential effect history.
+
+Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain deferred.
+
+### Non-functional / multi-device / operational recovery
+
+Later design must prevent silent multi-device consequential overwrite, preserve divergent states for reconciliation, define offline capability per operation rather than globally, classify consistency/availability by consequence, maintain truthful provider/degraded state, support efficient current-state access alongside long history, explicitly set RPO/RTO/latency/availability/scale inputs before dependent Physical scoring, preserve temporal/DST semantics, protect privacy in observability and prove recovery through destructive tests.
+
+Numeric RPO/RTO/SLA/latency/scale/offline-duration targets remain explicit open parameters; they must be resolved or benchmarked as scenarios before final Physical acceptance, not guessed during Phase 5.
+
 ## Runtime/technical != Domain
 
 Account, Principal, Credential, AuthZ decision, Agent, Tool, Workflow, Automation runtime, Notification delivery, Job, queue/outbox, cache/index, API DTO/route and protocol adapter are technical/product concepts unless separately revalidated. Authentication/security session concepts must not be conflated with Domain `Session`.
@@ -142,14 +180,15 @@ No durable-workflow winner is selected. Phase 7 compares at least PostgreSQL+wor
 
 ## Open owners before Physical authorization
 
-- **Phase 5:** AuthN/AuthZ; security/privacy/retention/recovery; transaction/consistency/outbox/side effects; non-functional/multi-device/recovery requirements.
 - **Phase 6:** AI/context/runtime/integration boundaries.
 - **Phase 7:** durable workflow/async benchmark.
 - **Phase 8:** governed API/command/effect contract before concrete routes/DTOs.
 - **Phase 9:** search/observability/calendar/solver pressure.
-- **Phase 10:** Physical benchmark specification/register.
+- **Phase 10:** Physical benchmark specification/register, including resolution/scenario treatment of Phase 5 open parameters whose values affect candidate scoring.
 - **Phase 11:** repository engineering safety.
 - **Phase 12:** clean-room coherence QA and closure.
+
+Phase 5 requirements are current downstream inputs; open parameters recorded inside them remain obligations, not permission to ignore the requirement family.
 
 ## Explicitly unauthorized now
 
@@ -157,10 +196,10 @@ No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/N
 
 ## Backend consumption contract
 
-Backend Foundation must consume this baseline plus complete current Domain/Logical authorities and later accepted Physical/runtime/security/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
+Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, complete current Domain/Logical authorities and later accepted Physical/runtime/integration/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
 
 ## Documentation/evidence rule
 
 Current specs = current truth. ADRs = rationale + explicit supersession/qualification. Historical checkpoints = truthful chronology. Git = recoverable history.
 
-This baseline closes only Phase 4. It does not close Pre-Physical Coherence or authorize Physical work. After Phase 4 QA the next current work is **Phase 5 requirements**.
+This baseline does not close Pre-Physical Coherence or authorize Physical work. After Phase 5 remote QA, the next current phase is **Phase 6 — AI/context/runtime/integration boundaries**.
