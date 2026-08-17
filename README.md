@@ -19,8 +19,8 @@ WD-05: PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS on chore/pre-physical-coherence
-Phase 0–4 QA PASS
-Phase 5 requirements NEXT
+Phase 0–5 QA PASS
+Phase 6 AI/context/runtime/integration boundaries NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -72,7 +72,7 @@ GIT
 
 A stale current document may be replaced/deleted only after a knowledge-coverage check proves no meaningful requirement/rationale is lost.
 
-A physical split is a tooling/layout concern, not separate authority: a canonical `*-part-N` chain must be read as one logical document.
+A physical split is a tooling/layout concern, not separate authority: a canonical `*-part-N` chain must be read as one logical document. A split performed only because of size/tool limits is a **lossless physical partition of the complete logical payload**, never a summary, condensation or hidden semantic rewrite.
 
 ## Product direction
 
@@ -157,6 +157,7 @@ Specialized infrastructure requires demonstrated benefit from measured workload 
 Current architecture navigation starts at:
 
 - [`docs/architecture/pre-physical-architecture-baseline.md`](docs/architecture/pre-physical-architecture-baseline.md)
+- [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) and all four Phase 5 requirement packages
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
@@ -181,7 +182,7 @@ Relevant ADRs include:
 
 Historical Domain→Logical readiness files remain evidence and are explicitly separated from current architecture navigation in `docs/architecture/README.md`.
 
-## Non-negotiable downstream Logical constraints
+## Non-negotiable downstream constraints
 
 The closed Logical Model activates `WL-H01..WL-H12`, including:
 
@@ -197,6 +198,8 @@ The closed Logical Model activates `WL-H01..WL-H12`, including:
 - retention/redaction/tombstone integrity;
 - reconstructible consequential AuthZ provenance;
 - non-interference/inference-leakage protection.
+
+Phase 5 additionally establishes current requirement packages for AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery. Open parameters recorded there remain explicit downstream obligations; they are not permission for implementation to pick arbitrary defaults.
 
 Future Physical/API/runtime work must preserve these constraints rather than reinterpret semantics for implementation convenience.
 
