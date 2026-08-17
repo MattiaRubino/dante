@@ -19,8 +19,8 @@ WD-05: PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS on chore/pre-physical-coherence
-Phase 0–6 QA PASS
-Coordinated Phase 7–9 architecture tranche NEXT
+Phase 0–9 QA PASS
+Phase 10 Physical benchmark specification/register NEXT — READ-ONLY FIRST
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -164,9 +164,91 @@ Current Integration Hub distinction:
 
 `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider success/failure does not automatically determine canonical effect truth. MCP/A2A/future protocols remain adapters, not ontology/governance.
 
+### Governed operations / effects
+
+Consequential requests use the current engine-/transport-neutral [`docs/architecture/governed-operation-effect-contract.md`](docs/architecture/governed-operation-effect-contract.md).
+
+```text
+route / UI button / tool / AuthZ action / workflow step
+!= canonical governed operation/effect meaning
+```
+
+Where material, the contract keeps semantic target/effect, expected state, purpose/context, Principal/Actor/represented party, governance, confirmation/autonomy, idempotency/correlation, execution class and independent canonical/provider/runtime/conflict/reconciliation result semantics.
+
+```text
+request accepted != effect complete
+provider acknowledgement != canonical completion automatically
+workflow completed != Actual automatically
+technical cancellation != Domain cancellation automatically
+```
+
+Concrete routes/DTOs/API style remain later decisions.
+
+### Durable execution
+
+LifeOS distinguishes bounded asynchronous work from material long-running durable coordination.
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style remains a valid baseline mechanism class
+
+DEDICATED DURABLE EXECUTION
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+```
+
+Dedicated durable execution is structurally justified for operation classes involving material long waits, human review, provider callbacks, crash-resume, cancellation/timeouts, compensation or reconciliation. No runtime is implemented or selected by this posture.
+
+### Search / retrieval
+
+Current posture:
+
+```text
+structured filters + lexical/full-text search
+BASELINE
+
+semantic/vector retrieval
+BOUNDED CANDIDATE
+
+pgvector
+BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
+
+dedicated search/vector service
+NOT JUSTIFIED BY DEFAULT
+```
+
+Search/index/ranking/vector state remains derived. Search miss does not prove canonical nonexistence; vector similarity does not establish semantic truth.
+
+### Observability
+
+OpenTelemetry-first or equivalent standards-based instrumentation is the current direction; no telemetry vendor is selected.
+
+Telemetry IDs/state remain technical and do not replace Domain Provenance, security audit or required material effect history.
+
+### Calendar interoperability
+
+iCalendar, JSCalendar and provider calendar APIs are interoperability/adapter pressure, not LifeOS ontology. Provider recurrence IDs, sync tokens and revisions do not become LifeOS native/material identity automatically.
+
+### Solver
+
+```text
+simple deterministic rules / heuristics
+BASELINE
+
+OR-Tools CP-SAT
+PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT implemented
+
+AI
+interpretation / ambiguity / explanation / cross-domain reasoning
+NOT deterministic constraint authority
+```
+
+Solver output remains candidate/scenario state and reaches accepted Schedule/Plan/etc state only through the governed-operation/effect contract. `UNKNOWN != INFEASIBLE`.
+
 ### Specialized infrastructure
 
-Search/vector stores, caches, workflow engines, policy engines, graph/analytics/time-series systems and similar infrastructure are bounded candidates rather than defaults.
+Search/vector stores, caches, workflow engines, policy engines, graph/analytics/time-series systems, solver runtimes and similar infrastructure are bounded candidates rather than defaults.
 
 Specialized infrastructure requires demonstrated benefit from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
 
@@ -178,6 +260,9 @@ Current architecture navigation starts at:
 - [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) and all four Phase 5 requirement packages
 - [`docs/architecture/ai-context-runtime-boundaries.md`](docs/architecture/ai-context-runtime-boundaries.md)
 - [`docs/architecture/integration-hub-boundaries.md`](docs/architecture/integration-hub-boundaries.md)
+- [`docs/architecture/durable-execution-benchmark.md`](docs/architecture/durable-execution-benchmark.md)
+- [`docs/architecture/governed-operation-effect-contract.md`](docs/architecture/governed-operation-effect-contract.md)
+- [`docs/architecture/search-observability-calendar-solver-boundaries.md`](docs/architecture/search-observability-calendar-solver-boundaries.md)
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
@@ -188,7 +273,7 @@ Current semantic/model authority:
 - [`docs/domain/README.md`](docs/domain/README.md)
 - [`docs/domain/language-map.md`](docs/domain/language-map.md)
 - [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md)
-- [`docs/logical-model/decision-and-assumption-register-v1-part-9.md`](docs/logical-model/decision-and-assumption-register-v1-part-9.md)
+- the complete `docs/logical-model/decision-and-assumption-register-v1*` logical document
 - [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md)
 
 Relevant ADRs include:
@@ -221,9 +306,22 @@ The closed Logical Model activates `WL-H01..WL-H12`, including:
 
 Phase 5 establishes current requirement packages for AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery. Open parameters recorded there remain explicit downstream obligations; they are not permission for implementation to pick arbitrary defaults.
 
-Phase 6 establishes current AI/context/runtime and Integration Hub boundary contracts. Provider/model/agent/protocol/workflow mechanisms remain deferred and must not redefine these contracts.
+Phase 6 establishes current AI/context/runtime and Integration Hub boundary contracts. Phase 7–9 establishes current durable-execution posture, governed-operation/effect contract and search/observability/calendar/solver pressure. Preferred benchmark candidates remain candidates, not implementation authorization.
 
 Future Physical/API/runtime work must preserve these constraints rather than reinterpret semantics for implementation convenience.
+
+## Immediate architecture next step
+
+```text
+PHASE 10
+PHYSICAL BENCHMARK SPECIFICATION / REGISTER
+READ-ONLY FIRST
+
+PHYSICAL MODEL
+NOT STARTED / NOT AUTHORIZED
+```
+
+Phase 10 prepares/scopes the later Physical comparison and must consume Phase 5 open parameters plus Phase 6–9 pressure. It does not itself start the Physical Model without a separate authorization boundary.
 
 ## Git and environments
 
