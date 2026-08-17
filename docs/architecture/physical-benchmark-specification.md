@@ -1,6 +1,6 @@
 # Physical Benchmark Specification
 
-- Status: **CURRENT — Phase 10 benchmark-method content; closure pending remote QA**
+- Status: **CURRENT — Phase 10 QA PASS**
 - Stage: Pre-Physical Repository & Architecture Coherence
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Technology selection: **NOT PERFORMED**
