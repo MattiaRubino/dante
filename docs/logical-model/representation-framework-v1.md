@@ -1,6 +1,6 @@
 # LifeOS Logical Representation Framework v1
 
-**Status:** Stage-0 foundation  
+**Status:** Stage-0H hardened normative foundation  
 **Date:** 2026-08-17  
 **Purpose:** provide a controlled vocabulary for classifying logical representation choices without equating representation shape with domain ontology
 
@@ -358,35 +358,146 @@ If this template cannot be filled unambiguously, the candidate is not ready for 
 
 ---
 
-## 9. Slice deliverable template
+## 9. Candidate comparison template
+
+Every material candidate comparison must use a common frame rather than free-form advocacy.
+
+```text
+CANDIDATE ID
+representation summary
+
+STRENGTHS
+what it solves naturally
+
+FAILURE PRESSURE
+where it is most likely to collapse semantics/history/privacy/queryability
+
+TRACE COVERAGE
+which invariant/owner entries it satisfies
+
+MUTATION RESULT
+what breaks if key structure is removed/merged/genericized
+
+COUNTERFACTUAL RESULT
+which near-identical cases remain distinguishable
+
+SIMPLE CASE
+minimum ceremony required
+
+WORST CASE
+history/scale/provider/multi-actor behavior
+
+EVOLUTION
+likely migration/extension pressure
+
+EXTERNAL EVIDENCE
+principles/anti-patterns only
+
+ASSUMPTIONS
+registered dependencies
+
+PHYSICAL FREEDOM
+which SQL/API implementation choices remain open
+
+VERDICT
+SELECTED / REJECTED / BLOCKED / RETEST
+```
+
+At least one rejected alternative should normally be materially plausible; straw-man comparison does not satisfy the methodology.
+
+---
+
+## 10. Traceability and decision records
+
+Every selected logical disposition must be connected to:
+
+- `traceability-and-regression-ledger-v1.md` for Domain invariant -> logical representation -> query -> test -> verdict;
+- `decision-and-assumption-register-v1.md` for accepted decisions, rejected alternatives, material assumptions, evidence freshness and physical deferrals.
+
+A representation that cannot be traced or whose meaning depends on undocumented assumptions is not accepted merely because it can be implemented.
+
+---
+
+## 11. Slice deliverable template
 
 Every logical slice should produce at least:
 
 1. owner inventory;
 2. mandatory semantic invariants;
-3. candidate logical representations;
-4. selected representation and rejected alternatives;
-5. identity/reference rules;
-6. lifecycle/state rules;
-7. history/correction rules;
-8. typed relationship rules;
-9. provider/reconciliation rules;
-10. derived/projection rules;
-11. simple-case representation;
-12. specialist extension boundaries;
-13. high-value queries;
-14. adversarial test results;
-15. external benchmark findings;
-16. reverse mapping;
-17. open logical questions;
-18. LM gate matrix;
-19. exact deferred physical decisions.
+3. traceability matrix + cumulative invariant delta;
+4. high-value query/operation corpus;
+5. candidate logical representations;
+6. selected representation and rejected plausible alternatives;
+7. decision + assumption register entries;
+8. identity/reference rules;
+9. lifecycle/state rules;
+10. history/correction rules;
+11. typed relationship rules;
+12. provider/reconciliation rules;
+13. derived/projection rules;
+14. simple-case representation;
+15. worst-case/scale representation;
+16. specialist extension boundaries;
+17. historical replay results;
+18. fresh adversarial test results;
+19. mutation/destructive test results;
+20. counterfactual test results;
+21. external benchmark findings;
+22. Product Reality pressure where relevant;
+23. reverse mapping;
+24. cross-slice regression impact + replay;
+25. open logical questions;
+26. LM gate matrix;
+27. exact deferred physical decisions;
+28. remote Git QA when written.
 
 No exact SQL schema is required or authorized by this template.
 
 ---
 
-## 10. Initial slice roadmap
+## 12. Reference architecture guardrails for Slice A
+
+Slice A must prove a way for native identities and contextual roles to share technical references without introducing false semantic inheritance.
+
+At minimum test:
+
+```text
+Person
+Living Referent
+Asset
+Place
+Content Artifact
+Collective
+
+Actor role
+Subject role
+Resource role
+
+Account / Principal boundary
+provider identity mapping
+```
+
+Hard guardrails:
+
+```text
+native referent identity may be shared technically
+!= universal semantic Entity / Thing
+
+Actor / Subject / Resource role reference
+!= wrapper identity by default
+
+Account / Principal / provider identity
+!= Person or other native referent identity
+
+specific typed role/relation
+!= generic semantic edge
+```
+
+The framework does not preselect a registry, union/reference envelope, explicit-FK-only design or hybrid. Slice A must compare and falsify plausible alternatives.
+
+---
+
+## 13. Initial slice roadmap
 
 ### Slice A — Identity / Reference
 
