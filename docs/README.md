@@ -13,7 +13,7 @@ Read in this order:
 5. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
 6. [`development/branching-and-environments.md`](development/branching-and-environments.md)
 7. [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
-8. the active [`workstreams/`](workstreams/) handoff
+8. active/final-verification [`workstreams/`](workstreams/) handoff
 9. current model/architecture index and linked current sources
 10. relevant ADRs/evidence/methodologies
 11. relevant implementation/tests
@@ -35,10 +35,14 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-IN PROGRESS
-Phase 0–10 QA PASS
-Phase 11 repository engineering safety QA PASS
-Phase 12 clean-room coherence QA NEXT
+FINAL CLOSURE CANDIDATE on chore/pre-physical-coherence
+Phase 0–11 QA PASS
+Phase 12 clean-room closure record written
+Phase 12 activation requires exact final remote gate QA
+
+AFTER PHASE 12
+independent total repository audit required before definitive closure
+NO main integration yet
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -47,16 +51,34 @@ BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 ```
 
-Active backend/architecture handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
+Active/final-verification backend/architecture handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
 
 ## Current semantic/model sources
 
+### Product
+
 - [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current product identity/North Star.
-- [`domain/README.md`](domain/README.md) — Domain Atlas entry point; read complete canonical split chains where applicable.
-- [`domain/language-map.md`](domain/language-map.md) — current Domain language map.
-- [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — closed Whole Logical Model.
-- complete `logical-model/decision-and-assumption-register-v1*` logical document — current Logical decisions/hardenings/deferrals unless explicitly superseded.
-- [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical closure evidence.
+
+### Domain
+
+The Domain authority is cumulative. The early entry payload retains truthful historical in-progress state; current closure is established by later continuations/evidence.
+
+Read at minimum:
+
+- [`domain/README.md`](domain/README.md) — Domain Atlas entry payload;
+- [`domain/README-part-20.md`](domain/README-part-20.md) — final corrected Domain status / closure activation;
+- [`domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md`](domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md) — final closure evidence;
+- [`domain/language-map.md`](domain/language-map.md) plus [`domain/language-map-part-22.md`](domain/language-map-part-22.md) — terminology authority and final disposition.
+
+Current Domain state: **CLOSED**.
+
+### Logical
+
+- [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — canonical Whole-Logical content payload;
+- complete `logical-model/decision-and-assumption-register-v1*` logical chain;
+- [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — separate closure activation / CLOSED evidence.
+
+Current Logical state: **CLOSED**.
 
 Product/UI terminology does not override accepted Domain/Logical semantics.
 
@@ -64,6 +86,7 @@ Product/UI terminology does not override accepted Domain/Logical semantics.
 
 Start with:
 
+- [`architecture/README.md`](architecture/README.md)
 - [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md)
 - [`architecture/requirements/README.md`](architecture/requirements/README.md) + all four Phase 5 packages
 - [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md)
@@ -74,22 +97,23 @@ Start with:
 - [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md)
 - [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md)
 - [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md)
-- [`architecture/README.md`](architecture/README.md)
+- [`architecture/pre-physical-clean-room-qa.md`](architecture/pre-physical-clean-room-qa.md) — Phase 12 evidence/activation contract
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
+- [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
 
 Historical `architecture/domain-model-logical-readiness*` files remain truthful transition/validation evidence, not current architecture specifications.
 
 ## Phase 5 requirements
 
-Current requirement owners:
+Current owners:
 
 - AuthN/AuthZ;
 - security/privacy/retention/security-aware recovery;
 - consistency/side effects;
 - non-functional/multi-device/operational recovery.
 
-Accepted requirements, explicit open parameters and deferred implementation mechanisms remain separate. Open parameters are downstream obligations, not permission for arbitrary defaults.
+Accepted requirements, explicit open parameters and deferred implementation mechanisms remain distinct. Open parameters are downstream obligations, not permission for arbitrary defaults.
 
 ## Phase 6 boundaries
 
@@ -135,7 +159,7 @@ structured + lexical/full-text = baseline
 semantic/vector = bounded candidate
 
 OBSERVABILITY
-OpenTelemetry-first / equivalent = current direction
+OpenTelemetry-first / equivalent = direction
 no vendor selected
 
 CALENDAR
@@ -148,13 +172,7 @@ OR-Tools CP-SAT = preferred specialized benchmark candidate — NOT implemented
 
 ## Phase 10 Physical benchmark method
 
-Current package:
-
-- [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md)
-- [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md)
-- [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md)
-
-Phase 10 decides **how** the later Physical Model benchmark must be run. It does not select a winner or create a Physical schema.
+The Phase 10 package defines **how** a later authorized Physical benchmark must run. It does not select a technology.
 
 ```text
 PRIMARY
@@ -166,74 +184,62 @@ no-specialized-store baseline vs Neo4j
 
 SEARCH / VECTOR
 structured + lexical/full-text baseline vs bounded pgvector
-
-EVENT / DOCUMENT
-bounded mechanisms first; specialized product only on demonstrated gap/benefit
 ```
 
-Hard correctness gates precede performance scoring. LOW/BASE/HIGH values are synthetic qualification envelopes, not business forecasts. `PREFERRED != SELECTED`.
+Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Evidence pins exact product/version/edition/deployment. `PREFERRED != SELECTED`.
 
-## Phase 11 repository engineering safety
+## Phase 11 repository safety
 
-Current policy: [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md).
+Phase 11 is QA PASS. Effective remote `main` protection was verified through `lifeos-main-safety` rather than inferred from documentation.
 
-Verified current main ruleset:
+Current owner-driven posture:
 
 ```text
-lifeos-main-safety
-active
-~DEFAULT_BRANCH
-no bypass
+PR required
 main deletion blocked
 force-push/non-fast-forward blocked
-pull request required
-required approvals = 0 while owner-driven
 review-thread resolution required
-merge commits only
-required checks = 0 until real stable workflows exist
-auto-delete merged head branches enabled
+required approvals = 0 while no independent reviewer exists
+required status checks = none until real stable check contexts exist
 ```
 
-Confirmed accidental refs were removed. Dependabot/secret/code-scanning state cannot be independently read by the connected GitHub integration because those endpoints return 403; the limitation is recorded explicitly in the safety policy.
+Security-setting endpoints unavailable to the connector remain explicitly connector-unverifiable.
 
-Future implementation must add real tests/lint/types/security/Physical checks before any such context becomes required on `main`.
+## Phase 12 clean-room QA
 
-## Current Physical benchmark posture
+Current evidence: [`architecture/pre-physical-clean-room-qa.md`](architecture/pre-physical-clean-room-qa.md).
 
-No Physical technology is finally selected.
+The initial clean-room review found bounded current-truth propagation/discoverability defects, not Domain/Logical or architectural contradictions. Repairs were limited to current consumer/navigation documents.
 
-- PostgreSQL hybrid — preferred primary benchmark baseline;
-- TypeDB — mandatory primary challenger;
-- Neo4j/property graph — serious secondary/read-projection candidate;
-- event/document mechanisms — bounded candidates;
-- pgvector — bounded semantic-retrieval candidate where applicable;
-- generic EAV/generic-edge/universal meta-model — hard reject for canonical kernel.
+Phase 12 becomes `QA PASS / CLOSED` only after its final remote activation gate proves:
 
-## Workstreams
+```text
+unique paths 11
+added 1
+modified 10
+deleted 0
+unexpected 0
+behind_by 0
+main unchanged
+```
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation; Phase 0–11 QA PASS, Phase 12 next.
-- [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **NOT STARTED / DEFERRED** future implementation handoff.
+After Phase 12 activation, current user instruction still requires a **separate independent total repository audit** before definitive whole Pre-Physical closure. Do not merge to `main` yet.
 
-Domain/Logical historical branches and workstream documents are evidence, not starting points for new semantic work.
-
-## Documentation lifecycle rule
+## Documentation architecture rule
 
 ```text
 CURRENT SPECIFICATION
 = current truth only
 
 ADR
-= rationale + explicit current status/supersession
+= rationale + explicit supersession/qualification
 
 HISTORICAL / VALIDATION EVIDENCE
 = truthful chronology
 
-GIT
+GIT / PR HISTORY
 = recoverable history
 ```
-
-A physical `*-part-N` chain is one logical document. If splitting exists only because of size/tool limits, the complete payload must be preserved losslessly; a split is not a summary, condensation or hidden semantic rewrite.
 
 Before replacing/deleting stale current documentation:
 
@@ -245,17 +251,24 @@ rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
 ```
 
-## Source-of-truth rule
+A physical split is not separate authority. A size/tool-limit split must preserve the complete logical payload losslessly; it is not summary/condensation/hidden semantic rewrite.
 
-For integrated state, current `main` wins over conversation memory and historical branches/files. For active unmerged work, bounded handoff/current files may contain newer truth only inside that scope.
+## Active parallel workstream
 
-## Immediate next step
+Phase 4 Home/Today remains separate on `prototype/phase-4-today-home`. Prototype choices do not redefine accepted Domain/Logical/backend architecture implicitly.
+
+## Explicit current boundary
 
 ```text
-PHASE 12
-CLEAN-ROOM REPOSITORY / ARCHITECTURE COHERENCE QA
-READ-ONLY FIRST
+MAIN INTEGRATION
+NOT AUTHORIZED YET
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
+
+BACKEND FOUNDATION
+NOT STARTED / DEFERRED
+
+NEXT AFTER PHASE 12 ACTIVATION
+independent total repository audit
 ```
