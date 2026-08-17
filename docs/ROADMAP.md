@@ -76,6 +76,9 @@ Phase 9 — search / observability / calendar / solver pressure
 QA PASS
 
 Phase 10 — Physical benchmark specification/register
+QA PASS
+
+Phase 11 — repository engineering safety
 NEXT — READ-ONLY FIRST
 ```
 
@@ -125,8 +128,8 @@ A split performed only because of file size/tool/connector limits is a **lossles
 8. **Phase 7 — durable workflow / async benchmark** — QA PASS WITH CONDITIONAL RANKING.
 9. **Phase 8 — governed API / command / effect contract** — QA PASS.
 10. **Phase 9 — search / observability / calendar / solver pressure** — QA PASS.
-11. **Phase 10 — Physical benchmark specification/register** — NEXT, read-only first.
-12. **Phase 11 — repository engineering safety alignment**.
+11. **Phase 10 — Physical benchmark specification/register** — QA PASS.
+12. **Phase 11 — repository engineering safety alignment** — NEXT, read-only first.
 13. **Phase 12 — clean-room repository/architecture coherence QA and closure**.
 14. **Separate user gate** — decide whether to authorize a Physical Model workstream.
 
@@ -143,6 +146,9 @@ Current navigation:
 - [`architecture/durable-execution-benchmark.md`](architecture/durable-execution-benchmark.md)
 - [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md)
 - [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md)
+- [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md)
+- [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md)
+- [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md)
 - [`architecture/README.md`](architecture/README.md)
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
@@ -155,21 +161,33 @@ Phase 6 adds current AI/context/runtime and Integration Hub boundaries without s
 
 Phase 7–9 adds current durable-execution benchmark posture, governed-operation/effect contract and search/observability/calendar/solver pressure without starting production implementation or Physical design.
 
+Phase 10 adds the executable future Physical benchmark method: role-specific candidate lanes, hard correctness gates, common scenario corpus, low/base/high synthetic qualification tiers, sensitivity handling, evidence pinning and result bookkeeping. It does not select the Physical Model.
+
 The old mixed `architecture/personal-data-ai-integration.md` current specification remains retired after knowledge-coverage QA. Its historical payload remains recoverable in Git.
 
 The `architecture/domain-model-logical-readiness*` chain remains historical transition/validation evidence, not a current architecture specification.
 
 ## Current Physical technology posture — benchmark, not selection
 
-- **PostgreSQL hybrid:** current preferred baseline, not final selection.
-- **TypeDB:** mandatory challenger.
-- **Neo4j/property graph:** serious secondary/read-projection challenger.
-- **event store/event stream:** bounded history/integration mechanism candidate.
-- **document store:** bounded provider/specialist/flexible candidate.
-- **pgvector:** bounded semantic-retrieval candidate.
-- **generic EAV/generic edge/universal meta-model:** hard reject for canonical kernel.
+```text
+PRIMARY CANONICAL PERSISTENCE
+PostgreSQL hybrid — current preferred baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
 
-Technology selection must use LifeOS-specific correctness/history/governance/concurrency/operability/runtime/search/solver pressure.
+SECONDARY GRAPH / TRAVERSAL
+no-specialized-store baseline vs Neo4j/property graph
+
+SEARCH / SEMANTIC RETRIEVAL
+structured + lexical/full-text baseline vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded native mechanisms first; specialized candidate only on demonstrated gap/benefit
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
+
+Technology selection must use LifeOS-specific correctness/history/governance/concurrency/operability/runtime/search/solver pressure under the Phase 10 benchmark method.
 
 ## Completed Pre-Physical architecture stages
 
@@ -362,52 +380,67 @@ PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
 
 Hard constraints are not silently relaxed; `UNKNOWN != INFEASIBLE`; solver output remains candidate/scenario until accepted through the governed-operation contract.
 
-## Phase 10 — Physical benchmark specification/register — NEXT
+## Phase 10 — Physical benchmark specification/register — QA PASS
 
-Phase 10 is **read-only first** and does not start the Physical Model.
+PRE-SCOPE:
 
-It must create the benchmark specification/register that a separately authorized later Physical Model can execute against.
+`01df10a4267880a213ede8582b0193ff616f9a70`
 
-At minimum Phase 10 must consume:
+Current package:
 
-- complete closed Domain + Logical constraints;
-- Phase 5 requirement packages and all open parameters;
-- Phase 6 AI/context/integration boundaries;
-- Phase 7 durable-execution ranking/operation classes;
-- Phase 8 governed-operation/effect contract;
-- Phase 9 search/observability/calendar/solver pressure.
+- [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md);
+- [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md);
+- [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md).
 
-Benchmark destructive LifeOS scenarios including:
+Content HEAD:
 
-- concurrent consequential edits;
-- expected-state conflicts;
-- multi-owner changes;
-- selective disclosure/inference leakage;
-- provider divergence/reconciliation;
-- redaction/history reconstruction;
-- recurrence across DST;
-- stale availability/derived state;
-- AuthZ provenance;
-- AI proposal → approval → effect;
-- revoked consent/authority during execution;
-- long-running crash/restart;
-- backup/restore;
-- schema evolution over historical state;
-- multi-device/offline divergence;
-- ambiguous external-effect failure/replay;
-- restore after deletion/redaction;
-- search/vector filtering/recall/deletion pressure;
-- calendar recurrence/provider rebaseline pressure;
-- solver input/result/freshness pressure;
-- explicit low/base/high scale/performance scenarios where exact forecasts remain open.
+`057df9bdc19d89ea74fcee0e5d999ebc34cf93dc`
 
-Phase 10 must resolve or scenario-model Phase 5 open parameters when their values materially affect candidate scoring.
+Remote content QA:
 
-Phase 10 must define acceptance/rejection evidence and benchmark bookkeeping without creating schema/tables/indexes/migrations or declaring a Physical winner.
+```text
+ahead_by       8
+behind_by      0
+total_commits  8
+added           3
+modified        5
+deleted         0
+unexpected      0
+```
 
-## Phase 11 — repository engineering safety
+Phase 10 establishes:
 
-Before production backend implementation, establish appropriate main protection/ruleset/CI/required checks when concrete checks exist.
+- role-specific competition rather than one false universal database leaderboard;
+- PostgreSQL hybrid vs TypeDB as mandatory primary lane;
+- no-specialized-store vs Neo4j as secondary graph lane;
+- structured/lexical baseline vs bounded pgvector where applicable;
+- bounded event/document mechanisms with explicit admission trigger for specialized products;
+- non-compensable semantic/correctness hard gates before weighted scoring;
+- common semantic assertions with idiomatic candidate-specific Physical mappings;
+- deterministic destructive corpus including concurrency, governance, provider divergence, deletion/restore, temporal/DST, search/vector, solver, recovery and evolution;
+- LOW/BASE/HIGH synthetic qualification tiers that are explicitly **not forecasts**;
+- sensitivity treatment for open RPO/RTO/latency/availability/scale inputs;
+- exact product/version/edition/deployment evidence pinning;
+- result vocabulary `PASS / PASS-CONDITIONAL / HOLD / REJECT / SENSITIVITY-DEPENDENT / PREFERRED`;
+- `PREFERRED != SELECTED`.
+
+Phase 10 did not create PostgreSQL tables, TypeDB schema, Neo4j projection, pgvector index, benchmark harness implementation or any Physical winner.
+
+## Phase 11 — repository engineering safety — NEXT
+
+Phase 11 is **read-only first**.
+
+It should determine the repository-safety baseline needed before future production work, including as applicable:
+
+- main-branch protection/ruleset posture;
+- required review/merge constraints;
+- CI/check classes that are meaningful before backend implementation;
+- secret/security scanning posture;
+- dependency/update policy;
+- artifact/test/evidence expectations;
+- how future branches/PRs prove required checks without inventing non-existent CI jobs today.
+
+Phase 11 does not start backend implementation or the Physical Model.
 
 ## Phase 12 — clean-room QA and closure
 
@@ -420,7 +453,7 @@ what LifeOS is
 → Logical CLOSED
 → current architecture truth
 → requirements/boundaries constraining downstream design
-→ benchmark candidates
+→ benchmark method/candidates
 → what remains unauthorized
 ```
 
@@ -447,7 +480,7 @@ Only after Phase 12 closure may the user separately decide whether to authorize 
 
 Backend Foundation and production implementation are **NOT STARTED / DEFERRED**.
 
-Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Phase 5 requirements + Phase 6–9 contracts + accepted Physical/current runtime contracts rather than old product-label schemas.
+Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Phase 5 requirements + Phase 6–9 contracts + the accepted Physical result produced under the Phase 10 method + current runtime contracts rather than old product-label schemas.
 
 ## Explicitly rejected/deferred by default
 
@@ -460,6 +493,7 @@ Do not introduce by default:
 - dedicated search/vector infrastructure without demonstrated benefit;
 - one universal workflow engine for every background job;
 - Restate/Temporal/DBOS adoption merely because one is preferred in a benchmark;
+- Phase 10 registered/preferred database candidates as selected infrastructure;
 - solver output as direct canonical state;
 - implicit collaboration/social implementation inside personal-first V1.
 
