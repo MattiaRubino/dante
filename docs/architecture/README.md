@@ -20,12 +20,15 @@ Read these for the current architecture state:
 5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable execution/async benchmark, operation-class boundary and conditional candidate ranking;
 6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase 8 engine-/transport-neutral governed operation/effect contract before concrete routes/DTOs;
 7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase 9 search/retrieval, observability, calendar-interoperability and deterministic-solver pressure contract;
-8. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
-9. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
-10. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
-11. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
-12. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
-13. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
+8. [`physical-benchmark-specification.md`](physical-benchmark-specification.md) — Phase 10 executable benchmark methodology: candidate lanes, hard gates, fairness, scoring, evidence and result rules;
+9. [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md) — Phase 10 common semantic/destructive fixtures, synthetic low/base/high qualification tiers and sensitivity cases;
+10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — Phase 10 role/candidate register and future result slots; registered/preferred does not mean selected;
+11. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
+12. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
+13. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
+14. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
+15. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
+16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
 
 A physically split canonical document is **one logical document**. Never treat the first path, the newest continuation or an isolated `*-part-N` file as complete authority.
 
@@ -107,6 +110,44 @@ No concrete REST/RPC/GraphQL route, DTO, command bus or execution engine is sele
 
 No search vendor, vector database, telemetry vendor, calendar-provider model or solver implementation is selected.
 
+## Phase 10 Physical benchmark method
+
+The current Phase 10 package consists of three distinct logical documents:
+
+- [`physical-benchmark-specification.md`](physical-benchmark-specification.md);
+- [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md);
+- [`physical-benchmark-register.md`](physical-benchmark-register.md).
+
+Phase 10 decides **how a later authorized Physical Model must be benchmarked**, not which technology wins.
+
+The benchmark uses competition by role:
+
+```text
+PRIMARY CANONICAL LANE
+PostgreSQL hybrid — mandatory preferred baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH LANE
+no-specialized-store baseline
+vs Neo4j
+
+SEARCH / SEMANTIC RETRIEVAL LANE
+structured + lexical/full-text baseline
+vs bounded pgvector where applicable
+
+EVENT / DOCUMENT LANE
+bounded native mechanisms first
+specialized candidate only on demonstrated gap/benefit
+```
+
+Primary candidates must pass non-compensable semantic/correctness hard gates before weighted performance/operability scoring. The common scenario corpus includes expected-state races, multi-owner consistency, deep history, selective disclosure, provider divergence, deletion + restore, recurrence/DST, search/vector filtering, solver freshness, recovery and schema evolution.
+
+Low/base/high numbers are **synthetic qualification tiers**, not user-growth forecasts. Open RPO/RTO/latency/scale values remain sensitivity inputs until accepted product/operational targets exist.
+
+Benchmark evidence is pinned to exact product version + edition + deployment mode. `PREFERRED != SELECTED` remains mandatory.
+
+No Physical mapping/schema or benchmark implementation is authorized by the Phase 10 documentation package itself.
+
 ## Current stage boundary
 
 ```text
@@ -123,6 +164,7 @@ Phase 6 AI/context/runtime/integration contracts CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver pressure contract CURRENT
+Phase 10 Physical benchmark method package CURRENT
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
@@ -131,15 +173,16 @@ Backend production implementation
 NOT STARTED / DEFERRED
 ```
 
-The current persistence posture is a benchmark posture, not a final Physical selection:
+The current persistence posture remains a benchmark posture, not a final Physical selection:
 
-- PostgreSQL hybrid — current preferred baseline;
-- TypeDB — mandatory challenger;
+- PostgreSQL hybrid — current preferred primary baseline;
+- TypeDB — mandatory primary challenger;
 - Neo4j/property graph — serious secondary/read-projection candidate;
 - event/document mechanisms — bounded candidates;
+- pgvector — bounded semantic-retrieval candidate when applicable;
 - generic EAV/generic-edge/universal meta-model — rejected for the canonical kernel.
 
-Phase 10 owns the Physical benchmark specification/register. Nothing in Phases 7–9 authorizes the Physical Model or production implementation.
+Phase 10 provides a reproducible future decision method. It does not authorize execution of the Physical Model benchmark or production implementation.
 
 ## Historical transition / validation evidence
 
@@ -159,7 +202,7 @@ ADRs preserve decision rationale and explicit supersession state. An older ADR m
 
 Current architecture specifications should not repeat obsolete ADR prose merely to preserve history. They should state the current result and link to the relevant ADR only where rationale is useful.
 
-No new ADR is created merely to record a preferred benchmark candidate. A benchmark preference is not an implementation selection.
+No new ADR is created merely to record a preferred benchmark candidate or benchmark method. A benchmark preference/method is not an implementation selection.
 
 ## Documentation rule
 
