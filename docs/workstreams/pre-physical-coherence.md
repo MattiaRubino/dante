@@ -8,7 +8,7 @@
 - Phase 3 PRE-SCOPE: `d2f190de06bf0e4e1e491c0c2dc601eb48668da9`
 - Phase 3 content HEAD before closure marker: `50731dbee3d2cc661972700ef0bce521b67098c6`
 - Phase 4 PRE-SCOPE: `46b963394e29179fadf20cb3b11c35dbf3b6edc2`
-- Phase 4 content HEAD before this closure marker: `d67cd83f462611b2cc6d341937432e705f7a8682`
+- Phase 4 content HEAD before closure markers: `d67cd83f462611b2cc6d341937432e705f7a8682`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
@@ -282,7 +282,7 @@ DELETE
 none
 ```
 
-Phase 4 content HEAD before this closure marker:
+Phase 4 content HEAD before closure markers:
 
 `d67cd83f462611b2cc6d341937432e705f7a8682`
 
@@ -306,6 +306,31 @@ Phase 4 content HEAD before this closure marker:
 `docs/workstreams/backend-foundation.md` now names the baseline as mandatory downstream reading while remaining **NOT STARTED / DEFERRED**.
 
 Domain and Logical semantics were not changed. No ADR was changed. No Physical/runtime implementation decision was introduced.
+
+Remote Phase 4 path QA from PRE-SCOPE through the first closure marker returned:
+
+```text
+ahead_by       8
+behind_by      0
+total_commits  8
+added           1
+modified        7
+deleted         0
+unexpected      0
+```
+
+The eight unique changed paths are exactly the approved gate. `main` remained unchanged.
+
+## Operational anomaly — accidental branch ref
+
+During Phase 4 execution an incorrect tool invocation created an unrelated temporary branch ref:
+
+```text
+__no-op__
+→ 46b963394e29179fadf20cb3b11c35dbf3b6edc2
+```
+
+It does **not** alter `chore/pre-physical-coherence`, `main`, the Phase 4 file delta or any project content. The currently available GitHub connector exposes branch create/update but no `delete_ref`, so this ref could not be removed in-session. It should be deleted as repository hygiene when a branch-delete mechanism is available (for example `git push origin --delete __no-op__`). Do not use it as a work branch or source of truth.
 
 ## Current exact task — Phase 5 read-only requirements inventory
 
@@ -426,7 +451,6 @@ Specialized infrastructure requires demonstrated benefit. Evidence may come from
 - concrete Auth provider/runtime selection;
 - provider adapters;
 - frontend/prototype changes inside this workstream;
-- historical branch cleanup/deletion;
 - direct modification of `main`.
 
 ## Exact continuation
