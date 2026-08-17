@@ -1,16 +1,16 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — Phase 6 boundaries incorporated**
+- Status: **CURRENT — Phase 7–9 contracts incorporated**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Backend: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md`, the detailed Phase 5 requirement packages or the detailed Phase 6 boundary contracts; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement/boundary inputs, open owners and authorization boundary.
+Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md`, the detailed Phase 5 requirement packages, the Phase 6 boundary contracts or the detailed Phase 7–9 architecture contracts; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement/boundary inputs, benchmark posture, open owners and authorization boundary.
 
 ## Authority
 
-Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, the Phase 6 AI/context/runtime and Integration Hub contracts, this baseline, then the active workstream for open obligations.
+Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, the Phase 6 AI/context/runtime and Integration Hub contracts, the Phase 7 durable-execution benchmark, Phase 8 governed-operation/effect contract, Phase 9 search/observability/calendar/solver contract, this baseline, then the active workstream for open obligations.
 
 A physical `*-part-N` chain is one logical document. Never infer current state from only the first or last physical part. A tool/size split preserves the complete logical payload losslessly and is not a summary/condensation operation.
 
@@ -19,6 +19,7 @@ A physical `*-part-N` chain is one logical document. Never infer current state f
 ```text
 DECIDED CURRENT DIRECTION != IMPLEMENTATION AUTHORIZATION
 PREFERRED BENCHMARK BASELINE != TECHNOLOGY SELECTION
+PREFERRED BENCHMARK CANDIDATE != TECHNOLOGY SELECTION
 ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
 ```
@@ -30,6 +31,11 @@ Product/North Star        CURRENT
 Domain Atlas              CLOSED
 Logical Model             CLOSED
 Pre-Physical Coherence    IN PROGRESS
+Phase 5 requirements      CURRENT
+Phase 6 boundaries        CURRENT
+Phase 7 benchmark         CURRENT
+Phase 8 effect contract   CURRENT
+Phase 9 pressure contract CURRENT
 Physical Model            NOT STARTED / NOT AUTHORIZED
 Backend Foundation        NOT STARTED / DEFERRED
 ```
@@ -45,6 +51,12 @@ Backend Foundation        NOT STARTED / DEFERRED
 - Object/file storage stays behind a provider abstraction.
 - AI stays behind replaceable/provider-neutral boundaries and a bounded Context Builder.
 - Provider state remains distinct from canonical LifeOS state.
+- Consequential operations use an engine-/transport-neutral governed operation/effect contract.
+- Bounded async work and material long-running durable execution are distinct runtime classes.
+- Structured + lexical/full-text search is the baseline posture; semantic/vector search is bounded.
+- OpenTelemetry-first or equivalent standards-based observability is the current direction, not a vendor selection.
+- Calendar standards/providers are interoperability/adaptor pressure, not ontology authority.
+- Deterministic rules/heuristics remain the baseline for explicit constraints; OR-Tools CP-SAT is the preferred specialized solver benchmark candidate, not an implementation selection.
 - Specialized infrastructure requires demonstrated measured or structural benefit.
 - SQLAlchemy/Alembic remain conditional on accepted Physical design.
 
@@ -150,7 +162,7 @@ Exact legal basis, retention durations, final classification catalogue, residenc
 
 Later design must preserve expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, unresolved conflict, semantic multi-owner atomicity where required, truthful staged/partial state where distributed atomicity is impossible, canonical/provider-effect separation, ambiguous-failure retry safety, derived-state freshness, delayed target/governance revalidation, publication/replay integrity and reconstructible consequential effect history.
 
-Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain deferred.
+Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain deferred except for the Phase 7 benchmark posture described below.
 
 ### Non-functional / multi-device / operational recovery
 
@@ -205,42 +217,166 @@ MCP/A2A/future protocols are adapters, not ontology or LifeOS governance.
 
 Provider/adapter/protocol selection remains deferred.
 
-## Benchmark posture
+## Phase 7 durable-execution posture
+
+Detailed source: [`durable-execution-benchmark.md`](durable-execution-benchmark.md).
+
+Current boundary:
+
+```text
+BOUNDED ASYNC WORK
+short / bounded / cheaply reconstructible
+→ DB + worker/outbox style remains a valid baseline mechanism class
+
+MATERIAL DURABLE PROCESS
+long waits / human review / provider callbacks / crash-resume /
+material cancellation / compensation / reconciliation
+→ dedicated durable execution is structurally justified
+```
+
+Current dedicated candidate ranking:
+
+```text
+Restate   preferred structural-fit candidate — NOT SELECTED
+Temporal  strongest mandatory challenger — NOT SELECTED
+DBOS      conditional PostgreSQL-dependent challenger — NOT SELECTED
+```
+
+Runtime completion/cancellation does not manufacture Domain Actual/Outcome/Confirmation/cancellation. External reality is never considered exactly-once merely because a runtime replays durably.
+
+Phase 10 must pressure-test the ranking again if Physical choice, RPO/RTO/SLO classes, deployment topology or operational assumptions materially change it.
+
+## Phase 8 governed operation/effect contract
+
+Detailed source: [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md).
+
+Consequential operations preserve where applicable:
+
+```text
+contract/version
+semantic target/facet
+requested effect semantics
+input/candidate
+purpose/context
+material/expected state
+derived/live basis + freshness
+Principal / actual Actor / represented party
+governance basis
+autonomy / preview / confirmation requirement
+idempotency
+correlation/causation
+execution class
+deadline/expiry/cancellation semantics
+canonical result
+provider result
+runtime result
+conflict/partial/reconciliation/provenance
+```
+
+No one universal success/status value can replace these independent result axes.
+
+```text
+request accepted != effect complete
+workflow complete != Actual automatically
+provider 2xx != canonical completion automatically
+technical cancellation != Domain cancellation automatically
+```
+
+Concrete REST/RPC/GraphQL routes, DTOs, error codes, command buses and engine bindings remain deferred.
+
+## Phase 9 search / observability / calendar / solver posture
+
+Detailed source: [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md).
+
+### Search
+
+```text
+structured filters + lexical/full-text
+BASELINE
+
+semantic/vector retrieval
+BOUNDED CANDIDATE
+
+pgvector
+BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
+
+dedicated search/vector service
+NOT JUSTIFIED BY DEFAULT
+```
+
+Ranking/search/index state remains derived, disclosure-aware and deletion-aware. Search miss != canonical nonexistence. ANN/vector similarity != truth.
+
+### Observability
+
+```text
+OpenTelemetry-first or equivalent standards-based instrumentation
+CURRENT DIRECTION
+
+vendor/backend
+NOT SELECTED
+```
+
+Telemetry identifiers/state remain technical and do not replace Domain Provenance, security audit or material history by identity.
+
+### Calendar interoperability
+
+```text
+iCalendar / JSCalendar / provider calendar APIs
+INTEROPERABILITY + ADAPTER PRESSURE
+NOT LIFEOS ONTOLOGY
+```
+
+Recurrence exceptions/overrides, timezone/floating/all-day semantics, provider sync tokens and deletion/cancellation behavior must be pressure-tested while preserving LifeOS owner/state distinctions.
+
+### Solver
+
+```text
+simple deterministic rules / heuristics
+BASELINE
+
+OR-Tools CP-SAT
+PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
+
+AI
+interpretation / ambiguity / explanation / cross-domain reasoning
+NOT deterministic constraint authority
+```
+
+Solver `UNKNOWN` != `INFEASIBLE`; solver output remains candidate/scenario until Phase 8 establishes an accepted governed effect.
+
+## Physical benchmark posture
 
 No Physical technology is selected:
 
 ```text
 PostgreSQL hybrid         preferred baseline — not selected
-TypeDB                     mandatory challenger
-Neo4j/property graph       serious secondary/read-projection candidate
+TypeDB                    mandatory challenger
+Neo4j/property graph      serious secondary/read-projection candidate
 event/document mechanisms bounded candidates
-pgvector                   bounded semantic-retrieval candidate
+pgvector                  bounded semantic-retrieval candidate
 generic EAV/generic edge/universal meta-model HARD REJECT
 ```
 
-No durable-workflow winner is selected. Phase 7 compares at least PostgreSQL+worker+transactional outbox, Temporal, Restate and DBOS.
+Phase 10 must benchmark LifeOS-specific correctness/history/governance/concurrency/runtime/search/solver pressure, not only synthetic throughput.
 
 ## Open owners before Physical authorization
 
-- **Phase 7:** durable workflow/async benchmark.
-- **Phase 8:** governed API/command/effect contract before concrete routes/DTOs.
-- **Phase 9:** search/observability/calendar/solver pressure.
-- **Phase 10:** Physical benchmark specification/register, including resolution/scenario treatment of Phase 5 open parameters whose values affect candidate scoring.
+- **Phase 10:** Physical benchmark specification/register, including resolution/scenario treatment of Phase 5 open parameters whose values affect candidate scoring and consumption of Phase 7–9 pressure.
 - **Phase 11:** repository engineering safety.
 - **Phase 12:** clean-room coherence QA and closure.
 
-Phase 5 requirements and Phase 6 boundary contracts are current downstream inputs; open parameters/decisions recorded inside them remain obligations, not permission to ignore the requirement/boundary family.
+Phase 5 requirements, Phase 6 boundary contracts and Phase 7–9 architecture contracts are current downstream inputs. Open parameters/decisions recorded inside them remain obligations, not permission to ignore their requirement/boundary family.
 
 ## Explicitly unauthorized now
 
-No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/Neo4j design, SQL/migrations, concrete API routes/DTOs, AuthN/AuthZ engine/provider implementation, workflow/automation/notification engine, provider adapters, AI provider/model/agent implementation, MCP/A2A adoption, production backend code or `feature/backend-foundation`. Domain/Logical changes require a separate explicit reopen gate.
+No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/Neo4j design, SQL/migrations, concrete API routes/DTOs, AuthN/AuthZ engine/provider implementation, Restate/Temporal/DBOS adoption, queue/outbox implementation, provider adapters, AI provider/model/agent implementation, MCP/A2A adoption, dedicated search/vector deployment, observability vendor, solver implementation, production backend code or `feature/backend-foundation`. Domain/Logical changes require a separate explicit reopen gate.
 
 ## Backend consumption contract
 
-Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, both Phase 6 boundary contracts, complete current Domain/Logical authorities and later accepted Physical/runtime/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
+Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, both Phase 6 boundary contracts, all three Phase 7–9 contracts, complete current Domain/Logical authorities and later accepted Physical/runtime/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
 
 ## Documentation/evidence rule
 
 Current specs = current truth. ADRs = rationale + explicit supersession/qualification. Historical checkpoints = truthful chronology. Git = recoverable history.
 
-This baseline does not close Pre-Physical Coherence or authorize Physical work. After Phase 6 remote QA, the next current work is the coordinated Phase 7–9 architecture tranche, beginning with read-only inventory/benchmark preparation and preserving the dependency order among durable execution, governed effects and search/observability/calendar/solver pressure.
+This baseline does not close Pre-Physical Coherence or authorize Physical work. After coordinated Phase 7–9 remote QA, the next current work is Phase 10 — Physical benchmark specification/register — beginning read-only and without starting the Physical Model itself.
