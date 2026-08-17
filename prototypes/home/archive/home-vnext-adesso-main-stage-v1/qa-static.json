@@ -1,0 +1,45 @@
+{
+  "checkpoint": "home-vnext-adesso-main-stage-v1",
+  "date": "2026-08-17",
+  "branch": "prototype/phase-4-today-home",
+  "artifact": {
+    "artifact_filename": "lifeos_home_v8_world_stats_switch_contextual_v23_safe_mid_divider.html",
+    "artifact_size": 344559,
+    "artifact_sha256": "a45d1f2b5fab677d738306154a93697e497ffb2c8b2e36ddbba4f4289b42cc77",
+    "v8_size": 307487,
+    "v8_sha256": "473de755ebb48940b30847c90a0cfd3a315d179a9ddd04138a0af13e3862013f",
+    "v8_exact_prefix": true,
+    "v20_size": 343265,
+    "v20_sha256": "feed658924788f278b910b589f625bb8075e3fcca9af5b6642accbf3b3810eb5",
+    "v20_exact_prefix": true
+  },
+  "static_checks": {
+    "duplicate_dom_ids": 0,
+    "full_css_parse_errors": 0,
+    "inline_script_count": 14,
+    "inline_js_syntax_failures": 0,
+    "v8_inherited_script_count": 13,
+    "v8_inherited_scripts_hash_identical": true,
+    "post_v8_today_timeline_selector_hits": 0,
+    "post_v8_today_timeline_js_hits": 0,
+    "v23_relative_to_v20_new_style_tags": 1,
+    "v23_relative_to_v20_new_script_tags": 0,
+    "v23_relative_to_v20_selectors": [
+      "#lifeosHero.home-vnext-test.ai-collapsed .lifeos-v7-layout",
+      "#lifeosHero.home-vnext-test.ai-collapsed .lifeos-v7-now",
+      "#lifeosHero.home-vnext-test.ai-collapsed .lifeos-v7-dynamic"
+    ],
+    "v23_relative_to_v20_allowed_properties": [
+      "background-image",
+      "background-repeat",
+      "background-position",
+      "background-size"
+    ]
+  },
+  "browser_regression": {
+    "status": "NOT COMPLETED IN CURRENT RUNTIME",
+    "reason": "Chromium local navigation blocked by runtime policy; set_content and CLI Chromium hang on the full accumulated prototype.",
+    "do_not_claim_full_e2e_pass": true,
+    "regression_authority": "tests/prototypes/today-v21-regression.py"
+  }
+}
