@@ -17,12 +17,15 @@ Read these for the current architecture state:
 2. [`requirements/README.md`](requirements/README.md) — current Phase 5 Pre-Physical requirement-package index; read all four requirement packages before later Physical/runtime/API/backend design;
 3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — current Phase 6 AI/context/runtime boundary contract;
 4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — current Phase 6 five-mode Integration Hub/provider boundary contract;
-5. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
-6. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
-7. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
-8. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
-9. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
-10. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
+5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable execution/async benchmark, operation-class boundary and conditional candidate ranking;
+6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase 8 engine-/transport-neutral governed operation/effect contract before concrete routes/DTOs;
+7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase 9 search/retrieval, observability, calendar-interoperability and deterministic-solver pressure contract;
+8. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
+9. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
+10. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
+11. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
+12. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
+13. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
 
 A physically split canonical document is **one logical document**. Never treat the first path, the newest continuation or an isolated `*-part-N` file as complete authority.
 
@@ -55,6 +58,55 @@ tool/protocol action != canonical governed effect
 runtime Agent / Principal != Domain Actor automatically
 ```
 
+## Phase 7–9 coordinated architecture contracts
+
+### Phase 7 — durable execution / async
+
+[`durable-execution-benchmark.md`](durable-execution-benchmark.md) establishes two execution classes rather than one universal workflow mechanism:
+
+```text
+bounded asynchronous work
+→ simple DB/worker/outbox style remains a valid baseline
+
+material long-running/recoverable coordination
+→ dedicated durable execution is structurally justified
+```
+
+Current dedicated candidate posture:
+
+```text
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+```
+
+The runtime does not define Domain truth; external-effect ambiguity/idempotency/reconciliation remain explicit.
+
+### Phase 8 — governed operation / effect
+
+[`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) defines the engine-/transport-neutral consequential-operation contract around semantic target/effect, material/expected state, purpose/context, Principal/Actor/represented party, governance, confirmation/autonomy, idempotency/correlation, execution class and multi-axis result/provenance.
+
+```text
+route / UI button / tool / AuthZ action / workflow step
+!= canonical governed operation/effect meaning
+```
+
+No concrete REST/RPC/GraphQL route, DTO, command bus or execution engine is selected.
+
+### Phase 9 — search / observability / calendar / solver
+
+[`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) establishes:
+
+- structured + lexical/full-text search as the baseline posture;
+- vector/pgvector as bounded candidates, not semantic truth;
+- no dedicated search/vector service by default without demonstrated benefit;
+- OpenTelemetry-first or equivalent standards-based observability direction, with telemetry separate from Domain history/audit;
+- iCalendar/JSCalendar/provider calendar models as adapter/interoperability pressure, not ontology;
+- deterministic rules/heuristics as solver baseline and OR-Tools CP-SAT as preferred specialized solver benchmark candidate;
+- solver output as candidate/projection that still crosses the governed-effect boundary.
+
+No search vendor, vector database, telemetry vendor, calendar-provider model or solver implementation is selected.
+
 ## Current stage boundary
 
 ```text
@@ -66,8 +118,11 @@ CLOSED
 
 Pre-Physical Repository & Architecture Coherence
 IN PROGRESS
-Phase 5 requirement packages accepted
-Phase 6 AI/context/runtime/integration boundary contracts established on active branch
+Phase 5 requirement packages CURRENT
+Phase 6 AI/context/runtime/integration contracts CURRENT
+Phase 7 durable-execution benchmark CURRENT
+Phase 8 governed-operation/effect contract CURRENT
+Phase 9 search/observability/calendar/solver pressure contract CURRENT
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
@@ -83,6 +138,8 @@ The current persistence posture is a benchmark posture, not a final Physical sel
 - Neo4j/property graph — serious secondary/read-projection candidate;
 - event/document mechanisms — bounded candidates;
 - generic EAV/generic-edge/universal meta-model — rejected for the canonical kernel.
+
+Phase 10 owns the Physical benchmark specification/register. Nothing in Phases 7–9 authorizes the Physical Model or production implementation.
 
 ## Historical transition / validation evidence
 
@@ -101,6 +158,8 @@ Those files intentionally retain READY/HOLD/reopen/restoration/clearance chronol
 ADRs preserve decision rationale and explicit supersession state. An older ADR may remain useful historical evidence while no longer being current execution authority.
 
 Current architecture specifications should not repeat obsolete ADR prose merely to preserve history. They should state the current result and link to the relevant ADR only where rationale is useful.
+
+No new ADR is created merely to record a preferred benchmark candidate. A benchmark preference is not an implementation selection.
 
 ## Documentation rule
 
