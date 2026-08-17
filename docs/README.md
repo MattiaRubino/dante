@@ -1,19 +1,21 @@
 # Documentation Index
 
-This directory is the durable project memory for LifeOS. It is designed so a new human developer, ChatGPT conversation, Claude session, Codex task or other agent can resume work from the repository without reconstructing decisions from chat history.
+This directory is the durable project memory for LifeOS. It is designed so a new human/AI contributor can resume from the repository without reconstructing decisions from chat history.
 
 ## Start here
 
-Read in this order for a new execution session:
+Read in this order:
 
-1. [`../README.md`](../README.md) — repository entry point and current high-level direction;
-2. [`PROJECT-STATUS.md`](PROJECT-STATUS.md) — current global state, active workstreams and next steps;
-3. [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — mandatory cross-session bootstrap, exact Git write gate, preservation/split-document discipline, QA and tool-failure behavior;
-4. [`development/operating-rules.md`](development/operating-rules.md) — authority order, where to work, branch/path ownership and coherence gates;
-5. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md) — documentation/handoff protocol;
-6. [`development/branching-and-environments.md`](development/branching-and-environments.md) — Git workflow and environment policy;
-7. the active [`workstreams/`](workstreams/) handoff;
-8. the current product/domain/logical/architecture/ADR sources linked by that handoff.
+1. [`../README.md`](../README.md)
+2. [`PROJECT-STATUS.md`](PROJECT-STATUS.md)
+3. [`development/agent-operating-manual.md`](development/agent-operating-manual.md)
+4. [`development/operating-rules.md`](development/operating-rules.md)
+5. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
+6. [`development/branching-and-environments.md`](development/branching-and-environments.md)
+7. the active [`workstreams/`](workstreams/) handoff
+8. current model/architecture index and linked current sources
+9. relevant ADRs/evidence/methodologies
+10. relevant implementation/tests
 
 ## Current backend/architecture stage
 
@@ -22,13 +24,13 @@ PRODUCT / NORTH STAR
 CURRENT
 
 CORE DOMAIN MODEL / DOMAIN ATLAS
-CLOSED — integrated into main via PR #10
+CLOSED — PR #10
 
 LOGICAL MODEL
-CLOSED — integrated into main via PR #11
-Whole-Logical: PASS WITH HARDENING / REMOTE QA PASS
-WD-03: PASS
-WD-05: PASS
+CLOSED — PR #11
+Whole-Logical PASS WITH HARDENING / REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
@@ -40,59 +42,107 @@ BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED
 ```
 
-The active backend/architecture preparation handoff is [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md). It contains the unified pre-Physical roadmap, exact workstream boundaries, mandatory downstream `WL-H01..WL-H12` constraints, future requirement areas and technology-benchmark posture.
+Active handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
 
 ## Current semantic/model sources
 
-- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — **Accepted** current living definition of LifeOS product identity and North Star.
-- [`domain/README.md`](domain/README.md) — accepted Core Domain Model / Domain Atlas entry point.
-- [`domain/language-map.md`](domain/language-map.md) — accepted current Domain language/semantic map.
-- [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — integrated Whole Logical Model.
-- [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical Model closure record.
-- [`logical-model/decision-and-assumption-register-v1-part-9.md`](logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions, hardenings, assumptions and deferred Physical/runtime obligations.
+- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current product identity/North Star.
+- [`domain/README.md`](domain/README.md) — Domain Atlas entry point.
+- [`domain/language-map.md`](domain/language-map.md) — current Domain language map.
+- [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — closed Whole Logical Model.
+- [`logical-model/decision-and-assumption-register-v1-part-9.md`](logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions/hardenings/deferrals.
+- [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical closure evidence.
 
-Older product terminology does not override later accepted Domain Atlas semantics. Older architecture documents/ADRs remain evidence but may be partially qualified or superseded by later Domain/Logical decisions; the active Pre-Physical Coherence workstream is responsible for making those relationships explicit before Physical Model authorization.
+Product/UI terminology does not override accepted Domain/Logical semantics.
 
-## Durable product and architecture sources
+## Current architecture sources
 
-- [`product/`](product/) — product scope, V1 behavior, accepted North Star and discovery evidence.
-- [`domain/`](domain/) — accepted Domain Atlas and validation/checkpoint corpus.
-- [`logical-model/`](logical-model/) — accepted Logical Model, representation framework, validations, benchmarks and closure records.
-- [`architecture/`](architecture/) — system/technical architecture material; some pre-Domain documents are under current supersession review and must be interpreted through later Domain/Logical authority.
-- [`decisions/`](decisions/) — Architecture Decision Records. Accepted historical ADR status does not automatically mean every older detail remains unqualified after later accepted decisions; explicit supersession/qualification is being hardened in the current workstream.
-- [`ux/`](ux/) and [`phase-4/`](phase-4/) — UX principles, prototype documentation and Phase 4 evidence.
+Start with [`architecture/README.md`](architecture/README.md). It explicitly separates current architecture from historical transition evidence.
+
+Current specifications:
+
+- [`architecture/system-overview.md`](architecture/system-overview.md)
+- [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
+
+The old mixed `personal-data-ai-integration.md` current specification has been retired after knowledge coverage; its useful current content is carried by the current architecture/ADR/Logical sources, and its old payload remains recoverable in Git history.
+
+Historical `domain-model-logical-readiness*` files remain truthful transition/validation evidence and are **not** current architecture specifications.
+
+## ADR status
+
+ADRs preserve rationale and explicit current status:
+
+- ADR-001 — accepted client platforms;
+- ADR-002 — accepted backend platform direction, qualified at ORM/migration boundary;
+- ADR-003 — superseded as final database selection; retained PostgreSQL rationale;
+- ADR-004 — accepted storage abstraction;
+- ADR-005 — accepted replaceable AI gateway, Logical-qualified;
+- ADR-006 — superseded as canonical generic hybrid semantic model;
+- ADR-007 — accepted semantic persistence guardrail, qualified for Physical posture.
+
+An older `Accepted` label is not timeless authority; use the current status inside the ADR and current model/architecture sources.
+
+## Current Physical benchmark posture
+
+```text
+PostgreSQL hybrid
+CURRENT PREFERRED BASELINE — not final selection
+
+TypeDB
+MANDATORY CHALLENGER
+
+Neo4j / property graph
+SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+
+event/document mechanisms
+BOUNDED CANDIDATES
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — **active backend/architecture preparation workstream**.
-- [`workstreams/today-home.md`](workstreams/today-home.md) — active Phase 4 Home/Today UX workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — preserved handoff that is currently stale/blocked pending Pre-Physical cleanup and later Physical authorization; do not execute its old Domain/persistence instructions as current truth.
-- completed Domain/Logical workstream documents remain historical/canonical evidence for their closed stages.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream.
+- [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — deferred/stale handoff; do not execute until its later bounded cleanup and prerequisites.
+- Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
+
+## Documentation lifecycle rule
+
+```text
+CURRENT SPECIFICATION
+= current truth only
+
+ADR
+= rationale + explicit current status/supersession
+
+HISTORICAL / VALIDATION EVIDENCE
+= truthful chronology
+
+GIT
+= recoverable history
+```
+
+Before a stale current document is replaced/deleted:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
+
+Do not accumulate obsolete design history inside current specifications. Do not delete useful knowledge before coverage proves it safe.
 
 ## Development process
 
-- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — mandatory execution standard for new chats/agents; includes exact write gates, remote QA, canonical split counting, preservation rules and safe-stop behavior for Git/tool limits.
-- [`development/operating-rules.md`](development/operating-rules.md) — where work happens, which source wins, parallel-work rules and pre/post-merge coherence checks.
-- [`development/branching-and-environments.md`](development/branching-and-environments.md) — Git workflow and DEV/UAT/PROD policy.
-- [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md) — mandatory documentation and AI/human handoff protocol.
-
-## Status vocabulary
-
-Documents may use these labels:
-
-- **Accepted** — durable decision/current baseline; do not reopen without new evidence.
-- **Current** — authoritative operational state at the time of the last update.
-- **In progress** — active work that may still change.
-- **Draft / Proposed** — not yet accepted.
-- **Planned / Ready to start** — sufficiently defined to begin but not yet implemented.
-- **Study / Exploration** — useful evidence and discovery, not automatically a binding implementation decision.
-- **Historical / Superseded** — preserved context that is no longer the current instruction.
-- **Partially superseded / Qualified** — portions remain useful/accepted, but later sources constrain or replace specific claims.
-
-Git history is retained. When a newer document supersedes part of an older one, prefer explicit links/status notes over deleting prior reasoning unless removal is necessary for correctness or security.
+- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — exact write gates, remote QA, documentation lifecycle, split/tool-failure rules.
+- [`development/operating-rules.md`](development/operating-rules.md) — authority, branches/path ownership, coherence gates.
+- [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md) — current-truth/evidence separation and handoff protocol.
+- [`development/branching-and-environments.md`](development/branching-and-environments.md) — Git/environment policy.
 
 ## Source-of-truth rule
 
-For integrated project state, prefer current `main` repository documentation over conversation memory or old branches. For a specific unmerged workstream, use its branch-local handoff and explicitly linked in-progress material together with the accepted `main` baseline.
-
-A detailed historical file does not beat a newer accepted semantic decision merely because it contains more text. Before copying a file from another branch, compare it with current `main` and preserve the newest accepted semantics.
+For integrated state, current `main` wins over conversation memory and historical branches/files. For an active unmerged workstream, its bounded handoff/current files may contain newer work only inside that scope.
