@@ -532,3 +532,125 @@ DOMAIN REOPEN REQUIRED        0
 ```
 
 Later slices that touch time/reality, Version/history, resource feasibility or governance must replay applicable TB entries and INV-061..084 in addition to the Slice-A cumulative ledger.
+
+---
+
+## 14. Integrated A+B trace / regression hardening
+
+The cumulative checkpoint found issues that neither Slice A nor Slice B represented incorrectly in isolation but that became visible only after composition.
+
+### Supersession note for INV-076
+
+`INV-076` above is preserved for historical traceability but its wording is **superseded** by `INV-092` and `INV-093` below.
+
+```text
+OLD / SUPERSEDED
+INV-076 explicit user request may itself authorize the bounded requested action
+
+CURRENT
+request/instruction may establish requester intent
+!= Authority / Consent / governance power
+```
+
+No later validation may rely on the old broader wording.
+
+### Integrated trace entries
+
+| Trace | Integrated pressure | Logical hardening | Required proof | Verdict |
+|---|---|---|---|---|
+| TAB-01 | canonical Activity identity | canonical persisted Activity -> LR-01 | storage cannot demote accepted Activity continuity | PASS WITH HARDENING |
+| TAB-02 | canonical Event identity | canonical persisted Event -> LR-01 | storage cannot demote accepted Event continuity | PASS WITH HARDENING |
+| TAB-03 | transient vs canonical owner | candidate/input remains pre-canonical until semantics establish owner | no persistence explosion or false intent | PASS |
+| TAB-04 | LR-02/LR-03 addressability | ScopedRecordRef | stable reference without native referent promotion | PASS WITH HARDENING |
+| TAB-05 | multiple reference spaces | discriminated ReferenceAddress family | Native/ScopedRecord/MaterialState/External remain distinguishable | PASS WITH HARDENING |
+| TAB-06 | Reference Contract eligibility | contract constrains address variant + target semantics | resolvable invalid target rejected | PASS |
+| TAB-07 | Request/instruction vs Authority | requester intent != governance power | personal direct instruction vs unauthorized shared mutation distinguishable | PASS WITH HARDENING |
+| TAB-08 | Dependency endpoint precision | ReferenceAddress + relevant facet/state/result/transition | existence vs attained-state dependency distinguishable | PASS WITH HARDENING |
+| TAB-09 | selective materialization/audit | consequential target change retains lineage despite no standalone act record | no history gap | PASS WITH HARDENING |
+| TAB-10 | Possibility -> Goal | typed adoption/origin lineage | no retyping / no generic edge | PASS |
+| TAB-11 | Plan replacement | typed replacement/continuation lineage | replacement != revision automatically | PASS |
+| TAB-12 | mechanism reconsideration | LM-WF-21 / LM-25 | old + rejected + new candidates re-compared under new evidence | PASS — RETAIN + HARDEN |
+| TAB-13 | global Node/Entity alternative | rejected as logical baseline | common addressing != ontology root | PASS |
+| TAB-14 | owner-specific ref alternative | retained as physical ingredient | semantic specificity preserved without making it sole logical contract | PASS |
+| TAB-15 | undifferentiated TypedRef | rejected as underspecified | address-space distinctions must survive | PASS |
+| TAB-16 | cumulative checkpoint discipline | LM-WF-20 / LM-24 | no next slice before integrated rerun/QA | PASS WITH HARDENING |
+
+### Integrated invariant additions
+
+```text
+INV-085  canonical persisted Activity has stable LR-01 identity; persistence choice cannot demote an accepted Activity to identity-less state
+INV-086  canonical persisted Event has stable LR-01 identity; persistence choice cannot demote an accepted Event to identity-less state
+INV-087  transient candidate/input != canonical owner solely because it resembles Activity/Event/Possibility content
+INV-088  ReferenceAddress is a representation family, not a semantic Entity/Thing/Object root
+INV-089  NativeRef != ScopedRecordRef != MaterialStateRef != ExternalRef
+INV-090  stable addressability of an LR-02/LR-03 record != promotion to native referent identity
+INV-091  Reference Contract constrains eligible address variant + target semantics; resolvable != semantically eligible
+INV-092  Request/instruction may establish requester intent without establishing Authority/Consent/governance power
+INV-093  redundant confirmation may be omitted only where applicable governance already permits the bounded effect
+INV-094  Dependency endpoint target identity != required prerequisite/dependent facet/state/result/transition
+INV-095  Dependency facet/state binding != universal predicate/expression language
+INV-096  selective semantic-act materialization != selective auditability of consequential change
+INV-097  Possibility->Goal maturation link is typed origin/adoption lineage, not retyping or generic relation
+INV-098  Plan replacement/continuation link is typed lineage and does not imply Version identity continuity automatically
+INV-099  mechanism hardening must trigger candidate/technology reconsideration before advancing to the next slice when material trade-offs changed
+INV-100  technology/mechanism reconsideration may retain, harden, replace or block the previous choice; prior acceptance carries no privileged status
+```
+
+### Integrated mutation results
+
+```text
+MUT-AB01 promote every addressable LR-02 record to NativeRef              PASS — mutation rejected
+MUT-AB02 one untyped ref for Native/Record/State/External                 PASS — mutation rejected
+MUT-AB03 ReferenceAddress without Reference Contract eligibility          PASS — mutation rejected
+MUT-AB04 Activity/Event LR-01 remains storage-optional after canon        PASS — mutation rejected
+MUT-AB05 direct user Request creates Authority                            PASS — mutation rejected
+MUT-AB06 Dependency references only whole endpoints                       PASS — mutation rejected
+MUT-AB07 omit standalone Request/Decision and all change lineage          PASS — mutation rejected
+MUT-AB08 Possibility->Goal as same-row kind/status mutation                PASS — mutation rejected
+MUT-AB09 Plan replacement only as same-Plan Version                       PASS — mutation rejected where identity changes
+MUT-AB10 skip mechanism reconsideration after constraints change          PASS — mutation rejected
+```
+
+### Integrated counterfactual result
+
+```text
+canonical Activity vs transient suggested action                         PASS
+Native Goal address vs scoped Milestone address                           PASS
+Decision ScopedRecordRef vs Decision MaterialStateRef                     PASS
+ExternalRef vs canonical target                                           PASS
+personal instruction vs unauthorized shared-state request                 PASS
+Dependency on target existence vs target attainment                       PASS
+no standalone Request record vs no audit/lineage                          PASS
+Possibility maturation vs historical retyping                             PASS
+Plan in-place revision vs distinct replacement Plan                       PASS
+```
+
+### Integrated counters
+
+```text
+INTEGRATED TRACE ENTRIES       16
+INTEGRATED TRACE CLOSED        16
+INTEGRATED TRACE UNRESOLVED     0
+
+NEW INVARIANTS                16
+NEW INVARIANTS FAIL            0
+
+INTEGRATED MUTATION TESTS      10
+INTEGRATED MUTATION PASS       10
+INTEGRATED MUTATION FAIL        0
+
+INTEGRATED COUNTERFACTUALS      9
+INTEGRATED COUNTERFACTUAL PASS  9
+INTEGRATED COUNTERFACTUAL FAIL  0
+
+TECHNOLOGY / MECHANISM
+RETAIN + HARDEN
+
+REGRESSION IMPACT
+R3 WHOLE-LOGICAL
+
+DOMAIN REOPEN REQUIRED          0
+LOGICAL STRUCTURAL BLOCKER      0
+```
+
+All later slices must replay applicable INV-085..100 in addition to the prior cumulative invariant ledger. Any later mechanism change that materially changes the trade-off triggers LM-WF-21 rather than inheriting the current architecture by default.
