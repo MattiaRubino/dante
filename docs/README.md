@@ -34,8 +34,8 @@ WD-05 PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
-Phase 0–3 QA PASS
-Phase 4 Current Pre-Physical Architecture Baseline NEXT
+Phase 0–4 QA PASS
+Phase 5 requirements NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -52,19 +52,21 @@ Active handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physic
 - [`domain/README.md`](domain/README.md) — Domain Atlas entry point. Read the complete canonical continuation chain when the document is physically split.
 - [`domain/language-map.md`](domain/language-map.md) — current Domain language map. Read its complete canonical continuation chain where required.
 - [`logical-model/whole-logical-model-v1.md`](logical-model/whole-logical-model-v1.md) — closed Whole Logical Model.
-- [`logical-model/decision-and-assumption-register-v1-part-9.md`](logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions/hardenings/deferrals; earlier register parts remain part of the canonical chain unless explicitly superseded.
+- the complete `logical-model/decision-and-assumption-register-v1*` chain — current Logical decisions/hardenings/deferrals unless explicitly superseded inside that logical document.
 - [`logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical closure evidence.
+
+A physical `*-part-N` chain is one logical document; do not treat one part as the whole authority.
 
 Product/UI terminology does not override accepted Domain/Logical semantics.
 
 ## Current architecture sources
 
-Start with [`architecture/README.md`](architecture/README.md). It explicitly separates current architecture from historical transition evidence.
+Start with:
 
-Current specifications:
-
-- [`architecture/system-overview.md`](architecture/system-overview.md)
-- [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
+- [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — current Pre-Physical bridge for decided/prohibited/open/mandatory downstream constraints;
+- [`architecture/README.md`](architecture/README.md) — architecture navigation and current/evidence separation;
+- [`architecture/system-overview.md`](architecture/system-overview.md);
+- [`architecture/technical-decisions.md`](architecture/technical-decisions.md).
 
 The old mixed `personal-data-ai-integration.md` current specification has been retired after knowledge coverage; its useful current content is carried by the current architecture/ADR/Logical sources, and its old payload remains recoverable in Git history.
 
@@ -105,9 +107,9 @@ HARD REJECT FOR CANONICAL KERNEL
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 4 is next after Phase 3 Backend Foundation handoff cleanup QA.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 4 baseline is QA-closed and Phase 5 requirements are next.
 - [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. Phase 3 removed its stale pre-Domain/pre-Logical instructions. It must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
 - Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
 
 ## Documentation lifecycle rule
