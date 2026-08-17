@@ -55,7 +55,10 @@ Phase 2 — architecture supersession/current-truth cleanup
 QA PASS
 
 Phase 3 — Backend Foundation handoff cleanup
-READ-ONLY AUDIT NEXT
+QA PASS
+
+Phase 4 — Current Pre-Physical Architecture Baseline
+NEXT
 ```
 
 This workstream does **not** itself start the Physical Model.
@@ -88,13 +91,15 @@ rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
 ```
 
+When a canonical document is physically split, the complete continuation chain is one logical document and must be read before drawing current-state conclusions.
+
 ## Pre-Physical sequence
 
 1. **Phase 0 — freeze/current-state inventory** — PASS.
 2. **Phase 1 — global entry-point/current-truth alignment** — QA PASS.
 3. **Phase 2 — architecture supersession/current-truth cleanup** — QA PASS.
-4. **Phase 3 — Backend Foundation handoff cleanup** — read-only audit next, then separate exact write gate.
-5. **Phase 4 — current Pre-Physical Architecture Baseline**.
+4. **Phase 3 — Backend Foundation handoff cleanup** — QA PASS.
+5. **Phase 4 — current Pre-Physical Architecture Baseline** — NEXT.
 6. **Phase 5 — requirements that can constrain Physical design**:
    - AuthN/AuthZ;
    - security/privacy/retention/recovery;
@@ -134,27 +139,25 @@ The `architecture/domain-model-logical-readiness*` chain remains historical tran
 
 Technology selection must use LifeOS-specific correctness/history/governance/concurrency/operability pressure.
 
-## Phase 3 — Backend Foundation handoff cleanup
+## Phase 3 — Backend Foundation handoff cleanup — QA PASS
 
-Next action is a **read-only audit** of `docs/workstreams/backend-foundation.md` against the current closed Domain + Logical models and the current architecture sources.
+The future Backend Foundation handoff has been rewritten against current accepted truth.
 
-Only after that inventory may a separate exact Phase 3 write gate be proposed.
+Current result:
 
-Backend Foundation must eventually consume:
+- Backend Foundation remains **NOT STARTED / DEFERRED**;
+- no `feature/backend-foundation` branch is authorized or created;
+- closed Domain + Logical are prerequisites to consume, not work to recreate inside backend bootstrap;
+- SQLAlchemy/Alembic are conditional on accepted Physical persistence;
+- PostgreSQL remains a preferred benchmark baseline, not a preselected implementation mandate;
+- concrete routes/DTOs/Auth/runtime/outbox/workflow/provider mechanisms wait for their accepted prerequisite contracts;
+- the old `Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation` slice is superseded as a canonical backend/domain contract;
+- valid future Python/FastAPI/Pydantic/modular-monolith/testing/provider-abstraction requirements are preserved;
+- older product documents remain evidence/requirements input and do not override accepted Domain/Logical semantics.
 
-```text
-CLOSED Domain Atlas
-+
-CLOSED Logical Model
-+
-future accepted Physical Model
-+
-current architecture/runtime/security/integration contracts
-```
+Backend Foundation may become executable only after Pre-Physical closure, separate Physical acceptance and the applicable accepted runtime/security/integration/API prerequisites.
 
-It must not instruct contributors to create Domain Model v0 inside backend bootstrap or treat old persistence assumptions as current truth.
-
-## Phase 4 — current Pre-Physical Architecture Baseline
+## Phase 4 — current Pre-Physical Architecture Baseline — NEXT
 
 Create one current bridge source stating:
 
@@ -164,6 +167,8 @@ Create one current bridge source stating:
 - which `WL-H01..WL-H12` constraints are mandatory;
 - what is runtime/backend rather than Domain;
 - what must be benchmarked during Physical design.
+
+Phase 4 begins read-only. Inventory current architecture/model/ADR/workstream sources first, classify the bridge content, then present a separate exact write gate.
 
 ## Phase 5 — requirements before Physical
 
@@ -306,7 +311,7 @@ NOT STARTED
 
 ## Backend Foundation / implementation — later
 
-Backend Foundation and production implementation are **NOT STARTED**.
+Backend Foundation and production implementation are **NOT STARTED / DEFERRED**.
 
 Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Physical/current runtime contracts rather than old product-label schemas.
 
