@@ -260,8 +260,10 @@ If complete-file replacement is required:
 1. verify the complete current payload can be reconstructed safely;
 2. preserve all still-valid content and make the intended bounded edit;
 3. if complete reconstruction is unsafe, do not perform a risky partial replacement;
-4. use a canonical split/continuation only where the logical document genuinely requires chronological/evidence continuity or size handling;
-5. if no safe route exists, STOP and report the exact tool limitation.
+4. use a canonical split/continuation only where the logical document genuinely requires chronological/evidence continuity or size/tool-limit handling;
+5. when splitting only because of size/tool limits, preserve the complete intended logical payload losslessly across the physical parts — **do not summarize, condense, paraphrase away, omit, reorder or silently clean up substantive content as part of the split**;
+6. if semantic/current-truth cleanup is needed as well, treat that cleanup as a separate content operation with its own justified scope; the physical split itself remains lossless;
+7. if no safe route exists, STOP and report the exact tool limitation.
 
 Do not repeatedly retry the same failure without new information.
 
@@ -290,13 +292,39 @@ Use the repository `LIFEOS-CANONICAL-SPLIT` / `LIFEOS-CANONICAL-PAYLOAD` convent
 
 All parts together carry the logical document's evidence/authority as defined by the document type.
 
-### 11.4 Chronology
+### 11.4 Size / tool-limit split — lossless partition only
+
+When the reason for splitting is file size, connector limits, write limits or another transport/tooling constraint:
+
+```text
+1 complete logical payload
+→ physical partition only
+→ all canonical parts together reconstruct the complete intended payload
+```
+
+The split operation itself MUST NOT:
+
+- summarize;
+- condense;
+- replace earlier detailed content with a shorter recap;
+- paraphrase substantive content merely to reduce size;
+- omit requirements/evidence/decisions;
+- reorder content in a way that changes meaning or chronology;
+- hide semantic cleanup or supersession inside the split.
+
+Split markers/navigation metadata may be added as required, but the substantive payload is preserved losslessly.
+
+If the content itself also needs revision, first define/approve the semantic/current-truth edit as such; do not call a summary/rewrite a `split`.
+
+### 11.5 Chronological / evidence continuation
 
 For chronological/evidence split documents, downstream amendments belong after the previous final payload, normally in the last/new continuation part. Do not append a newer event into an earlier part and falsify chronology.
 
-### 11.5 Current specifications should not split merely to preserve obsolete history
+A chronological/evidence continuation may legitimately add new later evidence; this is different from a size/tool-limit split of one already-defined payload.
 
-If a current specification can be rewritten cleanly to current truth, do that. A split/continuation is not a reason to carry stale current prose forever.
+### 11.6 Current specifications should not split merely to preserve obsolete history
+
+If a current specification can be rewritten cleanly to current truth, do that through a deliberate current-truth edit. A split/continuation is not a reason to carry stale current prose forever, and a current-truth rewrite must not be disguised as a lossless split.
 
 ## 12. Git/tool failure behavior
 
