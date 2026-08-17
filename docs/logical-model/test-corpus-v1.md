@@ -1,6 +1,6 @@
 # LifeOS Logical Model Test Corpus v1
 
-**Status:** Stage-0H hardened normative foundation  
+**Status:** Stage-0H hardened normative foundation + Slice-A regression package  
 **Date:** 2026-08-17  
 **Purpose:** minimum adversarial simulation corpus for Logical Model slices and final integrated regression
 
@@ -517,3 +517,168 @@ A scenario that passes once remains in the regression set for every later slice 
 If a later slice invalidates an earlier PASS, the earlier slice is reopened at the **logical** level first. Domain Atlas reopen requires the separate evidence bar in `validation-methodology-v1.md`.
 
 Every material candidate must also use the mutation/counterfactual families defined in `traceability-and-regression-ledger-v1.md`. Product Reality examples are pressure tests and must be classified as Domain coverage, logical requirement, capability gap, specialist boundary or genuine targeted reopen evidence rather than being accepted as ontology by request.
+
+---
+
+## M. Slice A accepted regression expansion
+
+These tests were added after the broad Slice-A benchmark and are permanent R3 regression pressure.
+
+### TC-M01 — Opaque native key format changes
+
+A future physical/API migration changes the serialized native identifier format.
+
+Required:
+
+```text
+semantic owner/type remains recoverable through the contract
+no business/domain logic depends on parsing the old format
+```
+
+### TC-M02 — Same external ID in different scopes
+
+Two provider tenants/accounts expose the same raw external identifier string for different external records.
+
+Required:
+
+```text
+ExternalRef includes sufficient provider/source scope
+no false native merge
+```
+
+### TC-M03 — Pairwise security IDs for one Person
+
+The same human authenticates through security contexts that legitimately expose different subject IDs.
+
+Required:
+
+```text
+multiple security/provider identities may map to one Person
+raw ID count != Person count
+```
+
+### TC-M04 — Provider migration bridge
+
+A provider changes identifier namespace or an application transfers ownership and supplies an explicit migration/transfer mapping.
+
+Required:
+
+```text
+old ExternalRef
+-> migration/reconciliation evidence
+-> new ExternalRef
+-> same NativeRef where justified
+```
+
+Native identity must not be replaced merely because provider identity changes.
+
+### TC-M05 — Wrong identity merge after six months
+
+Two Person identities were resolved as one; hundreds of historical records were subsequently queried through the current resolution. New evidence proves the merge was wrong.
+
+Required:
+
+```text
+reconciliation can be revoked/corrected
+historical anchors remain addressable
+records with uncertain redistribution may remain unresolved
+```
+
+### TC-M06 — Public correlation leakage
+
+One internal Person appears in a work context and a private health context.
+
+Required:
+
+```text
+shared internal identity
+!= globally exposed identical handle
+!= permission to reveal cross-context linkage
+```
+
+### TC-M07 — New native owner added years later
+
+A future validated Domain owner gains independent native identity.
+
+Required:
+
+```text
+new owner can participate in NativeRef/reference contracts
+existing Person/Asset/Place/etc. identity semantics remain unchanged
+```
+
+### TC-M08 — Resource target without native identity
+
+A Plan needs a fungible supply/service/pool that satisfies a Resource Requirement but does not independently justify kernel native identity.
+
+Required:
+
+```text
+Resource target contract supports bounded non-NativeRef representation
+no fake Entity/native identity is manufactured
+```
+
+### TC-M09 — Native identity vs version
+
+A Decision cites the state of an Asset/Person/Artifact as known at T1; current state at T2 differs.
+
+Required:
+
+```text
+NativeRef remains same referent
+material state/version reference remains distinguishable
+```
+
+### TC-M10 — Friendly alias reused
+
+A human-friendly label/key/name is retired and later reused for a different referent.
+
+Required:
+
+```text
+alias/name reuse != native identity reuse
+historical references remain resolvable to original native identity
+```
+
+### TC-M11 — Provider merge heuristic conflicts
+
+Provider A and Provider B expose identifiers that look equivalent but maintain conflicting source truth.
+
+Required:
+
+```text
+possible match remains reconciliation state
+provider similarity does not force canonical merge
+```
+
+### TC-M12 — Reference-contract invalid target
+
+A generic technical NativeRef points to a valid native identity whose owner family is not eligible for the containing semantic slot.
+
+Required:
+
+```text
+technical target exists
+BUT canonical relation is rejected by Reference Contract
+```
+
+### Additional Slice-A high-value queries
+
+23. Given a raw/native handle, can the system recover the native owner family without parsing vendor-specific ID encoding?
+24. Can two identical external-ID strings in different scopes map to different native identities safely?
+25. Can one Person retain multiple Account/Principal/provider identities over time without identity duplication?
+26. Can a current redirect/resolution be followed while still retrieving the exact historical identity reference originally recorded?
+27. Can a wrong identity merge be reversed without a database-wide semantic rewrite?
+28. Can a Reference Contract reject a technically valid but semantically ineligible NativeRef target?
+29. Can a role target be represented when it validly lacks independent native identity?
+30. Can an API/security layer expose context-scoped handles without duplicating the underlying native referent?
+
+### Slice-A regression result at acceptance
+
+```text
+TC-M01..M12
+PASS / PASS WITH explicitly stage-bound Slice-D/F dependencies
+
+NEW DOMAIN REOPEN EVIDENCE
+0
+```
