@@ -21,6 +21,7 @@ Phase 6 AI/context/runtime/integration boundaries CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver pressure CURRENT
+Phase 10 Physical benchmark method CURRENT
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
@@ -170,21 +171,65 @@ Any future persistence must preserve the closed Logical Model, including:
 Current Physical benchmark posture:
 
 ```text
+PRIMARY CANONICAL LANE
 PostgreSQL hybrid
 CURRENT PREFERRED BASELINE — not final selection
 
 TypeDB
 MANDATORY CHALLENGER
 
-Neo4j / property graph
-SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+SECONDARY GRAPH LANE
+primary-only/no-specialized-store baseline
+vs Neo4j / property graph
 
-event/document mechanisms
-BOUNDED CANDIDATES
+SEARCH / SEMANTIC RETRIEVAL LANE
+structured + lexical/full-text baseline
+vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms only unless explicit gap/benefit admits a specialized candidate
 
 generic EAV / generic edge / universal meta-model
 REJECTED FOR CANONICAL KERNEL
 ```
+
+## Phase 10 benchmark-method responsibility
+
+The current Phase 10 package defines the future Physical decision method:
+
+- [`physical-benchmark-specification.md`](physical-benchmark-specification.md);
+- [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md);
+- [`physical-benchmark-register.md`](physical-benchmark-register.md).
+
+It does **not** create Physical schemas or select a technology.
+
+The method enforces:
+
+```text
+hard semantic/correctness gates
+        ↓
+role-specific weighted scoring
+        ↓
+low/base/high + NFR sensitivity review
+        ↓
+version/edition/deployment-pinned evidence
+        ↓
+future PREFERRED / PASS-CONDITIONAL / HOLD / REJECT result
+```
+
+Primary-candidate hard gates cover semantic ownership, reference families, typed/n-ary relation fidelity, expected-state concurrency, multi-owner consistency, history/reconciliation, state-layer separation, governance/disclosure, retention/restore, temporal fidelity, schema evolution and recoverability.
+
+A candidate that fails a non-compensable hard gate cannot win by being faster.
+
+Low/base/high dataset values are synthetic qualification envelopes, not business/user-growth forecasts. Open RPO/RTO/latency/availability/scale targets remain sensitivity inputs until accepted values exist.
+
+Every future benchmark subject is pinned as:
+
+```text
+product + exact version + edition/license + deployment mode
+```
+
+The benchmark must use common semantic assertions with candidate-idiomatic physical mappings rather than forcing all technologies into one storage shape.
 
 ## Integration responsibility
 
@@ -264,6 +309,8 @@ Search ranking, snippets, counts, autocomplete, candidate lists and errors are d
 
 Actions from search results re-resolve/revalidate through the governed-operation boundary rather than mutating from stale index payload.
 
+Phase 10 additionally requires vector/search quality to be measured after scope/Visibility filtering and through deletion/redaction/index-staleness scenarios rather than top-k latency alone.
+
 ## Calendar interoperability responsibility
 
 LifeOS scheduling/time semantics remain Domain/Logical-owned.
@@ -300,6 +347,8 @@ Solver results preserve states such as feasible/infeasible/unknown where applica
 
 A solver produces candidate/scenario output bound to an input/material basis. Accepted Schedule/Plan/etc state changes only through the governed-operation contract.
 
+Phase 10 uses stale-snapshot and solver-status scenarios as Physical support pressure; the primary database is not expected to become the solver itself.
+
 ## Storage responsibility
 
 Large object/file bytes remain behind a provider abstraction rather than normal domain rows. Domain semantics refer to accepted Content Artifact identity/meaning; blob path, URL, provider object or storage identifier is representation/integration state, not automatically domain identity.
@@ -331,6 +380,8 @@ Phase 7 establishes structural justification for dedicated durable execution in 
 
 Phase 9 establishes OR-Tools CP-SAT as a preferred specialized solver benchmark candidate and does not yet justify a dedicated search/vector service.
 
+Phase 10 adds an explicit candidate-admission rule: a new specialized stateful product enters later benchmarking only when it addresses an accepted gap or demonstrates strong structural/measured benefit over the baseline for its role.
+
 ## Non-negotiable Logical hardenings
 
 Any later Physical/API/runtime architecture must preserve `WL-H01..WL-H12`, including:
@@ -348,7 +399,7 @@ Any later Physical/API/runtime architecture must preserve `WL-H01..WL-H12`, incl
 - reconstructible consequential AuthZ provenance;
 - non-interference/inference-leakage protection.
 
-Phase 5 requirement packages, Phase 6 AI/context/runtime + Integration Hub contracts, and Phase 7–9 architecture contracts are mandatory downstream constraints.
+Phase 5 requirement packages, Phase 6 AI/context/runtime + Integration Hub contracts, Phase 7–9 architecture contracts and the Phase 10 benchmark-method package are mandatory downstream constraints.
 
 See [`../logical-model/decision-and-assumption-register-v1-part-9.md`](../logical-model/decision-and-assumption-register-v1-part-9.md).
 
