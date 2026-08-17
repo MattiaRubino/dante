@@ -20,7 +20,8 @@ WD-05: PASS
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS on chore/pre-physical-coherence
 Phase 0–9 QA PASS
-Phase 10 Physical benchmark specification/register NEXT — READ-ONLY FIRST
+Phase 10 Physical benchmark method package CURRENT / content QA PASS
+Phase 11 repository engineering safety NEXT after Phase 10 closure
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -31,7 +32,7 @@ NOT STARTED
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
 
-For exact current state, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
+For exact current state and closure status, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
 
 ## How to resume work
 
@@ -110,21 +111,44 @@ The product direction includes:
 No final Physical persistence is selected.
 
 ```text
+PRIMARY CANONICAL PERSISTENCE
 PostgreSQL hybrid
-CURRENT PREFERRED BASELINE — not final selection
+CURRENT PREFERRED BASELINE — NOT SELECTED
 
 TypeDB
-MANDATORY CHALLENGER
+MANDATORY CHALLENGER — NOT SELECTED
 
-Neo4j / property graph
-SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+SECONDARY GRAPH / TRAVERSAL
+no-specialized-store baseline
+vs Neo4j/property graph
 
-event/document mechanisms
-BOUNDED CANDIDATES
+SEARCH / SEMANTIC RETRIEVAL
+structured + lexical/full-text baseline
+vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms first
+specialized candidate only on demonstrated gap/benefit
 
 generic EAV / generic edge / universal meta-model
 HARD REJECT FOR CANONICAL KERNEL
 ```
+
+### Phase 10 benchmark method
+
+Phase 10 has created the current method package:
+
+- [`docs/architecture/physical-benchmark-specification.md`](docs/architecture/physical-benchmark-specification.md);
+- [`docs/architecture/physical-benchmark-scenario-corpus.md`](docs/architecture/physical-benchmark-scenario-corpus.md);
+- [`docs/architecture/physical-benchmark-register.md`](docs/architecture/physical-benchmark-register.md).
+
+It decides **how** the later separately authorized Physical Model must be compared; it does not select a winner or design Physical schemas.
+
+Primary candidates must pass non-compensable semantic/correctness hard gates before weighted scoring. The common corpus covers consequential concurrency, multi-owner consistency, deep history, governance/disclosure, provider divergence, deletion + restore, recurrence/DST, search/vector filtering, solver freshness, recovery and schema evolution.
+
+LOW/BASE/HIGH values are synthetic qualification tiers, not business forecasts. Open RPO/RTO/latency/availability/scale values remain sensitivity inputs until accepted targets exist.
+
+Every future benchmark subject is pinned to exact product + version + edition/license + deployment mode. `PREFERRED != SELECTED`.
 
 ### Storage
 
@@ -252,6 +276,8 @@ Search/vector stores, caches, workflow engines, policy engines, graph/analytics/
 
 Specialized infrastructure requires demonstrated benefit from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
 
+Phase 10 additionally requires specialized candidates to compete against a role-specific no-specialized/native baseline and records the added consistency/operational burden.
+
 ## Architecture/model sources of truth
 
 Current architecture navigation starts at:
@@ -263,6 +289,9 @@ Current architecture navigation starts at:
 - [`docs/architecture/durable-execution-benchmark.md`](docs/architecture/durable-execution-benchmark.md)
 - [`docs/architecture/governed-operation-effect-contract.md`](docs/architecture/governed-operation-effect-contract.md)
 - [`docs/architecture/search-observability-calendar-solver-boundaries.md`](docs/architecture/search-observability-calendar-solver-boundaries.md)
+- [`docs/architecture/physical-benchmark-specification.md`](docs/architecture/physical-benchmark-specification.md)
+- [`docs/architecture/physical-benchmark-scenario-corpus.md`](docs/architecture/physical-benchmark-scenario-corpus.md)
+- [`docs/architecture/physical-benchmark-register.md`](docs/architecture/physical-benchmark-register.md)
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
@@ -306,22 +335,22 @@ The closed Logical Model activates `WL-H01..WL-H12`, including:
 
 Phase 5 establishes current requirement packages for AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery. Open parameters recorded there remain explicit downstream obligations; they are not permission for implementation to pick arbitrary defaults.
 
-Phase 6 establishes current AI/context/runtime and Integration Hub boundary contracts. Phase 7–9 establishes current durable-execution posture, governed-operation/effect contract and search/observability/calendar/solver pressure. Preferred benchmark candidates remain candidates, not implementation authorization.
+Phase 6 establishes current AI/context/runtime and Integration Hub boundary contracts. Phase 7–9 establishes current durable-execution posture, governed-operation/effect contract and search/observability/calendar/solver pressure. Phase 10 establishes the current benchmark method that a later authorized Physical Model must execute. Preferred/registered candidates remain candidates, not implementation authorization.
 
 Future Physical/API/runtime work must preserve these constraints rather than reinterpret semantics for implementation convenience.
 
 ## Immediate architecture next step
 
 ```text
-PHASE 10
-PHYSICAL BENCHMARK SPECIFICATION / REGISTER
+PHASE 11
+REPOSITORY ENGINEERING SAFETY
 READ-ONLY FIRST
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 ```
 
-Phase 10 prepares/scopes the later Physical comparison and must consume Phase 5 open parameters plus Phase 6–9 pressure. It does not itself start the Physical Model without a separate authorization boundary.
+Phase 11 prepares repository/CI/protection safety only. Phase 12 then performs clean-room Pre-Physical closure before the user may separately authorize the Physical Model.
 
 ## Git and environments
 
