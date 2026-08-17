@@ -19,6 +19,8 @@ WD-05: PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS on chore/pre-physical-coherence
+Phase 0–4 QA PASS
+Phase 5 requirements NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -69,6 +71,8 @@ GIT
 ```
 
 A stale current document may be replaced/deleted only after a knowledge-coverage check proves no meaningful requirement/rationale is lost.
+
+A physical split is a tooling/layout concern, not separate authority: a canonical `*-part-N` chain must be read as one logical document.
 
 ## Product direction
 
@@ -152,6 +156,7 @@ Specialized infrastructure requires demonstrated benefit from measured workload 
 
 Current architecture navigation starts at:
 
+- [`docs/architecture/pre-physical-architecture-baseline.md`](docs/architecture/pre-physical-architecture-baseline.md)
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
