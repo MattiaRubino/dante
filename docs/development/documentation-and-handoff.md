@@ -192,9 +192,29 @@ domain-model.md + domain-model-part-2.md + domain-model-part-3.md
 
 Git gates/QA enumerate each physical path.
 
+### Size / tool-limit split
+
+When a split exists only because of file size, connector limits, write limits or another tooling/transport constraint, it is a **lossless physical partition of one complete logical payload**.
+
+```text
+complete logical payload
+→ physical parts
+→ complete logical payload reconstructible from all canonical parts
+```
+
+A size/tool-limit split must **not** summarize, condense, replace prior detail with a recap, paraphrase away substantive content, omit requirements/evidence/decisions, or hide semantic cleanup inside the split.
+
+If the document also needs semantic/current-truth editing, perform and describe that as a separate content operation. Do not call a summary or rewrite a `split`.
+
+### Chronological / evidence continuation
+
 For chronological/evidence chains, a new session reads the complete required sequence. Do not treat Part 1 as current merely because it carries the original filename.
 
-Current specifications should not be split merely to preserve obsolete history; rewrite them cleanly where safe.
+Later evidence may legitimately be appended after the previous final payload in a continuation part. That evidence-continuation behavior is distinct from losslessly partitioning one already-defined payload because of size/tool limits.
+
+### Current specifications
+
+Current specifications should not be split merely to preserve obsolete history; rewrite them cleanly where safe through an explicit current-truth edit. A current-truth rewrite must not be disguised as a lossless split.
 
 ## Tool-limit handoff rule
 
@@ -227,4 +247,5 @@ Before handoff or merge:
 - [ ] any replaced/deleted stale current doc passed knowledge coverage;
 - [ ] global status changed only when globally meaningful;
 - [ ] significant durable decisions have ADR treatment;
-- [ ] no knowledge was lost because of tool/context limits.
+- [ ] no knowledge was lost because of tool/context limits;
+- [ ] any size/tool-limit split preserves the complete logical payload losslessly rather than summarizing it.
