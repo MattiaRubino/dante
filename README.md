@@ -2,26 +2,38 @@
 
 LifeOS is an adaptive personal operating system for connecting intentions, plans, real time, actual reality, people/resources, evidence, history and adaptive future planning across web, Android and iOS.
 
-## Project status
+## Current project state
 
-The product foundation, Core Domain Model / Domain Atlas and Logical Model are closed at their current stages. The repository is now in a deliberate **Pre-Physical Repository & Architecture Coherence** workstream before any Physical Model or production backend implementation is authorized.
+```text
+PRODUCT / NORTH STAR
+CURRENT
 
-Current tracks:
+CORE DOMAIN MODEL / DOMAIN ATLAS
+CLOSED — integrated into main via PR #10
 
-- **Phase 4 Home/Today UX prototype:** in progress on `prototype/phase-4-today-home`; this remains a separate product/design workstream.
-- **Pre-Physical Repository & Architecture Coherence:** in progress on `chore/pre-physical-coherence`; this is the current backend/architecture preparation workstream.
-- **Core Domain Model / Domain Atlas:** **CLOSED**, integrated into `main` via PR #10.
-- **Logical Model:** **CLOSED**, integrated into `main` via PR #11; Whole-Logical is `PASS WITH HARDENING / REMOTE QA PASS`, with WD-03 and WD-05 discharged.
-- **Physical Model:** **NOT STARTED / NOT AUTHORIZED** by Logical closure alone.
-- **Backend production implementation:** **NOT STARTED**.
+LOGICAL MODEL
+CLOSED — integrated into main via PR #11
+Whole-Logical: PASS WITH HARDENING / REMOTE QA PASS
+WD-03: PASS
+WD-05: PASS
 
-No production application code has been committed yet.
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+IN PROGRESS on chore/pre-physical-coherence
 
-For the exact current state, always read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md) handoff.
+PHYSICAL MODEL
+NOT STARTED / NOT AUTHORIZED
+
+BACKEND PRODUCTION IMPLEMENTATION
+NOT STARTED
+```
+
+Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
+
+For exact current state, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
 
 ## How to resume work
 
-Any human or AI agent continuing the project should read, in order:
+Read in this order:
 
 1. this README;
 2. [`docs/README.md`](docs/README.md);
@@ -30,76 +42,164 @@ Any human or AI agent continuing the project should read, in order:
 5. [`docs/development/operating-rules.md`](docs/development/operating-rules.md);
 6. [`docs/development/documentation-and-handoff.md`](docs/development/documentation-and-handoff.md);
 7. [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md);
-8. the relevant [`docs/workstreams/`](docs/workstreams/) handoff;
-9. the product/domain/logical/architecture/ADR sources linked by that handoff;
-10. relevant current code/tests before changing implementation.
+8. the active workstream handoff;
+9. the current model/architecture index and linked current sources;
+10. relevant ADRs/evidence/methodologies;
+11. relevant implementation/tests;
+12. verify the current Git ref before writes.
 
-Repository documentation on current `main` is the canonical integrated project memory when chat history or old branches are incomplete, stale or contradictory. An active workstream branch may contain newer unmerged work only inside that workstream's bounded scope.
+Repository current truth outranks conversation memory and old/historical files. An active workstream branch may contain newer truth only inside its bounded scope.
+
+## Documentation rule
+
+LifeOS keeps current specifications clean:
+
+```text
+CURRENT SPECIFICATION
+= current truth only
+
+ADR
+= rationale + explicit supersession/qualification
+
+HISTORICAL / VALIDATION EVIDENCE
+= truthful chronology
+
+GIT
+= recoverable history
+```
+
+A stale current document may be replaced/deleted only after a knowledge-coverage check proves no meaningful requirement/rationale is lost.
 
 ## Product direction
 
-LifeOS is personal-first in V1 and is designed around whole-life orchestration rather than a collection of isolated feature silos. Product/UI concepts may include goals, plans/programs/projects, activities, events, routines, reminders, measurements, people, resources, work, health, learning, travel and other specialist contexts, but current kernel terminology and semantic ownership are defined by the accepted Domain Atlas rather than by older product labels.
+LifeOS is personal-first in V1 and is designed around whole-life orchestration rather than isolated feature silos.
+
+Product/UI labels may include goals, programs/projects, activities, events, routines, reminders, measurements, people, resources, work, health, learning, travel and specialist contexts. These labels do not redefine the accepted Domain Atlas.
 
 The product direction includes:
 
-- a central adaptive Home/Today/time experience;
+- adaptive Home/Today/time experience;
 - intention → planning → execution/reality → evidence/history continuity;
-- configurable scheduling, replanning and user confirmation;
-- optional specialist capabilities without duplicating the common LifeOS foundation;
+- configurable scheduling/replanning and user confirmation;
+- optional specialist capabilities without duplicating the common kernel;
 - web, Android and iOS clients with equivalent capability and platform-adapted UX;
-- AI-assisted interpretation, planning and recalibration behind replaceable provider/tool interfaces;
-- integrations with external apps, device data and services while preserving provider provenance and canonical-state boundaries;
-- explainable, traceable and reversible significant changes;
+- AI-assisted interpretation/planning/recalibration behind replaceable provider/tool boundaries;
+- integrations that preserve provider provenance and canonical-state boundaries;
+- explainable/traceable significant changes;
 - later multi-actor/collaboration capabilities without collapsing personal-first V1 semantics.
 
 ## Current technical direction — not implementation authorization
 
-The following are current architectural directions or benchmark baselines. They do **not** authorize Physical Model, schema, API or backend implementation by themselves.
+### Clients
 
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
-- Backend toolchain direction: Python + FastAPI + Pydantic; SQLAlchemy + Alembic remain conditional on the accepted Physical persistence design.
-- Architecture: modular monolith first; extract specialized infrastructure only when it demonstrates material benefit in correctness, durability, security, evolvability, operational reliability, workload or migration risk.
-- Physical persistence posture: PostgreSQL hybrid is the **current preferred baseline entering the future Physical benchmark**, not a final Physical selection.
-- Mandatory Physical challenger: TypeDB.
-- Neo4j/property graph, event-stream/event-store and document-store mechanisms remain bounded secondary candidates where justified; they are not accepted universal canonical ontologies.
-- Generic EAV / generic-edge / universal meta-model design is rejected for the canonical kernel.
-- File/object storage: provider-neutral boundary; S3-compatible/cloud providers may replace local development storage later.
-- AI: replaceable gateway + bounded Context Builder + structured proposals + governed/validated effects; AI does not become canonical truth merely by producing an output.
-- Integrations: provider adapters must preserve provenance and the distinction between canonical LifeOS state, provider state, derived/read state and unresolved/candidate state.
-- Search/vector, caches, durable workflow engines and policy engines are benchmark/deferred infrastructure choices rather than implied defaults.
-- Repository: **public monorepo**; `main` remains the single integrated source of accepted truth.
 
-## Architecture and model sources of truth
+### Backend
 
-Before any detailed persistence, API, AI-runtime, integration or backend implementation work, read the sources in this order of relevance:
+- Python + FastAPI + Pydantic.
+- Modular monolith first.
+- SQLAlchemy + Alembic remain conditional implementation candidates depending on the accepted Physical persistence design.
 
-- [`docs/product/product-identity-and-north-star.md`](docs/product/product-identity-and-north-star.md) — accepted product identity/North Star;
-- [`docs/domain/README.md`](docs/domain/README.md) and [`docs/domain/language-map.md`](docs/domain/language-map.md) — accepted Core Domain Model / Domain Atlas;
-- [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md) — integrated Whole Logical Model;
-- [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md) — canonical Logical closure checkpoint;
-- [`docs/logical-model/decision-and-assumption-register-v1-part-9.md`](docs/logical-model/decision-and-assumption-register-v1-part-9.md) — final Whole-Logical decisions, hardenings and deferred Physical/runtime obligations;
-- [`docs/decisions/ADR-007-domain-first-physical-modeling.md`](docs/decisions/ADR-007-domain-first-physical-modeling.md) — domain-first architecture correction/boundary;
-- [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md) — current bounded coherence workstream and unified pre-Physical roadmap.
+### Physical persistence posture
 
-Earlier architecture documents and ADRs remain important historical evidence but may be partially qualified or superseded by later Domain/Logical decisions. The active Pre-Physical Coherence workstream will make those relationships explicit before Physical Model authorization.
+No final Physical persistence is selected.
 
-## Non-negotiable downstream model constraints
+```text
+PostgreSQL hybrid
+CURRENT PREFERRED BASELINE — not final selection
 
-The closed Logical Model activates `WL-H01..WL-H12`, including governed effects, selective disclosure, unknown/absence semantics, expected-state concurrency, idempotency separation, truthful multi-owner consistency, provider/canonical separation, derived-state freshness, retention/tombstone integrity, AuthZ provenance and non-interference/inference-leakage pressure.
+TypeDB
+MANDATORY CHALLENGER
 
-A future Physical/API/runtime design must preserve those constraints rather than reinterpret semantic ownership for implementation convenience.
+Neo4j / property graph
+SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+
+event/document mechanisms
+BOUNDED CANDIDATES
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
+
+### Storage
+
+Object/file storage remains behind a provider abstraction. Content Artifact identity is not the same thing as blob/path/URL/provider identity.
+
+### AI
+
+AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder. AI produces structured proposals/candidates or governed-effect requests; it does not become canonical truth by producing output.
+
+### Integrations
+
+Provider adapters preserve provenance and distinguish canonical LifeOS state from provider state, derived/read projections and unresolved/candidate state.
+
+Current integration-mode distinction:
+
+1. canonical import;
+2. synchronized/mirrored provider state;
+3. live federated read;
+4. retrieval/index projection;
+5. action/tool integration.
+
+### Specialized infrastructure
+
+Search/vector stores, caches, workflow engines, policy engines, graph/analytics/time-series systems and similar infrastructure are bounded candidates rather than defaults.
+
+Specialized infrastructure requires demonstrated benefit from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
+
+## Architecture/model sources of truth
+
+Current architecture navigation starts at:
+
+- [`docs/architecture/README.md`](docs/architecture/README.md)
+- [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
+- [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
+
+Current semantic/model authority:
+
+- [`docs/product/product-identity-and-north-star.md`](docs/product/product-identity-and-north-star.md)
+- [`docs/domain/README.md`](docs/domain/README.md)
+- [`docs/domain/language-map.md`](docs/domain/language-map.md)
+- [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md)
+- [`docs/logical-model/decision-and-assumption-register-v1-part-9.md`](docs/logical-model/decision-and-assumption-register-v1-part-9.md)
+- [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md)
+
+Relevant ADRs include:
+
+- [`ADR-002`](docs/decisions/ADR-002-backend.md) — backend platform direction, qualified at ORM/migration boundary;
+- [`ADR-003`](docs/decisions/ADR-003-primary-database.md) — historical PostgreSQL selection rationale, superseded as final selection;
+- [`ADR-004`](docs/decisions/ADR-004-storage.md) — storage abstraction;
+- [`ADR-005`](docs/decisions/ADR-005-ai-gateway.md) — replaceable AI gateway;
+- [`ADR-006`](docs/decisions/ADR-006-hybrid-personal-data-model.md) — superseded generic hybrid semantic model;
+- [`ADR-007`](docs/decisions/ADR-007-domain-model-informed-persistence-boundaries.md) — current semantic persistence guardrail, qualified for Physical posture.
+
+Historical Domain→Logical readiness files remain evidence and are explicitly separated from current architecture navigation in `docs/architecture/README.md`.
+
+## Non-negotiable downstream Logical constraints
+
+The closed Logical Model activates `WL-H01..WL-H12`, including:
+
+- justified material Agreement terms;
+- governed operation/effect semantics;
+- bounded projection/disclosure surfaces;
+- absence/unknown not collapsing to false;
+- expected-state consequential writes;
+- idempotency distinct from identity;
+- truthful multi-owner consistency;
+- canonical/provider-state separation;
+- derived-state freshness/material basis;
+- retention/redaction/tombstone integrity;
+- reconstructible consequential AuthZ provenance;
+- non-interference/inference-leakage protection.
+
+Future Physical/API/runtime work must preserve these constraints rather than reinterpret semantics for implementation convenience.
 
 ## Git and environments
 
 - `main` is the single integrated source of truth.
-- Work happens on bounded `feature/*`, `fix/*`, `docs/*`, `chore/*` or `prototype/*` branches and returns through PRs.
-- New production work starts from current `main` unless its active workstream handoff explicitly names another branch.
-- Before merge, compare against current `main` and check semantic/documentation coherence, not only Git conflicts.
-- DEV, UAT and PROD are deployment environments, not permanent Git branches.
+- Work happens on bounded `feature/*`, `fix/*`, `docs/*`, `chore/*` or `prototype/*` branches.
+- Every remote write follows the exact PRE-SCOPE/write-gate/QA protocol.
+- DEV/UAT/PROD are deployment environments, not permanent Git branches.
 
-See [`docs/development/agent-operating-manual.md`](docs/development/agent-operating-manual.md), [`docs/development/operating-rules.md`](docs/development/operating-rules.md) and [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md).
-
-## Documentation
-
-Start from [`docs/README.md`](docs/README.md). Significant work is not considered complete until its relevant handoff and durable documentation are updated and remotely verified.
+Significant work is not complete until relevant current documentation/handoff and remote QA are coherent.
