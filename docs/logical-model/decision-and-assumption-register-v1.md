@@ -996,3 +996,281 @@ DEFER-B10 runtime authorization/policy enforcement — Slice F/runtime stage
 ```
 
 All are `STAGE-DEFERRED PHYSICAL` or explicitly later-slice concerns. None may weaken the Slice-B logical invariants.
+
+---
+
+## 22. Integrated A+B decisions and mechanism reconsideration
+
+This section is normative and records the cumulative checkpoint that ran after Slice B became active.
+
+### Supersession of DEC-B09
+
+`DEC-B09` is preserved above as historical decision text, but its broad wording is **SUPERSEDED LOGICALLY** by `DEC-AB03` below.
+
+```text
+OLD / SUPERSEDED
+explicit Request may itself authorize the action
+
+CURRENT
+explicit Request/instruction may establish requester intent
+but does not create Authority/Consent/governance power
+```
+
+### DEC-AB01 — Discriminated ReferenceAddress family
+
+```text
+SCOPE
+Integrated A+B — shared reference/addressability
+
+QUESTION
+How can LifeOS address native identities, persistent contextual records, material states and provider identities without treating them as one universal object identity?
+
+SELECTED
+ReferenceAddress discriminated family + Reference Contract
+
+SHAPE
+ReferenceAddress
+  NativeRef
+  ScopedRecordRef
+  MaterialStateRef
+  ExternalRef
+
+RULE
+ReferenceAddress is representation vocabulary only.
+No variant implies semantic eligibility without the containing Reference Contract.
+
+STATUS
+ACCEPTED WITH HARDENING
+
+IMPACT
+R3 WHOLE-LOGICAL
+```
+
+### DEC-AB02 — canonical Activity/Event identity cannot be storage-demoted
+
+```text
+DECISION
+Once canonical persisted Activity/Event semantics exist, they retain LR-01 logical identity.
+A transient suggestion/input is not automatically a canonical Activity/Event/Possibility.
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-AB03 — user instruction may remove redundant confirmation, not governance
+
+```text
+DECISION
+An explicit user instruction/request may be sufficient evidence of that Actor's bounded intent/instruction and may eliminate a redundant confirmation step.
+It does not establish Authority, Consent or governance power over another/shared context.
+
+STATUS
+ACCEPTED — supersedes DEC-B09 wording
+```
+
+### DEC-AB04 — Dependency endpoint includes material facet/state binding
+
+```text
+DECISION
+Where the contingency is not about the target as a whole, Dependency endpoint semantics bind:
+ReferenceAddress(target)
++ relevant facet/state/result/transition/condition.
+
+No universal expression language is selected.
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-AB05 — selective materialization != selective auditability
+
+```text
+DECISION
+A trivial direct Request/Decision need not have a standalone semantic record, but consequential target change must still retain enough actor/source/basis/history under later Provenance/Version/governance mechanics.
+
+STATUS
+ACCEPTED WITH Slice-D/F dependency
+```
+
+### DEC-AB06 — cross-owner maturation/replacement uses typed lineage
+
+```text
+DECISION
+Possibility -> Goal uses typed adoption/origin lineage.
+Distinct replacement Plan -> predecessor Plan uses typed replacement/continuation lineage.
+Neither may degrade to generic related_to or imply Version identity continuity automatically.
+
+STATUS
+ACCEPTED
+```
+
+---
+
+## 23. Integrated A+B technology/mechanism candidate reconsideration
+
+The cumulative checkpoint materially changed the reference-addressability constraint. Under LM-WF-21 the selected mechanism received no incumbent preference.
+
+### TECH-AB-A — owner-specific references only
+
+```text
+WHY PLAUSIBLE
+strongest local type/FK constraints; no universal root
+
+CURRENT RESULT
+still a strong Physical Model ingredient
+
+WHY NOT LOGICAL BASELINE
+repeats heterogeneous address/history machinery across owners and makes cross-owner slots continually rebuild expanding unions
+
+STATUS
+RETAINED ALTERNATIVE — NOT LOGICALLY INVALID
+
+RETEST
+Physical Model; or earlier if ReferenceAddress produces material semantic/operational complexity
+```
+
+### TECH-AB-B — global Node/Entity registry/interface
+
+```text
+WHY PLAUSIBLE
+uniform global addressing/refetch and one common target
+
+EVIDENCE
+Relay/GraphQL Global Object Identification is a strong working example of a universal Node interface for globally identified/refetchable objects.
+
+WHY REJECTED FOR LIFEOS LOGICAL BASELINE
+common addressability would be too easy to interpret as common ontology;
+native/scoped-record/material-state/external identity spaces would be pressured to converge;
+contradicts LifeOS anti-universal-root discipline if semanticized.
+
+STATUS
+REJECTED AS LOGICAL BASELINE
+
+RETEST
+a narrow technical registry/interface may be physical/API-only if all ReferenceAddress distinctions and contracts remain explicit
+```
+
+### TECH-AB-C — one undifferentiated TypedRef(kind,id)
+
+```text
+WHY PLAUSIBLE
+compact polymorphic address mechanism
+
+FAILURE
+kind/id alone does not strongly preserve native identity vs scoped record vs material state vs provider identity.
+Adding those discriminators and contracts converges toward TECH-AB-D.
+
+STATUS
+REJECTED AS UNDERSPECIFIED
+```
+
+### TECH-AB-D — discriminated ReferenceAddress family + Reference Contract
+
+```text
+WHY PLAUSIBLE
+common addressability without common ontology;
+explicit address spaces;
+semantic target eligibility stays in Reference Contract;
+can extend later without changing existing address meaning;
+keeps physical implementation open.
+
+EXTERNAL STRUCTURAL EVIDENCE
+FHIR Reference: typed/limited references and target constraints
+FHIR Provenance: version-specific target pressure
+Kubernetes ObjectReference: kind/name/namespace/UID plus resourceVersion/fieldPath
+Kubernetes metadata: UID != resourceVersion
+PostgreSQL inheritance: PK/unique/FK constraints do not magically span child tables
+Relay GraphQL Node: useful global-address benchmark but negative ontology benchmark for LifeOS
+
+ANTI-COPY
+FHIR/Kubernetes/Relay ontologies are not adopted; only address/type/state separation lessons are used.
+
+STATUS
+SELECTED
+VERDICT
+RETAIN + HARDEN
+```
+
+---
+
+## 24. Integrated A+B evidence register
+
+```text
+EVID-AB01 FHIR R5 Reference/type/target constraints        STRUCTURAL PRINCIPLE
+EVID-AB02 FHIR R5 Provenance version-specific targets     STRUCTURAL PRINCIPLE / STATE ADDRESS
+EVID-AB03 Kubernetes ObjectReference                      STRUCTURAL PRINCIPLE
+EVID-AB04 Kubernetes UID vs resourceVersion               STRUCTURAL PRINCIPLE
+EVID-AB05 PostgreSQL inheritance constraint limitations   PHYSICAL FEASIBILITY EVIDENCE
+EVID-AB06 Relay GraphQL Global Object Identification      NEGATIVE ONTOLOGY / API ADDRESS BENCHMARK
+```
+
+Verified against current official/primary documentation on 2026-08-17. Refresh when a later decision materially depends on changed behavior/specification or at Whole-Logical final regression.
+
+No integrated A+B PASS depends materially on one volatile vendor behavior.
+
+---
+
+## 25. Integrated assumptions / physical deferrals
+
+### ASM-AB01 — ReferenceAddress remains implementable through multiple physical strategies
+
+```text
+STATEMENT
+The discriminated logical address family can be preserved by owner-specific FKs, a technical registry/anchor, composite typed references, API/read-model unions or hybrid strategies without creating one semantic root.
+
+CONFIDENCE
+HIGH logical plausibility
+
+STABILITY
+EVOLVING until Physical Model proof
+
+FAILURE CONSEQUENCE
+reopen the logical mechanism under LM-WF-21 before changing Domain semantics
+
+REFRESH TRIGGER
+Physical Model start; WD-05 discharge; material later-slice pressure
+
+STATUS
+ACCEPTED WITH PHYSICAL PROOF OBLIGATION
+```
+
+### DEFER-AB01 — exact physical ReferenceAddress strategy
+
+```text
+DEFERRED
+registry/anchor vs owner-specific FK vs composite/hybrid
+
+WHY SAFE
+address-space semantics and target eligibility are already defined independently of storage
+
+ACTIVATION
+Physical Model
+```
+
+### DEFER-AB02 — MaterialStateRef construction
+
+```text
+DEFERRED
+exact identity/storage/history mechanics for materially relevant state references
+
+WHY SAFE
+address-space distinction is fixed; Slice D owns exact Version/material-state mechanism
+
+ACTIVATION
+Slice D
+```
+
+### DEFER-AB03 — Dependency condition expression/composition
+
+```text
+DEFERRED
+all/any/quorum/alternative/predicate expression mechanism
+
+WHY SAFE
+endpoint + material facet/state/result/transition binding is already required; no evidence yet justifies one universal expression language
+
+ACTIVATION
+later reasoning/physical design if concrete cases require it
+```
+
+No integrated A+B decision relies on a material `UNPROVEN` assumption.
