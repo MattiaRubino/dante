@@ -66,8 +66,17 @@ QA PASS
 Phase 6 — AI/context/runtime/integration boundaries
 QA PASS
 
-Coordinated Phase 7–9 architecture tranche
-NEXT
+Phase 7 — durable workflow / async benchmark
+QA PASS WITH CONDITIONAL RANKING
+
+Phase 8 — governed API / command / effect contract
+QA PASS
+
+Phase 9 — search / observability / calendar / solver pressure
+QA PASS
+
+Phase 10 — Physical benchmark specification/register
+NEXT — READ-ONLY FIRST
 ```
 
 This workstream does **not** itself start the Physical Model.
@@ -113,16 +122,15 @@ A split performed only because of file size/tool/connector limits is a **lossles
 5. **Phase 4 — current Pre-Physical Architecture Baseline** — QA PASS.
 6. **Phase 5 — requirements that can constrain Physical design** — QA PASS.
 7. **Phase 6 — AI/context/runtime/integration boundaries** — QA PASS.
-8. **Coordinated Phase 7–9 architecture tranche** — NEXT, with mandatory internal order:
-   - Phase 7 — durable workflow / async benchmark;
-   - Phase 8 — governed API / command / effect contract;
-   - Phase 9 — search / observability / calendar / solver pressure.
-9. **Phase 10 — Physical benchmark specification/register**.
-10. **Phase 11 — repository engineering safety alignment**.
-11. **Phase 12 — clean-room repository/architecture coherence QA and closure**.
-12. **Separate user gate** — decide whether to authorize a Physical Model workstream.
+8. **Phase 7 — durable workflow / async benchmark** — QA PASS WITH CONDITIONAL RANKING.
+9. **Phase 8 — governed API / command / effect contract** — QA PASS.
+10. **Phase 9 — search / observability / calendar / solver pressure** — QA PASS.
+11. **Phase 10 — Physical benchmark specification/register** — NEXT, read-only first.
+12. **Phase 11 — repository engineering safety alignment**.
+13. **Phase 12 — clean-room repository/architecture coherence QA and closure**.
+14. **Separate user gate** — decide whether to authorize a Physical Model workstream.
 
-The combined 7–9 tranche reduces repeated global-document churn but does not collapse the internal dependencies: Phase 8 consumes Phase 7 results, Phase 9 consumes the accepted Phase 8 effect/disclosure boundary, and every internal phase keeps a separate verdict/QA checkpoint.
+Phases 7–9 were executed as one coordinated outer tranche to reduce repeated global-document churn while preserving separate internal dependency/QA checkpoints in the mandatory order `7 → 8 → 9`.
 
 ## Current architecture sources
 
@@ -132,6 +140,9 @@ Current navigation:
 - [`architecture/requirements/README.md`](architecture/requirements/README.md) plus all four Phase 5 requirement packages
 - [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md)
 - [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md)
+- [`architecture/durable-execution-benchmark.md`](architecture/durable-execution-benchmark.md)
+- [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md)
+- [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md)
 - [`architecture/README.md`](architecture/README.md)
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
@@ -140,9 +151,11 @@ The Pre-Physical Architecture Baseline is the current bridge for decided/prohibi
 
 The Phase 5 requirement package defines what later Physical/runtime/API/backend design must satisfy while separating accepted requirements, explicit open parameters and implementation-deferred mechanisms.
 
-Phase 6 adds current AI/context/runtime and Integration Hub boundaries without selecting providers, agent frameworks, protocols or workflow mechanisms.
+Phase 6 adds current AI/context/runtime and Integration Hub boundaries without selecting providers, agent frameworks or protocols.
 
-The old mixed `architecture/personal-data-ai-integration.md` current specification has been retired after knowledge-coverage QA. Its surviving valid knowledge is carried by current architecture, ADR, Logical and Pre-Physical sources; the old payload remains recoverable in Git history.
+Phase 7–9 adds current durable-execution benchmark posture, governed-operation/effect contract and search/observability/calendar/solver pressure without starting production implementation or Physical design.
+
+The old mixed `architecture/personal-data-ai-integration.md` current specification remains retired after knowledge-coverage QA. Its historical payload remains recoverable in Git.
 
 The `architecture/domain-model-logical-readiness*` chain remains historical transition/validation evidence, not a current architecture specification.
 
@@ -155,21 +168,20 @@ The `architecture/domain-model-logical-readiness*` chain remains historical tran
 - **document store:** bounded provider/specialist/flexible candidate.
 - **pgvector:** bounded semantic-retrieval candidate.
 - **generic EAV/generic edge/universal meta-model:** hard reject for canonical kernel.
-- **durable workflow technologies:** separate runtime benchmark, not persistence ontology.
 
-Technology selection must use LifeOS-specific correctness/history/governance/concurrency/operability pressure.
+Technology selection must use LifeOS-specific correctness/history/governance/concurrency/operability/runtime/search/solver pressure.
 
-## Phase 3 — Backend Foundation handoff cleanup — QA PASS
+## Completed Pre-Physical architecture stages
 
-The future Backend Foundation handoff is current but deferred. It consumes Domain + Logical rather than recreating them, treats SQLAlchemy/Alembic as Physical-dependent candidates, keeps PostgreSQL as benchmark posture rather than mandate, defers concrete API/Auth/workflow/provider mechanisms, removes the old fixed product-label slice as a canonical contract, and preserves valid future Python/FastAPI/Pydantic/modular-monolith/testing/provider-boundary requirements.
+### Phase 3 — Backend Foundation handoff cleanup — QA PASS
 
-Backend Foundation may become executable only after Pre-Physical closure, separate Physical acceptance and the applicable accepted runtime/security/integration/API prerequisites.
+The future Backend Foundation handoff is current but deferred. It consumes Domain + Logical rather than recreating them, treats SQLAlchemy/Alembic as Physical-dependent candidates, keeps PostgreSQL as benchmark posture rather than mandate and defers implementation-specific mechanisms until their prerequisite contracts exist.
 
-## Phase 4 — current Pre-Physical Architecture Baseline — QA PASS
+### Phase 4 — current Pre-Physical Architecture Baseline — QA PASS
 
-[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) provides one current bridge source for decided direction vs authorization, semantic prohibitions, representation/state boundaries, `WL-H01..WL-H12`, runtime-vs-Domain distinctions, benchmark posture and remaining phase ownership.
+[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) provides the current bridge source for decided direction vs authorization, semantic prohibitions, representation/state boundaries, `WL-H01..WL-H12`, runtime-vs-Domain distinctions, benchmark posture and remaining phase ownership.
 
-## Phase 5 — requirements before Physical — QA PASS
+### Phase 5 — requirements before Physical — QA PASS
 
 Current requirement index: [`architecture/requirements/README.md`](architecture/requirements/README.md).
 
@@ -188,7 +200,7 @@ Remote content QA:
 PRE-SCOPE
  e26f95af6d46292bf0f42aa43fa67b1f9f4fc05f
 
-CONTENT HEAD BEFORE GLOBAL CLOSURE MARKERS
+CONTENT HEAD
  c29cfe4bde47d5df4f46507a5f1717acd1903112
 
 ahead_by       10
@@ -200,7 +212,7 @@ deleted          0
 unexpected       0
 ```
 
-## Phase 6 — AI/context/runtime/integration boundaries — QA PASS
+### Phase 6 — AI/context/runtime/integration boundaries — QA PASS
 
 Current sources:
 
@@ -231,7 +243,7 @@ Phase 6 content QA:
 PRE-SCOPE
 40728080ae7a69703d40d14dd256a556516ccc58
 
-CONTENT HEAD BEFORE GLOBAL CLOSURE MARKERS
+CONTENT HEAD
 67d6a0d63ecaf39379912606dcf5113550718594
 
 ahead_by        8
@@ -243,49 +255,127 @@ deleted           0
 unexpected        0
 ```
 
-## Coordinated Phase 7–9 architecture tranche — NEXT
+## Coordinated Phase 7–9 architecture tranche — QA PASS
 
-### Internal Phase 7 — durable workflow / async benchmark
+PRE-SCOPE:
 
-Compare at least:
+`2cf77ea7e3d548147bbe2b0d87304b4d5393ff5f`
 
-- PostgreSQL + worker + transactional outbox;
-- Temporal;
-- Restate;
-- DBOS.
-
-Pressure must include provider retry/sync, human approval, long AI work, reconciliation, cancellation/timeouts, partial external effect, duplicate/replay, delayed governance/target change and crash/recovery.
-
-Phase 7 may choose/qualify a durable-execution posture only after evidence; it must not become a new ontology or bypass Phase 5/6 contracts.
-
-### Internal Phase 8 — governed API / command / effect contract
-
-Phase 8 consumes Phase 7 results but remains mechanism-neutral at the semantic contract level.
-
-Before concrete routes, define consequential-operation requirements around Principal/Actor/represented party, semantic target, operation/effect, expected/material state, inputs/context/purpose, governance basis, autonomy/confirmation, idempotency/correlation, delayed execution and result/provenance/conflict/partial semantics.
+Internal checkpoint sequence:
 
 ```text
-HTTP route / UI button / tool string / AuthZ action string
-!= canonical Governed Operation
+PHASE 7
+Durable execution benchmark
+022131c2568c0375e74563e46a22c9347b277fc5
+PASS WITH CONDITIONAL RANKING
+        ↓
+PHASE 8
+Governed operation/effect contract
+1d92f9e77ecc808095086fc5497eaac88e2039fa
+PASS
+        ↓
+PHASE 9
+Search/observability/calendar/solver pressure
+95df2a17b1187a590b5cba646ba0e107c038e5d3
+PASS
 ```
 
-### Internal Phase 9 — search / observability / calendar / solver pressure
+Content integration HEAD:
 
-Phase 9 consumes the accepted Phase 8 effect/disclosure boundary.
+`4cbf50ec23ede3b02a49c75bc52fa57c3b192a6d`
 
-Pressure includes:
+Remote content QA from PRE-SCOPE:
 
-- search/retrieval projection separate from canonical truth;
-- structured/full-text baseline and bounded pgvector candidate where applicable;
-- specialized search/vector only on demonstrated benefit;
-- standards-based observability with privacy minimization;
-- iCalendar/JSCalendar/Google/Microsoft semantics as interoperability pressure, not ontology;
-- deterministic solver/services for deterministic constraints;
-- AI for ambiguity/interpretation/explanation/cross-domain reasoning where useful;
-- truthful feasible/infeasible/uncertain/at-risk/conflicting/partial planner outcomes;
-- search/explanation/ranking non-interference under `WL-H12`.
+```text
+ahead_by       8
+behind_by      0
+total_commits  8
+added           3
+modified        5
+deleted         0
+unexpected      0
+```
 
-## Phase 10 — Physical benchmark specification/register
+### Phase 7 current result
+
+LifeOS does not force every async operation into one universal workflow runtime.
+
+```text
+BOUNDED ASYNC
+PostgreSQL + worker/outbox style = baseline mechanism class
+
+DEDICATED DURABLE EXECUTION
+Restate   = preferred structural-fit candidate — NOT selected
+Temporal  = strongest mandatory challenger — NOT selected
+DBOS      = conditional PostgreSQL-dependent challenger — NOT selected
+```
+
+Dedicated durable execution is structurally justified for operation classes involving material long waits/timers, human review, provider callbacks, crash-resume, material cancellation/timeouts, compensation or multi-step reconciliation.
+
+No durable runtime creates exactly-once external provider reality automatically.
+
+### Phase 8 current result
+
+The current governed-operation/effect contract is engine-/transport-neutral and preserves semantic target/effect, expected/material state, purpose/context, governance, confirmation/autonomy, idempotency/correlation, execution class and independent canonical/provider/runtime/conflict/reconciliation results.
+
+```text
+HTTP route / UI button / tool / AuthZ action / workflow step
+!= canonical Governed Operation
+
+request accepted != effect complete
+provider acknowledgement != canonical completion automatically
+workflow completed != Actual automatically
+technical cancellation != Domain cancellation automatically
+```
+
+Concrete routes/DTOs/API style remain deferred.
+
+### Phase 9 current result
+
+Search:
+
+- structured/lexical/full-text baseline;
+- semantic/vector bounded candidate;
+- pgvector bounded if PostgreSQL selected;
+- dedicated search/vector infrastructure not justified by default.
+
+Observability:
+
+- OpenTelemetry-first or equivalent standards-based direction;
+- no vendor selected;
+- telemetry != Domain Provenance/security audit/material history by identity.
+
+Calendar:
+
+- iCalendar/JSCalendar/provider APIs are interoperability/adapter pressure, not ontology;
+- recurrence exceptions, timezone/DST/all-day/floating semantics and provider sync-token state are benchmark pressure.
+
+Solver:
+
+```text
+simple deterministic rules / heuristics
+BASELINE
+
+OR-Tools CP-SAT
+PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
+```
+
+Hard constraints are not silently relaxed; `UNKNOWN != INFEASIBLE`; solver output remains candidate/scenario until accepted through the governed-operation contract.
+
+## Phase 10 — Physical benchmark specification/register — NEXT
+
+Phase 10 is **read-only first** and does not start the Physical Model.
+
+It must create the benchmark specification/register that a separately authorized later Physical Model can execute against.
+
+At minimum Phase 10 must consume:
+
+- complete closed Domain + Logical constraints;
+- Phase 5 requirement packages and all open parameters;
+- Phase 6 AI/context/integration boundaries;
+- Phase 7 durable-execution ranking/operation classes;
+- Phase 8 governed-operation/effect contract;
+- Phase 9 search/observability/calendar/solver pressure.
 
 Benchmark destructive LifeOS scenarios including:
 
@@ -306,9 +396,14 @@ Benchmark destructive LifeOS scenarios including:
 - multi-device/offline divergence;
 - ambiguous external-effect failure/replay;
 - restore after deletion/redaction;
-- explicit low/base/high scale and performance scenarios where exact forecasts remain open.
+- search/vector filtering/recall/deletion pressure;
+- calendar recurrence/provider rebaseline pressure;
+- solver input/result/freshness pressure;
+- explicit low/base/high scale/performance scenarios where exact forecasts remain open.
 
 Phase 10 must resolve or scenario-model Phase 5 open parameters when their values materially affect candidate scoring.
+
+Phase 10 must define acceptance/rejection evidence and benchmark bookkeeping without creating schema/tables/indexes/migrations or declaring a Physical winner.
 
 ## Phase 11 — repository engineering safety
 
@@ -346,11 +441,13 @@ READY FOR SEPARATE AUTHORIZATION
 NOT STARTED
 ```
 
+Only after Phase 12 closure may the user separately decide whether to authorize a Physical Model workstream.
+
 ## Backend Foundation / implementation — later
 
 Backend Foundation and production implementation are **NOT STARTED / DEFERRED**.
 
-Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Phase 5 requirements + Phase 6 boundaries + Physical/current runtime/API contracts rather than old product-label schemas.
+Only after accepted prerequisites should implementation proceed through bounded vertical slices derived from Domain + Logical + Phase 5 requirements + Phase 6–9 contracts + accepted Physical/current runtime contracts rather than old product-label schemas.
 
 ## Explicitly rejected/deferred by default
 
@@ -360,7 +457,10 @@ Do not introduce by default:
 - microservices/Kubernetes by fashion;
 - document/graph/meta-model storage as universal canonical kernel;
 - generic EAV/generic-edge ontology;
-- specialized search/cache/vector/analytics/workflow infrastructure without demonstrated benefit;
+- dedicated search/vector infrastructure without demonstrated benefit;
+- one universal workflow engine for every background job;
+- Restate/Temporal/DBOS adoption merely because one is preferred in a benchmark;
+- solver output as direct canonical state;
 - implicit collaboration/social implementation inside personal-first V1.
 
 Specialized infrastructure may be justified by measured workload **or** strong structural benefit in correctness/durability/security/evolvability/operations/migration risk.
