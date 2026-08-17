@@ -2,7 +2,7 @@
 
 - Last updated: 2026-08-17
 - Canonical branch: `main`
-- Current product stage: accepted LifeOS Product Identity / North Star established; Core Domain Model closed and integrated into `main`; Logical Model closed on its completed integration branch; Physical Model not started; Phase 4 UX structural rebaseline remains a separate product/design workstream
+- Current product stage: accepted LifeOS Product Identity / North Star established; Core Domain Model and Logical Model are closed and integrated into `main`; Physical Model is not started; a deliberate repository/project cleanup and coherence audit comes before any Physical Model authorization; Phase 4 UX structural rebaseline remains a separate product/design workstream
 - Production application code: not started yet
 - Documentation/governance consolidation: **COMPLETE on `main`**
 
@@ -38,8 +38,9 @@ Conversation history is useful context but is not the canonical project state wh
 - Repository-first human/AI handoff, source-precedence and parallel-work rules are established.
 - V1 remains personal-first; collaboration/social capabilities are deferred.
 - Multi-actor/collaboration discovery evidence is integrated into `main`: a dedicated simulation plus one consolidated external Deep Research document with semantic and bibliographic QC. This evidence does not itself change V1 scope, the domain model or architecture.
-- Core Domain Model / Domain Atlas is **CLOSED** and was integrated into `main` via PR #10. The final Whole-Domain state is `PASS WITH HARDENING / POST-WRITE QA PASS / CLOSED`, with the previously stage-bound WD-03 and WD-05 obligations discharged by the completed Logical Model validation.
-- Logical Model is **CLOSED** on `feature/logical-model`. Whole-Logical is `PASS WITH HARDENING / REMOTE QA PASS`; WD-03 is `PASS`; WD-05 is `PASS`. The closure checkpoint is [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md). This branch-local closure becomes canonical repository truth when the completed Logical Model branch is integrated into `main` through the normal PR/coherence workflow.
+- Core Domain Model / Domain Atlas is **CLOSED** and integrated into `main` via PR #10. The final Whole-Domain state is `PASS WITH HARDENING / POST-WRITE QA PASS / CLOSED`.
+- Logical Model is **CLOSED and integrated into `main` via PR #11**. Whole-Logical is `PASS WITH HARDENING / REMOTE QA PASS`; WD-03 is `PASS`; WD-05 is `PASS`. The canonical closure checkpoint is [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md).
+- The closed Logical Model preserves the accepted Domain owner set and activates the Whole hardening package `WL-H01..WL-H12` without selecting physical persistence/API/runtime mechanisms.
 - Physical Model is **NOT STARTED and NOT AUTHORIZED by Logical Model closure alone**. No SQL schema, migrations, API/backend implementation, AuthN/AuthZ runtime model, provider adapter implementation or concrete database adoption is implied by Logical Model closure.
 
 ## Active workstreams
@@ -58,15 +59,7 @@ Conversation history is useful context but is not the canonical project state wh
 - Status: **READY TO START, BUT NOT STARTED**
 - Intended branch: `feature/backend-foundation`
 - Handoff: [`docs/workstreams/backend-foundation.md`](workstreams/backend-foundation.md)
-- No backend implementation is authorized merely by Domain or Logical Model closure; sequencing must remain consistent with the next explicitly approved architecture/model phase and the repository cleanup/audit described below.
-
-### Logical Model integration
-
-- Status: **MODEL CLOSED — repository integration is the remaining step**
-- Branch: `feature/logical-model`
-- Whole-Logical closure: [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md)
-- Final workstream continuation: [`docs/workstreams/logical-model-part-9.md`](workstreams/logical-model-part-9.md)
-- Integration scope is documentation/model integration only. It must not be used to start the Physical Model, SQL, migrations, API/backend, AuthN/AuthZ runtime, provider adapters or frontend implementation.
+- No backend implementation is authorized merely by Domain or Logical Model closure. Before backend/model architecture advances, the planned repository/project cleanup and coherence audit must establish the next clean baseline and sequencing.
 
 ## Completed evidence workstreams
 
@@ -82,8 +75,8 @@ Conversation history is useful context but is not the canonical project state wh
 
 ## Immediate next work
 
-1. Integrate the completed and remotely QA-verified Logical Model from `feature/logical-model` into `main` through the normal PR and coherence gate, without semantic refactoring or starting a later architecture phase.
-2. On the resulting integrated `main`, perform a deliberate general repository/project cleanup and coherence audit before advancing the backend/model architecture. This cleanup may assess stale global documentation, branch/workstream status, duplicated or historical material, sequencing, repository hygiene and any other explicitly approved maintenance, but must preserve accepted semantic history and canonical split-document rules.
+1. Treat current `main` as the canonical integrated baseline for the **closed Core Domain Model + closed Logical Model**.
+2. Before advancing the backend/model architecture, perform a deliberate general repository/project cleanup and coherence audit. Assess stale global documentation, branch/workstream status, duplicated or historical material, sequencing, repository hygiene and any other explicitly approved maintenance while preserving accepted semantic history and canonical split-document rules.
 3. Only after that cleanup/audit, decide whether to authorize and start a separate **Physical Model** workstream with its own branch, PRE-SCOPE, write gate, validation criteria and technology benchmark/selection boundary. Logical Model closure does not itself authorize Physical Model implementation.
 4. Continue the accepted Product Identity / North Star based **structural frontend rebaseline** independently, preserving the approved Home + Today prototype baseline and avoiding redesign by accumulation of badges, controls or isolated modules.
 5. Do not start SQL schema/migrations, API/backend implementation, AuthN/AuthZ runtime design, provider adapters or concrete Physical Model implementation as an implicit continuation of the closed Logical Model.
@@ -101,7 +94,7 @@ At that point:
 - `prototype/phase-4-today-home` was synchronized with the accepted `main` baseline and intentionally ahead only for Phase 4 UX/prototype/test work;
 - the Phase 4 diff did not contain older competing copies of the accepted DB/AI architecture.
 
-This is a dated baseline, not a permanent assumption. The completed Core Domain Model was later integrated into `main` via PR #10, and the Logical Model was subsequently completed on `feature/logical-model`. Before the Logical Model merge and again during the planned post-merge cleanup, re-check Git using the coherence gate in [`development/operating-rules.md`](development/operating-rules.md).
+This is a dated baseline, not a permanent assumption. Since that audit, the completed Core Domain Model was integrated into `main` via PR #10 and the completed Logical Model was integrated via PR #11. The planned post-Logical cleanup/coherence audit must therefore establish a fresh current baseline before any Physical Model or backend architecture work begins.
 
 ## Important constraints — do not reopen casually
 
@@ -133,7 +126,7 @@ Incremental progress normally updates the workstream handoff, not this global st
 - completed `docs/project-governance*` helper branches: historical/obsolete after consolidation; no unique accepted work ahead of `main` at the last audit.
 - `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
 - `feature/domain-model`: completed historical integration branch; its accepted Core Domain Model / Domain Atlas was integrated into `main` via PR #10 and `main` is authoritative for that integrated state.
-- `feature/logical-model`: completed Logical Model branch awaiting normal integration into `main`; its closed branch-local Logical Model is authoritative for that scoped unmerged work until integration.
+- `feature/logical-model`: completed historical integration branch; its accepted closed Logical Model was integrated into `main` via PR #11 and `main` is authoritative for that integrated state.
 - `docs/multi-actor-discovery`: historical evidence branch after PR #6 merge; its accepted evidence is now integrated into `main` and `main` is authoritative.
 
 Historical branches and Git history are retained. Consolidation does not require deleting prior documentation or history.
