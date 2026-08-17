@@ -7,205 +7,198 @@
 
 These rules define where work happens, which source wins when information conflicts, how parallel workstreams avoid overwriting one another, and what every human or AI agent must do before and after modifying LifeOS.
 
-The goal is to make the repository resumable and safe across multiple ChatGPT conversations, Claude sessions, Codex tasks and human contributors without relying on conversational memory.
-
 The stricter execution mechanics in [`agent-operating-manual.md`](agent-operating-manual.md) are mandatory and apply together with this file.
 
 ## 1. Authority order
 
-When two sources disagree, use this order of authority unless a newer accepted decision explicitly supersedes it:
+When two sources disagree, use this order unless a newer accepted decision explicitly supersedes it:
 
-1. current `main` code, migrations, tests and accepted ADRs/current model decisions;
+1. current `main` code/migrations/tests and current accepted model/ADR decisions;
 2. current durable product/domain/logical/architecture documentation on `main`;
-3. the active workstream handoff for newer unmerged work on its branch;
-4. other files on the active workstream branch that are explicitly in progress;
-5. old branches, closed/merged PRs and Git history;
-6. conversation history or remembered context.
+3. active workstream handoff for newer bounded unmerged work;
+4. other explicit current files on the active branch inside that workstream;
+5. historical evidence, old branches, closed/merged PRs and Git history;
+6. conversation memory.
 
-An old branch never overrides a newer accepted decision simply because its document is more detailed.
+An old/detailed document never overrides newer current truth merely because it contains more prose.
 
-An older Accepted ADR or architecture document may be explicitly qualified/superseded by later accepted Domain/Logical/ADR/current-baseline work. Status labels must be interpreted together with chronology and supersession links rather than as timeless authority.
-
-Before copying or merging a document from another branch, compare it with the current `main` version and preserve the newest accepted decisions.
+An ADR may preserve original rationale while being superseded/qualified for current execution. Historical checkpoints preserve truthful chronology but are not current execution instructions unless explicitly designated as such.
 
 ## 2. Where work happens
 
 - `main` is the only integrated source of truth for accepted project state.
-- Normal implementation work starts from current `main` on a bounded `feature/*` or `fix/*` branch.
-- Documentation/governance/coherence work may use `docs/*` or `chore/*` as appropriate.
-- Exploratory UX or technical experiments may use `prototype/*`.
-- A long-running workstream keeps one primary active branch. Do not create parallel helper branches unless there is a concrete need.
-- Do not work directly on `main` except for an explicitly approved emergency repository repair.
-- DEV, UAT and PROD are environments, not branches.
+- Normal implementation work uses bounded `feature/*` / `fix/*` branches.
+- Documentation/governance/coherence work may use `docs/*` or `chore/*`.
+- Exploratory UX/technical experiments may use `prototype/*`.
+- One primary branch per workstream where practical.
+- Do not work directly on `main` except an explicitly approved emergency repair.
+- DEV/UAT/PROD are environments, not branches.
 
 ## 3. Workstream path ownership
 
-Parallel workstreams should avoid editing the same files unnecessarily.
+Parallel workstreams should avoid shared-file churn.
 
-Current/typical ownership:
+Current ownership:
 
-- Phase 4 Home/Today: `docs/phase-4/`, relevant `docs/ux/`, prototype/archive paths, prototype regression material and `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: current global/index/architecture/workflow documentation explicitly gated under `chore/pre-physical-coherence`, plus `docs/workstreams/pre-physical-coherence.md`.
-- Backend Foundation: **not currently started**; future backend bootstrap/configuration/infrastructure paths, backend tests/docs and `docs/workstreams/backend-foundation.md` only after required architecture/model prerequisites are accepted.
-- Core Domain Model / Domain Atlas: **closed and integrated**; `feature/domain-model` is historical. Domain semantic changes require an explicit reopen scope rather than being smuggled into backend/cleanup work.
-- Logical Model: **closed and integrated**; `feature/logical-model` is historical. Logical semantic changes likewise require an explicit reopen scope.
+- Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
+- Pre-Physical Repository & Architecture Coherence: explicitly gated current global/index/architecture/workflow docs + `docs/workstreams/pre-physical-coherence.md`.
+- Backend Foundation: **not started**; future backend bootstrap/config/infrastructure/tests/docs only after prerequisites are accepted.
+- Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
+- Logical Model: **closed**; historical branch does not reopen semantics.
 
-Shared/global files such as `README.md`, `docs/PROJECT-STATUS.md`, `docs/ROADMAP.md`, broad architecture documents and ADRs should be edited only when the work actually changes global/current project truth and the exact paths are included in an approved write gate.
-
-If two active workstreams would materially edit the same shared/current architecture sources, sequence them or explicitly synchronize them instead of allowing parallel silent divergence.
+Shared/current files (`README.md`, `docs/README.md`, `PROJECT-STATUS.md`, `ROADMAP.md`, broad architecture docs, ADRs) change only when global/current truth genuinely changes and exact paths are in an approved gate.
 
 ## 4. Start-of-work protocol
 
-Before making changes:
+Before changes:
 
 1. read root `README.md`;
 2. read `docs/README.md`;
 3. read `docs/PROJECT-STATUS.md`;
 4. read `docs/development/agent-operating-manual.md`;
-5. read this file and `docs/development/documentation-and-handoff.md`;
-6. read `docs/development/branching-and-environments.md`;
-7. read the complete relevant `docs/workstreams/<name>.md` logical handoff, including required continuation/split parts;
-8. read linked accepted product/domain/logical/architecture documents and ADRs;
-9. inspect the current branch/PR and compare it with current `main`;
-10. if the active branch is behind `main`, synchronize it before making overlapping changes where practical;
-11. inspect existing implementation/tests before assuming something is missing;
-12. check whether the requested decision already exists before creating a new one.
+5. read this file + `documentation-and-handoff.md`;
+6. read `branching-and-environments.md`;
+7. read the complete active workstream handoff;
+8. read current model/architecture index and linked current sources;
+9. read relevant ADRs/evidence/methodologies;
+10. inspect branch/PR and relation to current `main`;
+11. inspect relevant implementation/tests before assuming something is missing;
+12. check whether the requested decision already exists.
 
-Do not start from an old branch merely because it contains a familiar file. Start from `main` unless the current workstream handoff explicitly names another active branch.
+Do not start from an old branch merely because it contains a familiar file.
 
 ## 5. During-work protocol
 
-- Keep the change inside the workstream scope and approved exact write gate.
-- Update the workstream handoff after meaningful milestones so another agent can resume without the chat.
-- Prefer workstream-local documents/code/tests over editing global status files repeatedly.
-- Do not change an Accepted ADR or closed Domain/Logical semantic decision implicitly. If evidence requires a new direction, use the correct explicit supersession/reopen process.
-- Do not silently replace a newer `main` document with an older branch version.
-- Do not put important new project knowledge only in a chat response.
-- Do not create database schema, provider contracts or cross-cutting conventions solely because an AI suggested them; durable changes follow normal stage/gate/review rules.
-- Do not force-push shared branches or rewrite accepted history without explicit reason and review.
-- Do not delete documentation, branches or historical artifacts merely to make the repository look cleaner.
-- Do not treat a technical/runtime convenience concept as a new Domain owner without semantic evidence and the required reopen methodology.
+- Stay inside the approved exact write gate.
+- Keep the handoff resumable after meaningful milestones.
+- Prefer workstream-local progress over repeated global-file churn.
+- Do not change closed Domain/Logical semantics implicitly.
+- Do not silently replace newer current truth with older material.
+- Do not leave important new project knowledge only in chat.
+- Do not create schema/provider/cross-cutting conventions solely because an AI suggested them.
+- Do not force-push shared history for cosmetic cleanliness.
+- Do not treat runtime/technical convenience as new Domain ownership.
+
+### Current documentation rule
+
+Current specifications describe **current truth only**. They are not append-only historical logs.
+
+When current truth changes, obsolete prose should be replaced after a knowledge-coverage check. Useful rationale/history belongs in ADRs, checkpoints/evidence or Git.
+
+Historical evidence/checkpoints retain truthful chronology and must not be rewritten to appear current.
+
+Before deleting/replacing stale current documentation, verify:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
 
 ## 6. Global-status rule
 
-The workstream handoff is the live save game for incremental work.
+The workstream handoff is the live save-game.
 
-`docs/PROJECT-STATUS.md` is the global project view and should change only when something globally meaningful changes, for example:
+`docs/PROJECT-STATUS.md` changes only for globally meaningful state such as workstream start/finish/block, durable decision changes, integrated milestones or immediate sequence changes.
 
-- a workstream starts, finishes, becomes blocked or changes branch/PR;
-- an accepted architectural/product/model decision changes;
-- a major milestone merges;
-- the immediate project sequence changes.
-
-Do not edit `PROJECT-STATUS.md` for every prototype iteration, local refactor or small implementation step. This prevents parallel branches from constantly conflicting on the same global file.
-
-The same principle applies to root `README.md`, `docs/README.md`, `docs/ROADMAP.md`, broad architecture indexes and ADRs.
+The same discipline applies to root README, docs index, roadmap, architecture indexes and ADRs.
 
 ## 7. Documentation status semantics
 
-Use status labels consistently:
+- **Accepted** — durable decision/current baseline at its stated scope; later supersession may qualify it.
+- **Current** — authoritative current operational/specification truth.
+- **In progress** — active unmerged work.
+- **Draft / Proposed** — not accepted.
+- **Study / Exploration** — evidence/discovery, not binding implementation truth.
+- **Historical / Superseded** — preserved evidence/rationale, not current execution authority.
+- **Partially superseded / Qualified** — some decision/rationale remains useful while later sources constrain current effect.
 
-- **Accepted**: durable decision/current baseline at its stated stage; later explicit supersession may qualify it.
-- **Current**: authoritative operational state at the time of the last update.
-- **In progress**: active unmerged work that may still change.
-- **Draft / Proposed**: not yet accepted.
-- **Study / Exploration**: evidence or discovery, not binding implementation truth.
-- **Historical / Superseded**: preserved for context but not current instruction.
-- **Partially superseded / Qualified**: some content remains useful/accepted while later sources constrain or replace specific claims.
-
-When a document is superseded or materially qualified, identify the newer source where practical instead of leaving future agents to infer which version wins.
+Current navigation should point directly to current truth rather than requiring agents to infer authority from historical files.
 
 ## 8. Pre-merge coherence gate
 
-Before merging a branch into `main`:
+Before merge:
 
-1. compare the branch against current `main`;
-2. synchronize/rebase/merge current `main` as appropriate if the branch is behind;
-3. inspect every shared documentation file changed by both sides;
-4. verify that no older decision overwrites a newer Accepted/current decision;
-5. verify ADR/model status and supersession/reopen links;
-6. verify workstream handoff, tests and validation results;
-7. update global status only if the merge changes global state;
-8. confirm no secrets, production personal data, credentials or local-only artifacts were introduced;
-9. merge through PR after the branch is coherent.
+1. compare branch against current `main`;
+2. synchronize if needed;
+3. inspect shared docs changed by both sides;
+4. verify no old decision overwrites newer current truth;
+5. verify ADR/model status + supersession/reopen links;
+6. verify handoff/tests/validation;
+7. update global status only if globally meaningful;
+8. check secrets/personal production data/local artifacts;
+9. merge through PR only after semantic/documentation coherence.
 
-A clean Git merge is not enough: semantic/documentation coherence must also be checked.
+A clean Git merge is not enough.
 
 ## 9. After-merge protocol
 
-After an important merge:
+- verify `main` contains intended final versions;
+- refresh global status if required;
+- update workstream completion/next phase;
+- synchronize long-running overlapping branches;
+- old branches/history cease to be authoritative once accepted work is integrated.
 
-- verify `main` contains the intended final versions;
-- refresh `PROJECT-STATUS.md` if the merge changed global state;
-- update the workstream status to completed/next phase where applicable;
-- synchronize any long-running active branch that now shares changed global files;
-- leave old branches/history intact until normal housekeeping; they are no longer authoritative once accepted work is integrated.
+Historical files need not remain in the current working tree merely to preserve history if Git/ADR/evidence already retains the useful knowledge and deletion is explicitly gated.
 
-## 10. Handoff to another AI or chat
+## 10. Handoff to another AI/chat
 
-A new agent should be able to continue from the repository by following the mandatory bootstrap order in the agent operating manual and reading the active workstream handoff.
-
-The outgoing agent/workstream must record:
+The outgoing workstream records:
 
 - last completed change;
-- exact current task;
-- next exact steps;
-- branch and PR;
-- important files;
-- validation already performed;
-- known problems/open questions;
-- last validated commit when implementation exists;
-- current approved PRE-SCOPE/write state when a gate is in flight;
-- relevant failed/no-op tool operations when they affect continuation.
+- exact current task and next steps;
+- branch/PR;
+- important current files;
+- validation performed;
+- problems/open questions;
+- last validated commit where relevant;
+- approved PRE-SCOPE/write state when a gate is in flight;
+- failed/no-op tool operations that affect continuation.
 
-If that information exists only in the conversation, the handoff is incomplete.
+If critical continuation state exists only in conversation, the handoff is incomplete.
 
 ## 11. Current repository coherence baseline
 
-The 2026-08-10 coherence baseline is historical and must not be assumed indefinitely.
+At start of the 2026-08-17 Pre-Physical Coherence workstream:
 
-As of the start of the 2026-08-17 Pre-Physical Coherence workstream:
+- accepted `main` baseline: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`;
+- Domain Atlas: closed/integrated via PR #10;
+- Logical Model: closed/integrated via PR #11;
+- global main alignment: PR #12;
+- `chore/pre-physical-coherence`: active bounded backend/architecture preparation branch;
+- Phase 4 UX remains separate;
+- Backend Foundation not started;
+- Physical Model not started/authorized.
 
-- current accepted `main` baseline is `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`;
-- Core Domain Model / Domain Atlas is closed and integrated via PR #10;
-- Logical Model is closed and integrated via PR #11;
-- `main` was globally aligned after those merges via PR #12;
-- `chore/pre-physical-coherence` is the active bounded backend/architecture preparation branch;
-- `prototype/phase-4-today-home` remains a separate active UX/prototype branch;
-- Backend Foundation is not started and must not run from its stale pre-Domain handoff;
-- Physical Model is not started and requires separate future authorization.
-
-Future contributors must re-check all refs and current handoffs rather than assuming this statement remains true forever.
+Future contributors must re-check refs/handoffs rather than treating this dated baseline as permanent.
 
 ## 12. Current stage boundary — Pre-Physical Coherence
 
-Until the active Pre-Physical workstream closes:
+Until this workstream closes:
 
-- do not start the Physical Model implicitly;
-- do not start SQL/schema/migrations/API/backend/Auth/provider implementation implicitly;
-- do not reopen Domain/Logical semantics as part of documentation cleanup;
-- if a genuine material semantic contradiction is discovered, record it and open a separate explicit reopen scope;
-- older architecture/ADR wording may be marked qualified/superseded, but historical checkpoints must retain truthful chronology;
+- no implicit Physical Model;
+- no implicit SQL/schema/migrations/API/backend/Auth/provider implementation;
+- no implicit Domain/Logical reopen;
+- genuine semantic contradiction → record + separate reopen scope;
+- architecture/ADR cleanup may replace stale current prose while keeping meaningful rationale/evidence recoverable;
 - benchmark preparation may evaluate technologies without adopting them.
 
-The active detailed roadmap is [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
+Active detailed roadmap: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
 
-## 13. 2026-08-15 mandatory agent-execution hardening
+## 13. Mandatory execution hardening
 
-The stricter cross-session execution standard is defined in [`agent-operating-manual.md`](agent-operating-manual.md) and remains mandatory.
+The agent operating manual is authoritative for:
 
-In particular:
-
-- exact Git write gate with branch, pre-scope SHA, exact CREATE/UPDATE/DELETE paths, purpose and explicit out-of-scope;
-- re-fetch of branch HEAD before the first approved write; SHA drift requires STOP/re-gate;
-- post-write compare against the approved pre-scope; unexpected physical paths are QA failure;
-- no silent out-of-scope fixes or scope expansion;
-- preservation-first documentation updates and truthful historical amendments;
-- no truncation/knowledge loss because of connector/context limits;
-- canonical split documents count as one logical document while their physical paths remain individually auditable in Git scope/QA;
-- chronological amendments belong at the end of the logical canonical document;
-- explicit STOP/report behavior for Git/connector/network/tool failures;
-- remote repository evidence, not attempted tool calls, determines whether a write is complete;
-- workstream-specific mandatory methodologies remain binding, including Domain Validation Methodology v3 for any separately authorized Domain reopen/new validation.
-
-The detailed manual is authoritative for these stricter mechanics unless a higher-authority current accepted project decision explicitly supersedes it.
+- exact Git gate + PRE-SCOPE;
+- re-fetch before first real write;
+- exact post-write physical-path QA;
+- no scope expansion;
+- current-truth vs historical-evidence distinction;
+- knowledge-coverage gate before stale-doc replace/delete;
+- no connector/context-limit knowledge loss;
+- canonical split counting/chronology where evidence genuinely requires it;
+- truthful tool-failure reporting;
+- remote evidence for PASS/CLOSED;
+- Domain Validation Methodology v3 for any separately authorized Domain reopen/new validation.
