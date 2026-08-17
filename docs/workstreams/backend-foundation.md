@@ -28,6 +28,7 @@ Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver pressure CURRENT
 Phase 10 Physical benchmark method CURRENT
+Phase 11 repository engineering safety CONTENT CURRENT / GitHub settings verification pending
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
@@ -51,7 +52,7 @@ All of the following must be true before a backend implementation branch is crea
 7. the current Phase 8 governed operation/effect contract is accepted before concrete consequential routes/DTOs/tool schemas are stabilized;
 8. the current Phase 9 search/observability/calendar/solver boundaries are consumed where the implementation slice touches those capabilities;
 9. the Phase 10 Physical benchmark method has been consumed by the separately authorized Physical Model workstream, and the accepted Physical result records the evidence/conditions relevant to backend implementation;
-10. repository engineering safety/CI requirements needed before production backend work are in place;
+10. Phase 11 repository engineering safety is remotely verified: protected-main/ruleset policy is effective, branch hygiene is clean, applicable dependency/security settings are enabled, and any required checks configured at that future time correspond to real stable checks rather than placeholders;
 11. current `main` and all active current-specification sources are re-read immediately before the new branch/write gate.
 
 Until these conditions are satisfied:
@@ -66,6 +67,8 @@ DO NOT adopt Restate / Temporal / DBOS by benchmark preference alone
 DO NOT add dedicated search/vector infrastructure by default
 DO NOT make a solver write canonical state directly
 DO NOT treat Phase 10 PREFERRED/REGISTERED candidates as selected Physical technology
+DO NOT treat a documented GitHub ruleset as applied until effective remote rules are verified
+DO NOT invent required CI checks before real workflow/check contexts exist
 ```
 
 ## Required reading before future implementation
@@ -79,17 +82,18 @@ Read current sources, including complete canonical split/continuation chains whe
 5. [`../development/operating-rules.md`](../development/operating-rules.md);
 6. [`../development/documentation-and-handoff.md`](../development/documentation-and-handoff.md);
 7. [`../development/branching-and-environments.md`](../development/branching-and-environments.md);
-8. current [`../architecture/pre-physical-architecture-baseline.md`](../architecture/pre-physical-architecture-baseline.md), [`../architecture/README.md`](../architecture/README.md), [`../architecture/system-overview.md`](../architecture/system-overview.md) and [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md);
-9. the complete current Phase 5 requirement set beginning at [`../architecture/requirements/README.md`](../architecture/requirements/README.md), including all four linked requirement packages;
-10. current Phase 6 [`../architecture/ai-context-runtime-boundaries.md`](../architecture/ai-context-runtime-boundaries.md) and [`../architecture/integration-hub-boundaries.md`](../architecture/integration-hub-boundaries.md);
-11. current Phase 7 [`../architecture/durable-execution-benchmark.md`](../architecture/durable-execution-benchmark.md);
-12. current Phase 8 [`../architecture/governed-operation-effect-contract.md`](../architecture/governed-operation-effect-contract.md);
-13. current Phase 9 [`../architecture/search-observability-calendar-solver-boundaries.md`](../architecture/search-observability-calendar-solver-boundaries.md);
-14. current Phase 10 [`../architecture/physical-benchmark-specification.md`](../architecture/physical-benchmark-specification.md), [`../architecture/physical-benchmark-scenario-corpus.md`](../architecture/physical-benchmark-scenario-corpus.md) and [`../architecture/physical-benchmark-register.md`](../architecture/physical-benchmark-register.md);
-15. the complete accepted Domain Atlas beginning at [`../domain/README.md`](../domain/README.md), including its canonical continuation parts where required;
-16. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), its complete decision/assumption-register chain, and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
-17. the then-current accepted Physical Model sources, benchmark evidence/register results and closure evidence, once they exist;
-18. current ADRs under [`../decisions/`](../decisions/), using their current qualification/supersession status rather than historical labels.
+8. [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md) plus the then-current effective GitHub rules/settings and required checks;
+9. current [`../architecture/pre-physical-architecture-baseline.md`](../architecture/pre-physical-architecture-baseline.md), [`../architecture/README.md`](../architecture/README.md), [`../architecture/system-overview.md`](../architecture/system-overview.md) and [`../architecture/technical-decisions.md`](../architecture/technical-decisions.md);
+10. the complete current Phase 5 requirement set beginning at [`../architecture/requirements/README.md`](../architecture/requirements/README.md), including all four linked requirement packages;
+11. current Phase 6 [`../architecture/ai-context-runtime-boundaries.md`](../architecture/ai-context-runtime-boundaries.md) and [`../architecture/integration-hub-boundaries.md`](../architecture/integration-hub-boundaries.md);
+12. current Phase 7 [`../architecture/durable-execution-benchmark.md`](../architecture/durable-execution-benchmark.md);
+13. current Phase 8 [`../architecture/governed-operation-effect-contract.md`](../architecture/governed-operation-effect-contract.md);
+14. current Phase 9 [`../architecture/search-observability-calendar-solver-boundaries.md`](../architecture/search-observability-calendar-solver-boundaries.md);
+15. current Phase 10 [`../architecture/physical-benchmark-specification.md`](../architecture/physical-benchmark-specification.md), [`../architecture/physical-benchmark-scenario-corpus.md`](../architecture/physical-benchmark-scenario-corpus.md) and [`../architecture/physical-benchmark-register.md`](../architecture/physical-benchmark-register.md);
+16. the complete accepted Domain Atlas beginning at [`../domain/README.md`](../domain/README.md), including its canonical continuation parts where required;
+17. the closed Whole Logical Model at [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md), its complete decision/assumption-register chain, and closure evidence [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md);
+18. the then-current accepted Physical Model sources, benchmark evidence/register results and closure evidence, once they exist;
+19. current ADRs under [`../decisions/`](../decisions/), using their current qualification/supersession status rather than historical labels.
 
 Older product documents such as `v1-core-domain-glossary.md`, `v1-execution-status.md` and `v1-data-history-and-privacy.md` may remain useful **product evidence/requirements input**. They do not override the accepted Domain Atlas, closed Logical Model, later Physical Model or current architecture contracts.
 
@@ -114,8 +118,9 @@ Unless separately reviewed through the normal decision process:
 - deterministic solver output remains candidate/scenario state until a governed effect establishes canonical state;
 - Physical technology preference/registration remains benchmark posture until the separately authorized Physical workstream selects/accepts a result;
 - DEV/UAT/PROD are deployment environments, not permanent Git branches;
+- `main` integration follows the effective repository-safety rules and real required checks rather than undocumented/manual convention;
 - accepted Domain + Logical semantics, including `WL-H01..WL-H12`, are implementation constraints rather than suggestions;
-- the current Pre-Physical Architecture Baseline, Phase 5 requirements, Phase 6–9 contracts and Phase 10 benchmark-method package are mandatory downstream inputs and do not themselves authorize implementation.
+- the current Pre-Physical Architecture Baseline, Phase 5 requirements, Phase 6–9 contracts, Phase 10 benchmark-method package and accepted Phase 11 repository-safety policy are mandatory downstream inputs and do not themselves authorize implementation.
 
 ## Phase 5 requirements that future implementation must consume
 
@@ -329,6 +334,28 @@ If the Physical result requires a specific edition/topology/recovery mechanism t
 
 Phase 10 LOW/BASE/HIGH values are synthetic benchmark envelopes and do not become production capacity promises.
 
+## Phase 11 repository-engineering-safety contract that future implementation must consume
+
+Current source:
+
+- [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md).
+
+Before backend implementation starts, the documented policy must also be reflected in **effective GitHub settings**. At the current owner-driven stage, intended `main` safety is:
+
+```text
+pull request required
+delete protected main blocked
+force-push blocked
+review-thread resolution required
+0 required approvals until independent review exists
+0 required status checks until real stable checks exist
+merge-commit history preserved under current policy
+```
+
+As implementation workflows are introduced, material checks become required only after they exist, have stable unique contexts and have demonstrated that they should block integration.
+
+Backend Foundation must not weaken these controls for convenience. If CI/review/merge policy needs to evolve because the team or release model changes, update the repository-safety contract/settings through a separate approved scope.
+
 ## Physical-dependent implementation candidates
 
 The following are **not current architecture commitments** and may be adopted only if the accepted Physical Model justifies them:
@@ -473,7 +500,7 @@ solver result != accepted canonical effect
 preferred benchmark candidate != selected implementation
 ```
 
-And all `WL-H01..WL-H12`, accepted Phase 5 requirement packages, accepted Phase 6 boundary contracts, accepted Phase 7–9 architecture contracts, the Phase 10 benchmark-method package and the later accepted Physical result remain active downstream constraints.
+And all `WL-H01..WL-H12`, accepted Phase 5 requirement packages, accepted Phase 6 boundary contracts, accepted Phase 7–9 architecture contracts, the Phase 10 benchmark-method package, the effective Phase 11 repository-safety controls and the later accepted Physical result remain active downstream constraints.
 
 ## Where to work when eventually authorized
 
@@ -483,10 +510,11 @@ When all prerequisites are satisfied:
 
 1. re-read current `main` and this handoff;
 2. verify all required current split/continuation documents in full;
-3. define the exact backend implementation scope and path ownership;
-4. present a fresh branch/PRE-SCOPE/CREATE-UPDATE-DELETE gate;
-5. only after explicit approval, create the bounded implementation branch from current `main`;
-6. update this handoff to **IN PROGRESS** with actual branch, PRE-SCOPE, scope, package paths and validation commands.
+3. verify current effective repository rules and existing required check contexts;
+4. define the exact backend implementation scope and path ownership;
+5. present a fresh branch/PRE-SCOPE/CREATE-UPDATE-DELETE gate;
+6. only after explicit approval, create the bounded implementation branch from current `main`;
+7. update this handoff to **IN PROGRESS** with actual branch, PRE-SCOPE, scope, package paths and validation commands.
 
 ## Handoff maintenance after implementation starts
 
@@ -516,9 +544,12 @@ NO IMPLEMENTATION ACTION
 CURRENT PROJECT ACTION
 continue Pre-Physical Coherence
 
-AFTER PHASE 10 REMOTE QA
-Phase 11 — repository engineering safety
-READ-ONLY FIRST
+PHASE 11
+repository engineering safety
+CONTENT READY / GitHub settings verification pending
+
+NEXT AFTER PHASE 11 QA PASS
+Phase 12 — clean-room repository/architecture coherence QA
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
