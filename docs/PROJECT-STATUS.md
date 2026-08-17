@@ -25,13 +25,14 @@ PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
 Phase 0 + Phase 1 QA PASS
 Phase 2 architecture supersession/current-truth cleanup — QA PASS
-Phase 3 Backend Foundation handoff cleanup — READ-ONLY AUDIT NEXT
+Phase 3 Backend Foundation handoff cleanup — QA PASS
+Phase 4 Current Pre-Physical Architecture Baseline — NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
-NOT STARTED
+NOT STARTED / DEFERRED
 ```
 
 Phase 4 UX remains a separate active product/design workstream.
@@ -51,6 +52,8 @@ Phase 4 UX remains a separate active product/design workstream.
 11. relevant implementation/tests
 
 Conversation history is secondary to repository truth.
+
+When a canonical document is physically split, read the complete split/continuation chain rather than treating the first path as the whole logical document.
 
 ## Accepted/current foundations
 
@@ -89,6 +92,8 @@ Physical selection requires a later separate user authorization and benchmark/de
 - Phase 0 + 1: **QA PASS**.
 - Phase 2: **QA PASS** — current architecture/supersession cleanup completed with exact remote path QA and knowledge-coverage QA.
 - Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`.
+- Phase 3: **QA PASS** — Backend Foundation handoff cleaned against the closed Domain/Logical models and current architecture; stale Domain-v0/persistence/API start instructions removed or deferred without losing valid future bootstrap requirements.
+- Next: **Phase 4 — Current Pre-Physical Architecture Baseline**.
 - Domain/Logical remain closed/unchanged.
 
 ### Phase 4 — Home / Today UX
@@ -108,9 +113,10 @@ Physical selection requires a later separate user authorization and benchmark/de
 ### Backend Foundation
 
 - **NOT STARTED / DEFERRED**.
-- Existing handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-- Phase 3 will first audit that handoff read-only, then propose a separate exact write gate.
-- Backend Foundation must eventually consume closed Domain + Logical, accepted Physical Model and current runtime/security/integration contracts.
+- Current future handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
+- The old pre-Domain/pre-Logical instructions have been cleaned; the handoff is current but intentionally not executable yet.
+- Backend Foundation may start only after Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable accepted Physical/runtime/security/integration/API prerequisites exist.
+- Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/backend/Auth/provider implementation or a persistence-specific bootstrap from this status.
 
 ## Current architecture documentation policy
 
@@ -155,15 +161,44 @@ references/navigation repaired = PASS
 
 The retired file is absent from the active branch. Historical `domain-model-logical-readiness*` evidence was not modified.
 
+## Phase 3 result
+
+The Backend Foundation cleanup preserves useful future implementation requirements while removing or deferring stale assumptions.
+
+Current future handoff now establishes:
+
+```text
+Backend Foundation
+NOT STARTED / DEFERRED
+
+Domain Atlas
+CLOSED — consumed, not recreated
+
+Logical Model
+CLOSED — consumed, not recreated
+
+Physical persistence
+must come from a separately accepted Physical Model
+
+SQLAlchemy / Alembic
+conditional implementation candidates
+
+first implementation slice
+must derive from accepted Domain + Logical + Physical + runtime/API contracts
+not from old product-label ontology
+```
+
+It explicitly preserves valid future Python/FastAPI/Pydantic/modular-monolith/test/provider-boundary requirements without authorizing implementation now.
+
+Exact Phase 3 PRE-SCOPE and remote closure evidence are recorded in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
+
 ## Immediate next work
 
-1. **Phase 3 — read-only Backend Foundation handoff audit.**
-2. Compare `docs/workstreams/backend-foundation.md` against current Domain + Logical + architecture truth.
-3. Classify every stale/current requirement before proposing changes.
-4. Then present a **separate exact Phase 3 write gate**.
-5. Do not start Phase 3 writes from the consumed Phase 2 gate.
-6. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
-7. Continue Phase 4 UX independently.
+1. **Phase 4 — Current Pre-Physical Architecture Baseline.**
+2. Produce one current bridge source that states decided/open/prohibited architecture, active `WL-H01..WL-H12`, Domain-vs-runtime boundaries and downstream benchmark obligations.
+3. Begin Phase 4 read-only analysis first and classify what the bridge must contain before any new write gate.
+4. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
+5. Continue the separate Phase 4 Home/Today UX workstream independently.
 
 ## Non-negotiable downstream Logical obligations
 
