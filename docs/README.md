@@ -34,8 +34,8 @@ WD-05 PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 IN PROGRESS
-Phase 0–4 QA PASS
-Phase 5 requirements NEXT
+Phase 0–5 QA PASS
+Phase 6 AI/context/runtime/integration boundaries NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -57,6 +57,8 @@ Active handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physic
 
 A physical `*-part-N` chain is one logical document; do not treat one part as the whole authority.
 
+If a document is split only because of size/tool limits, all canonical parts together must preserve the complete logical payload losslessly. A split is not a summary, condensation or hidden content rewrite.
+
 Product/UI terminology does not override accepted Domain/Logical semantics.
 
 ## Current architecture sources
@@ -64,9 +66,19 @@ Product/UI terminology does not override accepted Domain/Logical semantics.
 Start with:
 
 - [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — current Pre-Physical bridge for decided/prohibited/open/mandatory downstream constraints;
+- [`architecture/requirements/README.md`](architecture/requirements/README.md) — current Phase 5 requirement-package index; read all four linked requirement packages;
 - [`architecture/README.md`](architecture/README.md) — architecture navigation and current/evidence separation;
 - [`architecture/system-overview.md`](architecture/system-overview.md);
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md).
+
+The Phase 5 requirement package constrains later Physical/runtime/API/backend work without selecting the implementation mechanism. It covers:
+
+- AuthN/AuthZ;
+- security/privacy/retention/security-aware recovery;
+- consistency/side effects;
+- non-functional/multi-device/operational recovery.
+
+Open parameters inside those packages are explicit downstream obligations and must not be silently defaulted by implementation.
 
 The old mixed `personal-data-ai-integration.md` current specification has been retired after knowledge coverage; its useful current content is carried by the current architecture/ADR/Logical sources, and its old payload remains recoverable in Git history.
 
@@ -107,9 +119,9 @@ HARD REJECT FOR CANONICAL KERNEL
 
 ## Workstreams
 
-- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 4 baseline is QA-closed and Phase 5 requirements are next.
+- [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md) — active backend/architecture preparation workstream; Phase 5 requirements are QA-closed and Phase 6 AI/context/runtime/integration boundaries are next.
 - [`workstreams/today-home.md`](workstreams/today-home.md) — active separate Phase 4 UX/product-structure workstream.
-- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
+- [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md) — **current deferred future handoff**. It consumes the Pre-Physical Architecture Baseline plus the complete Phase 5 requirement package and must not be executed until Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable current runtime/security/integration/API prerequisites are accepted.
 - Domain/Logical workstream documents are closed-stage evidence; `main` is authoritative for integrated state.
 
 ## Documentation lifecycle rule
@@ -142,7 +154,7 @@ Do not accumulate obsolete design history inside current specifications. Do not 
 
 ## Development process
 
-- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — exact write gates, remote QA, documentation lifecycle, split/tool-failure rules.
+- [`development/agent-operating-manual.md`](development/agent-operating-manual.md) — exact write gates, remote QA, documentation lifecycle, split/tool-failure rules, including the lossless size/tool-limit split rule.
 - [`development/operating-rules.md`](development/operating-rules.md) — authority, branches/path ownership, coherence gates.
 - [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md) — current-truth/evidence separation and handoff protocol.
 - [`development/branching-and-environments.md`](development/branching-and-environments.md) — Git/environment policy.
