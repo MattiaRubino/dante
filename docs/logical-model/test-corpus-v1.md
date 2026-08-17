@@ -1,6 +1,6 @@
 # LifeOS Logical Model Test Corpus v1
 
-**Status:** Stage-0H hardened normative foundation + Slice-A regression package  
+**Status:** Stage-0H hardened normative foundation + Slice-A + Slice-B regression packages  
 **Date:** 2026-08-17  
 **Purpose:** minimum adversarial simulation corpus for Logical Model slices and final integrated regression
 
@@ -678,6 +678,216 @@ BUT canonical relation is rejected by Reference Contract
 ```text
 TC-M01..M12
 PASS / PASS WITH explicitly stage-bound Slice-D/F dependencies
+
+NEW DOMAIN REOPEN EVIDENCE
+0
+```
+
+---
+
+## N. Slice B accepted regression expansion
+
+These scenarios are permanent Slice-B regression pressure and replay Slice-A identity/reference invariants where applicable.
+
+### TC-N01 — Possibility adoption without retyping
+
+A travel Possibility is retained for six months, evaluated repeatedly, then explicitly adopted as a Goal.
+
+Required:
+
+```text
+Possibility P1 remains historically P1
+Goal G1 is distinct identity
+adoption/origin link connects them
+pre-adoption history != Goal history
+```
+
+### TC-N02 — Possibility dismissed, later similar Goal
+
+A Possibility is dismissed. Two years later the user adopts a materially similar Goal.
+
+Required: similarity does not force identity equality or rewrite the earlier dismissal.
+
+### TC-N03 — Goal abandoned then reconsidered
+
+A Goal genuinely existed and was abandoned. Later the user reconsiders the same broad future.
+
+Required: abandoned Goal history remains Goal history; later candidate/adoption identity is evaluated explicitly.
+
+### TC-N04 — Minor Plan revision vs replacement Plan
+
+Plan A changes one optional Activity and moves one review point. Later, a materially different strategy is adopted.
+
+Required:
+
+```text
+minor revision may preserve Plan A identity
+materially different strategy may create Plan B
+Plan B links to predecessor/replacement relation
+Goal identity may remain unchanged
+```
+
+### TC-N05 — One Plan supports multiple Goals
+
+A health Plan supports fitness, weight and race-performance Goals.
+
+Required: no one-parent hierarchy; support relation remains explicit.
+
+### TC-N06 — Scheduled Activity vs Event
+
+An Activity receives a fixed calendar placement. A separate appointment Event also exists at an exact time.
+
+Required: exact scheduling does not retype Activity into Event.
+
+### TC-N07 — Routine occurrence skipped
+
+A Routine remains active while one generated occurrence is skipped and another is moved.
+
+Required:
+
+```text
+Routine lifecycle unchanged by default
+occurrence disposition independent
+future recurrence remains intact
+```
+
+### TC-N08 — Milestone date passes without attainment
+
+A milestone target date passes but the required criterion/evidence is not satisfied.
+
+Required: date passage != attainment.
+
+### TC-N09 — Proposal withdrawn without effect
+
+An AI/user Proposal is shared, reviewed and then withdrawn before any target change.
+
+Required: Proposal history persists; no Decision/effect is fabricated.
+
+### TC-N10 — Request acknowledged but not fulfilled
+
+A user requests a document from another person. The recipient acknowledges the Request but has not supplied the document.
+
+Required:
+
+```text
+acknowledged != fulfilled
+fulfilled != Actual automatically without owning reality semantics
+```
+
+### TC-N11 — Decision with zero effects
+
+A group explicitly decides to keep the current Plan unchanged.
+
+Required: Decision exists despite zero target mutation.
+
+### TC-N12 — One Decision, multiple effects
+
+A travel Decision authorizes a new Plan, several Activities and selected reservations/allocations.
+
+Required: one Decision may link to multiple effects without becoming those effects.
+
+### TC-N13 — Approval becomes stale after material edit
+
+Plan candidate V3 is approved. Before activation, a material revision creates V4.
+
+Required:
+
+```text
+approval of V3 != approval of V4 automatically
+material-equivalence/applicability is explicit
+```
+
+### TC-N14 — Replacement Plan preserves governed history
+
+Plan A governed two months of execution. It is replaced by Plan B.
+
+Required: past execution remains attributable to Plan A/material state; current plan lookup returns Plan B.
+
+### TC-N15 — Universal status projection challenge
+
+Goal, Plan, Activity, Proposal and Routine are all displayed in one UI list.
+
+Required: UI may derive normalized labels, but canonical owner lifecycle cannot be replaced by one universal status enum.
+
+### TC-N16 — Temporal order without Dependency
+
+Activity A is scheduled before Activity B only for convenience.
+
+Required: no Dependency exists unless true prerequisite contingency is asserted.
+
+### TC-N17 — Dependency current blocked state changes
+
+B depends on milestone M. M becomes attained, then later attainment is corrected/revoked under evidence/version rules.
+
+Required: current blocked/satisfied view is recomputed from applicable states; stale stored flag is not canonical truth.
+
+### TC-N18 — Conditional Policy activation proposes change
+
+A policy says: after two missed study Activities, propose a lighter revised Plan.
+
+Required:
+
+```text
+policy activation != Decision
+proposal != Plan replacement
+later Decision/effect follows owning semantics
+```
+
+### TC-N19 — AI candidate ranked highly but never adopted
+
+AI repeatedly recommends an opportunity and assigns high relevance.
+
+Required: ranking/confidence != Goal adoption/preference/Decision.
+
+### TC-N20 — Simple synchronous request without semantic ceremony
+
+The user says: "Move this Activity to 16:00" and has authority over it.
+
+Required: LifeOS may execute the bounded requested change without mandatory standalone Request+Proposal+Decision records unless independent lifecycle/history semantics require them.
+
+Material change history still follows Schedule/Version rules where applicable.
+
+### TC-N21 — Execution governed by historical Plan state
+
+A Routine/Activity executes under Plan material state V2. Plan later changes to V3.
+
+Required: later analysis can identify that the execution was governed by V2 where consequence requires.
+
+### TC-N22 — Slice-A reference regression
+
+Goal, Plan, Activity, Proposal and Decision records are referenced polymorphically by technical infrastructure.
+
+Required:
+
+```text
+technical addressability != universal WorkItem/Entity ontology
+Reference Contract still restricts semantic eligibility
+NativeRef != Version
+```
+
+### Additional Slice-B high-value queries
+
+31. Which retained Possibilities were never intentionally adopted?
+32. Which Goal originated from a prior Possibility without retyping it?
+33. Which Plans currently support a Goal, and which supported it at T?
+34. Which Plan materially governed a historical execution/occurrence?
+35. Which Plan replaced or continued another while Goal identity remained stable?
+36. Which Proposal/Request/Decision targeted which material state/version?
+37. What was proposed, what was decided and what effect actually followed?
+38. Which Decisions had zero effects?
+39. Which effects were produced under an already-authorized Conditional Policy rather than a fresh Decision?
+40. Which Dependencies currently block a target, and from which prerequisite state is that derived?
+41. Was a Milestone target date passed without semantic attainment?
+42. Can one mixed UI/search projection show useful normalized status without making it canonical owner lifecycle?
+
+### Slice-B regression result at acceptance
+
+```text
+TC-N01..N22
+PASS / PASS WITH explicitly stage-bound Slice-C/D/F dependencies
+
+SLICE-A REGRESSION FAILURE
+0
 
 NEW DOMAIN REOPEN EVIDENCE
 0
