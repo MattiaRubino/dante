@@ -1,16 +1,16 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — Phase 5 requirements incorporated**
+- Status: **CURRENT — Phase 6 boundaries incorporated**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Backend: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md` or the detailed Phase 5 requirement packages; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement inputs, open owners and authorization boundary.
+Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md`, the detailed Phase 5 requirement packages or the detailed Phase 6 boundary contracts; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement/boundary inputs, open owners and authorization boundary.
 
 ## Authority
 
-Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, this baseline, then the active workstream for open obligations.
+Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, the Phase 6 AI/context/runtime and Integration Hub contracts, this baseline, then the active workstream for open obligations.
 
 A physical `*-part-N` chain is one logical document. Never infer current state from only the first or last physical part. A tool/size split preserves the complete logical payload losslessly and is not a summary/condensation operation.
 
@@ -20,6 +20,7 @@ A physical `*-part-N` chain is one logical document. Never infer current state f
 DECIDED CURRENT DIRECTION != IMPLEMENTATION AUTHORIZATION
 PREFERRED BENCHMARK BASELINE != TECHNOLOGY SELECTION
 ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
+ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
 ```
 
 Current stage:
@@ -91,7 +92,19 @@ unresolved / candidate interpretation
 security / AuthZ runtime state
 ```
 
-Phase 6 must additionally distinguish retrieved context, live external context and transient LLM working context.
+Phase 6 additionally fixes the runtime context distinction:
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+The detailed contract lives in [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
 
 ## Mandatory WL-H01..WL-H12
 
@@ -149,11 +162,34 @@ Numeric RPO/RTO/SLA/latency/scale/offline-duration targets remain explicit open 
 
 Account, Principal, Credential, AuthZ decision, Agent, Tool, Workflow, Automation runtime, Notification delivery, Job, queue/outbox, cache/index, API DTO/route and protocol adapter are technical/product concepts unless separately revalidated. Authentication/security session concepts must not be conflated with Domain `Session`.
 
-## AI and integrations
+## Phase 6 AI/context/runtime boundary
 
-Already decided: provider-neutral AI boundaries; AI output remains proposal/candidate unless accepted through governed effects; deterministic constraints stay deterministic where appropriate; retrieved/provider context does not become canonical truth merely because AI consumed it.
+Current detailed contract: [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
 
-Integration modes remain distinct:
+Accepted boundary:
+
+```text
+AI/context/runtime representation != canonical LifeOS truth by default
+model output != accepted canonical effect
+tool invocation != governed operation
+runtime Agent / Principal != Domain Actor automatically
+```
+
+The Context Builder is purpose-, disclosure-, provenance- and freshness-aware and does not default to unrestricted user-history/database exposure.
+
+LifeOS does not create a second generic `AI memory` truth store. Durable information must receive an accepted canonical/history/candidate/derived/source/provider disposition.
+
+AI output is classified as answer/explanation, candidate/unresolved interpretation, structured extraction, Proposal/proposal-like candidate, scenario/recommendation or governed-effect request as applicable. None becomes effective solely because a model produced it.
+
+Configurable autonomy remains consequence/governance/policy based; Phase 6 does not impose universal human confirmation.
+
+AI provider/model selection, agent framework, tool registration format, conversation retention and concrete runtime mechanisms remain open/deferred.
+
+## Phase 6 Integration Hub boundary
+
+Current detailed contract: [`integration-hub-boundaries.md`](integration-hub-boundaries.md).
+
+Five modes remain distinct:
 
 1. canonical import;
 2. synchronized/mirrored provider state;
@@ -161,7 +197,13 @@ Integration modes remain distinct:
 4. retrieval/index projection;
 5. action/tool integration.
 
-MCP/A2A/future protocols are adapters, not ontology.
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider success/failure does not automatically determine canonical LifeOS effect truth.
+
+Sync/mirror requires explicit direction/conflict semantics; live reads retain source/freshness/unknown state; retrieval/index projections remain derived/deletion-aware; action/tool effects preserve governance, idempotency, partial-state and reconciliation truth.
+
+MCP/A2A/future protocols are adapters, not ontology or LifeOS governance.
+
+Provider/adapter/protocol selection remains deferred.
 
 ## Benchmark posture
 
@@ -180,7 +222,6 @@ No durable-workflow winner is selected. Phase 7 compares at least PostgreSQL+wor
 
 ## Open owners before Physical authorization
 
-- **Phase 6:** AI/context/runtime/integration boundaries.
 - **Phase 7:** durable workflow/async benchmark.
 - **Phase 8:** governed API/command/effect contract before concrete routes/DTOs.
 - **Phase 9:** search/observability/calendar/solver pressure.
@@ -188,18 +229,18 @@ No durable-workflow winner is selected. Phase 7 compares at least PostgreSQL+wor
 - **Phase 11:** repository engineering safety.
 - **Phase 12:** clean-room coherence QA and closure.
 
-Phase 5 requirements are current downstream inputs; open parameters recorded inside them remain obligations, not permission to ignore the requirement family.
+Phase 5 requirements and Phase 6 boundary contracts are current downstream inputs; open parameters/decisions recorded inside them remain obligations, not permission to ignore the requirement/boundary family.
 
 ## Explicitly unauthorized now
 
-No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/Neo4j design, SQL/migrations, concrete API routes/DTOs, AuthN/AuthZ engine/provider implementation, workflow/automation/notification engine, provider adapters, production backend code or `feature/backend-foundation`. Domain/Logical changes require a separate explicit reopen gate.
+No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/Neo4j design, SQL/migrations, concrete API routes/DTOs, AuthN/AuthZ engine/provider implementation, workflow/automation/notification engine, provider adapters, AI provider/model/agent implementation, MCP/A2A adoption, production backend code or `feature/backend-foundation`. Domain/Logical changes require a separate explicit reopen gate.
 
 ## Backend consumption contract
 
-Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, complete current Domain/Logical authorities and later accepted Physical/runtime/integration/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
+Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, both Phase 6 boundary contracts, complete current Domain/Logical authorities and later accepted Physical/runtime/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
 
 ## Documentation/evidence rule
 
 Current specs = current truth. ADRs = rationale + explicit supersession/qualification. Historical checkpoints = truthful chronology. Git = recoverable history.
 
-This baseline does not close Pre-Physical Coherence or authorize Physical work. After Phase 5 remote QA, the next current phase is **Phase 6 — AI/context/runtime/integration boundaries**.
+This baseline does not close Pre-Physical Coherence or authorize Physical work. After Phase 6 remote QA, the next current work is the coordinated Phase 7–9 architecture tranche, beginning with read-only inventory/benchmark preparation and preserving the dependency order among durable execution, governed effects and search/observability/calendar/solver pressure.
