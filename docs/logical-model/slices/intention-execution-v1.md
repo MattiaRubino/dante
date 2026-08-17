@@ -665,3 +665,201 @@ main remains unchanged
 ```
 
 Until that QA succeeds, this document records the accepted candidate but not final remote closure.
+
+---
+
+## 15. Integrated A+B hardening — superseding clarification
+
+This section is normative and **supersedes any broader or more permissive wording above where they conflict**. It was introduced by the cumulative A+B checkpoint after Slice B passed locally and remotely.
+
+### 15.1 Canonical owner identity is not storage-optional
+
+The earlier wording for Activity/Event said LR-01 applies `when persistent independent identity is required`. The integrated replay against the accepted Domain definitions shows that this is too permissive once a canonical Activity/Event actually exists.
+
+Correct rule:
+
+```text
+retained canonical Possibility -> LR-01
+canonical Goal                 -> LR-01
+canonical Plan                 -> LR-01
+canonical Activity             -> LR-01
+canonical Event                -> LR-01
+canonical Routine              -> LR-01
+```
+
+This does not promote transient suggestions/search results/AI candidates into canonical owners.
+
+```text
+transient action-like suggestion != Activity automatically
+transient event-like import candidate != Event automatically
+transient future candidate != Possibility automatically
+```
+
+### 15.2 LR-02 / LR-03 stable addressability uses ScopedRecordRef where material
+
+Persistent/history-bearing contextual records do not become NativeRef merely because another semantic fact must reference them.
+
+Current pressure:
+
+```text
+Milestone
+materialized Proposal
+materialized Request
+materialized Decision
+qualified Dependency when relation history/addressability matters
+```
+
+When these require stable logical addressability, use the integrated representation concept:
+
+```text
+ScopedRecordRef
+```
+
+under the containing Reference Contract.
+
+```text
+ScopedRecordRef != NativeRef
+stable addressability != native referent identity
+```
+
+Exact physical serialization/table strategy remains open.
+
+### 15.3 Request / instruction does not manufacture Authority
+
+The earlier shorthand:
+
+```text
+explicit user request may itself authorize the bounded requested action
+```
+
+is superseded.
+
+Correct contract:
+
+```text
+explicit user instruction/request
+may establish that Actor's bounded intent/instruction
+and may eliminate redundant confirmation ceremony
+```
+
+but:
+
+```text
+Request != Authority
+Request != Consent
+requester != Authority holder automatically
+```
+
+A personal action may be performed without asking the same user to confirm twice when the applicable governance already permits it. A shared/governed mutation still requires independently applicable Authority/Consent/policy.
+
+### 15.4 Dependency binds target plus relevant facet/state/result/transition
+
+A Dependency is not always semantically complete as only:
+
+```text
+from target -> to target
+```
+
+Where consequence is state/facet-specific, each endpoint must preserve:
+
+```text
+ReferenceAddress(target)
++
+materially relevant facet/state/result/transition/condition
+```
+
+Example:
+
+```text
+prerequisite
+ScopedRecordRef(Milestone M1)
+facet = attainment
+required condition = attained
+
+Dependent
+NativeRef(Activity A1)
+facet = execution admissibility
+```
+
+This does not create a universal predicate/expression language. Composite all/any/quorum/alternative logic remains deferred.
+
+### 15.5 Selective materialization != selective auditability
+
+The anti-overmodeling rule remains:
+
+```text
+not every Proposal/Request/Decision requires a standalone persisted record
+```
+
+But if a bounded direct instruction causes a consequential target change:
+
+```text
+no standalone Request/Decision
+!= no actor/source/basis/history for the change
+```
+
+Later Slice-D/F mechanisms must preserve enough lineage/provenance/governance basis where material.
+
+### 15.6 Possibility maturation and Plan replacement use typed lineage
+
+```text
+Possibility P1
+-- typed adoption/origin lineage -->
+Goal G1
+```
+
+and:
+
+```text
+Plan PL2
+-- typed replacement/continuation lineage -->
+Plan PL1
+```
+
+must not degrade to generic `related_to`.
+
+They also do not imply Version identity equality:
+
+```text
+Goal G1 != Possibility P1 v2
+Plan PL2 != Plan PL1 v2 automatically
+```
+
+### 15.7 Reference mechanism reconsideration
+
+The A+B checkpoint reopened the architecture choice because the non-native record-addressability gap changed the constraints.
+
+Reconsidered:
+
+```text
+owner-specific references only
+global Node/Entity registry/interface
+one undifferentiated TypedRef(kind,id)
+discriminated ReferenceAddress family + Reference Contract
+```
+
+Verdict:
+
+```text
+SELECTED
+ReferenceAddress discriminated family + Reference Contract
+
+MECHANISM / TECHNOLOGY RESULT
+RETAIN + HARDEN
+```
+
+Owner-specific refs remain a strong physical ingredient. A technical registry may remain physically viable. A universal semantic Node/Entity root and an undifferentiated reference space remain rejected.
+
+### 15.8 Slice-B integrated status
+
+```text
+SLICE B LOCAL/REMOTE CHECKPOINT
+PASS WITH HARDENING
+ACTIVE
+
+INTEGRATED A+B
+PASS WITH HARDENING
+pending current propagation-scope remote QA
+
+DOMAIN REOPEN REQUIRED 0
+```
