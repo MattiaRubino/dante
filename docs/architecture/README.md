@@ -14,14 +14,28 @@ Current specifications must describe the architecture as it is understood now. T
 Read these for the current architecture state:
 
 1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — current Pre-Physical bridge: decided/prohibited/open/mandatory downstream constraints and authorization boundary;
-2. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
-3. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
-4. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
-5. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
-6. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
-7. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
+2. [`requirements/README.md`](requirements/README.md) — current Phase 5 Pre-Physical requirement-package index; read all four requirement packages before later Physical/runtime/API/backend design;
+3. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
+4. [`technical-decisions.md`](technical-decisions.md) — current decided technical directions and explicitly open benchmark choices;
+5. [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md) — accepted Domain Atlas semantics; read their complete physical continuation chains where split;
+6. [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md) plus the complete decision/assumption-register chain — accepted Logical Model and current downstream decisions/hardenings;
+7. [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure evidence;
+8. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active Pre-Physical workstream and still-open phase ownership.
 
 A physically split canonical document is **one logical document**. Never treat the first path, the newest continuation or an isolated `*-part-N` file as complete authority.
+
+A tool/size split must preserve the complete logical payload losslessly. Splitting a document is not permission to summarize, condense, paraphrase away, omit or silently clean up content; semantic/current-truth editing is a separate operation.
+
+## Phase 5 requirement packages
+
+Current Pre-Physical requirement packages are:
+
+- [`requirements/authn-authz.md`](requirements/authn-authz.md) — authentication/security-context and authorization-enforcement requirements without `Principal = Actor = Authority` collapse;
+- [`requirements/security-privacy-retention-recovery.md`](requirements/security-privacy-retention-recovery.md) — security, minimization, sensitive-data, retention/redaction/deletion and security-aware recovery requirements;
+- [`requirements/consistency-side-effects.md`](requirements/consistency-side-effects.md) — expected-state, idempotency, concurrency, multi-owner consistency, provider/external side-effect and reconciliation/compensation requirements;
+- [`requirements/nonfunctional-multidevice-recovery.md`](requirements/nonfunctional-multidevice-recovery.md) — multi-device/offline, latency/availability classes, scale assumptions, resilience and operational-recovery requirements.
+
+These documents define requirements and explicit open parameters. They do not select Auth providers, policy engines, databases, schemas, transaction mechanisms, workflow/queue/outbox technologies, offline sync engines or numeric RPO/RTO/SLA targets by convenience.
 
 ## Current stage boundary
 
@@ -34,7 +48,7 @@ CLOSED
 
 Pre-Physical Repository & Architecture Coherence
 IN PROGRESS
-Phase 4 baseline established
+Phase 5 requirement packages established on active branch
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
