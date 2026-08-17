@@ -1,6 +1,6 @@
 # LifeOS Logical Model Decision & Assumption Register v1
 
-**Status:** Stage-0H normative foundation  
+**Status:** Stage-0H normative foundation + Slice-A + Slice-B decisions  
 **Date:** 2026-08-17  
 **Purpose:** prevent forgotten rejected designs, hidden assumptions, stale external dependencies and accidental reversals during Logical Model design
 
@@ -631,3 +631,368 @@ DEFER-A07 runtime authorization/identity-resolution enforcement
 ```
 
 All are `STAGE-DEFERRED PHYSICAL`. None may later weaken NativeRef/Reference Contract/ExternalRef/Reconciliation invariants.
+
+---
+
+## 17. Slice B — accepted decisions
+
+### DEC-B01 — Layered Typed Intention & Execution Model
+
+```text
+SLICE / SCOPE
+B — Intention / Execution
+
+QUESTION
+How can LifeOS preserve candidate future, adopted intent, strategy, action, expected occurrence, recurring policy, proposal/request/decision and dependency semantics without a universal WorkItem/workflow/status ontology?
+
+SELECTED CANDIDATE
+Layered Typed Intention & Execution Model
+
+CORE SHAPE
+typed semantic owner
++
+owner-specific material state/version
++
+typed links / semantic acts
++
+selective materialization
++
+history / lineage
++
+derived operational projections
+
+WHY SELECTED
+preserves all accepted Domain non-collapse boundaries;
+keeps simple cases compact;
+retains version/replacement/approval history pressure;
+allows shared technical mechanisms without shared lifecycle or ontology;
+leaves multiple physical implementations open.
+
+TRACE / TEST REFERENCES
+TB-01..TB-18
+INV-061..INV-084
+TC-B01..B06
+TC-N01..N22
+Slice-B mutation/counterfactual package
+
+REGRESSION IMPACT
+R3 WHOLE-LOGICAL
+
+STATUS
+ACCEPTED WITH HARDENING — activation conditional on Slice-B remote QA
+```
+
+### DEC-B02 — no universal canonical lifecycle/status
+
+```text
+DECISION
+Each semantic owner retains owner-specific lifecycle/disposition dimensions.
+Product/UI status may be a derived projection.
+
+STATUS
+ACCEPTED
+```
+
+### DEC-B03 — Possibility maturation creates/link Goal; no retyping
+
+```text
+DECISION
+Later intentional adoption establishes distinct Goal identity and may link back to the prior Possibility.
+Pre-adoption history remains Possibility history.
+
+STATUS
+ACCEPTED
+```
+
+### DEC-B04 — Proposal/Request/Decision use selective materialization
+
+```text
+DECISION
+Persist them independently when their own lifecycle/reference/history/audit/authority/version-binding matters.
+Do not manufacture standalone records for every trivial synchronous interaction.
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### DEC-B05 — Decision is resolution, not effect
+
+```text
+DECISION
+Decision may have zero/one/many effects.
+Target state remains owned by the affected concept.
+Previously authorized policy may produce permitted effects without a synthetic new Decision per mutation.
+
+STATUS
+ACCEPTED
+```
+
+### DEC-B06 — material target state matters to approval/applicability
+
+```text
+DECISION
+Where reviewed content can change materially, Proposal/Decision may bind the consequential target state/version.
+Material change does not automatically inherit prior approval.
+
+STATUS
+ACCEPTED WITH Slice-D hardening dependency
+```
+
+### DEC-B07 — Plan revision and replacement are distinct
+
+```text
+DECISION
+Ordinary operational edits may remain same Plan identity/material revision.
+Materially different execution strategy may create linked replacement/continuation Plan identity.
+No field-count threshold defines the boundary.
+
+STATUS
+ACCEPTED WITH Slice-D history dependency
+```
+
+### DEC-B08 — Dependency is typed contingency; blocked is derived
+
+```text
+DECISION
+Dependency is LR-03 typed directional contingency between bounded states/results/transitions.
+Hierarchy, temporal order and containment do not establish Dependency.
+Current blocked/satisfied view is normally derived.
+
+STATUS
+ACCEPTED
+```
+
+### DEC-B09 — explicit bounded user request may itself authorize requested action
+
+```text
+DECISION
+AI participation does not force a redundant approval ceremony when the user's explicit request already supplies the applicable bounded authority/intention.
+AI-generated details retain source/provenance and cannot silently become user facts/preferences.
+
+STATUS
+ACCEPTED WITH Slice-F/runtime governance dependency
+```
+
+### DEC-B10 — governed-by material state must be representable
+
+```text
+DECISION
+When consequence requires, later execution/Occurrence can identify the material Plan/Routine/Policy state that governed it.
+
+STATUS
+ACCEPTED WITH Slice-C/D deferral
+```
+
+---
+
+## 18. Slice B — rejected / retained alternatives
+
+### ALT-B01 — Universal WorkItem / IntentItem
+
+```text
+WHY PLAUSIBLE
+simple schema, one search/filter/status system, easy polymorphic UI
+
+FAILURE
+false superclass;
+universal lifecycle;
+Possibility→Goal retyping pressure;
+Dependency/hierarchy ambiguity;
+Proposal/Request/Decision collapse;
+semantic debt moves into kind/status/metadata.
+
+CLASS
+LOGICALLY REJECTED
+
+RETEST
+only if Domain Atlas is legitimately reopened; technical read-model projections may still unify search/UI without becoming canonical ontology
+```
+
+### ALT-B02 — Fully owner-specific persistence/mechanisms
+
+```text
+WHY PLAUSIBLE
+maximum local semantic and relational specificity
+
+RESULT
+VIABLE STRONG ALTERNATIVE
+
+WHY NOT SELECTED AS COMPLETE LOGICAL BASELINE
+duplicates common addressability/material-state/version/history mechanics without increasing semantic correctness.
+
+CLASS
+NOT LOGICALLY INVALID
+
+RETEST
+Physical Model may use it wholly or partly if it preserves DEC-B01 and all cumulative invariants
+```
+
+### ALT-B03 — Universal command/event-sourced model
+
+```text
+WHY PLAUSIBLE
+excellent auditability, event chronology and derived current views
+
+FAILURE AS LOGICAL REQUIREMENT
+technical events risk becoming ontology;
+current state depends on replay/projection policy;
+simple cases and high-volume mutation become unnecessarily expensive;
+owner semantics remain necessary anyway.
+
+CLASS
+LOGICALLY REJECTED AS UNIVERSAL REQUIREMENT
+
+RETEST
+event sourcing may be a bounded physical implementation technique later
+```
+
+### ALT-B04 — Universal desired-spec/current-status model
+
+```text
+WHY PLAUSIBLE
+Kubernetes-like clear intended/current separation
+
+FAILURE
+Possibility, Proposal, Request, Decision, Milestone and Dependency are not universally reducible to desired spec/current status.
+
+CLASS
+LOGICALLY REJECTED UNIVERSALLY
+
+RETAINED PRINCIPLE
+intended != actual
+```
+
+---
+
+## 19. Slice B — assumptions / evidence dependencies
+
+### ASM-B01 — material Version mechanism can later preserve Slice-B state bindings without owner collapse
+
+```text
+STATEMENT
+Slice D can provide a version/material-state mechanism capable of identifying consequential reviewed/governing state while keeping owner identity separate.
+
+EVIDENCE
+accepted Domain Version model + GitHub approval/version behavior + AWS/Google workflow revision/execution patterns
+
+CONFIDENCE
+HIGH
+
+STABILITY
+STABLE logical requirement / physical mechanism DEFERRED
+
+FAILURE CONSEQUENCE
+targeted Slice-B/D logical reopen if no sound shared or owner-specific Version representation can satisfy this
+
+REFRESH TRIGGER
+Slice D
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED WITH LATER-SLICE PROOF OBLIGATION
+```
+
+### ASM-B02 — selective materialization can remain compact and auditable
+
+```text
+STATEMENT
+LifeOS can materialize Proposal/Request/Decision only when their independent semantic lifecycle/history matters without losing reconstructibility for consequential changes.
+
+EVIDENCE
+simple-case counterfactuals + change-review/request workflow benchmarks
+
+CONFIDENCE
+HIGH
+
+STABILITY
+STABLE principle
+
+FAILURE CONSEQUENCE
+revisit materialization threshold/contract, not Domain owner semantics automatically
+
+REFRESH TRIGGER
+Slice F and Physical/API design
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED WITH HARDENING
+```
+
+### ASM-B03 — derived operational status can satisfy UI/search needs without becoming canonical owner lifecycle
+
+```text
+STATEMENT
+Product/UI/search can project normalized operational states from owner-specific canonical semantics.
+
+EVIDENCE
+existing LifeOS product status design + iCalendar differing status sets + modern work-management products
+
+CONFIDENCE
+HIGH
+
+STABILITY
+STABLE principle
+
+FAILURE CONSEQUENCE
+introduce richer projection/read-model design, not a universal semantic status root
+
+REFRESH TRIGGER
+API/product read-model design
+
+LAST VERIFIED
+2026-08-17
+
+STATUS
+ACCEPTED
+```
+
+No Slice-B PASS depends on a material `UNPROVEN` assumption.
+
+---
+
+## 20. Slice B — external evidence register
+
+```text
+EVID-B01 Terraform plan/apply                 STRUCTURAL PRINCIPLE
+EVID-B02 Kubernetes spec/status              STRUCTURAL PRINCIPLE + ANTI-COPY
+EVID-B03 Apache Airflow DAG/DagRun           STRUCTURAL PRINCIPLE
+EVID-B04 AWS Step Functions versions/runs    STRUCTURAL PRINCIPLE
+EVID-B05 Google Cloud Workflows revisions    STRUCTURAL PRINCIPLE
+EVID-B06 GitHub stale approval behavior      CURRENT PRODUCT + STRUCTURAL PRINCIPLE
+EVID-B07 SAP approval restart pressure       CURRENT PRODUCT BEHAVIOR
+EVID-B08 FHIR Goal/CarePlan/Request/Task     SPECIALIST BOUNDARY + STRUCTURAL PRINCIPLE
+EVID-B09 Jira Product Discovery             CURRENT PRODUCT / DISCOVERY-DELIVERY
+EVID-B10 Aha! ideas/initiatives/features     CURRENT PRODUCT / DISCOVERY-DELIVERY
+EVID-B11 Motion task/schedule separation     CURRENT PRODUCT
+EVID-B12 Reclaim habit/conflict rules        CURRENT PRODUCT
+EVID-B13 Todoist recurring-task advancement  NEGATIVE BENCHMARK
+EVID-B14 iCalendar RFC 5545 status families  INTEROPERABILITY / STRUCTURAL PRINCIPLE
+EVID-B15 Stripe PaymentIntent lifecycle      SPECIALIST BOUNDARY EVIDENCE
+EVID-B16 Notion generic properties/relations NEGATIVE + EXTENSION EVIDENCE
+EVID-B17 BPMN / DMN                          SPECIALIST PROCESS/RULE EVIDENCE
+```
+
+Canonical source URLs and dispositions: `benchmarks/intention-execution-v1.md`.
+
+---
+
+## 21. Slice B — physical deferrals
+
+```text
+DEFER-B01 exact PostgreSQL owner/table split
+DEFER-B02 owner-state/version table strategy
+DEFER-B03 exact Proposal/Request/Decision materialization persistence mechanics
+DEFER-B04 event sourcing usage, if any
+DEFER-B05 API lifecycle/status projections
+DEFER-B06 exact Plan replacement/version serialization
+DEFER-B07 exact Dependency physical/FK representation
+DEFER-B08 exact governed-by Version reference implementation
+DEFER-B09 exact Occurrence/Schedule/Session/Actual persistence — Slice C
+DEFER-B10 runtime authorization/policy enforcement — Slice F/runtime stage
+```
+
+All are `STAGE-DEFERRED PHYSICAL` or explicitly later-slice concerns. None may weaken the Slice-B logical invariants.
