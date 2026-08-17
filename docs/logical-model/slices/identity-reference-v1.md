@@ -1046,3 +1046,137 @@ NEXT
 SLICE B — INTENTION / EXECUTION
 NOT AUTOMATICALLY STARTED BY THIS WRITE
 ```
+
+---
+
+## 25. Integrated A+B hardening — ReferenceAddress family
+
+The cumulative A+B checkpoint found that Slice A's native/reference contract remained correct but incomplete for persistently addressable **non-native** semantic records introduced by Slice B.
+
+### 25.1 ReferenceAddress is a representation family
+
+Accepted integrated mechanism:
+
+```text
+ReferenceAddress
+=
+  NativeRef
+  OR ScopedRecordRef
+  OR MaterialStateRef
+  OR ExternalRef
+  OR another later explicitly accepted bounded address variant
+```
+
+This is not a Domain superclass.
+
+```text
+ReferenceAddress != Entity
+ReferenceAddress != Thing
+ReferenceAddress != Object root
+ReferenceAddress != Relationship
+```
+
+### 25.2 ScopedRecordRef
+
+`ScopedRecordRef` gives stable addressability to a materialized semantic record whose identity/history matters but whose identity remains dependent/contextual rather than native-referent identity.
+
+Current pressure includes:
+
+```text
+Milestone
+materialized Proposal
+materialized Request
+materialized Decision
+qualified Dependency when relation history/addressability matters
+```
+
+Canonical rule:
+
+```text
+stable reference/history
+!= native referent identity
+```
+
+### 25.3 MaterialStateRef
+
+`MaterialStateRef` remains the distinct address of the materially relevant state/version of a target.
+
+```text
+NativeRef / ScopedRecordRef
+!= MaterialStateRef
+```
+
+Exact construction remains Slice D.
+
+### 25.4 ExternalRef remains separate
+
+Provider/source addressability remains an external identity space.
+
+```text
+ExternalRef != NativeRef
+ExternalRef != ScopedRecordRef
+ExternalRef != MaterialStateRef
+```
+
+### 25.5 Reference Contract now constrains address variant too
+
+A Reference Contract must preserve, where relevant:
+
+```text
+semantic role/family
+eligible ReferenceAddress variants
+eligible target owner/family
+scope/context
+cardinality/directionality
+unresolved-target behavior
+material-state/facet binding
+history/materiality
+Visibility/Authority implications
+specialist boundary
+```
+
+A resolvable global address is not automatically semantically valid for a slot.
+
+### 25.6 Reconsidered technology/mechanism alternatives
+
+The A+B checkpoint reopened the reference architecture decision rather than treating Slice A as privileged because it had already passed.
+
+Reconsidered:
+
+```text
+owner-specific references only
+global Node/Entity registry/interface
+one undifferentiated TypedRef(kind,id)
+discriminated ReferenceAddress family + Reference Contract
+```
+
+Verdict:
+
+```text
+ReferenceAddress family + Reference Contract
+RETAIN + HARDEN
+```
+
+Owner-specific references remain a strong physical implementation ingredient. A narrow technical registry may remain physically valid. A global semantic Node/Entity root remains rejected.
+
+### 25.7 External calibration
+
+Transferable evidence used in the reconsideration:
+
+- FHIR typed/limited References show common reference machinery can retain target-type constraints;
+- FHIR version-specific Provenance targets reinforce target versus target-state distinction;
+- Kubernetes ObjectReference separates kind/UID from resourceVersion and can bind to a field path;
+- Kubernetes UID remains distinct from resourceVersion;
+- PostgreSQL inheritance still does not make PK/unique/FK constraints span children, so a universal parent-table hierarchy is not a free integrity solution;
+- Relay/GraphQL global Node is useful for API refetching but is a negative ontology benchmark for LifeOS because it deliberately defines a universal globally identified object interface.
+
+LifeOS copies none of those ontologies. It adopts only the structural lesson that addressability, type eligibility and addressed state can remain explicit and separable.
+
+### 25.8 Regression impact
+
+```text
+IMPACT
+R3 WHOLE-LOGICAL
+```
+
+All later slices must treat `ReferenceAddress` as representation-only vocabulary and must not collapse its variants into a universal semantic object identity.
