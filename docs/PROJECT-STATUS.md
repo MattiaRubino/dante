@@ -26,7 +26,8 @@ IN PROGRESS
 Phase 0 + Phase 1 QA PASS
 Phase 2 architecture supersession/current-truth cleanup — QA PASS
 Phase 3 Backend Foundation handoff cleanup — QA PASS
-Phase 4 Current Pre-Physical Architecture Baseline — NEXT
+Phase 4 Current Pre-Physical Architecture Baseline — QA PASS
+Phase 5 requirements that can constrain Physical design — NEXT
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -47,19 +48,20 @@ Phase 4 UX remains a separate active product/design workstream.
 6. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
 7. [`development/branching-and-environments.md`](development/branching-and-environments.md)
 8. active workstream handoff
-9. [`architecture/README.md`](architecture/README.md) and linked current architecture/model sources
+9. [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) and [`architecture/README.md`](architecture/README.md) with linked current sources
 10. relevant ADR/evidence/methodology
 11. relevant implementation/tests
 
 Conversation history is secondary to repository truth.
 
-When a canonical document is physically split, read the complete split/continuation chain rather than treating the first path as the whole logical document.
+When a canonical document is physically split, read the complete split/continuation chain rather than treating the first path or newest part as the whole logical document.
 
 ## Accepted/current foundations
 
 - [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current product identity/North Star.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**, with `WL-H01..WL-H12` active downstream constraints.
+- [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — **CURRENT** Pre-Physical bridge; `DECIDED != AUTHORIZED TO IMPLEMENT`.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
@@ -92,8 +94,10 @@ Physical selection requires a later separate user authorization and benchmark/de
 - Phase 0 + 1: **QA PASS**.
 - Phase 2: **QA PASS** — current architecture/supersession cleanup completed with exact remote path QA and knowledge-coverage QA.
 - Phase 2 content HEAD before closure markers: `dfc1f4e124f362d342c336485e166c8ac57afba4`.
-- Phase 3: **QA PASS** — Backend Foundation handoff cleaned against the closed Domain/Logical models and current architecture; stale Domain-v0/persistence/API start instructions removed or deferred without losing valid future bootstrap requirements.
-- Next: **Phase 4 — Current Pre-Physical Architecture Baseline**.
+- Phase 3: **QA PASS** — Backend Foundation handoff cleaned against closed Domain/Logical/current architecture.
+- Phase 4: **QA PASS** — current Pre-Physical Architecture Baseline established and made mandatory downstream input without authorizing Physical/backend implementation.
+- Phase 4 content HEAD before global closure markers: `cb7f9701fa21ebb4e771acef33088ee325e5e7f8`.
+- Next: **Phase 5 — requirements that can constrain Physical design**.
 - Domain/Logical remain closed/unchanged.
 
 ### Phase 4 — Home / Today UX
@@ -114,7 +118,7 @@ Physical selection requires a later separate user authorization and benchmark/de
 
 - **NOT STARTED / DEFERRED**.
 - Current future handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-- The old pre-Domain/pre-Logical instructions have been cleaned; the handoff is current but intentionally not executable yet.
+- The current handoff consumes the Pre-Physical Architecture Baseline and remains intentionally non-executable.
 - Backend Foundation may start only after Pre-Physical Coherence closes, a separate Physical Model is accepted, and applicable accepted Physical/runtime/security/integration/API prerequisites exist.
 - Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/backend/Auth/provider implementation or a persistence-specific bootstrap from this status.
 
@@ -124,7 +128,7 @@ Current specifications contain current truth only. ADRs preserve rationale + exp
 
 Stale current docs are replaced/deleted only after knowledge coverage proves meaningful content is safely mapped.
 
-Current architecture navigation: [`architecture/README.md`](architecture/README.md).
+Current architecture navigation starts at [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) and [`architecture/README.md`](architecture/README.md).
 
 ## Phase 2 verified result
 
@@ -165,38 +169,31 @@ The retired file is absent from the active branch. Historical `domain-model-logi
 
 The Backend Foundation cleanup preserves useful future implementation requirements while removing or deferring stale assumptions.
 
-Current future handoff now establishes:
-
-```text
-Backend Foundation
-NOT STARTED / DEFERRED
-
-Domain Atlas
-CLOSED — consumed, not recreated
-
-Logical Model
-CLOSED — consumed, not recreated
-
-Physical persistence
-must come from a separately accepted Physical Model
-
-SQLAlchemy / Alembic
-conditional implementation candidates
-
-first implementation slice
-must derive from accepted Domain + Logical + Physical + runtime/API contracts
-not from old product-label ontology
-```
-
-It explicitly preserves valid future Python/FastAPI/Pydantic/modular-monolith/test/provider-boundary requirements without authorizing implementation now.
+Current future handoff establishes Domain + Logical as consumed closed authorities, Physical/runtime/API prerequisites as later gates, SQLAlchemy/Alembic as conditional implementation candidates, and no canonical first slice based on old product-label ontology.
 
 Exact Phase 3 PRE-SCOPE and remote closure evidence are recorded in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
 
+## Phase 4 result
+
+[`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) is the current bridge source for:
+
+- decided current direction versus implementation authorization;
+- semantic non-collapse/prohibited shortcuts;
+- `LR-01..LR-13` / discriminated-reference and state-layer boundaries;
+- mandatory `WL-H01..WL-H12` downstream hardenings;
+- runtime/product/technical concepts that are not Domain owners by default;
+- AI/integration current boundaries;
+- Physical and durable-workflow benchmark posture;
+- Phase 5–12 ownership of still-open obligations;
+- explicit non-authorization of Physical/schema/API/Auth/runtime/provider/backend implementation.
+
+It coordinates current authority; it does not duplicate or reopen Domain/Logical semantics.
+
 ## Immediate next work
 
-1. **Phase 4 — Current Pre-Physical Architecture Baseline.**
-2. Produce one current bridge source that states decided/open/prohibited architecture, active `WL-H01..WL-H12`, Domain-vs-runtime boundaries and downstream benchmark obligations.
-3. Begin Phase 4 read-only analysis first and classify what the bridge must contain before any new write gate.
+1. **Phase 5 — requirements that can constrain Physical design.**
+2. Define requirements, not implementation, for AuthN/AuthZ; security/privacy/retention/recovery; transaction/consistency/outbox/side effects; and non-functional/multi-device/recovery.
+3. Begin Phase 5 read-only classification before any new exact write gate.
 4. Do not start Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation implicitly.
 5. Continue the separate Phase 4 Home/Today UX workstream independently.
 
