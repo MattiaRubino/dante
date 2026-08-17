@@ -1,18 +1,35 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — Phase 10 benchmark method incorporated**
+- Status: **CURRENT — Phase 12 clean-room repairs incorporated**
+- Pre-Physical Coherence: **FINAL CLOSURE CANDIDATE — independent total audit pending**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
-- Backend: **NOT STARTED / DEFERRED**
+- Backend production implementation: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-Current bridge between the closed Domain + Logical Models and later requirements, benchmark, Physical and backend work. It does not replace Domain, Logical, ADRs, `system-overview.md`, `technical-decisions.md`, the detailed Phase 5 requirement packages, the Phase 6 boundary contracts, the detailed Phase 7–9 architecture contracts or the Phase 10 benchmark-method package; it states the downstream assumptions, prohibitions, mandatory hardenings, current requirement/boundary inputs, benchmark posture, open owners and authorization boundary.
+This is the current bridge from the accepted Product/North Star, CLOSED Domain Atlas and CLOSED Logical Model into later Physical/runtime/API/backend work.
+
+It consolidates the downstream constraints that later engineering must preserve. It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract or Phase 12 clean-room evidence.
 
 ## Authority
 
-Read current truth through Product/North Star, the complete Domain Atlas + Language Map logical documents, the closed Whole Logical Model + full decision/register chain + remote closure, current ADR status, current architecture specs, the complete Phase 5 requirement package set, the Phase 6 AI/context/runtime and Integration Hub contracts, the Phase 7 durable-execution benchmark, Phase 8 governed-operation/effect contract, Phase 9 search/observability/calendar/solver contract, the Phase 10 Physical benchmark specification + scenario corpus + register, this baseline, then the active workstream for still-open obligations.
+Read current truth through:
 
-A physical `*-part-N` chain is one logical document. Never infer current state from only the first or last physical part. A tool/size split preserves the complete logical payload losslessly and is not a summary/condensation operation.
+1. Product / North Star;
+2. complete Domain Atlas + Language Map cumulative authority, including final closure/status continuations;
+3. CLOSED Whole Logical Model + complete decision/assumption-register chain + remote closure evidence;
+4. current ADR statuses;
+5. all four Phase 5 requirement packages;
+6. Phase 6 AI/context/runtime and Integration Hub contracts;
+7. Phase 7 durable-execution benchmark;
+8. Phase 8 governed-operation/effect contract;
+9. Phase 9 search/observability/calendar/solver contract;
+10. Phase 10 Physical benchmark specification + scenario corpus + register;
+11. Phase 11 repository-engineering-safety contract + verified effective main rules;
+12. this baseline;
+13. Phase 12 clean-room evidence and active workstream handoff for final-verification state.
+
+A physical split/cumulative continuation is one logical document. Never infer current state from only an early part or an isolated continuation. Size/tool-limit splitting is lossless physical partitioning, not summarization or semantic cleanup.
 
 ## Decided != authorized
 
@@ -24,51 +41,59 @@ REGISTERED BENCHMARK CANDIDATE != TECHNOLOGY SELECTION
 ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
 BENCHMARK METHOD ACCEPTED != PHYSICAL MODEL STARTED
+REPOSITORY SAFETY VERIFIED != BACKEND STARTED
+PHASE 12 CLOSED != WHOLE PRE-PHYSICAL DEFINITIVELY CLOSED UNTIL FINAL TOTAL AUDIT PASSES
 ```
 
-Current stage:
+## Current stage
 
 ```text
-Product/North Star        CURRENT
-Domain Atlas              CLOSED
-Logical Model             CLOSED
-Pre-Physical Coherence    IN PROGRESS
-Phase 5 requirements      CURRENT
-Phase 6 boundaries        CURRENT
-Phase 7 benchmark         CURRENT
-Phase 8 effect contract   CURRENT
-Phase 9 pressure contract CURRENT
-Phase 10 benchmark method CURRENT
-Physical Model            NOT STARTED / NOT AUTHORIZED
-Backend Foundation        NOT STARTED / DEFERRED
+Product / North Star        CURRENT
+Domain Atlas                CLOSED
+Logical Model               CLOSED
+Phase 5 requirements        CURRENT
+Phase 6 boundaries          CURRENT
+Phase 7 benchmark           CURRENT
+Phase 8 effect contract     CURRENT
+Phase 9 pressure contract   CURRENT
+Phase 10 benchmark method   CURRENT
+Phase 11 repository safety  QA PASS
+Phase 12 clean-room QA      CLOSING / QA evidence required
+
+Pre-Physical Coherence
+FINAL CLOSURE CANDIDATE
+independent total repository audit still required before definitive closure
+
+Physical Model              NOT STARTED / NOT AUTHORIZED
+Backend Foundation          NOT STARTED / DEFERRED
 ```
 
-## Current direction
+## Current technical direction
 
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
 - Backend direction: Python + FastAPI + Pydantic.
 - Modular monolith first.
-- Domain/application logic stays independent from HTTP/framework handling.
+- Domain/application logic remains independent from HTTP/framework handling.
 - Clients use governed backend contracts, not direct canonical persistence.
-- Object/file storage stays behind a provider abstraction.
-- AI stays behind replaceable/provider-neutral boundaries and a bounded Context Builder.
+- Object/file storage remains behind a provider abstraction.
+- AI remains behind replaceable/provider-neutral boundaries and a bounded Context Builder.
 - Provider state remains distinct from canonical LifeOS state.
 - Consequential operations use an engine-/transport-neutral governed operation/effect contract.
 - Bounded async work and material long-running durable execution are distinct runtime classes.
-- Structured + lexical/full-text search is the baseline posture; semantic/vector search is bounded.
+- Structured + lexical/full-text search is the baseline; semantic/vector retrieval is bounded.
 - OpenTelemetry-first or equivalent standards-based observability is the current direction, not a vendor selection.
 - Calendar standards/providers are interoperability/adaptor pressure, not ontology authority.
-- Deterministic rules/heuristics remain the baseline for explicit constraints; OR-Tools CP-SAT is the preferred specialized solver benchmark candidate, not an implementation selection.
-- Physical candidate comparison is role-specific: primary persistence, secondary graph, search/vector and bounded adjunct mechanisms do not share one false universal leaderboard.
-- Physical correctness hard gates precede any weighted performance/operability score.
-- Unknown business-scale/NFR values are scenario/sensitivity inputs rather than invented forecasts.
-- Specialized infrastructure requires demonstrated measured or structural benefit.
-- SQLAlchemy/Alembic remain conditional on accepted Physical design.
+- Deterministic rules/heuristics remain baseline for explicit constraints; OR-Tools CP-SAT is a preferred specialized solver benchmark candidate, not selected implementation.
+- Physical candidate comparison is role-specific, not one universal leaderboard.
+- Physical correctness hard gates precede performance/operability scoring.
+- Unknown NFR/business-scale values remain explicit sensitivity/scenario inputs rather than invented forecasts.
+- Specialized infrastructure requires demonstrated structural or measured benefit.
+- SQLAlchemy/Alembic remain conditional on the accepted Physical design.
 
 ## Semantic guardrails
 
-Do not manufacture universal owners or collapse accepted distinctions for implementation convenience.
+Later implementation must preserve accepted distinctions rather than manufacturing universal owners for storage convenience.
 
 ```text
 Person != Account != Principal != Actor
@@ -89,17 +114,41 @@ derived projection != canonical truth
 AI/solver inference != accepted canonical effect
 ```
 
-Product/runtime labels such as Project, Program, Workspace, Task, Reminder, Agent, Workflow or Notification do not create new universal Domain roots by naming alone.
+Product/runtime labels such as Project, Program, Workspace, Task, Reminder, Agent, Workflow or Notification do not create new Domain roots by naming alone.
 
-Hard rejects for the canonical kernel include universal Entity/Thing, universal generic Relationship/edge, generic EAV/property-bag ontology, generic unresolved-AI relation/property fallback, provider schema/IDs as ontology/identity, and product/UI vocabulary as ontology authority.
+Hard rejects for the canonical kernel include:
 
-Storage coincidence != semantic equivalence. Addressability != Domain identity.
+```text
+universal Entity / Thing
+universal generic Relationship / edge
+generic EAV / property-bag ontology
+generic unresolved-AI semantic fallback
+provider schema / identifier as ontology or native identity
+product/UI vocabulary as ontology authority
+```
 
-## Representation and state separation
+```text
+SEMANTIC OWNER != IMPLEMENTATION MECHANISM
+DOMAIN TERM != ENGINE
+PRODUCT LABEL != ONTOLOGY ROOT
+ADDRESSABILITY != DOMAIN IDENTITY
+STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
+```
 
-The Logical Model keeps `LR-01..LR-13` distinct and uses discriminated `NativeRef`, `ScopedRecordRef`, `MaterialStateRef`, `ExternalRef`; do not collapse them into one identifier model.
+## Logical representation and state separation
 
-Preserve separation among:
+The closed Logical Model preserves `LR-01..LR-13` representation families and discriminated reference families including:
+
+```text
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
+```
+
+Do not collapse them into a universal identifier model.
+
+State categories remain distinct where applicable:
 
 ```text
 canonical state
@@ -110,7 +159,7 @@ unresolved / candidate interpretation
 security / AuthZ runtime state
 ```
 
-Phase 6 additionally fixes the runtime context distinction:
+Phase 6 context categories further distinguish:
 
 ```text
 canonical state
@@ -122,30 +171,28 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-The detailed contract lives in [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
-
 ## Mandatory WL-H01..WL-H12
 
-- **H01** Agreement terms bind justified material owner/facet/state; no universal Terms root.
-- **H02** consequential operations use a governed operation/effect contract; route/UI/AuthZ strings are not the canonical effect.
-- **H03** projection/disclosure surfaces are bounded by source, derivation/version, purpose and exposure/disclosure boundaries.
-- **H04** absence/unknown != false.
-- **H05** consequential writes require expected-state semantics.
-- **H06** idempotency != semantic identity; conflicting reuse rejects.
-- **H07** multi-owner mutation is atomic where required or explicitly staged/partial with reconciliation/compensation.
-- **H08** canonical LifeOS state != provider sync state.
-- **H09** consequential derived-state use requires freshness revalidation or bound material basis/snapshot.
-- **H10** retention/redaction/tombstone handling preserves historical integrity; native identity is not reused.
-- **H11** consequential AuthZ provenance reconstructs Actor, represented party, Principal/security context, Authority/Consent/Visibility basis, policy/model version and effect.
-- **H12** non-interference/inference leakage includes existence, counts, ranking, errors, timing, free-busy, candidates, explanations and aggregates.
+All later Physical/API/runtime/backend work must preserve:
 
-## Phase 5 current requirement package
+1. **WL-H01** — Agreement terms bind a justified owner/facet/material state; no universal Terms root.
+2. **WL-H02** — consequential work uses a governed operation/effect contract; route/UI/AuthZ strings are not canonical effects.
+3. **WL-H03** — projection/disclosure surfaces remain bounded by source/facet/derivation/version/purpose/exposure/disclosure.
+4. **WL-H04** — absence/unknown != false.
+5. **WL-H05** — consequential writes preserve expected-state semantics.
+6. **WL-H06** — idempotency != identity; conflicting key/equivalence reuse rejects.
+7. **WL-H07** — multi-owner changes are atomic where required or explicitly staged/partial with reconciliation/compensation.
+8. **WL-H08** — canonical LifeOS state != provider sync state.
+9. **WL-H09** — consequential derived/live-state use revalidates freshness or binds material basis/snapshot.
+10. **WL-H10** — retention/redaction/tombstone handling preserves integrity; native identity is not reused.
+11. **WL-H11** — consequential authorization/effect provenance can reconstruct Actor, represented party, Principal/security context, Authority/Consent/Visibility basis, policy/model version and effect.
+12. **WL-H12** — non-interference/inference leakage includes existence, counts, ranking, errors, timing, free-busy, candidates, explanations and aggregates.
 
-The current detailed requirements live under [`requirements/README.md`](requirements/README.md) and its four packages.
+## Phase 5 requirement envelope
 
-### AuthN/AuthZ
+### AuthN / AuthZ
 
-Later implementation must preserve at least:
+Later implementation must preserve at minimum:
 
 ```text
 Person != Account != Principal != Actor
@@ -154,37 +201,33 @@ actual Actor != represented party automatically
 technical allow/deny != canonical governance truth
 ```
 
-Consequential authorization/effect provenance must be reconstructible where required; non-human Principals do not bypass governance; delayed effects must not rely indefinitely on stale governance state; disclosure enforcement includes inference/non-interference surfaces.
+Consequential authorization/effect provenance must be reconstructible where required. Non-human Principals do not bypass governance. Delayed effects cannot rely indefinitely on stale target/governance state. Disclosure enforcement includes inference/non-interference surfaces.
 
-Provider/protocol/session/policy-engine and enforcement mechanism selection remains deferred.
+Provider/protocol/session/policy-engine/enforcement mechanism selection remains deferred.
 
 ### Security / privacy / retention / security-aware recovery
 
-Later design must support purpose-aware minimization, sensitive-data handling, secure secret/credential isolation, privacy-minimized observability, category/purpose-sensitive retention, truthful deletion/redaction/anonymization, non-reused native identity, propagation to derived/external state, security-governed backup/restore and prevention of unauthorized resurrection after restore.
+Later design must support purpose-aware minimization, sensitive-data handling, secure credential/secret isolation, privacy-minimized observability, retention by category/purpose, truthful deletion/redaction/anonymization, non-reused native identity, propagation to derived/external state, security-governed backup/restore and prevention of unauthorized resurrection after restore.
 
-Exact legal basis, retention durations, final classification catalogue, residency/processor obligations and concrete security mechanisms remain explicit open decisions.
+Exact legal basis, retention durations, final classification catalogue, residency/processor obligations and concrete mechanisms remain open where not yet accepted.
 
 ### Consistency / side effects
 
-Later design must preserve expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, unresolved conflict, semantic multi-owner atomicity where required, truthful staged/partial state where distributed atomicity is impossible, canonical/provider-effect separation, ambiguous-failure retry safety, derived-state freshness, delayed target/governance revalidation, publication/replay integrity and reconstructible consequential effect history.
+Later design must preserve expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, unresolved conflict where appropriate, semantic multi-owner atomicity where required, truthful staged/partial state where distributed atomicity is impossible, canonical/provider-effect separation, ambiguous-failure retry safety, derived-state freshness, delayed target/governance revalidation, publication/replay integrity and reconstructible consequential effect history.
 
-Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain deferred except for the Phase 7 benchmark posture described below.
+Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain later decisions except for the engine-neutral Phase 7 posture.
 
 ### Non-functional / multi-device / operational recovery
 
-Later design must prevent silent multi-device consequential overwrite, preserve divergent states for reconciliation, define offline capability per operation rather than globally, classify consistency/availability by consequence, maintain truthful provider/degraded state, support efficient current-state access alongside long history, explicitly set RPO/RTO/latency/availability/scale inputs before dependent Physical scoring, preserve temporal/DST semantics, protect privacy in observability and prove recovery through destructive tests.
+Later design must prevent silent consequential overwrite across devices, preserve divergence for reconciliation, define offline capability per operation, classify consistency/availability by consequence, preserve provider/degraded-state truth, support current-state access alongside long history, set material RPO/RTO/latency/availability/scale inputs before dependent scoring, preserve temporal/DST semantics, protect privacy in observability and prove recovery through destructive tests.
 
-Numeric RPO/RTO/SLA/latency/scale/offline-duration targets remain explicit open parameters. Phase 10 treats them as scenario/sensitivity inputs until accepted product/operational values exist rather than inventing targets.
+Numeric targets remain explicit open parameters where not accepted. Phase 10 treats them as sensitivity inputs rather than fabricated forecasts.
 
-## Runtime/technical != Domain
+## Runtime / technical != Domain
 
-Account, Principal, Credential, AuthZ decision, Agent, Tool, Workflow, Automation runtime, Notification delivery, Job, queue/outbox, cache/index, API DTO/route and protocol adapter are technical/product concepts unless separately revalidated. Authentication/security session concepts must not be conflated with Domain `Session`.
+Account, Principal, Credential, AuthZ decision, Agent, Tool, Workflow, Automation runtime, Notification delivery, Job, queue/outbox, cache/index, API DTO/route and protocol adapter are technical/product constructs unless separately revalidated. Authentication/security-session concepts must not be conflated with Domain `Session`.
 
-## Phase 6 AI/context/runtime boundary
-
-Current detailed contract: [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md).
-
-Accepted boundary:
+## AI/context/runtime boundary
 
 ```text
 AI/context/runtime representation != canonical LifeOS truth by default
@@ -193,41 +236,33 @@ tool invocation != governed operation
 runtime Agent / Principal != Domain Actor automatically
 ```
 
-The Context Builder is purpose-, disclosure-, provenance- and freshness-aware and does not default to unrestricted user-history/database exposure.
+The Context Builder is purpose-, disclosure-, provenance- and freshness-aware and does not default to unrestricted history/database exposure.
 
-LifeOS does not create a second generic `AI memory` truth store. Durable information must receive an accepted canonical/history/candidate/derived/source/provider disposition.
+LifeOS does not create a second generic AI-memory truth store. Durable information receives an accepted canonical/history/candidate/derived/source/provider disposition.
 
-AI output is classified as answer/explanation, candidate/unresolved interpretation, structured extraction, Proposal/proposal-like candidate, scenario/recommendation or governed-effect request as applicable. None becomes effective solely because a model produced it.
+Configurable autonomy remains consequence/governance/policy based; no universal human-confirmation rule is imposed.
 
-Configurable autonomy remains consequence/governance/policy based; Phase 6 does not impose universal human confirmation.
+AI provider/model, agent framework, concrete tool protocol and conversation-runtime mechanisms remain open/deferred.
 
-AI provider/model selection, agent framework, tool registration format, conversation retention and concrete runtime mechanisms remain open/deferred.
+## Integration Hub boundary
 
-## Phase 6 Integration Hub boundary
+Five modes remain explicit:
 
-Current detailed contract: [`integration-hub-boundaries.md`](integration-hub-boundaries.md).
+```text
+canonical import
+synchronized / mirrored provider state
+live federated read
+retrieval / index projection
+action / tool integration
+```
 
-Five modes remain distinct:
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider outcome != canonical LifeOS effect truth automatically.
 
-1. canonical import;
-2. synchronized/mirrored provider state;
-3. live federated read;
-4. retrieval/index projection;
-5. action/tool integration.
+Mapping may remain candidate/unresolved. Sync direction/conflict semantics are explicit. Live reads retain source/freshness/unknown state. Retrieval/index projections remain derived/deletion-aware. External actions preserve governance, idempotency, partial/unknown effect and reconciliation truth.
 
-`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider success/failure does not automatically determine canonical LifeOS effect truth.
+MCP/A2A/future protocols remain adapters, not ontology or governance.
 
-Sync/mirror requires explicit direction/conflict semantics; live reads retain source/freshness/unknown state; retrieval/index projections remain derived/deletion-aware; action/tool effects preserve governance, idempotency, partial-state and reconciliation truth.
-
-MCP/A2A/future protocols are adapters, not ontology or LifeOS governance.
-
-Provider/adapter/protocol selection remains deferred.
-
-## Phase 7 durable-execution posture
-
-Detailed source: [`durable-execution-benchmark.md`](durable-execution-benchmark.md).
-
-Current boundary:
+## Durable execution posture
 
 ```text
 BOUNDED ASYNC WORK
@@ -248,228 +283,158 @@ Temporal  strongest mandatory challenger — NOT SELECTED
 DBOS      conditional PostgreSQL-dependent challenger — NOT SELECTED
 ```
 
-Runtime completion/cancellation does not manufacture Domain Actual/Outcome/Confirmation/cancellation. External reality is never considered exactly-once merely because a runtime replays durably.
+No runtime can create exactly-once external reality by itself. Runtime completion/cancellation does not manufacture Domain Actual/Outcome/Confirmation/cancellation.
 
-The later Physical benchmark must pressure-test the ranking again if Physical choice, RPO/RTO/SLO classes, deployment topology or operational assumptions materially change it.
+## Governed operation/effect contract
 
-## Phase 8 governed operation/effect contract
-
-Detailed source: [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md).
-
-Consequential operations preserve where applicable:
+Consequential operations preserve by materiality:
 
 ```text
-contract/version
-semantic target/facet
-requested effect semantics
-input/candidate
-purpose/context
-material/expected state
-derived/live basis + freshness
+contract / operation version
+semantic target / facet
+requested effect
+input / candidate
+purpose / context
+material / expected state
+freshness/material basis
 Principal / actual Actor / represented party
 governance basis
-autonomy / preview / confirmation requirement
-idempotency
-correlation/causation
-execution class
-deadline/expiry/cancellation semantics
+autonomy / preview / confirmation
+idempotency + operation equivalence
+correlation / causation
+execution requirement
+expiry / deadline / technical cancellation
 canonical result
-provider result
+provider/external result
 runtime result
-conflict/partial/reconciliation/provenance
+conflict / partial / reconciliation state
+provenance / execution receipt
 ```
-
-No one universal success/status value can replace these independent result axes.
 
 ```text
-request accepted != effect complete
-workflow complete != Actual automatically
-provider 2xx != canonical completion automatically
-technical cancellation != Domain cancellation automatically
+request accepted != effect completed
+provider acknowledgement != canonical completion automatically
+runtime cancellation != Domain cancellation automatically
+workflow completed != Actual automatically
 ```
 
-Concrete REST/RPC/GraphQL routes, DTOs, error codes, command buses and engine bindings remain deferred.
+Concrete routes/DTOs/transports remain deferred.
 
-## Phase 9 search / observability / calendar / solver posture
-
-Detailed source: [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md).
+## Search / observability / calendar / solver
 
 ### Search
 
-```text
-structured filters + lexical/full-text
-BASELINE
-
-semantic/vector retrieval
-BOUNDED CANDIDATE
-
-pgvector
-BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
-
-dedicated search/vector service
-NOT JUSTIFIED BY DEFAULT
-```
-
-Ranking/search/index state remains derived, disclosure-aware and deletion-aware. Search miss != canonical nonexistence. ANN/vector similarity != truth.
+Structured + lexical/full-text search is baseline. Semantic/vector retrieval is bounded. Search ranking/result omission/count/timing are disclosure surfaces; search miss != nonexistence; vector similarity != truth. Index state is projection, not canonical state.
 
 ### Observability
 
-```text
-OpenTelemetry-first or equivalent standards-based instrumentation
-CURRENT DIRECTION
+OpenTelemetry-first/equivalent is current direction. Telemetry identifiers do not become `NativeRef`, `MaterialStateRef`, durable execution identity or idempotency identity. Telemetry may be sampled/expired and does not replace required Domain Provenance/security audit/material history.
 
-vendor/backend
-NOT SELECTED
-```
+### Calendar
 
-Telemetry identifiers/state remain technical and do not replace Domain Provenance, security audit or material history by identity.
-
-### Calendar interoperability
-
-```text
-iCalendar / JSCalendar / provider calendar APIs
-INTEROPERABILITY + ADAPTER PRESSURE
-NOT LIFEOS ONTOLOGY
-```
-
-Recurrence exceptions/overrides, timezone/floating/all-day semantics, provider sync tokens and deletion/cancellation behavior must be pressure-tested while preserving LifeOS owner/state distinctions.
+LifeOS time semantics remain Domain/Logical-owned. iCalendar/JSCalendar/provider schemas pressure-test recurrence, overrides, occurrence history, all-day/floating/zoned time, DST, provider resync/token invalidation and cancellation/deletion, but do not define ontology. Provider sync token != `MaterialStateRef`.
 
 ### Solver
 
-```text
-simple deterministic rules / heuristics
-BASELINE
-
-OR-Tools CP-SAT
-PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE — NOT IMPLEMENTED
-
-AI
-interpretation / ambiguity / explanation / cross-domain reasoning
-NOT deterministic constraint authority
-```
-
-Solver `UNKNOWN` != `INFEASIBLE`; solver output remains candidate/scenario until Phase 8 establishes an accepted governed effect.
-
-## Phase 10 Physical benchmark method
-
-Detailed sources:
-
-- [`physical-benchmark-specification.md`](physical-benchmark-specification.md);
-- [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md);
-- [`physical-benchmark-register.md`](physical-benchmark-register.md).
-
-Phase 10 fixes the **method** a later authorized Physical workstream must execute. It does not execute candidate mappings or select a winner.
-
-### Candidate lanes
-
-```text
-PRIMARY CANONICAL PERSISTENCE
-P0 PostgreSQL hybrid — mandatory preferred baseline, NOT SELECTED
-P1 TypeDB            — mandatory challenger, NOT SELECTED
-
-SECONDARY GRAPH / TRAVERSAL
-G0 primary-only/no-specialized-store baseline
-G1 Neo4j — serious specialized secondary candidate
-
-SEARCH / SEMANTIC RETRIEVAL
-S0 structured + lexical/full-text baseline
-S1 pgvector bounded candidate when PostgreSQL is applicable
-
-EVENT / DOCUMENT
-bounded native mechanisms first
-specialized product only after explicit gap/benefit admission
-```
-
-### Hard-gate-first rule
-
-Primary candidates must pass non-compensable gates for:
-
-- semantic ownership/no generic meta-model collapse;
-- reference-family integrity;
-- typed/n-ary relation fidelity;
-- expected-state conflict safety;
-- truthful multi-owner consistency;
-- history/correction/reconciliation reconstruction;
-- state-layer separation;
-- governance/selective-disclosure support;
-- retention/redaction/tombstone + restore integrity;
-- temporal/recurrence/timezone fidelity;
-- schema/data evolution integrity;
-- recoverability/evidence quality.
-
-A hard-gate failure cannot be compensated by throughput or latency.
-
-### Synthetic qualification / sensitivity
-
-Phase 10 defines LOW/BASE/HIGH synthetic benchmark envelopes and deterministic fixture families. These values are qualification pressure, **not business forecasts**.
-
-Unknown RPO/RTO/availability/latency/scale values remain sensitivity dimensions. If the preferred candidate changes materially across accepted scenarios, the future result is `SENSITIVITY-DEPENDENT`, not an averaged false certainty.
-
-### Evidence contract
-
-Every future run pins at minimum:
-
-```text
-LifeOS source + benchmark commits
-candidate product/version/edition/deployment mode
-driver/runtime
-hardware/configuration
-mapping/schema revision
-fixture seed/tier/hash
-scenario IDs/load profile
-raw correctness + performance + recovery evidence
-manual tuning/caveats
-raw artifact location
-result/disposition
-```
-
-Operational/HA/backup capability is not scored from unpinned brand claims. Materially contradictory or unstable evidence becomes `HOLD`/conditional until verified.
-
-### Result vocabulary
-
-```text
-PASS
-PASS-CONDITIONAL
-HOLD
-REJECT
-SENSITIVITY-DEPENDENT
-PREFERRED
-```
-
-`PREFERRED != SELECTED`.
+Simple deterministic rules/heuristics remain baseline. OR-Tools CP-SAT is a preferred specialized benchmark candidate. `UNKNOWN != INFEASIBLE`. Solver output is candidate/projection bound to input/model/objective basis and crosses the governed-effect boundary before canonical change.
 
 ## Physical benchmark posture
 
-No Physical technology is selected:
+Phase 10 defines the method; it does not authorize Physical work.
 
 ```text
-PostgreSQL hybrid          primary preferred baseline — not selected
-TypeDB                     mandatory primary challenger
-Neo4j/property graph       serious secondary/read-projection candidate
-event/document mechanisms  bounded candidates
-pgvector                   bounded semantic-retrieval candidate
-generic EAV/generic edge/universal meta-model HARD REJECT
+PRIMARY CANONICAL LANE
+PostgreSQL hybrid — current preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH LANE
+no-specialized-store baseline vs Neo4j
+
+SEARCH / SEMANTIC RETRIEVAL LANE
+structured + lexical/full-text baseline vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms first; specialized candidate only on demonstrated need/benefit
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
 ```
 
-Phase 10 turns this posture into an executable future benchmark method. It does not itself start the Physical Model.
+Benchmark rules include:
 
-## Open owners before Physical authorization
+- semantic/correctness hard gates before weighted scoring;
+- candidate-idiomatic physical mappings against common semantic assertions;
+- expected-state races, multi-owner consistency, deep history, selective disclosure, provider divergence, deletion+restore, recurrence/DST, vector filtering, solver freshness, recovery and schema evolution;
+- synthetic LOW/BASE/HIGH qualification tiers, not forecasts;
+- exact product version + edition/license + deployment-mode evidence pinning;
+- sensitivity-dependent outcomes where open NFR assumptions materially change preference;
+- `PREFERRED != SELECTED`.
 
-- **Phase 11:** repository engineering safety.
-- **Phase 12:** clean-room coherence QA and closure.
+## Repository engineering safety
 
-Phase 5 requirements, Phase 6 boundary contracts, Phase 7–9 architecture contracts and the Phase 10 benchmark-method package are current downstream inputs. Open parameters/decisions recorded inside them remain obligations, not permission to ignore their requirement/boundary family.
+Phase 11 is QA PASS. Effective remote protection for `main` was verified rather than inferred from documentation.
+
+Current owner-driven safety posture:
+
+```text
+PR required
+main deletion blocked
+force-push / non-fast-forward blocked
+review-thread resolution required
+required approvals = 0 while no independent reviewer exists
+required status checks = none until real stable checks exist
+merge-commit history preserved by current policy
+```
+
+Required CI checks are introduced only after real workflows/check contexts exist and demonstrate stable blocking value. Backend/Physical work must not weaken repository protections for convenience.
+
+Connector-unverifiable security-setting state remains explicitly distinguished from remotely verified branch/ruleset state.
+
+## Open decisions before/during Physical
+
+Open parameters remain obligations, not permission for arbitrary defaults. They include as applicable:
+
+- accepted operational RPO/RTO/availability/latency/scale targets where candidate scoring materially depends on them;
+- final Physical primary-store mapping and adjunct-store justification;
+- concrete consistency/isolation/index/history/recovery mechanisms;
+- concrete AuthN/AuthZ provider/policy/enforcement mechanisms;
+- durable runtime implementation binding;
+- concrete API/DTO/transport design;
+- provider adapter/runtime integration mechanisms;
+- search/vector physical design;
+- observability backend/vendor;
+- solver service/implementation design.
 
 ## Explicitly unauthorized now
 
-No Physical schema/tables/keys/indexes/constraints, concrete PostgreSQL/TypeDB/Neo4j mapping, SQL/TypeQL/Cypher benchmark implementation, migrations, concrete API routes/DTOs, AuthN/AuthZ engine/provider implementation, Restate/Temporal/DBOS adoption, queue/outbox implementation, provider adapters, AI provider/model/agent implementation, MCP/A2A adoption, dedicated search/vector deployment, observability vendor, solver implementation, production backend code or `feature/backend-foundation`. Domain/Logical changes require a separate explicit reopen gate.
+No Physical schema/tables/keys/indexes/constraints, PostgreSQL/TypeDB/Neo4j mapping, SQL/TypeQL/Cypher benchmark implementation, migrations, concrete API routes/DTOs, AuthN/AuthZ implementation, Restate/Temporal/DBOS adoption, queue/outbox implementation, provider adapters, AI provider/model/agent implementation, MCP/A2A adoption, dedicated search/vector deployment, telemetry vendor, solver implementation, production backend code or `feature/backend-foundation` may be started from this baseline.
 
-## Backend consumption contract
+Domain/Logical changes require a separate explicit reopen gate.
 
-Backend Foundation must consume this baseline plus the complete Phase 5 requirement packages, both Phase 6 boundary contracts, all three Phase 7–9 contracts, the complete Phase 10 benchmark-method package, complete current Domain/Logical authorities and later accepted Physical/runtime/API contracts. Implementation convenience, product labels and stale evidence cannot redefine semantics.
+## Phase 12 / final-verification boundary
+
+Phase 12 exists to prove repository/architecture coherence from repository truth without relying on conversation history. Its closure may repair stale current navigation/status but does not alter closed Domain/Logical semantics.
+
+Per current user instruction, even after Phase 12 itself reaches QA PASS:
+
+```text
+DO NOT INTEGRATE TO MAIN YET
+DO NOT DECLARE WHOLE PRE-PHYSICAL DEFINITIVELY CLOSED YET
+
+NEXT
+independent total repository audit
+→ inspect for missed mistakes/contradictions/scope damage
+→ only then authorize definitive Pre-Physical closure
+→ PR/main integration remains later and separate
+```
 
 ## Documentation/evidence rule
 
-Current specs = current truth. ADRs = rationale + explicit supersession/qualification. Historical checkpoints = truthful chronology. Git = recoverable history.
+```text
+CURRENT SPECIFICATION = current truth
+ADR = rationale + explicit supersession/qualification
+HISTORICAL / VALIDATION EVIDENCE = truthful chronology
+GIT / PR HISTORY = recoverable history
+```
 
-This baseline does not close Pre-Physical Coherence or authorize Physical work. After Phase 10 remote QA, the next current work is Phase 11 — repository engineering safety — beginning read-only.
+Current sources must not retain stale execution instructions merely to preserve history. Historical checkpoints must not be rewritten to look current.
