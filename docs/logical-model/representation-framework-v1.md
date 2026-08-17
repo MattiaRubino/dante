@@ -1,6 +1,6 @@
 # LifeOS Logical Representation Framework v1
 
-**Status:** Stage-0H hardened normative foundation + Slice-A contract  
+**Status:** Stage-0H hardened normative foundation + Slice-A + Slice-B contracts  
 **Date:** 2026-08-17  
 **Purpose:** provide a controlled vocabulary for classifying logical representation choices without equating representation shape with domain ontology
 
@@ -743,3 +743,161 @@ PostgreSQL inheritance or one global table is not assumed or required.
 - `decision-and-assumption-register-v1.md` DEC-A / ALT-A / ASM-A entries
 
 Later slices must not silently weaken this contract. Changes affecting it are at least R2 and normally R3 regression impact.
+
+---
+
+## 15. Accepted Slice-B intention/execution contract
+
+This section activates with `slices/intention-execution-v1.md` after exact Slice-B remote QA.
+
+### 15.1 No universal work/intention root
+
+```text
+Possibility
+Goal
+Plan
+Activity
+Event
+Routine
+Milestone
+Proposal
+Request
+Decision
+Dependency
+```
+
+retain their accepted Domain ownership. Shared representation mechanisms do not create `WorkItem`, `Intent`, `WorkflowNode` or universal parent hierarchy semantics.
+
+### 15.2 Owner dispositions
+
+```text
+Possibility  -> LR-01 when persistently retained
+Goal         -> LR-01
+Plan         -> LR-01
+Activity     -> LR-01 when persistent independent identity is required
+Event        -> LR-01 when persistent independent identity is required
+Routine      -> LR-01
+Milestone    -> normally LR-02 dependent semantic record
+Proposal     -> LR-02 conditionally materialized
+Request      -> LR-02 conditionally materialized
+Decision     -> LR-02 conditionally materialized
+Dependency   -> LR-03 typed association/relation
+```
+
+Persistent addressability of LR-02 does not itself imply native Domain identity.
+
+### 15.3 Layered separation
+
+```text
+semantic owner
+!= material state/version
+!= typed link / semantic act
+!= occurrence/schedule/execution
+!= Actual
+!= Outcome
+!= derived operational status
+```
+
+### 15.4 Selective semantic materialization
+
+Proposal/Request/Decision require standalone persistent representation when independent lifecycle/reference/history matters, including:
+
+```text
+async review or response
+multi-actor interaction
+counter-proposal
+withdrawal / expiry / supersession
+material target-version binding
+Authority / rationale / provenance
+auditability
+material consequence
+```
+
+A trivial synchronous interaction does not require synthetic semantic records merely to satisfy architectural ceremony.
+
+### 15.5 Lifecycle rule
+
+There is no universal canonical status enum.
+
+Each owner preserves its own material lifecycle/disposition dimensions. Product/UI may derive compact status projections, but those projections are not universal canonical truth.
+
+### 15.6 Possibility maturation
+
+```text
+Possibility P1
+-> later adoption/origin link
+-> Goal G1
+
+P1 != G1
+```
+
+Later adoption never retypes pre-adoption history.
+
+### 15.7 Plan revision/replacement
+
+```text
+ordinary operational revision
+!= automatic new Plan identity
+
+materially different execution strategy
+may create linked replacement/continuation Plan
+```
+
+Exact material Version mechanics remain Slice D.
+
+### 15.8 Proposal/Decision version binding
+
+Where material content changes:
+
+```text
+approval / Decision over target V1
+!= automatic approval of materially different target V2
+```
+
+Material-equivalence/applicability must remain reconstructible.
+
+### 15.9 Decision/effect separation
+
+```text
+Decision
+!= target mutation
+```
+
+A Decision may have zero/one/many effects; effective state remains owned by the affected concept. Previously authorized Conditional Policy may produce permitted effects without manufacturing a new Decision for each mutation.
+
+### 15.10 Dependency
+
+```text
+Dependency
+= typed directional contingency
+!= hierarchy
+!= containment
+!= pure temporal order
+!= universal DAG edge
+```
+
+Current `blocked/satisfied/eligible` state is normally derived from the Dependency plus relevant prerequisite/target state.
+
+### 15.11 Routine/instance barrier
+
+```text
+Routine != Recurrence != Occurrence != Actual
+```
+
+A recurring owner must not be modeled as one mutable Activity whose date advances forever when occurrence/history distinctions matter.
+
+### 15.12 Governed-by material state
+
+Where consequence requires, later Occurrence/execution must be able to identify the material Plan/Routine/Policy state that governed it.
+
+Slice C owns exact instance/execution representation; Slice D owns exact Version/history representation.
+
+### 15.13 Canonical Slice-B references
+
+- `slices/intention-execution-v1.md`
+- `checkpoints/intention-execution-v1-validation.md`
+- `benchmarks/intention-execution-v1.md`
+- `traceability-and-regression-ledger-v1.md` Slice-B entries
+- `decision-and-assumption-register-v1.md` Slice-B entries
+
+Later slices must replay applicable Slice-A and Slice-B invariants rather than silently superseding them.
