@@ -15,6 +15,7 @@ This manual complements:
 - `operating-rules.md`;
 - `documentation-and-handoff.md`;
 - `branching-and-environments.md`;
+- `repository-engineering-safety.md` for GitHub-level enforcement/CI/security-setting lifecycle;
 - the active workstream handoff;
 - workstream-specific methodologies and checkpoints.
 
@@ -34,6 +35,7 @@ root README.md
 → docs/development/operating-rules.md
 → docs/development/documentation-and-handoff.md
 → docs/development/branching-and-environments.md
+→ docs/development/repository-engineering-safety.md when repository/CI/settings controls are relevant
 → active docs/workstreams/<workstream>.md logical document
 → current architecture/model index and linked current sources
 → relevant ADRs / methodologies / evidence
@@ -51,7 +53,7 @@ When sources conflict, use this order unless a newer accepted decision explicitl
 
 1. current `main` code/migrations/tests and current accepted model/ADR decisions;
 2. current durable product/domain/logical/architecture documentation on `main`;
-3. active workstream handoff for newer bounded branch-local work;
+3. active workstream handoff for newer bounded unmerged work;
 4. other explicit current active-branch sources inside that workstream;
 5. historical evidence, merged/closed branches and Git history;
 6. conversation memory.
@@ -67,8 +69,12 @@ A branch may contain newer unmerged truth inside its bounded workstream. It is n
 - Reuse the active workstream branch when its handoff identifies one.
 - DEV, UAT and PROD are deployment environments, not long-lived Git branches.
 - Do not work directly on `main` unless an explicitly approved exceptional repair requires it.
+- Integrate normal changes to `main` through pull requests under the effective repository-safety rules.
+- Do not bypass an active main ruleset merely to avoid normal coherence/review checks.
 - Do not force-push/rewrite shared history merely for cleanliness.
 - Main synchronization is its own scope when not required for the bounded task.
+
+Repository settings are operational state. A documented intended ruleset is not evidence that protection is active; verify effective remote rules/settings before claiming repository-safety PASS.
 
 ## 5. Exact Git write gate — mandatory
 
@@ -149,6 +155,15 @@ out-of-scope paths == 0
 branch relation/ahead/behind is as expected
 main protection holds where required
 ```
+
+When the scope depends on repository-level protections/settings, also distinguish:
+
+```text
+intended/documented setting
+!= effective remote setting
+```
+
+Read back the effective rules/settings before using them as closure evidence. Never invent a required CI check before its real workflow/check context exists and has demonstrated stable execution.
 
 Any extra physical path is a QA failure until explained and explicitly accepted.
 
@@ -443,6 +458,17 @@ blocked by tool
 
 Do not collapse these into vague `done`.
 
+Repository-safety language follows the same rule:
+
+```text
+ruleset file written
+!= ruleset imported
+!= effective rule verified
+
+security setting intended
+!= security setting enabled
+```
+
 ## 18. Handoff minimum for a new chat
 
 The active workstream must allow recovery of:
@@ -462,6 +488,16 @@ REOPEN / unclassified state
 important deferred dependencies
 next exact safe action
 explicit out-of-scope boundaries
+```
+
+When repository settings are part of an in-flight scope, also record:
+
+```text
+intended setting
+whether it has actually been applied
+how it was verified
+any connector/UI limitation
+remaining manual action
 ```
 
 A new chat should normally read this instead of asking the user to reconstruct prior conversations.
