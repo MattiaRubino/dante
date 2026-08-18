@@ -13,7 +13,7 @@ Current specifications describe the architecture as it is understood now. They a
 
 Read these for current architecture state:
 
-1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — current Pre-Physical bridge, downstream constraints and authorization boundary;
+1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed Pre-Physical bridge, downstream constraints and authorization boundary;
 2. [`requirements/README.md`](requirements/README.md) + all four Phase 5 requirement packages;
 3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime boundary contract, including consequential AI change evaluation/regression requirements;
 4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase 6 Integration Hub/provider boundary contract;
@@ -25,10 +25,10 @@ Read these for current architecture state:
 10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — Phase 10 candidate/role register; registered/preferred does not mean selected;
 11. [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md) — Phase 11 repository-safety contract and verified main-protection posture;
 12. [`pre-physical-clean-room-qa.md`](pre-physical-clean-room-qa.md) — Phase 12 clean-room evidence;
-13. [`pre-physical-final-coherence-audit.md`](pre-physical-final-coherence-audit.md) — final independent total-audit/closure evidence after it exists remotely;
+13. [`pre-physical-final-coherence-audit.md`](pre-physical-final-coherence-audit.md) — final independent total-audit/closure evidence;
 14. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
 15. [`technical-decisions.md`](technical-decisions.md) — current technical directions and explicitly open choices;
-16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — exact current/final-verification workstream state.
+16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — exact closed-workstream state and later integration boundary.
 
 ## Domain and Logical closure authority
 
@@ -189,17 +189,18 @@ Repository-safety documentation is not proof by itself; Phase 11 verified the ef
 
 Phase 12 clean-room QA is **QA PASS / CLOSED**.
 
-A later independent total repository audit rechecked the full Pre-Physical delta against `main`, Domain/Logical closure, current architecture/requirements, repository safety, branch hygiene, knowledge-retention treatment and Physical/backend authorization boundaries.
+The later independent total repository audit rechecked the full Pre-Physical delta against `main`, Domain/Logical closure, current architecture/requirements, repository safety, branch hygiene, knowledge-retention treatment and Physical/backend authorization boundaries.
 
-The audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start. It identified only bounded current-truth/factual/engineering hardenings, including:
+It found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start. The bounded current-truth/factual/engineering repairs included:
 
 - stale stage-handoff prose in current specifications;
 - precise Phase 10 method vs future Physical execution wording;
 - DBOS SQLite/PostgreSQL deployment-coupling correction;
 - explicit consequential AI evaluation/regression requirement;
-- final operating/navigation propagation.
+- final operating/navigation propagation;
+- honest `unexecuted benchmark tier != VERIFIED-RUN` treatment.
 
-Those bounded repairs are incorporated on this branch. Definitive closure activates only after the final exact remote gate QA and audit-record activation conditions pass.
+The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved the exact approved 23-path delta, `behind_by 0`, unchanged `main` and critical readback PASS.
 
 ## Current stage boundary
 
@@ -215,25 +216,26 @@ Phase 9 pressure contract                CURRENT
 Phase 10 benchmark method                CURRENT / QA PASS
 Phase 11 repository engineering safety   QA PASS
 Phase 12 clean-room QA                    QA PASS / CLOSED
-
-Independent total audit
-CORE PASS
-FINAL BOUNDED REPAIR / REMOTE ACTIVATION QA IN PROGRESS
+Independent total audit                  PASS
 
 Pre-Physical Coherence
-FINAL CLOSURE CANDIDATE
+DEFINITIVE CLOSED / FINAL QA PASS
+
+Physical readiness
+ESTABLISHED
 
 Physical Model
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 Backend production implementation
 NOT STARTED / DEFERRED
 
 Main integration
-NOT PERFORMED
+PENDING / NOT PERFORMED
 ```
 
-No Physical persistence/runtime/backend implementation may begin from the audit alone. Definitive Pre-Physical closure, later `main` integration and later Physical authorization are separate boundaries.
+No Physical persistence/runtime/backend implementation may begin merely from branch-local closure. Protected `main` integration and post-merge verification are separate; Physical authorization remains separate again after integration.
 
 ## Historical transition / validation evidence
 
