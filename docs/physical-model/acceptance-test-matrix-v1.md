@@ -1,7 +1,8 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-14 TARGET CLOSURE COMPLETE / DIRECT EXECUTION NOT STARTED**
-- Workstream: `feature/physical-model`
+- Status: **CURRENT — PM-14 TARGET CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15 / DIRECT EXECUTION NOT STARTED**
+- Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
+- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
 - Primary finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
 - PM-10 preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - PM-11 selected primary: **PostgreSQL 18.4**
@@ -250,7 +251,7 @@ LOST PSV OBLIGATIONS
 
 This does not discharge direct implementation tests.
 
-## Closure
+## Closure / integration
 
 ```text
 PM-11 COMPLETE
@@ -264,10 +265,14 @@ ARCHITECTURE / DOCUMENTATION COHERENCE
 
 PM-14 BRANCH CLOSURE COMPLETE
 
+PR #15
+PROTECTED-MAIN INTEGRATION COMPLETE
+MAIN e6f191bad947388a44defe2c15f4939345084f58
+FORMER feature/physical-model MERGED / AUTO-DELETED
+
 DIRECT HG PASS
 0
 
 NEXT
-protected-main integration through PR
-then Development Profile v0 as separate scope
+Development Profile v0 as separate scope
 ```
