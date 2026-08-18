@@ -10,7 +10,7 @@
 
 ## 1. Purpose
 
-This checkpoint freezes the exact user-supplied Home/Today prototype accepted on 2026-08-18 and makes it the deterministic starting point for the next Phase 4 iteration.
+This checkpoint freezes the exact user-supplied prototype accepted on 2026-08-18 and makes it the deterministic starting point for the next Phase 4 iteration.
 
 Do not reconstruct this state approximately from screenshots, old conversation previews or earlier checkpoints. Open the exact archived HTML artifact.
 
@@ -21,10 +21,10 @@ filename
 lifeos_home_vnext_orientation_day_ribbon_v1.html
 
 size
-748590 bytes
+748625 bytes
 
 SHA-256
-88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17
+986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
 ```
 
 Archive:
@@ -35,7 +35,9 @@ The exact HTML is stored directly as:
 
 `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/lifeos_home_vnext_orientation_day_ribbon_v1.html`
 
-Git blob SHA: `8933e62c4d99d09e7ef07620fa779496d6179650`. The artifact was moved into this checkpoint by reusing that verified blob, so no byte transformation occurred.
+Current Git blob SHA: `fd9788212fbbd1ee40e53271cc39cedd9275b341`.
+
+The initially checkpointed HTML was replaced by the user on commit `cb58b1528292398ccedeaedb60b44a4ff6e6235f` because the wrong local variant had been uploaded first. The corrective commit changes exactly one source line: `drRoadGrad` now uses `gradientUnits:'userSpaceOnUse'` with percentage x coordinates. The corrected blob above is the current exact source of truth.
 
 ---
 
@@ -62,7 +64,7 @@ Saving this integrated checkpoint does not rewrite Today v21 history and does no
 
 ## 3. What the current artifact visibly carries forward
 
-The exact artifact is authoritative. At a high level it contains the current integrated Home/Today direction, including:
+The exact artifact is authoritative. At a high level it contains the current integrated direction, including:
 
 - global Home shell and professional conversational AI surface;
 - current-situation composition around `Ora` / immediate continuation, attention and contextual/dynamic information;
@@ -71,7 +73,7 @@ The exact artifact is authoritative. At a high level it contains the current int
 - dedicated day ribbon / week navigation;
 - contextual `Ora` return-to-current-time control;
 - calendar navigation;
-- 24-hour Today timeline;
+- 24-hour timeline;
 - nonlinear temporal density and overlap handling;
 - group chips, filters/reordering and grouped timeline expansion;
 - timeline panel expansion;
@@ -93,11 +95,11 @@ Current durable/working constraints include:
 
 ### One reality, multiple projections
 
-Home, Today, temporal views, contextual surfaces, natural language and future Mobile/Web representations operate on the same underlying LifeOS reality. Presentation state is not a competing source of truth.
+Home, temporal views, contextual surfaces, natural language and future Mobile/Web representations operate on the same underlying LifeOS reality. Presentation state is not a competing source of truth.
 
 ### Time is primary, not sovereign
 
-Today/timeline is a powerful operational projection, but LifeOS is not reducible to calendar blocks. Persistent realities may matter without being scheduled.
+The timeline is a powerful operational projection, but LifeOS is not reducible to calendar blocks. Persistent realities may matter without being scheduled.
 
 ### Current situation is broader than the timeline
 
@@ -134,7 +136,7 @@ In particular:
 - `Worlds` is not accepted as a Domain primitive or final product noun;
 - `Stats` describes a prototype surface, not a finalized IA destination;
 - `Per te` / contextual copy is presentation vocabulary subject to later product/brand review;
-- Home/Today visual composition is evidence and approved prototype work, not by itself a final Information Architecture decision.
+- current visual composition is evidence and approved prototype work, not by itself a final Information Architecture decision.
 
 Future terminology changes require deliberate scope; do not silently rename the current checkpoint while editing unrelated behavior.
 
@@ -159,45 +161,26 @@ The exact artifact remains the visual reference when these prose guardrails are 
 
 ---
 
-## 7. QA recorded at checkpoint creation
+## 7. QA recorded for the corrected checkpoint source
 
-Exact source/static validation:
+Exact source/static validation on the corrected artifact:
 
 ```text
-size                         748590 bytes
-SHA-256                      88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17
+size                         748625 bytes
+SHA-256                      986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
+Git blob SHA                 fd9788212fbbd1ee40e53271cc39cedd9275b341
 DOM IDs                      67
 duplicate DOM IDs            0
 style blocks                 37
 CSS parse errors             0
 inline scripts               20
 inline JS syntax failures    0
-Git blob byte identity       PASS
+Git blob reconstruction      PASS
 ```
 
-Integrated Chromium smoke at `1575x945`:
+The integrated Chromium smoke previously recorded for this checkpoint lineage was executed before the corrective one-line HTML replacement. It must **not** be represented as having been rerun on the corrected blob. The corrected source passed exact byte reconstruction and static validation; a fresh browser regression remains separate evidence if/when required by the next functional or visual iteration.
 
-```text
-page/console errors          0
-lifeos-today                 present
-orientation day context      present
-week strip                   present
-Ora action                   present
-split-groups control         present
-rendered group chips         6
-rendered event cards         24
-time-edit controls           24
-hour labels                  00:00 through 24:00
-World layer                  present
-Stats stage                  present
-anchored time picker         opens / body portal PASS
-split-groups toggle          aria state changes PASS
-
-RESULT
-PASS
-```
-
-Qualification: this is a real integrated smoke plus static gate. It is **not** relabelled as a full execution of `today-v21-regression.py`.
+The complete `today-v21-regression.py` suite was also **NOT RUN** as part of this corrective replacement.
 
 Detailed record: `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/qa-static.json`.
 
@@ -205,7 +188,7 @@ Detailed record: `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/q
 
 ## 8. Next continuation rule
 
-The next Phase 4 modification starts from this exact checkpoint and from the user's next explicitly defined scope.
+The next Phase 4 modification starts from this exact corrected checkpoint and from the user's next explicitly defined scope.
 
 Before editing:
 
@@ -216,4 +199,4 @@ Before editing:
 5. use browser verification appropriate to the change;
 6. create a new checkpoint instead of overwriting this one when the result is accepted.
 
-Do not independently continue old `Appunti` / `Review` plans or any older “next task” merely because a previous handoff listed them. The user now defines the next scope.
+Do not independently continue old plans merely because a previous handoff listed them. The user now defines the next scope.
