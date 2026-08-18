@@ -301,21 +301,26 @@ Any later decision favoring Restate MUST continue to compare against Temporal on
 
 ### Structural fit
 
-Current DBOS documentation provides Python durable workflows, queues and workflow recovery by checkpointing execution state in PostgreSQL. DBOS therefore aligns closely with the current Python direction and can collapse part of the workflow-system footprint into PostgreSQL-backed runtime state.
+Current DBOS Python documentation supports either SQLite or PostgreSQL as the system database used to durably store workflow/step state. SQLite is the Python default and is appropriate for local/prototype/testing and bounded single-server use; current DBOS guidance recommends PostgreSQL for production. In a distributed DBOS deployment where an application runs across multiple servers, all servers connect to the same PostgreSQL system database.
+
+DBOS therefore remains structurally close to the current Python direction, but its coupling to PostgreSQL is **deployment-scenario dependent rather than universal**.
 
 ### Strengths
 
 - Python-first usable path;
 - straightforward durable workflow/step programming model;
 - durable queues and restart recovery;
-- operational simplicity can be attractive when PostgreSQL is already accepted infrastructure;
-- workflow metadata remains queryable in a relational system;
+- SQLite permits low-friction local/prototype/testing use in Python;
+- PostgreSQL-backed production/runtime state can be operationally attractive when PostgreSQL is already accepted infrastructure;
+- workflow metadata can remain queryable in the runtime system database;
 - useful fit for AI/unreliable API orchestration patterns.
 
 ### Costs / risks
 
-- DBOS requires PostgreSQL for its system database, making candidate adoption dependent on PostgreSQL infrastructure even though LifeOS Physical persistence is not yet selected;
-- choosing DBOS before the Physical stage would create an unjustified PostgreSQL coupling;
+- SQLite system state is not a distributed multi-server runtime topology;
+- production guidance materially favors PostgreSQL, and distributed multi-server DBOS operation is PostgreSQL-coupled;
+- therefore DBOS adoption may create a material PostgreSQL infrastructure dependency even when canonical LifeOS Physical persistence is not PostgreSQL;
+- choosing a production/distributed DBOS topology before Physical/runtime evaluation could create unjustified infrastructure coupling;
 - distributed/HA operational requirements and managed/self-hosted boundaries require later validation;
 - workflow/runtime tables remain technical runtime state and cannot become canonical semantic storage by convenience.
 
@@ -325,8 +330,11 @@ Current DBOS documentation provides Python durable workflows, queues and workflo
 DBOS
 CONDITIONAL CHALLENGER
 
-STRONGER IF POSTGRESQL SURVIVES PHYSICAL SELECTION
-WEAKER AS A PRE-PHYSICAL COMMITMENT
+LOCAL / BOUNDED SINGLE-NODE
+SQLite-capable
+
+PRODUCTION / DISTRIBUTED
+PostgreSQL materially favored / distributed multi-server PostgreSQL-coupled
 
 NOT SELECTED
 ```
@@ -342,7 +350,7 @@ BOUNDED ASYNC
 DEDICATED DURABLE EXECUTION
 1. Restate   — preferred structural-fit candidate
 2. Temporal  — strongest mandatory challenger
-3. DBOS      — conditional PostgreSQL-dependent challenger
+3. DBOS      — conditional challenger; deployment-dependent PostgreSQL coupling
 ```
 
 This is intentionally not one global ranking because the bounded-job problem and material durable-process problem are not identical.
@@ -414,11 +422,11 @@ Escalate to dedicated durable execution where one or more materially applies:
 - compensation/reconciliation spans multiple durable steps;
 - debugging/recovery from partial execution otherwise requires substantial custom state-machine infrastructure.
 
-This routing rule itself is current architecture guidance. Exact operation classes remain Phase 8/implementation-specific.
+This routing rule itself is current architecture guidance. Exact operation classes remain governed-contract/implementation-specific.
 
-## Phase 8 handoff
+## Governed-operation/effect compatibility
 
-The governed operation/effect contract MUST remain independent of the runtime selected here.
+The current Phase 8 governed operation/effect contract remains independent of the runtime ranked here.
 
 It may classify execution needs conceptually, for example:
 
@@ -430,14 +438,14 @@ durable long-running
 
 but MUST NOT encode `TemporalWorkflow`, `RestateWorkflow`, `DBOSWorkflow` or database queue rows as semantic operation identity.
 
-## Phase 10 benchmark carry-forward
+## Physical/runtime carry-forward
 
-If Phase 10/Physical choices materially alter runtime economics or coupling, Phase 7 ranking must be pressure-tested again.
+If later Physical or deployment choices materially alter runtime economics/coupling, the Phase 7 ranking MUST be pressure-tested again.
 
 Especially:
 
-- PostgreSQL selected vs not selected;
-- single-node/managed vs HA deployment expectations;
+- canonical PostgreSQL selected vs not selected;
+- single-node/managed vs distributed/HA deployment expectations;
 - actual RPO/RTO/SLO classes;
 - provider/integration load;
 - long-running workflow volume;
@@ -447,14 +455,15 @@ The benchmark does not need to be repeated from zero unless those inputs materia
 
 ## Evidence basis checked for this benchmark
 
-Current primary technical evidence reviewed on 2026-08-17 includes:
+Primary technical evidence includes:
 
-- PostgreSQL current documentation for queue-like `SKIP LOCKED`, transactions and `LISTEN/NOTIFY` behavior;
-- Restate current documentation for durable execution, Python external events, Awakeables/Durable Promises and timers;
-- Temporal current documentation for durable Workflow Execution, Python SDK and asynchronous Activity completion;
-- DBOS current documentation for Python durable workflows/queues and PostgreSQL-backed system state.
+- PostgreSQL documentation for queue-like `SKIP LOCKED`, transactions and `LISTEN/NOTIFY` behavior;
+- Restate documentation for durable execution, Python external events, Awakeables/Durable Promises and timers;
+- Temporal documentation for durable Workflow Execution, Python SDK and asynchronous Activity completion;
+- DBOS Python documentation for durable workflows/queues and SQLite/PostgreSQL system-database options;
+- DBOS architecture documentation establishing shared PostgreSQL system state for distributed multi-server application deployment.
 
-External product documentation is benchmark evidence, not LifeOS semantic authority.
+DBOS system-database posture was reverified from current official documentation on 2026-08-18. External product documentation is benchmark evidence, not LifeOS semantic authority.
 
 ## Phase 7 verdict
 
@@ -481,4 +490,4 @@ CONDITIONAL CHALLENGER
 DBOS
 ```
 
-This verdict authorizes Phase 8 contract work only. It does not authorize durable-runtime implementation.
+This verdict remains a current downstream architecture input. It does not authorize durable-runtime implementation, and no candidate is selected by the ranking.
