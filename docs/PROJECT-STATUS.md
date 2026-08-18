@@ -5,6 +5,8 @@
 - Current accepted `main` / Physical bootstrap base: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Active Physical branch: `feature/physical-model`
 - Physical bootstrap PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- PM-00 bootstrap: **QA PASS**
+- PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
 - Production application code: **NOT STARTED**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
@@ -34,7 +36,9 @@ PHYSICAL READINESS
 ESTABLISHED
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+AUTHORIZED / IN PROGRESS
+PM-00 BOOTSTRAP QA PASS
+PM-01 READ-ONLY NEXT
 branch feature/physical-model
 base 3de84bb49f9cef30e88e9bde4961ed84335daa79
 mapping NOT STARTED
@@ -87,7 +91,7 @@ Conversation history is secondary to repository truth.
 - Independent total Pre-Physical audit — **PASS**.
 - Pre-Physical protected-main integration — **PR #13 / POST-MERGE VERIFIED**.
 - Post-merge current-truth alignment — **PR #14**; `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`.
-- Physical Model workstream — **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**.
+- Physical PM-00 bootstrap — **QA PASS**.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
@@ -176,24 +180,24 @@ LOW/BASE/HIGH remain synthetic qualification envelopes, not business forecasts.
 ## PM progression
 
 ```text
-PM-00  bootstrap / authority freeze
-PM-01  candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST
-PM-02  primary mapping design
-PM-03  semantic hard-gate preflight
-PM-04  fixtures/oracle/harness design
-PM-05  correctness/destructive execution
-PM-06  scale/performance tiers
-PM-07  recovery/evolution/failure
-PM-08  secondary lanes
-PM-09  scoring/sensitivity
-PM-10  recommendation
-PM-11  explicit selection gate
-PM-12  accepted Physical Model
-PM-13  independent clean-room QA
-PM-14  closure/protected-main integration
+PM-00  bootstrap / authority freeze                 QA PASS
+PM-01  candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST — NEXT
+PM-02  primary mapping design                       NOT STARTED
+PM-03  semantic hard-gate preflight                 NOT STARTED
+PM-04  fixtures/oracle/harness design               NOT STARTED
+PM-05  correctness/destructive execution            NOT STARTED
+PM-06  scale/performance tiers                      NOT STARTED
+PM-07  recovery/evolution/failure                   NOT STARTED
+PM-08  secondary lanes                              NOT STARTED
+PM-09  scoring/sensitivity                          NOT STARTED
+PM-10  recommendation                               NOT STARTED
+PM-11  explicit selection gate                      NOT STARTED
+PM-12  accepted Physical Model                      NOT STARTED
+PM-13  independent clean-room QA                    NOT STARTED
+PM-14  closure/protected-main integration           NOT STARTED
 ```
 
-PM-00 bootstrap itself does **not** authorize SQL/TypeQL/Cypher, candidate schemas, benchmark harness code, database/container deployment or technology selection.
+PM-01 is read-only. No SQL/TypeQL/Cypher, candidate schemas, benchmark harness code, database/container deployment or technology selection is authorized yet.
 
 ## Phase-5..9 constraints remain active
 
@@ -275,28 +279,39 @@ UNKNOWN != INFEASIBLE
 
 `lifeos-main-safety` remains the protected-main policy. `feature/physical-model` is an active bounded branch. No direct-main work, no invented required checks, no production secrets/personal data in benchmark fixtures, and no benchmark-only code automatically promoted to production infrastructure.
 
-## Milestone ledger
+## PM-00 QA evidence
 
-| Scope | Result |
-|---|---|
-| Domain Model | CLOSED / PR #10 |
-| Logical Model | CLOSED / PR #11 |
-| Phase 0–6 | QA PASS |
-| Phase 7 | PASS WITH CONDITIONAL RANKING |
-| Phase 8–11 | QA PASS |
-| Phase 12 | QA PASS / CLOSED |
-| Independent Pre-Physical audit | PASS |
-| Pre-Physical closure/integration | DEFINITIVE CLOSED / PR #13 / VERIFIED |
-| Post-merge alignment | PR #14 |
-| Physical PM-00 bootstrap | IN PROGRESS / QA PENDING |
+```text
+BOOTSTRAP PRE-SCOPE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
 
-## Active / pending workstreams
+CREATE CHECKPOINT
+6d76bc150dfd7b3cefe56c6e05c96404e7494626
+6 added / 0 modified / behind 0
+
+CONTENT-QA CHECKPOINT
+8549e1c95bef2e354bd47028259e6816bf5e9272
+22 unique paths
+6 added
+16 modified
+0 deleted
+0 unexpected
+behind 0
+
+main
+3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
+```
+
+Final save-game propagation stays on the same approved 22-path physical scope.
+
+## Active workstreams
 
 ### Physical Model
 
-- **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- **AUTHORIZED / IN PROGRESS**
+- **PM-00 QA PASS**
+- **PM-01 READ-ONLY NEXT**
 - branch `feature/physical-model`
-- base `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - mapping **NOT STARTED**
 - benchmark **NOT STARTED**
 - selection **NONE**
@@ -313,15 +328,17 @@ UNKNOWN != INFEASIBLE
 ## Immediate next work
 
 ```text
-1. complete PM-00 remote bootstrap QA
-2. update Physical handoff with verified checkpoint
-3. PM-01 READ-ONLY FIRST
-   - freeze exact current candidate versions/editions/deployment modes
-   - freeze available benchmark environment
-   - use official primary sources
-   - build execution inventory/evidence plan
-4. STOP before first mapping/schema/harness write
-5. present fresh exact PM-02+ gate
+PM-01 — READ-ONLY FIRST
+
+- freeze exact current PostgreSQL and TypeDB versions/editions/deployment modes
+- verify version-sensitive capabilities from official primary sources
+- capture Python driver/client compatibility
+- verify backup/restore/HA/schema/evolution claims for exact subjects
+- freeze available benchmark environment
+- identify unavailable infrastructure/tooling honestly
+- produce execution inventory/evidence plan
+- STOP before mapping/schema/harness/database writes
+- present fresh exact PM-02+ gate
 ```
 
-Do not choose PostgreSQL or TypeDB during PM-00/PM-01.
+Do not choose PostgreSQL or TypeDB during PM-01.
