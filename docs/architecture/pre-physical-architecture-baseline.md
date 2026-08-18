@@ -1,17 +1,22 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — PRE-PHYSICAL DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
+- Status: **CURRENT CONSTRAINT BASELINE — PRE-PHYSICAL DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
 - Activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 - Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13 — **POST-MERGE VERIFIED**
 - Post-merge alignment / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79` via PR #14
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Physical handoff snapshot in this document: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** at the time of Pre-Physical closure
+- Current Physical truth: **CLOSED / SELECTED / ACCEPTED / integrated via PR #15**
 - Backend production implementation: **NOT STARTED / DEFERRED**
+
+> **Current-truth qualification:** this file remains authoritative for the accepted **Pre-Physical constraints and handoff rationale**. Statements below that describe `Physical Model AUTHORIZED / IN PROGRESS`, `Technology selection NONE`, `feature/physical-model` or candidate preferences are preserved as the truthful **handoff-time snapshot** and are superseded for current selection/status by PM-11, PM-12, PM-13, the Physical workstream handoff and `docs/PROJECT-STATUS.md`.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained in this Pre-Physical record reflect the previous working/project name for the same product lineage.
 
 ## Purpose
 
 This is the closed/current bridge from the accepted Product/North Star, CLOSED Domain Atlas and CLOSED Logical Model into Physical/runtime/API/backend work.
 
-It consolidates downstream constraints. The active Physical Model consumes this baseline; it does not rewrite it by implementation convenience.
+It consolidates downstream constraints. The completed Physical Model consumed this baseline; later implementation must not rewrite these constraints by implementation convenience.
 
 It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract, Phase 12 clean-room evidence or final independent audit evidence.
 
@@ -25,7 +30,7 @@ Read current truth through:
 4. current ADR statuses;
 5. all four Phase 5 requirement packages;
 6. Phase 6 AI/context/runtime and Integration Hub contracts;
-7. Phase 7 durable-execution benchmark;
+7. Phase 7 durable-execution contract/evidence;
 8. Phase 8 governed-operation/effect contract;
 9. Phase 9 search/observability/calendar/solver contract;
 10. Phase 10 Physical benchmark specification + scenario corpus + register;
@@ -34,8 +39,8 @@ Read current truth through:
 13. final independent audit evidence;
 14. PR #13 / merge commit `74593ae283ce5a1d22335502480ee3fa54be0436` post-merge verification;
 15. PR #14 / `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79` current-truth alignment;
-16. this baseline;
-17. active Physical execution authority under `docs/physical-model/**` and `docs/workstreams/physical-model.md`.
+16. this baseline for Pre-Physical constraints and handoff-time evidence;
+17. PM-11/12/13 plus current `docs/physical-model/**`, `docs/workstreams/physical-model.md` and `docs/PROJECT-STATUS.md` for current selected Physical truth.
 
 A physical split/cumulative continuation is one logical document. Size/tool-limit splitting is lossless physical partitioning, not summarization or semantic cleanup.
 
@@ -53,7 +58,9 @@ PHYSICAL WORKSTREAM AUTHORIZED != PHYSICAL RESULT ACCEPTED
 BENCHMARK PASS != PRODUCTION BACKEND AUTHORIZATION
 ```
 
-## Current stage
+## Pre-Physical closure / Physical-handoff snapshot
+
+The following block records the state **at Pre-Physical closure and Physical authorization**. It is not the current PM-11/12 selection status.
 
 ```text
 Product / North Star        CURRENT
@@ -81,10 +88,38 @@ Technology selection        NONE
 Backend Foundation          NOT STARTED / DEFERRED
 ```
 
-Physical branch: `feature/physical-model`.
+Historical Physical branch at handoff: `feature/physical-model`.
 Bootstrap base/PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
 
-## Current technical direction
+### Current resolution after the completed Physical workstream
+
+```text
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
+INTEGRATED VIA PR #15
+
+CANONICAL PRIMARY
+PostgreSQL 18.4
+
+DURABLE CLASS-B
+Restate runtime selected
+
+SEARCH / VECTOR
+PostgreSQL FTS + pg_trgm + unaccent + pgvector
+
+SOLVER
+OR-Tools 9.15 CP-SAT
+
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED / DIRECT HG PASS 0
+
+NEXT
+Development Profile v0
+```
+
+## Technical direction at Pre-Physical closure
+
+The following direction is retained as the Pre-Physical input snapshot. Later PM-11/12 selections resolve the candidate-only statements without weakening the constraints.
 
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
@@ -100,9 +135,9 @@ Bootstrap base/PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
 - Bounded async work and material long-running durable execution are distinct runtime classes.
 - Restate remains preferred dedicated durable candidate; Temporal remains the strongest mandatory challenger; DBOS remains conditional with deployment-dependent PostgreSQL coupling.
 - Structured + lexical/full-text search is baseline; semantic/vector retrieval is bounded.
-- OpenTelemetry-first or equivalent is current observability direction, not a vendor selection.
+- OpenTelemetry-first or equivalent is current observability direction, not a vendor selection at this snapshot.
 - Calendar standards/providers are adapter pressure, not ontology authority.
-- Deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred specialized benchmark candidate, not implemented.
+- Deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred specialized benchmark candidate at this snapshot.
 - Physical candidate comparison is role-specific; correctness hard gates precede performance/operability scoring.
 - Unknown NFR/business-scale values remain explicit sensitivity/scenario inputs rather than invented forecasts.
 - Unexecuted benchmark envelopes cannot be reported as verified runs.
@@ -208,7 +243,7 @@ Preserve expected-state semantics, idempotency distinct from identity, no silent
 
 Preserve device divergence, operation-specific offline semantics, truthful degraded/provider state, current-state access alongside long history, temporal/DST semantics, recovery testing and explicit later RPO/RTO/latency/availability/scale targets where material.
 
-Phase 10 defines method/scenarios; the active Physical workstream executes candidate evidence.
+Phase 10 defines method/scenarios; the completed Physical workstream consumed them for the accepted decision.
 
 ## AI/context/runtime boundary
 
@@ -246,20 +281,22 @@ action / tool integration
 
 `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider outcome != canonical LifeOS effect truth automatically. MCP/A2A/future protocols remain adapters.
 
-## Durable execution posture
+## Durable execution posture at Pre-Physical closure
 
 ```text
 BOUNDED ASYNC
 DB + worker/outbox style remains a valid baseline class
 
 MATERIAL DURABLE
-Restate   preferred structural-fit candidate — NOT selected
-Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional challenger — NOT selected
+Restate   preferred structural-fit candidate — NOT selected at this snapshot
+Temporal  strongest mandatory challenger — NOT selected at this snapshot
+DBOS      conditional challenger — NOT selected at this snapshot
           SQLite-capable local/bounded Python use
           PostgreSQL recommended for production
           distributed multi-server PostgreSQL-coupled
 ```
+
+Current PM-11/12 resolution: Restate is selected for material Class-B durable execution; deployment remains profile-dependent between first-class self-hosted and allowed Cloud EU.
 
 No runtime creates exactly-once external reality by itself. Runtime completion/cancellation does not manufacture Domain realization/cancellation.
 
@@ -279,14 +316,16 @@ workflow completed != Actual automatically
 - Search: structured + lexical/full-text baseline; semantic/vector bounded; search miss != nonexistence; index != truth.
 - Observability: OpenTelemetry-first/equivalent; telemetry != Domain Provenance/audit automatically.
 - Calendar: standards/providers are interoperability pressure; provider token != `MaterialStateRef`; recurrence/DST/override semantics remain LifeOS-owned.
-- Solver: deterministic rules/heuristics baseline; OR-Tools CP-SAT preferred candidate; `UNKNOWN != INFEASIBLE`; solver result crosses governed effect before canonical change.
+- Solver: deterministic rules/heuristics baseline; OR-Tools CP-SAT preferred candidate at this snapshot; `UNKNOWN != INFEASIBLE`; solver result crosses governed effect before canonical change.
 
-## Physical benchmark posture
+Current PM-11/12 resolution selects PostgreSQL FTS + `pg_trgm` + `unaccent`, pgvector, OpenTelemetry + Grafana Alloy/Grafana Cloud EU target and OR-Tools 9.15 CP-SAT while preserving the contract above.
+
+## Physical benchmark posture at handoff
 
 ```text
 PRIMARY
-PostgreSQL hybrid — preferred mandatory baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected at this snapshot
+TypeDB            — mandatory challenger, NOT selected at this snapshot
 
 SECONDARY GRAPH
 G0 no-specialized-store baseline vs G1 Neo4j
@@ -303,13 +342,13 @@ HARD REJECT FOR CANONICAL KERNEL
 
 Hard correctness gates precede weighted scoring. Candidate mappings may be idiomatic but must satisfy common semantic assertions. LOW/BASE/HIGH are synthetic envelopes, not forecasts. Unexecuted tiers remain unverified. Evidence is pinned to exact product/version/edition/deployment. `PREFERRED != SELECTED`.
 
-The active Physical workstream adds execution rules under `docs/physical-model/**`: evidence-before-claim, PM-00..PM-14 progression, exact subject pinning, explicit PM-11 selection gate and independent PM-13 clean-room QA.
+The completed Physical workstream applied the execution rules under `docs/physical-model/**`: evidence-before-claim, PM-00..PM-14 progression, exact subject pinning, explicit PM-11 selection gate and independent PM-13 clean-room QA.
 
-## Repository engineering safety
+## Repository engineering safety at handoff
 
 Phase 11 is QA PASS. Effective `main` protection was verified remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has no required status checks until real stable contexts exist and auto-deletes merged head branches.
 
-The active `feature/physical-model` branch is bounded and must not be deleted/repurposed while the workstream is active. Benchmark-only code/evidence does not automatically become production infrastructure or required CI.
+The historical `feature/physical-model` branch was bounded, later merged through PR #15 and auto-deleted. Benchmark-only code/evidence does not automatically become production infrastructure or required CI.
 
 ## Definitive Pre-Physical closure and integration evidence
 
@@ -317,11 +356,11 @@ Phase 12 clean-room QA is closed. The independent total audit found no major sem
 
 The final repairs were activated at `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`; protected PR #13 integrated the final tree at `74593ae283ce5a1d22335502480ee3fa54be0436`; PR #14 aligned current truth at `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
 
-Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED** and is an input to, not an open task inside, the Physical workstream.
+Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED** and is an input to, not an open task inside, later Physical/backend work.
 
-## Explicitly unauthorized by PM-00
+## Explicitly unauthorized at the PM-00 handoff snapshot
 
-The Physical workstream is authorized, but PM-00 does **not** authorize:
+The following block is retained as historical authorization evidence for the start of the Physical workstream. It does not describe the current closed Physical status.
 
 ```text
 candidate Physical schema/tables/keys/indexes/constraints
@@ -342,21 +381,23 @@ production backend code
 feature/backend-foundation
 ```
 
-Those require later exact Physical/Backend gates as applicable. Domain/Logical changes require a separate explicit reopen gate.
+Those items required later exact Physical/Backend gates as applicable. Domain/Logical changes still require a separate explicit reopen gate.
 
-## Next boundary
+## Current next boundary
 
-The Physical Model is now **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** on `feature/physical-model`.
-
-After PM-00 remote QA, proceed only to:
+The handoff-time `PM-00 BOOTSTRAP` next step is complete historical evidence. Current truth is:
 
 ```text
-PM-01 — READ-ONLY FIRST
-freeze exact candidate versions/editions/deployment modes
-freeze available benchmark environment
-verify current product capabilities from official primary sources
-build execution inventory/evidence plan
-STOP before first mapping/schema/harness write
-```
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
+INTEGRATED VIA PR #15
 
-Backend Foundation remains deferred until a Physical result is explicitly selected/accepted and all remaining prerequisites are satisfied.
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED / DIRECT HG PASS 0
+
+BACKEND FOUNDATION
+NOT STARTED / DEFERRED
+
+NEXT
+Development Profile v0
+```
