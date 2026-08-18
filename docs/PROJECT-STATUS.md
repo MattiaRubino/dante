@@ -2,11 +2,11 @@
 
 - Last updated: 2026-08-18
 - Canonical integrated branch: `main`
-- Accepted `main` baseline for this Pre-Physical workstream: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
-- Active backend/architecture preparation branch: `chore/pre-physical-coherence`
+- Accepted `main` baseline for the closed Pre-Physical workstream: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
+- Closed branch-local Pre-Physical state: `chore/pre-physical-coherence`
 - Production application code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
-- Main integration of Pre-Physical branch: **NOT PERFORMED**
+- Main integration of Pre-Physical branch: **PENDING / NOT PERFORMED**
 
 ## Current stage
 
@@ -26,21 +26,24 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-FINAL CLOSURE CANDIDATE
+DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
-Independent total audit CORE PASS
-bounded final repairs incorporated
-exact final remote activation QA pending
+Independent total audit PASS
+activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+
+PHYSICAL READINESS
+ESTABLISHED
 
 PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-NOT PERFORMED
+PENDING / NOT PERFORMED
 ```
 
 Phase 4 UX remains a separate active product/design workstream on `prototype/phase-4-today-home`.
@@ -64,45 +67,35 @@ Phase 4 UX remains a separate active product/design workstream on `prototype/pha
 
 Conversation history is secondary to repository truth.
 
-A canonical split/cumulative continuation chain is one logical document. A size/tool-limit split is lossless physical partitioning, not summary/condensation/hidden semantic rewrite.
-
 ## Accepted/current foundations
 
-- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current Product/North Star.
+- Product/North Star — **CURRENT**.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**; `WL-H01..WL-H12` active downstream.
-- [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md) — **CURRENT** bridge; `DECIDED != AUTHORIZED TO IMPLEMENT`.
-- Phase 5 requirement package — **CURRENT**.
-- [`architecture/ai-context-runtime-boundaries.md`](architecture/ai-context-runtime-boundaries.md) — **CURRENT** Phase 6 AI/context/runtime contract, including consequential AI evaluation/regression requirement.
-- [`architecture/integration-hub-boundaries.md`](architecture/integration-hub-boundaries.md) — **CURRENT** Phase 6 Integration Hub contract.
-- [`architecture/durable-execution-benchmark.md`](architecture/durable-execution-benchmark.md) — **CURRENT** Phase 7 posture.
-- [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md) — **CURRENT** Phase 8 contract.
-- [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md) — **CURRENT** Phase 9 contract.
-- Phase 10 benchmark-method package — **CURRENT / QA PASS**.
-- [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md) — **CURRENT / Phase 11 QA PASS**.
-- [`architecture/pre-physical-clean-room-qa.md`](architecture/pre-physical-clean-room-qa.md) — **Phase 12 QA PASS / CLOSED evidence**.
-- [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md) — independent total-audit/final activation record.
+- Pre-Physical Architecture Baseline — **CURRENT / CLOSED workstream result**.
+- Phase 5 requirements — **CURRENT**.
+- Phase 6 AI/context/runtime + Integration Hub boundaries — **CURRENT**.
+- Phase 7 durable execution — **CURRENT / conditional ranking only**.
+- Phase 8 governed operation/effect — **CURRENT**.
+- Phase 9 search/observability/calendar/solver — **CURRENT**.
+- Phase 10 benchmark method — **CURRENT / QA PASS**.
+- Phase 11 repository engineering safety — **QA PASS**.
+- Phase 12 clean-room QA — **QA PASS / CLOSED**.
+- Independent total Pre-Physical audit — **PASS**.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
 - SQLAlchemy/Alembic — conditional on accepted Physical persistence.
-- DEV/UAT/PROD — deployment environments, not permanent Git branches.
 
 ## Domain / Logical closure
 
-Domain closure remains:
-
 ```text
-WHOLE-DOMAIN
+DOMAIN
 PASS WITH HARDENING
 POST-WRITE QA PASS
 CLOSED
-```
 
-Logical closure remains:
-
-```text
-WHOLE-LOGICAL
+LOGICAL
 PASS WITH HARDENING
 REMOTE QA PASS
 CLOSED
@@ -112,20 +105,15 @@ WD-05 PASS
 
 The Pre-Physical workstream made no Domain/Logical semantic edits. Any future semantic contradiction requires a separate explicit reopen scope.
 
-## Current Phase 5 requirement inputs
+## Current Phase 5–10 posture
 
-Current owners:
+### Requirements
 
-- AuthN/AuthZ;
-- security/privacy/retention/security-aware recovery;
-- consistency/side effects;
-- non-functional/multi-device/operational recovery.
+AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery remain the four current Phase 5 owners. Open RPO/RTO/latency/availability/scale/offline values remain explicit until later accepted where material.
 
-Requirements include `Person != Account != Principal != Actor`, consequential AuthZ provenance, actual Actor vs represented party, purpose-aware minimization, truthful deletion/redaction/tombstones, secure restore, expected-state writes, idempotency != identity, no silent material last-write-wins, truthful multi-owner consistency, canonical/provider separation, multi-device divergence, operation-specific offline semantics and recovery testing.
+Phase 10 already defines how those requirements pressure-test Physical candidates. The later separately authorized Physical Model performs actual candidate execution/design/selection.
 
-Open RPO/RTO/latency/availability/scale/offline-duration values remain explicit parameters until accepted later where needed. Phase 10 defines synthetic/sensitivity treatment; the later Physical workstream executes candidate evidence.
-
-## Current Phase 6 boundary inputs
+### AI / context / integration
 
 ```text
 canonical state
@@ -137,18 +125,16 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-Context is purpose/minimization/disclosure/provenance/freshness bounded. Generic AI memory is not a second canonical truth store. Runtime Agent/Principal != Domain Actor automatically; tool invocation != authorization/governed effect.
+Generic AI memory is not a second canonical truth store. Runtime Agent/Principal != Domain Actor automatically; tool invocation != authorization/effect.
 
-Material consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+Material consequential AI changes require versioned/reproducible evaluation before promotion.
 
 ```text
 eval result != canonical LifeOS truth
 eval PASS != Authority / governed-effect authorization
 ```
 
-Integration Hub modes remain canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration. `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical state/effect automatically.
-
-## Current Phase 7–9 inputs
+Integration Hub preserves canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration. `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical state/effect automatically.
 
 ### Durable execution
 
@@ -167,8 +153,6 @@ DBOS      conditional challenger — NOT selected
 
 ### Governed operation/effect
 
-Consequential semantics preserve target/effect, expected material state, purpose/context, Principal/Actor/represented party, governance, confirmation/autonomy, idempotency/equivalence, correlation/causation, execution class and independent canonical/provider/runtime/reconciliation outcomes.
-
 ```text
 HTTP/UI/tool/AuthZ/workflow step != canonical governed operation
 request accepted != effect complete
@@ -181,24 +165,22 @@ technical cancellation != Domain cancellation automatically
 
 ```text
 SEARCH
-structured + lexical/full-text = baseline
-semantic/vector = bounded candidate
+structured + lexical/full-text baseline
+semantic/vector bounded candidate
 
 OBSERVABILITY
-OpenTelemetry-first / equivalent = direction
+OpenTelemetry-first / equivalent direction
 no vendor selected
 
 CALENDAR
 iCalendar / JSCalendar / provider APIs = adapter pressure, not ontology
 
 SOLVER
-simple deterministic rules/heuristics = baseline
-OR-Tools CP-SAT = preferred benchmark candidate — NOT implemented
+simple deterministic rules/heuristics baseline
+OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
 ```
 
-## Current Phase 10 benchmark posture
-
-Phase 10 defines how a later separately authorized Physical benchmark must run. It does not select or implement a Physical Model.
+### Physical benchmark method
 
 ```text
 PRIMARY
@@ -212,42 +194,22 @@ SEARCH / VECTOR
 structured + lexical/full-text baseline vs bounded pgvector
 
 EVENT / DOCUMENT
-bounded native mechanisms first; specialized candidate only on demonstrated gap/benefit
+bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
 ```
 
-Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Unexecuted tiers remain unverified. Evidence pins exact product/version/edition/deployment. `PREFERRED != SELECTED`.
+Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
 
-## Phase 11 repository engineering safety — QA PASS
+## Repository safety
 
-Verified core state:
+`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven `main` policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable contexts exist. Auto-delete merged head branches is enabled.
 
-```text
-ruleset                              lifeos-main-safety
-ruleset enforcement                  active
-target                               default branch
-main deletion                        blocked
-force-push / non-fast-forward        blocked
-pull request before merge            required
-required approvals                   0
-review-thread resolution             required
-required status checks               0 while no real stable contexts exist
-auto-delete merged head branches     enabled
-confirmed accidental refs            absent
-```
+Current `main` was re-read during final activation and remained `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` and protected.
 
-Security endpoints inaccessible to the connector remain explicitly connector-unverifiable rather than inferred.
+## Phase 12 + independent final audit
 
-## Phase 12 result
+Phase 12 clean-room QA is **QA PASS / CLOSED**.
 
-Phase 12 clean-room QA is **QA PASS / CLOSED**. Its exact 11-path final gate was independently rechecked before this final audit.
-
-It found bounded current-consumer/discoverability issues only; no Domain/Logical/Physical/backend semantic change was required.
-
-## Independent total Pre-Physical audit
-
-The broader post-Phase-12 audit rechecked the full branch delta against the accepted `main` baseline.
-
-Core verdict:
+The independent total audit then checked the full branch delta and independently confirmed:
 
 ```text
 CORE ARCHITECTURE HOLDS                 PASS
@@ -262,50 +224,23 @@ MAJOR KNOWLEDGE LOSS                        0
 TECHNOLOGY ACCIDENTALLY SELECTED            0
 ```
 
-Bounded repairs included stale current-stage prose, Phase10-method-vs-Physical-execution wording, documentation bootstrap/hygiene, DBOS coupling precision and explicit consequential AI evaluation requirements.
+Bounded repairs addressed stale current-stage prose, Phase10-method-vs-Physical-execution wording, repository bootstrap/hygiene, DBOS coupling precision, explicit consequential AI evaluation and honest treatment of unexecuted upper benchmark envelopes.
 
-Final evidence: [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md).
-
-## Final closure activation contract
-
-The branch is not declared definitively closed merely because the audit record exists.
-
-Definitive closure requires final remote evidence:
+The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved:
 
 ```text
-branch        chore/pre-physical-coherence
 PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
-main          148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
 unique paths  23
 added          1
 modified      22
 deleted        0
 unexpected     0
 behind_by      0
-critical current-authority readback PASS
+main unchanged
+critical readback PASS
 ```
 
-If these conditions pass, the operative result becomes:
-
-```text
-PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS
-
-INDEPENDENT TOTAL AUDIT
-PASS
-
-PHYSICAL READINESS
-ESTABLISHED
-PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
-
-BACKEND
-NOT STARTED / DEFERRED
-
-MAIN INTEGRATION
-PENDING / NOT PERFORMED
-```
-
-Until that final proof is complete, current status is `FINAL CLOSURE CANDIDATE`.
+Therefore branch-local Pre-Physical Coherence is definitively closed.
 
 ## Milestone ledger
 
@@ -323,50 +258,45 @@ Until that final proof is complete, current status is `FINAL CLOSURE CANDIDATE`.
 | Phase 10 | QA PASS |
 | Phase 11 | QA PASS |
 | Phase 12 | QA PASS / CLOSED |
-| Independent final audit | CORE PASS / activation QA pending |
+| Independent final audit | PASS |
+| Branch-local Pre-Physical closure | DEFINITIVE CLOSED / FINAL QA PASS |
 
-Exact SHAs and continuation evidence remain in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md), audit records and Git history.
+Exact SHAs/evidence remain in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md), the audit records and Git history.
 
-## Active workstreams
+## Active / pending workstreams
 
 ### Pre-Physical Repository & Architecture Coherence
 
-- **FINAL CLOSURE CANDIDATE**
+- **DEFINITIVE CLOSED / FINAL QA PASS on branch**
 - Branch: `chore/pre-physical-coherence`
-- final remote activation QA pending
-- `main` integration: **NOT PERFORMED**
+- `main` integration: **PENDING / NOT PERFORMED**
 
 ### Phase 4 — Home / Today UX
 
 - **IN PROGRESS — separate product/design workstream**
 - Branch: `prototype/phase-4-today-home`
 
-## Deferred production/model workstreams
-
 ### Physical Model
 
-**NOT STARTED / NOT AUTHORIZED.** A separate explicit user authorization is required only after definitive Pre-Physical closure and later protected `main` integration.
+**READY FOR SEPARATE AUTHORIZATION BUT NOT STARTED.** Do not begin until the user separately authorizes it after Pre-Physical `main` integration/post-merge verification.
 
 ### Backend Foundation
 
-**NOT STARTED / DEFERRED.** Current handoff: [`workstreams/backend-foundation.md`](workstreams/backend-foundation.md).
-
-Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/Auth/provider/runtime implementation or persistence-specific bootstrap before accepted prerequisites exist.
-
-## Documentation policy
-
-```text
-CURRENT SPECIFICATION = current truth
-ADR = rationale + explicit supersession/qualification
-HISTORICAL / VALIDATION EVIDENCE = truthful chronology
-GIT / PR HISTORY = recoverable history
-```
+**NOT STARTED / DEFERRED.** Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/Auth/provider/runtime implementation or persistence-specific bootstrap before all accepted prerequisites exist.
 
 ## Immediate next work
 
 ```text
-FINAL PRE-PHYSICAL AUDIT ACTIVATION QA
-remote compare + critical readback
+PRE-PHYSICAL MAIN INTEGRATION
+PENDING / NOT PERFORMED
 ```
 
-If PASS, branch-local Pre-Physical Coherence becomes definitively closed. **Do not merge to `main` in this gate.** The later integration is a separate protected PR/merge/post-merge verification step.
+Only after separate user authorization:
+
+```text
+protected PR to main
+→ merge commit
+→ post-merge main verification
+```
+
+Physical Model authorization remains a further separate decision after that integration.
