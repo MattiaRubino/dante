@@ -4,7 +4,7 @@
 - Current product/app name: **DANTE**
 - Previous working/project name: `LifeOS` — legacy/historical references only; same product lineage
 - Canonical integrated branch: `main`
-- Physical integration: **PR #15 / `main @ e6f191bad947388a44defe2c15f4939345084f58`**
+- Physical integration: **PR #15 / integration commit `e6f191bad947388a44defe2c15f4939345084f58`**
 - Former Physical workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical target architecture: **CLOSED / SELECTED / ACCEPTED**
 - Selected canonical primary: **PostgreSQL 18.4**
@@ -43,7 +43,7 @@ PM-12 Accepted Physical Model COMPLETE
 PM-13 clean-room architecture/documentation QA PASS
 PM-14 branch closure COMPLETE
 INTEGRATED INTO MAIN VIA PR #15
-MAIN e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 selected target companion architecture established
@@ -90,13 +90,13 @@ Conversation history is secondary to repository truth.
 - Current product/app identity — **DANTE**; `LifeOS` is the previous working/project name retained only where historical/technical continuity requires it.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**; `WL-H01..WL-H12` active downstream.
-- Pre-Physical Architecture Baseline — **CURRENT / CLOSED / integrated**.
+- Pre-Physical Architecture Baseline — **CURRENT / CLOSED / integrated**, with its Physical-start posture explicitly treated as a historical handoff snapshot after PM-11/12 closure.
 - Phase 5 requirements — **CURRENT**.
 - Phase 6 AI/context/runtime + Integration Hub boundaries — **CURRENT**.
-- Phase 7 durable execution contract — **CURRENT**, now physically resolved to Restate for Class-B target runtime.
+- Phase 7 durable execution contract — **CURRENT CONTRACT**, now physically resolved to Restate for Class-B target runtime.
 - Phase 8 governed operation/effect — **CURRENT**.
-- Phase 9 search/observability/calendar/solver — **CURRENT**, now physically resolved where selected by PM-11/12.
-- Phase 10 benchmark method — **CURRENT / QA PASS / historical method authority for Physical evidence**.
+- Phase 9 search/observability/calendar/solver — **CURRENT CONTRACT**, now physically resolved where selected by PM-11/12.
+- Phase 10 benchmark method — **CURRENT METHOD / QA PASS / historical decision-evidence authority**; phase-time candidate-status prose does not override PM-11/12.
 - Phase 11 repository engineering safety — **QA PASS**.
 - Phase 12 Pre-Physical clean-room QA — **QA PASS / CLOSED**.
 - Physical PM-11 selection — **COMPLETE**.
