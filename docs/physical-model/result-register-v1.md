@@ -1,7 +1,8 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
-- Workstream: `feature/physical-model`
+- Status: **CURRENT — TARGET-ARCHITECTURE CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
+- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
 - PM-09 evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
 - Ranking sensitivity: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
@@ -48,6 +49,7 @@ PM-11   EXPLICIT USER-APPROVED TARGET STACK SELECTION COMPLETE
 PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
 PM-13   CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
 PM-14   TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
+PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
 ```
 
 ## Selected primary
@@ -134,7 +136,7 @@ BENCHMARK HOST           HOLD / DORMANT
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-No PM-09/10/11/12/13/14 disposition is evidence that a direct hard gate ran.
+No PM-09/10/11/12/13/14 disposition or PR #15 integration is evidence that a direct hard gate ran.
 
 ## PM-09 score retained
 
@@ -335,6 +337,13 @@ PM-14  pm-14-closure-v1.md
 ```text
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
+
+MAIN
+e6f191bad947388a44defe2c15f4939345084f58
+
+FORMER BRANCH
+feature/physical-model MERGED / AUTO-DELETED
 
 SELECTED CANONICAL PRIMARY
 PostgreSQL 18.4
@@ -348,10 +357,7 @@ PASS
 DIRECT EXECUTION
 NOT STARTED
 
-PROTECTED-MAIN INTEGRATION
 NEXT
-
-AFTER INTEGRATION
 Development Profile v0 — separate operational scope
 
 BACKEND
