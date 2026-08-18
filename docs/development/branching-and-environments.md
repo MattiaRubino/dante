@@ -32,7 +32,7 @@ Repository-level enforcement and the lifecycle for branch rules, CI checks and s
 5. If two proposed workstreams would modify the same core/shared files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
 6. Before the first remote write, follow the exact PRE-SCOPE/write-gate protocol in the agent operating manual.
 
-While `chore/pre-physical-coherence` remains unmerged it owns its exact gated architecture/documentation reconciliation. A future Backend Foundation or Physical Model branch must not simultaneously rewrite those same current sources. Finish/integrate the prerequisite work or explicitly synchronize/re-scope first.
+`chore/pre-physical-coherence` is branch-locally **DEFINITIVE CLOSED / FINAL QA PASS** and remains unmerged. Until protected integration is separately authorized and completed, no future Backend Foundation or Physical Model branch may rewrite the same current sources concurrently. Integrate/synchronize the prerequisite state or explicitly re-scope first.
 
 Closed Domain/Logical branches are historical evidence, not starting points for new backend work. Any genuine semantic reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
 
@@ -134,13 +134,14 @@ As of 2026-08-18:
 
 - Core Domain Model / Domain Atlas is closed and integrated into `main`;
 - Logical Model is closed and integrated into `main`;
-- `chore/pre-physical-coherence` is the active final-closure-candidate backend/architecture preparation branch;
-- Phase 12 clean-room QA is closed;
-- the independent total Pre-Physical audit found only bounded repairs and is in final remote-activation QA;
-- Physical Model is not started and requires separate future authorization;
-- Backend Foundation/production implementation is not started/deferred;
+- `chore/pre-physical-coherence` is **DEFINITIVE CLOSED / FINAL QA PASS** branch-locally after the independent total audit and final remote activation QA;
+- Phase 12 clean-room QA is **QA PASS / CLOSED**;
+- Physical readiness is established, but the Physical Model is **NOT STARTED / NOT AUTHORIZED** and requires a separate future authorization;
+- Backend Foundation/production implementation is **NOT STARTED / DEFERRED**;
 - Phase 4 UX continues separately on `prototype/phase-4-today-home`;
-- Pre-Physical `main` integration has not yet been performed.
+- Pre-Physical `main` integration is **PENDING / NOT PERFORMED** and requires separate protected-PR authorization.
+
+Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
 
 This stage note is a current operational baseline, not a permanent branching rule. Future agents must re-check `docs/PROJECT-STATUS.md`, the active handoff and Git refs.
 
