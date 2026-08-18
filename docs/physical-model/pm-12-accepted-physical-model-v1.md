@@ -1,16 +1,18 @@
 # PM-12 — Accepted Physical Model v1
 
-- Status: **COMPLETE — ACCEPTED PHYSICAL MODEL ESTABLISHED / PM-13 NEXT**
-- Workstream: `feature/physical-model`
+- Status: **COMPLETE — ACCEPTED PHYSICAL MODEL ESTABLISHED**
+- Current product/app name: **DANTE** (`LifeOS` remains the previous working/project name in historical evidence and technical identifiers)
+- Historical workstream: `feature/physical-model`
 - Selection authority: `pm-11-explicit-selection-v1.md`
 - Domain authority: unchanged / closed
 - Logical authority: unchanged / closed / `WL-H01..WL-H12` active
 - Direct execution: **NOT STARTED**
 - Backend implementation: **NOT STARTED / OUT OF SCOPE**
+- Subsequent lifecycle: **PM-13 QA PASS → PM-14 branch/workstream closure COMPLETE → PR #15 protected-main integration COMPLETE**
 
 ## 1. Purpose
 
-This document is the accepted target Physical Model for LifeOS. It converts the selected PM-11 technology stack into one bounded ownership/topology contract without changing Domain or Logical semantics.
+This document is the accepted target Physical Model for DANTE. It converts the selected PM-11 technology stack into one bounded ownership/topology contract without changing Domain or Logical semantics.
 
 ```text
 ACCEPTED PHYSICAL MODEL
@@ -29,7 +31,7 @@ PostgreSQL 18.4
 CANONICAL PRIMARY
 ```
 
-PostgreSQL is the sole canonical persistence engine for accepted LifeOS state and material history. The accepted PostgreSQL mapping remains authoritative for how Logical owners and references are represented.
+PostgreSQL is the sole canonical persistence engine for accepted DANTE state and material history. The accepted PostgreSQL mapping remains authoritative for how Logical owners and references are represented.
 
 Forbidden shortcuts remain forbidden:
 
@@ -94,7 +96,7 @@ DEVICE GEOFENCING
 execution mechanism only where useful
 ```
 
-A device geofence event is not itself canonical LifeOS consequence. Consequential behavior re-enters governed LifeOS semantics where applicable.
+A device geofence event is not itself canonical DANTE consequence. Consequential behavior re-enters governed DANTE semantics where applicable.
 
 ## 6. Offline / multi-device model
 
@@ -122,7 +124,7 @@ PowerSync
       ↓
 encrypted SQLite
       ↓ offline mutation
-LifeOS backend
+DANTE backend
       ↓ expected-state + governance + AuthZ validation
 PostgreSQL canonical commit
 ```
@@ -235,7 +237,7 @@ Solver output is candidate/derived state. Required semantic barrier:
 ```text
 OPTIMAL / FEASIBLE / INFEASIBLE / UNKNOWN
 = technical solver status
-!= accepted LifeOS Decision
+!= accepted DANTE Decision
 ```
 
 `UNKNOWN != INFEASIBLE`.
@@ -253,13 +255,13 @@ PostgreSQL
 
 Observability collects privacy-minimized operational telemetry such as latency, error rate, backlog, replication lag, workflow failures, backup health and query behavior.
 
-Telemetry is not canonical LifeOS history and must not become a shadow personal-data store.
+Telemetry is not canonical DANTE history and must not become a shadow personal-data store.
 
 ## 12. State ownership matrix
 
 | State | Physical owner / mechanism | Canonical? |
 |---|---|---|
-| LifeOS current truth | PostgreSQL | YES |
+| DANTE current truth | PostgreSQL | YES |
 | Material history | PostgreSQL | YES |
 | Semantic relations | PostgreSQL explicit mappings | YES |
 | Geospatial query | PostGIS over PostgreSQL | capability over canonical data |
@@ -341,7 +343,14 @@ SELF-HOSTED OR CLOUD EU / PROFILE DECISION
 
 DIRECT EXECUTION
 NOT STARTED
-
-NEXT
-PM-13 independent clean-room QA
 ```
+
+Historical progression after PM-12:
+
+```text
+PM-13 independent clean-room QA   PASS
+PM-14 branch/workstream closure   COMPLETE
+PR #15 protected-main integration COMPLETE
+```
+
+Current next project boundary is **Development Profile v0**, not PM-13.

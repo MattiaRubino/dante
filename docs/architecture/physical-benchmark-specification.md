@@ -1,15 +1,21 @@
 # Physical Benchmark Specification
 
-- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model / PM-09 scoring reconciliation active**
-- Stage: Physical Model execution method authority
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-09 SCORING + SENSITIVITY**
-- Technology selection: **NONE / NOT PERFORMED**
+- Status: **CURRENT METHOD / HISTORICAL PHASE-TIME EXECUTION STATUS — Phase 10 QA PASS / consumed by the closed Physical Model**
+- Stage: Physical Model benchmark/evidence method authority
+- Phase-time Physical state recorded by this method: **PM-09 SCORING + SENSITIVITY / selection not yet performed at that point**
+- Current Physical truth: **CLOSED / SELECTED / ACCEPTED / integrated via PR #15**
+- Current selected canonical primary: **PostgreSQL 18.4**
+- Verified-run benchmark score: **NOT AVAILABLE / direct HG PASS 0**
+
+> **Current-truth qualification:** this specification remains the current benchmark/evidence **method**. Candidate labels, `NOT selected`, `Technology selection NONE`, active-PM-09 language and execution-state statements below are truthful phase-time evidence and do not override PM-11/12 selected/accepted truth. No direct hard gate or LOW/BASE/HIGH run has been manufactured by later selection.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained in this method reflect the previous working/project name for the same product lineage and are preserved where they belong to the historical method/evidence record.
 
 ## Purpose
 
-Define the executable, reproducible method that the separately authorized Physical Model workstream must use to compare LifeOS persistence and bounded specialized-infrastructure candidates.
+Define the executable, reproducible method used by the Physical Model workstream to compare LifeOS persistence and bounded specialized-infrastructure candidates.
 
-This document decides **how evidence will be produced and judged**. It does not select a database, schema, index layout, runtime topology, provider, workflow engine or backend implementation.
+This document decides **how evidence is produced and judged**. It does not itself select a database, schema, index layout, runtime topology, provider, workflow engine or backend implementation.
 
 ```text
 PHASE 10
@@ -62,19 +68,21 @@ Candidates are not forced into one undifferentiated leaderboard. They compete wi
 
 ### Lane P — primary canonical persistence
 
-Mandatory comparison:
+Mandatory comparison at Phase 10:
 
 ```text
 P0  PostgreSQL hybrid
     mandatory preferred baseline
-    NOT selected
+    NOT selected at Phase 10
 
 P1  TypeDB
     mandatory challenger
-    NOT selected
+    NOT selected at Phase 10
 ```
 
 A primary candidate must be capable of owning canonical LifeOS state and the material/history/governance requirements assigned to canonical persistence under an idiomatic candidate-specific physical mapping.
+
+Current PM-11/12 resolution later selected PostgreSQL 18.4 as canonical primary.
 
 ### Lane G — secondary graph / traversal projection
 
@@ -367,7 +375,7 @@ Best currently supported candidate among candidates that passed the applicable h
 PREFERRED != SELECTED
 ```
 
-Selection belongs to the active separately authorized Physical Model workstream and requires its explicit selection gate.
+Selection belonged to the separately authorized Physical Model workstream and required its explicit PM-11 selection gate; that gate later selected PostgreSQL 18.4 plus the bounded companion target stack.
 
 # Evidence contract
 
@@ -439,7 +447,7 @@ If upstream documentation is contradictory or maturity is unclear, the relevant 
 
 # Execution protocol
 
-The authorized Physical benchmark SHALL follow this order.
+The authorized Physical benchmark SHALL follow this order when direct verified-run execution is admitted.
 
 ## Step 1 — Freeze benchmark inputs
 
@@ -677,9 +685,9 @@ SELECTED
 
 PM-10 may use the evidence score, sensitivity and carried conditions to produce a bounded recommendation/PREFERRED status under the active Physical methodology. PM-11 remains the separate explicit selection gate.
 
-## Current PM-09 reconciliation state
+## PM-09 reconciliation state at the time of scoring
 
-The active Physical Model reached PM-09 with:
+The Physical Model reached PM-09 with:
 
 ```text
 DIRECT HG PASS                     0
@@ -698,9 +706,9 @@ docs/physical-model/scoring/*
 
 These artifacts must continue to label themselves `EVIDENCE-WEIGHTED DECISION SCORE` until direct execution creates a separate verified-run score.
 
-# Phase 10 boundary — current
+# Phase 10 boundary — current method, historical execution state
 
-This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package, now with the bounded PM-09 evidence-score reconciliation above.
+This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package, with the bounded PM-09 evidence-score reconciliation above.
 
 Phase 10 itself does **not**:
 
@@ -714,4 +722,4 @@ Phase 10 itself does **not**:
 
 Repository-safety and clean-room Pre-Physical verification were subsequently completed as Phases 11 and 12. Those later phases did not change the semantic hard gates.
 
-The Physical Model is separately authorized on `feature/physical-model`. Its evidence-first process may use the reconciled evidence-weighted ledger while preserving the original verified-run benchmark ledger and all unexecuted proof obligations.
+The later Physical workstream completed PM-11/12/13/14 and integrated through PR #15. Current selected truth is PostgreSQL 18.4 plus the bounded companion target stack. Direct benchmark execution remains a separate evidence ledger and is still `NOT RUN` where recorded; `DIRECT HG PASS = 0` and `VERIFIED-RUN SCORE = NOT AVAILABLE` remain unchanged.

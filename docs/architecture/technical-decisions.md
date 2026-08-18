@@ -2,10 +2,11 @@
 
 - Status: **Current technical direction — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
+- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained only where historical/technical continuity requires it)
 - Pre-Physical closure activation: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 - Pre-Physical integration: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13
 - Post-merge Pre-Physical alignment / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79` via PR #14
-- Physical integration: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
+- Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 
 This document is a current technical summary. Detailed requirements/contracts remain authoritative in their dedicated sources; historical rationale remains in ADRs, evidence and Git.
 
@@ -17,7 +18,10 @@ Domain Model / Domain Atlas                 CLOSED
 Logical Model                               CLOSED
 Phase 5 requirements                        CURRENT
 Phase 6 AI/context/runtime/integration      CURRENT
+Phase 7 durable-execution contract          CURRENT / PHYSICAL MECHANISM RESOLVED
 Phase 8 governed operation/effect           CURRENT
+Phase 9 search/observability/calendar/solver CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
+Phase 10 benchmark method                   CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
 Repository engineering safety              QA PASS
 Pre-Physical Coherence                      CLOSED / INTEGRATED / VERIFIED
 
@@ -60,8 +64,8 @@ Rejected for the canonical kernel:
 universal semantic Entity / Thing
 universal generic Relationship / edge
 generic EAV / property-bag ontology
-provider schema as LifeOS ontology
-AI-output schema as LifeOS ontology
+provider schema as DANTE ontology
+AI-output schema as DANTE ontology
 unresolved AI meaning persisted as fabricated generic canonical truth
 ```
 
@@ -76,7 +80,7 @@ PostgreSQL 18.4
 SELECTED / ACCEPTED
 ```
 
-PostgreSQL is the sole canonical persistence authority for LifeOS current truth/material history through the accepted owner-specific mapping.
+PostgreSQL is the sole canonical persistence authority for DANTE current truth/material history through the accepted owner-specific mapping.
 
 ### PostgreSQL capability envelope
 
@@ -103,7 +107,7 @@ PostgreSQL-backed PowerSync sync storage
 ```text
 LOCAL != CANONICAL
 sync arrival order != semantic conflict resolution
-consequential offline mutation -> LifeOS backend revalidation -> PostgreSQL
+consequential offline mutation -> DANTE backend revalidation -> PostgreSQL
 ```
 
 No universal consequential LWW.
@@ -223,7 +227,7 @@ action / tool integration
 ```text
 ExternalRef != NativeRef
 provider revision != MaterialStateRef
-provider state/effect != canonical LifeOS state/effect automatically
+provider state/effect != canonical DANTE state/effect automatically
 provider/tool operation string != canonical governed effect
 ```
 
@@ -252,10 +256,10 @@ runtime Agent / Principal != Domain Actor automatically
 
 ### Consequential AI change evaluation
 
-Before promotion of materially consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, LifeOS requires versioned/reproducible evaluation appropriate to affected behavior.
+Before promotion of materially consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, DANTE requires versioned/reproducible evaluation appropriate to affected behavior.
 
 ```text
-eval result != canonical LifeOS truth
+eval result != canonical DANTE truth
 eval PASS != Authority
 eval PASS != governed-effect authorization
 ```

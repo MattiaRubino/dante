@@ -55,7 +55,7 @@ PM-12 Accepted Physical Model COMPLETE
 PM-13 clean-room architecture/documentation QA PASS
 PM-14 branch closure COMPLETE
 INTEGRATED INTO MAIN VIA PR #15
-main e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 former feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 selected target companion architecture established
@@ -119,6 +119,8 @@ Phase-10 method/evidence remains available:
 - [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md);
 - [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md);
 - [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md).
+
+These Phase-7/9/10 documents remain authoritative for their contracts/method/evidence, but any embedded `Physical NOT STARTED`, candidate ranking or `Technology selection NONE` wording is a **phase-time snapshot**. Current selected truth is PM-11/12 and the current project status.
 
 ## Accepted Physical target
 

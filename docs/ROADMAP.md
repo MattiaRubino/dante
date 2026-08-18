@@ -82,7 +82,7 @@ PM-12  ACCEPTED PHYSICAL MODEL COMPLETE
 PM-13  CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
 PM-14  BRANCH CLOSURE COMPLETE
 PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
-MAIN    e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 FORMER  feature/physical-model MERGED / AUTO-DELETED
 ```
 
@@ -192,7 +192,9 @@ Later engineering must preserve:
 - Phase 5 AuthN/AuthZ, security/privacy/retention/recovery, consistency/side-effects and NFR/multi-device/recovery requirements;
 - Phase 6 AI/context/runtime and Integration Hub boundaries;
 - consequential AI behavior-change evaluation requirement;
+- Phase 7 durable-execution contract as physically resolved by PM-11/12;
 - Phase 8 governed operation/effect contract;
+- Phase 9 search/observability/calendar/solver contract as physically resolved where selected;
 - calendar/provider adapter separation;
 - selected-stack direct validation obligations;
 - repository engineering safety.
