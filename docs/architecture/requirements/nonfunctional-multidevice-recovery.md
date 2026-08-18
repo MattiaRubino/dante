@@ -221,7 +221,7 @@ NFR-OPEN-13 backup frequency/restore-validation cadence in operational terms
 NFR-OPEN-14 capacity/backpressure thresholds and user-visible degradation classes
 ```
 
-Where exact product forecasts are unavailable, Phase 10 MUST benchmark explicit low/base/high scenarios and sensitivity rather than inventing one precise forecast.
+Where exact product forecasts are unavailable, the Phase 10 method defines explicit LOW/BASE/HIGH synthetic qualification scenarios and sensitivity analysis. The later separately authorized Physical Model workstream MUST execute or explicitly classify the applicable evidence; an unexecuted upper envelope must not be reported as verified evidence.
 
 ## Deferred mechanisms — not selected by Phase 5
 
