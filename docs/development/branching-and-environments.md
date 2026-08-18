@@ -32,22 +32,29 @@ Repository-level enforcement and the lifecycle for branch rules, CI checks and s
 5. If two proposed workstreams would modify the same core/shared files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
 6. Before the first remote write, follow the exact PRE-SCOPE/write-gate protocol in the agent operating manual.
 
-`chore/pre-physical-coherence` is **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / post-merge verified**. Its merged head branch was auto-deleted.
-
-The separately authorized Physical Model now runs on:
+Historical workstream state:
 
 ```text
-feature/physical-model
-base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-```
+chore/pre-physical-coherence
+DEFINITIVE CLOSED / FINAL QA PASS
+integrated into main via PR #13
+post-merge aligned via PR #14
 
-This branch is the only active repository authority for unmerged Physical-workstream state. It does not supersede accepted `main` outside its bounded Physical scope and must never be used to reopen Domain/Logical semantics implicitly.
+feature/physical-model
+PM-00..PM-14 TARGET-ARCHITECTURE WORK COMPLETE
+selected canonical primary PostgreSQL 18.4
+PM-13 architecture/documentation QA PASS
+branch closure complete
+protected-main integration is the final branch lifecycle action
+```
 
 Closed Domain/Logical branches are historical evidence, not starting points for new backend work. Any genuine semantic reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
 
 ## Why there is no permanent `develop` branch
 
 A permanent `develop` branch would create a second integrated state that can drift from `main`. LifeOS instead uses `main` plus bounded branches and deployment environments.
+
+A future `Development Profile v0` is a **configuration/operational design scope**, not a permanent Git `develop` branch.
 
 If future release management creates a measured need for release branches, that decision can be added later. It is not the default.
 
@@ -65,6 +72,8 @@ Purpose:
 - non-production credentials/services.
 
 Normal direction: deploy the latest accepted `main` build automatically or on demand. Feature branches may use isolated preview environments when useful, without becoming shared canonical DEV state.
+
+The later Development Profile v0 may decide which already-selected Physical components are active in DEV and whether an allowed component uses local/self-hosted/managed/free-tier deployment. That profile cannot silently change the accepted Physical target architecture.
 
 ### UAT / Staging
 
@@ -121,7 +130,7 @@ Parallel branches must minimize shared-file churn.
 
 The repository safety target for `main` is deliberately aligned with this workflow rather than a separate Git model.
 
-The current owner-driven effective rules have been remotely verified:
+The last remotely verified owner-driven effective rules were:
 
 ```text
 pull request required before merge
@@ -143,22 +152,17 @@ PR #13 and post-merge alignment PR #14 successfully exercised the protected-main
 
 As of 2026-08-18:
 
-- Core Domain Model / Domain Atlas is closed and integrated into `main`;
-- Logical Model is closed and integrated into `main`;
-- Pre-Physical Repository & Architecture Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**;
-- Phase 12 clean-room QA is **QA PASS / CLOSED**;
-- Physical readiness is established;
-- Physical Model is **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** on `feature/physical-model`;
-- Physical mapping, benchmark execution and technology selection are **NOT STARTED / NONE**;
+- Core Domain Model / Domain Atlas is **CLOSED / integrated**;
+- Logical Model is **CLOSED / integrated / WL-H01..WL-H12 active**;
+- Pre-Physical Repository & Architecture Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified**;
+- Physical Model target architecture is **CLOSED / SELECTED / ACCEPTED** on the closure branch, with PostgreSQL 18.4 selected as canonical primary;
+- PM-13 Physical clean-room architecture/documentation QA is **PASS**;
+- direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**;
 - Backend Foundation/production implementation is **NOT STARTED / DEFERRED**;
+- Development Profile v0 is **NOT STARTED / next separate operational scope**;
 - Phase 4 UX continues separately on `prototype/phase-4-today-home`.
 
-Physical branch base / bootstrap PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
-Pre-Physical closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
-Pre-Physical integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436`.
-Post-merge alignment main checkpoint / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
-
-This stage note is a current operational baseline, not a permanent branching rule. Future agents must re-check `docs/PROJECT-STATUS.md`, the active handoff and Git refs.
+The Physical target includes Restate as the selected Class-B durable runtime while leaving deployment mode conditional between first-class self-hosted and allowed Cloud EU; deployment activation is a later profile decision.
 
 ## Branch lifecycle
 
@@ -175,7 +179,7 @@ This stage note is a current operational baseline, not a permanent branching rul
 
 Repository hygiene rules:
 
-- automatic deletion of merged head branches is currently enabled;
+- automatic deletion of merged head branches is currently enabled based on the last verified repository state;
 - unmerged active branches are never auto-classified as obsolete by age alone;
 - an old/historical branch is deleted only after proving it contains no unique accepted/active work that still requires integration;
 - obviously accidental refs may be deleted after ancestry/content verification shows no unique branch-only work;
@@ -187,7 +191,7 @@ As applicable:
 
 - implementation/design/documentation scope complete;
 - approved PRE-SCOPE delta matches expected paths;
-- tests/validation complete;
+- tests/validation complete at the scope actually claimed;
 - migrations and rollback implications considered when relevant;
 - relevant durable documentation updated;
 - workstream handoff updated;
@@ -199,6 +203,8 @@ As applicable:
 - environment/deployment impact noted;
 - any required repository/CI checks that actually exist are passing;
 - remote readback/QA supports any PASS/CLOSED claim.
+
+For Physical closure specifically, PM-11 selection, PM-12 Accepted Physical Model, PM-13 architecture/documentation QA PASS, preserved direct `NOT RUN` truth and the post-selection validation carry-forward must all remain visible before merge.
 
 ## Emergency production fixes
 
