@@ -2,13 +2,14 @@
 
 - Last updated: 2026-08-18
 - Canonical integrated branch: `main`
-- Current accepted `main` / Physical bootstrap base: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- Active Physical branch: `feature/physical-model`
-- Physical bootstrap PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- PM-00 bootstrap: **QA PASS**
-- PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
+- Physical workstream branch during closure: `feature/physical-model`
+- Physical target architecture: **CLOSED / SELECTED / ACCEPTED**
+- Selected canonical primary: **PostgreSQL 18.4**
+- PM-13 clean-room architecture/documentation QA: **PASS**
+- Direct selected-stack implementation validation: **NOT STARTED**
 - Production application code: **NOT STARTED**
 - Backend Foundation: **NOT STARTED / DEFERRED**
+- Development Profile v0: **NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE**
 
 ## Current stage
 
@@ -32,21 +33,25 @@ DEFINITIVE CLOSED / FINAL QA PASS
 INTEGRATED / POST-MERGE VERIFIED
 PR #13 + post-merge alignment PR #14
 
-PHYSICAL READINESS
-ESTABLISHED
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
+PM-11 explicit selection COMPLETE
+PM-12 Accepted Physical Model COMPLETE
+PM-13 clean-room architecture/documentation QA PASS
+PM-14 branch closure COMPLETE
+selected canonical primary PostgreSQL 18.4
+selected target companion architecture established
 
-PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS
-PM-00 BOOTSTRAP QA PASS
-PM-01 READ-ONLY NEXT
-branch feature/physical-model
-base 3de84bb49f9cef30e88e9bde4961ed84335daa79
-mapping NOT STARTED
-benchmark execution NOT STARTED
-technology selection NONE
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED
+DIRECT HG PASS 0
+VERIFIED-RUN SCORE NOT AVAILABLE
 
 BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
+
+DEVELOPMENT PROFILE v0
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 ```
 
 Phase 4 UX remains a separate active product/design workstream on `prototype/phase-4-today-home`.
@@ -63,14 +68,13 @@ Phase 4 UX remains a separate active product/design workstream on `prototype/pha
 8. [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
 9. [`workstreams/physical-model.md`](workstreams/physical-model.md)
 10. [`physical-model/README.md`](physical-model/README.md)
-11. [`physical-model/execution-methodology-v1.md`](physical-model/execution-methodology-v1.md)
-12. [`physical-model/execution-template-v1.md`](physical-model/execution-template-v1.md)
-13. [`physical-model/acceptance-test-matrix-v1.md`](physical-model/acceptance-test-matrix-v1.md)
-14. [`physical-model/result-register-v1.md`](physical-model/result-register-v1.md)
-15. [`architecture/README.md`](architecture/README.md) and the full Phase-5..10 authority it links
-16. complete Domain/Logical closure authority when mapping semantics are involved
-17. relevant ADR/evidence/methodology
-18. current Git refs/branch relation to `main`
+11. [`physical-model/pm-11-explicit-selection-v1.md`](physical-model/pm-11-explicit-selection-v1.md)
+12. [`physical-model/pm-12-accepted-physical-model-v1.md`](physical-model/pm-12-accepted-physical-model-v1.md)
+13. [`physical-model/pm-13-clean-room-qa-v1.md`](physical-model/pm-13-clean-room-qa-v1.md)
+14. [`physical-model/recommendation/post-selection-validation-register-v1.md`](physical-model/recommendation/post-selection-validation-register-v1.md)
+15. [`architecture/README.md`](architecture/README.md) and Phase-5..10 authority where relevant
+16. complete Domain/Logical closure authority where semantics are involved
+17. current Git refs / PR state before any new write
 
 Conversation history is secondary to repository truth.
 
@@ -82,20 +86,18 @@ Conversation history is secondary to repository truth.
 - Pre-Physical Architecture Baseline — **CURRENT / CLOSED / integrated**.
 - Phase 5 requirements — **CURRENT**.
 - Phase 6 AI/context/runtime + Integration Hub boundaries — **CURRENT**.
-- Phase 7 durable execution — **CURRENT / conditional ranking only**.
+- Phase 7 durable execution contract — **CURRENT**, now physically resolved to Restate for Class-B target runtime.
 - Phase 8 governed operation/effect — **CURRENT**.
-- Phase 9 search/observability/calendar/solver — **CURRENT**.
-- Phase 10 benchmark method — **CURRENT / QA PASS / ACTIVE INPUT**.
+- Phase 9 search/observability/calendar/solver — **CURRENT**, now physically resolved where selected by PM-11/12.
+- Phase 10 benchmark method — **CURRENT / QA PASS / historical method authority for Physical evidence**.
 - Phase 11 repository engineering safety — **QA PASS**.
-- Phase 12 clean-room QA — **QA PASS / CLOSED**.
-- Independent total Pre-Physical audit — **PASS**.
-- Pre-Physical protected-main integration — **PR #13 / POST-MERGE VERIFIED**.
-- Post-merge current-truth alignment — **PR #14**; `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`.
-- Physical PM-00 bootstrap — **QA PASS**.
+- Phase 12 Pre-Physical clean-room QA — **QA PASS / CLOSED**.
+- Physical PM-11 selection — **COMPLETE**.
+- Physical PM-12 Accepted Physical Model — **COMPLETE**.
+- Physical PM-13 clean-room architecture/documentation QA — **QA PASS**.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
-- SQLAlchemy/Alembic — conditional on accepted Physical persistence.
 
 ## Domain / Logical closure
 
@@ -113,208 +115,160 @@ WD-03 PASS
 WD-05 PASS
 ```
 
-The Physical workstream must consume these models without implicit semantic reopen. Any genuine contradiction requires a separate explicit reopen scope.
+Physical/backend work must consume these models without implicit semantic reopen. Any genuine contradiction requires a separate explicit reopen scope.
 
-## Active Physical Model
+## Accepted Physical Model
 
-Current execution authority:
+Current authority:
 
-- [`physical-model/README.md`](physical-model/README.md);
-- [`physical-model/execution-methodology-v1.md`](physical-model/execution-methodology-v1.md);
-- [`physical-model/execution-template-v1.md`](physical-model/execution-template-v1.md);
-- [`physical-model/acceptance-test-matrix-v1.md`](physical-model/acceptance-test-matrix-v1.md);
+- [`physical-model/pm-11-explicit-selection-v1.md`](physical-model/pm-11-explicit-selection-v1.md);
+- [`physical-model/pm-12-accepted-physical-model-v1.md`](physical-model/pm-12-accepted-physical-model-v1.md);
+- [`physical-model/pm-13-clean-room-qa-v1.md`](physical-model/pm-13-clean-room-qa-v1.md);
+- [`physical-model/pm-14-closure-v1.md`](physical-model/pm-14-closure-v1.md);
 - [`physical-model/result-register-v1.md`](physical-model/result-register-v1.md);
+- [`physical-model/recommendation/post-selection-validation-register-v1.md`](physical-model/recommendation/post-selection-validation-register-v1.md);
 - [`workstreams/physical-model.md`](workstreams/physical-model.md).
 
-Phase-10 method authority remains:
-
-- `architecture/physical-benchmark-specification.md`;
-- `architecture/physical-benchmark-scenario-corpus.md`;
-- `architecture/physical-benchmark-register.md`.
-
-Current role posture:
+Selected target:
 
 ```text
-PRIMARY
-PostgreSQL hybrid — preferred mandatory baseline, NOT SELECTED
-TypeDB            — mandatory challenger, NOT SELECTED
+CANONICAL PRIMARY
+PostgreSQL 18.4
 
-SECONDARY GRAPH
-G0 no-specialized-store vs G1 Neo4j
+POSTGRESQL CAPABILITIES
+PostGIS 3.6.4
+pgvector 0.8.6
+native FTS / pg_trgm / unaccent
+pg_stat_statements
+PgBouncer 1.25.2
 
-SEARCH / VECTOR
-S0 structured + lexical/full-text vs S1 pgvector where applicable
+OFFLINE / SYNC
+PowerSync 1.25.0 Open Edition
+encrypted SQLite
+PostgreSQL-backed PowerSync sync storage
 
-EVENT / DOCUMENT
-bounded native mechanisms first; specialist only after explicit admission
-```
+ASYNC CLASS A
+PostgreSQL transactional outbox + bounded worker
 
-Current result state:
+DURABLE CLASS B
+Restate runtime
+Restate self-hosted first-class OR Cloud EU managed option
+GLOBAL RESTATE DEPLOYMENT DEFAULT NONE
 
-```text
-P0 PostgreSQL   NOT RUN / NOT SELECTED
-P1 TypeDB       NOT RUN / NOT SELECTED
-G1 Neo4j        NOT RUN / NOT SELECTED
-S1 pgvector     NOT RUN / NOT SELECTED
-ED specialized  NOT ADMITTED
-```
+OBJECT
+Cloudflare R2 Standard / EU / private
 
-## Physical execution rules
-
-```text
-hard semantic/correctness gates before scoring
-same semantics + candidate-idiomatic mapping
-product + exact version + edition + deployment = benchmark subject
-raw evidence before summary
-NOT RUN != PASS
-official product claim != direct execution evidence
-unexecuted tier != VERIFIED-RUN
-missing/contradictory evidence = HOLD
-PREFERRED != SELECTED
-```
-
-Primary hard gates remain `HG-01..HG-12`; cross-lane hard gates `CG-01..CG-04`; corpus `C0..C7`; scenarios `SC-001..SC-035`.
-
-LOW/BASE/HIGH remain synthetic qualification envelopes, not business forecasts.
-
-## PM progression
-
-```text
-PM-00  bootstrap / authority freeze                 QA PASS
-PM-01  candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST — NEXT
-PM-02  primary mapping design                       NOT STARTED
-PM-03  semantic hard-gate preflight                 NOT STARTED
-PM-04  fixtures/oracle/harness design               NOT STARTED
-PM-05  correctness/destructive execution            NOT STARTED
-PM-06  scale/performance tiers                      NOT STARTED
-PM-07  recovery/evolution/failure                   NOT STARTED
-PM-08  secondary lanes                              NOT STARTED
-PM-09  scoring/sensitivity                          NOT STARTED
-PM-10  recommendation                               NOT STARTED
-PM-11  explicit selection gate                      NOT STARTED
-PM-12  accepted Physical Model                      NOT STARTED
-PM-13  independent clean-room QA                    NOT STARTED
-PM-14  closure/protected-main integration           NOT STARTED
-```
-
-PM-01 is read-only. No SQL/TypeQL/Cypher, candidate schemas, benchmark harness code, database/container deployment or technology selection is authorized yet.
-
-## Phase-5..9 constraints remain active
-
-### Requirements
-
-AuthN/AuthZ, security/privacy/retention/recovery, consistency/side effects and non-functional/multi-device/recovery remain mandatory Physical pressure. Open RPO/RTO/latency/availability/scale/offline values remain explicit until legitimately resolved.
-
-### AI / context / integration
-
-```text
-canonical state
-material history
-retrieved context
-derived context
-live external context
-candidate / unresolved state
-transient LLM working context
-```
-
-Generic AI memory is not a second canonical truth store. Runtime Agent/Principal != Domain Actor automatically; tool invocation != authorization/effect.
-
-Material consequential AI changes require versioned/reproducible evaluation before promotion.
-
-```text
-eval result != canonical LifeOS truth
-eval PASS != Authority / governed-effect authorization
-```
-
-Integration Hub preserves canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration. `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical state/effect automatically.
-
-### Durable execution
-
-```text
-BOUNDED ASYNC
-DB + worker/outbox style = valid baseline class
-
-DEDICATED DURABLE EXECUTION
-Restate   preferred structural-fit candidate — NOT selected
-Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional challenger — NOT selected
-          SQLite-capable local/bounded Python use
-          PostgreSQL-recommended production
-          distributed multi-server PostgreSQL-coupled
-```
-
-Physical evidence may affect infrastructure coupling, but may not select a workflow runtime implicitly.
-
-### Governed operation/effect
-
-```text
-HTTP/UI/tool/AuthZ/workflow step != canonical governed operation
-request accepted != effect complete
-provider acknowledgement != canonical completion automatically
-workflow completed != Actual automatically
-technical cancellation != Domain cancellation automatically
-```
-
-### Search / observability / calendar / solver
-
-```text
-SEARCH
-structured + lexical/full-text baseline
-semantic/vector bounded candidate
-
-OBSERVABILITY
-OpenTelemetry-first / equivalent direction
-no vendor selected
-
-CALENDAR
-iCalendar / JSCalendar / provider APIs = adapter pressure, not ontology
+RECOVERY TARGET
+pgBackRest 2.59.0
+AWS S3 Standard eu-south-1 recovery repositories
+Versioning + Object Lock GOVERNANCE / finite policy-bound retention
 
 SOLVER
-simple deterministic rules/heuristics baseline
-OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
-UNKNOWN != INFEASIBLE
+OR-Tools 9.15 CP-SAT
+
+OBSERVABILITY
+OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 ```
 
-## Repository safety
+Canonical authority remains singular: PostgreSQL.
 
-`lifeos-main-safety` remains the protected-main policy. `feature/physical-model` is an active bounded branch. No direct-main work, no invented required checks, no production secrets/personal data in benchmark fixtures, and no benchmark-only code automatically promoted to production infrastructure.
+## Restate deployment qualification
 
-## PM-00 QA evidence
+Restate technology is selected, but deployment is conditional:
 
 ```text
-BOOTSTRAP PRE-SCOPE
-3de84bb49f9cef30e88e9bde4961ed84335daa79
+SELF-HOSTED
+FIRST-CLASS
 
-CREATE CHECKPOINT
-6d76bc150dfd7b3cefe56c6e05c96404e7494626
-6 added / 0 modified / behind 0
+CLOUD EU
+ALLOWED MANAGED OPTION
 
-CONTENT-QA CHECKPOINT
-8549e1c95bef2e354bd47028259e6816bf5e9272
-22 unique paths
-6 added
-16 modified
-0 deleted
-0 unexpected
-behind 0
-
-main
-3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
+GLOBAL DEFAULT
+NONE
 ```
 
-Final save-game propagation stays on the same approved 22-path physical scope.
+The later deployment profile decides between them. Current Python use must not assume TypeScript-only client-side journal encryption; journal minimization remains mandatory.
+
+## Direct Physical execution truth
+
+```text
+DATABASE INSTANCE
+NOT STARTED
+
+FIXTURE/HARNESS
+NOT STARTED
+
+DIRECT HG PASS
+0
+
+LOW/BASE/HIGH
+NOT RUN
+
+RESTORE / MIGRATION / FAILURE INJECTION
+NOT RUN
+
+POWERSYNC / RESTATE / OBJECT / SOLVER DIRECT VALIDATION
+NOT RUN
+
+VERIFIED-RUN BENCHMARK SCORE
+NOT AVAILABLE
+```
+
+PM-11/12 selection and PM-13 clean-room QA do not convert these into direct PASS.
+
+## Mandatory implementation-validation carry-forward
+
+The selected target remains conditional on applicable direct implementation/release obligations in:
+
+```text
+physical-model/recommendation/post-selection-validation-register-v1.md
+```
+
+Key groups:
+
+```text
+SC-011 anti-resurrection
+SC-030 V1->V2 evolution
+SC-031 destructive semantic restore
+SC-032 capacity/backpressure
+WL-H12 non-interference
+search/vector/projection filtering/freshness/deletion
+PowerSync replication liveness / conflicts / local encryption
+Restate crash/replay/versioning/governance/deployment privacy
+R2/S3 object deletion/recovery
+PostGIS/PgBouncer compatibility
+pgBackRest archive/PITR
+OR-Tools status/governance corpus
+observability privacy
+```
+
+None is direct PASS merely because the target architecture is closed.
+
+## Backend / Development boundary
+
+The Physical target is now available as an input to later engineering. It does **not** itself start backend production implementation.
+
+A separate `Development Profile v0` may now be designed to decide:
+
+```text
+which selected components are activated immediately
+self-hosted vs managed where Physical allows both
+free-tier/local development choices
+accounts/credentials/environment setup
+initial backup/observability activation
+upgrade/production triggers
+```
+
+That profile must not silently change the accepted target Physical Model.
 
 ## Active workstreams
 
 ### Physical Model
 
-- **AUTHORIZED / IN PROGRESS**
-- **PM-00 QA PASS**
-- **PM-01 READ-ONLY NEXT**
-- branch `feature/physical-model`
-- mapping **NOT STARTED**
-- benchmark **NOT STARTED**
-- selection **NONE**
+- **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED**
+- **PM-13 QA PASS**
+- branch closure evidence complete
+- protected-main integration handled through normal PR path
 
 ### Phase 4 — Home / Today UX
 
@@ -323,22 +277,18 @@ Final save-game propagation stays on the same approved 22-path physical scope.
 
 ### Backend Foundation
 
-**NOT STARTED / DEFERRED.** It remains blocked until the Physical result is explicitly selected/accepted and all remaining prerequisites are satisfied.
+**NOT STARTED / DEFERRED.** It requires its own explicit authorization/gate.
+
+### Development Profile v0
+
+**NOT STARTED.** This is the next separate operational-design discussion after Physical integration.
 
 ## Immediate next work
 
 ```text
-PM-01 — READ-ONLY FIRST
-
-- freeze exact current PostgreSQL and TypeDB versions/editions/deployment modes
-- verify version-sensitive capabilities from official primary sources
-- capture Python driver/client compatibility
-- verify backup/restore/HA/schema/evolution claims for exact subjects
-- freeze available benchmark environment
-- identify unavailable infrastructure/tooling honestly
-- produce execution inventory/evidence plan
-- STOP before mapping/schema/harness/database writes
-- present fresh exact PM-02+ gate
+1. complete protected-main integration of the closed Physical workstream
+2. verify remote main contains the accepted Physical Model
+3. open Development Profile v0 as a separate bounded scope
+4. decide actual initial activation/deployment/free/local choices against the already-selected target
+5. do not start backend production implementation without its own explicit authorization
 ```
-
-Do not choose PostgreSQL or TypeDB during PM-01.
