@@ -1,8 +1,9 @@
 # Physical Model
 
 - Status: **CLOSED AT TARGET-ARCHITECTURE LEVEL — SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained in historical evidence and technical identifiers)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
-- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 - Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00: **QA PASS**
 - PM-01: **PASS-CONDITIONAL**
@@ -19,7 +20,8 @@
 - PM-11: **EXPLICIT TARGET STACK SELECTION COMPLETE**
 - PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
 - PM-13: **CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS**
-- PM-14: **BRANCH CLOSURE COMPLETE**
+- PM-14: **BRANCH / WORKSTREAM CLOSURE COMPLETE**
+- Protected-main integration after PM-14: **PR #15 COMPLETE**
 - Selected canonical primary: **PostgreSQL 18.4**
 - Selected target companion stack: **ESTABLISHED**
 - Direct implementation execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
@@ -28,7 +30,7 @@
 
 ## Purpose
 
-This directory contains the evidence, selection and accepted target Physical architecture that translates the CLOSED LifeOS Domain + Logical Model into bounded implementation mechanisms without weakening semantic ownership.
+This directory contains the evidence, selection and accepted target Physical architecture that translates the CLOSED DANTE Domain + Logical Model into bounded implementation mechanisms without weakening semantic ownership.
 
 ```text
 DOMAIN + LOGICAL
@@ -48,8 +50,8 @@ research
 → explicit selection
 → Accepted Physical Model
 → clean-room QA
-→ closure
-→ protected-main integration via PR #15
+→ branch/workstream closure
+→ protected-main lifecycle integration via PR #15
 ```
 
 ## Current authority order
@@ -59,7 +61,7 @@ For current target architecture read:
 1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
 2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
 3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
-4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch closure evidence produced before PR #15;
+4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch/workstream closure evidence produced before PR #15;
 5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
 6. [`result-register-v1.md`](result-register-v1.md) — current result ledger;
 7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — workstream closure/handoff.
@@ -79,7 +81,7 @@ RUNTIME != DOMAIN HISTORY
 MISSING != FALSE
 EVIDENCE-QUALIFIED != EXECUTED PASS
 EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
-PUBLIC BENCHMARK != LIFEOS BENCHMARK
+PUBLIC BENCHMARK != DANTE BENCHMARK
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 SELECTED != DEPLOYED
@@ -145,7 +147,7 @@ pg_stat_statements
 
 ```text
 PostgreSQL
-= canonical LifeOS truth + material history
+= canonical DANTE truth + material history
 
 PostGIS
 = geospatial capability over PostgreSQL state
@@ -181,7 +183,7 @@ PostgreSQL canonical
 → approved PowerSync projection
 → encrypted SQLite
 → offline mutation
-→ LifeOS backend expected-state + governance + AuthZ revalidation
+→ DANTE backend expected-state + governance + AuthZ revalidation
 → PostgreSQL canonical commit if valid
 ```
 
@@ -222,7 +224,7 @@ Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-
 ```text
 OPTIMAL / FEASIBLE / INFEASIBLE / UNKNOWN
 = technical solver status
-!= accepted LifeOS Decision
+!= accepted DANTE Decision
 ```
 
 `UNKNOWN != INFEASIBLE`.
@@ -317,14 +319,14 @@ A component being dormant in DEV does not remove it from the accepted target. A 
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
-MAIN e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
 
 PM-13
 QA PASS
 
 PM-14
-BRANCH CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
+BRANCH / WORKSTREAM CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
 
 DIRECT IMPLEMENTATION VALIDATION
 NOT STARTED / CARRIED FORWARD
