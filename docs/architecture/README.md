@@ -2,6 +2,7 @@
 
 - Status: **Current navigation — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
+- Current product/app name: **DANTE** (`LifeOS` remains a legacy working/project name in historical evidence and technical identifiers)
 
 ## Purpose
 
@@ -13,16 +14,16 @@ Current specifications describe the architecture as it is understood now. They a
 
 Read these for current architecture state:
 
-1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed/integrated Pre-Physical bridge and downstream constraints;
+1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed/integrated Pre-Physical bridge and downstream constraints; its Physical-start status is a historical handoff snapshot;
 2. [`requirements/README.md`](requirements/README.md) + all four Phase 5 requirement packages;
 3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime contract;
 4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase 6 provider/integration contract;
-5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable-execution evidence/ranking input;
+5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable-execution contract/evidence; candidate-status prose is phase-time history and the current Physical resolution is Restate;
 6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase 8 governed-operation/effect contract;
-7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase 9 pressure contract;
-8. [`physical-benchmark-specification.md`](physical-benchmark-specification.md) — Phase 10 benchmark methodology/evidence framework;
+7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase 9 pressure contract; selection-status prose is phase-time history where PM-11/12 later resolved the mechanism;
+8. [`physical-benchmark-specification.md`](physical-benchmark-specification.md) — Phase 10 benchmark methodology/evidence framework; phase-time Physical-status prose does not override closed PM-11/12 truth;
 9. [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md) — Phase 10 corpus/scenarios;
-10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — direct execution ledger/history;
+10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — historical candidate/direct-execution ledger;
 11. [`../physical-model/pm-11-explicit-selection-v1.md`](../physical-model/pm-11-explicit-selection-v1.md) — selected target stack;
 12. [`../physical-model/pm-12-accepted-physical-model-v1.md`](../physical-model/pm-12-accepted-physical-model-v1.md) — accepted Physical target architecture;
 13. [`../physical-model/pm-13-clean-room-qa-v1.md`](../physical-model/pm-13-clean-room-qa-v1.md) — clean-room architecture/documentation QA;
@@ -96,7 +97,7 @@ action/tool integration
 
 ```text
 AI/model/tool/runtime representation != canonical truth/effect by default
-provider state != canonical LifeOS state
+provider state != canonical DANTE state
 runtime Agent / Principal != Domain Actor automatically
 ExternalRef != NativeRef
 ```
@@ -147,7 +148,7 @@ OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 Canonical authority remains singular:
 
 ```text
-PostgreSQL = canonical
+PostgreSQL = canonical DANTE truth/material history
 PowerSync/SQLite = local/sync projection
 Restate = execution runtime
 R2 = raw bytes
@@ -165,18 +166,20 @@ CLOSED / SELECTED / ACCEPTED
 PROTECTED-MAIN INTEGRATION
 COMPLETE VIA PR #15
 
-MAIN
- e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT
+e6f191bad947388a44defe2c15f4939345084f58
 
 FORMER BRANCH
 feature/physical-model — MERGED / AUTO-DELETED
 ```
 
+That SHA identifies the Physical integration event; it is **not intended to track the moving current `main` HEAD**.
+
 PM-14 remains historical closure evidence for the pre-merge state and is not rewritten by the later integration event.
 
 ## Durable-execution resolution
 
-The prior Phase-7 ranking is now physically resolved:
+The Phase-7 contract remains current; its prior candidate ranking is now physically resolved:
 
 ```text
 BOUNDED ASYNC
@@ -196,6 +199,8 @@ Temporal and DBOS remain non-selected historical challengers. Runtime state does
 Current Restate Cloud client-side journal encryption must not be assumed for the Python path where the capability is currently documented only for TypeScript; journal minimization and later deployment privacy review remain mandatory.
 
 ## Search / observability / calendar / solver resolution
+
+The Phase-9 boundary contract remains current; PM-11/12 later resolved its selectable mechanisms as follows:
 
 ```text
 SEARCH
@@ -250,7 +255,10 @@ Domain Model / Domain Atlas              CLOSED
 Logical Model                            CLOSED
 Phase 5 requirements                     CURRENT
 Phase 6 boundaries                       CURRENT
+Phase 7 durable-execution contract       CURRENT / PHYSICAL MECHANISM RESOLVED
 Phase 8 governed-effect contract         CURRENT
+Phase 9 pressure contract                CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
+Phase 10 benchmark method                CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
 Repository engineering safety            QA PASS
 Pre-Physical Coherence                   CLOSED / INTEGRATED / VERIFIED
 
