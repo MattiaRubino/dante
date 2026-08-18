@@ -1,8 +1,9 @@
 # Workstream — Physical Model
 
-- Status: **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED — PM-14 BRANCH CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
-- Branch during workstream: `feature/physical-model`
-- Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Status: **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED — PM-14 BRANCH CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15**
+- Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
+- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
 - Domain: **CLOSED / INTEGRATED / UNCHANGED**
 - Logical: **CLOSED / INTEGRATED / WL-H01..WL-H12 ACTIVE / UNCHANGED**
@@ -31,7 +32,7 @@
 
 Terminal save-game for the Physical Model target-architecture workstream. A new chat/agent must be able to resume from repository truth without reconstructing conversation history.
 
-The workstream selected and accepted the target Physical architecture. It did **not** implement the production backend, deploy the selected stack, discharge the direct implementation validation register or decide the later Development Profile v0.
+The workstream selected and accepted the target Physical architecture and integrated it into protected `main` through PR #15. It did **not** implement the production backend, deploy the selected stack, discharge the direct implementation validation register or decide the later Development Profile v0.
 
 ## 2. Mandatory continuation bootstrap
 
@@ -50,7 +51,7 @@ For any later work that consumes or reopens the Physical target:
 11. read `docs/physical-model/pm-11-explicit-selection-v1.md`;
 12. read `docs/physical-model/pm-12-accepted-physical-model-v1.md`;
 13. read `docs/physical-model/pm-13-clean-room-qa-v1.md`;
-14. read `docs/physical-model/pm-14-closure-v1.md`;
+14. read `docs/physical-model/pm-14-closure-v1.md` as historical pre-merge closure evidence;
 15. read `docs/physical-model/recommendation/post-selection-validation-register-v1.md`;
 16. read older PM-01..PM-10 evidence only when rationale/history is material;
 17. read complete CLOSED Domain/Logical authority when semantics are involved;
@@ -128,9 +129,14 @@ PM-09 terminal
 
 PM-10 terminal
 4a988b115e445c726910ef5c3da7e2629d73eaf1
+
+PROTECTED-MAIN INTEGRATION
+PR #15
+main e6f191bad947388a44defe2c15f4939345084f58
+former feature/physical-model merged / auto-deleted
 ```
 
-The final closure branch HEAD and eventual PR merge SHA must be read from remote Git; they are not guessed inside this handoff.
+GitHub PR/merge history is the authoritative integration evidence.
 
 ## 5. Selection history
 
@@ -155,7 +161,7 @@ NOT SENSITIVITY-DEPENDENT
 NOT PERFORMANCE-DEPENDENT
 ```
 
-PM-10 established PostgreSQL as preferred. PM-11 received explicit user approval and selected the target stack. PM-12 established the Accepted Physical Model. PM-13 independently QA-checked architecture/documentation coherence and passed. PM-14 closed the branch-level target-architecture work.
+PM-10 established PostgreSQL as preferred. PM-11 received explicit user approval and selected the target stack. PM-12 established the Accepted Physical Model. PM-13 independently QA-checked architecture/documentation coherence and passed. PM-14 closed the branch-level target-architecture work. PR #15 integrated the closed result into protected `main`.
 
 ## 6. Accepted target stack
 
@@ -304,13 +310,7 @@ DIRECT HG PASS
 LOW/BASE/HIGH
 NOT RUN
 
-RESTORE
-NOT RUN
-
-MIGRATION
-NOT RUN
-
-FAILURE INJECTION
+RESTORE / MIGRATION / FAILURE INJECTION
 NOT RUN
 
 GRAPH / SEARCH / VECTOR / SQLITE / POWERSYNC / RESTATE / OBJECT / SOLVER DIRECT VALIDATION
@@ -323,7 +323,7 @@ VERIFIED-RUN BENCHMARK SCORE
 NOT AVAILABLE
 ```
 
-Do not convert scoring, recommendation, selection, acceptance, clean-room QA or closure into direct PASS.
+Do not convert scoring, recommendation, selection, acceptance, clean-room QA, closure or protected-main integration into direct PASS.
 
 ## 9. Post-selection validation obligations
 
@@ -416,23 +416,33 @@ upgrade/production triggers
 
 This is not a reopen of the target Physical Model. A selected component may be dormant in DEV without changing the accepted target.
 
-## 13. Protected-main integration boundary
+## 13. Protected-main integration result
 
-Normal integration:
+The closed Physical branch was integrated through the repository-protected path:
 
 ```text
 feature/physical-model
-→ protected pull request
-→ main
+→ PR #15
+→ main e6f191bad947388a44defe2c15f4939345084f58
+→ former head branch auto-deleted
 ```
 
-Before merge, compare closure branch to current main, verify scope/coherence, PR changed files and active protection/check state. After merge, verify remote main contains PM-11/12/13/14 current truth and record the real merge SHA from GitHub.
+Remote GitHub state verified the PR as merged and `main` at the merge commit. PM-14 is intentionally preserved as historical evidence of the branch state **before** this external integration action.
 
 ## 14. Current resume summary
 
 ```text
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
+
+PROTECTED-MAIN INTEGRATION
+COMPLETE VIA PR #15
+
+MAIN
+e6f191bad947388a44defe2c15f4939345084f58
+
+FORMER BRANCH
+feature/physical-model MERGED / AUTO-DELETED
 
 SELECTED CANONICAL PRIMARY
 PostgreSQL 18.4
@@ -444,7 +454,7 @@ PM-13
 QA PASS
 
 PM-14
-BRANCH CLOSURE COMPLETE
+BRANCH CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
 
 DIRECT HG PASS
 0
@@ -456,9 +466,8 @@ BACKEND
 NOT STARTED / DEFERRED
 
 DEV-v0
-NOT STARTED / SEPARATE AFTER PHYSICAL INTEGRATION
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 
 NEXT
-protected-main PR integration
-then Development Profile v0
+Development Profile v0
 ```
