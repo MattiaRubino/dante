@@ -2,13 +2,13 @@
 
 Use [`../PROJECT-STATUS.md`](../PROJECT-STATUS.md) for the current project state and [`../ROADMAP.md`](../ROADMAP.md) for current sequencing. This directory preserves durable V1 product definitions and earlier planning context.
 
-**Current product/app name:** **Dante**. `LifeOS` is the previous working/project name; historical evidence and existing technical/repository identifiers may retain it for the same product lineage.
+**Current product/app name:** **DANTE**. `LifeOS` is the previous working/project name; historical evidence and existing technical/repository identifiers may retain it for the same product lineage.
 
 For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](../domain/README.md) and [`../domain/language-map.md`](../domain/language-map.md). Product documents in this directory remain authoritative for accepted V1 product behavior where they have not been explicitly superseded, but older product terminology does not override a later accepted Domain Atlas definition.
 
 ## Foundation
 
-- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Accepted** current living definition of Dante product identity and North Star; use this for high-level product meaning and direction
+- [`product-identity-and-north-star.md`](product-identity-and-north-star.md) — **Accepted** current living definition of DANTE product identity and North Star; use this for high-level product meaning and direction
 - [`vision.md`](vision.md) — earlier product vision; remains useful context where not superseded by the accepted North Star
 - [`scope.md`](scope.md) — early scope foundation
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
