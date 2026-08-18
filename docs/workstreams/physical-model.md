@@ -1,18 +1,20 @@
 # Workstream — Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-03 STATIC PREFLIGHT COMPLETE / PM-04 NOT STARTED**
+- Status: **AUTHORIZED / IN PROGRESS — PM-04A EVIDENCE SUFFICIENCY COMPLETE / PM-04B NOT ADMITTED / PM-05 NEXT**
 - Branch: `feature/physical-model`
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
 - Domain: **CLOSED / INTEGRATED**
 - Logical: **CLOSED / INTEGRATED / WL-H01..WL-H12 ACTIVE**
 - PM-00: **QA PASS**
-- PM-01: **PASS-CONDITIONAL / benchmark-host HOLD**
+- PM-01: **PASS-CONDITIONAL / benchmark-host HOLD-DORMANT**
 - PM-02: **PRIMARY MAPPING DESIGN COMPLETE**
 - PM-03: **STATIC SEMANTIC HARD-GATE PREFLIGHT COMPLETE / 0 STATIC REJECTS**
+- PM-04A: **EXTERNAL EVIDENCE SUFFICIENCY COMPLETE / 48 OF 48 CELLS CLASSIFIED / 0 EXECUTION-WORTHY GAPS**
+- PM-04B: **NOT ADMITTED / FIXTURE-HARNESS NOT STARTED**
 - Executed hard gates: **NOT RUN**
-- Database/harness: **NOT STARTED**
-- Benchmark/performance: **NOT STARTED**
+- Database execution: **NOT STARTED**
+- Benchmark/performance execution: **NOT STARTED**
 - Primary persistence selected: **NONE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
@@ -29,9 +31,10 @@ technology discovery
 candidate admission
 candidate-native physical mapping
 semantic hard-gate pressure
-common fixture/oracle/harness
-correctness/destructive execution
-performance/resource qualification
+external-evidence sufficiency
+conditional direct proof only when decision-relevant
+correctness/destructive evidence qualification
+performance/resource evidence where relevant
 recovery/evolution evidence
 secondary-lane justification
 scoring/sensitivity
@@ -66,14 +69,15 @@ Before any further Physical write/action:
 16. read PM-01 landscape;
 17. read PM-02 overview + all four mapping records;
 18. read PM-03 overview + all four candidate preflight records;
-19. read Phase-10 benchmark specification, scenario corpus and register;
-20. when semantic mapping/execution is involved, read complete Whole-Logical authority and relevant decision-register continuations;
-21. verify current external product/version facts from official primary sources where material;
-22. issue an exact PRE-SCOPE/write gate before any new repository write.
+19. read PM-04A overview + all four candidate evidence records;
+20. read Phase-10 benchmark specification, scenario corpus and register;
+21. when semantic mapping/evidence is involved, read complete Whole-Logical authority and relevant decision-register continuations;
+22. verify current external product/version facts from official primary sources where material;
+23. issue an exact PRE-SCOPE/write gate before any new repository write.
 
 Conversation history is secondary to repository truth.
 
-## 3. Absolute semantic guardrails
+## 3. Absolute semantic/evidence guardrails
 
 ```text
 SEMANTIC OWNER != IMPLEMENTATION MECHANISM
@@ -81,6 +85,8 @@ DOMAIN TERM != ENGINE
 ADDRESSABILITY != DOMAIN IDENTITY
 STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
 STATIC PREFLIGHT != EXECUTED HARD-GATE PASS
+EXTERNAL EVIDENCE != DIRECT LIFEOS RUN
+PUBLIC/VENDOR BENCHMARK != LIFEOS BENCHMARK
 PREFERRED != SELECTED
 USED ELSEWHERE != RIGHT FOR LIFEOS
 ```
@@ -139,7 +145,7 @@ WL-H11 consequential AuthZ provenance
 WL-H12 non-interference/inference leakage
 ```
 
-A candidate failure is evidence against the candidate, not permission to weaken these.
+A candidate weakness is evidence against the candidate, not permission to weaken these.
 
 ## 5. Cost / technology policy
 
@@ -162,7 +168,7 @@ Decision order:
 2. consistency/integrity/security/privacy/recovery;
 3. LifeOS capability/workload fit;
 4. maturity/operability/Python tooling;
-5. measured performance/resource efficiency;
+5. performance/resource efficiency where decision-relevant;
 6. TCO/deployment requirements;
 7. lock-in/exit/migration risk.
 
@@ -194,13 +200,14 @@ STATUS
 QA PASS
 ```
 
-PM-00 introduced Physical methodology/evidence docs and propagated current Physical state without starting mapping/schema/backend.
-
 ## 7. PM-01 — technology discovery / candidate freeze
 
 ```text
 RESEARCH PRE-SCOPE
 622767d5435d59766459bb25a57e5afeb7dd7336
+
+TERMINAL PM-01 HEAD
+fac3b5baf1813f886c4773594e6234810e5ba8c6
 
 STATUS
 PASS-CONDITIONAL
@@ -212,16 +219,12 @@ APPLICATION ARCHITECTURE RECON
 PASS
 
 BENCHMARK HOST
-HOLD
+HOLD / now DORMANT until direct execution admission
 ```
 
 Evidence:
 
 `docs/physical-model/pm-01-technology-landscape-v1.md`
-
-PM-01 scanned relational, semantic/typed, bitemporal, multimodel, distributed SQL, graph, document, EAV/immutable, local/embedded, search/vector and adjacent application architectures.
-
-Application reconnaissance included public architecture evidence from Notion, Linear, Anytype/any-sync, AppFlowy, Immich, Home Assistant and Cal.com as supporting evidence only.
 
 ### PM-01 admitted primary subjects
 
@@ -274,7 +277,7 @@ PRE-SCOPE
 fac3b5baf1813f886c4773594e6234810e5ba8c6
 
 TERMINAL PM-02 HEAD
- db127af8c759aacf69b43d0f5a5444b04fd43759
+db127af8c759aacf69b43d0f5a5444b04fd43759
 
 STATUS
 DESIGN COMPLETE
@@ -321,13 +324,14 @@ SCHEMAFULL owner tables
 + narrow consistency guards for write-skew-sensitive invariants
 ```
 
-All mappings remained `HG-01..HG-12 NOT RUN / NOT SELECTED` at PM-02 closure.
-
 ## 9. PM-03 — semantic hard-gate static preflight
 
 ```text
 PRE-SCOPE
- db127af8c759aacf69b43d0f5a5444b04fd43759
+db127af8c759aacf69b43d0f5a5444b04fd43759
+
+TERMINAL PM-03 HEAD
+0e4212909bd94de076c9074302a79296d474e53f
 
 STATUS
 STATIC PREFLIGHT COMPLETE
@@ -335,7 +339,7 @@ STATIC PREFLIGHT COMPLETE
 STATIC CANDIDATE REJECTS
 0
 
-EXECUTED HARD GATES
+DIRECT EXECUTED HARD GATES
 NOT RUN
 ```
 
@@ -366,67 +370,121 @@ docs/physical-model/preflight/surrealdb-3.2.3-v1.md
 | HG-11 | HOLD | HOLD | HOLD | HOLD |
 | HG-12 | HOLD | HOLD | HOLD | HOLD |
 
-### PM-03 candidate interpretation
+## 10. PM-04A — external evidence sufficiency
 
 ```text
-P0 PostgreSQL
-9 PASS-CONDITIONAL / 3 HOLD / 0 REJECT
-ADVANCE
-candidate-specific static blocker: none
+PRE-SCOPE
+0e4212909bd94de076c9074302a79296d474e53f
 
-P1 TypeDB
-7 PASS-CONDITIONAL / 5 HOLD / 0 REJECT
-ADVANCE WITH CONCURRENCY HOLD
-candidate-specific: HG-04/HG-05
+STATUS
+CONTENT COMPLETE / REMOTE QA PENDING AT HANDOFF WRITE TIME
 
-P2 XTDB
-7 PASS-CONDITIONAL / 5 HOLD / 0 REJECT
-ADVANCE WITH REFERENCE/CONSTRAINT HOLD
-candidate-specific: HG-02/HG-03
-production topology HOLD remains
+48 / 48 candidate × HG cells
+CLASSIFIED
 
-P3 SurrealDB
-7 PASS-CONDITIONAL / 5 HOLD / 0 REJECT
-ADVANCE WITH CONCURRENCY HOLD
-candidate-specific: HG-04/HG-05
+EXECUTION-WORTHY gaps
+0
+
+FULL LOCAL BENCHMARK
+NOT ADMITTED
+
+TARGETED LOCAL PROOFS
+0 ADMITTED
+
+PM-04B
+NOT ADMITTED
+
+BENCHMARK HOST
+HOLD / DORMANT
 ```
 
-Counts are not scores.
-
-### Generic execution HOLDs for all candidates
+Evidence:
 
 ```text
-HG-09
-old-backup restore / redaction anti-resurrection not executed
-
-HG-11
-V1->V2 evolution not executed
-
-HG-12
-backup/restore/recovery evidence not executed
+docs/physical-model/pm-04-external-evidence-sufficiency-v1.md
+docs/physical-model/evidence/postgresql-18.4-v1.md
+docs/physical-model/evidence/typedb-3.12.3-v1.md
+docs/physical-model/evidence/xtdb-2.1.0-v1.md
+docs/physical-model/evidence/surrealdb-3.2.3-v1.md
 ```
 
-These HOLDs are mandatory honesty, not negative candidate judgments.
+### PM-04A evidence classes
 
-## 10. PM-03 critical findings
+```text
+EXT-SUFFICIENT
+MAP-SUFFICIENT
+KNOWN-STRUCTURAL-COST
+DEFER-FINALIST
+RESIDUAL-GAP
+EXECUTION-WORTHY
+```
 
-### PostgreSQL
+Direct execution remains a separate ledger. No external evidence class is a direct HG PASS.
 
-No static semantic blocker. Main future risk is keeping heterogeneous address anchors purely technical and choosing transaction strength that actually closes each consequential race.
+### PM-04A key findings
 
-### TypeDB
+#### PostgreSQL
 
-Relation/role/cardinality mapping is structurally strongest. Snapshot isolation is the central risk. PM-02's narrow `consistency-guard` must prove write-skew closure on the exact subject.
+```text
+CURRENT COMPARATIVE LEADER
+confidence HIGH engine fundamentals / MEDIUM-HIGH LifeOS mapping
+0 execution-worthy gaps
+```
 
-### XTDB
+Strong external evidence exists for FK/constraint primitives, true Serializable transactions, backup/PITR and controlled upgrades. Remaining LifeOS pressure is mapping discipline, disclosure/system policy and finalist recovery/evolution rehearsal.
 
-Native bitemporal/serialized-DML model is structurally strong for chronology and concurrency. Main risk is reference/cardinality integrity without conventional FK/cardinality constraints. Complete `ASSERT` mutation discipline must be proved, not assumed.
+#### TypeDB
 
-### SurrealDB
+```text
+PRINCIPAL SEMANTIC CHALLENGER
+confidence MEDIUM-HIGH
+0 execution-worthy gaps
+```
 
-Multimodel mapping survives only because canonical tables remain SCHEMAFULL and n-ary/material relations are not forced into binary graph edges. Snapshot-isolation guard proof remains mandatory.
+Relation/role/n-ary semantics remain strongest. Snapshot-isolation uncertainty is narrowed: documented same-data write conflict makes the narrow shared consistency-guard pattern conditionally credible. Correct guard coverage/scoping remains a design/operability cost, not an unknown primitive requiring a toy local test now.
 
-## 11. Executed proof remains zero
+#### XTDB
+
+```text
+DISTINCTIVE TEMPORAL/BITEMPORAL CHALLENGER
+confidence MEDIUM-HIGH temporal / MEDIUM overall primary fit
+0 execution-worthy gaps
+PRODUCTION TOPOLOGY HOLD remains
+```
+
+Serialized/serializable DML + ASSERT strongly supports concurrency semantics. No native FK and no general uniqueness beyond `_id` are documented structural costs; a local test cannot remove the permanent requirement for manual integrity discipline.
+
+#### SurrealDB
+
+```text
+CREDIBLE MULTIMODEL CHALLENGER
+confidence MEDIUM
+0 execution-worthy gaps
+```
+
+SCHEMAFULL/typed relation capability and write-write conflict semantics are documented. The consistency guard is conditionally credible; explicit long-lived material history still remains necessary. No unique primary advantage has yet displaced the first three.
+
+## 11. Non-scored comparative ordering after PM-04A
+
+Not PM-09 score, `PREFERRED` or `SELECTED`:
+
+```text
+1 PostgreSQL
+2 TypeDB
+3 XTDB
+4 SurrealDB
+```
+
+Rationale:
+
+- PostgreSQL currently has the lowest aggregate primary-store structural risk and mature integrity/concurrency/recovery tooling;
+- TypeDB has the best relation-semantic fit but additional concurrency/operations discipline;
+- XTDB has the strongest native chronology proposition but meaningful manual integrity/topology costs;
+- SurrealDB has credible multimodel consolidation but not yet a primary advantage strong enough to offset comparative risks.
+
+The ordering remains reopenable by material later evidence.
+
+## 12. Direct execution remains zero
 
 ```text
 DATABASE INSTANCE
@@ -454,56 +512,59 @@ WEIGHTED SCORES
 NOT RUN
 ```
 
-Do not promote PM-03 preflight results to executed HG PASS.
+Do not promote PM-04A sufficiency classifications to direct HG PASS.
 
-## 12. First executable correctness pressure pack
+## 13. Residual/finalist obligations
 
-Shared core:
+### All candidates
 
 ```text
-SC-001 same-base consequential race
-SC-003 atomic multi-owner mutation
-SC-009 stale/offline divergence
-SC-010 correction without false rewrite
-SC-012 NativeRef non-reuse
-SC-015 typed n-ary relation fidelity
-SC-016 selective disclosure without source leakage
-SC-022/023 DST gap/fold
-SC-024 occurrence override
-SC-030 V1->V2 evolution
-SC-011/031 old-backup restore + anti-resurrection
+HG-08 / WL-H12
+system-level non-interference proof may remain for finalist/downstream design
+
+HG-09
+old-backup anti-resurrection = DEFER-FINALIST
+
+HG-11
+actual LifeOS V1 -> V2 semantic migration = DEFER-FINALIST
+
+HG-12
+semantic post-restore verification = DEFER-FINALIST
 ```
 
-Candidate-specific:
+### Candidate-specific
 
 ```text
 PostgreSQL
-wrong-family/dangling anchor
-Read-Committed negative control
-stronger transaction/locking positive control
+heterogeneous anchor complexity = mapping pressure
+reopen direct proof only on concrete leakage/unmaintainability
 
 TypeDB
-snapshot write-skew negative control
-shared consistency-guard positive control
+consistency-guard coverage = known design/operability cost
+reopen targeted proof only if ranking becomes dependent on it
 
 XTDB
-missing/wrong-family reference
-cardinality/uniqueness race
-incomplete ASSERT negative control
-complex non-interactive governed mutation
+manual RI/cardinality = known structural cost
+production topology HOLD remains
 
 SurrealDB
-snapshot write-skew negative control
-shared consistency-guard positive control
-record-union/reference rejection
-binary relation vs n-ary Agreement
+consistency-guard coverage = known design/operability cost
+explicit material history remains required
+reopen targeted proof only if ranking becomes dependent on it
 ```
 
-## 13. Benchmark-host HOLD
+## 14. Benchmark-host posture
 
-Before reproducible executable evidence, the actual execution host must be verified and frozen.
+```text
+BENCHMARK HOST
+HOLD / DORMANT
+```
 
-Required fields:
+It is **not a blocker** for PM-04A or evidence-only PM-05 work.
+
+It becomes an active blocking prerequisite before any separately admitted reproducible direct execution claim.
+
+Required fields then remain:
 
 ```text
 host identity
@@ -520,20 +581,19 @@ background load policy
 clock/timezone
 ```
 
-Do not infer this from remembered conversation hardware.
+Never infer this from remembered conversation hardware.
 
-The host HOLD does not invalidate PM-01/02/03 documentation evidence, but it blocks truthful executable benchmark claims.
-
-## 14. Fixed Physical roadmap
+## 15. Fixed Physical roadmap
 
 ```text
 PM-00  Bootstrap / authority freeze                         PASS
 PM-01  Technology discovery / candidate freeze             PASS-CONDITIONAL
 PM-02  Primary candidate mapping design                    COMPLETE
 PM-03  Semantic hard-gate static preflight                 COMPLETE
-PM-04  Common fixture/oracle + candidate harness           NOT STARTED
-PM-05  Correctness/destructive execution                   NOT STARTED
-PM-06  LOW/BASE/HIGH + performance                         NOT STARTED
+PM-04A External evidence sufficiency                       COMPLETE subject to current remote QA
+PM-04B Conditional fixture/oracle/harness                  NOT ADMITTED
+PM-05  Correctness/destructive evidence qualification      NEXT / NOT STARTED
+PM-06  Scale/performance evidence                           NOT STARTED
 PM-07  Recovery/evolution/failure evidence                 NOT STARTED
 PM-08  Secondary lanes where justified                     NOT STARTED
 PM-09  Scoring + sensitivity                               NOT STARTED
@@ -544,50 +604,22 @@ PM-13  Independent clean-room QA                           NOT STARTED
 PM-14  Closure / protected main integration                NOT STARTED
 ```
 
-The gates/order are fixed; evidence/content inside them is evolutionary.
+The numbered sequence is unchanged; PM-04A/04B are sub-stages inside PM-04.
 
-## 15. PM-04 boundary
+## 16. PM-05 next boundary
 
-PM-04 is the next roadmap phase, but it must not be silently conflated with production backend implementation.
+PM-05 is now an **evidence-backed correctness/destructive qualification** phase.
 
-Allowed after a fresh explicit gate and host-resolution plan:
+It must begin with a fresh explicit gate and should:
 
-```text
-common synthetic fixture generator
-semantic oracle/assertion pack
-candidate-specific benchmark-only schemas/adapters/query packs
-container/native qualification deployment files
-raw evidence manifest structure
-```
+1. map `C0..C7` / `SC-001..SC-035` to PM-04A external/mapping evidence;
+2. distinguish capability proof, mapping proof, known structural cost and direct execution;
+3. keep every unexecuted scenario exactly `NOT RUN`;
+4. identify finalist-only/direct obligations explicitly;
+5. reopen PM-04B only for a genuinely unresolved decision-relevant question;
+6. avoid local execution by default.
 
-Still forbidden:
-
-```text
-production backend schema/migrations
-FastAPI routes/DTOs
-AuthN/AuthZ production mechanism
-provider production adapters
-frontend
-main write/merge
-technology selection
-```
-
-## 16. Test/result vocabulary
-
-Use exact terms:
-
-```text
-NOT RUN
-PASS
-PASS-CONDITIONAL
-HOLD
-REJECT
-SENSITIVITY-DEPENDENT
-PREFERRED
-SELECTED — PM-11 explicit user-approved gate only
-```
-
-Tool invocation or official docs are never direct executed evidence.
+No schema/harness/database deployment is implicitly authorized by PM-05 being next.
 
 ## 17. Git/write discipline
 
@@ -619,7 +651,7 @@ After writes:
 2. verify added/modified/deleted/unexpected paths;
 3. require `behind_by 0` unless separately authorized integration changed main;
 4. read back critical payloads remotely;
-5. record checkpoint here last;
+5. record checkpoint here last where possible;
 6. do not rewrite historical evidence to make current state look cleaner.
 
 ## 18. Current resume summary
@@ -649,7 +681,7 @@ QA PASS
 
 PM-01
 PASS-CONDITIONAL
-benchmark-host HOLD
+benchmark-host HOLD / DORMANT
 
 PM-02
 DESIGN COMPLETE
@@ -662,24 +694,29 @@ PM-03
 STATIC PREFLIGHT COMPLETE
 0 STATIC REJECTS
 
+PM-04A
+EVIDENCE SUFFICIENCY COMPLETE
+48/48 cells classified
+0 EXECUTION-WORTHY gaps
+
 P0 PostgreSQL
-ADVANCE
+CURRENT COMPARATIVE LEADER
 
 P1 TypeDB
-ADVANCE WITH CONCURRENCY HOLD
+PRINCIPAL SEMANTIC CHALLENGER
 
 P2 XTDB
-ADVANCE WITH REFERENCE/CONSTRAINT HOLD
+DISTINCTIVE TEMPORAL CHALLENGER
 production topology HOLD
 
 P3 SurrealDB
-ADVANCE WITH CONCURRENCY HOLD
+CREDIBLE MULTIMODEL CHALLENGER
 
-EXECUTED HG-01..HG-12
+PM-04B
+NOT ADMITTED
+
+DIRECT HG-01..HG-12
 NOT RUN ALL CANDIDATES
-
-BENCHMARK HOST
-HOLD
 
 DATABASE/HARNESS
 NOT STARTED
@@ -694,7 +731,8 @@ BACKEND
 NOT STARTED / DEFERRED
 
 NEXT
-PM-04 common fixture/oracle/harness after fresh gate and benchmark-host resolution plan
+PM-05 evidence-backed correctness/destructive qualification after fresh gate
+NO local execution by default
 ```
 
-The exact PM-03 final remote HEAD/checkpoint must be taken from Git after this handoff write; do not rely on a self-referential SHA embedded in its own creating commit.
+The exact PM-04A final remote HEAD/checkpoint must be taken from Git after this handoff write; do not rely on a self-referential SHA embedded in its own creating commit.
