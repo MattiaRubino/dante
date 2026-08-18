@@ -1,6 +1,6 @@
 # Workstream — Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-06+PM-07 JOINT COMPLETE / PM-08 NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-08 COMPLETE / PM-09 NEXT**
 - Branch: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
@@ -15,16 +15,20 @@
 - PM-05: **CORRECTNESS/DESTRUCTIVE EVIDENCE QUALIFICATION COMPLETE**
 - PM-06: **SCALE/PERFORMANCE EVIDENCE QUALIFICATION COMPLETE / DIRECT RUN NOT EXECUTED**
 - PM-07: **RECOVERY/EVOLUTION/FAILURE EVIDENCE QUALIFICATION COMPLETE / DIRECT RUN NOT EXECUTED**
+- PM-08: **SECONDARY/SPECIALIST LANE QUALIFICATION COMPLETE / NO DIRECT RUN**
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
-- Deferred challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
+- Deferred primary challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
 - Current comparative leader: **PostgreSQL 18.4**
+- Initial extra server specialists admitted: **0**
+- pgvector 0.8.6: **ADMIT-CONDITIONAL**
+- SQLite 3.53.4: **ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE / NOT CANONICAL**
 - Preferred: **NONE**
 - Selected: **NONE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
 ## 1. Purpose
 
-Terminal save-game for the active Physical Model workstream. A new chat/agent must be able to resume from repository truth without needing conversation reconstruction.
+Terminal save-game for the active Physical Model workstream. A new chat/agent must be able to resume from repository truth without reconstructing conversation history.
 
 The workstream owns technology discovery, candidate-native mapping, Physical evidence qualification, specialist-lane decisions, scoring/sensitivity, recommendation, explicit selection, accepted Physical Model, clean-room QA and protected-main integration.
 
@@ -55,10 +59,11 @@ Before any further Physical write/action:
 19. read PM-04A overview + all four evidence records;
 20. read PM-05 overview + all four candidate qualification records;
 21. read PM-06/07 joint overview + PM-06 + PM-07 + two finalist qualification records;
-22. read Phase-10 benchmark specification/scenario corpus/register where scenario authority matters;
-23. read complete Whole-Logical authority and relevant decision-register continuations when semantics are involved;
-24. verify current external product/version/edition/topology facts from primary sources where material;
-25. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
+22. read PM-08 overview + graph/search-vector/local-offline/specialist-trigger records;
+23. read Phase-10 benchmark specification/scenario corpus/register where scenario authority matters;
+24. read complete Whole-Logical authority and relevant decision-register continuations when semantics are involved;
+25. verify current external product/version/edition/topology facts from primary sources where material;
+26. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
 
 Conversation memory is secondary to repository truth.
 
@@ -70,10 +75,13 @@ DOMAIN TERM != ENGINE
 ADDRESSABILITY != DOMAIN IDENTITY
 STORAGE TOKEN != MaterialStateRef
 CANONICAL != PROVIDER / DERIVED / SECURITY STATE
+SECONDARY != CANONICAL
+LOCAL != CANONICAL
 MISSING != FALSE
 EXTERNAL EVIDENCE != DIRECT LIFEOS RUN
 PUBLIC/VENDOR BENCHMARK != LIFEOS BENCHMARK
 EVIDENCE-QUALIFIED != EXECUTED HARD-GATE PASS
+ADMIT != SELECTED
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 DEFER != REJECT
@@ -169,13 +177,16 @@ PM-04A terminal
 PM-05 terminal
 9a53c2577e8e25de6de63a830e9bab036521f040
 
-PM-06/07 PRE-SCOPE
-9a53c2577e8e25de6de63a830e9bab036521f040
+PM-06/07 terminal
+1e19793fdb9f51ba510f00ac4c927a6907e28c4b
+
+PM-08 PRE-SCOPE
+1e19793fdb9f51ba510f00ac4c927a6907e28c4b
 ```
 
-The final PM-06/07 HEAD must be taken from remote Git after the current write and is not guessed inside this creating payload.
+The PM-08 terminal SHA must be taken from remote Git after this write scope and is not guessed inside its own creating payload.
 
-## 6. Candidate history
+## 6. Primary candidate history
 
 PM-01 admitted:
 
@@ -206,21 +217,9 @@ SurrealDB Community 3.2.3
 
 ## 7. PM-06/07 Joint Finalist Qualification
 
-### Operating decision
-
-PM-06 and PM-07 remain separate result layers but were executed as one evidence campaign to avoid duplicate research and unnecessary host work.
-
-```text
-PM-06
-scale / performance / resource / saturation evidence
-
-PM-07
-backup / restore / recovery / evolution / failure / topology / operations
-```
-
 No local database execution was admitted.
 
-### PM-06 result
+### PM-06
 
 ```text
 PostgreSQL
@@ -238,17 +237,7 @@ performance-based reversal signal
 NONE
 ```
 
-TypeDB conditions carried forward:
-
-- each query currently single-threaded;
-- host resources are exploited through concurrent queries/transactions;
-- memory/index sizing matters;
-- CE is single-node;
-- horizontal scaling belongs to Cloud/Enterprise.
-
-No accepted LifeOS SLA currently makes a laptop throughput comparison decision-relevant.
-
-### PM-07 result
+### PM-07
 
 ```text
 PostgreSQL
@@ -259,11 +248,7 @@ RECOVERY/EVOLUTION VIABLE
 HIGHER SELF-HOSTED OPERATIONS COST
 ```
 
-PostgreSQL evidence includes WAL/PITR, full/incremental base backup, physical/logical replication, synchronous/asynchronous standby options, failover primitives, `pg_upgrade`, dump/restore and logical-replication migration paths.
-
-TypeDB CE evidence includes export/import cross-version migration and compatible data-directory upgrades, but self-hosted backup is user-owned, documented snapshot/export paths are non-incremental, and CE is single-node. Cluster/HA/horizontal read scaling belongs to Cloud/Enterprise rather than the frozen CE subject.
-
-### Comparative result
+Comparative result:
 
 ```text
 POSTGRESQL
@@ -274,11 +259,99 @@ SEMANTIC ADVANTAGE PRESERVED
 PRINCIPAL CHALLENGER
 ```
 
-The remaining primary decision is whether TypeDB's superior semantic relation/role/n-ary model is valuable enough to outweigh its consistency-guard, backup-operations and CE-topology burden versus PostgreSQL.
+The primary decision remains open.
 
-No preference or selection is inferred yet.
+## 8. PM-08 Secondary / Specialist Qualification
 
-## 8. Direct execution truth
+Status: **COMPLETE — EVIDENCE-FIRST / NO DIRECT EXECUTION**.
+
+### Graph
+
+```text
+G0 primary-store baseline
+ADVANCE
+
+Neo4j
+DEFER / NOT REJECTED
+NO INITIAL GRAPH SPECIALIST
+```
+
+No accepted graph workload currently justifies a second graph persistence/service boundary.
+
+Reopen only on decision-relevant graph traversal/recommendation/pathfinding/analytics or material primary-store graph isolation/performance pressure.
+
+### Search / vector
+
+```text
+PostgreSQL native FTS
+ADVANCE as P0 lexical baseline
+
+pgvector 0.8.6
+ADMIT-CONDITIONAL
+PostgreSQL selected + accepted vector retrieval requirement
+
+Qdrant 1.18.2
+DEFER / NOT REJECTED / TRIGGER ONLY
+
+OpenSearch 3.7
+DEFER / NOT REJECTED / TRIGGER ONLY
+```
+
+Embedding/vector state is derived state. Real scope/Visibility filtering remains mandatory before exposing ranked results.
+
+TypeDB retains its semantic advantage but is more likely to require a separate search/vector service once those capabilities are accepted. That probable extra server topology is carried into PM-09.
+
+### Local / offline
+
+```text
+SQLite 3.53.4
+ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
+CANONICAL AUTHORITY NO
+EXACT CLIENT ADAPTER DEFER
+```
+
+Local state may improve offline/client behavior but never becomes competing canonical truth or a default last-write-wins authority.
+
+### Object/blob
+
+```text
+NO ENGINE ADMITTED NOW
+DEFER / TRIGGER ONLY
+```
+
+Reopen only when concrete object type/size/volume/retention/security/distribution/durability requirements exist.
+
+### Initial stack pressure
+
+If PostgreSQL wins:
+
+```text
+PostgreSQL 18.4
+canonical primary
++ native FTS
++ pgvector when required
+
+SQLite 3.53.4
+bounded local/offline when required
+
+INITIAL EXTRA SERVER ENGINES
+0
+```
+
+If TypeDB wins:
+
+```text
+TypeDB CE 3.12.3
+canonical primary
++ likely external search/vector specialist when required
+
+SQLite 3.53.4
+bounded local/offline when required
+```
+
+No `PREFERRED` or `SELECTED` status is inferred from this architecture pressure.
+
+## 9. Direct execution truth
 
 ```text
 DATABASE INSTANCE
@@ -305,64 +378,46 @@ NOT RUN
 FAILURE INJECTION
 NOT RUN
 
+GRAPH / SEARCH / VECTOR / SQLITE BENCHMARKS
+NOT RUN
+
 BENCHMARK HOST
 HOLD / DORMANT
 ```
 
 Do not convert evidence qualification to direct PASS.
 
-## 9. Post-selection implementation validation obligations
+## 10. Validation obligations / reopen triggers
 
-The following are deferred from pre-selection comparison because they are selected-implementation proofs, not because they are optional:
+Post-selection implementation validation remains mandatory where applicable:
 
 ```text
-SC-011
-redaction + old-backup anti-resurrection
-
-SC-030
-actual LifeOS mapping V1→V2 with historical-reference continuity
-
-SC-031
-destructive restore + LifeOS semantic verification
-
-SC-032
-capacity/backpressure truthful degradation
+SC-011 redaction + old-backup anti-resurrection
+SC-030 actual LifeOS V1→V2 mapping evolution
+SC-031 destructive restore + semantic verification
+SC-032 capacity/backpressure truthful degradation
+WL-H12 system-level non-interference
+SC-017/018 search/non-interference
+SC-019 filtered vector recall when active
+SC-020/021 projection freshness/deletion propagation when active
+local/offline sync/reconciliation validation when active
 ```
 
 `SC-013` deep-history scale reopens before selection only if PM-09 becomes materially performance-sensitive.
 
-Also preserve WL-H12 system-level non-interference as downstream/finalist system proof where applicable.
+`SC-035` reopens only if a graph specialist is later admitted.
 
-## 10. PM-08 — next boundary
-
-PM-08 evaluates secondary/specialist technologies. It does **not** reopen the primary candidate universe by default.
-
-Read-only-first questions:
+## 11. PM-08 evidence paths
 
 ```text
-GRAPH
-G0 primary-store baseline vs specialist graph projection
-Neo4j only if traversal/read value materially earns another engine
-consider current credible alternatives if they offer a distinct LifeOS advantage
-
-SEARCH/VECTOR
-primary-native structured/lexical baseline
-pgvector when PostgreSQL remains applicable
-Qdrant/OpenSearch or alternatives only on a concrete specialist trigger
-
-LOCAL/OFFLINE
-SQLite bounded local/client state where justified
-never silent competing canonical truth
-
-OBJECT/BLOB STORAGE OR OTHER SPECIALISTS
-only if a concrete capability cannot be responsibly handled by primary/bounded existing mechanisms
+docs/physical-model/pm-08-secondary-lanes-v1.md
+docs/physical-model/secondary/graph-lane-v1.md
+docs/physical-model/secondary/search-vector-lane-v1.md
+docs/physical-model/secondary/local-offline-lane-v1.md
+docs/physical-model/secondary/specialist-trigger-register-v1.md
 ```
 
-PM-08 must evaluate correctness, freshness, deletion/redaction propagation, visibility/non-interference, rebuildability, operations, cost and exit risk.
-
-No infrastructure zoo. Every additional service must independently justify itself.
-
-## 11. Roadmap
+## 12. Roadmap
 
 ```text
 PM-00  PASS
@@ -374,8 +429,8 @@ PM-04B NOT ADMITTED
 PM-05  COMPLETE
 PM-06  COMPLETE — evidence qualification
 PM-07  COMPLETE — evidence qualification
-PM-08  NEXT
-PM-09  NOT STARTED
+PM-08  COMPLETE — specialist qualification
+PM-09  NEXT
 PM-10  NOT STARTED
 PM-11  NOT STARTED
 PM-12  NOT STARTED
@@ -383,7 +438,7 @@ PM-13  NOT STARTED
 PM-14  NOT STARTED
 ```
 
-## 12. Write discipline
+## 13. Write discipline
 
 For every next write:
 
@@ -406,7 +461,7 @@ exact allow-list
 
 After write: compare PRE-SCOPE→HEAD, verify mutation/path set, verify branch-vs-main, remotely read back critical claims, then update/save handoff last where practical.
 
-## 13. Current resume summary
+## 14. Current resume summary
 
 ```text
 ACTIVE WORKSTREAM
@@ -428,7 +483,7 @@ TypeDB CE 3.12.3
 CURRENT LEADER
 PostgreSQL 18.4
 
-DEFERRED / NOT REJECTED
+DEFERRED / NOT REJECTED PRIMARY
 XTDB 2.1.0
 SurrealDB Community 3.2.3
 
@@ -437,6 +492,24 @@ COMPLETE / NO DIRECT PERFORMANCE RUN
 
 PM-07
 COMPLETE / NO DIRECT DESTRUCTIVE RUN
+
+PM-08
+COMPLETE / NO DIRECT SPECIALIST RUN
+
+INITIAL GRAPH SPECIALIST
+NONE
+
+POSTGRESQL SEARCH PATH
+native FTS + pgvector conditional
+
+LOCAL/OFFLINE
+SQLite 3.53.4 admitted bounded candidate / not canonical
+
+DEFERRED/TRIGGER-ONLY SPECIALISTS
+Neo4j
+Qdrant 1.18.2
+OpenSearch 3.7
+object/blob TBD
 
 LOCAL TESTS
 0 ADMITTED
@@ -451,7 +524,8 @@ BACKEND
 NOT STARTED / DEFERRED
 
 NEXT
-PM-08 secondary/specialist lanes
-read-only first
-fresh gate before write
+PM-09 scoring + sensitivity
+fresh exact gate before write
 ```
+
+The exact PM-08 final remote HEAD must be taken from Git after this handoff write.
