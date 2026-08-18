@@ -45,9 +45,9 @@ Parallel workstreams should avoid shared-file churn.
 Current ownership:
 
 - Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**. The former branch `chore/pre-physical-coherence` is merged and auto-deleted; current accepted Pre-Physical truth now lives on `main`.
-- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after a separately authorized/accepted Physical result and a fresh gate.
-- Physical Model: **ready for separate authorization but not started / not authorized**; future work requires its own branch/gate from current `main` and explicit user authorization.
+- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**. The former branch `chore/pre-physical-coherence` is merged and auto-deleted; current accepted Pre-Physical truth lives on `main`.
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** on `feature/physical-model`; owns `docs/physical-model/**`, `docs/workstreams/physical-model.md` and later explicitly gated Physical benchmark/mapping/harness/evidence paths.
+- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after a separately accepted Physical result and a fresh gate.
 - Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
 - Logical Model: **closed**; historical branch does not reopen semantics.
 
@@ -71,6 +71,8 @@ Before changes:
 12. inspect relevant implementation/tests before assuming something is missing;
 13. check whether the requested decision already exists.
 
+For the active Physical workstream, also read the complete `docs/physical-model/**` bootstrap set plus all three Phase-10 benchmark documents before proposing mapping, harness or selection work.
+
 Do not start from an old branch merely because it contains a familiar file.
 
 ## 5. During-work protocol
@@ -87,6 +89,12 @@ Do not start from an old branch merely because it contains a familiar file.
 - Do not invent required CI/status checks before the real workflow/check context exists and has been validated.
 - Do not report an unexecuted benchmark tier/test as verified evidence.
 - Do not promote a materially consequential AI behavior change without the applicable versioned/reproducible evaluation required by the current Phase 6 contract.
+- For version-sensitive Physical capability claims, use current official primary documentation and pin product + version + edition + deployment mode.
+- A marketing/official capability claim is not direct execution evidence; distinguish the two.
+- Missing/contradictory Physical evidence becomes `HOLD`, not assumption.
+- A semantic hard-gate failure cannot be compensated by performance.
+- `PREFERRED != SELECTED`; Physical selection requires a separate explicit PM-11 gate.
+- Benchmark-only schemas/harnesses are not production backend code and may be written only inside later exact Physical gates.
 
 ### Current documentation rule
 
@@ -128,7 +136,35 @@ Repository settings/rulesets are operational state, not documentation state. A d
 
 Current navigation should point directly to current truth rather than requiring agents to infer authority from historical files.
 
-## 8. Pre-merge coherence gate
+## 8. Physical evidence/status semantics
+
+Use exact result words:
+
+```text
+NOT RUN
+PASS
+PASS-CONDITIONAL
+HOLD
+REJECT
+SENSITIVITY-DEPENDENT
+PREFERRED
+SELECTED — only after explicit PM-11 approval
+```
+
+Additional Physical evidence rules:
+
+```text
+nominal benchmark tier != executed dataset
+unexecuted HIGH != VERIFIED-RUN
+official documentation claim != benchmark execution
+brand != benchmark subject
+product + version + edition + deployment = benchmark subject
+raw evidence before summary
+```
+
+Physical benchmark raw evidence must be retained or durably referenced with hashes/reproduction metadata. Ephemeral CI artifacts alone do not establish closure.
+
+## 9. Pre-merge coherence gate
 
 Before merge:
 
@@ -145,9 +181,11 @@ Before merge:
 11. verify branch-specific final closure/evidence activation conditions are satisfied;
 12. merge through PR only after semantic/documentation coherence.
 
+For Physical closure, also verify candidate selection was explicitly authorized, all applicable hard-gate evidence is traceable, and benchmark evidence was not fabricated or mislabeled.
+
 A clean Git merge is not enough.
 
-## 9. After-merge protocol
+## 10. After-merge protocol
 
 - verify `main` contains intended final versions;
 - verify the merge commit and branch relation remotely;
@@ -159,7 +197,7 @@ A clean Git merge is not enough.
 
 Historical files need not remain in the current working tree merely to preserve history if Git/ADR/evidence already retains the useful knowledge and deletion is explicitly gated.
 
-## 10. Handoff to another AI/chat
+## 11. Handoff to another AI/chat
 
 The outgoing workstream records:
 
@@ -173,9 +211,19 @@ The outgoing workstream records:
 - approved PRE-SCOPE/write state when a gate is in flight;
 - failed/no-op tool operations that affect continuation.
 
+For Physical work it must additionally record:
+
+- exact benchmark subject versions/editions/deployment modes once frozen;
+- current mapping revision;
+- current hard-gate state;
+- executed scenario/tier state;
+- evidence locations/hashes;
+- current recommendation/selection state;
+- unresolved HOLD items.
+
 If critical continuation state exists only in conversation, the handoff is incomplete.
 
-## 11. Repository coherence baseline
+## 12. Repository coherence baseline
 
 The Pre-Physical workstream originally started from:
 
@@ -194,11 +242,23 @@ At that base:
 - Backend Foundation was not started;
 - Physical Model was not started/authorized.
 
-The Pre-Physical workstream then completed Phase 0–12 plus the independent total audit and exact final activation QA, and was integrated through protected PR #13. Post-merge verification established `main @ 74593ae283ce5a1d22335502480ee3fa54be0436` as the integrated Pre-Physical checkpoint with the branch tree preserved exactly. Future contributors must re-check current refs rather than treating either dated SHA as permanently current `main`.
+The Pre-Physical workstream then completed Phase 0–12 plus the independent total audit and exact final activation QA, integrated through protected PR #13, and received post-merge current-truth alignment through PR #14.
 
-## 12. Current stage boundary — Pre-Physical closed and integrated
+The separately authorized Physical workstream starts from:
 
-Current accepted state:
+```text
+main
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+branch
+feature/physical-model
+```
+
+Future contributors must re-check current refs rather than treating dated SHAs as permanently current `main`.
+
+## 13. Current stage boundary — Physical authorized
+
+Current accepted/unmerged bounded state:
 
 ```text
 DOMAIN
@@ -207,42 +267,37 @@ CLOSED / unchanged
 LOGICAL
 CLOSED / unchanged
 
-PHASE 0–11
-PASS
-
-PHASE 12
-QA PASS / CLOSED
-
-INDEPENDENT TOTAL AUDIT
-PASS
-
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+INTEGRATED / POST-MERGE VERIFIED
 
 PHYSICAL READINESS
 ESTABLISHED
 
 PHYSICAL MODEL
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+branch feature/physical-model
+base 3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+PRIMARY MAPPING
+NOT STARTED
+
+BENCHMARK EXECUTION
+NOT STARTED
+
+TECHNOLOGY SELECTION
+NONE
 
 BACKEND
 NOT STARTED / DEFERRED
-
-MAIN INTEGRATION
-COMPLETE / POST-MERGE VERIFIED
 ```
 
-Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
-Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436`.
+No SQL/TypeQL/Cypher, candidate mapping, benchmark harness, database deployment or selection is authorized by PM-00 bootstrap itself. The next step after bootstrap QA is PM-01 read-only candidate/version/edition/deployment/environment freeze.
 
-No implicit Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation or Domain/Logical reopen follows from the integrated Pre-Physical result. Physical work is a separate future workstream requiring its own explicit user authorization and gate.
+Physical workstream handoff: [`../workstreams/physical-model.md`](../workstreams/physical-model.md).
+Physical execution authority: [`../physical-model/README.md`](../physical-model/README.md).
 
-Completed detailed handoff/evidence: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
-
-## 13. Mandatory execution hardening
+## 14. Mandatory execution hardening
 
 The agent operating manual is authoritative for:
 
@@ -264,3 +319,13 @@ The repository engineering safety contract additionally governs:
 - required-check activation only after real stable check contexts exist;
 - branch-hygiene deletion only after unique-work classification;
 - repository security settings whose state must be verified rather than inferred.
+
+The Physical methodology additionally governs:
+
+- PM-00..PM-14 sequence;
+- evidence-before-claim;
+- exact candidate subject pinning;
+- hard-gate-before-score;
+- honest tier execution labels;
+- explicit PM-11 selection gate;
+- independent PM-13 clean-room QA before closure.
