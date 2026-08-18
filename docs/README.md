@@ -1,8 +1,8 @@
 # Documentation Index
 
-This directory is the durable project memory for Dante. A new human/AI contributor should be able to resume from repository truth without reconstructing decisions from chat history.
+This directory is the durable project memory for DANTE. A new human/AI contributor should be able to resume from repository truth without reconstructing decisions from chat history.
 
-> **Naming continuity:** `Dante` is the current product/app name. `LifeOS` is the previous working/project name and remains valid where it appears in historical evidence, Git history or existing technical/repository identifiers for the same product lineage.
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` is the previous working/project name and remains valid where it appears in historical evidence, Git history or existing technical/repository identifiers for the same product lineage.
 
 ## Start here
 
@@ -78,7 +78,7 @@ Exact Physical handoff: [`workstreams/physical-model.md`](workstreams/physical-m
 
 ### Product
 
-- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current Dante Product/North Star.
+- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current DANTE Product/North Star.
 
 ### Domain
 
