@@ -1,7 +1,7 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-12 COMPLETE / PM-13 NEXT**
-- Branch: `feature/physical-model`
+- Status: **CLOSED AT TARGET-ARCHITECTURE LEVEL — PM-14 BRANCH CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
+- Branch during workstream: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00: **QA PASS**
 - PM-01: **PASS-CONDITIONAL**
@@ -17,16 +17,17 @@
 - PM-10: **FINAL STACK RECOMMENDATION COMPLETE**
 - PM-11: **EXPLICIT TARGET STACK SELECTION COMPLETE**
 - PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
+- PM-13: **CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS**
+- PM-14: **BRANCH CLOSURE COMPLETE**
 - Selected canonical primary: **PostgreSQL 18.4**
-- Evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
-- Ranking: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
 - Selected target companion stack: **ESTABLISHED**
-- Direct execution: **NOT STARTED / DIRECT HG PASS 0**
+- Direct implementation execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
+- Development Profile v0: **NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE**
 
 ## Purpose
 
-Turn accepted LifeOS Domain + Logical semantics into a durable, evidence-backed Physical Model without weakening semantics or manufacturing benchmarks that cannot change the decision.
+This directory contains the evidence, selection and accepted target Physical architecture that translates the CLOSED LifeOS Domain + Logical Model into bounded implementation mechanisms without weakening semantic ownership.
 
 ```text
 DOMAIN + LOGICAL
@@ -42,12 +43,26 @@ research
 → specialist lanes
 → scoring/sensitivity
 → final stack audit
-→ preferred recommendation
+→ recommendation
 → explicit selection
-→ accepted Physical Model
+→ Accepted Physical Model
 → clean-room QA
-→ closure / protected-main integration
+→ closure
 ```
+
+## Current authority order
+
+For current target architecture read:
+
+1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
+2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
+3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
+4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — branch closure evidence;
+5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
+6. [`result-register-v1.md`](result-register-v1.md) — current result ledger;
+7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — workstream closure/handoff.
+
+PM-01..PM-10 remain evidence/rationale history and must not override later PM-11/12 current selected truth.
 
 ## Non-negotiable barriers
 
@@ -69,61 +84,12 @@ SELECTED != DEPLOYED
 SELECTED != DIRECT PASS
 ```
 
-No universal Entity/Thing/EAV/generic-edge canonical shortcut may be introduced for implementation convenience.
+No universal Entity/Thing/EAV/generic-edge canonical shortcut is accepted.
 
-## Evidence-first execution policy
-
-```text
-LOCAL EXECUTION
-last-mile evidence only
-```
-
-A direct run requires a residual question that remains unresolved, is materially decision-relevant, and can actually be resolved by controlled execution.
-
-Current direct execution state:
+## Accepted target stack
 
 ```text
-benchmark host          HOLD / DORMANT
-database deployment     NOT STARTED
-fixture/harness          NOT STARTED
-LOW/BASE/HIGH            NOT RUN
-direct HG PASS           0
-restore rehearsal        NOT RUN
-migration rehearsal      NOT RUN
-failure injection        NOT RUN
-PowerSync direct test    NOT RUN
-Restate direct test      NOT RUN
-object recovery test     NOT RUN
-solver direct test       NOT RUN
-verified-run score       NOT AVAILABLE
-```
-
-## Selected target architecture
-
-### Canonical primary
-
-```text
-PostgreSQL 18.4
-SELECTED / ACCEPTED
-```
-
-Why it won:
-
-- accepted mapping preserves LifeOS semantics without a universal ontology root;
-- strong transaction/concurrency ergonomics and mature integrity primitives;
-- WAL/PITR/backup/replication/evolution maturity;
-- reporting/traversal/search ecosystem;
-- PostGIS, pgvector and PostgreSQL-native search keep major accepted capabilities inside one primary database ecosystem;
-- lower topology, synchronization, operational and exit burden than the TypeDB finalist path.
-
-Performance is not a hidden reason for the lead: PM-09 deliberately scored performance `8.0 / 8.0` because LOW/BASE/HIGH were not executed.
-
-TypeDB CE 3.12.3 remains the historical semantic runner-up with the strongest direct relation/role/n-ary fit, but is not selected.
-
-## Accepted stack
-
-```text
-CANONICAL
+CANONICAL PRIMARY
 PostgreSQL 18.4
 
 POSTGRESQL CAPABILITIES
@@ -135,30 +101,33 @@ unaccent
 pg_stat_statements
 PgBouncer 1.25.2
 
+OFFLINE / SYNC
+PowerSync Service 1.25.0 Open Edition
+encrypted SQLite
+PostgreSQL-backed PowerSync bucket storage
+explicit client-safe sync projections
+
 BOUNDED ASYNC
 PostgreSQL transactional outbox + bounded worker
 
-DURABLE CLASS-B PROCESS
+DURABLE CLASS-B
 Restate runtime
 Restate Python SDK 1.0.3
 Restate Server 1.7.2 self-hosted/reproducible subject
 Restate Cloud EU allowed managed deployment
 GLOBAL RESTATE DEPLOYMENT DEFAULT NONE
 
-OFFLINE / SYNC
-PowerSync Service 1.25.0 Open Edition
-encrypted SQLite
-PostgreSQL-backed PowerSync bucket storage
-explicit client-safe sync projections only
-
 OBJECT BYTES
 Cloudflare R2 Standard
 EU jurisdiction
 private
 
-BACKUP
-pgBackRest 2.59.0 -> AWS S3 Standard eu-south-1
-R2 object backup -> separate AWS S3 eu-south-1 bucket
+RECOVERY TARGET
+pgBackRest 2.59.0
+AWS S3 Standard eu-south-1
+Versioning
+Object Lock GOVERNANCE / finite policy-bound retention
+separate DB/object backup repositories
 
 SOLVER
 OR-Tools 9.15 CP-SAT
@@ -170,69 +139,104 @@ Grafana Cloud EU
 pg_stat_statements
 ```
 
-## Restate deployment semantics
-
-Restate is selected as the durable-execution technology; deployment is intentionally conditional.
+## Canonical ownership
 
 ```text
-SELF-HOSTED
-first-class
+PostgreSQL
+= canonical LifeOS truth + material history
 
-CLOUD EU
-allowed managed option
+PostGIS
+= geospatial capability over PostgreSQL state
 
-GLOBAL MANDATORY DEFAULT
-none
+FTS / pg_trgm / unaccent / pgvector
+= derived/query retrieval
+
+SQLite / PowerSync
+= bounded local/sync state
+
+Restate
+= durable execution runtime
+
+R2
+= raw object bytes
+
+S3
+= recovery copies
+
+OR-Tools
+= candidate solver state
+
+OTel / Grafana
+= operational telemetry
 ```
 
-Current Restate documentation supports a self-contained server binary/container and an EU Cloud region. Current client-side journal encryption is documented only for the TypeScript SDK, while LifeOS targets Python; therefore Cloud EU is not mandatory and journal payload minimization remains a hard boundary.
+Canonical persistence authorities: **1 — PostgreSQL**.
 
 ## Offline semantics
 
-Offline capability is required but operation-specific.
-
 ```text
-SQLite
-bounded encrypted local working copy
-
-PowerSync
-transport/synchronization
-
-LifeOS backend
-semantic expected-state / governance / AuthZ / conflict authority
-
-PostgreSQL
-canonical truth
+PostgreSQL canonical
+→ approved PowerSync projection
+→ encrypted SQLite
+→ offline mutation
+→ LifeOS backend expected-state + governance + AuthZ revalidation
+→ PostgreSQL canonical commit if valid
 ```
 
-No global last-write-wins rule is accepted. A local mutation made while offline may be rejected or enter reconciliation when its material basis is stale or governance changed.
+Offline is operation-specific. Arrival order does not define truth. Universal consequential last-write-wins is rejected. Visibility/Consent/delete/redaction must propagate to affected local/projection copies.
 
-## Object semantics
+## Restate deployment semantics
 
-`ContentArtifact` identity, metadata, provenance, visibility, retention and locator state remain in PostgreSQL. R2 stores raw bytes only. Private object access is governed; public R2 buckets/public permanent URLs are not part of the accepted architecture.
+Restate is selected as the Class-B durable-execution technology.
 
-## Durable execution semantics
+```text
+SELF-HOSTED
+FIRST-CLASS DEPLOYMENT OPTION
 
-Short/reconstructible background work uses PostgreSQL outbox/worker. Long-running recoverable work with human/external waits uses Restate. Runtime state never replaces Domain Actual/Decision/Confirmation/history.
+CLOUD EU
+ALLOWED MANAGED DEPLOYMENT OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+The later Development/Production profile chooses between them. For the current Python path, do not assume the client-side journal encryption currently documented only for TypeScript; journal payload minimization remains mandatory.
+
+## Object / recovery semantics
+
+`ContentArtifact` identity, metadata, provenance, Visibility, retention, hashes and locator remain PostgreSQL-owned. R2 stores raw bytes only.
+
+Production recovery target:
+
+```text
+PostgreSQL -> pgBackRest -> S3
+R2 raw bytes -> separate S3 backup repository
+```
+
+Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-resurrection semantics. Object Lock Compliance is not the default.
 
 ## Solver semantics
 
-OR-Tools outputs are candidates. `OPTIMAL`, `FEASIBLE`, `INFEASIBLE` and `UNKNOWN` are technical solver outcomes; they cannot silently become canonical LifeOS Decisions or semantic truth. `UNKNOWN != INFEASIBLE`.
+```text
+OPTIMAL / FEASIBLE / INFEASIBLE / UNKNOWN
+= technical solver status
+!= accepted LifeOS Decision
+```
+
+`UNKNOWN != INFEASIBLE`.
 
 ## Technology exclusions
 
-The accepted target intentionally excludes:
+The accepted target does not include:
 
 ```text
-TypeDB/XTDB/SurrealDB primary
+TypeDB / XTDB / SurrealDB as primary
 Neo4j
 Qdrant
 OpenSearch
 TimescaleDB
-Redis/Valkey
-Kafka
-RabbitMQ
-NATS
+Redis / Valkey
+Kafka / RabbitMQ / NATS
 Debezium
 dedicated event store / universal event sourcing
 Temporal
@@ -242,100 +246,88 @@ Zero
 Electric as full mutation/sync engine
 CRDT/local-first canonical authority
 MongoDB for PowerSync
-large bytea object store
+large bytea standard object store
 public R2
-separate vector/graph/search servers
-data lake/Spark/Hudi
+separate vector / graph / search servers
+data lake / Spark / Hudi
 pg_cron as workflow engine
 Object Lock Compliance as default
 ```
 
-See `recommendation/technology-exclusion-register-v1.md` for rationale.
+Reintroduction requires an explicit later architecture reopen based on material new requirements/evidence.
 
-## Current authority records
+## Direct execution truth
+
+Target selection and PM-13 QA did **not** execute the selected stack:
 
 ```text
-pm-10-recommendation-v1.md
-pm-11-explicit-selection-v1.md
-pm-12-accepted-physical-model-v1.md
-recommendation/postgresql-18.4-v1.md
-recommendation/companion-stack-v1.md
-recommendation/technology-exclusion-register-v1.md
-recommendation/post-selection-validation-register-v1.md
+DATABASE DEPLOYMENT      NOT STARTED
+FIXTURE/HARNESS           NOT STARTED
+DIRECT HG PASS            0
+LOW/BASE/HIGH            NOT RUN
+RESTORE                   NOT RUN
+MIGRATION                 NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                  NOT RUN
+RESTATE                    NOT RUN
+OBJECT RECOVERY            NOT RUN
+SOLVER                     NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
 ```
 
-Supporting PM-10 evidence remains:
+The full mandatory implementation/release register is [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md).
+
+## Clean-room result
+
+PM-13 found:
 
 ```text
-final-stack-audit-v1.md
-final-stack-capability-matrix-v1.md
-final-stack-simulation-v1.md
+BLOCKING ARCHITECTURE DEFECTS      0
+CANONICAL-AUTHORITY CONFLICTS      0
+UNAPPROVED TECHNOLOGIES            0
+FALSE DIRECT PASS CLAIMS           0
+LOST PSV OBLIGATIONS               0
+DOMAIN/LOGICAL IMPLICIT REOPENS    0
 ```
 
-## Post-selection validation
+Verdict: **QA PASS — architecture/documentation coherence**.
 
-Selection/acceptance does not waive direct implementation validation.
+This is not a direct runtime/database/recovery PASS.
 
-Core obligations still include:
+## Development Profile v0 boundary
+
+A later separate operational scope will decide:
 
 ```text
-SC-011 old-backup anti-resurrection
-SC-030 actual LifeOS V1→V2 mapping evolution
-SC-031 semantic backup/restore verification
-SC-032 capacity/backpressure
-WL-H12 non-interference
-search/vector/projection deletion/freshness
-PowerSync offline/replication/local-encryption
-Restate crash/replay/governance/versioning/deployment privacy
-R2/S3 object recovery
-PostGIS/PgBouncer compatibility
-OR-Tools status/governance corpus
-observability privacy
+which selected components are active immediately
+self-hosted vs managed where the target permits both
+free-tier/local development choices
+accounts / credentials / environment setup
+initial backup / observability activation
+upgrade / production triggers
 ```
 
-The full register is `recommendation/post-selection-validation-register-v1.md` and remains `NOT RUN` where direct evidence does not yet exist.
+A component being dormant in DEV does not remove it from the accepted target. A DEV deployment choice does not silently change target architecture.
 
-## DEV-v0 boundary
-
-The accepted target architecture is intentionally separate from the later Development Profile v0. DEV-v0 will decide what is actually activated immediately, local/self-hosted/managed choices where allowed, free-tier/account setup and upgrade triggers without silently changing the target Physical Model.
-
-## Roadmap
+## Current boundary
 
 ```text
-PM-00  PASS
-PM-01  PASS-CONDITIONAL
-PM-02  COMPLETE
-PM-03  COMPLETE
-PM-04A COMPLETE
-PM-04B NOT ADMITTED
-PM-05  COMPLETE
-PM-06  COMPLETE
-PM-07  COMPLETE
-PM-08  COMPLETE
-PM-09  COMPLETE
-PM-10  COMPLETE
-PM-11  COMPLETE
-PM-12  COMPLETE
-PM-13  NEXT
-PM-14  NOT STARTED
-```
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
 
-## Current exact next step
-
-```text
 PM-13
-independent clean-room QA
+QA PASS
 
-SELECTED / ACCEPTED CANONICAL PRIMARY
-PostgreSQL 18.4
+PM-14
+BRANCH CLOSURE COMPLETE
 
-SELECTED TARGET COMPANION STACK
-ESTABLISHED
+DIRECT IMPLEMENTATION VALIDATION
+NOT STARTED / CARRIED FORWARD
 
-RESTATE DEPLOYMENT
-SELF-HOSTED OR CLOUD EU / PROFILE DECISION
+NEXT
+protected-main integration through PR
+then Development Profile v0
 
-DIRECT HG PASS 0
-VERIFIED-RUN SCORE NOT AVAILABLE
-BACKEND NOT STARTED / DEFERRED
+BACKEND
+NOT STARTED / DEFERRED
 ```
