@@ -1,593 +1,416 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-02 DESIGN COMPLETE / PM-03 NOT RUN**
+- Status: **CURRENT — PM-03 STATIC PREFLIGHT COMPLETE / EXECUTED HARD GATES NOT RUN**
 - Workstream: `feature/physical-model`
-- PM-01: **PASS-CONDITIONAL**
-- PM-02: **DESIGN COMPLETE**
 - Benchmark execution: **NOT STARTED**
 - Technology selection: **NONE**
-- Every hard-gate/executable candidate result remains `NOT RUN`.
 - PM-01 evidence: `pm-01-technology-landscape-v1.md`
-- PM-02 evidence: `pm-02-primary-mapping-overview-v1.md` + `mappings/*.md`
+- PM-02 evidence: `pm-02-primary-mapping-overview-v1.md` + candidate mappings
+- PM-03 evidence: `pm-03-semantic-hard-gate-preflight-v1.md` + candidate preflight records
 
-## Rule
-
-This file records current Physical disposition/execution state. It does not override Domain/Logical authority, the Phase-10 benchmark method, or create selection by prose.
+## 1. Result-language rule
 
 ```text
 OFFICIAL CLAIM != EXECUTED PROOF
 ADMIT != HARD-GATE PASS
-MAPPING DESIGNED != HARD-GATE PASS
+MAPPING COMPLETE != HARD-GATE PASS
+PM-03 PASS-CONDITIONAL != EXECUTED PASS
 NOT RUN != PASS
 PREFERRED != SELECTED
 ```
 
-A hard-gate/benchmark result changes only after evidence is remotely written/linked and the corresponding gate is QA-verified.
+PM-03 is a static mapping preflight. Executed hard-gate results remain `NOT RUN` until direct scenario evidence exists.
 
-# PM-01 status
+## 2. Current phase state
 
 ```text
-TECHNOLOGY DISCOVERY                 PASS
-APPLICATION ARCHITECTURE RECON       PASS
-PRIMARY ADMISSION                    PASS
-EXACT SUBJECT FREEZE                 PASS for P0/P1/P2/P3 qualification subjects
-LICENSE/COST REVIEW                  PASS-CONDITIONAL
-PYTHON/CLIENT REVIEW                 PASS
-BACKUP/EVOLUTION REVIEW              PASS-CONDITIONAL
-HA/PRODUCTION-TOPOLOGY REVIEW        PASS-CONDITIONAL
-BENCHMARK HOST FREEZE                HOLD
+PM-00
+QA PASS
 
-PM-01 OVERALL
+PM-01
 PASS-CONDITIONAL
+benchmark host HOLD
 
-SELECTED
-NONE
-```
+PM-02
+PRIMARY MAPPING DESIGN COMPLETE
 
-The host HOLD must close before executable benchmark evidence; it does not block static mapping/hard-gate design review.
+PM-03
+STATIC PREFLIGHT COMPLETE
+0 candidate REJECTs
 
-# PM-02 status
-
-```text
-PM-02 PRE-SCOPE
-fac3b5baf1813f886c4773594e6234810e5ba8c6
-
-P0 PostgreSQL mapping
-PM02-PG-001
-DESIGN COMPLETE
-
-P1 TypeDB mapping
-PM02-TDB-001
-DESIGN COMPLETE
-
-P2 XTDB mapping
-PM02-XT-001
-DESIGN COMPLETE
-
-P3 SurrealDB mapping
-PM02-SDB-001
-DESIGN COMPLETE
-
-HG-01..HG-12
-NOT RUN
-
-EXECUTABLE SCHEMA / DATABASE
+PM-04
 NOT STARTED
 
-BENCHMARK
+PM-05+
+NOT STARTED
+
+PERFORMANCE
 NOT STARTED
 
 SELECTION
 NONE
 ```
 
-The mappings are candidate-native designs against the same semantic oracle. PM-03 must challenge them before any benchmark harness/database deployment proceeds.
+## 3. PM-03 cross-candidate preflight result
 
-# Lane P — Primary canonical persistence
+| Gate | P0 PostgreSQL | P1 TypeDB | P2 XTDB | P3 SurrealDB |
+|---|---|---|---|---|
+| HG-01 | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL |
+| HG-02 | PASS-CONDITIONAL | PASS-CONDITIONAL | HOLD | PASS-CONDITIONAL |
+| HG-03 | PASS-CONDITIONAL | PASS-CONDITIONAL | HOLD | PASS-CONDITIONAL |
+| HG-04 | PASS-CONDITIONAL | HOLD | PASS-CONDITIONAL | HOLD |
+| HG-05 | PASS-CONDITIONAL | HOLD | PASS-CONDITIONAL | HOLD |
+| HG-06 | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL |
+| HG-07 | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL |
+| HG-08 | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL |
+| HG-09 | HOLD | HOLD | HOLD | HOLD |
+| HG-10 | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL | PASS-CONDITIONAL |
+| HG-11 | HOLD | HOLD | HOLD | HOLD |
+| HG-12 | HOLD | HOLD | HOLD | HOLD |
 
-## P0 — PostgreSQL hybrid
+This table records static preflight only.
+
+## 4. Executed hard-gate status
 
 ```text
-REGISTERED ROLE
-mandatory preferred baseline
+P0 PostgreSQL HG-01..HG-12   NOT RUN
+P1 TypeDB HG-01..HG-12       NOT RUN
+P2 XTDB HG-01..HG-12         NOT RUN
+P3 SurrealDB HG-01..HG-12    NOT RUN
+```
 
-PM-01 DISPOSITION
-ADMIT
+No candidate is score-eligible.
+
+## 5. P0 — PostgreSQL 18.4
+
+```text
+ROLE
+mandatory preferred baseline
 
 EXACT SUBJECT
 PostgreSQL 18.4
 self-hosted single-node qualification topology
 psycopg 3.3.4
 
-MAPPING
-PM02-PG-001
-docs/physical-model/mappings/postgresql-18.4-v1.md
-DESIGN COMPLETE
+PM-01
+ADMIT
 
-MAPPING THESIS
-owner-specific relational tables
-+ direct FKs for homogeneous references
-+ bounded technical address/state anchors for heterogeneous addressability
-+ explicit material-state/history records
-+ transaction/locking/SERIALIZABLE hardening where required
+PM-02 MAPPING
+PM02-PG-001 COMPLETE
 
-HG-01..HG-12
+PM-03 PREFLIGHT
+9 PASS-CONDITIONAL
+3 HOLD
+0 REJECT
+
+CANDIDATE-SPECIFIC STATIC BLOCKER
+NONE
+
+GENERIC EXECUTION HOLDS
+HG-09 retention/restore
+HG-11 evolution
+HG-12 recoverability
+
+EXECUTED HG
 NOT RUN
 
-CORRECTNESS / DESTRUCTIVE
-NOT RUN
-
-LOW / BASE / HIGH
-NOT RUN
-
-RECOVERY / EVOLUTION
-NOT RUN
-
-WEIGHTED SCORE
-NOT RUN
-
-SENSITIVITY
+SCORE
 NOT RUN
 
 CURRENT DISPOSITION
-ADMIT / PRE-EXISTING PREFERRED-BASELINE / NOT SELECTED
+ADVANCE / PRE-EXISTING PREFERRED BASELINE / NOT SELECTED
 ```
 
-PM-03 pressure:
+Primary executable risks:
 
-- technical anchors must not become universal Entity/Thing;
-- heterogeneous Reference Contracts must reject wrong-family/dangling targets;
-- expected-state and multi-owner concurrent operations must be proven;
-- owner-specific history must remain manageable without generic-state fallback;
-- selective disclosure/non-interference and tombstone/restore integrity remain unproven.
+- heterogeneous address-anchor family/existence integrity;
+- same-base/predicate race behavior under selected transaction pattern;
+- non-interference when constraints/RLS/application filtering interact;
+- history structure maintainability.
 
-## P1 — TypeDB
+## 6. P1 — TypeDB CE 3.12.3
 
 ```text
-REGISTERED ROLE
+ROLE
 mandatory semantic challenger
-
-PM-01 DISPOSITION
-ADMIT
 
 EXACT SUBJECT
 TypeDB CE 3.12.3
 self-hosted single-node qualification topology
-official typedb-driver 3.12.3
+official driver 3.12.3
 
-MAPPING
-PM02-TDB-001
-docs/physical-model/mappings/typedb-3.12.3-v1.md
-DESIGN COMPLETE
+PM-01
+ADMIT
 
-MAPPING THESIS
-concrete entity types for native owners
-+ first-class specific relation types/named roles
-+ role eligibility as Reference Contract enforcement
-+ explicit owner-specific material-state objects
-+ narrow technical consistency guards for write-skew-sensitive invariant sets
+PM-02 MAPPING
+PM02-TDB-001 COMPLETE
 
-HG-01..HG-12
+PM-03 PREFLIGHT
+7 PASS-CONDITIONAL
+5 HOLD
+0 REJECT
+
+CANDIDATE-SPECIFIC HOLDS
+HG-04 expected-state/predicate concurrency
+HG-05 multi-owner write-skew consistency
+
+GENERIC EXECUTION HOLDS
+HG-09 HG-11 HG-12
+
+EXECUTED HG
 NOT RUN
 
-CORRECTNESS / DESTRUCTIVE
-NOT RUN
-
-LOW / BASE / HIGH
-NOT RUN
-
-RECOVERY / EVOLUTION
-NOT RUN
-
-WEIGHTED SCORE
-NOT RUN
-
-SENSITIVITY
+SCORE
 NOT RUN
 
 CURRENT DISPOSITION
-ADMIT / NOT SELECTED
+ADVANCE WITH CONCURRENCY HOLD / NOT SELECTED
 ```
 
-PM-03 pressure:
+The narrow `consistency-guard` design must be executed. Snapshot-isolation documentation alone is not sufficient.
 
-- shared type/interface machinery must not become generic ontology;
-- TypeDB IID/snapshot cannot become NativeRef/MaterialStateRef;
-- explicit material history and reverse mapping must remain practical;
-- snapshot-isolation write-skew must be closed by exact-state + bounded consistency-guard design where applicable;
-- n-ary Agreement, deletion/tombstone and selective-disclosure inference remain unproven.
-
-## P2 — XTDB
+## 7. P2 — XTDB 2.1.0
 
 ```text
-REGISTERED ROLE
-PM-01-admitted temporal/bitemporal primary challenger
-
-PM-01 DISPOSITION
-ADMIT / PRODUCTION-TOPOLOGY HOLD
+ROLE
+PM-01-admitted temporal/bitemporal challenger
 
 EXACT SUBJECT
 XTDB 2.1.0
 self-hosted qualification subject
-Postgres-wire compatible client path
+Postgres-wire client path where applicable
 
-MAPPING
-PM02-XT-001
-docs/physical-model/mappings/xtdb-2.1.0-v1.md
-DESIGN COMPLETE
+PM-01
+ADMIT / PRODUCTION TOPOLOGY HOLD
 
-MAPPING THESIS
-owner-specific tables
-+ four separated technical address spaces
-+ explicit MaterialStateRef records
-+ native bitemporal history only where semantically truthful
-+ ASSERT-based reference/expected-state enforcement
-+ one serialized non-interactive DML transaction for co-located multi-owner effects
+PM-02 MAPPING
+PM02-XT-001 COMPLETE
 
-HG-01..HG-12
+PM-03 PREFLIGHT
+7 PASS-CONDITIONAL
+5 HOLD
+0 REJECT
+
+CANDIDATE-SPECIFIC HOLDS
+HG-02 reference-family enforcement
+HG-03 role/cardinality/uniqueness enforcement
+
+GENERIC EXECUTION HOLDS
+HG-09 HG-11 HG-12
+
+PRODUCTION TOPOLOGY
+HOLD
+
+EXECUTED HG
 NOT RUN
 
-CORRECTNESS / DESTRUCTIVE
-NOT RUN
-
-LOW / BASE / HIGH
-NOT RUN
-
-RECOVERY / EVOLUTION
-NOT RUN
-
-WEIGHTED SCORE
-NOT RUN
-
-SENSITIVITY
+SCORE
 NOT RUN
 
 CURRENT DISPOSITION
-ADMIT / PRODUCTION-TOPOLOGY HOLD / NOT SELECTED
+ADVANCE WITH REFERENCE/CONSTRAINT HOLD / NOT SELECTED
 ```
 
-PM-03 pressure:
+Serialized DML transactions + `ASSERT` provide a strong path for HG-04/HG-05, but conventional FK/cardinality safety is not assumed.
 
-- absent native FK/general uniqueness requires explicit integrity proof;
-- address anchors must stay technical and segregated;
-- system/valid time and transaction tokens must remain distinct from MaterialStateRef;
-- bitemporal axes must match semantic chronology only where truthful;
-- non-interactive DML + ASSERT must express representative governed operations cleanly;
-- dynamic schema must not become semantic drift;
-- production topology remains HOLD and gets no HA credit.
-
-## P3 — SurrealDB
+## 8. P3 — SurrealDB Community 3.2.3
 
 ```text
-REGISTERED ROLE
-PM-01-admitted multimodel primary challenger
-
-PM-01 DISPOSITION
-ADMIT-CONDITIONAL
+ROLE
+PM-01-admitted constrained multimodel challenger
 
 EXACT SUBJECT
 SurrealDB Community 3.2.3
 single-node RocksDB qualification topology
 Python SDK 2.0.0
 
-MAPPING
-PM02-SDB-001
-docs/physical-model/mappings/surrealdb-3.2.3-v1.md
-DESIGN COMPLETE
+PM-01
+ADMIT-CONDITIONAL
 
-MAPPING THESIS
-SCHEMAFULL owner-specific tables
-+ typed record links
-+ specific binary relation tables only where semantics are truly binary
-+ contextual records for n-ary/material relations
-+ explicit material-state history
-+ narrow technical consistency guards for write-skew-sensitive invariant sets
+PM-02 MAPPING
+PM02-SDB-001 COMPLETE
 
-HG-01..HG-12
+PM-03 PREFLIGHT
+7 PASS-CONDITIONAL
+5 HOLD
+0 REJECT
+
+CANDIDATE-SPECIFIC HOLDS
+HG-04 expected-state/predicate concurrency
+HG-05 multi-owner write-skew consistency
+
+GENERIC EXECUTION HOLDS
+HG-09 HG-11 HG-12
+
+EXECUTED HG
 NOT RUN
 
-CORRECTNESS / DESTRUCTIVE
-NOT RUN
-
-LOW / BASE / HIGH
-NOT RUN
-
-RECOVERY / EVOLUTION
-NOT RUN
-
-WEIGHTED SCORE
-NOT RUN
-
-SENSITIVITY
+SCORE
 NOT RUN
 
 CURRENT DISPOSITION
-ADMIT-CONDITIONAL / NOT SELECTED
+ADVANCE WITH CONCURRENCY HOLD / NOT SELECTED
 ```
 
-PM-03 pressure:
+The `consistency_guard` design and recipient/system-user disclosure boundary require direct proof.
 
-- SCHEMAFULL/typed records must prevent document/meta-model fallback;
-- graph edge machinery must not become universal Relationship ontology;
-- n-ary Agreement must remain contextual/common-ground structure;
-- explicit MaterialStateRef/history must not depend on changefeed/version metadata;
-- snapshot-isolation write-skew must be closed by expected-state + consistency guard;
-- deletion/edge behavior and selective-disclosure traversal leakage remain unproven;
-- Community subject receives no Enterprise/SurrealDS HA credit.
-
-# Cross-candidate PM-02 mapping comparison
-
-| Concern | PostgreSQL | TypeDB | XTDB | SurrealDB |
-|---|---|---|---|---|
-| Native owners | concrete relational tables | concrete entity types | concrete owner tables | concrete SCHEMAFULL tables |
-| Heterogeneous refs | bounded technical anchors | role eligibility + explicit key family | four separated address tables + ASSERT | typed record unions/links; bounded anchor if needed |
-| Specific binary relations | specific association tables | relation types/named roles | specific relation tables | typed links or specific relation tables |
-| N-ary/material relations | contextual record + role rows | native n-ary relation/context | contextual record + role rows | contextual record + participant rows/links |
-| MaterialStateRef | explicit state anchor/rows | explicit state objects + key | explicit state rows; bitemporal substrate separate | explicit state records |
-| History | explicit owner material history | explicit state/lineage objects | native bitemporal + semantic state records | explicit state history; changefeed bounded only |
-| Expected state | current state + tx/lock | state match + guard where needed | ASSERT | conditional state + guard where needed |
-| Multi-owner | one tx; SERIALIZABLE/locks as needed | one write tx + bounded guard | one serialized DML tx | one tx + bounded guard |
-| Primary design risk | anchor/history complexity | snapshot isolation/history verbosity | missing FK/schema/non-interactive DML | write-skew/graph+document escape hatch |
-
-No column is a score or recommendation.
-
-# Common material-state rule
+## 9. Static preflight interpretation
 
 ```text
-PostgreSQL xmin/xid       != MaterialStateRef
-TypeDB IID/transaction    != MaterialStateRef
-XTDB system/valid time    != MaterialStateRef
-SurrealDB change metadata != MaterialStateRef
+PostgreSQL
+lowest static primary risk among current mappings
+NOT a winner
+
+TypeDB
+strongest relation/role semantic mapping
+concurrency guard is material uncertainty
+
+XTDB
+strongest native chronology/serialized-write hypothesis
+reference/cardinality enforcement is material uncertainty
+
+SurrealDB
+multimodel mapping survives only under strict SCHEMAFULL/specific-relation discipline
+concurrency guard is material uncertainty
 ```
 
-Every candidate uses an explicit stable material-state address where consequential semantic binding requires it.
+This section is qualitative pressure, not scoring.
 
-# Common lazy-Occurrence rule
+## 10. Required next executable proof themes
 
 ```text
-before persistent differentiation
-source + governing MaterialStateRef + recurrence family + semantic coordinate where available
-= bounded occurrence locator
+COMMON
+SC-001 stale-base race
+SC-003 atomic multi-owner mutation
+SC-009 offline/stale divergence
+SC-010 correction without false rewrite
+SC-012 NativeRef non-reuse
+SC-015 n-ary relation fidelity
+SC-016 selective disclosure
+SC-022/023 DST gap/fold
+SC-024 occurrence override
+SC-030 V1->V2 evolution
+SC-011/031 restore + anti-resurrection
 
-when individually distinguished/addressable
--> same semantic Occurrence receives NativeRef
+P1 TypeDB
+write-skew negative control + shared guard positive control
+
+P2 XTDB
+wrong-family/missing reference + cardinality/uniqueness ASSERT pressure
+
+P3 SurrealDB
+write-skew negative control + shared guard positive control
+
+P0 PostgreSQL
+anchor integrity + Read-Committed negative control + stronger transaction positive control
 ```
 
-No candidate may manufacture arbitrary IDs for indistinguishable quota slots simply for storage convenience.
+## 11. Secondary lanes
 
-# Common expected-state / multi-owner rule
-
-A consequential operation must:
-
-1. bind/check expected semantic material state;
-2. reject stale mismatch;
-3. enforce all-or-nothing co-located invariant changes;
-4. expose staged/partial/reconciliation state where external atomicity is impossible;
-5. keep storage/transaction tokens separate from semantic MaterialStateRef.
-
-Candidate-specific enforcement remains PM-03 proof obligation.
-
-# Primary reserves / non-admitted current candidates
-
-| Candidate | PM-01 disposition | Current reason |
-|---|---|---|
-| MariaDB 11.8 LTS | DEFER — first reserve | Relevant temporal capability, but strong relational-lane overlap plus history/evolution caveats; must justify fifth mapping |
-| Gel 7 | DEFER | Interesting schema/query/migration direction but current continuity/operational uncertainty does not displace admitted set |
-| CockroachDB | DEFER | Reopen on real distributed/geographic HA requirement |
-| YugabyteDB | DEFER | Reopen on real distributed/geographic HA requirement |
-| MongoDB | REJECT-FROM-BENCHMARK primary | No sufficiently distinct canonical-primary hypothesis |
-| ArangoDB | REJECT-FROM-BENCHMARK primary | Multimodel hypothesis overlaps P3 without enough distinct value now |
-| Dgraph | REJECT-FROM-BENCHMARK primary | Graph specialization belongs in bounded G lane |
-| FoundationDB | REJECT-FROM-BENCHMARK primary | Too low-level for current canonical mapping objective |
-| Datomic | REJECT-FROM-BENCHMARK primary | Generic entity/attribute/value orientation conflicts with generic-EAV/meta-model rejection |
-| Dolt / Doltgres | REJECT-FROM-BENCHMARK primary | Git-like versioning is not LifeOS material history/correction/knowledge chronology |
-
-`REJECT-FROM-BENCHMARK` is scoped to the current primary benchmark and remains reopenable by materially new requirements/evidence.
-
-# Lane G — Secondary graph / traversal
+### Graph
 
 ```text
-G0 no specialized graph store
-BASELINE / NOT RUN
-
-G1 Neo4j
-DEFER TO PM-08
-EXACT SUBJECT NOT FROZEN
-CG-01..CG-04 NOT RUN
-NOT SELECTED
+G0 primary-store/no-specialized-store baseline
+G1 Neo4j DEFER TO PM-08
 ```
 
-No graph product becomes canonical truth by winning traversal performance.
+No graph store is selected or admitted as canonical primary by PM-03.
 
-# Lane S — Search / semantic retrieval
+### Search/vector
 
 ```text
-S0 structured + lexical/full-text baseline
-BASELINE / NOT RUN
-
-S1 pgvector
-DEFER TO PM-08 when PostgreSQL survives/applicable
-NOT FROZEN
-CG-01..CG-04 NOT RUN
-NOT SELECTED
-
-Qdrant / OpenSearch
-DEFER — specialist trigger required
+S0 primary-native structured/lexical baseline
+pgvector DEFER TO PM-08 when PostgreSQL is applicable
+Qdrant/OpenSearch specialist trigger only
 ```
 
-Vector/search quality is judged after scope/Visibility filtering and propagation correctness, not unfiltered top-k latency.
-
-# Local / offline bounded lane
+### Local/offline
 
 ```text
 SQLite
-DEFER — future local/offline/client role
-NOT current canonical server primary
+DEFER — future bounded local/client role
 ```
 
-Application reconnaissance supports keeping local/offline/sync as an explicit later architecture dimension without selecting CRDT/offline multi-master semantics today.
-
-# Lane E/D — bounded event/document mechanisms
+### Durable runtime
 
 ```text
-ED0 bounded native mechanisms
-BASELINE CLASS
-NOT RUN
-
-ED-SPECIALIZED
-NONE ADMITTED
+Restate  NOT SELECTED
+Temporal NOT SELECTED
+DBOS     NOT SELECTED
 ```
 
-A named specialist requires a future bounded admission trigger.
+Persistence preflight does not select workflow runtime.
 
-# Durable-runtime coupling
-
-No durable runtime is selected by the Physical workstream.
+## 12. PM-00 / PM-01 / PM-02 checkpoints
 
 ```text
-Restate   NOT SELECTED
-Temporal  NOT SELECTED
-DBOS      NOT SELECTED
-```
+MAIN BASELINE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
 
-Runtime coupling/cost may become Physical evidence, but runtime preference cannot select primary persistence.
-
-# Solver / AI / provider interaction
-
-```text
-solver output != accepted canonical effect
-AI eval/result != canonical LifeOS truth
-provider revision != MaterialStateRef
-runtime workflow completion != Actual automatically
-```
-
-No model/provider/solver/runtime product is selected here.
-
-# Evidence checkpoints
-
-## PM-00 Bootstrap
-
-```text
-PRE-SCOPE
-main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-
-CREATE CHECKPOINT
+PM-00 create checkpoint
 6d76bc150dfd7b3cefe56c6e05c96404e7494626
 
-CONTENT-QA CHECKPOINT
+PM-00 content-QA checkpoint
 8549e1c95bef2e354bd47028259e6816bf5e9272
 
-STATUS
-QA PASS
-```
+PM-00 QA-status checkpoint
+f5e7f5c3ea38dd02b54192705575b0a48ea3854c
 
-## PM-01 Technology discovery / candidate freeze
-
-```text
-RESEARCH PRE-SCOPE
+PM-01 research PRE-SCOPE
 622767d5435d59766459bb25a57e5afeb7dd7336
 
-EVIDENCE
-pm-01-technology-landscape-v1.md
-
-STATUS
-PASS-CONDITIONAL
-
-BENCHMARK HOST
-HOLD
-```
-
-## PM-02 Primary mapping design
-
-```text
-PRE-SCOPE
+PM-01 terminal handoff before PM-02
 fac3b5baf1813f886c4773594e6234810e5ba8c6
 
-EVIDENCE
-pm-02-primary-mapping-overview-v1.md
-mappings/postgresql-18.4-v1.md
-mappings/typedb-3.12.3-v1.md
-mappings/xtdb-2.1.0-v1.md
-mappings/surrealdb-3.2.3-v1.md
+PM-02 PRE-SCOPE
+fac3b5baf1813f886c4773594e6234810e5ba8c6
 
-STATUS
-DESIGN COMPLETE
-
-HG-01..HG-12
-NOT RUN
-
-BENCHMARK
-NOT STARTED
-
-SELECTION
-NONE
+PM-02 terminal HEAD
+ db127af8c759aacf69b43d0f5a5444b04fd43759
 ```
 
-## PM-03 Hard-gate preflight
+## 13. PM-03 evidence paths
 
 ```text
-STATUS
-NOT STARTED
+docs/physical-model/pm-03-semantic-hard-gate-preflight-v1.md
+docs/physical-model/preflight/postgresql-18.4-v1.md
+docs/physical-model/preflight/typedb-3.12.3-v1.md
+docs/physical-model/preflight/xtdb-2.1.0-v1.md
+docs/physical-model/preflight/surrealdb-3.2.3-v1.md
 ```
 
-## PM-04 Harness/fixtures
+The final PM-03 commit/remote-QA checkpoint is recorded in the workstream handoff after verification.
+
+## 14. Result mutation protocol
+
+Before changing any executed hard-gate from `NOT RUN`:
+
+1. freeze actual benchmark host/runtime;
+2. identify exact mapping/schema/harness revision;
+3. identify scenario/corpus/fixture revision and seed;
+4. retain raw assertion/concurrency output;
+5. classify candidate-specific failure versus tooling/environment failure;
+6. update only evidence-backed gates;
+7. preserve unresolved items as HOLD;
+8. remote-read back register and evidence;
+9. never award performance score before applicable hard gates pass.
+
+Before `SELECTED`, PM-11 explicit user-approved gate remains mandatory.
+
+## 15. Current next step
 
 ```text
-STATUS
-NOT STARTED
-BENCHMARK HOST HOLD MUST CLOSE FIRST
-```
-
-## PM-05+ Execution
-
-```text
-STATUS
-NOT STARTED
-```
-
-# Recommendation ledger
-
-| Lane | Candidate | Exact subject | Admission | Mapping | Hard-gate result | Score | Selected? |
-|---|---|---|---|---|---|---|---|
-| P | PostgreSQL | 18.4 / self-host / psycopg 3.3.4 | ADMIT | PM02-PG-001 COMPLETE | NOT RUN | NOT RUN | NO |
-| P | TypeDB | CE 3.12.3 / self-host / driver 3.12.3 | ADMIT | PM02-TDB-001 COMPLETE | NOT RUN | NOT RUN | NO |
-| P | XTDB | 2.1.0 / qualification subject | ADMIT / topology HOLD | PM02-XT-001 COMPLETE | NOT RUN | NOT RUN | NO |
-| P | SurrealDB | CE 3.2.3 / single-node RocksDB / SDK 2.0.0 | ADMIT-CONDITIONAL | PM02-SDB-001 COMPLETE | NOT RUN | NOT RUN | NO |
-| G | G0 | future primary-dependent | BASELINE | future | NOT RUN | NOT RUN | NO |
-| G | Neo4j | NOT FROZEN | DEFER PM-08 | NOT STARTED | NOT RUN | NOT RUN | NO |
-| S | S0 | future primary-dependent | BASELINE | future | NOT RUN | NOT RUN | NO |
-| S | pgvector | conditional / NOT FROZEN | DEFER PM-08 | NOT STARTED | NOT RUN | NOT RUN | NO |
-| E/D | bounded native | future primary/runtime-dependent | BASELINE CLASS | future | applicable checks NOT RUN | N/A | NO |
-
-# Result mutation protocol
-
-Before changing any candidate hard-gate/execution result from `NOT RUN`:
-
-1. identify exact evidence record/path/artifact;
-2. verify candidate subject/version/edition/topology;
-3. verify mapping revision and scenario/contract;
-4. update only applicable result fields;
-5. preserve unresolved items as `HOLD`/`NOT RUN` rather than inferring completion;
-6. remote-read back the register;
-7. record checkpoint in `docs/workstreams/physical-model.md`.
-
-Before writing a new `PREFERRED`, PM-09/10 evidence must exist.
-
-Before writing `SELECTED`, PM-11 explicit selection gate and user approval are mandatory.
-
-# Current next step
-
-```text
-PM-02
-DESIGN COMPLETE / FINAL REMOTE QA REQUIRED
-
 PM-03
-NEXT
-semantic mapping hard-gate preflight
+STATIC PREFLIGHT COMPLETE
+REMOTE QA REQUIRED FOR THIS WRITE SCOPE
 
-BENCHMARK HOST HOLD
-must close before executable PM-04/05 benchmark evidence
+PM-04
+NOT STARTED
 
-NO technology selection
-NO production backend
+BENCHMARK HOST
+HOLD — must close before reproducible executable evidence
+
+NO PERFORMANCE
+NO SELECTION
+NO PRODUCTION BACKEND
 ```
