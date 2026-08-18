@@ -1,8 +1,10 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — BOOTSTRAP**
+- Status: **AUTHORIZED / IN PROGRESS — PM-00 QA PASS / PM-01 READ-ONLY NEXT**
 - Branch: `feature/physical-model`
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- PM-00 bootstrap: **QA PASS**
+- PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
 - Mapping execution: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
 - Selected primary persistence: **NONE**
@@ -202,23 +204,48 @@ The Physical workstream may create benchmark-only mappings/harnesses in later ga
 
 Backend Foundation stays deferred until the Physical result is separately accepted and its downstream prerequisites are satisfied.
 
+## PM-00 QA evidence
+
+```text
+PRE-SCOPE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+CREATE CHECKPOINT
+6d76bc150dfd7b3cefe56c6e05c96404e7494626
+6 added / 0 modified / behind 0
+
+CONTENT-QA CHECKPOINT
+8549e1c95bef2e354bd47028259e6816bf5e9272
+22 unique paths
+6 added
+16 modified
+0 deleted
+0 unexpected
+behind 0
+
+main
+3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
+```
+
+Post-QA current-truth propagation remains on the same approved 22-path scope.
+
 ## Current exact next step
 
 ```text
-PM-00
-BOOTSTRAP / AUTHORITY FREEZE
-IN PROGRESS
+PM-01 — CANDIDATE / ENVIRONMENT FREEZE
+READ-ONLY FIRST
+READY / NOT STARTED
 
-NEXT AFTER BOOTSTRAP QA
-PM-01 — READ-ONLY FIRST
-
-- freeze exact current authority commits
-- verify current registered candidate versions/editions/deployment modes
+- re-fetch current branch/main relation
+- freeze exact current PostgreSQL and TypeDB versions/editions/deployment modes
 - use official primary sources for current capability claims
+- capture Python driver/client compatibility
+- verify backup/restore/HA/schema/evolution claims for exact subjects
+- freeze available benchmark hardware/environment constraints
 - build execution inventory and evidence plan
-- identify unresolved environment/hardware/tooling prerequisites
-- STOP before first Physical mapping/harness/schema write
+- identify unresolved environment/tooling prerequisites
+- STOP before first Physical mapping/harness/schema/database write
 - present a fresh exact write gate for PM-02+
 ```
 
-No SQL, TypeQL, Cypher, database instance, benchmark harness or schema is authorized by this bootstrap alone.
+Do not choose PostgreSQL or TypeDB during PM-01. No SQL, TypeQL, Cypher, database instance, benchmark harness or schema is authorized yet.
