@@ -27,12 +27,14 @@
 - Direct implementation validation: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 - Development Profile v0: **NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE**
+- Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
+- pgBackRest + AWS S3 initial DEV posture: **DORMANT / NOT ACTIVE until recovery/production boundary or real recovery rehearsal**
 
 ## 1. Purpose
 
 Terminal save-game for the Physical Model target-architecture workstream. A new chat/agent must be able to resume from repository truth without reconstructing conversation history.
 
-The workstream selected and accepted the target Physical architecture and integrated it into protected `main` through PR #15. It did **not** implement the production backend, deploy the selected stack, discharge the direct implementation validation register or decide the later Development Profile v0.
+The workstream selected and accepted the target Physical architecture and integrated it into protected `main` through PR #15. It did **not** implement the production backend, deploy the selected stack or discharge the direct implementation validation register. Current continuation truth additionally fixes the initial dormant posture of Restate and pgBackRest/AWS S3 so Development Profile v0 does not reopen those day-1 decisions.
 
 ## 2. Mandatory continuation bootstrap
 
@@ -229,7 +231,16 @@ GLOBAL DEFAULT
 NONE
 ```
 
-Current client-side journal encryption for Restate Cloud is documented only for TypeScript while LifeOS targets Python. Journal minimization is mandatory; deployment choice remains a later privacy/operability profile decision.
+Initial DEV posture is already fixed:
+
+```text
+RESTATE
+DORMANT / NOT ACTIVE
+ACTIVATE = first real Class-B durable-workflow need
+SELF-HOSTED vs CLOUD EU = decide only at activation
+```
+
+Current client-side journal encryption for Restate Cloud is documented only for TypeScript while LifeOS targets Python. Journal minimization is mandatory when Restate is activated.
 
 ### Object bytes
 
@@ -252,6 +263,15 @@ pgBackRest 2.59.0
 
 R2 object backup
 -> separate AWS S3 eu-south-1 repository
+```
+
+Initial DEV posture is already fixed:
+
+```text
+pgBackRest + AWS S3 eu-south-1
+DORMANT / NOT ACTIVE
+ACTIVATE = recovery/production boundary
+           OR real recovery-rehearsal requirement
 ```
 
 ### Solver
@@ -403,14 +423,29 @@ QA PASS — ARCHITECTURE / DOCUMENTATION COHERENCE
 
 ## 12. Development Profile v0 boundary
 
-The next separate operational design may decide:
+Development Profile v0 is the next separate operational design, but it decides only what is still genuinely unresolved.
+
+Already fixed and therefore **not** day-1 choices:
 
 ```text
-which selected components are active immediately
-self-hosted vs managed where Physical permits both
-free-tier/local development choices
+Restate initial DEV
+DORMANT / NOT ACTIVE until first real Class-B need
+
+Restate deployment mode
+DEFERRED until Restate activation
+
+pgBackRest + AWS S3 initial DEV
+DORMANT / NOT ACTIVE until recovery/production boundary
+or real recovery-rehearsal requirement
+```
+
+Remaining scope may decide:
+
+```text
+activation posture for selected components without an already-fixed initial disposition
+self-hosted vs managed only where an active component requires that choice now
 accounts/credentials/environment setup
-initial backup/observability activation
+initial observability activation
 upgrade/production triggers
 ```
 
@@ -438,7 +473,7 @@ CLOSED / SELECTED / ACCEPTED
 PROTECTED-MAIN INTEGRATION
 COMPLETE VIA PR #15
 
-MAIN
+MAIN INTEGRATION POINT
 e6f191bad947388a44defe2c15f4939345084f58
 
 FORMER BRANCH
@@ -467,7 +502,9 @@ NOT STARTED / DEFERRED
 
 DEV-v0
 NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 
 NEXT
-Development Profile v0
+Development Profile v0 — remaining unresolved operational decisions only
 ```
