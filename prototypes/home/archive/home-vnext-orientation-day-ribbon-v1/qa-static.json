@@ -2,14 +2,19 @@
   "checkpoint": "home-vnext-orientation-day-ribbon-v1",
   "date": "2026-08-18",
   "branch": "prototype/phase-4-today-home",
-  "pre_scope": "2f986aa540159f79ac646b8ce1cc52bc6216c5d4",
+  "corrective_pre_scope": "cb58b1528292398ccedeaedb60b44a4ff6e6235f",
   "artifact": {
     "filename": "lifeos_home_vnext_orientation_day_ribbon_v1.html",
-    "size_bytes": 748590,
-    "sha256": "88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17",
-    "git_blob_sha": "8933e62c4d99d09e7ef07620fa779496d6179650",
-    "manual_upload_commit": "2f986aa540159f79ac646b8ce1cc52bc6216c5d4",
-    "byte_identity_verified": true
+    "size_bytes": 748625,
+    "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+    "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341",
+    "corrective_upload_commit": "cb58b1528292398ccedeaedb60b44a4ff6e6235f",
+    "replaces_git_blob_sha": "8933e62c4d99d09e7ef07620fa779496d6179650",
+    "exact_reconstruction_matches_remote_git_blob": true
+  },
+  "corrective_delta": {
+    "changed_source_lines": 1,
+    "description": "drRoadGrad now uses gradientUnits userSpaceOnUse with percentage x coordinates"
   },
   "static_checks": {
     "dom_id_count": 67,
@@ -17,31 +22,16 @@
     "style_block_count": 37,
     "css_parse_errors": 0,
     "inline_script_count": 20,
-    "inline_js_syntax_failures": 0
-  },
-  "browser_smoke": {
-    "runtime": "system Chromium via Playwright",
-    "viewport": "1575x945",
-    "page_and_console_errors": 0,
-    "lifeos_today_present": true,
-    "orientation_day_title_present": true,
-    "week_strip_present": true,
-    "go_now_present": true,
-    "split_groups_present": true,
-    "group_chip_count": 6,
-    "event_card_count": 24,
-    "time_edit_control_count": 24,
-    "hour_labels_cover_00_00_to_24_00": true,
-    "world_layer_present": true,
-    "stats_stage_present": true,
-    "time_picker_opens": true,
-    "time_picker_body_portal": true,
-    "split_groups_toggle_changes_aria_pressed": true,
+    "inline_js_syntax_failures": 0,
     "result": "PASS"
   },
+  "browser_smoke": {
+    "status": "NOT_RERUN_AFTER_CORRECTIVE_REPLACEMENT",
+    "note": "The previously recorded integrated Chromium smoke was executed on the immediately preceding blob and is retained as historical evidence only; it is not attributed to the corrected blob."
+  },
   "qualification": {
-    "full_today_v21_regression": "NOT RUN in this checkpoint scope",
-    "visual_user_acceptance": "USER APPROVED SOURCE ARTIFACT",
-    "note": "Browser smoke is real integrated runtime evidence, but it is not relabelled as the complete Today v21 regression suite."
+    "full_today_v21_regression": "NOT RUN in this corrective checkpoint scope",
+    "visual_user_acceptance": "USER IDENTIFIED AND UPLOADED CORRECT SOURCE ARTIFACT",
+    "note": "Current corrected evidence is exact remote-blob reconstruction plus static integrity validation."
   }
 }
