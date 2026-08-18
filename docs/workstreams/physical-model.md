@@ -7,6 +7,7 @@
 - PM-00 bootstrap QA: **PASS**
 - PM-00 content-QA checkpoint: `8549e1c95bef2e354bd47028259e6816bf5e9272`
 - PM-00 QA-status propagation checkpoint before this final handoff: `f5e7f5c3ea38dd02b54192705575b0a48ea3854c`
+- PM-01 technology-discovery methodology checkpoint before this handoff: `1da012c28bf8f9de00bdf9deee1ab407fda4ba99`
 - PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
 - Physical mapping execution: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
@@ -215,7 +216,7 @@ Preserve:
 
 # 9. Candidate lanes — current authority
 
-Phase-10 register remains the source of candidate roles.
+Phase-10 register remains the source of candidate roles and mandatory starting anchors.
 
 ```text
 LANE P — PRIMARY
@@ -242,7 +243,9 @@ ED0 bounded native mechanisms first
 specialized candidate only after explicit admission trigger
 ```
 
-No candidate may be injected because it is fashionable. A new candidate/lane requires a bounded admission rationale and explicit gate.
+These registered candidates are **not a closed technology universe for PM-01 discovery**. PM-01 must scan credible current alternatives and may propose additional candidates where they show a concrete LifeOS fit rationale.
+
+No candidate may be injected because it is fashionable or merely to enlarge the shortlist. Discovery is broad; execution remains selective. A newly discovered product/lane requires a bounded admission rationale and explicit gate before mapping/benchmark execution.
 
 # 10. Durable runtime posture — not a Physical selection
 
@@ -352,14 +355,63 @@ When they matter:
 4. record contradictory/unclear claims as `HOLD` until resolved;
 5. do not use generic marketing copy as executed capability evidence.
 
+## Technology quality / cost / exit policy
+
+LifeOS must seek the best technology fit, not the cheapest technology and not the most fashionable technology.
+
+The current operating target is:
+
+```text
+INITIAL DIRECT TECHNOLOGY / LICENSE COST
+EUR 0 where realistically possible
+
+BUT
+EUR 0 != semantic requirement
+EUR 0 != permission to lose quality
+paid != automatic rejection
+free != automatic preference
+```
+
+Decision priority:
+
+```text
+1. semantic correctness / Domain + Logical preservation
+2. consistency / integrity / security / privacy / recovery
+3. real LifeOS capability and workload fit
+4. maturity / operability / maintainability / Python-tooling fit
+5. measured performance and resource efficiency
+6. total cost of ownership / deployment requirements
+7. lock-in / exit risk / realistic migration path
+```
+
+Cost can strongly break a near-tie, but cannot compensate for a hard semantic failure or a major structural deficit.
+
+If the strongest technology is materially paid, proprietary or infrastructure-heavy, do not hide or discard that result. Record the actual advantage and then evaluate whether:
+
+- an equivalent/near-equivalent zero-cost or open alternative exists;
+- the paid capability is required now or only under a future condition;
+- LifeOS can begin on a zero-cost topology without weakening accepted semantics or creating a dead end;
+- a migration/exit strategy is justified by a real, observed risk.
+
+Do not build large abstraction layers for hypothetical migrations. Preserve portability where cheap and structurally useful; use candidate-native strengths where they materially improve the system.
+
+```text
+portable where cheap and useful
+candidate-native where materially better
+no gratuitous lock-in
+no gratuitous abstraction
+```
+
+The best Physical result may use one primary canonical store plus bounded specialized mechanisms. Every additional engine must independently justify its semantic, operational and cost burden.
+
 # 15. Physical execution phases
 
 The current mandatory progression is:
 
 ```text
 PM-00  Bootstrap / authority freeze
-PM-01  Candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST
-PM-02  Primary candidate mapping design
+PM-01  Technology discovery + candidate/version/edition/deployment/environment freeze — READ-ONLY FIRST
+PM-02  Admitted primary candidate mapping design
 PM-03  Semantic mapping hard-gate preflight
 PM-04  Common fixture/oracle + candidate harness design
 PM-05  Correctness/destructive execution
@@ -373,6 +425,12 @@ PM-12  Accepted Physical Model
 PM-13  Independent clean-room QA
 PM-14  Closure / protected main integration
 ```
+
+The **sequence and gates are fixed**: semantic authority, correctness-before-performance, explicit writes, explicit selection and clean-room closure cannot be skipped by convenience.
+
+The **content inside the gates is evolutionary**: candidate universe, exact versions/editions/topologies, candidate-native mappings, activated secondary lanes, cost conditions and rerun/sensitivity needs may change as evidence is collected.
+
+This is deliberate: the Physical Model has a stable process without prematurely freezing the answer.
 
 Do not skip directly from bootstrap to a database winner.
 
@@ -461,7 +519,7 @@ PRE-SCOPE
 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
 ahead_by       22
-behind_by       0
+behind_by      0
 total_commits  22
 unique_paths   22
 added           6
@@ -513,7 +571,9 @@ f5e7f5c3ea38dd02b54192705575b0a48ea3854c
 
 No new physical path, mapping, benchmark execution, database deployment, technology selection, backend implementation or `main` write was introduced by that propagation.
 
-This handoff is the terminal PM-00 save-game propagation. A new chat must re-fetch the current branch HEAD rather than relying on a self-referential SHA inside the file containing that commit.
+The later PM-01 discovery-policy update changed only Physical documentation methodology/handoff and did not start PM-01 external research, mapping or benchmark execution.
+
+This handoff remains the live save-game. A new chat must re-fetch the current branch HEAD rather than relying on a self-referential SHA inside the file containing that commit.
 
 # 17. Git / write discipline — mandatory
 
@@ -617,7 +677,7 @@ Benchmark-only mapping/harness code is allowed only in later explicitly gated Ph
 # 22. Current exact next step — PM-01
 
 ```text
-PM-01 — CANDIDATE / ENVIRONMENT FREEZE
+PM-01 — TECHNOLOGY DISCOVERY / CANDIDATE / ENVIRONMENT FREEZE
 READ-ONLY FIRST
 READY / NOT STARTED
 ```
@@ -626,17 +686,21 @@ The next chat must:
 
 1. re-read this handoff and the Physical bootstrap docs;
 2. re-fetch the current `feature/physical-model` HEAD and compare with current `main`;
-3. confirm PM-00 final compare still has the same 22 approved physical paths and `behind_by 0` unless later repository activity is explicitly accounted for;
-4. research current exact PostgreSQL and TypeDB versions/editions/deployment options from official primary sources;
-5. capture exact Python driver/client compatibility and version-sensitive capabilities;
-6. verify backup/restore/HA/schema/evolution claims for the exact subjects;
-7. record the actual available benchmark host/environment constraints;
-8. identify whether any external infrastructure or local tooling is unavailable;
-9. produce a read-only PM-01 inventory and candidate freeze proposal;
-10. do **not** create mapping/schema/harness/database files during PM-01 read-only inventory;
-11. present a fresh exact PM-02+ write gate before any Physical mapping implementation.
+3. confirm PM-00 final compare still has the same 22 approved bootstrap paths plus any later explicitly authorized Physical-documentation updates, and account for current `behind_by` truth;
+4. perform broad current technology discovery from official primary sources rather than limiting the search to previously named products;
+5. keep PostgreSQL and TypeDB as mandatory starting primary anchors while evaluating other serious primary candidates/families that could materially fit LifeOS better;
+6. separately inventory credible alternatives for secondary graph, search/vector and other bounded specialist lanes without automatically activating those lanes;
+7. for every serious candidate record exact version, edition/license, deployment/topology, Python driver/client compatibility, backup/restore/HA/schema/evolution posture and relevant operational constraints;
+8. record direct-cost/free/self-hosted/managed boundaries and material infrastructure requirements without treating zero cost as a semantic requirement;
+9. record lock-in/exit considerations only to the depth justified by an actual candidate risk; do not design migration abstraction yet;
+10. record the actual available benchmark host/environment constraints;
+11. identify whether any external infrastructure or local tooling is unavailable;
+12. classify discovered candidates for future execution as `ADMIT`, `DEFER`, `HOLD` or `REJECT-FROM-BENCHMARK` with rationale; this is admission only, never selection;
+13. produce a read-only PM-01 technology landscape, candidate freeze proposal and evidence inventory;
+14. do **not** create mapping/schema/harness/database files during PM-01 read-only inventory;
+15. STOP and present a fresh exact PM-02+ write gate before any Physical mapping implementation.
 
-Do not choose PostgreSQL or TypeDB in PM-01.
+Do not choose PostgreSQL, TypeDB or any newly discovered candidate in PM-01.
 
 # 23. Resume summary
 
@@ -660,12 +724,12 @@ BOOTSTRAP QA PASS
 create checkpoint 6d76bc150dfd7b3cefe56c6e05c96404e7494626
 content-QA checkpoint 8549e1c95bef2e354bd47028259e6816bf5e9272
 QA-status propagation checkpoint f5e7f5c3ea38dd02b54192705575b0a48ea3854c
-22 unique paths
+22 unique bootstrap paths
 6 added
 16 modified
 0 deleted
 0 unexpected
-behind 0
+behind 0 at PM-00 QA
 main unchanged at bootstrap base
 
 DOMAIN
@@ -677,9 +741,20 @@ CLOSED / DO NOT REOPEN IMPLICITLY
 PHASE 10
 BENCHMARK METHOD AUTHORITY — DO NOT REINVENT
 
-PRIMARY CANDIDATES
+MANDATORY STARTING PRIMARY ANCHORS
 PostgreSQL hybrid — NOT SELECTED / NOT RUN
 TypeDB — NOT SELECTED / NOT RUN
+
+TECHNOLOGY DISCOVERY
+BROAD READ-ONLY PM-01 REQUIRED
+existing candidates != closed universe
+new execution candidates require bounded admission + explicit gate
+
+COST POSTURE
+EUR 0 initial direct technology/license cost where realistically possible
+quality/correctness outrank cost
+paid candidates remain eligible when materially better
+migration/exit work only when justified by real risk
 
 MAPPING
 NOT STARTED
@@ -694,6 +769,6 @@ BACKEND
 NOT STARTED / DEFERRED
 
 NEXT
-PM-01 READ-ONLY candidate/version/edition/deployment/environment freeze
+PM-01 READ-ONLY technology discovery + candidate/version/edition/deployment/environment freeze
 then STOP and gate PM-02 mapping writes
 ```
