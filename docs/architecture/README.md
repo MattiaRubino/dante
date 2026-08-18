@@ -1,7 +1,7 @@
 # Architecture Documentation
 
 - Status: **Current navigation**
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 ## Purpose
 
@@ -15,7 +15,7 @@ Read these for current architecture state:
 
 1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — current Pre-Physical bridge, downstream constraints and authorization boundary;
 2. [`requirements/README.md`](requirements/README.md) + all four Phase 5 requirement packages;
-3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime boundary contract;
+3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime boundary contract, including consequential AI change evaluation/regression requirements;
 4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase 6 Integration Hub/provider boundary contract;
 5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable-execution posture and conditional candidate ranking;
 6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase 8 engine-/transport-neutral governed-operation/effect contract;
@@ -24,10 +24,11 @@ Read these for current architecture state:
 9. [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md) — Phase 10 common scenario/destructive corpus;
 10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — Phase 10 candidate/role register; registered/preferred does not mean selected;
 11. [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md) — Phase 11 repository-safety contract and verified main-protection posture;
-12. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
-13. [`technical-decisions.md`](technical-decisions.md) — current technical directions and explicitly open choices;
-14. [`pre-physical-clean-room-qa.md`](pre-physical-clean-room-qa.md) — Phase 12 clean-room evidence after it exists remotely;
-15. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — active/final-verification workstream state.
+12. [`pre-physical-clean-room-qa.md`](pre-physical-clean-room-qa.md) — Phase 12 clean-room evidence;
+13. [`pre-physical-final-coherence-audit.md`](pre-physical-final-coherence-audit.md) — final independent total-audit/closure evidence after it exists remotely;
+14. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
+15. [`technical-decisions.md`](technical-decisions.md) — current technical directions and explicitly open choices;
+16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — exact current/final-verification workstream state.
 
 ## Domain and Logical closure authority
 
@@ -72,6 +73,8 @@ Current Pre-Physical requirement owners are:
 
 They define requirements and explicit open parameters. They do not select Auth providers, policy engines, databases, schemas, transaction mechanisms, workflow/queue/outbox technologies, offline-sync engines or arbitrary numeric RPO/RTO/SLA targets.
 
+Phase 10 already consumed these requirements into the benchmark method. The later separately authorized Physical Model executes the applicable candidate evidence and resolves materially ranking-dependent open parameters.
+
 ## Phase 6 boundaries
 
 Current AI/context/runtime categories remain distinct:
@@ -103,6 +106,8 @@ runtime Agent / Principal != Domain Actor automatically
 ExternalRef != NativeRef
 ```
 
+Material consequential changes to AI model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion. Evaluation evidence is not canonical truth or authorization.
+
 No AI provider/model, agent framework, MCP/A2A implementation, provider adapter or workflow engine is selected by Phase 6.
 
 ## Phase 7–9 contracts
@@ -122,7 +127,10 @@ Current dedicated candidates:
 ```text
 Restate   preferred structural-fit candidate — NOT selected
 Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable for local/bounded Python use
+          PostgreSQL recommended for production
+          distributed multi-server deployment PostgreSQL-coupled
 ```
 
 ### Governed operation/effect
@@ -169,13 +177,29 @@ EVENT / DOCUMENT
 bounded native mechanisms first; specialized candidate only on demonstrated gap/benefit
 ```
 
-Primary candidates must pass non-compensable semantic/correctness hard gates before weighted performance/operability scoring. LOW/BASE/HIGH values are synthetic qualification tiers, not business forecasts. Evidence is pinned to exact product version + edition/license + deployment mode. `PREFERRED != SELECTED`.
+Primary candidates must pass non-compensable semantic/correctness hard gates before weighted performance/operability scoring. LOW/BASE/HIGH values are synthetic qualification tiers, not business forecasts. Unexecuted upper envelopes remain unverified; progressive saturation/scaling evidence must be recorded honestly. Evidence is pinned to exact product version + edition/license + deployment mode. `PREFERRED != SELECTED`.
 
 ## Phase 11 repository engineering safety
 
 Phase 11 is remotely QA-verified. The current owner-driven `main` ruleset requires pull-request integration, blocks deletion and non-fast-forward/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and carries no required CI status checks until real stable checks exist.
 
-Repository-safety documentation is not proof by itself; the Phase 11 workstream closure verified the effective remote rules. Security settings that the connector cannot read remain explicitly connector-unverifiable rather than fabricated as PASS.
+Repository-safety documentation is not proof by itself; Phase 11 verified the effective remote rules. Security settings that the connector cannot read remain explicitly connector-unverifiable rather than fabricated as PASS.
+
+## Phase 12 + independent total audit
+
+Phase 12 clean-room QA is **QA PASS / CLOSED**.
+
+A later independent total repository audit rechecked the full Pre-Physical delta against `main`, Domain/Logical closure, current architecture/requirements, repository safety, branch hygiene, knowledge-retention treatment and Physical/backend authorization boundaries.
+
+The audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start. It identified only bounded current-truth/factual/engineering hardenings, including:
+
+- stale stage-handoff prose in current specifications;
+- precise Phase 10 method vs future Physical execution wording;
+- DBOS SQLite/PostgreSQL deployment-coupling correction;
+- explicit consequential AI evaluation/regression requirement;
+- final operating/navigation propagation.
+
+Those bounded repairs are incorporated on this branch. Definitive closure activates only after the final exact remote gate QA and audit-record activation conditions pass.
 
 ## Current stage boundary
 
@@ -188,23 +212,28 @@ Phase 6 boundaries                       CURRENT
 Phase 7 durable-execution contract       CURRENT
 Phase 8 governed-effect contract         CURRENT
 Phase 9 pressure contract                CURRENT
-Phase 10 benchmark method                CURRENT
+Phase 10 benchmark method                CURRENT / QA PASS
 Phase 11 repository engineering safety   QA PASS
-Phase 12 clean-room QA                    ACTIVE / closing on this branch
+Phase 12 clean-room QA                    QA PASS / CLOSED
+
+Independent total audit
+CORE PASS
+FINAL BOUNDED REPAIR / REMOTE ACTIVATION QA IN PROGRESS
 
 Pre-Physical Coherence
 FINAL CLOSURE CANDIDATE
-NOT YET DEFINITIVELY CLOSED
-pending independent total repository audit requested before final closure
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
 
 Backend production implementation
 NOT STARTED / DEFERRED
+
+Main integration
+NOT PERFORMED
 ```
 
-No Physical persistence/runtime/backend implementation may begin from the Phase 12 closure alone. Final whole-workstream closure and later Physical authorization are separate decisions.
+No Physical persistence/runtime/backend implementation may begin from the audit alone. Definitive Pre-Physical closure, later `main` integration and later Physical authorization are separate boundaries.
 
 ## Historical transition / validation evidence
 
