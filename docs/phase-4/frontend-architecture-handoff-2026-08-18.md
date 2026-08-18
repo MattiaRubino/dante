@@ -9,7 +9,7 @@
 
 ## 1. Current saved state
 
-The current Home/Today continuation reference is **Home vNext Orientation + Day Ribbon v1**, frozen from the exact HTML supplied and approved by the user on 2026-08-18.
+The current continuation reference is **Home vNext Orientation + Day Ribbon v1**, using the corrected exact HTML supplied by the user on 2026-08-18.
 
 Exact artifact:
 
@@ -22,9 +22,12 @@ Archive:
 Identity:
 
 ```text
-size     748590 bytes
-SHA-256  88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17
+size          748625 bytes
+SHA-256       986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
+Git blob SHA  fd9788212fbbd1ee40e53271cc39cedd9275b341
 ```
+
+The first uploaded variant was replaced by the user on commit `cb58b1528292398ccedeaedb60b44a4ff6e6235f`. The corrective delta changes exactly the `drRoadGrad` definition to use `gradientUnits:'userSpaceOnUse'` and percentage x coordinates. The corrected blob above is authoritative.
 
 Do not continue from a rejected/intermediate conversation preview or reconstruct this state by hand.
 
@@ -43,7 +46,7 @@ Read in this order for Phase 4 work:
 7. `docs/phase-4/cross-platform-interaction-rule-v0.md`;
 8. `docs/phase-4/interaction-architecture-guide-v0.md` as research/rationale, not as an automatic accepted-decision log;
 9. `docs/phase-4/frontend-master.md`, `docs/phase-4/today-v21.md` and regression tests for mature timeline guarantees;
-10. older Home/Today checkpoints only as historical/regression references.
+10. older checkpoints only as historical/regression references.
 
 Repository truth outranks conversation memory where they disagree.
 
@@ -101,32 +104,31 @@ The exact archived HTML wins over prose if there is uncertainty about current vi
 
 ## 5. Timeline protection
 
-The integrated artifact currently renders the mature timeline lineage, including 24-hour labels, group controls, event cards and anchored time editing.
+The integrated artifact currently carries the mature timeline lineage, including 24-hour labels, group controls, event cards and anchored time editing.
 
-`Today v21` remains a regression authority, not something superseded by this Home checkpoint.
+`Today v21` remains historical/regression authority for that timeline behavior; it is not a second current Home surface name.
 
 Do not remove/simplify mature behavior merely to solve a visual Home problem.
 
-Full `today-v21-regression.py` was **not run as part of this checkpoint save**; do not manufacture that PASS. The checkpoint has a real integrated Chromium smoke PASS plus static integrity and exact Git-blob identity evidence.
+The complete `today-v21-regression.py` suite was **not run as part of this checkpoint save or the corrective replacement**; do not manufacture that PASS.
 
 ---
 
 ## 6. QA state
 
-Checkpoint QA:
+Corrected artifact static QA:
 
 ```text
-Git blob byte identity                  PASS
-duplicate DOM IDs                       0
-CSS parse errors                        0
-inline JS syntax failures               0
-Chromium page/console errors             0
-rendered event cards                    24
-rendered group chips                     6
-00:00 → 24:00 labels                    present
-time-picker body portal                 PASS
-split-group state toggle                PASS
+size                                      748625 bytes
+SHA-256                                   986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
+Git blob SHA                              fd9788212fbbd1ee40e53271cc39cedd9275b341
+duplicate DOM IDs                         0
+CSS parse errors                          0
+inline JS syntax failures                 0
+exact reconstruction → remote blob        PASS
 ```
+
+Important qualification: the integrated Chromium smoke recorded immediately before the corrective replacement belongs to the previous blob and has **not** been relabelled as a fresh run on the corrected blob. The correction is a single `drRoadGrad` source-line change; current corrected evidence is exact byte reconstruction plus static validation.
 
 See `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/qa-static.json` for the exact record.
 
@@ -136,12 +138,12 @@ See `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/qa-static.json
 
 **Await the user's next explicit direction.**
 
-Do not independently resume an older planned task such as redesigning `Appunti`, `Review`, deeper navigation, naming or Home architecture merely because it appeared in a previous handoff.
+Do not independently resume an older planned task merely because it appeared in a previous handoff.
 
 The safe next iteration is:
 
 ```text
-open exact archived checkpoint
+open exact corrected archived checkpoint
 → receive explicit scope
 → preserve out-of-scope accepted regions
 → implement/test
