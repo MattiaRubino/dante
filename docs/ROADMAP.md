@@ -32,7 +32,7 @@ WL-H01..WL-H12 active downstream
 
 ### Pre-Physical Repository & Architecture Coherence
 
-**DEFINITIVE CLOSED / FINAL QA PASS on `chore/pre-physical-coherence`.**
+**DEFINITIVE CLOSED / FINAL QA PASS — integrated into `main` via PR #13 and post-merge verified.**
 
 ```text
 Phase 0–11        QA PASS
@@ -40,9 +40,14 @@ Phase 12          QA PASS / CLOSED
 Independent audit PASS
 Activation checkpoint
 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+
+Protected main integration
+PR #13
+74593ae283ce5a1d22335502480ee3fa54be0436
+POST-MERGE VERIFIED
 ```
 
-The branch-local closure does not itself integrate to `main`, select Physical persistence or start backend implementation.
+The merged head branch `chore/pre-physical-coherence` was auto-deleted after integration. The closed/integrated result does not select Physical persistence or start backend implementation.
 
 ## Active parallel product/design track
 
@@ -52,7 +57,7 @@ Separate workstream on `prototype/phase-4-today-home`.
 
 It may continue independently but does not redefine accepted Domain/Logical/backend architecture.
 
-## Closed Pre-Physical result
+## Closed and integrated Pre-Physical result
 
 The final independent audit confirmed:
 
@@ -78,6 +83,8 @@ The bounded final repairs included:
 - explicit versioned/reproducible consequential AI change evaluation requirement;
 - explicit `unexecuted upper benchmark envelope != VERIFIED-RUN` handling.
 
+Protected integration then preserved the final branch tree exactly: `34e9ea3b547922600cb472adf1549a321e6ddfe4 → 74593ae283ce5a1d22335502480ee3fa54be0436` is one merge commit ahead with zero file differences.
+
 ## Current Pre-Physical architecture inputs
 
 The following remain current downstream constraints:
@@ -93,7 +100,8 @@ The following remain current downstream constraints:
 - Phase 10 Physical benchmark method, scenario corpus and candidate register;
 - Phase 11 effective repository engineering safety;
 - Phase 12 clean-room evidence;
-- final independent audit evidence.
+- final independent audit evidence;
+- PR #13 / post-merge `main` verification.
 
 ## Current Physical benchmark posture
 
@@ -164,32 +172,24 @@ Concrete evaluation tooling/thresholds remain later engineering choices.
 
 ## Repository engineering safety
 
-`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
+`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled and removed the merged Pre-Physical source branch after PR #13.
 
-## Immediate next — not performed yet
-
-```text
-PRE-PHYSICAL PROTECTED MAIN INTEGRATION
-PENDING
-```
-
-Only after separate user authorization:
+## Immediate next — separate authorization required
 
 ```text
-chore/pre-physical-coherence
-→ protected PR to main
-→ merge commit
-→ post-merge main verification
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 ```
 
-Do not start Physical or Backend merely because branch-local Pre-Physical coherence is closed.
+Pre-Physical protected integration and post-merge verification are complete. Do not start Physical merely because readiness is established; beginning the Physical Model requires a new explicit user authorization and a fresh workstream/write gate.
 
 ## Later sequence — separate authorizations
 
-After protected integration and post-merge verification:
+After Physical Model authorization:
 
 ```text
-separately authorize Physical Model
+create bounded Physical workstream from current main
 → execute real Physical mappings + benchmark
 → select/accept Physical result
 → only then authorize Backend Foundation
