@@ -43,7 +43,9 @@ INTEGRATED / POST-MERGE VERIFIED
 PR #13 + current-truth alignment PR #14
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+AUTHORIZED / IN PROGRESS
+PM-00 BOOTSTRAP QA PASS
+PM-01 READ-ONLY NEXT
 branch feature/physical-model
 base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
 mapping NOT STARTED
@@ -185,10 +187,9 @@ S0 structured + lexical/full-text baseline vs S1 bounded pgvector where applicab
 
 Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
 
-The active Physical progression is:
+PM-00 is now **QA PASS**. The remaining Physical progression is:
 
 ```text
-PM-00 bootstrap
 PM-01 read-only candidate/environment freeze
 PM-02 mapping design
 PM-03 hard-gate preflight
@@ -231,7 +232,9 @@ PRE-PHYSICAL
 DEFINITIVE CLOSED / INTEGRATED / VERIFIED
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+AUTHORIZED / IN PROGRESS
+PM-00 QA PASS
+PM-01 READ-ONLY NEXT
 MAPPING NOT STARTED
 BENCHMARK NOT STARTED
 SELECTION NONE
@@ -240,4 +243,4 @@ BACKEND FOUNDATION
 NOT STARTED / DEFERRED
 ```
 
-After PM-00 remote QA, the exact next step is PM-01 **READ-ONLY FIRST**. It freezes exact current candidate versions/editions/deployment modes and the available benchmark environment from official primary sources, then stops before any mapping/schema/harness write.
+The exact next step is PM-01 **READ-ONLY FIRST**: freeze exact current candidate versions/editions/deployment modes and the available benchmark environment from official primary sources, then stop before any mapping/schema/harness write.
