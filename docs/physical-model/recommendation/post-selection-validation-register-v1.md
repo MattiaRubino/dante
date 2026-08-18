@@ -1,7 +1,7 @@
 # Post-Selection Validation Register v1
 
-- Status: **PM-10 MANDATORY CARRY-FORWARD / DIRECTLY UNEXECUTED**
-- Purpose: define the validation obligations that remain after recommendation and must not be mistaken for already executed PASS results.
+- Status: **PM-11 SELECTED-STACK CARRY-FORWARD / DIRECTLY UNEXECUTED**
+- Purpose: define the validation obligations that remain after target-stack selection and must not be mistaken for already executed PASS results.
 
 ## Primary correctness/recovery
 
@@ -49,7 +49,11 @@ PSV-25  cancellation/timeout truthfulness
 PSV-26  in-flight workflow version/deployment evolution
 PSV-27  runtime-journal privacy minimization
 PSV-28  recovery/reconciliation after runtime outage
+PSV-28A deployment-mode review: self-hosted vs Cloud EU privacy/operability/cost posture
+PSV-28B Python path must not assume TypeScript-only client-side journal encryption
 ```
+
+Restate technology is selected, but deployment is conditional. A deployment profile may choose self-hosted or Cloud EU without reopening the technology selection only if the selected mode satisfies the applicable privacy, durability, availability and recovery obligations above.
 
 ## Object storage / backup
 
@@ -95,11 +99,18 @@ PSV-47  telemetry outage does not mutate semantic truth
 No entry above is a PASS until a direct selected-stack artifact exists.
 
 ```text
-PM-10 RECOMMENDATION
-may remain PASS-CONDITIONAL
+PM-11 TARGET SELECTION
+may be COMPLETE
 
-PM-12/PM-13/implementation acceptance
-must preserve this register and discharge applicable items at the correct stage
+PM-12 ACCEPTED PHYSICAL MODEL
+may preserve implementation-validation obligations
+
+PM-13 CLEAN-ROOM QA
+may verify architecture/documentation coherence
+but MUST NOT relabel unexecuted PSV entries as PASS
+
+implementation/release acceptance
+must discharge applicable direct obligations at the correct stage
 ```
 
-If an obligation cannot be satisfied with the recommended stack, stop and reopen the relevant Physical decision rather than weakening Domain/Logical semantics.
+If an obligation cannot be satisfied with the selected stack, stop and reopen the relevant Physical decision rather than weakening Domain/Logical semantics.
