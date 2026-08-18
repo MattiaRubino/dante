@@ -7,7 +7,8 @@
 - Current approved working checkpoint: **Home vNext Orientation + Day Ribbon v1**
 - Current approved artifact documentation: `docs/phase-4/home-vnext-orientation-day-ribbon-v1.md`
 - Exact artifact: `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/lifeos_home_vnext_orientation_day_ribbon_v1.html`
-- Exact HTML SHA-256: `88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17`
+- Exact HTML SHA-256: `986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df`
+- Exact Git blob SHA: `fd9788212fbbd1ee40e53271cc39cedd9275b341`
 - Current handoff: `docs/phase-4/frontend-architecture-handoff-2026-08-18.md`
 - Historical/regression anchors: Home Shell v11, Today v21, Integrated v1, Timeline Toolbar v8, Adesso + Main Stage v1
 
@@ -43,7 +44,11 @@ For the next Home/Today prototype iteration, the authoritative working artifact 
 
 - `docs/phase-4/home-vnext-orientation-day-ribbon-v1.md`;
 - `prototypes/home/archive/home-vnext-orientation-day-ribbon-v1/lifeos_home_vnext_orientation_day_ribbon_v1.html`;
-- exact HTML SHA-256 `88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17`.
+- exact HTML size `748625` bytes;
+- exact HTML SHA-256 `986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df`;
+- exact Git blob SHA `fd9788212fbbd1ee40e53271cc39cedd9275b341`.
+
+The initially checkpointed HTML was replaced by the user on commit `cb58b1528292398ccedeaedb60b44a4ff6e6235f` after identifying that the wrong local variant had been uploaded. The corrective delta changes exactly one source line: `drRoadGrad` now uses `gradientUnits:'userSpaceOnUse'` with percentage x coordinates. This corrected blob is the only current working source.
 
 Use the archived HTML exactly. Do not reconstruct the current state approximately from screenshots or conversation history.
 
@@ -120,24 +125,19 @@ This summary is a handoff index, not permission to reimplement features approxim
 
 ## QA of current checkpoint
 
-Checkpoint creation verified:
+Corrected artifact verification:
 
 ```text
-artifact size                 748590 bytes
-artifact SHA-256              88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17
-Git blob identity             byte-identical PASS
+artifact size                 748625 bytes
+artifact SHA-256              986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
+Git blob SHA                  fd9788212fbbd1ee40e53271cc39cedd9275b341
+exact reconstruction          PASS
 duplicate DOM IDs             0
 CSS parse errors              0
 inline JS syntax failures     0
-Chromium page/console errors  0
-rendered event cards          24
-rendered group chips          6
-hour labels                   00:00 → 24:00
-time-picker body portal       PASS
-split-groups state toggle     PASS
 ```
 
-This is a real integrated browser smoke plus static integrity gate. The complete `today-v21-regression.py` suite was **NOT RUN** as part of this checkpoint save and must not be reported as PASS from this evidence.
+The integrated Chromium smoke previously recorded for this checkpoint lineage was executed on the immediately preceding mistaken blob. It was **NOT RERUN after the corrective replacement** and must not be attributed to the current corrected blob. The complete `today-v21-regression.py` suite was also **NOT RUN** as part of this correction.
 
 ## Historical/regression checkpoints
 
