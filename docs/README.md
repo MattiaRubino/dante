@@ -70,6 +70,8 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE
+Restate initial DEV activation DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV activation DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```
 
 Exact Physical handoff: [`workstreams/physical-model.md`](workstreams/physical-model.md).
@@ -165,6 +167,23 @@ OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 
 Canonical authority is singular: PostgreSQL. PowerSync/SQLite, Restate, R2, S3, solver state and telemetry remain bounded noncanonical mechanisms.
 
+## Initial DEV activation posture already fixed
+
+```text
+Restate runtime
+SELECTED TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = first real Class-B durable-workflow need
+DEPLOYMENT MODE = decide only at activation
+
+pgBackRest + AWS S3 eu-south-1
+SELECTED RECOVERY TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = recovery/production boundary OR real recovery-rehearsal requirement
+```
+
+These are not open day-1 choices for Development Profile v0. A component being selected in the target does not mean it must be deployed in initial DEV.
+
 ## Restate deployment qualification
 
 Restate technology is selected. Deployment is intentionally conditional:
@@ -180,7 +199,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-The later deployment/development profile decides between them using privacy, operability, availability and cost. The current Python path must not assume TypeScript-only client-side journal encryption.
+Because Restate is dormant in initial DEV, self-hosted vs Cloud EU is deferred until a real Class-B activation trigger exists. The current Python path must not assume TypeScript-only client-side journal encryption.
 
 ## Current architecture sources
 
@@ -280,4 +299,6 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```

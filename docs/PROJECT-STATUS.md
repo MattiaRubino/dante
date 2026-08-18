@@ -13,6 +13,8 @@
 - Production application code: **NOT STARTED**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 - Development Profile v0: **NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE**
+- Initial DEV Restate posture: **DORMANT / NOT ACTIVE until the first real Class-B durable-workflow need**
+- Initial DEV pgBackRest + AWS S3 posture: **DORMANT / NOT ACTIVE until the recovery/production boundary or a real recovery-rehearsal requirement**
 
 ## Current stage
 
@@ -58,6 +60,8 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+Restate initial DEV activation DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV activation DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```
 
 Phase 4 UX remains a separate active product/design workstream on `prototype/phase-4-today-home`.
@@ -180,6 +184,25 @@ OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 
 Canonical authority remains singular: PostgreSQL.
 
+## Initial DEV activation posture already fixed
+
+The accepted target contains components that are intentionally **selected but dormant in initial DEV**:
+
+```text
+RESTATE RUNTIME
+SELECTED TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = first real Class-B durable-workflow need
+DEPLOYMENT MODE = decide only when activation is triggered
+
+pgBackRest + AWS S3 eu-south-1
+SELECTED RECOVERY TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = recovery/production boundary OR real recovery-rehearsal requirement
+```
+
+These are not open day-1 technology or activation choices for Development Profile v0. `SELECTED != DEPLOYED` remains explicit.
+
 ## Restate deployment qualification
 
 Restate technology is selected, but deployment is conditional:
@@ -195,7 +218,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-The later deployment profile decides between them. Current Python use must not assume TypeScript-only client-side journal encryption; journal minimization remains mandatory.
+Because Restate is dormant in initial DEV, self-hosted vs Cloud EU is **not a current decision**. That choice is made only when the first real Class-B activation trigger exists, using privacy, operability, availability and cost at that boundary. Current Python use must not assume TypeScript-only client-side journal encryption; journal minimization remains mandatory.
 
 ## Direct Physical execution truth
 
@@ -256,18 +279,17 @@ None is direct PASS merely because the target architecture is closed.
 
 The Physical target is now integrated into `main` and available as an input to later engineering. It does **not** itself start backend production implementation.
 
-A separate `Development Profile v0` may now be designed to decide:
+A separate `Development Profile v0` may now be designed to decide the **remaining** operational questions, such as:
 
 ```text
-which selected components are activated immediately
-self-hosted vs managed where Physical allows both
-free-tier/local development choices
+activation posture for selected components not already fixed by current truth
+self-hosted vs managed only where an active component requires that choice now
 accounts/credentials/environment setup
-initial backup/observability activation
+initial observability activation
 upgrade/production triggers
 ```
 
-That profile must not silently change the accepted target Physical Model.
+It must **not** reopen Restate or pgBackRest/AWS S3 as day-1 activation choices: their initial dormant posture is already fixed above. The profile must not silently change the accepted target Physical Model.
 
 ## Active workstreams
 
@@ -290,13 +312,14 @@ That profile must not silently change the accepted target Physical Model.
 
 ### Development Profile v0
 
-**NOT STARTED.** This is the next separate operational-design discussion after Physical integration.
+**NOT STARTED.** This is the next separate operational-design discussion after Physical integration, consuming the fixed dormant-component posture above rather than reopening it.
 
 ## Immediate next work
 
 ```text
 1. open Development Profile v0 as a separate bounded scope
-2. decide actual initial activation/deployment/free/local choices against the already-selected target
-3. preserve all direct PSV obligations as NOT RUN until directly executed
-4. do not start backend production implementation without its own explicit authorization
+2. identify only the operational decisions that remain genuinely open
+3. preserve Restate and pgBackRest/AWS S3 as initial-DEV dormant until their explicit activation triggers
+4. preserve all direct PSV obligations as NOT RUN until directly executed
+5. do not start backend production implementation without its own explicit authorization
 ```

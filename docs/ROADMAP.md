@@ -111,7 +111,7 @@ OR-Tools 9.15 CP-SAT
 OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 ```
 
-Restate deployment is intentionally profile-dependent:
+Restate deployment is intentionally profile-dependent when Restate is activated:
 
 ```text
 SELF-HOSTED
@@ -122,6 +122,20 @@ ALLOWED MANAGED OPTION
 
 GLOBAL DEFAULT
 NONE
+```
+
+Initial DEV activation is already fixed for two selected target components:
+
+```text
+RESTATE
+DORMANT / NOT ACTIVE
+ACTIVATE ON FIRST REAL CLASS-B DURABLE-WORKFLOW NEED
+DEPLOYMENT MODE DECIDED ONLY AT ACTIVATION
+
+pgBackRest + AWS S3 eu-south-1
+DORMANT / NOT ACTIVE
+ACTIVATE AT RECOVERY/PRODUCTION BOUNDARY
+OR WHEN A REAL RECOVERY-REHEARSAL REQUIREMENT EXISTS
 ```
 
 ## Physical evidence truth retained
@@ -146,23 +160,28 @@ The mandatory direct selected-stack validation register remains active for imple
 
 ## Current next architecture/engineering track — Development Profile v0
 
-The next separate operational-design scope may decide **how the selected Physical target is actually used during initial development**.
+The next separate operational-design scope decides **only how the already-selected Physical target is used where current activation posture has not already been fixed**.
 
-Expected questions:
+Expected questions include:
 
 ```text
-which selected components are active immediately
-which are dormant until their first real capability need
-self-hosted vs managed where the Physical Model allows both
-free-tier/local development choices
+which still-unresolved selected components are active immediately
+which other components remain dormant until their first real capability need
+self-hosted vs managed only where an active component requires the choice now
 accounts/credentials/environment setup
-initial backup and observability activation
+initial observability activation
 upgrade/production triggers
 ```
 
 This profile must not silently change the accepted Physical target.
 
-For example, `Restate runtime` is already selected as the Class-B technology, but DEV-v0 may decide whether Restate is active immediately and whether the initial deployment is self-hosted or Cloud EU.
+Two day-1 questions are already closed and must not be reopened:
+
+```text
+Restate active now?                 NO — DORMANT UNTIL REAL CLASS-B NEED
+Restate self-hosted vs Cloud EU?    NOT YET — DECIDE ONLY AT ACTIVATION
+pgBackRest/AWS S3 active now?       NO — DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
+```
 
 ## Backend Foundation — later explicit authorization
 
@@ -214,7 +233,12 @@ SELECTED != DEPLOYED
 DURABLE EXECUTION
 bounded async → PostgreSQL outbox + bounded worker
 material durable Class-B → Restate runtime
-Restate deployment → self-hosted or Cloud EU / profile decision
+initial DEV Restate → DORMANT until first real Class-B need
+Restate deployment → self-hosted or Cloud EU, decided only when activated
+
+RECOVERY
+pgBackRest + AWS S3 eu-south-1 → selected production/off-site target
+initial DEV → DORMANT until recovery/production boundary or real rehearsal need
 
 SEARCH
 PostgreSQL native FTS + pg_trgm + unaccent
@@ -250,7 +274,8 @@ eval PASS != Authority / governed-effect authorization
 
 ```text
 1. Development Profile v0 — separate bounded operational-design scope
-2. decide initial activation/deployment/free/local choices against the accepted target
-3. later Backend Foundation authorization when explicitly approved
-4. discharge applicable direct selected-stack validation obligations at their proper implementation/release gates
+2. identify only genuinely unresolved initial activation/deployment/configuration choices
+3. preserve Restate and pgBackRest/AWS S3 as initial-DEV dormant until their fixed triggers
+4. later Backend Foundation authorization when explicitly approved
+5. discharge applicable direct selected-stack validation obligations at their proper implementation/release gates
 ```

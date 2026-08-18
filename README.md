@@ -47,6 +47,8 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE
+Restate initial DEV activation DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV activation DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
@@ -192,6 +194,25 @@ OR-Tools = candidate solver state
 Grafana/OTel = operational telemetry
 ```
 
+## Initial DEV activation posture already fixed
+
+Two selected target components are intentionally **not day-1 DEV services**:
+
+```text
+RESTATE RUNTIME
+SELECTED TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = first real Class-B durable-workflow need
+DEPLOYMENT MODE = decide only when activation is triggered
+
+pgBackRest + AWS S3 eu-south-1
+SELECTED RECOVERY TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATE = recovery/production boundary OR real recovery-rehearsal requirement
+```
+
+Development Profile v0 consumes this posture; it does not reopen these as initial activation choices.
+
 ## Restate deployment qualification
 
 Restate is selected as the durable-runtime technology. `Restate Cloud EU` is **not** a universal mandatory default.
@@ -207,7 +228,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-The later deployment profile chooses between them based on privacy, operability, availability and cost. For the current Python path, do not assume TypeScript-only client-side journal encryption; journal payload minimization remains mandatory.
+Because Restate is dormant in initial DEV, self-hosted vs Cloud EU is not a decision that must be made now. The deployment choice is made only when a real Class-B activation trigger exists, based on privacy, operability, availability and cost at that boundary. For the current Python path, do not assume TypeScript-only client-side journal encryption; journal payload minimization remains mandatory.
 
 ## Direct evidence truth
 
@@ -292,4 +313,6 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NEXT SEPARATE OPERATIONAL DESIGN SCOPE
+Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```

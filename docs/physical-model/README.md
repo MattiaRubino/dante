@@ -27,6 +27,8 @@
 - Direct implementation execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 - Development Profile v0: **NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE**
+- Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
+- pgBackRest + AWS S3 initial DEV posture: **DORMANT / NOT ACTIVE until recovery/production boundary or real recovery rehearsal**
 
 ## Purpose
 
@@ -189,6 +191,26 @@ PostgreSQL canonical
 
 Offline is operation-specific. Arrival order does not define truth. Universal consequential last-write-wins is rejected. Visibility/Consent/delete/redaction must propagate to affected local/projection copies.
 
+## Initial DEV activation posture already fixed
+
+The target stack includes components that are intentionally **selected but dormant in initial DEV**. This posture is current operational truth and is consumed by Development Profile v0 rather than reopened there.
+
+```text
+RESTATE RUNTIME
+TARGET = SELECTED
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATION TRIGGER = first real Class-B durable-workflow need
+DEPLOYMENT MODE = decide only when activation is triggered
+
+pgBackRest + AWS S3 eu-south-1
+TARGET = SELECTED PRODUCTION/OFF-SITE RECOVERY
+INITIAL DEV = DORMANT / NOT ACTIVE
+ACTIVATION TRIGGER = recovery/production boundary
+                     OR real recovery-rehearsal requirement
+```
+
+`SELECTED != DEPLOYED` is therefore directly applicable here.
+
 ## Restate deployment semantics
 
 Restate is selected as the Class-B durable-execution technology.
@@ -204,7 +226,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-The later Development/Production profile chooses between them. For the current Python path, do not assume the client-side journal encryption currently documented only for TypeScript; journal payload minimization remains mandatory.
+Because Restate is dormant in initial DEV, choosing self-hosted vs Cloud EU is **not a current Development Profile v0 decision**. That decision opens only when the first real Class-B activation trigger exists. For the current Python path, do not assume the client-side journal encryption currently documented only for TypeScript; journal payload minimization remains mandatory.
 
 ## Object / recovery semantics
 
@@ -216,6 +238,8 @@ Production recovery target:
 PostgreSQL -> pgBackRest -> S3
 R2 raw bytes -> separate S3 backup repository
 ```
+
+This recovery target is selected but **not activated in initial DEV**. Activation occurs at the recovery/production boundary or earlier only when an actual recovery-rehearsal requirement makes it necessary.
 
 Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-resurrection semantics. Object Lock Compliance is not the default.
 
@@ -300,15 +324,22 @@ This is not a direct runtime/database/recovery PASS.
 
 ## Development Profile v0 boundary
 
-A later separate operational scope will decide:
+A later separate operational scope decides only the **remaining unresolved** questions, such as:
 
 ```text
-which selected components are active immediately
-self-hosted vs managed where the target permits both
-free-tier/local development choices
+which selected components without an already-fixed posture are active immediately
+self-hosted vs managed where an active component actually requires that choice now
 accounts / credentials / environment setup
-initial backup / observability activation
+initial observability activation
 upgrade / production triggers
+```
+
+It must not reopen the already-fixed initial posture:
+
+```text
+Restate initial DEV = DORMANT until real Class-B need
+Restate deployment mode = deferred until Restate activation
+pgBackRest + AWS S3 initial DEV = DORMANT until recovery/production boundary or real rehearsal need
 ```
 
 A component being dormant in DEV does not remove it from the accepted target. A DEV deployment choice does not silently change target architecture.
@@ -333,6 +364,8 @@ NOT STARTED / CARRIED FORWARD
 
 NEXT
 Development Profile v0
+Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 
 BACKEND
 NOT STARTED / DEFERRED
