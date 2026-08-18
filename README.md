@@ -24,22 +24,29 @@ DEFINITIVE CLOSED / FINAL QA PASS — integrated via PR #13
 POST-MERGE CURRENT-TRUTH ALIGNMENT — PR #14
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS
-PM-00 BOOTSTRAP QA PASS
-PM-01 READ-ONLY NEXT
-branch feature/physical-model
-base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-mapping NOT STARTED
-benchmark execution NOT STARTED
-technology selection NONE
+CLOSED AT TARGET-ARCHITECTURE LEVEL
+PM-11 explicit stack selection COMPLETE
+PM-12 Accepted Physical Model COMPLETE
+PM-13 clean-room architecture/documentation QA PASS
+PM-14 branch closure COMPLETE
+selected canonical primary PostgreSQL 18.4
+selected target companion stack established
+
+DIRECT PHYSICAL IMPLEMENTATION VALIDATION
+NOT STARTED
+DIRECT HG PASS 0
+VERIFIED-RUN SCORE NOT AVAILABLE
 
 BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
+
+DEVELOPMENT PROFILE v0
+NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE
 ```
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
 
-For exact current state read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active [`docs/workstreams/physical-model.md`](docs/workstreams/physical-model.md).
+For exact current state read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md), [`docs/physical-model/pm-12-accepted-physical-model-v1.md`](docs/physical-model/pm-12-accepted-physical-model-v1.md) and [`docs/workstreams/physical-model.md`](docs/workstreams/physical-model.md).
 
 ## How to resume work
 
@@ -55,16 +62,16 @@ Read in this order:
 8. [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md);
 9. [`docs/workstreams/physical-model.md`](docs/workstreams/physical-model.md);
 10. [`docs/physical-model/README.md`](docs/physical-model/README.md);
-11. [`docs/physical-model/execution-methodology-v1.md`](docs/physical-model/execution-methodology-v1.md);
-12. [`docs/physical-model/execution-template-v1.md`](docs/physical-model/execution-template-v1.md);
-13. [`docs/physical-model/acceptance-test-matrix-v1.md`](docs/physical-model/acceptance-test-matrix-v1.md);
-14. [`docs/physical-model/result-register-v1.md`](docs/physical-model/result-register-v1.md);
-15. [`docs/architecture/README.md`](docs/architecture/README.md) and the complete Phase-5..10 authority it links;
-16. complete CLOSED Domain/Logical authority where mapping semantics are involved;
+11. [`docs/physical-model/pm-11-explicit-selection-v1.md`](docs/physical-model/pm-11-explicit-selection-v1.md);
+12. [`docs/physical-model/pm-12-accepted-physical-model-v1.md`](docs/physical-model/pm-12-accepted-physical-model-v1.md);
+13. [`docs/physical-model/pm-13-clean-room-qa-v1.md`](docs/physical-model/pm-13-clean-room-qa-v1.md);
+14. [`docs/physical-model/recommendation/post-selection-validation-register-v1.md`](docs/physical-model/recommendation/post-selection-validation-register-v1.md);
+15. [`docs/architecture/README.md`](docs/architecture/README.md) and complete Phase-5..10 authority where relevant;
+16. complete CLOSED Domain/Logical authority where semantics are involved;
 17. relevant ADRs/evidence;
 18. verify current Git refs before any write.
 
-Repository current truth outranks conversation memory and old/historical files. The active Physical branch may contain newer truth only inside its explicitly bounded workstream.
+Repository current truth outranks conversation memory and old/historical files.
 
 ## Documentation rule
 
@@ -87,9 +94,7 @@ A size/tool-limit split is a **lossless physical partition of the complete logic
 
 ### Domain
 
-The Domain Atlas is cumulative. Do not stop at the early entry payload when determining closure state.
-
-Read:
+The Domain Atlas is cumulative. Current closure remains:
 
 - [`docs/domain/README.md`](docs/domain/README.md);
 - [`docs/domain/README-part-20.md`](docs/domain/README-part-20.md);
@@ -108,71 +113,125 @@ Read:
 
 Current Logical state is **CLOSED**.
 
-## Active Physical authority
+## Accepted Physical authority
 
-The Physical workstream consumes the accepted Domain/Logical/Pre-Physical state; it does not reopen it implicitly.
+The Physical workstream consumed the accepted Domain/Logical/Pre-Physical state without reopening it implicitly.
 
-Current Physical execution documents:
+Current Physical authority:
 
-- [`docs/physical-model/README.md`](docs/physical-model/README.md) — execution authority/index;
-- [`docs/physical-model/execution-methodology-v1.md`](docs/physical-model/execution-methodology-v1.md) — PM-00..PM-14 sequence;
-- [`docs/physical-model/execution-template-v1.md`](docs/physical-model/execution-template-v1.md) — reproducible evidence template;
-- [`docs/physical-model/acceptance-test-matrix-v1.md`](docs/physical-model/acceptance-test-matrix-v1.md) — HG/CG/corpus/scenario ledger;
-- [`docs/physical-model/result-register-v1.md`](docs/physical-model/result-register-v1.md) — current result/disposition state;
-- [`docs/workstreams/physical-model.md`](docs/workstreams/physical-model.md) — live save-game.
+- [`docs/physical-model/README.md`](docs/physical-model/README.md) — Physical index/current state;
+- [`docs/physical-model/pm-10-recommendation-v1.md`](docs/physical-model/pm-10-recommendation-v1.md) — final recommendation evidence;
+- [`docs/physical-model/pm-11-explicit-selection-v1.md`](docs/physical-model/pm-11-explicit-selection-v1.md) — explicit selected target stack;
+- [`docs/physical-model/pm-12-accepted-physical-model-v1.md`](docs/physical-model/pm-12-accepted-physical-model-v1.md) — accepted target Physical Model;
+- [`docs/physical-model/pm-13-clean-room-qa-v1.md`](docs/physical-model/pm-13-clean-room-qa-v1.md) — clean-room architecture/documentation QA;
+- [`docs/physical-model/pm-14-closure-v1.md`](docs/physical-model/pm-14-closure-v1.md) — closure evidence;
+- [`docs/physical-model/recommendation/post-selection-validation-register-v1.md`](docs/physical-model/recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
+- [`docs/workstreams/physical-model.md`](docs/workstreams/physical-model.md) — workstream handoff/closure state.
 
-Phase-10 method authority remains:
+Phase-10 benchmark authority remains historical/method input:
 
 - [`docs/architecture/physical-benchmark-specification.md`](docs/architecture/physical-benchmark-specification.md)
 - [`docs/architecture/physical-benchmark-scenario-corpus.md`](docs/architecture/physical-benchmark-scenario-corpus.md)
 - [`docs/architecture/physical-benchmark-register.md`](docs/architecture/physical-benchmark-register.md)
 
-## Current Physical posture
-
-No final Physical persistence is selected.
+## Accepted Physical target
 
 ```text
-PRIMARY CANONICAL
-PostgreSQL hybrid — preferred mandatory baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
+CANONICAL PRIMARY
+PostgreSQL 18.4
 
-SECONDARY GRAPH
-G0 no-specialized-store baseline vs G1 Neo4j
+POSTGRESQL CAPABILITIES
+PostGIS 3.6.4
+pgvector 0.8.6
+native FTS / pg_trgm / unaccent
+pg_stat_statements
+PgBouncer 1.25.2
 
-SEARCH / VECTOR
-S0 structured + lexical/full-text baseline
-vs S1 bounded pgvector where applicable
+OFFLINE / SYNC
+PowerSync 1.25.0 Open Edition
+encrypted SQLite local state
+PostgreSQL-backed PowerSync sync storage
 
-EVENT / DOCUMENT
-bounded mechanisms first
-specialized candidate only on demonstrated gap/benefit
+BOUNDED ASYNC
+PostgreSQL transactional outbox + bounded worker
 
-generic EAV / generic edge / universal meta-model
-HARD REJECT FOR CANONICAL KERNEL
+DURABLE CLASS-B
+Restate runtime
+self-hosted first-class or Cloud EU managed option
+global Restate deployment default NONE
+
+OBJECT BYTES
+Cloudflare R2 Standard / EU / private
+
+RECOVERY TARGET
+pgBackRest 2.59.0
+AWS S3 Standard eu-south-1 off-site recovery repositories
+Versioning + Object Lock GOVERNANCE with finite policy-bound retention
+
+SOLVER
+OR-Tools 9.15 CP-SAT
+
+OBSERVABILITY
+OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 ```
 
-Mandatory Physical rules:
+Canonical authority remains singular:
 
 ```text
-hard semantic/correctness gates before score
-same semantics + candidate-idiomatic mapping
-product + version + edition + deployment = benchmark subject
-raw evidence before summary
-NOT RUN != PASS
-unexecuted tier != VERIFIED-RUN
-PREFERRED != SELECTED
+PostgreSQL = canonical LifeOS truth/material history
+PowerSync/SQLite = local/sync projection
+Restate = runtime state
+R2 = raw bytes
+S3 = recovery copy
+OR-Tools = candidate solver state
+Grafana/OTel = operational telemetry
 ```
 
-PM-00 bootstrap is complete and QA-verified. The next step is **PM-01 READ-ONLY FIRST**: freeze current exact candidate subjects and available benchmark environment using official primary sources, then stop before the first mapping/harness write.
+## Restate deployment qualification
 
-## Current technical direction — not backend implementation authorization
+Restate is selected as the durable-runtime technology. `Restate Cloud EU` is **not** a universal mandatory default.
+
+```text
+SELF-HOSTED
+FIRST-CLASS OPTION
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+The later deployment profile chooses between them based on privacy, operability, availability and cost. For the current Python path, do not assume TypeScript-only client-side journal encryption; journal payload minimization remains mandatory.
+
+## Direct evidence truth
+
+Physical target selection/acceptance did not manufacture direct execution evidence:
+
+```text
+DATABASE DEPLOYMENT      NOT STARTED
+FIXTURE/HARNESS           NOT STARTED
+DIRECT HG PASS            0
+LOW/BASE/HIGH            NOT RUN
+RESTORE/MIGRATION         NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                 NOT RUN
+RESTATE                   NOT RUN
+OBJECT RECOVERY           NOT RUN
+SOLVER                    NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
+```
+
+Direct selected-stack obligations remain in the post-selection validation register and move forward into implementation/release gates.
+
+## Current technical direction — not implementation authorization
 
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
 - Backend: Python + FastAPI + Pydantic; modular monolith first.
-- SQLAlchemy + Alembic remain conditional on accepted Physical persistence.
+- SQLAlchemy + Alembic may now be evaluated/used against the accepted PostgreSQL Physical target inside a separately authorized backend/development scope.
 
-Backend implementation is **not started**.
+Backend production implementation is **not started**.
 
 ### AI / context / runtime
 
@@ -192,11 +251,6 @@ AI output/tool invocation does not become canonical truth/effect by itself. Runt
 
 Material consequential AI changes require versioned/reproducible evaluation before promotion.
 
-```text
-eval result != canonical LifeOS truth
-eval PASS != Authority / governed-effect authorization
-```
-
 ### Integration Hub
 
 Five modes remain distinct: canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration.
@@ -214,66 +268,22 @@ workflow completed != Actual automatically
 technical cancellation != Domain cancellation automatically
 ```
 
-### Durable execution
-
-```text
-bounded async
-DB/worker/outbox style = valid baseline class
-
-material durable execution
-Restate   preferred candidate — NOT selected
-Temporal  mandatory strongest challenger — NOT selected
-DBOS      conditional challenger — NOT selected
-          local/bounded Python SQLite-capable
-          production PostgreSQL-recommended
-          distributed multi-server PostgreSQL-coupled
-```
-
-### Search / observability / calendar / solver
-
-```text
-SEARCH
-structured + lexical/full-text baseline
-semantic/vector bounded candidate
-
-OBSERVABILITY
-OpenTelemetry-first / equivalent direction
-
-CALENDAR
-iCalendar / JSCalendar / providers = adapter pressure, not ontology
-
-SOLVER
-simple deterministic rules/heuristics baseline
-OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
-```
-
 ## Repository safety
 
-`main` remains protected by the remotely verified `lifeos-main-safety` policy. `feature/physical-model` is the active bounded Physical branch. Do not work directly on `main`, do not invent required CI checks, and do not treat benchmark-only code/evidence as production infrastructure automatically.
-
-## Completed Pre-Physical boundary
-
-Pre-Physical is **DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified**. PR #13 integrated the workstream and PR #14 aligned current truth. Physical starts from `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`.
+`main` remains protected by the remotely verified `lifeos-main-safety` policy. Normal integration uses pull requests; no direct-main bypass is authorized.
 
 ## Next boundary
 
 ```text
-PM-00 BOOTSTRAP
-QA PASS
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
 
-NEXT
-PM-01 READ-ONLY FIRST
-exact candidate/version/edition/deployment/environment freeze
+DIRECT IMPLEMENTATION VALIDATION
+CARRIED FORWARD
 
-MAPPING
-NOT STARTED
-
-BENCHMARK
-NOT STARTED
-
-SELECTION
-NONE
-
-BACKEND
+BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
+
+DEVELOPMENT PROFILE v0
+NEXT SEPARATE OPERATIONAL DESIGN SCOPE
 ```
