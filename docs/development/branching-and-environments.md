@@ -44,11 +44,12 @@ feature/physical-model
 PM-00..PM-14 TARGET-ARCHITECTURE WORK COMPLETE
 selected canonical primary PostgreSQL 18.4
 PM-13 architecture/documentation QA PASS
-branch closure complete
-protected-main integration is the final branch lifecycle action
+merged into protected main via PR #15
+main merge e6f191bad947388a44defe2c15f4939345084f58
+auto-deleted after merge
 ```
 
-Closed Domain/Logical branches are historical evidence, not starting points for new backend work. Any genuine semantic reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
+Closed Domain/Logical/Physical branches are historical evidence, not starting points for new backend work. Any genuine semantic or Physical reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
 
 ## Why there is no permanent `develop` branch
 
@@ -146,7 +147,7 @@ Do not manufacture a required status check before the corresponding workflow/che
 
 Do not treat future repository rules/settings as active merely because their intended configuration is documented. Read back effective remote rules before claiming a changed safety milestone PASS.
 
-PR #13 and post-merge alignment PR #14 successfully exercised the protected-main path; merge commits preserved workstream history and automatic deletion removed merged head branches.
+PR #13, post-merge alignment PR #14 and Physical integration PR #15 successfully exercised the protected-main path; merge commits preserved workstream history and automatic deletion removed merged head branches.
 
 ## Current stage boundary
 
@@ -155,7 +156,8 @@ As of 2026-08-18:
 - Core Domain Model / Domain Atlas is **CLOSED / integrated**;
 - Logical Model is **CLOSED / integrated / WL-H01..WL-H12 active**;
 - Pre-Physical Repository & Architecture Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified**;
-- Physical Model target architecture is **CLOSED / SELECTED / ACCEPTED** on the closure branch, with PostgreSQL 18.4 selected as canonical primary;
+- Physical Model target architecture is **CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**, with PostgreSQL 18.4 selected as canonical primary;
+- former branch `feature/physical-model` is **MERGED / AUTO-DELETED**;
 - PM-13 Physical clean-room architecture/documentation QA is **PASS**;
 - direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**;
 - Backend Foundation/production implementation is **NOT STARTED / DEFERRED**;
@@ -204,7 +206,7 @@ As applicable:
 - any required repository/CI checks that actually exist are passing;
 - remote readback/QA supports any PASS/CLOSED claim.
 
-For Physical closure specifically, PM-11 selection, PM-12 Accepted Physical Model, PM-13 architecture/documentation QA PASS, preserved direct `NOT RUN` truth and the post-selection validation carry-forward must all remain visible before merge.
+For Physical closure/integration specifically, PM-11 selection, PM-12 Accepted Physical Model, PM-13 architecture/documentation QA PASS, preserved direct `NOT RUN` truth and the post-selection validation carry-forward must all remain visible after merge.
 
 ## Emergency production fixes
 

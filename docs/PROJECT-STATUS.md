@@ -2,7 +2,8 @@
 
 - Last updated: 2026-08-18
 - Canonical integrated branch: `main`
-- Physical workstream branch during closure: `feature/physical-model`
+- Physical integration: **PR #15 / `main @ e6f191bad947388a44defe2c15f4939345084f58`**
+- Former Physical workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical target architecture: **CLOSED / SELECTED / ACCEPTED**
 - Selected canonical primary: **PostgreSQL 18.4**
 - PM-13 clean-room architecture/documentation QA: **PASS**
@@ -39,6 +40,9 @@ PM-11 explicit selection COMPLETE
 PM-12 Accepted Physical Model COMPLETE
 PM-13 clean-room architecture/documentation QA PASS
 PM-14 branch closure COMPLETE
+INTEGRATED INTO MAIN VIA PR #15
+MAIN e6f191bad947388a44defe2c15f4939345084f58
+FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 selected target companion architecture established
 
@@ -95,6 +99,7 @@ Conversation history is secondary to repository truth.
 - Physical PM-11 selection — **COMPLETE**.
 - Physical PM-12 Accepted Physical Model — **COMPLETE**.
 - Physical PM-13 clean-room architecture/documentation QA — **QA PASS**.
+- Physical protected-main integration — **COMPLETE via PR #15 / post-merge verified**.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
@@ -246,7 +251,7 @@ None is direct PASS merely because the target architecture is closed.
 
 ## Backend / Development boundary
 
-The Physical target is now available as an input to later engineering. It does **not** itself start backend production implementation.
+The Physical target is now integrated into `main` and available as an input to later engineering. It does **not** itself start backend production implementation.
 
 A separate `Development Profile v0` may now be designed to decide:
 
@@ -268,7 +273,8 @@ That profile must not silently change the accepted target Physical Model.
 - **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED**
 - **PM-13 QA PASS**
 - branch closure evidence complete
-- protected-main integration handled through normal PR path
+- integrated into protected `main` through PR #15
+- former `feature/physical-model` branch merged and auto-deleted
 
 ### Phase 4 — Home / Today UX
 
@@ -286,9 +292,8 @@ That profile must not silently change the accepted target Physical Model.
 ## Immediate next work
 
 ```text
-1. complete protected-main integration of the closed Physical workstream
-2. verify remote main contains the accepted Physical Model
-3. open Development Profile v0 as a separate bounded scope
-4. decide actual initial activation/deployment/free/local choices against the already-selected target
-5. do not start backend production implementation without its own explicit authorization
+1. open Development Profile v0 as a separate bounded scope
+2. decide actual initial activation/deployment/free/local choices against the already-selected target
+3. preserve all direct PSV obligations as NOT RUN until directly executed
+4. do not start backend production implementation without its own explicit authorization
 ```

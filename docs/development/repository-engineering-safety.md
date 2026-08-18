@@ -4,8 +4,10 @@
 - Scope: repository integration safety before and during Physical/backend production implementation
 - Repository: `MattiaRubino/lifeos`
 - Default branch: `main`
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Physical Model: **CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Direct selected-stack implementation validation: **NOT STARTED / DIRECT HG PASS 0**
 - Backend Foundation: **NOT STARTED / DEFERRED**
+- Development Profile v0: **NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE**
 
 ## Purpose
 
@@ -183,7 +185,7 @@ only when executable benchmark tooling exists and produces stable useful checks
 
 Concrete workflow names, runners, language versions and tool selections belong to the future implementation scope that creates them.
 
-The active Physical workstream may later create benchmark-only tests/harnesses under exact gated paths. Their existence does not automatically justify a required `main` status check; promotion still requires the stable-context protocol below.
+Direct selected-stack validation may later create bounded tests/harnesses under exact gated paths. Their existence does not automatically justify a required `main` status check; promotion still requires the stable-context protocol below.
 
 ## Required-check promotion protocol
 
@@ -213,7 +215,7 @@ Secret scanning / push protection should remain enabled where available for this
 
 Do not place production secrets in repository files, real example credentials, Actions workflow source, CI logs/artifacts or benchmark fixtures.
 
-Physical benchmark fixtures must be synthetic/non-sensitive. Raw benchmark artifacts committed or durably referenced must not contain real personal production data or credentials.
+Physical/direct-validation fixtures must be synthetic/non-sensitive. Raw validation artifacts committed or durably referenced must not contain real personal production data or credentials.
 
 ## Dependabot
 
@@ -227,7 +229,7 @@ No code-scanning workflow is created by Phase 11.
 
 Code scanning / CodeQL becomes relevant when actual source code/harness code exists and the concrete language/build topology is known. A future code-scanning gate must produce real results before becoming a required main check.
 
-Benchmark-only harness code is not production backend code by identity; security/static analysis requirements must be chosen according to the actual code introduced and its risk.
+Benchmark/direct-validation harness code is not production backend code by identity; security/static analysis requirements must be chosen according to the actual code introduced and its risk.
 
 ## CODEOWNERS
 
@@ -246,11 +248,10 @@ Do not delete branches merely because they look old.
 Known active bounded branches relevant to current project work include:
 
 ```text
-feature/physical-model
 prototype/phase-4-today-home
 ```
 
-`feature/physical-model` is the active separately authorized Physical Model branch, created from `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`. Do not delete or repurpose it while the Physical workstream is active.
+The former `feature/physical-model` branch is no longer active. It was merged into protected `main` via PR #15 at merge commit `e6f191bad947388a44defe2c15f4939345084f58` and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
 
 `chore/pre-physical-coherence` is **not active**: it was merged into protected `main` via PR #13 and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
 
@@ -289,7 +290,7 @@ Verified repository setting:
 Automatically delete head branches after merge = enabled
 ```
 
-This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13 and post-merge alignment PR #14 both exercised the merged-head cleanup path.
+This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13, post-merge alignment PR #14 and Physical integration PR #15 all exercised the merged-head cleanup path.
 
 # Phase 11 verification evidence
 
@@ -310,7 +311,7 @@ required status checks = 0                        PASS / expected today
 auto-delete merged branches = true                PASS
 __do_not_create__                                 404 / PASS
 __noop_should_fail__                              404 / PASS
-__tmp_should_not_create__                         404 / PASS
+__tmp_should_not_create__                          404 / PASS
 main SHA unchanged during settings application    PASS
 ```
 
@@ -326,7 +327,7 @@ These connector permission limits do not invalidate the verified branch-integrat
 
 ## Later protected-integration evidence
 
-The closed Pre-Physical workstream exercised the accepted repository-safety posture through PR #13 and current-truth alignment PR #14:
+The closed Pre-Physical and Physical workstreams exercised the accepted repository-safety posture through PR #13, current-truth alignment PR #14 and Physical integration PR #15:
 
 ```text
 PR #13 mergeable before merge               PASS
@@ -343,40 +344,44 @@ PR #14 current-truth alignment              MERGED / PASS
 main after alignment                        3de84bb49f9cef30e88e9bde4961ed84335daa79
 alignment branch tree vs merged main        0 file differences
 alignment head branch auto-delete           PASS
+
+PR #15 Physical Model integration           MERGED / PASS
+main after Physical merge                   e6f191bad947388a44defe2c15f4939345084f58
+former feature/physical-model branch         AUTO-DELETED
 ```
 
 This later integration evidence does not change the Phase 11 policy; it demonstrates that the effective controls worked as designed.
 
-# Physical-workstream repository safety
+# Physical/direct-validation repository safety
 
-The active Physical Model adds execution/evidence risks that must be treated explicitly.
+The closed Physical Model and its carried-forward direct implementation validation add execution/evidence risks that must be treated explicitly.
 
 ```text
-BENCHMARK HARNESS
+BENCHMARK / VALIDATION HARNESS
 != production backend automatically
 
-RAW BENCHMARK ARTIFACT
+RAW VALIDATION ARTIFACT
 != current repository specification
 
 OFFICIAL PRODUCT CLAIM
 != direct execution evidence
 
-PREFERRED
-!= SELECTED
+SELECTED
+!= DIRECT PASS
 ```
 
-Physical-specific safety rules:
+Physical/direct-validation-specific safety rules:
 
-1. every new mapping/schema/harness/evidence path requires an exact Physical write gate;
-2. do not commit real production credentials or personal data into candidate databases/fixtures;
-3. record exact candidate version/edition/deployment and hardware for reproducibility;
+1. every new mapping/schema/harness/evidence path requires an exact separately approved write gate;
+2. do not commit real production credentials or personal data into selected-stack databases/fixtures;
+3. record exact selected component version/edition/deployment and hardware for reproducibility where material;
 4. retain or durably reference raw evidence with hashes/reproduction metadata;
-5. do not rely on ephemeral Actions artifacts alone for final selection/closure evidence;
-6. benchmark infrastructure must not silently become production architecture;
+5. do not rely on ephemeral Actions artifacts alone for final direct-validation evidence;
+6. validation infrastructure must not silently become production architecture;
 7. an unexecuted tier/test remains `NOT RUN`;
 8. insufficient/contradictory evidence remains `HOLD`;
-9. no technology becomes `SELECTED` without the explicit PM-11 gate;
-10. Physical work does not authorize Backend Foundation.
+9. PM-11 selection and PM-12 acceptance do not create direct PASS;
+10. Physical closure/integration does not authorize Backend Foundation.
 
 # Future production readiness
 
@@ -385,15 +390,16 @@ Repository safety must evolve with the codebase rather than remain frozen at thi
 ```text
 now
 main ruleset + PR discipline + branch hygiene/security settings
-+ active bounded Physical workstream
++ closed/integrated Physical target
++ Development Profile v0 next
 
-Physical benchmark implementation
-real benchmark tests/harness validation as appropriate
+selected-stack direct validation / backend implementation
+real tests/harness validation as appropriate
 
 stable useful workflow contexts
 optionally promote material checks into required main rules
 
-accepted Physical/migrations exist
+accepted Physical implementation/migrations exist
 add real Physical/migration checks
 
 backend implementation begins
@@ -431,14 +437,20 @@ DEFINITIVE CLOSED / FINAL QA PASS
 INTEGRATED / POST-MERGE VERIFIED
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
-branch feature/physical-model
-mapping NOT STARTED
-benchmark NOT STARTED
-selection NONE
+CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
+selected canonical primary PostgreSQL 18.4
+former feature/physical-model MERGED / AUTO-DELETED
+
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED
+DIRECT HG PASS 0
 
 BACKEND FOUNDATION
 NOT STARTED / DEFERRED
+
+DEVELOPMENT PROFILE v0
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 ```
 
-The next repository risk gate is PM-01/PM-02: freeze exact candidate subjects/environment read-only first, then authorize mapping/harness paths explicitly rather than allowing ad-hoc schema/code creation.
+The next repository risk gate is the separately bounded Development Profile v0 scope. Any later direct selected-stack validation, backend schema/API implementation, CI promotion or repository-policy change requires its own exact authorization rather than inheriting permission from Physical closure.

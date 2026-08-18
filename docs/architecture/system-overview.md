@@ -1,6 +1,6 @@
 # System Overview
 
-- Status: **Current architecture overview — Physical Model target selected/accepted**
+- Status: **Current architecture overview — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
 
 ## Stage boundary
@@ -34,6 +34,9 @@ INTEGRATED / POST-MERGE VERIFIED
 Physical Model target
 CLOSED / SELECTED / ACCEPTED
 PM-13 clean-room architecture/documentation QA PASS
+INTEGRATED INTO MAIN VIA PR #15
+main e6f191bad947388a44defe2c15f4939345084f58
+former feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 
 Direct selected-stack implementation validation
@@ -155,7 +158,7 @@ A future backend must enforce accepted semantics through technical services, inc
 - search/retrieval separated from canonical meaning;
 - privacy-safe observability and operational controls.
 
-Concrete routes/DTOs, AuthZ engine and Development Profile v0 remain later decisions. Physical persistence technology is selected, but backend production implementation has not started.
+Concrete routes/DTOs, AuthZ engine and Development Profile v0 remain later decisions. Physical persistence technology is selected and integrated, but backend production implementation has not started.
 
 ## Governed operation/effect responsibility
 
@@ -328,7 +331,7 @@ Applicable obligations remain in `docs/physical-model/recommendation/post-select
 
 ## Repository engineering safety
 
-Effective `main` protections remain the integration mechanism. Normal work uses bounded branches and PRs; no direct-main bypass is authorized.
+Effective `main` protections remain the integration mechanism. Physical integration used the protected PR path through PR #15; future normal work continues on bounded branches with no direct-main bypass.
 
 ## Development Profile v0 boundary
 
@@ -339,11 +342,12 @@ The accepted Physical target does not decide initial deployment activation. A se
 ```text
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
 
-PROTECTED-MAIN INTEGRATION
-normal PR path
+DIRECT IMPLEMENTATION VALIDATION
+NOT STARTED / CARRIED FORWARD
 
-THEN
+NEXT
 Development Profile v0
 
 Backend Foundation

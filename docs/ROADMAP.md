@@ -45,7 +45,7 @@ Physical base main 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
 ### Physical Model target architecture
 
-**CLOSED / SELECTED / ACCEPTED.**
+**CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO `main` VIA PR #15.**
 
 ```text
 PM-00  QA PASS
@@ -64,6 +64,9 @@ PM-11  EXPLICIT USER-APPROVED SELECTION COMPLETE
 PM-12  ACCEPTED PHYSICAL MODEL COMPLETE
 PM-13  CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
 PM-14  BRANCH CLOSURE COMPLETE
+PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
+MAIN    e6f191bad947388a44defe2c15f4939345084f58
+FORMER  feature/physical-model MERGED / AUTO-DELETED
 ```
 
 Selected canonical primary:
@@ -106,7 +109,7 @@ NONE
 
 ## Physical evidence truth retained
 
-Target closure does not mean direct implementation execution occurred.
+Target closure/integration does not mean direct implementation execution occurred.
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
@@ -152,7 +155,7 @@ Backend Foundation remains:
 NOT STARTED / DEFERRED
 ```
 
-Physical closure removes the persistence-selection blocker, but backend production implementation still requires its own explicit authorization/gate. Development Profile v0 may be established first so the actual initial infrastructure/deployment posture is deliberate rather than improvised.
+Physical closure/integration removes the persistence-selection blocker, but backend production implementation still requires its own explicit authorization/gate. Development Profile v0 may be established first so the actual initial infrastructure/deployment posture is deliberate rather than improvised.
 
 ## Active parallel product/design track
 
@@ -222,13 +225,13 @@ eval PASS != Authority / governed-effect authorization
 
 ## Repository engineering safety
 
-`main` remains protected by `lifeos-main-safety`. Physical integration must use the normal protected PR path. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
+`main` remains protected by `lifeos-main-safety`. Physical integration used the normal protected PR path through PR #15. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
 
 ## Immediate sequence
 
 ```text
-1. protected-main integration of closed Physical target
-2. remote post-merge verification
-3. separate Development Profile v0 scope
-4. later Backend Foundation authorization when explicitly approved
+1. Development Profile v0 — separate bounded operational-design scope
+2. decide initial activation/deployment/free/local choices against the accepted target
+3. later Backend Foundation authorization when explicitly approved
+4. discharge applicable direct selected-stack validation obligations at their proper implementation/release gates
 ```

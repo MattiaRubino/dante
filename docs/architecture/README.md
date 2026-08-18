@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-- Status: **Current navigation — Physical Model target selected/accepted**
+- Status: **Current navigation — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
 
 ## Purpose
@@ -156,6 +156,24 @@ OR-Tools = candidate state
 OTel/Grafana = telemetry
 ```
 
+## Physical integration state
+
+```text
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
+
+PROTECTED-MAIN INTEGRATION
+COMPLETE VIA PR #15
+
+MAIN
+ e6f191bad947388a44defe2c15f4939345084f58
+
+FORMER BRANCH
+feature/physical-model — MERGED / AUTO-DELETED
+```
+
+PM-14 remains historical closure evidence for the pre-merge state and is not rewritten by the later integration event.
+
 ## Durable-execution resolution
 
 The prior Phase-7 ranking is now physically resolved:
@@ -222,7 +240,7 @@ The authoritative carry-forward register is [`../physical-model/recommendation/p
 
 Current `main` policy requires PR integration, blocks deletion/non-fast-forward, requires review-thread resolution, uses zero approvals while no independent reviewer exists and no required CI checks until stable real contexts exist.
 
-Physical closure/integration must use that protected path.
+Physical integration used that protected path through PR #15. Future Development Profile/backend/direct-validation writes remain separately gated.
 
 ## Current stage boundary
 
@@ -239,6 +257,7 @@ Pre-Physical Coherence                   CLOSED / INTEGRATED / VERIFIED
 Physical Model target
 CLOSED / SELECTED / ACCEPTED
 PM-13 clean-room architecture/documentation QA PASS
+INTEGRATED INTO MAIN VIA PR #15
 
 Direct selected-stack implementation validation
 NOT STARTED / CARRIED FORWARD

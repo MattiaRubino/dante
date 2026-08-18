@@ -29,6 +29,9 @@ PM-11 explicit stack selection COMPLETE
 PM-12 Accepted Physical Model COMPLETE
 PM-13 clean-room architecture/documentation QA PASS
 PM-14 branch closure COMPLETE
+INTEGRATED INTO MAIN VIA PR #15
+main e6f191bad947388a44defe2c15f4939345084f58
+former feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 selected target companion stack established
 
@@ -277,6 +280,7 @@ technical cancellation != Domain cancellation automatically
 ```text
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
 
 DIRECT IMPLEMENTATION VALIDATION
 CARRIED FORWARD

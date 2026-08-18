@@ -1,8 +1,9 @@
 # Physical Model
 
-- Status: **CLOSED AT TARGET-ARCHITECTURE LEVEL — PM-14 BRANCH CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
-- Branch during workstream: `feature/physical-model`
-- Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Status: **CLOSED AT TARGET-ARCHITECTURE LEVEL — SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
+- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00: **QA PASS**
 - PM-01: **PASS-CONDITIONAL**
 - PM-02: **COMPLETE**
@@ -48,6 +49,7 @@ research
 → Accepted Physical Model
 → clean-room QA
 → closure
+→ protected-main integration via PR #15
 ```
 
 ## Current authority order
@@ -57,12 +59,12 @@ For current target architecture read:
 1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
 2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
 3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
-4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — branch closure evidence;
+4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch closure evidence produced before PR #15;
 5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
 6. [`result-register-v1.md`](result-register-v1.md) — current result ledger;
 7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — workstream closure/handoff.
 
-PM-01..PM-10 remain evidence/rationale history and must not override later PM-11/12 current selected truth.
+PM-01..PM-10 remain evidence/rationale history and must not override later PM-11/12 current selected truth. PM-14 remains truthful historical closure evidence for the state before protected-main integration.
 
 ## Non-negotiable barriers
 
@@ -258,7 +260,7 @@ Reintroduction requires an explicit later architecture reopen based on material 
 
 ## Direct execution truth
 
-Target selection and PM-13 QA did **not** execute the selected stack:
+Target selection, PM-13 QA, closure and PR #15 integration did **not** execute the selected stack:
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
@@ -314,19 +316,21 @@ A component being dormant in DEV does not remove it from the accepted target. A 
 ```text
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
+MAIN e6f191bad947388a44defe2c15f4939345084f58
+FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
 
 PM-13
 QA PASS
 
 PM-14
-BRANCH CLOSURE COMPLETE
+BRANCH CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
 
 DIRECT IMPLEMENTATION VALIDATION
 NOT STARTED / CARRIED FORWARD
 
 NEXT
-protected-main integration through PR
-then Development Profile v0
+Development Profile v0
 
 BACKEND
 NOT STARTED / DEFERRED
