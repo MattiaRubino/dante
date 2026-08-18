@@ -1,12 +1,12 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — PM-09 EVIDENCE-WEIGHTED SCORING COMPLETE / PM-10 NEXT**
+- Status: **CURRENT — PM-10 RECOMMENDATION COMPLETE / PM-11 NEXT**
 - Workstream: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
 - Primary finalists: **PostgreSQL 18.4 / TypeDB CE 3.12.3**
 - Current evidence-score leader: **PostgreSQL 18.4**
-- Preferred: **NONE**
+- Preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - Selected: **NONE**
 
 ## Purpose
@@ -151,7 +151,7 @@ PM-14 Closure / protected-main integration
 
 PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while keeping separate result layers.
 
-## Phase state through PM-09
+## Phase state through PM-10
 
 ```text
 PM-00   QA PASS
@@ -165,10 +165,11 @@ PM-06   COMPLETE / EVIDENCE QUALIFICATION / DIRECT TIERS NOT RUN
 PM-07   COMPLETE / EVIDENCE QUALIFICATION / DIRECT DESTRUCTIVE RUNS NOT RUN
 PM-08   COMPLETE / SECONDARY-SPECIALIST EVIDENCE QUALIFICATION
 PM-09   COMPLETE / EVIDENCE-WEIGHTED SCORING + SENSITIVITY
-PM-10   NEXT
+PM-10   COMPLETE / PREFERRED RECOMMENDATION + FINAL COMPANION STACK
+PM-11   NEXT / EXPLICIT SELECTION
 ```
 
-Deferred primary challengers remain `XTDB 2.1.0` and `SurrealDB Community 3.2.3`, both `DEFER / NOT REJECTED`.
+Deferred primary challengers remain historical comparative evidence only; the PM-10 recommended stack excludes TypeDB, XTDB and SurrealDB from the proposed selected primary architecture.
 
 ## Direct execution truth
 
@@ -203,7 +204,7 @@ PM-07
 MATERIAL OPERATIONS/RECOVERY/TOPOLOGY ADVANTAGE
 
 PM-08
-NATIVE FTS + CONDITIONAL PGVECTOR CAN KEEP INITIAL SEARCH/VECTOR SERVER TOPOLOGY CONSOLIDATED
+NATIVE FTS + PGVECTOR CONSOLIDATION ADVANTAGE
 
 PM-09 EVIDENCE SCORE
 89.25 / 100
@@ -211,8 +212,8 @@ PM-09 EVIDENCE SCORE
 SENSITIVITY
 ROBUST LEADER
 
-PREFERRED
-NONE
+PM-10
+PREFERRED / PASS-CONDITIONAL
 
 SELECTED
 NONE
@@ -228,41 +229,87 @@ PM-07
 RECOVERY/EVOLUTION VIABLE / HIGHER SELF-HOSTED OPERATIONS COST
 
 PM-08
-SEMANTIC ADVANTAGE PRESERVED / EXTERNAL SEARCH-VECTOR SPECIALIST MORE LIKELY WHEN ADVANCED RETRIEVAL IS ACCEPTED
+SEMANTIC ADVANTAGE PRESERVED / EXTERNAL SEARCH-VECTOR SPECIALIST MORE LIKELY
 
 PM-09 EVIDENCE SCORE
 80.00 / 100
 
-SENSITIVITY
-PRINCIPAL SEMANTIC CHALLENGER / NO ACCEPTED REVERSAL
-
-PREFERRED
-NONE
+PM-10
+NOT PREFERRED / RUNNER-UP
 
 SELECTED
 NONE
 ```
 
-## PM-08 secondary state carried into scoring
+## PM-08 secondary state and PM-10 refinement
+
+PM-08 established the specialist baseline. PM-10 re-ran the full product/capability audit and converted accepted product needs into the recommended stack:
 
 ```text
-GRAPH
-G0 primary-store baseline ADVANCE
-Neo4j DEFER / NOT REJECTED / no initial graph specialist
+PRIMARY
+PostgreSQL 18.4
 
-SEARCH/VECTOR
-PostgreSQL native FTS ADVANCE as P0 baseline
-pgvector 0.8.6 ADMIT-CONDITIONAL if PostgreSQL selected + vector requirement exists
-Qdrant 1.18.2 DEFER / TRIGGER ONLY
-OpenSearch 3.7 DEFER / TRIGGER ONLY
+POSTGRESQL CAPABILITIES
+PostGIS 3.6.4
+pgvector 0.8.6
+native FTS
+pg_trgm
+unaccent
+pg_stat_statements
+PgBouncer 1.25.2
 
-LOCAL/OFFLINE
-SQLite 3.53.4 ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
-canonical authority NO
+OFFLINE / SYNC
+PowerSync Service 1.25.0 Open Edition
+encrypted SQLite local state
+PostgreSQL-backed PowerSync bucket storage
 
-OBJECT/BLOB
-NO ENGINE ADMITTED / TRIGGER ONLY
+ASYNC
+PostgreSQL transactional outbox + bounded worker
+Restate Cloud EU for Class-B durable execution
+Restate Python SDK 1.0.3
+Restate Server 1.7.2 reproducible local/self-hosted subject
+
+OBJECT
+Cloudflare R2 Standard / EU jurisdiction / private
+
+RECOVERY
+pgBackRest 2.59.0 -> AWS S3 eu-south-1
+R2 object backup -> separate AWS S3 eu-south-1 bucket
+
+SOLVER
+OR-Tools 9.15 CP-SAT
+
+OBSERVABILITY
+OpenTelemetry
+Grafana Alloy 1.18.0
+Grafana Cloud EU
 ```
+
+These mechanisms remain bounded by state ownership. None becomes a second canonical source of truth.
+
+## Offline rule
+
+Offline support is accepted as operation-specific capability, not global local-first authority.
+
+```text
+ENCRYPTED SQLITE
+bounded local working copy
+
+POWERSYNC
+transport/sync projection
+
+LIFEOS BACKEND
+expected-state + governance + AuthZ + conflict authority
+
+POSTGRESQL
+canonical truth
+```
+
+A later-arriving offline mutation does not win by arrival order. Consequential LWW remains forbidden.
+
+## Technology exclusion rule
+
+PM-10 maintains an explicit exclusion register. Excluded technologies are not hidden future dependencies. Reintroduction requires a later architecture decision based on materially changed requirements/evidence.
 
 ## PM-09 scoring rules
 
@@ -279,8 +326,6 @@ performance/resource efficiency          10
 Python/tooling/cost/exit risk             5
 TOTAL                                   100
 ```
-
-Dimension grades must be traceable to PM-02 through PM-08 evidence. Unexecuted performance cannot be invented.
 
 ### Base PM-09 score
 
@@ -312,8 +357,6 @@ PERFORMANCE-DEPENDENT NO
 
 An adversarial, non-accepted weighting with semantic mapping at 50% produces only a `+0.125 TypeDB` boundary. Keeping all non-semantic dimensions proportional to their Phase-10 relative weights, semantic mapping must reach approximately `58.44%` before TypeDB reaches break-even.
 
-This boundary is evidence about sensitivity, not an accepted change to LifeOS priorities.
-
 ## Execution reopen decision
 
 ```text
@@ -324,11 +367,11 @@ PM-04B
 REOPEN NO
 ```
 
-Reason: the PM-09 ranking is not performance-dependent and no ranking-critical residual execution gap remains.
+Reason: the PM-09 ranking is not performance-dependent and PM-10 found no ranking-critical execution gap.
 
 ## Post-selection validation obligations
 
-These are mandatory where applicable and remain unexecuted:
+The dedicated PM-10 register is authoritative for the expanded selected-stack obligations. Core inherited obligations remain:
 
 ```text
 SC-011 old-backup anti-resurrection
@@ -336,39 +379,41 @@ SC-030 actual LifeOS V1 -> V2 mapping evolution
 SC-031 destructive restore + semantic verification
 SC-032 capacity/backpressure truthful degradation
 WL-H12 system-level non-interference
-SC-017/018 search/non-interference when search active
-SC-019 vector recall after security filter when vector active
-SC-020/021 projection freshness/deletion propagation when projection active
-local/offline reconciliation validation when local role active
+SC-017/018 search/non-interference
+SC-019 vector recall after security filters
+SC-020/021 projection freshness/deletion propagation
+offline sync/reconciliation
 ```
+
+Additional PM-10 obligations cover PowerSync replication liveness, local encryption, Restate crash/replay/versioning, R2/S3 object recovery, PostGIS/PgBouncer interactions, OR-Tools status semantics and observability privacy.
 
 ## PM-10 boundary
 
-PM-10 may consume:
+PM-10 has produced the bounded recommendation:
 
 ```text
-PM-02..PM-08 evidence
-PM-09 evidence-weighted score
-PM-09 sensitivity
-known conditions / post-selection validation obligations
+PREFERRED
+PostgreSQL 18.4 / PASS-CONDITIONAL
+
+COMPANION STACK
+RECOMMENDED / PASS-CONDITIONAL
+
+SELECTED
+NONE
 ```
 
-PM-10 may produce a bounded `PREFERRED` recommendation under this evidence-first methodology.
-
-It may not produce `SELECTED`.
-
-PM-11 remains the separate explicit user-approved selection gate.
+PM-11 remains the separate explicit user-approved selection gate and must select the stack before PM-12 treats it as accepted Physical architecture.
 
 ## Current next step
 
 ```text
-PM-09 COMPLETE
-CURRENT EVIDENCE-SCORE LEADER PostgreSQL 18.4
-SCORE 89.25 vs 80.00
-RANKING ROBUST
-PREFERRED NONE
+PM-10 COMPLETE
+PREFERRED PRIMARY PostgreSQL 18.4 / PASS-CONDITIONAL
+PREFERRED COMPANION STACK ESTABLISHED
+DIRECT HG PASS 0
+VERIFIED-RUN SCORE NOT AVAILABLE
 SELECTED NONE
 
 NEXT
-PM-10 recommendation after fresh explicit gate
+PM-11 explicit stack selection after fresh exact gate
 ```
