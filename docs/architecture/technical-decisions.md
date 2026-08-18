@@ -1,10 +1,11 @@
 # Technical Decisions
 
-- Status: **Current technical direction — Physical Model target selected/accepted**
+- Status: **Current technical direction — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
 - Pre-Physical closure activation: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 - Pre-Physical integration: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13
 - Post-merge Pre-Physical alignment / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79` via PR #14
+- Physical integration: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 
 This document is a current technical summary. Detailed requirements/contracts remain authoritative in their dedicated sources; historical rationale remains in ADRs, evidence and Git.
 
@@ -23,6 +24,8 @@ Pre-Physical Coherence                      CLOSED / INTEGRATED / VERIFIED
 Physical Model target
 CLOSED / SELECTED / ACCEPTED
 PM-13 clean-room architecture/documentation QA PASS
+INTEGRATED INTO MAIN VIA PR #15
+former feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 
 Direct selected-stack implementation validation
@@ -45,7 +48,7 @@ NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 - Domain/application logic remains independent from HTTP/framework handling.
 - SQLAlchemy/Alembic may now be evaluated/used against the accepted PostgreSQL target within a separately authorized backend/development scope.
 
-No production backend implementation is authorized merely by Physical closure.
+No production backend implementation is authorized merely by Physical closure/integration.
 
 ## Semantic/model authority
 
@@ -324,7 +327,7 @@ Applicable direct obligations remain in `docs/physical-model/recommendation/post
 
 ## Repository safety
 
-Effective `main` protections remain the integration policy: PR required, main deletion/non-fast-forward blocked, review-thread resolution required, no invented required checks before stable real contexts exist.
+Effective `main` protections remain the integration policy: PR required, main deletion/non-fast-forward blocked, review-thread resolution required, no invented required checks before stable real contexts exist. Physical integration successfully used that path through PR #15.
 
 ## Development Profile v0 boundary
 
@@ -337,11 +340,12 @@ That profile does not reopen the accepted Physical target merely because a selec
 ```text
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
 
-PROTECTED-MAIN INTEGRATION
-complete through normal PR path
+DIRECT IMPLEMENTATION VALIDATION
+NOT STARTED / CARRIED FORWARD
 
-THEN
+NEXT
 Development Profile v0 — separate operational design
 
 Backend Foundation
