@@ -30,7 +30,19 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 ```
 
-Domain/Logical closure does not select Physical persistence/API/Auth/runtime/backend implementation.
+### Pre-Physical Repository & Architecture Coherence
+
+**DEFINITIVE CLOSED / FINAL QA PASS on `chore/pre-physical-coherence`.**
+
+```text
+Phase 0–11        QA PASS
+Phase 12          QA PASS / CLOSED
+Independent audit PASS
+Activation checkpoint
+9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+```
+
+The branch-local closure does not itself integrate to `main`, select Physical persistence or start backend implementation.
 
 ## Active parallel product/design track
 
@@ -40,94 +52,31 @@ Separate workstream on `prototype/phase-4-today-home`.
 
 It may continue independently but does not redefine accepted Domain/Logical/backend architecture.
 
-## Backend/architecture preparation track
+## Closed Pre-Physical result
 
-### Pre-Physical Repository & Architecture Coherence
-
-Branch: `chore/pre-physical-coherence`  
-Handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md)
-
-Current progress:
+The final independent audit confirmed:
 
 ```text
-Phase 0 — baseline/freeze
-PASS
-
-Phase 1 — global current-truth entry-point alignment
-QA PASS
-
-Phase 2 — architecture supersession/current-truth cleanup
-QA PASS
-
-Phase 3 — Backend Foundation handoff cleanup
-QA PASS
-
-Phase 4 — Current Pre-Physical Architecture Baseline
-QA PASS
-
-Phase 5 — requirements that can constrain Physical design
-QA PASS
-
-Phase 6 — AI/context/runtime/integration boundaries
-QA PASS
-
-Phase 7 — durable workflow / async benchmark
-QA PASS WITH CONDITIONAL RANKING
-
-Phase 8 — governed API / command / effect contract
-QA PASS
-
-Phase 9 — search / observability / calendar / solver pressure
-QA PASS
-
-Phase 10 — Physical benchmark specification/register/method
-QA PASS
-
-Phase 11 — repository engineering safety
-QA PASS
-
-Phase 12 — clean-room repository/architecture coherence QA
-QA PASS / CLOSED
-
-Independent total Pre-Physical audit
-CORE PASS
-bounded final repairs incorporated
-final exact remote activation QA pending
+CORE ARCHITECTURE HOLDS                 PASS
+DOMAIN REOPEN REQUIRED                     0
+LOGICAL REOPEN REQUIRED                    0
+NEW DOMAIN OWNER REQUIRED                  0
+MAJOR SEMANTIC CONTRADICTION                0
+MAJOR ARCHITECTURAL CONTRADICTION           0
+PHYSICAL ACCIDENTALLY STARTED               0
+BACKEND ACCIDENTALLY STARTED                0
+MAJOR KNOWLEDGE LOSS                        0
+TECHNOLOGY ACCIDENTALLY SELECTED            0
 ```
 
-Current whole-workstream state:
+The bounded final repairs included:
 
-```text
-PRE-PHYSICAL COHERENCE
-FINAL CLOSURE CANDIDATE
-```
-
-The final audit record is [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md).
-
-No `main` integration is performed by this closure gate.
-
-## Documentation architecture rule
-
-Current specifications contain current truth only. Obsolete design chronology does not accumulate inside them.
-
-```text
-CURRENT SPECIFICATION = current truth only
-ADR = rationale + explicit supersession/qualification
-HISTORICAL / VALIDATION EVIDENCE = truthful chronology
-GIT / PR HISTORY = recoverable history
-```
-
-Before replacing/deleting stale current documentation:
-
-```text
-unclassified meaningful content = 0
-valid requirement lost = 0
-current truth represented = PASS
-rationale worth retaining mapped = PASS
-references/navigation repaired = PASS
-```
-
-A physical split is not separate authority. A size/tool-limit split must preserve the complete logical payload losslessly and must not become summary/condensation/hidden semantic rewrite.
+- removal of stale stage-handoff prose from current specs;
+- Phase 10 method vs future Physical execution clarification;
+- repository bootstrap/hygiene alignment;
+- DBOS coupling correction: SQLite-capable local/bounded Python use, PostgreSQL-recommended production, distributed multi-server PostgreSQL-coupled;
+- explicit versioned/reproducible consequential AI change evaluation requirement;
+- explicit `unexecuted upper benchmark envelope != VERIFIED-RUN` handling.
 
 ## Current Pre-Physical architecture inputs
 
@@ -144,7 +93,7 @@ The following remain current downstream constraints:
 - Phase 10 Physical benchmark method, scenario corpus and candidate register;
 - Phase 11 effective repository engineering safety;
 - Phase 12 clean-room evidence;
-- final independent audit evidence/activation contract.
+- final independent audit evidence.
 
 ## Current Physical benchmark posture
 
@@ -204,9 +153,7 @@ OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
 
 ## AI evaluation posture
 
-The current Phase 6 contract now makes explicit that materially consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
-
-Pressure includes structured output, false canonical claims, tool errors, governance bypass, privacy/inference leakage, stale context, substitution regression, fallback/refusal, human-approval flows and material cost/latency.
+Materially consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
 
 ```text
 eval result != canonical LifeOS truth
@@ -215,87 +162,34 @@ eval PASS != Authority / governed-effect authorization
 
 Concrete evaluation tooling/thresholds remain later engineering choices.
 
-## Phase 11 repository engineering safety
+## Repository engineering safety
 
-`lifeos-main-safety` is active and effective for protected-main integration. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
+`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
 
-Repository-safety settings do not start backend implementation.
-
-## Phase 12 + independent final audit
-
-Phase 12 is **QA PASS / CLOSED**.
-
-The broader independent total audit then checked the full branch delta for:
-
-- accidental semantic/architecture regressions;
-- stale current instructions;
-- missing/superseded knowledge;
-- current-vs-history misclassification;
-- unintended scope changes;
-- false PASS/CLOSED claims;
-- repository-rules inconsistencies;
-- accidental Physical/backend work;
-- Product/Domain/Logical/current-architecture contradiction;
-- factual technology errors.
-
-Core result:
+## Immediate next — not performed yet
 
 ```text
-DOMAIN REOPEN REQUIRED              0
-LOGICAL REOPEN REQUIRED             0
-NEW DOMAIN OWNER REQUIRED           0
-MAJOR SEMANTIC CONTRADICTION        0
-MAJOR ARCHITECTURAL CONTRADICTION   0
-PHYSICAL ACCIDENTALLY STARTED       0
-BACKEND ACCIDENTALLY STARTED        0
-MAJOR KNOWLEDGE LOSS                0
+PRE-PHYSICAL PROTECTED MAIN INTEGRATION
+PENDING
 ```
 
-Bounded repairs are incorporated. The final audit activation contract still requires exact remote compare/readback before definitive closure is claimed.
-
-## Immediate next — final branch-local closure QA
+Only after separate user authorization:
 
 ```text
-FINAL REMOTE ACTIVATION QA
-```
-
-Required proof:
-
-```text
-PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
-unique paths  23
-added          1
-modified      22
-deleted        0
-unexpected     0
-behind_by      0
-main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
-critical readback PASS
-```
-
-If and only if that passes:
-
-```text
-PRE-PHYSICAL COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS
-
-PHYSICAL READINESS
-ESTABLISHED
-PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
-
-MAIN INTEGRATION
-PENDING / NOT PERFORMED
-```
-
-## Later sequence — not authorized by this gate
-
-After definitive branch-local Pre-Physical closure, and only after separate approval:
-
-```text
-Pre-Physical protected PR to main
+chore/pre-physical-coherence
+→ protected PR to main
 → merge commit
 → post-merge main verification
-→ separately authorize Physical Model
+```
+
+Do not start Physical or Backend merely because branch-local Pre-Physical coherence is closed.
+
+## Later sequence — separate authorizations
+
+After protected integration and post-merge verification:
+
+```text
+separately authorize Physical Model
 → execute real Physical mappings + benchmark
 → select/accept Physical result
 → only then authorize Backend Foundation
@@ -304,7 +198,7 @@ Pre-Physical protected PR to main
 ## Explicitly unauthorized now
 
 ```text
-merge of chore/pre-physical-coherence into main
+direct main write
 Physical schema/tables/indexes/migrations
 PostgreSQL / TypeDB / Neo4j selection
 SQL / TypeQL / Cypher benchmark implementation
