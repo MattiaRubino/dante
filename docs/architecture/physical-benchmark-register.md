@@ -1,17 +1,22 @@
 # Physical Benchmark Register
 
-- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
-- Stage: Physical Model candidate-role authority
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
-- Mapping execution: **NOT STARTED**
-- Benchmark execution: **NOT STARTED**
-- Technology selection: **NONE**
+- Status: **CURRENT HISTORICAL LEDGER / Phase 10 QA PASS — consumed by the closed Physical Model**
+- Stage: Physical Model candidate-role and direct-execution ledger
+- Phase-time Physical state at register handoff: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Current Physical truth: **CLOSED / SELECTED / ACCEPTED / integrated via PR #15**
+- Current selected canonical primary: **PostgreSQL 18.4**
+- Direct mapping/benchmark execution recorded by this register: **NOT RUN / DIRECT HG PASS 0**
+- Verified-run score: **NOT AVAILABLE**
+
+> **Current-truth qualification:** this register preserves the Phase-10 candidate roles, evidence caveats and direct-execution slots. `NOT SELECTED` candidate labels below are truthful **Phase-10/hand-off state**, not the present winner status. PM-11/12 later selected PostgreSQL 18.4 and the bounded companion target. Conversely, later selection does **not** change any `NOT RUN` direct slot into PASS.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained in this ledger reflect the previous working/project name for the same product lineage and are preserved as benchmark/evidence history.
 
 ## Purpose
 
-Register the current candidate set, candidate role, mandatory benchmark status, known evidence/caveats, execution-time pinning requirements and result slots for the separately authorized Physical Model benchmark.
+Register the candidate set, candidate roles, mandatory benchmark status, known evidence/caveats, execution-time pinning requirements and direct result slots used by the Physical Model decision process.
 
-This register is not a winner list. It prevents candidate-role drift and undocumented technology injection.
+This register was never a winner list. It prevents candidate-role drift and undocumented technology injection, while PM-11/12 own the later explicit selected truth.
 
 ```text
 REGISTERED
@@ -19,6 +24,9 @@ REGISTERED
 
 PREFERRED BENCHMARK CANDIDATE
 != IMPLEMENTATION AUTHORIZATION
+
+SELECTED
+!= DIRECT PASS
 ```
 
 ## Required companion documents
@@ -27,9 +35,10 @@ Read with:
 
 - `physical-benchmark-specification.md`;
 - `physical-benchmark-scenario-corpus.md`;
-- the current Pre-Physical Architecture Baseline;
+- the Pre-Physical Architecture Baseline for historical constraint/handoff context;
 - all current Phase 5–9 contracts;
-- `docs/physical-model/README.md` and the active Physical execution methodology/result register.
+- `docs/physical-model/pm-11-explicit-selection-v1.md` and `pm-12-accepted-physical-model-v1.md` for current selected truth;
+- `docs/physical-model/README.md`, the current Physical methodology/result register and PSV register.
 
 # Role register
 
@@ -41,11 +50,14 @@ Read with:
 ROLE
 PRIMARY CANONICAL PERSISTENCE
 
-STATUS
+PHASE-10 STATUS
 MANDATORY PREFERRED BASELINE
-NOT SELECTED
+NOT SELECTED AT THAT PHASE
 
-BENCHMARK REQUIRED
+CURRENT PM-11/12 STATUS
+PostgreSQL 18.4 SELECTED / ACCEPTED CANONICAL PRIMARY
+
+BENCHMARK REQUIRED BY ORIGINAL VERIFIED-RUN METHOD
 YES
 ```
 
@@ -80,17 +92,18 @@ backup/PITR method
 Python driver / ORM if used for benchmark harness
 ```
 
-Result slots:
+Direct result slots retained from Phase 10:
 
 ```text
 HG-01..HG-12         NOT RUN
-weighted score       NOT RUN
+verified-run score   NOT AVAILABLE
 LOW                   NOT RUN
 BASE                  NOT RUN
 HIGH                  NOT RUN
-sensitivity           NOT RUN
-final disposition     NOT RUN
+verified-run sensitivity NOT RUN
 ```
+
+The later evidence-weighted PM-09 score is a separate ledger and does not mutate these direct slots.
 
 ### P1 — TypeDB
 
@@ -98,11 +111,14 @@ final disposition     NOT RUN
 ROLE
 PRIMARY CANONICAL PERSISTENCE
 
-STATUS
+PHASE-10 STATUS
 MANDATORY CHALLENGER
-NOT SELECTED
+NOT SELECTED AT THAT PHASE
 
-BENCHMARK REQUIRED
+CURRENT PM-11/12 STATUS
+NOT SELECTED / HISTORICAL SEMANTIC RUNNER-UP
+
+BENCHMARK REQUIRED BY ORIGINAL VERIFIED-RUN METHOD
 YES
 ```
 
@@ -140,16 +156,15 @@ execute failover/recovery where that capability affects scoring
 
 Backup/recovery capabilities must likewise be tested for the exact deployment mode rather than inferred from generic documentation.
 
-Result slots:
+Direct result slots:
 
 ```text
 HG-01..HG-12         NOT RUN
-weighted score       NOT RUN
+verified-run score   NOT AVAILABLE
 LOW                   NOT RUN
 BASE                  NOT RUN
 HIGH                  NOT RUN
-sensitivity           NOT RUN
-final disposition     NOT RUN
+verified-run sensitivity NOT RUN
 ```
 
 # Lane G — secondary graph / traversal projection
@@ -160,8 +175,11 @@ final disposition     NOT RUN
 ROLE
 GRAPH/TRAVERSAL BASELINE
 
-STATUS
+PHASE-10 STATUS
 MANDATORY BASELINE FOR G-LANE COMPARISON
+
+CURRENT TARGET STATUS
+NO DEDICATED GRAPH STORE IN ACCEPTED TARGET
 ```
 
 Meaning:
@@ -178,13 +196,12 @@ Measure whether a specialized graph system provides enough net structural/perfor
 - operational/licensing burden;
 - rebuild/recovery complexity.
 
-Result slots:
+Direct result slots:
 
 ```text
 scenario set           NOT RUN
 score                   NOT RUN
 operational burden      NOT RUN
-final disposition       NOT RUN
 ```
 
 ### G1 — Neo4j / property graph
@@ -193,10 +210,13 @@ final disposition       NOT RUN
 ROLE
 SECONDARY GRAPH / READ-PROJECTION CANDIDATE
 
-STATUS
+PHASE-10 STATUS
 SERIOUS CHALLENGER
 NOT SELECTED
 NOT PRIMARY-LANE CANDIDATE IN PHASE 10
+
+CURRENT TARGET STATUS
+NOT SELECTED
 ```
 
 Current rationale:
@@ -230,14 +250,13 @@ Current evidence note:
 
 Phase 10 preparation observed that current Neo4j documentation includes GA Graph Types in recent 2026 releases. The benchmark must use the exact current capability set and edition, not an outdated assumption that the candidate lacks schema controls entirely.
 
-Result slots:
+Direct result slots:
 
 ```text
 CG-01..CG-04          NOT RUN
 G-lane score          NOT RUN
 LOW/BASE/HIGH         NOT RUN
 net benefit           NOT RUN
-final disposition     NOT RUN
 ```
 
 # Lane S — search / semantic retrieval
@@ -248,8 +267,11 @@ final disposition     NOT RUN
 ROLE
 SEARCH BASELINE
 
-STATUS
+PHASE-10 STATUS
 MANDATORY BASELINE
+
+CURRENT TARGET STATUS
+PostgreSQL native FTS + pg_trgm + unaccent SELECTED
 ```
 
 Purpose:
@@ -265,13 +287,12 @@ Benchmark includes:
 - result non-interference;
 - long-history/current-source search pressure.
 
-Result slots:
+Direct result slots:
 
 ```text
 search correctness      NOT RUN
 LOW/BASE/HIGH           NOT RUN
 privacy/disclosure      NOT RUN
-final disposition       NOT RUN
 ```
 
 ### S1 — pgvector
@@ -280,10 +301,13 @@ final disposition       NOT RUN
 ROLE
 BOUNDED SEMANTIC RETRIEVAL CANDIDATE
 
-STATUS
+PHASE-10 STATUS
 BOUNDED CANDIDATE
 CONDITIONAL ON POSTGRESQL PRESENCE/APPLICABILITY
-NOT SELECTED
+NOT SELECTED AT THAT PHASE
+
+CURRENT PM-11/12 STATUS
+pgvector 0.8.6 SELECTED / DERIVED RETRIEVAL
 ```
 
 Current rationale:
@@ -317,14 +341,13 @@ Current evidence note:
 
 Phase 9/10 preparation identified filtering/ANN recall as material pressure. The future run must not score vector quality from unfiltered top-k latency alone.
 
-Result slots:
+Direct result slots:
 
 ```text
 CG-01..CG-04          NOT RUN
 recall/precision       NOT RUN
 filtered recall        NOT RUN
 LOW/BASE/HIGH          NOT RUN
-final disposition      NOT RUN
 ```
 
 # Lane E/D — bounded event / document mechanisms
@@ -377,20 +400,30 @@ Until then there is no arbitrary product shortlist.
 
 # Durable-runtime interaction register
 
-Phase 7 remains current:
+Phase-7 ranking at the time of this register:
 
 ```text
 bounded async baseline
 PostgreSQL + worker/outbox style
 
 preferred dedicated durable candidate
-Restate — NOT SELECTED
+Restate — NOT SELECTED AT PHASE 7/10
 
 mandatory strongest challenger
 Temporal — NOT SELECTED
 
 conditional challenger
 DBOS — NOT SELECTED
+```
+
+Current PM-11/12 resolution later selected:
+
+```text
+Class A bounded async
+PostgreSQL transactional outbox + bounded worker
+
+Class B durable runtime
+Restate
 ```
 
 DBOS coupling is deployment-dependent rather than universally PostgreSQL-required in Python:
@@ -418,11 +451,11 @@ Examples:
 - Restate/Temporal remain independent runtime candidates and must not receive primary-persistence points;
 - bounded outbox/worker feasibility is pressure on transactional primary architecture, not proof that all durable workflows belong in the primary database.
 
-No Phase 10 result selects a durable runtime.
+Phase 10 itself selected no durable runtime; PM-11/12 later selected Restate.
 
 # Solver interaction register
 
-Current Phase 9 posture:
+Phase-9 posture at the time of this register:
 
 ```text
 simple deterministic rules / heuristics
@@ -432,6 +465,8 @@ OR-Tools CP-SAT
 PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE
 NOT IMPLEMENTED
 ```
+
+Current PM-11/12 resolution later selected OR-Tools 9.15 CP-SAT. Direct solver implementation/validation remains `NOT RUN`.
 
 Physical candidates must support efficient retrieval/material snapshot assembly and governed application of solver candidates, but solver implementation is not part of primary database selection.
 
@@ -485,35 +520,38 @@ Operational/HA/backup hard-gate PASS should rely on `VERIFIED-RUN` where the sce
 
 `INFERRED`, `CONTRADICTORY/UNSTABLE` or `UNKNOWN` material evidence produces `HOLD` or `PASS-CONDITIONAL`, not invented certainty.
 
-# Physical benchmark result table template
+# Physical benchmark result table — historical direct-execution ledger
 
-The active Physical workstream SHALL fill one row per candidate/role as evidence is executed.
+The rows below preserve the direct execution slots from the Phase-10 register. They are **not** the PM-09 evidence-weighted score or PM-11/12 selection record.
 
-| ID | Candidate | Role | Version/Edition | Hard Gates | Weighted/Role Score | LOW | BASE | HIGH | Sensitivity | Conditions | Disposition |
+| ID | Candidate | Role | Phase-10 Version/Edition | Direct Hard Gates | Verified-run Score | LOW | BASE | HIGH | Direct Sensitivity | Conditions | Direct Disposition |
 |---|---|---|---|---|---:|---|---|---|---|---|---|
-| P0 | PostgreSQL hybrid | primary | TBD | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
-| P1 | TypeDB | primary | TBD | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
+| P0 | PostgreSQL hybrid | primary | TBD at Phase 10 | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
+| P1 | TypeDB | primary | TBD at Phase 10 | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
 | G0 | no graph store | graph baseline | follows primary | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
 | G1 | Neo4j | secondary graph | TBD | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
 | S0 | structured + lexical/FTS | search baseline | follows primary | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
-| S1 | pgvector | bounded vector | TBD | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | PostgreSQL applicable | NOT RUN |
+| S1 | pgvector | bounded vector | TBD at Phase 10 | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | PostgreSQL applicable | NOT RUN |
 | ED0 | native/bounded event/document | bounded adjunct baseline | follows architecture | NOT RUN | — | NOT RUN | NOT RUN | NOT RUN | NOT RUN | — | NOT RUN |
+
+Current PM-11/12 selection does not alter this direct ledger. The evidence-weighted scoring/result is maintained separately under `docs/physical-model/**`.
 
 # Register-level hard rules
 
 ```text
-PostgreSQL baseline cannot bypass P1 TypeDB challenge
+PostgreSQL baseline cannot bypass P1 TypeDB challenge inside the original Phase-10 method
 TypeDB challenge cannot bypass operational/recovery evidence
 Neo4j cannot win primary role from G-lane results
 pgvector cannot become semantic truth store from S-lane results
 event/document mechanisms cannot become universal ontology
-preferred cannot be reported as selected
+preferred cannot be reported as selected before PM-11
 candidate capability cannot be scored without version/edition/deployment context
+selected cannot be reported as direct PASS without execution
 ```
 
-# Phase 10 register status — current
+# Phase 10 register status — current historical ledger
 
-The register is remotely QA-verified complete for Phase 10 and now consumed by the authorized Physical workstream:
+The register is remotely QA-verified complete for Phase 10 and was consumed by the now-closed Physical workstream:
 
 ```text
 primary lane candidates classified              PASS
@@ -524,11 +562,24 @@ durable-runtime coupling recorded                PASS
 solver coupling recorded                         PASS
 admission/removal rules present                  PASS
 evidence maturity vocabulary present             PASS
-result slots present                             PASS
+direct result slots present                      PASS
+
+PHASE-TIME HANDOFF STATE
 Physical workstream authorized                   PASS
-Physical mapping started                         0
-benchmark execution started                      0
-technology selected                              0
+Physical mapping started                         0 at handoff
+benchmark execution started                      0 at handoff
+technology selected                              0 at handoff
+
+CURRENT PHYSICAL STATE
+PM-11 explicit selection                         COMPLETE
+PM-12 Accepted Physical Model                    COMPLETE
+PM-13 architecture/documentation QA              PASS
+PM-14 branch closure                             COMPLETE
+PR #15 integration                               COMPLETE
+selected canonical primary                       PostgreSQL 18.4
+DIRECT HG PASS                                   0
+LOW/BASE/HIGH                                    NOT RUN
+VERIFIED-RUN SCORE                               NOT AVAILABLE
 ```
 
-Phases 11 and 12 consumed the register during repository-safety and clean-room verification. `feature/physical-model` now owns execution of these registered candidates under the new Physical methodology; PM-00 bootstrap does not change any `NOT RUN` result slot.
+Phases 11 and 12 consumed the register during repository-safety and clean-room verification. The completed Physical workstream used the evidence-first method to reach an evidence-weighted decision without mutating this direct-execution ledger. Applicable direct proofs remain carried forward in the post-selection validation register.
