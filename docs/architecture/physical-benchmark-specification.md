@@ -1,13 +1,13 @@
 # Physical Benchmark Specification
 
-- Status: **CURRENT — Phase 10 QA PASS**
-- Stage: Pre-Physical Repository & Architecture Coherence
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
-- Technology selection: **NOT PERFORMED**
+- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
+- Stage: Physical Model execution method authority
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Technology selection: **NONE / NOT PERFORMED**
 
 ## Purpose
 
-Define the executable, reproducible method that a later separately authorized Physical Model workstream must use to compare LifeOS persistence and bounded specialized-infrastructure candidates.
+Define the executable, reproducible method that the separately authorized Physical Model workstream must use to compare LifeOS persistence and bounded specialized-infrastructure candidates.
 
 This document decides **how evidence will be produced and judged**. It does not select a database, schema, index layout, runtime topology, provider, workflow engine or backend implementation.
 
@@ -367,7 +367,7 @@ Best currently supported candidate among candidates that passed the applicable h
 PREFERRED != SELECTED
 ```
 
-Selection belongs to the later separately authorized Physical Model workstream.
+Selection belongs to the active separately authorized Physical Model workstream and requires its explicit selection gate.
 
 # Evidence contract
 
@@ -439,7 +439,7 @@ If upstream documentation is contradictory or maturity is unclear, the relevant 
 
 # Execution protocol
 
-A later authorized Physical benchmark SHALL follow this order.
+The authorized Physical benchmark SHALL follow this order.
 
 ## Step 1 — Freeze benchmark inputs
 
@@ -511,7 +511,7 @@ migration/exit risk
 recommended disposition
 ```
 
-No implementation branch or Physical schema is authorized merely because a benchmark result exists.
+No production implementation branch is authorized merely because a benchmark result exists. Selection remains a separate explicit Physical gate.
 
 # Candidate-specific minimum benchmark pressure
 
@@ -613,7 +613,7 @@ preferred != selected                               PASS
 
 This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package.
 
-Phase 10 does **not**:
+Phase 10 itself does **not**:
 
 - implement benchmark harness code;
 - design PostgreSQL tables/indexes;
@@ -621,9 +621,8 @@ Phase 10 does **not**:
 - design Neo4j projections;
 - choose pgvector indexes;
 - select a primary database;
-- authorize a Physical Model;
-- start Backend Foundation.
+- authorize production backend implementation.
 
-Repository-safety and clean-room Pre-Physical verification have subsequently been completed as Phases 11 and 12. Those later phases do not change this benchmark method or turn any candidate into a selected technology.
+Repository-safety and clean-room Pre-Physical verification were subsequently completed as Phases 11 and 12. Those later phases did not change this benchmark method or turn any candidate into a selected technology.
 
-Only after definitive Pre-Physical closure and separate user authorization may the Physical Model benchmark/design workstream execute this method.
+The Physical Model is now separately authorized on `feature/physical-model`. That workstream executes this method under `docs/physical-model/**`; PM-00 bootstrap does not itself start mapping/benchmark execution or select a technology.
