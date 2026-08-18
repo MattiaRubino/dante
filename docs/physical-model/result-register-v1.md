@@ -1,441 +1,244 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-05 COMPLETE / PM-06+PM-07 JOINT NEXT**
+- Status: **CURRENT — PM-06/07 JOINT COMPLETE / PM-08 NEXT**
 - Workstream: `feature/physical-model`
-- Direct benchmark execution: **NOT STARTED**
-- Primary finalist set: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
-- Deferred primary challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
-- Technology selection: **NONE**
+- Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
+- Deferred challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
+- Direct execution: **NOT STARTED**
+- Preferred: **NONE**
+- Selected: **NONE**
 
-## 1. Result-language rule
+## Result-language rule
 
 ```text
 OFFICIAL CLAIM != DIRECT EXECUTION
-ADMIT != HARD-GATE PASS
-MAPPING COMPLETE != HARD-GATE PASS
-PM-03 PASS-CONDITIONAL != DIRECT PASS
-PM-04A EXT/MAP-SUFFICIENT != DIRECT PASS
-PM-05 EVIDENCE-QUALIFIED != DIRECT PASS
 PUBLIC BENCHMARK != LIFEOS BENCHMARK
+EVIDENCE-QUALIFIED != DIRECT PASS
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 DEFER != REJECT
 NOT RUN != PASS
 ```
 
-## 2. Current phase state
+## Phase state
 
 ```text
 PM-00   QA PASS
 PM-01   PASS-CONDITIONAL
-PM-02   PRIMARY MAPPING DESIGN COMPLETE
+PM-02   PRIMARY MAPPING COMPLETE
 PM-03   STATIC PREFLIGHT COMPLETE / 0 STATIC REJECTS
-PM-04A  EVIDENCE SUFFICIENCY COMPLETE / 48 OF 48 CELLS CLASSIFIED
-PM-04B  NOT ADMITTED / HARNESS NOT STARTED
+PM-04A  EVIDENCE SUFFICIENCY COMPLETE / 48 OF 48 CELLS
+PM-04B  NOT ADMITTED
 PM-05   CORRECTNESS/DESTRUCTIVE EVIDENCE QUALIFICATION COMPLETE
+PM-06   SCALE/PERFORMANCE EVIDENCE QUALIFICATION COMPLETE
+PM-07   RECOVERY/EVOLUTION/FAILURE EVIDENCE QUALIFICATION COMPLETE
+PM-08   NEXT
+PM-09+  NOT STARTED
+```
 
-PM-05 EXECUTION-WORTHY GAPS
-0
+## Finalist set
 
-PRIMARY FINALISTS
+```text
 P0 PostgreSQL 18.4
+ADVANCE
+CURRENT OVERALL LEADER
+
 P1 TypeDB CE 3.12.3
+ADVANCE
+PRINCIPAL SEMANTIC CHALLENGER
 
-DEFERRED / NOT REJECTED
 P2 XTDB 2.1.0
+DEFER / NOT REJECTED
+
 P3 SurrealDB Community 3.2.3
+DEFER / NOT REJECTED
+```
 
-PM-06 + PM-07
-JOINT FINALIST QUALIFICATION NEXT
+## PM-06 result
 
-PM-08+
-NOT STARTED
+### PostgreSQL
 
-DIRECT PERFORMANCE
-NOT STARTED
+```text
+SCALE/PERFORMANCE VIABLE
+confidence HIGH
+LOW/BASE/HIGH NOT RUN
+```
 
-SELECTION
+No ranking-critical performance uncertainty remains.
+
+### TypeDB CE
+
+```text
+SCALE/PERFORMANCE VIABLE
+confidence MEDIUM-HIGH
+LOW/BASE/HIGH NOT RUN
+```
+
+Material conditions:
+
+- each query currently single-threaded;
+- scale-up uses concurrent queries/transactions and resource sizing;
+- CE is single-node;
+- horizontal scaling belongs to Cloud/Enterprise;
+- index/memory/disk overhead must be provisioned deliberately.
+
+### PM-06 comparison
+
+```text
+PERFORMANCE REVERSAL SIGNAL
 NONE
+
+LOCAL BENCHMARK
+NOT ADMITTED
 ```
 
-Benchmark host remains `HOLD / DORMANT` until a direct run is separately admitted.
+TypeDB remains viable; PostgreSQL does not win because of invented throughput numbers. The current lead remains based on aggregate architecture and operations.
 
-## 3. Evidence chain
+## PM-07 result
+
+### PostgreSQL
 
 ```text
-PM-01
-docs/physical-model/pm-01-technology-landscape-v1.md
-
-PM-02
-docs/physical-model/pm-02-primary-mapping-overview-v1.md
-+ mappings/*
-
-PM-03
-docs/physical-model/pm-03-semantic-hard-gate-preflight-v1.md
-+ preflight/*
-
-PM-04A
-docs/physical-model/pm-04-external-evidence-sufficiency-v1.md
-+ evidence/*
-
-PM-05
-docs/physical-model/pm-05-correctness-evidence-qualification-v1.md
-+ qualification/*
+RECOVERY/EVOLUTION/OPERATIONS
+MATERIAL ADVANTAGE
 ```
 
-Historical layers remain truthful and are not rewritten into direct execution results.
+Evidence-qualified capabilities include:
 
-## 4. Direct hard-gate status
+- SQL/filesystem/continuous-archive backup families;
+- WAL/PITR;
+- full/incremental base backup;
+- physical/logical replication;
+- synchronous/asynchronous standby options;
+- failover primitives;
+- pg_upgrade;
+- logical-replication migration.
 
-No direct LifeOS database correctness/destructive execution has occurred.
+### TypeDB CE
 
 ```text
-P0 PostgreSQL HG-01..HG-12   NOT RUN
-P1 TypeDB HG-01..HG-12       NOT RUN
-P2 XTDB HG-01..HG-12         NOT RUN
-P3 SurrealDB HG-01..HG-12    NOT RUN
+RECOVERY/EVOLUTION
+VIABLE
+HIGHER SELF-HOSTED OPERATIONS COST
 ```
 
-Direct HG PASS count: `0`.
+Evidence-qualified capabilities/conditions include:
 
-## 5. PM-05 corpus/scenario result
+- self-hosted backup implementation is user responsibility;
+- disk snapshot or export/import are recommended self-hosted paths;
+- those documented paths are not incremental;
+- export/import is designed for cross-version migration;
+- compatible versions may reuse/copy data directories;
+- CE is single-node;
+- cluster replication/horizontal read scaling/HA are Cloud/Enterprise capabilities.
 
-### Corpus
+## Joint comparative conclusion
 
 ```text
-C0  PRIMARY-EVIDENCE-SUFFICIENT
-C1  PRIMARY-EVIDENCE-SUFFICIENT + PM-06/07-FINALIST scale
-C2  PRIMARY-EVIDENCE-SUFFICIENT + candidate known costs
-C3  persistence sufficient / full WL-H12 SYSTEM-BOUNDARY
-C4  SYSTEM-BOUNDARY
-C5  PRIMARY-EVIDENCE-SUFFICIENT
-C6  primary baseline / specialist work PM-08
-C7  PM-06/07-FINALIST
+POSTGRESQL
+OVERALL LEAD STRENGTHENED
+
+TYPEDB
+SEMANTIC ADVANTAGE PRESERVED
+OPERATIONS/RECOVERY/TOPOLOGY DISADVANTAGE MADE EXPLICIT
 ```
 
-### Primary semantic scenario set
+The current decision question entering PM-08/09 is therefore not “which one can run LifeOS?” Both finalists remain viable.
 
-```text
-SC-001 SC-002 SC-003 SC-009 SC-010 SC-012
-SC-014 SC-015 SC-016 SC-022 SC-023 SC-024
+It is:
 
-RESULT
-EVIDENCE-QUALIFIED FOR CURRENT PRIMARY COMPARISON
-DIRECT RUN NOT REQUIRED NOW
-```
+> Is TypeDB's superior semantic relation/role model worth the additional concurrency-guard, self-hosted backup and CE-topology burden compared with PostgreSQL's stronger overall integrity/operations/recovery ecosystem?
 
-### System/runtime/provider set
-
-```text
-SC-004 SC-005 SC-006 SC-007 SC-008
-SC-025 SC-026 SC-027 SC-028 SC-029 SC-033 SC-034
-
-RESULT
-SYSTEM-BOUNDARY
-not a reason for four-primary local DB execution
-```
-
-### PM-06/07 finalist set
+## Scenario carry-forward
 
 ```text
 SC-011 old-backup anti-resurrection
+POST-SELECTION IMPLEMENTATION VALIDATION
+
 SC-013 deep-history scale
-SC-030 V1 -> V2 evolution
-SC-031 restore + semantic verification
+REOPEN ONLY IF PM-09 PERFORMANCE-SENSITIVE
+
+SC-030 actual LifeOS V1->V2 mapping evolution
+POST-SELECTION IMPLEMENTATION VALIDATION
+
+SC-031 semantic restore verification
+POST-SELECTION IMPLEMENTATION VALIDATION
+
 SC-032 capacity/backpressure
+POST-SELECTION IMPLEMENTATION VALIDATION
 ```
 
-### PM-08 secondary set
+None is a direct PASS.
+
+## Direct execution truth
 
 ```text
-SC-017 SC-018 SC-019 SC-020 SC-021 SC-035
+P0 HG-01..HG-12       NOT RUN
+P1 HG-01..HG-12       NOT RUN
+P2 HG-01..HG-12       NOT RUN
+P3 HG-01..HG-12       NOT RUN
+
+DIRECT HG PASS         0
+DATABASE DEPLOYMENT    NOT STARTED
+HARNESS                 NOT STARTED
+LOW/BASE/HIGH           NOT RUN
+RESTORE                  NOT RUN
+MIGRATION                NOT RUN
+FAILURE INJECTION        NOT RUN
+BENCHMARK HOST           HOLD / DORMANT
 ```
 
-## 6. P0 — PostgreSQL 18.4
+## Evidence paths
 
 ```text
-ROLE
-mandatory baseline / current comparative leader
-
 PM-01
-ADMIT
+pm-01-technology-landscape-v1.md
 
 PM-02
-PM02-PG-001 COMPLETE
+pm-02-primary-mapping-overview-v1.md
+mappings/*
 
 PM-03
-9 PASS-CONDITIONAL / 3 HOLD / 0 REJECT
+pm-03-semantic-hard-gate-preflight-v1.md
+preflight/*
 
 PM-04A
-0 execution-worthy gaps
+pm-04-external-evidence-sufficiency-v1.md
+evidence/*
 
 PM-05
-PRIMARY FINALIST
-ADVANCE PM-06/07 JOINT
-0 PM-05 execution-worthy gaps
+pm-05-correctness-evidence-qualification-v1.md
+qualification/*-v1.md
 
-DIRECT HG
-NOT RUN
-
-PREFERRED
-NO
-
-SELECTED
-NO
+PM-06/07
+pm-06-07-joint-finalist-qualification-v1.md
+pm-06-scale-performance-evidence-v1.md
+pm-07-recovery-evolution-evidence-v1.md
+qualification/postgresql-18.4-pm-06-07-v1.md
+qualification/typedb-3.12.3-pm-06-07-v1.md
 ```
 
-Current comparative strengths:
+## Secondary lanes
 
-- native FK/constraint ecosystem;
-- true Serializable/locking paths;
-- low primary-store structural risk;
-- mature recovery/operations ecosystem;
-- explicit LifeOS history/material-state mapping without semantic collapse.
-
-Current costs/conditions:
-
-- heterogeneous address anchors must remain purely technical;
-- transaction strength is operation/invariant-specific;
-- explicit history is application schema, not built-in semantic history;
-- RLS does not by itself satisfy WL-H12.
-
-PM-06/07 obligations: SC-011/013/030/031/032 and finalist scale/recovery/evolution/TCO sensitivity.
-
-## 7. P1 — TypeDB CE 3.12.3
-
-```text
-ROLE
-principal semantic challenger
-
-PM-01
-ADMIT
-
-PM-02
-PM02-TDB-001 COMPLETE
-
-PM-03
-HG-04/HG-05 HOLD
-
-PM-04A
-concurrency unknown narrowed to documented guard condition/design cost
-0 execution-worthy gaps
-
-PM-05
-PRIMARY FINALIST
-ADVANCE PM-06/07 JOINT
-CONDITION narrow consistency-guard coverage required
-0 PM-05 execution-worthy gaps
-
-DIRECT HG
-NOT RUN
-
-PREFERRED
-NO
-
-SELECTED
-NO
-```
-
-Current comparative strengths:
-
-- strongest typed relation/role/n-ary fit;
-- schema-level role/cardinality semantics;
-- clean mapping of Agreement/common-ground structures;
-- no generic semantic object/edge root required.
-
-Current costs/conditions:
-
-- snapshot isolation remains the engine transaction model;
-- correct narrow consistency-guard scoping is mandatory for write-skew-sensitive invariant sets;
-- explicit material-state/history remains required;
-- self-hosted operations/recovery/tooling maturity must be compared directly against PostgreSQL.
-
-Reopen targeted concurrency execution only if PM-06/07 ranking becomes materially dependent on guard behavior rather than its known complexity cost.
-
-## 8. P2 — XTDB 2.1.0
-
-```text
-ROLE
-distinctive temporal/bitemporal challenger
-
-PM-01
-ADMIT / PRODUCTION TOPOLOGY HOLD
-
-PM-02
-PM02-XT-001 COMPLETE
-
-PM-03
-HG-02/HG-03 HOLD
-
-PM-04A
-reference/cardinality uncertainty narrowed to KNOWN STRUCTURAL COST
-0 execution-worthy gaps
-
-PM-05
-DEFER FROM PRIMARY FINALIST SET
-NOT REJECTED
-
-DIRECT HG
-NOT RUN
-
-SELECTED
-NO
-```
-
-Reason for defer:
-
-```text
-native bitemporal value is real
-BUT
-no native FK
-+ no general uniqueness beyond _id
-+ manual ASSERT/address integrity discipline
-+ non-interactive transaction ergonomics
-+ production topology/single-writer sensitivity
-→ aggregate primary-store burden currently exceeds finalist value
-```
-
-Reopen triggers:
-
-- native bitemporality becomes decision-dominant under accepted requirements;
-- PostgreSQL/TypeDB shows material history/temporal weakness;
-- XTDB integrity/topology capability materially changes;
-- later sensitivity analysis provides evidence that can change the recommendation.
-
-## 9. P3 — SurrealDB Community 3.2.3
-
-```text
-ROLE
-credible constrained multimodel challenger
-
-PM-01
-ADMIT-CONDITIONAL
-
-PM-02
-PM02-SDB-001 COMPLETE
-
-PM-03
-HG-04/HG-05 HOLD
-
-PM-04A
-concurrency unknown narrowed to guard condition/design cost
-0 execution-worthy gaps
-
-PM-05
-DEFER FROM PRIMARY FINALIST SET
-NOT REJECTED
-
-DIRECT HG
-NOT RUN
-
-SELECTED
-NO
-```
-
-Reason for defer:
-
-- SCHEMAFULL/typed-link multimodel design is credible;
-- consistency-guard coverage remains a complexity cost;
-- explicit long-lived material history remains required;
-- no unique primary-store advantage currently offsets the comparative concurrency/history/operations burden enough to justify finalist scope.
-
-Reopen triggers:
-
-- multimodel consolidation becomes decision-changing;
-- PostgreSQL/TypeDB exposes a material capability gap SurrealDB directly solves;
-- relevant concurrency/history/operations capability changes materially;
-- later TCO/sensitivity evidence can change the recommendation.
-
-## 10. Primary finalist set
-
-```text
-P0 PostgreSQL 18.4
-P1 TypeDB CE 3.12.3
-```
-
-This narrowing is evidence-driven scope management. It does not delete or invalidate PM-02..PM-05 evidence for XTDB/SurrealDB.
-
-## 11. PM-06 + PM-07 joint campaign
-
-PM-06 and PM-07 are operationally combined while retaining separate result semantics.
-
-### PM-06 result layer
-
-Qualify finalist evidence for:
-
-```text
-scale/history efficiency
-resource behavior
-contention/throughput sensitivity
-storage/index growth
-topology/resource cliffs
-performance relevance to LifeOS
-```
-
-### PM-07 result layer
-
-Qualify finalist evidence for:
-
-```text
-backup/restore
-anti-resurrection
-schema/data evolution
-historical reference preservation
-failure/backpressure
-operations/HA/topology
-RPO/RTO capability sensitivity
-```
-
-Evidence-first default applies. No direct run is authorized by this register.
-
-## 12. Direct execution posture
-
-```text
-FULL LOCAL BENCHMARK
-NOT ADMITTED
-
-TARGETED LOCAL PROOFS
-0 currently admitted
-
-PM-04B
-NOT REOPENED
-
-DATABASE/HARNESS
-NOT STARTED
-
-BENCHMARK HOST
-HOLD / DORMANT
-```
-
-Before any direct result changes from `NOT RUN`:
-
-1. prove execution-worthiness or closure-mandatory status;
-2. obtain fresh explicit gate;
-3. freeze host/runtime/topology;
-4. freeze mapping/schema/harness revision;
-5. retain raw evidence;
-6. distinguish candidate failure from tooling/environment failure.
-
-## 13. Secondary lanes
+Still not selected:
 
 ```text
 GRAPH
-G0 primary/no-specialist baseline
-Neo4j DEFER PM-08
+G0 primary-store baseline
+Neo4j deferred to PM-08
 
 SEARCH/VECTOR
-primary structured/lexical baseline
-pgvector DEFER PM-08 when applicable
+primary-native baseline
+pgvector when PostgreSQL applicable
 Qdrant/OpenSearch trigger-only
 
 LOCAL/OFFLINE
-SQLite DEFER bounded client role
-
-DURABLE RUNTIME
-not selected by persistence workstream
+SQLite bounded future lane
 ```
 
-## 14. Checkpoints
+PM-08 must demand net value from every additional technology.
+
+## Historical checkpoints
 
 ```text
 MAIN BASELINE
@@ -453,26 +256,24 @@ PM-03 terminal
 PM-04A terminal
 44d331f12951e2844186e6f5f885e1bcf1559a3b
 
-PM-05 PRE-SCOPE
-44d331f12951e2844186e6f5f885e1bcf1559a3b
+PM-05 terminal
+9a53c2577e8e25de6de63a830e9bab036521f040
+
+PM-06/07 PRE-SCOPE
+9a53c2577e8e25de6de63a830e9bab036521f040
 ```
 
-Final PM-05 remote-QA HEAD is recorded in the workstream handoff after final verification.
+The PM-06/07 terminal SHA is determined by remote Git after this write.
 
-## 15. Current next step
+## Next
 
 ```text
-PM-05
-COMPLETE subject to final remote QA
+PM-08
+SECONDARY/SPECIALIST LANE QUALIFICATION
+fresh gate required
 
-PM-06/07 JOINT
-NEXT AFTER FRESH EXACT GATE
-PostgreSQL + TypeDB only unless a deferred candidate reopen trigger is proven
-
-PM-08+
-NOT STARTED
-
-NO DIRECT PERFORMANCE RUN
-NO SELECTION
-NO PRODUCTION BACKEND
+PM-09 scoring NOT STARTED
+PREFERRED NONE
+SELECTED NONE
+BACKEND NOT STARTED / DEFERRED
 ```

@@ -1,338 +1,212 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-05 COMPLETE / PM-06+PM-07 JOINT NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-06/07 JOINT COMPLETE / PM-08 NEXT**
 - Branch: `feature/physical-model`
-- Base: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00: **QA PASS**
 - PM-01: **PASS-CONDITIONAL**
 - PM-02: **COMPLETE**
 - PM-03: **STATIC COMPLETE / 0 REJECTS**
-- PM-04A: **COMPLETE / 48 OF 48 CELLS CLASSIFIED / 0 EXECUTION-WORTHY GAPS**
-- PM-04B: **NOT ADMITTED / NOT STARTED**
-- PM-05: **COMPLETE / PRIMARY FINALISTS = POSTGRESQL + TYPEDB**
-- PM-06+PM-07: **JOINT FINALIST QUALIFICATION NEXT**
-- Direct hard-gate execution: **NOT RUN**
-- Database/harness execution: **NOT STARTED**
-- Technology selection: **NONE**
+- PM-04A: **COMPLETE / 0 EXECUTION-WORTHY GAPS**
+- PM-04B: **NOT ADMITTED**
+- PM-05: **COMPLETE**
+- PM-06: **EVIDENCE QUALIFICATION COMPLETE / DIRECT PERFORMANCE NOT RUN**
+- PM-07: **EVIDENCE QUALIFICATION COMPLETE / DIRECT DESTRUCTIVE RUNS NOT RUN**
+- Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
+- Deferred challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
+- Preferred: **NONE**
+- Selected: **NONE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-Turn the closed LifeOS Domain + Logical model into an evidence-backed Physical Model without selecting technology by popularity, intuition, vendor marketing or ritual benchmarking.
+Turn accepted LifeOS Domain + Logical semantics into a durable, evidence-backed Physical Model without weakening semantics or manufacturing benchmarks that cannot change the decision.
 
 ```text
-Domain + Logical
+DOMAIN + LOGICAL
 fixed semantic authority
 
-Physical
-technology discovery
+PHYSICAL
+research
 → candidate-native mapping
 → semantic preflight
 → evidence sufficiency
-→ correctness scenario qualification
-→ finalist scale/recovery qualification
-→ secondary lanes
+→ correctness qualification
+→ finalist qualification
+→ specialist lanes
 → scoring/sensitivity
 → recommendation
 → explicit selection
+→ accepted model / clean-room QA / main integration
 ```
 
-## Authority order
+## Mandatory continuation order
 
-Before new Physical work:
+Before any further Physical write:
 
-1. verify current `feature/physical-model` HEAD and relation to `main`;
-2. read root/project status and development operating/safety rules;
+1. verify remote `feature/physical-model` HEAD;
+2. compare to current `main`;
 3. read `docs/workstreams/physical-model.md` completely;
 4. read this README;
 5. read `execution-methodology-v1.md`;
-6. read `execution-template-v1.md`;
-7. read `acceptance-test-matrix-v1.md`;
-8. read `result-register-v1.md`;
-9. read PM-01 landscape;
-10. read PM-02 overview + four mappings;
-11. read PM-03 overview + four preflight records;
-12. read PM-04A overview + four evidence records;
-13. read PM-05 overview + four qualification records;
-14. read Phase-10 benchmark specification/corpus/register;
-15. read closed Whole-Logical authority and `WL-H01..WL-H12` where semantics are involved;
-16. verify current external product/version facts from primary sources where material;
-17. issue an exact write gate before every repository write.
+6. read `acceptance-test-matrix-v1.md` and `result-register-v1.md`;
+7. read PM-01 through PM-07 current evidence relevant to the next phase;
+8. read Phase-10 benchmark spec/corpus/register where scenario authority matters;
+9. read Whole-Logical authority/WL-H01..WL-H12 where semantics are involved;
+10. verify current official technology facts where temporally unstable;
+11. issue exact PRE-SCOPE / CREATE / UPDATE / DELETE gate before write.
 
-Conversation memory never outranks repository current truth.
+Conversation memory never outranks repository truth.
 
 ## Non-negotiable barriers
 
 ```text
 SEMANTIC OWNER != IMPLEMENTATION MECHANISM
 ADDRESSABILITY != DOMAIN IDENTITY
-STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
-STATIC/EVIDENCE SUFFICIENCY != DIRECT EXECUTION
+STORAGE TOKEN != MaterialStateRef
+CANONICAL != PROVIDER / DERIVED / SECURITY STATE
+MISSING != FALSE
+EVIDENCE-QUALIFIED != EXECUTED PASS
 PUBLIC BENCHMARK != LIFEOS BENCHMARK
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 DEFER != REJECT
 ```
 
-Never reintroduce:
+No universal Entity/Thing/EAV/generic-edge canonical shortcut may be introduced for implementation convenience.
+
+## Evidence-first execution policy
 
 ```text
-universal Entity/Thing root
-universal generic Relationship/edge root
-generic EAV/property-bag canonical kernel
-universal Rule/Fact/WorkItem/Command root
-provider ID/revision as canonical identity/material state
-missing row == false
-storage/MVCC/system-time/changefeed token == MaterialStateRef
-technical AuthZ == Domain Authority/Consent
-AI/solver result == canonical truth/effect
-per-recipient duplicate canonical reality
+LOCAL EXECUTION
+last-mile evidence only
 ```
 
-## Current primary finalist set
+A direct run requires a residual question that remains unresolved, is materially decision-relevant, and can actually be resolved by controlled execution.
 
-### P0 — PostgreSQL 18.4
+Current direct execution state:
 
 ```text
-ROLE
-current comparative leader / primary finalist
-
-SUBJECT
-PostgreSQL 18.4
-self-hosted single-node qualification topology
-psycopg 3.3.4
-
-PM-02
-PM02-PG-001 COMPLETE
-
-PM-04A
-0 execution-worthy gaps
-
-PM-05
-ADVANCE TO PM-06/07 JOINT
-
-DIRECT HG
-NOT RUN
-
-PREFERRED
-NO
-
-SELECTED
-NO
+benchmark host          HOLD / DORMANT
+database deployment     NOT STARTED
+fixture/harness          NOT STARTED
+LOW/BASE/HIGH            NOT RUN
+direct HG PASS           0
+restore rehearsal        NOT RUN
+migration rehearsal      NOT RUN
+failure injection        NOT RUN
 ```
 
-Strengths:
+## Current primary finalists
 
-- native relational integrity/constraint ecosystem;
-- true Serializable/locking paths;
-- mature operations/recovery tooling;
-- low aggregate primary-store structural risk;
-- LifeOS mapping preserves explicit identity/history/state layers without meta-model collapse.
-
-Current pressure:
-
-- heterogeneous address anchors must remain purely technical;
-- isolation/locking strength remains invariant-specific;
-- RLS is not complete WL-H12 proof;
-- finalist scale/recovery/evolution evidence remains.
-
-### P1 — TypeDB CE 3.12.3
+### PostgreSQL 18.4
 
 ```text
 ROLE
-principal semantic challenger / primary finalist
+current overall leader
 
-SUBJECT
-TypeDB CE 3.12.3
-self-hosted single-node qualification topology
-driver 3.12.3
+PM-06
+scale/performance viable / HIGH confidence
 
-PM-02
-PM02-TDB-001 COMPLETE
-
-PM-04A
-0 execution-worthy gaps
-
-PM-05
-ADVANCE TO PM-06/07 JOINT
-CONDITION narrow consistency-guard coverage required
-
-DIRECT HG
-NOT RUN
+PM-07
+clear operations/recovery/topology advantage
 
 PREFERRED
-NO
+NONE
 
 SELECTED
-NO
+NONE
 ```
 
-Strengths:
+Why it leads:
 
-- strongest typed relation/role/n-ary semantic fit;
-- natural Agreement/common-ground representation;
-- schema role/cardinality semantics;
-- no generic canonical edge/object root required.
+- accepted mapping preserves LifeOS semantics without a universal ontology root;
+- mature integrity and Serializable primitives;
+- WAL/PITR and full/incremental base-backup paths;
+- mature physical/logical replication and standby/failover primitives;
+- several upgrade/migration paths;
+- zero-license-cost self-hosted database capability;
+- lower aggregate canonical-store operational risk.
 
-Current pressure:
+Remaining obligations are implementation-specific: anchor discipline, operation-specific transaction policy, system-level WL-H12, semantic restore/anti-resurrection, actual LifeOS V1→V2 migration.
 
-- snapshot isolation remains the transaction model;
-- correct consistency-guard scoping is mandatory for write-skew-sensitive invariants;
-- explicit material-state/history structures remain required;
-- operations/recovery/tooling burden must be compared against PostgreSQL.
-
-## Deferred primary challengers — not rejected
-
-### P2 — XTDB 2.1.0
+### TypeDB CE 3.12.3
 
 ```text
-PM-05
-DEFER FROM PRIMARY FINALIST SET
-NOT REJECTED
+ROLE
+principal semantic challenger
 
-DISTINCTIVE VALUE
-native bitemporality / serialized DML
+PM-06
+scale/performance viable / MEDIUM-HIGH confidence
 
-CURRENT COST
-no native FK
-no general uniqueness beyond _id
-manual ASSERT/address integrity discipline
-non-interactive transaction ergonomics
-production topology/single-writer sensitivity HOLD
+PM-07
+recovery/evolution viable / higher self-hosted operations cost
+
+PREFERRED
+NONE
+
+SELECTED
+NONE
 ```
 
-Reopen only if native bitemporal value becomes decision-dominant, PostgreSQL/TypeDB exposes a material temporal weakness, or XTDB capability/topology materially changes.
+Why it remains a finalist:
 
-### P3 — SurrealDB Community 3.2.3
+- strongest direct relation/role/n-ary semantic representation;
+- strong schema/cardinality semantics;
+- credible scale-up and concurrent-query model;
+- explicit cross-version export/import evolution path.
+
+Material costs/conditions:
+
+- snapshot-isolation hardening via correctly scoped consistency guards;
+- each query currently single-threaded;
+- CE is single-node;
+- self-hosted backup implementation is LifeOS-owned;
+- documented self-hosted backup options are non-incremental;
+- clustering/horizontal read scaling belong to Cloud/Enterprise rather than CE.
+
+## Deferred primary challengers
 
 ```text
-PM-05
-DEFER FROM PRIMARY FINALIST SET
-NOT REJECTED
+XTDB 2.1.0
+DEFER / NOT REJECTED
+reopen on decision-dominant bitemporal need or material capability change
 
-DISTINCTIVE VALUE
-constrained multimodel consolidation
-
-CURRENT COST
-snapshot-isolation guard discipline
-explicit long-lived material history
-comparatively weaker primary-store differentiator versus finalists
+SurrealDB Community 3.2.3
+DEFER / NOT REJECTED
+reopen on decision-dominant multimodel consolidation or material capability change
 ```
 
-Reopen only if multimodel consolidation becomes decision-changing, a finalist exposes a material gap SurrealDB directly solves, or relevant engine capability materially changes.
-
-## PM-05 scenario result
-
-### Primary semantic scenarios — evidence-qualified
+## PM-06/07 conclusion
 
 ```text
-SC-001 SC-002 SC-003 SC-009 SC-010 SC-012
-SC-014 SC-015 SC-016 SC-022 SC-023 SC-024
+PostgreSQL
+OVERALL LEAD STRENGTHENED
+
+TypeDB
+SEMANTIC ADVANTAGE PRESERVED
+
+LOCAL PERFORMANCE TESTS
+0 ADMITTED
+
+LOCAL DESTRUCTIVE TESTS
+0 ADMITTED
 ```
 
-No local execution is currently justified for these.
+The remaining primary decision is now a tradeoff between TypeDB's semantic-native model and PostgreSQL's stronger aggregate integrity/operations/recovery/topology posture.
 
-### System/runtime/provider boundary
+## Post-selection implementation validation
 
-```text
-SC-004 SC-005 SC-006 SC-007 SC-008
-SC-025 SC-026 SC-027 SC-028 SC-029 SC-033 SC-034
-```
-
-These remain real LifeOS obligations but are not standalone reasons to benchmark four primary databases.
-
-### PM-06/07 finalist scenarios
+These remain mandatory where applicable; they are not waived and are not direct PASS today:
 
 ```text
 SC-011 old-backup anti-resurrection
-SC-013 deep-history scale
-SC-030 V1 -> V2 evolution
-SC-031 backup/restore semantic verification
-SC-032 capacity/backpressure
+SC-030 actual V1→V2 mapping evolution
+SC-031 semantic backup/restore verification
+SC-032 capacity/backpressure behavior
 ```
 
-### PM-08 specialist scenarios
-
-```text
-SC-017 SC-018 SC-019 SC-020 SC-021 SC-035
-```
-
-## Current evidence posture
-
-```text
-PM-05 EXECUTION-WORTHY gaps  0
-PM-04B                        NOT REOPENED
-FULL LOCAL BENCHMARK          NOT ADMITTED
-TARGETED LOCAL PROOFS         0 ADMITTED
-DATABASE/HARNESS              NOT STARTED
-BENCHMARK HOST                HOLD / DORMANT
-DIRECT HG PASS                0
-```
-
-The benchmark host becomes a blocker only before a separately admitted direct execution claim.
-
-## PM-06 + PM-07 Joint Finalist Qualification
-
-The next campaign covers only PostgreSQL + TypeDB unless a deferred-candidate reopen trigger is proven.
-
-The campaign is operationally joint but preserves two result layers.
-
-### PM-06
-
-```text
-scale/history efficiency
-performance/resource behavior
-contention sensitivity
-storage/index growth
-topology/resource cliffs
-```
-
-### PM-07
-
-```text
-backup/restore
-anti-resurrection
-evolution/migration
-failure/backpressure
-operations/HA/topology
-RPO/RTO capability sensitivity
-```
-
-Default remains evidence-first. Direct tests occur only if a residual question is ranking-critical and test-resolvable or is genuinely mandatory for finalist closure.
-
-Performance can never compensate for recovery/evolution failure.
-
-## Secondary/specialist lanes — PM-08
-
-```text
-GRAPH
-G0 no-specialist baseline
-Neo4j or another graph specialist only on demonstrated value
-
-SEARCH/VECTOR
-primary structured/lexical baseline
-pgvector when applicable
-Qdrant/OpenSearch only on specialist trigger
-
-LOCAL/OFFLINE
-SQLite or equivalent bounded client role
-```
-
-The final system may use multiple technologies, but every additional engine must independently justify complexity and remain semantically bounded.
-
-## Cost/exit posture
-
-```text
-TARGET
-EUR 0 initial direct technology/license cost where realistically possible
-
-BUT
-quality/correctness outrank cost
-paid != automatic rejection
-free != automatic preference
-```
-
-Use candidate-native strengths where materially better; do not build gratuitous lowest-common-denominator abstraction.
+`SC-013` deep-history scale reopens before selection only if PM-09 becomes genuinely performance-sensitive.
 
 ## Current work products
 
@@ -350,39 +224,71 @@ preflight/*
 pm-04-external-evidence-sufficiency-v1.md
 evidence/*
 pm-05-correctness-evidence-qualification-v1.md
-qualification/*
+qualification/*-v1.md
+
+pm-06-07-joint-finalist-qualification-v1.md
+pm-06-scale-performance-evidence-v1.md
+pm-07-recovery-evolution-evidence-v1.md
+qualification/postgresql-18.4-pm-06-07-v1.md
+qualification/typedb-3.12.3-pm-06-07-v1.md
 ```
 
-The live save-game is `../workstreams/physical-model.md`.
+## PM-08 — next
 
-## Fixed roadmap
+PM-08 evaluates bounded specialist lanes after the primary comparison has narrowed.
+
+Questions include:
 
 ```text
-PM-00  Bootstrap                                      PASS
-PM-01  Technology discovery/candidate freeze          PASS-CONDITIONAL
-PM-02  Primary mapping design                         COMPLETE
-PM-03  Semantic static preflight                      COMPLETE
-PM-04A External evidence sufficiency                  COMPLETE
-PM-04B Conditional harness                            NOT ADMITTED
-PM-05  Correctness/destructive evidence qualification COMPLETE
-PM-06  Scale/performance result layer                 NEXT — JOINT WITH PM-07
-PM-07  Recovery/evolution/failure result layer        NEXT — JOINT WITH PM-06
-PM-08  Secondary lanes                                NOT STARTED
-PM-09  Scoring/sensitivity                            NOT STARTED
-PM-10  Recommendation                                 NOT STARTED
-PM-11  Explicit selection                             NOT STARTED
-PM-12  Accepted Physical Model                        NOT STARTED
-PM-13  Independent clean-room QA                      NOT STARTED
-PM-14  Closure/protected-main integration             NOT STARTED
+GRAPH
+Does a graph projection create enough traversal/read value to justify another engine?
+
+SEARCH/VECTOR
+Is primary-native search sufficient?
+If PostgreSQL remains applicable, does pgvector earn its bounded role?
+When would Qdrant/OpenSearch earn another service?
+
+LOCAL/OFFLINE
+Does SQLite earn a bounded client/local role without becoming competing canonical truth?
 ```
 
-## Next
+Rules:
+
+- no infrastructure zoo;
+- specialist state must remain bounded and reconciliable/rebuildable where required;
+- no specialist may compensate for a primary semantic failure;
+- no technology is selected merely because it is useful elsewhere;
+- cost/operations/security/freshness/delete propagation all count.
+
+## Roadmap
 
 ```text
-PM-06/07 JOINT FINALIST QUALIFICATION
-PostgreSQL + TypeDB
-fresh explicit gate required
-no local execution by default
-no selection
-no backend/API/Auth implementation
+PM-00  PASS
+PM-01  PASS-CONDITIONAL
+PM-02  COMPLETE
+PM-03  COMPLETE
+PM-04A COMPLETE
+PM-04B NOT ADMITTED
+PM-05  COMPLETE
+PM-06  COMPLETE — evidence qualification
+PM-07  COMPLETE — evidence qualification
+PM-08  NEXT
+PM-09  NOT STARTED
+PM-10  NOT STARTED
+PM-11  NOT STARTED
+PM-12  NOT STARTED
+PM-13  NOT STARTED
+PM-14  NOT STARTED
+```
+
+## Current exact next step
+
+```text
+PM-08
+read-only specialist-lane evidence first
+fresh exact write gate required before repository mutation
+
+PREFERRED NONE
+SELECTED NONE
+BACKEND NOT STARTED / DEFERRED
 ```
