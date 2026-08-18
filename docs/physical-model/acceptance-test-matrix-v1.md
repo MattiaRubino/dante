@@ -1,11 +1,9 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-09 COMPLETE / PM-10 NEXT / DIRECT EXECUTION NOT STARTED**
+- Status: **CURRENT — PM-10 COMPLETE / PM-11 NEXT / DIRECT EXECUTION NOT STARTED**
 - Workstream: `feature/physical-model`
-- Finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
-- Deferred primary challengers: XTDB 2.1.0, SurrealDB Community 3.2.3 — NOT REJECTED
-- Current evidence-score leader: **PostgreSQL 18.4**
-- Preferred: **NONE**
+- Primary finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
+- PM-10 preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - Selected: **NONE**
 
 ## Result-layer rule
@@ -23,21 +21,23 @@ PM-08 SPECIALIST QUALIFICATION
 !=
 PM-09 EVIDENCE-WEIGHTED DECISION SCORE
 !=
+PM-10 PREFERRED RECOMMENDATION
+!=
 VERIFIED-RUN BENCHMARK SCORE
 !=
 DIRECT EXECUTION
 ```
 
-`EVIDENCE-QUALIFIED != DIRECT PASS`, `EVIDENCE SCORE != VERIFIED-RUN SCORE`, and `NOT RUN != PASS`.
+`EVIDENCE-QUALIFIED != DIRECT PASS`, `PREFERRED != SELECTED`, and `NOT RUN != PASS`.
 
 ## Primary disposition
 
-| Candidate | PM-05 | PM-06 | PM-07 | PM-08 implication | PM-09 evidence score | Current disposition |
-|---|---|---|---|---|---:|---|
-| PostgreSQL 18.4 | FINALIST | VIABLE / HIGH | MATERIAL ADVANTAGE | FTS + conditional pgvector consolidation | **89.25** | ROBUST LEADER / ADVANCE PM-10 |
-| TypeDB CE 3.12.3 | FINALIST | VIABLE / MEDIUM-HIGH | VIABLE / higher ops cost | external search/vector more likely | **80.00** | PRINCIPAL SEMANTIC CHALLENGER / ADVANCE PM-10 record |
-| XTDB 2.1.0 | DEFER | not in finalist campaign | not in finalist campaign | no PM-08 reopening | — | DEFER / NOT REJECTED |
-| SurrealDB 3.2.3 | DEFER | not in finalist campaign | not in finalist campaign | no PM-08 reopening | — | DEFER / NOT REJECTED |
+| Candidate | PM-09 score | PM-10 disposition | Selected |
+|---|---:|---|---|
+| PostgreSQL 18.4 | **89.25** | **PREFERRED / PASS-CONDITIONAL** | NO |
+| TypeDB CE 3.12.3 | 80.00 | RUNNER-UP / NOT PREFERRED | NO |
+| XTDB 2.1.0 | — | EXCLUDED FROM RECOMMENDED PRIMARY STACK | NO |
+| SurrealDB 3.2.3 | — | EXCLUDED FROM RECOMMENDED PRIMARY STACK | NO |
 
 ## Direct hard-gate status
 
@@ -68,9 +68,9 @@ Direct HG PASS count: `0`.
 | BASE | NOT RUN | NOT RUN |
 | HIGH | NOT RUN | NOT RUN |
 
-Verified-run weighted score: `NOT AVAILABLE` for both.
+Verified-run weighted score: `NOT AVAILABLE`.
 
-## PM-05 scenario qualification carried forward
+## Inherited scenario qualification
 
 ### Primary semantic set
 
@@ -79,7 +79,7 @@ SC-001 SC-002 SC-003 SC-009 SC-010 SC-012
 SC-014 SC-015 SC-016 SC-022 SC-023 SC-024
 ```
 
-Classification: `PRIMARY-EVIDENCE-SUFFICIENT`; direct run not required for current ranking.
+Classification remains `PRIMARY-EVIDENCE-SUFFICIENT` for current recommendation.
 
 ### System/runtime/provider set
 
@@ -88,36 +88,115 @@ SC-004 SC-005 SC-006 SC-007 SC-008
 SC-025 SC-026 SC-027 SC-028 SC-029 SC-033 SC-034
 ```
 
-Classification: `SYSTEM-BOUNDARY`.
+Classification remains `SYSTEM-BOUNDARY`.
 
-## PM-06/07 carry-forward
+### Post-selection primary validation
 
-| Scenario | PostgreSQL | TypeDB | Current treatment |
-|---|---|---|---|
-| SC-011 old-backup anti-resurrection | NOT RUN | NOT RUN | post-selection implementation validation |
-| SC-013 deep-history current-state scale | NOT RUN | NOT RUN | PM-09 reopen test = NO |
-| SC-030 V1→V2 historical-reference evolution | NOT RUN | NOT RUN | post-selection implementation validation |
-| SC-031 destructive restore + semantic verification | NOT RUN | NOT RUN | post-selection implementation validation |
-| SC-032 capacity/backpressure | NOT RUN | NOT RUN | post-selection implementation validation |
+| Scenario | Status | Treatment |
+|---|---|---|
+| SC-011 old-backup anti-resurrection | NOT RUN | mandatory selected-stack validation |
+| SC-013 deep-history scale | NOT RUN | reopen NO under PM-09/10 ranking |
+| SC-030 V1→V2 evolution | NOT RUN | mandatory selected-stack validation |
+| SC-031 destructive restore + semantic verification | NOT RUN | mandatory selected-stack validation |
+| SC-032 capacity/backpressure | NOT RUN | mandatory selected-stack validation |
 
 None is declared PASS.
 
-## PM-08 secondary matrix
+## PM-10 recommended companion matrix
 
-| Lane / candidate | Status | Direct run | Selection meaning |
+| Capability / component | PM-10 status | Direct validation | Authority rule |
 |---|---|---|---|
-| G0 primary-store graph baseline | ADVANCE | NOT RUN | baseline only |
-| Neo4j | DEFER / NOT REJECTED | NOT RUN | no initial graph specialist |
-| PostgreSQL native FTS | ADVANCE as P0 baseline | NOT RUN | primary-native capability |
-| pgvector 0.8.6 | ADMIT-CONDITIONAL | NOT RUN | only if PostgreSQL selected + vector need accepted |
-| Qdrant 1.18.2 | DEFER / TRIGGER ONLY | NOT RUN | no initial service |
-| OpenSearch 3.7 | DEFER / TRIGGER ONLY | NOT RUN | no initial service |
-| SQLite 3.53.4 | ADMIT bounded local/offline candidate | NOT RUN | never canonical authority |
-| object/blob engine | DEFER / TRIGGER ONLY | NOT RUN | no engine admitted |
+| PostgreSQL 18.4 | PREFERRED / PASS-CONDITIONAL | NOT RUN | sole canonical persistence if selected |
+| PostGIS 3.6.4 | RECOMMENDED | NOT RUN | technical geo capability only |
+| PostgreSQL FTS + pg_trgm + unaccent | RECOMMENDED | NOT RUN | derived/query capability |
+| pgvector 0.8.6 | RECOMMENDED | NOT RUN | derived vector index only |
+| pg_stat_statements | RECOMMENDED | NOT RUN | operational telemetry only |
+| PgBouncer 1.25.2 | RECOMMENDED | NOT RUN | connection layer only |
+| encrypted SQLite | RECOMMENDED bounded local/offline | NOT RUN | never canonical |
+| PowerSync 1.25.0 Open Edition | RECOMMENDED / HARDENING REQUIRED | NOT RUN | sync/projection only |
+| PostgreSQL outbox + bounded worker | RECOMMENDED | NOT RUN | bounded async runtime |
+| Restate Cloud EU | RECOMMENDED / PASS-CONDITIONAL | NOT RUN | durable runtime only |
+| Restate Python SDK 1.0.3 | RECOMMENDED | NOT RUN | runtime client |
+| Restate Server 1.7.2 | reproducible local/self-hosted subject | NOT RUN | runtime only |
+| Cloudflare R2 Standard EU | RECOMMENDED | NOT RUN | raw bytes only |
+| pgBackRest 2.59.0 | RECOMMENDED | NOT RUN | backup/recovery mechanism |
+| AWS S3 eu-south-1 backup repos | RECOMMENDED | NOT RUN | recovery copies only |
+| OR-Tools 9.15 CP-SAT | RECOMMENDED | NOT RUN | candidate/derived solver output |
+| OpenTelemetry + Alloy 1.18.0 + Grafana Cloud EU | RECOMMENDED | NOT RUN | operational telemetry only |
 
-## PM-09 fixed dimensions
+## Offline acceptance rule
 
-| Dimension | Weight | PostgreSQL grade | TypeDB grade |
+```text
+LOCAL SQLITE
+!= CANONICAL
+
+POWERSYNC DELIVERY ORDER
+!= CONFLICT RESOLUTION
+
+OFFLINE MUTATION
+must re-enter LifeOS backend
+and revalidate expected state + governance + AuthZ
+before canonical PostgreSQL commit
+```
+
+Universal consequential last-write-wins is rejected.
+
+## PowerSync mandatory hardening tests
+
+```text
+replication/checkpoint lag monitoring
+stalled replication detection
+half-open source connection scenario
+controlled restart/reconnect
+client reconciliation after recovery
+Visibility/Consent/redaction invalidation
+approved sync_projection-only publication
+encrypted local storage
+```
+
+## Durable-execution mandatory tests
+
+```text
+crash/replay without duplicate consequence
+human/external wait with governance change
+ambiguous provider effect
+cancellation/timeout truthfulness
+in-flight workflow version evolution
+runtime journal privacy minimization
+```
+
+## Object/recovery mandatory tests
+
+```text
+ContentArtifact metadata/object partial failure
+R2 deletion/redaction propagation
+R2 -> S3 object recovery
+PostgreSQL pgBackRest restore/PITR
+DB + object semantic reconciliation
+old-backup anti-resurrection
+```
+
+## Search/vector/projection mandatory tests
+
+```text
+SC-017/018 non-interference
+SC-019 filtered vector recall/relevance
+SC-020 projection freshness/material basis
+SC-021 deletion propagation
+```
+
+## Solver mandatory tests
+
+```text
+deterministic corpus
+UNKNOWN != INFEASIBLE
+candidate output cannot bypass Decision/governance
+timeout/degraded behavior
+```
+
+## PM-09 scoring retained
+
+| Dimension | Weight | PostgreSQL | TypeDB |
 |---|---:|---:|---:|
 | Semantic mapping simplicity / evolvability | 20 | 8.5 | **9.5** |
 | Transaction / concurrency ergonomics | 15 | **9.5** | 7.0 |
@@ -129,59 +208,13 @@ None is declared PASS.
 | Python / tooling / cost / exit risk | 5 | **9.5** | 7.0 |
 | **Evidence-weighted score** | **100** | **89.25** | **80.00** |
 
-Performance is intentionally tied because direct LOW/BASE/HIGH were not executed.
-
-## PM-09 sensitivity
-
-| Scenario | PostgreSQL | TypeDB | Result |
-|---|---:|---:|---|
-| S0 Phase-10 base | 89.25 | 80.00 | PG +9.25 |
-| S1 semantic-heavy | 88.75 | 83.00 | PG +5.75 |
-| S2 early single-node / semantic-friendly | 88.75 | 81.50 | PG +7.25 |
-| S3 operations/recovery-heavy | 90.00 | 77.50 | PG +12.50 |
-| S4 strongly TypeDB-friendly accepted stress | 88.00 | 85.25 | PG +2.75 |
-
-```text
-RANKING ROBUST
-SENSITIVITY-DEPENDENT NO
-PERFORMANCE-DEPENDENT NO
-SC-013 REOPEN NO
-PM-04B REOPEN NO
-```
-
-Adversarial boundary only:
-
-```text
-semantic 50%
-PostgreSQL 87.375
-TypeDB      87.500
-```
-
-Not an accepted LifeOS weighting.
-
-Continuous break-even with original non-semantic proportions: semantic mapping approximately `58.44%`.
-
-## Post-selection validation obligations
-
-Still mandatory where applicable:
-
-```text
-SC-011
-SC-030
-SC-031
-SC-032
-WL-H12
-SC-017/018 when search active
-SC-019 when vector active
-SC-020/021 when projections active
-local/offline reconciliation when local role active
-```
+Sensitivity remains `ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT`.
 
 ## Execution admission result
 
 ```text
-PM-09 ranking-critical execution gaps  0
-PM-04B reopened                        NO
+PM-10 ranking-critical execution gaps   0
+PM-04B reopened                         NO
 benchmark host                          HOLD / DORMANT
 verified-run score                      NOT AVAILABLE
 ```
@@ -189,20 +222,17 @@ verified-run score                      NOT AVAILABLE
 ## Advancement
 
 ```text
-PostgreSQL
-ADVANCE PM-10
-EVIDENCE-WEIGHTED ROBUST LEADER
-
-TypeDB
-ADVANCE PM-10 COMPARATIVE RECORD
-PRINCIPAL SEMANTIC CHALLENGER
+PM-10 COMPLETE
 
 PREFERRED
-NONE
+PostgreSQL 18.4 / PASS-CONDITIONAL
+
+PREFERRED COMPANION STACK
+ESTABLISHED / PASS-CONDITIONAL
 
 SELECTED
 NONE
 
 NEXT
-PM-10 recommendation
+PM-11 explicit stack selection
 ```
