@@ -7755,7 +7755,7 @@ lifeos-today{
     var defs=el('defs');
     var waveGrad=el('linearGradient',{id:'drWaveGrad',x1:'0',y1:'0',x2:'1',y2:'0'});
     [['0%','#9c77ff'],['23%','#ff997f'],['49%','#ffe498'],['77%','#86d6ff'],['100%','#aa89ff']].forEach(function(s){ waveGrad.appendChild(el('stop',{offset:s[0],'stop-color':s[1]})); });
-    var roadGrad=el('linearGradient',{id:'drRoadGrad',x1:'0',y1:'0',x2:'1',y2:'0'});
+    var roadGrad=el('linearGradient',{id:'drRoadGrad',gradientUnits:'userSpaceOnUse',x1:'0%',y1:'0',x2:'100%',y2:'0'});
     [['0%','#7a68df'],['40%','#ffbc62'],['60%','#ffd86f'],['85%','#65c8ff'],['100%','#9579ef']].forEach(function(s){ roadGrad.appendChild(el('stop',{offset:s[0],'stop-color':s[1]})); });
     var roadFillGrad=el('linearGradient',{id:'drRoadFillGrad',x1:'0',y1:'0',x2:'0',y2:'1'});
     [['0%','rgba(6,12,24,.06)'],['28%','rgba(6,12,24,.16)'],['100%','rgba(4,8,18,.58)']].forEach(function(s){ roadFillGrad.appendChild(el('stop',{offset:s[0],'stop-color':s[1]})); });
