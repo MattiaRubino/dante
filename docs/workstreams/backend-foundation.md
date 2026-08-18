@@ -7,9 +7,9 @@
 
 ## Purpose
 
-Provide the future production backend skeleton for LifeOS **after** the semantic, Pre-Physical, Physical and runtime/security/integration prerequisites required by the chosen first slice exist.
+Provide the future production backend skeleton for LifeOS **after** the semantic, integrated Pre-Physical, Physical and runtime/security/integration prerequisites required by the chosen first slice exist.
 
-This handoff is deliberately non-executable today. It must not be used to bypass the closed branch-local Pre-Physical result, invent Domain/Logical semantics, select persistence by implementation convenience or start production code before the remaining integration/Physical prerequisites are satisfied.
+This handoff is deliberately non-executable today. It must not be used to bypass the closed/integrated Pre-Physical result, invent Domain/Logical semantics, select persistence by implementation convenience or start production code before the remaining Physical prerequisites are satisfied.
 
 ## Current stage boundary
 
@@ -49,7 +49,9 @@ Independent total Pre-Physical audit
 PASS
 
 Pre-Physical Coherence
-DEFINITIVE CLOSED / FINAL QA PASS branch-locally
+DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 Physical readiness
 ESTABLISHED
@@ -62,10 +64,11 @@ Backend Foundation / production implementation
 NOT STARTED / DEFERRED
 
 Main integration
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
 Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
+Pre-Physical main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13.
 
 Backend Foundation does **not** own Domain or Logical modeling. The old instruction to develop Domain Model v0 inside Backend Foundation is superseded. Any genuine future semantic contradiction requires its own explicit reopen scope and applicable methodology.
 
@@ -73,16 +76,16 @@ Backend Foundation does **not** own Domain or Logical modeling. The old instruct
 
 All of the following must be true before a backend implementation branch is created:
 
-1. Phase 12 is QA PASS/CLOSED and the independent total Pre-Physical audit/final closure gate has passed;
-2. Pre-Physical Repository & Architecture Coherence is definitively closed and integrated as current repository truth;
-3. the user has separately authorized and accepted the Physical Model workstream/result;
-4. accepted Physical persistence/runtime boundaries exist for the implementation slice being started;
+1. Phase 12 is QA PASS/CLOSED and the independent total Pre-Physical audit/final closure gate has passed — **SATISFIED**;
+2. Pre-Physical Repository & Architecture Coherence is definitively closed and integrated as current repository truth — **SATISFIED via PR #13 / post-merge verification**;
+3. the user has separately authorized and accepted the Physical Model workstream/result — **NOT SATISFIED**;
+4. accepted Physical persistence/runtime boundaries exist for the implementation slice being started — **NOT SATISFIED**;
 5. current Phase 5 requirements are consumed and implementation-dependent open parameters are resolved at the proper later gate;
 6. Phase 6 AI/context/runtime and Integration Hub contracts are consumed wherever the slice touches those concerns, including the consequential AI change evaluation requirement;
 7. Phase 7 durable-execution posture is consumed and any operation class needing a runtime has an accepted mechanism at the appropriate implementation gate;
 8. Phase 8 governed-operation/effect contract is preserved before consequential routes/DTOs/tool schemas are stabilized;
 9. Phase 9 search/observability/calendar/solver boundaries are consumed where applicable;
-10. the Phase 10 Physical benchmark method has been executed by the separately authorized Physical workstream and the accepted result records relevant evidence/conditions;
+10. the Phase 10 Physical benchmark method has been executed by the separately authorized Physical workstream and the accepted result records relevant evidence/conditions — **NOT SATISFIED**;
 11. Phase 11 effective repository safety remains active, and any future required checks correspond to real stable workflow/check contexts;
 12. current `main`, global status, active workstream handoffs and current architecture/model sources are re-read immediately before the future branch/write gate.
 
@@ -535,16 +538,17 @@ Do not update `PROJECT-STATUS.md` for every backend commit. Update global status
 ```text
 BACKEND FOUNDATION
 NO IMPLEMENTATION ACTION
+NOT STARTED / DEFERRED
 
 PRE-PHYSICAL COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS branch-locally
+DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 CURRENT PROJECT ACTION
-protected PR / main integration only after separate user authorization
-then post-merge main verification
+PHYSICAL MODEL MAY BE STARTED ONLY AFTER SEPARATE EXPLICIT USER AUTHORIZATION
 
 PHYSICAL MODEL
-after integration, still requires separate explicit user authorization
 READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 ```
