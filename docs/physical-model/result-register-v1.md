@@ -1,10 +1,10 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — BOOTSTRAP**
+- Status: **CURRENT — PM-00 BOOTSTRAP QA PASS / PM-01 READ-ONLY NEXT**
 - Workstream: `feature/physical-model`
 - Benchmark execution: **NOT STARTED**
 - Technology selection: **NONE**
-- This register starts with every executable result at `NOT RUN`.
+- Every executable candidate result remains `NOT RUN`.
 
 ## Rule
 
@@ -238,7 +238,7 @@ A named specialized product requires a separate admission record/gate proving a 
 
 # Durable-runtime coupling observations
 
-No durable runtime is selected by this workstream bootstrap.
+No durable runtime is selected by the Physical workstream.
 
 ```text
 Restate   NOT SELECTED
@@ -280,15 +280,31 @@ main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
 BRANCH
 feature/physical-model
 
+CREATE CHECKPOINT
+6d76bc150dfd7b3cefe56c6e05c96404e7494626
+6 added / 0 modified / behind 0
+
+CONTENT-QA CHECKPOINT
+8549e1c95bef2e354bd47028259e6816bf5e9272
+22 unique paths
+6 added
+16 modified
+0 deleted
+0 unexpected
+behind 0
+main unchanged
+
 STATUS
-IN PROGRESS — final bootstrap QA pending
+QA PASS
 ```
+
+The later QA-status propagation edits only already-approved bootstrap paths and does not change any candidate result slot.
 
 ## PM-01 Candidate/environment freeze
 
 ```text
 STATUS
-NOT STARTED
+READY / NOT STARTED — READ-ONLY FIRST
 ```
 
 ## PM-02 Primary mapping
@@ -347,3 +363,12 @@ Before changing any candidate from `NOT RUN`:
 Before writing `PREFERRED`, PM-09/10 evidence must exist.
 
 Before writing `SELECTED`, PM-11 explicit selection gate and user approval are mandatory.
+
+# Current next step
+
+```text
+PM-01 READ-ONLY FIRST
+freeze exact candidate subjects + benchmark environment
+no mapping/schema/harness/database write
+no technology selection
+```
