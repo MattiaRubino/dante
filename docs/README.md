@@ -1,6 +1,8 @@
 # Documentation Index
 
-This directory is the durable project memory for LifeOS. A new human/AI contributor should be able to resume from repository truth without reconstructing decisions from chat history.
+This directory is the durable project memory for Dante. A new human/AI contributor should be able to resume from repository truth without reconstructing decisions from chat history.
+
+> **Naming continuity:** `Dante` is the current product/app name. `LifeOS` is the previous working/project name and remains valid where it appears in historical evidence, Git history or existing technical/repository identifiers for the same product lineage.
 
 ## Start here
 
@@ -76,7 +78,7 @@ Exact Physical handoff: [`workstreams/physical-model.md`](workstreams/physical-m
 
 ### Product
 
-- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current Product/North Star.
+- [`product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) — current Dante Product/North Star.
 
 ### Domain
 
@@ -142,7 +144,7 @@ PostgreSQL transactional outbox + bounded worker
 DURABLE CLASS-B
 Restate runtime
 self-hosted first-class or Cloud EU managed option
-global Restate deployment default NONE
+global deployment default NONE
 
 OBJECT BYTES
 Cloudflare R2 Standard / EU / private

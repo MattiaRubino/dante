@@ -1,6 +1,8 @@
-# LifeOS
+# Dante
 
-LifeOS is an adaptive personal operating system for connecting intentions, plans, real time, actual reality, people/resources, evidence, history and adaptive future planning across web, Android and iOS.
+Dante is an adaptive personal operating system for connecting intentions, plans, real time, actual reality, people/resources, evidence, history and adaptive future planning across web, Android and iOS.
+
+> **Product naming:** `Dante` is the current product/app name. `LifeOS` is the previous working/project name and may remain in historical evidence, Git history and existing technical/repository identifiers. Those legacy references belong to the same product lineage and do not identify a second product.
 
 ## Current project state
 
@@ -181,7 +183,7 @@ OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 Canonical authority remains singular:
 
 ```text
-PostgreSQL = canonical LifeOS truth/material history
+PostgreSQL = canonical Dante truth/material history
 PowerSync/SQLite = local/sync projection
 Restate = runtime state
 R2 = raw bytes
@@ -258,7 +260,7 @@ Material consequential AI changes require versioned/reproducible evaluation befo
 
 Five modes remain distinct: canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration.
 
-`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical LifeOS state/effect automatically. MCP/A2A/future protocols remain adapters.
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical Dante state/effect automatically. MCP/A2A/future protocols remain adapters.
 
 ### Governed operations / effects
 

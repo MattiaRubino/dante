@@ -1,4 +1,4 @@
-# LifeOS Roadmap
+# Dante Roadmap
 
 - Last updated: 2026-08-18
 - Purpose: current delivery/architecture-stage sequence, not a calendar commitment
@@ -7,7 +7,24 @@
 
 ### Product / North Star
 
-Accepted current LifeOS identity/North Star and supporting product studies are integrated.
+Accepted current Dante identity/North Star and supporting product studies are integrated.
+
+Naming continuity:
+
+```text
+CURRENT PRODUCT / APP NAME
+Dante
+
+PREVIOUS WORKING / PROJECT NAME
+LifeOS
+
+LEGACY REFERENCES
+Historical evidence, Git history and existing technical/repository identifiers
+may still use LifeOS for the same product lineage.
+
+RENAME IMPACT
+Naming only — no Product North Star, Domain, Logical or Physical semantic change.
+```
 
 ### Core Domain Model / Domain Atlas
 
@@ -219,7 +236,7 @@ solver output != accepted canonical effect
 Material consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
 
 ```text
-eval result != canonical LifeOS truth
+eval result != canonical Dante truth
 eval PASS != Authority / governed-effect authorization
 ```
 
