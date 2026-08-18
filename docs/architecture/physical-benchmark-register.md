@@ -386,16 +386,32 @@ Restate — NOT SELECTED
 mandatory strongest challenger
 Temporal — NOT SELECTED
 
-conditional PostgreSQL-dependent challenger
+conditional challenger
 DBOS — NOT SELECTED
 ```
 
-Physical benchmarking must record coupling effects without turning workflow runtime into persistence ontology.
+DBOS coupling is deployment-dependent rather than universally PostgreSQL-required in Python:
+
+```text
+local / prototype / bounded single-node
+SQLite-capable
+
+production guidance
+PostgreSQL recommended
+
+distributed multi-server application
+shared PostgreSQL system database required by current DBOS architecture
+```
+
+This posture was reverified against current official DBOS Python database-connection/configuration and distributed-architecture documentation on 2026-08-18.
+
+Physical/runtime benchmarking must record coupling effects without turning workflow runtime into persistence ontology.
 
 Examples:
 
-- if PostgreSQL wins primary, DBOS economics/operational coupling may change;
-- if PostgreSQL does not win primary, PostgreSQL-backed runtime choices incur an additional infrastructure dependency;
+- if PostgreSQL wins primary, production/distributed DBOS economics/operational coupling may improve;
+- if PostgreSQL does not win primary, a production/distributed DBOS topology may introduce an additional PostgreSQL infrastructure dependency;
+- SQLite capability does not by itself establish a distributed/HA production topology;
 - Restate/Temporal remain independent runtime candidates and must not receive primary-persistence points;
 - bounded outbox/worker feasibility is pressure on transactional primary architecture, not proof that all durable workflows belong in the primary database.
 
@@ -492,9 +508,9 @@ preferred cannot be reported as selected
 candidate capability cannot be scored without version/edition/deployment context
 ```
 
-# Phase 10 closure condition for this register
+# Phase 10 register status — current
 
-This register is complete for Phase 10 when remote QA confirms:
+The register is remotely QA-verified complete for Phase 10:
 
 ```text
 primary lane candidates classified              PASS
@@ -510,4 +526,4 @@ technology selected                              0
 Physical Model started                           0
 ```
 
-Phase 11/12 may consume this register, but candidate execution belongs only to a later separately authorized Physical Model workstream.
+Phases 11 and 12 subsequently consumed the register during repository-safety and clean-room verification. Candidate execution still belongs only to a later separately authorized Physical Model workstream.
