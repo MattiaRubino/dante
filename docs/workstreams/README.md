@@ -19,19 +19,20 @@ A workstream handoff must contain, where applicable:
 
 ## Current workstreams
 
-- [`pre-physical-coherence.md`](pre-physical-coherence.md) — **active backend/architecture preparation workstream**; aligns repository current truth, supersession, pre-Physical requirements and benchmark inputs before any Physical Model authorization.
+- [`pre-physical-coherence.md`](pre-physical-coherence.md) — **final-closure-candidate backend/architecture preparation workstream**. Phase 0–12 are complete; an independent total audit found only bounded repairs, now under exact final remote closure QA. Physical/backend work remains unauthorized and `main` integration is a later separate step.
 - [`today-home.md`](today-home.md) — active Phase 4 Home/Today UX/product-structure workstream.
 
 ## Deferred / not currently executable workstreams
 
-- [`backend-foundation.md`](backend-foundation.md) — **NOT STARTED / DEFERRED**. Its pre-Domain/pre-Logical instructions were cleaned during Pre-Physical Phase 3. The current handoff now preserves valid future bootstrap requirements while explicitly requiring closed Pre-Physical Coherence, a separately accepted Physical Model, and applicable current security/runtime/integration/API prerequisites before implementation may start. Do not create `feature/backend-foundation` or execute backend/schema/API instructions yet.
+- [`backend-foundation.md`](backend-foundation.md) — **NOT STARTED / DEFERRED**. It requires definitive Pre-Physical closure, later protected integration into current `main`, a separately authorized/accepted Physical Model, and all applicable current security/runtime/integration/API prerequisites before implementation may start. Do not create `feature/backend-foundation` or execute backend/schema/API instructions yet.
+- Physical Model — **NOT STARTED / NOT AUTHORIZED**. Phase 10 provides its benchmark method, not its implementation or result. A separate user authorization and fresh workstream/write gate are required after Pre-Physical closure/integration.
 
 ## Completed model workstreams
 
-- [`domain-model.md`](domain-model.md) and its canonical continuation parts — historical operational record for the **CLOSED** Core Domain Model / Domain Atlas integrated into `main` via PR #10. Do not treat the older "ready to start" state as current.
+- [`domain-model.md`](domain-model.md) and its canonical continuation parts — historical operational record for the **CLOSED** Core Domain Model / Domain Atlas integrated into `main` via PR #10. Do not treat older readiness/in-progress prose as current closure state.
 - Logical Model workstream documents and continuations — historical operational record for the **CLOSED** Logical Model integrated into `main` via PR #11.
 
-Completed/historical handoffs remain useful evidence, but `main` is authoritative for their integrated accepted state.
+Completed/historical handoffs remain useful evidence, but current model/architecture authority and current `main` integration state determine execution truth.
 
 ## Operational rule
 
@@ -43,10 +44,11 @@ Before continuing a workstream:
 
 1. read [`../development/agent-operating-manual.md`](../development/agent-operating-manual.md);
 2. read [`../development/operating-rules.md`](../development/operating-rules.md);
-3. verify the named branch/PR still exists and compare it with current `main`;
-4. use current `main` as the accepted integrated baseline and the branch handoff as authority only for unmerged work inside that workstream;
-5. read the complete canonical workstream document, including required continuation/split parts;
-6. read linked accepted model/architecture sources before proposing edits.
+3. read [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md);
+4. verify the named branch/PR still exists and compare it with current `main`;
+5. use current `main` as the accepted integrated baseline and the branch handoff as authority only for unmerged work inside that workstream;
+6. read the complete canonical workstream document, including required continuation/split parts;
+7. read linked accepted model/architecture sources before proposing edits.
 
 If the work materially changes durable product/architecture truth, update the appropriate durable document/ADR/current baseline in the same PR rather than leaving that decision only in the handoff.
 
