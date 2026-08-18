@@ -1,6 +1,6 @@
 # Workstream — Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-10 COMPLETE / PM-11 NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-12 COMPLETE / PM-13 NEXT**
 - Branch: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
@@ -18,11 +18,11 @@
 - PM-08: **SECONDARY/SPECIALIST LANE QUALIFICATION COMPLETE**
 - PM-09: **EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE**
 - PM-10: **FINAL STACK RECOMMENDATION COMPLETE**
-- Evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
-- Ranking: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
-- Preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
-- Preferred companion stack: **ESTABLISHED / PASS-CONDITIONAL**
-- Selected: **NONE**
+- PM-11: **EXPLICIT USER-APPROVED TARGET STACK SELECTION COMPLETE**
+- PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
+- Selected canonical primary: **PostgreSQL 18.4**
+- Selected target companion stack: **ESTABLISHED**
+- Direct execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
 ## 1. Purpose
@@ -31,7 +31,7 @@ Terminal save-game for the active Physical Model workstream. A new chat/agent mu
 
 The workstream owns technology discovery, candidate-native mapping, Physical evidence qualification, specialist-lane decisions, scoring/sensitivity, recommendation, explicit selection, accepted Physical Model, clean-room QA and protected-main integration.
 
-It does **not** authorize production backend/API/Auth implementation.
+It does **not** authorize production backend/API/Auth implementation or the later Development Profile v0.
 
 ## 2. Mandatory continuation bootstrap
 
@@ -48,32 +48,18 @@ Before any further Physical write/action:
 9. read `docs/development/repository-engineering-safety.md`;
 10. read this file completely;
 11. read `docs/physical-model/README.md`;
-12. read `docs/architecture/physical-benchmark-specification.md` including the PM-09 scoring reconciliation;
-13. read `docs/physical-model/execution-methodology-v1.md`;
-14. read `docs/physical-model/execution-template-v1.md` when direct evidence is relevant;
-15. read `docs/physical-model/acceptance-test-matrix-v1.md`;
-16. read `docs/physical-model/result-register-v1.md`;
-17. read PM-01 landscape;
-18. read PM-02 overview + all four mapping records;
-19. read PM-03 overview + all four preflight records;
-20. read PM-04A overview + all four evidence records;
-21. read PM-05 overview + all four candidate qualification records;
-22. read PM-06/07 joint overview + PM-06 + PM-07 + two finalist qualification records;
-23. read PM-08 overview + graph/search-vector/local-offline/specialist-trigger records;
-24. read PM-09 overview + both candidate score records + sensitivity record;
-25. read all PM-10 records:
-    - `docs/physical-model/pm-10-recommendation-v1.md`;
-    - `docs/physical-model/final-stack-audit-v1.md`;
-    - `docs/physical-model/final-stack-capability-matrix-v1.md`;
-    - `docs/physical-model/final-stack-simulation-v1.md`;
-    - `docs/physical-model/recommendation/postgresql-18.4-v1.md`;
-    - `docs/physical-model/recommendation/companion-stack-v1.md`;
-    - `docs/physical-model/recommendation/technology-exclusion-register-v1.md`;
-    - `docs/physical-model/recommendation/post-selection-validation-register-v1.md`;
-26. read Phase-10 scenario corpus/register where scenario authority matters;
-27. read complete Whole-Logical authority and relevant decision-register continuations when semantics are involved;
-28. verify current external product/version/edition/topology facts from primary sources where material;
-29. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
+12. read `docs/physical-model/execution-methodology-v1.md`;
+13. read `docs/physical-model/acceptance-test-matrix-v1.md`;
+14. read `docs/physical-model/result-register-v1.md`;
+15. read PM-01 through PM-09 authority/evidence where their reasoning is material;
+16. read all PM-10 records;
+17. read `docs/physical-model/pm-11-explicit-selection-v1.md`;
+18. read `docs/physical-model/pm-12-accepted-physical-model-v1.md`;
+19. read `docs/physical-model/recommendation/post-selection-validation-register-v1.md`;
+20. read Phase-10 scenario corpus/register where scenario authority matters;
+21. read complete Whole-Logical authority where semantics are involved;
+22. verify current external product/version/edition/topology facts from primary sources where material;
+23. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
 
 Conversation memory is secondary to repository truth.
 
@@ -95,6 +81,8 @@ EVIDENCE-QUALIFIED != EXECUTED HARD-GATE PASS
 EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
 FINALIST != PREFERRED
 PREFERRED != SELECTED
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
 ```
 
 Never introduce by convenience:
@@ -112,26 +100,6 @@ per-recipient duplicate canonical reality
 universal last-write-wins
 local-first canonical authority
 runtime workflow state as Domain history
-```
-
-Reference families remain:
-
-```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
-```
-
-State layers remain distinguishable:
-
-```text
-canonical LifeOS state
-material historical state
-derived/projection state
-external/provider state
-candidate/unresolved state
-security/runtime state
 ```
 
 `WL-H01..WL-H12` remain active and non-negotiable.
@@ -157,7 +125,7 @@ paid != automatic rejection
 quality/correctness outrank cost
 ```
 
-Every companion mechanism must earn complexity and must never become an accidental second canonical authority.
+The Physical Model selects the target architecture. A later Development Profile v0 decides which selected components are activated/deployed initially and may use local/self-hosted/free-tier modes where those do not change the selected architecture.
 
 ## 5. Historical checkpoints
 
@@ -191,22 +159,25 @@ PM-09 terminal
 
 PM-10 PRE-SCOPE
 016e4df07df9756d2c03d5582b489eed607aaecc
+
+PM-10 terminal
+4a988b115e445c726910ef5c3da7e2629d73eaf1
 ```
 
-The final PM-10 remote HEAD must be read from Git after this terminal handoff write.
+PM-11/12 commits must be read from remote Git; do not hard-code a self-referential final workstream SHA before closure.
 
-## 6. Primary-candidate history and recommendation
+## 6. Selection history
 
-PM-01 admitted:
+PM-01 admitted four primary candidates:
 
 ```text
-P0 PostgreSQL 18.4
-P1 TypeDB CE 3.12.3
-P2 XTDB 2.1.0
-P3 SurrealDB Community 3.2.3
+PostgreSQL 18.4
+TypeDB CE 3.12.3
+XTDB 2.1.0
+SurrealDB Community 3.2.3
 ```
 
-PM-05 narrowed to PostgreSQL + TypeDB. PM-06/07 established both as viable while identifying PostgreSQL's material operations/recovery advantage and TypeDB's semantic-model advantage. PM-08 evaluated secondary lanes. PM-09 produced:
+PM-05 narrowed to PostgreSQL + TypeDB. PM-09 produced:
 
 ```text
 PostgreSQL 89.25
@@ -218,80 +189,15 @@ NOT SENSITIVITY-DEPENDENT
 NOT PERFORMANCE-DEPENDENT
 ```
 
-PM-10 conclusion:
+PM-10 established PostgreSQL as preferred. PM-11 then received explicit user approval and selected the target stack. PM-12 converted it into the Accepted Physical Model.
 
-```text
-PREFERRED PRIMARY
-PostgreSQL 18.4 / PASS-CONDITIONAL
-
-RUNNER-UP
-TypeDB CE 3.12.3
-
-SELECTED
-NONE
-```
-
-PM-10 does not authorize PM-11 selection automatically.
-
-## 7. Direct execution truth
-
-```text
-DATABASE INSTANCE
-NOT STARTED
-
-FIXTURE/HARNESS
-NOT STARTED
-
-DIRECT HG-01..HG-12
-NOT RUN ALL CANDIDATES
-
-DIRECT HG PASS
-0
-
-LOW/BASE/HIGH
-NOT RUN
-
-RESTORE
-NOT RUN
-
-MIGRATION
-NOT RUN
-
-FAILURE INJECTION
-NOT RUN
-
-GRAPH / SEARCH / VECTOR / SQLITE / POWERSYNC / RESTATE / OBJECT / SOLVER DIRECT VALIDATION
-NOT RUN
-
-BENCHMARK HOST
-HOLD / DORMANT
-
-VERIFIED-RUN BENCHMARK SCORE
-NOT AVAILABLE
-```
-
-Do not convert evidence qualification, scoring or recommendation into direct PASS.
-
-## 8. Phase-10 scoring reconciliation
-
-The original executable Phase-10 benchmark ledger remains valid in its hard gates and weights.
-
-```text
-VERIFIED-RUN BENCHMARK SCORE
-requires direct applicable HG PASS + direct execution artifacts
-
-EVIDENCE-WEIGHTED DECISION SCORE
-allowed only after evidence exhaustion and 0 ranking-critical execution-worthy gaps
-```
-
-PM-09/10 do not create direct hard-gate PASS and do not waive selected-implementation validation.
-
-## 9. PM-10 preferred stack
+## 7. Accepted target stack
 
 ### Canonical
 
 ```text
 PostgreSQL 18.4
+SELECTED / ACCEPTED CANONICAL PRIMARY
 ```
 
 ### PostgreSQL capabilities
@@ -332,10 +238,26 @@ BOUNDED CLASS A
 PostgreSQL transactional outbox + bounded worker
 
 MATERIAL CLASS B
-Restate Cloud EU
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 reproducible local/self-hosted subject
+Restate Server 1.7.2 self-hosted/reproducible subject
+Restate Cloud EU allowed managed deployment
 ```
+
+Restate technology is selected; deployment is conditional:
+
+```text
+SELF-HOSTED
+FIRST-CLASS
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+Current client-side journal encryption for Restate Cloud is documented only for TypeScript while LifeOS targets Python. Journal minimization is mandatory; deployment choice remains a later privacy/operability profile decision.
 
 ### Object bytes
 
@@ -366,7 +288,7 @@ R2 object backup
 OR-Tools 9.15 CP-SAT
 ```
 
-Candidate output only until accepted by applicable LifeOS semantics.
+Candidate output only until accepted by applicable LifeOS semantics. `UNKNOWN != INFEASIBLE`.
 
 ### Observability
 
@@ -379,9 +301,48 @@ pg_stat_statements
 
 Telemetry remains privacy-minimized operational state.
 
-## 10. Explicit PM-10 exclusions
+## 8. Direct execution truth
 
-Not part of the proposed selected Physical stack:
+```text
+DATABASE INSTANCE
+NOT STARTED
+
+FIXTURE/HARNESS
+NOT STARTED
+
+DIRECT HG-01..HG-12
+NOT RUN ALL CANDIDATES
+
+DIRECT HG PASS
+0
+
+LOW/BASE/HIGH
+NOT RUN
+
+RESTORE
+NOT RUN
+
+MIGRATION
+NOT RUN
+
+FAILURE INJECTION
+NOT RUN
+
+GRAPH / SEARCH / VECTOR / SQLITE / POWERSYNC / RESTATE / OBJECT / SOLVER DIRECT VALIDATION
+NOT RUN
+
+BENCHMARK HOST
+HOLD / DORMANT
+
+VERIFIED-RUN BENCHMARK SCORE
+NOT AVAILABLE
+```
+
+Do not convert evidence qualification, scoring, recommendation, selection or PM-12 acceptance into direct PASS.
+
+## 9. Technology exclusions
+
+Not part of the accepted target:
 
 ```text
 TypeDB/XTDB/SurrealDB primary
@@ -411,17 +372,17 @@ pg_cron as workflow system
 Object Lock Compliance as default
 ```
 
-These are not hidden deferred dependencies. Reintroduction requires a new explicit architecture decision with material evidence.
+Reintroduction requires a new explicit architecture decision with material evidence.
 
-## 11. Post-selection validation obligations
+## 10. Post-selection validation obligations
 
-The authoritative expanded register is:
+Authoritative register:
 
 ```text
 docs/physical-model/recommendation/post-selection-validation-register-v1.md
 ```
 
-It includes at minimum:
+It includes:
 
 ```text
 SC-011 anti-resurrection
@@ -431,7 +392,7 @@ SC-032 capacity/backpressure
 WL-H12 non-interference
 search/vector/projection filtering/freshness/deletion
 PowerSync replication liveness / conflicts / local encryption
-Restate crash/replay/versioning/governance
+Restate crash/replay/versioning/governance/deployment privacy
 R2/S3 object deletion/recovery
 PostGIS/PgBouncer compatibility
 pgBackRest archive/PITR
@@ -439,22 +400,22 @@ OR-Tools status/governance corpus
 observability privacy
 ```
 
-None is a direct PASS today.
+None is a direct PASS today unless separately executed and evidenced.
 
-## 12. PM-10 evidence paths
+## 11. Current authority paths
 
 ```text
 docs/physical-model/pm-10-recommendation-v1.md
-docs/physical-model/final-stack-audit-v1.md
-docs/physical-model/final-stack-capability-matrix-v1.md
-docs/physical-model/final-stack-simulation-v1.md
-docs/physical-model/recommendation/postgresql-18.4-v1.md
+docs/physical-model/pm-11-explicit-selection-v1.md
+docs/physical-model/pm-12-accepted-physical-model-v1.md
 docs/physical-model/recommendation/companion-stack-v1.md
 docs/physical-model/recommendation/technology-exclusion-register-v1.md
 docs/physical-model/recommendation/post-selection-validation-register-v1.md
 ```
 
-## 13. Roadmap
+PM-10 supporting evidence remains in `final-stack-*` plus the earlier PM-01..09 records.
+
+## 12. Roadmap
 
 ```text
 PM-00  PASS
@@ -469,13 +430,13 @@ PM-07  COMPLETE
 PM-08  COMPLETE
 PM-09  COMPLETE
 PM-10  COMPLETE
-PM-11  NEXT
-PM-12  NOT STARTED
-PM-13  NOT STARTED
+PM-11  COMPLETE
+PM-12  COMPLETE
+PM-13  NEXT
 PM-14  NOT STARTED
 ```
 
-## 14. Current resume summary
+## 13. Current resume summary
 
 ```text
 ACTIVE WORKSTREAM
@@ -490,21 +451,14 @@ CLOSED
 LOGICAL
 CLOSED / WL-H01..WL-H12 ACTIVE
 
-PM-09 EVIDENCE SCORES
-PostgreSQL 89.25
-TypeDB 80.00
+SELECTED CANONICAL PRIMARY
+PostgreSQL 18.4
 
-RANKING
-ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT
+SELECTED TARGET STACK
+ESTABLISHED
 
-PM-10 PREFERRED PRIMARY
-PostgreSQL 18.4 / PASS-CONDITIONAL
-
-PM-10 COMPANION STACK
-ESTABLISHED / PASS-CONDITIONAL
-
-LOCAL TESTS
-0 ADMITTED
+RESTATE DEPLOYMENT
+SELF-HOSTED OR CLOUD EU / PROFILE DECISION
 
 DIRECT HG PASS
 0
@@ -512,15 +466,12 @@ DIRECT HG PASS
 VERIFIED-RUN SCORE
 NOT AVAILABLE
 
-SELECTED
-NONE
-
 BACKEND
 NOT STARTED / DEFERRED
 
-NEXT
-PM-11 explicit user-approved stack selection
-fresh exact gate before write
-```
+DEV-v0
+NOT STARTED / SEPARATE AFTER PHYSICAL CLOSURE
 
-The exact PM-10 final remote HEAD must be taken from Git after this handoff write.
+NEXT
+PM-13 independent clean-room QA
+```
