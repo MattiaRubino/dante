@@ -1,9 +1,10 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-06/07 JOINT COMPLETE / PM-08 NEXT**
+- Status: **CURRENT — PM-08 COMPLETE / PM-09 NEXT**
 - Workstream: `feature/physical-model`
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
-- Deferred challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
+- Deferred primary challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
+- Current overall leader: **PostgreSQL 18.4**
 - Direct execution: **NOT STARTED**
 - Preferred: **NONE**
 - Selected: **NONE**
@@ -14,9 +15,12 @@
 OFFICIAL CLAIM != DIRECT EXECUTION
 PUBLIC BENCHMARK != LIFEOS BENCHMARK
 EVIDENCE-QUALIFIED != DIRECT PASS
+ADMIT != SELECTED
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 DEFER != REJECT
+SECONDARY != CANONICAL
+LOCAL != CANONICAL
 NOT RUN != PASS
 ```
 
@@ -32,11 +36,12 @@ PM-04B  NOT ADMITTED
 PM-05   CORRECTNESS/DESTRUCTIVE EVIDENCE QUALIFICATION COMPLETE
 PM-06   SCALE/PERFORMANCE EVIDENCE QUALIFICATION COMPLETE
 PM-07   RECOVERY/EVOLUTION/FAILURE EVIDENCE QUALIFICATION COMPLETE
-PM-08   NEXT
-PM-09+  NOT STARTED
+PM-08   SECONDARY/SPECIALIST LANE QUALIFICATION COMPLETE
+PM-09   NEXT
+PM-10+  NOT STARTED
 ```
 
-## Finalist set
+## Primary finalist set
 
 ```text
 P0 PostgreSQL 18.4
@@ -54,85 +59,29 @@ P3 SurrealDB Community 3.2.3
 DEFER / NOT REJECTED
 ```
 
-## PM-06 result
+## PM-06/07 carried result
 
 ### PostgreSQL
 
 ```text
 SCALE/PERFORMANCE VIABLE
 confidence HIGH
-LOW/BASE/HIGH NOT RUN
-```
 
-No ranking-critical performance uncertainty remains.
+RECOVERY/EVOLUTION/OPERATIONS
+MATERIAL ADVANTAGE
+```
 
 ### TypeDB CE
 
 ```text
 SCALE/PERFORMANCE VIABLE
 confidence MEDIUM-HIGH
-LOW/BASE/HIGH NOT RUN
-```
 
-Material conditions:
-
-- each query currently single-threaded;
-- scale-up uses concurrent queries/transactions and resource sizing;
-- CE is single-node;
-- horizontal scaling belongs to Cloud/Enterprise;
-- index/memory/disk overhead must be provisioned deliberately.
-
-### PM-06 comparison
-
-```text
-PERFORMANCE REVERSAL SIGNAL
-NONE
-
-LOCAL BENCHMARK
-NOT ADMITTED
-```
-
-TypeDB remains viable; PostgreSQL does not win because of invented throughput numbers. The current lead remains based on aggregate architecture and operations.
-
-## PM-07 result
-
-### PostgreSQL
-
-```text
-RECOVERY/EVOLUTION/OPERATIONS
-MATERIAL ADVANTAGE
-```
-
-Evidence-qualified capabilities include:
-
-- SQL/filesystem/continuous-archive backup families;
-- WAL/PITR;
-- full/incremental base backup;
-- physical/logical replication;
-- synchronous/asynchronous standby options;
-- failover primitives;
-- pg_upgrade;
-- logical-replication migration.
-
-### TypeDB CE
-
-```text
 RECOVERY/EVOLUTION
-VIABLE
-HIGHER SELF-HOSTED OPERATIONS COST
+VIABLE / HIGHER SELF-HOSTED OPERATIONS COST
 ```
 
-Evidence-qualified capabilities/conditions include:
-
-- self-hosted backup implementation is user responsibility;
-- disk snapshot or export/import are recommended self-hosted paths;
-- those documented paths are not incremental;
-- export/import is designed for cross-version migration;
-- compatible versions may reuse/copy data directories;
-- CE is single-node;
-- cluster replication/horizontal read scaling/HA are Cloud/Enterprise capabilities.
-
-## Joint comparative conclusion
+Joint comparison:
 
 ```text
 POSTGRESQL
@@ -140,32 +89,99 @@ OVERALL LEAD STRENGTHENED
 
 TYPEDB
 SEMANTIC ADVANTAGE PRESERVED
-OPERATIONS/RECOVERY/TOPOLOGY DISADVANTAGE MADE EXPLICIT
 ```
 
-The current decision question entering PM-08/09 is therefore not “which one can run LifeOS?” Both finalists remain viable.
+## PM-08 result
 
-It is:
-
-> Is TypeDB's superior semantic relation/role model worth the additional concurrency-guard, self-hosted backup and CE-topology burden compared with PostgreSQL's stronger overall integrity/operations/recovery ecosystem?
-
-## Scenario carry-forward
+### Graph lane
 
 ```text
-SC-011 old-backup anti-resurrection
-POST-SELECTION IMPLEMENTATION VALIDATION
+G0 primary-store graph baseline
+ADVANCE
 
-SC-013 deep-history scale
-REOPEN ONLY IF PM-09 PERFORMANCE-SENSITIVE
+Neo4j
+DEFER / NOT REJECTED
+NO INITIAL GRAPH SPECIALIST
+```
 
-SC-030 actual LifeOS V1->V2 mapping evolution
-POST-SELECTION IMPLEMENTATION VALIDATION
+Rationale:
 
-SC-031 semantic restore verification
-POST-SELECTION IMPLEMENTATION VALIDATION
+- PostgreSQL already provides recursive traversal primitives;
+- TypeDB is already relationship-native;
+- no accepted current LifeOS graph workload earns another persistence/service boundary;
+- projection freshness, deletion, Visibility, rebuild and operations costs remain real.
 
-SC-032 capacity/backpressure
-POST-SELECTION IMPLEMENTATION VALIDATION
+### Search / vector lane
+
+```text
+PostgreSQL native FTS
+ADVANCE as P0 lexical baseline
+
+pgvector 0.8.6
+ADMIT-CONDITIONAL
+conditions: PostgreSQL selected primary + accepted vector retrieval requirement
+
+Qdrant 1.18.2
+DEFER / NOT REJECTED / SPECIALIST TRIGGER ONLY
+
+OpenSearch 3.7
+DEFER / NOT REJECTED / SPECIALIST TRIGGER ONLY
+```
+
+Vector/embedding state remains derived state.
+
+Filtered ANN must preserve real scope/Visibility filtering. A security filter may not be weakened to improve recall.
+
+### TypeDB search/vector implication
+
+PM-08 does not establish a TypeDB-native equivalent to PostgreSQL FTS + pgvector.
+
+If TypeDB wins and accepted lexical/vector retrieval is required, an external search/vector service is more likely. Qdrant is the current trigger candidate, not selected or admitted now.
+
+This probable extra service is a PM-09 operability/topology/TCO input.
+
+### Local / offline lane
+
+```text
+SQLite 3.53.4
+ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
+CANONICAL AUTHORITY NO
+EXACT CLIENT IMPLEMENTATION DEFER
+```
+
+SQLite earns a distinct role for local/offline persistence, cache/projection, drafts and pending-operation staging. It never becomes competing canonical authority.
+
+### Object/blob lane
+
+```text
+OBJECT/BLOB ENGINE
+NO ADMISSION NOW
+DEFER / TRIGGER ONLY
+```
+
+Reopen only on concrete object-size/volume/retention/security/distribution/durability requirements.
+
+## PM-08 scenario carry-forward
+
+```text
+SC-017 hidden-result non-interference
+POST-SELECTION SEARCH/SYSTEM VALIDATION
+
+SC-018 FTS mixed filter/query
+POST-SELECTION SEARCH IMPLEMENTATION VALIDATION
+
+SC-019 vector recall after security filter
+REOPEN BEFORE SELECTION only if vector path becomes ranking/performance-sensitive;
+otherwise implementation validation
+
+SC-020 stale index source
+POST-SELECTION PROJECTION VALIDATION when projection exists
+
+SC-021 deletion propagation
+POST-SELECTION PROJECTION VALIDATION when projection exists
+
+SC-035 graph projection divergence/rebuild
+NOT APPLICABLE to initial stack; reopen if graph specialist is later admitted
 ```
 
 None is a direct PASS.
@@ -185,8 +201,67 @@ LOW/BASE/HIGH           NOT RUN
 RESTORE                  NOT RUN
 MIGRATION                NOT RUN
 FAILURE INJECTION        NOT RUN
+GRAPH BENCHMARK          NOT RUN
+VECTOR BENCHMARK         NOT RUN
+SEARCH BENCHMARK         NOT RUN
+SQLITE BENCHMARK         NOT RUN
 BENCHMARK HOST           HOLD / DORMANT
 ```
+
+## Specialist trigger state
+
+```text
+INITIAL EXTRA SERVER ENGINES ADMITTED
+0
+
+CONDITIONAL IN-PRIMARY EXTENSION
+pgvector 0.8.6
+
+BOUNDED LOCAL/OFFLINE CANDIDATE
+SQLite 3.53.4
+
+DEFERRED/TRIGGER-ONLY SERVER SPECIALISTS
+Neo4j
+Qdrant 1.18.2
+OpenSearch 3.7
+object/blob engine TBD
+```
+
+## Architecture pressure entering PM-09
+
+```text
+POSTGRESQL PATH
+PostgreSQL canonical
++ native FTS
++ pgvector conditional in same database
++ SQLite bounded local/offline when needed
+=> likely zero additional server engines initially
+
+TYPEDB PATH
+TypeDB canonical
++ stronger relation/role/n-ary semantic model
++ likely external search/vector service when accepted retrieval requires it
++ SQLite bounded local/offline when needed
+=> probable additional server topology/operations cost
+```
+
+This makes PostgreSQL's current lead stronger on overall architecture consolidation/operability, but it does not create `PREFERRED` or `SELECTED` before PM-09/10/11.
+
+## Post-selection implementation validation
+
+Still mandatory where applicable:
+
+```text
+SC-011 old-backup anti-resurrection
+SC-030 actual LifeOS V1->V2 evolution
+SC-031 semantic restore verification
+SC-032 capacity/backpressure
+WL-H12 system-level non-interference
+search/vector/projection validation for activated lanes
+client local/offline sync/reconciliation validation
+```
+
+`SC-013` deep-history scale remains a pre-selection reopen trigger only if PM-09 becomes materially performance-sensitive.
 
 ## Evidence paths
 
@@ -216,27 +291,14 @@ pm-06-scale-performance-evidence-v1.md
 pm-07-recovery-evolution-evidence-v1.md
 qualification/postgresql-18.4-pm-06-07-v1.md
 qualification/typedb-3.12.3-pm-06-07-v1.md
+
+PM-08
+pm-08-secondary-lanes-v1.md
+secondary/graph-lane-v1.md
+secondary/search-vector-lane-v1.md
+secondary/local-offline-lane-v1.md
+secondary/specialist-trigger-register-v1.md
 ```
-
-## Secondary lanes
-
-Still not selected:
-
-```text
-GRAPH
-G0 primary-store baseline
-Neo4j deferred to PM-08
-
-SEARCH/VECTOR
-primary-native baseline
-pgvector when PostgreSQL applicable
-Qdrant/OpenSearch trigger-only
-
-LOCAL/OFFLINE
-SQLite bounded future lane
-```
-
-PM-08 must demand net value from every additional technology.
 
 ## Historical checkpoints
 
@@ -259,20 +321,22 @@ PM-04A terminal
 PM-05 terminal
 9a53c2577e8e25de6de63a830e9bab036521f040
 
-PM-06/07 PRE-SCOPE
-9a53c2577e8e25de6de63a830e9bab036521f040
+PM-06/07 terminal
+1e19793fdb9f51ba510f00ac4c927a6907e28c4b
+
+PM-08 PRE-SCOPE
+1e19793fdb9f51ba510f00ac4c927a6907e28c4b
 ```
 
-The PM-06/07 terminal SHA is determined by remote Git after this write.
+PM-08 terminal HEAD is determined by remote Git after the current write scope.
 
 ## Next
 
 ```text
-PM-08
-SECONDARY/SPECIALIST LANE QUALIFICATION
+PM-09
+SCORING + SENSITIVITY
 fresh gate required
 
-PM-09 scoring NOT STARTED
 PREFERRED NONE
 SELECTED NONE
 BACKEND NOT STARTED / DEFERRED
