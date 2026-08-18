@@ -1,15 +1,15 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-10 COMPLETE / PM-11 NEXT**
+- Status: **CURRENT — PM-12 COMPLETE / PM-13 NEXT**
 - Workstream: `feature/physical-model`
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
 - PM-09 evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
 - Ranking sensitivity: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
 - PM-10 Preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
-- PM-10 Companion stack: **RECOMMENDED / PASS-CONDITIONAL**
+- PM-11 Selected: **PostgreSQL 18.4 + bounded companion target stack**
+- PM-12 Accepted Physical Model: **ESTABLISHED**
 - Direct execution: **NOT STARTED**
 - Verified-run benchmark score: **NOT AVAILABLE**
-- Selected: **NONE**
 
 ## Result-language rule
 
@@ -19,6 +19,8 @@ PUBLIC BENCHMARK != LIFEOS BENCHMARK
 EVIDENCE-QUALIFIED != DIRECT PASS
 EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
 PREFERRED != SELECTED
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
 SECONDARY != CANONICAL
 LOCAL != CANONICAL
 RUNTIME != DOMAIN HISTORY
@@ -40,11 +42,13 @@ PM-07   RECOVERY/EVOLUTION/FAILURE EVIDENCE QUALIFICATION COMPLETE
 PM-08   SECONDARY/SPECIALIST LANE QUALIFICATION COMPLETE
 PM-09   EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
 PM-10   FINAL STACK RECOMMENDATION COMPLETE
-PM-11   NEXT / EXPLICIT SELECTION
-PM-12+  NOT STARTED
+PM-11   EXPLICIT USER-APPROVED TARGET STACK SELECTION COMPLETE
+PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
+PM-13   NEXT / INDEPENDENT CLEAN-ROOM QA
+PM-14   NOT STARTED
 ```
 
-## Primary recommendation
+## Selected primary
 
 ### PostgreSQL 18.4
 
@@ -58,17 +62,20 @@ ROBUST
 PM-10
 PREFERRED / PASS-CONDITIONAL
 
-SELECTED
-NONE
+PM-11
+SELECTED — CANONICAL PRIMARY
+
+PM-12
+ACCEPTED PHYSICAL MODEL PRIMARY
 ```
 
-Primary reasons:
+Primary reasons remain:
 
 - accepted PM-02 mapping preserves LifeOS semantics;
 - mature integrity and transaction/concurrency primitives;
-- strongest self-hosted backup/recovery/HA/evolution envelope;
-- reporting, traversal, geospatial, lexical and vector capabilities can remain in one primary ecosystem;
-- lower operational/topology/exit burden than the TypeDB finalist path.
+- strongest recovery/HA/evolution envelope among finalists;
+- reporting, traversal, geospatial, lexical and vector capabilities remain in one primary ecosystem;
+- lower permanent operational/topology/exit burden than the TypeDB finalist path.
 
 ### TypeDB CE 3.12.3
 
@@ -77,27 +84,25 @@ PM-09 SCORE
 80.00 / 100
 
 ROLE
-PRINCIPAL SEMANTIC RUNNER-UP
+HISTORICAL PRINCIPAL SEMANTIC RUNNER-UP
 
 PM-10
 NOT PREFERRED
 
-SELECTED
-NONE
+PM-11
+NOT SELECTED
 ```
 
-TypeDB retains the strongest pure relation/role/n-ary semantic fit. It is not preferred because the accepted LifeOS whole-system priority set gives material weight to concurrency, recovery, operations, evolution and topology simplicity.
+TypeDB retains the strongest pure relation/role/n-ary semantic fit but is not part of the accepted target architecture.
 
 ### Prior challengers
 
 ```text
 XTDB 2.1.0
-not in PM-10 recommended primary stack
-historical evidence retained
+NOT SELECTED / historical evidence retained
 
 SurrealDB Community 3.2.3
-not in PM-10 recommended primary stack
-historical evidence retained
+NOT SELECTED / historical evidence retained
 ```
 
 ## Direct execution truth
@@ -124,21 +129,9 @@ BENCHMARK HOST           HOLD / DORMANT
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-No PM-09 or PM-10 disposition is evidence that a direct hard gate ran.
+No PM-09/10/11/12 disposition is evidence that a direct hard gate ran.
 
-## Phase-10 reconciliation retained
-
-```text
-VERIFIED-RUN BENCHMARK SCORE
-requires direct applicable hard-gate PASS + direct artifacts
-
-EVIDENCE-WEIGHTED DECISION SCORE
-allowed after evidence exhaustion and 0 ranking-critical execution-worthy gaps
-```
-
-The Phase-10 hard gates and 100-point weights remain unchanged.
-
-## PM-09 base score retained
+## PM-09 scoring retained
 
 | Dimension | Weight | PostgreSQL | TypeDB |
 |---|---:|---:|---:|
@@ -152,9 +145,9 @@ The Phase-10 hard gates and 100-point weights remain unchanged.
 | Python/tooling/cost/exit | 5 | **9.5** | 7.0 |
 | **TOTAL** | **100** | **89.25** | **80.00** |
 
-Sensitivity remains robust. `SC-013` and PM-04B remain closed because the recommendation is not performance-dependent.
+Sensitivity remains robust. `SC-013` and PM-04B remain closed because the selected ranking is not performance-dependent.
 
-## PM-10 companion stack register
+## Selected target stack register
 
 ```text
 POSTGRESQL-ADJACENT
@@ -172,11 +165,15 @@ encrypted SQLite local state
 PostgreSQL-backed PowerSync bucket storage
 explicit client-safe sync projections
 
-ASYNC
+ASYNC CLASS A
 PostgreSQL transactional outbox + bounded worker
-Restate Cloud EU for Class-B durable execution
+
+DURABLE CLASS B
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 reproducible local/self-hosted subject
+Restate Server 1.7.2 self-hosted/reproducible subject
+Restate Cloud EU allowed managed deployment
+Restate global deployment default NONE
 
 OBJECT
 Cloudflare R2 Standard / EU jurisdiction / private
@@ -215,9 +212,27 @@ solver output                  OR-Tools candidate/derived state
 telemetry                      OTel/Grafana operational state
 ```
 
+## Restate deployment disposition
+
+```text
+RESTATE TECHNOLOGY
+SELECTED
+
+SELF-HOSTED
+FIRST-CLASS DEPLOYMENT OPTION
+
+CLOUD EU
+ALLOWED MANAGED DEPLOYMENT OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+Current Python path must not assume TypeScript-only client-side journal encryption. Journal minimization and the later privacy/operability deployment review are mandatory carry-forward conditions.
+
 ## Technology exclusions
 
-PM-10 explicitly excludes from the proposed accepted stack:
+The accepted target excludes:
 
 ```text
 TypeDB/XTDB/SurrealDB as primary
@@ -235,7 +250,7 @@ universal event sourcing
 Temporal
 DBOS
 Celery + broker
-Zero sync
+Zero
 Electric as full mutation/sync engine
 CRDT/local-first canonical authority
 MongoDB for PowerSync
@@ -269,7 +284,7 @@ SC-017/018 search non-interference
 SC-019 filtered vector recall
 SC-020/021 projection freshness/deletion propagation
 PowerSync replication/offline conflict/local encryption
-Restate crash/replay/versioning/governance
+Restate crash/replay/versioning/governance/deployment privacy
 R2/S3 object recovery/deletion
 PostGIS/PgBouncer interactions
 OR-Tools status/governance corpus
@@ -289,29 +304,28 @@ PM-05  pm-05-correctness-evidence-qualification-v1.md + qualification/*
 PM-06/07 pm-06-07-joint-finalist-qualification-v1.md + related records
 PM-08  pm-08-secondary-lanes-v1.md + secondary/*
 PM-09  pm-09-scoring-sensitivity-v1.md + scoring/*
-PM-10  pm-10-recommendation-v1.md
-       final-stack-audit-v1.md
-       final-stack-capability-matrix-v1.md
-       final-stack-simulation-v1.md
-       recommendation/*
+PM-10  pm-10-recommendation-v1.md + final-stack-* + recommendation/*
+PM-11  pm-11-explicit-selection-v1.md
+PM-12  pm-12-accepted-physical-model-v1.md
 ```
 
 ## Next
 
 ```text
-PM-10 COMPLETE
+PM-12 COMPLETE
+ACCEPTED PHYSICAL MODEL ESTABLISHED
 
-PREFERRED
-PostgreSQL 18.4 / PASS-CONDITIONAL
+SELECTED CANONICAL PRIMARY
+PostgreSQL 18.4
 
-COMPANION STACK
-RECOMMENDED / PASS-CONDITIONAL
+SELECTED TARGET COMPANION STACK
+ESTABLISHED
 
-SELECTED
-NONE
+DIRECT EXECUTION
+NOT STARTED
 
 NEXT
-PM-11 explicit selection
+PM-13 independent clean-room QA
 
 BACKEND
 NOT STARTED / DEFERRED
