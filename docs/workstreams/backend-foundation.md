@@ -1,20 +1,24 @@
 # Workstream — Backend Foundation
 
 - Status: **NOT STARTED / DEFERRED**
-- Intended future branch: `feature/backend-foundation` only after all prerequisites are satisfied and a fresh branch/write gate is approved
+- Intended future branch: `feature/backend-foundation` only after remaining prerequisites are satisfied and a fresh branch/write gate is approved
 - Current implementation base: **none**
 - Work type: future production technical foundation
+- Accepted Physical input: **CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**
+- Development Profile v0: **NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE**
 
 ## Purpose
 
-Provide the future production backend skeleton for LifeOS **after** the semantic, integrated Pre-Physical, accepted Physical and applicable runtime/security/integration prerequisites required by the chosen first slice exist.
+Provide the future production backend skeleton for LifeOS **after** the semantic, integrated Pre-Physical, accepted/integrated Physical and applicable runtime/security/integration prerequisites required by the chosen first slice exist.
 
-This handoff is deliberately non-executable today. The active Physical Model workstream does not authorize Backend Foundation by itself.
+This handoff is deliberately non-executable today. Physical closure and integration do not authorize Backend Foundation by themselves.
 
 ```text
-PHYSICAL WORKSTREAM AUTHORIZED
+PHYSICAL TARGET CLOSED / SELECTED / ACCEPTED
 !=
-PHYSICAL RESULT ACCEPTED
+DIRECT SELECTED-STACK VALIDATION PASS
+!=
+DEVELOPMENT PROFILE DEFINED
 !=
 BACKEND AUTHORIZED
 ```
@@ -37,16 +41,16 @@ CURRENT
 including consequential AI evaluation/regression requirement
 
 Phase 7 durable-execution contract
-CURRENT / conditional ranking only
+CURRENT / physically resolved by PM-11/12 where selected
 
 Phase 8 governed-operation/effect contract
 CURRENT
 
 Phase 9 search/observability/calendar/solver pressure
-CURRENT
+CURRENT / physically resolved where selected
 
 Phase 10 Physical benchmark method
-CURRENT / QA PASS
+CURRENT METHOD / QA PASS / HISTORICAL INPUT TO CLOSED PHYSICAL DECISION
 
 Phase 11 repository engineering safety
 QA PASS / effective main rules remotely verified
@@ -58,22 +62,25 @@ Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
 INTEGRATED / POST-MERGE VERIFIED
 
-Physical readiness
-ESTABLISHED
-
 Physical Model
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
-branch feature/physical-model
-base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-mapping NOT STARTED
-benchmark NOT STARTED
-selection NONE
+CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
+main e6f191bad947388a44defe2c15f4939345084f58
+former feature/physical-model MERGED / AUTO-DELETED
+selected canonical primary PostgreSQL 18.4
+selected companion architecture ESTABLISHED
+
+Direct selected-stack implementation validation
+NOT STARTED / DIRECT HG PASS 0
+
+Development Profile v0
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 
 Backend Foundation / production implementation
 NOT STARTED / DEFERRED
 ```
 
-Backend Foundation does **not** own Domain or Logical modeling. Any genuine future semantic contradiction requires a separate explicit reopen scope/methodology.
+Backend Foundation does **not** own Domain or Logical modeling and does not silently reopen the accepted Physical target. Any genuine semantic contradiction requires a separate explicit Domain/Logical reopen scope; any selected-stack failure that invalidates a Physical choice requires an explicit Physical reopen.
 
 ## Prerequisites before Backend Foundation may become READY TO START
 
@@ -81,16 +88,17 @@ All must be true before `feature/backend-foundation` is created:
 
 1. Phase 12 + independent Pre-Physical closure passed — **SATISFIED**;
 2. Pre-Physical result integrated into current repository truth — **SATISFIED**;
-3. Physical Model workstream is completed, independently QA-verified and its result explicitly accepted — **NOT SATISFIED**;
-4. accepted Physical persistence boundaries exist for the implementation slice — **NOT SATISFIED**;
+3. Physical Model workstream completed, independently QA-verified and explicitly accepted — **SATISFIED**;
+4. accepted Physical persistence boundaries exist for the implementation slice — **SATISFIED**;
 5. Phase 5 requirements needed by the slice are consumed and required open parameters are resolved at the proper gate;
 6. Phase 6 AI/context/runtime + Integration Hub contracts are consumed where applicable;
-7. Phase 7 durable-execution posture is consumed and any operation class needing a runtime has an accepted mechanism at the proper implementation gate;
+7. Phase 7 durable-execution posture is consumed and any operation class needing Class-B durable execution uses the accepted Restate boundary without bypassing its PSV obligations;
 8. Phase 8 governed-operation/effect contract is preserved before routes/DTOs/tool schemas are stabilized;
 9. Phase 9 search/observability/calendar/solver boundaries are consumed where applicable;
-10. Phase-10 method has been executed by the Physical workstream and the accepted Physical result carries all evidence/conditions/sensitivity — **NOT SATISFIED**;
+10. Phase-10/Physical decision method has completed and the accepted Physical result carries its evidence/conditions/sensitivity — **SATISFIED AT TARGET-ARCHITECTURE LEVEL**; direct selected-stack PSV obligations remain separately **NOT RUN** until the applicable implementation/release boundary;
 11. Phase-11 effective repository safety remains active and any required checks correspond to real stable workflow contexts;
-12. then-current `main`, global status, active handoffs and current model/architecture sources are re-read immediately before Backend authorization.
+12. Development Profile v0 and any other operational choice required by the first backend slice are resolved at the proper separate gate;
+13. then-current `main`, global status, handoffs and current model/architecture sources are re-read immediately before Backend authorization.
 
 Until then:
 
@@ -98,18 +106,17 @@ Until then:
 DO NOT create feature/backend-foundation
 DO NOT create production SQL/schema/migrations
 DO NOT stabilize concrete API routes/DTOs
-DO NOT select persistence by convenience
+DO NOT change accepted persistence/runtime/search/solver choices by convenience
 DO NOT implement AuthN/AuthZ/provider/runtime mechanisms implicitly
-DO NOT adopt Restate / Temporal / DBOS by benchmark preference alone
-DO NOT add dedicated search/vector infrastructure by default
+DO NOT add excluded dedicated search/vector/graph/broker infrastructure by default
 DO NOT make solver/AI output write canonical state directly
-DO NOT treat PREFERRED/REGISTERED candidates as selected
+DO NOT treat SELECTED as DEPLOYED or DIRECT PASS
 DO NOT weaken repository-safety controls
 DO NOT invent required CI checks before stable contexts exist
-DO NOT reopen Domain/Logical semantics inside backend work
+DO NOT reopen Domain/Logical/Physical semantics inside backend work implicitly
 ```
 
-Physical benchmark-only mapping/schema/harness code, when later authorized inside `feature/physical-model`, remains **benchmark infrastructure**, not Backend Foundation production code.
+Any future selected-stack validation mapping/schema/harness code remains **validation infrastructure** unless and until a separately authorized backend scope deliberately adopts the relevant implementation artifact.
 
 ## Required reading before future backend implementation
 
@@ -126,13 +133,14 @@ At minimum:
 9. Phase-7 durable-execution contract;
 10. Phase-8 governed-operation/effect contract;
 11. Phase-9 search/observability/calendar/solver contract;
-12. all Phase-10 benchmark-method documents;
+12. all Phase-10 benchmark-method documents where evidence/method history is material;
 13. accepted Domain closure authority and Language Map;
 14. accepted Logical Model + complete decision register + remote closure evidence;
-15. the complete accepted Physical Model authority, benchmark evidence/result, conditions and closure evidence once it exists;
+15. complete accepted Physical Model authority: PM-11 selection, PM-12 Accepted Physical Model, PM-13 QA, PM-14 historical closure evidence, current result register and post-selection validation register;
 16. current ADRs with supersession/qualification state;
 17. then-current repository rules/check contexts;
-18. the exact backend workstream gate/first-slice requirements.
+18. Development Profile v0 once accepted;
+19. the exact backend workstream gate/first-slice requirements.
 
 Older documents/branches remain evidence only and cannot override accepted current authority.
 
@@ -144,21 +152,23 @@ Unless separately reviewed through the normal decision process:
 - architecture: modular monolith first;
 - domain/application logic independent from FastAPI request handling;
 - clients use governed backend contracts, not direct canonical persistence;
+- canonical persistence: PostgreSQL 18.4 through the accepted owner-specific Physical mapping;
 - AI remains behind replaceable/provider-neutral boundaries;
 - AI/context/runtime representation remains distinct from canonical truth;
 - material consequential AI changes are promotion-gated by reproducible evaluation;
 - Integration Hub preserves five accepted integration modes and canonical/provider separation;
-- storage remains behind an abstraction compatible with the **accepted** Physical result;
-- bounded async and material durable long-running work remain separate classes;
+- bounded async uses PostgreSQL transactional outbox + bounded worker where applicable;
+- material Class-B durable execution uses the selected Restate runtime where applicable;
 - governed operation/effect semantics remain independent from route/tool/workflow implementation;
 - search/index/vector state remains projection, not canonical truth;
-- OpenTelemetry-first/equivalent remains observability direction, not Domain Provenance/audit by identity;
+- accepted search baseline is PostgreSQL FTS + `pg_trgm` + `unaccent`, with pgvector for bounded vector retrieval;
+- observability target is OpenTelemetry + Grafana Alloy + Grafana Cloud EU, with privacy minimization;
 - calendar standards/provider schemas remain adapter pressure rather than ontology;
-- deterministic solver output remains candidate/scenario state until governed application;
+- OR-Tools 9.15 CP-SAT is the selected solver; its output remains candidate/scenario state until governed application;
 - DEV/UAT/PROD are environments, not permanent Git branches;
 - accepted Domain + Logical semantics, including `WL-H01..WL-H12`, remain implementation constraints.
 
-SQLAlchemy, Alembic and PostgreSQL-specific implementation choices remain conditional until the accepted Physical result justifies them.
+SQLAlchemy and Alembic may now be evaluated/used against the accepted PostgreSQL target **only inside a separately authorized backend/development scope**. Physical acceptance does not itself authorize their implementation.
 
 ## Phase-5 requirements future backend must consume
 
@@ -237,18 +247,19 @@ MCP/A2A/future protocols remain adapters.
 
 ```text
 BOUNDED ASYNC
-DB/worker/outbox style = valid baseline mechanism class
+PostgreSQL transactional outbox + bounded worker
+SELECTED CLASS-A MECHANISM
 
 MATERIAL DURABLE LONG-RUNNING
-Restate   preferred structural-fit candidate — NOT selected
-Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional challenger — NOT selected
-          local/bounded Python SQLite-capable
-          production PostgreSQL-recommended
-          distributed multi-server PostgreSQL-coupled
+Restate runtime
+SELECTED CLASS-B TECHNOLOGY
+self-hosted FIRST-CLASS OR Cloud EU ALLOWED MANAGED OPTION
+global deployment default NONE
 ```
 
-Replay/idempotency, delayed target/governance revalidation, ambiguous external effects, runtime-vs-Domain cancellation, execution-vs-semantic identity, in-flight compatibility and truthful pending/partial/reconciliation remain mandatory.
+Temporal and DBOS remain non-selected historical challengers, not backend implementation alternatives by default.
+
+Replay/idempotency, delayed target/governance revalidation, ambiguous external effects, runtime-vs-Domain cancellation, execution-vs-semantic identity, in-flight compatibility and truthful pending/partial/reconciliation remain mandatory. Current Python use must not assume TypeScript-only Restate Cloud journal encryption; journal minimization and applicable PSV checks remain required.
 
 ## Governed-operation/effect contract
 
@@ -290,49 +301,55 @@ Concrete route/DTO/command-bus design remains later implementation work.
 
 ```text
 SEARCH
-structured + lexical/full-text baseline
-semantic/vector bounded candidate
+PostgreSQL native FTS + pg_trgm + unaccent SELECTED
+pgvector bounded semantic/vector retrieval SELECTED
+search/index state remains derived
 search miss != canonical nonexistence
 
 OBSERVABILITY
-OpenTelemetry-first/equivalent direction
+OpenTelemetry + Grafana Alloy + Grafana Cloud EU SELECTED TARGET
 telemetry != Domain Provenance/security audit by identity
 
 CALENDAR
 iCalendar/JSCalendar/provider APIs = adapter pressure, not ontology
 
 SOLVER
-simple deterministic rules/heuristics baseline
-OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
+OR-Tools 9.15 CP-SAT SELECTED
 UNKNOWN != INFEASIBLE
 solver output != accepted canonical effect
 ```
 
-## Phase-10 / active Physical relationship
+## Phase-10 / closed Physical relationship
 
-Phase 10 defines the benchmark method; `feature/physical-model` now executes it under `docs/physical-model/**`.
+Phase 10 defines the benchmark/evidence method. The completed Physical workstream consumed it and selected/accepted the current target through PM-11/12, with PM-13 QA PASS and protected-main integration via PR #15.
 
-Current registered posture remains unselected:
+Current target posture is therefore no longer an unselected candidate register:
 
 ```text
 PRIMARY
-PostgreSQL hybrid — mandatory preferred baseline — NOT SELECTED
-TypeDB            — mandatory challenger        — NOT SELECTED
+PostgreSQL 18.4 SELECTED / ACCEPTED
 
 GRAPH
-G0 no-specialized-store vs Neo4j
+no dedicated graph database in accepted initial target
 
 SEARCH/VECTOR
-S0 structured/FTS vs bounded pgvector where applicable
+PostgreSQL FTS + pg_trgm + unaccent
+pgvector bounded vector retrieval
+
+DURABLE CLASS-B
+Restate runtime
+
+SOLVER
+OR-Tools 9.15 CP-SAT
 ```
 
-Physical hard-gate evidence precedes scoring. `LOW/BASE/HIGH` are synthetic qualification envelopes; unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
+Physical evidence rules remain active: `LOW/BASE/HIGH` are unexecuted direct tiers, `DIRECT HG PASS = 0`, `SELECTED != DIRECT PASS`, and applicable PSV obligations remain mandatory.
 
-Backend consumes the **accepted Physical result**, not interim benchmark preference.
+Backend consumes the **accepted Physical result**, not interim Phase-10 candidate preference.
 
 ## Physical-dependent implementation candidates
 
-Do not adopt until accepted Physical result justifies them:
+The accepted Physical result now permits later authorized evaluation/implementation of PostgreSQL-aligned mechanisms such as:
 
 - SQLAlchemy;
 - Alembic;
@@ -341,11 +358,14 @@ Do not adopt until accepted Physical result justifies them:
 - table/index/key/partition strategy;
 - database migration mechanics;
 - database-specific test/operational tooling;
-- PostgreSQL-native FTS / pgvector as production components;
-- TypeDB-specific client/schema infrastructure;
-- Neo4j-specific production projection infrastructure.
+- PostgreSQL-native FTS / pgvector production implementation;
+- PostGIS / PgBouncer integration where applicable.
 
-## Runtime/API-dependent candidates
+None is authorized merely by appearing here. Exact implementation still requires the Backend/Development gate and must preserve accepted semantics plus applicable PSV obligations.
+
+TypeDB- or Neo4j-specific production infrastructure is **not part of the accepted initial Physical target** and requires an explicit later architecture reopen if reintroduced.
+
+## Runtime/API-dependent implementation details
 
 Do not freeze prematurely:
 
@@ -353,21 +373,21 @@ Do not freeze prematurely:
 - concrete route/DTO versioning;
 - Auth middleware/policy engine/persistence;
 - idempotency storage/replay mechanics;
-- outbox/inbox/publication implementation;
-- bounded worker implementation;
-- Restate/Temporal/DBOS binding;
+- outbox/inbox/publication implementation details;
+- bounded worker implementation details;
+- concrete Restate binding/deployment activation;
 - provider adapters;
 - AI provider/model/router/tool adapters;
 - AI evaluation frameworks/datasets/runners/thresholds;
 - MCP/A2A adapters;
-- projection/cache/search/vector services;
-- OpenTelemetry SDK/Collector/backend;
+- projection/cache implementation details;
+- OpenTelemetry SDK/Collector/backend configuration;
 - calendar provider SDK/adapters;
-- OR-Tools/solver service.
+- OR-Tools service/module topology.
 
 ## Future backend bootstrap deliverables
 
-Only after authorization, likely implementation-independent foundation work includes:
+Only after authorization, likely foundation work includes:
 
 - Python project/package structure;
 - FastAPI bootstrap;
@@ -379,10 +399,10 @@ Only after authorization, likely implementation-independent foundation work incl
 - error-handling baseline;
 - privacy-aware structured logging;
 - development health/readiness endpoint where appropriate;
-- provider-neutral interfaces only where accepted contracts exist;
+- provider-neutral interfaces where accepted contracts require them;
 - explicit API/application/semantic/persistence/provider/runtime separation.
 
-Physical/runtime/provider-specific deliverables are added only after their relevant accepted decisions.
+Physical/runtime/provider-specific deliverables are added according to the accepted target and the exact authorized slice.
 
 ## First implementation slice rule
 
@@ -421,8 +441,8 @@ As applicable, future Backend must validate:
 - recurrence/DST/floating/all-day/provider resync;
 - solver hard-constraint/result-category/stale-input rules;
 - recovery/degraded/multi-device requirements;
-- all accepted Physical hard-gate conditions/sensitivity caveats;
-- migrations/rollback only when the accepted Physical design uses them;
+- all applicable post-selection Physical validation obligations;
+- migrations/rollback only when the implemented Physical design uses them;
 - real required repository/CI checks before integration.
 
 ## Non-negotiable guardrails
@@ -443,21 +463,23 @@ technical cancellation != Domain cancellation automatically
 search miss != canonical nonexistence
 solver result != accepted canonical effect
 eval result != canonical LifeOS truth
-preferred benchmark candidate != selected implementation
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
+NOT RUN != PASS
 ```
 
-All `WL-H01..WL-H12`, Phase-5 requirements, Phase-6 boundaries, Phase-7..9 contracts, Phase-10 benchmark method, Phase-11 controls, Pre-Physical closure constraints and eventual accepted Physical conditions remain downstream constraints.
+All `WL-H01..WL-H12`, Phase-5 requirements, Phase-6 boundaries, Phase-7..9 contracts, Phase-10 evidence rules, Phase-11 controls, Pre-Physical closure constraints, accepted Physical ownership boundaries and PSV conditions remain downstream constraints.
 
 ## Where to work when eventually authorized
 
 Do **not** create the Backend branch now.
 
-When every prerequisite is satisfied:
+When every remaining prerequisite is satisfied and the user explicitly authorizes Backend Foundation:
 
 1. re-read current `main` and this handoff;
-2. verify complete accepted model/Physical authorities;
+2. verify complete accepted Domain/Logical/Physical authorities and Development Profile;
 3. verify effective repository rules/checks;
-4. define exact backend scope/path ownership;
+4. define exact backend scope/path ownership and first slice;
 5. present fresh branch/PRE-SCOPE/CREATE-UPDATE-DELETE gate;
 6. after approval create bounded implementation branch from then-current `main`;
 7. update this handoff to **IN PROGRESS** with actual branch/PRE-SCOPE/package paths/validation commands.
@@ -476,20 +498,18 @@ NO IMPLEMENTATION ACTION
 NOT STARTED / DEFERRED
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
-feature/physical-model
-base 3de84bb49f9cef30e88e9bde4961ed84335daa79
+CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
+MAIN e6f191bad947388a44defe2c15f4939345084f58
+FORMER feature/physical-model MERGED / AUTO-DELETED
 
-PHYSICAL RESULT
-NOT YET ACCEPTED
-mapping NOT STARTED
-benchmark NOT STARTED
-selection NONE
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED / DIRECT HG PASS 0
 
 CURRENT PROJECT ACTION
-complete PM-00 bootstrap QA
-then PM-01 READ-ONLY candidate/version/edition/deployment/environment freeze
+Development Profile v0 — separate bounded operational-design scope
 
 BACKEND ELIGIBILITY
-BLOCKED until accepted Physical result + remaining prerequisites
+Physical acceptance blocker CLEARED
+Backend remains DEFERRED until explicit authorization + remaining slice/profile prerequisites
 ```
