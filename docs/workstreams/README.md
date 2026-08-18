@@ -23,7 +23,7 @@ A workstream handoff must contain, where applicable:
 
 ## Completed / integrated workstreams
 
-- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**, with `main @ e6f191bad947388a44defe2c15f4939345084f58`. Former branch `feature/physical-model` was merged and auto-deleted. Direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**; the next separate operational scope is **Development Profile v0**.
+- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**, with Physical integration commit `e6f191bad947388a44defe2c15f4939345084f58`. Former branch `feature/physical-model` was merged and auto-deleted. Direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**; the next separate operational scope is **Development Profile v0**.
 - [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**, with post-merge current-truth alignment through PR #14. Former branch `chore/pre-physical-coherence` was merged and auto-deleted.
 - [`domain-model.md`](domain-model.md) and its canonical continuation parts — historical operational record for the **CLOSED** Core Domain Model / Domain Atlas integrated into `main` via PR #10. Do not treat older readiness/in-progress prose as current closure state.
 - Logical Model workstream documents and continuations — historical operational record for the **CLOSED** Logical Model integrated into `main` via PR #11.
