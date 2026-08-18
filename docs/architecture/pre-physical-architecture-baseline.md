@@ -1,7 +1,7 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — Phase 12 clean-room repairs incorporated**
-- Pre-Physical Coherence: **FINAL CLOSURE CANDIDATE — independent total audit pending**
+- Status: **CURRENT — Phase 12 closed; independent total-audit repairs incorporated**
+- Pre-Physical Coherence: **FINAL CLOSURE CANDIDATE — definitive closure activates only after exact remote QA of the final audit gate**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Backend production implementation: **NOT STARTED / DEFERRED**
 
@@ -9,7 +9,7 @@
 
 This is the current bridge from the accepted Product/North Star, CLOSED Domain Atlas and CLOSED Logical Model into later Physical/runtime/API/backend work.
 
-It consolidates the downstream constraints that later engineering must preserve. It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract or Phase 12 clean-room evidence.
+It consolidates the downstream constraints that later engineering must preserve. It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract, Phase 12 clean-room evidence or the final independent audit evidence.
 
 ## Authority
 
@@ -26,8 +26,9 @@ Read current truth through:
 9. Phase 9 search/observability/calendar/solver contract;
 10. Phase 10 Physical benchmark specification + scenario corpus + register;
 11. Phase 11 repository-engineering-safety contract + verified effective main rules;
-12. this baseline;
-13. Phase 12 clean-room evidence and active workstream handoff for final-verification state.
+12. Phase 12 clean-room evidence;
+13. this baseline;
+14. final independent audit evidence and active workstream handoff for exact closure state.
 
 A physical split/cumulative continuation is one logical document. Never infer current state from only an early part or an isolated continuation. Size/tool-limit splitting is lossless physical partitioning, not summarization or semantic cleanup.
 
@@ -42,7 +43,7 @@ ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
 BENCHMARK METHOD ACCEPTED != PHYSICAL MODEL STARTED
 REPOSITORY SAFETY VERIFIED != BACKEND STARTED
-PHASE 12 CLOSED != WHOLE PRE-PHYSICAL DEFINITIVELY CLOSED UNTIL FINAL TOTAL AUDIT PASSES
+PHASE 12 CLOSED != WHOLE PRE-PHYSICAL DEFINITIVELY CLOSED UNTIL FINAL TOTAL-AUDIT GATE PASSES
 ```
 
 ## Current stage
@@ -56,16 +57,21 @@ Phase 6 boundaries          CURRENT
 Phase 7 benchmark           CURRENT
 Phase 8 effect contract     CURRENT
 Phase 9 pressure contract   CURRENT
-Phase 10 benchmark method   CURRENT
+Phase 10 benchmark method   CURRENT / QA PASS
 Phase 11 repository safety  QA PASS
-Phase 12 clean-room QA      CLOSING / QA evidence required
+Phase 12 clean-room QA      QA PASS / CLOSED
+
+Independent total audit
+CORE PASS
+bounded final repairs incorporated
+exact final remote gate QA still required
 
 Pre-Physical Coherence
 FINAL CLOSURE CANDIDATE
-independent total repository audit still required before definitive closure
 
 Physical Model              NOT STARTED / NOT AUTHORIZED
 Backend Foundation          NOT STARTED / DEFERRED
+Main integration            NOT PERFORMED
 ```
 
 ## Current technical direction
@@ -78,9 +84,11 @@ Backend Foundation          NOT STARTED / DEFERRED
 - Clients use governed backend contracts, not direct canonical persistence.
 - Object/file storage remains behind a provider abstraction.
 - AI remains behind replaceable/provider-neutral boundaries and a bounded Context Builder.
+- Material consequential AI changes are promotion-gated by versioned/reproducible evaluation; evaluation evidence is not canonical truth or authorization.
 - Provider state remains distinct from canonical LifeOS state.
 - Consequential operations use an engine-/transport-neutral governed operation/effect contract.
 - Bounded async work and material long-running durable execution are distinct runtime classes.
+- Restate remains preferred dedicated durable candidate; Temporal remains the strongest mandatory challenger; DBOS remains conditional, with deployment-dependent PostgreSQL coupling rather than universal PostgreSQL requirement in Python.
 - Structured + lexical/full-text search is the baseline; semantic/vector retrieval is bounded.
 - OpenTelemetry-first or equivalent standards-based observability is the current direction, not a vendor selection.
 - Calendar standards/providers are interoperability/adaptor pressure, not ontology authority.
@@ -88,6 +96,7 @@ Backend Foundation          NOT STARTED / DEFERRED
 - Physical candidate comparison is role-specific, not one universal leaderboard.
 - Physical correctness hard gates precede performance/operability scoring.
 - Unknown NFR/business-scale values remain explicit sensitivity/scenario inputs rather than invented forecasts.
+- An unexecuted synthetic upper envelope cannot be reported as verified benchmark evidence.
 - Specialized infrastructure requires demonstrated structural or measured benefit.
 - SQLAlchemy/Alembic remain conditional on the accepted Physical design.
 
@@ -221,7 +230,7 @@ Transaction/outbox/inbox/queue/workflow/CRDT/locking/isolation mechanisms remain
 
 Later design must prevent silent consequential overwrite across devices, preserve divergence for reconciliation, define offline capability per operation, classify consistency/availability by consequence, preserve provider/degraded-state truth, support current-state access alongside long history, set material RPO/RTO/latency/availability/scale inputs before dependent scoring, preserve temporal/DST semantics, protect privacy in observability and prove recovery through destructive tests.
 
-Numeric targets remain explicit open parameters where not accepted. Phase 10 treats them as sensitivity inputs rather than fabricated forecasts.
+Numeric targets remain explicit open parameters where not accepted. Phase 10 defines synthetic/sensitivity treatment; the later Physical workstream executes the applicable benchmark evidence.
 
 ## Runtime / technical != Domain
 
@@ -241,6 +250,19 @@ The Context Builder is purpose-, disclosure-, provenance- and freshness-aware an
 LifeOS does not create a second generic AI-memory truth store. Durable information receives an accepted canonical/history/candidate/derived/source/provider disposition.
 
 Configurable autonomy remains consequence/governance/policy based; no universal human-confirmation rule is imposed.
+
+### Consequential AI evaluation
+
+Before promoting a material change to model/provider/version, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, the applicable behavior must pass versioned/reproducible evaluation pressure.
+
+Minimum material pressure includes structured-output correctness, false canonical claims, candidate/canonical classification, tool errors, governance bypass, privacy/inference leakage, stale-context behavior, provider/model substitution regression, fallback/refusal behavior, approval flows and material cost/latency.
+
+```text
+eval result != canonical truth
+eval PASS != Authority / governed-effect authorization
+```
+
+Concrete eval tooling and thresholds remain later engineering choices.
 
 AI provider/model, agent framework, concrete tool protocol and conversation-runtime mechanisms remain open/deferred.
 
@@ -280,7 +302,10 @@ Current dedicated candidate ranking:
 ```text
 Restate   preferred structural-fit candidate — NOT SELECTED
 Temporal  strongest mandatory challenger — NOT SELECTED
-DBOS      conditional PostgreSQL-dependent challenger — NOT SELECTED
+DBOS      conditional challenger — NOT SELECTED
+          SQLite-capable for local/bounded Python use
+          PostgreSQL recommended for production
+          distributed multi-server topology PostgreSQL-coupled
 ```
 
 No runtime can create exactly-once external reality by itself. Runtime completion/cancellation does not manufacture Domain Actual/Outcome/Confirmation/cancellation.
@@ -368,6 +393,7 @@ Benchmark rules include:
 - synthetic LOW/BASE/HIGH qualification tiers, not forecasts;
 - exact product version + edition/license + deployment-mode evidence pinning;
 - sensitivity-dependent outcomes where open NFR assumptions materially change preference;
+- unexecuted scale envelopes remain unverified rather than fabricated as runs;
 - `PREFERRED != SELECTED`.
 
 ## Repository engineering safety
@@ -403,7 +429,8 @@ Open parameters remain obligations, not permission for arbitrary defaults. They 
 - provider adapter/runtime integration mechanisms;
 - search/vector physical design;
 - observability backend/vendor;
-- solver service/implementation design.
+- solver service/implementation design;
+- AI evaluation framework/datasets/runners/thresholds and promotion automation.
 
 ## Explicitly unauthorized now
 
@@ -411,22 +438,25 @@ No Physical schema/tables/keys/indexes/constraints, PostgreSQL/TypeDB/Neo4j mapp
 
 Domain/Logical changes require a separate explicit reopen gate.
 
-## Phase 12 / final-verification boundary
+## Final independent-audit boundary
 
-Phase 12 exists to prove repository/architecture coherence from repository truth without relying on conversation history. Its closure may repair stale current navigation/status but does not alter closed Domain/Logical semantics.
+Phase 12 clean-room QA is closed. A subsequent independent total audit rechecked the entire Pre-Physical branch delta and found no major semantic/architectural contradiction, accidental Physical/backend start or material knowledge loss. It found only bounded current-truth/factual/engineering hardening repairs, including the DBOS coupling correction and explicit consequential AI evaluation requirement.
 
-Per current user instruction, even after Phase 12 itself reaches QA PASS:
+This baseline incorporates those repairs but does **not self-certify definitive closure**.
+
+Definitive closure activates only when the final audit gate proves remotely:
 
 ```text
-DO NOT INTEGRATE TO MAIN YET
-DO NOT DECLARE WHOLE PRE-PHYSICAL DEFINITIVELY CLOSED YET
-
-NEXT
-independent total repository audit
-→ inspect for missed mistakes/contradictions/scope damage
-→ only then authorize definitive Pre-Physical closure
-→ PR/main integration remains later and separate
+approved final-audit paths only
+no unexpected delete/path
+branch not behind PRE-SCOPE
+main baseline unchanged
+critical current authorities readable/coherent
+Domain/Logical unchanged
+Physical/backend not started
 ```
+
+Main integration remains separate and is not performed by this closure gate.
 
 ## Documentation/evidence rule
 
