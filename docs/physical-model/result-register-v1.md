@@ -1,6 +1,6 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — PM-12 COMPLETE / PM-13 NEXT**
+- Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
 - Workstream: `feature/physical-model`
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
 - PM-09 evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
@@ -8,6 +8,8 @@
 - PM-10 Preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - PM-11 Selected: **PostgreSQL 18.4 + bounded companion target stack**
 - PM-12 Accepted Physical Model: **ESTABLISHED**
+- PM-13 architecture/documentation QA: **PASS**
+- PM-14 branch closure: **COMPLETE**
 - Direct execution: **NOT STARTED**
 - Verified-run benchmark score: **NOT AVAILABLE**
 
@@ -44,8 +46,8 @@ PM-09   EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
 PM-10   FINAL STACK RECOMMENDATION COMPLETE
 PM-11   EXPLICIT USER-APPROVED TARGET STACK SELECTION COMPLETE
 PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
-PM-13   NEXT / INDEPENDENT CLEAN-ROOM QA
-PM-14   NOT STARTED
+PM-13   CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
+PM-14   TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
 ```
 
 ## Selected primary
@@ -67,6 +69,9 @@ SELECTED — CANONICAL PRIMARY
 
 PM-12
 ACCEPTED PHYSICAL MODEL PRIMARY
+
+PM-13
+COHERENT / QA PASS
 ```
 
 Primary reasons remain:
@@ -129,9 +134,9 @@ BENCHMARK HOST           HOLD / DORMANT
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-No PM-09/10/11/12 disposition is evidence that a direct hard gate ran.
+No PM-09/10/11/12/13/14 disposition is evidence that a direct hard gate ran.
 
-## PM-09 scoring retained
+## PM-09 score retained
 
 | Dimension | Weight | PostgreSQL | TypeDB |
 |---|---:|---:|---:|
@@ -293,6 +298,20 @@ observability privacy
 
 All remain `NOT RUN` until direct selected-stack artifacts exist.
 
+## PM-13 clean-room result
+
+```text
+BLOCKING ARCHITECTURE DEFECTS      0
+CANONICAL-AUTHORITY CONFLICTS      0
+UNAPPROVED TECHNOLOGIES            0
+FALSE DIRECT PASS CLAIMS           0
+LOST PSV OBLIGATIONS               0
+DOMAIN/LOGICAL IMPLICIT REOPENS    0
+
+VERDICT
+QA PASS — ARCHITECTURE / DOCUMENTATION COHERENCE
+```
+
 ## Evidence paths
 
 ```text
@@ -307,13 +326,15 @@ PM-09  pm-09-scoring-sensitivity-v1.md + scoring/*
 PM-10  pm-10-recommendation-v1.md + final-stack-* + recommendation/*
 PM-11  pm-11-explicit-selection-v1.md
 PM-12  pm-12-accepted-physical-model-v1.md
+PM-13  pm-13-clean-room-qa-v1.md
+PM-14  pm-14-closure-v1.md
 ```
 
-## Next
+## Current closure state
 
 ```text
-PM-12 COMPLETE
-ACCEPTED PHYSICAL MODEL ESTABLISHED
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
 
 SELECTED CANONICAL PRIMARY
 PostgreSQL 18.4
@@ -321,11 +342,17 @@ PostgreSQL 18.4
 SELECTED TARGET COMPANION STACK
 ESTABLISHED
 
+PM-13 QA
+PASS
+
 DIRECT EXECUTION
 NOT STARTED
 
+PROTECTED-MAIN INTEGRATION
 NEXT
-PM-13 independent clean-room QA
+
+AFTER INTEGRATION
+Development Profile v0 — separate operational scope
 
 BACKEND
 NOT STARTED / DEFERRED
