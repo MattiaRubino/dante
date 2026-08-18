@@ -1,14 +1,19 @@
 # Physical Benchmark Scenario Corpus
 
-- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
-- Stage: Physical Model execution corpus authority
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
-- Benchmark execution: **NOT STARTED**
+- Status: **CURRENT CORPUS / HISTORICAL PHASE-TIME EXECUTION STATUS — Phase 10 QA PASS / consumed by the closed Physical Model**
+- Stage: Physical Model benchmark corpus authority
+- Phase-time Physical state recorded at corpus handoff: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Current Physical truth: **CLOSED / SELECTED / ACCEPTED / integrated via PR #15**
+- Direct benchmark execution: **NOT RUN / direct HG PASS 0**
 - Business forecast: **NOT ASSERTED BY THIS DOCUMENT**
+
+> **Current-truth qualification:** the fixture families, scenarios, synthetic tiers, assertions and sensitivity inputs below remain the current reusable corpus. Statements describing PM-00, the active Physical branch or future benchmark execution are truthful **phase-time handoff state** and do not override PM-11/12/13/14 closure. Later selection did not retroactively execute this corpus.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained in this corpus reflect the previous working/project name for the same product lineage and are preserved in the benchmark/evidence vocabulary.
 
 ## Purpose
 
-Define the common LifeOS fixture families, destructive scenarios, synthetic qualification tiers and sensitivity inputs that the separately authorized Physical Model benchmark must execute against candidate-specific idiomatic mappings.
+Define the common LifeOS fixture families, destructive scenarios, synthetic qualification tiers and sensitivity inputs for candidate-specific idiomatic mappings and later selected-stack validation.
 
 This corpus is designed to test correctness first and performance second.
 
@@ -872,17 +877,17 @@ A run may stop early for a candidate/role when:
 
 Record the stop reason and evidence. Do not continue only to generate flattering performance numbers after correctness failure.
 
-# Phase 10 boundary — current
+# Phase 10 boundary — current corpus, historical execution state
 
-This corpus defines the benchmark inputs consumed by the active Physical Model workstream.
+This corpus defines the benchmark inputs consumed by the completed Physical Model and retained for later selected-stack validation where applicable.
 
 It does not:
 
-- predict LifeOS user count;
+- predict DANTE user count;
 - set final RPO/RTO/SLA/latency requirements;
 - create Physical schemas by itself;
 - run the benchmark by itself;
-- select PostgreSQL, TypeDB, Neo4j, pgvector or another product;
+- select PostgreSQL, TypeDB, Neo4j, pgvector or another product by itself;
 - authorize production backend implementation.
 
-The Physical Model is now separately authorized on `feature/physical-model`; PM-00 bootstrap activates consumption of this corpus but benchmark execution remains `NOT STARTED` until later exact gates.
+The later Physical workstream selected and accepted PostgreSQL 18.4 plus the bounded companion target through PM-11/12 and integrated through PR #15. Direct execution of this corpus remains `NOT RUN` where recorded; LOW/BASE/HIGH remain unexecuted and `DIRECT HG PASS = 0`. Development Profile v0 is the next separate operational scope.
