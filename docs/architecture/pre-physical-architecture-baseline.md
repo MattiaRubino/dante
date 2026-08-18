@@ -1,10 +1,10 @@
 # Pre-Physical Architecture Baseline
 
-- Status: **CURRENT — PRE-PHYSICAL DEFINITIVE CLOSED / FINAL QA PASS**
+- Status: **CURRENT — PRE-PHYSICAL DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
 - Activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+- Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13 — **POST-MERGE VERIFIED**
 - Physical Model: **READY FOR SEPARATE AUTHORIZATION / NOT STARTED**
 - Backend production implementation: **NOT STARTED / DEFERRED**
-- Main integration: **PENDING / NOT PERFORMED**
 
 ## Purpose
 
@@ -29,7 +29,8 @@ Read current truth through:
 11. Phase 11 repository-engineering-safety contract + effective main rules;
 12. Phase 12 clean-room evidence;
 13. final independent audit evidence;
-14. this baseline and current project/workstream status.
+14. PR #13 / merge commit `74593ae283ce5a1d22335502480ee3fa54be0436` post-merge verification;
+15. this baseline and current project/workstream status.
 
 A physical split/cumulative continuation is one logical document. Size/tool-limit splitting is lossless physical partitioning, not summarization or semantic cleanup.
 
@@ -43,7 +44,7 @@ REGISTERED BENCHMARK CANDIDATE != TECHNOLOGY SELECTION
 ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
 BENCHMARK METHOD ACCEPTED != PHYSICAL MODEL STARTED
-PRE-PHYSICAL CLOSED != MAIN INTEGRATED
+PRE-PHYSICAL CLOSED != PHYSICAL MODEL AUTHORIZED
 ```
 
 ## Current stage
@@ -64,11 +65,13 @@ Independent total audit     PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 Physical readiness          ESTABLISHED
 Physical Model              READY FOR SEPARATE AUTHORIZATION / NOT STARTED
 Backend Foundation          NOT STARTED / DEFERRED
-Main integration            PENDING / NOT PERFORMED
+Main integration            COMPLETE / POST-MERGE VERIFIED
 ```
 
 ## Current technical direction
@@ -294,7 +297,9 @@ Hard correctness gates precede weighted scoring. Candidate mappings may be idiom
 
 Phase 11 is QA PASS. Effective `main` protection was verified remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has no required status checks until real stable contexts exist and auto-deletes merged head branches.
 
-## Definitive closure evidence
+PR #13 exercised that protected integration path successfully and the merged source branch was auto-deleted.
+
+## Definitive closure and integration evidence
 
 Phase 12 clean-room QA is closed. The independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start.
 
@@ -316,7 +321,9 @@ main unchanged
 critical readback PASS
 ```
 
-Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS** on this branch.
+That checkpoint established definitive branch-local closure. Protected PR #13 subsequently integrated the final branch tree into `main` at `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge comparison from branch final HEAD `34e9ea3b547922600cb472adf1549a321e6ddfe4` to merged `main` showed one merge commit and zero file differences.
+
+Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**.
 
 ## Explicitly unauthorized now
 
@@ -326,4 +333,4 @@ Domain/Logical changes require a separate explicit reopen gate.
 
 ## Next boundary
 
-`main` integration is **PENDING / NOT PERFORMED**. Only after separate authorization should this closed branch enter a protected PR → merge → post-merge verification. Physical Model authorization remains separate after integration.
+Pre-Physical protected integration is complete. The **Physical Model is ready for separate authorization but remains NOT STARTED / NOT AUTHORIZED**. Starting it requires a fresh explicit user authorization, workstream branch and exact PRE-SCOPE/write gate; Backend Foundation remains deferred until the Physical result is separately accepted.
