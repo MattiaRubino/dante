@@ -32,7 +32,7 @@ The benchmark consumes without reopening:
 3. the CLOSED Whole Logical Model, complete decision/assumption register and `WL-H01..WL-H12`;
 4. current ADR statuses, especially ADR-003 and ADR-007;
 5. all Phase 5 requirement packages;
-6. Phase 6 AI/context/runtime and Integration Hub contracts;
+6. Phase 6 AI/context/runtime and Integration Hub contracts, including the requirement for versioned/reproducible evaluation of material consequential AI changes;
 7. Phase 7 durable-execution benchmark;
 8. Phase 8 Governed Operation / Effect Contract;
 9. Phase 9 search/observability/calendar/solver pressure contract;
@@ -472,7 +472,7 @@ Hard-gate failures invalidate performance scoring for primary selection.
 
 Execute low/base/high qualification tiers and required sensitivity bands using the same semantic assertions.
 
-Record latency distributions rather than only averages where the tooling supports them.
+Record latency distributions rather than only averages where the tooling supports them. Qualification may proceed progressively, and where a full upper-envelope materialization would be disproportionate, saturation/scaling evidence may support sensitivity analysis only if the limitation is explicit and does not falsely claim an unexecuted tier as `VERIFIED-RUN`.
 
 ## Step 5 — Run operations/recovery/evolution evidence
 
@@ -609,9 +609,9 @@ secondary-store benefit measured against baseline   PASS
 preferred != selected                               PASS
 ```
 
-# Phase 10 boundary
+# Phase 10 boundary — current
 
-This specification plus the scenario corpus and benchmark register is sufficient Phase 10 output when remotely QA-verified.
+This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package.
 
 Phase 10 does **not**:
 
@@ -624,6 +624,6 @@ Phase 10 does **not**:
 - authorize a Physical Model;
 - start Backend Foundation.
 
-After Phase 10 closure, Phase 11 owns repository engineering safety and Phase 12 owns clean-room Pre-Physical closure.
+Repository-safety and clean-room Pre-Physical verification have subsequently been completed as Phases 11 and 12. Those later phases do not change this benchmark method or turn any candidate into a selected technology.
 
-Only after the full Pre-Physical workstream is closed may the user separately authorize the Physical Model benchmark/design workstream.
+Only after definitive Pre-Physical closure and separate user authorization may the Physical Model benchmark/design workstream execute this method.
