@@ -5,7 +5,8 @@
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
 - PM-00 bootstrap QA: **PASS**
-- PM-00 content-QA checkpoint before final save-game: `8549e1c95bef2e354bd47028259e6816bf5e9272`
+- PM-00 content-QA checkpoint: `8549e1c95bef2e354bd47028259e6816bf5e9272`
+- PM-00 QA-status propagation checkpoint before this final handoff: `f5e7f5c3ea38dd02b54192705575b0a48ea3854c`
 - PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
 - Physical mapping execution: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
@@ -475,7 +476,7 @@ unexpected      0
 3de84bb49f9cef30e88e9bde4961ed84335daa79
 ```
 
-The branch was independently compared from checkpoint `8549e1c95bef2e354bd47028259e6816bf5e9272` to `feature/physical-model` and returned `status=identical`, proving that checkpoint was the exact pre-save-game branch HEAD.
+The branch was independently compared from checkpoint `8549e1c95bef2e354bd47028259e6816bf5e9272` to `feature/physical-model` and returned `status=identical`, proving that checkpoint was the exact content-QA branch HEAD.
 
 Critical remote readback confirmed:
 
@@ -503,7 +504,16 @@ NEXT
 PM-01 READ-ONLY FIRST
 ```
 
-This final save-game write is propagation of the already-proven PM-00 QA result on an already-approved path. The new chat must still re-fetch the current branch HEAD; this document cannot truthfully self-reference the commit that contains itself without creating another commit.
+After that proof, current status consumers on the same already-approved bootstrap paths were aligned from `QA pending` to `PM-00 QA PASS / PM-01 READ-ONLY NEXT`. The last such consumer write before this handoff was:
+
+```text
+QA-STATUS PROPAGATION CHECKPOINT
+f5e7f5c3ea38dd02b54192705575b0a48ea3854c
+```
+
+No new physical path, mapping, benchmark execution, database deployment, technology selection, backend implementation or `main` write was introduced by that propagation.
+
+This handoff is the terminal PM-00 save-game propagation. A new chat must re-fetch the current branch HEAD rather than relying on a self-referential SHA inside the file containing that commit.
 
 # 17. Git / write discipline — mandatory
 
@@ -647,7 +657,9 @@ main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
 PM-00
 BOOTSTRAP QA PASS
+create checkpoint 6d76bc150dfd7b3cefe56c6e05c96404e7494626
 content-QA checkpoint 8549e1c95bef2e354bd47028259e6816bf5e9272
+QA-status propagation checkpoint f5e7f5c3ea38dd02b54192705575b0a48ea3854c
 22 unique paths
 6 added
 16 modified
