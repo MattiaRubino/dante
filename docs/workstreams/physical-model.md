@@ -1,6 +1,6 @@
 # Workstream — Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-08 COMPLETE / PM-09 NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-09 COMPLETE / PM-10 NEXT**
 - Branch: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
@@ -16,12 +16,11 @@
 - PM-06: **SCALE/PERFORMANCE EVIDENCE QUALIFICATION COMPLETE / DIRECT RUN NOT EXECUTED**
 - PM-07: **RECOVERY/EVOLUTION/FAILURE EVIDENCE QUALIFICATION COMPLETE / DIRECT RUN NOT EXECUTED**
 - PM-08: **SECONDARY/SPECIALIST LANE QUALIFICATION COMPLETE / NO DIRECT RUN**
+- PM-09: **EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE**
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
-- Deferred primary challengers: **XTDB 2.1.0 + SurrealDB Community 3.2.3 — NOT REJECTED**
-- Current comparative leader: **PostgreSQL 18.4**
-- Initial extra server specialists admitted: **0**
-- pgvector 0.8.6: **ADMIT-CONDITIONAL**
-- SQLite 3.53.4: **ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE / NOT CANONICAL**
+- Evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
+- Ranking: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
+- Current evidence-score leader: **PostgreSQL 18.4**
 - Preferred: **NONE**
 - Selected: **NONE**
 - Backend Foundation: **NOT STARTED / DEFERRED**
@@ -49,21 +48,23 @@ Before any further Physical write/action:
 9. read `docs/development/repository-engineering-safety.md`;
 10. read this file completely;
 11. read `docs/physical-model/README.md`;
-12. read `docs/physical-model/execution-methodology-v1.md`;
-13. read `docs/physical-model/execution-template-v1.md` when direct evidence is relevant;
-14. read `docs/physical-model/acceptance-test-matrix-v1.md`;
-15. read `docs/physical-model/result-register-v1.md`;
-16. read PM-01 landscape;
-17. read PM-02 overview + all four mapping records;
-18. read PM-03 overview + all four preflight records;
-19. read PM-04A overview + all four evidence records;
-20. read PM-05 overview + all four candidate qualification records;
-21. read PM-06/07 joint overview + PM-06 + PM-07 + two finalist qualification records;
-22. read PM-08 overview + graph/search-vector/local-offline/specialist-trigger records;
-23. read Phase-10 benchmark specification/scenario corpus/register where scenario authority matters;
-24. read complete Whole-Logical authority and relevant decision-register continuations when semantics are involved;
-25. verify current external product/version/edition/topology facts from primary sources where material;
-26. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
+12. read `docs/architecture/physical-benchmark-specification.md` including the PM-09 scoring reconciliation;
+13. read `docs/physical-model/execution-methodology-v1.md`;
+14. read `docs/physical-model/execution-template-v1.md` when direct evidence is relevant;
+15. read `docs/physical-model/acceptance-test-matrix-v1.md`;
+16. read `docs/physical-model/result-register-v1.md`;
+17. read PM-01 landscape;
+18. read PM-02 overview + all four mapping records;
+19. read PM-03 overview + all four preflight records;
+20. read PM-04A overview + all four evidence records;
+21. read PM-05 overview + all four candidate qualification records;
+22. read PM-06/07 joint overview + PM-06 + PM-07 + two finalist qualification records;
+23. read PM-08 overview + graph/search-vector/local-offline/specialist-trigger records;
+24. read PM-09 overview + both candidate score records + sensitivity record;
+25. read Phase-10 scenario corpus/register where scenario authority matters;
+26. read complete Whole-Logical authority and relevant decision-register continuations when semantics are involved;
+27. verify current external product/version/edition/topology facts from primary sources where material;
+28. issue a fresh exact PRE-SCOPE/write gate before repository mutation.
 
 Conversation memory is secondary to repository truth.
 
@@ -81,6 +82,7 @@ MISSING != FALSE
 EXTERNAL EVIDENCE != DIRECT LIFEOS RUN
 PUBLIC/VENDOR BENCHMARK != LIFEOS BENCHMARK
 EVIDENCE-QUALIFIED != EXECUTED HARD-GATE PASS
+EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
 ADMIT != SELECTED
 FINALIST != PREFERRED
 PREFERRED != SELECTED
@@ -125,7 +127,7 @@ security/runtime state
 
 ## 4. Cost / architecture policy
 
-Decision order:
+Decision order remains:
 
 1. semantic correctness;
 2. consistency/integrity/security/privacy/recovery;
@@ -139,7 +141,6 @@ Decision order:
 INITIAL DIRECT TECHNOLOGY/LICENSE TARGET
 EUR 0 where realistically possible
 
-BUT
 free != automatic preference
 paid != automatic rejection
 quality/correctness outrank cost
@@ -152,15 +153,6 @@ Final architecture may use one canonical primary plus bounded specialists. Every
 ```text
 MAIN BASELINE
 3de84bb49f9cef30e88e9bde4961ed84335daa79
-
-PM-00 create
-6d76bc150dfd7b3cefe56c6e05c96404e7494626
-
-PM-00 content-QA
-8549e1c95bef2e354bd47028259e6816bf5e9272
-
-PM-00 QA-status
-f5e7f5c3ea38dd02b54192705575b0a48ea3854c
 
 PM-01 terminal
 fac3b5baf1813f886c4773594e6234810e5ba8c6
@@ -180,11 +172,14 @@ PM-05 terminal
 PM-06/07 terminal
 1e19793fdb9f51ba510f00ac4c927a6907e28c4b
 
-PM-08 PRE-SCOPE
-1e19793fdb9f51ba510f00ac4c927a6907e28c4b
+PM-08 terminal
+6aef5537edacff3e315d502a1bd3ede544dc149e
+
+PM-09 PRE-SCOPE
+6aef5537edacff3e315d502a1bd3ede544dc149e
 ```
 
-The PM-08 terminal SHA must be taken from remote Git after this write scope and is not guessed inside its own creating payload.
+The final PM-09 HEAD must be read from remote Git after the current write scope; do not guess a self-referential SHA inside this creating payload.
 
 ## 6. Primary candidate history
 
@@ -215,143 +210,11 @@ XTDB 2.1.0
 SurrealDB Community 3.2.3
 ```
 
-## 7. PM-06/07 Joint Finalist Qualification
+PM-06/07 established both finalists as viable, with PostgreSQL holding the material operations/recovery/topology advantage and TypeDB preserving the semantic-model advantage.
 
-No local database execution was admitted.
+PM-08 admitted no initial extra server specialist, admitted pgvector conditionally for a PostgreSQL vector path, and admitted SQLite only as bounded local/offline candidate state.
 
-### PM-06
-
-```text
-PostgreSQL
-SCALE/PERFORMANCE VIABLE
-confidence HIGH
-
-TypeDB CE
-SCALE/PERFORMANCE VIABLE
-confidence MEDIUM-HIGH
-
-LOW/BASE/HIGH
-NOT RUN
-
-performance-based reversal signal
-NONE
-```
-
-### PM-07
-
-```text
-PostgreSQL
-CLEAR OPERATIONS/RECOVERY/TOPOLOGY ADVANTAGE
-
-TypeDB CE
-RECOVERY/EVOLUTION VIABLE
-HIGHER SELF-HOSTED OPERATIONS COST
-```
-
-Comparative result:
-
-```text
-POSTGRESQL
-OVERALL LEAD STRENGTHENED
-
-TYPEDB
-SEMANTIC ADVANTAGE PRESERVED
-PRINCIPAL CHALLENGER
-```
-
-The primary decision remains open.
-
-## 8. PM-08 Secondary / Specialist Qualification
-
-Status: **COMPLETE — EVIDENCE-FIRST / NO DIRECT EXECUTION**.
-
-### Graph
-
-```text
-G0 primary-store baseline
-ADVANCE
-
-Neo4j
-DEFER / NOT REJECTED
-NO INITIAL GRAPH SPECIALIST
-```
-
-No accepted graph workload currently justifies a second graph persistence/service boundary.
-
-Reopen only on decision-relevant graph traversal/recommendation/pathfinding/analytics or material primary-store graph isolation/performance pressure.
-
-### Search / vector
-
-```text
-PostgreSQL native FTS
-ADVANCE as P0 lexical baseline
-
-pgvector 0.8.6
-ADMIT-CONDITIONAL
-PostgreSQL selected + accepted vector retrieval requirement
-
-Qdrant 1.18.2
-DEFER / NOT REJECTED / TRIGGER ONLY
-
-OpenSearch 3.7
-DEFER / NOT REJECTED / TRIGGER ONLY
-```
-
-Embedding/vector state is derived state. Real scope/Visibility filtering remains mandatory before exposing ranked results.
-
-TypeDB retains its semantic advantage but is more likely to require a separate search/vector service once those capabilities are accepted. That probable extra server topology is carried into PM-09.
-
-### Local / offline
-
-```text
-SQLite 3.53.4
-ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
-CANONICAL AUTHORITY NO
-EXACT CLIENT ADAPTER DEFER
-```
-
-Local state may improve offline/client behavior but never becomes competing canonical truth or a default last-write-wins authority.
-
-### Object/blob
-
-```text
-NO ENGINE ADMITTED NOW
-DEFER / TRIGGER ONLY
-```
-
-Reopen only when concrete object type/size/volume/retention/security/distribution/durability requirements exist.
-
-### Initial stack pressure
-
-If PostgreSQL wins:
-
-```text
-PostgreSQL 18.4
-canonical primary
-+ native FTS
-+ pgvector when required
-
-SQLite 3.53.4
-bounded local/offline when required
-
-INITIAL EXTRA SERVER ENGINES
-0
-```
-
-If TypeDB wins:
-
-```text
-TypeDB CE 3.12.3
-canonical primary
-+ likely external search/vector specialist when required
-
-SQLite 3.53.4
-bounded local/offline when required
-```
-
-No `PREFERRED` or `SELECTED` status is inferred from this architecture pressure.
-
-## 9. Direct execution truth
+## 7. Direct execution truth
 
 ```text
 DATABASE INSTANCE
@@ -383,13 +246,191 @@ NOT RUN
 
 BENCHMARK HOST
 HOLD / DORMANT
+
+VERIFIED-RUN BENCHMARK SCORE
+NOT AVAILABLE
 ```
 
-Do not convert evidence qualification to direct PASS.
+Do not convert evidence qualification or PM-09 scoring into direct PASS.
 
-## 10. Validation obligations / reopen triggers
+## 8. Phase-10 scoring reconciliation
 
-Post-selection implementation validation remains mandatory where applicable:
+The original executable Phase-10 benchmark ledger remains valid and unchanged in its hard gates and weights.
+
+PM-09 adds a separate evidence-first ledger:
+
+```text
+VERIFIED-RUN BENCHMARK SCORE
+requires direct applicable HG PASS + direct execution artifacts
+
+EVIDENCE-WEIGHTED DECISION SCORE
+allowed only after evidence exhaustion and 0 ranking-critical execution-worthy gaps
+```
+
+```text
+EVIDENCE-WEIGHTED DECISION SCORE
+!= VERIFIED-RUN BENCHMARK SCORE
+```
+
+The original 100-point weights remain unchanged:
+
+```text
+semantic mapping simplicity/evolvability 20
+transaction/concurrency ergonomics       15
+query/report/traversal                   15
+history/current efficiency               10
+operations/backup/restore/HA             15
+schema evolution/migration               10
+performance/resource efficiency          10
+Python/tooling/cost/exit risk             5
+```
+
+PM-09 does not create a direct hard-gate PASS and does not waive selected-implementation validation.
+
+## 9. PM-09 scoring result
+
+### PostgreSQL 18.4
+
+```text
+semantic      8.5
+transaction   9.5
+query         9.0
+history       8.5
+operations    9.5
+evolution     9.0
+performance   8.0
+tooling       9.5
+
+EVIDENCE-WEIGHTED TOTAL
+89.25 / 100
+```
+
+Disposition:
+
+```text
+ROBUST EVIDENCE-SCORE LEADER
+ADVANCE PM-10
+PREFERRED NONE
+SELECTED NONE
+```
+
+### TypeDB CE 3.12.3
+
+```text
+semantic      9.5
+transaction   7.0
+query         8.5
+history       8.5
+operations    6.5
+evolution     8.0
+performance   8.0
+tooling       7.0
+
+EVIDENCE-WEIGHTED TOTAL
+80.00 / 100
+```
+
+Disposition:
+
+```text
+PRINCIPAL SEMANTIC CHALLENGER
+ADVANCE PM-10 COMPARATIVE RECORD
+PREFERRED NONE
+SELECTED NONE
+```
+
+Performance is deliberately tied `8.0 / 8.0`; no unexecuted throughput/latency advantage is invented.
+
+## 10. PM-09 sensitivity
+
+Accepted scenarios:
+
+```text
+S0 Phase-10 base
+PG 89.25 / TypeDB 80.00 / PG +9.25
+
+S1 semantic-heavy
+PG 88.75 / TypeDB 83.00 / PG +5.75
+
+S2 early single-node / semantic-friendly
+PG 88.75 / TypeDB 81.50 / PG +7.25
+
+S3 operations/recovery-heavy
+PG 90.00 / TypeDB 77.50 / PG +12.50
+
+S4 strongly TypeDB-friendly accepted stress
+PG 88.00 / TypeDB 85.25 / PG +2.75
+```
+
+Verdict:
+
+```text
+RANKING ROBUST
+SENSITIVITY-DEPENDENT NO
+PERFORMANCE-DEPENDENT NO
+```
+
+Adversarial boundary only:
+
+```text
+semantic 50%
+PG 87.375
+TypeDB 87.500
+TypeDB +0.125
+```
+
+This is not an accepted LifeOS priority distribution.
+
+If the seven non-semantic dimensions retain their original relative proportions, semantic mapping must reach approximately `58.44%` of total weight before TypeDB reaches break-even.
+
+## 11. Execution reopen decision
+
+```text
+PM-09 EXECUTION-WORTHY GAPS
+0
+
+SC-013 DEEP-HISTORY SCALE
+REOPEN NO
+
+PM-04B HARNESS
+REOPEN NO
+
+BENCHMARK HOST
+HOLD / DORMANT
+```
+
+The current ranking does not depend on an unmeasured performance advantage.
+
+## 12. PM-08 specialist state
+
+```text
+GRAPH
+G0 primary baseline ADVANCE
+Neo4j DEFER / NOT REJECTED
+initial graph specialist NONE
+
+SEARCH/VECTOR
+PostgreSQL native FTS ADVANCE as P0 baseline
+pgvector 0.8.6 ADMIT-CONDITIONAL
+Qdrant 1.18.2 DEFER / TRIGGER ONLY
+OpenSearch 3.7 DEFER / TRIGGER ONLY
+
+LOCAL/OFFLINE
+SQLite 3.53.4 ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
+CANONICAL AUTHORITY NO
+
+OBJECT/BLOB
+NO ENGINE ADMITTED
+TRIGGER ONLY
+```
+
+If PostgreSQL wins, the minimum credible initial server path remains PostgreSQL + native FTS + conditional pgvector, with no initial Neo4j/Qdrant/OpenSearch server.
+
+If TypeDB wins, its semantic advantage remains real but an external search/vector specialist is more likely once advanced retrieval becomes accepted; that burden is part of the PM-09 score.
+
+## 13. Post-selection implementation validation obligations
+
+Still mandatory where applicable:
 
 ```text
 SC-011 redaction + old-backup anti-resurrection
@@ -397,27 +438,30 @@ SC-030 actual LifeOS V1→V2 mapping evolution
 SC-031 destructive restore + semantic verification
 SC-032 capacity/backpressure truthful degradation
 WL-H12 system-level non-interference
-SC-017/018 search/non-interference
-SC-019 filtered vector recall when active
-SC-020/021 projection freshness/deletion propagation when active
-local/offline sync/reconciliation validation when active
+SC-017/018 search/non-interference where active
+SC-019 vector recall after real security filter where active
+SC-020/021 projection freshness/deletion propagation where active
+local/offline sync/reconciliation validation where active
 ```
 
-`SC-013` deep-history scale reopens before selection only if PM-09 becomes materially performance-sensitive.
+None is a direct PASS today.
 
-`SC-035` reopens only if a graph specialist is later admitted.
-
-## 11. PM-08 evidence paths
+## 14. PM-09 evidence paths
 
 ```text
-docs/physical-model/pm-08-secondary-lanes-v1.md
-docs/physical-model/secondary/graph-lane-v1.md
-docs/physical-model/secondary/search-vector-lane-v1.md
-docs/physical-model/secondary/local-offline-lane-v1.md
-docs/physical-model/secondary/specialist-trigger-register-v1.md
+docs/physical-model/pm-09-scoring-sensitivity-v1.md
+docs/physical-model/scoring/postgresql-18.4-v1.md
+docs/physical-model/scoring/typedb-3.12.3-v1.md
+docs/physical-model/scoring/sensitivity-analysis-v1.md
 ```
 
-## 12. Roadmap
+Phase-10 reconciliation lives in:
+
+```text
+docs/architecture/physical-benchmark-specification.md
+```
+
+## 15. Roadmap
 
 ```text
 PM-00  PASS
@@ -427,41 +471,18 @@ PM-03  COMPLETE
 PM-04A COMPLETE
 PM-04B NOT ADMITTED
 PM-05  COMPLETE
-PM-06  COMPLETE — evidence qualification
-PM-07  COMPLETE — evidence qualification
-PM-08  COMPLETE — specialist qualification
-PM-09  NEXT
-PM-10  NOT STARTED
+PM-06  COMPLETE
+PM-07  COMPLETE
+PM-08  COMPLETE
+PM-09  COMPLETE
+PM-10  NEXT
 PM-11  NOT STARTED
 PM-12  NOT STARTED
 PM-13  NOT STARTED
 PM-14  NOT STARTED
 ```
 
-## 13. Write discipline
-
-For every next write:
-
-```text
-BRANCH
-feature/physical-model unless explicitly changed
-
-PRE-SCOPE
-actual remote HEAD immediately before write
-
-CREATE
-exact allow-list
-
-UPDATE
-exact allow-list
-
-DELETE
-exact allow-list
-```
-
-After write: compare PRE-SCOPE→HEAD, verify mutation/path set, verify branch-vs-main, remotely read back critical claims, then update/save handoff last where practical.
-
-## 14. Current resume summary
+## 16. Current resume summary
 
 ```text
 ACTIVE WORKSTREAM
@@ -480,39 +501,28 @@ PRIMARY FINALISTS
 PostgreSQL 18.4
 TypeDB CE 3.12.3
 
-CURRENT LEADER
+PM-09 EVIDENCE SCORES
+PostgreSQL 89.25
+TypeDB 80.00
+
+CURRENT EVIDENCE-SCORE LEADER
 PostgreSQL 18.4
+
+RANKING
+ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT
 
 DEFERRED / NOT REJECTED PRIMARY
 XTDB 2.1.0
 SurrealDB Community 3.2.3
 
-PM-06
-COMPLETE / NO DIRECT PERFORMANCE RUN
-
-PM-07
-COMPLETE / NO DIRECT DESTRUCTIVE RUN
-
-PM-08
-COMPLETE / NO DIRECT SPECIALIST RUN
-
-INITIAL GRAPH SPECIALIST
-NONE
-
-POSTGRESQL SEARCH PATH
-native FTS + pgvector conditional
-
-LOCAL/OFFLINE
-SQLite 3.53.4 admitted bounded candidate / not canonical
-
-DEFERRED/TRIGGER-ONLY SPECIALISTS
-Neo4j
-Qdrant 1.18.2
-OpenSearch 3.7
-object/blob TBD
-
 LOCAL TESTS
 0 ADMITTED
+
+DIRECT HG PASS
+0
+
+VERIFIED-RUN SCORE
+NOT AVAILABLE
 
 PREFERRED
 NONE
@@ -524,8 +534,8 @@ BACKEND
 NOT STARTED / DEFERRED
 
 NEXT
-PM-09 scoring + sensitivity
+PM-10 recommendation
 fresh exact gate before write
 ```
 
-The exact PM-08 final remote HEAD must be taken from Git after this handoff write.
+The exact PM-09 final remote HEAD must be taken from Git after this handoff write.
