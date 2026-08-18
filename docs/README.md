@@ -14,11 +14,15 @@ Read in this order:
 6. [`development/branching-and-environments.md`](development/branching-and-environments.md)
 7. [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
 8. [`workstreams/physical-model.md`](workstreams/physical-model.md)
-9. [`physical-model/README.md`](physical-model/README.md) + all current Physical bootstrap documents
-10. [`architecture/README.md`](architecture/README.md) and linked Phase-5..10 current sources
-11. complete Domain/Logical closure authority where Physical mapping semantics are involved
-12. relevant ADRs/evidence/methodologies
-13. current Git refs/branch relation to `main`
+9. [`physical-model/README.md`](physical-model/README.md)
+10. [`physical-model/pm-11-explicit-selection-v1.md`](physical-model/pm-11-explicit-selection-v1.md)
+11. [`physical-model/pm-12-accepted-physical-model-v1.md`](physical-model/pm-12-accepted-physical-model-v1.md)
+12. [`physical-model/pm-13-clean-room-qa-v1.md`](physical-model/pm-13-clean-room-qa-v1.md)
+13. [`physical-model/recommendation/post-selection-validation-register-v1.md`](physical-model/recommendation/post-selection-validation-register-v1.md)
+14. [`architecture/README.md`](architecture/README.md) and linked Phase-5..10 sources where relevant
+15. complete Domain/Logical closure authority where semantics are involved
+16. relevant ADRs/evidence/methodologies
+17. current Git refs/branch relation to `main`
 
 ## Current backend/architecture stage
 
@@ -43,20 +47,27 @@ INTEGRATED / POST-MERGE VERIFIED
 PR #13 + current-truth alignment PR #14
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS
-PM-00 BOOTSTRAP QA PASS
-PM-01 READ-ONLY NEXT
-branch feature/physical-model
-base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-mapping NOT STARTED
-benchmark execution NOT STARTED
-technology selection NONE
+CLOSED AT TARGET-ARCHITECTURE LEVEL
+PM-11 explicit selection COMPLETE
+PM-12 Accepted Physical Model COMPLETE
+PM-13 clean-room architecture/documentation QA PASS
+PM-14 branch closure COMPLETE
+selected canonical primary PostgreSQL 18.4
+selected target companion architecture established
+
+DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
+NOT STARTED
+DIRECT HG PASS 0
+VERIFIED-RUN SCORE NOT AVAILABLE
 
 BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
+
+DEVELOPMENT PROFILE v0
+NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE
 ```
 
-Exact active handoff: [`workstreams/physical-model.md`](workstreams/physical-model.md).
+Exact Physical handoff: [`workstreams/physical-model.md`](workstreams/physical-model.md).
 
 ## Current semantic/model sources
 
@@ -85,24 +96,84 @@ Current Logical state: **CLOSED**.
 
 Product/UI terminology does not override accepted Domain/Logical semantics.
 
-## Active Physical Model sources
+## Accepted Physical Model sources
 
-Current execution authority:
+Current target authority:
 
-- [`physical-model/README.md`](physical-model/README.md) — active Physical authority/index;
-- [`physical-model/execution-methodology-v1.md`](physical-model/execution-methodology-v1.md) — PM-00..PM-14 methodology;
-- [`physical-model/execution-template-v1.md`](physical-model/execution-template-v1.md) — reproducible mapping/run/evidence template;
-- [`physical-model/acceptance-test-matrix-v1.md`](physical-model/acceptance-test-matrix-v1.md) — HG/CG/corpus/scenario ledger;
-- [`physical-model/result-register-v1.md`](physical-model/result-register-v1.md) — current candidate/result state;
-- [`workstreams/physical-model.md`](workstreams/physical-model.md) — live save-game.
+- [`physical-model/README.md`](physical-model/README.md) — Physical index/current state;
+- [`physical-model/pm-10-recommendation-v1.md`](physical-model/pm-10-recommendation-v1.md) — recommendation result;
+- [`physical-model/pm-11-explicit-selection-v1.md`](physical-model/pm-11-explicit-selection-v1.md) — explicit target-stack selection;
+- [`physical-model/pm-12-accepted-physical-model-v1.md`](physical-model/pm-12-accepted-physical-model-v1.md) — accepted Physical target;
+- [`physical-model/pm-13-clean-room-qa-v1.md`](physical-model/pm-13-clean-room-qa-v1.md) — clean-room architecture/documentation QA;
+- [`physical-model/pm-14-closure-v1.md`](physical-model/pm-14-closure-v1.md) — branch closure evidence;
+- [`physical-model/recommendation/post-selection-validation-register-v1.md`](physical-model/recommendation/post-selection-validation-register-v1.md) — mandatory implementation-validation carry-forward;
+- [`workstreams/physical-model.md`](workstreams/physical-model.md) — workstream handoff.
 
-Phase-10 method authority consumed by the Physical workstream:
+Phase-10 method/evidence remains available:
 
 - [`architecture/physical-benchmark-specification.md`](architecture/physical-benchmark-specification.md);
 - [`architecture/physical-benchmark-scenario-corpus.md`](architecture/physical-benchmark-scenario-corpus.md);
 - [`architecture/physical-benchmark-register.md`](architecture/physical-benchmark-register.md).
 
-The method is not duplicated or redefined by the new Physical files.
+## Accepted Physical target
+
+```text
+CANONICAL PRIMARY
+PostgreSQL 18.4
+
+POSTGRESQL CAPABILITIES
+PostGIS 3.6.4
+pgvector 0.8.6
+native FTS / pg_trgm / unaccent
+pg_stat_statements
+PgBouncer 1.25.2
+
+OFFLINE / SYNC
+PowerSync Service 1.25.0 Open Edition
+encrypted SQLite
+PostgreSQL-backed PowerSync sync storage
+
+BOUNDED ASYNC
+PostgreSQL transactional outbox + bounded worker
+
+DURABLE CLASS-B
+Restate runtime
+self-hosted first-class or Cloud EU managed option
+global Restate deployment default NONE
+
+OBJECT BYTES
+Cloudflare R2 Standard / EU / private
+
+RECOVERY TARGET
+pgBackRest 2.59.0
+AWS S3 Standard eu-south-1 backup repositories
+Versioning + Object Lock GOVERNANCE / finite policy-bound retention
+
+SOLVER
+OR-Tools 9.15 CP-SAT
+
+OBSERVABILITY
+OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
+```
+
+Canonical authority is singular: PostgreSQL. PowerSync/SQLite, Restate, R2, S3, solver state and telemetry remain bounded noncanonical mechanisms.
+
+## Restate deployment qualification
+
+Restate technology is selected. Deployment is intentionally conditional:
+
+```text
+SELF-HOSTED
+FIRST-CLASS
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+The later deployment/development profile decides between them using privacy, operability, availability and cost. The current Python path must not assume TypeScript-only client-side journal encryption.
 
 ## Current architecture sources
 
@@ -116,20 +187,32 @@ Also read:
 - [`architecture/governed-operation-effect-contract.md`](architecture/governed-operation-effect-contract.md)
 - [`architecture/search-observability-calendar-solver-boundaries.md`](architecture/search-observability-calendar-solver-boundaries.md)
 - [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
-- [`architecture/pre-physical-clean-room-qa.md`](architecture/pre-physical-clean-room-qa.md)
-- [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md)
 - [`architecture/system-overview.md`](architecture/system-overview.md)
 - [`architecture/technical-decisions.md`](architecture/technical-decisions.md)
 
 Historical `architecture/domain-model-logical-readiness*` files remain truthful transition/validation evidence, not current architecture specifications.
 
-## Current architecture posture
+## Direct Physical evidence truth
 
-### Phase 5
+```text
+DATABASE DEPLOYMENT      NOT STARTED
+FIXTURE/HARNESS           NOT STARTED
+DIRECT HG PASS            0
+LOW/BASE/HIGH            NOT RUN
+RESTORE/MIGRATION         NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                 NOT RUN
+RESTATE                   NOT RUN
+OBJECT RECOVERY           NOT RUN
+SOLVER                    NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
+```
 
-AuthN/AuthZ, security/privacy/retention/recovery, consistency/side-effects and non-functional/multi-device/operational recovery remain the four current requirement owners. Phase 10 converted them into benchmark hard gates/scenarios; the active Physical workstream executes candidate evidence without inventing missing business targets.
+Selection and clean-room QA do not relabel direct implementation evidence. Applicable obligations remain in the post-selection validation register.
 
-### Phase 6
+## Phase 5–9 contracts remain active
+
+### AI / context / runtime
 
 ```text
 canonical state
@@ -143,72 +226,19 @@ transient LLM working context
 
 Runtime Agent/Principal is not Domain Actor automatically; tool/protocol actions are not canonical governed effects; `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`.
 
-Material consequential AI changes require versioned/reproducible evaluation before promotion. `eval result != canonical truth`; `eval PASS != Authority/effect authorization`.
+Material consequential AI changes require versioned/reproducible evaluation before promotion.
 
-### Phase 7–9
+### Governed operations / effects
 
-```text
-DURABLE EXECUTION
-Restate preferred — NOT selected
-Temporal strongest mandatory challenger — NOT selected
-DBOS conditional — NOT selected
-local/bounded Python SQLite-capable
-production PostgreSQL-recommended
-distributed multi-server PostgreSQL-coupled
+Consequential meaning remains independent from route/UI/tool/AuthZ/workflow implementation. Request/runtime/canonical/provider/reconciliation axes remain distinct.
 
-SEARCH
-structured + lexical/full-text baseline
-semantic/vector bounded
+### Search / calendar / solver
 
-OBSERVABILITY
-OpenTelemetry-first / equivalent direction
-
-CALENDAR
-standards/providers = adapter pressure, not ontology
-
-SOLVER
-simple deterministic rules/heuristics baseline
-OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
-```
-
-### Phase 10 + Physical execution
-
-```text
-PRIMARY
-PostgreSQL hybrid — preferred mandatory baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
-
-SECONDARY GRAPH
-G0 no-specialized-store baseline vs G1 Neo4j
-
-SEARCH / VECTOR
-S0 structured + lexical/full-text baseline vs S1 bounded pgvector where applicable
-```
-
-Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
-
-PM-00 is now **QA PASS**. The remaining Physical progression is:
-
-```text
-PM-01 read-only candidate/environment freeze
-PM-02 mapping design
-PM-03 hard-gate preflight
-PM-04 harness/fixture design
-PM-05 correctness/destructive execution
-PM-06 performance/tiers
-PM-07 recovery/evolution/failure
-PM-08 secondary lanes
-PM-09 scoring/sensitivity
-PM-10 recommendation
-PM-11 explicit selection gate
-PM-12 accepted Physical Model
-PM-13 independent clean-room QA
-PM-14 closure/main integration
-```
+Search/index state remains derived and disclosure-aware. Calendar standards/providers remain adapter pressure rather than ontology. OR-Tools results remain candidate state and `UNKNOWN != INFEASIBLE`.
 
 ## Repository safety
 
-Effective `lifeos-main-safety` remains the protected-main integration policy. `feature/physical-model` is an active bounded branch. Do not invent required CI checks before stable real contexts exist, and do not treat benchmark-only code/evidence as production backend infrastructure automatically.
+Effective `lifeos-main-safety` remains the protected-main integration policy. Normal changes reach `main` through pull requests; no direct-main bypass is authorized.
 
 ## Documentation architecture rule
 
@@ -231,16 +261,15 @@ Phase 4 Home/Today remains separate on `prototype/phase-4-today-home`.
 PRE-PHYSICAL
 DEFINITIVE CLOSED / INTEGRATED / VERIFIED
 
-PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS
-PM-00 QA PASS
-PM-01 READ-ONLY NEXT
-MAPPING NOT STARTED
-BENCHMARK NOT STARTED
-SELECTION NONE
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
+
+DIRECT IMPLEMENTATION VALIDATION
+CARRIED FORWARD / NOT RUN
 
 BACKEND FOUNDATION
 NOT STARTED / DEFERRED
-```
 
-The exact next step is PM-01 **READ-ONLY FIRST**: freeze exact current candidate versions/editions/deployment modes and the available benchmark environment from official primary sources, then stop before any mapping/schema/harness write.
+DEVELOPMENT PROFILE v0
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+```
