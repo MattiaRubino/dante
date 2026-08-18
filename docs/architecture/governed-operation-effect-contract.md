@@ -281,7 +281,7 @@ Phase 7 guidance:
 
 - bounded async may use DB/worker/outbox style infrastructure;
 - dedicated durable execution is justified for material long-running classes;
-- Restate is preferred dedicated candidate, Temporal mandatory strongest challenger, DBOS conditional PostgreSQL-dependent challenger;
+- Restate is preferred dedicated candidate, Temporal the mandatory strongest challenger, and DBOS a conditional challenger whose PostgreSQL coupling depends on deployment topology;
 - none is selected/implemented by this contract.
 
 The execution class MUST NOT contain engine-specific semantic identity such as `TemporalWorkflow` or `RestateWorkflow` as the canonical operation meaning.
@@ -492,6 +492,8 @@ External/retrieved text MUST NOT expand Authority or bypass validation merely be
 
 The AI Gateway/Context Builder may assemble a governed-effect request, but the deterministic application/effect boundary owns validation and execution eligibility.
 
+Material AI/model/provider/prompt/tool changes that can affect consequential behavior are additionally subject to the current Phase 6 versioned/reproducible AI evaluation requirement before promotion.
+
 ## External/provider action boundary
 
 For Integration Hub mode 5, the governed operation MUST remain distinguishable from provider-specific adapter requests.
@@ -658,17 +660,17 @@ retry any timeout blindly
 latest result wins
 ```
 
-## Phase 9 handoff
+## Downstream compatibility already established
 
-Search, observability, calendar and solver pressure MUST consume this contract.
-
-In particular:
+The current Phase 9 search/observability/calendar/solver contract consumes this boundary. In particular:
 
 - search result/action surfaces must not bypass governed operations;
 - telemetry correlation must not become operation identity or Provenance by identity;
-- calendar provider actions must map through semantic target/effect + provider result axes;
+- calendar provider actions map through semantic target/effect + provider result axes;
 - solver output remains candidate/proposal input until a governed operation establishes accepted state;
 - `WL-H12` applies to search ranking/results/errors/previews/explanations.
+
+Phase 10's benchmark method also carries the consequential consistency, recovery and state-separation pressure established here into later Physical evaluation.
 
 ## Phase 8 verdict
 
@@ -686,4 +688,4 @@ RUNTIME ENGINE SELECTED         0
 BACKEND IMPLEMENTATION STARTED  0
 ```
 
-This contract authorizes Phase 9 pressure analysis only. Concrete API/backend implementation remains unauthorized.
+This contract remains current downstream authority. It does not authorize concrete API/backend implementation.
