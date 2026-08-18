@@ -1,15 +1,18 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **DEFINITIVE CLOSED / FINAL QA PASS — branch-local closure activated**
-- Branch: `chore/pre-physical-coherence`
+- Status: **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**
+- Former workstream branch: `chore/pre-physical-coherence` — merged via PR #13 and auto-deleted
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+- Final branch HEAD before integration: `34e9ea3b547922600cb472adf1549a321e6ddfe4`
+- Main integration PR: `#13`
+- Pre-Physical integration checkpoint on `main`: `74593ae283ce5a1d22335502480ee3fa54be0436`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
 - Physical Model: **READY FOR SEPARATE AUTHORIZATION / NOT STARTED / NOT AUTHORIZED**
 - Core Domain Model / Domain Atlas: **CLOSED / unchanged**
 - Logical Model: **CLOSED / unchanged**
-- Main integration: **PENDING / NOT PERFORMED**
+- Main integration: **COMPLETE / POST-MERGE VERIFIED**
 
 ## Purpose
 
@@ -36,16 +39,19 @@ WL-H01..WL-H12 active
 
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
 Independent total audit PASS
 closure activated at 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+integration checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
 
 PHYSICAL READINESS
 ESTABLISHED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 
 PHYSICAL MODEL
 READY FOR SEPARATE AUTHORIZATION
@@ -597,7 +603,7 @@ INITIAL SAVE-GAME / ACTIVATION CHECKPOINT
 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
 ```
 
-The exact remote activation QA at `9c53e812d13ffd1b3d3dc20b8b162799e13c1d` proved:
+The exact remote activation QA at `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved:
 
 ```text
 PRE-SCOPE      1bd142afe51221211bc777f6271a642911c650fc
@@ -638,19 +644,82 @@ DEFINITIVE CLOSED / FINAL QA PASS
 
 After activation, current-summary/operating/handoff consumers inside the **same already approved 23-path gate** were aligned from “activation pending” to the activated branch-local state. No new path, Domain/Logical semantic change, technology selection, Physical implementation, backend code or `main` write was introduced.
 
-Propagation head immediately before this final save-game:
+Propagation head immediately before the final branch-local save-game:
 
 ```text
 14d53905f0d0dc154a4a170198863d7a97717a67
 ```
 
-A final remote compare/readback after this save-game must still show the same approved physical path set (`1 added + 22 modified`, no unexpected paths, `behind_by 0`, `main` unchanged). This is a post-propagation integrity check; it does not create a new semantic closure decision.
+Final branch-local HEAD after post-activation propagation:
 
-## Boundary after definitive branch-local closure
+```text
+34e9ea3b547922600cb472adf1549a321e6ddfe4
+```
+
+The final remote compare/readback still showed the same approved physical 23-path set, `behind_by 0`, and unchanged pre-integration `main`.
+
+## Protected `main` integration evidence
+
+After separate user authorization, the definitive closed branch was integrated through the Phase-11 repository-safety path.
+
+```text
+PR
+#13 — docs(architecture): integrate closed Pre-Physical coherence
+
+BASE BEFORE MERGE
+main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+
+HEAD LOCKED FOR MERGE
+chore/pre-physical-coherence @ 34e9ea3b547922600cb472adf1549a321e6ddfe4
+
+PR SHAPE
+161 commits
+40 changed paths
+behind_by 0
+
+REVIEW THREADS
+0
+
+STATUS CHECKS
+0 — expected under current ruleset because no stable workflow contexts exist
+
+MERGE METHOD
+merge commit
+
+MERGED MAIN CHECKPOINT
+74593ae283ce5a1d22335502480ee3fa54be0436
+
+RESULT
+MERGED / PASS
+```
+
+Post-merge verification proved:
+
+```text
+old main 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+→ merged main 74593ae283ce5a1d22335502480ee3fa54be0436
+162 commits ahead
+0 behind
+40 changed paths
+
+final branch HEAD 34e9ea3b547922600cb472adf1549a321e6ddfe4
+→ merged main 74593ae283ce5a1d22335502480ee3fa54be0436
+1 merge commit ahead
+0 behind
+0 file differences
+```
+
+The merge commit has the old `main` and final Pre-Physical branch HEAD as its two parents. The repository's automatic merged-head cleanup then removed `chore/pre-physical-coherence`.
+
+Therefore protected integration preserved the accepted branch tree exactly and did not introduce a hidden post-closure content delta.
+
+## Current integrated boundary
 
 ```text
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 DOMAIN
 UNCHANGED / CLOSED
@@ -669,18 +738,16 @@ BACKEND
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
-The next action is **not** Physical/backend implementation.
+The next action is **not automatic Physical/backend implementation**. Pre-Physical is complete and integrated; a new Physical workstream exists only after separate explicit user authorization.
 
-Later sequence, only after separate user authorization:
+Future sequence, only after separate authorization at each boundary:
 
 ```text
-protected PR to main
-→ merge commit
-→ post-merge main verification
-→ separately authorize Physical Model
+separately authorize Physical Model
+→ create fresh bounded Physical workstream from current main
 → execute real Physical mapping + benchmark
 → select/accept Physical result
 → only then authorize Backend Foundation
@@ -689,8 +756,6 @@ protected PR to main
 ## Explicitly out of scope until separate authorization
 
 ```text
-PR / merge of chore/pre-physical-coherence into main
-main writes
 Physical Model start
 PostgreSQL / TypeDB / Neo4j selection
 Physical schema / benchmark implementation
@@ -711,13 +776,9 @@ Domain / Logical semantic changes
 
 ## Next safe action
 
-Immediately after this save-game write:
-
-1. re-fetch branch HEAD;
-2. compare final-audit PRE-SCOPE to current HEAD;
-3. verify the physical delta is still exactly the approved 23 paths (`1 added`, `22 modified`, `0 deleted`, `0 unexpected`, `behind_by 0`);
-4. re-fetch `main` and prove `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` unchanged;
-5. read back this handoff plus final audit/current status sources;
-6. if post-activation integrity remains PASS, perform no further Pre-Physical content write;
-7. do **not** merge to `main` without separate user authorization;
-8. next repository action, when authorized, is protected Pre-Physical PR / merge / post-merge QA.
+1. use current `main` as the accepted integrated baseline;
+2. preserve this workstream as completed evidence/handoff rather than resurrecting its deleted source branch;
+3. if the user wants to begin Physical work, first re-read current `main` + Phase 10 benchmark package + this integrated boundary;
+4. present a **new** Physical workstream branch/PRE-SCOPE/CREATE-UPDATE-DELETE gate;
+5. do not start Physical until that new gate is explicitly authorized;
+6. do not start Backend Foundation until the Physical result is separately accepted and its prerequisites are satisfied.

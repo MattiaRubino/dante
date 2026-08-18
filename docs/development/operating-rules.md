@@ -45,9 +45,9 @@ Parallel workstreams should avoid shared-file churn.
 Current ownership:
 
 - Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS branch-locally** on `chore/pre-physical-coherence`; its current global/index/architecture/workflow docs remain branch-owned until protected `main` integration is separately authorized and completed.
-- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after protected Pre-Physical integration, separately accepted Physical prerequisites and a fresh gate.
-- Physical Model: **ready for separate authorization but not started / not authorized**; future work requires its own branch/gate after Pre-Physical integration and explicit user authorization.
+- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**. The former branch `chore/pre-physical-coherence` is merged and auto-deleted; current accepted Pre-Physical truth now lives on `main`.
+- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after a separately authorized/accepted Physical result and a fresh gate.
+- Physical Model: **ready for separate authorization but not started / not authorized**; future work requires its own branch/gate from current `main` and explicit user authorization.
 - Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
 - Logical Model: **closed**; historical branch does not reopen semantics.
 
@@ -177,7 +177,7 @@ If critical continuation state exists only in conversation, the handoff is incom
 
 ## 11. Repository coherence baseline
 
-Accepted Pre-Physical workstream base:
+The Pre-Physical workstream originally started from:
 
 ```text
 main
@@ -194,11 +194,11 @@ At that base:
 - Backend Foundation was not started;
 - Physical Model was not started/authorized.
 
-The Pre-Physical branch has since completed Phase 0–12 plus the independent total audit and exact final activation QA. Future contributors must re-check refs/handoffs rather than treating the dated base as current `main` after integration.
+The Pre-Physical workstream then completed Phase 0–12 plus the independent total audit and exact final activation QA, and was integrated through protected PR #13. Post-merge verification established `main @ 74593ae283ce5a1d22335502480ee3fa54be0436` as the integrated Pre-Physical checkpoint with the branch tree preserved exactly. Future contributors must re-check current refs rather than treating either dated SHA as permanently current `main`.
 
-## 12. Current stage boundary — Pre-Physical closed branch / pending integration
+## 12. Current stage boundary — Pre-Physical closed and integrated
 
-Current branch-local state:
+Current accepted state:
 
 ```text
 DOMAIN
@@ -218,6 +218,8 @@ PASS
 
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 PHYSICAL READINESS
 ESTABLISHED
@@ -230,14 +232,15 @@ BACKEND
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
 Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
+Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436`.
 
-No implicit Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation or Domain/Logical reopen follows from branch-local closure. A protected PR/merge/post-merge QA is still a separate later repository operation; Physical work remains separately authorized after integration.
+No implicit Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation or Domain/Logical reopen follows from the integrated Pre-Physical result. Physical work is a separate future workstream requiring its own explicit user authorization and gate.
 
-Active detailed handoff: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
+Completed detailed handoff/evidence: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
 
 ## 13. Mandatory execution hardening
 

@@ -2,11 +2,12 @@
 
 - Last updated: 2026-08-18
 - Canonical integrated branch: `main`
-- Accepted `main` baseline for the closed Pre-Physical workstream: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
-- Closed branch-local Pre-Physical state: `chore/pre-physical-coherence`
+- Pre-Physical integration commit on `main`: `74593ae283ce5a1d22335502480ee3fa54be0436`
+- Pre-Physical integration PR: `#13`
+- Closed Pre-Physical source branch: `chore/pre-physical-coherence` — merged and auto-deleted
 - Production application code: **NOT STARTED**
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
-- Main integration of Pre-Physical branch: **PENDING / NOT PERFORMED**
+- Main integration of Pre-Physical workstream: **COMPLETE / POST-MERGE VERIFIED**
 
 ## Current stage
 
@@ -26,11 +27,14 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
+DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
 Independent total audit PASS
 activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+main integration checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
 
 PHYSICAL READINESS
 ESTABLISHED
@@ -43,7 +47,7 @@ BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
 Phase 4 UX remains a separate active product/design workstream on `prototype/phase-4-today-home`.
@@ -72,7 +76,7 @@ Conversation history is secondary to repository truth.
 - Product/North Star — **CURRENT**.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**; `WL-H01..WL-H12` active downstream.
-- Pre-Physical Architecture Baseline — **CURRENT / CLOSED workstream result**.
+- Pre-Physical Architecture Baseline — **CURRENT / CLOSED / integrated**.
 - Phase 5 requirements — **CURRENT**.
 - Phase 6 AI/context/runtime + Integration Hub boundaries — **CURRENT**.
 - Phase 7 durable execution — **CURRENT / conditional ranking only**.
@@ -82,6 +86,7 @@ Conversation history is secondary to repository truth.
 - Phase 11 repository engineering safety — **QA PASS**.
 - Phase 12 clean-room QA — **QA PASS / CLOSED**.
 - Independent total Pre-Physical audit — **PASS**.
+- Pre-Physical protected-main integration — **PR #13 / POST-MERGE VERIFIED**.
 - Web direction — Next.js + React + TypeScript.
 - Mobile direction — Expo + React Native + TypeScript.
 - Backend direction — Python + FastAPI + Pydantic; modular monolith.
@@ -203,7 +208,7 @@ Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qua
 
 `lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven `main` policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable contexts exist. Auto-delete merged head branches is enabled.
 
-Current `main` was re-read during final activation and remained `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` and protected.
+The Pre-Physical protected integration exercised that policy successfully through PR #13. `main` advanced from `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` to merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`; the merged branch was auto-deleted.
 
 ## Phase 12 + independent final audit
 
@@ -240,7 +245,7 @@ main unchanged
 critical readback PASS
 ```
 
-Therefore branch-local Pre-Physical Coherence is definitively closed.
+That activation established definitive branch-local closure. PR #13 then integrated the final branch tree into protected `main`. Post-merge verification proved `34e9ea3b547922600cb472adf1549a321e6ddfe4 → 74593ae283ce5a1d22335502480ee3fa54be0436` is one merge commit ahead with **zero file differences**.
 
 ## Milestone ledger
 
@@ -260,6 +265,7 @@ Therefore branch-local Pre-Physical Coherence is definitively closed.
 | Phase 12 | QA PASS / CLOSED |
 | Independent final audit | PASS |
 | Branch-local Pre-Physical closure | DEFINITIVE CLOSED / FINAL QA PASS |
+| Protected main integration | PR #13 / POST-MERGE VERIFIED |
 
 Exact SHAs/evidence remain in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md), the audit records and Git history.
 
@@ -267,9 +273,9 @@ Exact SHAs/evidence remain in [`workstreams/pre-physical-coherence.md`](workstre
 
 ### Pre-Physical Repository & Architecture Coherence
 
-- **DEFINITIVE CLOSED / FINAL QA PASS on branch**
-- Branch: `chore/pre-physical-coherence`
-- `main` integration: **PENDING / NOT PERFORMED**
+- **DEFINITIVE CLOSED / FINAL QA PASS**
+- **INTEGRATED INTO `main` VIA PR #13 / POST-MERGE VERIFIED**
+- Former branch `chore/pre-physical-coherence`: merged and auto-deleted
 
 ### Phase 4 — Home / Today UX
 
@@ -278,25 +284,18 @@ Exact SHAs/evidence remain in [`workstreams/pre-physical-coherence.md`](workstre
 
 ### Physical Model
 
-**READY FOR SEPARATE AUTHORIZATION BUT NOT STARTED.** Do not begin until the user separately authorizes it after Pre-Physical `main` integration/post-merge verification.
+**READY FOR SEPARATE AUTHORIZATION BUT NOT STARTED.** It is now eligible to begin only after a new explicit user authorization and a fresh workstream/write gate.
 
 ### Backend Foundation
 
-**NOT STARTED / DEFERRED.** Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/Auth/provider/runtime implementation or persistence-specific bootstrap before all accepted prerequisites exist.
+**NOT STARTED / DEFERRED.** Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/Auth/provider/runtime implementation or persistence-specific bootstrap before all accepted prerequisites exist, including a separately accepted Physical result.
 
 ## Immediate next work
 
 ```text
-PRE-PHYSICAL MAIN INTEGRATION
-PENDING / NOT PERFORMED
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 ```
 
-Only after separate user authorization:
-
-```text
-protected PR to main
-→ merge commit
-→ post-merge main verification
-```
-
-Physical Model authorization remains a further separate decision after that integration.
+Pre-Physical integration is complete. Starting the Physical Model is a **new separately authorized workstream**, not an automatic continuation. Backend Foundation remains deferred until the Physical result is separately accepted.

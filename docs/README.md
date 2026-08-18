@@ -38,11 +38,12 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
+DEFINITIVE CLOSED / FINAL QA PASS — integrated into main via PR #13
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
 Independent total audit PASS
 activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+post-merge main checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
 
 PHYSICAL MODEL
 READY FOR SEPARATE AUTHORIZATION
@@ -52,7 +53,8 @@ BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
+PR #13
 ```
 
 Exact handoff: [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md).
@@ -194,6 +196,8 @@ critical readback PASS
 
 Final evidence: [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md).
 
+PR #13 subsequently integrated the closed Pre-Physical workstream into protected `main` at merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge verification proved the final branch tree and merged `main` tree differ by one merge commit and zero files; the merged head branch was auto-deleted.
+
 ## Documentation architecture rule
 
 ```text
@@ -214,9 +218,11 @@ Phase 4 Home/Today remains separate on `prototype/phase-4-today-home`.
 ```text
 PRE-PHYSICAL
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE
 
 PHYSICAL MODEL
 READY FOR SEPARATE AUTHORIZATION
@@ -226,4 +232,4 @@ BACKEND FOUNDATION
 NOT STARTED / DEFERRED
 ```
 
-The next step requires separate user authorization: protected PR/main integration and post-merge verification. Physical Model authorization remains separate after integration.
+The next architecture/model action requires separate explicit user authorization to start the Physical Model. Backend Foundation remains deferred until the Physical result is separately accepted.

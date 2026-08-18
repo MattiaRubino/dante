@@ -1,8 +1,9 @@
 # Technical Decisions
 
-- Status: **Current technical direction — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS**
+- Status: **Current technical direction — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
 - Last updated: 2026-08-18
 - Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+- Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13 — **POST-MERGE VERIFIED**
 
 This document is a current technical summary. Detailed requirements/contracts remain authoritative in their dedicated sources; historical rationale remains in ADRs, evidence and Git.
 
@@ -24,6 +25,8 @@ Independent total Pre-Physical audit     PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 Physical readiness
 ESTABLISHED
@@ -36,7 +39,7 @@ Backend Foundation
 NOT STARTED / DEFERRED
 
 Main integration
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
 ## Clients and backend direction
@@ -303,7 +306,9 @@ auto-delete merged head branches enabled
 
 A documented setting is not evidence of application by itself; remote state must be re-read for future changes.
 
-## Definitive Pre-Physical closure evidence
+PR #13 subsequently exercised those rules successfully: the Pre-Physical branch merged through protected `main`, and the head branch was auto-deleted after merge.
+
+## Definitive Pre-Physical closure and integration evidence
 
 Phase 12 is QA PASS/CLOSED. The subsequent independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss, accidental technology selection or accidental Physical/backend start.
 
@@ -325,13 +330,16 @@ main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
 critical readback PASS
 ```
 
-Therefore branch-local Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS**.
+That evidence established definitive branch-local closure. PR #13 then integrated final branch HEAD `34e9ea3b547922600cb472adf1549a321e6ddfe4` into protected `main` at merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge compare proved one merge commit and zero file differences.
+
+Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**.
 
 ## Explicit next boundary
 
 ```text
-MAIN INTEGRATION
-PENDING / NOT PERFORMED
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 ```
 
-No Physical or backend implementation is authorized now. After separate user authorization, integrate this closed branch through the protected PR flow and verify `main`; only after that may the Physical Model receive its own separate authorization.
+Pre-Physical integration is complete. No Physical or backend implementation is authorized by that fact. Starting the Physical Model requires a new explicit user authorization and fresh workstream gate; Backend Foundation remains deferred until the Physical result is separately accepted.

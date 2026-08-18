@@ -1,6 +1,6 @@
 # System Overview
 
-- Status: **Current architecture overview — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS**
+- Status: **Current architecture overview — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
 - Last updated: 2026-08-18
 
 ## Stage boundary
@@ -44,7 +44,10 @@ PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+main integration checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
 
 Physical readiness
 ESTABLISHED
@@ -57,7 +60,7 @@ Backend Foundation / production implementation
 NOT STARTED / DEFERRED
 
 Main integration
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
 Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner or Physical mechanism.
@@ -251,7 +254,9 @@ Concrete eval datasets/frameworks/runners/thresholds/CI remain later engineering
 
 Phase 11 verified effective `main` protections remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has zero required checks until real stable contexts exist and auto-deletes merged head branches.
 
-## Definitive Pre-Physical closure evidence
+PR #13 successfully exercised that protected integration path and auto-deleted `chore/pre-physical-coherence` after merge.
+
+## Definitive Pre-Physical closure and integration evidence
 
 Phase 12 is QA PASS/CLOSED. The subsequent independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start.
 
@@ -273,8 +278,10 @@ main unchanged
 critical readback PASS
 ```
 
-Therefore branch-local Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS**.
+That evidence established definitive branch-local closure. PR #13 then integrated final branch HEAD `34e9ea3b547922600cb472adf1549a321e6ddfe4` into protected `main` at merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge compare showed one merge commit and zero file differences.
+
+Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**.
 
 ## Next boundary
 
-`main` integration remains **PENDING / NOT PERFORMED** and requires separate authorization. Physical Model authorization remains separate after protected integration/post-merge verification.
+Pre-Physical integration is complete. The **Physical Model is READY FOR SEPARATE AUTHORIZATION but remains NOT STARTED / NOT AUTHORIZED**. A new explicit user authorization and fresh workstream gate are required before any Physical design/benchmark execution; Backend Foundation remains deferred until a Physical result is separately accepted.

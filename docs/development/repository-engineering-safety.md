@@ -237,12 +237,13 @@ Phase 11 does not create a public vulnerability-reporting policy before a produc
 
 Do not delete branches merely because they look old.
 
-Known active bounded branches include:
+Known active bounded branch relevant to current project work includes:
 
 ```text
-chore/pre-physical-coherence
 prototype/phase-4-today-home
 ```
+
+`chore/pre-physical-coherence` is **not active**: it was merged into protected `main` via PR #13 and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
 
 The prototype branch has an open draft pull request and must not be removed while active.
 
@@ -279,7 +280,7 @@ Verified repository setting:
 Automatically delete head branches after merge = enabled
 ```
 
-This reduces stale working-branch accumulation without deleting unmerged active branches.
+This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13 provided a concrete successful exercise: `chore/pre-physical-coherence` was automatically removed after merge.
 
 # Phase 11 verification evidence
 
@@ -314,6 +315,24 @@ code scanning alert API         403 / connector-unverifiable
 
 These connector permission limits do not invalidate the verified branch-integration protections; they remain explicit future audit items rather than inferred PASS/FAIL values.
 
+## Later protected-integration evidence
+
+The closed Pre-Physical workstream later exercised the accepted repository-safety posture through PR #13:
+
+```text
+PR #13 mergeable before merge               PASS
+review threads                              0
+required / emitted status checks            0 / expected under current policy
+expected head SHA lock                      used
+merge method                                merge
+merged                                      PASS
+main merge commit                           74593ae283ce5a1d22335502480ee3fa54be0436
+final branch tree vs merged main tree       0 file differences
+merged head branch auto-delete              PASS
+```
+
+This later integration evidence does not change the Phase 11 policy; it demonstrates that the effective controls worked as designed.
+
 # Future production readiness
 
 Repository safety must evolve with the codebase rather than remain frozen at this documentation-only stage.
@@ -337,7 +356,7 @@ add environment/release protections based on actual promotion design
 
 Release tags, deployment environments, merge queues and environment approvals are intentionally premature today.
 
-# Phase 11 acceptance
+# Phase 11 acceptance and current downstream state
 
 ```text
 repository inventory complete                 PASS
@@ -354,17 +373,19 @@ Physical Model started                        0
 Backend implementation started                0
 ```
 
-Final state:
+Current state:
 
 ```text
 PHASE 11
 QA PASS
 
-NEXT
-PHASE 12 — CLEAN-ROOM REPOSITORY / ARCHITECTURE COHERENCE QA
-READ-ONLY FIRST
+PRE-PHYSICAL COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND FOUNDATION

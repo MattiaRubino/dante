@@ -13,7 +13,7 @@ Current specifications describe the architecture as it is understood now. They a
 
 Read these for current architecture state:
 
-1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed Pre-Physical bridge, downstream constraints and authorization boundary;
+1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed/integrated Pre-Physical bridge, downstream constraints and authorization boundary;
 2. [`requirements/README.md`](requirements/README.md) + all four Phase 5 requirement packages;
 3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime boundary contract, including consequential AI change evaluation/regression requirements;
 4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase 6 Integration Hub/provider boundary contract;
@@ -28,7 +28,7 @@ Read these for current architecture state:
 13. [`pre-physical-final-coherence-audit.md`](pre-physical-final-coherence-audit.md) — final independent total-audit/closure evidence;
 14. [`system-overview.md`](system-overview.md) — current logical/system boundary overview;
 15. [`technical-decisions.md`](technical-decisions.md) — current technical directions and explicitly open choices;
-16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — exact closed-workstream state and later integration boundary.
+16. [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md) — exact closed/integrated workstream record and integration checkpoints.
 
 ## Domain and Logical closure authority
 
@@ -202,6 +202,8 @@ It found no major semantic/architectural contradiction, Domain/Logical reopen ne
 
 The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved the exact approved 23-path delta, `behind_by 0`, unchanged `main` and critical readback PASS.
 
+PR #13 subsequently integrated the closed Pre-Physical workstream into protected `main` at merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge verification proved the final branch tree and merged `main` tree differ by one merge commit and zero files. The source branch was auto-deleted.
+
 ## Current stage boundary
 
 ```text
@@ -220,6 +222,8 @@ Independent total audit                  PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 Physical readiness
 ESTABLISHED
@@ -232,10 +236,10 @@ Backend production implementation
 NOT STARTED / DEFERRED
 
 Main integration
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
 ```
 
-No Physical persistence/runtime/backend implementation may begin merely from branch-local closure. Protected `main` integration and post-merge verification are separate; Physical authorization remains separate again after integration.
+Pre-Physical integration is complete. Physical authorization remains a separate new workstream decision; no Physical persistence/runtime/backend implementation may begin merely from readiness.
 
 ## Historical transition / validation evidence
 
