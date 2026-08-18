@@ -1,10 +1,11 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — PM-06/07 JOINT EVIDENCE-FIRST QUALIFICATION COMPLETE**
+- Status: **CURRENT — PM-08 SECONDARY/SPECIALIST QUALIFICATION COMPLETE / PM-09 NEXT**
 - Workstream: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
 - Primary finalists: **PostgreSQL 18.4 / TypeDB CE 3.12.3**
+- Current overall leader: **PostgreSQL 18.4**
 - Preferred: **NONE**
 - Selected: **NONE**
 
@@ -28,7 +29,7 @@ Every Physical write scope must:
 8. compare PRE-SCOPE -> final HEAD remotely;
 9. verify added/modified/deleted/unexpected paths;
 10. read back critical output from the remote branch;
-11. save the terminal handoff last where practical.
+11. save/verify terminal handoff.
 
 A tool invocation/no-op is not repository evidence.
 
@@ -46,6 +47,8 @@ EVIDENCE-QUALIFIED != DIRECT PASS
 FINALIST != PREFERRED
 PREFERRED != SELECTED
 DEFER != REJECT
+SECONDARY != CANONICAL
+LOCAL != CANONICAL
 ```
 
 Do not introduce a universal Entity/Thing/EAV/generic-edge canonical kernel merely to fit a candidate.
@@ -89,7 +92,7 @@ RESIDUAL-GAP
 = EXECUTION-WORTHY
 ```
 
-The benchmark-host HOLD is therefore dormant until a direct run is actually admitted.
+The benchmark-host HOLD remains dormant until a direct run is admitted.
 
 ## Cost/quality policy
 
@@ -135,129 +138,59 @@ PM-13 Independent clean-room QA
 PM-14 Closure / protected-main integration
 ```
 
-The numbered gates remain distinct. PM-06 and PM-07 are operated as one **Joint Finalist Qualification Campaign**, while their result layers remain separate.
+PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while preserving separate result layers.
 
-## PM-00 — Bootstrap
-
-Status: `QA PASS`.
-
-Established Physical authority, evidence vocabulary, repository discipline and resumable handoff. No technology selected.
-
-## PM-01 — Discovery / Candidate Freeze
-
-Status: `PASS-CONDITIONAL`.
-
-Admitted primary subjects:
+## Phase state through PM-08
 
 ```text
-P0 PostgreSQL 18.4
-P1 TypeDB CE 3.12.3
-P2 XTDB 2.1.0
-P3 SurrealDB Community 3.2.3
+PM-00   QA PASS
+PM-01   PASS-CONDITIONAL
+PM-02   COMPLETE
+PM-03   STATIC COMPLETE / 0 STATIC REJECTS
+PM-04A  COMPLETE / 48 OF 48 CELLS / 0 EXECUTION-WORTHY GAPS
+PM-04B  NOT ADMITTED / HARNESS NOT STARTED
+PM-05   COMPLETE / PRIMARY FINALISTS POSTGRESQL + TYPEDB
+PM-06   COMPLETE / EVIDENCE QUALIFICATION / DIRECT TIERS NOT RUN
+PM-07   COMPLETE / EVIDENCE QUALIFICATION / DIRECT DESTRUCTIVE RUNS NOT RUN
+PM-08   COMPLETE / SECONDARY-SPECIALIST EVIDENCE QUALIFICATION
+PM-09   NEXT
 ```
 
-Benchmark host remained HOLD and is now dormant until direct execution admission.
+Deferred primary challengers remain `XTDB 2.1.0` and `SurrealDB Community 3.2.3`, both `DEFER / NOT REJECTED`.
 
-## PM-02 — Primary Mapping Design
+## Primary finalist state after PM-06/07
 
-Status: `COMPLETE`.
-
-All four candidate-native mappings remain historical evidence. No mapping is selected by existence.
-
-## PM-03 — Semantic Preflight
-
-Status: `STATIC COMPLETE / 0 STATIC REJECTS`.
-
-Direct hard gates remained `NOT RUN`.
-
-## PM-04 — Evidence Sufficiency + Conditional Harness
-
-### PM-04A
-
-Status: `COMPLETE / 48 OF 48 CELLS CLASSIFIED / 0 EXECUTION-WORTHY GAPS`.
-
-### PM-04B
-
-Status: `NOT ADMITTED / HARNESS NOT STARTED`.
-
-A later phase may reopen PM-04B only through a fresh exact gate for a ranking-critical or mandatory implementation proof.
-
-## PM-05 — Correctness / Destructive Evidence Qualification
-
-Status: `COMPLETE`.
-
-Primary finalists:
+### PostgreSQL 18.4
 
 ```text
-P0 PostgreSQL 18.4
-P1 TypeDB CE 3.12.3
+SCALE/PERFORMANCE
+VIABLE / HIGH CONFIDENCE
+
+RECOVERY/EVOLUTION/OPERATIONS
+MATERIAL ADVANTAGE
+
+CURRENT DISPOSITION
+CURRENT OVERALL LEADER
+NOT PREFERRED
+NOT SELECTED
 ```
 
-Deferred, not rejected:
+### TypeDB CE 3.12.3
 
 ```text
-P2 XTDB 2.1.0
-P3 SurrealDB Community 3.2.3
+SCALE/PERFORMANCE
+VIABLE / MEDIUM-HIGH CONFIDENCE
+
+RECOVERY/EVOLUTION
+VIABLE / HIGHER SELF-HOSTED OPERATIONS COST
+
+CURRENT DISPOSITION
+PRINCIPAL SEMANTIC CHALLENGER
+NOT PREFERRED
+NOT SELECTED
 ```
 
-Primary semantic scenarios were evidence-qualified; provider/runtime scenarios were classified as system-boundary; secondary search/graph scenarios were deferred to PM-08.
-
-## PM-06 + PM-07 — Joint Finalist Qualification
-
-Status: **COMPLETE — EVIDENCE-FIRST / DIRECT RUNS NOT ADMITTED**.
-
-### Joint operating rule
-
-Collect shared evidence once, then emit two separate judgments:
-
-```text
-PM-06
-scale/performance/resource viability and sensitivity
-
-PM-07
-backup/recovery/evolution/failure/topology/operations
-```
-
-Performance cannot compensate for recovery/evolution failure.
-
-### PM-06 acceptance
-
-A finalist may advance without LOW/BASE/HIGH direct execution when:
-
-- credible evidence establishes viability;
-- no accepted product SLA makes performance discriminating;
-- no residual scale question can materially change ranking;
-- unexecuted tiers remain explicitly `NOT RUN`.
-
-Current result:
-
-```text
-PostgreSQL       VIABLE / HIGH CONFIDENCE
-TypeDB CE        VIABLE / MEDIUM-HIGH CONFIDENCE
-LOW/BASE/HIGH    NOT RUN
-performance reversal signal NONE
-```
-
-TypeDB exact-subject conditions include single-query single-threading, CE single-node topology and documented resource/index sizing pressure.
-
-### PM-07 acceptance
-
-A finalist may advance on evidence qualification when engine recovery/evolution paths are viable and remaining semantic restore/migration proof is implementation-specific rather than ranking-critical.
-
-Current result:
-
-```text
-PostgreSQL
-clear operations/recovery/topology advantage
-
-TypeDB CE
-viable recovery/evolution
-higher self-hosted operations/topology cost
-```
-
-Direct SC-011/030/031/032 execution is moved to **post-selection implementation validation** rather than declared PASS.
-
-SC-013 remains a reopen trigger only if PM-09 becomes performance-sensitive.
+The remaining primary question is whether TypeDB's stronger relation/role/n-ary semantic model outweighs its consistency-guard, backup-operations and CE-topology burden versus PostgreSQL.
 
 ## Direct execution truth
 
@@ -274,33 +207,142 @@ BENCHMARK HOST            HOLD / DORMANT
 
 Do not mutate these values without real execution artifacts.
 
-## PM-08 — Secondary Lanes
+## Post-selection validation obligations
 
-Next phase.
-
-PM-08 asks which specialist capabilities, if any, earn additional technology cost after the primary comparison has narrowed.
-
-Relevant lanes include:
+The following remain mandatory where applicable and are not direct PASS today:
 
 ```text
-GRAPH
-G0 primary-store baseline
-Neo4j or PM-01-admitted alternative only if graph specialization materially wins
-
-SEARCH/VECTOR
-primary-native structured/lexical baseline
-pgvector when PostgreSQL applicable
-Qdrant/OpenSearch only on concrete specialist trigger
-
-LOCAL/OFFLINE
-SQLite only as bounded client/local state, never silent canonical authority
+SC-011 old-backup anti-resurrection
+SC-030 actual LifeOS V1 -> V2 mapping evolution
+SC-031 destructive restore + semantic verification
+SC-032 capacity/backpressure truthful degradation
 ```
 
-Secondary state must be rebuildable/reconcilable where the accepted architecture requires it. No specialist may hide a primary hard-gate weakness.
+`SC-013` deep-history scale reopens before selection only if PM-09 becomes materially performance-sensitive.
+
+## PM-08 — Secondary / Specialist Lanes
+
+Status: **COMPLETE — EVIDENCE-FIRST / NO DIRECT EXECUTION**.
+
+PM-08 asks whether a specialist technology creates enough bounded value to justify another engine/service.
+
+### Global secondary rule
+
+```text
+SECONDARY / PROJECTION / SEARCH / VECTOR / LOCAL STATE
+!= CANONICAL TRUTH
+```
+
+Where derived from canonical truth, secondary mechanisms must define source basis, freshness/lag, deletion/redaction propagation, Visibility/scope enforcement and rebuild/reconciliation behavior.
+
+### Graph lane
+
+```text
+G0 primary-store baseline
+ADVANCE
+
+Neo4j
+DEFER / NOT REJECTED
+NO INITIAL GRAPH SPECIALIST
+```
+
+PostgreSQL 18 already supports recursive traversal with `SEARCH`/`CYCLE`; TypeDB is already relationship-native. No current accepted LifeOS graph workload earns a second graph persistence/service boundary.
+
+Neo4j may reopen only on concrete decision-relevant graph workload pressure such as large/deep path traversal, graph recommendation/pathfinding/analytics or unacceptable primary traversal isolation/performance.
+
+### Search / vector lane
+
+```text
+PostgreSQL native FTS
+ADVANCE as P0 lexical baseline
+
+pgvector 0.8.6
+ADMIT-CONDITIONAL
+conditions: PostgreSQL selected primary + accepted vector retrieval requirement
+
+Qdrant 1.18.2
+DEFER / NOT REJECTED / SPECIALIST TRIGGER ONLY
+
+OpenSearch 3.7
+DEFER / NOT REJECTED / SPECIALIST TRIGGER ONLY
+```
+
+Embedding/vector state remains derived state.
+
+Vector quality must be evaluated after real scope/Visibility filtering. Security filtering cannot be weakened to improve ANN recall.
+
+Qdrant may reopen on large vector scale, filtered-ANN limits, independent vector scaling or advanced dense+sparse/multi-stage retrieval requirements.
+
+OpenSearch may reopen on large dedicated lexical/faceted/relevance/search-analytics requirements or material search isolation needs.
+
+### TypeDB specialist implication
+
+PM-08 does not establish a TypeDB-native equivalent to PostgreSQL FTS + pgvector.
+
+If TypeDB wins primary selection and accepted lexical/vector retrieval is required, an external search/vector specialist is therefore more likely. That probable extra service is a PM-09 operability/topology/TCO input, not a semantic rejection.
+
+### Local / offline lane
+
+```text
+SQLite 3.53.4
+ADMIT AS BOUNDED LOCAL/OFFLINE CANDIDATE
+CANONICAL AUTHORITY NO
+EXACT CLIENT ADAPTER DEFER
+```
+
+SQLite earns admission because it solves device-local/offline persistence rather than duplicating canonical server authority.
+
+The exact web/mobile/desktop configuration remains future client implementation design; browser/WASM/OPFS locking and concurrency trade-offs prevent PM-08 from pretending one universal configuration is already proven.
+
+### Object/blob lane
+
+```text
+OBJECT/BLOB ENGINE
+NO ADMISSION NOW
+DEFER / TRIGGER ONLY
+```
+
+Reopen only when concrete object classes, sizes, volume, retention, security, distribution and durability requirements exist.
+
+### PM-08 execution decision
+
+```text
+PM-08 EXECUTION-WORTHY GAPS  0
+PM-04B REOPENED              NO
+GRAPH BENCHMARK              NOT ADMITTED
+VECTOR BENCHMARK             NOT ADMITTED NOW
+SEARCH BENCHMARK             NOT ADMITTED NOW
+SQLITE BENCHMARK             NOT ADMITTED NOW
+```
+
+### PM-08 scenario carry-forward
+
+```text
+SC-017 hidden-result non-interference
+post-selection search/system validation
+
+SC-018 FTS mixed filter/query
+post-selection search implementation validation
+
+SC-019 vector recall after security filter
+reopen before selection only if vector path becomes ranking/performance-sensitive;
+otherwise post-selection implementation validation
+
+SC-020 stale index source
+post-selection projection validation where a projection exists
+
+SC-021 deletion propagation
+post-selection projection validation where a projection exists
+
+SC-035 graph projection divergence/rebuild
+not applicable to initial stack; reopen if graph specialist is later admitted
+```
+
+None is a direct PASS.
 
 ## PM-09 — Scoring + Sensitivity
 
-Only after PM-08 evidence is coherent.
+Next phase.
 
 Primary 100-point dimensions remain:
 
@@ -315,23 +357,27 @@ performance/resource efficiency          10
 Python/tooling/cost/exit risk             5
 ```
 
-Scores require evidence. Unexecuted measurements cannot be invented.
+PM-09 must incorporate PM-08 architecture implications rather than score the primary in isolation.
 
-Sensitivity must test whether ranking changes under scale/history/concurrency/topology/recovery/cost assumptions. Instability => `SENSITIVITY-DEPENDENT`.
-
-## PM-10 — Recommendation
-
-May produce `PREFERRED`; cannot produce `SELECTED`.
-
-## PM-11 — Explicit Selection
-
-`SELECTED` requires separate user approval with candidate, exact subject, evidence basis, conditions, sensitivity, cost/topology implications and rejected/deferred alternatives.
-
-## PM-12..PM-14
-
-After selection:
+Important sensitivity:
 
 ```text
+POSTGRESQL PATH
+likely fewer initial server technologies because FTS + conditional vector stay in PostgreSQL
+
+TYPEDB PATH
+stronger semantic-native relation model but likely external search/vector specialist when that capability is accepted
+```
+
+Scores require evidence. Unexecuted measurements cannot be invented.
+
+Ranking instability under scale/history/concurrency/topology/recovery/cost/specialist assumptions becomes `SENSITIVITY-DEPENDENT`.
+
+## PM-10..PM-14
+
+```text
+PM-10 Recommendation may produce PREFERRED, never SELECTED
+PM-11 explicit user-approved selection gate
 PM-12 accepted Physical Model
 PM-13 independent clean-room QA
 PM-14 protected PR/merge/main verification
@@ -346,9 +392,9 @@ Stop and re-gate if:
 - Domain/Logical contradiction appears;
 - a candidate requires semantic weakening;
 - a new semantic owner/root appears necessary;
-- PM-08 proposes a new engine without bounded admission rationale;
+- a specialist is proposed without bounded admission rationale;
 - direct execution needs unapproved infrastructure/path scope;
-- official capability evidence contradicts the frozen subject;
+- official capability evidence contradicts a frozen subject;
 - a ranking-critical residual gap appears;
 - selection is being inferred rather than explicitly authorized;
 - a path outside the approved scope must be written.
@@ -356,14 +402,15 @@ Stop and re-gate if:
 ## Current next step
 
 ```text
-PM-06 COMPLETE
-PM-07 COMPLETE
-DIRECT EXECUTION NOT RUN
+PM-08 COMPLETE
 CURRENT LEADER PostgreSQL
 PRINCIPAL CHALLENGER TypeDB
+INITIAL EXTRA SERVER SPECIALISTS 0
+PGVECTOR ADMIT-CONDITIONAL
+SQLITE ADMIT BOUNDED LOCAL/OFFLINE CANDIDATE
 PREFERRED NONE
 SELECTED NONE
 
 NEXT
-PM-08 secondary/specialist lanes after fresh explicit gate
+PM-09 scoring + sensitivity after fresh explicit gate
 ```
