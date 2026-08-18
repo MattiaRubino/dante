@@ -54,8 +54,11 @@ feature/physical-model
 BASE / BOOTSTRAP PRE-SCOPE
 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
-CURRENT STATUS
-PM-00 BOOTSTRAP IN PROGRESS
+PM-00
+BOOTSTRAP QA PASS
+
+CURRENT NEXT
+PM-01 READ-ONLY candidate/environment freeze
 
 MAPPING
 NOT STARTED
@@ -67,26 +70,26 @@ SELECTION
 NONE
 ```
 
-PM-00 creates only execution rules, evidence/test contracts, current navigation and the live handoff. It does **not** authorize candidate schemas, SQL/TypeQL/Cypher, benchmark harness code, database deployment or technology selection.
+PM-00 created the execution rules, evidence/test contracts, current navigation and live handoff. It did **not** authorize candidate schemas, SQL/TypeQL/Cypher, benchmark harness code, database deployment or technology selection.
 
 ## Physical execution sequence
 
 ```text
-PM-00  Bootstrap / authority freeze
-PM-01  Candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST
-PM-02  Primary candidate mapping design
-PM-03  Semantic hard-gate preflight
-PM-04  Fixture/oracle/harness design
-PM-05  Correctness/destructive execution
-PM-06  LOW/BASE/HIGH + performance
-PM-07  Recovery/evolution/failure
-PM-08  Secondary lanes where justified
-PM-09  Scoring + sensitivity
-PM-10  Recommendation
-PM-11  Explicit selection gate
-PM-12  Accepted Physical Model
-PM-13  Independent clean-room QA
-PM-14  Closure / protected-main integration
+PM-00  Bootstrap / authority freeze                                      QA PASS
+PM-01  Candidate + version/edition/deployment/environment freeze         NEXT / READ-ONLY FIRST
+PM-02  Primary candidate mapping design                                  NOT STARTED
+PM-03  Semantic hard-gate preflight                                      NOT STARTED
+PM-04  Fixture/oracle/harness design                                     NOT STARTED
+PM-05  Correctness/destructive execution                                 NOT STARTED
+PM-06  LOW/BASE/HIGH + performance                                       NOT STARTED
+PM-07  Recovery/evolution/failure                                        NOT STARTED
+PM-08  Secondary lanes where justified                                   NOT STARTED
+PM-09  Scoring + sensitivity                                             NOT STARTED
+PM-10  Recommendation                                                    NOT STARTED
+PM-11  Explicit selection gate                                           NOT STARTED
+PM-12  Accepted Physical Model                                           NOT STARTED
+PM-13  Independent clean-room QA                                         NOT STARTED
+PM-14  Closure / protected-main integration                              NOT STARTED
 ```
 
 No phase may be skipped merely because one technology appears attractive early.
@@ -95,16 +98,16 @@ No phase may be skipped merely because one technology appears attractive early.
 
 ```text
 PRIMARY CANONICAL
-P0 PostgreSQL hybrid — preferred mandatory baseline — NOT SELECTED
-P1 TypeDB            — mandatory challenger        — NOT SELECTED
+P0 PostgreSQL hybrid — preferred mandatory baseline — NOT SELECTED / NOT RUN
+P1 TypeDB            — mandatory challenger        — NOT SELECTED / NOT RUN
 
 SECONDARY GRAPH
 G0 no-specialized-store baseline
-G1 Neo4j specialized secondary/read projection — NOT SELECTED
+G1 Neo4j specialized secondary/read projection — NOT SELECTED / NOT RUN
 
 SEARCH / VECTOR
 S0 structured + lexical/full-text baseline
-S1 pgvector where PostgreSQL is present/applicable — NOT SELECTED
+S1 pgvector where PostgreSQL is present/applicable — NOT SELECTED / NOT RUN
 
 EVENT / DOCUMENT
 bounded native mechanisms first
@@ -129,7 +132,32 @@ PREFERRED != SELECTED
 
 LOW/BASE/HIGH remain synthetic qualification envelopes, not business forecasts.
 
-## Immediate next after PM-00 QA
+## PM-00 QA evidence
+
+```text
+PRE-SCOPE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+CREATE CHECKPOINT
+6d76bc150dfd7b3cefe56c6e05c96404e7494626
+6 added / 0 modified / behind 0
+
+CONTENT-QA CHECKPOINT
+8549e1c95bef2e354bd47028259e6816bf5e9272
+22 unique paths
+6 added
+16 modified
+0 deleted
+0 unexpected
+behind 0
+
+main
+3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
+```
+
+Post-QA status propagation remains confined to the same already-approved 22 physical paths.
+
+## Immediate next — PM-01
 
 ```text
 PM-01 — READ-ONLY FIRST
@@ -139,7 +167,7 @@ PM-01 must:
 
 1. freeze exact current PostgreSQL and TypeDB versions/editions/deployment modes to be evaluated;
 2. verify version-sensitive capability claims from official primary documentation;
-3. capture Python driver/client compatibility;
+3. capture exact Python driver/client compatibility;
 4. verify backup/restore/HA/schema/evolution claims for exact subjects;
 5. freeze the available benchmark host/environment constraints;
 6. identify unavailable external infrastructure/tooling honestly;
@@ -233,7 +261,7 @@ NOT STARTED / DEFERRED
 
 It becomes eligible for a separate authorization only after an accepted Physical result exists and all remaining prerequisites are satisfied.
 
-## Explicitly unauthorized by PM-00
+## Explicitly unauthorized now
 
 ```text
 direct main write
