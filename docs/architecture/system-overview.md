@@ -2,6 +2,7 @@
 
 - Status: **Current architecture overview — Physical Model target selected/accepted/integrated**
 - Last updated: 2026-08-18
+- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained only where historical/technical continuity requires it)
 
 ## Stage boundary
 
@@ -21,8 +22,17 @@ CURRENT
 Phase 6 AI/context/runtime/integration boundaries
 CURRENT
 
+Phase 7 durable-execution contract
+CURRENT / PHYSICAL MECHANISM RESOLVED
+
 Phase 8 governed-operation/effect contract
 CURRENT
+
+Phase 9 search/observability/calendar/solver contract
+CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
+
+Phase 10 benchmark method
+CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
 
 Repository engineering safety
 QA PASS
@@ -35,7 +45,7 @@ Physical Model target
 CLOSED / SELECTED / ACCEPTED
 PM-13 clean-room architecture/documentation QA PASS
 INTEGRATED INTO MAIN VIA PR #15
-main e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 former feature/physical-model MERGED / AUTO-DELETED
 selected canonical primary PostgreSQL 18.4
 
@@ -56,7 +66,7 @@ Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/
 ```text
 Web client (Next.js) -----------------------\
                                              \
-Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundary
+Mobile client (Expo / React Native) ----------> Versioned DANTE backend boundary
                                                   |-- authentication context / AuthZ enforcement
                                                   |-- governed operation/effect boundary
                                                   |-- scheduling / planning / reasoning services
@@ -95,12 +105,12 @@ Constraint solving:
 OR-Tools CP-SAT -> candidate output -> governed acceptance path
 ```
 
-External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical LifeOS truth merely because they contain data.
+External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical DANTE truth merely because they contain data.
 
 ## Canonical ownership
 
 ```text
-CANONICAL LIFEOS TRUTH
+CANONICAL DANTE TRUTH
 PostgreSQL 18.4
 
 MATERIAL HISTORY
@@ -226,7 +236,7 @@ PostgreSQL canonical
 → approved PowerSync projection
 → encrypted SQLite local copy
 → offline mutation
-→ LifeOS backend expected-state/governance/AuthZ revalidation
+→ DANTE backend expected-state/governance/AuthZ revalidation
 → PostgreSQL canonical commit if valid
 ```
 
@@ -294,12 +304,12 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. LifeOS does not create a second generic AI-memory source of truth.
+AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. DANTE does not create a second generic AI-memory source of truth.
 
 Material consequential AI changes require versioned/reproducible evaluation before promotion.
 
 ```text
-eval result != canonical LifeOS truth
+eval result != canonical DANTE truth
 eval PASS != Authority / governed-effect authorization
 ```
 
@@ -307,7 +317,7 @@ eval PASS != Authority / governed-effect authorization
 
 - Search: PostgreSQL native FTS + `pg_trgm` + `unaccent`; pgvector for bounded vector retrieval; search/index state remains derived and disclosure-aware.
 - Graph traversal: explicit PostgreSQL mappings + recursive SQL; no dedicated graph database in the accepted target.
-- Calendar: standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain LifeOS-owned.
+- Calendar: standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain DANTE-owned.
 - Solver: OR-Tools 9.15 CP-SAT is selected; `UNKNOWN != INFEASIBLE`; output crosses governed acceptance before canonical change.
 - Observability: OpenTelemetry + Grafana Alloy + Grafana Cloud EU target; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
 
