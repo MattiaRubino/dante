@@ -1,12 +1,13 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-01 READ-ONLY PASS-CONDITIONAL / PM-02 NOT AUTHORIZED**
+- Status: **AUTHORIZED / IN PROGRESS — PM-02 DESIGN COMPLETE / PM-03 NEXT**
 - Branch: `feature/physical-model`
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00 bootstrap: **QA PASS**
 - PM-01 technology/candidate freeze: **PASS-CONDITIONAL**
 - PM-01 benchmark-host freeze: **HOLD**
-- Mapping execution: **NOT STARTED**
+- PM-02 primary mapping design: **DESIGN COMPLETE / PM-03 NOT RUN**
+- Mapping execution/deployment: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
 - Selected primary persistence: **NONE**
 - Selected secondary graph: **NONE**
@@ -24,7 +25,7 @@ PHASE 10
 HOW TO BENCHMARK
 
 PHYSICAL MODEL
-DISCOVER + DESIGN + EXECUTE + EVALUATE + SELECT
+DISCOVER + DESIGN + PREFLIGHT + EXECUTE + EVALUATE + SELECT
 ```
 
 ## Mandatory authority order
@@ -42,17 +43,18 @@ Before any Physical write or benchmark action, read current repository truth in 
 9. `docs/workstreams/physical-model.md`;
 10. this file;
 11. `pm-01-technology-landscape-v1.md`;
-12. complete CLOSED Domain authority and final closure continuations when mapping semantics are involved;
-13. complete CLOSED Logical authority and `WL-H01..WL-H12` when mapping semantics are involved;
-14. all Phase-5 requirement packages;
-15. Phase-6 AI/context/runtime + Integration Hub boundaries;
-16. Phase-7 durable-execution contract;
-17. Phase-8 governed-operation/effect contract;
-18. Phase-9 search/observability/calendar/solver contract;
-19. Phase-10 benchmark specification, scenario corpus and register;
-20. current ADRs with supersession/qualification state;
-21. the current Physical execution/evidence files in this directory;
-22. current Git refs and branch relation to `main`.
+12. `pm-02-primary-mapping-overview-v1.md` and all four PM-02 candidate mapping documents;
+13. complete CLOSED Domain authority and final closure continuations when mapping semantics are involved;
+14. complete CLOSED Logical authority and `WL-H01..WL-H12` when mapping semantics are involved;
+15. all Phase-5 requirement packages;
+16. Phase-6 AI/context/runtime + Integration Hub boundaries;
+17. Phase-7 durable-execution contract;
+18. Phase-8 governed-operation/effect contract;
+19. Phase-9 search/observability/calendar/solver contract;
+20. Phase-10 benchmark specification, scenario corpus and register;
+21. current ADRs with supersession/qualification state;
+22. the current Physical execution/evidence files in this directory;
+23. current Git refs and branch relation to `main`.
 
 Conversation memory never outranks repository current truth.
 
@@ -75,6 +77,7 @@ STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
 POPULAR != CORRECT
 USED ELSEWHERE != SELECTED
 PREFERRED != SELECTED
+MAPPING DESIGNED != HARD-GATE PASS
 BENCHMARK PASS != IMPLEMENTATION AUTHORIZATION
 ```
 
@@ -104,11 +107,9 @@ PM-01 OVERALL
 PASS-CONDITIONAL
 ```
 
-The host HOLD must be closed before executable benchmark evidence begins. It does not imply a technology failure.
+The host HOLD must be closed before executable benchmark evidence begins. It does not imply a technology failure and does not block static PM-02/PM-03 design review.
 
 ## Current admitted primary candidates
-
-Phase-10 starting anchors remain mandatory, but PM-01 proved that they are not the complete serious candidate universe.
 
 ```text
 P0 PostgreSQL 18.4
@@ -126,7 +127,7 @@ mandatory semantic challenger
 NOT SELECTED
 
 P2 XTDB 2.1.0
-qualification subject via Postgres wire protocol
+self-hosted qualification subject
 ADMIT
 production topology HOLD
 temporal/bitemporal challenger
@@ -140,7 +141,153 @@ multimodel challenger
 NOT SELECTED
 ```
 
-`ADMIT` means only that the candidate merits PM-02 mapping evidence. No hard gate has run.
+`ADMIT` means only that the candidate merits Physical mapping/hard-gate evidence. No hard gate has passed yet.
+
+## PM-02 primary mapping package
+
+PM-02 designs the best candidate-native representation of the **same** closed Logical Model for all four admitted primary candidates.
+
+Current package:
+
+- `pm-02-primary-mapping-overview-v1.md` — cross-candidate mapping oracle, comparison and PM-03 proof obligations;
+- `mappings/postgresql-18.4-v1.md` — `PM02-PG-001`;
+- `mappings/typedb-3.12.3-v1.md` — `PM02-TDB-001`;
+- `mappings/xtdb-2.1.0-v1.md` — `PM02-XT-001`;
+- `mappings/surrealdb-3.2.3-v1.md` — `PM02-SDB-001`.
+
+PM-02 status:
+
+```text
+P0 PostgreSQL mapping   DESIGN COMPLETE
+P1 TypeDB mapping       DESIGN COMPLETE
+P2 XTDB mapping         DESIGN COMPLETE
+P3 SurrealDB mapping    DESIGN COMPLETE
+
+HG-01..HG-12            NOT RUN
+DDL/TypeQL/SurrealQL    NOT DEPLOYED
+DATABASE INSTANCES      NOT STARTED
+HARNESS/FIXTURES         NOT STARTED
+BENCHMARK                NOT STARTED
+SELECTION                NONE
+```
+
+### Common PM-02 rule
+
+```text
+SAME
+accepted semantic owners
+Reference Contracts
+WL-H01..WL-H12
+truth oracle
+history/concurrency/governance meaning
+
+IDIOMATICALLY DIFFERENT
+physical identity anchor
+relation representation
+history substrate
+constraint mechanism
+concurrency hardening
+query strategy
+```
+
+No mapping is forced into a lowest-common-denominator representation.
+
+### Mapping distinctions
+
+```text
+PostgreSQL
+owner-specific relational model
++ direct FKs where homogeneous
++ bounded technical address/state anchors where heterogeneous
++ explicit material state/history
++ transactional/serializable hardening
+
+TypeDB
+concrete owner types
++ first-class named-role relations/n-ary structures
++ role eligibility as Reference Contract enforcement
++ explicit state objects
++ narrow technical consistency guards for write-skew-sensitive invariants
+
+XTDB
+owner-specific tables
++ four separated address spaces
++ explicit MaterialStateRef records
++ native bitemporality where semantically truthful
++ ASSERT-based integrity/expected-state checks
++ serialized DML transaction model
+
+SurrealDB
+SCHEMAFULL owner tables
++ typed record links
++ specific binary relation tables only where semantically binary
++ contextual records for n-ary/material structures
++ explicit state history
++ narrow technical consistency guards under snapshot isolation
+```
+
+### MaterialStateRef remains explicit
+
+```text
+PostgreSQL xmin/xid      != MaterialStateRef
+TypeDB IID/snapshot      != MaterialStateRef
+XTDB system/valid time   != MaterialStateRef
+SurrealDB change version != MaterialStateRef
+```
+
+Each mapping creates an explicit stable material-state address/binding where the Logical Model requires material state.
+
+### Current vs historical state
+
+All mappings must provide direct current-state access without lifetime replay while retaining reconstructible material history. World/effective applicability and knowledge/recording chronology stay distinguishable where material.
+
+### Relation fidelity
+
+Simple binary LR-03 relations may use compact candidate-native mechanisms. Qualified/consequential relations escalate to explicit contextual/material representation.
+
+Material Agreement always preserves:
+
+```text
+one Agreement context
++ one justified terms MaterialStateRef
++ N party assent bindings to the same terms state
+```
+
+No candidate may infer this from unrelated pairwise edges.
+
+### Expected-state / multi-owner strategy
+
+```text
+PostgreSQL
+expected-state check + transaction/locks/SERIALIZABLE where required
+
+TypeDB
+expected-state match + one write transaction
++ narrow consistency guard for write-skew-sensitive invariant sets
+
+XTDB
+ASSERT preconditions + one serialized non-interactive DML transaction
+
+SurrealDB
+conditional expected-state mutation + one transaction
++ narrow consistency guard for write-skew-sensitive invariant sets
+```
+
+These are design hypotheses. PM-03 must prove they preserve WL-H05/WL-H07; no PASS is implied.
+
+### Lazy Occurrence
+
+All four mappings preserve the same semantic rule:
+
+```text
+pre-persistent bounded locator
+= governing source + governing MaterialStateRef + recurrence family + semantic coordinate where available
+
+when individually distinguished/addressable
+-> same semantic Occurrence receives NativeRef
+```
+
+No artificial early ordinal is created for indistinguishable quota slots.
 
 ## Deferred and bounded lanes
 
@@ -168,7 +315,7 @@ bounded native mechanisms first
 specialist only after explicit admission trigger
 ```
 
-Current primary benchmark rejection/defer rationale is recorded in `pm-01-technology-landscape-v1.md`; those dispositions are scoped, evidence-reopenable decisions rather than global product judgments.
+PM-02 does not activate these lanes.
 
 ## Technology-discovery and cost rule
 
@@ -201,19 +348,7 @@ Portability is preserved where cheap and structurally useful. Candidate-native s
 
 ## Application architecture reconnaissance rule
 
-PM-01 now includes public architecture evidence from similar or structurally adjacent applications such as Notion, Linear, Anytype/any-sync, AppFlowy, Immich, Home Assistant and Cal.com.
-
-This evidence is used to answer questions such as:
-
-- when mature products retain a single canonical relational store versus add specialist systems;
-- how local/offline state and CRDT sync are separated from server authority;
-- how caches/projections can diverge from canonical state;
-- whether recovery paths are actually rehearsed;
-- when vector/search specialists are worth another datastore;
-- how object storage, jobs and AI/ML remain bounded responsibilities;
-- where generic ORM portability breaks down in practice.
-
-It is **not** a popularity vote.
+Public architecture evidence from similar/adjacent products remains supporting evidence only. It may reveal real patterns around canonical stores, sync/offline, recovery, projections, vector/search and bounded specialist infrastructure, but:
 
 ```text
 USED BY NOTION != RIGHT FOR LIFEOS
@@ -221,7 +356,7 @@ USED BY LINEAR != RIGHT FOR LIFEOS
 LOCAL-FIRST ELSEWHERE != LIFEOS REQUIREMENT
 ```
 
-Domain + Logical + LifeOS benchmark evidence remain authority.
+Domain + Logical + LifeOS direct evidence remain authority.
 
 ## Physical work products
 
@@ -231,16 +366,18 @@ Current files:
 - `execution-template-v1.md` — reproducible run/mapping evidence template;
 - `acceptance-test-matrix-v1.md` — hard-gate/corpus/scenario execution matrix;
 - `result-register-v1.md` — current Physical results/dispositions;
-- `pm-01-technology-landscape-v1.md` — current read-only PM-01 evidence;
+- `pm-01-technology-landscape-v1.md` — PM-01 discovery/freeze evidence;
+- `pm-02-primary-mapping-overview-v1.md` — PM-02 common mapping design/oracle;
+- `mappings/*.md` — candidate-specific PM-02 mappings;
 - `../workstreams/physical-model.md` — live save-game/handoff.
 
 Later explicitly gated scopes may add:
 
 ```text
-candidate mapping specifications
+hard-gate preflight evidence
 benchmark harness/source
 fixture generators
-candidate-specific adapters/query packs
+candidate-specific executable adapters/query packs
 raw-evidence manifests
 benchmark reports
 recovery/evolution evidence
@@ -325,9 +462,9 @@ A final technology becomes `SELECTED` only through PM-11 explicit selection gate
 
 ## Backend boundary
 
-The Physical workstream may create benchmark-only mappings/harnesses in later gated scopes. It does **not** authorize production backend implementation, concrete product API surface, Auth implementation, provider adapters or `feature/backend-foundation`.
+Physical benchmark-only design/code in later scopes does **not** authorize production backend implementation, concrete product API surface, Auth implementation, provider adapters or `feature/backend-foundation`.
 
-Backend Foundation stays deferred until the Physical result is separately accepted and its downstream prerequisites are satisfied.
+Backend Foundation stays deferred until the Physical result is separately accepted and downstream prerequisites are satisfied.
 
 ## PM-00 QA evidence
 
@@ -337,22 +474,15 @@ PRE-SCOPE
 
 CREATE CHECKPOINT
 6d76bc150dfd7b3cefe56c6e05c96404e7494626
-6 added / 0 modified / behind 0
 
 CONTENT-QA CHECKPOINT
 8549e1c95bef2e354bd47028259e6816bf5e9272
-22 unique paths
-6 added
-16 modified
-0 deleted
-0 unexpected
-behind 0
 
-main
-3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
+STATUS
+QA PASS
 ```
 
-## PM-01 read-only evidence state
+## PM-01 evidence state
 
 ```text
 RESEARCH PRE-SCOPE
@@ -365,7 +495,28 @@ result-register-v1.md
 STATUS
 PASS-CONDITIONAL
 
-MAPPING
+BENCHMARK HOST
+HOLD
+```
+
+## PM-02 evidence state
+
+```text
+PM-02 PRE-SCOPE
+fac3b5baf1813f886c4773594e6234810e5ba8c6
+
+EVIDENCE
+pm-02-primary-mapping-overview-v1.md
+mappings/postgresql-18.4-v1.md
+mappings/typedb-3.12.3-v1.md
+mappings/xtdb-2.1.0-v1.md
+mappings/surrealdb-3.2.3-v1.md
+
+STATUS
+DESIGN COMPLETE
+PM-03 NOT RUN
+
+MAPPING DEPLOYMENT
 NOT STARTED
 
 BENCHMARK
@@ -378,18 +529,15 @@ NONE
 ## Current exact next step
 
 ```text
-PM-01
-READ-ONLY RESULT RECORDED / PASS-CONDITIONAL
-
 PM-02
-NOT STARTED / NOT AUTHORIZED
+DESIGN COMPLETE / PENDING FINAL WRITE-SCOPE QA
 
-NEXT
-remote QA this PM-01 write scope
-then present a fresh explicit PM-02 mapping-design gate
+PM-03
+NEXT AFTER PM-02 REMOTE QA
+SEMANTIC MAPPING HARD-GATE PREFLIGHT
 
 BENCHMARK HOST
-HOLD — must close before executable benchmark/harness evidence
+HOLD — must close before executable PM-04/05+ benchmark evidence
 ```
 
-Do not create SQL, TypeQL, SurrealQL/XTDB mapping implementation, database instances, fixture generators or benchmark harnesses until the separate PM-02+ scope is approved.
+Do not create executable database schemas, database instances, fixture generators or benchmark harnesses merely because the design package exists. PM-03 must challenge the mapping first.
