@@ -1,13 +1,14 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — PM-10 RECOMMENDATION COMPLETE / PM-11 NEXT**
+- Status: **CURRENT — PM-12 ACCEPTED PHYSICAL MODEL COMPLETE / PM-13 NEXT**
 - Workstream: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
 - Primary finalists: **PostgreSQL 18.4 / TypeDB CE 3.12.3**
-- Current evidence-score leader: **PostgreSQL 18.4**
-- Preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
-- Selected: **NONE**
+- PM-09 evidence-score leader: **PostgreSQL 18.4**
+- PM-10 preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
+- PM-11 selected primary: **PostgreSQL 18.4**
+- PM-12 accepted Physical Model: **ESTABLISHED**
 
 ## Purpose
 
@@ -49,6 +50,8 @@ EVIDENCE-QUALIFIED != DIRECT PASS
 EVIDENCE SCORE != VERIFIED-RUN SCORE
 FINALIST != PREFERRED
 PREFERRED != SELECTED
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
 DEFER != REJECT
 ```
 
@@ -86,7 +89,7 @@ The benchmark-host HOLD remains dormant until a direct run is admitted.
 
 ## Two evidence ledgers
 
-The reconciled Phase-10 specification now distinguishes:
+The reconciled Phase-10 specification distinguishes:
 
 ```text
 VERIFIED-RUN BENCHMARK SCORE
@@ -102,7 +105,7 @@ EVIDENCE-WEIGHTED DECISION SCORE
 != VERIFIED-RUN BENCHMARK SCORE
 ```
 
-The evidence ledger may support PM-09 sensitivity and PM-10 recommendation. It does not change `DIRECT HG PASS`, does not make LOW/BASE/HIGH executed and does not select infrastructure.
+The evidence ledger supported PM-09 sensitivity, PM-10 recommendation and PM-11 selection. It does not change `DIRECT HG PASS`, does not make LOW/BASE/HIGH executed and does not waive selected-stack implementation validation.
 
 If a ranking-critical residual uncertainty appears, evidence scoring stops and a bounded direct proof must be separately gated.
 
@@ -127,7 +130,7 @@ paid != automatic rejection
 quality/correctness outrank cost
 ```
 
-The final architecture may be one canonical primary plus bounded specialists. Every extra technology must earn its complexity.
+The accepted target architecture is one canonical primary plus bounded specialists/capabilities. A later Development Profile may choose activation/deployment modes without silently changing the target Physical architecture.
 
 ## Fixed roadmap
 
@@ -151,7 +154,7 @@ PM-14 Closure / protected-main integration
 
 PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while keeping separate result layers.
 
-## Phase state through PM-10
+## Phase state through PM-12
 
 ```text
 PM-00   QA PASS
@@ -166,10 +169,13 @@ PM-07   COMPLETE / EVIDENCE QUALIFICATION / DIRECT DESTRUCTIVE RUNS NOT RUN
 PM-08   COMPLETE / SECONDARY-SPECIALIST EVIDENCE QUALIFICATION
 PM-09   COMPLETE / EVIDENCE-WEIGHTED SCORING + SENSITIVITY
 PM-10   COMPLETE / PREFERRED RECOMMENDATION + FINAL COMPANION STACK
-PM-11   NEXT / EXPLICIT SELECTION
+PM-11   COMPLETE / EXPLICIT USER-APPROVED TARGET STACK SELECTION
+PM-12   COMPLETE / ACCEPTED PHYSICAL MODEL ESTABLISHED
+PM-13   NEXT / INDEPENDENT CLEAN-ROOM QA
+PM-14   NOT STARTED
 ```
 
-Deferred primary challengers remain historical comparative evidence only; the PM-10 recommended stack excludes TypeDB, XTDB and SurrealDB from the proposed selected primary architecture.
+Deferred primary challengers remain historical comparative evidence only; the selected architecture excludes TypeDB, XTDB and SurrealDB from primary persistence.
 
 ## Direct execution truth
 
@@ -186,13 +192,17 @@ GRAPH BENCHMARK           NOT RUN
 VECTOR BENCHMARK          NOT RUN
 SEARCH BENCHMARK          NOT RUN
 SQLITE BENCHMARK          NOT RUN
+POWERSYNC DIRECT TEST     NOT RUN
+RESTATE DIRECT TEST       NOT RUN
+OBJECT RECOVERY TEST      NOT RUN
+SOLVER DIRECT TEST        NOT RUN
 BENCHMARK HOST            HOLD / DORMANT
 VERIFIED-RUN SCORE        NOT AVAILABLE
 ```
 
 Do not mutate these values without direct execution artifacts.
 
-## Primary finalist state
+## Selected primary state
 
 ### PostgreSQL 18.4
 
@@ -215,8 +225,11 @@ ROBUST LEADER
 PM-10
 PREFERRED / PASS-CONDITIONAL
 
-SELECTED
-NONE
+PM-11
+SELECTED — CANONICAL PRIMARY
+
+PM-12
+ACCEPTED PHYSICAL MODEL PRIMARY
 ```
 
 ### TypeDB CE 3.12.3
@@ -237,13 +250,14 @@ PM-09 EVIDENCE SCORE
 PM-10
 NOT PREFERRED / RUNNER-UP
 
-SELECTED
-NONE
+PM-11
+NOT SELECTED
+
+ROLE
+HISTORICAL PRINCIPAL SEMANTIC CHALLENGER
 ```
 
-## PM-08 secondary state and PM-10 refinement
-
-PM-08 established the specialist baseline. PM-10 re-ran the full product/capability audit and converted accepted product needs into the recommended stack:
+## Accepted companion architecture
 
 ```text
 PRIMARY
@@ -263,11 +277,14 @@ PowerSync Service 1.25.0 Open Edition
 encrypted SQLite local state
 PostgreSQL-backed PowerSync bucket storage
 
-ASYNC
+ASYNC CLASS A
 PostgreSQL transactional outbox + bounded worker
-Restate Cloud EU for Class-B durable execution
+
+DURABLE CLASS B
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 reproducible local/self-hosted subject
+Restate Server 1.7.2 self-hosted/reproducible subject
+Restate Cloud EU allowed managed deployment
 
 OBJECT
 Cloudflare R2 Standard / EU jurisdiction / private
@@ -286,6 +303,23 @@ Grafana Cloud EU
 ```
 
 These mechanisms remain bounded by state ownership. None becomes a second canonical source of truth.
+
+### Restate deployment rule
+
+Restate is selected as the durable runtime; deployment is not globally fixed.
+
+```text
+SELF-HOSTED
+FIRST-CLASS
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+Current Restate documentation supports a self-contained binary/container and an EU Cloud region. Current client-side journal encryption is documented only for the TypeScript SDK, while the LifeOS selected SDK path is Python. Therefore journal minimization is mandatory and deployment choice remains a later privacy/operability profile decision.
 
 ## Offline rule
 
@@ -309,9 +343,9 @@ A later-arriving offline mutation does not win by arrival order. Consequential L
 
 ## Technology exclusion rule
 
-PM-10 maintains an explicit exclusion register. Excluded technologies are not hidden future dependencies. Reintroduction requires a later architecture decision based on materially changed requirements/evidence.
+PM-10 maintains the explicit exclusion register and PM-11 carries it into selection. Excluded technologies are not hidden future dependencies. Reintroduction requires a later architecture decision based on materially changed requirements/evidence.
 
-## PM-09 scoring rules
+## PM-09 scoring retained
 
 The original Phase-10 dimensions and weights remain unchanged:
 
@@ -327,35 +361,21 @@ Python/tooling/cost/exit risk             5
 TOTAL                                   100
 ```
 
-### Base PM-09 score
-
 ```text
 PostgreSQL 18.4     89.25
 TypeDB CE 3.12.3    80.00
 Delta               +9.25 PostgreSQL
 ```
 
-Performance is intentionally tied `8.0 / 8.0` because no direct LOW/BASE/HIGH LifeOS run exists.
+Performance remains intentionally tied `8.0 / 8.0` because no direct LOW/BASE/HIGH LifeOS run exists.
 
-### Accepted sensitivity
-
-```text
-S0 Phase-10 base                  PG +9.25
-S1 semantic-heavy                 PG +5.75
-S2 early single-node              PG +7.25
-S3 operations/recovery-heavy      PG +12.50
-S4 strongly TypeDB-friendly       PG +2.75
-```
-
-Result:
+Accepted sensitivity remains:
 
 ```text
 RANKING ROBUST
 SENSITIVITY-DEPENDENT NO
 PERFORMANCE-DEPENDENT NO
 ```
-
-An adversarial, non-accepted weighting with semantic mapping at 50% produces only a `+0.125 TypeDB` boundary. Keeping all non-semantic dimensions proportional to their Phase-10 relative weights, semantic mapping must reach approximately `58.44%` before TypeDB reaches break-even.
 
 ## Execution reopen decision
 
@@ -367,11 +387,17 @@ PM-04B
 REOPEN NO
 ```
 
-Reason: the PM-09 ranking is not performance-dependent and PM-10 found no ranking-critical execution gap.
+Reason: selection does not depend on an unmeasured performance advantage and no ranking-critical direct execution gap emerged.
 
 ## Post-selection validation obligations
 
-The dedicated PM-10 register is authoritative for the expanded selected-stack obligations. Core inherited obligations remain:
+The dedicated selected-stack register remains authoritative:
+
+```text
+docs/physical-model/recommendation/post-selection-validation-register-v1.md
+```
+
+Core inherited obligations remain:
 
 ```text
 SC-011 old-backup anti-resurrection
@@ -385,35 +411,37 @@ SC-020/021 projection freshness/deletion propagation
 offline sync/reconciliation
 ```
 
-Additional PM-10 obligations cover PowerSync replication liveness, local encryption, Restate crash/replay/versioning, R2/S3 object recovery, PostGIS/PgBouncer interactions, OR-Tools status semantics and observability privacy.
+Additional obligations cover PowerSync replication liveness, local encryption, Restate crash/replay/versioning and deployment privacy, R2/S3 object recovery, PostGIS/PgBouncer interactions, OR-Tools status semantics and observability privacy.
 
-## PM-10 boundary
+None is a direct PASS today unless separately executed and evidenced.
 
-PM-10 has produced the bounded recommendation:
+## PM-11/PM-12 boundary
 
 ```text
-PREFERRED
-PostgreSQL 18.4 / PASS-CONDITIONAL
+PM-11
+TARGET STACK SELECTED
 
-COMPANION STACK
-RECOMMENDED / PASS-CONDITIONAL
+PM-12
+ACCEPTED PHYSICAL MODEL ESTABLISHED
 
-SELECTED
-NONE
+DIRECT EXECUTION
+UNCHANGED / NOT STARTED
+
+DEV-v0
+SEPARATE LATER OPERATIONAL PROFILE
 ```
-
-PM-11 remains the separate explicit user-approved selection gate and must select the stack before PM-12 treats it as accepted Physical architecture.
 
 ## Current next step
 
 ```text
-PM-10 COMPLETE
-PREFERRED PRIMARY PostgreSQL 18.4 / PASS-CONDITIONAL
-PREFERRED COMPANION STACK ESTABLISHED
+PM-12 COMPLETE
+TARGET PHYSICAL STACK SELECTED
+ACCEPTED PHYSICAL MODEL ESTABLISHED
+CANONICAL PRIMARY PostgreSQL 18.4
+RESTATE DEPLOYMENT CONDITIONAL: SELF-HOSTED OR CLOUD EU
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
-SELECTED NONE
 
 NEXT
-PM-11 explicit stack selection after fresh exact gate
+PM-13 independent clean-room QA
 ```
