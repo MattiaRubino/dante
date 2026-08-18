@@ -24,7 +24,9 @@ DEFINITIVE CLOSED / FINAL QA PASS — integrated via PR #13
 POST-MERGE CURRENT-TRUTH ALIGNMENT — PR #14
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+AUTHORIZED / IN PROGRESS
+PM-00 BOOTSTRAP QA PASS
+PM-01 READ-ONLY NEXT
 branch feature/physical-model
 base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
 mapping NOT STARTED
@@ -161,7 +163,7 @@ unexecuted tier != VERIFIED-RUN
 PREFERRED != SELECTED
 ```
 
-PM-00 bootstrap does not authorize schema/mapping/harness/database deployment or technology selection. After PM-00 QA the next step is **PM-01 READ-ONLY FIRST**: freeze current exact candidate subjects and available benchmark environment using official primary sources, then stop before the first mapping/harness write.
+PM-00 bootstrap is complete and QA-verified. The next step is **PM-01 READ-ONLY FIRST**: freeze current exact candidate subjects and available benchmark environment using official primary sources, then stop before the first mapping/harness write.
 
 ## Current technical direction — not backend implementation authorization
 
@@ -257,9 +259,9 @@ Pre-Physical is **DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge ve
 
 ```text
 PM-00 BOOTSTRAP
-REMOTE QA REQUIRED
+QA PASS
 
-THEN
+NEXT
 PM-01 READ-ONLY FIRST
 exact candidate/version/edition/deployment/environment freeze
 
