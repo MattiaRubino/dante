@@ -738,7 +738,7 @@ PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE
 NOT IMPLEMENTED
 ```
 
-Specialized infrastructure may become justified by measured load or structural correctness/reliability/evolvability benefit. Candidate posture must be revisited when Phase 10 supplies realistic low/base/high scale scenarios.
+Specialized infrastructure may become justified by measured load or structural correctness/reliability/evolvability benefit. Phase 10 already supplies explicit synthetic LOW/BASE/HIGH qualification envelopes and sensitivity rules; the later separately authorized Physical/runtime workstream executes the applicable scenarios rather than inventing new scale claims here.
 
 # Open decisions / parameters
 
@@ -771,11 +771,11 @@ solver service deployment topology
 
 These are later implementation/Physical/runtime decisions.
 
-# Phase 10 handoff
+# Physical benchmark-method integration already established
 
-Phase 10 Physical benchmark specification/register MUST consume this document together with Phases 5–8.
+The current Phase 10 Physical benchmark specification/register/corpus already consume this document together with Phases 5–8.
 
-At minimum Phase 10 must preserve candidate pressure around:
+The Phase 10 method carries forward candidate pressure around:
 
 - lexical/structured search baseline;
 - optional vector projection and ANN filtering/recall;
@@ -787,19 +787,19 @@ At minimum Phase 10 must preserve candidate pressure around:
 - governed-effect contract from Phase 8;
 - Phase 5 open scale/latency/availability/RPO/RTO scenarios.
 
-No Physical database/search/runtime selection is made here.
+No Physical database/search/runtime selection is made here or by Phase 10's method package.
 
 # Evidence basis checked for this contract
 
-Current primary technical evidence reviewed on 2026-08-17 includes:
+Primary technical evidence reviewed for this contract includes:
 
-- PostgreSQL current documentation for full-text search types, query parsing and relevance ranking;
-- pgvector current project documentation for exact vs approximate HNSW/IVFFlat search, filtering and recall behavior;
-- OpenTelemetry current semantic-conventions documentation;
+- PostgreSQL documentation for full-text search types, query parsing and relevance ranking;
+- pgvector project documentation for exact vs approximate HNSW/IVFFlat search, filtering and recall behavior;
+- OpenTelemetry semantic-conventions documentation;
 - RFC 5545 iCalendar recurrence/timezone semantics;
 - RFC 8984 JSCalendar recurrence overrides and timezone/floating-time semantics;
-- Google Calendar current incremental-sync documentation including sync-token invalidation/full-resync behavior;
-- Google OR-Tools current CP-SAT documentation and status semantics.
+- Google Calendar incremental-sync documentation including sync-token invalidation/full-resync behavior;
+- Google OR-Tools CP-SAT documentation and status semantics.
 
 External standards/products are pressure evidence and adapter inputs, not LifeOS semantic authority.
 
@@ -836,4 +836,4 @@ SOLVER
 OR-Tools CP-SAT = preferred specialized benchmark candidate
 ```
 
-This verdict closes the analytical Phase 9 checkpoint and hands the combined Phase 7–9 tranche to current-architecture propagation and remote QA.
+This verdict remains current downstream architecture pressure. It does not authorize specialized infrastructure, Physical implementation or backend implementation.
