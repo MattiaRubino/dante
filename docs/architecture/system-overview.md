@@ -1,6 +1,6 @@
 # System Overview
 
-- Status: **Current architecture overview — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
+- Status: **Current architecture overview — Physical Model authorized / PM-00 bootstrap**
 - Last updated: 2026-08-18
 
 ## Stage boundary
@@ -21,7 +21,7 @@ CURRENT
 Phase 6 AI/context/runtime/integration boundaries
 CURRENT
 
-Phase 7 durable-execution benchmark
+Phase 7 durable-execution contract
 CURRENT
 
 Phase 8 governed-operation/effect contract
@@ -31,39 +31,34 @@ Phase 9 search/observability/calendar/solver pressure
 CURRENT
 
 Phase 10 Physical benchmark method
-CURRENT / QA PASS
+CURRENT / QA PASS / ACTIVE INPUT
 
 Phase 11 repository engineering safety
 QA PASS
 
-Phase 12 clean-room QA
-QA PASS / CLOSED
-
-Independent total audit
-PASS
+Phase 12 + independent Pre-Physical audit
+CLOSED / PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
-activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
-main integration checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
+INTEGRATED / POST-MERGE VERIFIED
 
 Physical readiness
 ESTABLISHED
 
 Physical Model
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+feature/physical-model
+base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
+mapping NOT STARTED
+benchmark NOT STARTED
+selection NONE
 
 Backend Foundation / production implementation
 NOT STARTED / DEFERRED
-
-Main integration
-COMPLETE / POST-MERGE VERIFIED
 ```
 
-Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner or Physical mechanism.
+Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner and does not select a Physical mechanism.
 
 ## Logical architecture
 
@@ -87,7 +82,8 @@ Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundar
                                                             |
                                                             v
                                                 Physical persistence/runtime
-                                                TO BE SELECTED / BENCHMARKED
+                                                ACTIVE BENCHMARK/DESIGN WORKSTREAM
+                                                NONE SELECTED YET
                                                             |
                                                 StorageProvider / object storage
 ```
@@ -124,7 +120,7 @@ A future backend must enforce accepted semantics through technical services, inc
 - search/retrieval projections separated from canonical state;
 - privacy-safe observability and operational controls.
 
-Concrete routes/DTOs, transaction mechanics, AuthZ engine, AI eval tooling, durable-runtime binding and persistence structures remain later decisions.
+Concrete routes/DTOs, AuthZ engine, AI eval tooling and durable-runtime binding remain later decisions. Physical persistence structures are now the subject of the active Physical workstream, but no candidate mapping/schema is authorized by PM-00 bootstrap itself.
 
 ## Governed operation/effect responsibility
 
@@ -173,11 +169,11 @@ DBOS      conditional challenger — NOT selected
           distributed multi-server PostgreSQL-coupled
 ```
 
-No runtime creates exactly-once external reality. Runtime/workflow IDs remain technical and do not become Domain identity/material-state identity.
+No runtime creates exactly-once external reality. Runtime/workflow IDs remain technical and do not become Domain/material-state identity.
 
 ## Canonical state responsibility
 
-Any future persistence must preserve owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, specific relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
+Any Physical persistence must preserve owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
 
 ```text
 Person != Account != Principal != Actor
@@ -189,7 +185,7 @@ AI / solver inference != accepted canonical effect
 
 All `WL-H01..WL-H12` remain mandatory downstream.
 
-## Physical benchmark posture
+## Active Physical benchmark posture
 
 ```text
 PRIMARY CANONICAL
@@ -197,16 +193,27 @@ PostgreSQL hybrid — preferred mandatory baseline, NOT selected
 TypeDB            — mandatory challenger, NOT selected
 
 SECONDARY GRAPH
-no-specialized-store baseline vs Neo4j
+G0 no-specialized-store baseline vs G1 Neo4j
 
 SEARCH / VECTOR
-structured + lexical/full-text baseline vs bounded pgvector where applicable
+S0 structured + lexical/full-text vs S1 bounded pgvector where applicable
 
 EVENT / DOCUMENT
-bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
+bounded mechanisms first; specialist only on demonstrated gap/benefit
 ```
 
-Phase 10 defines how later evidence is produced/judged. Hard correctness gates precede scoring. Candidate mappings are idiomatic but must satisfy common semantic assertions. LOW/BASE/HIGH are synthetic envelopes, not forecasts; unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
+Phase 10 defines evidence methodology. `docs/physical-model/**` defines how the active workstream executes it.
+
+```text
+hard correctness gates before score
+same semantics + candidate-idiomatic mapping
+LOW/BASE/HIGH = synthetic qualification envelopes
+unexecuted tier != VERIFIED-RUN
+product + version + edition + deployment = benchmark subject
+PREFERRED != SELECTED
+```
+
+Current execution state is still `NOT STARTED`; PM-00 only establishes rules/test/evidence/handoff infrastructure.
 
 ## Integration responsibility
 
@@ -218,7 +225,7 @@ Five Integration Hub modes remain distinct:
 4. retrieval/index projection;
 5. action/tool integration.
 
-`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider acknowledgement/result != canonical effect completion automatically. MCP/A2A/future protocols remain adapters.
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider acknowledgement/result != canonical completion automatically. MCP/A2A/future protocols remain adapters.
 
 ## AI / Context Builder responsibility
 
@@ -234,54 +241,42 @@ transient LLM working context
 
 AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. LifeOS does not create a second generic AI-memory source of truth.
 
-Material consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+Material consequential AI changes require versioned/reproducible evaluation before promotion.
 
 ```text
 eval result != canonical LifeOS truth
 eval PASS != Authority / governed-effect authorization
 ```
 
-Concrete eval datasets/frameworks/runners/thresholds/CI remain later engineering choices.
-
 ## Search / calendar / solver / observability responsibility
 
 - Search/index state is derived, disclosure-aware and deletion/freshness aware; search miss != canonical nonexistence.
 - Calendar standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain LifeOS-owned.
-- Simple deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred candidate; `UNKNOWN != INFEASIBLE`; solver output crosses governed effect before canonical change.
+- Deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred candidate; `UNKNOWN != INFEASIBLE`; solver output crosses governed effect before canonical change.
 - OpenTelemetry-first/equivalent is direction; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
 
 ## Repository engineering safety
 
-Phase 11 verified effective `main` protections remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has zero required checks until real stable contexts exist and auto-deletes merged head branches.
+Effective `main` protections are remotely verified. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has zero required checks until real stable contexts exist and auto-deletes merged head branches.
 
-PR #13 successfully exercised that protected integration path and auto-deleted `chore/pre-physical-coherence` after merge.
+`feature/physical-model` is now an active bounded branch. Benchmark-only code/evidence is not production backend infrastructure and does not become a required CI check automatically.
 
-## Definitive Pre-Physical closure and integration evidence
+## Pre-Physical closure evidence
 
-Phase 12 is QA PASS/CLOSED. The subsequent independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start.
-
-Activation checkpoint:
-
-`9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
-
-proved:
-
-```text
-PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
-unique paths  23
-added          1
-modified      22
-deleted        0
-unexpected     0
-behind_by      0
-main unchanged
-critical readback PASS
-```
-
-That evidence established definitive branch-local closure. PR #13 then integrated final branch HEAD `34e9ea3b547922600cb472adf1549a321e6ddfe4` into protected `main` at merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge compare showed one merge commit and zero file differences.
-
-Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**.
+Phase 12 + independent audit passed; PR #13 integrated Pre-Physical and PR #14 aligned current truth. Physical starts from accepted `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79` without reopening that completed workstream.
 
 ## Next boundary
 
-Pre-Physical integration is complete. The **Physical Model is READY FOR SEPARATE AUTHORIZATION but remains NOT STARTED / NOT AUTHORIZED**. A new explicit user authorization and fresh workstream gate are required before any Physical design/benchmark execution; Backend Foundation remains deferred until a Physical result is separately accepted.
+```text
+PM-00 BOOTSTRAP
+complete and remotely QA first
+
+THEN
+PM-01 READ-ONLY FIRST
+freeze current PostgreSQL/TypeDB subjects and benchmark environment
+verify version/edition/deployment capabilities from official primary sources
+build execution inventory/evidence plan
+STOP before first mapping/schema/harness write
+```
+
+Backend Foundation remains deferred until a Physical result is explicitly selected/accepted and its remaining prerequisites are satisfied.
