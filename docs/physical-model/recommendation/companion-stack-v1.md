@@ -44,12 +44,25 @@ Class A bounded async
 PostgreSQL transactional outbox + bounded worker
 
 Class B material durable process
-Restate Cloud EU
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 local/reproducible subject
+Restate Server 1.7.2 self-hosted/reproducible subject
+Restate Cloud EU allowed as managed deployment
 ```
 
-Restate journal payloads should be minimized and should normally carry technical execution identifiers plus bounded references rather than duplicate full personal canonical payloads.
+`Restate runtime` is the technology recommendation. Deployment is deliberately conditional rather than hard-coded to Cloud EU:
+
+```text
+SELF-HOSTED
+first-class option when privacy/data-control or Python journal-encryption constraints dominate
+
+CLOUD EU
+managed option when operational value is preferred and the privacy assessment accepts the journal posture
+```
+
+Current Restate documentation supports a self-contained server binary/container. Current client-side journal encryption for Restate Cloud is documented only for the TypeScript SDK; the LifeOS target path is Python. Therefore Cloud EU must not be treated as mandatory merely for managed convenience.
+
+Restate journal payloads must be minimized and should normally carry technical execution identifiers plus bounded references rather than duplicate full personal canonical payloads. Runtime state is never Domain history.
 
 ### Object storage
 
@@ -129,6 +142,12 @@ Grafana stack = telemetry
 ```text
 COMPANION STACK
 RECOMMENDED / PASS-CONDITIONAL
+
+RESTATE TECHNOLOGY
+RECOMMENDED
+
+RESTATE DEPLOYMENT
+CONDITIONAL: SELF-HOSTED OR CLOUD EU
 
 SECOND CANONICAL AUTHORITY
 NONE
