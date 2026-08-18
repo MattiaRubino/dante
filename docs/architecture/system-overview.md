@@ -1,6 +1,6 @@
 # System Overview
 
-- Status: **Current architecture overview — Physical Model authorized / PM-00 bootstrap**
+- Status: **Current architecture overview — Physical Model target selected/accepted**
 - Last updated: 2026-08-18
 
 ## Stage boundary
@@ -21,46 +21,34 @@ CURRENT
 Phase 6 AI/context/runtime/integration boundaries
 CURRENT
 
-Phase 7 durable-execution contract
-CURRENT
-
 Phase 8 governed-operation/effect contract
 CURRENT
 
-Phase 9 search/observability/calendar/solver pressure
-CURRENT
-
-Phase 10 Physical benchmark method
-CURRENT / QA PASS / ACTIVE INPUT
-
-Phase 11 repository engineering safety
+Repository engineering safety
 QA PASS
-
-Phase 12 + independent Pre-Physical audit
-CLOSED / PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
 INTEGRATED / POST-MERGE VERIFIED
 
-Physical readiness
-ESTABLISHED
+Physical Model target
+CLOSED / SELECTED / ACCEPTED
+PM-13 clean-room architecture/documentation QA PASS
+selected canonical primary PostgreSQL 18.4
 
-Physical Model
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
-feature/physical-model
-base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
-mapping NOT STARTED
-benchmark NOT STARTED
-selection NONE
+Direct selected-stack implementation validation
+NOT STARTED / DIRECT HG PASS 0
 
 Backend Foundation / production implementation
 NOT STARTED / DEFERRED
+
+Development Profile v0
+NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
 ```
 
-Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner and does not select a Physical mechanism.
+Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner.
 
-## Logical architecture
+## Logical/system architecture
 
 ```text
 Web client (Next.js) -----------------------\
@@ -72,29 +60,76 @@ Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundar
                                                   |-- deterministic solver boundary
                                                   |-- provenance / history / reconciliation services
                                                   |-- projection / disclosure services
-                                                  |-- search / retrieval projection services
+                                                  |-- search / retrieval services
                                                   |-- Integration Hub / provider adapters
                                                   |-- AI Gateway + Context Builder
                                                   |-- AI evaluation / promotion boundary
-                                                  |-- provider-neutral tool/action interfaces
-                                                  |-- bounded async + durable execution runtime boundary
+                                                  |-- bounded async + durable execution boundary
                                                   |-- observability / operational controls
                                                             |
                                                             v
-                                                Physical persistence/runtime
-                                                ACTIVE BENCHMARK/DESIGN WORKSTREAM
-                                                NONE SELECTED YET
-                                                            |
-                                                StorageProvider / object storage
+                                                   PostgreSQL 18.4
+                                                   canonical persistence
+                                                      /    |    \
+                                                     /     |     \
+                                                 PostGIS  pgvector  FTS
+                                                    |
+                 -----------------------------------+-----------------------------------
+                 |                                  |                                  |
+          PowerSync / SQLite                 Restate runtime                    Cloudflare R2
+          local/sync projection              Class-B execution                 raw object bytes
+                 |                                  |                                  |
+                 +-------------------------- backend authority -------------------------+
+                                                    |
+                                                pgBackRest
+                                                    |
+                                      AWS S3 recovery repositories
+
+Operational telemetry:
+OpenTelemetry -> Grafana Alloy -> Grafana Cloud EU
+
+Constraint solving:
+OR-Tools CP-SAT -> candidate output -> governed acceptance path
 ```
 
 External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical LifeOS truth merely because they contain data.
+
+## Canonical ownership
+
+```text
+CANONICAL LIFEOS TRUTH
+PostgreSQL 18.4
+
+MATERIAL HISTORY
+PostgreSQL 18.4
+
+RAW OBJECT BYTES
+Cloudflare R2
+
+LOCAL/OFFLINE COPY
+encrypted SQLite / noncanonical
+
+SYNC PROJECTION
+PowerSync / noncanonical
+
+DURABLE RUNTIME STATE
+Restate / noncanonical
+
+BACKUPS
+S3 / recovery only
+
+SOLVER OUTPUT
+OR-Tools / candidate only
+
+TELEMETRY
+OTel/Grafana / operational only
+```
 
 ## Client responsibilities
 
 Clients own presentation, navigation, local interaction state, secure session handling, platform capabilities and collection of user intent/confirmation where required.
 
-Any future multi-device/offline implementation must obey Phase 5 operation-specific freshness, expected-state, conflict, governance and sensitive-data requirements. Clients do not own canonical persistence or critical authorization/Domain invariants.
+Multi-device/offline behavior must obey operation-specific freshness, expected-state, conflict, governance and sensitive-data requirements. Clients do not own canonical persistence or critical authorization/Domain invariants.
 
 UI actions may request governed operations; UI labels/buttons do not define semantic operation identity.
 
@@ -112,15 +147,15 @@ A future backend must enforce accepted semantics through technical services, inc
 - provider-state vs canonical-state separation;
 - selective projection/disclosure;
 - scheduling/replanning and deterministic calculation/constraint services;
-- optional solver candidate generation rather than direct canonical writes;
+- solver candidate generation rather than direct canonical writes;
 - AI context construction/provider-neutral routing;
 - versioned/reproducible evaluation before promotion of materially consequential AI behavior changes;
 - provider/integration orchestration;
 - bounded background work vs durable long-running coordination by operation class;
-- search/retrieval projections separated from canonical state;
+- search/retrieval separated from canonical meaning;
 - privacy-safe observability and operational controls.
 
-Concrete routes/DTOs, AuthZ engine, AI eval tooling and durable-runtime binding remain later decisions. Physical persistence structures are now the subject of the active Physical workstream, but no candidate mapping/schema is authorized by PM-00 bootstrap itself.
+Concrete routes/DTOs, AuthZ engine and Development Profile v0 remain later decisions. Physical persistence technology is selected, but backend production implementation has not started.
 
 ## Governed operation/effect responsibility
 
@@ -158,22 +193,69 @@ runtime cancellation != Domain cancellation automatically
 
 ```text
 BOUNDED ASYNC
-DB + worker/outbox style = valid baseline class
+PostgreSQL transactional outbox + bounded worker
 
-DEDICATED DURABLE EXECUTION
-Restate   preferred structural-fit candidate — NOT selected
-Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional challenger — NOT selected
-          SQLite-capable local/bounded Python use
-          PostgreSQL-recommended production
-          distributed multi-server PostgreSQL-coupled
+DEDICATED DURABLE CLASS-B
+Restate runtime — SELECTED
 ```
+
+Restate deployment:
+
+```text
+SELF-HOSTED
+FIRST-CLASS
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+The deployment profile chooses between them based on privacy, operability, availability and cost. Current Python use must not assume TypeScript-only client-side journal encryption; journal minimization remains mandatory.
 
 No runtime creates exactly-once external reality. Runtime/workflow IDs remain technical and do not become Domain/material-state identity.
 
+## Offline / multi-device responsibility
+
+```text
+PostgreSQL canonical
+→ approved PowerSync projection
+→ encrypted SQLite local copy
+→ offline mutation
+→ LifeOS backend expected-state/governance/AuthZ revalidation
+→ PostgreSQL canonical commit if valid
+```
+
+Local arrival order is not semantic conflict resolution. Universal consequential LWW is rejected. Visibility/delete/redaction changes must propagate to affected sync/local copies.
+
+## Object responsibility
+
+```text
+ContentArtifact identity/metadata/authority
+PostgreSQL
+
+raw object bytes
+Cloudflare R2 Standard / EU / private
+```
+
+R2 is not a semantic database. Public permanent object URLs/buckets are not the default.
+
+## Recovery responsibility
+
+```text
+PostgreSQL backup
+pgBackRest 2.59.0 -> AWS S3 Standard eu-south-1
+
+R2 object backup
+-> separate S3 repository
+```
+
+Versioning and Object Lock GOVERNANCE with finite policy-bound retention are the target recovery posture. Recovery copies are not canonical and restore must preserve anti-resurrection/deletion semantics.
+
 ## Canonical state responsibility
 
-Any Physical persistence must preserve owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
+Physical persistence preserves owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
 
 ```text
 Person != Account != Principal != Actor
@@ -184,36 +266,6 @@ AI / solver inference != accepted canonical effect
 ```
 
 All `WL-H01..WL-H12` remain mandatory downstream.
-
-## Active Physical benchmark posture
-
-```text
-PRIMARY CANONICAL
-PostgreSQL hybrid — preferred mandatory baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
-
-SECONDARY GRAPH
-G0 no-specialized-store baseline vs G1 Neo4j
-
-SEARCH / VECTOR
-S0 structured + lexical/full-text vs S1 bounded pgvector where applicable
-
-EVENT / DOCUMENT
-bounded mechanisms first; specialist only on demonstrated gap/benefit
-```
-
-Phase 10 defines evidence methodology. `docs/physical-model/**` defines how the active workstream executes it.
-
-```text
-hard correctness gates before score
-same semantics + candidate-idiomatic mapping
-LOW/BASE/HIGH = synthetic qualification envelopes
-unexecuted tier != VERIFIED-RUN
-product + version + edition + deployment = benchmark subject
-PREFERRED != SELECTED
-```
-
-Current execution state is still `NOT STARTED`; PM-00 only establishes rules/test/evidence/handoff infrastructure.
 
 ## Integration responsibility
 
@@ -250,33 +302,50 @@ eval PASS != Authority / governed-effect authorization
 
 ## Search / calendar / solver / observability responsibility
 
-- Search/index state is derived, disclosure-aware and deletion/freshness aware; search miss != canonical nonexistence.
-- Calendar standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain LifeOS-owned.
-- Deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred candidate; `UNKNOWN != INFEASIBLE`; solver output crosses governed effect before canonical change.
-- OpenTelemetry-first/equivalent is direction; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
+- Search: PostgreSQL native FTS + `pg_trgm` + `unaccent`; pgvector for bounded vector retrieval; search/index state remains derived and disclosure-aware.
+- Graph traversal: explicit PostgreSQL mappings + recursive SQL; no dedicated graph database in the accepted target.
+- Calendar: standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain LifeOS-owned.
+- Solver: OR-Tools 9.15 CP-SAT is selected; `UNKNOWN != INFEASIBLE`; output crosses governed acceptance before canonical change.
+- Observability: OpenTelemetry + Grafana Alloy + Grafana Cloud EU target; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
+
+## Direct implementation-validation truth
+
+```text
+DATABASE DEPLOYMENT      NOT STARTED
+FIXTURE/HARNESS           NOT STARTED
+DIRECT HG PASS            0
+LOW/BASE/HIGH            NOT RUN
+RESTORE/MIGRATION         NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                 NOT RUN
+RESTATE                   NOT RUN
+OBJECT RECOVERY           NOT RUN
+SOLVER                    NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
+```
+
+Applicable obligations remain in `docs/physical-model/recommendation/post-selection-validation-register-v1.md`.
 
 ## Repository engineering safety
 
-Effective `main` protections are remotely verified. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has zero required checks until real stable contexts exist and auto-deletes merged head branches.
+Effective `main` protections remain the integration mechanism. Normal work uses bounded branches and PRs; no direct-main bypass is authorized.
 
-`feature/physical-model` is now an active bounded branch. Benchmark-only code/evidence is not production backend infrastructure and does not become a required CI check automatically.
+## Development Profile v0 boundary
 
-## Pre-Physical closure evidence
-
-Phase 12 + independent audit passed; PR #13 integrated Pre-Physical and PR #14 aligned current truth. Physical starts from accepted `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79` without reopening that completed workstream.
+The accepted Physical target does not decide initial deployment activation. A separate Development Profile v0 may choose which selected services run immediately, self-hosted/managed modes where allowed, free-tier/local operational choices, accounts/environments and upgrade triggers.
 
 ## Next boundary
 
 ```text
-PM-00 BOOTSTRAP
-complete and remotely QA first
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
+
+PROTECTED-MAIN INTEGRATION
+normal PR path
 
 THEN
-PM-01 READ-ONLY FIRST
-freeze current PostgreSQL/TypeDB subjects and benchmark environment
-verify version/edition/deployment capabilities from official primary sources
-build execution inventory/evidence plan
-STOP before first mapping/schema/harness write
-```
+Development Profile v0
 
-Backend Foundation remains deferred until a Physical result is explicitly selected/accepted and its remaining prerequisites are satisfied.
+Backend Foundation
+NOT STARTED / requires separate explicit authorization
+```
