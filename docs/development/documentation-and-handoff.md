@@ -1,195 +1,268 @@
 # Documentation and Handoff Protocol
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-10
+- Last updated: 2026-08-18
 
 ## Goal
 
-LifeOS must remain resumable across separate ChatGPT conversations, Claude sessions, Codex tasks, other AI agents and human developers. Repository documentation is therefore part of the implementation, not optional aftercare.
+LifeOS must remain resumable across separate ChatGPT conversations, Claude sessions, Codex tasks, other AI agents and human developers. Repository documentation is part of the implementation, not optional aftercare.
 
-Operational branch/path/authority rules are defined in [`operating-rules.md`](operating-rules.md) and apply together with this protocol.
+Operational branch/path/authority rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md). Repository integration enforcement is defined in [`repository-engineering-safety.md`](repository-engineering-safety.md).
 
 ## Canonical reading order
 
-Before modifying the project, a new contributor/agent should read:
+Before modifying the project, read:
 
 1. root `README.md`;
-2. `docs/PROJECT-STATUS.md`;
-3. `docs/development/operating-rules.md`;
-4. the relevant `docs/workstreams/<name>.md` handoff;
-5. linked product/architecture documents;
-6. linked accepted ADRs;
-7. implementation code/tests relevant to the current task.
+2. `docs/README.md`;
+3. `docs/PROJECT-STATUS.md`;
+4. `docs/development/agent-operating-manual.md`;
+5. `docs/development/operating-rules.md`;
+6. this file;
+7. `docs/development/branching-and-environments.md`;
+8. `docs/development/repository-engineering-safety.md`;
+9. the active workstream handoff;
+10. current model/architecture index and linked current sources;
+11. relevant ADRs/evidence/methodologies;
+12. implementation/tests relevant to the task;
+13. current branch/ref and relation to `main`.
 
-If repository documentation and conversational memory disagree, stop treating the conversation as authoritative and verify the current repository/branch state.
+Repository truth beats conversation memory where they disagree.
 
-If an old branch and `main` disagree, current accepted `main` is the baseline unless the active workstream handoff explicitly identifies branch-local unmerged work that is newer within that workstream's scope.
+## Workstream handoff as save-game
 
-## Workstream handoff as save game
-
-Every active workstream must maintain one concise operational file that lets another contributor continue without reconstructing the entire project history.
+Every active workstream maintains one concise operational source that allows continuation without reconstructing chat history.
 
 The handoff should record:
 
 - status;
-- branch and PR;
+- branch/PR;
 - scope/purpose;
-- current source-of-truth documents;
-- last completed work;
-- current task;
-- next exact steps;
+- current sources of truth;
+- last completed milestone;
+- exact current task and next steps;
 - known issues/open questions;
-- important files/paths;
-- tests/validation commands and results;
-- decisions that should not be reopened casually;
-- last validated commit when code exists.
+- important paths;
+- validation/QA results;
+- decisions that should not be casually reopened;
+- validated/current commit where applicable;
+- in-flight PRE-SCOPE/write state;
+- meaningful failed/no-op tool incidents that affect continuation.
 
-The handoff should be updated after meaningful progress, not only at the end of a large phase.
-
-For long-running workstreams, the handoff is the preferred place for incremental status. Do not edit global status files after every local iteration.
+Update it after meaningful progress, not only at the end.
 
 ## Durable documentation versus operational state
 
-Use the right document for the right job:
+Use the right document type:
 
-- `PROJECT-STATUS.md`: current global project state.
-- `ROADMAP.md`: sequencing and broad future direction.
-- `workstreams/*.md`: exact operational continuation state.
-- `product/*.md`: durable product meaning/behavior.
-- `architecture/*.md`: durable system/technical model.
-- `decisions/ADR-*.md`: important accepted decisions and rationale.
-- code/tests/migrations: executable implementation truth.
-- Git history/PR discussion: detailed historical evidence when needed.
+- `PROJECT-STATUS.md` — current global state;
+- `ROADMAP.md` — current sequence/broad future direction;
+- `workstreams/*.md` — exact operational continuation;
+- `product/*.md` — current durable product meaning/behavior where marked current;
+- `architecture/*.md` — current durable system/technical model where marked current;
+- `decisions/ADR-*.md` — decision rationale plus explicit current status/supersession;
+- checkpoints/validation/research — historical or current evidence as explicitly labelled;
+- code/tests/migrations — executable implementation truth;
+- Git/PR history — recoverable detailed history.
 
-Do not turn `PROJECT-STATUS.md` into a giant design document and do not use a workstream handoff as the only record of an architectural decision.
+Do not use a workstream handoff as the only durable record of an architectural decision.
+
+## Current truth vs historical evidence
+
+LifeOS deliberately distinguishes current specifications from historical evidence.
+
+```text
+CURRENT SPECIFICATION
+= current truth only
+
+ADR
+= rationale + explicit current status/supersession
+
+HISTORICAL / VALIDATION EVIDENCE
+= truthful chronology
+
+GIT
+= recoverable complete change history
+```
+
+### Current specifications
+
+Current specifications should not accumulate obsolete design chronology.
+
+If `A` is replaced by `B`, the current specification describes `B`. It may include only the minimum prior context needed to understand the current constraint.
+
+Do not leave `A`, `A failed`, `B proposed`, `B revised` as a running story inside a current architecture/product/status document.
+
+### ADRs
+
+ADRs preserve material decision rationale. When superseded/qualified, update the status and replacement authority explicitly without pretending the original decision never existed.
+
+### Historical evidence/checkpoints
+
+Historical checkpoints, validation records and transition evidence preserve what was true/tested at the time. Do not rewrite them to look current.
+
+### Git as history
+
+A stale document does not need to remain in the current working tree merely because history matters. Git retains the old payload. Keep a historical file in-tree only when it still provides continuing evidentiary/rationale value that is useful enough to justify its presence.
+
+## Knowledge-coverage gate before replacing/deleting stale current docs
+
+Before replacing or deleting a stale current document, classify every meaningful statement.
+
+Possible dispositions:
+
+- current truth → keep in current source;
+- current truth → move to the correct current source;
+- rationale → ADR;
+- evidence → checkpoint/research/history source;
+- later requirement → explicit roadmap/requirement register;
+- superseded → Git history is sufficient;
+- duplicate/no continuing value → discard.
+
+Required deletion/replacement gate:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
+
+The goal is **clean current documentation without knowledge loss**.
 
 ## Global-file discipline
 
-To reduce conflicts between parallel branches:
+To reduce conflicts:
 
-- update the workstream handoff for normal incremental progress;
-- update `PROJECT-STATUS.md` only when a workstream starts/finishes/blocks, a major milestone merges, a durable decision changes, or the global sequence changes;
-- update root `README.md`, broad architecture indexes and ADRs only when their durable content genuinely changes;
-- before merging any shared/global file, compare the branch version against current `main` and preserve the newest accepted semantics.
+- normal incremental progress → update workstream handoff;
+- global state/sequence changes → update `PROJECT-STATUS.md` / `ROADMAP.md` as appropriate;
+- current architecture/product meaning changes → update the current durable source;
+- significant architectural decision/rationale changes → update/create ADR;
+- repository protection/runtime policy changes → update `repository-engineering-safety.md` and effective remote settings as applicable;
+- before merging shared/global files, compare against current `main` and preserve newest current truth.
 
-A clean textual merge is not enough if it would make documentation less current.
+A clean textual merge is not enough if documentation becomes stale.
 
 ## When an ADR is required
 
-Create or update an ADR when a decision materially affects architecture, persistence strategy, security, deployment model, provider boundaries, data ownership, major framework choice or another durable cross-cutting constraint.
+Create/update an ADR when a decision materially affects architecture, persistence strategy, security, deployment model, provider boundaries, data ownership, major framework choice or another durable cross-cutting constraint.
 
-A normal implementation detail does not require an ADR.
+Normal implementation details do not require ADRs.
 
-Accepted ADRs may be superseded by later ADRs, but should not be silently rewritten to hide the previous decision. Mark supersession explicitly.
+Accepted ADRs may be superseded; mark that explicitly.
+
+A requirement hardening that preserves an existing architectural decision does not automatically require a new ADR. For example, requiring reproducible evaluation before promoting consequential AI behavior changes strengthens the current AI boundary without selecting a provider/model/evaluation product.
 
 ## Documentation in the same PR
 
-A change is incomplete if it changes behavior/architecture but leaves documentation describing the previous state.
+A change is incomplete if behavior/architecture changes while current documentation still describes the old state.
 
-The same PR should update, when applicable:
+Update as applicable:
 
 - implementation;
 - tests;
 - migrations;
-- durable product/architecture docs;
+- current product/architecture docs;
 - workstream handoff;
-- global status when globally meaningful;
+- global status/roadmap when meaningful;
 - ADR;
-- changelog of significant internal milestones.
+- significant milestone/change record where useful.
 
 ## AI-agent protocol
 
-When an AI agent works on LifeOS:
+AI agents must:
 
-- do not assume conversation history is complete;
-- do not invent project state that can be checked in Git;
-- read the operating rules and handoff before continuing a workstream;
-- verify current `main` and the active branch before editing;
-- preserve accepted decisions unless new evidence justifies a deliberate change;
-- never promote an old branch document over a newer `main` decision without comparison;
-- record new durable decisions in the repository;
-- record exact remaining work before handing off;
-- avoid leaving critical context only inside a chat response;
-- do not expose secrets, production personal data or private credentials in prompts, logs or committed docs.
+- not assume chat history is complete;
+- not invent state that Git can verify;
+- follow bootstrap/operating rules;
+- verify `main` and active branch before writes;
+- preserve accepted semantics unless deliberate evidence justifies change;
+- not promote historical detail over newer current truth;
+- keep current specifications current rather than append-only;
+- run knowledge coverage before replacing/deleting stale current docs;
+- record durable decisions/continuation in repo;
+- distinguish documented repository policy from remotely effective repository settings;
+- avoid secrets, production personal data and credentials in prompts/logs/docs.
 
-## Historical preservation
+## Split-document handoff rule
 
-Existing documentation should not be deleted merely because a newer summary/index is introduced. Consolidation should normally add navigation/status and integrate accepted work into the canonical branch.
-
-If a document is obsolete, prefer marking it historical/superseded or leaving it in Git history while updating current indexes. Delete only when keeping the file creates real correctness, security, legal or maintenance problems.
-
-Old branches remain useful historical evidence but stop being authoritative once their accepted work is integrated into `main`.
-
-## Completion checklist
-
-Before handing a workstream to another chat/agent or merging it:
-
-- [ ] Current branch was checked against current `main`.
-- [ ] Workstream status reflects reality.
-- [ ] Last completed work is explicit.
-- [ ] Next exact step is explicit.
-- [ ] Important open questions are listed.
-- [ ] Relevant source-of-truth docs are linked.
-- [ ] Tests/validation are recorded where applicable.
-- [ ] Last validated commit is recorded when code exists.
-- [ ] No older shared document overwrites a newer accepted decision.
-- [ ] `PROJECT-STATUS.md` reflects globally meaningful changes only.
-- [ ] Significant durable decisions have an ADR.
-
----
-
-## 2026-08-15 — Cross-session handoff hardening
-
-[`agent-operating-manual.md`](agent-operating-manual.md) is now mandatory reading for new AI/human sessions before workstream execution. It records the stricter repository-write, preservation, split-document and tool-failure rules that make handoffs independently resumable.
-
-The canonical reading order for an execution session is therefore hardened to include:
-
-```text
-root README.md
-→ docs/README.md
-→ docs/PROJECT-STATUS.md
-→ docs/development/agent-operating-manual.md
-→ docs/development/operating-rules.md
-→ docs/development/documentation-and-handoff.md
-→ docs/development/branching-and-environments.md
-→ active workstream logical document (all required canonical split parts)
-→ linked accepted docs / ADRs / methodologies
-→ relevant code / tests / checkpoints
-→ verified Git branch and remote compare
-```
-
-### Handoff precision requirements
-
-A handoff must distinguish intended work from repository-proven work. For an incomplete approved Git scope it should preserve, when applicable:
-
-- approved pre-scope SHA;
-- current verified branch HEAD;
-- exact physical paths already written successfully;
-- exact physical paths still missing;
-- logical documents affected;
-- physical split/continuation mapping;
-- failed/no-op writes and concrete tool errors;
-- QA already performed and QA still required;
-- explicit out-of-scope boundaries.
-
-A tool call that failed or returned a conflict is not a completed repository change.
-
-### Split-document handoff rule
-
-A canonical split is one logical document. Its parts are physical storage/operational units only. Handoffs and project summaries must not inflate document counts because a file was split.
-
-For example:
+A canonical split is one logical document with multiple physical Git paths.
 
 ```text
 domain-model.md + domain-model-part-2.md + domain-model-part-3.md
-= 1 logical workstream document
-= 3 physical Git paths
+= 1 logical document
+= 3 physical paths
 ```
 
-Git write gates and Git QA still enumerate each physical path independently.
+Git gates/QA enumerate each physical path.
 
-A new session must read the complete logical sequence, especially the last continuation part containing the newest downstream amendments. It must not treat Part 1 as current merely because it carries the original filename.
+### Size / tool-limit split
 
-### Tool-limit handoff rule
+When a split exists only because of file size, connector limits, write limits or another tooling/transport constraint, it is a **lossless physical partition of one complete logical payload**.
 
-When an agent stops because Git/GitHub/connector/network capabilities prevent a safe write, the handoff must state that limitation explicitly and leave a recoverable next step. It must not mark the work as closed, nor invent a semantic workaround for a technical limitation.
+```text
+complete logical payload
+→ physical parts
+→ complete logical payload reconstructible from all canonical parts
+```
+
+A size/tool-limit split must **not** summarize, condense, replace prior detail with a recap, paraphrase away substantive content, omit requirements/evidence/decisions, or hide semantic cleanup inside the split.
+
+If the document also needs semantic/current-truth editing, perform and describe that as a separate content operation. Do not call a summary or rewrite a `split`.
+
+### Chronological / evidence continuation
+
+For chronological/evidence chains, a new session reads the complete required sequence. Do not treat Part 1 as current merely because it carries the original filename.
+
+Later evidence may legitimately be appended after the previous final payload in a continuation part. That evidence-continuation behavior is distinct from losslessly partitioning one already-defined payload because of size/tool limits.
+
+### Current specifications
+
+Current specifications should not be split merely to preserve obsolete history; rewrite them cleanly where safe through an explicit current-truth edit. A current-truth rewrite must not be disguised as a lossless split.
+
+## Tool-limit handoff rule
+
+When Git/GitHub/connector/network limitations prevent safe work, the handoff states:
+
+- exact attempted operation/error;
+- writes that actually landed;
+- writes that did not;
+- current verified branch/HEAD where possible;
+- remaining scope;
+- QA already done/still required;
+- safe next action.
+
+A failed/conflicted call is not a completed change.
+
+## Repository-safety handoff rule
+
+A workstream that depends on branch rules, required checks or security/integration settings must distinguish:
+
+```text
+documented intended policy
+!= remotely verified effective state
+```
+
+If the connector cannot read a security setting because of integration permissions, record it as connector-unverifiable rather than inventing PASS/FAIL. If a required check does not yet exist as a stable real check context, do not manufacture it merely to make a policy look complete.
+
+## Completion checklist
+
+Before handoff or merge:
+
+- [ ] branch relation to current `main` verified;
+- [ ] workstream status reflects reality;
+- [ ] last completed milestone explicit;
+- [ ] next exact step explicit;
+- [ ] open questions listed;
+- [ ] current source-of-truth docs linked;
+- [ ] tests/validation/QA recorded;
+- [ ] validated/current commit recorded where relevant;
+- [ ] no historical source overrides newer current truth;
+- [ ] current specs contain current truth rather than obsolete chronology;
+- [ ] any replaced/deleted stale current doc passed knowledge coverage;
+- [ ] global status changed only when globally meaningful;
+- [ ] significant durable decisions have ADR treatment;
+- [ ] repository settings relied on as evidence were remotely verified where the connector permits;
+- [ ] no knowledge was lost because of tool/context limits;
+- [ ] any size/tool-limit split preserves the complete logical payload losslessly rather than summarizing it.

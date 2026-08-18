@@ -1,132 +1,302 @@
 # Project Status
 
-- Last updated: 2026-08-17
-- Canonical branch: `main`
-- Current product stage: accepted LifeOS Product Identity / North Star established; Core Domain Model and Logical Model are closed and integrated into `main`; Physical Model is not started; a deliberate repository/project cleanup and coherence audit comes before any Physical Model authorization; Phase 4 UX structural rebaseline remains a separate product/design workstream
-- Production application code: not started yet
-- Documentation/governance consolidation: **COMPLETE on `main`**
+- Last updated: 2026-08-18
+- Canonical integrated branch: `main`
+- Accepted `main` baseline for the closed Pre-Physical workstream: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
+- Closed branch-local Pre-Physical state: `chore/pre-physical-coherence`
+- Production application code: **NOT STARTED**
+- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Main integration of Pre-Physical branch: **PENDING / NOT PERFORMED**
+
+## Current stage
+
+```text
+PRODUCT / NORTH STAR
+CURRENT
+
+CORE DOMAIN MODEL / DOMAIN ATLAS
+CLOSED — integrated through PR #10
+Whole-Domain PASS WITH HARDENING / POST-WRITE QA PASS
+
+LOGICAL MODEL
+CLOSED — integrated through PR #11
+Whole-Logical PASS WITH HARDENING / REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
+WL-H01..WL-H12 active downstream
+
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
+Phase 0–11 QA PASS
+Phase 12 QA PASS / CLOSED
+Independent total audit PASS
+activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+
+PHYSICAL READINESS
+ESTABLISHED
+
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
+
+BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
+NOT STARTED / DEFERRED
+
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
+```
+
+Phase 4 UX remains a separate active product/design workstream on `prototype/phase-4-today-home`.
 
 ## Read this first
 
-Any human or AI agent continuing LifeOS should read, in this order:
-
 1. [`README.md`](../README.md)
-2. this file
-3. [`docs/development/operating-rules.md`](development/operating-rules.md)
-4. the relevant file under [`docs/workstreams/`](workstreams/)
-5. the architecture/product documents linked by that workstream
-6. accepted ADRs under [`docs/decisions/`](decisions/)
-7. relevant current code/tests before editing implementation
+2. [`docs/README.md`](README.md)
+3. this file
+4. [`development/agent-operating-manual.md`](development/agent-operating-manual.md)
+5. [`development/operating-rules.md`](development/operating-rules.md)
+6. [`development/documentation-and-handoff.md`](development/documentation-and-handoff.md)
+7. [`development/branching-and-environments.md`](development/branching-and-environments.md)
+8. [`development/repository-engineering-safety.md`](development/repository-engineering-safety.md)
+9. [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md)
+10. [`architecture/README.md`](architecture/README.md) and [`architecture/pre-physical-architecture-baseline.md`](architecture/pre-physical-architecture-baseline.md)
+11. complete Phase 5 requirement package + Phase 6–10 current contracts/method package
+12. [`architecture/pre-physical-clean-room-qa.md`](architecture/pre-physical-clean-room-qa.md)
+13. [`architecture/pre-physical-final-coherence-audit.md`](architecture/pre-physical-final-coherence-audit.md)
+14. relevant ADR/evidence/methodology and implementation/tests
 
-Conversation history is useful context but is not the canonical project state when repository documentation exists.
+Conversation history is secondary to repository truth.
 
-## Completed / accepted foundations
+## Accepted/current foundations
 
-- [`docs/product/product-identity-and-north-star.md`](product/product-identity-and-north-star.md) is the **Accepted current living definition of LifeOS product identity and North Star**. It defines what LifeOS is, its whole-life orchestration direction, capability boundaries and non-negotiable product principles without freezing final UX, autonomy, pricing, providers or release scope.
-- Product vision and V1 scope are defined; older high-level vision wording remains useful context where it does not conflict with the accepted North Star.
-- Detailed V1 product-definition documents are integrated into `main`.
-- Core V1 concepts and user flows are documented, including Goal, Program, Project, Routine, Activity/Event, reminders, planned-versus-actual execution, confirmations, provenance, onboarding, learning, health/wellness boundaries and work/meeting lifecycle.
-- Web direction: Next.js + React + TypeScript.
-- Mobile direction: Expo + React Native + TypeScript.
-- Backend direction: Python + FastAPI + Pydantic + SQLAlchemy + Alembic.
-- PostgreSQL is the primary source of truth.
-- Personal data architecture is accepted: typed relational core + flexible metadata/JSONB + graph-like personal relationship layer + provenance + audit/version history.
-- AI is isolated behind a replaceable gateway and must use structured proposals validated by LifeOS domain services.
-- External integrations are normalized through an Integration Hub/provider layer.
-- `main` is the single integrated project source of truth.
-- DEV, UAT and PROD are deployment environments rather than permanent Git branches.
-- Repository-first human/AI handoff, source-precedence and parallel-work rules are established.
-- V1 remains personal-first; collaboration/social capabilities are deferred.
-- Multi-actor/collaboration discovery evidence is integrated into `main`: a dedicated simulation plus one consolidated external Deep Research document with semantic and bibliographic QC. This evidence does not itself change V1 scope, the domain model or architecture.
-- Core Domain Model / Domain Atlas is **CLOSED** and integrated into `main` via PR #10. The final Whole-Domain state is `PASS WITH HARDENING / POST-WRITE QA PASS / CLOSED`.
-- Logical Model is **CLOSED and integrated into `main` via PR #11**. Whole-Logical is `PASS WITH HARDENING / REMOTE QA PASS`; WD-03 is `PASS`; WD-05 is `PASS`. The canonical closure checkpoint is [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](logical-model/checkpoints/whole-logical-v1-remote-qa.md).
-- The closed Logical Model preserves the accepted Domain owner set and activates the Whole hardening package `WL-H01..WL-H12` without selecting physical persistence/API/runtime mechanisms.
-- Physical Model is **NOT STARTED and NOT AUTHORIZED by Logical Model closure alone**. No SQL schema, migrations, API/backend implementation, AuthN/AuthZ runtime model, provider adapter implementation or concrete database adoption is implied by Logical Model closure.
+- Product/North Star — **CURRENT**.
+- Core Domain Model / Domain Atlas — **CLOSED**.
+- Logical Model — **CLOSED**; `WL-H01..WL-H12` active downstream.
+- Pre-Physical Architecture Baseline — **CURRENT / CLOSED workstream result**.
+- Phase 5 requirements — **CURRENT**.
+- Phase 6 AI/context/runtime + Integration Hub boundaries — **CURRENT**.
+- Phase 7 durable execution — **CURRENT / conditional ranking only**.
+- Phase 8 governed operation/effect — **CURRENT**.
+- Phase 9 search/observability/calendar/solver — **CURRENT**.
+- Phase 10 benchmark method — **CURRENT / QA PASS**.
+- Phase 11 repository engineering safety — **QA PASS**.
+- Phase 12 clean-room QA — **QA PASS / CLOSED**.
+- Independent total Pre-Physical audit — **PASS**.
+- Web direction — Next.js + React + TypeScript.
+- Mobile direction — Expo + React Native + TypeScript.
+- Backend direction — Python + FastAPI + Pydantic; modular monolith.
+- SQLAlchemy/Alembic — conditional on accepted Physical persistence.
 
-## Active workstreams
+## Domain / Logical closure
+
+```text
+DOMAIN
+PASS WITH HARDENING
+POST-WRITE QA PASS
+CLOSED
+
+LOGICAL
+PASS WITH HARDENING
+REMOTE QA PASS
+CLOSED
+WD-03 PASS
+WD-05 PASS
+```
+
+The Pre-Physical workstream made no Domain/Logical semantic edits. Any future semantic contradiction requires a separate explicit reopen scope.
+
+## Current Phase 5–10 posture
+
+### Requirements
+
+AuthN/AuthZ, security/privacy/retention/security-aware recovery, consistency/side effects and non-functional/multi-device/operational recovery remain the four current Phase 5 owners. Open RPO/RTO/latency/availability/scale/offline values remain explicit until later accepted where material.
+
+Phase 10 already defines how those requirements pressure-test Physical candidates. The later separately authorized Physical Model performs actual candidate execution/design/selection.
+
+### AI / context / integration
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+Generic AI memory is not a second canonical truth store. Runtime Agent/Principal != Domain Actor automatically; tool invocation != authorization/effect.
+
+Material consequential AI changes require versioned/reproducible evaluation before promotion.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
+
+Integration Hub preserves canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration. `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical state/effect automatically.
+
+### Durable execution
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style = valid baseline class
+
+DEDICATED DURABLE EXECUTION
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable local/bounded Python use
+          PostgreSQL-recommended production
+          distributed multi-server PostgreSQL-coupled
+```
+
+### Governed operation/effect
+
+```text
+HTTP/UI/tool/AuthZ/workflow step != canonical governed operation
+request accepted != effect complete
+provider acknowledgement != canonical completion automatically
+workflow completed != Actual automatically
+technical cancellation != Domain cancellation automatically
+```
+
+### Search / observability / calendar / solver
+
+```text
+SEARCH
+structured + lexical/full-text baseline
+semantic/vector bounded candidate
+
+OBSERVABILITY
+OpenTelemetry-first / equivalent direction
+no vendor selected
+
+CALENDAR
+iCalendar / JSCalendar / provider APIs = adapter pressure, not ontology
+
+SOLVER
+simple deterministic rules/heuristics baseline
+OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
+```
+
+### Physical benchmark method
+
+```text
+PRIMARY
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
+
+SEARCH / VECTOR
+structured + lexical/full-text baseline vs bounded pgvector
+
+EVENT / DOCUMENT
+bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
+```
+
+Hard correctness gates precede weighted scoring. LOW/BASE/HIGH are synthetic qualification envelopes, not forecasts. Unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
+
+## Repository safety
+
+`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven `main` policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable contexts exist. Auto-delete merged head branches is enabled.
+
+Current `main` was re-read during final activation and remained `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` and protected.
+
+## Phase 12 + independent final audit
+
+Phase 12 clean-room QA is **QA PASS / CLOSED**.
+
+The independent total audit then checked the full branch delta and independently confirmed:
+
+```text
+CORE ARCHITECTURE HOLDS                 PASS
+DOMAIN REOPEN REQUIRED                     0
+LOGICAL REOPEN REQUIRED                    0
+NEW DOMAIN OWNER REQUIRED                  0
+MAJOR SEMANTIC CONTRADICTION                0
+MAJOR ARCHITECTURAL CONTRADICTION           0
+PHYSICAL WORK ACCIDENTALLY STARTED          0
+BACKEND ACCIDENTALLY STARTED                0
+MAJOR KNOWLEDGE LOSS                        0
+TECHNOLOGY ACCIDENTALLY SELECTED            0
+```
+
+Bounded repairs addressed stale current-stage prose, Phase10-method-vs-Physical-execution wording, repository bootstrap/hygiene, DBOS coupling precision, explicit consequential AI evaluation and honest treatment of unexecuted upper benchmark envelopes.
+
+The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved:
+
+```text
+PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
+unique paths  23
+added          1
+modified      22
+deleted        0
+unexpected     0
+behind_by      0
+main unchanged
+critical readback PASS
+```
+
+Therefore branch-local Pre-Physical Coherence is definitively closed.
+
+## Milestone ledger
+
+| Scope | Result |
+|---|---|
+| Phase 0–1 | QA PASS |
+| Phase 2 | QA PASS |
+| Phase 3 | QA PASS |
+| Phase 4 | QA PASS |
+| Phase 5 | QA PASS |
+| Phase 6 | QA PASS |
+| Phase 7 | PASS WITH CONDITIONAL RANKING |
+| Phase 8 | QA PASS |
+| Phase 9 | QA PASS |
+| Phase 10 | QA PASS |
+| Phase 11 | QA PASS |
+| Phase 12 | QA PASS / CLOSED |
+| Independent final audit | PASS |
+| Branch-local Pre-Physical closure | DEFINITIVE CLOSED / FINAL QA PASS |
+
+Exact SHAs/evidence remain in [`workstreams/pre-physical-coherence.md`](workstreams/pre-physical-coherence.md), the audit records and Git history.
+
+## Active / pending workstreams
+
+### Pre-Physical Repository & Architecture Coherence
+
+- **DEFINITIVE CLOSED / FINAL QA PASS on branch**
+- Branch: `chore/pre-physical-coherence`
+- `main` integration: **PENDING / NOT PERFORMED**
 
 ### Phase 4 — Home / Today UX
 
-- Status: **IN PROGRESS — structural frontend rebaseline is the next design step**
+- **IN PROGRESS — separate product/design workstream**
 - Branch: `prototype/phase-4-today-home`
-- Pull request: #2
-- Handoff: [`docs/workstreams/today-home.md`](workstreams/today-home.md)
-- The approved Home + Today visual/mechanical baseline remains preserved while the product structure is reassessed against the accepted Product Identity / North Star.
-- The next question is no longer merely how to refine Calendar/Today, but what graphical/product structure correctly represents LifeOS as a whole-life operating system.
+
+### Physical Model
+
+**READY FOR SEPARATE AUTHORIZATION BUT NOT STARTED.** Do not begin until the user separately authorizes it after Pre-Physical `main` integration/post-merge verification.
 
 ### Backend Foundation
 
-- Status: **READY TO START, BUT NOT STARTED**
-- Intended branch: `feature/backend-foundation`
-- Handoff: [`docs/workstreams/backend-foundation.md`](workstreams/backend-foundation.md)
-- No backend implementation is authorized merely by Domain or Logical Model closure. Before backend/model architecture advances, the planned repository/project cleanup and coherence audit must establish the next clean baseline and sequencing.
-
-## Completed evidence workstreams
-
-### Multi-Actor / Collaboration Discovery
-
-- Status: **COMPLETE — integrated into `main` via PR #6**
-- Historical work branch: `docs/multi-actor-discovery`
-- Pull request: #6 — merged
-- Handoff: [`docs/workstreams/multi-actor-discovery.md`](workstreams/multi-actor-discovery.md)
-- Simulation: [`docs/product/multi-actor-collaboration-discovery-simulation-2026-08.md`](product/multi-actor-collaboration-discovery-simulation-2026-08.md)
-- Consolidated research: [`docs/product/multi-actor-collaboration-research-2026-08.md`](product/multi-actor-collaboration-research-2026-08.md)
-- Generic evidence acquisition is closed. Any later evidence synthesis or Multi-Actor Readiness pass must be started deliberately as a separate workstream.
+**NOT STARTED / DEFERRED.** Do not create `feature/backend-foundation`, SQL/schema/migrations, concrete API/Auth/provider/runtime implementation or persistence-specific bootstrap before all accepted prerequisites exist.
 
 ## Immediate next work
 
-1. Treat current `main` as the canonical integrated baseline for the **closed Core Domain Model + closed Logical Model**.
-2. Before advancing the backend/model architecture, perform a deliberate general repository/project cleanup and coherence audit. Assess stale global documentation, branch/workstream status, duplicated or historical material, sequencing, repository hygiene and any other explicitly approved maintenance while preserving accepted semantic history and canonical split-document rules.
-3. Only after that cleanup/audit, decide whether to authorize and start a separate **Physical Model** workstream with its own branch, PRE-SCOPE, write gate, validation criteria and technology benchmark/selection boundary. Logical Model closure does not itself authorize Physical Model implementation.
-4. Continue the accepted Product Identity / North Star based **structural frontend rebaseline** independently, preserving the approved Home + Today prototype baseline and avoiding redesign by accumulation of badges, controls or isolated modules.
-5. Do not start SQL schema/migrations, API/backend implementation, AuthN/AuthZ runtime design, provider adapters or concrete Physical Model implementation as an implicit continuation of the closed Logical Model.
-6. Treat product simulations and multi-actor research as evidence rather than automatic implementation commitments.
+```text
+PRE-PHYSICAL MAIN INTEGRATION
+PENDING / NOT PERFORMED
+```
 
-## Repository coherence baseline
+Only after separate user authorization:
 
-A repository/branch coherence audit was performed on 2026-08-10 after documentation consolidation.
+```text
+protected PR to main
+→ merge commit
+→ post-merge main verification
+```
 
-At that point:
-
-- `docs/project-foundation` had no commits ahead of `main` and was historical;
-- `docs/v1-scope-and-flows` had no commits ahead of `main`; its accepted V1 documents were already integrated;
-- the completed project-governance helper branches had no unique commits ahead of `main`;
-- `prototype/phase-4-today-home` was synchronized with the accepted `main` baseline and intentionally ahead only for Phase 4 UX/prototype/test work;
-- the Phase 4 diff did not contain older competing copies of the accepted DB/AI architecture.
-
-This is a dated baseline, not a permanent assumption. Since that audit, the completed Core Domain Model was integrated into `main` via PR #10 and the completed Logical Model was integrated via PR #11. The planned post-Logical cleanup/coherence audit must therefore establish a fresh current baseline before any Physical Model or backend architecture work begins.
-
-## Important constraints — do not reopen casually
-
-- `main` is the integrated source of truth; feature/fix/docs/prototype branches feed it through PRs.
-- Current accepted `main` takes precedence over historical branches and conversation memory.
-- A branch is authoritative only for its scoped unmerged work; it does not override unrelated accepted decisions.
-- The accepted Product Identity / North Star is a **living definition**: it guides current product work but may be deliberately revised, documented and versioned when stronger evidence or product understanding justifies change.
-- DEV, UAT and PROD are environments, not permanent Git branches.
-- Do not create per-user database tables or databases.
-- Do not turn the entire product into arbitrary JSON or one universal graph table.
-- AI never writes SQL directly, changes physical schema, or bypasses backend validation.
-- Time passing does not mean completion.
-- Planned state and actual outcome remain distinct.
-- The past is not silently rewritten; important future changes are versioned/auditable.
-- Do not introduce specialized databases, caches or orchestration systems before measured need.
-- Logical Model closure does not authorize the Physical Model or any implementation layer automatically.
-- Physical Model work, if approved later, is a separate phase and must receive a separate explicit gate.
-
-## Documentation rule
-
-A work item is not considered complete when only code or design is updated. The relevant workstream handoff and durable documentation must also be updated in the same PR. Significant architectural decisions require an ADR.
-
-Incremental progress normally updates the workstream handoff, not this global status file. Update `PROJECT-STATUS.md` when global project truth changes.
-
-## Historical / active branches
-
-- `docs/project-foundation`: historical foundation branch; no unique accepted work missing from `main` at the last coherence audit.
-- `docs/v1-scope-and-flows`: historical source branch whose detailed V1 product-definition documents are integrated into `main`.
-- completed `docs/project-governance*` helper branches: historical/obsolete after consolidation; no unique accepted work ahead of `main` at the last audit.
-- `prototype/phase-4-today-home`: active Phase 4 exploratory implementation and documentation; remains separate until its work is accepted.
-- `feature/domain-model`: completed historical integration branch; its accepted Core Domain Model / Domain Atlas was integrated into `main` via PR #10 and `main` is authoritative for that integrated state.
-- `feature/logical-model`: completed historical integration branch; its accepted closed Logical Model was integrated into `main` via PR #11 and `main` is authoritative for that integrated state.
-- `docs/multi-actor-discovery`: historical evidence branch after PR #6 merge; its accepted evidence is now integrated into `main` and `main` is authoritative.
-
-Historical branches and Git history are retained. Consolidation does not require deleting prior documentation or history.
+Physical Model authorization remains a further separate decision after that integration.

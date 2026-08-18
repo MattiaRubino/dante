@@ -1,92 +1,280 @@
 # System Overview
 
+- Status: **Current architecture overview — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS**
+- Last updated: 2026-08-18
+
+## Stage boundary
+
+```text
+Product / North Star
+CURRENT
+
+Core Domain Model / Domain Atlas
+CLOSED
+
+Logical Model
+CLOSED
+
+Phase 5 requirements
+CURRENT
+
+Phase 6 AI/context/runtime/integration boundaries
+CURRENT
+
+Phase 7 durable-execution benchmark
+CURRENT
+
+Phase 8 governed-operation/effect contract
+CURRENT
+
+Phase 9 search/observability/calendar/solver pressure
+CURRENT
+
+Phase 10 Physical benchmark method
+CURRENT / QA PASS
+
+Phase 11 repository engineering safety
+QA PASS
+
+Phase 12 clean-room QA
+QA PASS / CLOSED
+
+Independent total audit
+PASS
+
+Pre-Physical Coherence
+DEFINITIVE CLOSED / FINAL QA PASS
+activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+
+Physical readiness
+ESTABLISHED
+
+Physical Model
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
+
+Backend Foundation / production implementation
+NOT STARTED / DEFERRED
+
+Main integration
+PENDING / NOT PERFORMED
+```
+
+Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner or Physical mechanism.
+
 ## Logical architecture
 
 ```text
-Web client (Next.js) ----------------------\
-                                            \
-Mobile client (Expo/RN) ---------------------> Versioned HTTPS API (FastAPI)
-                                                |-- authentication / authorization
-                                                |-- calendar / scheduling / recalibration
-                                                |-- goals / programs / progress
-                                                |-- domain services and validation
-                                                |-- semantic model / relationship services
-                                                |-- Integration Hub
-                                                |-- AI Gateway + Context Builder
-                                                |-- Tool API / MCP-compatible surface
-                                                |-- synchronization / audit / versioning
-                                                          |
-                                                          v
-                                                   PostgreSQL
-                                                source of truth
-                                                          |
-                                                   StorageProvider
+Web client (Next.js) -----------------------\
+                                             \
+Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundary
+                                                  |-- authentication context / AuthZ enforcement
+                                                  |-- governed operation/effect boundary
+                                                  |-- scheduling / planning / reasoning services
+                                                  |-- deterministic solver boundary
+                                                  |-- provenance / history / reconciliation services
+                                                  |-- projection / disclosure services
+                                                  |-- search / retrieval projection services
+                                                  |-- Integration Hub / provider adapters
+                                                  |-- AI Gateway + Context Builder
+                                                  |-- AI evaluation / promotion boundary
+                                                  |-- provider-neutral tool/action interfaces
+                                                  |-- bounded async + durable execution runtime boundary
+                                                  |-- observability / operational controls
+                                                            |
+                                                            v
+                                                Physical persistence/runtime
+                                                TO BE SELECTED / BENCHMARKED
+                                                            |
+                                                StorageProvider / object storage
 ```
 
-External providers and assistants never become alternate sources of truth. They interact through LifeOS APIs, adapters and validated proposals.
+External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical LifeOS truth merely because they contain data.
 
 ## Client responsibilities
 
-Clients handle:
+Clients own presentation, navigation, local interaction state, secure session handling, platform capabilities and collection of user intent/confirmation where required.
 
-- presentation and navigation;
-- local interaction state;
-- offline-capable caches and queued changes where appropriate;
-- secure session storage;
-- platform integrations such as notifications, location, HealthKit, or Health Connect;
-- collection of user confirmation when a proposed change requires it.
+Any future multi-device/offline implementation must obey Phase 5 operation-specific freshness, expected-state, conflict, governance and sensitive-data requirements. Clients do not own canonical persistence or critical authorization/Domain invariants.
 
-Clients do not hold database credentials and do not enforce critical authorization or business rules.
+UI actions may request governed operations; UI labels/buttons do not define semantic operation identity.
 
-## Backend responsibilities
+## Backend boundary responsibilities
 
-The backend handles:
+A future backend must enforce accepted semantics through technical services, including:
 
-- authentication and authorization;
-- data validation and schema/domain constraints;
-- domain rules;
-- scheduling and recalibration;
-- semantic entity/relation validation;
-- synchronization and conflict detection;
-- provenance, deduplication and reconciliation of external records;
-- audit and version checks;
-- Integration Hub orchestration;
-- AI context construction, routing and proposal validation;
-- tool contracts used by internal AI and external assistants.
+- semantic target/operation validation;
+- governed operation/effect admission + multi-axis result semantics;
+- authorization enforcement without collapsing Principal, Actor, Authority, Consent or Visibility;
+- expected-state/conflict handling;
+- autonomy/preview/confirmation according to consequence/governance;
+- provenance/material history/correction/reconciliation;
+- truthful multi-owner consistency or explicit staged/partial outcomes;
+- provider-state vs canonical-state separation;
+- selective projection/disclosure;
+- scheduling/replanning and deterministic calculation/constraint services;
+- optional solver candidate generation rather than direct canonical writes;
+- AI context construction/provider-neutral routing;
+- versioned/reproducible evaluation before promotion of materially consequential AI behavior changes;
+- provider/integration orchestration;
+- bounded background work vs durable long-running coordination by operation class;
+- search/retrieval projections separated from canonical state;
+- privacy-safe observability and operational controls.
 
-## Data responsibility
+Concrete routes/DTOs, transaction mechanics, AuthZ engine, AI eval tooling, durable-runtime binding and persistence structures remain later decisions.
 
-PostgreSQL is the official server-side state. Device-local storage is a cache and offline operation queue, not an independent source of truth.
+## Governed operation/effect responsibility
 
-The persistent model combines:
+Where material, consequential operations preserve:
 
-- typed relational core for stable domain concepts;
-- metadata/JSONB for genuinely flexible properties;
-- graph-like dynamic relations for personal/emergent links;
-- version/audit/event history;
-- planned versus actual state;
-- registers/measurements and reproducible derived summaries.
+```text
+contract/version
+semantic target/facet
+requested effect
+input/candidate
+purpose/context
+material/expected state
+derived/live basis + freshness
+Principal / actual Actor / represented party
+governance basis
+autonomy / preview / confirmation
+idempotency/equivalence
+correlation/causation
+execution class
+deadline/expiry/technical cancellation
+canonical result
+provider/external result
+runtime result
+conflict/partial/reconciliation/provenance
+```
 
-Important AI-inferred relationships retain provenance and lifecycle/status. AI may propose semantic candidates but cannot create arbitrary physical schema or bypass backend validation.
+```text
+request accepted != effect completed
+provider acknowledgement != canonical completion automatically
+workflow completion != Actual automatically
+runtime cancellation != Domain cancellation automatically
+```
 
-Detailed model: [`personal-data-ai-integration.md`](personal-data-ai-integration.md).
+## Durable execution responsibility
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style = valid baseline class
+
+DEDICATED DURABLE EXECUTION
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable local/bounded Python use
+          PostgreSQL-recommended production
+          distributed multi-server PostgreSQL-coupled
+```
+
+No runtime creates exactly-once external reality. Runtime/workflow IDs remain technical and do not become Domain identity/material-state identity.
+
+## Canonical state responsibility
+
+Any future persistence must preserve owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, specific relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
+
+```text
+Person != Account != Principal != Actor
+provider state != canonical state
+derived projection != canonical truth
+absence / unknown != false
+AI / solver inference != accepted canonical effect
+```
+
+All `WL-H01..WL-H12` remain mandatory downstream.
+
+## Physical benchmark posture
+
+```text
+PRIMARY CANONICAL
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
+
+SEARCH / VECTOR
+structured + lexical/full-text baseline vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
+```
+
+Phase 10 defines how later evidence is produced/judged. Hard correctness gates precede scoring. Candidate mappings are idiomatic but must satisfy common semantic assertions. LOW/BASE/HIGH are synthetic envelopes, not forecasts; unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
 
 ## Integration responsibility
 
-External apps and services are normalized through provider adapters. LifeOS stores canonical domain meaning rather than making the rest of the application depend on Google-, Apple-, OpenAI- or vendor-specific payloads.
+Five Integration Hub modes remain distinct:
 
-External records retain identifiers/provenance sufficient for synchronization, deduplication and reconciliation. High-frequency raw sensor data is not duplicated indefinitely by default when useful summaries or source references are sufficient.
+1. canonical import;
+2. sync/mirror;
+3. live federated read;
+4. retrieval/index projection;
+5. action/tool integration.
 
-## AI responsibility
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider acknowledgement/result != canonical effect completion automatically. MCP/A2A/future protocols remain adapters.
 
-The AI Gateway is replaceable and may route work among mock, internal API and future providers. AI is not required for deterministic calculations or simple state transitions.
+## AI / Context Builder responsibility
 
-The Context Builder selects the relevant state for a request and can expose read/proposal tools so models fetch more context only when needed. Replanning is expressed as structured proposals and validated future changes rather than direct database mutation.
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
 
-The same domain/tool surface can be used by LifeOS-integrated AI and external assistants. Direct write support depends on the client/provider; a structured proposal import flow remains the universal fallback.
+AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. LifeOS does not create a second generic AI-memory source of truth.
 
-## Scalability direction
+Material consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
 
-The initial backend is a modular monolith. Modules have clear boundaries so expensive or independently scaled components can be extracted later only when measurements justify it.
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
 
-The initial persistence stack intentionally stays small: PostgreSQL plus the StorageProvider. Indexing, partitioning, materialized aggregates, caches, analytics/time-series systems, graph projections, sharding or other specialized infrastructure are added only when real workload evidence requires them.
+Concrete eval datasets/frameworks/runners/thresholds/CI remain later engineering choices.
+
+## Search / calendar / solver / observability responsibility
+
+- Search/index state is derived, disclosure-aware and deletion/freshness aware; search miss != canonical nonexistence.
+- Calendar standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain LifeOS-owned.
+- Simple deterministic rules/heuristics remain solver baseline; OR-Tools CP-SAT is a preferred candidate; `UNKNOWN != INFEASIBLE`; solver output crosses governed effect before canonical change.
+- OpenTelemetry-first/equivalent is direction; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
+
+## Repository engineering safety
+
+Phase 11 verified effective `main` protections remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has zero required checks until real stable contexts exist and auto-deletes merged head branches.
+
+## Definitive Pre-Physical closure evidence
+
+Phase 12 is QA PASS/CLOSED. The subsequent independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start.
+
+Activation checkpoint:
+
+`9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+
+proved:
+
+```text
+PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
+unique paths  23
+added          1
+modified      22
+deleted        0
+unexpected     0
+behind_by      0
+main unchanged
+critical readback PASS
+```
+
+Therefore branch-local Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS**.
+
+## Next boundary
+
+`main` integration remains **PENDING / NOT PERFORMED** and requires separate authorization. Physical Model authorization remains separate after protected integration/post-merge verification.

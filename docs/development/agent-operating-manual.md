@@ -2,6 +2,7 @@
 
 - Status: Accepted project workflow
 - Established: 2026-08-15
+- Last updated: 2026-08-17
 - Audience: ChatGPT, Claude, Codex, other AI agents, and human contributors
 - Purpose: mandatory bootstrap and execution standard for safe continuation of LifeOS work across separate sessions
 
@@ -9,19 +10,20 @@
 
 LifeOS must not depend on one conversation remembering the project correctly. A new chat or agent must be able to resume from the repository, understand what is authoritative, identify the exact active workstream state, and make changes without silently overwriting accepted work or inventing new conventions.
 
-This manual consolidates the stricter operating standard reached during the Domain Model workstream. It complements, and does not replace, the repository's existing workflow documents:
+This manual complements:
 
 - `operating-rules.md`;
 - `documentation-and-handoff.md`;
 - `branching-and-environments.md`;
+- `repository-engineering-safety.md` for GitHub-level enforcement/CI/security-setting lifecycle;
 - the active workstream handoff;
 - workstream-specific methodologies and checkpoints.
 
-When this manual and an older generic workflow statement differ in precision, use the stricter rule unless a higher-authority current source explicitly supersedes it.
+When this manual and an older generic workflow statement differ in precision, use the stricter current rule unless a higher-authority accepted source explicitly supersedes it.
 
 ## 2. Mandatory new-session bootstrap
 
-Before proposing or performing project changes, a new agent must reconstruct the current state from the repository rather than asking the user to restate prior chats.
+Before proposing or performing project changes, reconstruct current state from the repository rather than asking the user to restate prior chats.
 
 Read and verify, in this order:
 
@@ -33,46 +35,50 @@ root README.md
 → docs/development/operating-rules.md
 → docs/development/documentation-and-handoff.md
 → docs/development/branching-and-environments.md
-→ active docs/workstreams/<workstream>.md canonical document
-→ linked accepted product / architecture / ADR / methodology docs
-→ relevant implementation / tests / checkpoints
-→ current Git branch/ref and compare against main when relevant
+→ docs/development/repository-engineering-safety.md when repository/CI/settings controls are relevant
+→ active docs/workstreams/<workstream>.md logical document
+→ current architecture/model index and linked current sources
+→ relevant ADRs / methodologies / evidence
+→ relevant implementation / tests
+→ current Git branch/ref and relation to main
 ```
 
-Do not infer that a file is current merely because it is detailed or recently mentioned in conversation.
+Do not infer that a file is current merely because it is detailed, old, marked Accepted, or recently mentioned in conversation.
 
-If the active workstream document is physically split, read all canonical parts required to reconstruct the logical document, including the latest continuation part.
+If a canonical historical/evidence document is physically split, read all required parts when that evidence is material to the task.
 
 ## 3. Source precedence
 
-When sources conflict, use this authority order unless a newer accepted decision explicitly supersedes it:
+When sources conflict, use this order unless a newer accepted decision explicitly supersedes it:
 
-1. current `main` code, migrations, tests and accepted ADRs;
-2. current durable documentation on `main`;
-3. active workstream handoff for newer unmerged branch-local work;
-4. other explicit active-branch current documents/checkpoints;
-5. merged/closed branches and Git history;
+1. current `main` code/migrations/tests and current accepted model/ADR decisions;
+2. current durable product/domain/logical/architecture documentation on `main`;
+3. active workstream handoff for newer bounded unmerged work;
+4. other explicit current active-branch sources inside that workstream;
+5. historical evidence, merged/closed branches and Git history;
 6. conversation memory.
 
-Conversation context is useful for orientation but is not allowed to override verifiable repository truth.
+Conversation context is useful for orientation but cannot override verifiable repository truth.
 
-A newer branch-local workstream amendment may legitimately be newer than `main` inside that workstream's bounded scope. That does not make the branch authoritative for unrelated project areas.
+A branch may contain newer unmerged truth inside its bounded workstream. It is not a second global source of truth.
 
 ## 4. Branch and environment discipline
 
 - `main` is the single integrated project truth.
 - Normal work occurs on a bounded active branch.
-- Reuse the active workstream branch when its handoff identifies one; do not create helper branches without a concrete reason.
-- DEV, UAT and PROD are environments, not long-lived Git branches.
+- Reuse the active workstream branch when its handoff identifies one.
+- DEV, UAT and PROD are deployment environments, not long-lived Git branches.
 - Do not work directly on `main` unless an explicitly approved exceptional repair requires it.
-- Do not force-push or rewrite shared history merely for cleanliness.
-- Main synchronization is its own scope when it is not required for the bounded task. Do not smuggle it into unrelated work.
+- Integrate normal changes to `main` through pull requests under the effective repository-safety rules.
+- Do not bypass an active main ruleset merely to avoid normal coherence/review checks.
+- Do not force-push/rewrite shared history merely for cleanliness.
+- Main synchronization is its own scope when not required for the bounded task.
+
+Repository settings are operational state. A documented intended ruleset is not evidence that protection is active; verify effective remote rules/settings before claiming repository-safety PASS.
 
 ## 5. Exact Git write gate — mandatory
 
 Before any remote Git write, present an exact write gate and obtain explicit user approval.
-
-The gate must contain:
 
 ```text
 BRANCH
@@ -99,13 +105,13 @@ EXPLICITLY OUT OF SCOPE
 
 Rules:
 
-1. path scope must be exact, not approximate;
-2. CREATE / UPDATE / DELETE must be distinguished;
-3. the approved pre-scope SHA is part of the approval;
+1. path scope is exact, not approximate;
+2. CREATE/UPDATE/DELETE are distinguished;
+3. approved PRE-SCOPE SHA is part of approval;
 4. approval applies only to that gate;
-5. an approval is consumed only after the approved work has been written and QA-verified cleanly.
+5. approval is consumed only after the approved work is written and QA-verified cleanly.
 
-Before the first write after approval, re-fetch the active branch HEAD.
+Before the first real approved write, re-fetch the active branch HEAD:
 
 ```text
 current HEAD == approved PRE-SCOPE
@@ -113,30 +119,32 @@ current HEAD == approved PRE-SCOPE
 
 current HEAD != approved PRE-SCOPE
 → STOP
-→ inspect the change
-→ issue a new gate if needed
+→ inspect
+→ re-gate if required
 ```
 
 Never silently continue on a moved branch.
+
+A failed/no-op call or same-SHA ref write does not count as a repository content change.
 
 ## 6. Scope integrity during writes
 
 After approval:
 
 - write only approved paths;
-- do not add an opportunistic fix outside the gate;
-- do not modify a nearby file merely because it would be convenient;
-- do not convert an implementation concern into a schema/API/architecture change without a new scope;
-- if an approved path is discovered to be the wrong physical/canonical destination, STOP before writing that path and re-gate the correction;
-- if an unexpected dependency requires another file, STOP and re-gate rather than silently expanding scope.
+- do not add opportunistic fixes outside the gate;
+- do not change nearby files merely for convenience;
+- do not turn an implementation concern into schema/API/architecture change without a new scope;
+- if an approved path is the wrong canonical destination, STOP before writing it and re-gate;
+- if an unexpected dependency requires another physical path, STOP/re-gate rather than expanding silently.
 
-A failed/no-op write does not mean the intended change exists. Repository state, not tool intent, determines completion.
+Repository state, not tool intent, determines completion.
 
 ## 7. Mandatory post-write QA
 
-Every Git write scope must be verified against its approved pre-scope.
+Every Git write scope is verified against its approved PRE-SCOPE.
 
-At minimum verify:
+At minimum prove:
 
 ```text
 expected changed physical paths == actual changed physical paths
@@ -144,187 +152,235 @@ expected CREATE == actual added paths
 expected UPDATE == actual modified paths
 expected DELETE == actual deleted paths
 out-of-scope paths == 0
-branch remains ahead/behind as expected
+branch relation/ahead/behind is as expected
+main protection holds where required
 ```
+
+When the scope depends on repository-level protections/settings, also distinguish:
+
+```text
+intended/documented setting
+!= effective remote setting
+```
+
+Read back the effective rules/settings before using them as closure evidence. Never invent a required CI check before its real workflow/check context exists and has demonstrated stable execution.
 
 Any extra physical path is a QA failure until explained and explicitly accepted.
 
-For a multi-step scope, intermediate mini-QA is encouraged after high-risk groups of writes, but final QA must compare the entire approved scope.
+For multi-step scopes, intermediate mini-QA is encouraged after high-risk groups, but final QA covers the entire approved scope.
 
-Do not declare `DONE`, `PASS`, `CLOSED`, or an equivalent status from memory or intended writes. Use the remote repository compare/result as evidence.
+Do not declare `DONE`, `PASS`, `CLOSED` or equivalent from memory/intended writes. Use remote repository evidence.
 
-When a checkpoint has an explicit post-write marker, update it only after the actual QA result exists.
+If the native compare endpoint is unavailable, do **not** report it as PASS. Verify the equivalent property through remote refs, bounded linear commit chain, per-commit changed paths/status and payload readback; record the fallback honestly.
+
+When a checkpoint/handoff has a post-write marker, update it only after the actual QA result exists.
 
 ## 8. Documentation is implementation
 
-Repository documentation is a required project artifact, not cleanup after code/design work.
+Repository documentation is a required project artifact.
 
-Durable decisions, exact operational continuation state, meaningful validation results, and important reopen/dependency state must not exist only in chat.
+Durable decisions, exact continuation state, meaningful validation results and important reopen/dependency state must not exist only in chat.
 
-The active workstream handoff is the live save-game. It should allow another agent to resume without replaying the conversation.
+The active workstream handoff is the live save-game and should make replaying the conversation unnecessary.
 
 At meaningful milestones record, as applicable:
 
-- exact branch;
-- last validated/current commit;
+- branch;
+- validated/current commit;
 - last completed milestone;
-- exact current task;
-- exact next action;
+- exact current task and next action;
 - approved/current scope;
-- important source-of-truth files;
-- validations already performed;
-- failures or blockers;
-- safe deferred dependencies and reopening triggers;
+- current sources of truth;
+- validation already performed;
+- failures/blockers/tool incidents that affect continuation;
+- safe deferred dependencies/reopen triggers;
 - decisions that must not be casually reopened.
 
-If critical continuation information exists only in chat, the handoff is incomplete.
+## 9. Current truth vs historical evidence — mandatory distinction
 
-## 9. Historical preservation rule
+**Current specifications are not chronological logs.**
 
-Historical reasoning is evidence and must not be rewritten merely to make current documentation look cleaner.
+Use this classification:
 
-Default behavior:
+```text
+CURRENT SPECIFICATION
+= current truth only
 
-- preserve accepted historical checkpoints;
-- preserve rejected alternatives, hardenings, examples, deferred items and earlier status when they accurately describe the state at that time;
-- add later closure/amendment sections that explain what changed downstream;
-- distinguish historical validation state from current semantic authority;
-- never make an old checkpoint falsely appear to have known a later decision.
+ADR
+= decision rationale + explicit current status/supersession
 
-Use append/current-amendment semantics when chronology matters.
+HISTORICAL / VALIDATION EVIDENCE
+= truthful chronology at the time it was produced
 
-Delete historical content only when there is a concrete correctness, security, legal or maintenance reason and the deletion is explicitly in scope.
+GIT / PR HISTORY
+= recoverable historical file/change record
+```
+
+### 9.1 Current specification rule
+
+Current product/architecture/status/roadmap/handoff documents should contain the current accepted result needed for correct execution.
+
+When current truth changes:
+
+- replace obsolete prose rather than stacking `A → later B → later C` explanations into the current specification;
+- keep only historical context that is necessary to understand current semantics or an active constraint;
+- repair navigation/references so new agents enter current truth directly.
+
+### 9.2 Historical/evidence rule
+
+Historical checkpoints, validation records, research evidence and truthful transition logs must not be rewritten to pretend they knew later decisions.
+
+Chronology belongs there when chronology is the evidence.
+
+### 9.3 ADR rule
+
+ADRs preserve material rationale and explicit supersession/qualification. They may retain the original decision/rationale while clearly stating the current status and replacement authority.
+
+### 9.4 Knowledge-coverage gate before replace/delete
+
+Before replacing or deleting a stale current document, classify every meaningful statement.
+
+Disposition categories may include:
+
+```text
+KEEP IN CURRENT TRUTH
+MOVE TO ANOTHER CURRENT SOURCE
+KEEP AS ADR/RATIONALE
+KEEP AS EVIDENCE/CHECKPOINT
+DEFER AS EXPLICIT REQUIREMENT
+SUPERSEDED — GIT HISTORY SUFFICIENT
+DUPLICATE / NO CONTINUING VALUE
+```
+
+A stale current document may be removed from the working tree only when:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
+
+Do not keep obsolete files merely to make the repository a museum. Do not delete them before coverage proves useful knowledge is safe.
 
 ## 10. Large-document and tool-limit discipline
 
 Tool/context limits never justify knowledge loss.
 
-Never truncate, summarize away, compress away or replace a large canonical document with partial content merely because a connector cannot return or write it conveniently.
+Never truncate or replace a large canonical/current document with partial content merely because a connector cannot return/write it conveniently.
 
-If a connector requires complete-file replacement:
+If complete-file replacement is required:
 
-1. verify that the complete current file can be reconstructed safely;
-2. if it can, preserve the full payload and make the intended bounded edit;
-3. if it cannot, do not attempt a risky partial replacement;
-4. prefer a canonical physical split/continuation when that preserves the logical document safely;
-5. if no safe write route exists, STOP and report the exact tool limitation.
+1. verify the complete current payload can be reconstructed safely;
+2. preserve all still-valid content and make the intended bounded edit;
+3. if complete reconstruction is unsafe, do not perform a risky partial replacement;
+4. use a canonical split/continuation only where the logical document genuinely requires chronological/evidence continuity or size/tool-limit handling;
+5. when splitting only because of size/tool limits, preserve the complete intended logical payload losslessly across the physical parts — **do not summarize, condense, paraphrase away, omit, reorder or silently clean up substantive content as part of the split**;
+6. if semantic/current-truth cleanup is needed as well, treat that cleanup as a separate content operation with its own justified scope; the physical split itself remains lossless;
+7. if no safe route exists, STOP and report the exact tool limitation.
 
-Do not repeatedly retry the same failing Git operation without new information.
+Do not repeatedly retry the same failure without new information.
 
 ## 11. Canonical split-document rule
 
 A physical split does **not** create multiple logical documents.
 
-Example:
-
 ```text
 README.md
 README-part-2.md
 README-part-3.md
-README-part-4.md
+= 1 logical document / 3 physical paths
 ```
-
-means:
-
-```text
-1 logical canonical document
-4 physical Git paths
-```
-
-This distinction is mandatory in all planning and QA.
 
 ### 11.1 Logical-document counting
 
-When describing the domain/documentation model, count the split set as one document.
-
-Do not inflate document/concept counts because a canonical payload was physically split for size/tool reasons.
+Count the split set as one logical document.
 
 ### 11.2 Physical-path counting
 
-For Git write gates and Git QA, every physical path still counts independently because exact repository changes must be auditable.
-
-Therefore reports should distinguish, where relevant:
-
-```text
-logical documents affected
-physical paths changed
-```
+Git gates and QA enumerate every physical path independently.
 
 ### 11.3 Canonical split contract
 
-A canonical split should use the repository's `LIFEOS-CANONICAL-SPLIT` / `LIFEOS-CANONICAL-PAYLOAD` convention or an explicitly compatible continuation form.
+Use the repository `LIFEOS-CANONICAL-SPLIT` / `LIFEOS-CANONICAL-PAYLOAD` convention or an explicitly compatible continuation form where required.
 
-All parts together carry canonical authority. A part is not a summary/reference substitute for the others.
+All parts together carry the logical document's evidence/authority as defined by the document type.
 
-### 11.4 Chronology
+### 11.4 Size / tool-limit split — lossless partition only
 
-For an already split chronological document, new downstream amendments belong after the previous final payload: normally the last physical part, or a newly created continuation part when the last part has become operationally too large.
+When the reason for splitting is file size, connector limits, write limits or another transport/tooling constraint:
 
-Do not append a new 2026 amendment to Part 1 if Parts 2–3 contain later preserved history; doing so falsifies chronology.
+```text
+1 complete logical payload
+→ physical partition only
+→ all canonical parts together reconstruct the complete intended payload
+```
 
-### 11.5 Extending an existing split
+The split operation itself MUST NOT:
 
-If a split document needs a new part because the final part is too large:
+- summarize;
+- condense;
+- replace earlier detailed content with a shorter recap;
+- paraphrase substantive content merely to reduce size;
+- omit requirements/evidence/decisions;
+- reorder content in a way that changes meaning or chronology;
+- hide semantic cleanup or supersession inside the split.
 
-- treat the new part as continuation of the same logical document;
-- preserve all previous parts;
-- update navigation/total markers when it can be done safely;
-- if a connector limitation makes historical marker rewrites unsafe, use an explicit canonical continuation amendment rather than rewriting large preserved payloads blindly;
-- document the physical continuation clearly so future agents know the complete logical reading order.
+Split markers/navigation metadata may be added as required, but the substantive payload is preserved losslessly.
+
+If the content itself also needs revision, first define/approve the semantic/current-truth edit as such; do not call a summary/rewrite a `split`.
+
+### 11.5 Chronological / evidence continuation
+
+For chronological/evidence split documents, downstream amendments belong after the previous final payload, normally in the last/new continuation part. Do not append a newer event into an earlier part and falsify chronology.
+
+A chronological/evidence continuation may legitimately add new later evidence; this is different from a size/tool-limit split of one already-defined payload.
+
+### 11.6 Current specifications should not split merely to preserve obsolete history
+
+If a current specification can be rewritten cleanly to current truth, do that through a deliberate current-truth edit. A split/continuation is not a reason to carry stale current prose forever, and a current-truth rewrite must not be disguised as a lossless split.
 
 ## 12. Git/tool failure behavior
 
-When Git, GitHub, connector, network or another execution tool fails, distinguish the failure type from project semantics.
-
-Use this classification:
+Distinguish:
 
 ```text
-project / semantic problem
-!= repository state problem
-!= Git conflict / SHA problem
+project/semantic problem
+!= repository-state problem
+!= Git conflict/SHA problem
 != connector/tool capability limit
-!= local environment/network limit
+!= local network/environment limit
 ```
 
-Do not turn a connector limitation into a project-design change.
+For non-trivial failures:
 
-If a non-trivial Git/tool problem occurs:
+1. stop blind retries;
+2. report attempted operation and concrete error/status;
+3. verify whether the write landed;
+4. state which writes exist and which do not;
+5. state current verified branch/HEAD if available;
+6. confirm repository integrity where possible;
+7. preserve remaining scope;
+8. use only safe alternatives.
 
-1. stop repeated blind retries;
-2. report the exact attempted operation;
-3. report the concrete error/status (`409`, `404`, SHA mismatch, truncation, unsupported operation, network failure, etc.);
-4. state which writes actually landed and which did not;
-5. state the current verified branch/HEAD if available;
-6. state whether existing repository content remains intact;
-7. state the remaining scope;
-8. propose only safe alternatives.
+Never claim success from an attempted call alone.
 
-Never claim a write succeeded merely because the tool call was attempted.
+## 13. Freshness and supersession
 
-## 13. Current truth versus historical evidence
+Current indexes/handoffs must point to the newest current truth.
 
-When downstream work resolves an earlier deferred dependency:
+Historical evidence may record legitimate earlier `SAFE DEFERRED`, HOLD, READY or other stage states; those states do not override later explicit closure/current sources.
 
-- keep the earlier SAFE DEFERRED record as historical evidence;
-- add a downstream closure stating that the dependency is now resolved;
-- do not erase the fact that it was legitimately deferred earlier;
-- ensure current indexes/handoffs identify the newer accepted state.
+Do not inherit an old candidate ranking or roadmap after the model changes. Re-evaluate from the accepted current baseline when methodology requires it.
 
-Historical checkpoint wording does not override newer explicit amendments.
+Do not preselect the next candidate during closure unless the user included it in scope.
 
-## 14. Freshness and candidate selection
+## 14. Domain Model special protocol
 
-Do not inherit an old ranking as a roadmap after the model changes.
+For Core Domain Model / Domain Atlas work, `docs/domain/validation-methodology-v3.md` and `docs/domain/validation-execution-template-v3.md` remain mandatory for any separately authorized new validation/reopen unless explicitly superseded.
 
-Where a workstream uses candidate scoring/re-scoring, re-score from the new accepted baseline after every meaningful milestone when the methodology requires it.
-
-Do not preselect the next candidate during closure of the current one unless the user explicitly includes that in scope.
-
-## 15. Domain Model special protocol
-
-For Core Domain Model / Domain Atlas work, `docs/domain/validation-methodology-v3.md` is the mandatory current validation standard and `docs/domain/validation-execution-template-v3.md` is the mandatory execution template for new validations unless explicitly superseded.
-
-The required ordered pipeline is conceptually:
+Required conceptual pipeline:
 
 ```text
 fresh candidate selection / re-score
@@ -358,39 +414,37 @@ documentation propagation analysis
 STOP BEFORE GIT WRITE
 ```
 
-Allowed verdict vocabulary is controlled by the methodology. A `PASS WITH HARDENING` is not considered complete until required hardenings are incorporated and retested/propagated as required.
+Every material neighbor in the Adjacent Dependency Sweep is classified. `SAFE DEFERRED` requires reason, owner/stage, exact reopening trigger and tests to rerun.
 
-Every material neighbor in the Adjacent Dependency Sweep must be classified. `SAFE DEFERRED` is not shorthand for "later"; it must include why it is non-blocking, owner/stage, exact reopening trigger, and tests to rerun.
+`PASS WITH HARDENING` is not complete until required hardenings are incorporated and retested/propagated as required.
 
-Do not jump from semantic validation directly into SQL, migrations, API, auth, physical persistence or provider contracts unless that separate implementation scope has been explicitly approved.
+Do not jump from semantic validation directly into SQL/migrations/API/Auth/Physical/provider implementation without a separate approved scope.
 
-## 16. No ontology by convenience
+## 15. No ontology by convenience
 
-Do not create generic roots/tables/entities merely because they make implementation look uniform.
+Do not create generic roots/tables/entities merely because implementation looks more uniform.
 
-Do not add a schema/API/provider/cross-cutting convention only because an AI suggested it or an external standard uses it.
+Do not add schema/API/provider/cross-cutting convention only because an AI suggested it or an external standard uses it.
 
-External products/standards are evidence. Adapt useful separation patterns, reject irrelevant ontology, and preserve LifeOS's accepted semantics.
+External products/standards are evidence. Adapt useful patterns while preserving accepted LifeOS semantics.
 
-## 17. Communication during long work
+## 16. Communication during long work
 
-For long multi-tool operations, give concise progress updates so the user can see what has actually happened and can interrupt if needed.
-
-Useful updates report substantive state such as:
+For long multi-tool operations, provide concise substantive updates such as:
 
 - HEAD verified;
-- split path corrected;
 - X/Y approved paths written;
-- compare matches expected scope;
-- blocker discovered.
+- unexpected dependency found;
+- fallback QA in progress;
+- compare/path QA matches scope.
 
-Do not spam low-level tool narration.
+Do not spam low-level narration.
 
-When the user has already supplied an answer or approval, do not ask the same question again.
+When the user already supplied an answer/approval, do not ask again.
 
-## 18. Completion language must match evidence
+## 17. Completion language must match evidence
 
-Use precise status language:
+Use precise state language:
 
 ```text
 validated semantically
@@ -402,24 +456,33 @@ closed
 blocked by tool
 ```
 
-Do not collapse these into one vague "done".
+Do not collapse these into vague `done`.
 
-For example, a concept can be semantically `PASS WITH HARDENING` while propagation QA is still pending. That must remain visible until the repository proves closure.
+Repository-safety language follows the same rule:
 
-## 19. Handoff minimum for a new chat
+```text
+ruleset file written
+!= ruleset imported
+!= effective rule verified
 
-Before ending or switching sessions, the active workstream should make it possible to recover:
+security setting intended
+!= security setting enabled
+```
+
+## 18. Handoff minimum for a new chat
+
+The active workstream must allow recovery of:
 
 ```text
 repository
 active branch
 current verified HEAD
 main baseline if relevant
-logical workstream state
+current logical workstream state
 last completed milestone
 current incomplete scope
 exact remaining physical paths
-known failed writes / tool limits
+known failed/no-op writes / tool limits
 validation verdicts
 REOPEN / unclassified state
 important deferred dependencies
@@ -427,23 +490,32 @@ next exact safe action
 explicit out-of-scope boundaries
 ```
 
-A new chat should normally be able to read this information instead of asking the user to reconstruct prior conversations.
+When repository settings are part of an in-flight scope, also record:
 
-## 20. Final operating principle
+```text
+intended setting
+whether it has actually been applied
+how it was verified
+any connector/UI limitation
+remaining manual action
+```
 
-Prefer a truthful partial completion over a risky or falsely complete one.
+A new chat should normally read this instead of asking the user to reconstruct prior conversations.
 
-The safe order is:
+## 19. Final operating principle
+
+Prefer truthful partial completion over risky or falsely complete work.
 
 ```text
 understand current truth
 → define exact scope
 → obtain approval
-→ verify pre-scope
+→ verify PRE-SCOPE
 → execute only approved work
-→ preserve history
+→ preserve useful knowledge and truthful evidence
+→ keep current specifications current
 → verify remote result
 → document continuation state
 ```
 
-If a tool prevents a safe step, stop at the safe boundary, explain the blocker precisely, and leave the repository in a recoverable state.
+If a tool prevents a safe step, stop at the safe boundary, explain the blocker precisely and leave the repository recoverable.

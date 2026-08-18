@@ -1,86 +1,306 @@
 # LifeOS
 
-LifeOS is an adaptive personal operating system for connecting goals and intentions to programs, routines, projects, real calendar time, actual observed/confirmed behavior, progress and adaptive future planning across web, Android and iOS.
+LifeOS is an adaptive personal operating system for connecting intentions, plans, real time, actual reality, people/resources, evidence, history and adaptive future planning across web, Android and iOS.
 
-## Project status
+## Current project state
 
-V1 product definition and the main architecture foundation are sufficiently mature to support parallel work.
+```text
+PRODUCT / NORTH STAR
+CURRENT
 
-Current tracks:
+CORE DOMAIN MODEL / DOMAIN ATLAS
+CLOSED — integrated into main via PR #10
+Whole-Domain PASS WITH HARDENING / POST-WRITE QA PASS
 
-- **Phase 4 Home/Today UX prototype:** in progress on `prototype/phase-4-today-home` (PR #2).
-- **Backend Foundation:** ready to start from current `main`.
-- **Core Domain Model v0:** ready to start in parallel with the backend foundation.
+LOGICAL MODEL
+CLOSED — integrated into main via PR #11
+Whole-Logical PASS WITH HARDENING / REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
+WL-H01..WL-H12 active downstream
 
-No production application code has been committed yet.
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
+Phase 0–11 QA PASS
+Phase 12 QA PASS / CLOSED
+Independent total audit PASS
+final activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
 
-For the exact current state, always read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md).
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
+
+BACKEND PRODUCTION IMPLEMENTATION
+NOT STARTED / DEFERRED
+
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
+```
+
+Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
+
+For exact current state, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
 
 ## How to resume work
 
-Any human or AI agent continuing the project should read:
+Read in this order:
 
 1. this README;
-2. [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md);
-3. [`docs/development/operating-rules.md`](docs/development/operating-rules.md);
-4. the relevant [`docs/workstreams/`](docs/workstreams/) handoff;
-5. the product/architecture documents and ADRs linked by that handoff;
-6. relevant current code/tests before changing implementation.
+2. [`docs/README.md`](docs/README.md);
+3. [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md);
+4. [`docs/development/agent-operating-manual.md`](docs/development/agent-operating-manual.md);
+5. [`docs/development/operating-rules.md`](docs/development/operating-rules.md);
+6. [`docs/development/documentation-and-handoff.md`](docs/development/documentation-and-handoff.md);
+7. [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md);
+8. [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md);
+9. the relevant workstream handoff;
+10. [`docs/architecture/README.md`](docs/architecture/README.md) and linked current sources;
+11. Phase 12 + final independent audit evidence;
+12. relevant ADRs/evidence/methodologies and implementation/tests;
+13. verify current Git refs before any write.
 
-Repository documentation on current `main` is the canonical project memory when chat history or old branches are incomplete, stale or contradictory. An active workstream branch may contain newer unmerged work only inside that workstream's scope.
+Repository current truth outranks conversation memory and old/historical files. An active branch may contain newer truth only inside its explicitly bounded workstream.
 
-## Product direction
+## Documentation rule
 
-LifeOS will provide:
+```text
+CURRENT SPECIFICATION = current truth only
+ADR = rationale + explicit supersession/qualification
+HISTORICAL / VALIDATION EVIDENCE = truthful chronology
+GIT / PR HISTORY = recoverable history
+```
 
-- a central adaptive calendar and Today experience;
-- goals, programs, projects, activities, events, routines, reminders and progress tracking;
-- planned-versus-actual execution and user-controlled confirmation;
-- registers/measurements, assets/subjects, skills, requirements/capabilities and extensible cross-domain relationships;
-- optional specialist capabilities such as nutrition, training, health, learning, travel and creative work without turning each life topic into an isolated product silo;
-- web, Android and iOS clients with equivalent functionality and platform-adapted UX;
-- AI-assisted interpretation, planning and recalibration behind replaceable provider/tool interfaces;
-- integrations with external apps, device data and services through a normalized Integration Hub;
-- explainable, traceable and reversible significant changes.
+A stale current document may be replaced/deleted only after knowledge coverage proves no meaningful requirement/rationale is lost.
 
-V1 is personal-first. Collaboration/social capabilities are deferred.
+A physical split is a tooling/layout concern, not separate authority. A size/tool-limit split is a **lossless physical partition of the complete logical payload**, never a summary, condensation or hidden semantic rewrite.
 
-## Technical direction
+## Current model authority
 
-- Web: Next.js + React + TypeScript
-- Mobile: Expo + React Native + TypeScript
-- Backend: Python + FastAPI + Pydantic + SQLAlchemy + Alembic
-- Primary database: PostgreSQL
-- Data model: typed relational core + metadata/JSONB + graph-like personal relations + audit/version history
-- File storage: local provider initially, replaceable by S3-compatible/cloud providers
-- AI: replaceable gateway + Context Builder + structured proposals + provider-neutral tool/MCP-compatible direction
-- Integrations: provider adapters normalized into LifeOS domain data with provenance and deduplication
-- Architecture: modular monolith first; extract specialized infrastructure only when measured needs justify it
-- Repository: private monorepo
+### Product
 
-## Git and environments
+- [`docs/product/product-identity-and-north-star.md`](docs/product/product-identity-and-north-star.md) — current living product definition.
 
-- `main` is the single integrated source of truth.
-- Work happens on bounded `feature/*`, `fix/*`, `docs/*` or `prototype/*` branches and returns through PRs.
-- New production work starts from current `main` unless its workstream handoff explicitly names an active prototype branch.
-- Before merge, compare against current `main` and check semantic/documentation coherence, not only Git conflicts.
-- DEV, UAT and PROD are deployment environments, not permanent Git branches.
+### Domain
 
-See [`docs/development/operating-rules.md`](docs/development/operating-rules.md) and [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md).
+The Domain Atlas is cumulative. Do not stop at the early entry payload when determining closure state.
 
-## Architecture sources of truth
+Read:
 
-Before detailed production data-model, AI or integration implementation, read:
+- [`docs/domain/README.md`](docs/domain/README.md) — entry payload;
+- [`docs/domain/README-part-20.md`](docs/domain/README-part-20.md) — final corrected closure/status continuation;
+- [`docs/domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md`](docs/domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md) — final closure evidence;
+- [`docs/domain/language-map.md`](docs/domain/language-map.md) plus [`docs/domain/language-map-part-22.md`](docs/domain/language-map-part-22.md) — language authority/final disposition.
 
+Current Domain state is **CLOSED**.
+
+### Logical
+
+Read:
+
+- [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md);
+- complete `docs/logical-model/decision-and-assumption-register-v1*` chain;
+- [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md).
+
+Current Logical state is **CLOSED**.
+
+## Current architecture sources
+
+Start with:
+
+- [`docs/architecture/README.md`](docs/architecture/README.md)
+- [`docs/architecture/pre-physical-architecture-baseline.md`](docs/architecture/pre-physical-architecture-baseline.md)
+- [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) + all Phase 5 packages
+- [`docs/architecture/ai-context-runtime-boundaries.md`](docs/architecture/ai-context-runtime-boundaries.md)
+- [`docs/architecture/integration-hub-boundaries.md`](docs/architecture/integration-hub-boundaries.md)
+- [`docs/architecture/durable-execution-benchmark.md`](docs/architecture/durable-execution-benchmark.md)
+- [`docs/architecture/governed-operation-effect-contract.md`](docs/architecture/governed-operation-effect-contract.md)
+- [`docs/architecture/search-observability-calendar-solver-boundaries.md`](docs/architecture/search-observability-calendar-solver-boundaries.md)
+- [`docs/architecture/physical-benchmark-specification.md`](docs/architecture/physical-benchmark-specification.md)
+- [`docs/architecture/physical-benchmark-scenario-corpus.md`](docs/architecture/physical-benchmark-scenario-corpus.md)
+- [`docs/architecture/physical-benchmark-register.md`](docs/architecture/physical-benchmark-register.md)
+- [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md)
+- [`docs/architecture/pre-physical-clean-room-qa.md`](docs/architecture/pre-physical-clean-room-qa.md) — Phase 12 evidence
+- [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md) — final independent audit/activation evidence
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
-- [`docs/architecture/personal-data-ai-integration.md`](docs/architecture/personal-data-ai-integration.md)
-- [`docs/decisions/ADR-003-primary-database.md`](docs/decisions/ADR-003-primary-database.md)
-- [`docs/decisions/ADR-005-ai-gateway.md`](docs/decisions/ADR-005-ai-gateway.md)
-- [`docs/decisions/ADR-006-hybrid-personal-data-model.md`](docs/decisions/ADR-006-hybrid-personal-data-model.md)
 
-The architecture is fixed at the level of principles and boundaries. Exact production tables, relation vocabulary, JSONB boundaries, retention rules and specialist-domain schemas remain implementation decisions to be made through detailed domain modeling.
+## Current technical direction — not implementation authorization
 
-## Documentation
+### Clients / backend direction
 
-Start from [`docs/README.md`](docs/README.md). Significant work is not considered complete until its relevant documentation/handoff is updated.
+- Web: Next.js + React + TypeScript.
+- Mobile: Expo + React Native + TypeScript.
+- Backend: Python + FastAPI + Pydantic; modular monolith first.
+- SQLAlchemy + Alembic remain conditional on accepted Physical persistence.
+
+Backend implementation is **not started**.
+
+### Physical persistence posture
+
+No final Physical persistence is selected.
+
+```text
+PRIMARY CANONICAL
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
+
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
+
+SEARCH / VECTOR
+structured + lexical/full-text baseline
+vs bounded pgvector where applicable
+
+EVENT / DOCUMENT
+bounded mechanisms first
+specialized candidate only on demonstrated gap/benefit
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
+
+Phase 10 decides **how** a later Physical benchmark must run, not what technology wins. `PREFERRED != SELECTED`.
+
+Synthetic LOW/BASE/HIGH tiers are qualification envelopes, not forecasts. An unexecuted envelope is not `VERIFIED-RUN`; progressive saturation/scaling evidence must be reported according to what actually ran.
+
+### AI / context / runtime
+
+AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+AI output/tool invocation does not become canonical truth/effect by itself. Runtime Agent/Principal is not Domain Actor automatically. Generic AI memory is not a second canonical truth store.
+
+Material consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
+
+### Integration Hub
+
+Five modes remain distinct: canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration.
+
+`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical LifeOS state/effect automatically. MCP/A2A/future protocols remain adapters.
+
+### Governed operations / effects
+
+```text
+route / UI button / tool / AuthZ action / workflow step
+!= canonical governed operation/effect
+request accepted != effect complete
+provider acknowledgement != canonical completion automatically
+workflow completed != Actual automatically
+technical cancellation != Domain cancellation automatically
+```
+
+### Durable execution
+
+```text
+bounded async
+DB/worker/outbox style = valid baseline class
+
+material durable execution
+Restate   preferred candidate — NOT selected
+Temporal  mandatory strongest challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          local/bounded Python use SQLite-capable
+          production PostgreSQL-recommended
+          distributed multi-server PostgreSQL-coupled
+```
+
+### Search / observability / calendar / solver
+
+```text
+SEARCH
+structured + lexical/full-text baseline
+semantic/vector bounded candidate
+
+OBSERVABILITY
+OpenTelemetry-first / equivalent direction
+
+CALENDAR
+iCalendar / JSCalendar / providers = adapter pressure, not ontology
+
+SOLVER
+simple deterministic rules/heuristics baseline
+OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
+```
+
+## Repository safety
+
+Phase 11 remotely verified `lifeos-main-safety` as active for protected `main` integration. Current owner-driven policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
+
+Do not work directly on `main` for normal work and do not invent required checks before the corresponding workflow exists.
+
+## Definitive Pre-Physical closure
+
+Phase 12 is **QA PASS / CLOSED**.
+
+The independent total audit then rechecked the entire Pre-Physical delta and found:
+
+```text
+Domain reopen required             0
+Logical reopen required            0
+major semantic contradiction       0
+major architecture contradiction   0
+major knowledge loss               0
+Physical accidentally started      0
+backend accidentally started       0
+```
+
+The bounded current-truth/factual/engineering repairs were applied under PRE-SCOPE `1bd142afe51221211bc777f6271a642911c650fc`. The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved exactly:
+
+```text
+unique paths 23
+added 1
+modified 22
+deleted 0
+unexpected 0
+behind_by 0
+main unchanged at 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+critical readback PASS
+```
+
+Therefore the branch-local result is:
+
+```text
+INDEPENDENT TOTAL PRE-PHYSICAL AUDIT
+PASS
+
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
+
+DOMAIN
+UNCHANGED / CLOSED
+
+LOGICAL
+UNCHANGED / CLOSED
+
+PHYSICAL READINESS
+ESTABLISHED
+PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
+
+BACKEND
+NOT STARTED / DEFERRED
+```
+
+Final audit evidence: [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md).
+
+## Next boundary
+
+```text
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
+```
+
+No merge was performed by the closure scope. The next step, only after separate user authorization, is protected PR → merge → post-merge `main` verification. Physical Model authorization remains a further separate decision after integration.

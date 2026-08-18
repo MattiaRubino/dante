@@ -1,116 +1,218 @@
 # LifeOS Roadmap
 
-- Last updated: 2026-08-10
-- Purpose: delivery order, not a calendar commitment
+- Last updated: 2026-08-18
+- Purpose: current delivery/architecture-stage sequence, not a calendar commitment
 
-## Completed foundation
+## Completed foundations
 
-### Phase 1–3 — Vision, architecture and V1 product definition
+### Product / North Star
 
-Completed at the level required to move into implementation and UX validation:
+Accepted current LifeOS identity/North Star and supporting product studies are integrated.
 
-- product vision and scope;
-- client/backend/database/storage/AI technical direction;
-- core domain vocabulary;
-- V1 behaviors and user flows;
-- history/privacy/safety boundaries;
-- confirmation and planned-versus-actual model;
-- adaptive-intelligence principles.
+### Core Domain Model / Domain Atlas
 
-## In progress
+**CLOSED — integrated into `main` via PR #10.**
 
-### Phase 4 — UX prototype and interaction validation
+```text
+Whole-Domain PASS WITH HARDENING
+POST-WRITE QA PASS
+```
 
-Primary focus:
+### Logical Model
 
-- Home / Today information architecture;
-- timeline density and progressive disclosure;
-- grouped views and navigation;
-- interaction behavior across complex daily scenarios;
-- mobile/touch/accessibility implications.
+**CLOSED — integrated into `main` via PR #11.**
 
-This work can continue in parallel with backend/domain foundations. Final visual decisions must not block stable backend primitives that are already product-defined.
+```text
+Whole-Logical PASS WITH HARDENING
+REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
+WL-H01..WL-H12 active downstream
+```
 
-## Parallel technical track
+### Pre-Physical Repository & Architecture Coherence
 
-### Backend Foundation
+**DEFINITIVE CLOSED / FINAL QA PASS on `chore/pre-physical-coherence`.**
 
-Deliverables:
+```text
+Phase 0–11        QA PASS
+Phase 12          QA PASS / CLOSED
+Independent audit PASS
+Activation checkpoint
+9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+```
 
-- Python/FastAPI project bootstrap;
-- configuration and dependency boundaries;
-- PostgreSQL development infrastructure;
-- SQLAlchemy + Alembic setup;
-- pytest baseline;
-- versioned API skeleton;
-- modular-monolith boundaries;
-- provider interfaces for AI, storage and integrations;
-- observability/error-handling baseline appropriate for development.
+The branch-local closure does not itself integrate to `main`, select Physical persistence or start backend implementation.
 
-### Domain Model v0
+## Active parallel product/design track
 
-Deliverables:
+### Phase 4 — UX prototype/product-structure validation
 
-- first-class domain concepts and value objects;
-- ownership/workspace rules;
-- invariants and lifecycle rules;
-- structural versus dynamic relationships;
-- source/provenance model;
-- planned/actual/confirmation model;
-- version/audit expectations;
-- first persistence mapping proposal.
+Separate workstream on `prototype/phase-4-today-home`.
 
-Exact complete table count is intentionally not a roadmap prerequisite.
+It may continue independently but does not redefine accepted Domain/Logical/backend architecture.
 
-### First vertical slice
+## Closed Pre-Physical result
 
-Target conceptual slice:
+The final independent audit confirmed:
 
-`Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation`
+```text
+CORE ARCHITECTURE HOLDS                 PASS
+DOMAIN REOPEN REQUIRED                     0
+LOGICAL REOPEN REQUIRED                    0
+NEW DOMAIN OWNER REQUIRED                  0
+MAJOR SEMANTIC CONTRADICTION                0
+MAJOR ARCHITECTURAL CONTRADICTION           0
+PHYSICAL ACCIDENTALLY STARTED               0
+BACKEND ACCIDENTALLY STARTED                0
+MAJOR KNOWLEDGE LOSS                        0
+TECHNOLOGY ACCIDENTALLY SELECTED            0
+```
 
-The slice should include API contracts, persistence, migrations and tests. It becomes the first end-to-end backend behavior that future web/mobile clients can consume.
+The bounded final repairs included:
 
-## Next expansion
+- removal of stale stage-handoff prose from current specs;
+- Phase 10 method vs future Physical execution clarification;
+- repository bootstrap/hygiene alignment;
+- DBOS coupling correction: SQLite-capable local/bounded Python use, PostgreSQL-recommended production, distributed multi-server PostgreSQL-coupled;
+- explicit versioned/reproducible consequential AI change evaluation requirement;
+- explicit `unexecuted upper benchmark envelope != VERIFIED-RUN` handling.
 
-After the first slice is stable:
+## Current Pre-Physical architecture inputs
 
-- Register / RegisterEntry and quantities;
-- Asset / Subject;
-- Skill and skill state;
-- Requirement / Capability;
-- semantic relationship layer with provenance;
-- Review Queue / Inbox primitives;
-- source/integration records and deduplication;
-- seed/demo workspace matching UX prototype scenarios.
+The following remain current downstream constraints:
 
-## Frontend/backend convergence
+- CLOSED Domain Atlas and final closure/status continuations;
+- CLOSED Whole Logical Model + complete decision/assumption-register chain + remote QA closure;
+- Phase 5 AuthN/AuthZ, security/privacy/retention/recovery, consistency/side-effects and NFR/multi-device/recovery requirements;
+- Phase 6 AI/context/runtime and Integration Hub boundaries;
+- consequential AI behavior changes promotion-gated by versioned/reproducible evaluation;
+- Phase 7 durable-execution posture;
+- Phase 8 governed operation/effect contract;
+- Phase 9 search/observability/calendar/solver boundary contract;
+- Phase 10 Physical benchmark method, scenario corpus and candidate register;
+- Phase 11 effective repository engineering safety;
+- Phase 12 clean-room evidence;
+- final independent audit evidence.
 
-Phase 4 mock/simulated data is replaced gradually by versioned LifeOS APIs when a backend slice is stable. The frontend does not need to wait for the entire backend, and the backend does not need to copy unfinished visual implementation details.
+## Current Physical benchmark posture
 
-## Later V1 work
+No Physical technology is selected.
 
-- richer scheduling/replanning engine;
-- real AI provider integration behind the gateway;
-- Integration Hub adapters;
-- notifications and device integrations;
-- HealthKit / Health Connect where applicable;
-- weather/maps providers where product flows require them;
-- production authentication/security hardening;
-- data export/deletion and privacy controls;
-- staging/UAT and production deployment pipelines;
-- release/versioning process.
+```text
+PRIMARY CANONICAL
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
 
-## Explicitly deferred until justified
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
 
-- permanent `dev`, `uat` or `prod` Git branches;
-- microservices by default;
-- Kubernetes by default;
-- MongoDB as the primary domain store;
-- a dedicated graph database as the primary store;
-- Redis/ClickHouse/Timescale/search clusters before measured need;
-- full specialist schemas for every imaginable life domain;
-- V2 collaboration/social features.
+SEARCH / VECTOR
+structured + lexical/full-text baseline vs bounded pgvector where applicable
 
-## Roadmap maintenance
+EVENT / DOCUMENT
+bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
 
-This file describes sequence and boundaries. [`PROJECT-STATUS.md`](PROJECT-STATUS.md) records what is actually happening now. Workstream files contain the exact operational handoff.
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
+
+Phase 10 defines how a later authorized benchmark must run. `PREFERRED != SELECTED`.
+
+LOW/BASE/HIGH values are synthetic qualification envelopes, not business forecasts. Unexecuted tiers are not `VERIFIED-RUN`; progressive saturation/scaling evidence may support sensitivity only when its limits are explicit.
+
+## Current runtime/search/solver posture
+
+```text
+DURABLE EXECUTION
+bounded async → DB/worker/outbox style baseline class
+material durable orchestration → dedicated engine structurally justified
+Restate preferred candidate — NOT selected
+Temporal mandatory strongest challenger — NOT selected
+DBOS conditional challenger — NOT selected
+     local/bounded Python SQLite-capable
+     production PostgreSQL-recommended
+     distributed multi-server PostgreSQL-coupled
+
+SEARCH
+structured + lexical/full-text baseline
+semantic/vector bounded
+no dedicated service by default
+
+OBSERVABILITY
+OpenTelemetry-first / equivalent direction
+no vendor selected
+
+CALENDAR
+iCalendar / JSCalendar / providers = adapter pressure, not ontology
+
+SOLVER
+simple deterministic rules/heuristics baseline
+OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
+```
+
+## AI evaluation posture
+
+Materially consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
+
+Concrete evaluation tooling/thresholds remain later engineering choices.
+
+## Repository engineering safety
+
+`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
+
+## Immediate next — not performed yet
+
+```text
+PRE-PHYSICAL PROTECTED MAIN INTEGRATION
+PENDING
+```
+
+Only after separate user authorization:
+
+```text
+chore/pre-physical-coherence
+→ protected PR to main
+→ merge commit
+→ post-merge main verification
+```
+
+Do not start Physical or Backend merely because branch-local Pre-Physical coherence is closed.
+
+## Later sequence — separate authorizations
+
+After protected integration and post-merge verification:
+
+```text
+separately authorize Physical Model
+→ execute real Physical mappings + benchmark
+→ select/accept Physical result
+→ only then authorize Backend Foundation
+```
+
+## Explicitly unauthorized now
+
+```text
+direct main write
+Physical schema/tables/indexes/migrations
+PostgreSQL / TypeDB / Neo4j selection
+SQL / TypeQL / Cypher benchmark implementation
+concrete API routes / DTOs
+AuthN/AuthZ implementation
+Restate / Temporal / DBOS adoption
+queue/outbox implementation
+provider adapters
+AI provider/model/agent framework
+MCP/A2A adoption
+dedicated search/vector deployment
+observability vendor
+solver implementation
+production backend code
+feature/backend-foundation
+Domain/Logical changes without explicit reopen
+```

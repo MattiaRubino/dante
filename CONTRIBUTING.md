@@ -14,11 +14,12 @@ Use bounded branches:
 - `feature/*` for implementation work;
 - `fix/*` for fixes;
 - `docs/*` for documentation/governance;
+- `chore/*` for bounded repository/coherence/maintenance work;
 - `prototype/*` for exploratory prototypes.
 
 Changes should be reviewed through pull requests before merging into `main`.
 
-Start new production work from current `main` unless the workstream handoff explicitly requires an existing active prototype branch. Keep one primary branch per workstream where practical.
+Start new production work from current `main` unless the workstream handoff explicitly identifies another active branch as the required base. Keep one primary branch per workstream where practical.
 
 Do not use permanent `dev`, `uat` or `prod` branches. DEV/UAT/PROD are deployment environments; see `docs/development/branching-and-environments.md`.
 
@@ -28,7 +29,7 @@ Avoid editing shared/global files from multiple branches unless the change is ge
 
 - Incremental workstream state belongs in `docs/workstreams/<name>.md`.
 - `docs/PROJECT-STATUS.md`, root `README.md`, broad architecture documents and ADRs change only when global truth actually changes.
-- If Domain Model work is performed inside Backend Foundation, use the same branch rather than opening two branches that modify the same domain files.
+- The Domain Atlas and Logical Model are closed. Backend, Physical, product or prototype work must not reopen or modify their semantics implicitly; a genuine contradiction requires a separate explicit reopen scope and the applicable methodology.
 - Never copy an older branch document over `main` without comparing the two versions first.
 
 See `docs/development/operating-rules.md` for path ownership and source precedence.
@@ -41,7 +42,7 @@ Update as applicable in the same PR:
 
 - code/design;
 - tests/validation;
-- migrations;
+- migrations when an accepted implementation actually uses them;
 - relevant product/architecture documentation;
 - the active workstream handoff;
 - `docs/PROJECT-STATUS.md` only when global state changes;
@@ -72,13 +73,14 @@ Before merge:
 3. inspect overlapping shared documentation semantically, not only for text conflicts;
 4. verify no older decision overwrites a newer Accepted decision;
 5. verify tests/validation and workstream handoff;
-6. update global status only when the merge changes global state.
+6. update global status only when the merge changes global state;
+7. verify the repository-required checks and review-thread rules that actually exist.
 
 A branch being technically mergeable is not sufficient if its documentation would make the project state less accurate.
 
 ## Architecture changes
 
-Do not casually reopen Accepted ADRs. If new evidence requires a different durable architecture decision, document the context and superseding decision explicitly.
+Do not casually reopen Accepted ADRs or closed Domain/Logical semantics. If new evidence requires a different durable architecture or semantic decision, document the contradiction and open the separately approved supersession/reopen scope required by the current operating rules.
 
 AI agents may propose changes but must not invent project state, bypass domain validation, expose secrets or silently change accepted architectural constraints.
 

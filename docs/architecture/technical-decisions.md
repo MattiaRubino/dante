@@ -1,101 +1,337 @@
 # Technical Decisions
 
-## Clients
+- Status: **Current technical direction — Pre-Physical DEFINITIVE CLOSED / FINAL QA PASS**
+- Last updated: 2026-08-18
+- Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 
-### Web
+This document is a current technical summary. Detailed requirements/contracts remain authoritative in their dedicated sources; historical rationale remains in ADRs, evidence and Git.
 
-- Next.js
-- React
-- TypeScript
+## Stage boundary
 
-### Mobile
+```text
+Product / North Star                      CURRENT
+Domain Model / Domain Atlas              CLOSED
+Logical Model                            CLOSED
+Phase 5 requirements                     CURRENT
+Phase 6 AI/context/runtime/integration   CURRENT
+Phase 7 durable execution                CURRENT
+Phase 8 governed operation/effect        CURRENT
+Phase 9 search/observability/calendar/solver CURRENT
+Phase 10 Physical benchmark method       CURRENT / QA PASS
+Phase 11 repository engineering safety   QA PASS
+Phase 12 clean-room QA                    QA PASS / CLOSED
+Independent total Pre-Physical audit     PASS
 
-- Expo
-- React Native
-- TypeScript
-- Android and iOS from the same mobile codebase where practical
+Pre-Physical Coherence
+DEFINITIVE CLOSED / FINAL QA PASS
 
-Web and mobile are separate clients of the same product. They share contracts, types, validation, design tokens, and selected business rules while retaining platform-appropriate interfaces.
+Physical readiness
+ESTABLISHED
 
-## Backend
+Physical Model
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 
-- Python
-- FastAPI
-- Pydantic
-- SQLAlchemy
-- Alembic
+Backend Foundation
+NOT STARTED / DEFERRED
 
-The backend exposes versioned APIs used by every client. Clients never connect directly to the primary database.
+Main integration
+PENDING / NOT PERFORMED
+```
 
-## Data
+## Clients and backend direction
 
-- PostgreSQL is the primary source of truth.
-- The production data model is hybrid: typed relational core + flexible metadata/JSONB + graph-like personal relationship layer + audit/version history.
-- Tables are shared across users/workspaces; LifeOS does not create per-user tables/databases.
-- Stable domain invariants and high-frequency structural relationships remain relational and constrained.
-- Flexible or unpredictable properties use metadata/JSONB rather than one migration per possible life-domain property.
-- Personal, emergent or uncertain semantic links use the relationship layer and retain provenance/status where relevant.
-- AI never invents or changes the physical database schema. Schema evolution is controlled through reviewed Alembic migrations.
-- New domains should begin with the generic model when appropriate and be progressively formalized when repeated usage/query needs justify it.
-- MongoDB and a dedicated graph database are not planned as primary domain stores.
-- Specialized time-series, analytics, graph or cache systems are introduced only after measured workload needs.
-- PostgreSQL search is used before introducing a dedicated search engine.
+- Web: Next.js + React + TypeScript.
+- Mobile: Expo + React Native + TypeScript.
+- Backend direction: Python + FastAPI + Pydantic.
+- Architecture direction: modular monolith first.
+- Clients use versioned governed backend contracts, not direct primary-persistence access.
+- Domain/application logic remains independent from HTTP/framework handling.
+- SQLAlchemy/Alembic remain conditional on the later accepted Physical design.
 
-Detailed accepted direction: [`personal-data-ai-integration.md`](personal-data-ai-integration.md) and [`ADR-006`](../decisions/ADR-006-hybrid-personal-data-model.md).
+No production backend implementation is authorized by these directions.
 
-## Data semantics and history
+## Semantic/model authority
 
-LifeOS explicitly separates:
+Technical design follows the accepted Domain Atlas and closed Logical Model; storage/runtime convenience does not create ontology.
 
-- planned/canonical state;
-- actual events and sessions;
-- derived metrics/aggregates;
-- high-frequency raw external data.
+Rejected for the canonical kernel:
 
-The past is not silently rewritten. Important changes are auditable, and structural plans may create new effective versions. Derived values remain reproducible where practical. Raw sensor streams are not copied indefinitely by default when summaries/provider references are sufficient.
+```text
+universal semantic Entity / Thing
+universal generic Relationship / edge
+generic EAV / property-bag ontology
+provider schema as LifeOS ontology
+AI-output schema as LifeOS ontology
+unresolved AI meaning persisted as fabricated generic canonical truth
+```
 
-## Files
+Bounded technical registries, discriminators, references, JSON/provider metadata, indexes and projections remain allowed where semantic ownership stays explicit.
 
-The first implementation uses local file storage behind a provider interface. Future providers may include S3-compatible storage, Cloudflare R2, Azure Blob Storage, or similar services without changing domain logic. PostgreSQL stores file metadata/logical identifiers rather than normal large-file payloads.
+## Physical persistence posture
 
-## Integrations
+No Physical technology is selected.
 
-External apps and device services are normalized behind an Integration Hub/provider interfaces. Provider-specific concepts should not leak through the core domain.
+```text
+PRIMARY CANONICAL
+PostgreSQL hybrid — preferred mandatory baseline, NOT selected
+TypeDB            — mandatory challenger, NOT selected
 
-Expected provider families include weather, maps/places/routes, health, calendar, AI and future external data sources. Imported data retains provenance/external identifiers and supports deduplication/reconciliation.
+SECONDARY GRAPH
+no-specialized-store baseline vs Neo4j
 
-HealthKit and Health Connect are preferred aggregation surfaces for supported mobile health/wearable data rather than integrating every device vendor independently at the start. Device-native sensors may be used directly when they add value, but high-frequency raw data is retained only for a justified product need.
+SEARCH / SEMANTIC RETRIEVAL
+structured + lexical/full-text baseline vs bounded pgvector where applicable
 
-## AI
+EVENT / DOCUMENT
+bounded native mechanisms first
+specialized product only on demonstrated gap/benefit
 
-AI access is isolated behind a replaceable AI gateway.
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
+```
 
-Initial providers/workflows may include:
+Phase 10 defines the benchmark method, not the winner.
 
-1. mock provider;
-2. manual/structured assistant import-export;
-3. paid API providers when needed;
-4. external assistants connected through a provider-neutral Tool API / MCP-compatible layer when supported.
+Mandatory benchmark posture:
 
-AI produces structured semantic candidates or proposals. The backend validates permissions, versions, entity/relation types, constraints, duplicates, consequences and confirmation policy before applying changes.
+```text
+hard semantic/correctness gates
+→ role-specific scoring only after PASS
+→ LOW / BASE / HIGH + NFR sensitivity
+→ exact version / edition / deployment evidence
+→ PASS / PASS-CONDITIONAL / HOLD / REJECT /
+  SENSITIVITY-DEPENDENT / PREFERRED
+```
 
-LifeOS owns persistent memory/state. AI conversation memory is not authoritative.
+`PREFERRED != SELECTED`.
 
-A Context Builder provides the minimum relevant state and tool access for each request instead of sending the user's entire history to the model. Deterministic services handle routine calculations, aggregation and straightforward scheduling logic; AI is reserved for interpretation, conversation, ambiguous cross-domain planning and complex replanning.
+LOW/BASE/HIGH are synthetic qualification envelopes, not business forecasts. An unexecuted upper envelope must not be reported as `VERIFIED-RUN`; progressive saturation/scaling evidence is acceptable only when its limits are explicit.
 
-External assistants and the internal AI must use the same LifeOS domain/tool contracts. When a client cannot write directly, it may still create an importable proposal that LifeOS validates and applies after confirmation.
+## State/history/consistency direction
 
-See [`ADR-005`](../decisions/ADR-005-ai-gateway.md) and [`personal-data-ai-integration.md`](personal-data-ai-integration.md).
+Future implementation must preserve, where applicable:
 
-## Local development
+- intended/planned vs accepted/current vs actual realization;
+- Actual vs Observation/Outcome;
+- canonical vs provider/external state;
+- material state/history vs derived projection;
+- candidate/unresolved vs established canonical meaning;
+- correction/version/reconciliation vs silent overwrite;
+- owner identity vs storage/provider/runtime identity;
+- expected-state semantics for consequential writes;
+- atomic multi-owner changes where required or truthful staged/partial state with reconciliation/compensation.
 
-- Web, mobile, and backend may run natively for fast development.
-- PostgreSQL runs through Docker initially.
-- Docker Compose is prepared for repeatable infrastructure startup.
-- Production images will be added when application code begins.
+```text
+NativeRef != ScopedRecordRef != MaterialStateRef != ExternalRef
+ETag / MVCC token / provider revision != MaterialStateRef by identity
+idempotency != semantic identity
+absence / unknown != false
+```
 
-## Deployment direction
+## Flexible/provider data and object storage
 
-The architecture must remain portable across local machines, single-server deployments, managed container platforms, and future orchestration systems. Kubernetes is not required initially.
+JSON/metadata may represent genuinely flexible, low-consequence, provider-specific or specialist detail; it must not hide unresolved kernel semantics.
 
-The initial backend remains a modular monolith with clear domain boundaries. Expensive components are extracted only when measurements justify independent scaling.
+Large file bytes remain behind a StorageProvider/object-storage abstraction. Content Artifact identity is not identical to blob/path/URL/provider-object identity.
+
+## Integration Hub
+
+Five modes remain distinct:
+
+```text
+canonical import
+sync / mirror
+live federated read
+retrieval / index projection
+action / tool integration
+```
+
+```text
+ExternalRef != NativeRef
+provider revision != MaterialStateRef
+provider state/effect != canonical LifeOS state/effect automatically
+provider/tool operation string != canonical governed effect
+```
+
+Callbacks/webhooks/polling/push are adapter mechanisms. MCP/A2A/future protocols remain adapters, not ontology/governance authority.
+
+## AI / context / runtime
+
+AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
+
+```text
+canonical state
+material history
+retrieved context
+derived context
+live external context
+candidate / unresolved state
+transient LLM working context
+```
+
+```text
+AI memory != second canonical truth store
+model output != accepted canonical effect
+tool invocation != authorization
+runtime Agent / Principal != Domain Actor automatically
+```
+
+### Consequential AI change evaluation
+
+Before promotion of a materially consequential change to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, LifeOS requires versioned/reproducible evaluation appropriate to the affected behavior.
+
+Pressure includes, where material:
+
+```text
+structured-output correctness
+false canonical claims / semantic overreach
+candidate-vs-canonical classification
+tool-selection / tool-argument errors
+governance bypass
+privacy / inference leakage
+stale-context behavior
+model/provider substitution regression
+fallback / refusal / malformed-output behavior
+confirmation / human-approval flows
+cost / latency
+```
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority
+eval PASS != governed-effect authorization
+```
+
+Concrete eval framework/datasets/runners/thresholds/CI remain later engineering choices.
+
+## Governed operations/effects
+
+Consequential operation meaning remains independent from route/UI/tool/AuthZ/workflow implementation.
+
+```text
+request accepted != effect completed
+provider acknowledgement != canonical completion automatically
+workflow completion != Actual automatically
+technical cancellation != Domain cancellation automatically
+```
+
+Where material, preserve contract/version, semantic target/effect, input/candidate, purpose/context, expected/material state, freshness basis, Principal/Actor/represented party, governance, autonomy/confirmation, idempotency/equivalence, correlation/causation, execution class, deadlines/cancellation semantics and independent canonical/provider/runtime/reconciliation outcomes.
+
+## Security / AuthZ
+
+Later implementation preserves:
+
+```text
+Person != Account != Principal != Actor
+Authority != AuthZ decision
+Consent != Authority
+Visibility != Authority
+```
+
+Consequential authorization/effect provenance must be reconstructible where required. Non-human Principals do not bypass semantic governance.
+
+## Durable execution
+
+LifeOS does not adopt one universal async/workflow mechanism.
+
+```text
+BOUNDED ASYNC
+DB + worker/outbox style = valid baseline mechanism class
+
+DEDICATED DURABLE EXECUTION
+Restate   preferred structural-fit candidate — NOT selected
+Temporal  strongest mandatory challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable local/bounded Python use
+          PostgreSQL recommended for production
+          distributed multi-server topology PostgreSQL-coupled
+```
+
+DBOS coupling is deployment-dependent rather than universally PostgreSQL-required in Python. No workflow runtime creates exactly-once external reality by itself, and runtime state does not become canonical Domain history/ontology.
+
+## Search / observability / calendar / solver
+
+```text
+SEARCH
+structured filters + lexical/full-text = baseline
+semantic/vector retrieval = bounded candidate
+search miss != canonical nonexistence
+index/embedding/ranking != canonical truth
+
+OBSERVABILITY
+OpenTelemetry-first / equivalent direction
+no vendor selected
+telemetry != Domain Provenance / security audit automatically
+
+CALENDAR
+iCalendar / JSCalendar / provider APIs = adapter pressure
+provider schema/token != LifeOS ontology / MaterialStateRef
+
+SOLVER
+simple deterministic rules/heuristics = baseline
+OR-Tools CP-SAT = preferred specialized benchmark candidate — NOT implemented
+UNKNOWN != INFEASIBLE
+solver result != accepted canonical effect
+```
+
+## Specialized-infrastructure rule
+
+A specialized system is admitted only on demonstrated measured or strong structural benefit in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
+
+Current consequences:
+
+- dedicated durable execution is structurally justified for material long-running classes, but no engine is selected;
+- dedicated search/vector infrastructure is not justified by default;
+- Neo4j remains a secondary/read-projection challenger against the no-specialized-store baseline;
+- OR-Tools CP-SAT remains a solver benchmark candidate;
+- event/document/policy/analytics/time-series systems remain bounded candidates requiring evidence.
+
+## Repository safety
+
+Phase 11 verified effective `main` protections remotely:
+
+```text
+PR integration required
+main deletion blocked
+non-fast-forward / force-push blocked
+review-thread resolution required
+required approvals 0 while no independent reviewer exists
+required status checks 0 until real stable contexts exist
+auto-delete merged head branches enabled
+```
+
+A documented setting is not evidence of application by itself; remote state must be re-read for future changes.
+
+## Definitive Pre-Physical closure evidence
+
+Phase 12 is QA PASS/CLOSED. The subsequent independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss, accidental technology selection or accidental Physical/backend start.
+
+The bounded final repair gate was activated at:
+
+`9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+
+with exact evidence:
+
+```text
+PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
+unique paths  23
+added          1
+modified      22
+deleted        0
+unexpected     0
+behind_by      0
+main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
+critical readback PASS
+```
+
+Therefore branch-local Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS**.
+
+## Explicit next boundary
+
+```text
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
+```
+
+No Physical or backend implementation is authorized now. After separate user authorization, integrate this closed branch through the protected PR flow and verify `main`; only after that may the Physical Model receive its own separate authorization.

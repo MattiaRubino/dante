@@ -1,50 +1,41 @@
 # ADR-007: Domain-Model-Informed Persistence Boundaries
 
-- Status: Accepted
+- Status: **Accepted semantic guardrail / partially superseded for Physical posture**
 - Date: 2026-08-16
-- Supersedes: only the semantic-authority implications of earlier generic-model language in ADR-006 and related architecture documents; PostgreSQL, hybrid persistence, provider abstraction and progressive implementation remain valid where compatible with the final Domain Atlas.
+- Qualified: 2026-08-17
+- Current semantic authority: accepted Domain Atlas + closed Logical Model
 
 ## Context
 
-ADR-006 and the August 10 architecture documents were intentionally written before the final LifeOS Domain Atlas existed. They established useful technical direction: PostgreSQL as the primary source of truth, a hybrid typed/flexible persistence approach, provider adapters, version/audit history, and the ability to support open-ended personal domains without one table per imaginable subject.
+Earlier architecture material predated the final Domain Atlas and risked allowing generic persistence mechanisms to redefine LifeOS semantics.
 
-Subsequent Domain Validation Methodology v3 work materially refined the semantic model. The accepted Domain Atlas now rejects several assumptions that a generic persistence layer could accidentally reintroduce, including:
-
-- a universal semantic `Relationship`/`Relation` root;
-- semantic-free `related_to` canonical truth;
-- universal `Register` semantics;
-- provider or storage objects as canonical LifeOS identity;
-- creating native domain primitives because of query frequency, cardinality, UI grouping or storage convenience;
-- treating product profiles such as Project/Program as independent kernel primitives merely because they have product identity;
-- using arbitrary generic properties/relations as canonical fallback when AI interpretation is semantically unresolved.
-
-The semantic model must therefore govern persistence design, not the reverse.
+Subsequent Domain Validation Methodology v3 and Whole-Logical work confirmed that persistence must preserve accepted semantic ownership rather than manufacture universal roots for convenience.
 
 ## Decision
 
-### 1. Domain Atlas is authoritative for semantic meaning
+### 1. Domain and Logical semantics govern persistence
 
-When legacy architecture examples conflict with later accepted Domain Atlas definitions or validation checkpoints, the later Domain Atlas decision controls semantic interpretation.
+When implementation pressure conflicts with accepted Domain/Logical meaning, the accepted semantic model controls unless a separate explicit reopen demonstrates a genuine contradiction.
 
 ```text
-accepted Domain Atlas / validation checkpoint
+accepted Domain Atlas + closed Logical Model
         >
-legacy generic-model semantic assumption
+legacy generic-model assumption
+        >
+provider/storage/API convenience
 ```
 
-This ADR does not erase the earlier history. It constrains how that history may be implemented.
+### 2. Representation is not ontology
 
-### 2. Technical generic mechanisms are allowed, semantic generic roots are not implied
+Technical implementation may use shared mechanisms such as:
 
-A logical/physical implementation may use shared technical mechanisms where useful, including:
-
-- common identity/reference registries;
+- common reference/identity registries;
 - typed discriminators;
 - shared history/version infrastructure;
-- typed edge/reference tables;
-- JSONB or metadata for genuinely flexible/provider-specific properties;
+- typed edge/reference structures;
+- JSON/provider metadata;
 - search/index projections;
-- provider sync/reconciliation tables.
+- provider sync/reconciliation structures.
 
 But:
 
@@ -52,83 +43,49 @@ But:
 technical registry != universal semantic Entity/Thing root
 technical edge row != universal semantic Relationship
 shared table != shared ontology parent
-object_type discriminator != proof of domain superclass
+discriminator != proof of domain superclass
 ```
 
-The database may generalize representation without generalizing domain meaning.
+### 3. Specific semantics beat generic fallback
 
-### 3. Specific semantic owner takes precedence over generic edge
+Where LifeOS knows the accepted meaning, persistence/API representation must preserve the specific semantic owner/relation/governance family.
 
-When LifeOS knows the meaning, persistence/API representation must preserve the specific accepted semantic family.
+A semantically weak `related_to` or arbitrary property must not replace accepted semantics merely because it is easier to store.
 
-Examples include:
+### 4. Uncertainty remains uncertainty
 
-```text
-Participation
-Responsibility
-Coordination Stewardship
-Authority
-Visibility
-Agreement
-Consent
-Representation
-Membership
-Contribution
-Ownership
-Possession
-Interpersonal Relationship
-Dependency
-Resource Allocation
-```
-
-A physical shared relation table may store several such typed families if that design survives logical-model validation, but an untyped or semantically weak `related_to` record must not replace them.
-
-### 4. Generic relation/property is not a canonical AI fallback
-
-If input cannot be expressed precisely with the accepted semantic vocabulary, AI or ingestion logic may retain source material and create a proposal/candidate with Provenance and uncertainty, or leave the interpretation unresolved.
+If input cannot be represented precisely with accepted semantics, AI/ingestion may retain source material and unresolved/candidate state with provenance.
 
 It must not silently establish:
 
 ```text
-generic canonical Relation
+generic canonical Relationship
 arbitrary canonical property
-new ontology type
+new ontology owner
 ```
 
-Merely persisting uncertainty as `related_to` would manufacture truth the semantic model has explicitly rejected.
+### 5. Flexible metadata is bounded
 
-### 5. JSONB is an extension mechanism, not semantic debt storage
+JSON/provider metadata may represent provider-specific fields, low-consequence flexible descriptive properties, reconciliation payload remnants, specialist/optional metadata and implementation projections where semantics permit.
 
-JSONB/provider metadata may represent:
+It must not hide a required but unclassified kernel semantic owner/material state.
 
-- provider-specific fields;
-- low-consequence flexible descriptive properties;
-- adapter payload remnants needed for reconciliation;
-- specialist or optional metadata whose semantics are not part of the general kernel.
+### 6. Product/runtime identity does not imply Domain-native identity
 
-It must not become an escape hatch for required but unclassified kernel semantics.
+Product containers, profiles, UI objects, technical runtime objects, provider objects and storage objects may have identifiers without thereby becoming native semantic referents.
 
-If repeated concrete LifeOS workflows demonstrate a missing semantic owner, the normal evidence → simulation → V3 review process applies.
+### 7. Provider identity remains external representation
 
-### 6. Product object identity does not automatically create domain-native identity
-
-Product concepts and UX containers may have application identifiers without becoming native semantic referents.
-
-Examples historically discussed as product profiles/organization include Project, Program, Calendar/Life Area, Inbox Item, Module, Template, Review Queue and similar constructs.
-
-Their product identity may be useful operationally. That alone does not override their semantic classification.
-
-### 7. Provider identity remains external evidence
-
-Provider IDs, URLs, file IDs, place IDs, calendar IDs and analogous external identifiers remain integration/reconciliation evidence unless an accepted owner explicitly defines otherwise.
+Provider IDs, URLs, file IDs, place IDs, calendar IDs and analogous identifiers remain integration/reconciliation representation unless accepted semantics explicitly establish otherwise.
 
 ```text
-provider object != LifeOS canonical identity automatically
+provider object != canonical LifeOS identity automatically
+provider state != canonical LifeOS truth automatically
 ```
 
 ### 8. Persistence pressure cannot justify ontology changes by convenience
 
-The following are insufficient, by themselves, to create or merge a semantic primitive:
+The following are insufficient by themselves to create/merge semantic primitives:
 
 ```text
 foreign-key convenience
@@ -137,60 +94,65 @@ index convenience
 cardinality
 UI grouping
 serialization shape
-one-table implementation preference
+one-table preference
 provider schema
 AI output schema
 ```
 
-If logical implementation pressure reveals that no representation can preserve accepted invariants, that is valid evidence for a targeted semantic reopen. The implementation must demonstrate the contradiction; convenience alone is not enough.
+If no implementation can preserve an accepted invariant, that is valid evidence for a targeted reopen. Convenience is not.
 
-## Required logical-model invariants
+## Logical-model hardening now carried forward
 
-The next logical-model stage must prove that its representation can preserve at least the following distinctions:
+The closed Logical Model expands this ADR's original guardrails with `WL-H01..WL-H12`, including:
+
+- justified material Agreement terms;
+- governed operation/effect contract;
+- bounded projection/disclosure surfaces;
+- absence/unknown not collapsing to false;
+- expected-state consequential writes;
+- idempotency distinct from identity;
+- truthful multi-owner consistency;
+- canonical/provider-state separation;
+- derived-state freshness/material basis;
+- retention/redaction/tombstone integrity;
+- reconstructible consequential AuthZ provenance;
+- non-interference/inference-leakage protection.
+
+These Logical contracts are now the stronger downstream authority.
+
+## Current Physical qualification
+
+The original ADR retained PostgreSQL/hybrid persistence as accepted direction and used a measured-workload-only threshold for specialized infrastructure. Those parts are now qualified.
+
+Current posture:
 
 ```text
-Person != Account != Actor
-Goal != Plan != Activity != Event
-Routine != Occurrence
-Occurrence != Schedule
-Schedule != Session
-Session != Actual
-Actual != Observation != Outcome
-Confirmation != Evidence != Provenance
-Asset != Resource
-Place != Asset
-Content Artifact != file/blob/provider representation
-Quantity != MonetaryAmount
-Responsibility != Participation != Coordination Stewardship
-Authority != Visibility
-Agreement != Consent
-Ownership != Possession
-Collective != current member set
-current != historical
-correction != silent overwrite
-provider state != canonical LifeOS state automatically
+PostgreSQL hybrid
+CURRENT PREFERRED PHYSICAL BASELINE — not final selection
+
+TypeDB
+MANDATORY PHYSICAL BENCHMARK CHALLENGER
+
+Neo4j / property graph
+SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+
+event/document mechanisms
+BOUNDED CANDIDATES
+
+generic EAV / generic edge / universal meta-model
+HARD REJECT FOR CANONICAL KERNEL
 ```
 
-The list is illustrative, not a substitute for the full Domain Atlas.
-
-## What remains valid from ADR-006
-
-Unless contradicted by this ADR or later reviewed decisions, the following direction remains valid:
-
-- PostgreSQL as primary source of truth;
-- shared schema across users/workspaces;
-- typed relational structures for stable/high-value semantics;
-- JSONB/metadata for genuinely flexible/provider-specific data;
-- provider adapters and reconciliation;
-- auditable version/history support;
-- no per-user/per-domain database/table proliferation;
-- AI cannot invent physical schema;
-- specialized infrastructure only when justified by real workload.
+Specialized infrastructure requires demonstrated benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
 
 ## Consequences
 
-- The logical model must be designed from accepted semantics rather than from old candidate table lists.
-- A generic technical relation/reference mechanism is permissible only if every canonical semantic use remains typed, validated and queryable without semantic collapse.
-- Unsupported semantic interpretations remain unresolved/proposed rather than becoming generic canonical facts.
-- Architecture documentation predating the final Domain Atlas is historical context, not independent ontology authority.
-- SQL, migrations, API resources and backend implementation remain separately gated after logical-model validation.
+- Physical design starts from the closed Domain + Logical models, not old candidate table lists.
+- Shared technical representations are allowed only where semantic boundaries remain explicit and reconstructible.
+- Unsupported interpretation remains unresolved/proposed rather than becoming generic canonical truth.
+- Physical/database/schema/API/runtime choices remain separately gated.
+- A genuine semantic contradiction triggers a targeted reopen; implementation convenience does not.
+
+## Historical relation to ADR-006
+
+This ADR originally superseded the semantic-authority implications of ADR-006. ADR-006 is now explicitly superseded as canonical semantic/data-model architecture. This ADR remains useful/current for its semantic guardrails, with the Physical-posture qualifications stated above.
