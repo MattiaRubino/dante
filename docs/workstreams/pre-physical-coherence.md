@@ -1,6 +1,6 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **FINAL CLOSURE CANDIDATE — Phase 12 activation pending final remote gate QA**
+- Status: **FINAL CLOSURE CANDIDATE — final independent-audit activation QA pending**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
 - Started: 2026-08-17
@@ -8,15 +8,15 @@
 - Physical Model: **NOT STARTED / NOT AUTHORIZED**
 - Core Domain Model / Domain Atlas: **CLOSED / unchanged**
 - Logical Model: **CLOSED / unchanged**
-- Main integration: **NOT AUTHORIZED YET**
+- Main integration: **NOT PERFORMED**
 
 ## Purpose
 
-Bridge the closed Domain + Logical Models and any later separately authorized Physical Model by making repository/current architecture truth coherent, establishing pre-Physical technical requirements and benchmark inputs, hardening repository integration safety and proving clean-room recoverability from repository truth.
+Bridge the closed Domain + Logical Models and any later separately authorized Physical Model by making repository/current architecture truth coherent, establishing Pre-Physical technical requirements and benchmark inputs, hardening repository integration safety and proving repository-first recoverability without conversation memory.
 
 A genuine semantic contradiction requires a separate explicit Domain/Logical reopen. Cleanup, Physical design or implementation convenience must never silently alter closed semantics.
 
-## Current accepted stage
+## Current stage
 
 ```text
 PRODUCT / NORTH STAR
@@ -35,25 +35,14 @@ WL-H01..WL-H12 active
 
 PRE-PHYSICAL COHERENCE
 FINAL CLOSURE CANDIDATE
-Phase 0 PASS
-Phase 1 QA PASS
-Phase 2 QA PASS
-Phase 3 QA PASS
-Phase 4 QA PASS
-Phase 5 QA PASS
-Phase 6 QA PASS
-Phase 7 QA PASS WITH CONDITIONAL RANKING
-Phase 8 QA PASS
-Phase 9 QA PASS
-Phase 10 QA PASS
-Phase 11 QA PASS
-Phase 12 closure record written / activation pending final exact remote gate QA
-
-AFTER PHASE 12 ACTIVATION
-independent total repository audit REQUIRED before definitive whole-workstream closure
+Phase 0–11 QA PASS
+Phase 12 QA PASS / CLOSED
+Independent total audit CORE PASS
+bounded final repairs incorporated
+final exact remote activation QA pending
 
 MAIN INTEGRATION
-NOT AUTHORIZED
+NOT PERFORMED
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
@@ -78,16 +67,17 @@ Before any further work:
 10. read `docs/architecture/README.md` and linked current architecture sources;
 11. read `docs/architecture/pre-physical-architecture-baseline.md`;
 12. read `docs/architecture/pre-physical-clean-room-qa.md`;
-13. read all Phase 5 requirement packages;
-14. read Phase 6 AI/context/runtime + Integration Hub contracts;
-15. read Phase 7 durable-execution benchmark;
-16. read Phase 8 governed-operation/effect contract;
-17. read Phase 9 search/observability/calendar/solver contract;
-18. read all three Phase 10 Physical benchmark-method documents;
-19. read complete cumulative/split Domain/Logical authority where material;
-20. read relevant ADR/evidence/methodology;
-21. verify current branch/ref and relation to `main` before any write;
-22. issue a fresh exact PRE-SCOPE/write gate for any new write scope.
+13. read `docs/architecture/pre-physical-final-coherence-audit.md`;
+14. read all Phase 5 requirement packages;
+15. read Phase 6 AI/context/runtime + Integration Hub contracts;
+16. read Phase 7 durable-execution benchmark;
+17. read Phase 8 governed-operation/effect contract;
+18. read Phase 9 search/observability/calendar/solver contract;
+19. read all three Phase 10 Physical benchmark-method documents;
+20. read complete cumulative/split Domain/Logical authority where material;
+21. read relevant ADR/evidence/methodology;
+22. verify current branch/ref and relation to `main` before any write;
+23. issue a fresh exact PRE-SCOPE/write gate for any new write scope.
 
 ## Domain / Logical closure discoverability
 
@@ -103,28 +93,21 @@ Domain closure authority includes:
 Logical closure authority includes:
 
 - `docs/logical-model/whole-logical-model-v1.md` — canonical content payload;
-- complete `docs/logical-model/decision-and-assumption-register-v1*` logical chain;
+- complete `docs/logical-model/decision-and-assumption-register-v1*` chain;
 - `docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md` — separate closure activation.
 
 ```text
-DOMAIN REOPEN REQUIRED 0
+DOMAIN REOPEN REQUIRED  0
 LOGICAL REOPEN REQUIRED 0
 ```
 
 ## Documentation lifecycle rule
 
 ```text
-CURRENT SPECIFICATION
-= current truth only
-
-ADR
-= rationale + explicit status/supersession/qualification
-
-HISTORICAL / VALIDATION EVIDENCE
-= truthful chronology
-
-GIT / PR HISTORY
-= recoverable history
+CURRENT SPECIFICATION = current truth only
+ADR = rationale + explicit status/supersession/qualification
+HISTORICAL / VALIDATION EVIDENCE = truthful chronology
+GIT / PR HISTORY = recoverable history
 ```
 
 Before replacing/deleting stale current documentation:
@@ -179,6 +162,8 @@ technical cancellation != Domain cancellation automatically
 search miss != canonical nonexistence
 telemetry != Domain Provenance / audit automatically
 preferred / registered benchmark candidate != selected technology
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
 ```
 
 ## Phase ledger — exact continuation evidence
@@ -232,8 +217,6 @@ RESULT
 QA PASS
 ```
 
-Backend Foundation remains deferred/non-executable.
-
 ### Phase 4 — Current Pre-Physical Architecture Baseline
 
 ```text
@@ -246,8 +229,6 @@ d67cd83f462611b2cc6d341937432e705f7a8682
 RESULT
 QA PASS
 ```
-
-The old accidental `__no-op__` ref is absent.
 
 ### Phase 5 — requirements constraining Physical
 
@@ -266,8 +247,6 @@ QA PASS
 ```
 
 Owners: AuthN/AuthZ; Security/Privacy/Retention/Security-aware Recovery; Consistency/Side Effects; Non-functional/Multi-device/Operational Recovery.
-
-No arbitrary RPO/RTO/SLA/latency/scale/offline targets or implementation mechanisms were selected.
 
 ### Phase 6 — AI/context/runtime/integration boundaries
 
@@ -288,19 +267,7 @@ RESULT
 QA PASS
 ```
 
-Context categories:
-
-```text
-canonical state
-material history
-retrieved context
-derived context
-live external context
-candidate / unresolved state
-transient LLM working context
-```
-
-Integration Hub preserves five modes. No AI provider/model, agent framework, generic AI-memory truth store, MCP/A2A implementation, workflow engine or provider adapter was selected.
+Final independent audit hardening later added an explicit current requirement for versioned/reproducible evaluation before promotion of materially consequential AI behavior changes. No AI provider/model/eval product was selected.
 
 ### Coordinated Phase 7–9 tranche
 
@@ -330,7 +297,7 @@ RESULT
 QA PASS
 ```
 
-Current durable-execution posture:
+Current durable-execution posture after final factual hardening:
 
 ```text
 BOUNDED ASYNC
@@ -339,8 +306,13 @@ DB + worker/outbox style = valid baseline class
 DEDICATED DURABLE EXECUTION
 Restate   preferred structural-fit candidate — NOT selected
 Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable for local/bounded Python use
+          PostgreSQL recommended for production
+          distributed multi-server topology PostgreSQL-coupled
 ```
+
+DBOS system-database posture was reverified from current official DBOS documentation on 2026-08-18; the old universal `requires PostgreSQL` wording was corrected without changing candidate rank.
 
 ### Phase 10 — Physical benchmark method
 
@@ -375,7 +347,7 @@ SEARCH / VECTOR
 structured + lexical/full-text baseline vs bounded pgvector
 ```
 
-Hard correctness gates precede scoring; synthetic tiers are not forecasts; exact version/edition/deployment evidence is required; `PREFERRED != SELECTED`.
+Hard correctness gates precede scoring; synthetic tiers are not forecasts; exact version/edition/deployment evidence is required; unexecuted tiers remain unverified; `PREFERRED != SELECTED`.
 
 ### Phase 11 — repository engineering safety
 
@@ -396,7 +368,7 @@ RESULT
 QA PASS
 ```
 
-Phase 11 final physical result:
+Final Phase 11 physical result:
 
 ```text
 ahead_by      13
@@ -425,23 +397,114 @@ confirmed accidental refs absent
 
 Dependabot/secret/code-scanning endpoints remain connector-unverifiable because of integration permissions; no independent API PASS was fabricated.
 
-## Phase 12 — clean-room repository / architecture QA
-
-Approved Phase 12 gate:
+### Phase 12 — clean-room repository / architecture QA
 
 ```text
 PRE-SCOPE
 d7fe582872be97ddb9c7a4e322918fccbb3e26e0
 
+REPAIR HEAD
+4d4c5eaccd97096e55a0736b18ef836e6c9fa673
+
+CLOSURE EVIDENCE COMMIT
+ab945295fe4e84d2ec86a75f577a19cff1fae320
+
+PROPAGATION HEAD BEFORE SAVE-GAME
+73be96456b3f30cb9d13d41f55324a2f85daa774
+
+FINAL PHASE-12 HEAD
+1bd142afe51221211bc777f6271a642911c650fc
+
+RESULT
+QA PASS / CLOSED
+```
+
+Final Phase 12 compare:
+
+```text
+ahead_by       11
+behind_by       0
+unique_paths   11
+added           1
+modified       10
+deleted         0
+unexpected      0
+```
+
+Initial Phase 12 findings were five bounded current-consumer/discoverability defects only. No Domain/Logical semantic payload was changed.
+
+## Independent total Pre-Physical audit
+
+After Phase 12, the user explicitly required another broader independent audit before definitive closure and before any `main` integration.
+
+### Whole workstream inventory at audit PRE-SCOPE
+
+```text
+FINAL-AUDIT PRE-SCOPE
+1bd142afe51221211bc777f6271a642911c650fc
+
+MAIN BASELINE
+148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+
+PRE-PHYSICAL BRANCH VS MAIN
+ahead_by       125
+behind_by        0
+changed paths   39
+```
+
+The delta contained documentation/governance/architecture only. No Domain/Logical file change, backend source, SQL/schema/migration, Physical implementation or prototype path was introduced by this workstream.
+
+### Independent core verdict
+
+Two independent audit passes converged on:
+
+```text
+CORE ARCHITECTURE HOLDS                         PASS
+DOMAIN REOPEN REQUIRED                            0
+LOGICAL REOPEN REQUIRED                           0
+NEW DOMAIN OWNER REQUIRED                         0
+MAJOR SEMANTIC CONTRADICTION                       0
+MAJOR ARCHITECTURAL CONTRADICTION                  0
+PHYSICAL WORK ACCIDENTALLY STARTED                 0
+BACKEND ACCIDENTALLY STARTED                       0
+MAJOR KNOWLEDGE LOSS                               0
+TECHNOLOGY ACCIDENTALLY SELECTED                   0
+```
+
+### Bounded final findings
+
+The audit found only bounded current-truth/factual/engineering hardening:
+
+1. stale stage-handoff prose in current architecture/contract documents;
+2. Phase 10 method vs future Physical execution wording in Phase 5 consumers;
+3. documentation bootstrap missing repository-safety in one current protocol;
+4. branch auto-delete wording still framed as future although enabled;
+5. DBOS coupling wording falsely implied universal PostgreSQL requirement;
+6. consequential AI change evaluation/regression requirement was too implicit;
+7. upper synthetic benchmark tier needed explicit `unexecuted != VERIFIED-RUN` handling.
+
+No new Phase, Domain root, Logical representation or candidate technology was required.
+
+### Final approved audit gate
+
+```text
+BRANCH
+chore/pre-physical-coherence
+
+PRE-SCOPE
+1bd142afe51221211bc777f6271a642911c650fc
+
+MAIN
+148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+
 CREATE
 1
 
-docs/architecture/pre-physical-clean-room-qa.md
+docs/architecture/pre-physical-final-coherence-audit.md
 
 UPDATE
-10
+22
 
-CONTRIBUTING.md
 README.md
 docs/README.md
 docs/PROJECT-STATUS.md
@@ -449,6 +512,19 @@ docs/ROADMAP.md
 docs/architecture/README.md
 docs/architecture/pre-physical-architecture-baseline.md
 docs/architecture/system-overview.md
+docs/architecture/technical-decisions.md
+docs/architecture/requirements/README.md
+docs/architecture/requirements/nonfunctional-multidevice-recovery.md
+docs/architecture/ai-context-runtime-boundaries.md
+docs/architecture/durable-execution-benchmark.md
+docs/architecture/governed-operation-effect-contract.md
+docs/architecture/search-observability-calendar-solver-boundaries.md
+docs/architecture/physical-benchmark-specification.md
+docs/architecture/physical-benchmark-register.md
+docs/development/branching-and-environments.md
+docs/development/documentation-and-handoff.md
+docs/development/operating-rules.md
+docs/workstreams/README.md
 docs/workstreams/backend-foundation.md
 docs/workstreams/pre-physical-coherence.md
 
@@ -456,139 +532,118 @@ DELETE
 0
 
 UNIQUE PATHS
-11
+23
 ```
 
-### Initial read-only clean-room verdict
+Explicitly untouched:
 
 ```text
-PASS WITH BOUNDED REPAIR
-
-DOMAIN REOPEN REQUIRED                 0
-LOGICAL REOPEN REQUIRED                0
-NEW DOMAIN OWNER REQUIRED              0
-SEMANTIC CONTRADICTION                 0
-ARCHITECTURAL CONTRADICTION            0
-PHYSICAL MODEL STARTED                 0
-BACKEND STARTED                        0
-BOUNDED CURRENT-TRUTH REPAIRS          5
+docs/domain/**
+docs/logical-model/**
+ADRs
+repository ruleset JSON
+Phase 12 clean-room evidence
+Physical implementation/schema
+backend source
+prototype
+main
+PR / merge
 ```
 
-Repairs discovered:
+### Final repair QA checkpoint
 
-1. architecture navigation had not consumed Phase 11 and did not make cumulative Domain closure sufficiently discoverable;
-2. Pre-Physical baseline still treated Phase 11 as open/next;
-3. system overview stopped at Phase 10;
-4. Backend handoff still said GitHub settings verification pending;
-5. `CONTRIBUTING.md` retained an obsolete instruction that could imply Domain work inside Backend Foundation.
-
-No Domain/Logical semantic payload was changed.
-
-### Phase 12 repair HEAD
+After all 17 non-global repair/consumer writes, before creating final audit evidence:
 
 ```text
-4d4c5eaccd97096e55a0736b18ef836e6c9fa673
+REPAIR HEAD
+5ef72e6f1a177e173af72a862d64ceda5290bb84
+
+ahead_by       17
+behind_by       0
+total_commits  17
+modified       17
+added           0
+deleted         0
+unexpected      0
 ```
 
-Repair compare from PRE-SCOPE:
-
-```text
-ahead_by       5
-behind_by      0
-total_commits  5
-added          0
-modified       5
-deleted        0
-unexpected     0
-```
-
-### Post-repair clean-room rerun
-
-```text
-Domain closure discoverable               PASS
-Logical closure discoverable              PASS
-Phase 11 consumed by current architecture PASS
-Backend still NOT STARTED                 PASS
-Physical still NOT STARTED                PASS
-PREFERRED != SELECTED                     PASS
-current-vs-history distinction             PASS
-ruleset still active                      PASS
-remaining Phase-12 repair blocker         0
-```
-
-### Phase 12 closure evidence
+### Final audit evidence
 
 Created:
 
 ```text
-docs/architecture/pre-physical-clean-room-qa.md
+docs/architecture/pre-physical-final-coherence-audit.md
 ```
 
 Evidence commit:
 
 ```text
-ab945295fe4e84d2ec86a75f577a19cff1fae320
+99aeed6a71c07383c0ef206b190fc628a8263d63
 ```
 
-The evidence record is conditionally activating and is not self-validating.
+The record is conditionally activating and is not self-validating.
 
-### Phase 12 propagation point before final save-game
+### Final global propagation point before save-game
 
 ```text
 PROPAGATION HEAD
-73be96456b3f30cb9d13d41f55324a2f85daa774
-
-compare PRE-SCOPE -> PROPAGATION HEAD
-status          ahead
-ahead_by        10
-behind_by       0
-total_commits   10
-unique_paths    10
-added            1
-modified         9
-deleted          0
-unexpected       0
+f6d43818faf54ba81da898d9bc72864dd9edabde
 ```
 
-At that point the **only approved path not yet written was this save-game**.
+At that point every approved path except this save-game had been written.
 
-## Phase 12 activation contract
+## Final definitive-closure activation contract
 
-After this save-game write, do **no further content write** before QA.
+After this save-game write, **do no further content write before final QA**.
 
-Phase 12 becomes operative as:
+Branch-local Pre-Physical Coherence becomes operative as:
 
 ```text
-PHASE 12
-QA PASS / CLOSED
+INDEPENDENT TOTAL PRE-PHYSICAL AUDIT
+PASS
+
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
 ```
 
 only if final remote QA proves:
 
 ```text
 branch         chore/pre-physical-coherence
-base           d7fe582872be97ddb9c7a4e322918fccbb3e26e0
-unique_paths   11
-added           1
-modified       10
-deleted         0
-unexpected      0
-behind_by       0
+PRE-SCOPE      1bd142afe51221211bc777f6271a642911c650fc
+unique_paths   exactly 23
+added          exactly 1
+modified       exactly 22
+deleted        0
+unexpected     0
+behind_by      0
 main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
-critical Phase-12/current closure payloads remotely readable
+critical current-authority readback PASS
 ```
 
-If any condition fails, do not call Phase 12 closed.
+Critical readback includes at minimum:
 
-## Boundary after successful Phase 12 activation
+- Domain closure still readable/unchanged;
+- Logical closure still readable/unchanged;
+- Phase 5–10 current boundaries coherent;
+- Phase 11 effective repository rules still valid;
+- Phase 12 remains QA PASS/CLOSED;
+- consequential AI evaluation requirement present;
+- DBOS coupling correction present;
+- no selected Physical technology;
+- Physical Model still NOT STARTED / NOT AUTHORIZED;
+- Backend still NOT STARTED / DEFERRED;
+- `main` integration still NOT PERFORMED.
 
-Current explicit user instruction changes the previous immediate-merge plan.
+If any condition fails, do not call whole Pre-Physical closed.
 
-Successful Phase 12 means:
+## Boundary after successful final activation
+
+If and only if the final activation contract passes:
 
 ```text
-PHASE 12
-QA PASS / CLOSED
+PRE-PHYSICAL COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
 
 DOMAIN
 UNCHANGED / CLOSED
@@ -596,33 +651,32 @@ UNCHANGED / CLOSED
 LOGICAL
 UNCHANGED / CLOSED
 
-PHYSICAL MODEL
-NOT STARTED / NOT AUTHORIZED
+PHYSICAL READINESS
+ESTABLISHED
+PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
 
 BACKEND
 NOT STARTED / DEFERRED
+
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
 ```
 
-But the **whole Pre-Physical workstream remains a final-closure candidate**, not definitively closed yet:
+The next action is **not** Physical/backend implementation.
+
+Later sequence, only after separate user authorization:
 
 ```text
-PRE-PHYSICAL COHERENCE
-FINAL CLOSURE CANDIDATE
-NOT YET DEFINITIVELY CLOSED
+protected PR to main
+→ merge commit
+→ post-merge main verification
+→ separately authorize Physical Model
+→ execute real Physical mapping + benchmark
+→ select/accept Physical result
+→ only then authorize Backend Foundation
 ```
 
-The next exact activity is:
-
-```text
-INDEPENDENT TOTAL REPOSITORY AUDIT
-READ-ONLY FIRST
-```
-
-That audit must inspect the complete relevant repository/workstream for mistakes, contradictions, stale current instructions, knowledge loss, erroneous supersession/current-vs-history classification, unintended scope changes, false PASS/CLOSED claims, branch/PR/ruleset inconsistencies and any implicit Physical/backend start.
-
-Only after that total audit passes may the user separately authorize definitive Pre-Physical closure.
-
-## Explicitly out of scope until that audit/authorization
+## Explicitly out of scope until separate authorization
 
 ```text
 PR / merge of chore/pre-physical-coherence into main
@@ -650,10 +704,11 @@ Domain / Logical semantic changes
 Immediately after this save-game write:
 
 1. re-fetch branch HEAD;
-2. compare Phase-12 PRE-SCOPE to final HEAD;
-3. verify exact 11-path physical delta;
+2. compare final-audit PRE-SCOPE to final HEAD;
+3. verify exact 23-path physical delta;
 4. re-fetch `main` and prove unchanged;
-5. read back `docs/architecture/pre-physical-clean-room-qa.md` and current status/navigation markers;
-6. if and only if all activation conditions pass, report **Phase 12 QA PASS / CLOSED**;
-7. do **not** merge or definitively close the whole Pre-Physical workstream;
-8. next begin the separately requested independent total repository audit read-only.
+5. read back final audit evidence + current status/navigation/technical sources;
+6. re-read effective `lifeos-main-safety` rules;
+7. if and only if all activation conditions pass, report **INDEPENDENT AUDIT PASS / PRE-PHYSICAL DEFINITIVE CLOSED**;
+8. do **not** merge to `main`;
+9. wait for separate user authorization for protected `main` integration.
