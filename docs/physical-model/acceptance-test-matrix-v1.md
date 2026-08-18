@@ -1,11 +1,13 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-12 COMPLETE / PM-13 NEXT / DIRECT EXECUTION NOT STARTED**
+- Status: **CURRENT — PM-14 TARGET CLOSURE COMPLETE / DIRECT EXECUTION NOT STARTED**
 - Workstream: `feature/physical-model`
 - Primary finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
 - PM-10 preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - PM-11 selected primary: **PostgreSQL 18.4**
 - PM-12 accepted Physical Model: **ESTABLISHED**
+- PM-13 architecture/documentation QA: **PASS**
+- PM-14 branch closure: **COMPLETE**
 
 ## Result-layer rule
 
@@ -27,6 +29,8 @@ PM-10 PREFERRED RECOMMENDATION
 PM-11 TARGET SELECTION
 !=
 PM-12 ACCEPTED PHYSICAL MODEL
+!=
+PM-13 ARCHITECTURE/DOCUMENTATION QA
 !=
 VERIFIED-RUN BENCHMARK SCORE
 !=
@@ -228,7 +232,25 @@ benchmark host                           HOLD / DORMANT
 verified-run score                       NOT AVAILABLE
 ```
 
-## Advancement
+## PM-13 clean-room result
+
+```text
+ARCHITECTURE / DOCUMENTATION COHERENCE
+QA PASS
+
+BLOCKING ARCHITECTURE DEFECTS
+0
+
+FALSE DIRECT PASS CLAIMS
+0
+
+LOST PSV OBLIGATIONS
+0
+```
+
+This does not discharge direct implementation tests.
+
+## Closure
 
 ```text
 PM-11 COMPLETE
@@ -237,9 +259,15 @@ TARGET STACK SELECTED
 PM-12 COMPLETE
 ACCEPTED PHYSICAL MODEL ESTABLISHED
 
+PM-13 QA PASS
+ARCHITECTURE / DOCUMENTATION COHERENCE
+
+PM-14 BRANCH CLOSURE COMPLETE
+
 DIRECT HG PASS
 0
 
 NEXT
-PM-13 independent clean-room QA
+protected-main integration through PR
+then Development Profile v0 as separate scope
 ```
