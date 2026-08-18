@@ -1,7 +1,7 @@
 # System Overview
 
 - Status: **Current architecture overview**
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 ## Stage boundary
 
@@ -21,16 +21,19 @@ Phase 6 AI/context/runtime/integration boundaries CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver pressure CURRENT
-Phase 10 Physical benchmark method CURRENT
+Phase 10 Physical benchmark method CURRENT / QA PASS
 Phase 11 repository engineering safety QA PASS
-Phase 12 clean-room QA closing on this branch
-independent total repository audit still required before definitive whole-workstream closure
+Phase 12 clean-room QA QA PASS / CLOSED
+independent total audit CORE PASS / final bounded repair + remote activation QA in progress
 
 Physical Model
 NOT STARTED / NOT AUTHORIZED
 
 Backend production implementation
 NOT STARTED / DEFERRED
+
+Main integration
+NOT PERFORMED
 ```
 
 Domain semantics are defined by the accepted CLOSED Domain Atlas and its final closure/status continuations. Logical representation and downstream hardenings are defined by the CLOSED Whole Logical Model plus its separate remote-QA closure record. This overview does not introduce new semantic owners or Physical mechanisms.
@@ -50,6 +53,7 @@ Mobile client (Expo / React Native) ----------> Versioned LifeOS backend boundar
                                                   |-- search / retrieval projection services
                                                   |-- Integration Hub / provider adapters
                                                   |-- AI Gateway + Context Builder
+                                                  |-- AI evaluation / promotion boundary
                                                   |-- provider-neutral tool/action interfaces
                                                   |-- bounded async + durable-execution runtime boundary
                                                   |-- observability / operational controls
@@ -88,12 +92,13 @@ The future backend boundary is responsible for enforcing accepted Domain/Logical
 - deterministic calculations/constraints;
 - optional solver invocation producing candidates rather than direct canonical writes;
 - AI context construction and provider-neutral routing;
+- versioned/reproducible evaluation before promotion of materially consequential AI behavior changes;
 - provider/integration orchestration;
 - bounded background work and durable long-running coordination by operation class;
 - search/retrieval projections separated from canonical state;
 - privacy-safe observability and operational controls.
 
-Concrete routes, DTOs, transaction mechanics, AuthZ engine, durable-runtime binding and persistence structures remain later decisions.
+Concrete routes, DTOs, transaction mechanics, AuthZ engine, AI eval tooling, durable-runtime binding and persistence structures remain later decisions.
 
 ## Governed operation/effect responsibility
 
@@ -142,7 +147,10 @@ DB + worker/outbox style remains valid baseline mechanism class
 DEDICATED DURABLE EXECUTION
 Restate   preferred structural-fit candidate — NOT selected
 Temporal  strongest mandatory challenger — NOT selected
-DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          SQLite-capable for local/bounded Python use
+          PostgreSQL recommended for production
+          distributed multi-server deployment PostgreSQL-coupled
 ```
 
 Dedicated durable execution is structurally justified where correctness depends on long waits/timers, human review, provider callbacks, crash-resume, material cancellation/timeouts, compensation or multi-step reconciliation.
@@ -227,7 +235,7 @@ version / edition / deployment-pinned evidence
 PREFERRED / PASS-CONDITIONAL / HOLD / REJECT / SENSITIVITY-DEPENDENT
 ```
 
-A candidate failing a non-compensable hard gate cannot win through throughput/latency. Synthetic tiers are qualification envelopes, not business forecasts. Candidate mappings are idiomatic but must satisfy common semantic assertions. `PREFERRED != SELECTED`.
+A candidate failing a non-compensable hard gate cannot win through throughput/latency. Synthetic tiers are qualification envelopes, not business forecasts. Candidate mappings are idiomatic but must satisfy common semantic assertions. An unexecuted upper envelope remains unverified; progressive saturation/scaling evidence must be labeled according to what actually ran. `PREFERRED != SELECTED`.
 
 ## Integration responsibility
 
@@ -262,6 +270,19 @@ transient LLM working context
 ```
 
 AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. LifeOS does not create a second generic AI-memory source of truth.
+
+### AI evaluation responsibility
+
+Before promotion of a materially consequential AI behavior change, LifeOS requires versioned/reproducible evaluation appropriate to the affected model/provider/version, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy.
+
+Evaluation pressure includes structured-output correctness, false canonical claims, candidate/canonical classification, tool errors, governance bypass, privacy/inference leakage, stale context, provider/model substitution regression, fallback/refusal behavior, human-approval flows and material cost/latency.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
+
+Concrete eval datasets/frameworks/runners/thresholds/CI remain later engineering choices.
 
 ## Search responsibility
 
@@ -339,23 +360,24 @@ merge-commit history preserved by current policy
 
 Repository settings must be read back before being used as evidence. Connector-unverifiable security settings remain explicitly unverifiable rather than fabricated as PASS.
 
-## Phase 12 / final-verification responsibility
+## Phase 12 + final independent-audit responsibility
 
-Phase 12 is the repository-first clean-room coherence check. It may repair stale current navigation/status but does not reopen the accepted Domain/Logical semantics.
+Phase 12 clean-room repository/architecture QA is **QA PASS / CLOSED**.
 
-Current user-required boundary after Phase 12 QA PASS:
+The subsequent independent total audit rechecked the complete Pre-Physical branch delta and found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start. Its bounded repair set is being incorporated under an exact final closure gate.
 
 ```text
-DO NOT MERGE TO MAIN
-DO NOT DECLARE THE ENTIRE PRE-PHYSICAL WORKSTREAM DEFINITIVELY CLOSED YET
+DO NOT MERGE TO MAIN AS PART OF THIS GATE
+DO NOT START PHYSICAL / BACKEND FROM THE AUDIT ALONE
 
-NEXT
-run one independent total repository audit for mistakes, contradictions, lost knowledge and scope damage
-
-only if that passes
-→ definitive Pre-Physical closure
-→ later separately authorized PR/main integration
+FINAL AUDIT GATE
+→ bounded repairs
+→ final audit evidence
+→ exact remote compare/readback
+→ definitive Pre-Physical closure if and only if activation conditions pass
 ```
+
+Main integration remains later and separate.
 
 ## Scalability and specialized infrastructure
 
