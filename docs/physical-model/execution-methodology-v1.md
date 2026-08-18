@@ -1,6 +1,6 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — PM-12 ACCEPTED PHYSICAL MODEL COMPLETE / PM-13 NEXT**
+- Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
 - Workstream: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
@@ -9,6 +9,8 @@
 - PM-10 preferred: **PostgreSQL 18.4 / PASS-CONDITIONAL**
 - PM-11 selected primary: **PostgreSQL 18.4**
 - PM-12 accepted Physical Model: **ESTABLISHED**
+- PM-13 clean-room architecture/documentation QA: **PASS**
+- PM-14 branch closure: **COMPLETE**
 
 ## Purpose
 
@@ -154,7 +156,7 @@ PM-14 Closure / protected-main integration
 
 PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while keeping separate result layers.
 
-## Phase state through PM-12
+## Phase state through PM-14
 
 ```text
 PM-00   QA PASS
@@ -171,8 +173,8 @@ PM-09   COMPLETE / EVIDENCE-WEIGHTED SCORING + SENSITIVITY
 PM-10   COMPLETE / PREFERRED RECOMMENDATION + FINAL COMPANION STACK
 PM-11   COMPLETE / EXPLICIT USER-APPROVED TARGET STACK SELECTION
 PM-12   COMPLETE / ACCEPTED PHYSICAL MODEL ESTABLISHED
-PM-13   NEXT / INDEPENDENT CLEAN-ROOM QA
-PM-14   NOT STARTED
+PM-13   QA PASS / ARCHITECTURE-DOCUMENTATION COHERENCE
+PM-14   BRANCH CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT
 ```
 
 Deferred primary challengers remain historical comparative evidence only; the selected architecture excludes TypeDB, XTDB and SurrealDB from primary persistence.
@@ -415,7 +417,7 @@ Additional obligations cover PowerSync replication liveness, local encryption, R
 
 None is a direct PASS today unless separately executed and evidenced.
 
-## PM-11/PM-12 boundary
+## PM-11..PM-14 boundary
 
 ```text
 PM-11
@@ -423,6 +425,12 @@ TARGET STACK SELECTED
 
 PM-12
 ACCEPTED PHYSICAL MODEL ESTABLISHED
+
+PM-13
+CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
+
+PM-14
+TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
 
 DIRECT EXECUTION
 UNCHANGED / NOT STARTED
@@ -434,14 +442,14 @@ SEPARATE LATER OPERATIONAL PROFILE
 ## Current next step
 
 ```text
-PM-12 COMPLETE
-TARGET PHYSICAL STACK SELECTED
-ACCEPTED PHYSICAL MODEL ESTABLISHED
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
 CANONICAL PRIMARY PostgreSQL 18.4
 RESTATE DEPLOYMENT CONDITIONAL: SELF-HOSTED OR CLOUD EU
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
 
 NEXT
-PM-13 independent clean-room QA
+protected-main integration through PR
+then separate Development Profile v0 scope
 ```
