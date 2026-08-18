@@ -1,18 +1,18 @@
 # Home vNext Orientation + Day Ribbon v1 archive
 
-This directory preserves the exact standalone HTML supplied and approved on 2026-08-18 as the current Phase 4 Home/Today continuation checkpoint.
+This directory preserves the exact standalone HTML supplied and approved on 2026-08-18 as the current Phase 4 continuation checkpoint.
 
 ## Artifact identity
 
 `lifeos_home_vnext_orientation_day_ribbon_v1.html`
 
-- size: `748590` bytes
-- SHA-256: `88a88b4098672d26c7681cedd1d189c380f0b69e33ec9d6e536f5022ef93be17`
-- Git blob SHA: `8933e62c4d99d09e7ef07620fa779496d6179650`
+- size: `748625` bytes
+- SHA-256: `986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df`
+- Git blob SHA: `fd9788212fbbd1ee40e53271cc39cedd9275b341`
 
-The HTML is stored directly in this directory. It is the exact approved artifact; no compression, regeneration or semantic reconstruction is required.
+The HTML is stored directly in this directory. It is the exact current approved artifact; no compression, regeneration or semantic reconstruction is required.
 
-The file was first uploaded manually on commit `2f986aa540159f79ac646b8ce1cc52bc6216c5d4` under the previous checkpoint directory and then moved by reusing the same Git blob, so the move does not alter its bytes.
+The first uploaded variant used blob `8933e62c4d99d09e7ef07620fa779496d6179650`. The user corrected that source on commit `cb58b1528292398ccedeaedb60b44a4ff6e6235f`; the current blob above replaces it. The corrective delta changes exactly one source line: `drRoadGrad` uses `gradientUnits:'userSpaceOnUse'` and percentage x coordinates.
 
 ## Status and scope
 
