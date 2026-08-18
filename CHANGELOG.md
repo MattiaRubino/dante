@@ -1,4 +1,4 @@
-# Dante Internal Changelog
+# DANTE Internal Changelog
 
 This changelog records significant project-state and architecture milestones. It is not a replacement for Git history and is not intended to list every commit.
 
@@ -6,7 +6,7 @@ This changelog records significant project-state and architecture milestones. It
 
 ### Product naming
 
-- Established **Dante** as the current product/app name.
+- Established **DANTE** as the current product/app name.
 - `LifeOS` remains the previous working/project name in historical evidence, Git history and existing technical/repository identifiers where preserving chronology or compatibility matters.
 - The rename is naming-only: Product North Star, Domain Model, Logical Model and Physical Model semantics remain unchanged.
 
