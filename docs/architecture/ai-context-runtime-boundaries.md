@@ -270,6 +270,40 @@ correlation/reconciliation outcome
 
 This does not make technical telemetry Domain history automatically.
 
+## Consequential AI change evaluation / regression requirement
+
+Material changes to AI behavior MUST NOT be promoted on provider reputation, ad-hoc prompting or one successful example alone.
+
+Before promoting a consequentially relevant change to any applicable model, model version, provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, LifeOS MUST run versioned and reproducible evaluation appropriate to the affected behavior.
+
+The evaluation pressure MUST cover, where materially applicable:
+
+```text
+structured-output correctness
+false canonical claims / semantic overreach
+candidate-vs-canonical classification
+wrong tool selection / materially wrong tool arguments
+governance / authorization bypass attempts
+privacy / selective-disclosure / inference leakage
+stale-context and stale-derived-input behavior
+model/provider substitution regression
+fallback / refusal / malformed-output behavior
+confirmation / human-approval flows
+cost / latency where materially consequential
+```
+
+The evaluation corpus, relevant model/provider/version, prompt/tool contract version, configuration and acceptance criteria MUST be pinned well enough to reproduce or explain a promotion decision.
+
+A material regression blocks promotion unless an explicit later gate accepts the trade-off and records the consequence.
+
+```text
+eval result != canonical LifeOS truth
+benchmark/eval PASS != Authority
+benchmark/eval PASS != governed-effect authorization
+```
+
+The concrete evaluation framework, datasets, runners, thresholds and CI integration remain later engineering decisions. This requirement does not select an AI provider/model or create an AI-specific source of truth.
+
 ## Protocol boundary
 
 MCP, A2A and future assistant/tool protocols MAY be used as provider/runtime adapters.
@@ -292,7 +326,7 @@ The following remain explicit later decisions where applicable:
 AI provider/model set
 model routing/fallback policy
 sensitive-data provider eligibility
-model/version evaluation and pinning policy
+model/version pinning and evaluation implementation details
 prompt/context provider-retention policy
 conversation retention policy
 context budget/selection strategy
@@ -302,6 +336,8 @@ external-assistant registration/trust policy
 tool capability registration format
 provider-specific model safety configuration
 ```
+
+The requirement to evaluate material consequential AI changes is **not open**; the open portion is the concrete evaluation implementation and acceptance thresholds.
 
 ## Deferred mechanisms — not selected by Phase 6
 
@@ -321,9 +357,10 @@ workflow engine
 Temporal / Restate / DBOS
 outbox/inbox implementation
 concrete API/tool schemas
+AI evaluation framework / runner / vendor
 ```
 
-Phase 7 owns durable-workflow/async benchmark. Phase 8 owns the governed API/command/effect contract. Phase 9 owns search/observability/calendar/solver pressure.
+Phase 7–10 have already added their current downstream runtime/effect/search/benchmark contracts. Those later contracts consume this boundary; they do not replace it.
 
 ## Downstream acceptance pressure
 
@@ -338,6 +375,8 @@ Later runtime/Physical/backend candidates MUST demonstrate at minimum:
 7. delayed effects revalidate target/governance appropriately;
 8. provider fallback cannot widen privacy scope silently;
 9. prompt/tool content cannot self-authorize actions;
-10. runtime failure remains truthful without fabricated semantic negatives.
+10. runtime failure remains truthful without fabricated semantic negatives;
+11. material consequential AI changes are promotion-gated by versioned/reproducible evaluation;
+12. evaluation evidence cannot be confused with canonical truth or authorization.
 
 This contract does not authorize backend implementation or Physical design.
