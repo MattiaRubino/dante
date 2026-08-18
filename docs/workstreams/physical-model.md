@@ -1,11 +1,12 @@
 # Workstream — Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Status: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP QA PASS / PM-01 READ-ONLY NEXT**
 - Branch: `feature/physical-model`
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Started: 2026-08-18
-- PM-00 bootstrap QA: **PENDING**
-- PM-01 candidate/environment freeze: **NOT STARTED**
+- PM-00 bootstrap QA: **PASS**
+- PM-00 content-QA checkpoint before final save-game: `8549e1c95bef2e354bd47028259e6816bf5e9272`
+- PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
 - Physical mapping execution: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
 - Primary persistence selected: **NONE**
@@ -45,7 +46,18 @@ MAIN AT PHYSICAL AUTHORIZATION
 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
 PHYSICAL MODEL
-AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+AUTHORIZED / IN PROGRESS
+PM-00 BOOTSTRAP QA PASS
+PM-01 READ-ONLY NEXT
+
+MAPPING
+NOT STARTED
+
+BENCHMARK
+NOT STARTED
+
+SELECTION
+NONE
 
 BACKEND FOUNDATION
 NOT STARTED / DEFERRED
@@ -422,6 +434,77 @@ frontend/prototype
 main write / PR / merge
 ```
 
+## PM-00 remote QA evidence
+
+The initial six CREATEs were isolated first and remotely compared before any consumer propagation:
+
+```text
+CREATE CHECKPOINT
+6d76bc150dfd7b3cefe56c6e05c96404e7494626
+
+ahead_by       6
+behind_by      0
+added          6
+modified       0
+deleted        0
+unexpected     0
+```
+
+After all 16 authorized consumer updates, the remote branch was verified at:
+
+```text
+CONTENT-QA CHECKPOINT
+8549e1c95bef2e354bd47028259e6816bf5e9272
+
+PRE-SCOPE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+ahead_by       22
+behind_by       0
+total_commits  22
+unique_paths   22
+added           6
+modified       16
+deleted         0
+unexpected      0
+```
+
+`main` was separately re-read and remained exactly:
+
+```text
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+```
+
+The branch was independently compared from checkpoint `8549e1c95bef2e354bd47028259e6816bf5e9272` to `feature/physical-model` and returned `status=identical`, proving that checkpoint was the exact pre-save-game branch HEAD.
+
+Critical remote readback confirmed:
+
+```text
+Physical workstream active                     PASS
+Phase-10 register consumed but unchanged       PASS
+PostgreSQL result slots                        NOT RUN
+TypeDB result slots                            NOT RUN
+mapping execution                              NOT STARTED
+benchmark execution                            NOT STARTED
+technology selection                           NONE
+Backend Foundation                             NOT STARTED / DEFERRED
+Domain/Logical reopen                          0
+main write                                     0
+unexpected physical paths                      0
+```
+
+Therefore:
+
+```text
+PM-00 BOOTSTRAP
+QA PASS
+
+NEXT
+PM-01 READ-ONLY FIRST
+```
+
+This final save-game write is propagation of the already-proven PM-00 QA result on an already-approved path. The new chat must still re-fetch the current branch HEAD; this document cannot truthfully self-reference the commit that contains itself without creating another commit.
+
 # 17. Git / write discipline — mandatory
 
 For every future write scope:
@@ -521,32 +604,33 @@ Do not create `feature/backend-foundation`, production SQL/migrations, FastAPI r
 
 Benchmark-only mapping/harness code is allowed only in later explicitly gated Physical scopes and must remain clearly non-production unless separately promoted after Physical acceptance.
 
-# 22. Current exact next step after PM-00 QA
+# 22. Current exact next step — PM-01
 
 ```text
 PM-01 — CANDIDATE / ENVIRONMENT FREEZE
 READ-ONLY FIRST
+READY / NOT STARTED
 ```
 
-The next chat should:
+The next chat must:
 
-1. re-read this handoff and the new Physical bootstrap docs;
-2. verify branch HEAD and PM-00 remote QA result;
-3. verify `main` is unchanged from the bootstrap base unless later repository activity is explicitly accounted for;
-4. research current exact PostgreSQL and TypeDB versions/editions/deployment options from official sources;
+1. re-read this handoff and the Physical bootstrap docs;
+2. re-fetch the current `feature/physical-model` HEAD and compare with current `main`;
+3. confirm PM-00 final compare still has the same 22 approved physical paths and `behind_by 0` unless later repository activity is explicitly accounted for;
+4. research current exact PostgreSQL and TypeDB versions/editions/deployment options from official primary sources;
 5. capture exact Python driver/client compatibility and version-sensitive capabilities;
 6. verify backup/restore/HA/schema/evolution claims for the exact subjects;
 7. record the actual available benchmark host/environment constraints;
 8. identify whether any external infrastructure or local tooling is unavailable;
 9. produce a read-only PM-01 inventory and candidate freeze proposal;
-10. STOP before writing mapping/schema/harness code;
-11. present a fresh exact PM-01/PM-02 write gate.
+10. do **not** create mapping/schema/harness/database files during PM-01 read-only inventory;
+11. present a fresh exact PM-02+ write gate before any Physical mapping implementation.
 
 Do not choose PostgreSQL or TypeDB in PM-01.
 
 # 23. Resume summary
 
-If a new chat reads only this section after the mandatory sources, the operative state is:
+If a new chat reads this section after the mandatory sources, the operative state is:
 
 ```text
 REPO
@@ -558,12 +642,19 @@ Physical Model
 BRANCH
 feature/physical-model
 
-BASE
+BASE / BOOTSTRAP PRE-SCOPE
 main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
 
-STATUS
-PM-00 BOOTSTRAP IN PROGRESS
-BOOTSTRAP QA PENDING
+PM-00
+BOOTSTRAP QA PASS
+content-QA checkpoint 8549e1c95bef2e354bd47028259e6816bf5e9272
+22 unique paths
+6 added
+16 modified
+0 deleted
+0 unexpected
+behind 0
+main unchanged at bootstrap base
 
 DOMAIN
 CLOSED / DO NOT REOPEN IMPLICITLY
@@ -575,8 +666,8 @@ PHASE 10
 BENCHMARK METHOD AUTHORITY — DO NOT REINVENT
 
 PRIMARY CANDIDATES
-PostgreSQL hybrid — NOT SELECTED
-TypeDB — NOT SELECTED
+PostgreSQL hybrid — NOT SELECTED / NOT RUN
+TypeDB — NOT SELECTED / NOT RUN
 
 MAPPING
 NOT STARTED
@@ -590,6 +681,7 @@ NONE
 BACKEND
 NOT STARTED / DEFERRED
 
-NEXT AFTER BOOTSTRAP QA
+NEXT
 PM-01 READ-ONLY candidate/version/edition/deployment/environment freeze
+then STOP and gate PM-02 mapping writes
 ```
