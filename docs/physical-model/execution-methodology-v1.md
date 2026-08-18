@@ -1,8 +1,9 @@
 # Physical Model Execution Methodology v1
 
 - Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15**
+- Current product/app name: **DANTE** (`LifeOS` remains the previous working/project name in historical evidence and technical identifiers)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
-- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 - Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
 - Primary finalists: **PostgreSQL 18.4 / TypeDB CE 3.12.3**
@@ -11,11 +12,12 @@
 - PM-11 selected primary: **PostgreSQL 18.4**
 - PM-12 accepted Physical Model: **ESTABLISHED**
 - PM-13 clean-room architecture/documentation QA: **PASS**
-- PM-14 branch closure: **COMPLETE**
+- PM-14 branch/workstream closure: **COMPLETE**
+- Protected-main lifecycle action after PM-14: **PR #15 COMPLETE**
 
 ## Purpose
 
-Define how LifeOS converts accepted Domain + Logical semantics into an evidence-backed Physical Model without selecting infrastructure by popularity, vendor marketing, ritual benchmark breadth or implementation convenience.
+Define how DANTE converts accepted Domain + Logical semantics into an evidence-backed Physical Model without selecting infrastructure by popularity, vendor marketing, ritual benchmark breadth or implementation convenience.
 
 This methodology does not alter Domain/Logical authority or the Phase-10 semantic hard-gate corpus.
 
@@ -35,7 +37,7 @@ During the Physical workstream, every Physical write scope had to:
 10. read back critical output from the remote branch;
 11. save/verify terminal handoff.
 
-The workstream is now merged into `main` via PR #15. Any later direct selected-stack validation or Physical reopen requires a fresh separately approved branch/write gate rather than reusing the deleted historical branch.
+The workstream was merged into `main` through the protected repository lifecycle action PR #15 **after PM-14 branch/workstream closure**. Any later direct selected-stack validation or Physical reopen requires a fresh separately approved branch/write gate rather than reusing the deleted historical branch.
 
 A tool invocation/no-op is not repository evidence.
 
@@ -120,7 +122,7 @@ Decision priority remains:
 
 1. semantic correctness;
 2. consistency/integrity/security/privacy/recovery;
-3. LifeOS workload/capability fit;
+3. DANTE workload/capability fit;
 4. maturity/operability/maintainability/Python tooling;
 5. performance/resource efficiency where decision-relevant;
 6. TCO/deployment requirements;
@@ -154,8 +156,10 @@ PM-10 Recommendation
 PM-11 Explicit selection
 PM-12 Accepted Physical Model
 PM-13 Independent clean-room QA
-PM-14 Closure / protected-main integration
+PM-14 Branch / workstream closure
 ```
+
+**Protected-main integration is a repository lifecycle action after PM-14**, not a second semantic phase. For this workstream that action was PR #15, followed by remote post-merge verification and automatic deletion of the merged head branch.
 
 PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while keeping separate result layers.
 
@@ -177,9 +181,9 @@ PM-10   COMPLETE / PREFERRED RECOMMENDATION + FINAL COMPANION STACK
 PM-11   COMPLETE / EXPLICIT USER-APPROVED TARGET STACK SELECTION
 PM-12   COMPLETE / ACCEPTED PHYSICAL MODEL ESTABLISHED
 PM-13   QA PASS / ARCHITECTURE-DOCUMENTATION COHERENCE
-PM-14   BRANCH CLOSURE COMPLETE
+PM-14   BRANCH / WORKSTREAM CLOSURE COMPLETE
 PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
-MAIN    e6f191bad947388a44defe2c15f4939345084f58
+PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
 FORMER  feature/physical-model MERGED / AUTO-DELETED
 ```
 
@@ -327,7 +331,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-Current Restate documentation supports a self-contained binary/container and an EU Cloud region. Current client-side journal encryption is documented only for the TypeScript SDK, while the LifeOS selected SDK path is Python. Therefore journal minimization is mandatory and deployment choice remains a later privacy/operability profile decision.
+Current Restate documentation supports a self-contained binary/container and an EU Cloud region. Current client-side journal encryption is documented only for the TypeScript SDK, while the DANTE selected SDK path is Python. Therefore journal minimization is mandatory and deployment choice remains a later privacy/operability profile decision.
 
 ## Offline rule
 
@@ -340,7 +344,7 @@ bounded local working copy
 POWERSYNC
 transport/sync projection
 
-LIFEOS BACKEND
+DANTE BACKEND
 expected-state + governance + AuthZ + conflict authority
 
 POSTGRESQL
@@ -375,7 +379,7 @@ TypeDB CE 3.12.3    80.00
 Delta               +9.25 PostgreSQL
 ```
 
-Performance remains intentionally tied `8.0 / 8.0` because no direct LOW/BASE/HIGH LifeOS run exists.
+Performance remains intentionally tied `8.0 / 8.0` because no direct LOW/BASE/HIGH DANTE run exists.
 
 Accepted sensitivity remains:
 
@@ -409,7 +413,7 @@ Core inherited obligations remain:
 
 ```text
 SC-011 old-backup anti-resurrection
-SC-030 actual LifeOS V1 -> V2 mapping evolution
+SC-030 actual DANTE V1 -> V2 mapping evolution
 SC-031 destructive restore + semantic verification
 SC-032 capacity/backpressure truthful degradation
 WL-H12 system-level non-interference
@@ -436,7 +440,7 @@ PM-13
 CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
 
 PM-14
-TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
+TARGET-ARCHITECTURE BRANCH / WORKSTREAM CLOSURE COMPLETE
 
 PR #15
 PROTECTED-MAIN INTEGRATION COMPLETE
