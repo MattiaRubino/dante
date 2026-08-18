@@ -19,7 +19,7 @@ A workstream handoff must contain, where applicable:
 
 ## Current workstreams
 
-- [`physical-model.md`](physical-model.md) — **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** on `feature/physical-model`, based on `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`. Physical mapping/benchmark execution is not started and no technology is selected. After PM-00 QA the exact next step is PM-01 read-only candidate/version/edition/deployment/environment freeze.
+- [`physical-model.md`](physical-model.md) — **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP QA PASS / PM-01 READ-ONLY NEXT** on `feature/physical-model`, based on `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`. Physical mapping/benchmark execution is not started and no technology is selected. The exact next step is PM-01 read-only candidate/version/edition/deployment/environment freeze.
 - [`today-home.md`](today-home.md) — active Phase 4 Home/Today UX/product-structure workstream.
 
 ## Completed / integrated workstreams
@@ -36,9 +36,11 @@ Completed/historical handoffs remain useful evidence, but current model/architec
 
 ## Physical workstream rule
 
-Physical execution must use the bootstrap authority in `docs/physical-model/**` plus the Phase-10 benchmark specification/corpus/register.
+Physical execution must use `docs/physical-model/**` plus the Phase-10 benchmark specification/corpus/register.
 
 ```text
+PM-00 QA PASS
+PM-01 READ-ONLY FIRST
 PREFERRED != SELECTED
 NOT RUN != PASS
 unexecuted tier != VERIFIED-RUN
@@ -46,6 +48,8 @@ semantic hard-gate failure cannot be offset by performance
 ```
 
 Current/version-sensitive candidate claims require official primary-source verification and exact product + version + edition + deployment pinning. Selection requires the explicit PM-11 gate.
+
+PM-01 does not authorize mapping/schema/harness/database writes. It produces the candidate/environment freeze and the next exact write gate.
 
 ## Operational rule
 
@@ -62,7 +66,7 @@ Before continuing a workstream:
 5. use current `main` as the accepted integrated baseline and the branch handoff as authority only for unmerged work inside that workstream;
 6. read the complete canonical workstream document, including required continuation/split parts;
 7. read linked accepted model/architecture sources before proposing edits;
-8. for Physical work, read all `docs/physical-model/**` bootstrap documents and all three Phase-10 benchmark-method documents before proposing mapping/harness/selection changes.
+8. for Physical work, read all `docs/physical-model/**` documents and all three Phase-10 benchmark-method documents before proposing mapping/harness/selection changes.
 
 If the work materially changes durable product/architecture truth, update the appropriate durable document/ADR/current baseline in the same PR rather than leaving that decision only in the handoff.
 
