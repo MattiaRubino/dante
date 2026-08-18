@@ -70,10 +70,15 @@ BOUNDED ASYNC
 PostgreSQL transactional outbox + bounded worker
 
 MATERIAL LONG-RUNNING DURABLE PROCESS
-Restate Cloud EU
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 as reproducible local/self-hosted subject
+Restate Server 1.7.2 self-hosted/reproducible deployment subject
+Restate Cloud EU allowed as managed deployment when privacy/operability review accepts it
 ```
+
+Restate is the recommended Class-B durable-execution technology; **Cloud EU is not a globally mandatory deployment mode**. Restate can run self-hosted as a single binary/container and can also run as a managed EU cloud environment. The deployment choice is an operational/privacy decision and must preserve the same LifeOS runtime boundary.
+
+For the current Python path, do not assume client-side journal encryption available on Restate Cloud: current Restate documentation exposes client-side journal encryption through the TypeScript SDK only. Therefore journal payload minimization is a hard rule regardless of deployment, and self-hosting remains a first-class production option when data-control/privacy considerations dominate managed convenience.
 
 Runtime workflow state remains technical and must not replace LifeOS canonical or material history.
 
@@ -184,7 +189,7 @@ vector retrieval               pgvector derived state
 local/offline copy             encrypted SQLite / noncanonical
 sync buckets/projections       PowerSync / derived and rebuildable
 bounded async                  PostgreSQL outbox/worker
-long durable execution         Restate / runtime only
+long durable execution         Restate runtime only
 raw object bytes               Cloudflare R2
 object metadata/authority      PostgreSQL
 DB backup repository           pgBackRest -> AWS S3
@@ -209,6 +214,7 @@ No companion becomes a second canonical source of truth.
 - encrypted local-storage validation;
 - object deletion/restore/reconciliation;
 - durable workflow crash/replay/versioning/governance validation;
+- Restate deployment-mode privacy/operability validation and journal minimization;
 - solver corpus and status handling.
 
 None of these is declared directly executed today.
@@ -225,6 +231,9 @@ PASS-CONDITIONAL
 
 PREFERRED COMPANION ARCHITECTURE
 ESTABLISHED
+
+RESTATE DEPLOYMENT
+CONDITIONAL / SELF-HOSTED OR CLOUD EU
 
 DIRECT HG PASS
 0
