@@ -1,7 +1,7 @@
 # Project Status
 
 - Last updated: 2026-08-18
-- Current product/app name: **Dante**
+- Current product/app name: **DANTE**
 - Previous working/project name: `LifeOS` — legacy/historical references only; same product lineage
 - Canonical integrated branch: `main`
 - Physical integration: **PR #15 / `main @ e6f191bad947388a44defe2c15f4939345084f58`**
@@ -87,7 +87,7 @@ Conversation history is secondary to repository truth.
 ## Accepted/current foundations
 
 - Product/North Star — **CURRENT**.
-- Current product/app identity — **Dante**; `LifeOS` is the previous working/project name retained only where historical/technical continuity requires it.
+- Current product/app identity — **DANTE**; `LifeOS` is the previous working/project name retained only where historical/technical continuity requires it.
 - Core Domain Model / Domain Atlas — **CLOSED**.
 - Logical Model — **CLOSED**; `WL-H01..WL-H12` active downstream.
 - Pre-Physical Architecture Baseline — **CURRENT / CLOSED / integrated**.
