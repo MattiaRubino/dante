@@ -10,35 +10,36 @@ CURRENT
 
 CORE DOMAIN MODEL / DOMAIN ATLAS
 CLOSED — integrated into main via PR #10
-Whole-Domain: PASS WITH HARDENING / POST-WRITE QA PASS
+Whole-Domain PASS WITH HARDENING / POST-WRITE QA PASS
 
 LOGICAL MODEL
 CLOSED — integrated into main via PR #11
-Whole-Logical: PASS WITH HARDENING / REMOTE QA PASS
-WD-03: PASS
-WD-05: PASS
+Whole-Logical PASS WITH HARDENING / REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 FINAL CLOSURE CANDIDATE on chore/pre-physical-coherence
 Phase 0–11 QA PASS
-Phase 12 clean-room QA closure record written
-Phase 12 becomes QA PASS / CLOSED only when its exact final remote gate QA passes
-
-AFTER PHASE 12
-independent total repository audit required before definitive Pre-Physical closure
-NO main integration yet
+Phase 12 QA PASS / CLOSED
+Independent total audit CORE PASS
+final bounded repairs incorporated
+exact final remote activation QA pending
 
 PHYSICAL MODEL
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
+
+MAIN INTEGRATION
+NOT PERFORMED
 ```
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
 
-For exact current state, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and the active/final-verification [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
+For exact current state, read [`docs/PROJECT-STATUS.md`](docs/PROJECT-STATUS.md) and [`docs/workstreams/pre-physical-coherence.md`](docs/workstreams/pre-physical-coherence.md).
 
 ## How to resume work
 
@@ -52,27 +53,21 @@ Read in this order:
 6. [`docs/development/documentation-and-handoff.md`](docs/development/documentation-and-handoff.md);
 7. [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md);
 8. [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md);
-9. the active workstream handoff;
-10. current architecture/model indexes and linked current sources;
-11. relevant ADRs/evidence/methodologies and implementation/tests;
-12. verify the current Git ref before any write.
+9. the active/final-verification workstream handoff;
+10. [`docs/architecture/README.md`](docs/architecture/README.md) and linked current sources;
+11. Phase 12 + final independent audit evidence;
+12. relevant ADRs/evidence/methodologies and implementation/tests;
+13. verify current Git refs before any write.
 
 Repository current truth outranks conversation memory and old/historical files. An active branch may contain newer truth only inside its explicitly bounded workstream.
 
 ## Documentation rule
 
 ```text
-CURRENT SPECIFICATION
-= current truth only
-
-ADR
-= rationale + explicit supersession/qualification
-
-HISTORICAL / VALIDATION EVIDENCE
-= truthful chronology
-
-GIT / PR HISTORY
-= recoverable history
+CURRENT SPECIFICATION = current truth only
+ADR = rationale + explicit supersession/qualification
+HISTORICAL / VALIDATION EVIDENCE = truthful chronology
+GIT / PR HISTORY = recoverable history
 ```
 
 A stale current document may be replaced/deleted only after knowledge coverage proves no meaningful requirement/rationale is lost.
@@ -91,10 +86,10 @@ The Domain Atlas is cumulative. Do not stop at the early entry payload when dete
 
 Read:
 
-- [`docs/domain/README.md`](docs/domain/README.md) — Domain Atlas entry payload;
-- [`docs/domain/README-part-20.md`](docs/domain/README-part-20.md) — final corrected Domain closure/status continuation;
+- [`docs/domain/README.md`](docs/domain/README.md) — entry payload;
+- [`docs/domain/README-part-20.md`](docs/domain/README-part-20.md) — final corrected closure/status continuation;
 - [`docs/domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md`](docs/domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md) — final closure evidence;
-- [`docs/domain/language-map.md`](docs/domain/language-map.md) plus [`docs/domain/language-map-part-22.md`](docs/domain/language-map-part-22.md) — language authority and final disposition.
+- [`docs/domain/language-map.md`](docs/domain/language-map.md) plus [`docs/domain/language-map-part-22.md`](docs/domain/language-map-part-22.md) — language authority/final disposition.
 
 Current Domain state is **CLOSED**.
 
@@ -102,9 +97,9 @@ Current Domain state is **CLOSED**.
 
 Read:
 
-- [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md) — canonical content payload;
-- complete `docs/logical-model/decision-and-assumption-register-v1*` logical document;
-- [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md) — separate closure activation / CLOSED evidence.
+- [`docs/logical-model/whole-logical-model-v1.md`](docs/logical-model/whole-logical-model-v1.md);
+- complete `docs/logical-model/decision-and-assumption-register-v1*` chain;
+- [`docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md`](docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md).
 
 Current Logical state is **CLOSED**.
 
@@ -114,7 +109,7 @@ Start with:
 
 - [`docs/architecture/README.md`](docs/architecture/README.md)
 - [`docs/architecture/pre-physical-architecture-baseline.md`](docs/architecture/pre-physical-architecture-baseline.md)
-- [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) + all four Phase 5 packages
+- [`docs/architecture/requirements/README.md`](docs/architecture/requirements/README.md) + all Phase 5 packages
 - [`docs/architecture/ai-context-runtime-boundaries.md`](docs/architecture/ai-context-runtime-boundaries.md)
 - [`docs/architecture/integration-hub-boundaries.md`](docs/architecture/integration-hub-boundaries.md)
 - [`docs/architecture/durable-execution-benchmark.md`](docs/architecture/durable-execution-benchmark.md)
@@ -124,21 +119,18 @@ Start with:
 - [`docs/architecture/physical-benchmark-scenario-corpus.md`](docs/architecture/physical-benchmark-scenario-corpus.md)
 - [`docs/architecture/physical-benchmark-register.md`](docs/architecture/physical-benchmark-register.md)
 - [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md)
-- [`docs/architecture/pre-physical-clean-room-qa.md`](docs/architecture/pre-physical-clean-room-qa.md) — Phase 12 evidence/activation contract
+- [`docs/architecture/pre-physical-clean-room-qa.md`](docs/architecture/pre-physical-clean-room-qa.md) — Phase 12 evidence
+- [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md) — final independent audit/activation evidence
 - [`docs/architecture/system-overview.md`](docs/architecture/system-overview.md)
 - [`docs/architecture/technical-decisions.md`](docs/architecture/technical-decisions.md)
 
 ## Current technical direction — not implementation authorization
 
-### Clients
+### Clients / backend direction
 
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
-
-### Backend
-
-- Python + FastAPI + Pydantic.
-- Modular monolith first.
+- Backend: Python + FastAPI + Pydantic; modular monolith first.
 - SQLAlchemy + Alembic remain conditional on accepted Physical persistence.
 
 Backend implementation is **not started**.
@@ -169,6 +161,8 @@ HARD REJECT FOR CANONICAL KERNEL
 
 Phase 10 decides **how** a later Physical benchmark must run, not what technology wins. `PREFERRED != SELECTED`.
 
+Synthetic LOW/BASE/HIGH tiers are qualification envelopes, not forecasts. An unexecuted envelope is not `VERIFIED-RUN`; progressive saturation/scaling evidence must be reported according to what actually ran.
+
 ### AI / context / runtime
 
 AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
@@ -185,15 +179,16 @@ transient LLM working context
 
 AI output/tool invocation does not become canonical truth/effect by itself. Runtime Agent/Principal is not Domain Actor automatically. Generic AI memory is not a second canonical truth store.
 
+Material consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / governed-effect authorization
+```
+
 ### Integration Hub
 
-Five modes remain distinct:
-
-1. canonical import;
-2. synchronized/mirrored provider state;
-3. live federated read;
-4. retrieval/index projection;
-5. action/tool integration.
+Five modes remain distinct: canonical import, sync/mirror, live federated read, retrieval/index projection and action/tool integration.
 
 `ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect != canonical LifeOS state/effect automatically. MCP/A2A/future protocols remain adapters.
 
@@ -202,7 +197,6 @@ Five modes remain distinct:
 ```text
 route / UI button / tool / AuthZ action / workflow step
 != canonical governed operation/effect
-
 request accepted != effect complete
 provider acknowledgement != canonical completion automatically
 workflow completed != Actual automatically
@@ -218,7 +212,10 @@ DB/worker/outbox style = valid baseline class
 material durable execution
 Restate   preferred candidate — NOT selected
 Temporal  mandatory strongest challenger — NOT selected
-DBOS      conditional PostgreSQL-dependent challenger — NOT selected
+DBOS      conditional challenger — NOT selected
+          local/bounded Python use SQLite-capable
+          production PostgreSQL-recommended
+          distributed multi-server PostgreSQL-coupled
 ```
 
 ### Search / observability / calendar / solver
@@ -241,25 +238,52 @@ OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
 
 ## Repository safety
 
-Phase 11 remotely verified `lifeos-main-safety` as active for protected `main` integration. Current owner-driven policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable check contexts exist.
+Phase 11 remotely verified `lifeos-main-safety` as active for protected `main` integration. Current owner-driven policy requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists and has no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled.
 
 Do not work directly on `main` for normal work and do not invent required checks before the corresponding workflow exists.
 
-## Phase 12 boundary
+## Final Pre-Physical audit boundary
 
-Phase 12 is the clean-room repository/architecture coherence phase. Its evidence record is [`docs/architecture/pre-physical-clean-room-qa.md`](docs/architecture/pre-physical-clean-room-qa.md).
+Phase 12 is already **QA PASS / CLOSED**.
 
-The record is **conditionally activating**: Phase 12 is `QA PASS / CLOSED` only when the final remote compare proves the exact approved 11-path gate and `main` remains unchanged.
-
-Even after that activation, current user instruction is:
+The independent total audit then rechecked the entire Pre-Physical delta and found:
 
 ```text
-DO NOT MERGE TO MAIN YET
-DO NOT DECLARE THE WHOLE PRE-PHYSICAL WORKSTREAM DEFINITIVELY CLOSED YET
-
-NEXT
-run an independent total repository audit
-for mistakes, contradictions, lost knowledge and scope damage
+Domain reopen required             0
+Logical reopen required            0
+major semantic contradiction       0
+major architecture contradiction   0
+major knowledge loss               0
+Physical accidentally started      0
+backend accidentally started       0
 ```
 
-Only after that total audit passes may the definitive Pre-Physical closure be separately authorized. Physical Model authorization and `main` integration remain later steps.
+It found only bounded current-truth/factual/engineering repairs, all incorporated in the approved final gate. The final audit record is [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md).
+
+Definitive branch-local Pre-Physical closure activates **only if** final remote QA proves its exact activation contract:
+
+```text
+PRE-SCOPE 1bd142afe51221211bc777f6271a642911c650fc
+unique paths 23
+added 1
+modified 22
+deleted 0
+unexpected 0
+behind_by 0
+main unchanged at 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+critical current-authority readback PASS
+```
+
+Until that proof is complete, status remains `FINAL CLOSURE CANDIDATE`.
+
+Even after successful branch-local closure:
+
+```text
+MAIN INTEGRATION
+PENDING / NOT PERFORMED
+
+PHYSICAL MODEL
+NOT STARTED / NOT AUTHORIZED
+```
+
+The later sequence is separately authorized protected PR → merge → post-merge `main` verification → separate Physical Model authorization.
