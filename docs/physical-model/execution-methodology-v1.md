@@ -1,9 +1,9 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — BOOTSTRAP**
+- Status: **CURRENT — PM-04A EVIDENCE-FIRST REVISION**
 - Workstream: `feature/physical-model`
 - Base authority: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- Execution: **NOT STARTED**
+- Direct execution: **NOT STARTED**
 - Selection: **NONE**
 
 ## Purpose
@@ -43,7 +43,67 @@ or official release notes/API docs
 
 Secondary articles may help discovery but cannot override exact official/version-specific evidence.
 
-If current official documentation is contradictory or insufficient, mark the affected question `HOLD` and test it directly where feasible.
+If current official documentation is contradictory or insufficient, mark the affected question `HOLD` and test it directly where feasible **only when the unresolved behavior remains materially decision-relevant**.
+
+## Evidence-sufficiency / execution-minimization rule
+
+Direct local execution is an evidence tool, not the default database-selection method.
+
+Before creating a fixture, harness, database deployment or local/server benchmark, exhaust existing evidence and classify the unresolved question.
+
+Allowed PM-04A evidence classes:
+
+```text
+EXT-SUFFICIENT
+= authoritative external evidence establishes the relevant engine capability/limitation
+
+MAP-SUFFICIENT
+= accepted LifeOS mapping + documented engine guarantee is sufficient for current comparative reasoning
+
+KNOWN-STRUCTURAL-COST
+= uncertainty has resolved into a known design/operational burden that a toy test cannot remove
+
+DEFER-FINALIST
+= direct LifeOS rehearsal may be warranted before final acceptance, but testing all candidates now is disproportionate
+
+RESIDUAL-GAP
+= evidence remains materially incomplete
+
+EXECUTION-WORTHY
+= residual gap is unresolved AND capable of materially changing the recommendation
+```
+
+Execution admission rule:
+
+```text
+RESIDUAL-GAP
++ decision relevance
++ external/reasoned evidence exhausted
++ test can actually resolve the question
+= EXECUTION-WORTHY
+```
+
+Only an `EXECUTION-WORTHY` result opens PM-04B by default.
+
+Important separation:
+
+```text
+external evidence sufficiency
+!= direct LifeOS execution
+
+public benchmark
+!= LifeOS benchmark
+
+production case study
+!= proof of LifeOS mapping
+
+MAP-SUFFICIENT
+!= executed HG PASS
+```
+
+Therefore direct scenario/tier slots remain `NOT RUN` unless a direct run actually occurs.
+
+The benchmark-host HOLD is dormant/non-blocking for evidence-only phases. It becomes blocking before any reproducible direct execution claim.
 
 ## Technology discovery and quality/cost policy
 
@@ -73,7 +133,7 @@ Decision priority is:
 2. consistency, integrity, security, privacy and recoverability
 3. real LifeOS workload and capability fit
 4. operability, maturity, maintainability and Python/tooling fit
-5. performance and scalable resource efficiency on measured workloads
+5. performance and scalable resource efficiency where it can affect the decision
 6. total cost of ownership and deployment requirements
 7. lock-in, exit risk and realistic migration path
 ```
@@ -113,6 +173,8 @@ explicit selection gate
 clean-room QA before closure
 ```
 
+PM-04A is an authorized process refinement **inside PM-04**. It does not insert/remove a numbered phase or weaken hard gates.
+
 The **content inside those gates is evolutionary**:
 
 ```text
@@ -122,9 +184,10 @@ mapping designs are candidate-native and may be repaired before execution
 secondary lanes activate only when justified
 paid/free/managed/self-hosted alternatives are evaluated when materially relevant
 benchmark sensitivity may force reruns or conditional recommendations
+direct execution breadth may contract when authoritative evidence makes it non-decision-relevant
 ```
 
-This prevents premature lock-in while keeping the project reproducible and resumable.
+This prevents premature lock-in and ritual benchmarking while keeping the project reproducible and resumable.
 
 ## Fairness rule
 
@@ -211,7 +274,9 @@ Secondary lane subjects are frozen when their lane is admitted/executed, includi
 
 PM-01 may also discover alternatives to these secondary-lane anchors; no secondary product becomes canonical or selected by discovery alone.
 
-Also freeze execution environment:
+Execution environment is frozen only when direct execution is admitted. Until then, record the benchmark-host requirement as HOLD/dormant rather than inventing an environment.
+
+When execution is admitted, freeze:
 
 ```text
 CPU
@@ -228,7 +293,7 @@ zero-cost/local/self-hosted constraints where applicable
 unavailable paid or external infrastructure
 ```
 
-PM-01 is read-only with respect to Physical mapping/harness/schema implementation. Its output is a technology landscape, admission register, exact execution inventory and next write gate.
+PM-01 is read-only with respect to Physical mapping/harness/schema implementation. Its output is a technology landscape, admission register, exact candidate inventory and environment requirements without forcing premature host selection.
 
 Acceptance:
 
@@ -238,7 +303,7 @@ Acceptance:
 - official sources captured;
 - license/cost/deployment constraints distinguished from semantic capability;
 - contradictions marked HOLD;
-- benchmark environment documented honestly;
+- benchmark environment requirement documented honestly;
 - no schema/harness write started;
 - no candidate selected.
 
@@ -280,7 +345,7 @@ No performance claim counts in PM-02.
 
 # PM-03 — Semantic Mapping Preflight
 
-Goal: determine whether candidate mappings are semantically eligible for execution.
+Goal: determine whether candidate mappings are semantically eligible for further evidence qualification.
 
 Evaluate applicable `HG-01..HG-12` using static design review plus executable proof where already available.
 
@@ -300,11 +365,47 @@ Rules:
 - insufficient evidence = HOLD, not PASS;
 - a REJECTed primary candidate does not receive weighted performance scoring unless a later explicit repair/reopen proves the hard gate can be satisfied without semantic weakening.
 
-# PM-04 — Fixture + Harness Design
+# PM-04 — Evidence Sufficiency + Conditional Harness
 
-Goal: implement common semantic fixtures/oracles and candidate-specific adapters without contaminating the benchmark with candidate-specific semantics.
+PM-04 has two bounded sub-stages under the same numbered phase.
 
-Required components when later gated:
+## PM-04A — External Evidence Sufficiency — DEFAULT FIRST
+
+Goal: exhaust authoritative/public evidence and LifeOS mapping reasoning before manufacturing local execution.
+
+Required output:
+
+```text
+candidate × HG-01..HG-12 evidence-sufficiency matrix
+source ledger per candidate
+confidence and source class
+known structural costs
+residual-gap register
+decision relevance per residual gap
+EXECUTION-WORTHY count
+PM-04B admission decision
+```
+
+Rules:
+
+- official engine guarantees may establish capabilities/limitations for comparative reasoning but never become fictional direct LifeOS execution;
+- public/vendor benchmarks may support viability/performance context but are not LifeOS benchmark runs;
+- production cases are supporting architecture/maturity evidence, not proof of our mapping;
+- do not locally re-prove settled generic engine properties merely to fill a matrix;
+- a known structural limitation should count directly as a candidate cost rather than be converted into an unnecessary local test;
+- `DEFER-FINALIST` is allowed for recovery/migration/system proof that should not be repeated across all candidates;
+- benchmark host is not required for PM-04A;
+- no executed hard-gate result changes from `NOT RUN` without direct evidence.
+
+PM-04A completion does not automatically authorize PM-04B.
+
+## PM-04B — Targeted Fixture / Oracle / Harness — CONDITIONAL
+
+PM-04B opens only when PM-04A identifies one or more `EXECUTION-WORTHY` gaps, or when a later explicit gate proves direct execution is required for a finalist/closure obligation.
+
+Goal: implement the minimum common semantic fixtures/oracles and candidate-specific adapters necessary to resolve the admitted gaps without contaminating the evidence with candidate-specific semantics.
+
+Possible components when actually required:
 
 ```text
 deterministic fixture generator
@@ -328,13 +429,40 @@ Rules:
 - common scenario meaning lives above candidate adapters;
 - candidate adapter may use native query/schema features;
 - expected result must not be derived from candidate output itself;
-- raw run artifacts must be retained or summarized with durable hash/location metadata where size prevents repository storage.
+- build only the fixtures/adapters needed for admitted questions; do not create a four-engine harness by ritual;
+- raw run artifacts must be retained or summarized with durable hash/location metadata where size prevents repository storage;
+- freeze the actual benchmark host before the first reproducible direct execution claim.
 
-# PM-05 — Correctness / Destructive Execution
+If PM-04A finds zero `EXECUTION-WORTHY` gaps:
 
-Goal: execute mandatory applicable `C0..C7` and `SC-001..SC-035` correctness/destructive pressure before scoring.
+```text
+PM-04B
+NOT ADMITTED
 
-Minimum result per scenario:
+HARNESS
+NOT STARTED
+
+DATABASE DEPLOYMENT
+NOT STARTED
+```
+
+# PM-05 — Correctness / Destructive Evidence Qualification
+
+Goal: qualify mandatory applicable `C0..C7` and `SC-001..SC-035` correctness/destructive pressure using the strongest available evidence while preserving exact direct-run truth.
+
+PM-05 starts from PM-04A evidence rather than assuming every scenario must be re-executed locally across every candidate.
+
+For each scenario/gate distinguish:
+
+```text
+external capability evidence
+LifeOS mapping reasoning
+known structural limitation/cost
+finalist-only direct obligation
+direct execution result, if any
+```
+
+Minimum direct-run result per scenario **when direct execution is admitted**:
 
 ```text
 scenario ID
@@ -349,23 +477,45 @@ observed caveat
 hard-gate linkage
 ```
 
-A candidate with an applicable hard-gate failure cannot continue to weighted primary selection scoring.
+Rules:
 
-# PM-06 — Qualification Scale + Performance
+- external evidence never changes a direct execution slot from `NOT RUN`;
+- a direct hard-gate failure cannot be averaged away;
+- if a mandatory unresolved semantic question remains material and cannot be responsibly closed from external/mapping evidence, it becomes `EXECUTION-WORTHY` and PM-04B is reopened through a fresh gate;
+- finalist-only destructive obligations remain explicit rather than being silently waived;
+- do not perform broad local testing when it cannot change the recommendation.
 
-Goal: measure surviving candidates under synthetic LOW/BASE/HIGH qualification pressure and explicit load profiles.
+# PM-06 — Qualification Scale + Performance Evidence
+
+Goal: determine whether scale/performance/resource behavior can materially change the recommendation or sensitivity result.
+
+Evidence order:
+
+```text
+credible published/product evidence
++ production evidence
++ architectural scaling limits
+        ↓
+identify unresolved LifeOS-specific sensitivity
+        ↓ only when decision-relevant
+admit direct LOW/BASE/HIGH execution
+```
 
 Rules:
 
 - tiers are not business forecasts;
+- vendor benchmarks are supporting evidence and their methodology/bias must be disclosed;
+- do not rerun generic CRUD benchmarks merely because they exist in the historical method;
+- local performance execution is admitted only when the result could materially change ranking/sensitivity or validate a required deployment condition;
 - actual executed dataset counts must be recorded;
 - latency distributions preferred over averages;
 - throughput alone is insufficient;
 - resource consumption must accompany performance;
 - unexecuted HIGH is never labeled VERIFIED-RUN;
-- progressive saturation/scaling evidence may support sensitivity analysis if limitations are explicit.
+- progressive saturation/scaling evidence may support sensitivity analysis if limitations are explicit;
+- if no direct tier is admitted, LOW/BASE/HIGH remain `NOT RUN` and the recommendation must disclose the evidence basis instead.
 
-Capture where applicable:
+Capture where applicable when a run exists:
 
 ```text
 p50/p95/p99
@@ -381,11 +531,19 @@ manual tuning
 warm/cold/cache condition
 ```
 
-# PM-07 — Recovery / Evolution / Failure
+# PM-07 — Recovery / Evolution / Failure Evidence
 
-Goal: test exact deployment subject rather than generic product claims.
+Goal: qualify recovery/evolution/failure characteristics for the exact candidate/deployment subjects without confusing a documented capability with a LifeOS rehearsal.
 
-Required pressure includes applicable:
+Evidence-first treatment:
+
+- compare exact edition/topology backup/restore mechanisms from authoritative documentation;
+- compare migration/evolution mechanics and operational burden;
+- record known topology/HA/RPO/RTO sensitivity instead of inventing commitments;
+- use production/incident evidence where reliable and clearly classified;
+- identify what direct destructive rehearsal remains mandatory for a finalist before final Physical acceptance.
+
+Direct pressure, **when admitted for a finalist or material unresolved gap**, includes applicable:
 
 - backup + destructive restore + semantic verification;
 - redaction/deletion anti-resurrection after old-backup restore;
@@ -395,6 +553,8 @@ Required pressure includes applicable:
 - capacity/backpressure;
 - HA/failover only where the exact edition/topology claims it and that capability affects scoring;
 - recovery observations reported as measured observations, not invented RPO/RTO commitments.
+
+A backup command's existence is not a LifeOS anti-resurrection PASS. Conversely, the existence of such a finalist-only proof obligation does not justify repeating a destructive lab across candidates that are no longer competitive.
 
 # PM-08 — Secondary Lanes
 
@@ -416,7 +576,7 @@ Do not benchmark a named specialist by default. First create an admission record
 
 # PM-09 — Scoring + Sensitivity
 
-Only candidates with applicable hard-gate PASS/PASS-CONDITIONAL proceed to scoring.
+Only candidates with applicable hard-gate/evidence status sufficient for honest comparison proceed to scoring. Any unresolved material hard-gate remains explicit and can block recommendation/selection.
 
 Primary weighted dimensions remain the Phase-10 100-point model:
 
@@ -431,13 +591,13 @@ performance/resource efficiency          10
 Python/tooling/cost/exit risk             5
 ```
 
-Every score requires evidence/rationale.
+Every score requires evidence/rationale. A dimension may use disclosed external evidence where direct execution is not decision-relevant; do not fabricate measured values.
 
 The 5-point cost/exit dimension must not be used to conceal material cost or lock-in differences. In addition to the numeric score, PM-09 must show direct-cost/TCO conditions and exit consequences explicitly whenever they could change the practical decision. A zero-cost candidate may win on practicality when quality is materially comparable; zero cost does not compensate for a hard-gate or major structural deficit.
 
 Sensitivity must explicitly test whether ranking changes with:
 
-- LOW/BASE/HIGH;
+- LOW/BASE/HIGH or equivalent evidence-backed scale bands;
 - history depth;
 - concurrency/read-write mix;
 - deployment topology;
@@ -465,14 +625,15 @@ PREFERRED
 Required recommendation contents:
 
 - evidence summary;
-- hard-gate result;
+- hard-gate/evidence sufficiency result;
+- direct execution coverage, if any, explicitly separate;
 - weighted result where applicable;
 - conditions;
 - sensitivity;
 - operational burden;
 - direct/TCO cost posture where material;
 - migration/exit risk;
-- unresolved HOLD items;
+- unresolved HOLD/finalist-proof items;
 - why alternatives lost/were deferred.
 
 If the technically strongest candidate is materially paid/proprietary, PM-10 must expose that fact rather than silently replacing it with a weaker free candidate. It must also identify credible lower-cost alternatives and whether a lower-cost starting architecture preserves a realistic future migration path.
@@ -487,7 +648,8 @@ Before changing any result to `SELECTED`, present a separate selection gate cont
 candidate/role
 exact subject version/edition/topology
 evidence basis
-hard-gate result
+direct execution coverage and unexecuted obligations
+hard-gate result/conditions
 score/sensitivity
 material conditions
 cost/TCO conditions where material
@@ -512,12 +674,13 @@ After explicit selection approval, produce the durable accepted Physical Model:
 - retention/redaction/recovery strategy;
 - evolution/migration strategy;
 - required deployment conditions;
-- benchmark caveats/sensitivity;
+- evidence caveats/sensitivity;
+- direct execution coverage and any accepted residual conditions;
 - material cost/licensing conditions;
 - downstream implementation constraints;
 - explicitly rejected alternatives and why.
 
-Do not hide unresolved HOLD items.
+Do not hide unresolved HOLD/finalist-proof items.
 
 # PM-13 — Independent Clean-Room QA
 
@@ -527,10 +690,10 @@ A separate read-only-first audit must reconstruct the Physical result from repos
 Domain unchanged unless separately reopened
 Logical unchanged unless separately reopened
 Phase-5..10 constraints preserved
-hard-gate evidence traceable
+hard-gate/evidence claims traceable
+direct execution never fabricated
 score/recommendation reproducible
 selection explicitly authorized
-no benchmark result fabricated
 no production backend accidentally started
 current docs coherent
 ```
@@ -560,9 +723,9 @@ Stop and re-gate immediately if:
 - Domain/Logical contradiction appears;
 - a new semantic owner/root seems necessary;
 - a registered candidate requires weakening a hard gate;
-- a new product/lane is proposed for benchmark admission beyond PM-01 read-only discovery;
-- execution needs unapproved infrastructure/path scope;
+- a new product/lane is proposed for benchmark admission beyond the authorized discovery/admission process;
+- direct execution needs unapproved infrastructure/path scope;
 - candidate capability evidence materially conflicts with the frozen subject;
-- benchmark environment changes enough to affect comparability;
+- an admitted benchmark environment changes enough to affect comparability;
 - a path outside the approved physical scope must be written;
 - selection is about to be inferred from preference rather than explicitly authorized.
