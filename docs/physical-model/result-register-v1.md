@@ -1,8 +1,9 @@
 # Physical Model Result Register v1
 
 - Status: **CURRENT — TARGET-ARCHITECTURE CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained in historical evidence and technical identifiers)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
-- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 - Primary finalists: **PostgreSQL 18.4 + TypeDB CE 3.12.3**
 - PM-09 evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
 - Ranking sensitivity: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
@@ -10,7 +11,8 @@
 - PM-11 Selected: **PostgreSQL 18.4 + bounded companion target stack**
 - PM-12 Accepted Physical Model: **ESTABLISHED**
 - PM-13 architecture/documentation QA: **PASS**
-- PM-14 branch closure: **COMPLETE**
+- PM-14 branch/workstream closure: **COMPLETE**
+- Protected-main integration after PM-14: **PR #15 COMPLETE**
 - Direct execution: **NOT STARTED**
 - Verified-run benchmark score: **NOT AVAILABLE**
 
@@ -18,7 +20,7 @@
 
 ```text
 OFFICIAL CLAIM != DIRECT EXECUTION
-PUBLIC BENCHMARK != LIFEOS BENCHMARK
+PUBLIC BENCHMARK != DANTE BENCHMARK
 EVIDENCE-QUALIFIED != DIRECT PASS
 EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
 PREFERRED != SELECTED
@@ -48,7 +50,7 @@ PM-10   FINAL STACK RECOMMENDATION COMPLETE
 PM-11   EXPLICIT USER-APPROVED TARGET STACK SELECTION COMPLETE
 PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
 PM-13   CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
-PM-14   TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
+PM-14   TARGET-ARCHITECTURE BRANCH / WORKSTREAM CLOSURE COMPLETE
 PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
 ```
 
@@ -78,7 +80,7 @@ COHERENT / QA PASS
 
 Primary reasons remain:
 
-- accepted PM-02 mapping preserves LifeOS semantics;
+- accepted PM-02 mapping preserves DANTE semantics;
 - mature integrity and transaction/concurrency primitives;
 - strongest recovery/HA/evolution envelope among finalists;
 - reporting, traversal, geospatial, lexical and vector capabilities remain in one primary ecosystem;
@@ -283,7 +285,7 @@ Core obligations include:
 
 ```text
 SC-011 old-backup anti-resurrection
-SC-030 actual LifeOS V1->V2 evolution
+SC-030 actual DANTE V1->V2 evolution
 SC-031 destructive restore + semantic verification
 SC-032 capacity/backpressure
 WL-H12 system-level non-interference
@@ -339,7 +341,7 @@ PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
 
-MAIN
+PHYSICAL INTEGRATION COMMIT
 e6f191bad947388a44defe2c15f4939345084f58
 
 FORMER BRANCH
@@ -353,6 +355,9 @@ ESTABLISHED
 
 PM-13 QA
 PASS
+
+PM-14
+BRANCH / WORKSTREAM CLOSURE COMPLETE
 
 DIRECT EXECUTION
 NOT STARTED
