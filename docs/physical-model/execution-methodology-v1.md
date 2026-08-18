@@ -45,6 +45,87 @@ Secondary articles may help discovery but cannot override exact official/version
 
 If current official documentation is contradictory or insufficient, mark the affected question `HOLD` and test it directly where feasible.
 
+## Technology discovery and quality/cost policy
+
+The Physical Model must search for the **best technology fit for LifeOS**, not merely choose among the products that happened to be named before PM-01.
+
+Existing Phase-10 candidates remain mandatory anchors/challengers where their registered lane applies, but they are not a closed universe.
+
+PM-01 read-only discovery may identify additional plausible products, engines or bounded technology combinations when there is a concrete LifeOS fit rationale. A new candidate does not automatically enter PM-02 execution: it must first pass an explicit bounded admission decision based on likely semantic fit, operational realism, maturity and distinct value versus already registered candidates.
+
+The economic posture is:
+
+```text
+TARGET OPERATING POSTURE
+initial direct technology/license cost = EUR 0 where realistically possible
+
+BUT
+EUR 0 != semantic requirement
+EUR 0 != permission to lower correctness, durability, security or evolvability
+paid != automatic rejection
+free != automatic preference
+```
+
+Decision priority is:
+
+```text
+1. semantic correctness / preservation of Domain + Logical invariants
+2. consistency, integrity, security, privacy and recoverability
+3. real LifeOS workload and capability fit
+4. operability, maturity, maintainability and Python/tooling fit
+5. performance and scalable resource efficiency on measured workloads
+6. total cost of ownership and deployment requirements
+7. lock-in, exit risk and realistic migration path
+```
+
+Cost is therefore a decision dimension and can be a strong differentiator between otherwise comparable candidates, but it cannot rescue a materially inferior or semantically unsafe technology.
+
+If a materially better candidate requires payment, proprietary infrastructure or meaningful lock-in, do not discard it silently. Record the exact benefit and cost/constraint, then evaluate in order:
+
+1. whether an equivalent or near-equivalent zero-cost/open alternative exists;
+2. whether the paid capability is actually required now or only under a future condition;
+3. whether a zero-cost starting topology can preserve the accepted Physical semantics without creating a dead end;
+4. whether an explicit migration/exit strategy is justified by the real risk.
+
+Do not create portability abstraction for hypothetical future migrations if it materially degrades the selected technology or adds unjustified complexity.
+
+```text
+portable where cheap and structurally useful
+candidate-native where materially better
+no gratuitous lock-in
+no gratuitous abstraction
+```
+
+The best LifeOS result may be one primary canonical store plus bounded specialized mechanisms. Every additional technology must independently justify its operational and semantic cost; multi-store complexity is never rewarded by itself.
+
+## Fixed-gate / evolutionary-roadmap rule
+
+The Physical Model is neither a free-form exploration nor a rigid list of predetermined products.
+
+The **sequence and semantic gates are fixed** unless a separately authorized process revision changes them:
+
+```text
+PM-00 -> PM-01 -> PM-02 -> ... -> PM-14
+correctness before performance
+PREFERRED != SELECTED
+explicit write gates
+explicit selection gate
+clean-room QA before closure
+```
+
+The **content inside those gates is evolutionary**:
+
+```text
+candidate universe may expand/contract on evidence
+exact versions/editions/topologies may change before freeze
+mapping designs are candidate-native and may be repaired before execution
+secondary lanes activate only when justified
+paid/free/managed/self-hosted alternatives are evaluated when materially relevant
+benchmark sensitivity may force reruns or conditional recommendations
+```
+
+This prevents premature lock-in while keeping the project reproducible and resumable.
+
 ## Fairness rule
 
 ```text
@@ -94,7 +175,7 @@ bootstrap readback PASS
 
 # PM-01 — Candidate / Environment Freeze — READ-ONLY FIRST
 
-Goal: turn registered abstract candidates into exact benchmark subjects.
+Goal: perform broad read-only technology discovery, admit only serious LifeOS candidates, and turn admitted abstract candidates into exact benchmark subjects.
 
 For each candidate/lane record where applicable:
 
@@ -111,18 +192,24 @@ schema/constraint capability
 migration/evolution tooling
 observability/tooling
 known license/feature boundaries
+direct and likely infrastructure cost posture
+lock-in / exit characteristics
 ```
 
-Mandatory primary subjects initially:
+Mandatory starting anchors, **not a closed shortlist**:
 
 - PostgreSQL hybrid;
 - TypeDB.
 
-Secondary lane subjects are frozen only when their lane is actually executed:
+PM-01 must also scan credible current alternatives across relevant technology families and record why each serious candidate is `ADMIT`, `DEFER`, `HOLD` or `REJECT-FROM-BENCHMARK`. Discovery breadth is required; benchmark breadth is not. Products must earn execution scope through a bounded admission rationale rather than being added for list size.
+
+Secondary lane subjects are frozen when their lane is admitted/executed, including registered anchors such as:
 
 - G0 baseline / Neo4j;
 - S0 baseline / pgvector;
 - ED specialized only after explicit admission.
+
+PM-01 may also discover alternatives to these secondary-lane anchors; no secondary product becomes canonical or selected by discovery alone.
 
 Also freeze execution environment:
 
@@ -137,22 +224,29 @@ single-node vs HA capability
 available disk budget
 time budget
 reproducibility constraints
+zero-cost/local/self-hosted constraints where applicable
+unavailable paid or external infrastructure
 ```
 
-PM-01 is read-only with respect to Physical mapping/harness/schema implementation. Its output is an execution inventory and next write gate.
+PM-01 is read-only with respect to Physical mapping/harness/schema implementation. Its output is a technology landscape, admission register, exact execution inventory and next write gate.
 
 Acceptance:
 
 - no candidate capability inferred from memory;
-- exact version/edition/deployment questions identified;
+- discovery is not artificially limited to previously named products;
+- exact version/edition/deployment questions identified for admitted candidates;
 - official sources captured;
+- license/cost/deployment constraints distinguished from semantic capability;
 - contradictions marked HOLD;
 - benchmark environment documented honestly;
-- no schema/harness write started.
+- no schema/harness write started;
+- no candidate selected.
 
 # PM-02 — Primary Mapping Design
 
-Goal: design an idiomatic candidate-specific Physical mapping for PostgreSQL and TypeDB against the same accepted semantic corpus.
+Goal: design idiomatic candidate-specific Physical mappings for the explicitly admitted primary candidates against the same accepted semantic corpus.
+
+PostgreSQL and TypeDB remain mandatory primary mappings unless PM-01 produces a separately reviewed hard blocker. Additional primary candidates require PM-01 admission plus the PM-02 write gate.
 
 Required mapping package per primary candidate:
 
@@ -306,13 +400,13 @@ Required pressure includes applicable:
 
 ## Lane G
 
-Compare G0 primary-store baseline versus G1 Neo4j only on workloads that make graph specialization meaningful.
+Compare G0 primary-store baseline versus G1 Neo4j only on workloads that make graph specialization meaningful, while allowing PM-01-admitted alternatives where they offer a materially distinct graph/read-projection proposition.
 
 A graph projection remains secondary/rebuildable. It cannot become canonical truth because traversal is faster.
 
 ## Lane S
 
-Compare structured/lexical S0 against bounded semantic/vector S1 where applicable. When PostgreSQL survives/is present, pgvector is the registered candidate.
+Compare structured/lexical S0 against bounded semantic/vector S1 where applicable. When PostgreSQL survives/is present, pgvector is the registered candidate; PM-01 may admit alternatives only with a concrete reason to incur another technology.
 
 Vector quality must be measured after real scope/Visibility filtering.
 
@@ -339,6 +433,8 @@ Python/tooling/cost/exit risk             5
 
 Every score requires evidence/rationale.
 
+The 5-point cost/exit dimension must not be used to conceal material cost or lock-in differences. In addition to the numeric score, PM-09 must show direct-cost/TCO conditions and exit consequences explicitly whenever they could change the practical decision. A zero-cost candidate may win on practicality when quality is materially comparable; zero cost does not compensate for a hard-gate or major structural deficit.
+
 Sensitivity must explicitly test whether ranking changes with:
 
 - LOW/BASE/HIGH;
@@ -347,7 +443,7 @@ Sensitivity must explicitly test whether ranking changes with:
 - deployment topology;
 - stronger/weaker RPO/RTO assumptions;
 - projection/search pressure;
-- edition/license constraints.
+- edition/license/cost constraints.
 
 Ranking instability becomes `SENSITIVITY-DEPENDENT`.
 
@@ -374,9 +470,12 @@ Required recommendation contents:
 - conditions;
 - sensitivity;
 - operational burden;
+- direct/TCO cost posture where material;
 - migration/exit risk;
 - unresolved HOLD items;
 - why alternatives lost/were deferred.
+
+If the technically strongest candidate is materially paid/proprietary, PM-10 must expose that fact rather than silently replacing it with a weaker free candidate. It must also identify credible lower-cost alternatives and whether a lower-cost starting architecture preserves a realistic future migration path.
 
 # PM-11 — Explicit Selection Gate
 
@@ -391,6 +490,7 @@ evidence basis
 hard-gate result
 score/sensitivity
 material conditions
+cost/TCO conditions where material
 rejected/held alternatives
 known downstream consequences
 migration/exit consequences
@@ -413,6 +513,7 @@ After explicit selection approval, produce the durable accepted Physical Model:
 - evolution/migration strategy;
 - required deployment conditions;
 - benchmark caveats/sensitivity;
+- material cost/licensing conditions;
 - downstream implementation constraints;
 - explicitly rejected alternatives and why.
 
@@ -459,7 +560,7 @@ Stop and re-gate immediately if:
 - Domain/Logical contradiction appears;
 - a new semantic owner/root seems necessary;
 - a registered candidate requires weakening a hard gate;
-- a new product/lane is proposed;
+- a new product/lane is proposed for benchmark admission beyond PM-01 read-only discovery;
 - execution needs unapproved infrastructure/path scope;
 - candidate capability evidence materially conflicts with the frozen subject;
 - benchmark environment changes enough to affect comparability;
