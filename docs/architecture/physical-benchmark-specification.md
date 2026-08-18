@@ -1,8 +1,8 @@
 # Physical Benchmark Specification
 
-- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
+- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model / PM-09 scoring reconciliation active**
 - Stage: Physical Model execution method authority
-- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-09 SCORING + SENSITIVITY**
 - Technology selection: **NONE / NOT PERFORMED**
 
 ## Purpose
@@ -259,7 +259,7 @@ A projection result used in consequential reasoning must expose enough material/
 
 # Primary-lane score after hard-gate PASS
 
-Only candidates passing all applicable hard gates receive a weighted score.
+Only candidates passing all applicable hard gates receive a weighted **verified-run benchmark score**.
 
 | Dimension | Weight | Evaluation focus |
 |---|---:|---|
@@ -464,9 +464,9 @@ If equivalence cannot be achieved without violating a hard gate, record `REJECT`
 
 ## Step 3 — Run correctness/destructive corpus
 
-Run all mandatory applicable correctness/destructive scenarios before weighted scoring.
+Run all mandatory applicable correctness/destructive scenarios before **verified-run weighted scoring**.
 
-Hard-gate failures invalidate performance scoring for primary selection.
+Hard-gate failures invalidate verified-run performance scoring for primary selection.
 
 ## Step 4 — Run scale and performance tiers
 
@@ -480,7 +480,7 @@ Execute candidate-appropriate backup/restore, destructive recovery and schema/da
 
 ## Step 6 — Score role-specific dimensions
 
-Calculate scores only after hard-gate PASS and attach evidence/rationale to each dimension.
+Calculate **verified-run benchmark scores** only after hard-gate PASS and attach evidence/rationale to each dimension.
 
 ## Step 7 — Sensitivity review
 
@@ -590,7 +590,7 @@ Do not expand the technology set because a product is fashionable.
 
 # Benchmark integrity checks
 
-Before any final Physical recommendation, verify:
+Before any **verified-run benchmark recommendation**, verify:
 
 ```text
 all mandatory primary candidates executed           PASS
@@ -609,9 +609,98 @@ secondary-store benefit measured against baseline   PASS
 preferred != selected                               PASS
 ```
 
+# PM-09 evidence-weighted decision-score reconciliation
+
+This amendment reconciles the original executable Phase-10 benchmark protocol with the subsequently approved evidence-first Physical Model process. It does **not** weaken or remove any hard gate, change any scoring weight, or convert unexecuted evidence into a direct PASS.
+
+## Two scoring ledgers
+
+```text
+VERIFIED-RUN BENCHMARK SCORE
+requires direct applicable hard-gate PASS
+requires direct benchmark/recovery/evolution artifacts
+uses the original execution protocol above
+
+EVIDENCE-WEIGHTED DECISION SCORE
+may be used by PM-09/PM-10 as a comparative decision aid
+only when the evidence-first admission conditions below are satisfied
+```
+
+```text
+EVIDENCE-WEIGHTED DECISION SCORE
+!=
+VERIFIED-RUN BENCHMARK SCORE
+```
+
+A PM-09 evidence score is never evidence that `HG-01..HG-12` were executed or passed.
+
+## Evidence-weighted admission conditions
+
+PM-09 may produce an evidence-weighted decision score only when all of the following are true:
+
+```text
+1. candidate-native mappings are complete enough for comparison;
+2. semantic/static/external evidence has been exhausted;
+3. no unresolved ranking-critical EXECUTION-WORTHY gap remains;
+4. all unexecuted direct scenarios remain explicitly NOT RUN;
+5. known structural costs are scored as such rather than assumed away;
+6. unmeasured performance is not invented;
+7. mandatory selected-implementation proofs remain carried forward;
+8. sensitivity analysis checks whether missing execution could plausibly reverse the ranking.
+```
+
+If a ranking-critical residual gap appears, the evidence-score path stops and the relevant direct proof must be separately admitted.
+
+## Weight preservation
+
+The evidence-weighted decision score uses the exact same 100-point dimensions and weights already frozen above. This reconciliation does not authorize changing them inside PM-09.
+
+Dimension grades must cite PM-02 through PM-08 evidence and must identify where confidence is weaker because direct execution is absent.
+
+## Result vocabulary under the evidence ledger
+
+An evidence-weighted score may establish:
+
+```text
+CURRENT EVIDENCE-SCORE LEADER
+ROBUST / SENSITIVITY-DEPENDENT
+ADVANCE TO RECOMMENDATION
+```
+
+It does **not** by itself establish:
+
+```text
+DIRECT HARD-GATE PASS
+VERIFIED-RUN PASS
+SELECTED
+```
+
+PM-10 may use the evidence score, sensitivity and carried conditions to produce a bounded recommendation/PREFERRED status under the active Physical methodology. PM-11 remains the separate explicit selection gate.
+
+## Current PM-09 reconciliation state
+
+The active Physical Model reached PM-09 with:
+
+```text
+DIRECT HG PASS                     0
+LOW/BASE/HIGH                      NOT RUN
+PM-04B                             NOT ADMITTED
+RANKING-CRITICAL EXECUTION GAPS    0
+POST-SELECTION PROOFS              CARRIED FORWARD
+```
+
+The resulting PM-09 score artifacts live under:
+
+```text
+docs/physical-model/pm-09-scoring-sensitivity-v1.md
+docs/physical-model/scoring/*
+```
+
+These artifacts must continue to label themselves `EVIDENCE-WEIGHTED DECISION SCORE` until direct execution creates a separate verified-run score.
+
 # Phase 10 boundary — current
 
-This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package.
+This specification plus the scenario corpus and benchmark register is the remotely QA-verified Phase 10 method package, now with the bounded PM-09 evidence-score reconciliation above.
 
 Phase 10 itself does **not**:
 
@@ -623,6 +712,6 @@ Phase 10 itself does **not**:
 - select a primary database;
 - authorize production backend implementation.
 
-Repository-safety and clean-room Pre-Physical verification were subsequently completed as Phases 11 and 12. Those later phases did not change this benchmark method or turn any candidate into a selected technology.
+Repository-safety and clean-room Pre-Physical verification were subsequently completed as Phases 11 and 12. Those later phases did not change the semantic hard gates.
 
-The Physical Model is now separately authorized on `feature/physical-model`. That workstream executes this method under `docs/physical-model/**`; PM-00 bootstrap does not itself start mapping/benchmark execution or select a technology.
+The Physical Model is separately authorized on `feature/physical-model`. Its evidence-first process may use the reconciled evidence-weighted ledger while preserving the original verified-run benchmark ledger and all unexecuted proof obligations.
