@@ -45,9 +45,9 @@ Parallel workstreams should avoid shared-file churn.
 Current ownership:
 
 - Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: exact gated current global/index/architecture/workflow docs + `docs/workstreams/pre-physical-coherence.md` until that branch is integrated/closed.
-- Backend Foundation: **not started**; future backend bootstrap/config/infrastructure/tests/docs only after prerequisites are accepted.
-- Physical Model: **not started / not authorized**; future work requires its own branch/gate after definitive Pre-Physical closure and separate user authorization.
+- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS branch-locally** on `chore/pre-physical-coherence`; its current global/index/architecture/workflow docs remain branch-owned until protected `main` integration is separately authorized and completed.
+- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after protected Pre-Physical integration, separately accepted Physical prerequisites and a fresh gate.
+- Physical Model: **ready for separate authorization but not started / not authorized**; future work requires its own branch/gate after Pre-Physical integration and explicit user authorization.
 - Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
 - Logical Model: **closed**; historical branch does not reopen semantics.
 
@@ -194,9 +194,9 @@ At that base:
 - Backend Foundation was not started;
 - Physical Model was not started/authorized.
 
-The Pre-Physical branch has since completed Phase 0–12 and is in its independent final-audit closure gate. Future contributors must re-check refs/handoffs rather than treating this dated base as current `main` after integration.
+The Pre-Physical branch has since completed Phase 0–12 plus the independent total audit and exact final activation QA. Future contributors must re-check refs/handoffs rather than treating the dated base as current `main` after integration.
 
-## 12. Current stage boundary — Pre-Physical final closure
+## 12. Current stage boundary — Pre-Physical closed branch / pending integration
 
 Current branch-local state:
 
@@ -214,30 +214,28 @@ PHASE 12
 QA PASS / CLOSED
 
 INDEPENDENT TOTAL AUDIT
-CORE PASS
-bounded final repairs incorporated / final remote activation QA pending
+PASS
+
+PRE-PHYSICAL COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
+
+PHYSICAL READINESS
+ESTABLISHED
 
 PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-NOT PERFORMED
+PENDING / NOT PERFORMED
 ```
 
-Until the final audit activation conditions pass:
+Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
 
-- no implicit Physical Model;
-- no implicit SQL/schema/migrations/API/backend/Auth/provider implementation;
-- no implicit Domain/Logical reopen;
-- genuine semantic contradiction → record + separate reopen scope;
-- architecture/ADR cleanup may replace stale current prose while keeping meaningful rationale/evidence recoverable;
-- benchmark preparation/evidence may evaluate technologies without adopting them;
-- repository-safety state may be verified without starting production implementation.
-
-After definitive branch-local Pre-Physical closure, `main` integration remains a separate later PR/merge/post-merge QA step.
+No implicit Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation or Domain/Logical reopen follows from branch-local closure. A protected PR/merge/post-merge QA is still a separate later repository operation; Physical work remains separately authorized after integration.
 
 Active detailed handoff: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
 
