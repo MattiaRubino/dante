@@ -1,10 +1,10 @@
 # Companion Stack Recommendation v1
 
-- Status: **PM-10 RECOMMENDED COMPANION ARCHITECTURE**
-- Primary dependency: PostgreSQL 18.4 preferred primary
-- Selection: **NOT SELECTED UNTIL PM-11**
+- Status: **PM-11 SELECTED TARGET COMPANION ARCHITECTURE**
+- Primary dependency: PostgreSQL 18.4 selected canonical primary
+- Selection authority: `../pm-11-explicit-selection-v1.md`
 
-## Recommended stack
+## Selected stack
 
 ### PostgreSQL-adjacent
 
@@ -50,7 +50,7 @@ Restate Server 1.7.2 self-hosted/reproducible subject
 Restate Cloud EU allowed as managed deployment
 ```
 
-`Restate runtime` is the technology recommendation. Deployment is deliberately conditional rather than hard-coded to Cloud EU:
+`Restate runtime` is selected. Deployment is deliberately conditional rather than hard-coded to Cloud EU:
 
 ```text
 SELF-HOSTED
@@ -60,7 +60,7 @@ CLOUD EU
 managed option when operational value is preferred and the privacy assessment accepts the journal posture
 ```
 
-Current Restate documentation supports a self-contained server binary/container. Current client-side journal encryption for Restate Cloud is documented only for the TypeScript SDK; the LifeOS target path is Python. Therefore Cloud EU must not be treated as mandatory merely for managed convenience.
+Current Restate documentation supports a self-contained server binary/container. Current client-side journal encryption for Restate Cloud is documented only for the TypeScript SDK; the LifeOS target path is Python. Therefore Cloud EU is not mandatory merely for managed convenience.
 
 Restate journal payloads must be minimized and should normally carry technical execution identifiers plus bounded references rather than duplicate full personal canonical payloads. Runtime state is never Domain history.
 
@@ -121,7 +121,7 @@ half-open source-connection destructive test
 client reconciliation validation after recovery
 ```
 
-The component is recommended because its mutation path preserves server authority better than the current alternatives reviewed; the known risk is not ignored.
+The component is selected because its mutation path preserves server authority better than the alternatives reviewed; the known risk remains an implementation-validation obligation.
 
 ## Topology principle
 
@@ -141,14 +141,17 @@ Grafana stack = telemetry
 
 ```text
 COMPANION STACK
-RECOMMENDED / PASS-CONDITIONAL
+SELECTED TARGET ARCHITECTURE
 
 RESTATE TECHNOLOGY
-RECOMMENDED
+SELECTED
 
 RESTATE DEPLOYMENT
 CONDITIONAL: SELF-HOSTED OR CLOUD EU
 
 SECOND CANONICAL AUTHORITY
 NONE
+
+DIRECT IMPLEMENTATION VALIDATION
+STILL REQUIRED WHERE REGISTERED
 ```
