@@ -1,13 +1,18 @@
 # Durable Execution / Async Benchmark
 
-- Status: **CURRENT — Phase 7 benchmark contract**
-- Stage: Pre-Physical Repository & Architecture Coherence
-- Runtime implementation: **NOT SELECTED / NOT AUTHORIZED**
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Status: **CURRENT CONTRACT / HISTORICAL CANDIDATE RANKING — consumed by the closed Physical Model**
+- Stage: Pre-Physical Repository & Architecture Coherence / Phase-7 evidence input
+- Phase-7 selection state recorded below: **NO RUNTIME SELECTED AT THAT PHASE**
+- Current Physical resolution: **Restate runtime SELECTED for Class-B via PM-11/12; deployment remains profile-dependent**
+- Backend implementation: **NOT STARTED / DEFERRED**
+
+> **Current-truth qualification:** the semantic/runtime contract and evidence in this document remain current inputs. Candidate labels such as `PREFERRED`, `NOT SELECTED` and the Phase-7 verdict are the truthful state **at Phase 7** and do not override the later PM-11/12 selection. Current selected truth is in `docs/physical-model/pm-11-explicit-selection-v1.md`, `pm-12-accepted-physical-model-v1.md` and `docs/PROJECT-STATUS.md`.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained below reflect the previous working/project name for the same product lineage and are preserved as historical evidence.
 
 ## Purpose
 
-Define the current LifeOS durable-execution posture and benchmark the minimum required candidate set without turning workflow/runtime machinery into Domain ontology or selecting implementation prematurely.
+Define the durable-execution contract and preserve the Phase-7 benchmark/ranking evidence without turning workflow/runtime machinery into Domain ontology or retroactively rewriting the state that existed before Physical selection.
 
 This benchmark consumes the CLOSED Domain Atlas, CLOSED Logical Model, `WL-H01..WL-H12`, all Phase 5 requirement packages, the Phase 6 AI/context/runtime contract and the Phase 6 Integration Hub contract.
 
@@ -15,10 +20,10 @@ It answers two separate questions:
 
 ```text
 1. WHEN does LifeOS need dedicated durable orchestration?
-2. WHICH current candidate best fits that dedicated boundary?
+2. WHICH Phase-7 candidate best fits that dedicated boundary?
 ```
 
-It does not answer which runtime is implemented now. No backend implementation is authorized by this document.
+At Phase 7 it did not select a runtime. PM-11/12 later selected Restate for the accepted Class-B target. No backend implementation is authorized by this document.
 
 ## Core boundary
 
@@ -260,7 +265,7 @@ NOT SELECTED
 NOT AUTHORIZED TO IMPLEMENT
 ```
 
-The preference is structural-fit evidence, not an implementation decision.
+The preference is structural-fit evidence from Phase 7, not the later implementation decision. PM-11/12 subsequently selected Restate for the accepted Class-B target.
 
 ## Candidate C — Temporal
 
@@ -341,7 +346,7 @@ NOT SELECTED
 
 ## Comparative result
 
-Current Phase 7 ranking:
+Phase-7 ranking at the time of this benchmark:
 
 ```text
 BOUNDED ASYNC
@@ -453,6 +458,8 @@ Especially:
 
 The benchmark does not need to be repeated from zero unless those inputs materially change the conclusion.
 
+Current PM-11/12 resolution selected PostgreSQL as canonical primary and Restate for Class-B execution; Development Profile v0 still owns the allowed self-hosted-vs-Cloud deployment activation choice.
+
 ## Evidence basis checked for this benchmark
 
 Primary technical evidence includes:
@@ -474,7 +481,7 @@ PASS WITH CONDITIONAL RANKING
 DOMAIN REOPEN REQUIRED          0
 LOGICAL REOPEN REQUIRED         0
 NEW DOMAIN OWNER REQUIRED       0
-WORKFLOW ENGINE SELECTED        0
+WORKFLOW ENGINE SELECTED        0   # at Phase 7
 BACKEND IMPLEMENTATION STARTED  0
 
 BOUNDED ASYNC BASELINE
@@ -490,4 +497,4 @@ CONDITIONAL CHALLENGER
 DBOS
 ```
 
-This verdict remains a current downstream architecture input. It does not authorize durable-runtime implementation, and no candidate is selected by the ranking.
+This verdict remains a current downstream architecture input. It did not select a runtime **at Phase 7**; PM-11/12 later selected Restate for the accepted Class-B target. Backend implementation remains separately gated and not started.
