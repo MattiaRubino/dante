@@ -1,8 +1,9 @@
 # Physical Model Execution Methodology v1
 
-- Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT**
-- Workstream: `feature/physical-model`
-- Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Status: **CURRENT — PM-14 TARGET-ARCHITECTURE CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15**
+- Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
+- Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
+- Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - Direct execution: **NOT STARTED**
 - Primary finalists: **PostgreSQL 18.4 / TypeDB CE 3.12.3**
 - PM-09 evidence-score leader: **PostgreSQL 18.4**
@@ -20,7 +21,7 @@ This methodology does not alter Domain/Logical authority or the Phase-10 semanti
 
 ## Repository discipline
 
-Every Physical write scope must:
+During the Physical workstream, every Physical write scope had to:
 
 1. verify actual remote `feature/physical-model` HEAD;
 2. compare against current `main`;
@@ -33,6 +34,8 @@ Every Physical write scope must:
 9. verify added/modified/deleted/unexpected paths;
 10. read back critical output from the remote branch;
 11. save/verify terminal handoff.
+
+The workstream is now merged into `main` via PR #15. Any later direct selected-stack validation or Physical reopen requires a fresh separately approved branch/write gate rather than reusing the deleted historical branch.
 
 A tool invocation/no-op is not repository evidence.
 
@@ -156,7 +159,7 @@ PM-14 Closure / protected-main integration
 
 PM-06 and PM-07 were operated as one Joint Finalist Qualification Campaign while keeping separate result layers.
 
-## Phase state through PM-14
+## Phase state through PM-14 and integration
 
 ```text
 PM-00   QA PASS
@@ -174,7 +177,10 @@ PM-10   COMPLETE / PREFERRED RECOMMENDATION + FINAL COMPANION STACK
 PM-11   COMPLETE / EXPLICIT USER-APPROVED TARGET STACK SELECTION
 PM-12   COMPLETE / ACCEPTED PHYSICAL MODEL ESTABLISHED
 PM-13   QA PASS / ARCHITECTURE-DOCUMENTATION COHERENCE
-PM-14   BRANCH CLOSURE COMPLETE / PROTECTED-MAIN INTEGRATION NEXT
+PM-14   BRANCH CLOSURE COMPLETE
+PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
+MAIN    e6f191bad947388a44defe2c15f4939345084f58
+FORMER  feature/physical-model MERGED / AUTO-DELETED
 ```
 
 Deferred primary challengers remain historical comparative evidence only; the selected architecture excludes TypeDB, XTDB and SurrealDB from primary persistence.
@@ -417,7 +423,7 @@ Additional obligations cover PowerSync replication liveness, local encryption, R
 
 None is a direct PASS today unless separately executed and evidenced.
 
-## PM-11..PM-14 boundary
+## PM-11..PM-14 / integration boundary
 
 ```text
 PM-11
@@ -432,11 +438,14 @@ CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
 PM-14
 TARGET-ARCHITECTURE BRANCH CLOSURE COMPLETE
 
+PR #15
+PROTECTED-MAIN INTEGRATION COMPLETE
+
 DIRECT EXECUTION
 UNCHANGED / NOT STARTED
 
 DEV-v0
-SEPARATE LATER OPERATIONAL PROFILE
+SEPARATE NEXT OPERATIONAL PROFILE
 ```
 
 ## Current next step
@@ -444,12 +453,15 @@ SEPARATE LATER OPERATIONAL PROFILE
 ```text
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+INTEGRATED INTO MAIN VIA PR #15
 CANONICAL PRIMARY PostgreSQL 18.4
 RESTATE DEPLOYMENT CONDITIONAL: SELF-HOSTED OR CLOUD EU
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
 
 NEXT
-protected-main integration through PR
-then separate Development Profile v0 scope
+separate Development Profile v0 scope
+
+BACKEND
+NOT STARTED / DEFERRED
 ```
