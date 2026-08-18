@@ -1,7 +1,7 @@
 # LifeOS Operating Rules
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 ## Purpose
 
@@ -45,8 +45,9 @@ Parallel workstreams should avoid shared-file churn.
 Current ownership:
 
 - Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: explicitly gated current global/index/architecture/workflow docs + `docs/workstreams/pre-physical-coherence.md`.
+- Pre-Physical Repository & Architecture Coherence: exact gated current global/index/architecture/workflow docs + `docs/workstreams/pre-physical-coherence.md` until that branch is integrated/closed.
 - Backend Foundation: **not started**; future backend bootstrap/config/infrastructure/tests/docs only after prerequisites are accepted.
+- Physical Model: **not started / not authorized**; future work requires its own branch/gate after definitive Pre-Physical closure and separate user authorization.
 - Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
 - Logical Model: **closed**; historical branch does not reopen semantics.
 
@@ -62,7 +63,7 @@ Before changes:
 4. read `docs/development/agent-operating-manual.md`;
 5. read this file + `documentation-and-handoff.md`;
 6. read `branching-and-environments.md`;
-7. read `repository-engineering-safety.md` when repository/CI/integration controls are relevant;
+7. read `repository-engineering-safety.md`;
 8. read the complete active workstream handoff;
 9. read current model/architecture index and linked current sources;
 10. read relevant ADRs/evidence/methodologies;
@@ -84,6 +85,8 @@ Do not start from an old branch merely because it contains a familiar file.
 - Do not force-push shared history for cosmetic cleanliness.
 - Do not treat runtime/technical convenience as new Domain ownership.
 - Do not invent required CI/status checks before the real workflow/check context exists and has been validated.
+- Do not report an unexecuted benchmark tier/test as verified evidence.
+- Do not promote a materially consequential AI behavior change without the applicable versioned/reproducible evaluation required by the current Phase 6 contract.
 
 ### Current documentation rule
 
@@ -138,14 +141,16 @@ Before merge:
 7. update global status only if globally meaningful;
 8. check secrets/personal production data/local artifacts;
 9. verify any repository-required checks that actually exist are passing;
-10. verify blocking review conversations are resolved where the active main rules require it;
-11. merge through PR only after semantic/documentation coherence.
+10. verify blocking review conversations are resolved where active main rules require it;
+11. verify branch-specific final closure/evidence activation conditions are satisfied;
+12. merge through PR only after semantic/documentation coherence.
 
 A clean Git merge is not enough.
 
 ## 9. After-merge protocol
 
 - verify `main` contains intended final versions;
+- verify the merge commit and branch relation remotely;
 - refresh global status if required;
 - update workstream completion/next phase;
 - synchronize long-running overlapping branches;
@@ -170,34 +175,71 @@ The outgoing workstream records:
 
 If critical continuation state exists only in conversation, the handoff is incomplete.
 
-## 11. Current repository coherence baseline
+## 11. Repository coherence baseline
 
-At start of the 2026-08-17 Pre-Physical Coherence workstream:
+Accepted Pre-Physical workstream base:
 
-- accepted `main` baseline: `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`;
-- Domain Atlas: closed/integrated via PR #10;
-- Logical Model: closed/integrated via PR #11;
-- global main alignment: PR #12;
-- `chore/pre-physical-coherence`: active bounded backend/architecture preparation branch;
-- Phase 4 UX remains separate;
-- Backend Foundation not started;
-- Physical Model not started/authorized.
+```text
+main
+148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+```
 
-Future contributors must re-check refs/handoffs rather than treating this dated baseline as permanent.
+At that base:
 
-## 12. Current stage boundary — Pre-Physical Coherence
+- Domain Atlas was closed/integrated via PR #10;
+- Logical Model was closed/integrated via PR #11;
+- global main alignment was PR #12;
+- `chore/pre-physical-coherence` became the bounded architecture/repository-coherence workstream;
+- Phase 4 UX remained separate;
+- Backend Foundation was not started;
+- Physical Model was not started/authorized.
 
-Until this workstream closes:
+The Pre-Physical branch has since completed Phase 0–12 and is in its independent final-audit closure gate. Future contributors must re-check refs/handoffs rather than treating this dated base as current `main` after integration.
+
+## 12. Current stage boundary — Pre-Physical final closure
+
+Current branch-local state:
+
+```text
+DOMAIN
+CLOSED / unchanged
+
+LOGICAL
+CLOSED / unchanged
+
+PHASE 0–11
+PASS
+
+PHASE 12
+QA PASS / CLOSED
+
+INDEPENDENT TOTAL AUDIT
+CORE PASS
+bounded final repairs incorporated / final remote activation QA pending
+
+PHYSICAL MODEL
+NOT STARTED / NOT AUTHORIZED
+
+BACKEND
+NOT STARTED / DEFERRED
+
+MAIN INTEGRATION
+NOT PERFORMED
+```
+
+Until the final audit activation conditions pass:
 
 - no implicit Physical Model;
 - no implicit SQL/schema/migrations/API/backend/Auth/provider implementation;
 - no implicit Domain/Logical reopen;
 - genuine semantic contradiction → record + separate reopen scope;
 - architecture/ADR cleanup may replace stale current prose while keeping meaningful rationale/evidence recoverable;
-- benchmark preparation may evaluate technologies without adopting them;
-- repository-safety work may configure GitHub integration controls without starting production backend/Physical implementation.
+- benchmark preparation/evidence may evaluate technologies without adopting them;
+- repository-safety state may be verified without starting production implementation.
 
-Active detailed roadmap: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
+After definitive branch-local Pre-Physical closure, `main` integration remains a separate later PR/merge/post-merge QA step.
+
+Active detailed handoff: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
 
 ## 13. Mandatory execution hardening
 
