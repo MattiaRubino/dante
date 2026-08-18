@@ -20,11 +20,12 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
+DEFINITIVE CLOSED / FINAL QA PASS — integrated into main via PR #13
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
 Independent total audit PASS
 final activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+post-merge main checkpoint 74593ae283ce5a1d22335502480ee3fa54be0436
 
 PHYSICAL MODEL
 READY FOR SEPARATE AUTHORIZATION
@@ -34,7 +35,8 @@ BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-PENDING / NOT PERFORMED
+COMPLETE / POST-MERGE VERIFIED
+PR #13
 ```
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
@@ -242,7 +244,7 @@ Phase 11 remotely verified `lifeos-main-safety` as active for protected `main` i
 
 Do not work directly on `main` for normal work and do not invent required checks before the corresponding workflow exists.
 
-## Definitive Pre-Physical closure
+## Definitive Pre-Physical closure and integration
 
 Phase 12 is **QA PASS / CLOSED**.
 
@@ -271,7 +273,9 @@ main unchanged at 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
 critical readback PASS
 ```
 
-Therefore the branch-local result is:
+That checkpoint established the branch-local closure. PR #13 then integrated the closed workstream into protected `main` using merge commit `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge verification proved the final branch tree and merged `main` tree differ by the merge commit only and by **zero files**. The merged head branch was auto-deleted.
+
+Current result:
 
 ```text
 INDEPENDENT TOTAL PRE-PHYSICAL AUDIT
@@ -279,6 +283,8 @@ PASS
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO MAIN VIA PR #13
+POST-MERGE VERIFIED
 
 DOMAIN
 UNCHANGED / CLOSED
@@ -299,8 +305,9 @@ Final audit evidence: [`docs/architecture/pre-physical-final-coherence-audit.md`
 ## Next boundary
 
 ```text
-MAIN INTEGRATION
-PENDING / NOT PERFORMED
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 ```
 
-No merge was performed by the closure scope. The next step, only after separate user authorization, is protected PR → merge → post-merge `main` verification. Physical Model authorization remains a further separate decision after integration.
+Pre-Physical integration is complete. The next architecture/model action requires a **separate explicit authorization** to start the Physical Model. Backend Foundation remains deferred until a Physical result is separately accepted.
