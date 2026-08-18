@@ -1,26 +1,41 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-03 STATIC PREFLIGHT COMPLETE / EXECUTION NOT STARTED**
+- Status: **CURRENT — PM-04A EVIDENCE SUFFICIENCY COMPLETE / DIRECT EXECUTION NOT STARTED**
 - Workstream: `feature/physical-model`
 - Primary candidates: P0 PostgreSQL 18.4, P1 TypeDB CE 3.12.3, P2 XTDB 2.1.0, P3 SurrealDB Community 3.2.3
-- Database/harness execution: **NOT STARTED**
+- PM-04A evidence review: **COMPLETE**
+- PM-04B fixture/harness: **NOT ADMITTED / NOT STARTED**
+- Database execution: **NOT STARTED**
 - Technology selection: **NONE**
 
 ## 1. Result-layer rule
 
-This matrix separates static mapping review from executable hard-gate evidence.
+This matrix separates three evidence layers.
 
 ```text
-PM-03 PREFLIGHT
+PM-03 STATIC PREFLIGHT
 PASS-CONDITIONAL | HOLD | REJECT
 
-!=
+PM-04A EVIDENCE SUFFICIENCY
+EXT-SUFFICIENT | MAP-SUFFICIENT | KNOWN-STRUCTURAL-COST |
+DEFER-FINALIST | RESIDUAL-GAP | EXECUTION-WORTHY
 
-EXECUTED HARD-GATE RESULT
-NOT RUN until direct scenario evidence exists
+DIRECT EXECUTION
+NOT RUN until a direct scenario/run actually exists
 ```
 
-A preflight PASS-CONDITIONAL never authorizes performance scoring.
+These layers must never be collapsed.
+
+```text
+PM-04A MAP-SUFFICIENT
+!= EXECUTED HG PASS
+
+PUBLIC BENCHMARK
+!= LIFEOS BENCHMARK
+
+NOT RUN
+!= PASS
+```
 
 ## 2. PM-03 static preflight matrix
 
@@ -39,7 +54,7 @@ A preflight PASS-CONDITIONAL never authorizes performance scoring.
 | HG-11 | Schema/data evolution integrity | HOLD | HOLD | HOLD | HOLD |
 | HG-12 | Recoverability/evidence quality | HOLD | HOLD | HOLD | HOLD |
 
-Preflight evidence:
+PM-03 evidence:
 
 - `pm-03-semantic-hard-gate-preflight-v1.md`;
 - `preflight/postgresql-18.4-v1.md`;
@@ -47,11 +62,51 @@ Preflight evidence:
 - `preflight/xtdb-2.1.0-v1.md`;
 - `preflight/surrealdb-3.2.3-v1.md`.
 
-## 3. Executed primary hard-gate matrix
+## 3. PM-04A evidence-sufficiency matrix
 
-No candidate has executed the mandatory correctness/destructive corpus yet.
+This is a comparative sufficiency matrix, not a direct test result.
 
-| Gate | P0 PostgreSQL | P1 TypeDB | P2 XTDB | P3 SurrealDB | Required direct evidence |
+| Gate | Meaning | P0 PostgreSQL | P1 TypeDB | P2 XTDB | P3 SurrealDB |
+|---|---|---|---|---|---|
+| HG-01 | Semantic ownership preservation | MAP-SUFFICIENT | MAP-SUFFICIENT | MAP-SUFFICIENT | MAP-SUFFICIENT |
+| HG-02 | Reference-family integrity | EXT+MAP-SUFFICIENT | EXT+MAP-SUFFICIENT | KNOWN-STRUCTURAL-COST | EXT+MAP-SUFFICIENT |
+| HG-03 | Typed/n-ary relation fidelity | EXT+MAP-SUFFICIENT | EXT+MAP-SUFFICIENT | KNOWN-STRUCTURAL-COST | EXT+MAP-SUFFICIENT |
+| HG-04 | Expected-state consequential concurrency | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT / guard condition | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT / guard condition |
+| HG-05 | Multi-owner consistency truthfulness | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT / KNOWN COST | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT / KNOWN COST |
+| HG-06 | History/correction/reconciliation | MAP-SUFFICIENT | MAP-SUFFICIENT | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT / KNOWN COST |
+| HG-07 | State-layer separation | MAP-SUFFICIENT | MAP-SUFFICIENT | MAP-SUFFICIENT | MAP-SUFFICIENT |
+| HG-08 | Governance/selective disclosure | MAP-SUFFICIENT / DEFER-FINALIST system proof | MAP-SUFFICIENT / DEFER-FINALIST system proof | MAP-SUFFICIENT / DEFER-FINALIST system proof | MAP-SUFFICIENT / DEFER-FINALIST system proof |
+| HG-09 | Retention/redaction/tombstone/restore | DEFER-FINALIST | DEFER-FINALIST / KNOWN OPS COST | DEFER-FINALIST | DEFER-FINALIST |
+| HG-10 | Temporal/recurrence/timezone fidelity | EXT+MAP-SUFFICIENT | EXT+MAP-SUFFICIENT | EXT+MAP-SUFFICIENT | MAP-SUFFICIENT |
+| HG-11 | Schema/data evolution integrity | DEFER-FINALIST | EXT+DEFER-FINALIST | KNOWN-STRUCTURAL-COST + DEFER-FINALIST | EXT+DEFER-FINALIST |
+| HG-12 | Recoverability/evidence quality | EXT+DEFER-FINALIST | KNOWN OPS COST + DEFER-FINALIST | KNOWN OPS/TOPOLOGY COST + DEFER-FINALIST | EXT+DEFER-FINALIST |
+
+PM-04A evidence:
+
+- `pm-04-external-evidence-sufficiency-v1.md`;
+- `evidence/postgresql-18.4-v1.md`;
+- `evidence/typedb-3.12.3-v1.md`;
+- `evidence/xtdb-2.1.0-v1.md`;
+- `evidence/surrealdb-3.2.3-v1.md`.
+
+### PM-04A execution admission
+
+```text
+EXECUTION-WORTHY gaps       0
+FULL LOCAL BENCHMARK        NOT ADMITTED
+TARGETED LOCAL PROOFS       0 ADMITTED
+PM-04B HARNESS              NOT ADMITTED / NOT STARTED
+BENCHMARK HOST              HOLD / DORMANT
+SELECTION                   NONE
+```
+
+`HOLD / DORMANT` means the host requirement still exists before a direct run, but it does not block evidence-only work.
+
+## 4. Direct primary hard-gate matrix
+
+No candidate has executed a direct LifeOS correctness/destructive corpus yet.
+
+| Gate | P0 PostgreSQL | P1 TypeDB | P2 XTDB | P3 SurrealDB | Direct evidence if later admitted |
 |---|---|---|---|---|---|
 | HG-01 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | C0 reverse mapping / owner reconstruction |
 | HG-02 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NativeRef/ScopedRecordRef/MaterialStateRef/ExternalRef negative tests |
@@ -66,50 +121,60 @@ No candidate has executed the mandatory correctness/destructive corpus yet.
 | HG-11 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | V1 -> V2 migration with historical refs |
 | HG-12 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | destructive restore + semantic verification |
 
-## 4. Candidate-specific executable priorities
+Direct execution remains available as last-mile evidence if a later gate admits it. PM-04A does not erase Phase-10 scenarios; it prevents unnecessary execution breadth.
+
+## 5. Candidate-specific residual pressure
+
+These are **not automatically executable priorities** after PM-04A.
 
 ### P0 PostgreSQL
 
 ```text
-wrong-family/dangling heterogeneous anchor
-same-base race
-predicate write-skew
-Read-Committed negative control
-Serializable/locking positive control
-RLS/query leakage where applicable
+heterogeneous-anchor mapping complexity
+transaction-strength selection per consequential operation
+RLS/query/system non-interference boundary
+finalist restore/evolution rehearsal if required
 ```
+
+PM-04A: no execution-worthy PostgreSQL gap now.
 
 ### P1 TypeDB
 
 ```text
-wrong role/player/address family
-same-base race
-snapshot write-skew negative control
-shared consistency-guard positive control
-relation/cardinality history
+snapshot isolation remains engine model
+shared consistency-guard coverage/scoping is mandatory
+self-hosted backup/operations burden
+finalist restore/evolution rehearsal if required
 ```
+
+PM-04A: guard primitive path is reasoned/documented sufficiently for current comparison; execution may reopen only if ranking becomes dependent on it.
 
 ### P2 XTDB
 
 ```text
-missing/wrong-family reference
-cardinality/uniqueness race
-incomplete ASSERT negative control
-expected-state ASSERT race
-complex non-interactive governed mutation
+no native FK
+no uniqueness beyond _id
+manual ASSERT/ID integrity discipline
+non-interactive transaction ergonomics
+production topology/single-writer sensitivity
+finalist restore/evolution rehearsal if required
 ```
+
+PM-04A: these are known structural costs. A local test cannot remove them.
 
 ### P3 SurrealDB
 
 ```text
-invalid typed record union/reference
-binary relation vs n-ary Agreement
-snapshot write-skew negative control
-shared consistency-guard positive control
-record-user/system-user disclosure boundary
+snapshot isolation remains engine model
+shared consistency-guard coverage/scoping is mandatory
+explicit material history remains required
+system disclosure boundary
+finalist restore/evolution rehearsal if required
 ```
 
-## 5. Cross-lane hard gates
+PM-04A: no execution-worthy SurrealDB gap now.
+
+## 6. Cross-lane hard gates
 
 Secondary lanes remain deferred to PM-08.
 
@@ -120,22 +185,24 @@ Secondary lanes remain deferred to PM-08.
 | CG-03 non-interference filtering/ranking | NOT RUN | NOT RUN | NOT RUN | NOT RUN | future |
 | CG-04 freshness/material basis | NOT RUN | NOT RUN | NOT RUN | NOT RUN | future |
 
-## 6. Corpus-family execution register
+## 7. Corpus-family direct execution register
 
-| Corpus | Purpose | P0 | P1 | P2 | P3 | Required before recommendation |
+External/mapping evidence is tracked separately; this table records direct execution only.
+
+| Corpus | Purpose | P0 | P1 | P2 | P3 | Qualification obligation |
 |---|---|---|---|---|---|---|
-| C0 | semantic correctness | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C1 | deep personal history | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C2 | population/concurrency | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C3 | governance/disclosure | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C4 | integration/provider | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C5 | temporal/calendar | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
-| C6 | search/retrieval primary baseline | NOT RUN | NOT RUN | NOT RUN | NOT RUN | primary portion |
-| C7 | recovery/evolution | NOT RUN | NOT RUN | NOT RUN | NOT RUN | YES |
+| C0 | semantic correctness | NOT RUN | NOT RUN | NOT RUN | NOT RUN | evidence-qualified in PM-05; direct only if needed |
+| C1 | deep personal history | NOT RUN | NOT RUN | NOT RUN | NOT RUN | evidence-qualified in PM-05; direct only if needed |
+| C2 | population/concurrency | NOT RUN | NOT RUN | NOT RUN | NOT RUN | evidence-qualified in PM-05; direct only if decision-relevant |
+| C3 | governance/disclosure | NOT RUN | NOT RUN | NOT RUN | NOT RUN | system/finalist proof may remain |
+| C4 | integration/provider | NOT RUN | NOT RUN | NOT RUN | NOT RUN | evidence-qualified in PM-05 |
+| C5 | temporal/calendar | NOT RUN | NOT RUN | NOT RUN | NOT RUN | evidence-qualified in PM-05 |
+| C6 | search/retrieval primary baseline | NOT RUN | NOT RUN | NOT RUN | NOT RUN | primary portion; secondary PM-08 |
+| C7 | recovery/evolution | NOT RUN | NOT RUN | NOT RUN | NOT RUN | finalist direct obligations may remain |
 
-## 7. Core scenario execution register
+## 8. Core scenario direct execution register
 
-All scenarios remain `NOT RUN`.
+All scenarios remain `NOT RUN` because no direct execution has occurred.
 
 | ID | Purpose | Key gate(s) | P0 | P1 | P2 | P3 |
 |---|---|---|---|---|---|---|
@@ -171,7 +238,7 @@ All scenarios remain `NOT RUN`.
 
 Search/secondary-only scenarios SC-017..SC-021 and SC-035 remain deferred until applicable PM-08 lanes are admitted.
 
-## 8. Qualification tiers
+## 9. Qualification tiers
 
 | Tier | P0 | P1 | P2 | P3 |
 |---|---|---|---|---|
@@ -179,9 +246,9 @@ Search/secondary-only scenarios SC-017..SC-021 and SC-035 remain deferred until 
 | BASE | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | HIGH | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 
-No tier label may be called verified without actual materialized counts and raw run evidence.
+No tier label may be called verified without actual materialized counts and raw run evidence. PM-06 may leave these `NOT RUN` if external evidence is sufficient and a local performance comparison cannot materially change the recommendation.
 
-## 9. Load profiles
+## 10. Load profiles
 
 | Profile | P0 | P1 | P2 | P3 |
 |---|---|---|---|---|
@@ -191,65 +258,84 @@ No tier label may be called verified without actual materialized counts and raw 
 | LP-04 history/reporting | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | LP-05 projection/search churn | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 
-## 10. Operational/recovery register
+## 11. Operational/recovery register
 
 | Check | P0 | P1 | P2 | P3 |
 |---|---|---|---|---|
 | exact qualification subject pinned | YES PM-01 | YES PM-01 | YES PM-01 / production topology HOLD | YES PM-01 |
-| benchmark host frozen | HOLD | HOLD | HOLD | HOLD |
+| authoritative recovery/evolution docs reviewed | YES PM-04A | YES PM-04A | YES PM-04A | YES PM-04A |
+| benchmark host frozen | HOLD / DORMANT | HOLD / DORMANT | HOLD / DORMANT | HOLD / DORMANT |
 | database deployed | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| backup created | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| backup created by LifeOS benchmark | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | destructive restore | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | semantic post-restore suite | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | redaction anti-resurrection | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| V1 -> V2 evolution | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| V1 -> V2 LifeOS evolution | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | failure injection | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| exact HA/failover topology | HOLD | HOLD | HOLD | HOLD / Community single-node subject only |
+| exact production HA/failover topology | future sensitivity | future sensitivity | HOLD | Community single-node current subject |
 
-## 11. Evidence quality checklist
+## 12. Evidence quality checklist
 
-Before any candidate hard-gate PASS or recommendation:
+For an external/mapping evidence claim:
+
+```text
+[x] exact candidate subject identified
+[x] source class disclosed
+[x] official/current primary sources preferred
+[x] vendor benchmark/case study not treated as neutral direct proof
+[x] structural limitation retained as cost/condition
+[x] external evidence kept separate from direct execution state
+```
+
+Before any **direct** hard-gate PASS or measured benchmark claim:
 
 ```text
 [ ] benchmark host/runtime frozen
 [ ] LifeOS/Phase-10/mapping commits recorded
 [ ] exact candidate version/edition/deployment recorded
-[ ] fixture generator + seed recorded
-[ ] actual dataset counts recorded
+[ ] fixture generator + seed recorded where applicable
+[ ] actual dataset counts recorded where applicable
 [ ] raw assertion output retained
-[ ] concurrency negative and positive controls retained
-[ ] backup/restore evidence retained
-[ ] evolution evidence retained
-[ ] failure-injection evidence retained
+[ ] concurrency negative and positive controls retained where applicable
+[ ] backup/restore evidence retained where applicable
+[ ] evolution evidence retained where applicable
+[ ] failure-injection evidence retained where applicable
 [ ] manual tuning disclosed
 [ ] raw artifact hashes/locations recorded
 [ ] no real personal data/secrets in fixtures
 ```
 
-## 12. PM-03 advancement state
+## 13. Current advancement state
 
 ```text
 P0 PostgreSQL
-ADVANCE
+CURRENT COMPARATIVE LEADER
+NO EXECUTION-WORTHY GAP
 
 P1 TypeDB
-ADVANCE WITH CONCURRENCY HOLD
+PRINCIPAL SEMANTIC CHALLENGER
+CONCURRENCY UNKNOWN NARROWED TO DOCUMENTED GUARD CONDITION/COST
+NO EXECUTION-WORTHY GAP
 
 P2 XTDB
-ADVANCE WITH REFERENCE/CONSTRAINT HOLD
-production topology HOLD
+TEMPORAL CHALLENGER
+REFERENCE/CARDINALITY UNKNOWN NARROWED TO KNOWN STRUCTURAL COST
+PRODUCTION TOPOLOGY HOLD
+NO EXECUTION-WORTHY GAP
 
 P3 SurrealDB
-ADVANCE WITH CONCURRENCY HOLD
+MULTIMODEL CHALLENGER
+CONCURRENCY UNKNOWN NARROWED TO DOCUMENTED GUARD CONDITION/COST
+NO EXECUTION-WORTHY GAP
 
-STATIC REJECTS
-0
+PM-04B
+NOT ADMITTED
 
-EXECUTED HG PASS
+DIRECT HG PASS
 0
 
 SELECTION
 NONE
 ```
 
-The next executable phase must resolve uncertainty through evidence rather than converting these preflight dispositions into paper PASS.
+Counts/classes are not PM-09 scores. The next phase must qualify scenario/corpus evidence without manufacturing local runs that cannot change the decision.
