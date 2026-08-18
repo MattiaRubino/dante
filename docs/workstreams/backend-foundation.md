@@ -9,7 +9,7 @@
 
 Provide the future production backend skeleton for LifeOS **after** the semantic, Pre-Physical, Physical and runtime/security/integration prerequisites required by the chosen first slice exist.
 
-This handoff is deliberately non-executable today. It must not be used to bypass the current final Pre-Physical closure verification, invent Domain/Logical semantics, select persistence by implementation convenience or start production code before the required gates are closed.
+This handoff is deliberately non-executable today. It must not be used to bypass the closed branch-local Pre-Physical result, invent Domain/Logical semantics, select persistence by implementation convenience or start production code before the remaining integration/Physical prerequisites are satisfied.
 
 ## Current stage boundary
 
@@ -46,21 +46,26 @@ Phase 12 clean-room repository/architecture QA
 QA PASS / CLOSED
 
 Independent total Pre-Physical audit
-CORE PASS
-bounded final repairs incorporated / final remote activation QA pending
+PASS
 
 Pre-Physical Coherence
-FINAL CLOSURE CANDIDATE
+DEFINITIVE CLOSED / FINAL QA PASS branch-locally
+
+Physical readiness
+ESTABLISHED
 
 Physical Model
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 Backend Foundation / production implementation
 NOT STARTED / DEFERRED
 
 Main integration
-NOT PERFORMED
+PENDING / NOT PERFORMED
 ```
+
+Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
 
 Backend Foundation does **not** own Domain or Logical modeling. The old instruction to develop Domain Model v0 inside Backend Foundation is superseded. Any genuine future semantic contradiction requires its own explicit reopen scope and applicable methodology.
 
@@ -531,16 +536,15 @@ Do not update `PROJECT-STATUS.md` for every backend commit. Update global status
 BACKEND FOUNDATION
 NO IMPLEMENTATION ACTION
 
+PRE-PHYSICAL COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS branch-locally
+
 CURRENT PROJECT ACTION
-finish independent total Pre-Physical audit final remote activation QA
-
-IF PASS
-Pre-Physical branch-local coherence becomes DEFINITIVELY CLOSED
-
-THEN
-main integration remains a separate protected PR / merge / post-merge QA step
+protected PR / main integration only after separate user authorization
+then post-merge main verification
 
 PHYSICAL MODEL
 after integration, still requires separate explicit user authorization
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 ```
