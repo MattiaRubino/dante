@@ -20,21 +20,21 @@ WD-05 PASS
 WL-H01..WL-H12 active downstream
 
 PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
-FINAL CLOSURE CANDIDATE on chore/pre-physical-coherence
+DEFINITIVE CLOSED / FINAL QA PASS on chore/pre-physical-coherence
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
-Independent total audit CORE PASS
-final bounded repairs incorporated
-exact final remote activation QA pending
+Independent total audit PASS
+final activation checkpoint 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
 
 PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND PRODUCTION IMPLEMENTATION
 NOT STARTED / DEFERRED
 
 MAIN INTEGRATION
-NOT PERFORMED
+PENDING / NOT PERFORMED
 ```
 
 Phase 4 Home/Today UX continues separately on `prototype/phase-4-today-home`.
@@ -53,7 +53,7 @@ Read in this order:
 6. [`docs/development/documentation-and-handoff.md`](docs/development/documentation-and-handoff.md);
 7. [`docs/development/branching-and-environments.md`](docs/development/branching-and-environments.md);
 8. [`docs/development/repository-engineering-safety.md`](docs/development/repository-engineering-safety.md);
-9. the active/final-verification workstream handoff;
+9. the relevant workstream handoff;
 10. [`docs/architecture/README.md`](docs/architecture/README.md) and linked current sources;
 11. Phase 12 + final independent audit evidence;
 12. relevant ADRs/evidence/methodologies and implementation/tests;
@@ -242,9 +242,9 @@ Phase 11 remotely verified `lifeos-main-safety` as active for protected `main` i
 
 Do not work directly on `main` for normal work and do not invent required checks before the corresponding workflow exists.
 
-## Final Pre-Physical audit boundary
+## Definitive Pre-Physical closure
 
-Phase 12 is already **QA PASS / CLOSED**.
+Phase 12 is **QA PASS / CLOSED**.
 
 The independent total audit then rechecked the entire Pre-Physical delta and found:
 
@@ -258,12 +258,9 @@ Physical accidentally started      0
 backend accidentally started       0
 ```
 
-It found only bounded current-truth/factual/engineering repairs, all incorporated in the approved final gate. The final audit record is [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md).
-
-Definitive branch-local Pre-Physical closure activates **only if** final remote QA proves its exact activation contract:
+The bounded current-truth/factual/engineering repairs were applied under PRE-SCOPE `1bd142afe51221211bc777f6271a642911c650fc`. The activation checkpoint `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d` proved exactly:
 
 ```text
-PRE-SCOPE 1bd142afe51221211bc777f6271a642911c650fc
 unique paths 23
 added 1
 modified 22
@@ -271,19 +268,39 @@ deleted 0
 unexpected 0
 behind_by 0
 main unchanged at 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
-critical current-authority readback PASS
+critical readback PASS
 ```
 
-Until that proof is complete, status remains `FINAL CLOSURE CANDIDATE`.
+Therefore the branch-local result is:
 
-Even after successful branch-local closure:
+```text
+INDEPENDENT TOTAL PRE-PHYSICAL AUDIT
+PASS
+
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
+
+DOMAIN
+UNCHANGED / CLOSED
+
+LOGICAL
+UNCHANGED / CLOSED
+
+PHYSICAL READINESS
+ESTABLISHED
+PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
+
+BACKEND
+NOT STARTED / DEFERRED
+```
+
+Final audit evidence: [`docs/architecture/pre-physical-final-coherence-audit.md`](docs/architecture/pre-physical-final-coherence-audit.md).
+
+## Next boundary
 
 ```text
 MAIN INTEGRATION
 PENDING / NOT PERFORMED
-
-PHYSICAL MODEL
-NOT STARTED / NOT AUTHORIZED
 ```
 
-The later sequence is separately authorized protected PR → merge → post-merge `main` verification → separate Physical Model authorization.
+No merge was performed by the closure scope. The next step, only after separate user authorization, is protected PR → merge → post-merge `main` verification. Physical Model authorization remains a further separate decision after integration.
