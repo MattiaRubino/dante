@@ -1,10 +1,11 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-10 COMPLETE / PM-11 NEXT / DIRECT EXECUTION NOT STARTED**
+- Status: **CURRENT — PM-12 COMPLETE / PM-13 NEXT / DIRECT EXECUTION NOT STARTED**
 - Workstream: `feature/physical-model`
 - Primary finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
 - PM-10 preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
-- Selected: **NONE**
+- PM-11 selected primary: **PostgreSQL 18.4**
+- PM-12 accepted Physical Model: **ESTABLISHED**
 
 ## Result-layer rule
 
@@ -23,21 +24,25 @@ PM-09 EVIDENCE-WEIGHTED DECISION SCORE
 !=
 PM-10 PREFERRED RECOMMENDATION
 !=
+PM-11 TARGET SELECTION
+!=
+PM-12 ACCEPTED PHYSICAL MODEL
+!=
 VERIFIED-RUN BENCHMARK SCORE
 !=
 DIRECT EXECUTION
 ```
 
-`EVIDENCE-QUALIFIED != DIRECT PASS`, `PREFERRED != SELECTED`, and `NOT RUN != PASS`.
+`EVIDENCE-QUALIFIED != DIRECT PASS`, `PREFERRED != SELECTED`, `SELECTED != DEPLOYED`, and `NOT RUN != PASS`.
 
 ## Primary disposition
 
-| Candidate | PM-09 score | PM-10 disposition | Selected |
-|---|---:|---|---|
-| PostgreSQL 18.4 | **89.25** | **PREFERRED / PASS-CONDITIONAL** | NO |
-| TypeDB CE 3.12.3 | 80.00 | RUNNER-UP / NOT PREFERRED | NO |
-| XTDB 2.1.0 | — | EXCLUDED FROM RECOMMENDED PRIMARY STACK | NO |
-| SurrealDB 3.2.3 | — | EXCLUDED FROM RECOMMENDED PRIMARY STACK | NO |
+| Candidate | PM-09 score | PM-10 | PM-11 | PM-12 |
+|---|---:|---|---|---|
+| PostgreSQL 18.4 | **89.25** | PREFERRED / PASS-CONDITIONAL | **SELECTED CANONICAL PRIMARY** | **ACCEPTED PRIMARY** |
+| TypeDB CE 3.12.3 | 80.00 | RUNNER-UP | NOT SELECTED | historical semantic challenger |
+| XTDB 2.1.0 | — | excluded from recommended primary | NOT SELECTED | historical evidence |
+| SurrealDB 3.2.3 | — | excluded from recommended primary | NOT SELECTED | historical evidence |
 
 ## Direct hard-gate status
 
@@ -79,7 +84,7 @@ SC-001 SC-002 SC-003 SC-009 SC-010 SC-012
 SC-014 SC-015 SC-016 SC-022 SC-023 SC-024
 ```
 
-Classification remains `PRIMARY-EVIDENCE-SUFFICIENT` for current recommendation.
+Classification remains `PRIMARY-EVIDENCE-SUFFICIENT` for the selected architecture.
 
 ### System/runtime/provider set
 
@@ -90,39 +95,41 @@ SC-025 SC-026 SC-027 SC-028 SC-029 SC-033 SC-034
 
 Classification remains `SYSTEM-BOUNDARY`.
 
-### Post-selection primary validation
+### Selected-stack direct validation
 
 | Scenario | Status | Treatment |
 |---|---|---|
-| SC-011 old-backup anti-resurrection | NOT RUN | mandatory selected-stack validation |
+| SC-011 old-backup anti-resurrection | NOT RUN | mandatory implementation validation |
 | SC-013 deep-history scale | NOT RUN | reopen NO under PM-09/10 ranking |
-| SC-030 V1→V2 evolution | NOT RUN | mandatory selected-stack validation |
-| SC-031 destructive restore + semantic verification | NOT RUN | mandatory selected-stack validation |
-| SC-032 capacity/backpressure | NOT RUN | mandatory selected-stack validation |
+| SC-030 V1→V2 evolution | NOT RUN | mandatory implementation validation |
+| SC-031 destructive restore + semantic verification | NOT RUN | mandatory implementation validation |
+| SC-032 capacity/backpressure | NOT RUN | mandatory implementation validation |
 
 None is declared PASS.
 
-## PM-10 recommended companion matrix
+## Accepted companion matrix
 
-| Capability / component | PM-10 status | Direct validation | Authority rule |
+| Capability / component | PM-11/12 status | Direct validation | Authority rule |
 |---|---|---|---|
-| PostgreSQL 18.4 | PREFERRED / PASS-CONDITIONAL | NOT RUN | sole canonical persistence if selected |
-| PostGIS 3.6.4 | RECOMMENDED | NOT RUN | technical geo capability only |
-| PostgreSQL FTS + pg_trgm + unaccent | RECOMMENDED | NOT RUN | derived/query capability |
-| pgvector 0.8.6 | RECOMMENDED | NOT RUN | derived vector index only |
-| pg_stat_statements | RECOMMENDED | NOT RUN | operational telemetry only |
-| PgBouncer 1.25.2 | RECOMMENDED | NOT RUN | connection layer only |
-| encrypted SQLite | RECOMMENDED bounded local/offline | NOT RUN | never canonical |
-| PowerSync 1.25.0 Open Edition | RECOMMENDED / HARDENING REQUIRED | NOT RUN | sync/projection only |
-| PostgreSQL outbox + bounded worker | RECOMMENDED | NOT RUN | bounded async runtime |
-| Restate Cloud EU | RECOMMENDED / PASS-CONDITIONAL | NOT RUN | durable runtime only |
-| Restate Python SDK 1.0.3 | RECOMMENDED | NOT RUN | runtime client |
-| Restate Server 1.7.2 | reproducible local/self-hosted subject | NOT RUN | runtime only |
-| Cloudflare R2 Standard EU | RECOMMENDED | NOT RUN | raw bytes only |
-| pgBackRest 2.59.0 | RECOMMENDED | NOT RUN | backup/recovery mechanism |
-| AWS S3 eu-south-1 backup repos | RECOMMENDED | NOT RUN | recovery copies only |
-| OR-Tools 9.15 CP-SAT | RECOMMENDED | NOT RUN | candidate/derived solver output |
-| OpenTelemetry + Alloy 1.18.0 + Grafana Cloud EU | RECOMMENDED | NOT RUN | operational telemetry only |
+| PostgreSQL 18.4 | SELECTED / ACCEPTED | NOT RUN | sole canonical persistence |
+| PostGIS 3.6.4 | SELECTED | NOT RUN | technical geo capability only |
+| PostgreSQL FTS + pg_trgm + unaccent | SELECTED | NOT RUN | derived/query capability |
+| pgvector 0.8.6 | SELECTED | NOT RUN | derived vector index only |
+| pg_stat_statements | SELECTED | NOT RUN | operational telemetry only |
+| PgBouncer 1.25.2 | SELECTED | NOT RUN | connection layer only |
+| encrypted SQLite | SELECTED bounded local/offline | NOT RUN | never canonical |
+| PowerSync 1.25.0 Open Edition | SELECTED / HARDENING REQUIRED | NOT RUN | sync/projection only |
+| PostgreSQL outbox + bounded worker | SELECTED | NOT RUN | bounded async runtime |
+| Restate runtime | SELECTED / HARDENING REQUIRED | NOT RUN | durable runtime only |
+| Restate self-hosted | ALLOWED / FIRST-CLASS | NOT RUN | deployment option |
+| Restate Cloud EU | ALLOWED MANAGED OPTION | NOT RUN | deployment option; not mandatory |
+| Restate Python SDK 1.0.3 | SELECTED SDK SUBJECT | NOT RUN | runtime client |
+| Restate Server 1.7.2 | SELECTED self-hosted/reproducible subject | NOT RUN | runtime only |
+| Cloudflare R2 Standard EU | SELECTED | NOT RUN | raw bytes only |
+| pgBackRest 2.59.0 | SELECTED | NOT RUN | backup/recovery mechanism |
+| AWS S3 eu-south-1 backup repos | SELECTED production target | NOT RUN | recovery copies only |
+| OR-Tools 9.15 CP-SAT | SELECTED | NOT RUN | candidate/derived solver output |
+| OpenTelemetry + Alloy 1.18.0 + Grafana Cloud EU | SELECTED | NOT RUN | operational telemetry only |
 
 ## Offline acceptance rule
 
@@ -163,6 +170,8 @@ ambiguous provider effect
 cancellation/timeout truthfulness
 in-flight workflow version evolution
 runtime journal privacy minimization
+self-hosted vs Cloud EU deployment-mode review
+Python path must not assume TypeScript-only journal encryption
 ```
 
 ## Object/recovery mandatory tests
@@ -213,26 +222,24 @@ Sensitivity remains `ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPEND
 ## Execution admission result
 
 ```text
-PM-10 ranking-critical execution gaps   0
-PM-04B reopened                         NO
-benchmark host                          HOLD / DORMANT
-verified-run score                      NOT AVAILABLE
+ranking-critical execution gaps          0
+PM-04B reopened                          NO
+benchmark host                           HOLD / DORMANT
+verified-run score                       NOT AVAILABLE
 ```
 
 ## Advancement
 
 ```text
-PM-10 COMPLETE
+PM-11 COMPLETE
+TARGET STACK SELECTED
 
-PREFERRED
-PostgreSQL 18.4 / PASS-CONDITIONAL
+PM-12 COMPLETE
+ACCEPTED PHYSICAL MODEL ESTABLISHED
 
-PREFERRED COMPANION STACK
-ESTABLISHED / PASS-CONDITIONAL
-
-SELECTED
-NONE
+DIRECT HG PASS
+0
 
 NEXT
-PM-11 explicit stack selection
+PM-13 independent clean-room QA
 ```
