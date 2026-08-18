@@ -1,13 +1,13 @@
 # Documentation and Handoff Protocol
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 ## Goal
 
 LifeOS must remain resumable across separate ChatGPT conversations, Claude sessions, Codex tasks, other AI agents and human developers. Repository documentation is part of the implementation, not optional aftercare.
 
-Operational branch/path/authority rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md).
+Operational branch/path/authority rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md). Repository integration enforcement is defined in [`repository-engineering-safety.md`](repository-engineering-safety.md).
 
 ## Canonical reading order
 
@@ -20,11 +20,12 @@ Before modifying the project, read:
 5. `docs/development/operating-rules.md`;
 6. this file;
 7. `docs/development/branching-and-environments.md`;
-8. the active workstream handoff;
-9. current model/architecture index and linked current sources;
-10. relevant ADRs/evidence/methodologies;
-11. implementation/tests relevant to the task;
-12. current branch/ref and relation to `main`.
+8. `docs/development/repository-engineering-safety.md`;
+9. the active workstream handoff;
+10. current model/architecture index and linked current sources;
+11. relevant ADRs/evidence/methodologies;
+12. implementation/tests relevant to the task;
+13. current branch/ref and relation to `main`.
 
 Repository truth beats conversation memory where they disagree.
 
@@ -138,6 +139,7 @@ To reduce conflicts:
 - global state/sequence changes → update `PROJECT-STATUS.md` / `ROADMAP.md` as appropriate;
 - current architecture/product meaning changes → update the current durable source;
 - significant architectural decision/rationale changes → update/create ADR;
+- repository protection/runtime policy changes → update `repository-engineering-safety.md` and effective remote settings as applicable;
 - before merging shared/global files, compare against current `main` and preserve newest current truth.
 
 A clean textual merge is not enough if documentation becomes stale.
@@ -149,6 +151,8 @@ Create/update an ADR when a decision materially affects architecture, persistenc
 Normal implementation details do not require ADRs.
 
 Accepted ADRs may be superseded; mark that explicitly.
+
+A requirement hardening that preserves an existing architectural decision does not automatically require a new ADR. For example, requiring reproducible evaluation before promoting consequential AI behavior changes strengthens the current AI boundary without selecting a provider/model/evaluation product.
 
 ## Documentation in the same PR
 
@@ -178,6 +182,7 @@ AI agents must:
 - keep current specifications current rather than append-only;
 - run knowledge coverage before replacing/deleting stale current docs;
 - record durable decisions/continuation in repo;
+- distinguish documented repository policy from remotely effective repository settings;
 - avoid secrets, production personal data and credentials in prompts/logs/docs.
 
 ## Split-document handoff rule
@@ -230,6 +235,17 @@ When Git/GitHub/connector/network limitations prevent safe work, the handoff sta
 
 A failed/conflicted call is not a completed change.
 
+## Repository-safety handoff rule
+
+A workstream that depends on branch rules, required checks or security/integration settings must distinguish:
+
+```text
+documented intended policy
+!= remotely verified effective state
+```
+
+If the connector cannot read a security setting because of integration permissions, record it as connector-unverifiable rather than inventing PASS/FAIL. If a required check does not yet exist as a stable real check context, do not manufacture it merely to make a policy look complete.
+
 ## Completion checklist
 
 Before handoff or merge:
@@ -247,5 +263,6 @@ Before handoff or merge:
 - [ ] any replaced/deleted stale current doc passed knowledge coverage;
 - [ ] global status changed only when globally meaningful;
 - [ ] significant durable decisions have ADR treatment;
+- [ ] repository settings relied on as evidence were remotely verified where the connector permits;
 - [ ] no knowledge was lost because of tool/context limits;
 - [ ] any size/tool-limit split preserves the complete logical payload losslessly rather than summarizing it.
