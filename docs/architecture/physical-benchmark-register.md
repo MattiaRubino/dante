@@ -1,13 +1,15 @@
 # Physical Benchmark Register
 
-- Status: **CURRENT — Phase 10 QA PASS**
-- Stage: Pre-Physical Repository & Architecture Coherence
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
+- Stage: Physical Model candidate-role authority
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Mapping execution: **NOT STARTED**
+- Benchmark execution: **NOT STARTED**
 - Technology selection: **NONE**
 
 ## Purpose
 
-Register the current candidate set, candidate role, mandatory benchmark status, known evidence/caveats, execution-time pinning requirements and future result slots for the separately authorized Physical Model benchmark.
+Register the current candidate set, candidate role, mandatory benchmark status, known evidence/caveats, execution-time pinning requirements and result slots for the separately authorized Physical Model benchmark.
 
 This register is not a winner list. It prevents candidate-role drift and undocumented technology injection.
 
@@ -26,7 +28,8 @@ Read with:
 - `physical-benchmark-specification.md`;
 - `physical-benchmark-scenario-corpus.md`;
 - the current Pre-Physical Architecture Baseline;
-- all current Phase 5–9 contracts.
+- all current Phase 5–9 contracts;
+- `docs/physical-model/README.md` and the active Physical execution methodology/result register.
 
 # Role register
 
@@ -77,7 +80,7 @@ backup/PITR method
 Python driver / ORM if used for benchmark harness
 ```
 
-Future result slots:
+Result slots:
 
 ```text
 HG-01..HG-12         NOT RUN
@@ -137,7 +140,7 @@ execute failover/recovery where that capability affects scoring
 
 Backup/recovery capabilities must likewise be tested for the exact deployment mode rather than inferred from generic documentation.
 
-Future result slots:
+Result slots:
 
 ```text
 HG-01..HG-12         NOT RUN
@@ -175,7 +178,7 @@ Measure whether a specialized graph system provides enough net structural/perfor
 - operational/licensing burden;
 - rebuild/recovery complexity.
 
-Future result slots:
+Result slots:
 
 ```text
 scenario set           NOT RUN
@@ -225,9 +228,9 @@ Python driver version
 
 Current evidence note:
 
-Phase 10 preparation observed that current Neo4j documentation includes GA Graph Types in recent 2026 releases. The future benchmark must therefore use the exact current capability set and edition, not an outdated assumption that the candidate lacks schema controls entirely.
+Phase 10 preparation observed that current Neo4j documentation includes GA Graph Types in recent 2026 releases. The benchmark must use the exact current capability set and edition, not an outdated assumption that the candidate lacks schema controls entirely.
 
-Future result slots:
+Result slots:
 
 ```text
 CG-01..CG-04          NOT RUN
@@ -262,7 +265,7 @@ Benchmark includes:
 - result non-interference;
 - long-history/current-source search pressure.
 
-Future result slots:
+Result slots:
 
 ```text
 search correctness      NOT RUN
@@ -314,7 +317,7 @@ Current evidence note:
 
 Phase 9/10 preparation identified filtering/ANN recall as material pressure. The future run must not score vector quality from unfiltered top-k latency alone.
 
-Future result slots:
+Result slots:
 
 ```text
 CG-01..CG-04          NOT RUN
@@ -484,7 +487,7 @@ Operational/HA/backup hard-gate PASS should rely on `VERIFIED-RUN` where the sce
 
 # Physical benchmark result table template
 
-The later Physical workstream SHALL fill one row per candidate/role.
+The active Physical workstream SHALL fill one row per candidate/role as evidence is executed.
 
 | ID | Candidate | Role | Version/Edition | Hard Gates | Weighted/Role Score | LOW | BASE | HIGH | Sensitivity | Conditions | Disposition |
 |---|---|---|---|---|---:|---|---|---|---|---|---|
@@ -510,7 +513,7 @@ candidate capability cannot be scored without version/edition/deployment context
 
 # Phase 10 register status — current
 
-The register is remotely QA-verified complete for Phase 10:
+The register is remotely QA-verified complete for Phase 10 and now consumed by the authorized Physical workstream:
 
 ```text
 primary lane candidates classified              PASS
@@ -521,9 +524,11 @@ durable-runtime coupling recorded                PASS
 solver coupling recorded                         PASS
 admission/removal rules present                  PASS
 evidence maturity vocabulary present             PASS
-future result slots present                      PASS
+result slots present                             PASS
+Physical workstream authorized                   PASS
+Physical mapping started                         0
+benchmark execution started                      0
 technology selected                              0
-Physical Model started                           0
 ```
 
-Phases 11 and 12 subsequently consumed the register during repository-safety and clean-room verification. Candidate execution still belongs only to a later separately authorized Physical Model workstream.
+Phases 11 and 12 consumed the register during repository-safety and clean-room verification. `feature/physical-model` now owns execution of these registered candidates under the new Physical methodology; PM-00 bootstrap does not change any `NOT RUN` result slot.
