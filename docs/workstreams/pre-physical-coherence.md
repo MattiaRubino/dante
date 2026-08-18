@@ -1,14 +1,15 @@
 # Pre-Physical Repository & Architecture Coherence
 
-- Status: **FINAL CLOSURE CANDIDATE — final independent-audit activation QA pending**
+- Status: **DEFINITIVE CLOSED / FINAL QA PASS — branch-local closure activated**
 - Branch: `chore/pre-physical-coherence`
 - Original workstream base: `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`
+- Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 - Started: 2026-08-17
 - Production backend code: **NOT STARTED**
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Physical Model: **READY FOR SEPARATE AUTHORIZATION / NOT STARTED / NOT AUTHORIZED**
 - Core Domain Model / Domain Atlas: **CLOSED / unchanged**
 - Logical Model: **CLOSED / unchanged**
-- Main integration: **NOT PERFORMED**
+- Main integration: **PENDING / NOT PERFORMED**
 
 ## Purpose
 
@@ -34,17 +35,20 @@ WD-05 PASS
 WL-H01..WL-H12 active
 
 PRE-PHYSICAL COHERENCE
-FINAL CLOSURE CANDIDATE
+DEFINITIVE CLOSED / FINAL QA PASS
 Phase 0–11 QA PASS
 Phase 12 QA PASS / CLOSED
-Independent total audit CORE PASS
-bounded final repairs incorporated
-final exact remote activation QA pending
+Independent total audit PASS
+closure activated at 9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
+
+PHYSICAL READINESS
+ESTABLISHED
 
 MAIN INTEGRATION
-NOT PERFORMED
+PENDING / NOT PERFORMED
 
 PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
 NOT STARTED / NOT AUTHORIZED
 
 BACKEND FOUNDATION / PRODUCTION IMPLEMENTATION
@@ -581,22 +585,46 @@ Evidence commit:
 99aeed6a71c07383c0ef206b190fc628a8263d63
 ```
 
-The record is conditionally activating and is not self-validating.
+The record was conditionally activating and was not treated as self-validating.
 
-### Final global propagation point before save-game
+### Initial definitive-closure propagation point
 
 ```text
-PROPAGATION HEAD
+PROPAGATION HEAD BEFORE INITIAL SAVE-GAME
 f6d43818faf54ba81da898d9bc72864dd9edabde
+
+INITIAL SAVE-GAME / ACTIVATION CHECKPOINT
+9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
 ```
 
-At that point every approved path except this save-game had been written.
+The exact remote activation QA at `9c53e812d13ffd1b3d3dc20b8b162799e13c1d` proved:
 
-## Final definitive-closure activation contract
+```text
+PRE-SCOPE      1bd142afe51221211bc777f6271a642911c650fc
+unique_paths   23
+added           1
+modified       22
+deleted         0
+unexpected      0
+behind_by       0
+main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
+critical current-authority readback PASS
+```
 
-After this save-game write, **do no further content write before final QA**.
+Critical readback confirmed:
 
-Branch-local Pre-Physical Coherence becomes operative as:
+- Domain closure readable and unchanged;
+- Logical closure readable and unchanged;
+- Phase 5–10 boundaries coherent;
+- Phase 12 still QA PASS/CLOSED;
+- consequential AI evaluation requirement present;
+- DBOS coupling correction present;
+- no selected Physical technology;
+- Physical Model still NOT STARTED / NOT AUTHORIZED;
+- Backend still NOT STARTED / DEFERRED;
+- `main` integration NOT PERFORMED.
+
+Therefore branch-local definitive closure activated at that checkpoint:
 
 ```text
 INDEPENDENT TOTAL PRE-PHYSICAL AUDIT
@@ -606,40 +634,19 @@ PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
 ```
 
-only if final remote QA proves:
+### Post-activation current-truth propagation
+
+After activation, current-summary/operating/handoff consumers inside the **same already approved 23-path gate** were aligned from “activation pending” to the activated branch-local state. No new path, Domain/Logical semantic change, technology selection, Physical implementation, backend code or `main` write was introduced.
+
+Propagation head immediately before this final save-game:
 
 ```text
-branch         chore/pre-physical-coherence
-PRE-SCOPE      1bd142afe51221211bc777f6271a642911c650fc
-unique_paths   exactly 23
-added          exactly 1
-modified       exactly 22
-deleted        0
-unexpected     0
-behind_by      0
-main           148a4cb5d5741b4a5b9667cf8d30231ebc0545f0 unchanged
-critical current-authority readback PASS
+14d53905f0d0dc154a4a170198863d7a97717a67
 ```
 
-Critical readback includes at minimum:
+A final remote compare/readback after this save-game must still show the same approved physical path set (`1 added + 22 modified`, no unexpected paths, `behind_by 0`, `main` unchanged). This is a post-propagation integrity check; it does not create a new semantic closure decision.
 
-- Domain closure still readable/unchanged;
-- Logical closure still readable/unchanged;
-- Phase 5–10 current boundaries coherent;
-- Phase 11 effective repository rules still valid;
-- Phase 12 remains QA PASS/CLOSED;
-- consequential AI evaluation requirement present;
-- DBOS coupling correction present;
-- no selected Physical technology;
-- Physical Model still NOT STARTED / NOT AUTHORIZED;
-- Backend still NOT STARTED / DEFERRED;
-- `main` integration still NOT PERFORMED.
-
-If any condition fails, do not call whole Pre-Physical closed.
-
-## Boundary after successful final activation
-
-If and only if the final activation contract passes:
+## Boundary after definitive branch-local closure
 
 ```text
 PRE-PHYSICAL COHERENCE
@@ -653,7 +660,10 @@ UNCHANGED / CLOSED
 
 PHYSICAL READINESS
 ESTABLISHED
-PHYSICAL MODEL NOT STARTED / NOT AUTHORIZED
+
+PHYSICAL MODEL
+READY FOR SEPARATE AUTHORIZATION
+NOT STARTED / NOT AUTHORIZED
 
 BACKEND
 NOT STARTED / DEFERRED
@@ -704,11 +714,10 @@ Domain / Logical semantic changes
 Immediately after this save-game write:
 
 1. re-fetch branch HEAD;
-2. compare final-audit PRE-SCOPE to final HEAD;
-3. verify exact 23-path physical delta;
-4. re-fetch `main` and prove unchanged;
-5. read back final audit evidence + current status/navigation/technical sources;
-6. re-read effective `lifeos-main-safety` rules;
-7. if and only if all activation conditions pass, report **INDEPENDENT AUDIT PASS / PRE-PHYSICAL DEFINITIVE CLOSED**;
-8. do **not** merge to `main`;
-9. wait for separate user authorization for protected `main` integration.
+2. compare final-audit PRE-SCOPE to current HEAD;
+3. verify the physical delta is still exactly the approved 23 paths (`1 added`, `22 modified`, `0 deleted`, `0 unexpected`, `behind_by 0`);
+4. re-fetch `main` and prove `148a4cb5d5741b4a5b9667cf8d30231ebc0545f0` unchanged;
+5. read back this handoff plus final audit/current status sources;
+6. if post-activation integrity remains PASS, perform no further Pre-Physical content write;
+7. do **not** merge to `main` without separate user authorization;
+8. next repository action, when authorized, is protected Pre-Physical PR / merge / post-merge QA.
