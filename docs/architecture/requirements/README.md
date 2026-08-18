@@ -115,11 +115,23 @@ External security/privacy standards and regulations may pressure-test these requ
 
 Where a legal value, retention duration, data classification, identity-assurance level or operational target requires qualified evidence not yet accepted, the requirement records it as an explicit open parameter rather than inventing a value.
 
-## Downstream gate
+## Downstream gate — current
 
-Before Physical Model candidate scoring, Phase 10 must consume these packages and either:
+Phase 10 has already consumed these packages into the current Physical benchmark method, hard gates, scenario corpus and sensitivity treatment.
 
-- carry an accepted requirement as a hard benchmark constraint; or
-- resolve any open parameter whose value materially changes candidate scoring.
+The later separately authorized Physical Model workstream MUST therefore:
 
-A Physical/runtime design that cannot preserve an accepted requirement is rejected unless a separate authorized upstream reopen changes the requirement.
+- execute the applicable accepted requirements as hard benchmark/design constraints;
+- resolve any still-open parameter whose value materially changes candidate scoring before claiming a final result;
+- preserve explicit uncertainty/sensitivity where the product has not responsibly fixed one value;
+- reject a Physical/runtime design that cannot preserve an accepted requirement unless a separate authorized upstream reopen changes that requirement.
+
+```text
+PHASE 10
+method + benchmark pressure defined
+
+PHYSICAL MODEL
+actual candidate execution / design / selection
+```
+
+These packages remain current requirements throughout that later work.
