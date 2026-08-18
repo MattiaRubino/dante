@@ -1,7 +1,7 @@
 # Branching and Environments
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 ## Git model
 
@@ -32,7 +32,7 @@ Repository-level enforcement and the lifecycle for branch rules, CI checks and s
 5. If two proposed workstreams would modify the same core/shared files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
 6. Before the first remote write, follow the exact PRE-SCOPE/write-gate protocol in the agent operating manual.
 
-For example, while `chore/pre-physical-coherence` owns the current architecture/documentation reconciliation, a future Backend Foundation or Physical Model branch must not simultaneously rewrite the same architecture sources. Finish/merge the prerequisite work or explicitly synchronize/re-scope first.
+While `chore/pre-physical-coherence` remains unmerged it owns its exact gated architecture/documentation reconciliation. A future Backend Foundation or Physical Model branch must not simultaneously rewrite those same current sources. Finish/integrate the prerequisite work or explicitly synchronize/re-scope first.
 
 Closed Domain/Logical branches are historical evidence, not starting points for new backend work. Any genuine semantic reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
 
@@ -112,11 +112,11 @@ Parallel branches must minimize shared-file churn.
 
 The repository safety target for `main` is deliberately aligned with this workflow rather than a separate Git model.
 
-At the current owner-driven stage, the intended effective rules are:
+The current owner-driven effective rules have been remotely verified:
 
 ```text
 pull request required before merge
-force-push blocked
+force-push / non-fast-forward blocked
 delete protected main blocked
 review-thread resolution required
 required approvals = 0 while no independent reviewer exists
@@ -126,18 +126,21 @@ merge commits allowed/required by current merge policy
 
 Do not manufacture a required status check before the corresponding workflow/check context exists and has run successfully. When real CI is introduced, promote checks into required-main rules only after their exact stable context names and blocking value are verified.
 
-Do not treat repository rules/settings as active merely because their intended configuration is documented. The effective remote rules must be read back before a workstream claims repository-safety `PASS`.
+Do not treat future repository rules/settings as active merely because their intended configuration is documented. Read back effective remote rules before claiming a changed safety milestone PASS.
 
 ## Current stage boundary
 
-As of 2026-08-17:
+As of 2026-08-18:
 
 - Core Domain Model / Domain Atlas is closed and integrated into `main`;
 - Logical Model is closed and integrated into `main`;
-- `chore/pre-physical-coherence` is the active bounded backend/architecture preparation branch;
+- `chore/pre-physical-coherence` is the active final-closure-candidate backend/architecture preparation branch;
+- Phase 12 clean-room QA is closed;
+- the independent total Pre-Physical audit found only bounded repairs and is in final remote-activation QA;
 - Physical Model is not started and requires separate future authorization;
-- Backend Foundation/production implementation is not started and must not be initiated from its stale historical assumptions;
-- Phase 4 UX continues separately on `prototype/phase-4-today-home`.
+- Backend Foundation/production implementation is not started/deferred;
+- Phase 4 UX continues separately on `prototype/phase-4-today-home`;
+- Pre-Physical `main` integration has not yet been performed.
 
 This stage note is a current operational baseline, not a permanent branching rule. Future agents must re-check `docs/PROJECT-STATUS.md`, the active handoff and Git refs.
 
@@ -152,11 +155,11 @@ This stage note is a current operational baseline, not a permanent branching rul
 7. Before merge, run the semantic/documentation coherence gate from `operating-rules.md` plus the exact post-write/compare QA required by the agent operating manual.
 8. Merge only when implementation/design and required documentation/handoff are coherent.
 9. After an important merge, synchronize long-running branches that share changed global files.
-10. Delete or archive obsolete working branches later according to repository housekeeping policy; never delete history merely to hide prior reasoning.
+10. Delete or archive obsolete working branches according to repository housekeeping policy; never delete history merely to hide prior reasoning.
 
 Repository hygiene rules:
 
-- enabling automatic deletion of merged head branches is preferred once repository settings allow it;
+- automatic deletion of merged head branches is currently enabled;
 - unmerged active branches are never auto-classified as obsolete by age alone;
 - an old/historical branch is deleted only after proving it contains no unique accepted/active work that still requires integration;
 - obviously accidental refs may be deleted after ancestry/content verification shows no unique branch-only work;
