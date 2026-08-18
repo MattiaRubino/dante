@@ -47,7 +47,7 @@ Current ownership/state:
 - Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`; active separately.
 - Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**.
 - Physical Model: **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED**; authority lives in `docs/physical-model/**` and `docs/workstreams/physical-model.md`; PM-13 clean-room architecture/documentation QA is PASS; direct selected-stack implementation validation remains carried forward.
-- Development Profile v0: **NOT STARTED**; future bounded operational-deployment scope for initial activation/local/free/managed choices against the already-selected Physical target.
+- Development Profile v0: **NOT STARTED**; future bounded operational-deployment scope for the genuinely unresolved initial activation/deployment/configuration choices against the already-selected Physical target. It must consume, not reopen, the fixed initial dormant posture for Restate and pgBackRest/AWS S3.
 - Backend Foundation: **NOT STARTED / DEFERRED**; future backend bootstrap/config/infrastructure/tests/docs only after separate explicit authorization.
 - Domain Model / Domain Atlas: **CLOSED**; historical branch does not reopen semantics.
 - Logical Model: **CLOSED**; historical branch does not reopen semantics.
@@ -100,7 +100,9 @@ Do not start from an old branch merely because it contains a familiar file.
 - A marketing/official capability claim is not direct execution evidence; distinguish the two.
 - Missing/contradictory implementation evidence becomes `HOLD`, not assumption.
 - `SELECTED != DEPLOYED` and `SELECTED != DIRECT PASS`.
-- A later Development Profile may choose activation/deployment mode without silently replacing the accepted target technology.
+- Development Profile v0 must not reopen a current activation decision already fixed by repository truth.
+- Restate is selected but **DORMANT / NOT ACTIVE in initial DEV** until a real Class-B durable-workflow need exists; self-hosted vs Cloud EU is decided only when that activation trigger exists.
+- pgBackRest + AWS S3 eu-south-1 are selected recovery targets but **DORMANT / NOT ACTIVE in initial DEV** until the recovery/production boundary or a real recovery-rehearsal requirement exists.
 - A selected-stack validation failure that invalidates the Physical choice requires an explicit reopen; do not weaken Domain/Logical semantics to force a PASS.
 
 ### Current documentation rule
@@ -275,6 +277,8 @@ NOT STARTED / DEFERRED
 
 DEVELOPMENT PROFILE v0
 NOT STARTED / next separate operational scope
+Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
+pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
 ```
 
 No production backend/API/Auth implementation is authorized solely by Physical closure.
@@ -302,4 +306,4 @@ The closed Physical methodology/evidence additionally governs:
 - `SELECTED != DIRECT PASS`;
 - honest direct PSV status;
 - explicit reopen if selected-stack implementation evidence invalidates a decision;
-- Development Profile choices must not silently change the accepted target.
+- Development Profile choices must not silently change the accepted target or reopen already-fixed initial activation posture.
