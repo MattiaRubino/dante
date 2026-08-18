@@ -1,6 +1,6 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-10 COMPLETE / PM-11 NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-12 COMPLETE / PM-13 NEXT**
 - Branch: `feature/physical-model`
 - Main baseline: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00: **QA PASS**
@@ -15,11 +15,13 @@
 - PM-08: **SECONDARY/SPECIALIST QUALIFICATION COMPLETE**
 - PM-09: **EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE**
 - PM-10: **FINAL STACK RECOMMENDATION COMPLETE**
-- Preferred primary: **PostgreSQL 18.4 / PASS-CONDITIONAL**
+- PM-11: **EXPLICIT TARGET STACK SELECTION COMPLETE**
+- PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
+- Selected canonical primary: **PostgreSQL 18.4**
 - Evidence-weighted score: **PostgreSQL 89.25 / TypeDB 80.00**
 - Ranking: **ROBUST / NOT SENSITIVITY-DEPENDENT / NOT PERFORMANCE-DEPENDENT**
-- Preferred companion stack: **ESTABLISHED / PASS-CONDITIONAL**
-- Selected: **NONE**
+- Selected target companion stack: **ESTABLISHED**
+- Direct execution: **NOT STARTED / DIRECT HG PASS 0**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
 ## Purpose
@@ -42,7 +44,9 @@ research
 → final stack audit
 → preferred recommendation
 → explicit selection
-→ accepted model / clean-room QA / main integration
+→ accepted Physical Model
+→ clean-room QA
+→ closure / protected-main integration
 ```
 
 ## Non-negotiable barriers
@@ -61,6 +65,8 @@ EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
 PUBLIC BENCHMARK != LIFEOS BENCHMARK
 FINALIST != PREFERRED
 PREFERRED != SELECTED
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
 ```
 
 No universal Entity/Thing/EAV/generic-edge canonical shortcut may be introduced for implementation convenience.
@@ -85,40 +91,23 @@ direct HG PASS           0
 restore rehearsal        NOT RUN
 migration rehearsal      NOT RUN
 failure injection        NOT RUN
+PowerSync direct test    NOT RUN
+Restate direct test      NOT RUN
+object recovery test     NOT RUN
+solver direct test       NOT RUN
 verified-run score       NOT AVAILABLE
 ```
 
-## Two score ledgers
+## Selected target architecture
+
+### Canonical primary
 
 ```text
-VERIFIED-RUN BENCHMARK SCORE
-requires direct applicable hard-gate PASS and execution artifacts
-
-EVIDENCE-WEIGHTED DECISION SCORE
-used by PM-09 after evidence exhaustion and 0 ranking-critical execution gaps
+PostgreSQL 18.4
+SELECTED / ACCEPTED
 ```
 
-The PM-09 score is the second type only. PM-10 consumes it for recommendation without manufacturing direct PASS.
-
-## PM-10 preferred primary
-
-### PostgreSQL 18.4
-
-```text
-PM-09 SCORE
-89.25 / 100
-
-SENSITIVITY
-ROBUST
-
-PM-10
-PREFERRED / PASS-CONDITIONAL
-
-SELECTED
-NONE
-```
-
-Why it is preferred:
+Why it won:
 
 - accepted mapping preserves LifeOS semantics without a universal ontology root;
 - strong transaction/concurrency ergonomics and mature integrity primitives;
@@ -129,11 +118,9 @@ Why it is preferred:
 
 Performance is not a hidden reason for the lead: PM-09 deliberately scored performance `8.0 / 8.0` because LOW/BASE/HIGH were not executed.
 
-### TypeDB CE 3.12.3
+TypeDB CE 3.12.3 remains the historical semantic runner-up with the strongest direct relation/role/n-ary fit, but is not selected.
 
-TypeDB remains the semantic runner-up with the strongest direct relation/role/n-ary fit, but it is not PM-10 preferred because its advantages do not outweigh the accepted whole-system costs under LifeOS priorities.
-
-## Recommended stack
+## Accepted stack
 
 ```text
 CANONICAL
@@ -152,9 +139,11 @@ BOUNDED ASYNC
 PostgreSQL transactional outbox + bounded worker
 
 DURABLE CLASS-B PROCESS
-Restate Cloud EU
+Restate runtime
 Restate Python SDK 1.0.3
-Restate Server 1.7.2 reproducible local/self-hosted subject
+Restate Server 1.7.2 self-hosted/reproducible subject
+Restate Cloud EU allowed managed deployment
+GLOBAL RESTATE DEPLOYMENT DEFAULT NONE
 
 OFFLINE / SYNC
 PowerSync Service 1.25.0 Open Edition
@@ -181,6 +170,23 @@ Grafana Cloud EU
 pg_stat_statements
 ```
 
+## Restate deployment semantics
+
+Restate is selected as the durable-execution technology; deployment is intentionally conditional.
+
+```text
+SELF-HOSTED
+first-class
+
+CLOUD EU
+allowed managed option
+
+GLOBAL MANDATORY DEFAULT
+none
+```
+
+Current Restate documentation supports a self-contained server binary/container and an EU Cloud region. Current client-side journal encryption is documented only for the TypeScript SDK, while LifeOS targets Python; therefore Cloud EU is not mandatory and journal payload minimization remains a hard boundary.
+
 ## Offline semantics
 
 Offline capability is required but operation-specific.
@@ -203,19 +209,19 @@ No global last-write-wins rule is accepted. A local mutation made while offline 
 
 ## Object semantics
 
-`ContentArtifact` identity, metadata, provenance, visibility, retention and locator state remain in PostgreSQL. R2 stores raw bytes only. Private object access is governed; public R2 buckets/public permanent URLs are not part of the accepted recommendation.
+`ContentArtifact` identity, metadata, provenance, visibility, retention and locator state remain in PostgreSQL. R2 stores raw bytes only. Private object access is governed; public R2 buckets/public permanent URLs are not part of the accepted architecture.
 
 ## Durable execution semantics
 
-Short/reconstructible background work uses the PostgreSQL outbox/worker baseline. Long-running recoverable work with human/external waits uses Restate. Runtime state never replaces Domain Actual/Decision/Confirmation/history.
+Short/reconstructible background work uses PostgreSQL outbox/worker. Long-running recoverable work with human/external waits uses Restate. Runtime state never replaces Domain Actual/Decision/Confirmation/history.
 
 ## Solver semantics
 
-OR-Tools outputs are candidates. `OPTIMAL`, `FEASIBLE`, `INFEASIBLE` and `UNKNOWN` are technical solver outcomes; they cannot silently become canonical LifeOS Decisions or semantic truth.
+OR-Tools outputs are candidates. `OPTIMAL`, `FEASIBLE`, `INFEASIBLE` and `UNKNOWN` are technical solver outcomes; they cannot silently become canonical LifeOS Decisions or semantic truth. `UNKNOWN != INFEASIBLE`.
 
 ## Technology exclusions
 
-The proposed PM-11 stack intentionally excludes:
+The accepted target intentionally excludes:
 
 ```text
 TypeDB/XTDB/SurrealDB primary
@@ -246,22 +252,29 @@ Object Lock Compliance as default
 
 See `recommendation/technology-exclusion-register-v1.md` for rationale.
 
-## PM-10 supporting records
+## Current authority records
 
 ```text
 pm-10-recommendation-v1.md
-final-stack-audit-v1.md
-final-stack-capability-matrix-v1.md
-final-stack-simulation-v1.md
+pm-11-explicit-selection-v1.md
+pm-12-accepted-physical-model-v1.md
 recommendation/postgresql-18.4-v1.md
 recommendation/companion-stack-v1.md
 recommendation/technology-exclusion-register-v1.md
 recommendation/post-selection-validation-register-v1.md
 ```
 
+Supporting PM-10 evidence remains:
+
+```text
+final-stack-audit-v1.md
+final-stack-capability-matrix-v1.md
+final-stack-simulation-v1.md
+```
+
 ## Post-selection validation
 
-Scoring/recommendation does not waive direct selected-stack validation.
+Selection/acceptance does not waive direct implementation validation.
 
 Core obligations still include:
 
@@ -273,14 +286,18 @@ SC-032 capacity/backpressure
 WL-H12 non-interference
 search/vector/projection deletion/freshness
 PowerSync offline/replication/local-encryption
-Restate crash/replay/governance/versioning
+Restate crash/replay/governance/versioning/deployment privacy
 R2/S3 object recovery
 PostGIS/PgBouncer compatibility
 OR-Tools status/governance corpus
 observability privacy
 ```
 
-The full register is `recommendation/post-selection-validation-register-v1.md`.
+The full register is `recommendation/post-selection-validation-register-v1.md` and remains `NOT RUN` where direct evidence does not yet exist.
+
+## DEV-v0 boundary
+
+The accepted target architecture is intentionally separate from the later Development Profile v0. DEV-v0 will decide what is actually activated immediately, local/self-hosted/managed choices where allowed, free-tier/account setup and upgrade triggers without silently changing the target Physical Model.
 
 ## Roadmap
 
@@ -297,25 +314,28 @@ PM-07  COMPLETE
 PM-08  COMPLETE
 PM-09  COMPLETE
 PM-10  COMPLETE
-PM-11  NEXT
-PM-12  NOT STARTED
-PM-13  NOT STARTED
+PM-11  COMPLETE
+PM-12  COMPLETE
+PM-13  NEXT
 PM-14  NOT STARTED
 ```
 
 ## Current exact next step
 
 ```text
-PM-11
-explicit user-approved stack selection
-fresh exact write gate required
+PM-13
+independent clean-room QA
 
-PREFERRED
-PostgreSQL 18.4 / PASS-CONDITIONAL
+SELECTED / ACCEPTED CANONICAL PRIMARY
+PostgreSQL 18.4
 
-PREFERRED COMPANION STACK
-ESTABLISHED / PASS-CONDITIONAL
+SELECTED TARGET COMPANION STACK
+ESTABLISHED
 
-SELECTED NONE
+RESTATE DEPLOYMENT
+SELF-HOSTED OR CLOUD EU / PROFILE DECISION
+
+DIRECT HG PASS 0
+VERIFIED-RUN SCORE NOT AVAILABLE
 BACKEND NOT STARTED / DEFERRED
 ```
