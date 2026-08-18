@@ -1,10 +1,11 @@
 # Physical Model
 
-- Status: **AUTHORIZED / IN PROGRESS — PM-00 QA PASS / PM-01 READ-ONLY NEXT**
+- Status: **AUTHORIZED / IN PROGRESS — PM-01 READ-ONLY PASS-CONDITIONAL / PM-02 NOT AUTHORIZED**
 - Branch: `feature/physical-model`
 - Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
 - PM-00 bootstrap: **QA PASS**
-- PM-01 candidate/environment freeze: **READY / NOT STARTED — READ-ONLY FIRST**
+- PM-01 technology/candidate freeze: **PASS-CONDITIONAL**
+- PM-01 benchmark-host freeze: **HOLD**
 - Mapping execution: **NOT STARTED**
 - Benchmark execution: **NOT STARTED**
 - Selected primary persistence: **NONE**
@@ -14,7 +15,7 @@
 
 ## Purpose
 
-Turn the already accepted Pre-Physical requirements and Phase-10 benchmark method into an evidence-backed Physical Model without reopening Domain/Logical semantics or selecting infrastructure by intuition.
+Turn the accepted Pre-Physical requirements and Phase-10 benchmark method into an evidence-backed Physical Model without reopening Domain/Logical semantics or selecting infrastructure by intuition, popularity or vendor marketing.
 
 This directory is the current Physical workstream authority for execution state. It does not replace upstream semantic/model authority.
 
@@ -23,7 +24,7 @@ PHASE 10
 HOW TO BENCHMARK
 
 PHYSICAL MODEL
-DESIGN + EXECUTE + EVALUATE + SELECT
+DISCOVER + DESIGN + EXECUTE + EVALUATE + SELECT
 ```
 
 ## Mandatory authority order
@@ -40,17 +41,18 @@ Before any Physical write or benchmark action, read current repository truth in 
 8. `docs/development/repository-engineering-safety.md`;
 9. `docs/workstreams/physical-model.md`;
 10. this file;
-11. complete CLOSED Domain authority and final closure continuations;
-12. complete CLOSED Logical authority and `WL-H01..WL-H12`;
-13. all Phase-5 requirement packages;
-14. Phase-6 AI/context/runtime + Integration Hub boundaries;
-15. Phase-7 durable-execution contract;
-16. Phase-8 governed-operation/effect contract;
-17. Phase-9 search/observability/calendar/solver contract;
-18. Phase-10 benchmark specification, scenario corpus and register;
-19. current ADRs with supersession/qualification state;
-20. the current Physical execution/evidence files in this directory;
-21. current Git refs and branch relation to `main`.
+11. `pm-01-technology-landscape-v1.md`;
+12. complete CLOSED Domain authority and final closure continuations when mapping semantics are involved;
+13. complete CLOSED Logical authority and `WL-H01..WL-H12` when mapping semantics are involved;
+14. all Phase-5 requirement packages;
+15. Phase-6 AI/context/runtime + Integration Hub boundaries;
+16. Phase-7 durable-execution contract;
+17. Phase-8 governed-operation/effect contract;
+18. Phase-9 search/observability/calendar/solver contract;
+19. Phase-10 benchmark specification, scenario corpus and register;
+20. current ADRs with supersession/qualification state;
+21. the current Physical execution/evidence files in this directory;
+22. current Git refs and branch relation to `main`.
 
 Conversation memory never outranks repository current truth.
 
@@ -70,47 +72,169 @@ SEMANTIC OWNER != IMPLEMENTATION MECHANISM
 DOMAIN TERM != ENGINE
 ADDRESSABILITY != DOMAIN IDENTITY
 STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
+POPULAR != CORRECT
+USED ELSEWHERE != SELECTED
 PREFERRED != SELECTED
 BENCHMARK PASS != IMPLEMENTATION AUTHORIZATION
 ```
 
 A candidate that cannot preserve accepted semantics loses. LifeOS semantics are not weakened to rescue a technology.
 
-## Current candidate lanes
+## PM-01 evidence
 
-Phase 10 remains authoritative for candidate roles.
+Current read-only result:
+
+- `pm-01-technology-landscape-v1.md` — broad technology landscape, admission/freeze evidence, cost/license/operations review and public architecture reconnaissance of similar/adjacent applications;
+- `result-register-v1.md` — current candidate/disposition/result state.
+
+PM-01 status:
 
 ```text
-LANE P — PRIMARY CANONICAL
-P0 PostgreSQL hybrid — mandatory preferred baseline — NOT SELECTED
-P1 TypeDB            — mandatory challenger        — NOT SELECTED
+TECHNOLOGY DISCOVERY                 PASS
+APPLICATION ARCHITECTURE RECON       PASS
+PRIMARY ADMISSION                    PASS
+EXACT SUBJECT FREEZE                 PASS for P0/P1/P2/P3 qualification subjects
+LICENSE/COST REVIEW                  PASS-CONDITIONAL
+PYTHON/CLIENT REVIEW                 PASS
+BACKUP/EVOLUTION REVIEW              PASS-CONDITIONAL
+HA/PRODUCTION-TOPOLOGY REVIEW        PASS-CONDITIONAL
+BENCHMARK HOST FREEZE                HOLD
+
+PM-01 OVERALL
+PASS-CONDITIONAL
+```
+
+The host HOLD must be closed before executable benchmark evidence begins. It does not imply a technology failure.
+
+## Current admitted primary candidates
+
+Phase-10 starting anchors remain mandatory, but PM-01 proved that they are not the complete serious candidate universe.
+
+```text
+P0 PostgreSQL 18.4
+self-hosted single-node qualification subject
+psycopg 3.3.4
+ADMIT
+pre-existing preferred baseline
+NOT SELECTED
+
+P1 TypeDB CE 3.12.3
+self-hosted single-node qualification subject
+official driver 3.12.3
+ADMIT
+mandatory semantic challenger
+NOT SELECTED
+
+P2 XTDB 2.1.0
+qualification subject via Postgres wire protocol
+ADMIT
+production topology HOLD
+temporal/bitemporal challenger
+NOT SELECTED
+
+P3 SurrealDB Community 3.2.3
+self-hosted single-node RocksDB
+Python SDK 2.0.0
+ADMIT-CONDITIONAL
+multimodel challenger
+NOT SELECTED
+```
+
+`ADMIT` means only that the candidate merits PM-02 mapping evidence. No hard gate has run.
+
+## Deferred and bounded lanes
+
+```text
+PRIMARY RESERVES
+MariaDB 11.8 LTS  DEFER — first reserve
+Gel 7              DEFER
+CockroachDB        DEFER until real distributed/geo requirement
+YugabyteDB         DEFER until real distributed/geo requirement
 
 LANE G — SECONDARY GRAPH
-G0 no specialized graph store — baseline
-G1 Neo4j — specialized secondary/read-projection challenger — NOT SELECTED
+G0 no-specialized-store baseline
+G1 Neo4j — DEFER TO PM-08
 
 LANE S — SEARCH / VECTOR
 S0 structured + lexical/full-text baseline
-S1 pgvector where PostgreSQL is present/applicable — NOT SELECTED
+S1 pgvector — DEFER TO PM-08 when PostgreSQL applicable
+Qdrant/OpenSearch — specialist trigger only
 
-LANE E/D — EVENT / DOCUMENT
+LOCAL/OFFLINE
+SQLite — DEFER to future bounded local/client lane
+
+LANE E/D
 bounded native mechanisms first
-specialized product only after explicit admission trigger
+specialist only after explicit admission trigger
 ```
 
-No additional product enters a lane merely to create a larger shortlist.
+Current primary benchmark rejection/defer rationale is recorded in `pm-01-technology-landscape-v1.md`; those dispositions are scoped, evidence-reopenable decisions rather than global product judgments.
+
+## Technology-discovery and cost rule
+
+LifeOS seeks the best technology fit, not the cheapest or most fashionable option.
+
+```text
+INITIAL DIRECT TECHNOLOGY / LICENSE COST
+EUR 0 where realistically possible
+
+BUT
+EUR 0 != semantic requirement
+EUR 0 != permission to lose quality
+paid != automatic rejection
+free != automatic preference
+```
+
+Decision priority remains:
+
+```text
+1. semantic correctness / Domain + Logical preservation
+2. consistency / integrity / security / privacy / recovery
+3. real LifeOS capability and workload fit
+4. maturity / operability / maintainability / Python-tooling fit
+5. measured performance and resource efficiency
+6. total cost of ownership / deployment requirements
+7. lock-in / exit risk / realistic migration path
+```
+
+Portability is preserved where cheap and structurally useful. Candidate-native strengths are allowed where materially better. Do not build a lowest-common-denominator abstraction to insure against a hypothetical migration.
+
+## Application architecture reconnaissance rule
+
+PM-01 now includes public architecture evidence from similar or structurally adjacent applications such as Notion, Linear, Anytype/any-sync, AppFlowy, Immich, Home Assistant and Cal.com.
+
+This evidence is used to answer questions such as:
+
+- when mature products retain a single canonical relational store versus add specialist systems;
+- how local/offline state and CRDT sync are separated from server authority;
+- how caches/projections can diverge from canonical state;
+- whether recovery paths are actually rehearsed;
+- when vector/search specialists are worth another datastore;
+- how object storage, jobs and AI/ML remain bounded responsibilities;
+- where generic ORM portability breaks down in practice.
+
+It is **not** a popularity vote.
+
+```text
+USED BY NOTION != RIGHT FOR LIFEOS
+USED BY LINEAR != RIGHT FOR LIFEOS
+LOCAL-FIRST ELSEWHERE != LIFEOS REQUIREMENT
+```
+
+Domain + Logical + LifeOS benchmark evidence remain authority.
 
 ## Physical work products
 
-Current bootstrap files:
+Current files:
 
 - `execution-methodology-v1.md` — mandatory PM-00..PM-14 operating sequence;
 - `execution-template-v1.md` — reproducible run/mapping evidence template;
 - `acceptance-test-matrix-v1.md` — hard-gate/corpus/scenario execution matrix;
-- `result-register-v1.md` — current Physical results/dispositions; starts with all results NOT RUN;
+- `result-register-v1.md` — current Physical results/dispositions;
+- `pm-01-technology-landscape-v1.md` — current read-only PM-01 evidence;
 - `../workstreams/physical-model.md` — live save-game/handoff.
 
-Later gated scopes may add, without changing this rule automatically:
+Later explicitly gated scopes may add:
 
 ```text
 candidate mapping specifications
@@ -184,6 +308,7 @@ Synthetic `LOW / BASE / HIGH` tiers are qualification envelopes, not business fo
 Allowed interim result vocabulary:
 
 ```text
+NOT RUN
 PASS
 PASS-CONDITIONAL
 HOLD
@@ -227,25 +352,44 @@ main
 3de84bb49f9cef30e88e9bde4961ed84335daa79 unchanged
 ```
 
-Post-QA current-truth propagation remains on the same approved 22-path scope.
+## PM-01 read-only evidence state
+
+```text
+RESEARCH PRE-SCOPE
+622767d5435d59766459bb25a57e5afeb7dd7336
+
+EVIDENCE
+pm-01-technology-landscape-v1.md
+result-register-v1.md
+
+STATUS
+PASS-CONDITIONAL
+
+MAPPING
+NOT STARTED
+
+BENCHMARK
+NOT STARTED
+
+SELECTION
+NONE
+```
 
 ## Current exact next step
 
 ```text
-PM-01 — CANDIDATE / ENVIRONMENT FREEZE
-READ-ONLY FIRST
-READY / NOT STARTED
+PM-01
+READ-ONLY RESULT RECORDED / PASS-CONDITIONAL
 
-- re-fetch current branch/main relation
-- freeze exact current PostgreSQL and TypeDB versions/editions/deployment modes
-- use official primary sources for current capability claims
-- capture Python driver/client compatibility
-- verify backup/restore/HA/schema/evolution claims for exact subjects
-- freeze available benchmark hardware/environment constraints
-- build execution inventory and evidence plan
-- identify unresolved environment/tooling prerequisites
-- STOP before first Physical mapping/harness/schema/database write
-- present a fresh exact write gate for PM-02+
+PM-02
+NOT STARTED / NOT AUTHORIZED
+
+NEXT
+remote QA this PM-01 write scope
+then present a fresh explicit PM-02 mapping-design gate
+
+BENCHMARK HOST
+HOLD — must close before executable benchmark/harness evidence
 ```
 
-Do not choose PostgreSQL or TypeDB during PM-01. No SQL, TypeQL, Cypher, database instance, benchmark harness or schema is authorized yet.
+Do not create SQL, TypeQL, SurrealQL/XTDB mapping implementation, database instances, fixture generators or benchmark harnesses until the separate PM-02+ scope is approved.
