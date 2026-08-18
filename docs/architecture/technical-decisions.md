@@ -1,7 +1,7 @@
 # Technical Decisions
 
 - Status: **Current technical direction**
-- Last updated: 2026-08-17
+- Last updated: 2026-08-18
 
 This document contains current technical direction only. Historical rationale belongs in ADRs/Git/checkpoints; superseded implementation assumptions do not remain here as narrative history.
 
@@ -41,7 +41,7 @@ Technical design must follow:
 
 1. accepted Domain Atlas;
 2. closed Logical Model;
-3. active Pre-Physical requirements/contracts;
+3. active/current Pre-Physical requirements/contracts;
 4. separately accepted Physical Model when later authorized.
 
 Technical convenience does not create a universal Entity/Thing/Relationship ontology.
@@ -143,6 +143,8 @@ benchmark tier != business forecast
 The existing open RPO/RTO/availability/latency/scale values remain scenario/sensitivity inputs until accepted product/operational targets exist.
 
 If candidate preference changes materially across those scenarios, the result is `SENSITIVITY-DEPENDENT` rather than one averaged winner.
+
+An unexecuted upper envelope must not be reported as verified evidence. Progressive execution plus explicit saturation/scaling evidence is acceptable where the Phase 10 evidence contract is respected.
 
 ### Evidence pinning
 
@@ -295,6 +297,33 @@ External/retrieved content cannot self-authorize actions or expand Authority mer
 
 Provider/model routing, fallback, quota/cost handling and transport adaptation live in the AI Gateway. A fallback must not silently widen privacy/provider eligibility.
 
+### AI change evaluation
+
+Material consequential changes to model, model version, provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+
+The evaluation pressure includes, where material:
+
+```text
+structured-output correctness
+false canonical claims / semantic overreach
+candidate-vs-canonical classification
+tool-selection / tool-argument error
+governance bypass
+privacy / inference leakage
+stale-context behavior
+model/provider substitution regression
+fallback / refusal behavior
+confirmation / human-approval flow
+cost / latency
+```
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority / effect authorization
+```
+
+Concrete eval framework/runners/datasets/thresholds remain later engineering choices.
+
 See [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) and [`../decisions/ADR-005-ai-gateway.md`](../decisions/ADR-005-ai-gateway.md).
 
 ## Governed operations / effects
@@ -387,14 +416,17 @@ Temporal
 STRONGEST MANDATORY CHALLENGER — NOT SELECTED
 
 DBOS
-CONDITIONAL POSTGRESQL-DEPENDENT CHALLENGER — NOT SELECTED
+CONDITIONAL CHALLENGER — NOT SELECTED
+local/bounded Python use is SQLite-capable
+production is PostgreSQL-recommended
+distributed multi-server deployment is PostgreSQL-coupled
 ```
 
 No workflow engine is implemented or adopted by this ranking.
 
 External provider reality remains outside exactly-once guarantees of any runtime. Durable replay must preserve idempotency, unknown outcome and reconciliation semantics.
 
-The later Physical benchmark must record coupling/operational effects without treating a workflow runtime as primary persistence ontology.
+The later Physical/runtime benchmark must record coupling/operational effects without treating a workflow runtime as primary persistence ontology.
 
 ## Search / retrieval projections
 
@@ -526,12 +558,16 @@ Phase 6 AI/context/runtime/integration boundaries CURRENT
 Phase 7 durable-execution benchmark CURRENT
 Phase 8 governed-operation/effect contract CURRENT
 Phase 9 search/observability/calendar/solver contract CURRENT
-Phase 10 Physical benchmark method CURRENT
-Pre-Physical Coherence IN PROGRESS
+Phase 10 Physical benchmark method CURRENT / QA PASS
+Phase 11 repository engineering safety QA PASS
+Phase 12 clean-room QA CLOSED
+Pre-Physical Coherence FINAL CLOSURE CANDIDATE
+Independent total audit FINAL BOUNDED REPAIR IN PROGRESS
 Physical NOT STARTED / NOT AUTHORIZED
-Backend production implementation NOT STARTED
+Backend production implementation NOT STARTED / DEFERRED
+Main integration NOT PERFORMED
 ```
 
-After Phase 10 remote QA, the next Pre-Physical stage is Phase 11 — repository engineering safety — read-only first. The Physical Model remains separately authorized later.
+The only current work before definitive Pre-Physical closure is the bounded repair/verification scope produced by the independent total repository audit. No Physical or backend implementation is authorized by that audit.
 
 See [`README.md`](README.md) for current architecture navigation.
