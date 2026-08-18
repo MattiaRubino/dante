@@ -1,0 +1,595 @@
+# Workstream — Physical Model
+
+- Status: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Branch: `feature/physical-model`
+- Base / bootstrap PRE-SCOPE: `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Started: 2026-08-18
+- PM-00 bootstrap QA: **PENDING**
+- PM-01 candidate/environment freeze: **NOT STARTED**
+- Physical mapping execution: **NOT STARTED**
+- Benchmark execution: **NOT STARTED**
+- Primary persistence selected: **NONE**
+- Secondary graph selected: **NONE**
+- Search/vector specialization selected: **NONE**
+- Production backend: **NOT STARTED / DEFERRED**
+
+## Purpose
+
+Produce the accepted LifeOS Physical Model by designing idiomatic candidate mappings, executing the already-approved Phase-10 benchmark method, preserving all closed Domain/Logical semantics, and making any technology selection only through explicit evidence-backed selection gates.
+
+This handoff is the live save-game for the workstream. A new chat/AI must be able to continue from this repository without relying on previous conversation memory.
+
+# 1. Current repository boundary
+
+```text
+PRODUCT / NORTH STAR
+CURRENT
+
+DOMAIN MODEL / DOMAIN ATLAS
+CLOSED / INTEGRATED
+DO NOT REOPEN IMPLICITLY
+
+LOGICAL MODEL
+CLOSED / INTEGRATED
+Whole-Logical PASS WITH HARDENING / REMOTE QA PASS
+WD-03 PASS
+WD-05 PASS
+WL-H01..WL-H12 ACTIVE DOWNSTREAM
+
+PRE-PHYSICAL REPOSITORY & ARCHITECTURE COHERENCE
+DEFINITIVE CLOSED / FINAL QA PASS
+INTEGRATED INTO main VIA PR #13
+POST-MERGE CURRENT-TRUTH ALIGNMENT VIA PR #14
+
+MAIN AT PHYSICAL AUTHORIZATION
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+PHYSICAL MODEL
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+
+BACKEND FOUNDATION
+NOT STARTED / DEFERRED
+```
+
+No Pre-Physical repair is pending at this workstream start.
+
+# 2. Mandatory bootstrap for every new chat
+
+Before proposing or executing Physical work:
+
+1. verify `feature/physical-model` remote HEAD and compare to current `main`;
+2. read root `README.md`;
+3. read `docs/README.md`;
+4. read `docs/PROJECT-STATUS.md`;
+5. read `docs/development/agent-operating-manual.md`;
+6. read `docs/development/operating-rules.md`;
+7. read `docs/development/documentation-and-handoff.md`;
+8. read `docs/development/branching-and-environments.md`;
+9. read `docs/development/repository-engineering-safety.md`;
+10. read this complete handoff;
+11. read `docs/physical-model/README.md`;
+12. read `docs/physical-model/execution-methodology-v1.md`;
+13. read `docs/physical-model/execution-template-v1.md`;
+14. read `docs/physical-model/acceptance-test-matrix-v1.md`;
+15. read `docs/physical-model/result-register-v1.md`;
+16. read `docs/architecture/physical-benchmark-specification.md`;
+17. read `docs/architecture/physical-benchmark-scenario-corpus.md`;
+18. read `docs/architecture/physical-benchmark-register.md`;
+19. read the current Pre-Physical Architecture Baseline and architecture index;
+20. read all four Phase-5 requirement packages;
+21. read Phase-6 AI/context/runtime + Integration Hub boundaries;
+22. read Phase-7 durable-execution contract;
+23. read Phase-8 governed-operation/effect contract;
+24. read Phase-9 search/observability/calendar/solver contract;
+25. read complete Domain closure authority when mapping semantics are involved;
+26. read complete Logical Model/decision register and `WL-H01..WL-H12` when mapping semantics are involved;
+27. read current ADR statuses, especially superseded/qualified decisions;
+28. verify current external product facts from official primary sources when versions/features are material;
+29. issue an exact PRE-SCOPE/write gate before every new write scope.
+
+Conversation history is secondary to repository truth.
+
+# 3. Absolute semantic guardrails
+
+The Physical Model implements/represents accepted semantics. It does not redesign them by convenience.
+
+```text
+SEMANTIC OWNER != IMPLEMENTATION MECHANISM
+DOMAIN TERM != ENGINE
+PRODUCT LABEL != ONTOLOGY ROOT
+ADDRESSABILITY != DOMAIN IDENTITY
+STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
+PREFERRED != SELECTED
+BENCHMARK PASS != IMPLEMENTATION AUTHORIZATION
+```
+
+Reject as canonical shortcuts unless a separately authorized semantic reopen changes upstream truth:
+
+```text
+universal Entity / Thing root
+generic Relationship/edge as universal semantic root
+generic EAV/property-bag canonical kernel
+generic Command/Terms/Projection semantic root
+provider IDs/schema as ontology
+absent/unknown == false
+ETag/storage revision == MaterialStateRef
+route/UI/AuthZ string == canonical effect
+AI/solver inference == accepted canonical state/effect
+runtime workflow completion == Actual automatically
+technical cancellation == Domain cancellation automatically
+```
+
+Contextual `Actor`, `Subject`, `Resource` remain roles/capabilities rather than universal native identities.
+
+# 4. Identity / reference invariants
+
+Preserve the accepted distinctions among applicable:
+
+```text
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
+```
+
+Never collapse by convenience:
+
+```text
+storage PK/MVCC token != MaterialStateRef automatically
+provider opaque ID/revision != NativeRef/MaterialStateRef automatically
+workflow/runtime ID != semantic operation identity
+index/vector ID != canonical identity
+```
+
+# 5. State-layer invariants
+
+Where applicable keep distinguishable:
+
+```text
+canonical state
+material history
+retrieved context
+derived/projection state
+live external/provider state
+candidate/unresolved state
+runtime/security state
+transient LLM working context
+```
+
+Co-location is allowed when technically sensible; semantic equivalence is not implied by co-location.
+
+# 6. Governed-effect / concurrency invariants
+
+Physical design must preserve:
+
+- expected-state conflict detection for consequential mutations;
+- no universal silent last-write-wins;
+- idempotency distinct from semantic identity;
+- atomic multi-owner change where an accepted invariant requires it;
+- truthful partial/pending/reconciliation state across non-atomic external boundaries;
+- Authority/Consent/Visibility/Representation separation;
+- delayed-effect governance/material revalidation where required;
+- provider result separate from canonical result;
+- runtime result separate from Domain/user result;
+- provenance sufficient for consequential authorization/effect reconstruction.
+
+# 7. Retention / history / recovery invariants
+
+Physical design must support:
+
+- current-state access without lifetime replay by default;
+- material historical reconstruction where required;
+- correction without pretending corrected knowledge always existed;
+- category/purpose-sensitive retention;
+- redaction/tombstone truthfulness;
+- native identity non-reuse;
+- derived/index/provider deletion propagation where applicable;
+- old-backup restore that does not silently resurrect forbidden current data;
+- schema/mapping evolution that preserves identity, references and historical meaning.
+
+# 8. Temporal / search / disclosure invariants
+
+Preserve:
+
+- recurrence series/occurrence distinctions;
+- timezone/local/floating/all-day semantics where applicable;
+- DST gaps/folds and historical interpretation;
+- provider calendar IDs/tokens as external state;
+- search/index miss != canonical nonexistence;
+- embedding similarity != relationship/evidence;
+- hidden records not leaking via counts/ranking/errors/timing beyond accepted disclosure;
+- stale projections exposing enough freshness/material basis for consequential revalidation.
+
+# 9. Candidate lanes — current authority
+
+Phase-10 register remains the source of candidate roles.
+
+```text
+LANE P — PRIMARY
+P0 PostgreSQL hybrid
+mandatory preferred baseline
+NOT SELECTED
+
+P1 TypeDB
+mandatory challenger
+NOT SELECTED
+
+LANE G — SECONDARY GRAPH
+G0 no-specialized-store baseline
+G1 Neo4j specialized secondary/read-projection challenger
+NOT SELECTED
+
+LANE S — SEARCH/VECTOR
+S0 structured + lexical/full-text baseline
+S1 pgvector conditional when PostgreSQL present/applicable
+NOT SELECTED
+
+LANE E/D
+ED0 bounded native mechanisms first
+specialized candidate only after explicit admission trigger
+```
+
+No candidate may be injected because it is fashionable. A new candidate/lane requires a bounded admission rationale and explicit gate.
+
+# 10. Durable runtime posture — not a Physical selection
+
+Keep Phase-7 result separate:
+
+```text
+bounded async
+DB/worker/outbox mechanism class = valid baseline
+
+Restate
+preferred structural-fit dedicated durable candidate — NOT SELECTED
+
+Temporal
+strongest mandatory challenger — NOT SELECTED
+
+DBOS
+conditional challenger — NOT SELECTED
+local/bounded Python SQLite-capable
+production PostgreSQL-recommended
+distributed multi-server PostgreSQL-coupled
+```
+
+Physical benchmarking may expose infrastructure coupling/cost effects. It must not award primary-persistence semantic points to workflow runtimes or select a runtime implicitly.
+
+# 11. AI evaluation requirement
+
+Material consequential AI behavior changes remain promotion-gated by versioned/reproducible evaluation.
+
+```text
+eval result != canonical LifeOS truth
+eval PASS != Authority
+eval PASS != governed-effect authorization
+```
+
+The Physical Model may store evaluation metadata/results only according to accepted state-layer semantics; it does not turn an eval store into canonical LifeOS truth.
+
+# 12. Phase-10 benchmark authority
+
+The Physical workstream MUST consume rather than reinvent:
+
+- `physical-benchmark-specification.md`;
+- `physical-benchmark-scenario-corpus.md`;
+- `physical-benchmark-register.md`.
+
+Primary hard gates:
+
+```text
+HG-01..HG-12
+```
+
+Cross-lane hard gates:
+
+```text
+CG-01..CG-04
+```
+
+Corpus/scenarios:
+
+```text
+C0..C7
+SC-001..SC-035
+LP-01..LP-05
+LOW / BASE / HIGH synthetic qualification tiers
+```
+
+Correctness/hard gates precede performance scoring.
+
+# 13. Evidence contract
+
+Every meaningful run must record at least:
+
+```text
+LifeOS commit
+Phase-10 commits
+candidate product/version/edition/deployment
+hardware/runtime
+candidate configuration
+mapping revision
+fixture generator/seed/actual counts/hash
+scenario/load profile
+correctness assertions/raw result
+latency/throughput where relevant
+CPU/RAM/storage
+query plan/profile where relevant
+backup/restore evidence
+migration/evolution evidence
+failure-injection evidence
+manual tuning
+known caveats
+raw artifact locations/hashes
+summary/disposition
+```
+
+No secrets or real personal production data in fixtures/artifacts.
+
+Large raw evidence may live outside Git only if durable location/hash/reproduction metadata is committed. Ephemeral CI retention alone is not closure evidence.
+
+# 14. External research rule
+
+Current versions/features/editions/licensing/HA/backup/driver support may change.
+
+When they matter:
+
+1. browse current official primary documentation;
+2. pin exact subject and source applicability;
+3. distinguish official claim from direct execution proof;
+4. record contradictory/unclear claims as `HOLD` until resolved;
+5. do not use generic marketing copy as executed capability evidence.
+
+# 15. Physical execution phases
+
+The current mandatory progression is:
+
+```text
+PM-00  Bootstrap / authority freeze
+PM-01  Candidate + version/edition/deployment/environment freeze — READ-ONLY FIRST
+PM-02  Primary candidate mapping design
+PM-03  Semantic mapping hard-gate preflight
+PM-04  Common fixture/oracle + candidate harness design
+PM-05  Correctness/destructive execution
+PM-06  LOW/BASE/HIGH + performance execution
+PM-07  Recovery/evolution/failure evidence
+PM-08  Secondary lanes where justified
+PM-09  Scoring + sensitivity
+PM-10  Recommendation
+PM-11  Explicit selection gate
+PM-12  Accepted Physical Model
+PM-13  Independent clean-room QA
+PM-14  Closure / protected main integration
+```
+
+Do not skip directly from bootstrap to a database winner.
+
+# 16. PM-00 approved bootstrap scope
+
+Authorized by the user on 2026-08-18.
+
+```text
+BRANCH
+feature/physical-model
+
+PRE-SCOPE
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+CREATE 6
+docs/physical-model/README.md
+docs/physical-model/execution-methodology-v1.md
+docs/physical-model/execution-template-v1.md
+docs/physical-model/acceptance-test-matrix-v1.md
+docs/physical-model/result-register-v1.md
+docs/workstreams/physical-model.md
+
+UPDATE 16
+README.md
+docs/README.md
+docs/PROJECT-STATUS.md
+docs/ROADMAP.md
+docs/workstreams/README.md
+docs/workstreams/backend-foundation.md
+docs/architecture/README.md
+docs/architecture/pre-physical-architecture-baseline.md
+docs/architecture/system-overview.md
+docs/architecture/technical-decisions.md
+docs/architecture/physical-benchmark-specification.md
+docs/architecture/physical-benchmark-scenario-corpus.md
+docs/architecture/physical-benchmark-register.md
+docs/development/branching-and-environments.md
+docs/development/operating-rules.md
+docs/development/repository-engineering-safety.md
+
+DELETE
+0
+
+UNIQUE PATHS
+22
+```
+
+Bootstrap explicitly excludes:
+
+```text
+Domain/Logical semantic edits
+SQL / TypeQL / Cypher
+Physical candidate schema/mapping implementation
+benchmark harness code
+fixture generator code
+database/container deployment
+technology selection
+backend source/API/Auth/provider implementation
+frontend/prototype
+main write / PR / merge
+```
+
+# 17. Git / write discipline — mandatory
+
+For every future write scope:
+
+```text
+BRANCH
+feature/physical-model unless a later approved workstream split changes it
+
+PRE-SCOPE
+exact remote HEAD immediately before first write
+
+CREATE
+exact paths
+
+UPDATE
+exact paths
+
+DELETE
+exact paths
+
+OUT OF SCOPE
+explicitly listed
+```
+
+After approval:
+
+- re-fetch branch HEAD immediately before first write;
+- if HEAD differs from PRE-SCOPE, STOP/re-gate;
+- do not add an extra path because it seems convenient;
+- post-write compare from PRE-SCOPE;
+- classify added/modified/deleted/unexpected paths;
+- require `behind_by 0` unless an explicit main-update/rebase process is separately authorized;
+- read back critical remote outputs;
+- update this handoff last with the verified checkpoint.
+
+No direct `main` writes.
+
+# 18. Documentation lifecycle
+
+```text
+CURRENT SPECIFICATION = current truth only
+ADR = rationale + explicit supersession/qualification
+HISTORICAL / VALIDATION EVIDENCE = truthful chronology
+GIT / PR HISTORY = recoverable history
+```
+
+Do not rewrite historical evidence merely because current state advanced.
+
+Size/tool-limit split rule remains mandatory:
+
+```text
+ONE COMPLETE LOGICAL PAYLOAD
+→ LOSSLESS PHYSICAL PARTITION
+→ ONE COMPLETE LOGICAL PAYLOAD
+```
+
+A transport split is not summarization or semantic cleanup.
+
+# 19. Test/result language
+
+Use exact terms:
+
+```text
+NOT RUN
+PASS
+PASS-CONDITIONAL
+HOLD
+REJECT
+SENSITIVITY-DEPENDENT
+PREFERRED
+SELECTED — only after PM-11 explicit gate
+```
+
+Never call a planned test PASS, an official documentation claim executed evidence, or an unexecuted HIGH tier verified.
+
+# 20. Selection rule
+
+`PREFERRED != SELECTED` is mandatory.
+
+Before any selection, PM-11 must show:
+
+- exact benchmark subject;
+- all applicable hard-gate results;
+- raw/evidence-backed scores;
+- sensitivity;
+- material topology/edition conditions;
+- operational/cost/exit tradeoffs;
+- rejected/held alternatives;
+- downstream consequences;
+- explicit user approval.
+
+# 21. Backend boundary
+
+Backend Foundation remains **NOT STARTED / DEFERRED**.
+
+Do not create `feature/backend-foundation`, production SQL/migrations, FastAPI routes/DTOs, Auth mechanisms, provider adapters or runtime implementation merely because Physical benchmark code exists.
+
+Benchmark-only mapping/harness code is allowed only in later explicitly gated Physical scopes and must remain clearly non-production unless separately promoted after Physical acceptance.
+
+# 22. Current exact next step after PM-00 QA
+
+```text
+PM-01 — CANDIDATE / ENVIRONMENT FREEZE
+READ-ONLY FIRST
+```
+
+The next chat should:
+
+1. re-read this handoff and the new Physical bootstrap docs;
+2. verify branch HEAD and PM-00 remote QA result;
+3. verify `main` is unchanged from the bootstrap base unless later repository activity is explicitly accounted for;
+4. research current exact PostgreSQL and TypeDB versions/editions/deployment options from official sources;
+5. capture exact Python driver/client compatibility and version-sensitive capabilities;
+6. verify backup/restore/HA/schema/evolution claims for the exact subjects;
+7. record the actual available benchmark host/environment constraints;
+8. identify whether any external infrastructure or local tooling is unavailable;
+9. produce a read-only PM-01 inventory and candidate freeze proposal;
+10. STOP before writing mapping/schema/harness code;
+11. present a fresh exact PM-01/PM-02 write gate.
+
+Do not choose PostgreSQL or TypeDB in PM-01.
+
+# 23. Resume summary
+
+If a new chat reads only this section after the mandatory sources, the operative state is:
+
+```text
+REPO
+MattiaRubino/lifeos
+
+ACTIVE WORKSTREAM
+Physical Model
+
+BRANCH
+feature/physical-model
+
+BASE
+main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+STATUS
+PM-00 BOOTSTRAP IN PROGRESS
+BOOTSTRAP QA PENDING
+
+DOMAIN
+CLOSED / DO NOT REOPEN IMPLICITLY
+
+LOGICAL
+CLOSED / DO NOT REOPEN IMPLICITLY
+
+PHASE 10
+BENCHMARK METHOD AUTHORITY — DO NOT REINVENT
+
+PRIMARY CANDIDATES
+PostgreSQL hybrid — NOT SELECTED
+TypeDB — NOT SELECTED
+
+MAPPING
+NOT STARTED
+
+BENCHMARK
+NOT STARTED
+
+SELECTION
+NONE
+
+BACKEND
+NOT STARTED / DEFERRED
+
+NEXT AFTER BOOTSTRAP QA
+PM-01 READ-ONLY candidate/version/edition/deployment/environment freeze
+```
