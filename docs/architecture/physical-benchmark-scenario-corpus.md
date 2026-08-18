@@ -1,13 +1,14 @@
 # Physical Benchmark Scenario Corpus
 
-- Status: **CURRENT — Phase 10 QA PASS**
-- Stage: Pre-Physical Repository & Architecture Coherence
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Status: **CURRENT — Phase 10 QA PASS / consumed by active Physical Model**
+- Stage: Physical Model execution corpus authority
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
+- Benchmark execution: **NOT STARTED**
 - Business forecast: **NOT ASSERTED BY THIS DOCUMENT**
 
 ## Purpose
 
-Define the common LifeOS fixture families, destructive scenarios, synthetic qualification tiers and sensitivity inputs that a later separately authorized Physical Model benchmark must execute against candidate-specific idiomatic mappings.
+Define the common LifeOS fixture families, destructive scenarios, synthetic qualification tiers and sensitivity inputs that the separately authorized Physical Model benchmark must execute against candidate-specific idiomatic mappings.
 
 This corpus is designed to test correctness first and performance second.
 
@@ -782,7 +783,7 @@ Where an HA topology is material to operational scoring, pin exact edition/versi
 
 # Deterministic fixture generation
 
-The later benchmark harness SHOULD use a deterministic seeded generator.
+The Physical benchmark harness SHOULD use a deterministic seeded generator.
 
 Generator inputs SHOULD include:
 
@@ -871,15 +872,17 @@ A run may stop early for a candidate/role when:
 
 Record the stop reason and evidence. Do not continue only to generate flattering performance numbers after correctness failure.
 
-# Phase 10 boundary
+# Phase 10 boundary — current
 
-This corpus defines future benchmark inputs only.
+This corpus defines the benchmark inputs consumed by the active Physical Model workstream.
 
 It does not:
 
 - predict LifeOS user count;
 - set final RPO/RTO/SLA/latency requirements;
-- create Physical schemas;
-- run the benchmark;
+- create Physical schemas by itself;
+- run the benchmark by itself;
 - select PostgreSQL, TypeDB, Neo4j, pgvector or another product;
-- authorize Physical Model or backend implementation.
+- authorize production backend implementation.
+
+The Physical Model is now separately authorized on `feature/physical-model`; PM-00 bootstrap activates consumption of this corpus but benchmark execution remains `NOT STARTED` until later exact gates.

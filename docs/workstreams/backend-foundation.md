@@ -1,24 +1,33 @@
 # Workstream — Backend Foundation
 
 - Status: **NOT STARTED / DEFERRED**
-- Intended future branch: `feature/backend-foundation` only after prerequisites are satisfied and a fresh branch/write gate is approved
-- Current base: **none** — no backend implementation branch is authorized
+- Intended future branch: `feature/backend-foundation` only after all prerequisites are satisfied and a fresh branch/write gate is approved
+- Current implementation base: **none**
 - Work type: future production technical foundation
 
 ## Purpose
 
-Provide the future production backend skeleton for LifeOS **after** the semantic, integrated Pre-Physical, Physical and runtime/security/integration prerequisites required by the chosen first slice exist.
+Provide the future production backend skeleton for LifeOS **after** the semantic, integrated Pre-Physical, accepted Physical and applicable runtime/security/integration prerequisites required by the chosen first slice exist.
 
-This handoff is deliberately non-executable today. It must not be used to bypass the closed/integrated Pre-Physical result, invent Domain/Logical semantics, select persistence by implementation convenience or start production code before the remaining Physical prerequisites are satisfied.
+This handoff is deliberately non-executable today. The active Physical Model workstream does not authorize Backend Foundation by itself.
+
+```text
+PHYSICAL WORKSTREAM AUTHORIZED
+!=
+PHYSICAL RESULT ACCEPTED
+!=
+BACKEND AUTHORIZED
+```
 
 ## Current stage boundary
 
 ```text
 Core Domain Model / Domain Atlas
-CLOSED
+CLOSED / INTEGRATED
 
 Logical Model
-CLOSED
+CLOSED / INTEGRATED
+WL-H01..WL-H12 ACTIVE DOWNSTREAM
 
 Phase 5 requirements
 CURRENT
@@ -27,8 +36,8 @@ Phase 6 AI/context/runtime/integration boundaries
 CURRENT
 including consequential AI evaluation/regression requirement
 
-Phase 7 durable-execution benchmark
-CURRENT
+Phase 7 durable-execution contract
+CURRENT / conditional ranking only
 
 Phase 8 governed-operation/effect contract
 CURRENT
@@ -42,98 +51,90 @@ CURRENT / QA PASS
 Phase 11 repository engineering safety
 QA PASS / effective main rules remotely verified
 
-Phase 12 clean-room repository/architecture QA
-QA PASS / CLOSED
-
-Independent total Pre-Physical audit
-PASS
+Phase 12 + independent Pre-Physical audit
+CLOSED / PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+INTEGRATED / POST-MERGE VERIFIED
 
 Physical readiness
 ESTABLISHED
 
 Physical Model
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+branch feature/physical-model
+base main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79
+mapping NOT STARTED
+benchmark NOT STARTED
+selection NONE
 
 Backend Foundation / production implementation
 NOT STARTED / DEFERRED
-
-Main integration
-COMPLETE / POST-MERGE VERIFIED
 ```
 
-Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
-Pre-Physical main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13.
+Backend Foundation does **not** own Domain or Logical modeling. Any genuine future semantic contradiction requires a separate explicit reopen scope/methodology.
 
-Backend Foundation does **not** own Domain or Logical modeling. The old instruction to develop Domain Model v0 inside Backend Foundation is superseded. Any genuine future semantic contradiction requires its own explicit reopen scope and applicable methodology.
+## Prerequisites before Backend Foundation may become READY TO START
 
-## Prerequisites before this workstream may become READY TO START
+All must be true before `feature/backend-foundation` is created:
 
-All of the following must be true before a backend implementation branch is created:
-
-1. Phase 12 is QA PASS/CLOSED and the independent total Pre-Physical audit/final closure gate has passed — **SATISFIED**;
-2. Pre-Physical Repository & Architecture Coherence is definitively closed and integrated as current repository truth — **SATISFIED via PR #13 / post-merge verification**;
-3. the user has separately authorized and accepted the Physical Model workstream/result — **NOT SATISFIED**;
-4. accepted Physical persistence/runtime boundaries exist for the implementation slice being started — **NOT SATISFIED**;
-5. current Phase 5 requirements are consumed and implementation-dependent open parameters are resolved at the proper later gate;
-6. Phase 6 AI/context/runtime and Integration Hub contracts are consumed wherever the slice touches those concerns, including the consequential AI change evaluation requirement;
-7. Phase 7 durable-execution posture is consumed and any operation class needing a runtime has an accepted mechanism at the appropriate implementation gate;
-8. Phase 8 governed-operation/effect contract is preserved before consequential routes/DTOs/tool schemas are stabilized;
+1. Phase 12 + independent Pre-Physical closure passed — **SATISFIED**;
+2. Pre-Physical result integrated into current repository truth — **SATISFIED**;
+3. Physical Model workstream is completed, independently QA-verified and its result explicitly accepted — **NOT SATISFIED**;
+4. accepted Physical persistence boundaries exist for the implementation slice — **NOT SATISFIED**;
+5. Phase 5 requirements needed by the slice are consumed and required open parameters are resolved at the proper gate;
+6. Phase 6 AI/context/runtime + Integration Hub contracts are consumed where applicable;
+7. Phase 7 durable-execution posture is consumed and any operation class needing a runtime has an accepted mechanism at the proper implementation gate;
+8. Phase 8 governed-operation/effect contract is preserved before routes/DTOs/tool schemas are stabilized;
 9. Phase 9 search/observability/calendar/solver boundaries are consumed where applicable;
-10. the Phase 10 Physical benchmark method has been executed by the separately authorized Physical workstream and the accepted result records relevant evidence/conditions — **NOT SATISFIED**;
-11. Phase 11 effective repository safety remains active, and any future required checks correspond to real stable workflow/check contexts;
-12. current `main`, global status, active workstream handoffs and current architecture/model sources are re-read immediately before the future branch/write gate.
+10. Phase-10 method has been executed by the Physical workstream and the accepted Physical result carries all evidence/conditions/sensitivity — **NOT SATISFIED**;
+11. Phase-11 effective repository safety remains active and any required checks correspond to real stable workflow contexts;
+12. then-current `main`, global status, active handoffs and current model/architecture sources are re-read immediately before Backend authorization.
 
-Until those conditions are satisfied:
+Until then:
 
 ```text
 DO NOT create feature/backend-foundation
-DO NOT create SQL/schema/migrations
+DO NOT create production SQL/schema/migrations
 DO NOT stabilize concrete API routes/DTOs
 DO NOT select persistence by convenience
 DO NOT implement AuthN/AuthZ/provider/runtime mechanisms implicitly
 DO NOT adopt Restate / Temporal / DBOS by benchmark preference alone
 DO NOT add dedicated search/vector infrastructure by default
-DO NOT make a solver write canonical state directly
-DO NOT treat Phase 10 PREFERRED/REGISTERED candidates as selected technology
-DO NOT weaken verified repository-safety controls
-DO NOT invent required CI checks before real stable check contexts exist
+DO NOT make solver/AI output write canonical state directly
+DO NOT treat PREFERRED/REGISTERED candidates as selected
+DO NOT weaken repository-safety controls
+DO NOT invent required CI checks before stable contexts exist
 DO NOT reopen Domain/Logical semantics inside backend work
-DO NOT promote materially consequential AI behavior changes without required reproducible evaluation
 ```
 
-## Required reading before future implementation
+Physical benchmark-only mapping/schema/harness code, when later authorized inside `feature/physical-model`, remains **benchmark infrastructure**, not Backend Foundation production code.
 
-Read current sources, including complete cumulative/split chains where material:
+## Required reading before future backend implementation
+
+At minimum:
 
 1. root `README.md`;
 2. `docs/README.md`;
 3. `docs/PROJECT-STATUS.md`;
-4. `docs/development/agent-operating-manual.md`;
-5. `docs/development/operating-rules.md`;
-6. `docs/development/documentation-and-handoff.md`;
-7. `docs/development/branching-and-environments.md`;
-8. `docs/development/repository-engineering-safety.md` plus then-current effective GitHub rules/settings/checks;
-9. `docs/architecture/README.md`, `pre-physical-architecture-baseline.md`, `system-overview.md` and `technical-decisions.md`;
-10. all four Phase 5 requirement packages;
-11. both Phase 6 boundary contracts;
-12. the Phase 7 durable-execution benchmark;
-13. the Phase 8 governed-operation/effect contract;
-14. the Phase 9 search/observability/calendar/solver contract;
-15. all three Phase 10 benchmark-method documents;
-16. Phase 12 clean-room evidence and final independent-audit closure evidence;
-17. the complete accepted Domain Atlas authority including final closure/status continuation and final language disposition;
-18. the closed Whole Logical Model, complete decision/assumption-register chain and `whole-logical-v1-remote-qa.md` closure record;
-19. the accepted Physical Model sources, benchmark evidence/result and closure evidence once they exist;
-20. current ADRs using their current supersession/qualification state;
-21. the then-current backend workstream gate and exact first-slice requirements.
+4. all development operating/safety manuals;
+5. this handoff;
+6. current architecture index/baseline/system overview/technical decisions;
+7. all Phase-5 requirement packages;
+8. Phase-6 AI/context/runtime + Integration Hub contracts;
+9. Phase-7 durable-execution contract;
+10. Phase-8 governed-operation/effect contract;
+11. Phase-9 search/observability/calendar/solver contract;
+12. all Phase-10 benchmark-method documents;
+13. accepted Domain closure authority and Language Map;
+14. accepted Logical Model + complete decision register + remote closure evidence;
+15. the complete accepted Physical Model authority, benchmark evidence/result, conditions and closure evidence once it exists;
+16. current ADRs with supersession/qualification state;
+17. then-current repository rules/check contexts;
+18. the exact backend workstream gate/first-slice requirements.
 
-Older product/architecture documents may remain useful evidence but do not override accepted Domain/Logical/Physical/current architecture sources.
+Older documents/branches remain evidence only and cannot override accepted current authority.
 
 ## Current technical direction to preserve
 
@@ -145,35 +146,52 @@ Unless separately reviewed through the normal decision process:
 - clients use governed backend contracts, not direct canonical persistence;
 - AI remains behind replaceable/provider-neutral boundaries;
 - AI/context/runtime representation remains distinct from canonical truth;
-- material consequential AI changes are promotion-gated by versioned/reproducible evaluation;
+- material consequential AI changes are promotion-gated by reproducible evaluation;
 - Integration Hub preserves five accepted integration modes and canonical/provider separation;
-- Storage remains behind a provider abstraction;
-- bounded async and material durable long-running work remain separate operation classes;
+- storage remains behind an abstraction compatible with the **accepted** Physical result;
+- bounded async and material durable long-running work remain separate classes;
 - governed operation/effect semantics remain independent from route/tool/workflow implementation;
-- search/index/vector state remains projection rather than canonical truth;
-- OpenTelemetry-first or equivalent is observability direction, not Domain history/audit by identity;
+- search/index/vector state remains projection, not canonical truth;
+- OpenTelemetry-first/equivalent remains observability direction, not Domain Provenance/audit by identity;
 - calendar standards/provider schemas remain adapter pressure rather than ontology;
-- deterministic solver output remains candidate/scenario state until a governed effect establishes canonical state;
-- Physical preference/registration remains benchmark posture until accepted Physical selection;
-- DEV/UAT/PROD are deployment environments, not permanent Git branches;
-- `main` integration follows effective repository rules and real required checks;
-- accepted Domain + Logical semantics, including `WL-H01..WL-H12`, are implementation constraints;
-- Phase 5–11 contracts, Phase 12/final-audit closure evidence and the eventual accepted Physical result are mandatory downstream inputs, not implementation authorization by themselves.
+- deterministic solver output remains candidate/scenario state until governed application;
+- DEV/UAT/PROD are environments, not permanent Git branches;
+- accepted Domain + Logical semantics, including `WL-H01..WL-H12`, remain implementation constraints.
 
-## Phase 5 requirements future backend must consume
+SQLAlchemy, Alembic and PostgreSQL-specific implementation choices remain conditional until the accepted Physical result justifies them.
 
-At minimum:
+## Phase-5 requirements future backend must consume
 
-- AuthN/AuthZ preserves `Person != Account != Principal != Actor`, `Authority != AuthZ decision`, actual Actor vs represented party, consequential AuthZ provenance, non-human Principal governance, delayed-effect revalidation and non-interference/disclosure constraints;
-- security/privacy supports purpose-aware minimization, secret isolation, sensitive-data handling, category-sensitive retention, truthful deletion/redaction/tombstone semantics, derived/external deletion propagation and secure recovery without forbidden-data resurrection;
-- consistency/side-effects preserves expected-state semantics, idempotency distinct from identity, no silent material last-write-wins, semantic multi-owner atomicity where required, truthful staged/partial state, canonical/provider separation, ambiguous-failure safety and effect/reconciliation provenance;
-- non-functional/multi-device/recovery preserves device divergence, operation-specific offline semantics, truthful degraded/provider state, long-history/current-state access, temporal/DST semantics, safe observability, recovery testing and later accepted RPO/RTO/latency/availability/scale targets.
+### AuthN/AuthZ
 
-Open Phase 5 parameters are obligations to resolve before dependent implementation/benchmarking, not permission to ignore the requirement. Phase 10 defines the benchmark method and synthetic sensitivity envelopes; the separately authorized Physical workstream executes/classifies the evidence.
+Preserve at minimum:
 
-## Phase 6 AI / Context / Runtime contract
+```text
+Person != Account != Principal != Actor
+Authority != AuthZ decision
+actual Actor != represented party where applicable
+technical authorization provenance != Domain identity
+```
 
-Future implementation must preserve:
+Support delayed-effect revalidation, non-human Principal governance and selective-disclosure/non-interference constraints.
+
+### Security / privacy / retention / recovery
+
+Support purpose-aware minimization, secret isolation, sensitive-data handling, category-sensitive retention, truthful deletion/redaction/tombstone semantics, downstream deletion propagation and recovery without forbidden-data resurrection.
+
+### Consistency / side effects
+
+Preserve expected-state semantics, idempotency distinct from identity, no universal silent last-write-wins, atomic multi-owner change where required, truthful staged/partial state across external boundaries, provider/canonical separation and ambiguous-failure reconciliation.
+
+### Non-functional / multi-device / operational recovery
+
+Preserve device divergence, operation-specific offline semantics, truthful degraded/provider state, long-history/current-state access, temporal/DST semantics, safe observability and accepted later RPO/RTO/latency/availability/scale targets.
+
+Open values are obligations to resolve, not permission to invent defaults.
+
+## Phase-6 AI / Context / Runtime contract
+
+Preserve distinct:
 
 ```text
 canonical state
@@ -185,93 +203,60 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-The Context Builder is purpose-, disclosure-, provenance- and freshness-aware. Whole-history/full-database exposure is not default.
-
-LifeOS does not maintain generic AI memory as a second canonical truth store.
-
 ```text
 runtime Agent / Principal != Domain Actor automatically
 tool invocation != authorization
-tool/protocol action != canonical governed operation
-```
-
-Non-human Principals, delayed tool effects and external/retrieved instructions remain subject to governance, expected-state, privacy, idempotency and provenance requirements.
-
-### Consequential AI change evaluation
-
-Before promotion of a materially consequential change to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, future implementation MUST run versioned/reproducible evaluations appropriate to the affected behavior.
-
-Pressure includes, where material:
-
-```text
-structured-output correctness
-false canonical claims / semantic overreach
-candidate-vs-canonical classification
-tool selection / tool argument error
-governance bypass
-privacy / inference leakage
-stale-context behavior
-model/provider substitution regression
-fallback / refusal / malformed behavior
-confirmation / human-approval flow
-cost / latency
-```
-
-```text
+tool/protocol action != canonical governed effect
 eval result != canonical LifeOS truth
-eval PASS != Authority
-eval PASS != governed-effect authorization
+eval PASS != Authority / governed-effect authorization
 ```
 
-Concrete evaluation frameworks, datasets, runners, thresholds and CI integration are later engineering choices.
+The Context Builder remains purpose/disclosure/provenance/freshness aware. Whole-history/full-database exposure is not default.
 
-## Phase 6 Integration Hub contract
+Material changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool schema/selection or fallback/routing require versioned/reproducible evaluation appropriate to the affected behavior.
 
-Five modes remain distinct:
+## Integration Hub contract
+
+Keep five modes distinct:
 
 1. canonical import;
-2. synchronized/mirrored provider state;
+2. sync/mirror;
 3. live federated read;
 4. retrieval/index projection;
 5. action/tool integration.
 
-`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider state/effect status != canonical LifeOS state/effect automatically.
+```text
+ExternalRef != NativeRef
+provider revision != MaterialStateRef
+provider state/effect != canonical LifeOS state/effect automatically
+```
 
-Sync direction/conflict handling, live-read freshness, deletion-aware projections, callbacks/replays and ambiguous external effects remain explicit bounded contracts. MCP/A2A/future protocols remain adapters.
+MCP/A2A/future protocols remain adapters.
 
-## Phase 7 durable-execution contract
+## Durable-execution contract
 
 ```text
 BOUNDED ASYNC
-short / bounded / cheaply reconstructible
-→ DB/worker/outbox style remains valid baseline mechanism class
+DB/worker/outbox style = valid baseline mechanism class
 
 MATERIAL DURABLE LONG-RUNNING
-long waits / human review / callbacks / crash-resume /
-material cancellation / compensation / reconciliation
-→ dedicated durable execution is structurally justified
-```
-
-Current candidates remain unselected:
-
-```text
 Restate   preferred structural-fit candidate — NOT selected
 Temporal  strongest mandatory challenger — NOT selected
 DBOS      conditional challenger — NOT selected
-          SQLite-capable for local/bounded Python use
-          PostgreSQL recommended for production
-          distributed multi-server deployment PostgreSQL-coupled
+          local/bounded Python SQLite-capable
+          production PostgreSQL-recommended
+          distributed multi-server PostgreSQL-coupled
 ```
 
-Future implementation preserves replay/idempotency safety, delayed target/governance revalidation, external-effect ambiguity, runtime-vs-Domain cancellation separation, execution-vs-semantic identity separation, in-flight compatibility/versioning and truthful pending/partial/reconciliation state.
+Replay/idempotency, delayed target/governance revalidation, ambiguous external effects, runtime-vs-Domain cancellation, execution-vs-semantic identity, in-flight compatibility and truthful pending/partial/reconciliation remain mandatory.
 
-## Phase 8 governed-operation/effect contract
+## Governed-operation/effect contract
 
-Consequential operations preserve by materiality:
+Consequential operations preserve as material:
 
 ```text
 contract/version
-semantic target/facet
+target/facet
 requested effect
 input/candidate
 purpose/context
@@ -299,184 +284,146 @@ workflow completed != Actual automatically
 technical cancellation != Domain cancellation automatically
 ```
 
-Concrete routes/DTOs/error codes/command buses remain later implementation design.
+Concrete route/DTO/command-bus design remains later implementation work.
 
-## Phase 9 contracts
-
-### Search / retrieval
+## Search / observability / calendar / solver
 
 ```text
-structured filters + lexical/full-text  BASELINE
-semantic/vector retrieval              BOUNDED CANDIDATE
-pgvector                               BOUNDED IF POSTGRESQL SURVIVES PHYSICAL
-dedicated search/vector service        NOT JUSTIFIED BY DEFAULT
+SEARCH
+structured + lexical/full-text baseline
+semantic/vector bounded candidate
+search miss != canonical nonexistence
+
+OBSERVABILITY
+OpenTelemetry-first/equivalent direction
+telemetry != Domain Provenance/security audit by identity
+
+CALENDAR
+iCalendar/JSCalendar/provider APIs = adapter pressure, not ontology
+
+SOLVER
+simple deterministic rules/heuristics baseline
+OR-Tools CP-SAT preferred specialized benchmark candidate — NOT implemented
+UNKNOWN != INFEASIBLE
+solver output != accepted canonical effect
 ```
 
-Search miss != canonical nonexistence; ranking/similarity remains derived; inclusion/count/ranking/snippets/autocomplete/timing are disclosure surfaces; deletion/redaction propagates to projections.
+## Phase-10 / active Physical relationship
 
-### Observability
+Phase 10 defines the benchmark method; `feature/physical-model` now executes it under `docs/physical-model/**`.
 
-OpenTelemetry-first/equivalent is current direction. Technical trace/request/workflow IDs do not replace Domain Provenance, security audit or material effect history.
-
-### Calendar
-
-iCalendar/JSCalendar/provider APIs are interoperability pressure, not ontology. Adapters preserve recurrence exceptions, all-day/floating/zoned time, DST/history and provider token/deletion state without equating provider state with LifeOS state.
-
-### Solver
+Current registered posture remains unselected:
 
 ```text
-simple deterministic rules / heuristics  BASELINE
-OR-Tools CP-SAT                       PREFERRED SPECIALIZED BENCHMARK CANDIDATE — NOT IMPLEMENTED
+PRIMARY
+PostgreSQL hybrid — mandatory preferred baseline — NOT SELECTED
+TypeDB            — mandatory challenger        — NOT SELECTED
+
+GRAPH
+G0 no-specialized-store vs Neo4j
+
+SEARCH/VECTOR
+S0 structured/FTS vs bounded pgvector where applicable
 ```
 
-Hard constraints are not silently relaxed; `UNKNOWN != INFEASIBLE`; solver output remains candidate/scenario until a governed effect establishes canonical state.
+Physical hard-gate evidence precedes scoring. `LOW/BASE/HIGH` are synthetic qualification envelopes; unexecuted tiers remain unverified. `PREFERRED != SELECTED`.
 
-## Phase 10 benchmark method
-
-The later Physical Model must consume:
-
-- `physical-benchmark-specification.md`;
-- `physical-benchmark-scenario-corpus.md`;
-- `physical-benchmark-register.md`.
-
-Current role posture:
-
-```text
-PRIMARY CANONICAL
-PostgreSQL hybrid — mandatory preferred baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
-
-SECONDARY GRAPH
-no-specialized-store baseline vs Neo4j
-
-SEARCH / VECTOR
-structured + lexical/full-text baseline vs bounded pgvector where applicable
-
-EVENT / DOCUMENT
-bounded native mechanisms first; specialized candidate only on admitted gap/benefit
-```
-
-Physical candidates must satisfy semantic/correctness hard gates before performance/operability scores matter. LOW/BASE/HIGH values are synthetic benchmark envelopes, not production promises. Unexecuted upper envelopes remain unverified rather than being reported as benchmark runs. Evidence is pinned to exact version/edition/deployment. `PREFERRED != SELECTED`.
-
-Future backend implementation consumes the **accepted Physical result and all its conditions**, not the candidate labels above.
-
-## Phase 11 repository-engineering safety
-
-Current source: `docs/development/repository-engineering-safety.md`.
-
-Phase 11 is QA PASS and effective main rules were remotely verified. Current owner-driven posture:
-
-```text
-pull request required
-main deletion blocked
-force-push/non-fast-forward blocked
-review-thread resolution required
-0 required approvals while no independent reviewer exists
-0 required status checks until real stable checks exist
-merge-commit history preserved by current policy
-auto-delete merged head branches enabled
-```
-
-Required checks are promoted only after real stable contexts exist. Backend Foundation must not weaken these controls for convenience.
+Backend consumes the **accepted Physical result**, not interim benchmark preference.
 
 ## Physical-dependent implementation candidates
 
-The following are **not current architecture commitments** and may be adopted only if the accepted Physical Model justifies them:
+Do not adopt until accepted Physical result justifies them:
 
 - SQLAlchemy;
 - Alembic;
-- PostgreSQL-specific development configuration;
-- relational migration mechanics;
-- concrete transaction/isolation/version-token mechanisms;
+- PostgreSQL-specific configuration;
+- concrete transaction/isolation/version-token mechanics;
 - table/index/key/partition strategy;
-- database-specific test fixtures/operational tooling;
-- PostgreSQL-native FTS / pgvector as implementation components.
+- database migration mechanics;
+- database-specific test/operational tooling;
+- PostgreSQL-native FTS / pgvector as production components;
+- TypeDB-specific client/schema infrastructure;
+- Neo4j-specific production projection infrastructure.
 
-## Runtime/API-dependent implementation candidates
+## Runtime/API-dependent candidates
 
-Do not freeze before prerequisite contracts/mechanism decisions exist:
+Do not freeze prematurely:
 
-- concrete versioned API route/DTO surface;
 - REST/RPC/GraphQL surface;
-- AuthN/AuthZ middleware/policy engine/persistence;
+- concrete route/DTO versioning;
+- Auth middleware/policy engine/persistence;
 - idempotency storage/replay mechanics;
-- transactional outbox/inbox/publication mechanics;
+- outbox/inbox/publication implementation;
 - bounded worker implementation;
-- Restate / Temporal / DBOS runtime binding;
-- workflow/automation execution mechanics;
-- notification delivery runtime;
+- Restate/Temporal/DBOS binding;
 - provider adapters;
 - AI provider/model/router/tool adapters;
-- AI evaluation framework/datasets/runners/thresholds;
-- MCP/A2A/protocol adapters;
-- projection/cache/search/vector infrastructure;
+- AI evaluation frameworks/datasets/runners/thresholds;
+- MCP/A2A adapters;
+- projection/cache/search/vector services;
 - OpenTelemetry SDK/Collector/backend;
 - calendar provider SDK/adapters;
-- OR-Tools/solver service;
-- observability details that could expose sensitive data.
+- OR-Tools/solver service.
 
-## Future bootstrap deliverables — implementation-independent core
+## Future backend bootstrap deliverables
 
-When this workstream is actually authorized, likely initial foundation deliverables include:
+Only after authorization, likely implementation-independent foundation work includes:
 
 - Python project/package structure;
-- FastAPI application bootstrap;
+- FastAPI bootstrap;
 - Pydantic settings/configuration;
 - modular-monolith package boundaries;
 - pytest baseline;
-- externalized dependency/config/secrets handling;
-- domain/application logic testability without FastAPI request handling;
+- externalized secrets/config;
+- domain/application testability without HTTP;
 - error-handling baseline;
-- structured logging compatible with privacy/minimization requirements;
+- privacy-aware structured logging;
 - development health/readiness endpoint where appropriate;
-- provider-neutral interfaces only where an accepted contract exists;
-- clear separation among API, application, Domain/Logical translation, persistence and provider/runtime concerns.
+- provider-neutral interfaces only where accepted contracts exist;
+- explicit API/application/semantic/persistence/provider/runtime separation.
 
-Physical-specific deliverables are added only after Physical acceptance. Runtime/provider-specific deliverables are added only after their mechanism selection is accepted.
+Physical/runtime/provider-specific deliverables are added only after their relevant accepted decisions.
 
 ## First implementation slice rule
 
 There is **no fixed canonical first vertical slice today**.
 
-The old target:
+The old product-shaped shortcut:
 
 ```text
 Workspace → Goal/Program → Activity → Schedule → Actual/Confirmation
 ```
 
-is superseded as a backend/domain contract. `Workspace` is not an accepted universal Domain owner; Project/Program product vocabulary maps to accepted semantics according to actual meaning rather than manufacturing new kernel roots.
+is superseded as a backend/domain contract. `Workspace` is not an accepted universal owner. Product vocabulary maps to accepted semantics according to meaning rather than manufacturing ontology roots.
 
-When backend implementation is eventually authorized, the first slice is chosen from the accepted Domain + Logical + Phase 5 requirements + Phase 6–9 contracts + accepted Physical result + current product need. It must be narrow enough to validate architecture end-to-end without using product labels as ontology shortcuts.
+When Backend is eventually authorized, choose a narrow slice from accepted Domain + Logical + Phase-5..9 contracts + accepted Physical result + current product need.
 
 ## Future validation baseline
 
-As applicable to the accepted design, validate at minimum:
+As applicable, future Backend must validate:
 
-- application starts in intended development environment;
-- configuration/secrets are externalized appropriately;
-- unit tests run independently of production providers;
-- critical Domain/application logic is testable without HTTP handling;
-- API/persistence/provider layers do not become the Domain Model;
-- expected-state/conflict semantics are testable for consequential mutations;
-- provider partial failure/divergence is truthful;
-- history/provenance/correction survive persistence translation;
-- selective disclosure and inference-leakage constraints are tested;
-- Phase 5 open parameters needed by the slice are resolved rather than silently defaulted;
-- AI/context tests preserve provenance/freshness/disclosure categories where relevant;
-- material consequential AI changes pass versioned/reproducible promotion evaluation;
-- tool/agent callers cannot bypass governance and retrieved content cannot self-authorize effects;
-- integration tests distinguish canonical/provider state, duplicate callbacks, unknown outcomes and reconciliation;
-- durable-runtime tests prove replay/idempotency/cancellation/version/recovery behavior appropriate to operation class;
-- governed-operation tests prove target/material/governance/confirmation/result-axis semantics independently from transport;
-- search tests cover authorization/disclosure, stale index, deletion propagation and vector recall where applicable;
-- observability tests diagnose without sensitive payload leakage and without relying on telemetry as sole audit/provenance;
-- calendar tests cover recurrence overrides, DST/floating/all-day and provider resync/token invalidation;
-- solver tests preserve hard constraints, feasible/infeasible/unknown distinctions, stale input rejection and governed-effect application;
-- recovery/degraded/multi-device tests exercise accepted requirements;
-- accepted Physical hard-gate conditions/sensitivity caveats become implementation/deployment tests;
-- migrations/rollback are tested only if the accepted Physical design uses migration-based persistence;
-- database connectivity/config tests are added only for the accepted persistence;
-- real required repository/CI checks pass before integration.
+- application/config/secrets bootstrap;
+- unit tests independent of production providers;
+- critical logic testable without HTTP;
+- API/persistence/provider layers do not become Domain Model;
+- expected-state conflicts;
+- provider partial/unknown outcomes;
+- history/provenance/correction persistence;
+- disclosure/inference leakage;
+- AI/context provenance/freshness/disclosure;
+- consequential AI promotion evaluation;
+- tool/agent governance non-bypass;
+- integration duplicate/reorder/unknown/reconciliation behavior;
+- durable-runtime replay/idempotency/cancellation/version/recovery;
+- governed-operation target/material/governance/confirmation/result axes;
+- search authorization/staleness/deletion/vector recall where applicable;
+- observability without sensitive leakage;
+- recurrence/DST/floating/all-day/provider resync;
+- solver hard-constraint/result-category/stale-input rules;
+- recovery/degraded/multi-device requirements;
+- all accepted Physical hard-gate conditions/sensitivity caveats;
+- migrations/rollback only when the accepted Physical design uses them;
+- real required repository/CI checks before integration.
 
 ## Non-negotiable guardrails
 
@@ -499,39 +446,27 @@ eval result != canonical LifeOS truth
 preferred benchmark candidate != selected implementation
 ```
 
-All `WL-H01..WL-H12`, Phase 5 requirements, Phase 6 boundaries, Phase 7–9 contracts, Phase 10 benchmark method, effective Phase 11 repository controls, Phase 12/final-audit closure constraints and later accepted Physical conditions remain active downstream constraints.
+All `WL-H01..WL-H12`, Phase-5 requirements, Phase-6 boundaries, Phase-7..9 contracts, Phase-10 benchmark method, Phase-11 controls, Pre-Physical closure constraints and eventual accepted Physical conditions remain downstream constraints.
 
 ## Where to work when eventually authorized
 
-Do **not** create the implementation branch now.
+Do **not** create the Backend branch now.
 
 When every prerequisite is satisfied:
 
 1. re-read current `main` and this handoff;
-2. verify complete current split/continuation authorities;
-3. verify effective repository rules and real required check contexts;
-4. define exact backend implementation scope/path ownership;
+2. verify complete accepted model/Physical authorities;
+3. verify effective repository rules/checks;
+4. define exact backend scope/path ownership;
 5. present fresh branch/PRE-SCOPE/CREATE-UPDATE-DELETE gate;
-6. only after approval create bounded implementation branch from current `main`;
-7. update this handoff to **IN PROGRESS** with actual branch, PRE-SCOPE, package paths and validation commands.
+6. after approval create bounded implementation branch from then-current `main`;
+7. update this handoff to **IN PROGRESS** with actual branch/PRE-SCOPE/package paths/validation commands.
 
-## Handoff maintenance after implementation starts
+## Handoff maintenance after Backend starts
 
-Record at least:
+Record actual branch/PR, PRE-SCOPE, approved paths, validated commit, implementation paths, test/migrate commands, accepted Physical/runtime dependencies, current task, risks, evidence and exact next steps.
 
-- actual branch and PR;
-- implementation PRE-SCOPE;
-- exact approved path scope;
-- last validated commit;
-- actual package/file paths;
-- commands to run/test/migrate where applicable;
-- accepted Physical/runtime dependencies;
-- completed tasks/current task;
-- known issues/risks;
-- validation evidence;
-- next exact steps.
-
-Do not update `PROJECT-STATUS.md` for every backend commit. Update global status only when the workstream genuinely starts, blocks, reaches an integrated milestone, changes branch/PR or finishes.
+Do not update global status for every backend commit.
 
 ## Current exact next step
 
@@ -540,15 +475,21 @@ BACKEND FOUNDATION
 NO IMPLEMENTATION ACTION
 NOT STARTED / DEFERRED
 
-PRE-PHYSICAL COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+PHYSICAL MODEL
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+feature/physical-model
+base 3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+PHYSICAL RESULT
+NOT YET ACCEPTED
+mapping NOT STARTED
+benchmark NOT STARTED
+selection NONE
 
 CURRENT PROJECT ACTION
-PHYSICAL MODEL MAY BE STARTED ONLY AFTER SEPARATE EXPLICIT USER AUTHORIZATION
+complete PM-00 bootstrap QA
+then PM-01 READ-ONLY candidate/version/edition/deployment/environment freeze
 
-PHYSICAL MODEL
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+BACKEND ELIGIBILITY
+BLOCKED until accepted Physical result + remaining prerequisites
 ```

@@ -1,10 +1,10 @@
 # Repository Engineering Safety
 
 - Status: **CURRENT — Phase 11 QA PASS**
-- Scope: repository integration safety before Physical/backend production implementation
+- Scope: repository integration safety before and during Physical/backend production implementation
 - Repository: `MattiaRubino/lifeos`
 - Default branch: `main`
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
 - Backend Foundation: **NOT STARTED / DEFERRED**
 
 ## Purpose
@@ -17,7 +17,7 @@ DOCUMENTED REPOSITORY POLICY
 GITHUB SETTING ACTUALLY APPLIED
 ```
 
-Phase 11 closes only because both the policy and the applicable GitHub-side protections were verified where the connector permits verification.
+Phase 11 closed only because both the policy and the applicable GitHub-side protections were verified where the connector permits verification.
 
 ## Authority
 
@@ -61,7 +61,7 @@ required status checks             0
 GitHub Actions workflows           0
 auto-delete merged head branches  enabled
 confirmed accidental refs          absent
-Physical Model                     NOT STARTED / NOT AUTHORIZED
+Physical Model                     NOT STARTED / NOT AUTHORIZED at Phase-11 closure
 Backend Foundation                 NOT STARTED / DEFERRED
 ```
 
@@ -178,10 +178,12 @@ Physical/migration validation
 only when an accepted Physical implementation exists
 
 benchmark evidence validation
-only when executable benchmark tooling exists
+only when executable benchmark tooling exists and produces stable useful checks
 ```
 
 Concrete workflow names, runners, language versions and tool selections belong to the future implementation scope that creates them.
+
+The active Physical workstream may later create benchmark-only tests/harnesses under exact gated paths. Their existence does not automatically justify a required `main` status check; promotion still requires the stable-context protocol below.
 
 ## Required-check promotion protocol
 
@@ -211,6 +213,8 @@ Secret scanning / push protection should remain enabled where available for this
 
 Do not place production secrets in repository files, real example credentials, Actions workflow source, CI logs/artifacts or benchmark fixtures.
 
+Physical benchmark fixtures must be synthetic/non-sensitive. Raw benchmark artifacts committed or durably referenced must not contain real personal production data or credentials.
+
 ## Dependabot
 
 Dependabot alerts were disabled at the initial Phase 11 inventory. The requested admin action was applied by the repository owner, but the connector cannot independently verify the resulting state because the vulnerability-alerts endpoint is inaccessible to the integration.
@@ -221,7 +225,9 @@ Do not create `.github/dependabot.yml` merely to populate the repository. Depend
 
 No code-scanning workflow is created by Phase 11.
 
-Code scanning / CodeQL becomes relevant when actual production source code exists and the concrete language/build topology is known. A future code-scanning gate must produce real results before becoming a required main check.
+Code scanning / CodeQL becomes relevant when actual source code/harness code exists and the concrete language/build topology is known. A future code-scanning gate must produce real results before becoming a required main check.
+
+Benchmark-only harness code is not production backend code by identity; security/static analysis requirements must be chosen according to the actual code introduced and its risk.
 
 ## CODEOWNERS
 
@@ -237,11 +243,14 @@ Phase 11 does not create a public vulnerability-reporting policy before a produc
 
 Do not delete branches merely because they look old.
 
-Known active bounded branch relevant to current project work includes:
+Known active bounded branches relevant to current project work include:
 
 ```text
+feature/physical-model
 prototype/phase-4-today-home
 ```
+
+`feature/physical-model` is the active separately authorized Physical Model branch, created from `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79`. Do not delete or repurpose it while the Physical workstream is active.
 
 `chore/pre-physical-coherence` is **not active**: it was merged into protected `main` via PR #13 and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
 
@@ -280,7 +289,7 @@ Verified repository setting:
 Automatically delete head branches after merge = enabled
 ```
 
-This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13 provided a concrete successful exercise: `chore/pre-physical-coherence` was automatically removed after merge.
+This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13 and post-merge alignment PR #14 both exercised the merged-head cleanup path.
 
 # Phase 11 verification evidence
 
@@ -317,7 +326,7 @@ These connector permission limits do not invalidate the verified branch-integrat
 
 ## Later protected-integration evidence
 
-The closed Pre-Physical workstream later exercised the accepted repository-safety posture through PR #13:
+The closed Pre-Physical workstream exercised the accepted repository-safety posture through PR #13 and current-truth alignment PR #14:
 
 ```text
 PR #13 mergeable before merge               PASS
@@ -329,26 +338,66 @@ merged                                      PASS
 main merge commit                           74593ae283ce5a1d22335502480ee3fa54be0436
 final branch tree vs merged main tree       0 file differences
 merged head branch auto-delete              PASS
+
+PR #14 current-truth alignment              MERGED / PASS
+main after alignment                        3de84bb49f9cef30e88e9bde4961ed84335daa79
+alignment branch tree vs merged main        0 file differences
+alignment head branch auto-delete           PASS
 ```
 
 This later integration evidence does not change the Phase 11 policy; it demonstrates that the effective controls worked as designed.
 
+# Physical-workstream repository safety
+
+The active Physical Model adds execution/evidence risks that must be treated explicitly.
+
+```text
+BENCHMARK HARNESS
+!= production backend automatically
+
+RAW BENCHMARK ARTIFACT
+!= current repository specification
+
+OFFICIAL PRODUCT CLAIM
+!= direct execution evidence
+
+PREFERRED
+!= SELECTED
+```
+
+Physical-specific safety rules:
+
+1. every new mapping/schema/harness/evidence path requires an exact Physical write gate;
+2. do not commit real production credentials or personal data into candidate databases/fixtures;
+3. record exact candidate version/edition/deployment and hardware for reproducibility;
+4. retain or durably reference raw evidence with hashes/reproduction metadata;
+5. do not rely on ephemeral Actions artifacts alone for final selection/closure evidence;
+6. benchmark infrastructure must not silently become production architecture;
+7. an unexecuted tier/test remains `NOT RUN`;
+8. insufficient/contradictory evidence remains `HOLD`;
+9. no technology becomes `SELECTED` without the explicit PM-11 gate;
+10. Physical work does not authorize Backend Foundation.
+
 # Future production readiness
 
-Repository safety must evolve with the codebase rather than remain frozen at this documentation-only stage.
+Repository safety must evolve with the codebase rather than remain frozen at this documentation-first stage.
 
 ```text
 now
 main ruleset + PR discipline + branch hygiene/security settings
++ active bounded Physical workstream
 
-first implementation
-real tests/lint/types/security workflows
+Physical benchmark implementation
+real benchmark tests/harness validation as appropriate
 
-stable workflow contexts
-promote material checks into required main rules
+stable useful workflow contexts
+optionally promote material checks into required main rules
 
-Physical/migrations exist
+accepted Physical/migrations exist
 add real Physical/migration checks
+
+backend implementation begins
+real backend tests/lint/types/security workflows
 
 release/deployment exists
 add environment/release protections based on actual promotion design
@@ -369,8 +418,6 @@ auto-delete merged branches                   PASS
 security-setting connector limits recorded    PASS
 Domain reopen required                        0
 Logical reopen required                       0
-Physical Model started                        0
-Backend implementation started                0
 ```
 
 Current state:
@@ -381,13 +428,17 @@ QA PASS
 
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+INTEGRATED / POST-MERGE VERIFIED
 
 PHYSICAL MODEL
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+branch feature/physical-model
+mapping NOT STARTED
+benchmark NOT STARTED
+selection NONE
 
 BACKEND FOUNDATION
 NOT STARTED / DEFERRED
 ```
+
+The next repository risk gate is PM-01/PM-02: freeze exact candidate subjects/environment read-only first, then authorize mapping/harness paths explicitly rather than allowing ad-hoc schema/code creation.

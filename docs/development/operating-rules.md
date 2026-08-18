@@ -42,14 +42,15 @@ An ADR may preserve original rationale while being superseded/qualified for curr
 
 Parallel workstreams should avoid shared-file churn.
 
-Current ownership:
+Current ownership/state:
 
-- Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`.
-- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**. The former branch `chore/pre-physical-coherence` is merged and auto-deleted; current accepted Pre-Physical truth now lives on `main`.
-- Backend Foundation: **not started / deferred**; future backend bootstrap/config/infrastructure/tests/docs only after a separately authorized/accepted Physical result and a fresh gate.
-- Physical Model: **ready for separate authorization but not started / not authorized**; future work requires its own branch/gate from current `main` and explicit user authorization.
-- Domain Model / Domain Atlas: **closed**; historical branch does not reopen semantics.
-- Logical Model: **closed**; historical branch does not reopen semantics.
+- Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`; active separately.
+- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**.
+- Physical Model: **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED**; authority lives in `docs/physical-model/**` and `docs/workstreams/physical-model.md`; PM-13 clean-room architecture/documentation QA is PASS; direct selected-stack implementation validation remains carried forward.
+- Development Profile v0: **NOT STARTED**; future bounded operational-deployment scope for initial activation/local/free/managed choices against the already-selected Physical target.
+- Backend Foundation: **NOT STARTED / DEFERRED**; future backend bootstrap/config/infrastructure/tests/docs only after separate explicit authorization.
+- Domain Model / Domain Atlas: **CLOSED**; historical branch does not reopen semantics.
+- Logical Model: **CLOSED**; historical branch does not reopen semantics.
 
 Shared/current files (`README.md`, `docs/README.md`, `PROJECT-STATUS.md`, `ROADMAP.md`, broad architecture docs, ADRs) change only when global/current truth genuinely changes and exact paths are in an approved gate.
 
@@ -71,6 +72,14 @@ Before changes:
 12. inspect relevant implementation/tests before assuming something is missing;
 13. check whether the requested decision already exists.
 
+For work that depends on the accepted Physical target, also read at minimum:
+
+```text
+docs/physical-model/pm-11-explicit-selection-v1.md
+docs/physical-model/pm-12-accepted-physical-model-v1.md
+docs/physical-model/recommendation/post-selection-validation-register-v1.md
+```
+
 Do not start from an old branch merely because it contains a familiar file.
 
 ## 5. During-work protocol
@@ -87,6 +96,12 @@ Do not start from an old branch merely because it contains a familiar file.
 - Do not invent required CI/status checks before the real workflow/check context exists and has been validated.
 - Do not report an unexecuted benchmark tier/test as verified evidence.
 - Do not promote a materially consequential AI behavior change without the applicable versioned/reproducible evaluation required by the current Phase 6 contract.
+- For version-sensitive Physical capability claims, use current official primary documentation and pin product + version + edition + deployment mode where material.
+- A marketing/official capability claim is not direct execution evidence; distinguish the two.
+- Missing/contradictory implementation evidence becomes `HOLD`, not assumption.
+- `SELECTED != DEPLOYED` and `SELECTED != DIRECT PASS`.
+- A later Development Profile may choose activation/deployment mode without silently replacing the accepted target technology.
+- A selected-stack validation failure that invalidates the Physical choice requires an explicit reopen; do not weaken Domain/Logical semantics to force a PASS.
 
 ### Current documentation rule
 
@@ -108,7 +123,7 @@ references/navigation repaired = PASS
 
 ## 6. Global-status rule
 
-The workstream handoff is the live save-game.
+The workstream handoff is the live save-game while a workstream is active and the closure handoff/evidence remains the durable resume point after closure.
 
 `docs/PROJECT-STATUS.md` changes only for globally meaningful state such as workstream start/finish/block, durable decision changes, integrated milestones or immediate sequence changes.
 
@@ -128,7 +143,37 @@ Repository settings/rulesets are operational state, not documentation state. A d
 
 Current navigation should point directly to current truth rather than requiring agents to infer authority from historical files.
 
-## 8. Pre-merge coherence gate
+## 8. Physical evidence/status semantics
+
+Use exact result words where applicable:
+
+```text
+NOT RUN
+PASS
+PASS-CONDITIONAL
+HOLD
+REJECT
+SENSITIVITY-DEPENDENT
+PREFERRED
+SELECTED
+```
+
+Additional Physical evidence rules:
+
+```text
+nominal benchmark tier != executed dataset
+unexecuted HIGH != VERIFIED-RUN
+official documentation claim != benchmark execution
+brand != benchmark subject
+product + version + edition + deployment = benchmark subject
+raw evidence before summary
+SELECTED != DEPLOYED
+SELECTED != DIRECT PASS
+```
+
+Current accepted Physical target is selected by PM-11 and accepted by PM-12. Direct selected-stack validation remains explicitly unexecuted where the PSV register says `NOT RUN`.
+
+## 9. Pre-merge coherence gate
 
 Before merge:
 
@@ -143,23 +188,25 @@ Before merge:
 9. verify any repository-required checks that actually exist are passing;
 10. verify blocking review conversations are resolved where active main rules require it;
 11. verify branch-specific final closure/evidence activation conditions are satisfied;
-12. merge through PR only after semantic/documentation coherence.
+12. merge only after semantic/documentation coherence.
+
+For Physical closure/integration, also verify PM-11 explicit selection exists, PM-12 accepted target is coherent, PM-13 clean-room QA is PASS, direct `NOT RUN` truth is preserved and the PSV register is carried forward.
 
 A clean Git merge is not enough.
 
-## 9. After-merge protocol
+## 10. After-merge protocol
 
 - verify `main` contains intended final versions;
 - verify the merge commit and branch relation remotely;
 - refresh global status if required;
-- update workstream completion/next phase;
+- update workstream completion/next phase when a separate post-merge alignment scope is needed;
 - synchronize long-running overlapping branches;
 - old branches/history cease to be authoritative once accepted work is integrated;
-- allow repository auto-delete of merged head branches where enabled, except when a branch is intentionally retained as active/historical evidence for a documented reason.
+- allow repository auto-delete of merged head branches where enabled, except when a branch is intentionally retained for a documented reason.
 
 Historical files need not remain in the current working tree merely to preserve history if Git/ADR/evidence already retains the useful knowledge and deletion is explicitly gated.
 
-## 10. Handoff to another AI/chat
+## 11. Handoff to another AI/chat
 
 The outgoing workstream records:
 
@@ -170,79 +217,69 @@ The outgoing workstream records:
 - validation performed;
 - problems/open questions;
 - last validated commit where relevant;
-- approved PRE-SCOPE/write state when a gate is in flight;
+- approved/current scope;
 - failed/no-op tool operations that affect continuation.
+
+For implementation based on the closed Physical target, the handoff must additionally preserve:
+
+- selected exact product/version subjects where still pinned;
+- deployment mode where actually chosen;
+- current direct PSV/HG status;
+- evidence locations/hashes;
+- unresolved HOLD items;
+- any explicit Physical reopen trigger.
 
 If critical continuation state exists only in conversation, the handoff is incomplete.
 
-## 11. Repository coherence baseline
+## 12. Repository coherence baseline
 
-The Pre-Physical workstream originally started from:
+The Pre-Physical workstream started from `main @ 148a4cb5d5741b4a5b9667cf8d30231ebc0545f0`, completed Phase 0–12 plus independent total audit and exact final activation QA, integrated through protected PR #13, then received post-merge current-truth alignment through PR #14.
+
+The Physical workstream started from:
 
 ```text
 main
-148a4cb5d5741b4a5b9667cf8d30231ebc0545f0
+3de84bb49f9cef30e88e9bde4961ed84335daa79
+
+branch
+feature/physical-model
 ```
 
-At that base:
+It completed PM-00..PM-14 at the target-architecture layer, selected PostgreSQL 18.4 as canonical primary and established the bounded target companion stack documented in PM-11/12.
 
-- Domain Atlas was closed/integrated via PR #10;
-- Logical Model was closed/integrated via PR #11;
-- global main alignment was PR #12;
-- `chore/pre-physical-coherence` became the bounded architecture/repository-coherence workstream;
-- Phase 4 UX remained separate;
-- Backend Foundation was not started;
-- Physical Model was not started/authorized.
+Future contributors must re-check current refs rather than treating dated SHAs as permanently current `main`.
 
-The Pre-Physical workstream then completed Phase 0–12 plus the independent total audit and exact final activation QA, and was integrated through protected PR #13. Post-merge verification established `main @ 74593ae283ce5a1d22335502480ee3fa54be0436` as the integrated Pre-Physical checkpoint with the branch tree preserved exactly. Future contributors must re-check current refs rather than treating either dated SHA as permanently current `main`.
-
-## 12. Current stage boundary — Pre-Physical closed and integrated
-
-Current accepted state:
+## 13. Current stage boundary
 
 ```text
 DOMAIN
 CLOSED / unchanged
 
 LOGICAL
-CLOSED / unchanged
-
-PHASE 0–11
-PASS
-
-PHASE 12
-QA PASS / CLOSED
-
-INDEPENDENT TOTAL AUDIT
-PASS
+CLOSED / WL-H01..WL-H12 ACTIVE
 
 PRE-PHYSICAL COHERENCE
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+INTEGRATED / POST-MERGE VERIFIED
 
-PHYSICAL READINESS
-ESTABLISHED
+PHYSICAL MODEL TARGET
+CLOSED / SELECTED / ACCEPTED
+PM-13 clean-room architecture/documentation QA PASS
+selected canonical primary PostgreSQL 18.4
 
-PHYSICAL MODEL
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
+DIRECT SELECTED-STACK VALIDATION
+NOT STARTED / carried forward
 
 BACKEND
 NOT STARTED / DEFERRED
 
-MAIN INTEGRATION
-COMPLETE / POST-MERGE VERIFIED
+DEVELOPMENT PROFILE v0
+NOT STARTED / next separate operational scope
 ```
 
-Closure activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`.
-Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436`.
+No production backend/API/Auth implementation is authorized solely by Physical closure.
 
-No implicit Physical Model, SQL/schema/migrations/API/backend/Auth/provider implementation or Domain/Logical reopen follows from the integrated Pre-Physical result. Physical work is a separate future workstream requiring its own explicit user authorization and gate.
-
-Completed detailed handoff/evidence: [`../workstreams/pre-physical-coherence.md`](../workstreams/pre-physical-coherence.md).
-
-## 13. Mandatory execution hardening
+## 14. Mandatory execution hardening
 
 The agent operating manual is authoritative for:
 
@@ -253,14 +290,16 @@ The agent operating manual is authoritative for:
 - current-truth vs historical-evidence distinction;
 - knowledge-coverage gate before stale-doc replace/delete;
 - no connector/context-limit knowledge loss;
-- canonical split counting/chronology where evidence genuinely requires it;
 - truthful tool-failure reporting;
 - remote evidence for PASS/CLOSED;
 - Domain Validation Methodology v3 for any separately authorized Domain reopen/new validation.
 
-The repository engineering safety contract additionally governs:
+The repository engineering safety contract additionally governs effective main rules/settings and branch hygiene.
 
-- effective `main` ruleset/protection verification;
-- required-check activation only after real stable check contexts exist;
-- branch-hygiene deletion only after unique-work classification;
-- repository security settings whose state must be verified rather than inferred.
+The closed Physical methodology/evidence additionally governs:
+
+- exact selected target ownership boundaries;
+- `SELECTED != DIRECT PASS`;
+- honest direct PSV status;
+- explicit reopen if selected-stack implementation evidence invalidates a decision;
+- Development Profile choices must not silently change the accepted target.

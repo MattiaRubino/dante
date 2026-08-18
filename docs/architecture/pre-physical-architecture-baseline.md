@@ -3,14 +3,17 @@
 - Status: **CURRENT — PRE-PHYSICAL DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED**
 - Activation checkpoint: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
 - Main integration checkpoint: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13 — **POST-MERGE VERIFIED**
-- Physical Model: **READY FOR SEPARATE AUTHORIZATION / NOT STARTED**
+- Post-merge alignment / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79` via PR #14
+- Physical Model: **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP**
 - Backend production implementation: **NOT STARTED / DEFERRED**
 
 ## Purpose
 
-This is the current bridge from the accepted Product/North Star, CLOSED Domain Atlas and CLOSED Logical Model into later Physical/runtime/API/backend work.
+This is the closed/current bridge from the accepted Product/North Star, CLOSED Domain Atlas and CLOSED Logical Model into Physical/runtime/API/backend work.
 
-It consolidates downstream constraints. It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract, Phase 12 clean-room evidence or final independent audit evidence.
+It consolidates downstream constraints. The active Physical Model consumes this baseline; it does not rewrite it by implementation convenience.
+
+It does not replace the detailed Domain/Logical sources, ADRs, Phase 5 requirement packages, Phase 6 boundary contracts, Phase 7–9 architecture contracts, Phase 10 benchmark package, Phase 11 repository-safety contract, Phase 12 clean-room evidence or final independent audit evidence.
 
 ## Authority
 
@@ -30,11 +33,13 @@ Read current truth through:
 12. Phase 12 clean-room evidence;
 13. final independent audit evidence;
 14. PR #13 / merge commit `74593ae283ce5a1d22335502480ee3fa54be0436` post-merge verification;
-15. this baseline and current project/workstream status.
+15. PR #14 / `main @ 3de84bb49f9cef30e88e9bde4961ed84335daa79` current-truth alignment;
+16. this baseline;
+17. active Physical execution authority under `docs/physical-model/**` and `docs/workstreams/physical-model.md`.
 
 A physical split/cumulative continuation is one logical document. Size/tool-limit splitting is lossless physical partitioning, not summarization or semantic cleanup.
 
-## Decided != authorized
+## Decided != authorized != selected
 
 ```text
 DECIDED CURRENT DIRECTION != IMPLEMENTATION AUTHORIZATION
@@ -43,8 +48,9 @@ PREFERRED BENCHMARK CANDIDATE != TECHNOLOGY SELECTION
 REGISTERED BENCHMARK CANDIDATE != TECHNOLOGY SELECTION
 ACCEPTED REQUIREMENT != IMPLEMENTATION MECHANISM SELECTION
 ACCEPTED BOUNDARY CONTRACT != PROVIDER / RUNTIME / PROTOCOL SELECTION
-BENCHMARK METHOD ACCEPTED != PHYSICAL MODEL STARTED
-PRE-PHYSICAL CLOSED != PHYSICAL MODEL AUTHORIZED
+BENCHMARK METHOD ACCEPTED != PHYSICAL TECHNOLOGY SELECTED
+PHYSICAL WORKSTREAM AUTHORIZED != PHYSICAL RESULT ACCEPTED
+BENCHMARK PASS != PRODUCTION BACKEND AUTHORIZATION
 ```
 
 ## Current stage
@@ -58,21 +64,25 @@ Phase 6 boundaries          CURRENT
 Phase 7 benchmark           CURRENT
 Phase 8 effect contract     CURRENT
 Phase 9 pressure contract   CURRENT
-Phase 10 benchmark method   CURRENT / QA PASS
+Phase 10 benchmark method   CURRENT / QA PASS / ACTIVE INPUT
 Phase 11 repository safety  QA PASS
 Phase 12 clean-room QA      QA PASS / CLOSED
 Independent total audit     PASS
 
 Pre-Physical Coherence
 DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED INTO MAIN VIA PR #13
-POST-MERGE VERIFIED
+INTEGRATED / POST-MERGE VERIFIED
 
 Physical readiness          ESTABLISHED
-Physical Model              READY FOR SEPARATE AUTHORIZATION / NOT STARTED
+Physical Model              AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP
+Physical mapping            NOT STARTED
+Benchmark execution         NOT STARTED
+Technology selection        NONE
 Backend Foundation          NOT STARTED / DEFERRED
-Main integration            COMPLETE / POST-MERGE VERIFIED
 ```
+
+Physical branch: `feature/physical-model`.
+Bootstrap base/PRE-SCOPE: `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
 
 ## Current technical direction
 
@@ -165,7 +175,7 @@ Phase 6 context further distinguishes retrieved context, live external context a
 
 ## Mandatory WL-H01..WL-H12
 
-All later work must preserve:
+All Physical and later implementation work must preserve:
 
 1. Agreement terms bind justified owner/facet/material state; no universal Terms root.
 2. Consequential work uses a governed operation/effect contract; route/UI/AuthZ strings are not canonical effects.
@@ -198,7 +208,7 @@ Preserve expected-state semantics, idempotency distinct from identity, no silent
 
 Preserve device divergence, operation-specific offline semantics, truthful degraded/provider state, current-state access alongside long history, temporal/DST semantics, recovery testing and explicit later RPO/RTO/latency/availability/scale targets where material.
 
-Phase 10 defines method/scenarios; future Physical executes candidate evidence.
+Phase 10 defines method/scenarios; the active Physical workstream executes candidate evidence.
 
 ## AI/context/runtime boundary
 
@@ -279,10 +289,10 @@ PostgreSQL hybrid — preferred mandatory baseline, NOT selected
 TypeDB            — mandatory challenger, NOT selected
 
 SECONDARY GRAPH
-no-specialized-store baseline vs Neo4j
+G0 no-specialized-store baseline vs G1 Neo4j
 
 SEARCH / VECTOR
-structured + lexical/full-text baseline vs bounded pgvector
+S0 structured + lexical/full-text baseline vs S1 bounded pgvector where applicable
 
 EVENT / DOCUMENT
 bounded mechanisms first; specialized only on demonstrated gap/benefit
@@ -293,44 +303,60 @@ HARD REJECT FOR CANONICAL KERNEL
 
 Hard correctness gates precede weighted scoring. Candidate mappings may be idiomatic but must satisfy common semantic assertions. LOW/BASE/HIGH are synthetic envelopes, not forecasts. Unexecuted tiers remain unverified. Evidence is pinned to exact product/version/edition/deployment. `PREFERRED != SELECTED`.
 
+The active Physical workstream adds execution rules under `docs/physical-model/**`: evidence-before-claim, PM-00..PM-14 progression, exact subject pinning, explicit PM-11 selection gate and independent PM-13 clean-room QA.
+
 ## Repository engineering safety
 
 Phase 11 is QA PASS. Effective `main` protection was verified remotely. Current owner-driven posture requires PR integration, blocks deletion/force-push, requires review-thread resolution, uses zero required approvals while no independent reviewer exists, has no required status checks until real stable contexts exist and auto-deletes merged head branches.
 
-PR #13 exercised that protected integration path successfully and the merged source branch was auto-deleted.
+The active `feature/physical-model` branch is bounded and must not be deleted/repurposed while the workstream is active. Benchmark-only code/evidence does not automatically become production infrastructure or required CI.
 
-## Definitive closure and integration evidence
+## Definitive Pre-Physical closure and integration evidence
 
 Phase 12 clean-room QA is closed. The independent total audit found no major semantic/architectural contradiction, Domain/Logical reopen need, material knowledge loss or accidental Physical/backend start.
 
-The bounded final repairs were activated at checkpoint:
+The final repairs were activated at `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`; protected PR #13 integrated the final tree at `74593ae283ce5a1d22335502480ee3fa54be0436`; PR #14 aligned current truth at `3de84bb49f9cef30e88e9bde4961ed84335daa79`.
 
-`9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
+Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED** and is an input to, not an open task inside, the Physical workstream.
 
-with:
+## Explicitly unauthorized by PM-00
+
+The Physical workstream is authorized, but PM-00 does **not** authorize:
 
 ```text
-PRE-SCOPE     1bd142afe51221211bc777f6271a642911c650fc
-unique paths  23
-added          1
-modified      22
-deleted        0
-unexpected     0
-behind_by      0
-main unchanged
-critical readback PASS
+candidate Physical schema/tables/keys/indexes/constraints
+SQL / TypeQL / Cypher implementation
+benchmark harness/fixture-generator code
+database/container deployment
+technology selection
+production migrations
+concrete API routes/DTOs
+Auth implementation
+runtime adoption
+provider adapters
+AI provider/model/agent framework
+dedicated search/vector deployment
+observability vendor
+solver implementation
+production backend code
+feature/backend-foundation
 ```
 
-That checkpoint established definitive branch-local closure. Protected PR #13 subsequently integrated the final branch tree into `main` at `74593ae283ce5a1d22335502480ee3fa54be0436`. Post-merge comparison from branch final HEAD `34e9ea3b547922600cb472adf1549a321e6ddfe4` to merged `main` showed one merge commit and zero file differences.
-
-Therefore Pre-Physical Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / INTEGRATED / POST-MERGE VERIFIED**.
-
-## Explicitly unauthorized now
-
-No Physical schema/tables/keys/indexes/constraints, SQL/TypeQL/Cypher benchmark implementation, migrations, concrete API routes/DTOs, Auth implementation, runtime adoption, provider adapters, AI provider/model/agent framework, dedicated search/vector deployment, observability vendor, solver implementation, production backend code or `feature/backend-foundation` may begin from this baseline without their later prerequisites and separate authorizations.
-
-Domain/Logical changes require a separate explicit reopen gate.
+Those require later exact Physical/Backend gates as applicable. Domain/Logical changes require a separate explicit reopen gate.
 
 ## Next boundary
 
-Pre-Physical protected integration is complete. The **Physical Model is ready for separate authorization but remains NOT STARTED / NOT AUTHORIZED**. Starting it requires a fresh explicit user authorization, workstream branch and exact PRE-SCOPE/write gate; Backend Foundation remains deferred until the Physical result is separately accepted.
+The Physical Model is now **AUTHORIZED / IN PROGRESS — PM-00 BOOTSTRAP** on `feature/physical-model`.
+
+After PM-00 remote QA, proceed only to:
+
+```text
+PM-01 — READ-ONLY FIRST
+freeze exact candidate versions/editions/deployment modes
+freeze available benchmark environment
+verify current product capabilities from official primary sources
+build execution inventory/evidence plan
+STOP before first mapping/schema/harness write
+```
+
+Backend Foundation remains deferred until a Physical result is explicitly selected/accepted and all remaining prerequisites are satisfied.

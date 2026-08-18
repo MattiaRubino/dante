@@ -32,22 +32,127 @@ WL-H01..WL-H12 active downstream
 
 ### Pre-Physical Repository & Architecture Coherence
 
-**DEFINITIVE CLOSED / FINAL QA PASS — integrated into `main` via PR #13 and post-merge verified.**
+**DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified.**
 
 ```text
-Phase 0–11        QA PASS
-Phase 12          QA PASS / CLOSED
-Independent audit PASS
-Activation checkpoint
-9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d
-
-Protected main integration
-PR #13
-74593ae283ce5a1d22335502480ee3fa54be0436
-POST-MERGE VERIFIED
+Phase 0–11         QA PASS
+Phase 12           QA PASS / CLOSED
+Independent audit  PASS
+PR #13             Pre-Physical integration
+PR #14             post-merge current-truth alignment
+Physical base main 3de84bb49f9cef30e88e9bde4961ed84335daa79
 ```
 
-The merged head branch `chore/pre-physical-coherence` was auto-deleted after integration. The closed/integrated result does not select Physical persistence or start backend implementation.
+### Physical Model target architecture
+
+**CLOSED / SELECTED / ACCEPTED.**
+
+```text
+PM-00  QA PASS
+PM-01  PASS-CONDITIONAL
+PM-02  COMPLETE
+PM-03  STATIC COMPLETE / 0 REJECTS
+PM-04A COMPLETE / 0 EXECUTION-WORTHY GAPS
+PM-04B NOT ADMITTED
+PM-05  COMPLETE
+PM-06  EVIDENCE QUALIFICATION COMPLETE
+PM-07  EVIDENCE QUALIFICATION COMPLETE
+PM-08  SECONDARY/SPECIALIST QUALIFICATION COMPLETE
+PM-09  EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
+PM-10  FINAL STACK RECOMMENDATION COMPLETE
+PM-11  EXPLICIT USER-APPROVED SELECTION COMPLETE
+PM-12  ACCEPTED PHYSICAL MODEL COMPLETE
+PM-13  CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
+PM-14  BRANCH CLOSURE COMPLETE
+```
+
+Selected canonical primary:
+
+```text
+PostgreSQL 18.4
+```
+
+Selected target companion architecture:
+
+```text
+PostGIS 3.6.4
+pgvector 0.8.6
+PostgreSQL native FTS / pg_trgm / unaccent
+pg_stat_statements
+PgBouncer 1.25.2
+PowerSync 1.25.0 Open Edition
+encrypted SQLite
+PostgreSQL transactional outbox + bounded worker
+Restate runtime
+Cloudflare R2 Standard EU/private
+pgBackRest 2.59.0
+AWS S3 Standard eu-south-1 recovery target
+OR-Tools 9.15 CP-SAT
+OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
+```
+
+Restate deployment is intentionally profile-dependent:
+
+```text
+SELF-HOSTED
+FIRST-CLASS
+
+CLOUD EU
+ALLOWED MANAGED OPTION
+
+GLOBAL DEFAULT
+NONE
+```
+
+## Physical evidence truth retained
+
+Target closure does not mean direct implementation execution occurred.
+
+```text
+DATABASE DEPLOYMENT      NOT STARTED
+FIXTURE/HARNESS           NOT STARTED
+DIRECT HG PASS            0
+LOW/BASE/HIGH            NOT RUN
+RESTORE/MIGRATION         NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                 NOT RUN
+RESTATE                   NOT RUN
+OBJECT RECOVERY           NOT RUN
+SOLVER                    NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
+```
+
+The mandatory direct selected-stack validation register remains active for implementation/release.
+
+## Current next architecture/engineering track — Development Profile v0
+
+The next separate operational-design scope may decide **how the selected Physical target is actually used during initial development**.
+
+Expected questions:
+
+```text
+which selected components are active immediately
+which are dormant until their first real capability need
+self-hosted vs managed where the Physical Model allows both
+free-tier/local development choices
+accounts/credentials/environment setup
+initial backup and observability activation
+upgrade/production triggers
+```
+
+This profile must not silently change the accepted Physical target.
+
+For example, `Restate runtime` is already selected as the Class-B technology, but DEV-v0 may decide whether Restate is active immediately and whether the initial deployment is self-hosted or Cloud EU.
+
+## Backend Foundation — later explicit authorization
+
+Backend Foundation remains:
+
+```text
+NOT STARTED / DEFERRED
+```
+
+Physical closure removes the persistence-selection blocker, but backend production implementation still requires its own explicit authorization/gate. Development Profile v0 may be established first so the actual initial infrastructure/deployment posture is deliberate rather than improvised.
 
 ## Active parallel product/design track
 
@@ -55,164 +160,75 @@ The merged head branch `chore/pre-physical-coherence` was auto-deleted after int
 
 Separate workstream on `prototype/phase-4-today-home`.
 
-It may continue independently but does not redefine accepted Domain/Logical/backend architecture.
+It may continue independently but does not redefine accepted Domain/Logical/Physical authority.
 
-## Closed and integrated Pre-Physical result
+## Upstream constraints that remain active
 
-The final independent audit confirmed:
+Later engineering must preserve:
 
-```text
-CORE ARCHITECTURE HOLDS                 PASS
-DOMAIN REOPEN REQUIRED                     0
-LOGICAL REOPEN REQUIRED                    0
-NEW DOMAIN OWNER REQUIRED                  0
-MAJOR SEMANTIC CONTRADICTION                0
-MAJOR ARCHITECTURAL CONTRADICTION           0
-PHYSICAL ACCIDENTALLY STARTED               0
-BACKEND ACCIDENTALLY STARTED                0
-MAJOR KNOWLEDGE LOSS                        0
-TECHNOLOGY ACCIDENTALLY SELECTED            0
-```
-
-The bounded final repairs included:
-
-- removal of stale stage-handoff prose from current specs;
-- Phase 10 method vs future Physical execution clarification;
-- repository bootstrap/hygiene alignment;
-- DBOS coupling correction: SQLite-capable local/bounded Python use, PostgreSQL-recommended production, distributed multi-server PostgreSQL-coupled;
-- explicit versioned/reproducible consequential AI change evaluation requirement;
-- explicit `unexecuted upper benchmark envelope != VERIFIED-RUN` handling.
-
-Protected integration then preserved the final branch tree exactly: `34e9ea3b547922600cb472adf1549a321e6ddfe4 → 74593ae283ce5a1d22335502480ee3fa54be0436` is one merge commit ahead with zero file differences.
-
-## Current Pre-Physical architecture inputs
-
-The following remain current downstream constraints:
-
-- CLOSED Domain Atlas and final closure/status continuations;
-- CLOSED Whole Logical Model + complete decision/assumption-register chain + remote QA closure;
+- CLOSED Domain Atlas and final closure/language authority;
+- CLOSED Whole Logical Model + complete decision register + `WL-H01..WL-H12`;
+- accepted Physical Model ownership/topology boundaries;
 - Phase 5 AuthN/AuthZ, security/privacy/retention/recovery, consistency/side-effects and NFR/multi-device/recovery requirements;
 - Phase 6 AI/context/runtime and Integration Hub boundaries;
-- consequential AI behavior changes promotion-gated by versioned/reproducible evaluation;
-- Phase 7 durable-execution posture;
+- consequential AI behavior-change evaluation requirement;
 - Phase 8 governed operation/effect contract;
-- Phase 9 search/observability/calendar/solver boundary contract;
-- Phase 10 Physical benchmark method, scenario corpus and candidate register;
-- Phase 11 effective repository engineering safety;
-- Phase 12 clean-room evidence;
-- final independent audit evidence;
-- PR #13 / post-merge `main` verification.
-
-## Current Physical benchmark posture
-
-No Physical technology is selected.
+- calendar/provider adapter separation;
+- selected-stack direct validation obligations;
+- repository engineering safety.
 
 ```text
-PRIMARY CANONICAL
-PostgreSQL hybrid — preferred mandatory baseline, NOT selected
-TypeDB            — mandatory challenger, NOT selected
-
-SECONDARY GRAPH
-no-specialized-store baseline vs Neo4j
-
-SEARCH / VECTOR
-structured + lexical/full-text baseline vs bounded pgvector where applicable
-
-EVENT / DOCUMENT
-bounded mechanisms first; specialized candidate only on demonstrated gap/benefit
-
-generic EAV / generic edge / universal meta-model
-HARD REJECT FOR CANONICAL KERNEL
+SEMANTIC OWNER != IMPLEMENTATION MECHANISM
+DOMAIN TERM != ENGINE
+ADDRESSABILITY != DOMAIN IDENTITY
+STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
+SELECTED != DIRECT PASS
+SELECTED != DEPLOYED
 ```
 
-Phase 10 defines how a later authorized benchmark must run. `PREFERRED != SELECTED`.
-
-LOW/BASE/HIGH values are synthetic qualification envelopes, not business forecasts. Unexecuted tiers are not `VERIFIED-RUN`; progressive saturation/scaling evidence may support sensitivity only when its limits are explicit.
-
-## Current runtime/search/solver posture
+## Current accepted runtime/search/solver posture
 
 ```text
 DURABLE EXECUTION
-bounded async → DB/worker/outbox style baseline class
-material durable orchestration → dedicated engine structurally justified
-Restate preferred candidate — NOT selected
-Temporal mandatory strongest challenger — NOT selected
-DBOS conditional challenger — NOT selected
-     local/bounded Python SQLite-capable
-     production PostgreSQL-recommended
-     distributed multi-server PostgreSQL-coupled
+bounded async → PostgreSQL outbox + bounded worker
+material durable Class-B → Restate runtime
+Restate deployment → self-hosted or Cloud EU / profile decision
 
 SEARCH
-structured + lexical/full-text baseline
-semantic/vector bounded
-no dedicated service by default
+PostgreSQL native FTS + pg_trgm + unaccent
+semantic/vector retrieval → pgvector
+no dedicated search/vector service in accepted target
 
 OBSERVABILITY
-OpenTelemetry-first / equivalent direction
-no vendor selected
+OpenTelemetry + Grafana Alloy + Grafana Cloud EU target
 
 CALENDAR
 iCalendar / JSCalendar / providers = adapter pressure, not ontology
 
 SOLVER
-simple deterministic rules/heuristics baseline
-OR-Tools CP-SAT preferred benchmark candidate — NOT implemented
+OR-Tools 9.15 CP-SAT selected
+UNKNOWN != INFEASIBLE
+solver output != accepted canonical effect
 ```
 
 ## AI evaluation posture
 
-Materially consequential changes to model/model version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
+Material consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
 
 ```text
 eval result != canonical LifeOS truth
 eval PASS != Authority / governed-effect authorization
 ```
 
-Concrete evaluation tooling/thresholds remain later engineering choices.
-
 ## Repository engineering safety
 
-`lifeos-main-safety` was remotely verified during Phase 11. Current owner-driven rules require PR integration, block deletion/force-push, require review-thread resolution, use zero required approvals while no independent reviewer exists and have no required CI checks until real stable check contexts exist. Auto-delete merged head branches is enabled and removed the merged Pre-Physical source branch after PR #13.
+`main` remains protected by `lifeos-main-safety`. Physical integration must use the normal protected PR path. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
 
-## Immediate next — separate authorization required
-
-```text
-PHYSICAL MODEL
-READY FOR SEPARATE AUTHORIZATION
-NOT STARTED / NOT AUTHORIZED
-```
-
-Pre-Physical protected integration and post-merge verification are complete. Do not start Physical merely because readiness is established; beginning the Physical Model requires a new explicit user authorization and a fresh workstream/write gate.
-
-## Later sequence — separate authorizations
-
-After Physical Model authorization:
+## Immediate sequence
 
 ```text
-create bounded Physical workstream from current main
-→ execute real Physical mappings + benchmark
-→ select/accept Physical result
-→ only then authorize Backend Foundation
-```
-
-## Explicitly unauthorized now
-
-```text
-direct main write
-Physical schema/tables/indexes/migrations
-PostgreSQL / TypeDB / Neo4j selection
-SQL / TypeQL / Cypher benchmark implementation
-concrete API routes / DTOs
-AuthN/AuthZ implementation
-Restate / Temporal / DBOS adoption
-queue/outbox implementation
-provider adapters
-AI provider/model/agent framework
-MCP/A2A adoption
-dedicated search/vector deployment
-observability vendor
-solver implementation
-production backend code
-feature/backend-foundation
-Domain/Logical changes without explicit reopen
+1. protected-main integration of closed Physical target
+2. remote post-merge verification
+3. separate Development Profile v0 scope
+4. later Backend Foundation authorization when explicitly approved
 ```
