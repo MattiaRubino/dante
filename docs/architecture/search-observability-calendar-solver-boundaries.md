@@ -1,13 +1,18 @@
 # Search / Observability / Calendar / Solver Boundaries
 
-- Status: **CURRENT — Phase 9 pressure contract**
-- Stage: Pre-Physical Repository & Architecture Coherence
-- Specialized infrastructure: **NOT SELECTED / NOT AUTHORIZED EXCEPT CURRENT DIRECTIONS/CANDIDATE POSTURE**
-- Physical Model: **NOT STARTED / NOT AUTHORIZED**
+- Status: **CURRENT CONTRACT / HISTORICAL PHASE-9 SELECTION SNAPSHOT — consumed by the closed Physical Model**
+- Stage: Pre-Physical Repository & Architecture Coherence / Phase-9 pressure input
+- Phase-9 selection state recorded below: **specialized infrastructure not selected at that phase**
+- Current Physical resolution: **PostgreSQL FTS + pgvector, OpenTelemetry + Grafana Alloy/Grafana Cloud EU target, OR-Tools 9.15 CP-SAT selected where applicable by PM-11/12**
+- Backend implementation: **NOT STARTED / DEFERRED**
+
+> **Current-truth qualification:** the semantic pressure/boundary rules in this document remain current. Statements below such as `NOT SELECTED`, `NO VENDOR SELECTED`, `PREFERRED ... CANDIDATE` or `PHYSICAL MODEL SELECTED 0` are the truthful state **at Phase 9** and do not override later PM-11/12 selected truth.
+>
+> **Naming continuity:** `DANTE` is the current product/app name. `LifeOS` references retained below reflect the previous working/project name for the same product lineage and are preserved as historical evidence.
 
 ## Purpose
 
-Define the LifeOS Pre-Physical pressure and current architecture boundary for:
+Define the Pre-Physical pressure and durable architecture boundary for:
 
 - search / retrieval / indexing;
 - observability / technical diagnostics;
@@ -16,9 +21,34 @@ Define the LifeOS Pre-Physical pressure and current architecture boundary for:
 
 This contract consumes the CLOSED Domain Atlas, CLOSED Logical Model, `WL-H01..WL-H12`, all Phase 5 requirements, Phase 6 AI/integration boundaries, the Phase 7 durable-execution benchmark and the Phase 8 Governed Operation / Effect Contract.
 
-It does not select a dedicated search cluster, vector database, observability vendor, calendar provider SDK, solver service topology or Physical persistence design.
+At Phase 9 this document did not select a dedicated search cluster, vector database, observability vendor, calendar provider SDK, solver service topology or Physical persistence design. PM-11/12 later resolved the applicable target mechanisms without changing the boundary rules here.
 
-## Cross-cutting invariant
+## Current Physical resolution of Phase-9 selectable mechanisms
+
+```text
+SEARCH / LEXICAL
+PostgreSQL native FTS + pg_trgm + unaccent — SELECTED
+
+SEMANTIC / VECTOR
+pgvector 0.8.6 — SELECTED / DERIVED RETRIEVAL
+
+DEDICATED SEARCH / VECTOR SERVER
+NONE IN ACCEPTED TARGET
+
+OBSERVABILITY TARGET
+OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU — SELECTED TARGET
+
+CALENDAR
+standards/providers remain adapter pressure; no provider ontology adopted
+
+SOLVER
+OR-Tools 9.15 CP-SAT — SELECTED
+
+DIRECT IMPLEMENTATION VALIDATION
+NOT STARTED
+```
+
+# Cross-cutting invariant
 
 ```text
 search/index projection
@@ -80,7 +110,7 @@ A later design SHOULD support practical lexical search and relevance ranking bef
 
 If PostgreSQL survives the Physical benchmark, its native text-search capabilities (`tsvector`, `tsquery`, phrase/query parsing, ranking and GIN/GiST indexing) form a strong baseline candidate.
 
-This is conditional on PostgreSQL selection; it is not a Phase 9 Physical commitment.
+This was conditional on PostgreSQL selection at Phase 9; PM-11/12 later selected PostgreSQL and the native lexical baseline.
 
 ## SEARCH-03 — Search ranking is derived state
 
@@ -142,7 +172,7 @@ The search document/index row/embedding ID does not become the Domain identity.
 
 ## Search/vector posture
 
-Current posture:
+Phase-9 posture:
 
 ```text
 structured filters + lexical/full-text search
@@ -157,6 +187,8 @@ BOUNDED CANDIDATE IF POSTGRESQL SURVIVES PHYSICAL SELECTION
 dedicated search/vector service
 NOT JUSTIFIED BY DEFAULT
 ```
+
+Current PM-11/12 resolution selects PostgreSQL lexical search and pgvector while keeping a dedicated search/vector service out of the accepted target.
 
 ### pgvector-specific pressure
 
@@ -223,7 +255,7 @@ A rebuilt index may be disposable/reconstructable; canonical history must not de
 
 Observability exists to diagnose and operate the technical system. It does not replace canonical/domain history, governance provenance or dedicated security/audit requirements.
 
-Current direction remains:
+Phase-9 direction:
 
 ```text
 OpenTelemetry-first or equivalent standards-based instrumentation
@@ -328,11 +360,9 @@ Aggregation may group them at higher levels only if the underlying distinction r
 
 ## Observability vendor posture
 
-No vendor is selected.
+At Phase 9, no vendor was selected. PM-11/12 later selected the **target** `OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU`, while Development Profile v0 still decides activation/deployment details.
 
-Possible later tooling may include OpenTelemetry SDK/Collector plus any compatible backend, but Phase 9 does not choose Grafana, Datadog, Honeycomb, Elastic, cloud-native telemetry or another platform.
-
-Specialized observability infrastructure must be justified by operational requirements rather than assumed.
+Specialized observability infrastructure remains bounded by operational requirements rather than assumed as semantic authority.
 
 # Part III — Calendar interoperability pressure
 
@@ -627,7 +657,7 @@ The system may solve under explicit assumptions/scenarios but must preserve the 
 
 ## Solver technology posture
 
-Current Phase 9 posture:
+Phase-9 posture:
 
 ```text
 simple deterministic rules / heuristics
@@ -640,6 +670,8 @@ AI
 INTERPRETATION / AMBIGUITY / EXPLANATION / REASONING
 NOT DETERMINISTIC CONSTRAINT AUTHORITY
 ```
+
+PM-11/12 later selected OR-Tools 9.15 CP-SAT; its output remains candidate/derived state until governed acceptance.
 
 ### Why CP-SAT is a strong candidate
 
@@ -662,7 +694,7 @@ Structural benefits for LifeOS include:
 - explanation of infeasibility/trade-offs may require additional model instrumentation;
 - solver use does not remove the need for Domain/Logical materiality and Phase 8 effect validation.
 
-No solver library is implemented by this phase.
+No solver implementation was performed by Phase 9. Direct selected-stack solver validation remains `NOT RUN` until separately executed.
 
 # Cross-pressure tests
 
@@ -713,7 +745,7 @@ Phase 9 establishes the following destructive/cross-boundary tests for later Phy
 
 # Specialized-infrastructure rule applied
 
-Current result:
+Phase-9 result:
 
 ```text
 DEDICATED SEARCH CLUSTER
@@ -726,8 +758,8 @@ PGVECTOR
 BOUNDED CANDIDATE IF POSTGRESQL SELECTED
 
 OPENTELEMETRY-FIRST / EQUIVALENT
-CURRENT OBSERVABILITY DIRECTION
-NO VENDOR SELECTED
+PHASE-9 OBSERVABILITY DIRECTION
+NO VENDOR SELECTED AT PHASE 9
 
 CALENDAR STANDARD/PROVIDER SDK
 ADAPTER CONCERN
@@ -735,14 +767,16 @@ NO ONTOLOGY AUTHORITY
 
 OR-TOOLS CP-SAT
 PREFERRED SPECIALIZED SOLVER BENCHMARK CANDIDATE
-NOT IMPLEMENTED
+NOT IMPLEMENTED AT PHASE 9
 ```
 
-Specialized infrastructure may become justified by measured load or structural correctness/reliability/evolvability benefit. Phase 10 already supplies explicit synthetic LOW/BASE/HIGH qualification envelopes and sensitivity rules; the later separately authorized Physical/runtime workstream executes the applicable scenarios rather than inventing new scale claims here.
+Later PM-11/12 resolution selected pgvector, OpenTelemetry + Grafana Alloy/Grafana Cloud EU target and OR-Tools 9.15 CP-SAT while keeping dedicated search/vector servers out of the accepted target.
 
-# Open decisions / parameters
+Specialized infrastructure may become justified by measured load or structural correctness/reliability/evolvability benefit. Phase 10 already supplies explicit synthetic LOW/BASE/HIGH qualification envelopes and sensitivity rules; later direct selected-stack validation executes applicable scenarios rather than inventing new scale claims here.
 
-Phase 9 deliberately leaves open:
+# Open decisions / parameters from Phase 9
+
+Phase 9 deliberately left the following open. Some technology-level choices were later resolved by PM-11/12, while configuration/deployment details remain for Development Profile/implementation:
 
 ```text
 search indexing topology
@@ -769,7 +803,7 @@ solver time limits by operation class
 solver service deployment topology
 ```
 
-These are later implementation/Physical/runtime decisions.
+Current target selection does not imply every configuration parameter above is fixed.
 
 # Physical benchmark-method integration already established
 
@@ -787,7 +821,7 @@ The Phase 10 method carries forward candidate pressure around:
 - governed-effect contract from Phase 8;
 - Phase 5 open scale/latency/availability/RPO/RTO scenarios.
 
-No Physical database/search/runtime selection is made here or by Phase 10's method package.
+No Physical database/search/runtime selection was made **by this Phase-9 document or by the Phase-10 method itself**; PM-11/12 later made the explicit target selection.
 
 # Evidence basis checked for this contract
 
@@ -812,12 +846,12 @@ PASS
 DOMAIN REOPEN REQUIRED             0
 LOGICAL REOPEN REQUIRED            0
 NEW DOMAIN OWNER REQUIRED          0
-DEDICATED SEARCH ENGINE SELECTED   0
-VECTOR DATABASE SELECTED           0
-OBSERVABILITY VENDOR SELECTED      0
+DEDICATED SEARCH ENGINE SELECTED   0   # at Phase 9
+VECTOR DATABASE SELECTED           0   # at Phase 9
+OBSERVABILITY VENDOR SELECTED      0   # at Phase 9
 CALENDAR PROVIDER MODEL ADOPTED    0
-SOLVER IMPLEMENTED                 0
-PHYSICAL MODEL SELECTED            0
+SOLVER IMPLEMENTED                 0   # at Phase 9
+PHYSICAL MODEL SELECTED            0   # at Phase 9
 BACKEND IMPLEMENTATION STARTED     0
 
 SEARCH BASELINE
@@ -836,4 +870,4 @@ SOLVER
 OR-Tools CP-SAT = preferred specialized benchmark candidate
 ```
 
-This verdict remains current downstream architecture pressure. It does not authorize specialized infrastructure, Physical implementation or backend implementation.
+This verdict remains current downstream architecture pressure. It records **Phase-9 state**, not current PM-11/12 selection. Current target selection is PostgreSQL lexical search + pgvector, OpenTelemetry + Grafana Alloy/Grafana Cloud EU target and OR-Tools 9.15 CP-SAT; direct implementation validation remains not started.
