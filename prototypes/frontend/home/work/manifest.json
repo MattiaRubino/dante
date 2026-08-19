@@ -1,11 +1,27 @@
 {
-  "format": "dante-home-a2-modular-v1",
+  "format": "dante-home-modular-v2",
   "oracle": {
+    "role": "retained-complete-a2-baseline",
     "path": "../current/home.html",
     "size_bytes": 748625,
     "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
     "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341"
   },
+  "accepted_output": {
+    "checkpoint": "b1-context-rail-v1",
+    "size_bytes": 760281,
+    "sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0"
+  },
+  "accepted_overrides": [
+    {
+      "id": "b1-context-rail-v1",
+      "file": "overrides/b1-context-rail-v1.patch",
+      "format": "gzip-base64-unified-diff",
+      "patch_sha256": "e5a2c3e6680c080f898811ae6b9877fc84d7e4247b06b90e6eb5656180eec82f",
+      "base_sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+      "result_sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0"
+    }
+  ],
   "template": "index.template.html",
   "style_separator": "\n/*__DANTE_A2_STYLE_BLOCK_SPLIT__*/\n",
   "script_separator": "\n/*__DANTE_A2_SCRIPT_BLOCK_SPLIT__*/\n",
@@ -20,7 +36,9 @@
     "source_prefix": "data:image/png;base64,"
   },
   "nested_style_blocks": {
-    "3": {"inside_script_block": 2}
+    "3": {
+      "inside_script_block": 2
+    }
   },
   "styles": [
     {"file":"styles/01-base.css","blocks":[1]},
@@ -67,5 +85,6 @@
     {"file":"scripts/03-stage-controller.js","blocks":[11,12,13,14,15]},
     {"file":"scripts/04-day-ribbon.js","blocks":[16,17,18,19,20]}
   ],
-  "module_storage": "copy-on-write-oracle-pointers"
+  "module_storage": "copy-on-write-oracle-pointers",
+  "materialization_note": "If a future edit touches content already represented by an accepted override, absorb/remove that override in the same bounded scope before committing the materialized replacement."
 }
