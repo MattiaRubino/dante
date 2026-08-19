@@ -76,7 +76,7 @@ def test_missing_identity_is_rejected(
     _set_valid_local_environment(monkeypatch)
     monkeypatch.delenv(variable_name)
 
-    with pytest.raises(ValidationError, match="release_sha|build_id"):
+    with pytest.raises(ValidationError, match=r"release_sha|build_id"):
         Settings()
 
 
@@ -88,7 +88,7 @@ def test_blank_identity_is_rejected(
     _set_valid_local_environment(monkeypatch)
     monkeypatch.setenv(variable_name, "   ")
 
-    with pytest.raises(ValidationError, match="release_sha|build_id"):
+    with pytest.raises(ValidationError, match=r"release_sha|build_id"):
         Settings()
 
 
@@ -115,7 +115,7 @@ def test_remote_environments_reject_local_identity_markers(
     release_sha: str,
     build_id: str,
 ) -> None:
-    with pytest.raises(ValidationError, match="DANTE_(RELEASE_SHA|BUILD_ID)"):
+    with pytest.raises(ValidationError, match=r"DANTE_(RELEASE_SHA|BUILD_ID)"):
         Settings(
             env=env,
             release_sha=release_sha,
@@ -143,10 +143,7 @@ def test_dotenv_local_is_not_loaded_implicitly(
     _clear_dante_environment(monkeypatch)
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".env.local").write_text(
-        "DANTE_ENV=local\n"
-        "DANTE_RELEASE_SHA=local\n"
-        "DANTE_BUILD_ID=local\n"
-        "DANTE_DEBUG=false\n",
+        "DANTE_ENV=local\nDANTE_RELEASE_SHA=local\nDANTE_BUILD_ID=local\nDANTE_DEBUG=false\n",
         encoding="utf-8",
     )
 
