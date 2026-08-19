@@ -39,7 +39,9 @@ COMPLETE
 MattiaRubino/lifeos → MattiaRubino/dante
 
 PRODUCTION BACKEND SCAFFOLD
-NOT STARTED
+ACTIVE
+CP1 DESIGN APPROVED
+IMPLEMENTATION NOT STARTED
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
 NOT STARTED
@@ -299,26 +301,57 @@ SOLVER DIRECT TEST       NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
+Workstation Docker/WSL smoke tests are direct evidence of the developer environment only. They do not count as PostgreSQL/database/HG/PSV validation.
+
 ## 8. Current repository branches/workstreams
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
-Engineering Foundation v0 is closed. Repository rename is complete. No production scaffold has yet been created.
+Engineering Foundation v0 is closed. Repository rename is complete.
+
+Production Backend Scaffold is now the active bounded workstream:
+
+```text
+branch    feature/backend-scaffold
+handoff   docs/workstreams/backend-scaffold.md
+state     CP1 DESIGN APPROVED / IMPLEMENTATION NOT STARTED
+```
+
+The verified workstation bootstrap is recorded in:
+
+`docs/development/local-backend-workstation-bootstrap.md`
 
 ## 9. Exact next action
 
+Do not jump directly to PostgreSQL or concrete schema implementation.
+
+Resume from the active scaffold handoff:
+
 ```text
 STEP 1
-Mandatory bootstrap from current repository truth + fresh exact Git write gate.
+Research current official releases and Python 3.14.7 compatibility for the backend stack.
 
 STEP 2
-Create production scaffold for apps/backend and LOCAL PostgreSQL engineering baseline only.
+Decide exact CP1 dependency/version/tool configuration.
 
 STEP 3
-QA the scaffold.
+Open a fresh exact CP1 Git write gate.
 
 STEP 4
-Begin concrete Logical → PostgreSQL mapping/schema implementation.
+Materialize only CP1:
+Python/backend process + typed config + real bootstrap/settings tests.
+
+STEP 5
+Run CP1 local direct QA + remote exact-delta QA.
+
+STEP 6
+Only after CP1 PASS, design/gate CP2 DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
+
+STEP 7
+Then CP3 persistence/migrations/real-PostgreSQL harness, CP4 CI enforcement, and CP5 scaffold closure.
+
+STEP 8
+Only after scaffold QA begin concrete Logical → PostgreSQL mapping/schema implementation.
 ```
 
-Do not reopen closed models/Foundation unless a concrete implementation contradiction supplies evidence for an explicit reopen.
+The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation are not reopened unless concrete implementation evidence reveals an actual contradiction.
