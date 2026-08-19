@@ -1,0 +1,47 @@
+{
+  "scope": "A2",
+  "date": "2026-08-19",
+  "branch": "prototype/frontend",
+  "pre_scope": "a84bb1062564265e22476c8467ecc21bed96af74",
+  "purpose": "mechanically modularize the current Home coded-UX prototype without visual or behavioral change",
+  "oracle": {
+    "repository_path": "prototypes/frontend/home/current/home.html",
+    "size_bytes": 748625,
+    "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+    "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341",
+    "retained_unchanged": true
+  },
+  "modular_source": {
+    "template": "index.template.html",
+    "css_files": 37,
+    "javascript_files": 4,
+    "raw_style_bodies_reconstructed": 38,
+    "raw_script_bodies_reconstructed": 20,
+    "extracted_asset": {
+      "path": "assets/day-ribbon-backdrop.png",
+      "storage_encoding": "oracle-pointer",
+      "oracle": "../current/home.html",
+      "decoded_media_type": "image/png",
+      "decoded_size_bytes": 281038,
+      "decoded_sha256": "9a273c238835dfd66b65544004d75e2adba03971add634a35e86d7fe10f0cc4d",
+      "note": "The large immutable PNG payload is not duplicated in work/. The build resolves it from the retained complete oracle and verifies its decoded identity."
+    },
+    "storage_mode": "copy-on-write-oracle-pointers",
+    "note": "Untouched CSS/JS modules are exact block pointers. build.py can materialize a selected module before editing; materialized modules become deterministic overrides.",
+    "template_storage": "copy-on-write-oracle-pointer"
+  },
+  "build": {
+    "command": "python build.py",
+    "generated_output": "build/home.html (ignored by Git)",
+    "size_bytes": 748625,
+    "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+    "byte_for_byte_matches_oracle": true,
+    "result": "PASS"
+  },
+  "qualification": {
+    "visual_change_authorized": false,
+    "behavior_change_authorized": false,
+    "production_frontend_started": false,
+    "note": "Because the generated standalone file is byte-identical to the retained oracle, its HTML/CSS/JS payload and browser input are exactly the same. A2 is a source-organization change only."
+  }
+}
