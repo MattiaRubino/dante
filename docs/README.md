@@ -24,7 +24,7 @@ Logical Model                      CLOSED
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
-Production backend scaffold        ACTIVE — CP1 DESIGN APPROVED / IMPLEMENTATION NOT STARTED
+Production backend scaffold        ACTIVE — CP1-01..03 APPROVED / IMPLEMENTATION NOT STARTED
 Concrete PostgreSQL schema         NOT STARTED
 Direct HG / PSV                    NOT RUN
 ```
@@ -40,6 +40,7 @@ Direct HG / PSV                    NOT RUN
 ### Active implementation workstream
 
 - `workstreams/backend-scaffold.md` — active production-backend scaffold handoff, checkpoint plan, quality bar and exact resume point
+- `development/backend-cp1-contract.md` — frozen CP1-01/02/03 technical contract: dependency/version policy, `pyproject`/quality tooling, complete `DANTE_*` variable registry, FastAPI/settings/health behavior, commands/tests and rationale
 - `development/local-backend-workstation-bootstrap.md` — verified clean-machine/WSL2/Docker developer bootstrap
 
 ### Development governance
@@ -120,15 +121,17 @@ Historical/closed documents may still record the pre-rename repository decision 
 ## Exact next handoff
 
 ```text
-1. Read `workstreams/backend-scaffold.md` after the normal mandatory bootstrap.
+1. Read `workstreams/backend-scaffold.md` and `development/backend-cp1-contract.md` after the normal mandatory bootstrap.
 2. Verify `feature/backend-scaffold`, current HEAD and clean local/remote state.
-3. CP1 design is approved but CP1 files do not exist yet.
-4. Research current official package releases and Python 3.14.7 compatibility.
-5. Decide exact CP1 dependency/tool configuration.
-6. Open a fresh exact CP1 Git write gate.
-7. Materialize and QA CP1 only after approval.
-8. Proceed through CP2 PostgreSQL → CP3 persistence/migrations → CP4 CI → CP5 closure.
-9. Only after scaffold QA begin concrete Logical → PostgreSQL implementation.
+3. CP1-01 dependency/version policy is approved.
+4. CP1-02 pyproject/Ruff/mypy/pytest/coverage policy is approved.
+5. CP1-03 FastAPI/settings/environment-variable/health policy is approved.
+6. CP1 implementation files and `uv.lock` do not exist yet.
+7. Re-check upstream versions only if the version-sensitive evidence has materially changed since 2026-08-19.
+8. Open a fresh exact CP1 implementation Git write gate.
+9. Materialize and QA CP1 only after approval.
+10. Proceed through CP2 PostgreSQL → CP3 persistence/migrations → CP4 CI → CP5 closure.
+11. Only after scaffold QA begin concrete Logical → PostgreSQL implementation.
 ```
 
-No production application code or concrete schema is authorized merely by Engineering Foundation closure or by the scaffold planning handoff; every implementation write still requires its own exact scope.
+No production application code or concrete schema is authorized merely by Engineering Foundation closure or by the scaffold planning/CP1 design documents; every implementation write still requires its own exact scope.
