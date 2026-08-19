@@ -1,215 +1,243 @@
 # Branching and Environments
 
-- Status: Accepted project workflow
-- Last updated: 2026-08-18
+- Status: **CURRENT**
 
-## Git model
+## 1. Core rule
 
-`main` is the single integrated source of truth for accepted code, documentation and decisions.
-
-Normal work uses bounded branches such as:
-
-- `feature/*` — production features or foundations;
-- `fix/*` — bug fixes;
-- `docs/*` — documentation/governance work;
-- `chore/*` — bounded repository/coherence/maintenance work;
-- `prototype/*` — bounded exploratory work that is not yet production implementation.
-
-Changes reach `main` through pull requests. A branch should not become a permanent second source of project truth.
-
-Long-running exploratory/model branches may exist temporarily, but durable accepted decisions/documentation discovered there must eventually be integrated into `main` or explicitly closed as rejected/historical.
-
-Detailed source precedence, path ownership, write gates and coherence rules are defined in [`agent-operating-manual.md`](agent-operating-manual.md) and [`operating-rules.md`](operating-rules.md).
-
-Repository-level enforcement and the lifecycle for branch rules, CI checks and security settings are defined in [`repository-engineering-safety.md`](repository-engineering-safety.md). Repository settings must enforce this Git model where practical, but a documented policy is not considered applied until the remote setting is verified.
-
-## Starting a branch
-
-1. Start normal new work from current `main`.
-2. Use an existing non-main branch only when the active workstream handoff explicitly identifies it as the current branch for that work.
-3. Before editing overlapping/shared files, compare the active branch with current `main` and synchronize it when practical.
-4. Keep one primary branch per workstream where possible.
-5. If two proposed workstreams would modify the same core/shared files heavily, sequence them or combine them instead of manufacturing avoidable merge conflicts.
-6. Before the first remote write, follow the exact PRE-SCOPE/write-gate protocol in the agent operating manual.
-
-Historical workstream state:
+Git branches represent source-change scope. Runtime environments represent deployed state.
 
 ```text
-chore/pre-physical-coherence
-DEFINITIVE CLOSED / FINAL QA PASS
-integrated into main via PR #13
-post-merge aligned via PR #14
-
-feature/physical-model
-PM-00..PM-14 TARGET-ARCHITECTURE WORK COMPLETE
-selected canonical primary PostgreSQL 18.4
-PM-13 architecture/documentation QA PASS
-merged into protected main via PR #15
-main merge e6f191bad947388a44defe2c15f4939345084f58
-auto-deleted after merge
+BRANCH != ENVIRONMENT
 ```
 
-Closed Domain/Logical/Physical branches are historical evidence, not starting points for new backend work. Any genuine semantic or Physical reopen requires its own explicit scope/methodology rather than reuse of a historical branch by convenience.
+DANTE does not use permanent `develop`, `uat`, `staging` or `production` branches as environment state.
 
-## Why there is no permanent `develop` branch
+## 2. Integrated source truth
 
-A permanent `develop` branch would create a second integrated state that can drift from `main`. LifeOS instead uses `main` plus bounded branches and deployment environments.
+Protected `main` is the only integrated source truth.
 
-A future `Development Profile v0` is a **configuration/operational design scope**, not a permanent Git `develop` branch.
-
-If future release management creates a measured need for release branches, that decision can be added later. It is not the default.
-
-## DEV / UAT / PROD
-
-DEV, UAT and PROD are deployment environments, not Git branches.
-
-### DEV
-
-Purpose:
-
-- integration testing;
-- active development validation;
-- test/demo data;
-- non-production credentials/services.
-
-Normal direction: deploy the latest accepted `main` build automatically or on demand. Feature branches may use isolated preview environments when useful, without becoming shared canonical DEV state.
-
-The later Development Profile v0 may decide which already-selected Physical components are active in DEV and whether an allowed component uses local/self-hosted/managed/free-tier deployment. That profile cannot silently change the accepted Physical target architecture.
-
-### UAT / Staging
-
-Purpose:
-
-- acceptance testing;
-- realistic end-to-end validation;
-- migration/deployment rehearsal;
-- release-candidate verification.
-
-A UAT deployment must record the exact source commit and artifact/build identifier.
-
-### PROD
-
-Purpose:
-
-- real released service/data.
-
-Promotion should use the same immutable artifact already accepted in UAT whenever practical, with environment-specific configuration/secrets supplied externally.
-
-Production releases should be traceable to a Git commit and later to a release tag such as `v1.0.0` when semantic release versioning begins.
-
-## Promotion model
-
-Conceptually:
+Normal flow:
 
 ```text
-feature/fix/docs/chore/prototype branch
-          ↓ PR + validation
-         main
-          ↓
-         DEV
-          ↓ promote accepted artifact
-         UAT
-          ↓ approve/promote same artifact
-         PROD
+bounded branch
+        ↓
+PR + applicable validation
+        ↓
+protected main
 ```
 
-The exact CI/CD provider is intentionally not fixed yet.
-
-## Parallel branch discipline
-
-Parallel branches must minimize shared-file churn.
-
-- Workstream-local progress belongs in the workstream's own code/docs/handoff paths.
-- `PROJECT-STATUS.md`, root `README.md`, `docs/README.md`, `docs/ROADMAP.md`, broad architecture docs and ADRs are global coordination/current-truth files; do not modify them for every local iteration.
-- A prototype branch may contain newer prototype-specific decisions without becoming authoritative for unrelated backend/domain decisions.
-- A model/architecture branch may contain newer bounded decisions only inside its explicit workstream scope; it does not become a second global truth.
-- Before copying files from historical branches, compare them against `main` and preserve newer accepted semantics.
-- Do not force-push shared active branches or rewrite history merely to make synchronization look cleaner.
-- If a shared file is stale, fix it inside an explicit scope rather than opportunistically while working on unrelated code.
-
-## Main-branch enforcement
-
-The repository safety target for `main` is deliberately aligned with this workflow rather than a separate Git model.
-
-The last remotely verified owner-driven effective rules were:
+Short-lived branch prefixes may reflect purpose, for example:
 
 ```text
-pull request required before merge
-force-push / non-fast-forward blocked
-delete protected main blocked
-review-thread resolution required
-required approvals = 0 while no independent reviewer exists
-required status checks = none until real stable checks exist
-merge commits allowed/required by current merge policy
+feature/
+fix/
+chore/
+docs/
+prototype/
 ```
 
-Do not manufacture a required status check before the corresponding workflow/check context exists and has run successfully. When real CI is introduced, promote checks into required-main rules only after their exact stable context names and blocking value are verified.
+The prefix does not authorize work outside the explicit write gate.
 
-Do not treat future repository rules/settings as active merely because their intended configuration is documented. Read back effective remote rules before claiming a changed safety milestone PASS.
+## 3. Existing repository
 
-PR #13, post-merge alignment PR #14 and Physical integration PR #15 successfully exercised the protected-main path; merge commits preserved workstream history and automatic deletion removed merged head branches.
+Production implementation continues in the current repository.
 
-## Current stage boundary
+```text
+NEW REPOSITORY
+NO
+```
 
-As of 2026-08-18:
+The repository may be renamed from historical `lifeos` to `dante` in a separate explicit governance operation. A rename preserves Git history and is preferred to creating a new production repo.
 
-- Core Domain Model / Domain Atlas is **CLOSED / integrated**;
-- Logical Model is **CLOSED / integrated / WL-H01..WL-H12 active**;
-- Pre-Physical Repository & Architecture Coherence is **DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified**;
-- Physical Model target architecture is **CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**, with PostgreSQL 18.4 selected as canonical primary;
-- former branch `feature/physical-model` is **MERGED / AUTO-DELETED**;
-- PM-13 Physical clean-room architecture/documentation QA is **PASS**;
-- direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**;
-- Backend Foundation/production implementation is **NOT STARTED / DEFERRED**;
-- Development Profile v0 is **NOT STARTED / next separate operational scope**;
-- Phase 4 UX continues separately on `prototype/phase-4-today-home`.
+## 4. Exact write gate
 
-The Physical target includes Restate as the selected Class-B durable runtime while leaving deployment mode conditional between first-class self-hosted and allowed Cloud EU; deployment activation is a later profile decision.
+Before remote mutation:
 
-## Branch lifecycle
+```text
+BRANCH
+<exact branch>
 
-1. Start from current `main` unless the workstream explicitly requires another active base.
-2. Establish the workstream/handoff and exact PRE-SCOPE where required.
-3. Keep scope bounded.
-4. Commit code/tests/docs for the same change together logically where practical.
-5. Open a PR early when useful; draft PRs are appropriate for work in progress.
-6. Keep the branch synchronized enough to expose conflicts before merge.
-7. Before merge, run the semantic/documentation coherence gate from `operating-rules.md` plus the exact post-write/compare QA required by the agent operating manual.
-8. Merge only when implementation/design and required documentation/handoff are coherent.
-9. After an important merge, synchronize long-running branches that share changed global files.
-10. Delete or archive obsolete working branches according to repository housekeeping policy; never delete history merely to hide prior reasoning.
+PRE-SCOPE
+<exact SHA>
 
-Repository hygiene rules:
+CREATE
+<paths>
 
-- automatic deletion of merged head branches is currently enabled based on the last verified repository state;
-- unmerged active branches are never auto-classified as obsolete by age alone;
-- an old/historical branch is deleted only after proving it contains no unique accepted/active work that still requires integration;
-- obviously accidental refs may be deleted after ancestry/content verification shows no unique branch-only work;
-- branch deletion is not a substitute for Git history/evidence retention.
+UPDATE
+<paths>
 
-## Definition of Done for a PR
+DELETE
+<paths>
 
-As applicable:
+PURPOSE
+<bounded purpose>
 
-- implementation/design/documentation scope complete;
-- approved PRE-SCOPE delta matches expected paths;
-- tests/validation complete at the scope actually claimed;
-- migrations and rollback implications considered when relevant;
-- relevant durable documentation updated;
-- workstream handoff updated;
-- `PROJECT-STATUS.md` updated only if global state changed;
-- ADR/current-baseline/supersession treatment added for significant architectural decisions;
-- branch compared against current `main` before merge;
-- overlapping shared docs checked for semantic freshness;
-- no secrets or personal production data committed;
-- environment/deployment impact noted;
-- any required repository/CI checks that actually exist are passing;
-- remote readback/QA supports any PASS/CLOSED claim.
+EXPLICITLY OUT OF SCOPE
+<non-scope>
+```
 
-For Physical closure/integration specifically, PM-11 selection, PM-12 Accepted Physical Model, PM-13 architecture/documentation QA PASS, preserved direct `NOT RUN` truth and the post-selection validation carry-forward must all remain visible after merge.
+Immediately before first write verify branch HEAD still equals PRE-SCOPE.
 
-## Emergency production fixes
+If it moved: stop, inspect and re-gate.
 
-When production exists, urgent fixes should still originate from the canonical history and be merged back into `main`. Do not create permanent environment branches that require repeated manual cherry-picking.
+## 5. Protected-main integration
 
-If an emergency direct-main repair is ever explicitly approved because normal PR flow is unavailable or would worsen an active incident, record the reason and resulting commit, then restore normal protected-branch discipline immediately after the repair. Emergency exception language must not become a standing bypass.
+Durable work integrates through PR.
+
+Before merge:
+
+- inspect exact changed paths;
+- inspect applicable real checks/statuses;
+- verify no unexpected branch movement;
+- merge with expected head when tooling supports it;
+- preserve workstream history with the repository's accepted merge strategy.
+
+After merge:
+
+- reread/compare `main`;
+- verify exact integration result;
+- verify branch lifecycle/autodelete when relevant.
+
+## 6. Environment vocabulary
+
+DANTE lifecycle contexts:
+
+```text
+LOCAL
+DEV
+UAT
+PROD
+```
+
+`TEST` may exist as an automated execution context but is not a promotion environment.
+
+Optional preview environments may exist temporarily when useful.
+
+## 7. Activation
+
+```text
+LOCAL
+first production implementation
+
+DEV
+when shared/remote integration becomes useful
+
+UAT
+when real release candidates exist
+
+PROD
+at production-readiness
+```
+
+Environment definitions are fixed now; remote resources are not created until useful.
+
+## 8. LOCAL
+
+LOCAL is the individual developer context.
+
+Backend baseline:
+
+- Linux canonical semantics;
+- Windows supported through WSL2;
+- backend repo/worktree in WSL filesystem;
+- PyCharm WSL interpreter supported;
+- backend process direct in WSL for reload/debug;
+- Docker Compose for stateful infra;
+- real PostgreSQL 18.4 with full selected extension envelope enabled;
+- synthetic/local credentials and data.
+
+LOCAL is disposable/rebuildable where state is not intentionally retained.
+
+## 9. DEV
+
+First shared remote integration environment.
+
+- accepted-main artifact only;
+- DEV-only state/credentials/secrets;
+- synthetic/shared non-production data;
+- remote config/network/provider integration;
+- no PROD credentials;
+- no raw PROD dump as convenience.
+
+## 10. UAT
+
+Production-like release-candidate/acceptance environment.
+
+- exact candidate identity;
+- migration/release rehearsal;
+- E2E/provider compatibility;
+- representative synthetic or explicitly sanitized/minimized data;
+- applicable security/performance/recovery/PSV gates.
+
+## 11. PROD
+
+Real released service/user data.
+
+- exact accepted candidate artifact;
+- isolated production state/identity/secrets;
+- controlled serialized migrations/releases where required;
+- accepted recovery/observability/security posture;
+- manual emergency infra changes reconciled into versioned desired state.
+
+## 12. Environment isolation
+
+Target:
+
+```text
+DEV state != UAT state != PROD state
+DEV identity != UAT identity != PROD identity
+DEV secrets != UAT secrets != PROD secrets
+```
+
+When provider is selected, prefer its strong account/project/subscription-equivalent security boundary where operationally reasonable.
+
+Cloud provider is intentionally deferred.
+
+## 13. GitHub Environments
+
+When remote deployment workflows activate, use GitHub Environments:
+
+```text
+dev
+uat
+prod
+```
+
+They control deployment workflow/credentials/protection/history as supported. They are not the runtime/cloud environment themselves.
+
+## 14. Artifact promotion
+
+Future server default:
+
+```text
+accepted main
+→ build once
+→ immutable artifact/digest
+→ DEV
+→ exact UAT candidate
+→ exact PROD candidate
+```
+
+Do not rebuild “the same release” separately without a platform-specific reason and explicit traceability.
+
+Frontend/mobile artifact semantics are deferred to frontend workstream.
+
+## 15. Required status checks
+
+A documented future job name is not a required check.
+
+Only after the real check exists, emits a stable context, has been observed on relevant PRs and genuinely must block merge may it become required on `main`.
+
+## 16. One-developer posture
+
+While there is one active developer:
+
+- PR + automated gates remain real;
+- do not create impossible/fake independent-review requirements;
+- add required reviewers/CODEOWNERS only when real independent ownership exists.
+
+## 17. Next branch after Foundation
+
+First small scope: repository rename decision/action `lifeos → dante`, or explicit defer.
+
+Then create a dedicated production-scaffold branch from current `main` with an exact path gate for `apps/backend` and required local infrastructure/tooling only.

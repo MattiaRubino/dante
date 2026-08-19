@@ -1,281 +1,205 @@
 # DANTE Roadmap
 
-- Last updated: 2026-08-18
-- Purpose: current delivery/architecture-stage sequence, not a calendar commitment
+- Status: **CURRENT**
 
-## Completed foundations
-
-### Product / North Star
-
-Accepted current DANTE identity/North Star and supporting product studies are integrated.
-
-Naming continuity:
+## Completed architecture/design sequence
 
 ```text
-CURRENT PRODUCT / APP NAME
-DANTE
-
-PREVIOUS WORKING / PROJECT NAME
-LifeOS
-
-LEGACY REFERENCES
-Historical evidence, Git history and existing technical/repository identifiers
-may still use LifeOS for the same product lineage.
-
-RENAME IMPACT
-Naming only — no Product North Star, Domain, Logical or Physical semantic change.
+Product / North Star
+        CLOSED/CURRENT
+          ↓
+Domain Model
+        CLOSED
+          ↓
+Logical Model
+        CLOSED
+          ↓
+Pre-Physical Repository & Architecture Coherence
+        CLOSED
+          ↓
+Physical Model / Target Selection
+        CLOSED / ACCEPTED
+          ↓
+Current-truth dormant-component alignment
+        COMPLETE
+          ↓
+Engineering Foundation v0
+        CLOSED / ACCEPTED
 ```
 
-### Core Domain Model / Domain Atlas
+Engineering Foundation replaces the previously considered standalone Development Profile phase. Tool/runtime/infrastructure activation now happens under the closed Foundation contract and the implementation boundary that actually needs the capability.
 
-**CLOSED — integrated into `main` via PR #10.**
+## Immediate next sequence
+
+### 0. Repository identity governance
+
+Keep the current repository; **do not create a new repository** for implementation.
+
+Recommended small next operation:
 
 ```text
-Whole-Domain PASS WITH HARDENING
-POST-WRITE QA PASS
+rename GitHub repository
+lifeos → dante
 ```
 
-### Logical Model
+The rename must be an explicit governance write. If intentionally deferred, document that defer and continue on the same repository.
 
-**CLOSED — integrated into `main` via PR #11.**
+### 1. Production repository/backend scaffold
+
+Open a fresh bounded branch/write gate and create only real scaffold required for:
 
 ```text
-Whole-Logical PASS WITH HARDENING
-REMOTE QA PASS
-WD-03 PASS
-WD-05 PASS
-WL-H01..WL-H12 active downstream
+apps/backend
+Python 3.14.x / initial 3.14.7
+uv + pyproject.toml + uv.lock + .python-version
+src/dante
+Ruff
+mypy strict
+pytest + Hypothesis baseline
+architecture-test skeleton where an enforceable package graph exists
+pydantic-settings bootstrap
+SQLAlchemy + psycopg + Alembic bootstrap
+LOCAL Docker Compose
+DANTE-owned PostgreSQL 18.4 image/config
+full selected PostgreSQL extension envelope enabled
+initial migration harness
+initial real PostgreSQL integration harness
+initial GitHub Actions checks only where they can really execute
 ```
 
-### Pre-Physical Repository & Architecture Coherence
+Do not create frontend implementation or unused remote-cloud scaffolding in this scope.
 
-**DEFINITIVE CLOSED / FINAL QA PASS / integrated / post-merge verified.**
+### 2. Scaffold QA
+
+Before concrete schema work prove:
+
+- exact changed paths;
+- clean locked dependency bootstrap;
+- backend can start in WSL/Linux;
+- PyCharm WSL interpreter workflow remains straightforward;
+- DANTE PostgreSQL image builds/starts;
+- selected extensions are installed/enabled and versions inspectable;
+- basic database connection works through selected driver/toolkit;
+- migration harness can create/upgrade an empty DB baseline;
+- initial unit/integration/architecture checks actually run;
+- real emitted CI contexts are observed before any required-check activation.
+
+No direct Physical HG/PSV PASS may be claimed unless the specific required scenario/artifact is actually executed.
+
+### 3. Concrete Logical → PostgreSQL implementation
+
+After scaffold PASS:
 
 ```text
-Phase 0–11         QA PASS
-Phase 12           QA PASS / CLOSED
-Independent audit  PASS
-PR #13             Pre-Physical integration
-PR #14             post-merge current-truth alignment
-Physical base main 3de84bb49f9cef30e88e9bde4961ed84335daa79
+consume closed Logical owner/ref/invariant contracts
+        ↓
+propose concrete physical mapping
+        ↓
+review schema/constraints/indexes/history semantics
+        ↓
+Alembic migration(s)
+        ↓
+real PostgreSQL tests
+        ↓
+persistence/application vertical slice
 ```
 
-### Physical Model target architecture
+Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
 
-**CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO `main` VIA PR #15.**
+### 4. Backend vertical slices
+
+Build capability-by-capability:
+
+- explicit application use cases;
+- expected-state/idempotency/governance semantics;
+- transaction boundaries;
+- persistence adapters;
+- material history/provenance;
+- HTTP adapter only after semantic/application boundary is sound;
+- outbox/async effects when real Class-A use cases appear.
+
+### 5. Frontend production engineering
+
+Frontend internal engineering remains on its own workstream/branch after the current frontend design/prototype work is ready.
+
+That scope will decide, against current evidence:
+
+- production web/mobile internal structure;
+- Node/package-manager/workspace/task tooling;
+- detailed web/mobile testing;
+- generated API-client consumption;
+- mobile build/release/EAS posture;
+- shared frontend package boundaries.
+
+It consumes backend contracts; it does not reopen backend Foundation by default.
+
+### 6. Capability-triggered Physical implementation
+
+Activate selected components when their real feature boundary arrives:
 
 ```text
-PM-00  QA PASS
-PM-01  PASS-CONDITIONAL
-PM-02  COMPLETE
-PM-03  STATIC COMPLETE / 0 REJECTS
-PM-04A COMPLETE / 0 EXECUTION-WORTHY GAPS
-PM-04B NOT ADMITTED
-PM-05  COMPLETE
-PM-06  EVIDENCE QUALIFICATION COMPLETE
-PM-07  EVIDENCE QUALIFICATION COMPLETE
-PM-08  SECONDARY/SPECIALIST QUALIFICATION COMPLETE
-PM-09  EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
-PM-10  FINAL STACK RECOMMENDATION COMPLETE
-PM-11  EXPLICIT USER-APPROVED SELECTION COMPLETE
-PM-12  ACCEPTED PHYSICAL MODEL COMPLETE
-PM-13  CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
-PM-14  BRANCH CLOSURE COMPLETE
-PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
-PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
-FORMER  feature/physical-model MERGED / AUTO-DELETED
+PowerSync + encrypted SQLite
+→ real offline/multi-device implementation
+
+R2
+→ real ContentArtifact byte flow
+
+OR-Tools
+→ solver-backed planning capability
+
+Restate
+→ first real Class-B durable workflow
+
+pgBackRest + AWS S3
+→ recovery/production boundary or real recovery rehearsal
 ```
 
-Selected canonical primary:
+Applicable PSV obligations travel with activation.
+
+### 7. Remote DEV
+
+When LOCAL implementation has enough value to require real remote integration:
+
+- compare current hosting/compute options;
+- select provider and IaC engine deliberately;
+- create isolated DEV only;
+- use workload identity/secret manager/OIDC;
+- deploy exact immutable artifact;
+- validate remote config/network/provider wiring.
+
+Do not materialize UAT/PROD merely to have empty enterprise-looking environments.
+
+### 8. UAT
+
+Activate when a real release candidate exists.
+
+Use for:
+
+- migration rehearsal;
+- release deployment rehearsal;
+- E2E/provider compatibility;
+- performance/failure/security/recovery checks as applicable;
+- release acceptance.
+
+### 9. PROD
+
+Activate at production readiness with:
+
+- isolated production resources/identity/secrets;
+- accepted recovery posture;
+- observability/security release gates;
+- exact candidate artifact/digest;
+- controlled migration/release procedure;
+- post-deploy verification.
+
+## Persistent rule
 
 ```text
-PostgreSQL 18.4
+SELECTED ARCHITECTURE
+!= IMPLEMENTED COMPONENT
+
+DOCUMENTATION PASS
+!= DIRECT IMPLEMENTATION PASS
 ```
 
-Selected target companion architecture:
-
-```text
-PostGIS 3.6.4
-pgvector 0.8.6
-PostgreSQL native FTS / pg_trgm / unaccent
-pg_stat_statements
-PgBouncer 1.25.2
-PowerSync 1.25.0 Open Edition
-encrypted SQLite
-PostgreSQL transactional outbox + bounded worker
-Restate runtime
-Cloudflare R2 Standard EU/private
-pgBackRest 2.59.0
-AWS S3 Standard eu-south-1 recovery target
-OR-Tools 9.15 CP-SAT
-OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
-```
-
-Restate deployment is intentionally profile-dependent when Restate is activated:
-
-```text
-SELF-HOSTED
-FIRST-CLASS
-
-CLOUD EU
-ALLOWED MANAGED OPTION
-
-GLOBAL DEFAULT
-NONE
-```
-
-Initial DEV activation is already fixed for two selected target components:
-
-```text
-RESTATE
-DORMANT / NOT ACTIVE
-ACTIVATE ON FIRST REAL CLASS-B DURABLE-WORKFLOW NEED
-DEPLOYMENT MODE DECIDED ONLY AT ACTIVATION
-
-pgBackRest + AWS S3 eu-south-1
-DORMANT / NOT ACTIVE
-ACTIVATE AT RECOVERY/PRODUCTION BOUNDARY
-OR WHEN A REAL RECOVERY-REHEARSAL REQUIREMENT EXISTS
-```
-
-## Physical evidence truth retained
-
-Target closure/integration does not mean direct implementation execution occurred.
-
-```text
-DATABASE DEPLOYMENT      NOT STARTED
-FIXTURE/HARNESS           NOT STARTED
-DIRECT HG PASS            0
-LOW/BASE/HIGH            NOT RUN
-RESTORE/MIGRATION         NOT RUN
-FAILURE INJECTION         NOT RUN
-POWERSYNC                 NOT RUN
-RESTATE                   NOT RUN
-OBJECT RECOVERY           NOT RUN
-SOLVER                    NOT RUN
-VERIFIED-RUN SCORE        NOT AVAILABLE
-```
-
-The mandatory direct selected-stack validation register remains active for implementation/release.
-
-## Current next architecture/engineering track — Development Profile v0
-
-The next separate operational-design scope decides **only how the already-selected Physical target is used where current activation posture has not already been fixed**.
-
-Expected questions include:
-
-```text
-which still-unresolved selected components are active immediately
-which other components remain dormant until their first real capability need
-self-hosted vs managed only where an active component requires the choice now
-accounts/credentials/environment setup
-initial observability activation
-upgrade/production triggers
-```
-
-This profile must not silently change the accepted Physical target.
-
-Two day-1 questions are already closed and must not be reopened:
-
-```text
-Restate active now?                 NO — DORMANT UNTIL REAL CLASS-B NEED
-Restate self-hosted vs Cloud EU?    NOT YET — DECIDE ONLY AT ACTIVATION
-pgBackRest/AWS S3 active now?       NO — DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
-```
-
-## Backend Foundation — later explicit authorization
-
-Backend Foundation remains:
-
-```text
-NOT STARTED / DEFERRED
-```
-
-Physical closure/integration removes the persistence-selection blocker, but backend production implementation still requires its own explicit authorization/gate. Development Profile v0 may be established first so the actual initial infrastructure/deployment posture is deliberate rather than improvised.
-
-## Active parallel product/design track
-
-### Phase 4 — UX prototype/product-structure validation
-
-Separate workstream on `prototype/phase-4-today-home`.
-
-It may continue independently but does not redefine accepted Domain/Logical/Physical authority.
-
-## Upstream constraints that remain active
-
-Later engineering must preserve:
-
-- CLOSED Domain Atlas and final closure/language authority;
-- CLOSED Whole Logical Model + complete decision register + `WL-H01..WL-H12`;
-- accepted Physical Model ownership/topology boundaries;
-- Phase 5 AuthN/AuthZ, security/privacy/retention/recovery, consistency/side-effects and NFR/multi-device/recovery requirements;
-- Phase 6 AI/context/runtime and Integration Hub boundaries;
-- consequential AI behavior-change evaluation requirement;
-- Phase 7 durable-execution contract as physically resolved by PM-11/12;
-- Phase 8 governed operation/effect contract;
-- Phase 9 search/observability/calendar/solver contract as physically resolved where selected;
-- calendar/provider adapter separation;
-- selected-stack direct validation obligations;
-- repository engineering safety.
-
-```text
-SEMANTIC OWNER != IMPLEMENTATION MECHANISM
-DOMAIN TERM != ENGINE
-ADDRESSABILITY != DOMAIN IDENTITY
-STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
-SELECTED != DIRECT PASS
-SELECTED != DEPLOYED
-```
-
-## Current accepted runtime/search/solver posture
-
-```text
-DURABLE EXECUTION
-bounded async → PostgreSQL outbox + bounded worker
-material durable Class-B → Restate runtime
-initial DEV Restate → DORMANT until first real Class-B need
-Restate deployment → self-hosted or Cloud EU, decided only when activated
-
-RECOVERY
-pgBackRest + AWS S3 eu-south-1 → selected production/off-site target
-initial DEV → DORMANT until recovery/production boundary or real rehearsal need
-
-SEARCH
-PostgreSQL native FTS + pg_trgm + unaccent
-semantic/vector retrieval → pgvector
-no dedicated search/vector service in accepted target
-
-OBSERVABILITY
-OpenTelemetry + Grafana Alloy + Grafana Cloud EU target
-
-CALENDAR
-iCalendar / JSCalendar / providers = adapter pressure, not ontology
-
-SOLVER
-OR-Tools 9.15 CP-SAT selected
-UNKNOWN != INFEASIBLE
-solver output != accepted canonical effect
-```
-
-## AI evaluation posture
-
-Material consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy require versioned/reproducible evaluation before promotion.
-
-```text
-eval result != canonical DANTE truth
-eval PASS != Authority / governed-effect authorization
-```
-
-## Repository engineering safety
-
-`main` remains protected by `lifeos-main-safety`. Physical integration used the normal protected PR path through PR #15. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
-
-## Immediate sequence
-
-```text
-1. Development Profile v0 — separate bounded operational-design scope
-2. identify only genuinely unresolved initial activation/deployment/configuration choices
-3. preserve Restate and pgBackRest/AWS S3 as initial-DEV dormant until their fixed triggers
-4. later Backend Foundation authorization when explicitly approved
-5. discharge applicable direct selected-stack validation obligations at their proper implementation/release gates
-```
+The next conversation should start from the Engineering Foundation closure handoff rather than redesigning the same decisions.

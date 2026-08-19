@@ -1,365 +1,322 @@
-# System Overview
+# DANTE System Overview
 
-- Status: **Current architecture overview — Physical Model target selected/accepted/integrated**
-- Last updated: 2026-08-18
-- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained only where historical/technical continuity requires it)
+- Status: **CURRENT ARCHITECTURE OVERVIEW**
 
-## Stage boundary
+## 1. Product
 
-```text
-Product / North Star
-CURRENT
+DANTE is a personal operating system whose canonical truth represents real life over time while preserving authority, provenance, uncertainty and the distinction between intention, execution and outcome.
 
-Core Domain Model / Domain Atlas
-CLOSED
+Compass: **Understand life. Shape what comes next.**
 
-Logical Model
-CLOSED
+## 2. Architectural authority
 
-Phase 5 requirements
-CURRENT
+Implementation consumes the closed Product/Domain/Logical/Physical models and the closed Engineering Foundation.
 
-Phase 6 AI/context/runtime/integration boundaries
-CURRENT
-
-Phase 7 durable-execution contract
-CURRENT / PHYSICAL MECHANISM RESOLVED
-
-Phase 8 governed-operation/effect contract
-CURRENT
-
-Phase 9 search/observability/calendar/solver contract
-CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
-
-Phase 10 benchmark method
-CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
-
-Repository engineering safety
-QA PASS
-
-Pre-Physical Coherence
-DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED / POST-MERGE VERIFIED
-
-Physical Model target
-CLOSED / SELECTED / ACCEPTED
-PM-13 clean-room architecture/documentation QA PASS
-INTEGRATED INTO MAIN VIA PR #15
-PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
-former feature/physical-model MERGED / AUTO-DELETED
-selected canonical primary PostgreSQL 18.4
-
-Direct selected-stack implementation validation
-NOT STARTED / DIRECT HG PASS 0
-
-Backend Foundation / production implementation
-NOT STARTED / DEFERRED
-
-Development Profile v0
-NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
-```
-
-Domain semantics are defined by the CLOSED Domain Atlas; Logical representation/downstream hardenings by the CLOSED Whole Logical Model. This overview introduces no new semantic owner.
-
-## Logical/system architecture
-
-```text
-Web client (Next.js) -----------------------\
-                                             \
-Mobile client (Expo / React Native) ----------> Versioned DANTE backend boundary
-                                                  |-- authentication context / AuthZ enforcement
-                                                  |-- governed operation/effect boundary
-                                                  |-- scheduling / planning / reasoning services
-                                                  |-- deterministic solver boundary
-                                                  |-- provenance / history / reconciliation services
-                                                  |-- projection / disclosure services
-                                                  |-- search / retrieval services
-                                                  |-- Integration Hub / provider adapters
-                                                  |-- AI Gateway + Context Builder
-                                                  |-- AI evaluation / promotion boundary
-                                                  |-- bounded async + durable execution boundary
-                                                  |-- observability / operational controls
-                                                            |
-                                                            v
-                                                   PostgreSQL 18.4
-                                                   canonical persistence
-                                                      /    |    \
-                                                     /     |     \
-                                                 PostGIS  pgvector  FTS
-                                                    |
-                 -----------------------------------+-----------------------------------
-                 |                                  |                                  |
-          PowerSync / SQLite                 Restate runtime                    Cloudflare R2
-          local/sync projection              Class-B execution                 raw object bytes
-                 |                                  |                                  |
-                 +-------------------------- backend authority -------------------------+
-                                                    |
-                                                pgBackRest
-                                                    |
-                                      AWS S3 recovery repositories
-
-Operational telemetry:
-OpenTelemetry -> Grafana Alloy -> Grafana Cloud EU
-
-Constraint solving:
-OR-Tools CP-SAT -> candidate output -> governed acceptance path
-```
-
-External providers, assistants, caches, indexes, projections, solver candidates, workflow/runtime state and device-local stores are not alternate canonical DANTE truth merely because they contain data.
-
-## Canonical ownership
-
-```text
-CANONICAL DANTE TRUTH
-PostgreSQL 18.4
-
-MATERIAL HISTORY
-PostgreSQL 18.4
-
-RAW OBJECT BYTES
-Cloudflare R2
-
-LOCAL/OFFLINE COPY
-encrypted SQLite / noncanonical
-
-SYNC PROJECTION
-PowerSync / noncanonical
-
-DURABLE RUNTIME STATE
-Restate / noncanonical
-
-BACKUPS
-S3 / recovery only
-
-SOLVER OUTPUT
-OR-Tools / candidate only
-
-TELEMETRY
-OTel/Grafana / operational only
-```
-
-## Client responsibilities
-
-Clients own presentation, navigation, local interaction state, secure session handling, platform capabilities and collection of user intent/confirmation where required.
-
-Multi-device/offline behavior must obey operation-specific freshness, expected-state, conflict, governance and sensitive-data requirements. Clients do not own canonical persistence or critical authorization/Domain invariants.
-
-UI actions may request governed operations; UI labels/buttons do not define semantic operation identity.
-
-## Backend boundary responsibilities
-
-A future backend must enforce accepted semantics through technical services, including:
-
-- semantic target/operation validation;
-- governed operation/effect admission + multi-axis result semantics;
-- authorization enforcement without collapsing Principal, Actor, Authority, Consent or Visibility;
-- expected-state/conflict handling;
-- autonomy/preview/confirmation according to consequence/governance;
-- provenance/material history/correction/reconciliation;
-- truthful multi-owner consistency or explicit staged/partial outcomes;
-- provider-state vs canonical-state separation;
-- selective projection/disclosure;
-- scheduling/replanning and deterministic calculation/constraint services;
-- solver candidate generation rather than direct canonical writes;
-- AI context construction/provider-neutral routing;
-- versioned/reproducible evaluation before promotion of materially consequential AI behavior changes;
-- provider/integration orchestration;
-- bounded background work vs durable long-running coordination by operation class;
-- search/retrieval separated from canonical meaning;
-- privacy-safe observability and operational controls.
-
-Concrete routes/DTOs, AuthZ engine and Development Profile v0 remain later decisions. Physical persistence technology is selected and integrated, but backend production implementation has not started.
-
-## Governed operation/effect responsibility
-
-Where material, consequential operations preserve:
-
-```text
-contract/version
-semantic target/facet
-requested effect
-input/candidate
-purpose/context
-material/expected state
-derived/live basis + freshness
-Principal / actual Actor / represented party
-governance basis
-autonomy / preview / confirmation
-idempotency/equivalence
-correlation/causation
-execution class
-deadline/expiry/technical cancellation
-canonical result
-provider/external result
-runtime result
-conflict/partial/reconciliation/provenance
-```
-
-```text
-request accepted != effect completed
-provider acknowledgement != canonical completion automatically
-workflow completion != Actual automatically
-runtime cancellation != Domain cancellation automatically
-```
-
-## Durable execution responsibility
-
-```text
-BOUNDED ASYNC
-PostgreSQL transactional outbox + bounded worker
-
-DEDICATED DURABLE CLASS-B
-Restate runtime — SELECTED
-```
-
-Restate deployment:
-
-```text
-SELF-HOSTED
-FIRST-CLASS
-
-CLOUD EU
-ALLOWED MANAGED OPTION
-
-GLOBAL DEFAULT
-NONE
-```
-
-The deployment profile chooses between them based on privacy, operability, availability and cost. Current Python use must not assume TypeScript-only client-side journal encryption; journal minimization remains mandatory.
-
-No runtime creates exactly-once external reality. Runtime/workflow IDs remain technical and do not become Domain/material-state identity.
-
-## Offline / multi-device responsibility
-
-```text
-PostgreSQL canonical
-→ approved PowerSync projection
-→ encrypted SQLite local copy
-→ offline mutation
-→ DANTE backend expected-state/governance/AuthZ revalidation
-→ PostgreSQL canonical commit if valid
-```
-
-Local arrival order is not semantic conflict resolution. Universal consequential LWW is rejected. Visibility/delete/redaction changes must propagate to affected sync/local copies.
-
-## Object responsibility
-
-```text
-ContentArtifact identity/metadata/authority
-PostgreSQL
-
-raw object bytes
-Cloudflare R2 Standard / EU / private
-```
-
-R2 is not a semantic database. Public permanent object URLs/buckets are not the default.
-
-## Recovery responsibility
-
-```text
-PostgreSQL backup
-pgBackRest 2.59.0 -> AWS S3 Standard eu-south-1
-
-R2 object backup
--> separate S3 repository
-```
-
-Versioning and Object Lock GOVERNANCE with finite policy-bound retention are the target recovery posture. Recovery copies are not canonical and restore must preserve anti-resurrection/deletion semantics.
-
-## Canonical state responsibility
-
-Physical persistence preserves owner-specific identity/lifecycle boundaries, discriminated reference families, planned/current/actual/observed/derived distinctions, relationship/governance semantics, provider/canonical separation, material history/correction/reconciliation/retention integrity, bounded flexible/provider metadata and unresolved/candidate meaning where not established.
+Core invariants include:
 
 ```text
 Person != Account != Principal != Actor
-provider state != canonical state
+Authority != AuthZ decision
+Consent != Authority
+Visibility != Authority
+provider state != canonical DANTE state
 derived projection != canonical truth
-absence / unknown != false
-AI / solver inference != accepted canonical effect
+absence/unknown != false
+MaterialStateRef != ETag/MVCC/provider revision
+idempotency != semantic identity
+AI/solver output != accepted canonical effect
 ```
 
-All `WL-H01..WL-H12` remain mandatory downstream.
+WL-H01..WL-H12 remain active.
 
-## Integration responsibility
+## 3. Repository/application topology
 
-Five Integration Hub modes remain distinct:
-
-1. canonical import;
-2. sync/mirror;
-3. live federated read;
-4. retrieval/index projection;
-5. action/tool integration.
-
-`ExternalRef != NativeRef`; provider revision != `MaterialStateRef`; provider acknowledgement/result != canonical completion automatically. MCP/A2A/future protocols remain adapters.
-
-## AI / Context Builder responsibility
+One product monorepo:
 
 ```text
-canonical state
-material history
-retrieved context
-derived context
-live external context
-candidate / unresolved state
-transient LLM working context
+DANTE repository
+│
+├── apps/backend
+│   └── capability-first modular monolith
+│
+├── apps/web
+│   └── client boundary; internal engineering deferred
+│
+├── apps/mobile
+│   └── client boundary; internal engineering deferred
+│
+├── packages
+│   └── only genuinely shared contracts/artifacts
+│
+├── infra
+│   └── LOCAL and future remote infrastructure definitions
+│
+├── tooling
+├── tests/system
+├── docs
+├── prototypes
+└── .github
 ```
 
-AI output/tool invocation never becomes canonical truth/effect merely because a model/runtime produced it. DANTE does not create a second generic AI-memory source of truth.
+Production implementation continues in the existing repository. A rename from historical `lifeos` to `dante` is a separate governance step; a new repo is not planned.
 
-Material consequential AI changes require versioned/reproducible evaluation before promotion.
+## 4. Backend architecture
+
+Target internal shape:
 
 ```text
-eval result != canonical DANTE truth
-eval PASS != Authority / governed-effect authorization
+apps/backend/src/dante
+├── bootstrap
+├── kernel
+├── platform
+└── modules/<capability>
+    ├── domain
+    ├── application
+    ├── ports
+    └── adapters
+        ├── inbound/http
+        └── outbound/persistence|integrations
 ```
 
-## Search / calendar / solver / observability responsibility
+The shape expresses dependency direction, not mandatory empty folders.
 
-- Search: PostgreSQL native FTS + `pg_trgm` + `unaccent`; pgvector for bounded vector retrieval; search/index state remains derived and disclosure-aware.
-- Graph traversal: explicit PostgreSQL mappings + recursive SQL; no dedicated graph database in the accepted target.
-- Calendar: standards/providers are adapter pressure; recurrence/overrides/DST/floating/all-day/provider-resync semantics remain DANTE-owned.
-- Solver: OR-Tools 9.15 CP-SAT is selected; `UNKNOWN != INFEASIBLE`; output crosses governed acceptance before canonical change.
-- Observability: OpenTelemetry + Grafana Alloy + Grafana Cloud EU target; telemetry identifiers do not replace NativeRef/MaterialStateRef/Provenance/audit.
+FastAPI is an inbound adapter/process host.
 
-## Direct implementation-validation truth
+SQLAlchemy/persistence/provider/runtime objects remain outside Domain identity.
+
+Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
+
+## 5. Canonical persistence
 
 ```text
-DATABASE DEPLOYMENT      NOT STARTED
-FIXTURE/HARNESS           NOT STARTED
-DIRECT HG PASS            0
-LOW/BASE/HIGH            NOT RUN
-RESTORE/MIGRATION         NOT RUN
-FAILURE INJECTION         NOT RUN
-POWERSYNC                 NOT RUN
-RESTATE                   NOT RUN
-OBJECT RECOVERY           NOT RUN
-SOLVER                    NOT RUN
-VERIFIED-RUN SCORE        NOT AVAILABLE
+PostgreSQL 18.4
+SOLE CANONICAL PERSISTENCE AUTHORITY
 ```
 
-Applicable obligations remain in `docs/physical-model/recommendation/post-selection-validation-register-v1.md`.
+It owns canonical material state/history required by the accepted Logical/Physical model.
 
-## Repository engineering safety
+Selected DB capabilities:
 
-Effective `main` protections remain the integration mechanism. Physical integration used the protected PR path through PR #15; future normal work continues on bounded branches with no direct-main bypass.
+- PostGIS 3.6.4;
+- pgvector 0.8.6;
+- native FTS;
+- pg_trgm;
+- unaccent;
+- pg_stat_statements;
+- PgBouncer 1.25.2 target.
 
-## Development Profile v0 boundary
+The first LOCAL DB already has the full extension envelope installed/enabled. “Enabled” does not mean every capability is already used by application code.
 
-The accepted Physical target does not decide initial deployment activation. A separate Development Profile v0 may choose which selected services run immediately, self-hosted/managed modes where allowed, free-tier/local operational choices, accounts/environments and upgrade triggers.
-
-## Next boundary
+## 6. Persistence/application boundary
 
 ```text
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-INTEGRATED INTO MAIN VIA PR #15
-
-DIRECT IMPLEMENTATION VALIDATION
-NOT STARTED / CARRIED FORWARD
-
-NEXT
-Development Profile v0
-
-Backend Foundation
-NOT STARTED / requires separate explicit authorization
+application use case
+        ↓
+capability-shaped persistence boundary
+        ↓
+SQLAlchemy 2.0 / psycopg 3
+        ↓
+PostgreSQL
 ```
+
+Rules:
+
+- ORM != Domain;
+- no universal generic CRUD repository;
+- one AsyncSession per concurrent use-case/task scope;
+- application/use-case boundary owns transaction;
+- implicit/lazy DB I/O does not leak into Domain/application logic;
+- cross-capability transaction remains possible inside the modular monolith where accepted semantics require atomicity.
+
+## 7. Schema evolution
+
+```text
+Alembic revision history
+= deployment schema-change authority
+```
+
+Policy:
+
+- autogenerate candidate only;
+- applied revisions immutable;
+- clean base→head tests;
+- metadata/schema drift detection;
+- lock/rewrite/data-loss review;
+- online/staged PostgreSQL techniques where appropriate;
+- expand → migrate → contract for breaking evolution;
+- large backfills as bounded resumable/idempotent jobs;
+- separate runtime/migrator/owner privileges.
+
+Logical copy and disaster recovery are different mechanisms:
+
+```text
+pg_dump / pg_restore
+logical copies / bounded clone workflows
+
+pgBackRest + WAL/PITR + AWS S3
+recovery-grade path when recovery boundary activates
+```
+
+## 8. Offline/sync
+
+Selected target:
+
+- PowerSync Open Edition;
+- encrypted SQLite local state;
+- PostgreSQL-backed PowerSync bucket storage;
+- explicit client-safe sync projections.
+
+Invariants:
+
+```text
+SQLite local state != canonical truth
+PowerSync arrival order != conflict resolution
+consequential offline mutation → backend revalidation → PostgreSQL
+```
+
+PowerSync is not implemented merely because the target is selected.
+
+## 9. Async/durable work
+
+### Class A
+
+PostgreSQL transactional outbox + bounded worker.
+
+Where semantics require atomicity:
+
+```text
+canonical state transition
++
+outbox record
+= same PostgreSQL transaction
+```
+
+### Class B
+
+Restate is selected but dormant until first real Class-B durable workflow.
+
+Restate runtime state never becomes canonical DANTE history by default.
+
+## 10. Content artifacts / object bytes
+
+When activated:
+
+```text
+PostgreSQL
+owns ContentArtifact identity/metadata/provenance/visibility/retention/hash/locator
+
+Cloudflare R2
+owns private raw object bytes only
+```
+
+R2 is private and EU-jurisdiction target under the accepted Physical posture.
+
+## 11. Recovery
+
+Selected target:
+
+- pgBackRest 2.59.0;
+- AWS S3 Standard eu-south-1;
+- Versioning/Object Lock posture defined by Physical model;
+- WAL/PITR;
+- anti-resurrection requirement;
+- recovery copies noncanonical.
+
+Initial implementation posture remains dormant until recovery/production boundary or real rehearsal.
+
+Once active, backup verification and restore rehearsal are mandatory evidence.
+
+## 12. Solver
+
+OR-Tools CP-SAT is the selected candidate mechanism when solver-backed planning arrives.
+
+```text
+UNKNOWN != INFEASIBLE
+```
+
+Solver output remains candidate/derived context until accepted through governed application semantics.
+
+## 13. Observability
+
+Selected target:
+
+- OpenTelemetry;
+- Grafana Alloy;
+- Grafana Cloud EU;
+- pg_stat_statements.
+
+Observability is privacy-minimized operational telemetry, not a shadow user-data store or canonical history.
+
+Backend design includes correlation/release identity and secret/payload redaction boundaries from the first service scaffold.
+
+## 14. Configuration/secrets
+
+Backend uses typed `pydantic-settings` configuration with fail-fast validation and immutable runtime state.
+
+Remote target:
+
+```text
+workload/federated identity
+→ provider secret manager
+→ least privilege
+→ rotation/revocation/audit
+```
+
+GitHub OIDC is preferred for future cloud deployment identity.
+
+DEV/UAT/PROD identities/secrets/state remain isolated.
+
+## 15. Environments
+
+```text
+LOCAL → DEV → UAT → PROD
+```
+
+These are runtime lifecycle contexts, not Git branches.
+
+- LOCAL activates with first implementation;
+- remote DEV when remote integration is useful;
+- UAT with real release candidates;
+- PROD at production readiness.
+
+Cloud/compute provider and IaC engine are intentionally deferred.
+
+## 16. CI/security
+
+GitHub Actions is the primary CI/CD control plane.
+
+Backend quality target includes:
+
+- Ruff/mypy;
+- unit/application/Hypothesis;
+- architecture tests;
+- real PostgreSQL integration/migration/concurrency;
+- privacy/non-interference tests;
+- dependency/security analysis;
+- real-check-before-required-check branch-protection rule;
+- least-privilege workflows and immutable Action SHA pinning;
+- no production deployment identity in ordinary PRs;
+- future artifact digest/provenance/SBOM release evidence.
+
+## 17. Frontend relationship
+
+`apps/web` and `apps/mobile` consume governed backend contracts.
+
+Their internal package/tool/test/build decisions are deliberately deferred to the frontend workstream. They cannot bypass backend authority for consequential canonical mutations.
+
+## 18. Current direct evidence boundary
+
+Architecture/design closure is not implementation proof.
+
+```text
+BACKEND SCAFFOLD          NOT STARTED
+DATABASE DEPLOYMENT       NOT STARTED
+CONCRETE SCHEMA           NOT STARTED
+DIRECT HG                 NOT RUN
+PSV                       NOT RUN
+RESTORE REHEARSAL         NOT RUN
+```
+
+## 19. Next system-building step
+
+Keep the current repository. Resolve the small repository rename decision (`lifeos → dante`) first, then open an exact write gate for the real `apps/backend` scaffold and LOCAL PostgreSQL/migration/test/config/CI baseline.
