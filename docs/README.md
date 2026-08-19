@@ -102,17 +102,24 @@ Cloud/compute provider and IaC engine are explicitly deferred until first remote
 
 Production implementation continues in the existing repository. Creating a new repo is not the plan.
 
-The historical GitHub repository name `lifeos` may be renamed to `dante` in a separate governance operation. The next conversation should address that small decision/action before the production scaffold unless explicitly deferred.
+Repository identity governance is complete:
+
+```text
+historical repository   MattiaRubino/lifeos
+current repository      MattiaRubino/dante
+rename                   COMPLETE
+```
+
+Historical/closed documents may still record the pre-rename repository decision as historical truth. Current-truth documents and new implementation work use `MattiaRubino/dante`.
 
 ## Exact next handoff
 
 ```text
-1. Mandatory bootstrap from current main.
-2. Keep current repository; decide/execute `lifeos → dante` rename or explicitly defer.
-3. Open a fresh exact Git write gate for production scaffold.
-4. Scaffold apps/backend + LOCAL PostgreSQL/migration/test/config/CI baseline only.
-5. Run scaffold QA.
-6. Only then begin concrete Logical → PostgreSQL implementation.
+1. Mandatory bootstrap from current repository truth.
+2. Open a fresh exact Git write gate for production scaffold.
+3. Scaffold apps/backend + LOCAL PostgreSQL/migration/test/config/CI baseline only.
+4. Run scaffold QA.
+5. Only then begin concrete Logical → PostgreSQL implementation.
 ```
 
 No production application code or concrete schema is authorized merely by Engineering Foundation closure; every next write still requires its own exact scope.
