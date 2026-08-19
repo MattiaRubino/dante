@@ -1,48 +1,43 @@
 # Architecture Documentation
 
-- Status: **Current navigation — Physical Model target selected/accepted/integrated**
-- Last updated: 2026-08-18
+- Status: **Current navigation — Physical target accepted; Engineering Foundation v0 active**
+- Last updated: 2026-08-19
 - Current product/app name: **DANTE** (`LifeOS` remains a legacy working/project name in historical evidence and technical identifiers)
 
 ## Purpose
 
 This directory separates **current architectural truth** from historical transition/validation evidence.
 
-Current specifications describe the architecture as it is understood now. They are not chronological logs. Historical rationale and transition state remain recoverable through Git, ADRs, checkpoints and explicitly historical evidence.
+Current specifications describe architecture as it is understood now. They are not chronological logs. Historical rationale and transition state remain recoverable through Git, ADRs, checkpoints and explicitly historical evidence.
 
-## Current architecture sources
+Engineering Foundation is downstream engineering architecture: it does not reopen Product/Domain/Logical/Physical semantics.
 
-Read these for current architecture state:
+## Current architecture/engineering sources
 
-1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed/integrated Pre-Physical bridge and downstream constraints; its Physical-start status is a historical handoff snapshot;
-2. [`requirements/README.md`](requirements/README.md) + all four Phase 5 requirement packages;
-3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase 6 AI/context/runtime contract;
-4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase 6 provider/integration contract;
-5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase 7 durable-execution contract/evidence; candidate-status prose is phase-time history and the current Physical resolution is Restate;
-6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase 8 governed-operation/effect contract;
-7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase 9 pressure contract; selection-status prose is phase-time history where PM-11/12 later resolved the mechanism;
-8. [`physical-benchmark-specification.md`](physical-benchmark-specification.md) — Phase 10 benchmark methodology/evidence framework; phase-time Physical-status prose does not override closed PM-11/12 truth;
-9. [`physical-benchmark-scenario-corpus.md`](physical-benchmark-scenario-corpus.md) — Phase 10 corpus/scenarios;
-10. [`physical-benchmark-register.md`](physical-benchmark-register.md) — historical candidate/direct-execution ledger;
-11. [`../physical-model/pm-11-explicit-selection-v1.md`](../physical-model/pm-11-explicit-selection-v1.md) — selected target stack;
-12. [`../physical-model/pm-12-accepted-physical-model-v1.md`](../physical-model/pm-12-accepted-physical-model-v1.md) — accepted Physical target architecture;
-13. [`../physical-model/pm-13-clean-room-qa-v1.md`](../physical-model/pm-13-clean-room-qa-v1.md) — clean-room architecture/documentation QA;
-14. [`../physical-model/recommendation/post-selection-validation-register-v1.md`](../physical-model/recommendation/post-selection-validation-register-v1.md) — implementation-validation carry-forward;
-15. [`system-overview.md`](system-overview.md) — current system boundary overview;
-16. [`technical-decisions.md`](technical-decisions.md) — current technical decisions;
-17. [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md) — repository-safety contract;
-18. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — Physical workstream closure/handoff.
+Read these for current state:
+
+1. [`pre-physical-architecture-baseline.md`](pre-physical-architecture-baseline.md) — closed/integrated Pre-Physical bridge; embedded start-state status is historical after later closure;
+2. [`requirements/README.md`](requirements/README.md) + all four Phase-5 requirement packages;
+3. [`ai-context-runtime-boundaries.md`](ai-context-runtime-boundaries.md) — Phase-6 AI/context/runtime contract;
+4. [`integration-hub-boundaries.md`](integration-hub-boundaries.md) — Phase-6 provider/integration contract;
+5. [`durable-execution-benchmark.md`](durable-execution-benchmark.md) — Phase-7 durable-execution contract/evidence; current Physical resolution is Restate;
+6. [`governed-operation-effect-contract.md`](governed-operation-effect-contract.md) — Phase-8 governed-operation/effect contract;
+7. [`search-observability-calendar-solver-boundaries.md`](search-observability-calendar-solver-boundaries.md) — Phase-9 pressure contract;
+8. [`physical-benchmark-specification.md`](physical-benchmark-specification.md) + scenario/register — Phase-10 methodology/evidence;
+9. [`../physical-model/pm-11-explicit-selection-v1.md`](../physical-model/pm-11-explicit-selection-v1.md) — selected target stack;
+10. [`../physical-model/pm-12-accepted-physical-model-v1.md`](../physical-model/pm-12-accepted-physical-model-v1.md) — accepted Physical target;
+11. [`../physical-model/pm-13-clean-room-qa-v1.md`](../physical-model/pm-13-clean-room-qa-v1.md) — clean-room architecture/documentation QA;
+12. [`../physical-model/recommendation/post-selection-validation-register-v1.md`](../physical-model/recommendation/post-selection-validation-register-v1.md) — direct implementation-validation carry-forward;
+13. [`system-overview.md`](system-overview.md) — current whole-system boundary overview;
+14. [`technical-decisions.md`](technical-decisions.md) — current technical summary;
+15. [`../workstreams/engineering-foundation.md`](../workstreams/engineering-foundation.md) — active Foundation handoff;
+16. [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md) + all linked detailed Foundation sources;
+17. [`../development/repository-engineering-safety.md`](../development/repository-engineering-safety.md);
+18. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — Physical closure/handoff.
 
 ## Domain and Logical closure authority
 
-The Domain and Logical Models are closed. Their canonical content/evidence is cumulative; an earlier historical status never overrides a later explicit closure record.
-
-For Domain current closure read:
-
-- [`../domain/README.md`](../domain/README.md);
-- [`../domain/README-part-20.md`](../domain/README-part-20.md);
-- [`../domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md`](../domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md);
-- [`../domain/language-map.md`](../domain/language-map.md) + [`../domain/language-map-part-22.md`](../domain/language-map-part-22.md).
+Domain and Logical Models are closed. Their canonical content/evidence is cumulative; an earlier historical status never overrides later explicit closure.
 
 Current Domain result:
 
@@ -52,28 +47,22 @@ POST-WRITE QA PASS
 CLOSED
 ```
 
-For Logical closure read:
+Current Logical result:
 
-- [`../logical-model/whole-logical-model-v1.md`](../logical-model/whole-logical-model-v1.md);
-- complete `decision-and-assumption-register-v1*` chain;
-- [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md).
+```text
+PASS WITH HARDENING
+REMOTE QA PASS
+CLOSED
+WD-03 PASS
+WD-05 PASS
+WL-H01..WL-H12 active downstream
+```
 
 A physically split/cumulative canonical document is **one logical document**. A size/tool-limit split is a lossless physical partition, never permission to summarize/omit/change semantics.
 
-## Phase 5 requirement package
+## Phase 5–9 boundaries remain active
 
-Current requirement owners remain:
-
-- [`requirements/authn-authz.md`](requirements/authn-authz.md);
-- [`requirements/security-privacy-retention-recovery.md`](requirements/security-privacy-retention-recovery.md);
-- [`requirements/consistency-side-effects.md`](requirements/consistency-side-effects.md);
-- [`requirements/nonfunctional-multidevice-recovery.md`](requirements/nonfunctional-multidevice-recovery.md).
-
-They define requirements/open parameters rather than inventing business targets.
-
-## Phase 6 boundaries
-
-Keep distinct:
+Implementation must preserve the existing distinctions, including:
 
 ```text
 canonical state
@@ -85,7 +74,7 @@ candidate / unresolved state
 transient LLM working context
 ```
 
-Integration modes remain distinct:
+Integration Hub modes remain distinct:
 
 ```text
 canonical import
@@ -95,11 +84,20 @@ retrieval/index projection
 action/tool integration
 ```
 
+Hard examples:
+
 ```text
+Person != Account != Principal != Actor
+Authority != AuthZ decision
+Consent != Authority
+Visibility != Authority
 AI/model/tool/runtime representation != canonical truth/effect by default
 provider state != canonical DANTE state
 runtime Agent / Principal != Domain Actor automatically
 ExternalRef != NativeRef
+MaterialStateRef != provider revision / ETag / MVCC token
+idempotency != semantic identity
+absence / unknown != false
 ```
 
 Material consequential AI changes require versioned/reproducible evaluation before promotion. Eval evidence is not canonical truth/authorization.
@@ -166,20 +164,13 @@ CLOSED / SELECTED / ACCEPTED
 PROTECTED-MAIN INTEGRATION
 COMPLETE VIA PR #15
 
-PHYSICAL INTEGRATION COMMIT
-e6f191bad947388a44defe2c15f4939345084f58
-
 FORMER BRANCH
 feature/physical-model — MERGED / AUTO-DELETED
 ```
 
-That SHA identifies the Physical integration event; it is **not intended to track the moving current `main` HEAD**.
-
-PM-14 remains historical closure evidence for the pre-merge state and is not rewritten by the later integration event.
+`pm-14-closure-v1.md` remains historical pre-merge closure evidence and is not rewritten by downstream work.
 
 ## Durable-execution resolution
-
-The Phase-7 contract remains current; its prior candidate ranking is now physically resolved:
 
 ```text
 BOUNDED ASYNC
@@ -188,48 +179,109 @@ PostgreSQL outbox + bounded worker
 MATERIAL DURABLE CLASS-B
 Restate runtime — SELECTED
 
-RESTATE DEPLOYMENT
+INITIAL DEV
+DORMANT / NOT ACTIVE
+ACTIVATE = first real Class-B durable-workflow need
+
+AT ACTIVATION
 self-hosted FIRST-CLASS
 Cloud EU ALLOWED MANAGED OPTION
 global default NONE
 ```
 
-Temporal and DBOS remain non-selected historical challengers. Runtime state does not become Domain ontology/history and no workflow runtime creates exactly-once external reality.
+Self-hosted vs Cloud EU is **not a current day-1 decision**. It opens only when the fixed activation trigger exists. Runtime state does not become Domain ontology/history and no workflow runtime creates exactly-once external reality.
 
-Current Restate Cloud client-side journal encryption must not be assumed for the Python path where the capability is currently documented only for TypeScript; journal minimization and later deployment privacy review remain mandatory.
+Current Python use must not assume TypeScript-only Restate client-side journal encryption; journal minimization remains mandatory when Restate activates.
+
+## Recovery activation resolution
+
+```text
+pgBackRest + AWS S3 eu-south-1
+SELECTED RECOVERY TARGET
+
+INITIAL DEV
+DORMANT / NOT ACTIVE
+
+ACTIVATE
+recovery/production boundary
+OR real recovery-rehearsal requirement
+```
+
+This dormant posture is already fixed and Engineering Foundation does not reopen it.
 
 ## Search / observability / calendar / solver resolution
 
-The Phase-9 boundary contract remains current; PM-11/12 later resolved its selectable mechanisms as follows:
-
 ```text
 SEARCH
-PostgreSQL native FTS + pg_trgm + unaccent selected
-pgvector selected for bounded vector retrieval
-no dedicated search/vector server in accepted target
+PostgreSQL native FTS + pg_trgm + unaccent
+pgvector for bounded vector retrieval
+no dedicated search/vector server
 
 OBSERVABILITY
-OpenTelemetry + Grafana Alloy + Grafana Cloud EU target selected
+OpenTelemetry + Grafana Alloy + Grafana Cloud EU target
 telemetry != canonical/audit ontology
 
 CALENDAR
-iCalendar / JSCalendar / provider models = adapter pressure, not ontology
+iCalendar / JSCalendar / providers = adapter pressure, not ontology
 
 SOLVER
-OR-Tools 9.15 CP-SAT selected
+OR-Tools 9.15 CP-SAT
 UNKNOWN != INFEASIBLE
 solver output != accepted canonical effect
 ```
 
-## Physical direct-evidence truth
+## Engineering Foundation v0
 
-The accepted target is evidence-backed but direct selected-stack implementation validation has not run:
+Engineering Foundation is the active final pre-implementation engineering-design scope.
+
+Branch baseline:
+
+```text
+REPOSITORY
+polyglot monorepo
+apps/api + apps/web + apps/mobile
+precise shared packages only
+
+BACKEND
+capability-first modular monolith
+explicit composition root
+application/domain independent from FastAPI/SQLAlchemy/provider adapters by identity
+
+ENVIRONMENTS
+LOCAL + DEV + UAT + PROD
+optional ephemeral preview environments
+no environment Git branches
+
+DATABASE ENGINEERING
+SQLAlchemy 2.0 stable + psycopg 3 + Alembic
+real PostgreSQL integration testing
+migration release job separate from app startup
+expand/migrate/contract when compatibility requires it
+
+TOOLCHAIN
+Python 3.14 + uv + Ruff + mypy + pytest
+Node 24 LTS + pnpm 11 + strict TypeScript + ESLint + Prettier
+Turborepo for JS/TS task graph
+
+DELIVERY
+GitHub Actions primary CI/CD orchestration
+GitHub Environments for privileged deployment once real workflows exist
+immutable artifact/release identity
+build-once promotion where platform permits
+secrets external / least privilege / OIDC where supported
+```
+
+No production code is created by this design branch. Exact compute host/IaC engine remain deferred until real remote infrastructure implementation supplies the missing provider facts.
+
+The previously proposed standalone Development Profile is no longer a separate next phase; its valid operational concerns are now covered by Foundation and by capability/release implementation.
+
+## Physical direct-evidence truth
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
 FIXTURE/HARNESS           NOT STARTED
 DIRECT HG PASS            0
-LOW/BASE/HIGH            NOT RUN
+LOW/BASE/HIGH             NOT RUN
 RESTORE/MIGRATION         NOT RUN
 FAILURE INJECTION         NOT RUN
 POWERSYNC                 NOT RUN
@@ -243,9 +295,9 @@ The authoritative carry-forward register is [`../physical-model/recommendation/p
 
 ## Repository engineering safety
 
-Current `main` policy requires PR integration, blocks deletion/non-fast-forward, requires review-thread resolution, uses zero approvals while no independent reviewer exists and no required CI checks until stable real contexts exist.
+Current `main` policy requires protected PR integration, blocks destructive/non-fast-forward updates, requires review-thread resolution and does not invent required CI contexts before real stable checks exist.
 
-Physical integration used that protected path through PR #15. Future Development Profile/backend/direct-validation writes remain separately gated.
+Engineering Foundation selects GitHub Actions as future primary CI/CD orchestration, but no status check becomes a protected-main requirement until its real emitted context and blocking value are verified.
 
 ## Current stage boundary
 
@@ -259,27 +311,26 @@ Phase 7 durable-execution contract       CURRENT / PHYSICAL MECHANISM RESOLVED
 Phase 8 governed-effect contract         CURRENT
 Phase 9 pressure contract                CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
 Phase 10 benchmark method                CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
-Repository engineering safety            QA PASS
+Repository engineering safety            QA PASS at verified scope
 Pre-Physical Coherence                   CLOSED / INTEGRATED / VERIFIED
 
 Physical Model target
-CLOSED / SELECTED / ACCEPTED
-PM-13 clean-room architecture/documentation QA PASS
-INTEGRATED INTO MAIN VIA PR #15
+CLOSED / SELECTED / ACCEPTED / INTEGRATED
 
 Direct selected-stack implementation validation
 NOT STARTED / CARRIED FORWARD
 
-Backend production implementation
-NOT STARTED / DEFERRED
+Engineering Foundation v0
+ACTIVE / UNMERGED / PENDING FINAL REVIEW + QA
 
-Development Profile v0
-NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+Backend / production implementation
+NOT STARTED
+NEXT AFTER FOUNDATION ACCEPTANCE/INTEGRATION
 ```
 
 ## Historical transition / validation evidence
 
-The `domain-model-logical-readiness*` chain and Phase-7..10 benchmark records preserve truthful transition/evidence history. They do not override the later PM-11/12 selected/accepted Physical target.
+The `domain-model-logical-readiness*` chain and Phase-7..10 benchmark records preserve truthful transition/evidence history. They do not override later PM-11/12 selected Physical truth or current Engineering Foundation execution direction.
 
 ## Documentation rule
 
