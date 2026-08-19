@@ -1,44 +1,68 @@
 # Configuration and Secrets v0
 
-- Status: **Engineering Foundation branch baseline — pending closure**
-- Scope: application configuration, credentials, secret handling and environment identity
+- Status: **APPROVED BACKEND BLOCK — Engineering Foundation remains open**
+- Scope: backend application configuration, runtime identity, credentials, secret handling and environment isolation
+- Frontend/web/mobile configuration: **DEFERRED to the dedicated frontend workstream/branch**
 
-## 1. Core rule
+## 1. Decision
 
-Configuration is explicit, typed, environment-scoped and validated before an application accepts work.
+DANTE backend configuration is explicit, typed, environment-scoped and validated before the process accepts work.
 
-Secrets are external runtime inputs. They are never source code, defaults, generated client data or documentation examples.
+Secrets are external security material. They are not source code, ordinary configuration defaults, repository examples, image build arguments or product/domain state.
+
+The target hierarchy is:
 
 ```text
-CONFIGURATION
-controls deployed behavior within accepted architecture
+MINIMIZE SECRETS
+        ↓
+WORKLOAD / FEDERATED IDENTITY where supported
+        ↓
+PROVIDER SECRET MANAGER for remaining secret material
+        ↓
+LEAST-PRIVILEGE RUNTIME ACCESS
+        ↓
+ROTATION + REVOCATION + AUDIT
+```
+
+This contract is provider-neutral. AWS, Azure, GCP or another hosting provider may implement it differently without changing DANTE's architectural rule.
+
+## 2. Configuration classes
+
+DANTE distinguishes four classes.
+
+```text
+NON-SECRET DEPLOYMENT CONFIG
+runtime behavior that is safe to disclose, e.g. environment identity,
+ports, non-sensitive endpoints, bounded timeouts and telemetry mode
 
 SECRET
-credential/key/token/private material that grants capability or access
+credential, private key, token or other material whose disclosure grants
+capability or access
 
-PUBLIC CLIENT CONFIG
-anything delivered to browser/mobile; never considered secret
+BUILD / RELEASE IDENTITY
+Git SHA, build ID, release/version and artifact identity
+
+DOMAIN / BUSINESS CONFIGURATION
+product rules or governed state that belongs to canonical application data
+rather than infrastructure configuration
 ```
 
-## 2. Environment identity
+Domain/business semantics must not drift into environment variables merely because they are configurable.
 
-Every deployed/runtime process knows its environment explicitly.
+## 3. Environment identity
 
-Canonical generic values:
+Promotion environments remain:
 
 ```text
-local
-dev
-uat
-prod
-test
+LOCAL
+DEV
+UAT
+PROD
 ```
 
-`test` is an execution context for automated tests, not a promotion environment.
+Automated tests may use an explicit test execution context, but `TEST` is not a fifth promotion environment.
 
-The backend configuration surface uses a DANTE-specific namespace/prefix so host environments cannot accidentally collide with generic variables.
-
-At minimum deployed server processes expose validated equivalents of:
+Every backend process knows its environment and release identity explicitly. The implementation uses a DANTE-specific namespace and exposes validated equivalents of at least:
 
 ```text
 DANTE_ENV
@@ -46,379 +70,421 @@ DANTE_RELEASE_SHA
 DANTE_BUILD_ID
 ```
 
-A public application version/release identifier may also be exposed for diagnostics.
+`DANTE_ENV` is a closed enum, not an arbitrary string.
 
-## 3. Backend configuration
+## 4. Typed backend configuration
 
-Backend configuration uses `pydantic-settings` as the typed boundary.
+Backend configuration uses **pydantic-settings** as the typed bootstrap boundary.
 
 Rules:
 
-- one composed settings object or small clearly-owned settings groups are built at process bootstrap;
-- environment variables are parsed/validated exactly once at startup where practical;
-- invalid/missing required values fail fast before serving requests/jobs;
-- settings are treated as immutable after bootstrap;
-- configuration is injected into components rather than imported from process globals throughout the codebase;
-- business rules are not encoded as scattered `if env == "prod"` checks.
+- one composed settings object or a small set of clearly owned settings groups is constructed during bootstrap;
+- parsing and validation occur before requests/jobs are accepted;
+- required missing values fail fast;
+- malformed values fail fast;
+- cross-field/environment safety rules fail fast;
+- validated settings are treated as immutable runtime state;
+- components receive configuration explicitly instead of reading process globals throughout the codebase;
+- scattered `if env == "prod"` business logic is forbidden.
 
-Environment-specific behavior belongs behind explicit configuration/capability boundaries.
-
-## 4. TypeScript configuration
-
-Web/mobile configuration has separate server-only and client-visible boundaries.
-
-### Web
-
-Next.js code must make the server/browser distinction explicit.
-
-- server-only values may include secrets and are never imported into browser-safe modules;
-- values embedded/exposed to browser JavaScript are public;
-- browser-visible configuration is runtime/schema validated where practical;
-- client config must not become a second authority for security/governance.
-
-### Mobile
-
-Every value packaged into a mobile binary/update is considered extractable/public.
+Safe grouping may include, for example:
 
 ```text
-API endpoint
-public provider app ID
-feature exposure identifier
-= may be client config
-
-API secret
-service-account key
-private signing secret
-backend provider token
-= MUST NOT be mobile config
+AppSettings
+DatabaseSettings
+ObservabilitySettings
+SecuritySettings
+ProviderSettings
 ```
 
-Signing credentials are build/release secrets, not application runtime data.
+The final class/module split belongs to implementation, not this foundation.
 
-## 5. Local environment files
+## 5. Safe defaults
 
-Each application may provide its own committed example file when scaffolded:
+A default is allowed only when an incorrect default cannot silently weaken security, privacy, durability or environment isolation.
 
-```text
-apps/api/.env.example
-apps/web/.env.example
-apps/mobile/.env.example
-```
+Critical values normally have no permissive PROD fallback, including:
 
-Examples contain:
-
-- variable names;
-- safe dummy/non-secret values where useful;
-- comments explaining required vs optional behavior.
-
-They do not contain real DEV/UAT/PROD values.
-
-Local developer secret/value files are ignored, e.g. ecosystem-appropriate `.env.local`/`.env.*.local` files.
-
-The exact ignore pattern is defined during scaffold to avoid accidentally ignoring committed example/config contracts.
-
-## 6. Configuration precedence
-
-Keep precedence small and predictable.
-
-Recommended server baseline:
-
-```text
-code default for safe non-environment-specific value
-        ↓ overridden by
-local ignored env file (LOCAL only, when used)
-        ↓ overridden by
-process/environment injected value
-```
-
-Deployed DEV/UAT/PROD do not depend on repository `.env` files.
-
-Secrets from a provider secret manager/CI environment are injected into the process/platform environment or mounted through an explicitly supported secret interface.
-
-Avoid multi-layer YAML/TOML/env inheritance trees that make it difficult to know which value won.
-
-## 7. Safe defaults
-
-A default is allowed only when being wrong cannot silently weaken security, privacy, durability or environment isolation.
-
-Examples of values that should generally **not** have a permissive PROD fallback:
-
-- database URL/credential;
-- token/signing secret;
-- allowed trusted origin/host policy;
-- encryption key;
-- production provider endpoint/credential;
-- environment identifier;
+- environment identity;
+- database identity/credential source;
+- token/signing/encryption material;
+- trusted-host/origin policy where security-relevant;
+- production provider identity/credential source;
 - destructive maintenance switches.
 
-Missing critical configuration causes startup/preflight failure.
+A PROD process must not start merely because a dangerous value fell back to a development default.
 
-## 8. Secret classes
+## 6. Cross-field safety invariants
 
-Future secrets should be classified by owner and consequence, for example:
+Configuration validation must be able to reject dangerous combinations, not only malformed individual values.
 
-```text
-DATABASE
-PostgreSQL application/migration/admin credentials
-
-IDENTITY / AUTH
-signing/verifier/provider credentials
-
-OBJECT
-R2 access credentials
-
-RECOVERY
-AWS backup credentials
-
-OBSERVABILITY
-Grafana/telemetry exporter credentials
-
-INTEGRATION
-provider-specific OAuth/API credentials
-
-CI / RELEASE
-artifact registry, signing, store/release credentials
-```
-
-This classification does not authorize or create those credentials now.
-
-## 9. Least privilege
-
-Different workloads receive different credentials where privilege differs materially.
-
-Examples once implemented:
-
-- normal API runtime does not receive database superuser capability;
-- migration job may receive DDL capability that normal runtime lacks;
-- read-only operational tooling uses read-only credentials where practical;
-- backup credentials cannot become normal application credentials;
-- DEV/UAT credentials cannot access PROD state;
-- CI PR jobs do not receive PROD deployment credentials.
-
-Credentials are scoped to the narrowest resource/action/environment practical.
-
-## 10. CI/cloud identity
-
-GitHub Actions uses OIDC/federated identity with external providers where the provider supports a secure practical integration.
-
-Benefits adopted as policy:
-
-- avoid long-lived static cloud keys in GitHub secrets;
-- trust can bind repository/ref/environment/workflow claims;
-- short-lived credentials are issued only for the job that needs them.
-
-Where a provider cannot use GitHub OIDC safely, environment-scoped GitHub secrets or provider-native secret integration may be used as the bounded fallback.
-
-Fallback static credentials require:
-
-- least privilege;
-- explicit environment ownership;
-- rotation procedure;
-- no exposure to PR jobs;
-- revocation path.
-
-## 11. GitHub Environments
-
-Deployment credentials/variables are scoped through GitHub Environments when workflows are created:
+Examples:
 
 ```text
-dev
-uat
-prod
+PROD + debug enabled                         -> REJECT
+PROD + LOCAL/synthetic database credential   -> REJECT
+PROD + DEV/UAT resource identity              -> REJECT
+DEV/UAT + PROD credential/resource binding    -> REJECT
+unknown DANTE_ENV                             -> REJECT
 ```
 
-A workflow job must reference the intended environment before it can access that environment's protected secrets/variables.
+Provider-specific resource identifiers are validated once those providers exist.
 
-Environment protections are not substitutes for repository branch protection; source integration and deployment authorization remain separate gates.
+## 7. LOCAL configuration
 
-## 12. Secret managers
+LOCAL may use an ignored dotenv file for developer convenience.
 
-The exact runtime secret manager depends on the compute/deployment provider, which is not yet selected.
+Backend target shape:
 
-Engineering Foundation therefore fixes the interface requirements, not a fake provider choice:
+```text
+apps/backend/.env.example    COMMITTED, safe contract/example only
+apps/backend/.env.local      IGNORED, local developer values only
+```
 
+`.env.example` contains variable names, safe dummy values where useful and required/optional guidance. It never contains live DEV/UAT/PROD credentials.
+
+LOCAL credentials are synthetic and restricted to LOCAL resources.
+
+## 8. Remote configuration
+
+DEV/UAT/PROD do not depend on manually maintained repository `.env` files or ad-hoc files edited over SSH.
+
+Non-secret configuration is supplied through the deployment/IaC/platform configuration mechanism selected for the environment.
+
+Secrets use the provider-native secret-management path selected with the hosting platform.
+
+The exact vendor is deferred until the compute/provider decision; the required capabilities are fixed here.
+
+## 9. Secret-manager requirements
+
+A production-capable secret manager must provide, as applicable:
+
+- encryption in transit and at rest under provider guarantees;
+- fine-grained IAM/RBAC;
 - environment isolation;
-- encryption at rest/in transit under provider guarantees;
-- auditable access where supported;
-- least-privilege workload identity;
-- rotation/update without committing source changes;
-- version/revocation behavior suitable for the secret class.
+- workload/service identity integration;
+- secret versioning;
+- controlled rotation and revocation;
+- auditability of secret access and administration;
+- safe recovery/disable/delete lifecycle;
+- automation interfaces suitable for IaC/deployment;
+- regional/data-residency controls where DANTE requirements demand them.
 
-Production does not use a checked-in encrypted secret file merely because plaintext is hidden.
+A checked-in encrypted file is not a substitute for a runtime secret-management system.
 
-## 13. Database credentials
+## 10. Secret delivery — strongest available mechanism
 
-At implementation time, separate logical roles should be created where privilege separation is useful:
+For remote environments, the preferred order is:
 
 ```text
-runtime application role
-migration/deployment role
-administrative/operator role
-replication/sync role when PowerSync activates
-backup/recovery role when recovery activates
+1. eliminate the secret through workload/managed identity
+2. runtime retrieves the required secret from the provider secret manager
+   using its workload identity
+3. provider-native secret projection/injection when direct retrieval is not
+   practical and the mechanism has an acceptable exposure model
+4. environment-variable injection only as a bounded fallback when the runtime
+   or provider requires it
 ```
 
-Exact PostgreSQL grants/roles are part of implementation, not this foundation document.
+Secrets are **not** hard-coded through Docker `ENV`/`ARG`, baked into OCI images or committed to deployment manifests.
 
-Connection strings are secrets if they embed credentials.
+Environment variables remain the normal mechanism for non-sensitive configuration.
 
-## 14. Provider OAuth/user tokens
+## 11. Workload identity and the bootstrap-secret rule
 
-Integration Hub credentials/tokens tied to a user/provider account are application data with their own privacy/security lifecycle; they are not generic deployment secrets.
+DANTE prefers identity over stored credentials.
 
-Their eventual persistence must preserve:
+Where supported, a runtime authenticates to its cloud/provider through a managed/workload identity rather than through a long-lived service-account key.
 
-- account/principal ownership;
-- provider/canonical separation;
-- token encryption/protection requirements;
-- revocation/refresh semantics;
-- retention/deletion rules;
-- no leakage into logs/traces/errors.
+The system must avoid the circular anti-pattern:
 
-Engineering Foundation does not decide their concrete schema.
+```text
+store a permanent secret
+        ↓
+only so the application can authenticate
+        ↓
+to the secret manager
+```
 
-## 15. Logging/redaction
+Provider-native managed identity, workload identity federation or equivalent short-lived identity is preferred.
+
+## 12. GitHub deployment identity
+
+Future GitHub Actions deployments use **OIDC/federated identity** with the target provider where secure practical support exists.
+
+Target flow:
+
+```text
+GitHub Actions job
+        ↓ OIDC claim
+provider trust policy
+        ↓
+short-lived deployment credential
+        ↓
+DEV / UAT / PROD deployment
+```
+
+Trust policy must be scoped to the expected repository/ref/workflow/environment claims rather than accepting any token from GitHub.
+
+Long-lived cloud deployment keys in GitHub are a fallback only when federation is genuinely unavailable.
+
+## 13. GitHub is not the canonical runtime-secret store
+
+GitHub Environments are the deployment control plane for `dev`, `uat` and `prod` when remote deployment activates.
+
+GitHub environment secrets may be used for bounded bootstrap/integration cases that cannot use federation, but the normal DANTE model is:
+
+```text
+GitHub
+source + workflow + deployment authorization
+
+provider secret manager
+runtime secret authority
+```
+
+Production runtime credentials are not duplicated into GitHub merely because GitHub can store secrets.
+
+## 14. Environment isolation
+
+DEV, UAT and PROD have separate secret and identity boundaries.
+
+```text
+DEV identity  -> DEV resources/secrets only
+UAT identity  -> UAT resources/secrets only
+PROD identity -> PROD resources/secrets only
+```
+
+A DEV/UAT credential must not authenticate to PROD by design.
+
+When the hosting provider is selected, this rule maps onto its native account/subscription/project/security boundary and secret-store model.
+
+## 15. Separate consumers, separate privileges
+
+Secrets/identities are scoped to the narrowest consumer and action practical.
+
+Database roles already approved by the persistence block remain logically separated:
+
+```text
+owner
+migration/deployment
+runtime application
+replication/sync when PowerSync activates
+backup/recovery when recovery activates
+```
+
+Normal backend runtime does not receive schema-owner or migration privileges.
+
+The same principle applies to object storage, provider integrations, observability and future release/signing operations.
+
+## 16. Minimize human access
+
+Humans should not routinely read production secret values merely because they administer the repository.
+
+Target rules:
+
+- machine workloads consume machine secrets;
+- administrative access is least-privilege and auditable;
+- privileged human access uses MFA/JIT/approval controls where the selected provider supports them and the risk justifies them;
+- break-glass access, if required later, is explicit, tightly restricted, logged and followed by credential review/rotation.
+
+This remains proportionate to DANTE's actual team size while preserving the enterprise boundary.
+
+## 17. Rotation, revocation and versioning
+
+Every long-lived secret introduced must have:
+
+- owner;
+- purpose and scope;
+- consumers;
+- creation mechanism;
+- rotation mechanism;
+- revocation mechanism;
+- incident replacement procedure;
+- audit source.
+
+Automatic rotation is preferred where technically safe.
+
+Where a secret manager supports versioned secrets, deployments should use deliberate version behavior rather than relying blindly on an unbounded `latest` reference when rollback/reproducibility requires a known version.
+
+High-consequence rotation must be tested before production dependence becomes material.
+
+When a platform can replace a static credential with a short-lived/dynamic credential without unacceptable operational cost, prefer the short-lived form.
+
+## 18. Zero-downtime rotation readiness
+
+Consumers of rotatable credentials must not force an outage merely because a secret changes.
+
+Depending on the provider/resource, the implementation may use:
+
+- dual/alternating credentials;
+- overlapping validity windows;
+- connection refresh/retry;
+- staged rollout;
+- workload identity instead of a rotatable static secret.
+
+The concrete mechanism is selected per secret class.
+
+## 19. Audit and monitoring
+
+Secret lifecycle events and accesses are auditable where the provider supports it.
+
+Operational evidence should be able to answer, within provider capability:
+
+```text
+who/what accessed the secret?
+when?
+from which workload/environment?
+who changed permissions?
+when was it rotated/disabled/revoked?
+```
+
+Suspicious or high-consequence secret-management events become security-monitoring inputs when remote operations activate.
+
+## 20. Logging and redaction
 
 Secrets must never be logged by default.
 
-Configuration objects implement redacted representations where tooling could otherwise print sensitive values.
-
-Forbidden logging patterns:
+Forbidden examples include:
 
 ```text
-entire environment dump
-full settings object with secrets
+full environment dump
+full settings object containing secrets
 Authorization headers
 cookies/session tokens
 OAuth refresh tokens
 raw provider credentials
-raw database DSN with password
+raw database DSN containing a password
 private signing/encryption keys
 ```
 
-Operational diagnostics log bounded metadata such as provider name, environment, resource class, correlation ID and safe error category instead.
+Configuration/credential wrappers expose redacted representations where diagnostics could otherwise leak values.
 
-## 16. CI logs/artifacts
+Operational logs use bounded metadata such as environment, provider/resource class, release identity, correlation ID and safe error category.
 
-Workflows must not echo secrets or place them into durable artifacts.
+## 21. CI logs and artifacts
 
-Rules when CI exists:
+CI/CD must not echo secrets or persist them into artifacts.
 
-- shell tracing that prints commands/values is disabled around sensitive operations;
-- generated config artifacts are checked for secret content before upload where risk exists;
-- test fixtures use synthetic credentials;
-- PR jobs are designed to succeed without production secrets;
-- Dependabot/untrusted PR execution does not receive normal repository secrets.
+When workflows exist:
 
-## 17. Client-side public config
-
-A browser/mobile config variable naming convention must make public exposure explicit.
-
-Framework prefixes such as `NEXT_PUBLIC_*` or `EXPO_PUBLIC_*`, if used, are treated as disclosure labels, not protection mechanisms.
-
-A review should be able to answer:
-
-```text
-Can this value be read by any user who receives the client?
-YES -> public config is acceptable if intended
-NO  -> it cannot be placed in the client bundle
-```
-
-## 18. Runtime public configuration for web
-
-Where practical, public environment-specific web values should be delivered at runtime through a controlled configuration endpoint/document so the same immutable web/server artifact can move between environments.
-
-If Next.js/hosting implementation makes a build-time public value materially simpler/safer, environment-specific builds may be accepted as an explicit artifact distinction rather than hiding the difference.
-
-## 19. Feature flags and operational switches
-
-No feature-flag provider is selected by Engineering Foundation.
-
-If feature flags activate later:
-
-- they are typed/owned;
-- flags do not bypass Authority/AuthZ/governance;
-- a flag cannot redefine canonical semantics silently;
-- stale flags have cleanup ownership;
-- security-critical access is not protected only by client-side flags.
-
-Emergency/maintenance switches with destructive consequence require explicit authorization and auditability.
-
-## 20. Key/encryption material
-
-Application encryption/signing key design belongs to the security/Auth implementation boundary.
-
-Foundation rules:
-
-- keys are not committed;
-- separate environments use separate key material;
-- rotation/versioning must be possible without losing historical readability where the use case requires it;
-- key IDs/versions may be persisted when needed, secret key bytes are not;
-- client-local encryption keys use platform secure storage appropriate to the mobile offline design when that PSV activates.
-
-## 21. Secret rotation
-
-Every long-lived secret introduced must eventually have:
-
-- owner;
-- scope;
-- creation mechanism;
-- rotation mechanism;
-- revocation mechanism;
-- consumers;
-- incident replacement procedure.
-
-Rotation is tested for high-consequence credentials before production dependence becomes material.
+- PR validation succeeds without production secrets;
+- untrusted/fork/Dependabot code does not receive privileged deployment material;
+- shell tracing is disabled around sensitive operations;
+- generated/uploaded artifacts are checked against accidental secret inclusion where risk exists;
+- production secrets are not exposed merely to run ordinary tests.
 
 ## 22. Repository policy
 
-Repository files must never contain:
+Git must never contain:
 
 - production/private keys;
-- real service-account files;
+- real service-account credential files;
 - live `.env` files;
 - personal access tokens;
-- real user/provider tokens;
-- copied production database dumps;
+- user/provider OAuth tokens;
 - credentials embedded in URLs/examples;
-- secrets hidden in test snapshots/fixtures.
+- copied production database dumps;
+- secrets hidden in fixtures, snapshots, build args or generated files.
 
-Secret-scanning/push-protection controls complement review; they do not make committing secrets acceptable.
+Secret scanning and push protection complement this rule; they do not make committing secrets acceptable.
 
-## 23. Configuration change discipline
+## 23. Provider/user tokens are application data, not deployment secrets
 
-A material config contract change ships like code:
+OAuth/provider tokens tied to a DANTE user or Integration Hub account have a separate governed application-data lifecycle.
 
-- reviewed manifest/settings model change;
-- example/documentation update;
-- tests for validation/default behavior;
-- environment rollout consideration;
-- backward-compatible rollout when old/new artifact overlap is possible.
+They are not generic environment secrets.
 
-Renaming a required variable without a migration/overlap plan can break a build-once promotion just as surely as an API break.
+Their future persistence must preserve ownership, provider/canonical separation, encryption/protection, refresh/revocation semantics, retention/deletion and no leakage to logs/traces/errors.
 
-## 24. Validation
+Concrete schema and Auth implementation remain out of scope here.
 
-Once scaffold exists, automated tests should cover at minimum:
+## 24. Encryption/signing material
 
-- required settings fail when absent;
-- invalid environment enum rejects;
-- secret fields are redacted from representations/logging helpers;
-- client public config schema rejects malformed values;
-- server-only config cannot be imported into browser bundle through architecture/build checks where feasible;
-- environment-specific dangerous defaults are absent.
+Concrete Auth/signing/encryption key design remains deferred to its implementation boundary.
 
-## 25. Deferred provider choices
+Foundation requirements are already fixed:
 
-The following remain intentionally deferred until their actual implementation boundary:
+- key bytes are never committed;
+- environments use separate key material;
+- rotation/versioning must be possible;
+- historical readability/verification must survive rotation when the use case requires it;
+- persisted key identifiers/versions may identify material without persisting secret bytes;
+- provider KMS/HSM use is selected only when the actual key/use-case boundary exists.
+
+## 25. Configuration precedence
+
+Precedence remains small and deterministic.
+
+For backend non-secret configuration:
 
 ```text
-runtime secret-manager vendor
-Auth/signing key provider
-CI-to-R2 federation mechanism
-CI-to-AWS recovery identity
-mobile signing credential store
-app-store secret handling
+safe code default
+        ↓ overridden by
+LOCAL ignored dotenv value, LOCAL only
+        ↓ overridden by
+explicit process/deployment configuration
 ```
 
-The provider choice may vary; the contract above does not.
+Remote secret resolution is deliberately separate from generic configuration precedence.
+
+Avoid deep YAML/TOML/env inheritance trees where the winning value is difficult to prove.
+
+## 26. Configuration changes ship like code
+
+A material configuration-contract change requires:
+
+- reviewed settings-model change;
+- safe example/documentation update;
+- validation/default tests;
+- environment rollout consideration;
+- compatibility period where old/new artifacts can overlap.
+
+Renaming a required configuration key without an overlap/migration plan is treated as a release-breaking change.
+
+## 27. Validation obligations
+
+Once backend scaffold exists, automated tests cover at minimum:
+
+- required configuration fails when absent;
+- invalid environment enum rejects;
+- dangerous PROD cross-field combinations reject;
+- settings remain bounded/immutable after bootstrap;
+- secret-bearing types/representations redact values;
+- safe defaults do not weaken PROD behavior;
+- LOCAL dotenv behavior does not become a remote deployment dependency.
+
+Provider integration tests are added when a real secret manager/workload identity exists.
+
+## 28. Deferred concrete choices
+
+The following are intentionally deferred until the corresponding implementation boundary:
+
+```text
+cloud / compute provider
+provider secret-manager product
+provider managed/workload identity mechanism
+exact remote configuration service/IaC mechanism
+Auth/signing/encryption provider
+CI-to-R2 federation mechanism
+CI-to-AWS recovery identity
+```
+
+The provider may vary; the security contract above does not.
+
+## 29. Primary-source security basis
+
+This approved contract was rechecked on 2026-08-19 against current primary/authoritative guidance:
+
+- OWASP Secrets Management Cheat Sheet:
+  `https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html`
+- GitHub deployment hardening / OIDC:
+  `https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments`
+- AWS Secrets Manager best practices:
+  `https://docs.aws.amazon.com/secretsmanager/latest/userguide/best-practices.html`
+- Google Cloud Secret Manager best practices:
+  `https://cloud.google.com/secret-manager/docs/best-practices`
+- Azure secrets / managed identity / Key Vault guidance:
+  `https://learn.microsoft.com/azure/security/fundamentals/secrets-best-practices`
+  `https://learn.microsoft.com/azure/key-vault/general/secure-key-vault`
+
+The common enterprise pattern across these sources is reflected here: minimize stored secrets, prefer workload identity, isolate environments, apply least privilege, use a dedicated secret manager, automate rotation/revocation where possible, audit access and prevent secrets from entering source/logs/artifacts.
