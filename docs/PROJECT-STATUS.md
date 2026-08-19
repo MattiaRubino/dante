@@ -40,8 +40,10 @@ MattiaRubino/lifeos → MattiaRubino/dante
 
 PRODUCTION BACKEND SCAFFOLD
 ACTIVE
-CP1 DESIGN APPROVED
-IMPLEMENTATION NOT STARTED
+CP1-01 DEPENDENCY/VERSION POLICY APPROVED
+CP1-02 PYPROJECT/QUALITY TOOLING APPROVED
+CP1-03 FASTAPI/SETTINGS/HEALTH CONTRACT APPROVED
+CP1 IMPLEMENTATION NOT STARTED
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
 NOT STARTED
@@ -303,19 +305,24 @@ VERIFIED-RUN SCORE       NOT AVAILABLE
 
 Workstation Docker/WSL smoke tests are direct evidence of the developer environment only. They do not count as PostgreSQL/database/HG/PSV validation.
 
+CP1 design approval is documentation/design evidence only. No CP1 implementation command has yet earned PASS.
+
 ## 8. Current repository branches/workstreams
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
 Engineering Foundation v0 is closed. Repository rename is complete.
 
-Production Backend Scaffold is now the active bounded workstream:
+Production Backend Scaffold is the active bounded workstream:
 
 ```text
-branch    feature/backend-scaffold
-handoff   docs/workstreams/backend-scaffold.md
-state     CP1 DESIGN APPROVED / IMPLEMENTATION NOT STARTED
+branch             feature/backend-scaffold
+handoff            docs/workstreams/backend-scaffold.md
+CP1 contract        docs/development/backend-cp1-contract.md
+state              CP1-01/02/03 APPROVED / IMPLEMENTATION NOT STARTED
 ```
+
+The CP1 contract is deliberately self-contained and records the complete variable registry, version ranges/rationale, `pyproject`/Ruff/mypy/pytest/coverage policy, FastAPI application-factory behavior, LOCAL `.env.local` loading, health/readiness semantics, standard commands and acceptance tests.
 
 The verified workstation bootstrap is recorded in:
 
@@ -323,34 +330,40 @@ The verified workstation bootstrap is recorded in:
 
 ## 9. Exact next action
 
-Do not jump directly to PostgreSQL or concrete schema implementation.
+Do not repeat the already-closed CP1 decisions by default and do not jump to PostgreSQL or concrete schema implementation.
 
-Resume from the active scaffold handoff:
+Resume from the active scaffold handoff + CP1 contract:
 
 ```text
 STEP 1
-Research current official releases and Python 3.14.7 compatibility for the backend stack.
+Verify feature/backend-scaffold, remote/local HEAD and clean tree.
 
 STEP 2
-Decide exact CP1 dependency/version/tool configuration.
+Re-check upstream package evidence only if version-sensitive facts materially changed since 2026-08-19.
 
 STEP 3
-Open a fresh exact CP1 Git write gate.
+Present a fresh exact CP1 implementation Git write gate covering the approved apps/backend file set only.
 
 STEP 4
-Materialize only CP1:
-Python/backend process + typed config + real bootstrap/settings tests.
+After explicit approval, materialize CP1:
+Python package + pyproject/uv.lock + FastAPI factory + typed settings + health routes + real tests + backend README/.env example.
 
 STEP 5
-Run CP1 local direct QA + remote exact-delta QA.
+Generate the lockfile with uv; never hand-write it.
 
 STEP 6
-Only after CP1 PASS, design/gate CP2 DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
+Run every direct CP1 acceptance command listed in `docs/development/backend-cp1-contract.md` on the real WSL/Linux workstation.
 
 STEP 7
-Then CP3 persistence/migrations/real-PostgreSQL harness, CP4 CI enforcement, and CP5 scaffold closure.
+Run remote exact-delta/readback QA and record actual resolved versions/evidence.
 
 STEP 8
+Only after CP1 PASS, design/gate CP2 DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
+
+STEP 9
+Then CP3 persistence/migrations/real-PostgreSQL harness, CP4 CI enforcement, and CP5 scaffold closure.
+
+STEP 10
 Only after scaffold QA begin concrete Logical → PostgreSQL mapping/schema implementation.
 ```
 
