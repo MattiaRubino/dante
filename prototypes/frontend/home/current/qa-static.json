@@ -1,41 +1,38 @@
 {
-  "checkpoint": "home-current-pre-frontend-oracle",
-  "migration_date": "2026-08-19",
+  "checkpoint": "b1-context-rail-v1",
+  "date": "2026-08-19",
   "branch": "prototype/frontend",
-  "source_branch": "prototype/phase-4-today-home",
-  "source_head": "861f73b2932f3092fe6dca5f37b77732bb32bc65",
-  "artifact": {
+  "retained_complete_baseline": {
     "filename": "home.html",
     "size_bytes": 748625,
     "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
     "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341",
-    "corrective_source_commit": "cb58b1528292398ccedeaedb60b44a4ff6e6235f",
-    "reuses_exact_existing_git_blob": true
+    "retained_unchanged": true
   },
-  "corrective_delta": {
-    "changed_source_lines": 1,
-    "description": "drRoadGrad uses gradientUnits userSpaceOnUse with percentage x coordinates"
+  "accepted_build": {
+    "source": "prototypes/frontend/home/work/",
+    "size_bytes": 760281,
+    "sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0",
+    "user_visual_acceptance": "B1 v3 accepted",
+    "static_checks": {
+      "dom_id_count": 114,
+      "duplicate_dom_ids": 0,
+      "style_block_count": 38,
+      "inline_script_count": 20,
+      "inline_js_syntax_failures": 0,
+      "result": "PASS"
+    }
   },
-  "static_checks_from_corrected_source": {
-    "dom_id_count": 67,
-    "duplicate_dom_ids": 0,
-    "style_block_count": 37,
-    "css_parse_errors": 0,
-    "inline_script_count": 20,
-    "inline_js_syntax_failures": 0,
-    "result": "PASS"
+  "embedded_day_ribbon_png": {
+    "size_bytes": 281038,
+    "sha256": "9a273c238835dfd66b65544004d75e2adba03971add634a35e86d7fe10f0cc4d",
+    "identity_unchanged": true
   },
   "browser_smoke": {
-    "status": "NOT_RERUN_AFTER_CORRECTIVE_REPLACEMENT",
-    "note": "The earlier integrated Chromium smoke was executed on the immediately preceding blob and is retained as historical evidence only."
+    "status": "NOT_RERUN_IN_B1_WRITE_SCOPE"
   },
   "historical_today_v21_regression": {
-    "suite_preserved_at": "tests/prototypes/today-v21-regression.py",
-    "status_against_current_integrated_home": "NOT RUN"
-  },
-  "migration_qualification": {
-    "visual_or_behavior_change_in_A1": false,
-    "artifact_blob_reused_exactly": true,
-    "note": "A1 migrates the accepted oracle and evidence into the new pre-production frontend workstream; it does not requalify old browser evidence."
+    "suite": "tests/prototypes/today-v21-regression.py",
+    "status_against_b1": "NOT RUN"
   }
 }
