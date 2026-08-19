@@ -1,0 +1,20 @@
+{
+  "home.contextRail.capture.title": "Cattura",
+  "home.contextRail.capture.subtitle": "Registra qualcosa senza classificarlo",
+  "home.contextRail.capture.input.placeholder": "Scrivi qualcosa che vuoi ricordare o registrare…",
+  "home.contextRail.capture.voice.label": "Registra voce",
+  "home.contextRail.capture.attach.label": "Aggiungi allegato",
+  "home.contextRail.capture.submit.label": "Registra",
+  "home.contextRail.capture.history.label": "Registro completo",
+  "home.contextRail.capture.status.recorded": "Registrato",
+  "home.contextRail.resolution.title": "Da risolvere",
+  "home.contextRail.resolution.subtitle": "Questioni che richiedono una tua scelta",
+  "home.contextRail.resolution.workout.title": "Allenamento di oggi",
+  "home.contextRail.resolution.workout.subtitle": "Non risulta ancora l’esito.",
+  "home.actions.done": "Fatto",
+  "home.actions.partial": "Parziale",
+  "home.actions.skipped": "Saltato",
+  "home.actions.confirm": "Conferma",
+  "home.actions.correct": "Correggi",
+  "home.actions.details": "Vedi dettagli"
+}
