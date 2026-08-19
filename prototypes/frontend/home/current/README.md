@@ -1,8 +1,8 @@
-# DANTE — Home Current Prototype Oracle
+# DANTE — Home Retained Complete Baseline
 
-This directory preserves the exact corrected standalone Home HTML accepted before the transition from the historical Phase 4 branch to `prototype/frontend`.
+This directory keeps the exact complete standalone A2 Home baseline so later accepted prototype work remains recoverable and auditable.
 
-## Artifact identity
+## Baseline identity
 
 `home.html`
 
@@ -10,25 +10,31 @@ This directory preserves the exact corrected standalone Home HTML accepted befor
 - SHA-256: `986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df`
 - Git blob SHA: `fd9788212fbbd1ee40e53271cc39cedd9275b341`
 
-The HTML is migrated by reusing the exact existing Git blob. No compression, regeneration or semantic reconstruction is required.
+This file is intentionally **not overwritten by B1**.
 
-Historical source lineage:
+## Current accepted Home
 
-- branch: `prototype/phase-4-today-home`
-- corrective source commit: `cb58b1528292398ccedeaedb60b44a4ff6e6235f`
-- final historical branch state before migration: `861f73b2932f3092fe6dca5f37b77732bb32bc65`
+The current accepted prototype is **B1 Context Rail v1**, reconstructed deterministically by:
 
-The correction replaced an earlier wrong local variant and changed exactly one source line: `drRoadGrad` uses `gradientUnits:'userSpaceOnUse'` and percentage x coordinates.
+```text
+cd prototypes/frontend/home/work
+python build.py
+```
 
-## Status
+Expected result:
 
-This is an immutable **pre-production coded UX / visual-behavior oracle**, not production application code and not a Domain/Logical/Physical Model decision.
+```text
+size     760281 bytes
+SHA-256  a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
+```
 
-A later A2 scope may derive modular editable source under a separate `work/` path. A2 must not alter this oracle.
+The build applies the accepted B1 override to this retained complete baseline.
 
-See:
+## Why both are kept
 
-- `docs/workstreams/frontend.md`
-- `docs/frontend/home/current-checkpoint.md`
-- `docs/frontend/research-index.md`
-- `qa-static.json`
+- this directory gives an exact complete recovery point;
+- `work/` gives maintainable source/build logic;
+- accepted checkpoint docs identify the exact resulting standalone output;
+- Git + change-log preserve the semantic/history trail.
+
+See `docs/frontend/home/current-checkpoint.md`.
