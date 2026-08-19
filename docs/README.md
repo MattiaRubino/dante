@@ -24,7 +24,7 @@ Logical Model                      CLOSED
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
-Production backend scaffold        NOT STARTED
+Production backend scaffold        ACTIVE — CP1 DESIGN APPROVED / IMPLEMENTATION NOT STARTED
 Concrete PostgreSQL schema         NOT STARTED
 Direct HG / PSV                    NOT RUN
 ```
@@ -37,6 +37,11 @@ Direct HG / PSV                    NOT RUN
 - `PROJECT-STATUS.md`
 - `ROADMAP.md`
 
+### Active implementation workstream
+
+- `workstreams/backend-scaffold.md` — active production-backend scaffold handoff, checkpoint plan, quality bar and exact resume point
+- `development/local-backend-workstation-bootstrap.md` — verified clean-machine/WSL2/Docker developer bootstrap
+
 ### Development governance
 
 - `development/agent-operating-manual.md`
@@ -47,7 +52,7 @@ Direct HG / PSV                    NOT RUN
 
 ### Engineering Foundation — closed
 
-- `workstreams/engineering-foundation.md` — closure/handoff and exact next boundary
+- `workstreams/engineering-foundation.md` — closure/handoff and inherited implementation boundary
 - `development/engineering-foundation-v0.md` — master engineering contract
 - `development/repository-layout-v0.md` — monorepo/path ownership
 - `development/application-structure-v0.md` — backend modular architecture
@@ -115,11 +120,15 @@ Historical/closed documents may still record the pre-rename repository decision 
 ## Exact next handoff
 
 ```text
-1. Mandatory bootstrap from current repository truth.
-2. Open a fresh exact Git write gate for production scaffold.
-3. Scaffold apps/backend + LOCAL PostgreSQL/migration/test/config/CI baseline only.
-4. Run scaffold QA.
-5. Only then begin concrete Logical → PostgreSQL implementation.
+1. Read `workstreams/backend-scaffold.md` after the normal mandatory bootstrap.
+2. Verify `feature/backend-scaffold`, current HEAD and clean local/remote state.
+3. CP1 design is approved but CP1 files do not exist yet.
+4. Research current official package releases and Python 3.14.7 compatibility.
+5. Decide exact CP1 dependency/tool configuration.
+6. Open a fresh exact CP1 Git write gate.
+7. Materialize and QA CP1 only after approval.
+8. Proceed through CP2 PostgreSQL → CP3 persistence/migrations → CP4 CI → CP5 closure.
+9. Only after scaffold QA begin concrete Logical → PostgreSQL implementation.
 ```
 
-No production application code or concrete schema is authorized merely by Engineering Foundation closure; every next write still requires its own exact scope.
+No production application code or concrete schema is authorized merely by Engineering Foundation closure or by the scaffold planning handoff; every implementation write still requires its own exact scope.
