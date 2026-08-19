@@ -6,9 +6,11 @@
 - Work type: pre-production frontend / coded UX prototype / interaction and visual validation
 - Production frontend implementation: **NOT STARTED in this workstream**
 - Current primary surface: **Home**
-- Current exact Home oracle: `prototypes/frontend/home/current/home.html`
+- Retained complete A2 baseline: `prototypes/frontend/home/current/home.html`
 - Current modular Home work source: `prototypes/frontend/home/work/`
-- Current Home checkpoint: `docs/frontend/home/current-checkpoint.md`
+- Current Home contract: `docs/frontend/home/contract.md`
+- Current UI registry: `docs/frontend/ui-registry.md`
+- Terminology registry: `docs/frontend/terminology.md`
 - Research/evidence index: `docs/frontend/research-index.md`
 
 ## Purpose
@@ -17,21 +19,65 @@ This is the shared pre-production frontend workspace. It supersedes `prototype/p
 
 This branch is not the production frontend implementation. Production framework/runtime selection and application architecture remain a later explicit engineering scope.
 
+## Mandatory frontend documentation invariant
+
+**This rule is permanent for this workstream and applies to every frontend change from B1 onward.**
+
+A frontend write is not complete merely because the HTML renders. Every user-visible surface, control, interaction, state, label, visual token and removal must remain discoverable without reverse-engineering the implementation.
+
+For every frontend change, update the applicable authorities in the same bounded write:
+
+1. `docs/frontend/ui-registry.md` — what exists now, its stable technical ID, status and current behavior;
+2. surface contract, e.g. `docs/frontend/home/contract.md` — what the surface contains, what it must not contain, states, actions, dependencies and non-regression rules;
+3. `docs/frontend/terminology.md` — product terms, technical IDs, naming status, replacements and deprecated/rejected names;
+4. localization resources / `docs/frontend/localization.md` — user-facing copy and locale keys when wording is introduced or changed;
+5. design tokens / `docs/frontend/design-tokens.md` — semantic visual tokens when colors, spacing, radii, shadows or typography are introduced or changed;
+6. `docs/frontend/change-log.md` — append-only history classified as `ADDED`, `CHANGED`, `REMOVED`, `DEPRECATED`, `RENAMED`, `BEHAVIOR_CHANGED` or `VISUAL_ONLY`;
+7. the current checkpoint / QA record when the accepted artifact or behavior changes.
+
+### Required guarantees
+
+- Every durable UI concept gets a stable **English technical ID**; visible labels may change without changing that ID.
+- Product labels are not implementation identifiers.
+- New/touched user-facing copy must be represented in localization resources; inline prototype copy may remain only as a transitional fallback and must be traceable to the locale key.
+- New/touched visual values must use semantic tokens rather than adding arbitrary raw colors/radii/shadows/spacing.
+- Removed or superseded UI is recorded, not erased from history.
+- A new chat must be able to determine current Home functionality by reading the workstream + registry + contract + current checkpoint, without inferring behavior from screenshots or 700k of HTML.
+- A local fix must state what is intentionally unchanged.
+- Prototype-only or mock controls must be explicitly marked as such; presence must never imply implemented backend semantics.
+- Documentation and implementation must move in the same bounded scope. If they diverge, the scope is not closed.
+
+## Frontend bootstrap order
+
+For any new chat/agent continuing frontend work, read in this order:
+
+1. mandatory repository bootstrap from current `main`;
+2. `docs/workstreams/frontend.md`;
+3. `docs/frontend/README.md`;
+4. `docs/frontend/ui-registry.md`;
+5. current surface contract, beginning with `docs/frontend/home/contract.md`;
+6. `docs/frontend/terminology.md`;
+7. `docs/frontend/localization.md`;
+8. `docs/frontend/design-tokens.md`;
+9. current checkpoint / QA record;
+10. research/evidence index when making semantic/UX decisions;
+11. implementation only after the authorities above are understood.
+
 ## Source precedence
 
 1. current `main` Product/North Star, accepted Domain/Logical/Physical semantics and repository rules;
-2. this workstream handoff;
-3. `docs/frontend/README.md`;
-4. `docs/frontend/research-index.md` and the authoritative sources it points to;
-5. surface-specific current checkpoint, beginning with `docs/frontend/home/current-checkpoint.md`;
-6. exact current surface artifact;
-7. modular work source for the active bounded prototype task;
-8. migrated Phase 4 reference material under `docs/frontend/reference/phase4/` when behavior/research history is material;
+2. this workstream handoff and mandatory invariant;
+3. frontend registry + current surface contract;
+4. terminology/localization/design-token authorities;
+5. current checkpoint;
+6. modular work source and deterministic build output;
+7. retained complete baseline/oracle;
+8. migrated Phase 4 reference material when behavior/research history is material;
 9. historical Git/PR evidence.
 
 Current `main` truth outranks historical Phase 4 terminology when they conflict.
 
-## Current Home oracle
+## Retained complete A2 baseline
 
 ```text
 path
@@ -47,41 +93,32 @@ Git blob
 fd9788212fbbd1ee40e53271cc39cedd9275b341
 ```
 
-The artifact is migrated by reusing the exact corrected Phase 4 Git blob. It remains the complete immutable accepted standalone oracle.
+This complete file is deliberately retained as the immutable pre-B1 baseline.
 
-## A2 modular source — PASS
+## Current accepted Home build — B1 Context Rail v1
 
-A2 mechanically derived:
-
-`prototypes/frontend/home/work/`
-
-from the immutable oracle without visual or behavioral changes.
-
-The work source contains:
-
-- one copy-on-write structural HTML template pointer;
-- 37 named CSS module pointers covering 38 raw style bodies;
-- 4 named JavaScript module pointers covering 20 raw script bodies;
-- a verified day-ribbon asset pointer to the immutable embedded PNG;
-- deterministic manifest/build tooling;
-- build QA evidence.
-
-A module is materialized only when it must be edited; untouched modules continue to resolve exactly from the full oracle.
-
-`python build.py` reconstructs a standalone HTML with exactly:
+B1 is stored as a deterministic accepted override on top of the retained A2 baseline.
 
 ```text
-size
-748625 bytes
+build command
+cd prototypes/frontend/home/work
+python build.py
 
-SHA-256
-986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df
+accepted output size
+760281 bytes
 
-byte-for-byte oracle match
-PASS
+accepted output SHA-256
+a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
 ```
 
-The complete oracle is kept in parallel; modular work does not replace it.
+Accepted behavior:
+
+- the old `Appunti` + side `Review` cards are superseded by one integrated right contextual rail;
+- the rail contains `Capture` (`user -> DANTE`) and `Resolution` (`DANTE -> user`) functions;
+- both remain visible together; the rejected ambiguous focus/expand interaction is not part of the accepted state;
+- the rail stretches with the timeline column instead of stopping early and leaving an arbitrary empty lower block;
+- timeline expansion still yields the rail's horizontal space;
+- deep/complex resolution is intentionally deferred to the future overlay/sheet grammar.
 
 ## Constraints carried forward
 
@@ -102,21 +139,18 @@ The complete oracle is kept in parallel; modular work does not replace it.
 
 `prototype/phase-4-today-home` and PR #2 are historical/superseded evidence. Selected branch-only research/decision/reference material is preserved under `docs/frontend/reference/phase4/`. Product research already integrated into `main` is not duplicated and is indexed from `docs/frontend/research-index.md`.
 
-## Immediate next scope
+## Immediate roadmap
 
-Home functional/design closeout now proceeds from the modular work source while retaining the full oracle:
-
-1. define the two side/collapsible surfaces beside the calendar;
-2. define the actual purpose/content of the current `Worlds` / `Stats` central-stage area;
-3. lock product/UI naming progressively;
-4. define the overlay grammar and real popup/sheet/dialog cases;
-5. perform the complete Home functional pass;
-6. add final product name/logo/avatar treatment and then background/skin/polish;
-7. run Home QA and freeze the final pre-production Home checkpoint;
-8. continue with Logger and other surfaces.
-
-Each visual/behavioral mutation still requires its own bounded scope and checkpoint discipline.
+1. **B1 Context Rail** — accepted, documentation/operational hardening in progress;
+2. audit and register the rest of the current Home surface;
+3. **B2 central stage** — define actual purpose/content of current `Worlds` / `Stats`;
+4. naming pass;
+5. overlay grammar and real popup/sheet/dialog cases;
+6. complete Home functional review;
+7. final product identity treatment / skin;
+8. Home QA and final pre-production checkpoint;
+9. Logger and later surfaces.
 
 ## Scope boundary
 
-Do not silently start production frontend implementation, choose production framework/runtime, invent backend contracts from prototype convenience, alter accepted semantic models, mutate the immutable Home oracle during structural maintenance, or promote historical UI vocabulary into final Information Architecture without explicit review.
+Do not silently start production frontend implementation, choose production framework/runtime, invent backend contracts from prototype convenience, alter accepted semantic models, or promote historical UI vocabulary into final Information Architecture without explicit review.
