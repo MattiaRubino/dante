@@ -64,11 +64,11 @@ a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
 
 The deterministic source representation is the A2 retained complete baseline plus:
 
-`prototypes/frontend/home/work/overrides/b1-context-rail-v1.patch`
+`prototypes/frontend/home/work/overrides/b1-context-rail-v1.patch` (gzip+base64 encoded unified diff)
 
 Patch SHA-256:
 
-`c89772f1301b3419b6a0a0843a8d5105d77a05ac73fea3b863ef5460a6db60c8`
+`e5a2c3e6680c080f898811ae6b9877fc84d7e4247b06b90e6eb5656180eec82f`
 
 ## QA qualification
 
