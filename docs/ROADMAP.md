@@ -25,24 +25,29 @@ Current-truth dormant-component alignment
           ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
+          ↓
+Repository identity governance
+        COMPLETE
+        MattiaRubino/lifeos → MattiaRubino/dante
 ```
 
 Engineering Foundation replaces the previously considered standalone Development Profile phase. Tool/runtime/infrastructure activation now happens under the closed Foundation contract and the implementation boundary that actually needs the capability.
 
 ## Immediate next sequence
 
-### 0. Repository identity governance
+### 0. Repository identity governance — COMPLETE
 
-Keep the current repository; **do not create a new repository** for implementation.
+The current repository is retained; **do not create a new repository** for implementation.
 
-Recommended small next operation:
+Completed governance operation:
 
 ```text
-rename GitHub repository
-lifeos → dante
+historical GitHub repository   MattiaRubino/lifeos
+current GitHub repository      MattiaRubino/dante
+rename                         COMPLETE
 ```
 
-The rename must be an explicit governance write. If intentionally deferred, document that defer and continue on the same repository.
+The repository rename is no longer a pending prerequisite for production implementation.
 
 ### 1. Production repository/backend scaffold
 
@@ -202,4 +207,4 @@ DOCUMENTATION PASS
 != DIRECT IMPLEMENTATION PASS
 ```
 
-The next conversation should start from the Engineering Foundation closure handoff rather than redesigning the same decisions.
+The next implementation boundary is the production backend scaffold under the closed Engineering Foundation contract.
