@@ -1,51 +1,48 @@
 # Engineering Foundation v0
 
-- Status: **ACTIVE BRANCH BASELINE — PENDING FINAL REVIEW / CLOSURE**
-- Workstream: `chore/engineering-foundation-v0`
-- Established: 2026-08-19
-- Scope: production engineering structure before first production code
+- Status: **CLOSED / ACCEPTED**
+- Scope: backend/repository engineering baseline before first production implementation
+- Product: **DANTE**
+- Frontend internal engineering: **DEFERRED to dedicated frontend workstream**
 
 ## 1. Purpose
 
-This specification defines the engineering system in which DANTE production code will be created, tested, versioned, migrated, deployed and operated.
+Engineering Foundation v0 defines the engineering contract under which DANTE production code is created and evolved.
 
-It sits downstream from the closed Product/Domain/Logical/Physical work and upstream from production implementation.
+It is downstream from the closed Domain, Logical and Physical models and upstream from production implementation.
 
 ```text
-PRODUCT / DOMAIN / LOGICAL / PHYSICAL
-already define WHAT DANTE means and the accepted target architecture
-
-ENGINEERING FOUNDATION
-now defines HOW the codebase and delivery system are structured
-
-IMPLEMENTATION
-comes next
+Domain / Logical / Physical
+          ↓
+Engineering Foundation v0
+          ↓
+production scaffold
+          ↓
+concrete implementation
 ```
 
-This is not another technology-selection benchmark and not a hidden backend implementation phase.
+It does not create production code, schema, API/Auth or direct validation evidence.
 
 ## 2. Quality model
 
-DANTE adopts a production-grade standard from the first implementation commit, but does not copy large-company complexity that exists only because those companies already have thousands of engineers or hundreds of services.
+The standard is production-grade without copying complexity that exists only because very large organizations already have large distributed teams.
 
 The foundation optimizes for:
 
-1. semantic fidelity to accepted Domain/Logical authority;
-2. explicit dependency direction;
-3. reproducible developer and CI environments;
-4. safe schema evolution;
-5. environment isolation;
-6. immutable, traceable releases;
-7. high-signal automated validation;
-8. least-privilege and secret-safe delivery;
-9. observable behavior without shadow personal-data stores;
-10. straightforward growth from one modular application to later components only where evidence requires it.
+1. semantic fidelity to accepted Domain/Logical truth;
+2. one canonical persistence authority;
+3. explicit dependency and ownership boundaries;
+4. reproducible local/CI environments;
+5. safe schema and data evolution;
+6. environment isolation;
+7. immutable/traceable releases;
+8. least-privilege delivery and secret handling;
+9. high-signal automated validation;
+10. growth without forced microservices or repository fragmentation.
 
-A mechanism is not “enterprise” merely because it is complicated. Complexity must pay for a concrete requirement.
+## 3. Inherited non-negotiable boundaries
 
-## 3. Non-negotiable inherited boundaries
-
-Engineering implementation must preserve, among others:
+Implementation preserves, among others:
 
 ```text
 Person != Account != Principal != Actor
@@ -62,428 +59,451 @@ AI / solver output != accepted canonical effect
 
 `WL-H01..WL-H12` remain active.
 
-PostgreSQL remains the single canonical persistence authority. PowerSync/SQLite, Restate, R2/S3, solver state and telemetry remain bounded mechanisms with the ownership defined by PM-11/12.
+PostgreSQL remains the sole canonical persistence authority. PowerSync/SQLite, R2/S3, Restate, solver and telemetry are bounded mechanisms under the already-accepted Physical model.
 
 ## 4. Repository strategy
 
 ### Decision
 
-DANTE uses a **polyglot monorepo**.
-
-Rationale:
-
-- web, mobile and backend evolve against the same governed product semantics;
-- API contract changes can be validated atomically with their clients;
-- infrastructure, migrations, generated contracts and documentation remain traceable to one commit;
-- the current team does not benefit from distributed repository/version coordination;
-- a monorepo does not imply a monolithic runtime.
-
-Repository extraction is allowed later only for a measured boundary such as independent release ownership, security isolation, scale/tooling constraints or genuinely independent lifecycle.
-
-### Top-level ownership
+DANTE uses one **product monorepo**.
 
 ```text
-apps/        deployable/runnable applications
-packages/    genuinely shared TypeScript packages/artifacts
-infra/       environment/infrastructure definitions and local dependency topology
-tooling/     repository engineering utilities; never product business logic
-tests/       cross-application/system black-box validation only
+apps/        runnable/deployable applications
+packages/    genuinely shared cross-application artifacts/contracts
+infra/       local/remote infrastructure definitions
+tooling/     repository engineering utilities
+tests/       true cross-application/system black-box tests
 docs/        durable product/architecture/engineering authority
-prototypes/  exploratory/non-production work
-.github/     GitHub repository automation and integration controls
+prototypes/  explicitly non-production work
+.github/     GitHub automation/integration controls
 ```
 
-Detailed tree and dependency rules live in `repository-layout-v0.md`.
-
-## 5. Application architecture
-
-### Backend
-
-DANTE starts as one **capability-first modular monolith**.
-
-A module groups behavior that changes together. A Logical owner is not automatically a Python module, table, microservice or route.
-
-Each backend capability keeps its domain/application meaning separate from technical adapters. FastAPI, SQLAlchemy, provider SDKs and transport DTOs remain at technical boundaries rather than becoming the domain model by identity.
-
-The composition root owns concrete dependency wiring.
-
-Cross-module access uses explicit public contracts/application interfaces; modules do not reach into another module's private persistence or internal implementation.
-
-Generic infrastructure abstractions are not allowed merely to reduce line count. In particular:
+Deployable application boundaries:
 
 ```text
-NO universal generic Repository[T] as a semantic model
-NO BaseService CRUD hierarchy
-NO service locator
-NO global mutable database session
-NO framework-coupled domain entities
-NO “shared” dumping-ground package
+apps/backend
+apps/web
+apps/mobile
 ```
 
-### Web and mobile
+`apps/backend` is the server-side application boundary. FastAPI is an inbound adapter/process host, not the identity of the whole backend.
 
-Web and mobile are independent clients of the governed backend contract.
+Repository extraction is allowed later only for a measured independent lifecycle/security/ownership/scale boundary.
 
-They may share:
+The current GitHub repository is retained. Creating a new repository for production implementation is not part of the accepted plan. A rename from the historical repository name `lifeos` to `dante` is a separate governance operation.
 
-- generated API client/types;
-- design tokens;
-- pure platform-neutral utilities proven to be genuinely common.
+## 5. Backend application architecture
 
-They do **not** share UI components by default. React DOM and React Native have different platform semantics; a shared UI library is extracted only when actual stable reuse exists.
+DANTE begins as a **capability-first modular monolith**.
 
-## 6. API contract ownership
+Core rules:
 
-Backend HTTP schemas are transport contracts, not Domain identity.
+- one deployable backend while product/team size does not justify distributed services;
+- capability modules reflect behavior/change cohesion, not one table/route/Logical owner each;
+- Domain/application meaning remains separate from FastAPI, SQLAlchemy and provider SDKs;
+- concrete dependency wiring belongs to the composition root;
+- module private persistence/adapters are not cross-module APIs;
+- cross-module atomic transactions remain allowed where accepted semantics require them;
+- no universal `Repository[T]`, `BaseService`, service locator, global mutable DB session or `shared/common/utils` dumping ground.
 
-The authoritative transport description is generated from the backend OpenAPI contract. TypeScript client/types are generated from that contract into a dedicated workspace package.
+Detailed rules: `application-structure-v0.md`.
 
-Policy:
+## 6. Frontend boundary
+
+This workstream fixes only that:
 
 ```text
-backend contract source
-→ deterministic OpenAPI generation
-→ deterministic TypeScript client generation
-→ generated package consumed by web/mobile
-→ CI verifies no generation drift
+apps/web
+apps/mobile
 ```
 
-Hand-written duplicate request/response types across Python and TypeScript are forbidden where the generated contract can represent them.
+are sibling applications in the same product monorepo and remain governed clients of the backend contract.
 
-Generated code is explicitly marked and never hand-edited.
+It **does not** select or freeze their package manager, task graph, detailed source tree, test runner, E2E stack, mobile build service usage or shared-UI strategy. Those decisions belong to the dedicated frontend workstream/branch after current frontend design work is ready.
 
-Mobile clients cannot be assumed to upgrade at the same instant as the backend. Production backend contract changes must therefore remain compatible with every mobile build still inside the supported-client window. Removal of old behavior requires an explicit retirement boundary, not merely a new server deploy.
+Existing accepted product choices such as Next.js/React and Expo/React Native are inherited context, not re-selected here.
 
-## 7. Runtime and dependency policy
+## 7. Environment model
 
-### Python
-
-```text
-production language line        Python 3.14
-initial bootstrap interpreter   Python 3.14.7
-package/environment manager     uv
-manifest                        pyproject.toml
-lockfile                        uv.lock / committed
-formatter + linter              Ruff
-type checker                    mypy / strict baseline
-test runner                     pytest
-ORM/data access                 SQLAlchemy 2.0 stable line
-PostgreSQL driver               psycopg 3
-migrations                      Alembic
-```
-
-Patch/minor library versions are locked by `uv.lock`; documentation does not duplicate every package patch number. Runtime/package-manager versions used in CI are explicitly pinned and upgraded by reviewed change.
-
-### TypeScript/JavaScript
-
-```text
-runtime line                    Node.js 24 LTS
-initial bootstrap runtime       Node.js 24.18.0
-package manager                 pnpm 11 stable
-initial bootstrap package mgr   pnpm 11.20.0
-lockfile                        pnpm-lock.yaml / committed
-type checking                   TypeScript strict
-lint                            ESLint
-format                          Prettier
-JS workspace task graph         Turborepo
-```
-
-Pre-release toolchain majors are not adopted as the default production baseline merely because they exist.
-
-### Dependency update rule
-
-- manifests express intended dependency constraints;
-- lockfiles express the exact resolved build;
-- CI uses frozen/locked install modes;
-- runtime/toolchain upgrades happen in explicit PRs;
-- major framework/runtime upgrades require compatibility and migration review;
-- security fixes may be expedited but still produce traceable repository history.
-
-## 8. Local development contract
-
-### Canonical server-side semantics
-
-Linux is the canonical server-side execution environment.
-
-For Windows developers, backend/container work uses WSL2/Linux semantics. This keeps filesystem/shell/runtime behavior close to CI/production and avoids platform-specific async/database differences becoming the accidental canonical path.
-
-Web/mobile tooling may run natively on the host OS when platform tooling benefits from it. Repository contracts must remain usable from macOS, Linux and supported Windows development setups.
-
-### Containers
-
-Docker Compose is used for **stateful local dependencies**, not as a requirement to run every application process during the inner development loop.
-
-Typical rule:
-
-```text
-PostgreSQL/extensions/PgBouncer/other activated stateful dependencies
-→ containers
-
-FastAPI / Next.js / Expo processes
-→ native developer process by default for fast reload/debug
-```
-
-A deployable server application is packaged as an OCI image when deployment begins. Images are immutable, run as non-root where practical and are identified by digest.
-
-### No fake canonical database
-
-Backend integration tests and development paths that exercise persistence use PostgreSQL. SQLite is not used as a convenience substitute for canonical PostgreSQL behavior.
-
-The encrypted SQLite selected by the Physical Model belongs only to the bounded mobile/offline architecture.
-
-## 9. Database development and migration contract
-
-SQLAlchemy/Alembic are accepted for the implementation baseline against the already-selected PostgreSQL target.
-
-### Hard rules
-
-1. Application startup does not call `metadata.create_all()` to manage deployed schema.
-2. Every durable schema change is represented by an Alembic migration.
-3. Alembic autogenerate produces a **candidate**, never an automatically trusted migration.
-4. Generated migrations are manually reviewed for data loss, lock behavior, constraints, indexes, defaults and rollback implications.
-5. Migrations that have been merged/applied are immutable; corrections use new revisions.
-6. Schema migration and reference/demo data seeding are separate concerns.
-7. Production replicas do not race each other to migrate on startup.
-8. Environment deployment runs a single controlled migration/release job before dependent application rollout where required.
-9. The empty database -> current head path is continuously tested once migrations exist.
-10. UAT rehearses release migrations against representative synthetic data before PROD.
-11. Production rollback does not assume that every destructive schema operation can be safely reversed with `alembic downgrade`.
-12. Risky changes use expand/migrate/contract sequencing so old and new application versions can coexist during rollout where necessary.
-
-Data migrations that materially transform canonical semantics require explicit implementation/test review; they are not hidden in startup hooks.
-
-## 10. Transaction and persistence discipline
-
-Database sessions/transactions are request/use-case scoped, never global shared state.
-
-Async database access may be used at the application/adapters boundary, while Domain logic remains synchronous/pure unless a real domain computation requires otherwise.
-
-`AsyncSession` is not shared across concurrent tasks. Implicit lazy I/O is avoided; data required by a use case is loaded explicitly.
-
-Consequential writes preserve accepted expected-state, idempotency and multi-owner semantics. Transaction scope is selected by the use case, not by ORM convenience.
-
-Where a Class-A async effect uses the selected PostgreSQL outbox pattern, the outbox record and canonical state transition belong to the same transaction where the accepted semantics require atomicity.
-
-## 11. Environment model
-
-DANTE defines four lifecycle contexts:
+DANTE lifecycle contexts:
 
 ```text
 LOCAL
-individual developer environment; not a remote deployment stage
+individual developer context
 
 DEV
-shared integration environment for accepted main builds and synthetic/test data
+shared remote integration environment
 
 UAT
-production-like release-candidate verification, migration rehearsal and acceptance
+production-like release-candidate/acceptance environment
 
 PROD
-real released service and real user data
+real released environment and real user data
 ```
-
-Optional ephemeral preview environments may exist per PR/feature when economically and technically useful. They never become another source of canonical project truth.
-
-Each remote environment has independent state and credentials. No DEV/UAT application receives PROD database credentials by design.
-
-Detailed promotion semantics live in `environments-and-promotion-v0.md`.
-
-## 12. Artifact and release contract
-
-Server/web deployables use an immutable artifact identity containing at minimum:
-
-- source Git commit SHA;
-- build identifier;
-- artifact/image digest where available;
-- application version/release tag when release versioning is active.
-
-The preferred lifecycle is:
-
-```text
-commit accepted on main
-→ CI builds/tests artifact
-→ deploy to DEV
-→ select exact artifact as release candidate
-→ promote exact artifact to UAT
-→ acceptance/migration/E2E gates
-→ promote exact artifact to PROD
-```
-
-Rebuilding “the same source” separately for PROD is avoided where the platform permits build-once promotion.
-
-Mobile is a deliberate exception: separate signed application identities/configuration may require DEV/UAT/PROD builds. Those builds must remain traceable to the same source commit, locked dependencies and explicit build profile; they are not treated as identical binary artifacts when they are not.
-
-## 13. Configuration and secrets
-
-Configuration is typed, validated on process start and then treated as immutable runtime state.
-
-Backend uses `pydantic-settings`; TypeScript clients use a typed validation boundary appropriate to the selected client stack.
 
 Rules:
 
-```text
-client-visible value = PUBLIC by definition
-secret = never shipped to browser/mobile bundle
-production secret = never committed
-real credentials = never placed in .env.example
-missing required production config = startup failure
-invalid environment combination = startup failure
-```
+- environments are not Git branches;
+- protected `main` is the integrated source truth;
+- remote environment state, identity, credentials and secrets are isolated;
+- provider-native account/project/subscription isolation is preferred where practical and security-relevant;
+- lower environments do not possess production credentials;
+- production data is not copied raw into DEV;
+- remote provider is intentionally deferred.
 
-OIDC/federated identity is preferred for CI-to-cloud access where supported. Long-lived cloud access keys are a fallback, not the default.
-
-Full policy lives in `config-and-secrets-v0.md`.
-
-## 14. Testing model
-
-DANTE uses risk-layered testing rather than one undifferentiated test suite.
-
-Required categories as implementation arrives:
+Activation:
 
 ```text
-unit / pure semantic tests
-property/invariant tests where state space matters
-architecture dependency tests
-PostgreSQL integration tests
-migration tests
-adapter/provider contract tests
-OpenAPI/client-generation drift tests
-web component/integration tests
-mobile component/integration tests
-system/E2E tests
-security/static/dependency analysis
-performance/recovery/specialist PSV tests at their applicable boundary
+LOCAL   first implementation
+DEV     when remote integration becomes useful
+UAT     when real release candidates exist
+PROD    at production-readiness
 ```
 
-Coverage percentage is a signal, not semantic proof. A global percentage cannot substitute for explicit invariant, conflict, migration, recovery or non-interference tests. Exact numerical coverage floors may be introduced after the first real implementation establishes meaningful denominators; critical semantic paths are required to have direct tests regardless of aggregate coverage.
+## 8. Release identity and promotion
 
-## 15. CI/CD model
-
-GitHub Actions is the primary repository CI/CD orchestrator.
-
-PR CI begins with real checks and grows with the codebase. No check becomes a required-main status merely because its future name is documented.
-
-Initial check classes will include, when corresponding code/manifests exist:
-
-- repository/config validation;
-- backend format/lint/type/unit;
-- backend PostgreSQL integration/migration;
-- web lint/type/test/build;
-- mobile lint/type/test/build-validation;
-- API contract/client drift;
-- dependency review;
-- CodeQL/static analysis;
-- container/IaC checks when those artifacts exist.
-
-PR jobs run with least-privilege token permissions and no production deployment secrets.
-
-Deployment jobs use GitHub Environments to scope approval, environment rules and environment-specific credentials. Deployment concurrency is serialized per environment where concurrent deploys would be unsafe.
-
-Only after a real check exists, emits a stable context and demonstrates that failure should block integration may it be added to the protected-main required-check ruleset.
-
-## 16. Supply-chain baseline
-
-- all package-manager lockfiles are committed;
-- CI uses locked/frozen installs;
-- third-party GitHub Actions are pinned to immutable commit SHAs where practical;
-- dependency review is part of PR security once manifests exist;
-- Dependabot/security update automation is enabled for supported active ecosystems after manifests exist;
-- CodeQL activates when production source exists;
-- secret scanning/push protection remain repository security controls where available;
-- build provenance/artifact attestation is introduced for release artifacts once actual deployable artifacts exist;
-- generated files state their generator and are regenerated deterministically;
-- no downloaded binary or generated artifact is silently committed without ownership/provenance policy.
-
-## 17. Infrastructure-as-code posture
-
-Remote durable infrastructure must be reproducible from versioned infrastructure definitions. Manual console changes cannot become the only representation of production state.
-
-The repository reserves `infra/iac/` for that contract.
-
-The exact compute/runtime provider and exact IaC engine are **not selected by current accepted architecture**, so Engineering Foundation does not invent them merely to make the folder non-empty. The first remote infrastructure implementation must select/pin the IaC engine and provider under an explicit implementation decision while preserving this contract.
-
-This is a deliberate defer, not missing architecture.
-
-## 18. Specialist target activation
-
-Selected Physical components enter implementation when their real capability arrives; they are not re-evaluated from scratch in a separate profile phase.
-
-Examples:
+Future server artifacts are immutable and traceable to at least:
 
 ```text
-PostGIS
-→ when accepted geospatial mappings/queries are implemented
-
-pgvector / FTS
-→ when retrieval/search vertical slices arrive
-
-PowerSync + encrypted SQLite
-→ when real offline/multi-device implementation begins
-
-R2
-→ when real ContentArtifact bytes are implemented
-
-OR-Tools
-→ when solver-backed planning capability begins
-
-Restate
-→ fixed dormant trigger: first real Class-B durable workflow
-
-pgBackRest + AWS S3
-→ fixed dormant trigger: recovery/production boundary or real rehearsal
+source commit SHA
+build identifier
+OCI/artifact digest
+release/version when active
+migration head when applicable
 ```
 
-Dormancy never cancels the applicable PSV obligations.
-
-## 19. Deferred decisions
-
-Only decisions that genuinely depend on absent implementation/provider facts are deferred:
+Target server lifecycle:
 
 ```text
-compute hosting/provider
-exact IaC engine
-artifact/container registry provider
-exact remote DEV/UAT/PROD sizing
-domain-capability module list
-exact API route/version surface
-exact AuthN/AuthZ mechanism
-exact numeric coverage floors
-specialist service activation beyond already-fixed triggers
+accepted main
+→ build/test
+→ immutable artifact
+→ DEV
+→ exact release candidate
+→ UAT
+→ exact candidate
+→ PROD
 ```
 
-A defer is not permission to improvise later. It opens at the implementation boundary that supplies the missing facts.
+Build-once/promote-exact-artifact is the default where the platform permits it.
 
-## 20. Primary-source verification baseline
-
-Version-sensitive engineering choices were checked on 2026-08-19 against current primary documentation, including:
-
-- Python 3.14.7 release: `https://www.python.org/downloads/release/python-3147/`
-- uv project/workspace/lock documentation: `https://docs.astral.sh/uv/`
-- Ruff documentation: `https://docs.astral.sh/ruff/`
-- Node.js release/LTS policy: `https://nodejs.org/en/about/previous-releases`
-- pnpm releases/workspace documentation: `https://pnpm.io/workspaces`
-- FastAPI larger-application structure: `https://fastapi.tiangolo.com/tutorial/bigger-applications/`
-- SQLAlchemy 2.0 async/psycopg documentation: `https://docs.sqlalchemy.org/en/20/`
-- Alembic autogeneration guidance: `https://alembic.sqlalchemy.org/en/latest/autogenerate.html`
-- Psycopg async documentation: `https://www.psycopg.org/psycopg3/docs/advanced/async.html`
-- GitHub Actions deployment environments/OIDC/supply-chain documentation: `https://docs.github.com/en/actions` and `https://docs.github.com/en/code-security`
-- Expo monorepo/development-build documentation: `https://docs.expo.dev/guides/monorepos/` and `https://docs.expo.dev/develop/development-builds/introduction/`
-
-These URLs are supporting engineering evidence, not a replacement for repository authority. Exact package/library versions are locked by implementation manifests when scaffolded and must be re-verified at upgrade time.
-
-## 21. Closure condition
-
-Engineering Foundation v0 can close only after the complete specification set is internally coherent, approved current-truth docs no longer point to the superseded standalone Development Profile sequence, exact Git scope QA is clean, and the user accepts the baseline.
-
-Until then:
+## 9. Backend runtime/toolchain
 
 ```text
-ENGINEERING FOUNDATION
-ACTIVE / NOT CLOSED
-
-BACKEND PRODUCTION CODE
-NOT STARTED
-
-DIRECT PSV
-NOT RUN
+Python supported line        3.14.x
+initial bootstrap pin        3.14.7
+package/environment manager  uv
+manifest                     apps/backend/pyproject.toml
+lockfile                     apps/backend/uv.lock (committed)
+interpreter declaration      apps/backend/.python-version
+source layout                apps/backend/src/dante
+formatter/linter             Ruff
+type checker                 mypy strict baseline
+test runner                  pytest
+property/state-space tests   Hypothesis where meaningful
 ```
+
+Exact dependency versions are resolved/locked during scaffold. Unbounded `latest` is not a production/CI contract.
+
+## 10. Developer platform
+
+Canonical server-side semantics are Linux.
+
+For Windows development:
+
+```text
+Windows 11 host
+        ↓
+WSL2 / Linux
+        ↓
+repo checkout in WSL filesystem
+Python / uv / Git / backend process
+        ↓
+Docker Desktop WSL2 backend for stateful infra
+```
+
+PyCharm is a supported primary IDE workflow using a WSL interpreter and can provide normal run/debug/test integration. Repository commands/configuration remain IDE-neutral so another supported IDE does not change the engineering contract.
+
+Backend runs directly in WSL/Linux during the normal inner loop. Docker Compose runs stateful LOCAL dependencies. Future remote backend packaging uses OCI containers.
+
+## 11. LOCAL PostgreSQL platform
+
+Canonical LOCAL persistence is real PostgreSQL 18.4.
+
+DANTE owns a reproducible local database build/configuration. It must make exact PostgreSQL/extension provenance inspectable and must not rely on a mutable community “all extensions” image.
+
+The first LOCAL database has the full selected extension envelope installed and enabled:
+
+```text
+PostGIS             3.6.4
+pgvector            0.8.6
+pg_trgm             enabled
+unaccent            enabled
+pg_stat_statements  enabled + shared_preload_libraries configured
+native FTS          available
+```
+
+“Enabled” means database/server capability is present from the first baseline. Application features remain free not to use a capability until their implementation arrives.
+
+PgBouncer 1.25.2 remains a selected target and is activated/tested at the connection-pooling boundary rather than forced into every first-line LOCAL request.
+
+## 12. Persistence architecture
+
+```text
+SQL toolkit / ORM         SQLAlchemy 2.0 stable line
+PostgreSQL driver         psycopg 3
+I/O model                 async at DB/provider/HTTP boundaries where useful
+Domain/application logic  synchronous/pure by default
+migration authority       Alembic
+```
+
+Rules:
+
+- SQLAlchemy mappings are persistence models, not canonical Domain identity;
+- complex SQL/Core is allowed when clearer/safer than forced ORM navigation;
+- one `AsyncSession` is bounded to one concurrent use-case/task scope;
+- sessions are injected and never global;
+- application/use-case boundary owns transaction commit/rollback;
+- adapters do not silently commit inside a larger semantic transaction;
+- no universal generic CRUD repository;
+- persistence ports are capability/use-case shaped where a boundary adds real value.
+
+## 13. Schema/migration governance
+
+Deployed schema is represented by Alembic revision history.
+
+Hard rules:
+
+1. no production schema management through application `metadata.create_all()`;
+2. every durable schema change has a reviewed migration;
+3. autogenerate is assistance/candidate generation only;
+4. merged/applied revisions are immutable;
+5. manual remote DDL that is not reconciled into migration history is forbidden;
+6. empty PostgreSQL → head is continuously tested;
+7. metadata/schema drift is detected in CI;
+8. release migration execution is serialized and separate from ordinary application startup;
+9. risky evolution uses expand → migrate → contract;
+10. old mobile/client compatibility is part of contract/removal timing.
+
+Migration review classifies:
+
+- data-loss risk;
+- table rewrite risk;
+- lock duration/strength;
+- index construction behavior;
+- constraint validation behavior;
+- old/new application coexistence;
+- backfill cost/resumability;
+- rollback versus forward-repair truth.
+
+Use PostgreSQL online/staged mechanisms such as concurrent index creation and `NOT VALID`/later validation where technically appropriate.
+
+Large data migrations/backfills use bounded, restartable, idempotent jobs with checkpoints and validation instead of one giant migration transaction.
+
+## 14. Database privilege model
+
+When implemented, PostgreSQL privilege classes are separated by responsibility:
+
+```text
+owner          owns schema objects; not ordinary application runtime
+migrator       controlled DDL/release migration capability
+runtime        normal backend application capability only
+replication    PowerSync/replication capability when active
+backup         recovery capability when active
+```
+
+Exact grants are implementation work, but normal API runtime must not possess schema-owner power merely for convenience.
+
+## 15. Copy, backup and recovery model
+
+Logical-copy tooling:
+
+```text
+pg_dump / pg_restore
+```
+
+is used for portable logical copies, controlled migration tests and bounded/sanitized clone workflows.
+
+Recovery-grade production posture remains the already-selected:
+
+```text
+pgBackRest 2.59.0
++ WAL archive / PITR
++ AWS S3 Standard eu-south-1
++ accepted retention/Object Lock posture
+```
+
+That recovery stack remains dormant until the fixed recovery/production boundary or real rehearsal need.
+
+Rules:
+
+- backup is not the normal “rollback button” for every schema migration;
+- risky changes require a truthful forward/rollback/recovery plan;
+- once recovery activates, backup verification and periodic restore rehearsal are required;
+- raw production data is not copied into DEV by default;
+- production-derived acceptance/debug clones require explicit minimization/sanitization and authorization;
+- PostgreSQL major upgrades use a separate platform procedure (`pg_upgrade`, dump/restore, logical replication or another reviewed supported path), not normal application migration semantics.
+
+## 16. Configuration and secrets
+
+Backend configuration is typed with `pydantic-settings`, validated before serving work and immutable after bootstrap.
+
+Configuration classes are separated:
+
+```text
+non-secret deployment configuration
+secret material
+build/release identity
+governed domain/business configuration
+```
+
+Domain/business semantics must not migrate into environment variables as a second truth authority.
+
+LOCAL may use ignored `.env.local`; a safe `.env.example` is committed.
+
+Remote hierarchy:
+
+```text
+minimize secrets
+→ workload/federated identity
+→ provider secret manager
+→ least privilege
+→ rotation / revocation / audit
+```
+
+GitHub OIDC is preferred for CI-to-cloud identity where supported. Long-lived deployment credentials are fallback only.
+
+Full contract: `config-and-secrets-v0.md`.
+
+## 17. Testing architecture
+
+Testing is organized by risk/boundary, not a single suite or vanity coverage number.
+
+Required as applicable:
+
+```text
+unit/domain
+application/use-case
+property/invariant
+state-machine/lifecycle
+architecture dependency
+real PostgreSQL integration
+migration
+concurrency/expected-state/idempotency
+provider contract
+HTTP/API contract
+privacy/non-interference
+system/E2E
+security/supply chain
+performance/resilience/recovery/PSV
+```
+
+Real PostgreSQL tests use the DANTE-owned PostgreSQL 18.4 image/envelope. SQLite is never evidence of PostgreSQL backend correctness.
+
+Test data is synthetic/deterministic by default.
+
+Coverage is tracked, but a numeric gate is introduced only after real code provides a meaningful denominator. Critical semantic paths must have direct tests independent of aggregate percentage.
+
+Test cost tiers:
+
+```text
+PR
+fast/high-signal mandatory validation
+
+accepted main / DEV
+heavier integration/provider/system smoke
+
+scheduled/nightly
+larger property/state/concurrency/fuzz corpus where useful
+
+UAT/release
+migration rehearsal, E2E, performance, failure injection, recovery/security and applicable PSV
+```
+
+Flaky tests are defects to investigate/fix or explicitly quarantine; repeated retries are not accepted as evidence of correctness.
+
+## 18. CI/CD
+
+GitHub Actions is the primary repository CI/CD orchestration layer.
+
+Principles:
+
+- split workflows/jobs by meaningful responsibility;
+- run fast/high-signal checks early and parallelize independent work;
+- use deterministic locked installs;
+- use conservative change/path filtering only after correctness is proven;
+- cancel superseded non-deployment PR runs where safe;
+- serialize environment deployments/migrations where concurrent execution is unsafe;
+- normal PR validation has no production secrets/deployment identity;
+- `GITHUB_TOKEN` permissions are explicit/minimal;
+- protected workflows pin external Actions to immutable full commit SHAs;
+- only approved/trusted Action sources are allowed when repository policy supports enforcement;
+- a check becomes required on `main` only after its real stable emitted context and blocking value are verified;
+- one-developer reality does not create fake required human review; independent review rules can activate when real independent maintainers exist.
+
+GitHub-hosted runners are the default. Self-hosted runners require a measured hardware/private-network/cost/environment need and a separate security/maintenance decision.
+
+## 19. Security and supply chain
+
+When corresponding artifacts/source exist:
+
+- Dependency Review evaluates dependency changes;
+- a severity/license enforcement policy is selected against real dependencies rather than invented before manifests exist;
+- CodeQL Python activates for real production Python source;
+- secret scanning/push protection is used where repository capability supports it;
+- OCI/container scanning activates with real images;
+- release artifacts are promoted by immutable digest;
+- production release artifacts receive build provenance/attestation;
+- production release boundary includes an SBOM/dependency inventory;
+- evidence/artifact retention is class/policy-bound rather than infinite.
+
+Artifact attestation proves provenance, not semantic correctness.
+
+## 20. Infrastructure-as-code posture
+
+Remote durable infrastructure must eventually be reproducible from version-controlled desired state.
+
+`infra/iac/` is reserved for that contract, but neither cloud/compute provider nor IaC engine is selected here.
+
+The first remote infrastructure scope must select/pin them against actual DANTE deployment requirements. Manual console state must not become the only production representation.
+
+## 21. Deferred decisions
+
+Intentionally deferred:
+
+```text
+frontend internal architecture/toolchain/testing/release implementation
+cloud/compute provider
+IaC engine
+artifact registry
+remote environment sizing
+backend capability module map
+concrete database schema/migrations
+API route/version surface
+AuthN/AuthZ mechanism
+exact numeric coverage thresholds
+specialist service implementation beyond accepted activation triggers
+```
+
+A defer requires a later explicit bounded decision; it is not permission to improvise.
+
+## 22. Closure and next boundary
+
+Engineering Foundation v0 is **CLOSED**.
+
+Next sequence:
+
+```text
+repository identity decision
+(keep current repo; decide/execute recommended `lifeos → dante` rename or explicitly defer)
+        ↓
+production repository/backend scaffold
+        ↓
+LOCAL PostgreSQL + migration harness
+        ↓
+concrete Logical → PostgreSQL implementation
+        ↓
+first persistence/application vertical slice
+```
+
+Before any implementation write, re-run mandatory bootstrap and exact Git write gate.

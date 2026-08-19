@@ -1,430 +1,339 @@
 # Environments and Promotion v0
 
-- Status: **Engineering Foundation branch baseline — pending closure**
-- Scope: LOCAL / DEV / UAT / PROD lifecycle, isolation and release promotion
+- Status: **CLOSED / ACCEPTED**
+- Scope: LOCAL / DEV / UAT / PROD lifecycle, isolation and promotion
+- Cloud/compute provider: **DEFERRED**
 
 ## 1. Environment vocabulary
 
-DANTE uses exactly these lifecycle concepts:
+DANTE uses exactly these promotion/lifecycle contexts:
 
 ```text
 LOCAL
 individual developer execution context
-not a remotely shared deployment stage
+not a remote deployment stage
 
 DEV
-shared integration environment
+shared remote integration environment
 
 UAT
-production-like acceptance/release-candidate environment
+production-like release-candidate/acceptance environment
 
 PROD
 real released environment and real user data
 ```
 
-Optional **preview** environments may be created for pull requests/features when useful. Preview is ephemeral and not part of the durable promotion chain.
+Automated tests may use a `TEST` execution context, but TEST is not a fifth promotion environment.
 
-DEV/UAT/PROD are environments, **not Git branches**.
+Optional ephemeral preview environments may be added when useful. Preview is not part of the durable DEV→UAT→PROD chain.
 
-## 2. Source and deployment relationship
+## 2. Environment != Git branch
 
-Protected `main` remains the only integrated source truth.
+Protected `main` is the integrated source truth.
 
-Normal flow:
+No permanent `develop`, `staging` or `production` Git branch is introduced.
+
+Normal source flow:
 
 ```text
 bounded feature/fix/chore branch
         ↓ PR + validation
 protected main
-        ↓ build immutable artifact
-DEV
-        ↓ select exact release candidate
-UAT
-        ↓ acceptance / release gates
-PROD
 ```
 
-A permanent `develop`, `staging` or `production` Git branch is not introduced.
+Deployment state is represented by exact source/build/artifact/environment identity, not parallel source histories.
 
-Release state is represented by an exact commit/artifact/deployment record, not by maintaining parallel code histories.
+## 3. Activation sequence
 
-## 3. LOCAL
+The architecture defines all environments now but materializes them progressively.
 
-LOCAL optimizes developer feedback while preserving production-relevant semantics where they matter.
+```text
+LOCAL
+active from first production implementation
+
+DEV
+remote activation only when shared/remote integration is useful
+
+UAT
+activation when real release candidates need acceptance/rehearsal
+
+PROD
+activation at production-readiness / real-user boundary
+```
+
+This preserves enterprise-grade separation without paying/operating unused remote environments prematurely.
+
+## 4. LOCAL
+
+LOCAL optimizes developer feedback while preserving server/database semantics that matter.
 
 Baseline:
 
-- application processes run directly in the canonical developer environment for fast reload/debug where practical;
-- stateful selected dependencies run through Docker Compose as they become active;
-- PostgreSQL integration uses real PostgreSQL 18.4 and selected extensions, not SQLite substitution;
-- synthetic fixtures only;
-- local credentials are non-production and least-privilege;
-- local `.env`-style files are ignored from Git;
-- local state is disposable and rebuildable from migrations/seeds where applicable.
+- Windows 11 host is supported;
+- canonical backend execution semantics are Linux through WSL2 on Windows;
+- backend repository/worktree used by server tooling is kept in WSL filesystem;
+- Python backend runs directly in WSL/Linux for normal reload/debug;
+- Docker Compose runs stateful selected dependencies;
+- PostgreSQL is real PostgreSQL 18.4, not SQLite substitution;
+- full selected PostgreSQL extension envelope is installed/enabled from the first LOCAL DB;
+- data/credentials are synthetic/non-production;
+- local state is disposable/rebuildable from migrations/fixtures where applicable;
+- ignored `.env.local` may provide LOCAL convenience only.
 
-Windows server-side development uses WSL2/Linux semantics. Web/mobile platform tooling may run natively where appropriate.
+LOCAL does not need to run every future specialist service before its implementation exists.
 
-LOCAL does not need to mirror every production service from day one. A selected specialist component is activated when the corresponding implementation capability requires it, subject to already-fixed Restate/recovery dormancy rules.
+## 5. DEV
 
-## 4. DEV
-
-DEV is the first shared remote integration environment.
+DEV is the first shared remote integration environment once activated.
 
 Purpose:
 
-- validate accepted `main` integrations;
-- exercise service-to-service/provider wiring;
-- run shared integration/smoke tests;
-- provide stable non-production endpoints for web/mobile integration;
-- surface environment/configuration problems that local mocks cannot.
+- run accepted-main backend artifacts remotely;
+- validate remote networking/config/provider integration;
+- provide stable non-production endpoints to real clients/integration tests;
+- expose failures that LOCAL cannot reproduce truthfully.
 
 Rules:
 
-- DEV deploys an accepted `main` artifact, never an arbitrary developer working tree;
-- credentials and state are DEV-only;
-- data is synthetic/test/demo data;
-- production personal data is not copied into DEV as a convenience;
-- destructive reset is allowed only through controlled DEV procedures;
-- DEV outages do not justify relaxing PROD correctness/security boundaries in shared code.
+- deploy accepted `main` artifact, not arbitrary workstation code;
+- DEV state/credentials are DEV-only;
+- synthetic/shared test data by default;
+- no raw production database copy for convenience;
+- reset/destructive procedures remain controlled and traceable;
+- DEV does not possess PROD credentials.
 
-Automatic deployment from accepted `main` is the target once stable CI/deployment exists. Before that automation exists, manual deployment remains traceable to exact commit/artifact identity.
+Auto-deploy from accepted `main` is a target only after real deployment automation proves stable. Before that, any manual deployment remains traceable to exact commit/artifact identity.
 
-## 5. UAT
+## 6. UAT
 
-UAT is the release-candidate acceptance environment, not a second development sandbox.
+UAT is a release-candidate environment, not a second development sandbox.
 
 Purpose:
 
 - end-to-end acceptance;
-- realistic migration rehearsal;
+- migration rehearsal;
 - deployment/release rehearsal;
 - provider integration verification;
 - supported-client compatibility verification;
-- applicable recovery/operability checks;
-- final pre-production security/quality gates.
+- applicable security/performance/recovery/PSV checks;
+- final release evidence before PROD.
 
-UAT should resemble PROD in topology/configuration behavior as far as practical without using production data or production credentials.
+UAT resembles PROD topology/configuration behavior as far as practical without using PROD credentials or ad-hoc raw PROD data.
 
-Required release-candidate identity:
+A UAT PASS belongs to an exact candidate and evidence basis.
 
-```text
-source commit SHA
-build identifier
-artifact/image digest where applicable
-migration head/revision
-client build identity where applicable
-configuration/environment identity
-```
+## 7. PROD
 
-A UAT PASS applies only to that exact release candidate and environment/configuration basis.
-
-## 6. PROD
-
-PROD contains real users, real data and released application state.
+PROD contains real released service state and real user data.
 
 Rules:
 
-- deploy only an accepted release candidate;
-- use environment-scoped production identities/secrets;
-- production state is not shared with DEV/UAT;
-- migrations/deployments are auditable and serialized where required;
-- observability/recovery/security controls activate according to accepted release requirements;
-- emergency repair does not create a permanent alternate Git workflow;
-- direct console/manual changes that materially alter infrastructure must be reconciled back into versioned desired state.
+- deploy only an accepted exact release candidate;
+- use PROD-only identities/secrets/resources;
+- do not share state with DEV/UAT;
+- serialize release/migration operations where concurrent mutation is unsafe;
+- activate recovery/observability/security controls required by the production boundary;
+- reconcile emergency manual infrastructure repair back to versioned desired state;
+- direct console changes do not create a second infrastructure authority.
 
-## 7. Environment isolation
+## 8. Environment isolation
 
-Each remote environment is independently addressable and credentialed.
+Each remote environment is independently addressed, credentialed and stateful.
 
-At minimum, where the provider supports separation:
+Target minimum:
 
 ```text
-DEV database != UAT database != PROD database
-DEV object namespace != UAT != PROD
-DEV provider credentials != UAT != PROD
+DEV DB != UAT DB != PROD DB
+DEV object namespace/resource != UAT != PROD
+DEV credentials != UAT != PROD
 DEV secrets != UAT != PROD
+DEV deployment identity != UAT != PROD
 DEV telemetry environment != UAT != PROD
 ```
 
-Using separate schemas inside one production database as a substitute for environment isolation is not the default.
+Using multiple schemas inside one production database is not the default substitute for environment isolation.
 
-A lower environment must not possess broad production credentials “for convenience”.
+## 9. Provider-native security boundary
 
-## 8. Account/project isolation
+The exact provider is not selected yet.
 
-Provider-specific account/project strategy is decided when each provider integration is implemented, but follows this preference order:
-
-1. separate provider projects/accounts where isolation materially improves blast radius/security and is operationally reasonable;
-2. otherwise provider-native environment namespaces/resources plus independent identities;
-3. shared credential with environment-level branching only as an explicit exception where the provider makes stronger isolation unavailable or disproportionately harmful.
-
-Any exception involving production privilege is documented and minimized.
-
-## 9. Artifact identity
-
-Deployable backend/server artifacts are immutable.
-
-Preferred API identity:
+When chosen, DANTE prefers the provider's strong administrative/security isolation primitive where operationally reasonable, e.g. conceptually:
 
 ```text
-OCI image
-repository/tag for human navigation
-immutable digest for actual promotion/deploy identity
+AWS    separate accounts
+Azure  separate subscriptions/resource security boundaries
+GCP    separate projects
+other  equivalent provider-native isolation unit
 ```
 
-Never treat a mutable tag such as `latest` as sufficient release evidence.
+The principle is provider-neutral: limit blast radius and prevent lower environments from possessing production privilege.
 
-Web artifact handling follows the hosting mechanism selected later, but the same principle applies: exact source/build/artifact identity must be traceable.
+A weaker shared boundary requires an explicit reason and compensating controls; it is not the default merely because the team is small.
 
-## 10. Build once, promote
+## 10. GitHub Environments
 
-For server/web targets, the default is:
+When remote deployment workflows exist, GitHub Environments are used for:
 
 ```text
-build artifact once
-→ validate
-→ deploy same artifact to DEV/UAT/PROD
-→ inject environment-specific runtime configuration externally
+dev
+uat
+prod
 ```
 
-This prevents environment-specific rebuild drift.
+They control deployment workflow identity/variables/secrets/protection/history as supported.
 
-If a hosting platform fundamentally requires environment-specific compilation, that is an explicit exception and the builds must still be reproducible from the same locked source/toolchain with a recorded configuration identity.
+GitHub Environment is a deployment-control boundary; it is **not** the cloud runtime itself. Cloud/provider resources remain separate execution/data boundaries.
 
-## 11. Browser configuration consequence
+Human approval requirements reflect real independent reviewer capacity. DANTE does not create a fake multi-reviewer ceremony while there is one active developer.
 
-Values compiled into browser JavaScript are public and often artifact-specific.
+## 11. Artifact identity
 
-Therefore:
+Future backend/server artifacts are immutable.
 
-- secrets never use browser build-time variables;
-- public runtime configuration should prefer a controlled runtime/public-config boundary where that preserves build-once promotion;
-- environment-specific public values embedded at build time are allowed only when the hosting/client architecture requires it and the artifact identity records the difference.
-
-This prevents a hidden “same version but different untracked web build” model.
-
-## 12. Mobile promotion exception
-
-Mobile distribution has different artifact constraints.
-
-DEV/UAT/PROD mobile builds may require distinct:
-
-- application/bundle identifiers;
-- signing identities;
-- deep-link schemes;
-- provider application registrations;
-- public environment endpoints;
-- build profiles.
-
-Therefore DANTE does **not** falsely claim that the same mobile binary is promoted unchanged across environments.
-
-Professional invariant instead:
+Required identity includes, as available:
 
 ```text
-same reviewed source commit
-+ same locked dependency graph
-+ explicit build profile
-+ traceable build service/toolchain
-+ environment-specific public configuration/signing
-= reproducible mobile build identity
+Git source SHA
+build ID
+OCI/artifact digest
+release/version
+migration revision/head
+configuration/environment identity
 ```
 
-Production-grade mobile development uses Expo development builds. Production distribution uses explicit signed build/submission profiles when implemented.
+Mutable tags such as `latest` are navigation aids only, never sufficient release evidence.
 
-Application identifiers should reserve clearly distinct non-production identities, e.g. conceptual `dev` / `uat` variants, while exact reverse-DNS identifiers are chosen during mobile scaffold.
+## 12. Build once, promote exact artifact
 
-## 13. Mobile OTA/update policy
-
-Over-the-air JavaScript updates are not treated as a bypass around release governance.
-
-Before EAS Update or another OTA mechanism becomes production-active, implementation must define:
-
-- runtime compatibility policy;
-- channel/environment isolation;
-- rollout controls;
-- rollback behavior;
-- source/build traceability;
-- migration/data compatibility;
-- security approval path.
-
-An OTA update that changes consequential behavior remains a release and must satisfy applicable tests/evaluation.
-
-## 14. Release-candidate selection
-
-UAT deployment is an explicit promotion of an existing successful build from `main`, not an implicit “whatever main is now”.
-
-A newer commit landing on `main` does not mutate the identity of an in-flight release candidate.
-
-If a fix is needed:
+Server default:
 
 ```text
-new commit
-→ new artifact
-→ DEV verification
-→ new UAT candidate
+accepted source
+→ build once
+→ validate immutable artifact
+→ deploy exact artifact to DEV
+→ select exact candidate
+→ promote exact candidate to UAT
+→ promote exact candidate to PROD
 ```
 
-No patching binaries/containers in place.
+Environment-specific runtime configuration is supplied externally.
 
-## 15. Production release versioning
+A platform that fundamentally requires environment-specific build output is an explicit exception and must preserve source/toolchain/config traceability.
 
-Before public semantic release versioning begins, commit SHA + build ID + artifact digest provide deployment identity.
+Frontend/mobile artifact semantics are deferred to the frontend workstream.
 
-When public release versioning begins:
+## 13. Release-candidate identity
 
-- use repository tags such as `vX.Y.Z`;
-- tag points to the exact accepted release commit;
-- artifact metadata contains version + SHA;
-- release notes/change record are generated/reviewed from actual merged changes;
-- mobile store version/build numbers map back to source/build identity.
+A release candidate is not “whatever main is now”.
 
-SemVer is a release-interface contract, not a reason to tag every development commit.
-
-## 16. Database migration promotion
-
-Migrations travel with the application source/artifact release but execute as a controlled release step.
-
-Baseline release flow where a DB migration exists:
+Record at least:
 
 ```text
-migration chain validated in CI
-→ DEV migrate + app deploy + smoke
-→ UAT migration rehearsal + app deploy + E2E
-→ PROD preflight
-→ one serialized migration job
-→ compatible application rollout
-→ post-deploy verification
+source commit
+build ID
+artifact digest
+migration head
+configuration/environment identity
 ```
 
-The exact order may vary for expand/migrate/contract changes, but application replicas do not independently run Alembic on boot.
+A later commit on `main` does not mutate an in-flight candidate. A fix creates a new commit/artifact and re-enters validation.
 
-## 17. Expand / migrate / contract
+## 14. Database migration promotion
 
-For changes that cannot tolerate an atomic stop-the-world rollout:
+When migrations exist:
 
-1. **expand** — add backward-compatible schema/capability;
-2. **migrate** — move/backfill data while old/new readers remain valid;
-3. **contract** — remove old shape only after every supported application/client no longer requires it.
+```text
+CI validates migration graph / empty→head / drift / risk
+        ↓
+DEV controlled migration + deploy + smoke
+        ↓
+UAT migration rehearsal + deploy + E2E
+        ↓
+PROD preflight
+        ↓
+one serialized migration/release operation
+        ↓
+compatible application rollout
+        ↓
+post-deploy validation
+```
 
-This matters particularly because mobile clients may remain on older versions after a backend deploy.
+Application replicas do not independently race Alembic at startup.
 
-A destructive DB migration that assumes every client updates instantly is not acceptable.
+Expand/migrate/contract changes may span multiple releases.
 
-## 18. Rollback model
-
-Rollback is capability-specific.
-
-Possible actions:
-
-- redeploy previous compatible application artifact;
-- disable/rollback a feature through an approved control if one exists;
-- issue a forward database repair migration;
-- execute an accepted restore/recovery procedure for destructive data failure.
+## 15. Rollback / forward-repair
 
 `alembic downgrade` is not a universal production rollback strategy.
 
-Before a risky release, UAT/release evidence must state what rollback/forward-repair path actually exists.
+Possible recovery actions include:
 
-## 19. Deployment concurrency
+- redeploy previous compatible application artifact;
+- approved feature/operational control where one exists;
+- forward repair migration;
+- data repair/reconciliation job;
+- accepted restore/PITR path for destructive data failure.
 
-Per-environment deploy operations are serialized when concurrent execution could corrupt release state or race migrations.
+Risky release evidence states what path actually exists.
 
-GitHub Actions environment/job concurrency is used once workflows exist.
+## 16. Deployment concurrency
 
-PR/test concurrency may cancel superseded runs to reduce waste, but a production deployment is never cancelled mid-critical mutation merely because a new commit appeared.
+- superseded non-deployment PR CI may be cancelled where safe;
+- deployment per environment is serialized where migrations/resource mutation make concurrency unsafe;
+- in-progress critical production mutation is not blindly cancelled because a newer commit arrived.
 
-## 20. GitHub Environments
-
-When deployment workflows are created, GitHub Environments are used for `dev`, `uat` and `prod` deployment boundaries.
-
-They may scope:
-
-- environment secrets/variables;
-- allowed deployment sources;
-- approval/protection rules;
-- deployment history.
-
-Protection strictness increases with consequence. PROD should require explicit promotion/approval when a meaningful release process exists.
-
-Repository rules remain separately responsible for source integration safety.
-
-## 21. Preview environments
-
-Preview environments are optional and ephemeral.
-
-Use when they materially help review web/API integration.
-
-Rules:
-
-- isolated non-production credentials/data;
-- automatic expiration/cleanup where practical;
-- no use as canonical shared DEV;
-- no production secrets;
-- no persistent personal test data that survives branch lifecycle without reason;
-- preview deployment failure does not silently mutate DEV/UAT/PROD.
-
-## 22. Data policy by environment
+## 17. Data policy by environment
 
 ```text
 LOCAL
-synthetic/generated/developer-owned non-sensitive data
+synthetic/developer-owned non-sensitive data
 
 DEV
 synthetic/shared test/demo data
 
 UAT
-representative synthetic/sanitized purpose-built acceptance data
+representative synthetic or explicitly sanitized/minimized acceptance data
 
 PROD
 real data under production privacy/security controls
 ```
 
-Copying the production database into lower environments is forbidden by default.
+Production-derived data in lower environments requires a deliberate sanitization/minimization/authorization process. Raw ad-hoc dumps are forbidden by default.
 
-If a future debugging need requires production-derived data, it needs an explicit privacy-safe sanitization/minimization process and separate authorization; it is never an ad-hoc dump.
+## 18. Infrastructure-as-code
 
-## 23. Infrastructure drift
+Once durable remote infrastructure exists:
 
-Once remote durable infrastructure is under IaC:
-
-- intended state is code-reviewed;
-- deployment plan/change is reviewable;
+- intended state is version controlled/reviewable;
+- secrets remain external;
+- drift is detected/reconciled where chosen tooling supports reliable mechanisms;
 - emergency manual changes are documented and reconciled;
-- drift detection is added when the chosen provider/IaC tooling supports useful reliable checks;
-- secrets remain external to desired-state files.
+- provider and IaC engine are selected/pinned through the first remote-infrastructure scope.
 
-## 24. Specialist service activation across environments
+## 19. Specialist service activation
 
-A selected service is not required to exist in all environments before its capability is implemented.
+Environment design does not force every selected Physical component to exist everywhere on day one.
 
-When a service activates, the implementation defines the minimal environment matrix needed for truthful validation.
+Key fixed posture:
 
-Examples:
+- PostgreSQL: active with first backend persistence;
+- selected PostgreSQL extension envelope: enabled from first LOCAL DB and reproduced in later DB environments as persistence deploys;
+- PowerSync: activates with real mobile/offline implementation;
+- R2: activates with real ContentArtifact byte handling;
+- OR-Tools: activates with solver-backed capability;
+- Restate: dormant until first real Class-B durable workflow;
+- pgBackRest + AWS S3: dormant until recovery/production boundary or real rehearsal.
 
-- PostgreSQL: LOCAL/DEV/UAT/PROD once backend persistence exists;
-- R2: non-prod + PROD resources once real object handling exists;
-- PowerSync: activation when mobile/offline slice arrives;
-- Restate: remains dormant until fixed Class-B trigger;
-- pgBackRest/S3: remains dormant in initial DEV; activates at the fixed recovery/production boundary or real rehearsal requirement.
+Activation never cancels applicable PSV obligations.
 
-Activation must preserve the accepted target and applicable PSV obligations.
+## 20. Promotion evidence rule
 
-## 25. Promotion gate principle
-
-Every promotion claim is scoped to evidence actually executed.
+Every PASS claim is scoped to what actually ran.
 
 ```text
-PR tests PASS
-!= UAT PASS
-
-UAT app E2E PASS
-!= backup recovery PASS
-
-migration rehearsal PASS
-!= all PSV PASS
-
-selected architecture
-!= deployed component
+PR PASS != UAT PASS
+migration rehearsal PASS != recovery PASS
+UAT E2E PASS != complete PSV PASS
+selected target != deployed component
 ```
-
-Release checklists reference only validations applicable to the artifact/capabilities being released.

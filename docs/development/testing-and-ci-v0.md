@@ -1,168 +1,193 @@
 # Testing and CI v0
 
-- Status: **Engineering Foundation branch baseline — pending closure**
-- Scope: automated validation, CI/CD orchestration, supply-chain and release evidence
+- Status: **CLOSED / ACCEPTED BACKEND BASELINE**
+- Scope: backend automated validation, CI/CD orchestration, repository security and supply-chain evidence
+- Frontend testing/CI implementation: **DEFERRED**
 
 ## 1. Principle
 
-DANTE testing is organized by **risk and boundary**, not by one giant suite or a vanity coverage number.
+DANTE testing is organized by **risk and boundary**, not one giant suite or a vanity coverage number.
 
-A PASS claim must identify what was directly executed.
+A PASS claim identifies exactly what was directly executed.
 
 ```text
 unit PASS
 != PostgreSQL integration PASS
 != migration PASS
 != provider contract PASS
-!= UAT E2E PASS
+!= UAT PASS
 != recovery PASS
 != complete PSV PASS
 ```
 
-The existing Physical post-selection validation register remains authoritative for specialist obligations and stays `NOT RUN` until direct artifacts exist.
+The Physical post-selection validation register remains authoritative for specialist obligations and stays NOT RUN until direct evidence exists.
 
-## 2. Test taxonomy
+## 2. Backend test taxonomy
 
-Future production code uses these distinct classes as applicable:
+Use these classes as applicable:
 
 ```text
-UNIT
-pure domain/application calculations and local behavior
+UNIT / DOMAIN
+pure semantic/local behavior
+
+APPLICATION
+use-case orchestration against explicit fakes/ports
 
 PROPERTY / INVARIANT
-state-space, generative and invariant validation
+Hypothesis generative invariant validation
+
+STATE MACHINE / LIFECYCLE
+Hypothesis stateful sequences where operation order matters
 
 ARCHITECTURE
-static dependency/import/layer rules
+dependency/import/layer constraints
 
-INTEGRATION
-real PostgreSQL and activated technical dependencies
+POSTGRESQL INTEGRATION
+real DANTE PostgreSQL semantics
 
 MIGRATION
-schema evolution, empty->head, release transition and safety checks
+schema evolution and release transition
 
-CONTRACT
-OpenAPI/client/provider adapter compatibility
+CONCURRENCY / ATOMICITY
+expected-state/idempotency/multi-owner/outbox behavior
 
-COMPONENT
-web/mobile component behavior
+PROVIDER CONTRACT
+real non-production provider/service integration where needed
+
+HTTP / API CONTRACT
+transport routing/validation/error/contract behavior when API exists
+
+PRIVACY / NON-INTERFERENCE
+visibility/authority/leakage behavior including WL-H12
 
 SYSTEM / E2E
-black-box user/system journeys across deployed/runnable boundaries
+black-box deployed/runnable journeys
 
 SECURITY / SUPPLY CHAIN
-SAST, dependency, secret, container/IaC checks
+SAST/dependency/secret/container/IaC checks as artifacts appear
 
-PERFORMANCE / RESILIENCE / RECOVERY
-only at the capability/release boundary that needs them
+PERFORMANCE / RESILIENCE / RECOVERY / PSV
+applicable boundary only
 ```
 
-## 3. Backend unit tests
+## 3. Unit/domain tests
 
-Unit tests should run without network, PostgreSQL, provider SDK calls or containers whenever the behavior under test is pure.
+Run without network/PostgreSQL/provider SDK/container whenever behavior is pure.
 
-Priority targets:
+Priority:
 
-- domain invariants;
+- Domain invariants;
+- value/reference semantics;
 - state transitions;
-- application decision logic;
-- expected-state/conflict handling;
-- idempotency/equivalence behavior;
-- candidate/actual distinctions;
-- parsing/normalization where semantic;
-- permission/governance policy logic once implemented;
-- deterministic solver-result interpretation once implemented.
+- planning/temporal logic;
+- expected-state decisions;
+- idempotency/equivalence logic;
+- visibility/authority policy logic once implemented;
+- parsing/normalization where semantically material.
 
-Mocking is used at explicit ports, not deep inside implementation internals merely to force a unit shape.
+Mock only explicit boundaries; do not mock deep implementation simply to manufacture a unit-test shape.
 
-## 4. Property/invariant tests
+## 4. Application/use-case tests
 
-Use Hypothesis or equivalent generative testing where hand-picked examples are poor coverage of the state space.
+Use-case tests exercise orchestration with controlled fakes for persistence/clock/provider/identity where appropriate.
 
-High-value candidates include:
-
-- identifier/reference round-trips;
-- temporal/recurrence transitions;
-- ordering/range boundaries;
-- correction/version semantics;
-- expected-state conflict cases;
-- idempotency key reuse conflicts;
-- normalization/search token cases;
-- solver status handling;
-- redaction/visibility invariants.
-
-Property tests must encode meaningful properties, not random input for its own sake.
-
-## 5. Architecture tests
-
-Once packages/modules exist, automated checks enforce foundation boundaries.
-
-At minimum:
+They validate sequencing such as:
 
 ```text
-domain packages do not import FastAPI
-
-domain packages do not import SQLAlchemy
-
-domain packages do not import provider SDKs
-
-packages/* do not import apps/*
-
-production source does not import prototypes/*
-
-module A does not import module B private adapters/internals
-
-client browser-safe code does not import server-only config/secrets
+load
+→ validate
+→ authority/governance check
+→ expected-state/idempotency check
+→ change
+→ history/outbox staging
+→ persistence result
 ```
 
-The lightest reliable enforcement mechanism is preferred. The rule matters more than buying a heavy architecture-testing framework.
+without requiring PostgreSQL for every semantic scenario.
 
-## 6. PostgreSQL integration tests
+## 5. Property and state-machine testing
 
-Persistence integration uses real PostgreSQL with the versions/capabilities required by the implemented slice.
+Use **Hypothesis** where hand-picked examples are weak coverage of the state space.
 
-Not allowed as a substitute:
+High-value candidates:
+
+- identifier/reference round trips;
+- temporal/range/recurrence boundaries;
+- correction/version semantics;
+- expected-state conflicts;
+- idempotency key reuse conflicts;
+- retention/redaction/visibility invariants;
+- serialization/normalization round trips;
+- lifecycle operation sequences.
+
+Use state-machine testing where sequences such as create/update/revoke/delete/reconcile materially determine correctness.
+
+Properties must encode meaningful invariants, not random input for its own sake.
+
+## 6. Architecture tests
+
+Once code exists, automated checks enforce at least:
+
+```text
+domain --X--> FastAPI
+domain --X--> SQLAlchemy
+domain --X--> provider SDKs
+module A --X--> module B private persistence/adapters
+production backend --X--> prototypes
+```
+
+The lightest reliable enforcement mechanism is preferred. Exact import-boundary tooling is selected during scaffold against the concrete package graph.
+
+## 7. PostgreSQL integration tests
+
+Persistence integration uses **real PostgreSQL 18.4 with the DANTE-selected extension envelope**.
+
+The canonical DANTE LOCAL PostgreSQL image/build is reused for CI integration/migration validation where practical.
+
+Forbidden substitution:
 
 ```text
 SQLite backend test
 claimed as proof of PostgreSQL behavior
 ```
 
-CI should create an isolated disposable database/container per job or equivalent isolated test resource.
+Validate, as applicable:
 
-Integration tests cover, as applicable:
-
-- constraints and FK behavior;
+- FK/unique/check constraints;
 - transaction/rollback behavior;
-- concurrency/expected-state behavior;
-- SQLAlchemy mapping behavior;
-- PostGIS/pgvector/search semantics once active;
-- connection/pooling behavior where relevant;
-- database-generated values/types;
-- serialization/timezone/collation behavior material to semantics.
+- SQLAlchemy mapping/Core behavior;
+- expected-state/concurrency behavior;
+- DB-generated values/types;
+- timezone/collation/serialization semantics;
+- PostGIS/pgvector/FTS/pg_trgm behavior when used;
+- pooling/connection behavior when relevant.
 
-## 7. Database test isolation
+## 8. Test isolation
 
-Tests must be independently repeatable.
+Tests are independently repeatable.
 
-Acceptable strategies include transaction rollback, database/schema recreation or purpose-built isolated databases depending on the test class.
+Use an appropriate isolation strategy per class:
 
-A test must not depend on execution order or dirty state from a previous test.
+- transaction rollback;
+- clean schema/database;
+- disposable/ephemeral PostgreSQL instance;
+- deterministic synthetic fixtures.
 
-CI integration data is synthetic and deterministic enough to reproduce failures.
+No test depends on ordering or dirty state from a previous test.
 
-## 8. Migration tests
+## 9. Migration tests
 
 When migrations exist, CI validates:
 
-1. migration graph has the expected single accepted head unless a deliberate branch/merge revision is in progress;
-2. a clean PostgreSQL instance can migrate from base to head;
-3. SQLAlchemy metadata/schema intent has no unrepresented migration drift;
-4. required extensions/preconditions are present/validated;
-5. migration code is reviewed/linted/importable;
-6. destructive/long-running operations carry explicit release consideration.
+1. accepted migration graph/head shape;
+2. clean PostgreSQL can migrate base → head;
+3. required extensions/preconditions exist;
+4. SQLAlchemy metadata/schema intent has no unrepresented drift;
+5. migration modules import/lint correctly;
+6. migration risk classification is present for material changes;
+7. destructive/long-running/locking consequences are explicit.
 
-At release boundaries, extend validation to:
+After releases exist:
 
 ```text
 previous released schema/data
@@ -170,524 +195,348 @@ previous released schema/data
 → application smoke/integration
 ```
 
-UAT rehearses materially risky migrations with representative synthetic volume/state.
+UAT rehearses materially risky migrations with representative synthetic or approved sanitized/minimized state.
 
-## 9. Alembic autogenerate policy
+## 10. Alembic autogenerate
 
-Alembic autogeneration generates candidate migrations only.
+Autogeneration creates a candidate only.
 
-CI must never auto-generate a migration and silently commit/apply it as authoritative.
-
-A developer-generated candidate is reviewed for:
+Manual review covers:
 
 - rename vs drop/add ambiguity;
 - type conversion/data loss;
 - defaults/backfills;
-- constraints/indexes;
-- lock duration;
-- concurrent rollout compatibility;
-- downgrade/rollback truthfulness.
+- indexes/constraints;
+- lock/table-rewrite consequence;
+- old/new app compatibility;
+- downgrade/forward-repair truth.
 
-## 10. Provider/adapter contract tests
+CI never auto-generates a migration and silently treats it as authority.
 
-External providers are tested behind adapters.
+## 11. Migration safety tests
 
-Use three layers where useful:
+Where applicable validate the selected safe pattern itself, including:
+
+- concurrent-index workflow consequences;
+- staged constraints (`NOT VALID` → later validation) where used;
+- expand/migrate/contract compatibility;
+- bounded backfill idempotency/resume/checkpoint behavior;
+- timeout/lock failure handling;
+- data precondition/postcondition checks.
+
+## 12. Concurrency / expected-state / idempotency
+
+Real PostgreSQL tests deliberately provoke races.
+
+Required families when corresponding implementation exists:
+
+```text
+two writers from same expected state
+conflicting idempotency-key reuse
+equivalent duplicate request
+multi-owner atomic transaction failure
+outbox + canonical transition atomicity
+transaction conflict/retry boundary
+```
+
+Tests must demonstrate the accepted semantics, not merely absence of exceptions.
+
+## 13. Provider adapters
+
+Use layers where useful:
 
 ```text
 unit fake/stub
-fast deterministic local behavior
+fast deterministic behavior
 
-provider contract/integration test
-real non-production provider/service or official local runtime when needed
+provider contract/integration
+real non-production provider/service or official local runtime
 
-system test
-end-to-end use through DANTE boundary
+system
+end-to-end through DANTE boundary
 ```
 
-A mock success response is never evidence that a provider integration works.
+A mock success payload is not evidence a provider integration works.
 
-Real-provider tests use non-production credentials/resources and are isolated from normal untrusted PR execution.
+Real provider tests use non-production resources/credentials and are isolated from untrusted PR execution.
 
-## 11. API contract tests
+## 14. HTTP/API tests
 
-When HTTP API exists, validate:
+When FastAPI routes exist, test real routing/validation/error projection and public contract behavior.
 
-- OpenAPI generation is deterministic;
-- committed/generated TypeScript client matches current backend contract;
-- generated client compiles/types;
-- contract examples/schemas validate;
-- intentional breaking change is detected/reviewed;
-- deprecated compatibility remains until supported mobile clients can retire it.
+Cover, as applicable:
 
-A backend route test is not enough to prove client compatibility.
+- request/response validation;
+- status/error model;
+- headers/correlation/idempotency semantics;
+- authority/privacy boundaries;
+- OpenAPI determinism;
+- compatibility requirements.
 
-## 12. Web tests
+Calling the route function directly is not sufficient transport proof.
 
-Target stack when web production scaffold exists:
+## 15. Privacy / non-interference testing
+
+DANTE requires explicit tests for information leakage, not only ordinary authorization success/failure.
+
+Test families include, as applicable:
+
+- resource existence leakage;
+- count leakage;
+- ranking leakage;
+- timing/error-shape leakage;
+- free/busy inference;
+- candidate/explanation leakage;
+- aggregate/derived-context leakage;
+- unauthorized historical/provenance disclosure.
+
+WL-H12 remains the governing inherited rule.
+
+## 16. Test data
+
+Default:
 
 ```text
-unit/component/integration
-Vitest + Testing Library
-
-browser E2E
-Playwright
+SYNTHETIC
+DETERMINISTIC
+SEMANTICALLY VALID
 ```
-
-Focus on observable behavior and accessibility-relevant semantics rather than fragile implementation snapshots.
-
-Snapshot testing is used only where a stable serialized representation genuinely adds value; broad UI snapshots are not the main regression strategy.
-
-Web E2E covers a small set of critical journeys rather than duplicating every component test in a browser.
-
-## 13. Mobile tests
-
-Target stack when mobile production scaffold exists:
-
-```text
-unit/component/integration
-Jest + React Native Testing Library
-
-native E2E
-Maestro
-```
-
-Production-grade E2E runs against built development/test application artifacts, not Expo Go assumptions.
-
-Maestro flows remain repository-owned and should be runnable outside a single hosted workflow provider where practical.
-
-Current EAS-hosted Maestro workflow maturity is not treated as a reason to make an alpha hosted execution path a required repository gate before it proves stable.
-
-## 14. System tests
-
-`tests/system/` contains true black-box tests that span application boundaries or validate a deployed environment.
-
-Examples later:
-
-- API + web critical journey;
-- API + mobile sync journey;
-- provider callback/reconciliation journey;
-- deployment smoke;
-- cross-component privacy/non-interference cases.
-
-System tests consume public/gateway contracts. They do not reach into application private modules merely to set up assertions unless a bounded test-support API/fixture is explicitly designed.
-
-## 15. Test data
-
-Test data policy:
-
-- synthetic by default;
-- deterministic builders/factories for important semantic cases;
-- explicit edge-case fixture corpus where domain history requires it;
-- no production database dumps;
-- no real credentials/tokens;
-- no accidental personal data in snapshots/logs/artifacts;
-- fixture versioning when a regression corpus becomes durable evidence.
-
-Factories should create semantically valid defaults and make exceptional/invalid state explicit.
-
-## 16. Coverage policy
-
-Coverage is tracked, but DANTE does not equate line coverage with correctness.
-
-Initial foundation policy:
-
-- every material new behavior has direct tests at the appropriate level;
-- critical Domain/Logical invariants require explicit tests independent of aggregate percentage;
-- generated code, migration boilerplate and framework bootstrap are not allowed to distort quality incentives;
-- exact global/changed-code numerical thresholds are set after the first real vertical slice produces a meaningful denominator;
-- a later threshold may only ratchet intentionally, not silently fall to make CI green.
-
-This avoids choosing an arbitrary `80%` today and then optimizing code toward the number instead of risk.
-
-## 17. CI provider
-
-### Decision
-
-Use **GitHub Actions** as the primary repository CI/CD orchestration layer.
-
-Rationale:
-
-- repository and branch protection already live on GitHub;
-- PR/check/deployment identity remains close to source history;
-- GitHub Environments support deployment boundaries;
-- OIDC supports short-lived cloud identity with compatible providers;
-- dependency review/CodeQL/attestation integrate with repository security.
-
-Mobile-native build execution may invoke/use EAS where appropriate without creating a second independent source-integration authority.
-
-## 18. CI workflow architecture
-
-Do not create one enormous workflow file with every concern interleaved.
-
-Expected workflow classes once code exists:
-
-```text
-ci-repo.yml
-repository/config/docs policy validation
-
-ci-api.yml
-backend format/lint/type/unit/integration/migration
-
-ci-web.yml
-web lint/type/test/build
-
-ci-mobile.yml
-mobile lint/type/test/build validation
-
-ci-contract.yml
-OpenAPI/generated-client drift/compatibility
-
-ci-security.yml
-security/supply-chain checks where useful
-
-deploy-dev.yml
-deploy-uat.yml
-deploy-prod.yml
-only when corresponding deployment exists
-```
-
-Exact filenames/jobs are implementation details; stable emitted job/check names matter before branch rules make them required.
-
-Reusable workflows/actions may be extracted only after repetition exists.
-
-## 19. PR CI principles
-
-PR validation must be safe for untrusted change context.
 
 Rules:
 
-- least-privilege `GITHUB_TOKEN` permissions;
-- no PROD secrets;
-- no automatic production deployment;
-- read-only cloud/provider access where possible for validation;
-- dependency caches keyed to lockfiles/toolchain;
-- deterministic locked installs;
-- cancellation of superseded PR runs where safe;
-- failures remain inspectable and attributable to one stable job/check.
+- no production DB dump as ordinary fixture;
+- no real credentials/tokens;
+- no accidental personal data in snapshots/logs/artifacts;
+- durable regression corpus is versioned when material;
+- builders/factories create valid defaults and make exceptional/invalid states explicit.
 
-Avoid `pull_request_target` for running untrusted PR code with elevated secrets.
+## 17. Coverage
 
-## 20. Change-aware CI
+Coverage is tracked as a signal, not semantic proof.
 
-Path/change filtering is allowed to save time but must be conservative.
+Initial policy:
 
-A job must run when any input capable of affecting it changes, including:
+- every material behavior receives direct tests at the appropriate level;
+- critical Domain/Logical invariants have explicit tests independent of percentage;
+- generated/migration/framework boilerplate does not distort incentives;
+- exact global/changed-code thresholds wait until the first real vertical slice creates a meaningful denominator;
+- once introduced, thresholds change deliberately and do not silently fall to make CI green.
 
-- its app source;
-- shared package source;
-- root lock/workspace config;
-- generated contracts;
-- relevant infrastructure/build scripts;
-- workflow/toolchain configuration.
+No arbitrary “80% because everyone uses 80%” rule is accepted at foundation time.
 
-Do not build a clever filter that silently skips tests after a root/shared dependency change.
+## 18. Test cost tiers
 
-Turborepo may compute affected JS tasks; Python and repository-global inputs remain explicitly represented.
+### PR — blocking/high signal
 
-## 21. CI ordering
+As corresponding code exists:
 
-Fast/high-signal checks run early.
+- repository/manifest/config validation;
+- Ruff/mypy;
+- architecture tests;
+- unit/application tests;
+- fast Hypothesis profile;
+- real PostgreSQL integration;
+- migration base→head/drift;
+- critical concurrency/privacy tests.
 
-Conceptual PR order:
+### Accepted main / DEV
+
+Add heavier integration/provider/system smoke where remote/non-production resources are required.
+
+### Scheduled/nightly
+
+Add larger Hypothesis/state/concurrency/fuzz/regression corpora where useful.
+
+### UAT/release
+
+Add release-specific E2E, migration rehearsal, performance, failure injection, security/recovery and applicable PSV.
+
+## 19. Flaky-test policy
+
+A flaky test is a defect, not a test to retry until green.
+
+Investigate/fix it or explicitly quarantine it with reason/owner/exit condition. Retries may diagnose/transiently contain known external instability but cannot become semantic PASS evidence.
+
+## 20. CI provider
+
+Use **GitHub Actions** as primary repository CI/CD orchestration.
+
+Reason:
+
+- source/PR/branch protection already lives on GitHub;
+- checks/deployment identity stays close to source history;
+- GitHub Environments/OIDC/security/supply-chain features integrate with the repository;
+- no current requirement justifies a second CI control plane.
+
+## 21. Workflow architecture
+
+Do not create one enormous workflow with unrelated concerns interleaved.
+
+Backend-oriented classes once real checks exist may include:
 
 ```text
-repository/manifest validation
-→ formatting/lint/types
-→ unit tests
-→ build / contract generation
-→ integration/migration tests
-→ heavier E2E/security/specialist checks as applicable
+repository/config validation
+backend quality: format/lint/type/architecture
+backend tests: unit/application/property
+backend database: PostgreSQL/integration/migration/concurrency
+backend security/supply chain
+future deploy DEV/UAT/PROD
 ```
 
-Independent jobs run in parallel where safe.
+Exact YAML filenames/job names are implementation details. Stable emitted check names matter before branch protection makes them required.
 
-No artificial serial pipeline is created merely for visual order.
+No empty/decorative workflow is created just to reserve a name.
 
-## 22. Required status-check activation
+## 22. PR CI security
 
-Current repository policy has no required status checks because no stable real workflows exist.
+PR validation:
 
-Engineering Foundation preserves the existing promotion protocol:
+- least-privilege explicit `GITHUB_TOKEN` permissions;
+- no PROD secrets;
+- no deployment identity;
+- no automatic production deploy;
+- deterministic frozen installs;
+- caches keyed to actual lock/tool inputs;
+- superseded non-deployment runs cancelled where safe;
+- failure attributable to stable high-signal checks.
+
+Avoid privileged execution of untrusted PR-controlled code such as unsafe `pull_request_target` patterns.
+
+## 23. Required check activation
+
+Existing DANTE repository rule remains:
 
 ```text
 real workflow/job exists
 + runs on relevant PRs
-+ stable emitted check name verified
-+ success observed
-+ failure genuinely means merge should stop
-→ then exact check MAY become required on main
++ stable emitted check name verified remotely
++ success/failure behavior observed
++ failure truly means merge must stop
+→ only then may the exact check become required on protected main
 ```
 
-Never configure a future guessed check name into branch protection.
+Never configure guessed future check names.
 
-Required checks are added only after remote verification.
+## 24. One-developer review posture
 
-## 23. CI concurrency
+While DANTE has one active developer, do not manufacture a fake independent-review gate that cannot be independently satisfied.
 
-### PR
+Protected main + PR + automated gates remain real.
 
-Use concurrency groups so new pushes can cancel superseded non-deployment CI for the same PR/branch.
+When additional maintainers exist, required review/CODEOWNERS can activate at real ownership/security boundaries.
 
-### Deployment
+## 25. Actions hardening
 
-Serialize per environment where migrations/resource changes make concurrent deployment unsafe.
+Protected workflows:
 
-A new deployment request does not blindly cancel an in-progress production migration or other non-interruptible release step.
+- explicit minimal `permissions`;
+- external Actions pinned to immutable full commit SHA;
+- official Actions also SHA-pinned in protected workflows unless a documented technical constraint prevents it;
+- allowed Action sources restricted where repository settings support useful enforcement;
+- shell commands fail on errors and avoid secret echo;
+- downloaded tools/binaries pinned/verified where practical;
+- no dynamic execution of PR-controlled scripts with privileged credentials.
 
-## 24. GitHub Actions hardening
+## 26. Dependency security
 
-Workflow baseline:
+When real manifests exist:
 
-- explicit minimal `permissions` block;
-- third-party Actions pinned to immutable commit SHA where practical;
-- official/actions still version-reviewed and preferably SHA-pinned in protected workflows;
-- shell commands fail on errors and avoid accidental secret echoing;
-- downloaded tools/artifacts are pinned/verified where practical;
-- action dependency updates reviewed through dependency tooling;
-- no dynamic execution of PR-controlled scripts with elevated deployment credentials.
+- dependency graph/review visibility is enabled for supported ecosystems;
+- Dependency Review evaluates new dependency risk;
+- severity/license blocking policy is chosen against real dependencies rather than guessed in advance;
+- dependency bot/update automation is configured only for package-manager versions actually supported;
+- bot PRs run the same relevant validation as human dependency PRs.
 
-## 25. Dependency review
-
-When dependency manifests exist, PR CI uses GitHub dependency review/supply-chain visibility for supported ecosystems.
-
-A dependency change should surface:
-
-- newly introduced known vulnerability;
-- dependency/source change;
-- material license risk where policy becomes applicable.
-
-Severity/license enforcement thresholds are configured only when there is an accepted policy; they are not invented as arbitrary governance in this foundation.
-
-## 26. Dependabot / dependency update automation
-
-Once real manifests exist, configure supported ecosystems for security/version updates, including as supported at that time:
-
-- uv/Python;
-- pnpm/npm workspace;
-- GitHub Actions;
-- Docker;
-- future IaC ecosystem.
-
-Exact package-manager version support is verified when configuration is added. If pnpm 11 is not yet supported by a GitHub automation feature, that limitation is recorded and handled through scheduled maintenance/another selected mechanism instead of producing a false PASS.
-
-Bot PRs run the same relevant CI as human dependency PRs.
+No false claim of `uv.lock`/other automation support without verifying current GitHub capability.
 
 ## 27. CodeQL / SAST
 
-CodeQL activates when real production source exists and language/build topology can be configured truthfully.
+CodeQL Python activates when real production Python source exists and can be configured truthfully.
 
-It is not created as an empty workflow during Engineering Foundation.
+It complements rather than replaces:
 
-A CodeQL finding policy is severity/risk based. Tool output is reviewed; “scanner ran” is not equivalent to “application secure”.
+```text
+Ruff
+mypy
+tests
+architecture checks
+dependency review
+container/IaC scanning when those artifacts exist
+```
 
-Language-native static checks complement CodeQL:
+“Scanner ran” is not equivalent to “application secure”.
 
-- Ruff/mypy/backend tests;
-- ESLint/TypeScript/client tests;
-- provider/IaC/container scanners when those artifacts exist.
+## 28. Secret scanning
 
-## 28. Secrets and PR security
+Use repository secret scanning/push protection where available for the repository/account/visibility at activation time.
 
-CI must be designed so normal PR validation does not require production secrets.
+This is a second barrier. Committing secrets remains forbidden regardless of scanner capability.
 
-Dependabot/untrusted PR restrictions are treated as a design input, not bypassed.
+## 29. Deployment identity
 
-Real provider integration tests requiring secrets may run:
-
-- after trusted merge in DEV;
-- on manually approved trusted branch/job;
-- or in another bounded safe workflow.
-
-They must not leak secrets into logs/artifacts.
-
-## 29. OIDC and deployment identity
-
-For cloud providers that support it, deployment workflows use GitHub OIDC to obtain short-lived credentials bound to repository/workflow/environment claims.
+When cloud deployment exists, use GitHub OIDC for short-lived provider identity where supported.
 
 Static long-lived deployment keys are fallback only.
 
-Deployment jobs reference the GitHub Environment (`dev`, `uat`, `prod`) so environment protections/credentials apply before privileged work begins.
+Deployment jobs reference the intended GitHub Environment (`dev`, `uat`, `prod`).
 
 ## 30. Build artifacts
 
-Server/web builds are reproducible from locked source and produce identifiable artifacts.
+When OCI backend images activate:
 
-When OCI images activate:
-
-- multi-stage build where useful;
+- reproducible multi-stage build where useful;
 - minimal runtime image;
 - non-root runtime where practical;
-- no build secrets copied into final layers;
-- image tagged for navigation and promoted by immutable digest;
-- release SHA/build metadata embedded/attached;
-- vulnerability scan added before production promotion when image exists.
+- no build secrets in final layers;
+- tag for navigation, digest for promotion identity;
+- release SHA/build metadata attached;
+- vulnerability scan before production promotion when applicable.
 
-CI artifacts have explicit retention; they do not become indefinite shadow stores of test/user data.
+CI artifacts use explicit retention and do not become shadow stores of user/test data.
 
-## 31. Artifact provenance
+## 31. Provenance and SBOM
 
-Once releasable artifacts exist, use build provenance/attestation appropriate to the GitHub/repository capabilities.
+At production release boundary:
 
-The target is to answer:
+- produce artifact provenance/attestation linking source/workflow/artifact digest;
+- produce SBOM/dependency inventory appropriate to the release artifact;
+- retain evidence according to release/security policy.
 
-```text
-which source commit built this?
-which workflow built it?
-which locked dependencies/toolchain were used?
-which artifact digest was promoted?
-```
+Provenance proves where an artifact came from, not that its behavior is correct.
 
-Attestation is evidence of provenance, not evidence that code is semantically correct.
+## 32. Runner posture
 
-## 32. DEV deployment
+Use GitHub-hosted Linux runners initially.
 
-When remote DEV exists:
+Self-hosted runner requires a measured reason such as:
 
-- successful accepted-main build creates/promotes artifact;
-- deployment references GitHub `dev` environment;
-- migration job executes in controlled order if needed;
-- post-deploy smoke verifies basic health/version/migration identity;
-- deploy result records artifact/SHA.
+- private network access;
+- special hardware;
+- measured cost/performance requirement;
+- special reproducible environment.
 
-Auto-deploy from `main` is preferred after it proves stable.
+It also requires explicit patching/isolation/cleanup/credential hardening ownership.
 
-## 33. UAT promotion
+## 33. Merge queue
 
-UAT uses an exact previously built candidate.
+Deferred until real merge concurrency makes it valuable. One developer/low concurrency does not justify it now.
 
-Gate may include, as applicable:
+## 34. Deployment concurrency
 
-- DEV success;
-- migration rehearsal;
-- API/system E2E;
-- web/mobile candidate compatibility;
-- provider smoke;
-- applicable specialist PSV/release checks;
-- operator/user acceptance.
+PR CI may cancel superseded safe runs.
 
-UAT evidence belongs to the exact candidate, not a moving branch label.
+Deployment/migration concurrency is serialized per environment where concurrent mutation is unsafe. A production migration is not blindly cancelled because a newer deployment request exists.
 
-## 34. PROD promotion
+## 35. Change-aware CI
 
-PROD requires explicit release promotion once real users exist.
+Path filtering may reduce monorepo cost only after correctness is proven.
 
-Baseline:
+A backend job still runs when any input capable of affecting it changes, including backend source, backend lock/tool config, database image/migration tooling, shared contract input, workflow/build infrastructure and relevant repository-global configuration.
 
-- GitHub `prod` environment;
-- protected deployment job;
-- exact candidate artifact/digest;
-- exact migration revision;
-- release notes/version identity when active;
-- preflight/rollback-forward-repair plan for risky change;
-- post-deploy smoke/observability check.
+Never optimize by silently skipping correctness after root/shared changes.
 
-A production deploy is not triggered from an unreviewed feature branch.
+## 36. Frontend testing/CI
 
-## 35. Mobile CI/CD
+Not selected by this document.
 
-GitHub Actions remains source/quality orchestration authority.
-
-EAS Build/Submit may perform native build/sign/distribution because it is specialized for Expo; exact use is selected during mobile scaffold.
-
-Rules:
-
-- EAS profile config is versioned;
-- build identity ties back to source SHA;
-- signing secrets remain provider/CI secrets;
-- development, UAT/internal and production build profiles are separated;
-- native E2E uses built artifacts;
-- app-store submission is a release action, not normal PR CI.
-
-EAS Workflows may supplement this model, but DANTE does not need two independent duplicated CI policy graphs. GitHub remains the canonical repository integration/deployment orchestration record unless a later explicit decision changes it.
-
-## 36. Performance tests
-
-Performance tests are not run on every PR unless they become cheap/stable/high-signal.
-
-Use tiers:
-
-- micro/unit performance only for proven hot logic;
-- DB/query benchmarks for regressions when real schema/data shapes exist;
-- load/capacity tests at release/capacity boundaries;
-- SC-032/backpressure and Physical benchmark obligations at their direct execution boundary.
-
-Performance numbers require stable dataset/environment evidence; an uncalibrated laptop run is not a production capacity claim.
-
-## 37. Recovery/resilience tests
-
-Recovery tests activate at their accepted boundary.
-
-Examples from PSV:
-
-- anti-resurrection restore;
-- migration/restore rehearsal;
-- PowerSync stalled replication/reconciliation;
-- Restate crash/replay/outage after activation;
-- R2/S3 object recovery;
-- observability outage non-interference.
-
-They are distinct suites/evidence and remain `NOT RUN` until actually executed.
-
-## 38. Flaky test policy
-
-A flaky required test is a defect in the delivery system.
-
-Rules:
-
-- retry may collect diagnostic evidence but must not normalize permanent flakiness;
-- repeatedly flaky tests are owned/fixed or explicitly quarantined with tracked reason;
-- quarantine cannot hide a critical correctness/security gate indefinitely;
-- nondeterministic provider tests are isolated from deterministic unit/integration evidence.
-
-## 39. Test failure diagnostics
-
-CI failures should retain bounded safe artifacts useful for diagnosis:
-
-- test reports;
-- sanitized logs;
-- screenshots/traces for browser/mobile E2E;
-- migration logs without credentials/data payloads;
-- version/environment metadata.
-
-Never upload broad DB dumps or secret-rich environment snapshots for convenience.
-
-## 40. Local vs CI parity
-
-Every required CI check should have a documented local equivalent where technically practical.
-
-CI may provide ephemeral services/runners, but validation logic should not exist only as opaque YAML shell fragments.
-
-If a workflow contains non-trivial reusable logic, move that logic into a repository-owned script/tool that can run locally and in CI, while the workflow remains the orchestration layer.
-
-## 41. Definition of CI-ready scaffold
-
-The initial production scaffold is CI-ready when:
-
-```text
-locked installs work from clean checkout
-format/lint/type commands run
-unit tests run
-production builds compile
-real PostgreSQL integration harness works when persistence exists
-migration checks work when migrations exist
-generated contract drift check works when API contract exists
-workflows emit stable observed check names
-no PR job needs production secrets
-```
-
-Only then should corresponding checks be promoted into protected-main requirements.
-
-## 42. Primary-source basis
-
-Current foundation direction was checked on 2026-08-19 against official documentation including:
-
-- GitHub deployment environments and deployment controls: `https://docs.github.com/en/actions`
-- GitHub OIDC reference: `https://docs.github.com/en/actions/reference/security/oidc`
-- GitHub dependency/supply-chain security: `https://docs.github.com/en/code-security/concepts/supply-chain-security/`
-- FastAPI multi-file applications: `https://fastapi.tiangolo.com/tutorial/bigger-applications/`
-- SQLAlchemy async behavior: `https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html`
-- Alembic autogeneration: `https://alembic.sqlalchemy.org/en/latest/autogenerate.html`
-- Expo development builds/monorepo/E2E guidance: `https://docs.expo.dev/`
-
-External documentation supports tooling facts. Actual DANTE PASS evidence remains repository execution evidence only.
+Web/mobile test runners, native E2E, package-manager task graph, EAS/build/release details and frontend-specific CI are deferred to the frontend workstream.

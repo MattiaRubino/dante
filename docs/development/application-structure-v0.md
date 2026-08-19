@@ -1,34 +1,30 @@
 # Application Structure v0
 
-- Status: **Engineering Foundation branch baseline — pending closure**
-- Scope: internal architecture of future API/web/mobile production applications
-- Production code: **NOT CREATED BY THIS DOCUMENT**
+- Status: **CLOSED / ACCEPTED**
+- Scope: backend internal architecture and application boundaries
+- Frontend internal architecture: **DEFERRED**
+- Production code: **NOT CREATED**
 
 ## 1. Architectural style
 
-DANTE begins as a **capability-first modular monolith** with explicit dependency boundaries.
-
-This choice combines:
-
-- one deployment/runtime boundary while the product is young;
-- local ACID transactions where accepted semantics require them;
-- simple operational topology;
-- explicit internal modules that can later be extracted only if a measured independent lifecycle appears.
+DANTE backend begins as a **capability-first modular monolith** with enforceable dependency boundaries.
 
 ```text
 MODULAR MONOLITH
 != unstructured monolith
 != one giant service layer
-!= one module per database table
+!= one module per table
 != one module per Logical owner
-!= future microservices forbidden forever
+!= future extraction forbidden
 ```
 
-A future extraction requires evidence such as independent scaling, security isolation, ownership, release cadence, availability or technology needs that outweigh distributed-system cost.
+One deployable backend preserves operational simplicity and local ACID transactions while internal boundaries preserve future extraction options.
 
-## 2. Backend target tree
+Extraction requires evidence such as independent scaling, security isolation, availability, ownership, release cadence or technology lifecycle that outweighs distributed-system cost.
 
-Target shape inside `apps/api/src/dante/`:
+## 2. Backend target shape
+
+Target inside `apps/backend/src/dante/`:
 
 ```text
 dante/
@@ -62,164 +58,148 @@ dante/
         └── public.py
 ```
 
-This is a dependency model, not a mandate that every module contains every folder. Empty layers are omitted.
+This is a dependency model, not a mandate that every capability contains every folder. Empty layers are omitted.
 
 ## 3. Capability module rule
 
-Modules are selected from behavior/change cohesion, not from database nouns.
-
-A module should own a stable business/application capability boundary. The first concrete module map is created during implementation after consuming the closed Domain/Logical clusters and real vertical slices.
+A module groups behavior/change cohesion, not storage nouns.
 
 Forbidden mechanical mappings:
 
 ```text
-57 Logical owners -> 57 Python modules
-1 table -> 1 module
-1 API route -> 1 module
-1 screen -> 1 backend module
+57 Logical owners → 57 Python modules
+1 table → 1 module
+1 HTTP route → 1 module
+1 UI screen → 1 backend module
 ```
 
-Several accepted owners may belong to one capability, and one owner may participate in several use cases without becoming a generic technical root.
+The concrete module map is created during implementation by consuming the closed Domain/Logical clusters and the first real vertical slices.
 
-## 4. Backend dependency direction
+## 4. Dependency direction
 
-Within one capability:
+Conceptually:
 
 ```text
 DOMAIN
-  ^
-  |
-APPLICATION -----> PORTS
-  ^                 ^
-  |                 |
-ADAPTERS -----------+
+  ↑
+APPLICATION → PORTS
+  ↑            ↑
+ADAPTERS ──────┘
 
 BOOTSTRAP / COMPOSITION ROOT
-may depend on concrete implementations to wire them
+wires concrete implementations
 ```
 
-Practical rule:
+Rules:
 
 - `domain/` knows Python/domain primitives only;
-- `application/` orchestrates use cases and depends on domain + abstract ports;
-- `ports/` define required external capabilities when an abstraction is genuinely useful;
-- inbound adapters translate transport/provider input into application calls;
-- outbound adapters implement persistence/provider/tool boundaries;
-- `bootstrap/` wires FastAPI, concrete adapters, lifecycle and process resources;
-- `platform/` contains bounded technical infrastructure shared by modules, not business meaning.
+- `application/` orchestrates use cases and depends on domain + explicit ports;
+- `ports/` express required external capabilities only where the abstraction protects a real boundary/test seam;
+- inbound adapters translate transport/runtime input to application calls;
+- outbound adapters implement database/provider/tool boundaries;
+- `bootstrap/` owns FastAPI composition, concrete wiring and lifecycle resources;
+- `platform/` owns bounded shared technical infrastructure, not business meaning.
 
 ## 5. Domain purity
 
-Domain/application semantics must not be coupled by identity to:
+Domain/application semantics are not coupled by identity to:
 
 - FastAPI request/response objects;
-- SQLAlchemy sessions/mapped rows;
-- Pydantic HTTP DTOs;
+- SQLAlchemy mapped rows/sessions;
+- Pydantic transport DTOs;
 - provider SDK objects;
 - OpenTelemetry span objects;
 - Restate runtime objects;
 - PowerSync protocol objects;
-- Cloudflare/AWS identifiers.
+- Cloudflare/AWS resource identifiers.
 
-Pydantic remains the selected backend validation/serialization technology at technical boundaries. This does not require every domain object to inherit from `BaseModel`.
+Pydantic may validate/serialize technical boundaries without forcing all Domain objects to inherit from Pydantic models.
 
-SQLAlchemy persistence mappings similarly do not become Domain objects merely because fields are similar.
+SQLAlchemy mappings may resemble Domain state without becoming canonical Domain identity.
 
 ## 6. Kernel rule
 
-`kernel/` exists only for genuinely stable primitives used across capabilities whose meaning is already cross-cutting in accepted architecture.
-
-Candidate classes of responsibility may include reference/value primitives derived from accepted Logical contracts, but only when implementation proves the shared need.
-
-Hard rule:
+`kernel/` contains only genuinely stable cross-capability primitives whose shared meaning is proven.
 
 ```text
-kernel size should stay small
-kernel change frequency should be low
-kernel must not become shared/common/utils
+kernel small
+kernel low-change
+kernel != shared/common/utils
 ```
 
-A helper used by two modules is not automatically kernel material.
+A helper used in two places is not automatically kernel material.
 
 ## 7. Cross-module interaction
 
-A module's private implementation is not a public API to other modules.
+A module's private implementation is not another module's API.
 
-Allowed interaction mechanisms, chosen per use case:
+Allowed, chosen per use case:
 
-1. explicit application/public interface exposed through `public.py`;
+1. explicit narrow application/public interface;
 2. typed command/query interface;
-3. in-process domain/application event where temporal decoupling is actually useful;
-4. explicit read model/query interface for cross-capability reads;
-5. shared stable kernel value type.
+3. in-process event where temporal decoupling is genuinely valuable;
+4. explicit read model/query interface;
+5. stable kernel value type.
 
 Forbidden:
 
 ```text
-module A importing module B's persistence adapter
-module A mutating module B's SQLAlchemy row directly
-module A reaching into B's private package because it is convenient
-cross-module service locator lookups
+module A imports module B persistence adapter
+module A mutates B SQLAlchemy row directly
+module A reaches into B private internals for convenience
+service-locator lookups
 ```
 
-Cross-module database transactions remain possible inside the modular monolith when accepted multi-owner semantics require atomicity. Module boundaries must not force truthful atomic operations into fake distributed workflows.
+Cross-module PostgreSQL transactions remain allowed where accepted multi-owner semantics require truthful atomicity. Module boundaries do not force fake distributed workflows.
 
-## 8. Public interfaces and semantic ownership
+## 8. Public interfaces
 
-`public.py` is a narrow exported application surface, not a second API framework.
+`public.py` is a narrow exported application surface, not a second framework.
 
 It may expose:
 
-- typed requests/results;
-- application interfaces;
+- typed application requests/results;
+- stable application interfaces;
 - stable events;
-- identifiers/value types already accepted as cross-module.
+- already-accepted cross-module value/reference types.
 
 It must not expose:
 
-- SQLAlchemy models;
-- database sessions;
+- SQLAlchemy models/sessions;
 - FastAPI request objects;
 - provider clients;
-- internal repositories;
-- private domain implementation merely for convenience.
+- private persistence adapters;
+- private module implementation merely for convenience.
 
 ## 9. Application use-case boundary
 
-Consequential operations are application use cases, not CRUD methods.
+Consequential operations are use cases, not CRUD methods.
 
 A use case owns, as applicable:
 
-- input validation beyond transport shape;
 - semantic target resolution;
 - expected/material-state checks;
-- Authority/AuthZ/governance enforcement through appropriate ports/services;
+- Authority/AuthZ/governance enforcement via appropriate boundaries;
 - transaction scope;
 - idempotency/equivalence handling;
 - canonical state transition;
+- history/provenance obligations;
 - outbox/effect staging;
-- result/reconciliation semantics;
-- provenance requirements.
+- reconciliation/result semantics.
 
-This preserves the Phase-8 governed-operation/effect contract rather than letting HTTP verbs define semantic operations.
+HTTP verb/path does not define canonical operation identity.
 
 ## 10. Persistence architecture
 
 ### SQLAlchemy role
 
-SQLAlchemy 2.0 is the selected persistence toolkit for the implementation baseline against PostgreSQL.
+SQLAlchemy 2.0 stable line is the baseline persistence toolkit against PostgreSQL 18.4.
 
-Use ORM and/or Core where each is appropriate; the project does not require ideological ORM-only or SQL-only usage.
+Use ORM and/or Core/reviewed SQL where each is clearest. Recursive, search, geospatial, vector or reporting queries are not forced through object navigation if explicit Core/SQL is safer and easier to reason about.
 
-Complex recursive/search/geospatial/vector/reporting queries may use explicit SQLAlchemy Core or reviewed SQL when that is clearer and safer than forcing object navigation.
+### Repository rule
 
-### Repository pattern
-
-DANTE does **not** define one generic repository abstraction.
-
-Ports/repositories are capability-specific and exist only where they protect a meaningful application boundary or test seam.
-
-Bad default:
+No universal generic repository abstraction:
 
 ```python
 Repository[T].get(id)
@@ -227,244 +207,162 @@ Repository[T].save(entity)
 Repository[T].delete(id)
 ```
 
-as the universal application model.
+as the semantic model of DANTE.
 
-Preferred direction: interfaces shaped by the use cases/invariants they support.
+Persistence interfaces are shaped by capability/use-case invariants when an abstraction is useful, e.g. operations whose names express the semantic intent rather than generic CRUD.
 
-### Session / Unit of Work
+### Session / transaction boundary
 
-- database session is scoped to an application operation/request/job;
-- session is injected, never fetched from hidden global state;
-- `AsyncSession` is never shared concurrently;
-- transaction commit is controlled at an explicit application boundary;
-- adapters do not silently commit behind a caller that owns a larger semantic transaction;
-- lazy database I/O is avoided in application/domain code.
-
-An explicit Unit-of-Work abstraction may be used if it clarifies transaction ownership across adapters. It must not obscure actual PostgreSQL transaction semantics.
+- session scoped to one application operation/request/job;
+- session injected, never global;
+- one `AsyncSession` is never shared across concurrent tasks;
+- commit/rollback controlled by the application/use-case transaction boundary;
+- adapters do not silently commit behind a caller that owns a larger transaction;
+- implicit/lazy DB I/O is avoided in domain/application logic;
+- explicit Unit-of-Work abstraction is optional and only accepted if it clarifies, rather than hides, PostgreSQL transaction semantics.
 
 ## 11. Async policy
 
-Async is used where it improves I/O concurrency; it is not propagated into pure code for style.
-
 ```text
-HTTP/provider/database I/O boundary
-async where supported/appropriate
+HTTP/provider/database I/O
+async where supported and useful
 
-pure domain calculation/invariant
-normal synchronous function by default
+pure domain/application calculation
+synchronous by default
 ```
 
-Background concurrency must preserve session/transaction isolation. One `AsyncSession` per concurrent task/use case is the baseline.
+Async is an I/O tool, not a style requirement propagated into pure code.
 
 ## 12. FastAPI boundary
 
-FastAPI is an inbound HTTP adapter and process host.
-
-`APIRouter`s are composed from capability HTTP adapters into the application at bootstrap.
+FastAPI is an inbound HTTP adapter/process host.
 
 Routes:
 
 - translate HTTP/auth/request state into application input;
 - call application interfaces;
-- translate application result/errors into stable transport contracts;
-- do not contain core business orchestration;
-- do not open ad-hoc database sessions outside the established dependency boundary;
-- do not define canonical operation identity merely from URL/method names.
+- translate results/errors to stable transport contracts;
+- do not own core business orchestration;
+- do not open ad-hoc sessions outside the established persistence boundary;
+- do not derive canonical effect identity from URL/method alone.
 
-Global middleware is restricted to true cross-cutting transport concerns such as request IDs, security headers, observability context and bounded error handling.
+Global middleware is limited to true cross-cutting transport concerns such as request identity, security headers, observability context and bounded error translation.
 
 ## 13. Error model
 
-The implementation will distinguish at least:
+Implementation distinguishes at least:
 
 ```text
 domain/application rejection
-conflict / expected-state failure
+expected-state/conflict failure
 authorization/governance denial
-not found / intentionally undisclosed
+not-found / intentionally undisclosed
 invalid transport input
 provider/external failure
 transient infrastructure failure
 internal defect
 ```
 
-Transport status codes are projections of these results, not the canonical semantic model.
+HTTP status is a transport projection, not canonical semantic identity.
 
-Error responses and timing must preserve WL-H12 non-interference requirements; hidden resource existence must not leak through convenient error detail.
+Error body, status, timing and side effects must preserve WL-H12 non-interference requirements.
 
-## 14. Web application structure
+## 14. Schema/change boundary
 
-Target direction:
+Persistence mappings and migrations obey `engineering-foundation-v0.md` and `testing-and-ci-v0.md`:
 
-```text
-apps/web/
-├── src/
-│   ├── app/            Next.js routing/composition
-│   ├── features/       user-facing capability slices
-│   ├── components/     web-only reusable presentational components
-│   ├── lib/            precise technical integrations only
-│   └── config/         validated public/server configuration boundary
-├── public/
-└── tests/
-```
+- Alembic migration authority;
+- autogenerate candidate only;
+- immutable applied revisions;
+- migration risk classification;
+- expand/migrate/contract;
+- bounded resumable backfills;
+- explicit lock/rewrite review;
+- schema drift checks;
+- separate runtime/migrator privileges.
 
-Rules:
-
-- Next.js `app/` routing does not become the business architecture;
-- business-facing UI behavior is grouped by feature/capability;
-- server-only and browser-safe code have explicit boundaries;
-- secrets never enter browser bundles;
-- generated API client is consumed from `packages/api-client`;
-- raw fetch calls are not duplicated ad hoc across features when the governed client exists;
-- server components/actions do not bypass backend authority to reach canonical persistence directly.
-
-The web client never receives direct PostgreSQL credentials.
-
-## 15. Mobile application structure
-
-Target direction:
-
-```text
-apps/mobile/
-├── app/                Expo Router navigation when scaffolded
-├── src/
-│   ├── features/
-│   ├── components/
-│   ├── platform/
-│   ├── config/
-│   └── sync/           only when offline/sync implementation activates
-├── assets/
-├── tests/
-└── .maestro/
-```
-
-Rules:
-
-- navigation paths do not define Domain ownership;
-- device/platform capability adapters are isolated from feature meaning;
-- PowerSync/SQLite implementation remains behind a bounded sync/data interface;
-- local SQLite is explicitly noncanonical;
-- consequential offline mutations re-enter backend revalidation before PostgreSQL commit;
-- mobile secrets do not exist: any value in the binary is considered public/extractable.
-
-Expo **development builds** are the canonical production-grade development path once the mobile production app is scaffolded. Expo Go may remain useful for trivial exploration but is not the required production runtime.
-
-## 16. Shared TypeScript policy
-
-Share code only if the abstraction is truly platform-neutral.
-
-Good candidates:
-
-- generated API types/client;
-- design tokens;
-- pure validation/calculation utilities with identical semantics;
-- lint/type configuration.
-
-Bad candidates by default:
-
-- one universal React component set wrapping both DOM and native;
-- navigation abstraction merely to make APIs look identical;
-- environment-specific platform behavior hidden behind broad `utils`;
-- server-only business rules duplicated into clients as authoritative enforcement.
-
-Client-side validation improves UX; backend validation/governance remains authoritative for consequential canonical changes.
-
-## 17. Contract generation
-
-Generated API client policy:
-
-```text
-FastAPI/Pydantic transport schemas
-→ deterministic OpenAPI
-→ pinned generator
-→ packages/api-client
-→ web/mobile compile against generated package
-```
-
-CI will eventually check:
-
-1. OpenAPI generation is deterministic;
-2. committed generated client matches source contract;
-3. TypeScript package builds/types cleanly;
-4. breaking contract changes trigger explicit review;
-5. mobile compatibility requirements are respected.
-
-Generated client types do not become the Domain Model.
-
-## 18. Background work
+## 15. Background work
 
 ### Class A
 
-The selected PostgreSQL transactional outbox + bounded worker belongs inside the modular backend/application infrastructure when a real bounded async use case appears.
+The already-selected PostgreSQL transactional outbox + bounded worker lives inside the modular backend when a real Class-A async use case appears.
 
-Worker entrypoints share the same application/module boundaries as HTTP entrypoints. A worker must not create a second business-logic implementation.
+Outbox record and canonical state transition are in the same transaction where semantics require atomicity.
+
+Worker entrypoints call the same application boundaries as HTTP; they do not create a duplicate business implementation.
 
 ### Class B
 
-Restate remains dormant until the already-fixed first real Class-B trigger. When activated, Restate handlers are inbound/runtime adapters that invoke application use cases; runtime state does not become canonical DANTE history.
+Restate remains selected but dormant until the fixed first real Class-B durable-workflow trigger.
 
-## 19. Object/provider integrations
+When activated, Restate handlers are runtime/inbound adapters invoking application use cases. Restate runtime state does not become canonical DANTE history.
+
+## 16. Provider/object integrations
 
 Provider SDKs live in outbound adapters.
 
-For example, when activated:
+Example when ContentArtifact bytes activate:
 
 ```text
-ContentArtifact application semantics
+ContentArtifact semantics
         ↓ port
 R2 adapter
         ↓
 raw object bytes
 ```
 
-The provider client is not imported into domain objects. Object locator/provider state remains distinct from canonical ContentArtifact identity/metadata as already accepted.
+Provider locator/state remains distinct from canonical DANTE identity/metadata/provenance.
 
-Integration Hub modes remain explicit; a generic provider adapter cannot collapse import, sync, live read, retrieval and action/tool integration into one ambiguous interface.
+Integration Hub modes must remain explicit; import, sync, live read, retrieval and action/tool integration are not collapsed into one ambiguous provider interface.
 
-## 20. Observability boundary
+## 17. Observability boundary
 
-Application code emits structured operational signals through the selected observability abstraction/instrumentation boundary.
+Backend emits privacy-minimized operational signals through the accepted observability boundary.
 
-Requirements from the first real service scaffold:
+From first real service scaffold, design for:
 
 - request/operation correlation identity;
-- source release SHA/build identity;
+- release SHA/build identity;
 - structured logs;
-- metrics/traces where material;
-- default redaction/no sensitive payload logging;
-- no use of telemetry IDs as DANTE NativeRef/MaterialStateRef/Provenance identity.
+- safe metric/trace context;
+- default sensitive-payload redaction;
+- no telemetry ID used as DANTE NativeRef/MaterialStateRef/provenance identity.
 
-Domain/application code does not branch business behavior on Grafana availability.
+Business behavior does not depend on Grafana availability.
 
-## 21. Architecture enforcement
+## 18. Architecture enforcement
 
-Documentation alone is insufficient.
-
-Once source exists, architecture tests/lint rules must enforce at least:
+Documentation is not enough. Once source exists, automated architecture checks enforce at least:
 
 ```text
-domain does not import FastAPI/SQLAlchemy/provider SDKs
-packages do not import apps
-production apps do not import prototypes
-module private internals are not cross-imported
-client code does not import server-only modules
+domain --X--> FastAPI
+domain --X--> SQLAlchemy
+domain --X--> provider SDKs
+module A --X--> module B private adapters/internals
+production --X--> prototypes
 ```
 
-The exact import-boundary tool is selected during scaffold based on the concrete package graph; a lightweight custom/static test is preferred over a heavy framework if it proves the rule reliably.
+Use the lightest reliable enforcement mechanism; exact package/import-lint tool is selected during scaffold against the concrete Python graph.
 
-## 22. Extraction rule
+## 19. Frontend relationship
 
-No component becomes a separate service because a folder became large.
+`apps/web` and `apps/mobile` are sibling clients of the governed backend contract.
+
+This document does not define their internal architecture/toolchain. Frontend decisions belong to the dedicated frontend workstream.
+
+Backend authority remains authoritative for consequential canonical effects; client-side behavior/validation cannot become a bypass.
+
+## 20. Extraction rule
+
+No component becomes a service because a folder became large.
 
 Extraction requires a written case covering:
 
-- independently valuable operational boundary;
-- data ownership and consistency consequence;
-- API/versioning consequence;
-- failure modes;
+- independent operational/ownership boundary;
+- data ownership/consistency consequence;
+- API/version consequence;
+- failure and availability modes;
 - observability/security consequence;
-- deployment/ownership benefit;
+- independent deployment benefit;
 - migration path;
-- why modular-monolith isolation is no longer sufficient.
-
-Until then, local module boundaries are the professional default.
+- why modular-monolith isolation is insufficient.

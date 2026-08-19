@@ -1,129 +1,229 @@
-# DANTE Operating Rules
+# DANTE Development Operating Rules
 
-- Status: Accepted project workflow
-- Last updated: 2026-08-19
-- Naming continuity: `LifeOS` may remain in historical evidence, Git history and legacy technical identifiers for the same DANTE product lineage.
+- Status: **CURRENT**
 
-## Purpose
-
-These rules define where work happens, which source wins when information conflicts, how parallel workstreams avoid overwriting one another, and what every human or AI agent must do before and after modifying DANTE.
-
-The stricter execution mechanics in [`agent-operating-manual.md`](agent-operating-manual.md) are mandatory and apply together with this file.
-
-Repository-level enforcement and the lifecycle for branch protection/rulesets/required checks/security settings are defined in [`repository-engineering-safety.md`](repository-engineering-safety.md). Engineering implementation structure is defined by the active/accepted Engineering Foundation sources when applicable.
+These rules govern repository-backed project work. Durable repository truth outranks conversational memory.
 
 ## 1. Authority order
 
-When two sources disagree, use this order unless a newer accepted decision explicitly supersedes it:
+When sources conflict:
 
-1. current `main` code/migrations/tests and current accepted model/ADR decisions;
-2. current durable product/domain/logical/architecture/engineering documentation on `main`;
-3. active workstream handoff for newer bounded unmerged work;
-4. other explicit current files on the active branch inside that workstream;
-5. historical evidence, old branches, closed/merged PRs and Git history;
+1. current `main` code/migrations/tests and current accepted model/ADR;
+2. current durable product/domain/logical/architecture/engineering docs on `main`;
+3. active bounded workstream handoff for newer unmerged work;
+4. other current sources inside that workstream;
+5. historical evidence/closed branches/Git history;
 6. conversation memory.
 
-An old/detailed document never overrides newer current truth merely because it contains more prose.
+A user instruction may clarify/reopen a decision, but durable project truth changes only through an approved repository scope.
 
-An ADR may preserve original rationale while being superseded/qualified for current execution. Historical checkpoints preserve truthful chronology but are not current execution instructions unless explicitly designated as such.
+## 2. Mandatory bootstrap before design or writes
 
-## 2. Where work happens
-
-- `main` is the only integrated source of truth for accepted project state.
-- Normal implementation work uses bounded `feature/*` / `fix/*` branches.
-- Documentation/governance/coherence work may use `docs/*` or `chore/*`.
-- Exploratory UX/technical experiments may use `prototype/*`.
-- One primary branch per workstream where practical.
-- Do not work directly on `main` except an explicitly approved emergency repair.
-- Changes integrate to `main` through pull requests under the current repository-safety policy.
-- Do not bypass an active `main` ruleset merely to avoid normal review/coherence checks.
-- LOCAL/DEV/UAT/PROD are execution/deployment contexts, not long-lived Git branches.
-
-## 3. Workstream path ownership
-
-Parallel workstreams should avoid shared-file churn.
-
-Current ownership/state:
-
-- Phase 4 Home/Today: relevant Phase-4/UX/prototype/archive/regression paths + `docs/workstreams/today-home.md`; active separately.
-- Pre-Physical Repository & Architecture Coherence: **DEFINITIVE CLOSED / FINAL QA PASS / integrated via PR #13 / post-merge aligned via PR #14**.
-- Physical Model: **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated via PR #15**; authority lives in `docs/physical-model/**` and `docs/workstreams/physical-model.md`; direct selected-stack validation remains carried forward.
-- Engineering Foundation v0: **ACTIVE / UNMERGED** on `chore/engineering-foundation-v0`; owns its approved `docs/workstreams/engineering-foundation.md`, `docs/development/*-v0.md` foundation sources and the explicitly gated current-truth alignment files.
-- Standalone Development Profile v0: **no longer the next separate phase**; useful operational concerns are absorbed by Engineering Foundation and the actual capability/release boundary that needs them.
-- Backend / production application implementation: **NOT STARTED**; begins only after Engineering Foundation closure/integration and a fresh exact implementation scope.
-- Domain Model / Domain Atlas: **CLOSED**; historical branches do not reopen semantics.
-- Logical Model: **CLOSED**; historical branches do not reopen semantics.
-
-Shared/current files (`README.md`, `docs/README.md`, `PROJECT-STATUS.md`, `ROADMAP.md`, broad architecture docs, ADRs) change only when global/current truth genuinely changes and exact paths are in an approved gate.
-
-## 4. Start-of-work protocol
-
-Before changes:
-
-1. read root `README.md`;
-2. read `docs/README.md`;
-3. read `docs/PROJECT-STATUS.md`;
-4. read `docs/development/agent-operating-manual.md`;
-5. read this file + `documentation-and-handoff.md`;
-6. read `branching-and-environments.md`;
-7. read `repository-engineering-safety.md`;
-8. read the complete active workstream handoff;
-9. read current model/architecture/engineering indexes and linked current sources relevant to the task;
-10. read relevant ADRs/evidence/methodologies;
-11. inspect branch/PR and relation to current `main`;
-12. inspect relevant implementation/tests before assuming something is missing;
-13. check whether the requested decision already exists.
-
-For work that depends on the accepted Physical target, also read at minimum:
+Read, in order:
 
 ```text
-docs/physical-model/pm-11-explicit-selection-v1.md
-docs/physical-model/pm-12-accepted-physical-model-v1.md
-docs/physical-model/recommendation/post-selection-validation-register-v1.md
+README.md
+→ docs/README.md
+→ docs/PROJECT-STATUS.md
+→ docs/development/agent-operating-manual.md
+→ docs/development/operating-rules.md
+→ docs/development/documentation-and-handoff.md
+→ docs/development/branching-and-environments.md
+→ docs/development/repository-engineering-safety.md
+→ active workstream handoff, if any
+→ current model/architecture index + linked accepted sources
+→ relevant ADR/evidence/methodology
+→ relevant code/tests/manifests
+→ current Git refs and relation to main
 ```
 
-For implementation after Engineering Foundation acceptance, also read:
+For Physical-consuming backend implementation also reread at minimum:
+
+- PM-11 accepted Physical target;
+- PM-12 operational/stack posture;
+- post-selection validation register.
+
+For the next production scaffold specifically, also inspect the exact root tree, `.github`, existing config/manifests/workflows, current branch protections/settings where relevant and the Engineering Foundation closure sources.
+
+## 3. Current closed engineering baseline
+
+Engineering Foundation v0 is **CLOSED / ACCEPTED**.
+
+Do not reopen it by default.
+
+Key backend decisions:
 
 ```text
-docs/development/engineering-foundation-v0.md
-and every detailed foundation source relevant to the change
+one existing product monorepo
+apps/backend + apps/web + apps/mobile
+backend capability-first modular monolith
+Python 3.14.x / initial 3.14.7
+uv / Ruff / mypy strict / pytest / Hypothesis
+Windows backend through WSL2/Linux semantics
+PyCharm WSL workflow supported; repo IDE-neutral
+Docker Compose for LOCAL stateful infra
+PostgreSQL 18.4 + full selected extension envelope enabled from first LOCAL DB
+SQLAlchemy 2.0 stable line + psycopg 3 + Alembic
+typed pydantic-settings config
+risk-layered real-PostgreSQL testing
+GitHub Actions / protected main / supply-chain hardening
+LOCAL → DEV → UAT → PROD environments, not branches
 ```
 
-Do not start from an old branch merely because it contains a familiar file.
+Frontend internal tooling/testing/release implementation is deferred to the frontend workstream.
 
-## 5. During-work protocol
+Cloud provider/IaC engine is deferred to first remote infrastructure.
 
-- Stay inside the approved exact write gate.
-- Keep the handoff resumable after meaningful milestones.
-- Prefer workstream-local progress over repeated global-file churn.
-- Do not change closed Domain/Logical semantics implicitly.
-- Do not silently replace newer current truth with older material.
-- Do not leave important new project knowledge only in chat.
-- Do not create schema/provider/cross-cutting conventions solely because an AI suggested them.
-- Do not force-push shared history for cosmetic cleanliness.
-- Do not treat runtime/technical convenience as new Domain ownership.
-- Do not invent required CI/status checks before the real workflow/check context exists and has been validated.
-- Do not report an unexecuted benchmark/test/PSV item as verified evidence.
-- Do not promote a materially consequential AI behavior change without the applicable versioned/reproducible evaluation required by Phase 6.
-- For version-sensitive Physical/toolchain capability claims, use current official primary documentation and pin version/edition/deployment mode where material.
-- An official capability claim is not direct DANTE execution evidence.
-- Missing/contradictory implementation evidence becomes `HOLD`, not assumption.
-- `SELECTED != DEPLOYED` and `SELECTED != DIRECT PASS`.
-- Restate remains **DORMANT / NOT ACTIVE in initial DEV** until a real Class-B durable-workflow need exists; self-hosted vs Cloud EU is decided only when that activation trigger exists.
-- pgBackRest + AWS S3 eu-south-1 remain **DORMANT / NOT ACTIVE in initial DEV** until recovery/production boundary or a real recovery-rehearsal requirement.
-- Other selected components activate when their real implementation capability requires them; that is not a technology reopen.
-- A selected-stack validation failure that invalidates the Physical choice requires an explicit reopen; never weaken Domain/Logical semantics to force a PASS.
-- After Engineering Foundation is accepted, implementation must follow its repository, dependency, environment, migration, testing, config/secrets and CI contracts unless a later explicit decision supersedes them.
+## 4. Current next boundary
 
-### Current documentation rule
+Production implementation continues in the current repository. Do not create a new repository.
 
-Current specifications describe **current truth only**. They are not append-only historical logs.
+Before scaffold:
 
-When current truth changes, obsolete prose should be replaced after a knowledge-coverage check. Useful rationale/history belongs in ADRs, checkpoints/evidence or Git.
+```text
+repository rename decision
+lifeos → dante recommended
+```
 
-Historical evidence/checkpoints retain truthful chronology and must not be rewritten to appear current.
+Execute it in its own explicit governance scope or explicitly defer it.
 
-Before deleting/replacing stale current documentation, verify:
+Then open the production scaffold workstream/gate under `apps/backend`.
+
+## 5. No silent scope expansion
+
+A bounded task does not authorize adjacent work.
+
+Examples:
+
+- backend scaffold does not authorize concrete Domain/Logical schema unless explicitly included;
+- Foundation closure does not authorize production code;
+- frontend prototype/design does not override backend architecture truth;
+- selected Physical component does not mean activated/deployed component;
+- cloud/provider decision is not inferred from recovery/object providers already selected for bounded roles.
+
+When a material new decision appears, stop the decision—not necessarily the entire task—and establish the appropriate approval/gate before durable write.
+
+## 6. Exact remote Git write gate
+
+Before a remote Git write, state:
+
+```text
+BRANCH
+<exact branch>
+
+PRE-SCOPE
+<exact current SHA>
+
+CREATE
+<exact paths>
+
+UPDATE
+<exact paths>
+
+DELETE
+<exact paths>
+
+PURPOSE
+<bounded purpose>
+
+EXPLICITLY OUT OF SCOPE
+<what will not be touched>
+```
+
+Immediately before first write:
+
+```text
+current HEAD == approved PRE-SCOPE → proceed
+current HEAD != approved PRE-SCOPE → STOP, inspect, re-gate
+```
+
+Never silently continue on a moved branch.
+
+## 7. Protected main
+
+`main` is the only integrated source truth.
+
+Normal durable flow:
+
+```text
+bounded branch
+→ reviewed/validated commits
+→ PR
+→ protected-main integration
+```
+
+No direct protected-main edit/merge bypass is accepted merely for convenience.
+
+Use expected-head protection when merging through automation/tooling so a moved PR head cannot be merged silently.
+
+## 8. Commit/write discipline
+
+Prefer commits that are:
+
+- bounded by one coherent purpose;
+- reviewable;
+- truthful about what changed;
+- free from unrelated formatting/content churn.
+
+Do not manufacture one commit per tiny file when one atomic coherent commit is safer, and do not combine unrelated decisions merely to reduce commit count.
+
+Do not rewrite/force-push shared history casually. Any history rewrite requires an explicit reason/authorization and proof of branch ownership/safety.
+
+## 9. Post-write QA
+
+Against the approved PRE-SCOPE prove:
+
+- expected changed paths == actual;
+- expected CREATE == actual adds;
+- expected UPDATE == actual modifications;
+- expected DELETE == actual deletes;
+- unexpected/out-of-scope == 0;
+- branch ahead/behind relationship is expected;
+- remote payload/readback matches intended content;
+- PR changed paths are exact where a PR exists;
+- real checks/statuses are inspected when applicable;
+- protected-main integration uses expected head;
+- post-merge `main` is reread/compared;
+- branch lifecycle/autodelete is verified when relevant.
+
+Never call a workstream PASS/CLOSED only because a write API returned success.
+
+## 10. Required-check activation rule
+
+Never configure a guessed future status-check name.
+
+```text
+workflow/job exists
++ runs on relevant PR
++ stable emitted context verified remotely
++ success/failure observed
++ failure genuinely means merge must stop
+→ only then exact context may become required
+```
+
+This remains true during the production scaffold.
+
+## 11. Documentation is implementation
+
+Distinguish:
+
+```text
+CURRENT SPECIFICATION
+current truth only
+
+ADR / TECHNICAL DECISION
+current decision + rationale/status/supersession
+
+HISTORICAL / VALIDATION EVIDENCE
+truthful chronology
+
+GIT / PR HISTORY
+recoverable implementation history
+```
+
+Do not rewrite historical evidence to pretend it knew later decisions.
+
+Before deleting/replacing meaningful current docs prove:
 
 ```text
 unclassified meaningful content = 0
@@ -133,217 +233,85 @@ rationale worth retaining mapped = PASS
 references/navigation repaired = PASS
 ```
 
-## 6. Global-status rule
+Tool/size-driven document splits must be lossless physical partitioning, not silent summaries.
 
-The workstream handoff is the live save-game while a workstream is active and the closure handoff/evidence remains the durable resume point after closure.
+## 12. Historical evidence protection
 
-`docs/PROJECT-STATUS.md` changes only for globally meaningful state such as workstream start/finish/block, durable decision changes, integrated milestones or immediate sequence changes.
+Closed validation/closure evidence remains historical and must not be edited merely to align wording with a later state.
 
-The same discipline applies to root README, docs index, roadmap, architecture indexes and ADRs.
+In particular, PM-14 closure evidence remains protected historical evidence. Changes to historical artifacts require an explicit evidence-correction reason, not current-truth cleanup.
 
-Repository settings/rulesets are operational state, not documentation state. A document saying a protection **should** exist is not evidence that it **does** exist; read back the remote setting before declaring the corresponding safety milestone PASS.
+## 13. Domain/Logical/Physical reopen rule
 
-## 7. Documentation status semantics
+Engineering implementation consumes closed models.
 
-- **Accepted** — durable decision/current baseline at its stated scope; later supersession may qualify it.
-- **Current** — authoritative current operational/specification truth.
-- **In progress / Active** — bounded work exists but is not yet integrated/closed.
-- **Draft / Proposed** — not accepted.
-- **Study / Exploration** — evidence/discovery, not binding implementation truth.
-- **Historical / Superseded** — preserved evidence/rationale, not current execution authority.
-- **Partially superseded / Qualified** — some decision/rationale remains useful while later sources constrain current effect.
+A concrete contradiction found during implementation may reopen only the affected decision under an explicit architecture/model reopen scope.
 
-Current navigation should point directly to current truth rather than requiring agents to infer authority from historical files.
+Do not weaken accepted semantics to fit a convenient database/ORM/API/tool behavior.
 
-## 8. Physical evidence/status semantics
+A failed applicable PSV may reopen the affected Physical decision but cannot silently weaken Domain/Logical requirements.
 
-Use exact result words where applicable:
+## 14. Implementation evidence truth
+
+Keep these distinctions explicit:
 
 ```text
-NOT RUN
-PASS
-PASS-CONDITIONAL
-HOLD
-REJECT
-SENSITIVITY-DEPENDENT
-PREFERRED
-SELECTED
+selected != installed
+installed != configured
+configured != directly validated
+direct scenario PASS != complete system PASS
 ```
 
-Additional evidence rules:
+Current direct selected-stack evidence remains NOT RUN until real artifacts/harness exist.
 
-```text
-nominal benchmark tier != executed dataset
-unexecuted HIGH != VERIFIED-RUN
-official documentation claim != benchmark execution
-brand != benchmark subject
-product + version + edition + deployment = benchmark subject
-raw evidence before summary
-SELECTED != DEPLOYED
-SELECTED != DIRECT PASS
-```
+## 15. Secrets / production data
 
-The accepted Physical target is selected by PM-11 and accepted by PM-12. Direct selected-stack validation remains explicitly unexecuted where the PSV register says `NOT RUN`.
+Never commit live credentials, keys, tokens, `.env` secrets or raw production DB dumps.
 
-## 9. Engineering Foundation execution rules
+Lower-environment data is synthetic by default. Production-derived clones require explicit sanitization/minimization and authorization.
 
-Once accepted/integrated, production engineering uses these baseline rules unless an explicit later decision changes them:
+Normal PR CI receives no PROD deployment identity.
 
-```text
-repository           polyglot monorepo
-backend              capability-first modular monolith
-canonical DB         PostgreSQL 18.4
-DB tests             real PostgreSQL, not SQLite substitution
-migrations           Alembic release artifacts; no replica auto-migrate-on-start
-Python               3.14 line + uv + lockfile + Ruff + mypy + pytest
-JS                   Node 24 LTS + pnpm 11 + lockfile + strict TypeScript
-CI/CD                GitHub Actions primary orchestration
-remote envs          DEV / UAT / PROD, isolated and not Git branches
-secrets              external / least privilege / OIDC where supported
-release identity     exact source/build/artifact digest where available
-```
+## 16. Development environment discipline
 
-The exact compute host, exact IaC engine, artifact registry and provider-specific mechanisms remain deferred until a real implementation boundary supplies the missing facts.
+Backend canonical semantics are Linux.
 
-No heavy infrastructure such as microservices/Kubernetes/brokers is introduced merely to look enterprise-grade. Such mechanisms require a measured need and an explicit decision.
+For the primary Windows workflow:
 
-## 10. Pre-merge coherence gate
+- keep backend repo/worktree in WSL filesystem;
+- run Python/uv/backend commands under WSL/Linux;
+- PyCharm may use a WSL interpreter for run/debug/test;
+- use Docker Compose for stateful LOCAL dependencies;
+- do not share one virtualenv between native Windows and WSL execution.
 
-Before merge:
+Repository commands remain CLI-reproducible and IDE-neutral.
 
-1. compare branch against current `main`;
-2. synchronize/review if `main` moved materially;
-3. inspect shared docs changed by both sides;
-4. verify no old decision overwrites newer current truth;
-5. verify ADR/model/engineering status + supersession/reopen links;
-6. verify handoff/tests/validation appropriate to claimed scope;
-7. update global status only if globally meaningful;
-8. check secrets/personal production data/local artifacts;
-9. verify any repository-required checks that actually exist are passing;
-10. verify blocking review conversations are resolved where active main rules require it;
-11. verify branch-specific final closure/evidence activation conditions are satisfied;
-12. verify exact approved PRE-SCOPE path delta;
-13. merge only after semantic/documentation/engineering coherence.
+## 17. No enterprise cosplay
 
-A clean Git merge is not enough.
+Professional quality means real boundaries/evidence, not maximum component count.
 
-## 11. After-merge protocol
+Do not introduce without measured need:
 
-- verify `main` contains intended final versions;
-- verify the merge commit and branch relation remotely;
-- refresh global status if required;
-- synchronize long-running overlapping branches;
-- old branches/history cease to be authoritative once accepted work is integrated;
-- allow repository auto-delete of merged head branches where enabled, except when a branch is intentionally retained for a documented reason.
+- microservices;
+- Kubernetes;
+- brokers/service zoo;
+- self-hosted CI runners;
+- merge queues;
+- multiple repositories;
+- extra permanent environment branches;
+- fake reviewer requirements;
+- placeholder IaC/services/directories.
 
-Historical files need not remain in the current working tree merely to preserve history if Git/ADR/evidence already retains useful knowledge and deletion is explicitly gated.
+When scale/ownership/security creates a real need, introduce the mechanism through explicit architecture change.
 
-## 12. Handoff to another AI/chat
+## 18. Current continuation instruction
 
-The outgoing workstream records:
+A new chat should:
 
-- last completed change;
-- exact current task and next steps;
-- branch/PR;
-- important current files;
-- validation performed;
-- problems/open questions;
-- last validated commit where relevant;
-- approved/current scope;
-- failed/no-op tool operations that affect continuation.
-
-For implementation based on the closed Physical target, the handoff additionally preserves:
-
-- selected exact product/version subjects where still pinned;
-- deployment mode where actually chosen;
-- current direct PSV/HG status;
-- evidence locations/hashes;
-- unresolved HOLD items;
-- any explicit Physical reopen trigger;
-- applicable Engineering Foundation contract and any explicit implementation-stage defer resolved.
-
-If critical continuation state exists only in conversation, the handoff is incomplete.
-
-## 13. Repository coherence baseline
-
-Pre-Physical completed Phase 0–12 plus independent audit, integrated through protected PR #13 and post-merge alignment PR #14.
-
-Physical Model completed PM-00..PM-14 at the target-architecture layer, selected PostgreSQL 18.4 as canonical primary, established the bounded target companion stack in PM-11/12 and integrated through protected PR #15.
-
-The current Engineering Foundation workstream started from:
-
-```text
-main / PRE-SCOPE
-ebc3616956faeabd99d90f5f32458b284be218e4
-
-branch
-chore/engineering-foundation-v0
-```
-
-Future contributors must re-check current refs rather than treating dated SHAs as permanently current `main`.
-
-## 14. Current stage boundary
-
-```text
-DOMAIN
-CLOSED / unchanged
-
-LOGICAL
-CLOSED / WL-H01..WL-H12 ACTIVE
-
-PRE-PHYSICAL COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED / POST-MERGE VERIFIED
-
-PHYSICAL MODEL TARGET
-CLOSED / SELECTED / ACCEPTED
-selected canonical primary PostgreSQL 18.4
-
-DIRECT SELECTED-STACK VALIDATION
-NOT STARTED / carried forward
-
-ENGINEERING FOUNDATION v0
-ACTIVE / UNMERGED
-
-BACKEND / PRODUCTION IMPLEMENTATION
-NOT STARTED
-NEXT AFTER FOUNDATION ACCEPTANCE/INTEGRATION
-
-STANDALONE DEVELOPMENT PROFILE v0
-NO LONGER NEXT / absorbed into Foundation + capability/release implementation
-```
-
-No production backend/API/Auth/database-schema implementation is authorized solely by Foundation documentation work.
-
-## 15. Mandatory execution hardening
-
-The agent operating manual is authoritative for:
-
-- exact Git gate + PRE-SCOPE;
-- re-fetch before first real write;
-- exact post-write physical-path QA;
-- no scope expansion;
-- current-truth vs historical-evidence distinction;
-- knowledge-coverage gate before stale-doc replace/delete;
-- no connector/context-limit knowledge loss;
-- truthful tool-failure reporting;
-- remote evidence for PASS/CLOSED;
-- Domain Validation Methodology v3 for any separately authorized Domain reopen/new validation.
-
-Repository engineering safety additionally governs effective main rules/settings and branch hygiene.
-
-Closed Physical authority additionally governs:
-
-- exact selected target ownership boundaries;
-- `SELECTED != DIRECT PASS`;
-- honest direct PSV status;
-- explicit reopen if selected-stack implementation evidence invalidates a decision.
-
-Engineering Foundation additionally governs, once accepted:
-
-- repository/application structure;
-- environment/promotion contract;
-- configuration/secrets;
-- toolchain/reproducibility;
-- migration discipline;
-- testing/CI/CD/supply-chain baseline.
+1. read current main and the Engineering Foundation closure handoff;
+2. verify repository/ref state;
+3. **not** restart Foundation selection;
+4. keep the current repository;
+5. address repository rename `lifeos → dante` as the first small governance decision/action, or explicitly defer;
+6. then create a fresh branch/gate for real `apps/backend` scaffold;
+7. run scaffold QA before concrete schema/business implementation.
