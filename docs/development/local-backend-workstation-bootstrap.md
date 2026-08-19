@@ -428,6 +428,15 @@ Use Docker Desktop's own **Disk image location** setting to move/manage that sto
 
 The exact disk-image location must be verified separately on each workstation; Docker functionality PASS does not by itself prove the storage location.
 
+The first DANTE workstation was explicitly verified in Docker Desktop under **Settings → Resources → Advanced** with:
+
+```text
+WSL 2 backend       ACTIVE
+Disk image location D:\Docker\DesktopData\DockerDesktopWSL
+```
+
+Therefore Docker images, layers, build cache and Docker-managed volume data for this workstation are anchored on the secondary `D:` drive rather than the Windows system drive.
+
 ## 13. Verify Docker inside Ubuntu
 
 With Docker Desktop running and `Ubuntu-24.04` integration enabled, open Ubuntu and run:
@@ -570,6 +579,7 @@ Docker daemon access no sudo    PASS
 linux/x86_64 container engine   PASS
 Docker Hub pull                 PASS
 hello-world container           PASS
+Docker data location on D:      PASS
 ```
 
 ## 16. PostgreSQL posture
@@ -617,7 +627,7 @@ Docker CLI                         PASS
 Docker Compose                     PASS
 Docker daemon access               PASS
 Docker hello-world                 PASS
-Docker data location on D:         VERIFY SEPARATELY
+Docker data location on D:         PASS
 
 PostgreSQL LOCAL                   NOT STARTED
 backend scaffold files             NOT CREATED BY THIS CHECKPOINT
