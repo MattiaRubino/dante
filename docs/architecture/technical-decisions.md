@@ -1,12 +1,11 @@
 # Technical Decisions
 
-- Status: **Current technical direction — Physical Model target selected/accepted/integrated**
-- Last updated: 2026-08-18
+- Status: **Current technical direction — Physical target accepted; Engineering Foundation v0 active**
+- Last updated: 2026-08-19
 - Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained only where historical/technical continuity requires it)
-- Pre-Physical closure activation: `9c53e812d13ffd1b3d3d3dc20b8b162799e13c1d`
-- Pre-Physical integration: `74593ae283ce5a1d22335502480ee3fa54be0436` via PR #13
-- Post-merge Pre-Physical alignment / Physical base: `3de84bb49f9cef30e88e9bde4961ed84335daa79` via PR #14
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
+- Engineering Foundation branch: `chore/engineering-foundation-v0`
+- Engineering Foundation PRE-SCOPE: `ebc3616956faeabd99d90f5f32458b284be218e4`
 
 This document is a current technical summary. Detailed requirements/contracts remain authoritative in their dedicated sources; historical rationale remains in ADRs, evidence and Git.
 
@@ -22,37 +21,91 @@ Phase 7 durable-execution contract          CURRENT / PHYSICAL MECHANISM RESOLVE
 Phase 8 governed operation/effect           CURRENT
 Phase 9 search/observability/calendar/solver CURRENT / PHYSICAL MECHANISMS RESOLVED WHERE SELECTED
 Phase 10 benchmark method                   CURRENT METHOD / HISTORICAL DECISION-EVIDENCE AUTHORITY
-Repository engineering safety              QA PASS
+Repository engineering safety              QA PASS at verified scope
 Pre-Physical Coherence                      CLOSED / INTEGRATED / VERIFIED
 
 Physical Model target
-CLOSED / SELECTED / ACCEPTED
-PM-13 clean-room architecture/documentation QA PASS
-INTEGRATED INTO MAIN VIA PR #15
-former feature/physical-model MERGED / AUTO-DELETED
+CLOSED / SELECTED / ACCEPTED / INTEGRATED
 selected canonical primary PostgreSQL 18.4
 
 Direct selected-stack implementation validation
 NOT STARTED / DIRECT HG PASS 0
 
-Backend Foundation
-NOT STARTED / DEFERRED
+Engineering Foundation v0
+ACTIVE / UNMERGED
 
-Development Profile v0
-NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+Backend / production implementation
+NOT STARTED
 ```
 
 ## Clients and backend direction
 
+Accepted direction:
+
 - Web: Next.js + React + TypeScript.
 - Mobile: Expo + React Native + TypeScript.
-- Backend direction: Python + FastAPI + Pydantic.
-- Architecture direction: modular monolith first.
+- Backend: Python + FastAPI + Pydantic.
+- Architecture: capability-first modular monolith.
 - Clients use versioned governed backend contracts, not direct primary-persistence access.
-- Domain/application logic remains independent from HTTP/framework handling.
-- SQLAlchemy/Alembic may now be evaluated/used against the accepted PostgreSQL target within a separately authorized backend/development scope.
+- Domain/application logic remains independent from HTTP/framework/persistence/provider representations by identity.
 
-No production backend implementation is authorized merely by Physical closure/integration.
+Engineering Foundation branch baseline now additionally selects:
+
+```text
+BACKEND PERSISTENCE TOOLKIT
+SQLAlchemy 2.0 stable line
+psycopg 3
+Alembic
+
+PYTHON ENGINEERING
+Python 3.14 line
+uv + committed lockfile
+Ruff
+mypy strict
+pytest
+
+JS ENGINEERING
+Node 24 LTS
+pnpm 11 + committed lockfile
+TypeScript strict
+ESLint + Prettier
+Turborepo for JS/TS task graph
+
+DELIVERY
+GitHub Actions primary CI/CD orchestration
+GitHub Environments for privileged deployment once real workflows exist
+```
+
+These are active unmerged Foundation decisions. Production backend implementation has not started.
+
+## Repository/application architecture
+
+DANTE uses a **polyglot monorepo** target:
+
+```text
+apps/api
+apps/web
+apps/mobile
+packages/<precise-shared-TS-artifacts>
+infra
+tooling
+tests/system
+docs
+prototypes
+```
+
+Rules:
+
+- one integrated source tree allows atomic contract/client/infrastructure/documentation changes;
+- production apps never depend on `prototypes/`;
+- `packages/` does not become a `shared/common/utils` dumping ground;
+- no root Python workspace is introduced while there is only one real Python project;
+- backend modules are selected by capability/change cohesion, not one module per table, Logical owner, route or screen;
+- no universal generic `Repository[T]`, CRUD `BaseService` or service locator becomes the application model;
+- cross-module atomic PostgreSQL transactions remain allowed where accepted semantics require true atomicity;
+- microservices/Kubernetes/brokers/build-system complexity require a measured later need rather than enterprise imitation.
+
+Detailed authority: `docs/development/repository-layout-v0.md` and `application-structure-v0.md`.
 
 ## Semantic/model authority
 
@@ -124,7 +177,7 @@ Restate Python SDK 1.0.3
 Restate Server 1.7.2 self-hosted/reproducible subject
 ```
 
-Restate deployment:
+Restate deployment capability remains:
 
 ```text
 SELF-HOSTED
@@ -137,7 +190,20 @@ GLOBAL DEFAULT
 NONE
 ```
 
-Restate is the selected technology; deployment remains a later privacy/operability/cost profile decision. Current Python use must not assume the client-side journal encryption that current Restate Cloud documentation exposes only through TypeScript. Journal payload minimization is mandatory.
+Current activation truth is more specific than the original generic later-profile wording:
+
+```text
+INITIAL DEV
+DORMANT / NOT ACTIVE
+
+ACTIVATE
+first real Class-B durable-workflow need
+
+SELF-HOSTED vs CLOUD EU
+choose only when activation trigger exists
+```
+
+Current Python use must not assume TypeScript-only Restate client-side journal encryption. Journal payload minimization remains mandatory when Restate activates.
 
 No workflow runtime creates exactly-once external reality by itself and runtime state does not become Domain ontology/history by identity.
 
@@ -166,6 +232,14 @@ R2 raw-object backup
 
 Recovery copies remain noncanonical. `Object Lock Compliance` is not the default.
 
+Initial DEV activation is already fixed:
+
+```text
+pgBackRest + AWS S3
+DORMANT / NOT ACTIVE
+ACTIVATE = recovery/production boundary OR real recovery rehearsal
+```
+
 ### Solver
 
 ```text
@@ -184,6 +258,103 @@ pg_stat_statements
 ```
 
 Telemetry remains privacy-minimized operational state, not Domain Provenance/security audit/canonical history automatically.
+
+## Database engineering decisions
+
+Engineering Foundation fixes the implementation discipline before concrete schema work:
+
+```text
+ORM / SQL toolkit       SQLAlchemy 2.0 stable
+PostgreSQL driver       psycopg 3
+migration system        Alembic
+backend DB tests        real PostgreSQL 18.4 semantics
+```
+
+Rules:
+
+- SQLite is never used as a convenience substitute to prove backend PostgreSQL semantics;
+- application startup does not use `metadata.create_all()` as deployed schema management;
+- every durable deployed schema change is an Alembic migration;
+- autogenerate output is a candidate requiring review;
+- merged/applied migrations are not rewritten for cosmetic convenience;
+- one controlled migration/release job executes schema change where required; application replicas do not race on startup;
+- risky evolution uses expand/migrate/contract when old/new services or mobile clients overlap;
+- `alembic downgrade` is not assumed to be a universal production rollback mechanism;
+- session/transaction scope belongs to the application operation/request/job, is injected and not global;
+- `AsyncSession` is not shared across concurrent tasks;
+- transaction boundaries follow accepted semantic atomicity rather than ORM convenience.
+
+Concrete tables/columns/constraints/indexes/migration revisions remain future implementation.
+
+## Environment and release decisions
+
+Engineering Foundation defines:
+
+```text
+LOCAL
+individual disposable developer context
+Linux backend semantics canonical; Windows via WSL2/Linux
+stateful dependencies via Docker Compose as activated
+
+DEV
+shared integration environment for accepted main artifacts / synthetic data
+
+UAT
+production-like exact release-candidate acceptance + migration rehearsal
+
+PROD
+real released service/data
+```
+
+No permanent Git branch represents an environment.
+
+Server/web baseline is **build once, promote exact immutable artifact** where the platform permits. Release evidence records source SHA, build ID and artifact/image digest where available.
+
+Mobile is an explicit exception where different signed/environment-specific binaries may be required; each build remains tied to the same reviewed source, locked dependencies and explicit build profile.
+
+Exact compute hosting provider, artifact registry and IaC engine are intentionally deferred until real remote infrastructure implementation because accepted architecture has not selected them.
+
+## Configuration / secret decisions
+
+- backend configuration uses typed `pydantic-settings` at bootstrap;
+- invalid/missing critical deployed configuration fails before serving work;
+- secrets remain external to Git;
+- client-visible/browser/mobile values are public by definition;
+- environment credentials/state are isolated;
+- runtime database privilege is separated from migration/admin/replication/backup roles where material;
+- GitHub Actions -> cloud/provider identity prefers OIDC/short-lived federation where supported;
+- sensitive payloads/credentials are excluded from logs/traces by default.
+
+Exact runtime secret-manager vendor depends on future compute/provider choice and is therefore deferred.
+
+## Testing / CI decisions
+
+DANTE uses risk-layered tests:
+
+```text
+unit / property-invariant
+architecture dependency enforcement
+real PostgreSQL integration
+migration evolution/drift
+provider contracts
+OpenAPI/generated-client drift
+web/mobile component/integration
+system/E2E
+security/supply chain
+performance/recovery/PSV at applicable boundaries
+```
+
+Web baseline: Vitest + Testing Library + Playwright E2E.
+
+Mobile baseline: Jest + React Native Testing Library + Maestro native E2E when activated. Expo development builds are the canonical production-grade mobile development path; Expo Go is not the production runtime baseline.
+
+GitHub Actions is the primary repository CI/CD orchestrator. Normal PR jobs use least-privilege permissions, locked installs and no production deployment secrets.
+
+Third-party actions are pinned to immutable SHAs where practical. Dependency review, CodeQL, Dependabot/update automation, container/IaC scans and build provenance are activated when corresponding real manifests/source/artifacts exist and their actual support/context is verified.
+
+No required-main status check is invented before a real workflow emits a stable verified context whose failure genuinely should block merge.
+
+Aggregate coverage is a signal, not semantic proof. Exact numeric coverage floors are deferred until real code gives a meaningful denominator; critical invariants require direct tests regardless of aggregate percentage.
 
 ## State/history/consistency direction
 
@@ -210,7 +381,7 @@ absence / unknown != false
 
 JSON/metadata may represent genuinely flexible, low-consequence, provider-specific or specialist detail; it must not hide unresolved kernel semantics.
 
-Large file bytes remain behind the selected object-storage boundary; Content Artifact identity is not identical to blob/path/URL/provider-object identity.
+Large file bytes remain behind the selected object-storage boundary; ContentArtifact identity is not identical to blob/path/URL/provider-object identity.
 
 ## Integration Hub
 
@@ -233,6 +404,8 @@ provider/tool operation string != canonical governed effect
 
 Callbacks/webhooks/polling/push are adapter mechanisms. MCP/A2A/future protocols remain adapters, not ontology/governance authority.
 
+Provider SDKs live behind outbound adapters rather than becoming domain/application types by identity.
+
 ## AI / context / runtime
 
 AI remains behind a replaceable/provider-neutral gateway and bounded Context Builder.
@@ -254,9 +427,7 @@ tool invocation != authorization
 runtime Agent / Principal != Domain Actor automatically
 ```
 
-### Consequential AI change evaluation
-
-Before promotion of materially consequential changes to model/version/provider, prompt/instruction layer, Context Builder policy, tool/action schema, tool-selection policy or fallback/routing policy, DANTE requires versioned/reproducible evaluation appropriate to affected behavior.
+Before promotion of materially consequential AI changes, DANTE requires versioned/reproducible evaluation appropriate to affected behavior.
 
 ```text
 eval result != canonical DANTE truth
@@ -309,7 +480,7 @@ DBOS
 Celery + broker
 ```
 
-Any reintroduction requires a material later requirement/evidence reopen.
+Engineering Foundation likewise does not add Kubernetes/microservices/build-system complexity without a concrete measured need. Any reintroduction/extraction requires an explicit decision based on changed requirements/evidence.
 
 ## Direct implementation-validation truth
 
@@ -331,27 +502,37 @@ Applicable direct obligations remain in `docs/physical-model/recommendation/post
 
 ## Repository safety
 
-Effective `main` protections remain the integration policy: PR required, main deletion/non-fast-forward blocked, review-thread resolution required, no invented required checks before stable real contexts exist. Physical integration successfully used that path through PR #15.
+Effective `main` protections remain the integration policy: PR required, main deletion/non-fast-forward blocked, review-thread resolution required, no invented required checks before stable real contexts exist.
 
-## Development Profile v0 boundary
+Engineering Foundation selecting GitHub Actions does not assert that workflows/check contexts already exist.
 
-The next operational design may decide which selected components are activated immediately, local/self-hosted/managed/free-tier choices where allowed, account/environment setup and upgrade triggers.
+## Engineering Foundation boundary
 
-That profile does not reopen the accepted Physical target merely because a selected component is dormant or deployed differently during development.
+The previously proposed standalone Development Profile is no longer the next separate operational phase.
+
+Operational concerns are now handled by:
+
+1. the durable Engineering Foundation contract for repository/environments/config/toolchain/testing/delivery; and
+2. the actual capability/release implementation boundary that has the information needed to activate a selected Physical component.
+
+This does not reopen or weaken the accepted Physical target.
 
 ## Explicit next boundary
 
 ```text
 PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-INTEGRATED INTO MAIN VIA PR #15
+CLOSED / SELECTED / ACCEPTED / INTEGRATED
 
 DIRECT IMPLEMENTATION VALIDATION
 NOT STARTED / CARRIED FORWARD
 
-NEXT
-Development Profile v0 — separate operational design
+ENGINEERING FOUNDATION v0
+ACTIVE / UNMERGED / PENDING FINAL REVIEW + QA
 
-Backend Foundation
-NOT STARTED / requires separate explicit authorization
+THEN
+production repository scaffold
+→ backend bootstrap
+→ PostgreSQL local profile + migration harness
+→ concrete Logical-to-PostgreSQL schema
+→ vertical implementation
 ```
