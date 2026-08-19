@@ -49,7 +49,7 @@ apps/
 - web/mobile internal engineering/tooling remains deferred to the dedicated frontend workstream;
 - do **not** create a new repository for production implementation.
 
-The historical repository name `lifeos` may be renamed to `dante` in a separate small governance operation. Rename is recommended before the production scaffold unless explicitly deferred.
+Repository identity governance is complete: the historical GitHub repository `MattiaRubino/lifeos` was renamed to `MattiaRubino/dante`. Production implementation continues in `MattiaRubino/dante`; the rename is no longer a pending implementation prerequisite.
 
 ## Backend engineering baseline
 
@@ -188,9 +188,9 @@ Read in this order before the next write:
 ### Exact next boundary
 
 ```text
-STEP 0
-Keep this repository. Decide/execute recommended repository rename
-`lifeos → dante`, or explicitly defer the rename.
+REPOSITORY IDENTITY
+COMPLETE
+MattiaRubino/lifeos → MattiaRubino/dante
 
 STEP 1
 Open a fresh exact write gate for the real production scaffold under
