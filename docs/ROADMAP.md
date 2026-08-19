@@ -1,6 +1,6 @@
 # DANTE Roadmap
 
-- Last updated: 2026-08-18
+- Last updated: 2026-08-19
 - Purpose: current delivery/architecture-stage sequence, not a calendar commitment
 
 ## Completed foundations
@@ -8,8 +8,6 @@
 ### Product / North Star
 
 Accepted current DANTE identity/North Star and supporting product studies are integrated.
-
-Naming continuity:
 
 ```text
 CURRENT PRODUCT / APP NAME
@@ -21,9 +19,6 @@ LifeOS
 LEGACY REFERENCES
 Historical evidence, Git history and existing technical/repository identifiers
 may still use LifeOS for the same product lineage.
-
-RENAME IMPACT
-Naming only — no Product North Star, Domain, Logical or Physical semantic change.
 ```
 
 ### Core Domain Model / Domain Atlas
@@ -57,7 +52,6 @@ Phase 12           QA PASS / CLOSED
 Independent audit  PASS
 PR #13             Pre-Physical integration
 PR #14             post-merge current-truth alignment
-Physical base main 3de84bb49f9cef30e88e9bde4961ed84335daa79
 ```
 
 ### Physical Model target architecture
@@ -65,25 +59,12 @@ Physical base main 3de84bb49f9cef30e88e9bde4961ed84335daa79
 **CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO `main` VIA PR #15.**
 
 ```text
-PM-00  QA PASS
-PM-01  PASS-CONDITIONAL
-PM-02  COMPLETE
-PM-03  STATIC COMPLETE / 0 REJECTS
-PM-04A COMPLETE / 0 EXECUTION-WORTHY GAPS
-PM-04B NOT ADMITTED
-PM-05  COMPLETE
-PM-06  EVIDENCE QUALIFICATION COMPLETE
-PM-07  EVIDENCE QUALIFICATION COMPLETE
-PM-08  SECONDARY/SPECIALIST QUALIFICATION COMPLETE
-PM-09  EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
-PM-10  FINAL STACK RECOMMENDATION COMPLETE
-PM-11  EXPLICIT USER-APPROVED SELECTION COMPLETE
-PM-12  ACCEPTED PHYSICAL MODEL COMPLETE
-PM-13  CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
-PM-14  BRANCH CLOSURE COMPLETE
-PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
-PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
-FORMER  feature/physical-model MERGED / AUTO-DELETED
+PM-00..PM-14 target-architecture work COMPLETE at stated statuses
+PM-11 explicit user-approved selection COMPLETE
+PM-12 Accepted Physical Model COMPLETE
+PM-13 clean-room architecture/documentation QA PASS
+PM-14 branch closure COMPLETE
+PR #15 protected-main integration COMPLETE
 ```
 
 Selected canonical primary:
@@ -92,7 +73,7 @@ Selected canonical primary:
 PostgreSQL 18.4
 ```
 
-Selected target companion architecture:
+Selected companion target:
 
 ```text
 PostGIS 3.6.4
@@ -111,36 +92,29 @@ OR-Tools 9.15 CP-SAT
 OpenTelemetry + Grafana Alloy 1.18.0 + Grafana Cloud EU
 ```
 
-Restate deployment is intentionally profile-dependent when Restate is activated:
+Canonical persistence authority remains **one: PostgreSQL**.
 
-```text
-SELF-HOSTED
-FIRST-CLASS
-
-CLOUD EU
-ALLOWED MANAGED OPTION
-
-GLOBAL DEFAULT
-NONE
-```
-
-Initial DEV activation is already fixed for two selected target components:
+## Fixed initial activation posture
 
 ```text
 RESTATE
-DORMANT / NOT ACTIVE
+SELECTED TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
 ACTIVATE ON FIRST REAL CLASS-B DURABLE-WORKFLOW NEED
-DEPLOYMENT MODE DECIDED ONLY AT ACTIVATION
+SELF-HOSTED vs CLOUD EU DECIDED ONLY AT ACTIVATION
 
 pgBackRest + AWS S3 eu-south-1
-DORMANT / NOT ACTIVE
+SELECTED RECOVERY TARGET
+INITIAL DEV = DORMANT / NOT ACTIVE
 ACTIVATE AT RECOVERY/PRODUCTION BOUNDARY
 OR WHEN A REAL RECOVERY-REHEARSAL REQUIREMENT EXISTS
 ```
 
-## Physical evidence truth retained
+These are settled day-1 decisions and are not reopened by later implementation planning.
 
-Target closure/integration does not mean direct implementation execution occurred.
+## Direct Physical evidence truth retained
+
+Target closure/integration and Engineering Foundation design do not mean direct implementation execution occurred.
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
@@ -156,42 +130,157 @@ SOLVER                    NOT RUN
 VERIFIED-RUN SCORE        NOT AVAILABLE
 ```
 
-The mandatory direct selected-stack validation register remains active for implementation/release.
+The post-selection validation register remains mandatory at the applicable implementation/release boundaries.
 
-## Current next architecture/engineering track — Development Profile v0
+## Current engineering track — Engineering Foundation v0
 
-The next separate operational-design scope decides **only how the already-selected Physical target is used where current activation posture has not already been fixed**.
+**ACTIVE / UNMERGED on `chore/engineering-foundation-v0`.**
 
-Expected questions include:
+This is the final bounded engineering-design workstream before production implementation.
 
-```text
-which still-unresolved selected components are active immediately
-which other components remain dormant until their first real capability need
-self-hosted vs managed only where an active component requires the choice now
-accounts/credentials/environment setup
-initial observability activation
-upgrade/production triggers
-```
-
-This profile must not silently change the accepted Physical target.
-
-Two day-1 questions are already closed and must not be reopened:
+It defines and freezes:
 
 ```text
-Restate active now?                 NO — DORMANT UNTIL REAL CLASS-B NEED
-Restate self-hosted vs Cloud EU?    NOT YET — DECIDE ONLY AT ACTIVATION
-pgBackRest/AWS S3 active now?       NO — DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
+polyglot monorepo / path ownership
+capability-first modular-monolith structure
+web/mobile/backend dependency boundaries
+LOCAL / DEV / UAT / PROD lifecycle
+configuration / secret / credential rules
+runtime / package / dependency versioning
+PostgreSQL development and migration workflow
+test taxonomy / architecture enforcement
+GitHub Actions CI/CD model
+artifact identity / promotion
+supply-chain controls
+developer bootstrap / DX conventions
 ```
 
-## Backend Foundation — later explicit authorization
-
-Backend Foundation remains:
+Current branch specification set:
 
 ```text
-NOT STARTED / DEFERRED
+docs/workstreams/engineering-foundation.md
+docs/development/engineering-foundation-v0.md
+docs/development/repository-layout-v0.md
+docs/development/application-structure-v0.md
+docs/development/environments-and-promotion-v0.md
+docs/development/config-and-secrets-v0.md
+docs/development/toolchain-and-dx-v0.md
+docs/development/testing-and-ci-v0.md
 ```
 
-Physical closure/integration removes the persistence-selection blocker, but backend production implementation still requires its own explicit authorization/gate. Development Profile v0 may be established first so the actual initial infrastructure/deployment posture is deliberate rather than improvised.
+### Foundation baseline direction
+
+```text
+REPOSITORY
+polyglot monorepo
+apps/api + apps/web + apps/mobile
+precise shared TypeScript packages only
+
+BACKEND
+Python + FastAPI + Pydantic
+capability-first modular monolith
+explicit composition root
+SQLAlchemy 2.0 stable + psycopg 3 + Alembic
+
+PYTHON TOOLCHAIN
+Python 3.14 line
+uv + committed lockfile
+Ruff + mypy strict + pytest
+
+JS TOOLCHAIN
+Node 24 LTS
+pnpm 11 + committed lockfile
+TypeScript strict + ESLint + Prettier
+Turborepo for JS/TS task graph
+
+LOCAL
+Linux semantics canonical for backend
+Windows backend path through WSL2/Linux
+Docker Compose for stateful dependencies
+real PostgreSQL for persistence/integration testing
+
+DELIVERY
+GitHub Actions primary CI/CD orchestration
+GitHub Environments for privileged deployment once workflows exist
+immutable release identity by commit/build/digest
+build once/promote same server/web artifact where platform permits
+mobile builds remain explicitly environment/signing-profile specific
+
+SECURITY / SUPPLY CHAIN
+secrets external to Git
+OIDC/short-lived deployment identity where supported
+least privilege
+locked dependencies
+CodeQL/dependency review/attestation activated with real source/artifacts, not placeholders
+```
+
+No production code is created by this workstream.
+
+## Standalone Development Profile v0 — sequence decision
+
+The previously proposed standalone Development Profile is **no longer a separate next stage**.
+
+Its useful concerns have been absorbed into:
+
+1. Engineering Foundation for durable development/environment/configuration rules; and
+2. the real implementation/release boundary that has enough facts to activate a selected component.
+
+This avoids a speculative pass over every selected technology merely to decide whether it is installed on day one.
+
+The accepted Physical target remains unchanged.
+
+## Production implementation — next after Foundation closure
+
+Production application code remains:
+
+```text
+NOT STARTED
+```
+
+After Engineering Foundation receives final review, exact remote QA and protected-main integration, the delivery sequence becomes:
+
+```text
+1. production repository scaffold
+   - create real apps/packages/infra/tooling manifests only where used
+   - pin runtimes/package managers/lockfiles
+   - establish first real CI contexts
+
+2. backend bootstrap
+   - FastAPI process/composition root
+   - typed config
+   - logging/observability baseline
+   - module/dependency enforcement
+
+3. PostgreSQL development foundation
+   - pinned LOCAL PostgreSQL 18.4 profile
+   - required selected extensions for implemented slices
+   - SQLAlchemy/psycopg wiring
+   - Alembic migration harness
+   - real PostgreSQL integration-test harness
+
+4. concrete Logical -> PostgreSQL implementation
+   - owner/reference mappings
+   - constraints/indexes/history
+   - transaction/expected-state semantics
+   - migration chain
+
+5. first vertical production slices
+   - application use case
+   - persistence
+   - governed backend contract
+   - tests
+   - generated client contract where applicable
+
+6. specialist Physical capabilities as real use-cases arrive
+   - PostGIS/search/pgvector
+   - PowerSync/SQLite
+   - R2
+   - OR-Tools
+   - Restate only at fixed Class-B trigger
+   - recovery target at fixed recovery/production trigger
+```
+
+This is the transition from architecture/design into normal production engineering.
 
 ## Active parallel product/design track
 
@@ -199,7 +288,7 @@ Physical closure/integration removes the persistence-selection blocker, but back
 
 Separate workstream on `prototype/phase-4-today-home`.
 
-It may continue independently but does not redefine accepted Domain/Logical/Physical authority.
+It may continue independently but does not redefine accepted Domain/Logical/Physical/backend engineering authority.
 
 ## Upstream constraints that remain active
 
@@ -216,7 +305,8 @@ Later engineering must preserve:
 - Phase 9 search/observability/calendar/solver contract as physically resolved where selected;
 - calendar/provider adapter separation;
 - selected-stack direct validation obligations;
-- repository engineering safety.
+- repository engineering safety;
+- Engineering Foundation rules once accepted/integrated.
 
 ```text
 SEMANTIC OWNER != IMPLEMENTATION MECHANISM
@@ -225,36 +315,6 @@ ADDRESSABILITY != DOMAIN IDENTITY
 STORAGE COINCIDENCE != SEMANTIC EQUIVALENCE
 SELECTED != DIRECT PASS
 SELECTED != DEPLOYED
-```
-
-## Current accepted runtime/search/solver posture
-
-```text
-DURABLE EXECUTION
-bounded async → PostgreSQL outbox + bounded worker
-material durable Class-B → Restate runtime
-initial DEV Restate → DORMANT until first real Class-B need
-Restate deployment → self-hosted or Cloud EU, decided only when activated
-
-RECOVERY
-pgBackRest + AWS S3 eu-south-1 → selected production/off-site target
-initial DEV → DORMANT until recovery/production boundary or real rehearsal need
-
-SEARCH
-PostgreSQL native FTS + pg_trgm + unaccent
-semantic/vector retrieval → pgvector
-no dedicated search/vector service in accepted target
-
-OBSERVABILITY
-OpenTelemetry + Grafana Alloy + Grafana Cloud EU target
-
-CALENDAR
-iCalendar / JSCalendar / providers = adapter pressure, not ontology
-
-SOLVER
-OR-Tools 9.15 CP-SAT selected
-UNKNOWN != INFEASIBLE
-solver output != accepted canonical effect
 ```
 
 ## AI evaluation posture
@@ -268,14 +328,18 @@ eval PASS != Authority / governed-effect authorization
 
 ## Repository engineering safety
 
-`main` remains protected by `lifeos-main-safety`. Physical integration used the normal protected PR path through PR #15. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
+`main` remains protected by the verified repository-safety policy. Normal integration uses the protected PR path. No direct-main bypass, no invented required checks and no production secrets/personal data in test/evidence artifacts.
+
+Engineering Foundation selects GitHub Actions as the future primary CI/CD orchestration mechanism, but **no required status check is added until a real workflow emits a stable verified context whose failure should block merge**.
 
 ## Immediate sequence
 
 ```text
-1. Development Profile v0 — separate bounded operational-design scope
-2. identify only genuinely unresolved initial activation/deployment/configuration choices
-3. preserve Restate and pgBackRest/AWS S3 as initial-DEV dormant until their fixed triggers
-4. later Backend Foundation authorization when explicitly approved
-5. discharge applicable direct selected-stack validation obligations at their proper implementation/release gates
+1. complete Engineering Foundation v0 documentation/current-truth alignment
+2. exact scope/readback/coherence QA
+3. user acceptance
+4. protected PR integration
+5. start production repository scaffold under a fresh exact implementation scope
+6. continue backend/database vertical implementation
+7. discharge applicable PSV obligations as the corresponding capabilities/release boundaries become real
 ```
