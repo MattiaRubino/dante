@@ -34,6 +34,10 @@ PM-14 CLOSURE COMPLETE
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
 
+REPOSITORY IDENTITY GOVERNANCE
+COMPLETE
+MattiaRubino/lifeos → MattiaRubino/dante
+
 PRODUCTION BACKEND SCAFFOLD
 NOT STARTED
 
@@ -187,7 +191,7 @@ apps/web
 apps/mobile
 ```
 
-Production implementation remains in the current repository; no new repo is planned. The historical repository name `lifeos` may be renamed to `dante` in a separate next governance scope.
+Production implementation remains in the current repository; no new repo is planned. Repository identity governance is complete and the current GitHub repository is `MattiaRubino/dante`; `MattiaRubino/lifeos` is historical identity only.
 
 ### Backend architecture
 
@@ -299,17 +303,13 @@ VERIFIED-RUN SCORE       NOT AVAILABLE
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
-Engineering Foundation v0 is closed. No production scaffold has yet been created.
+Engineering Foundation v0 is closed. Repository rename is complete. No production scaffold has yet been created.
 
 ## 9. Exact next action
 
 ```text
-STEP 0
-Keep current repository.
-Decide/execute recommended rename `lifeos → dante`, or explicitly defer.
-
 STEP 1
-Mandatory bootstrap + fresh exact Git write gate.
+Mandatory bootstrap from current repository truth + fresh exact Git write gate.
 
 STEP 2
 Create production scaffold for apps/backend and LOCAL PostgreSQL engineering baseline only.
