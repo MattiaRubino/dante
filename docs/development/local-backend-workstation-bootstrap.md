@@ -1,10 +1,10 @@
 # Local Backend Workstation Bootstrap
 
-- Status: **ACTIVE / VERIFIED THROUGH PYTHON BOOTSTRAP**
+- Status: **ACTIVE / VERIFIED THROUGH DOCKER DESKTOP + WSL INTEGRATION**
 - Scope: Windows 11 developer workstation bootstrap for DANTE backend work
 - Canonical backend development environment: **WSL2 + Ubuntu 24.04 LTS + Linux filesystem**
 - Verified workstation checkpoint date: **2026-08-19**
-- Docker/PostgreSQL portion: **NEXT / NOT YET VERIFIED IN THIS GUIDE**
+- PostgreSQL/backend scaffold portion: **NEXT / NOT YET VERIFIED IN THIS GUIDE**
 
 ## 1. Purpose
 
@@ -22,7 +22,7 @@ The Engineering Foundation remains authoritative for architectural decisions. Th
 ```text
 Windows 11
 ├── PyCharm on Windows
-├── Docker Desktop on Windows        NEXT
+├── Docker Desktop on Windows
 │   └── WSL2 backend
 │
 └── WSL2
@@ -31,6 +31,7 @@ Windows 11
         ├── GitHub CLI
         ├── uv
         ├── Python 3.14.7
+        ├── Docker CLI / Compose via Docker Desktop integration
         └── /home/<user>/projects/dante
 ```
 
@@ -39,7 +40,8 @@ Rules:
 - backend/server semantics are Linux;
 - the repository lives in the Linux filesystem, not under `/mnt/c/...` or `/mnt/d/...`;
 - Python for DANTE is managed by `uv`, not by replacing Ubuntu's system Python;
-- Docker Desktop provides the future local container engine through WSL2;
+- Docker Desktop provides the local container engine through WSL2;
+- do not install a second Docker Engine directly inside Ubuntu when using Docker Desktop WSL integration;
 - PostgreSQL is not installed directly on Windows or directly into Ubuntu for the DANTE LOCAL baseline.
 
 ## 3. Install WSL without an automatic distribution
@@ -391,38 +393,204 @@ Do not let the IDE manufacture an unrelated Windows Python environment before th
 
 IDE convenience must never be required for repository correctness: build/test/lint/type/migration commands remain CLI-capable.
 
-## 12. Docker / PostgreSQL checkpoint
+## 12. Install Docker Desktop on Windows
 
-At the time this guide was first written:
+Use Docker Desktop for Windows with the **WSL2 backend**.
 
-```text
-Docker Desktop installation/configuration    IN PROGRESS / NOT VERIFIED
-WSL Integration for Ubuntu-24.04              NOT YET VERIFIED
-Docker data location on D:                    NOT YET VERIFIED
-PostgreSQL 18.4 LOCAL container               NOT CREATED
-DANTE PostgreSQL image                        NOT CREATED
-extension envelope verification               NOT RUN
-```
+For a normal single-user development workstation, use the per-user installation mode unless an explicit machine-administration requirement says otherwise.
 
-The intended next workstation shape is:
+Do not enable Windows Containers or Kubernetes for the DANTE backend bootstrap.
+
+After installation, open Docker Desktop and verify:
 
 ```text
-Windows
-└── Docker Desktop
-    ├── WSL2 backend
-    ├── Ubuntu-24.04 integration
-    └── disk/container/volume data on D: where configured
+Settings
+→ General
+→ WSL 2 based engine enabled / active
 
-Ubuntu / WSL
-└── docker CLI / docker compose
-    └── DANTE-owned PostgreSQL 18.4 LOCAL container
+Settings
+→ Resources
+→ WSL Integration
+→ Ubuntu-24.04 ON
 ```
 
-PostgreSQL server is **container-only** for the DANTE LOCAL baseline. Do not install a second PostgreSQL server on Windows or directly into Ubuntu.
+The first workstation explicitly enabled `Ubuntu-24.04` rather than enabling every future/default WSL distribution implicitly.
+
+### Docker data location
+
+Container images, layers, build cache and volumes may become large. Prefer a secondary drive where available, for example:
+
+```text
+D:\Docker\DesktopData
+```
+
+Use Docker Desktop's own **Disk image location** setting to move/manage that storage. Do not manually move Docker's VHDX files.
+
+The exact disk-image location must be verified separately on each workstation; Docker functionality PASS does not by itself prove the storage location.
+
+## 13. Verify Docker inside Ubuntu
+
+With Docker Desktop running and `Ubuntu-24.04` integration enabled, open Ubuntu and run:
+
+```bash
+command -v docker
+groups
+docker --version
+docker compose version
+docker info --format 'OS={{.OSType}} ARCH={{.Architecture}}'
+```
+
+Expected fundamentals:
+
+```text
+docker CLI present
+Docker daemon reachable without sudo
+OS=linux
+ARCH=x86_64
+```
+
+The first workstation ultimately verified:
+
+```text
+Docker Engine/CLI      29.7.2
+Docker Compose         v5.4.0
+Docker daemon OS       linux
+Docker architecture    x86_64
+```
+
+These Docker/Compose versions are workstation evidence, not permanent DANTE pins unless later repository-controlled infrastructure declares one.
+
+## 14. Docker socket permission case encountered on the first workstation
+
+The first workstation initially showed:
+
+```text
+permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+```
+
+Diagnosis:
+
+```bash
+whoami
+groups
+command -v docker
+ls -l /var/run/docker.sock
+readlink -f /var/run/docker.sock
+docker context ls
+env | grep -E '^DOCKER_' || true
+ls -ld /mnt/wsl/docker-desktop 2>/dev/null || echo "docker-desktop mount non trovato"
+```
+
+Observed state:
+
+```text
+socket       /var/run/docker.sock
+owner/group  root:docker
+mode         srw-rw----
+user         not yet a member of docker group
+Docker Desktop WSL mount present
+```
+
+Fix used:
+
+```bash
+sudo usermod -aG docker $USER
+getent group docker
+```
+
+Then close Ubuntu and from PowerShell terminate the distro so supplementary groups are reloaded:
+
+```powershell
+wsl --terminate Ubuntu-24.04
+```
+
+Restart Docker Desktop if required, verify `Ubuntu-24.04` remains enabled under **Settings → Resources → WSL Integration**, then reopen Ubuntu.
+
+Verify the group membership:
+
+```bash
+groups
+```
+
+Expected to include:
+
+```text
+docker
+```
+
+Do **not** install a second Docker Engine in Ubuntu and do not use permanent `sudo docker ...` as a workaround for a broken Desktop integration.
+
+Membership of the `docker` group provides high privilege over the local Docker daemon and is intentional only for trusted developer accounts on the workstation.
+
+### Integration reset case
+
+After terminating the distro, the first workstation temporarily reported that `docker` could not be found. Docker Desktop's WSL integration was reset by toggling:
+
+```text
+Ubuntu-24.04 OFF
+Apply
+Ubuntu-24.04 ON
+Apply & Restart
+```
+
+After reopening Ubuntu, the CLI and daemon were available correctly.
+
+## 15. Docker end-to-end smoke test
+
+Run without `sudo`:
+
+```bash
+docker run --rm hello-world
+```
+
+A valid PASS proves that the WSL CLI can:
+
+1. contact the Docker Desktop daemon;
+2. pull an image from Docker Hub;
+3. create/run a Linux amd64 container;
+4. receive the container output;
+5. remove the test container after exit.
+
+The first workstation produced:
+
+```text
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
+
+Therefore the workstation checkpoint is:
+
+```text
+Docker Desktop                  PASS
+Docker Desktop WSL2 backend     PASS
+Ubuntu-24.04 integration        PASS
+Docker CLI from Ubuntu          PASS
+Docker Compose                  PASS
+Docker daemon access no sudo    PASS
+linux/x86_64 container engine   PASS
+Docker Hub pull                 PASS
+hello-world container           PASS
+```
+
+## 16. PostgreSQL posture
+
+PostgreSQL server is **container-only** for the DANTE LOCAL baseline.
+
+Do not install a second PostgreSQL server on Windows or directly into Ubuntu.
 
 A Windows GUI such as PyCharm Database Tools or pgAdmin may later connect to the container over the published local port; the GUI is not the database server.
 
-## 13. Current verified checkpoint
+Still not created at this checkpoint:
+
+```text
+PostgreSQL 18.4 LOCAL container               NOT CREATED
+DANTE-owned PostgreSQL image                  NOT CREATED
+selected extension envelope verification      NOT RUN
+backend application scaffold                  NOT CREATED
+backend virtual environment                   NOT CREATED
+```
+
+## 17. Current verified checkpoint
 
 As of the first workstation bootstrap:
 
@@ -430,7 +598,6 @@ As of the first workstation bootstrap:
 Repository                         MattiaRubino/dante
 Working branch                     feature/backend-scaffold
 Workspace                          /home/mattia/projects/dante
-Git working tree                   clean at branch creation/checkpoint
 
 WSL                                PASS
 WSL2                               PASS
@@ -443,18 +610,25 @@ uv                                 PASS
 Python 3.14.7                      PASS
 Linux x86_64 interpreter           PASS
 
-Docker Desktop                     NEXT
-Docker WSL integration             NOT VERIFIED
+Docker Desktop                     PASS
+Docker WSL2 backend                PASS
+Ubuntu-24.04 Docker integration    PASS
+Docker CLI                         PASS
+Docker Compose                     PASS
+Docker daemon access               PASS
+Docker hello-world                 PASS
+Docker data location on D:         VERIFY SEPARATELY
+
 PostgreSQL LOCAL                   NOT STARTED
 backend scaffold files             NOT CREATED BY THIS CHECKPOINT
 ```
 
-## 14. Resume rule
+## 18. Resume rule
 
 When continuing on a new machine or after interruption:
 
 1. identify the first section whose verification is not PASS;
 2. re-run the verification command for the immediately preceding PASS boundary;
 3. continue from there;
-4. never infer Docker/database/backend-scaffold PASS from workstation bootstrap alone;
+4. never infer Docker/database/backend-scaffold PASS from an earlier workstation step alone;
 5. before repository writes, follow the current exact Git write gate for the active branch/workstream.
