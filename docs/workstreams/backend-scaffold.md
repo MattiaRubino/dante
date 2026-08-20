@@ -1,6 +1,6 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / DIRECT QA PASS / CP4 NEXT**
+- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / DIRECT QA PASS / CP4 DESIGN CLOSED / MATERIALIZATION NEXT**
 - Branch: `feature/backend-scaffold`
 - Decision baseline PRE-SCOPE: `9f7c21857cf7a9c7300053370954c4b93f9bd96a`
 - CP1 closure implementation HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
@@ -8,6 +8,7 @@
 - CP3 original materialization PRE-SCOPE: `a09936d168de48909d948425387b168d016911e8`
 - CP3 lock materialization HEAD: `17c00d2ac24d2efecfc52f7fa5f707f5b15c36cd`
 - CP3 implementation/direct-QA HEAD: `35cf6440bc121a38342f6bbee72e210435a788a4`
+- CP4 design PRE-SCOPE: `495e484c6ac729f24dc43dc2dbba8cc4d359a568`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
@@ -15,6 +16,7 @@
 - Detailed CP1 contract: `docs/development/backend-cp1-contract.md`
 - Detailed CP2 contract: `docs/development/backend-cp2-postgres-contract.md`
 - Detailed CP3 contract: `docs/development/backend-cp3-persistence-contract.md`
+- Detailed CP4 contract: `docs/development/backend-cp4-ci-contract.md`
 
 ## 1. Purpose
 
@@ -41,7 +43,7 @@ CP3 persistence + migrations + real PostgreSQL harness
         CLOSED / DIRECT QA PASS
           ↓
 CP4 quality / CI enforcement
-        NEXT
+        DESIGN CLOSED / MATERIALIZATION NEXT
           ↓
 CP5 scaffold QA / closure
           ↓
@@ -158,6 +160,17 @@ backend CI workflows                   NOT CREATED
 concrete business schema               NOT STARTED
 ```
 
+CP4 design is now closed under its durable contract, but no CI implementation PASS is claimed:
+
+```text
+CP4 contract                           CREATED / REMOTE
+Backend CI workflow                    NOT CREATED
+Dependency Review workflow             NOT CREATED
+Dependabot config                      NOT CREATED
+required status checks                 0 / unchanged
+CodeQL post-main activation            DEFERRED / NOT RUN
+```
+
 ## 4. Execution strategy
 
 Do not create the complete scaffold in one undifferentiated write.
@@ -171,7 +184,7 @@ CP2  reproducible LOCAL PostgreSQL infrastructure                CLOSED / DIRECT
  ↓
 CP3  persistence + migration + real-PostgreSQL harness           CLOSED / DIRECT QA PASS
  ↓
-CP4  repository quality/CI enforcement once real checks exist    NEXT
+CP4  repository quality/CI enforcement                           DESIGN CLOSED / MATERIALIZATION NEXT
  ↓
 CP5  full scaffold QA + closure/handoff
 ```
@@ -541,26 +554,95 @@ The 97.42% coverage figure is run evidence, not a permanent arbitrary project th
 
 CP3 therefore does not claim a bounded wall-clock readiness result for a frozen/blackholed peer. That stronger scenario remains a separate hardening item; it is not hidden by the accepted stop/start outage test.
 
-## 8. CP4 — Quality, architecture and CI enforcement
+## 8. CP4 — Quality and CI enforcement — DESIGN CLOSED / MATERIALIZATION NEXT
 
-CI is introduced after the commands it runs are real and stable.
+### Detailed authority
 
-Expected classes as applicable:
+The complete accepted CP4 design, security posture, materialization sequence and direct acceptance matrix live in:
 
-- frozen/locked dependency bootstrap;
-- Ruff format check/lint;
-- mypy strict;
-- pytest backend tests;
-- architecture dependency checks once a meaningful package graph exists;
-- real PostgreSQL integration/migration checks;
-- repository text/line-ending normalization required by the scaffold;
-- GitHub Actions with explicit least-privilege permissions;
-- third-party and, where practical, official Actions pinned to immutable full SHAs;
-- no deployment/PROD identity in ordinary PR validation.
+`docs/development/backend-cp4-ci-contract.md`
 
-No GitHub check becomes required on protected `main` until its real emitted context has run remotely, its name is stable and a deliberate failure is confirmed to block the merge correctly.
+Do not reconstruct CP4 from conversation history when that contract exists.
 
-CodeQL/dependency/security automation activates only when the corresponding real source/manifest/capability exists and current GitHub support is verified.
+### Frozen architecture
+
+```text
+Backend CI
+├── Backend Quality
+├── Backend PostgreSQL
+└── Backend CI Gate
+    ├── always executes after mandatory upstream jobs resolve
+    └── PASS iff every mandatory upstream result == success
+
+Dependency Review
+└── separate repository-wide workflow/check candidate
+```
+
+CP4 intentionally begins with **zero required checks**. A check may become required only after real remote calibration proves its emitted identity and failure semantics.
+
+Key frozen rules:
+
+- GitHub-hosted `ubuntu-24.04` runner initially;
+- workflow-level `paths` filtering is not used on future required workflows;
+- `pull_request` to `main`, `push` to `main` and manual execution for Backend CI;
+- superseded PR validation may be cancelled; accepted-main validation is not cancelled merely because a newer main commit exists;
+- workflow token permissions default to none and are granted minimally per job;
+- checkout jobs receive only `contents: read` and disable persisted checkout credentials;
+- ordinary PR CI receives no PROD/deployment identity or secrets;
+- `pull_request_target` is not used for normal validation;
+- Actions are pinned by immutable full-length commit SHA;
+- Python authority remains `apps/backend/.python-version` (`3.14.7`);
+- one exact uv `required-version` will be materialized under `apps/backend/pyproject.toml` only after direct workstation/version verification;
+- setup-uv must explicitly discover `apps/backend` and preserve workstation/CI uv parity;
+- selected uv binary checksum verification must remain enabled/proven;
+- every material job receives a finite timeout;
+- real CP2 PostgreSQL image + CP3 PostgreSQL acceptance run remotely;
+- no SQLite substitution;
+- no arbitrary coverage threshold;
+- architecture-linter dependency remains deferred until a meaningful package graph exists;
+- Dependabot `uv` + `github-actions` support is eligible for materialization after current support is revalidated;
+- CodeQL default setup activates only after backend source is integrated into current `main` and then receives its own direct evidence.
+
+### Required-check calibration protocol
+
+Neither `Backend CI Gate` nor `Dependency Review` is made required merely because YAML exists.
+
+Required sequence:
+
+```text
+materialize workflow
+→ real PR green
+→ inspect exact emitted context/source
+→ deliberate red
+→ prove intended candidate becomes red
+→ recovery green
+→ reconcile/reverify current main
+→ separate repository-setting/ruleset gate
+→ apply only proven required contexts
+→ reread effective protection
+```
+
+For `Backend CI Gate`, any mandatory upstream result other than `success` is a gate failure, including skipped/cancelled states.
+
+For `Dependency Review`, DANTE must directly prove evaluation of a real dependency-policy violation and verify that an `uv.lock` dependency delta is actually visible/evaluated before promoting that check.
+
+### Current CP4 state
+
+```text
+CP4 design contract                      CLOSED / REMOTE
+Backend CI YAML                          NOT CREATED
+Dependency Review YAML                   NOT CREATED
+Dependabot config                        NOT CREATED
+pyproject uv required-version             NOT MATERIALIZED
+canonical uv exact version evidence       NOT YET RECORDED FOR CP4
+remote workflow green/red calibration     NOT RUN
+required checks                           0 / unchanged
+repository full-SHA enforcement           NOT APPLIED / VERIFY SUPPORT LATER
+CodeQL post-main default setup            NOT RUN
+CP4 direct QA                             NOT YET EARNED
+```
+
+The backend branch was 28 commits behind current `main` at CP4 design time. This design-only write deliberately did not merge `main` because `.github` had no competing workflow and `docs/PROJECT-STATUS.md` was intentionally untouched. Before the calibration PR, required-check promotion or global/current-truth documentation write, current `main` must be re-read and reconciled semantically.
 
 ## 9. CP5 — Scaffold QA and closure
 
@@ -608,24 +690,28 @@ Until explicitly reopened by a later boundary, do not add:
 
 ## 11. Exact resume point for the next chat
 
-A new conversation must not redesign Engineering Foundation, repeat CP1/CP2 work, redesign CP3-01..CP3-06 or jump directly into concrete PostgreSQL business schema mapping.
+A new conversation must not redesign Engineering Foundation, repeat CP1/CP2 work, redesign CP3-01..CP3-06, reopen the closed CP4 design without contradictory evidence or jump directly into concrete PostgreSQL business schema mapping.
 
 Resume in this exact order:
 
 ```text
-1. Read current project truth, this handoff and backend-cp3-persistence-contract.md.
+1. Read current project truth, this handoff, backend-cp3-persistence-contract.md and backend-cp4-ci-contract.md.
 2. Verify feature/backend-scaffold, remote/local HEAD and clean tree.
 3. Treat CP1, CP2 and CP3 as CLOSED / DIRECT QA PASS.
-4. Preserve CP3 implementation/direct-QA HEAD 35cf6440bc121a38342f6bbee72e210435a788a4 as executable closure evidence.
-5. Begin CP4 quality/architecture/CI enforcement as a new bounded checkpoint.
-6. First inspect the real repository checks/workflows/protected-main state and current GitHub support before selecting CP4 writes.
-7. Define the CP4 command/check matrix only from commands already proven real and stable.
-8. Open a new exact Git write gate before any CP4 mutation.
-9. Do not make a GitHub check required until its real remote context has emitted, its name is stable and a deliberate failure is confirmed to block correctly.
-10. After CP4 direct QA, proceed to CP5 full scaffold QA/closure.
-11. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
+4. Treat CP4 design as CLOSED; do not repeat broad CI research by default.
+5. Begin CP4-M1 read-only evidence collection: canonical workstation uv exact version, current selected Action release/full-SHA/checksum support and finite initial timeout inputs.
+6. Revalidate current GitHub support for Dependency Review/Dependabot uv and repository full-SHA enforcement immediately before materialization.
+7. Open a new exact Git write gate for CP4-M2 before creating workflow/config/pyproject changes.
+8. Materialize only the accepted Backend CI, Dependency Review, exact uv-version authority and supported Dependabot surface.
+9. Run local non-mutating checks and remote exact-delta/readback QA.
+10. Reconcile current main before the real calibration PR; preserve newer frontend/global truth.
+11. Run real PR green → deliberate red → recovery green calibration and record exact emitted check contexts/sources.
+12. Only after calibration propose a separate repository-setting/ruleset gate for required checks/full-SHA enforcement that is actually supported.
+13. Record CP4 CLOSED / DIRECT QA PASS only after the contract acceptance matrix is truthfully satisfied or an item is explicitly deferred as unsupported/out of boundary.
+14. Then proceed to CP5 full scaffold QA/closure.
+15. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
 ```
 
 ### Immediate next action
 
-**Begin CP4 read-only inspection/design. Do not create CI workflows or change protected-main requirements until the CP4 gate is explicitly approved.**
+**Begin CP4-M1 read-only evidence collection. Do not create CI YAML, Dependabot configuration, change `apps/backend/pyproject.toml`, reconcile `main` or mutate repository protection/settings until the next exact gate is explicitly approved.**
