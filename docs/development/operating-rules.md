@@ -64,7 +64,7 @@ GitHub Actions / protected main / supply-chain hardening
 LOCAL → DEV → UAT → PROD environments, not branches
 ```
 
-Frontend Engineering Foundation on `feature/frontend-foundation` is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**. Its branch-local specifications/ADRs/final-review evidence are newer workstream truth until protected-main integration. Direct implementation validation remains **NOT RUN**.
+Frontend Engineering Foundation is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / INTEGRATED VIA PR #22**. Its specifications/ADRs/final-review evidence are current `main` authority. The former `feature/frontend-foundation` branch was merged and auto-deleted. Direct implementation validation remains **NOT RUN**.
 
 Backend cloud compute/IaC remains deferred to first real remote infrastructure boundary.
 
@@ -75,17 +75,15 @@ Production implementation remains in the current repository. Do not create a new
 Frontend sequence:
 
 ```text
-prepare protected-main integration
-→ PR only with explicit authorization
-→ merge only with explicit authorization + expected-head safety
-→ post-merge main readback
-→ fresh exact materialization/scaffold scope
+fresh exact materialization/scaffold scope
+→ materialize only accepted real workspace/app/package artifacts
 → execute direct frontend validations progressively
+→ open product-surface implementation only when relevant foundation/contracts exist
 ```
 
 Backend production scaffold remains a separate **NOT STARTED** implementation scope and requires its own fresh gate.
 
-Repository rename history/governance is not an implicit prerequisite for frontend integration/materialization and must not be reintroduced as a blocking pseudo-phase.
+Repository rename history/governance is not an implicit prerequisite for frontend materialization and must not be reintroduced as a blocking pseudo-phase.
 
 ## 5. No silent scope expansion
 
@@ -299,17 +297,17 @@ Introduce mechanisms only when scale/ownership/security/product requirements cre
 
 ## 18. Current continuation instruction
 
-A new chat must first read current `main`, current global status and any pending-integration workstream handoff.
+A new chat must first read current `main`, current global status and any active bounded workstream handoff.
 
-While `feature/frontend-foundation` is pending integration:
+Frontend Foundation is integrated through PR #22. Do not restart stack/architecture selection without concrete contradictory evidence or a materially changed requirement.
+
+Current frontend continuation:
 
 ```text
-verify branch relation
-→ read frontend-foundation closure handoff + both frontend specs + final review + ADR-008/009
-→ do not restart stack/architecture selection
-→ perform PR/integration work only with explicit authorization and exact scope
+read integrated frontend Foundation specs + ADR-008/009 + closure evidence
+→ verify current main/root/manifests/workflows before writes
+→ open fresh bounded production materialization/scaffold/direct-validation scope
+→ materialize and validate progressively
 ```
 
-After Frontend Foundation integrates, the next frontend scope is a fresh bounded production materialization/scaffold + direct-validation workstream.
-
-Backend production scaffold remains separate and not implicitly authorized by frontend closure.
+Backend production scaffold remains separate and not implicitly authorized by frontend closure/integration.
