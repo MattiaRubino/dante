@@ -56,3 +56,17 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `CHANGED` frontend workflow so touched durable behavior is expected to carry production-shaped contracts before `apps/web` migration.
 - `NO_CHANGE` accepted Home visual build remains B1; B2 responsive defect remains open.
 - `NO_CHANGE` no production framework/package versions, backend endpoints, database schema or auth transport strategy are selected by this scope.
+
+## 2026-08-20 — B2 Central Stage v21 responsive working baseline
+
+- `ADDED` user-reviewed B2 v21 responsive checkpoint and deterministic full/partial delta archive from the saved v16 artifacts.
+- `CHANGED` current B2 working oracle from v16 to v21 after resize hardening.
+- `BEHAVIOR_CHANGED` central-stage rendering now follows real stage geometry during window/parent reflow rather than relying only on early global resize timing.
+- `CHANGED` Continuity spacing can adapt enough to keep the five-sphere desktop target inside the narrow critical stage state.
+- `CHANGED` Signal track remains centered and constrained to its intended inner stage footprint with a maximum of three complete visible items.
+- `RENAMED` stable B2 projection vocabulary to technical IDs `home.stage.continuity` / `home.stage.signals` with locked visible names `Mondi` / `Segnali`; historical `Worlds` / `Stats` vocabulary is deprecated, not erased from history.
+- `QA` user review accepted v21 as the current working visual/behavior baseline; static evidence reports zero duplicate IDs and zero inline-JS syntax failures.
+- `QA_LIMIT` a fresh automated browser PASS for every one of the 24 matrix cases is not claimed in this write; the matrix remains the executable target for final QA.
+- `OPEN` persistent/add affordance for full Mondi/Segnali/future projections remains undecided.
+- `OPEN` DANTE logo/name alignment, palette review and background/atmosphere remain the next visual scope.
+- `NO_CHANGE` no backend endpoint/schema, Domain model or production-framework selection is introduced.
