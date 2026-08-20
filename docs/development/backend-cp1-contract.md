@@ -1,13 +1,14 @@
 # Backend CP1 Technical Contract
 
-- Status: **APPROVED DESIGN / IMPLEMENTATION NOT STARTED**
+- Status: **ACTIVE IMPLEMENTATION / DIRECT QA IN PROGRESS**
 - Workstream: `docs/workstreams/backend-scaffold.md`
 - Branch: `feature/backend-scaffold`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
-- Contract checkpoint: **CP1-01 + CP1-02 + CP1-03 APPROVED**
-- Version/source verification date: **2026-08-19**
-- Implementation authority: **NO CP1 FILE WRITE IS AUTHORIZED BY THIS DOCUMENT ALONE**
+- Contract checkpoint: **CP1-01 + CP1-02 + CP1-03 APPROVED / IMPLEMENTATION EVIDENCE ACTIVE**
+- Version/source verification baseline: **2026-08-19**
+- First direct implementation evidence: **2026-08-20**
+- Implementation authority: **EVERY FURTHER WRITE STILL REQUIRES ITS OWN EXACT GATE**
 
 ## 1. Purpose
 
@@ -30,6 +31,7 @@ It exists so a future developer, reviewer or conversation can answer, without re
 - which lint/type/test/coverage policies are enforced;
 - which commands must work;
 - which tests must exist before CP1 can pass;
+- what implementation findings changed an earlier design assumption;
 - what is deliberately deferred and at which trigger it returns.
 
 The Engineering Foundation remains the parent architecture authority. This file specializes that accepted baseline for CP1; it does not reopen Domain, Logical or Physical design.
@@ -104,7 +106,7 @@ apps/backend/
     └── test_settings.py
 ```
 
-The exact implementation write gate is still required before these files are created.
+This tree has now been materialized except that `uv.lock` is still only generated locally and must not be called committed until its dedicated CP1-B write is completed and remotely verified.
 
 ## 4. CP1-01 — dependency and version contract
 
@@ -114,7 +116,7 @@ The exact implementation write gate is still required before these files are cre
 SUPPORTED PYTHON LINE    3.14.x
 INITIAL EXACT PIN        3.14.7
 PROJECT MANAGER          uv
-LOCKFILE                 apps/backend/uv.lock — COMMITTED
+LOCKFILE                 apps/backend/uv.lock — REQUIRED TO BE COMMITTED
 ```
 
 `apps/backend/.python-version` records `3.14.7`.
@@ -164,13 +166,13 @@ Responsibilities:
 | Dependency | Why it is direct | CP1 role |
 |---|---|---|
 | `fastapi` | DANTE imports and constructs the inbound HTTP/process host directly | application factory + technical health routes |
-| `pydantic` | DANTE uses Pydantic validation primitives directly in the settings boundary | validation/cross-field rules |
+| `pydantic` | DANTE uses Pydantic validation primitives directly in the settings boundary | validation/cross-field rules + mypy integration plugin |
 | `pydantic-settings` | accepted Foundation configuration boundary | process-environment → typed immutable settings |
 | `uvicorn[standard]` | accepted ASGI server for local process execution; `standard` provides the normal optimized/reload extras where supported | actual LOCAL server + reload workflow |
 
 Do **not** use `fastapi[standard]` in CP1. The FastAPI standard bundle includes optional capabilities not currently exercised by DANTE, including template/form/email/CLI/cloud-related surface. CP1 keeps direct dependencies explicit and bounded to real responsibilities.
 
-`uvicorn[standard]` is accepted because the server itself is exercised immediately and its standard extras include the supported file-watching/performance dependencies. Python 3.14 compatibility of relevant Linux extras such as `uvloop`/`watchfiles` was checked during the CP1 research boundary and is still validated by the actual `uv` resolution on the DANTE workstation.
+`uvicorn[standard]` is accepted because the server itself is exercised immediately and its standard extras include the supported file-watching/performance dependencies. Python 3.14 compatibility of relevant Linux extras such as `uvloop`/`watchfiles` was checked during the CP1 research boundary and is also exercised by the actual `uv` resolution on the DANTE workstation.
 
 ### 4.4 Quality dependencies
 
@@ -182,14 +184,23 @@ quality = [
 ]
 ```
 
-Important research correction frozen here:
+The 2026-08-19 research snapshot observed:
 
 ```text
-Ruff verified stable on 2026-08-19     0.16.2
-mypy verified stable on 2026-08-19     2.3.0
+Ruff stable observed              0.16.2
+mypy stable observed              2.3.0
 ```
 
-Do not use nonexistent/unverified floors such as `ruff>=0.16.3` or `mypy>=2.3.1` merely because they appeared in an earlier transient discussion. Future higher versions may of course be adopted through the normal explicit upgrade workflow after they actually exist and are reviewed.
+The real `uv` resolution on 2026-08-20 then selected later patch releases that still satisfy the approved ranges:
+
+```text
+Ruff resolved                     0.16.3
+mypy resolved                     2.3.1
+```
+
+Official package metadata was rechecked after this resolution and those patch releases were confirmed as real stable releases compatible with the Python 3.14 line. Therefore the earlier transient statement that `ruff 0.16.3` / `mypy 2.3.1` were nonexistent or unverified is superseded by direct implementation evidence.
+
+The manifest floors remain `>=0.16.2` and `>=2.3.0`: they describe the accepted compatibility envelope, while the lockfile records the exact resolved graph. Do not raise lower bounds merely because a later patch was selected unless DANTE actually requires behavior introduced by that patch.
 
 ### 4.5 Test dependencies
 
@@ -250,6 +261,24 @@ Alembic
 They remain selected by Engineering Foundation and return at CP3, after CP2 has produced a directly working DANTE PostgreSQL environment.
 
 Their exact current versions are reverified at CP3. Avoid carrying unused persistence dependencies through CP1 merely because they are known future choices.
+
+### 4.9 First real resolved direct graph — 2026-08-20
+
+`uv lock` on the canonical WSL/Linux workstation using CPython 3.14.7 resolved 38 packages. The direct project dependencies/groups resolved as:
+
+```text
+fastapi             0.141.1
+pydantic            2.13.4
+pydantic-settings   2.15.0
+uvicorn             0.52.4
+httpx               0.28.1
+mypy                2.3.1
+pytest              9.1.1
+pytest-cov          7.1.0
+ruff                0.16.3
+```
+
+This is **local resolver evidence**, not yet remote lockfile evidence until `apps/backend/uv.lock` is committed and read back from GitHub.
 
 ## 5. CP1-02 — package/build metadata contract
 
@@ -346,7 +375,7 @@ build-backend = "uv_build"
 module-name = "dante"
 ```
 
-This is the approved design target. `uv` still performs the real resolution and generates the authoritative lockfile during implementation.
+This is the approved design target. `uv` performs the real resolution and generates the authoritative lockfile during implementation.
 
 ## 6. Ruff contract
 
@@ -443,12 +472,33 @@ TC/type-checking import movement before the concrete Pydantic/SQLAlchemy graph e
 
 Mypy owns the primary static typing policy. Ruff complements it instead of duplicating every annotation rule.
 
+### 6.4 Direct Ruff implementation findings — 2026-08-20
+
+The first direct LOCAL run produced two narrow findings:
+
+1. `ruff format --check .` requested one formatting-only rewrite in `tests/test_settings.py` for the `.env.local` fixture string;
+2. `ruff check .` then reported three `RUF043` findings because regex metacharacters in `pytest.raises(..., match=...)` were not marked as raw strings.
+
+The fixes were intentionally narrow:
+
+- accept Ruff's deterministic formatter output;
+- change the three regex strings to raw regex literals;
+- no test semantics or production behavior changed.
+
+After those fixes:
+
+```text
+uv run ruff format --check .    PASS — 9 files already formatted
+uv run ruff check .             PASS — All checks passed
+```
+
 ## 7. mypy contract
 
-Approved baseline:
+Approved implementation baseline after direct CP1 evidence:
 
 ```toml
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 python_version = "3.14"
 strict = true
 warn_unreachable = true
@@ -463,26 +513,84 @@ enable_error_code = [
     "explicit-override",
     "exhaustive-match",
 ]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 ```
 
 Rationale:
 
-- `strict` is the global baseline; do not weaken it globally to accommodate one adapter/library;
+- `strict` remains the global baseline; it was **not** weakened to accommodate Pydantic;
 - `warn_unreachable` surfaces impossible/dead branches;
 - error codes make narrow exceptions auditable;
 - `explicit-override` requires deliberate override intent as inheritance appears;
 - `exhaustive-match` is valuable for DANTE's closed enums/state families and prevents silent omission of newly introduced cases;
-- tests are type-checked too.
+- tests are type-checked too;
+- the Pydantic plugin is used because DANTE intentionally relies on `BaseSettings` fields being satisfiable from the process environment rather than only explicit constructor arguments.
 
-### Pydantic mypy plugin
+### 7.1 Pydantic mypy plugin — evidence-driven decision change
 
-```text
-CP1 DEFAULT    OFF
+The original CP1 design deliberately started with the plugin **OFF** to avoid adopting framework-specific type-checker behavior without evidence.
+
+The first real strict-mypy run on 2026-08-20 produced **21 `call-arg` errors** in two files. Every error was the same semantic mismatch: plain mypy treated `env`, `release_sha` and `build_id` as required explicit constructor arguments and therefore rejected valid `Settings()` calls even though `BaseSettings` intentionally sources those values from the process environment.
+
+A temporary, non-repository mypy configuration then enabled:
+
+```toml
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 ```
 
-Pydantic supports ordinary mypy usage without the plugin. Start with standard mypy strict behavior. Introduce `pydantic.mypy` only if direct CP1/next-scope evidence shows a concrete benefit that outweighs plugin-specific coupling.
+Result:
 
-A third-party typing weakness is handled with the narrowest justified adapter/path exception, never by lowering global strictness.
+```text
+initial plain strict mypy        21 errors
+strict mypy + pydantic plugin     1 error
+```
+
+The remaining error was not a production typing defect. It was the deliberate negative runtime test:
+
+```python
+settings.debug = True
+```
+
+The plugin correctly understood that frozen `Settings.debug` is read-only and rejected the assignment statically. The test must nevertheless perform that invalid assignment to prove Pydantic also rejects mutation **at runtime**.
+
+Therefore CP1 permanently changes posture to:
+
+```text
+PYDANTIC MYPY PLUGIN       ENABLED
+GLOBAL MYPY STRICTNESS     PRESERVED
+SETTINGS FROZEN            PRESERVED
+RUNTIME IMMUTABILITY TEST  PRESERVED
+BROAD TYPE IGNORES         FORBIDDEN
+```
+
+The one intentional negative-test line uses the narrow suppression:
+
+```python
+settings.debug = True  # type: ignore[misc]  # deliberate runtime immutability probe
+```
+
+This is accepted because:
+
+- it suppresses exactly the diagnostic that proves the static model is working;
+- it exists only so the runtime rejection path can be exercised;
+- it does not hide a production-code typing defect;
+- the reason is documented inline and here;
+- if the diagnostic code or test purpose changes, mypy's unused-ignore behavior under strict mode helps surface stale suppression.
+
+A third-party/framework typing weakness is handled with the narrowest justified integration or exception, never by lowering global strictness.
+
+### 7.2 Current mypy evidence state
+
+After the repository configuration update, **canonical `uv run mypy` must be rerun on the real WSL checkout before CP1 can earn PASS**. The temporary-config experiment proves the selected fix, but it is not a substitute for the post-pull canonical command.
 
 ## 8. pytest and coverage contract
 
@@ -707,7 +815,7 @@ class Settings(BaseSettings):
     )
 ```
 
-The implementation may use narrow validators/types to trim/reject blank identity strings and enforce cross-field invariants. It must preserve the external variable names and semantics frozen above.
+The implementation uses narrow string constraints/validators to trim/reject blank identity strings and enforce cross-field invariants while preserving the external variable names and semantics frozen above.
 
 Canonical external spelling is uppercase `DANTE_*`, as documented in `.env.example` and backend README.
 
@@ -830,7 +938,7 @@ Why this separation matters:
 - test configuration can be injected explicitly;
 - the same Settings model consumes the process environment regardless of source.
 
-A CP1 test must directly prove that `Settings()` does not automatically discover/read `.env.local`.
+A CP1 test directly proves that `Settings()` does not automatically discover/read `.env.local`.
 
 ## 12. FastAPI application factory contract
 
@@ -1006,7 +1114,7 @@ Uvicorn host/port can remain its defaults initially. If a developer needs a diff
 
 ## 17. CP1 standard commands
 
-The backend README must document these once implementation exists.
+The backend README documents these once implementation exists.
 
 From `apps/backend`:
 
@@ -1066,6 +1174,8 @@ settings mutation after bootstrap                       REJECT
 
 Use pytest's environment-isolation facilities such as `monkeypatch`/temporary paths where appropriate; tests must not depend on the developer's actual shell environment.
 
+The runtime immutability test deliberately performs an assignment that the Pydantic mypy plugin correctly rejects statically. The single `# type: ignore[misc]` on that exact line exists only to permit the negative runtime probe; do not broaden it to the function/file/module.
+
 ### 18.2 `test_bootstrap.py`
 
 Must directly prove at least:
@@ -1099,21 +1209,56 @@ Do not add:
 Before CP1 is called PASS, execute directly on the real WSL/Linux workstation:
 
 ```text
-uv sync --locked                            PASS
-uv lock --check                             PASS
-Python resolved as 3.14.7                   PASS
-import installed `dante` package            PASS
-uv run ruff format --check .                PASS
-uv run ruff check .                         PASS
-uv run mypy                                 PASS
-uv run pytest                               PASS
-uv build                                    PASS
-actual Uvicorn factory process startup       PASS
-/health/live over HTTP                       PASS
-/health/ready over HTTP                      PASS
+uv sync --locked                            REQUIRED
+uv lock --check                             REQUIRED
+Python resolved as 3.14.7                   REQUIRED
+import installed `dante` package            REQUIRED
+uv run ruff format --check .                REQUIRED
+uv run ruff check .                         REQUIRED
+uv run mypy                                 REQUIRED
+uv run pytest                               REQUIRED
+uv build                                    REQUIRED
+actual Uvicorn factory process startup       REQUIRED
+/health/live over HTTP                       REQUIRED
+/health/ready over HTTP                      REQUIRED
 ```
 
-`PASS` here is earned only after execution; this document itself proves none of them.
+### 19.1 Direct evidence earned so far — 2026-08-20
+
+The following results were run on the real DANTE WSL/Linux checkout:
+
+```text
+uv lock
+Python 3.14.7 / 38 packages resolved         PASS
+
+uv lock --check                              PASS
+
+uv tree --locked --depth 1                    PASS
+exact direct versions recorded in §4.9
+
+uv sync --locked                              PASS
+created apps/backend/.venv
+installed dante-backend + 37 packages
+
+project runtime Python == 3.14.7              PASS
+project executable == apps/backend/.venv/...  PASS
+installed dante import from src/dante         PASS
+
+uv run ruff format --check .                  PASS after narrow formatter cleanup
+uv run ruff check .                           PASS after narrow RUF043 cleanup
+
+plain uv run mypy                             FAIL — 21 BaseSettings call-arg findings
+plugin experiment                             EXPECTED IMPROVEMENT — 1 deliberate frozen mutation finding
+canonical post-update uv run mypy             NOT YET RERUN
+
+uv run pytest                                 NOT YET RUN
+uv build                                      NOT YET RUN
+actual Uvicorn factory startup                NOT YET RUN
+/health/live over HTTP                        NOT YET RUN
+/health/ready over HTTP                       NOT YET RUN
+```
+
+Do not promote an experimental/temporary-config result to canonical PASS. `PASS` is earned only after the final repository configuration is pulled and the canonical command succeeds.
 
 ## 20. File responsibility map
 
@@ -1221,58 +1366,63 @@ A variable must not appear only in tribal knowledge/chat history.
 
 ## 23. Source-verification record
 
-Research was refreshed on **2026-08-19** before freezing this contract.
+Research was first refreshed on **2026-08-19** before freezing the design contract. Version-sensitive implementation evidence was refreshed again on **2026-08-20** when the real resolver selected newer patch releases.
 
 Primary/official sources used include:
 
 - uv build backend/config/dependency documentation: `https://docs.astral.sh/uv/`
 - FastAPI official documentation: `https://fastapi.tiangolo.com/`
 - Uvicorn official settings documentation: `https://www.uvicorn.org/settings/`
-- Pydantic/Pydantic Settings documentation: `https://docs.pydantic.dev/`
+- Pydantic/Pydantic Settings documentation, including the official mypy integration/plugin documentation: `https://docs.pydantic.dev/`
 - pytest official documentation: `https://docs.pytest.org/`
 - authoritative package release metadata on PyPI for FastAPI, Pydantic, pydantic-settings, Uvicorn, Ruff, mypy, pytest, pytest-cov, HTTPX and relevant Uvicorn extras.
 
-Release observations used to choose the manifest floor on that date:
+Initial release observations used to choose the manifest floors on 2026-08-19:
 
 ```text
-FastAPI stable                 0.141.1
-Pydantic stable                2.13.4
-pydantic-settings stable       2.15.0
-Uvicorn stable                 0.52.1
-Ruff stable                    0.16.2
-mypy stable                    2.3.0
-pytest stable                  9.1.1
-pytest-cov stable              7.1.0
-HTTPX stable                   0.28.1
+FastAPI stable observed         0.141.1
+Pydantic stable observed        2.13.4
+pydantic-settings observed      2.15.0
+Uvicorn stable observed         0.52.1
+Ruff stable observed            0.16.2
+mypy stable observed            2.3.0
+pytest stable observed          9.1.1
+pytest-cov stable observed      7.1.0
+HTTPX stable observed           0.28.1
 ```
 
-These observations explain the approved compatibility ranges. They are **not** a promise that those remain the latest versions forever. Once CP1 is implemented, the committed `uv.lock` becomes exact implementation evidence; future upgrades re-check current official release/migration information.
+Real resolver selections on 2026-08-20 are recorded in §4.9. Later patch selections inside the approved envelope do not invalidate the envelope; the committed lockfile becomes the exact reproducibility authority once CP1-B is complete.
 
 ## 24. Exact resume point
 
 A future conversation resuming CP1 must start here:
 
 ```text
-CP1-01 dependency/version policy     APPROVED
-CP1-02 pyproject/tooling design       APPROVED
-CP1-03 FastAPI/settings design        APPROVED
-CP1 implementation files              NOT CREATED
-CP1 direct QA                         NOT RUN
+CP1-01 dependency/version policy       APPROVED
+CP1-02 pyproject/tooling design         APPROVED
+CP1-03 FastAPI/settings design          APPROVED
+CP1-A implementation                    MATERIALIZED REMOTELY
+Ruff formatter/lint findings            REPAIRED / DIRECT PASS
+Pydantic mypy plugin finding            REPAIRED REMOTELY
+uv.lock                                 GENERATED LOCALLY / NOT YET COMMITTED
+CP1 direct QA                           IN PROGRESS
+PostgreSQL / CP2                        NOT STARTED
 ```
 
 Next sequence:
 
 ```text
-1. Read this document + `docs/workstreams/backend-scaffold.md`.
-2. Verify `feature/backend-scaffold`, remote/local HEAD and clean tree.
-3. Re-check only if version-sensitive evidence materially changed since 2026-08-19.
-4. Present the exact CP1 implementation Git write gate with every path.
-5. After explicit approval, create CP1 only.
-6. Generate `uv.lock` through uv; never hand-write it.
-7. Run all CP1 local direct acceptance commands.
-8. Prove exact remote delta/readback.
-9. Update CP1 status/documentation with actual resolved versions and evidence.
-10. Proceed to CP2 only after CP1 PASS.
+1. Pull the latest `feature/backend-scaffold` without losing the locally generated `uv.lock`.
+2. Verify the only local untracked/pending artifact remains `apps/backend/uv.lock`.
+3. Re-run `uv lock --check` after the pyproject mypy-plugin config update; the lock should remain semantically unchanged because no dependency was added.
+4. Re-run `uv run ruff format --check .` and `uv run ruff check .`.
+5. Run canonical `uv run mypy`; only a real zero-error result earns mypy PASS.
+6. Run `uv run pytest` and inspect coverage/warnings.
+7. Run `uv build`.
+8. Start the real Uvicorn factory with explicit LOCAL env injection and verify `/health/live` + `/health/ready` over HTTP.
+9. Open/execute the dedicated CP1-B gate for the locally generated `uv.lock`; never hand-write it.
+10. Prove exact remote delta/readback and then update CP1 status/evidence honestly.
+11. Proceed to CP2 only after every CP1 acceptance obligation is directly PASS.
 ```
 
 No PostgreSQL/schema/business implementation is authorized by this contract.
