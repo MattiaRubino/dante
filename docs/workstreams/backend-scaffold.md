@@ -1,12 +1,13 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING**
+- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / DIRECT QA PASS / CP4 NEXT**
 - Branch: `feature/backend-scaffold`
 - Decision baseline PRE-SCOPE: `9f7c21857cf7a9c7300053370954c4b93f9bd96a`
 - CP1 closure implementation HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
 - CP2 implementation/repair HEAD before closure docs: `2d79c89d78b9031a1fe4323bbdcdb4b359fa87d6`
 - CP3 original materialization PRE-SCOPE: `a09936d168de48909d948425387b168d016911e8`
 - CP3 lock materialization HEAD: `17c00d2ac24d2efecfc52f7fa5f707f5b15c36cd`
+- CP3 implementation/direct-QA HEAD: `35cf6440bc121a38342f6bbee72e210435a788a4`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
@@ -37,9 +38,10 @@ CP2 reproducible LOCAL PostgreSQL
         CLOSED / DIRECT QA PASS
           ↓
 CP3 persistence + migrations + real PostgreSQL harness
-        IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING
+        CLOSED / DIRECT QA PASS
           ↓
 CP4 quality / CI enforcement
+        NEXT
           ↓
 CP5 scaffold QA / closure
           ↓
@@ -139,15 +141,19 @@ fresh extension reinitialization       PASS
 Windows DBeaver connectivity           PASS
 ```
 
-CP3 is materially implemented but not yet directly validated:
+CP3 is materially implemented and directly validated:
 
 ```text
-SQLAlchemy/psycopg persistence         MATERIALIZED / DIRECT QA PENDING
-Alembic migration harness              MATERIALIZED / DIRECT QA PENDING
-real PostgreSQL integration harness    MATERIALIZED / DIRECT QA PENDING
-runtime/migrator application roles     MATERIALIZED / DIRECT QA PENDING
-CP3 transaction tests                  MATERIALIZED / DIRECT QA PENDING
-CP3 DB outage/recovery tests           MATERIALIZED / DIRECT QA PENDING
+SQLAlchemy/psycopg persistence         CLOSED / DIRECT QA PASS
+Alembic migration harness              CLOSED / DIRECT QA PASS
+real PostgreSQL integration harness    CLOSED / DIRECT QA PASS
+runtime/migrator application roles     CLOSED / DIRECT QA PASS
+CP3 transaction tests                  CLOSED / DIRECT QA PASS
+CP3 DB outage/recovery tests           CLOSED / DIRECT QA PASS
+PostgreSQL acceptance                  18/18 PASS
+full backend pytest                    50/50 PASS
+full-run coverage                      97.42% evidence only; not threshold
+uv build                               PASS
 backend CI workflows                   NOT CREATED
 concrete business schema               NOT STARTED
 ```
@@ -163,9 +169,9 @@ CP1  Python/backend process + typed config                       CLOSED / DIRECT
  ↓
 CP2  reproducible LOCAL PostgreSQL infrastructure                CLOSED / DIRECT QA PASS
  ↓
-CP3  persistence + migration + real-PostgreSQL harness           IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING
+CP3  persistence + migration + real-PostgreSQL harness           CLOSED / DIRECT QA PASS
  ↓
-CP4  repository quality/CI enforcement once real checks exist
+CP4  repository quality/CI enforcement once real checks exist    NEXT
  ↓
 CP5  full scaffold QA + closure/handoff
 ```
@@ -370,11 +376,11 @@ CP2                          CLOSED / DIRECT QA PASS
 
 CP2 does not imply application persistence, Alembic, privilege separation, Logical mapping, restore/PITR or Physical HG/PSV PASS.
 
-## 7. CP3 — Persistence, migrations and real PostgreSQL harness — ACTIVE / QA PENDING
+## 7. CP3 — Persistence, migrations and real PostgreSQL harness — CLOSED / DIRECT QA PASS
 
 ### Detailed authority
 
-The complete accepted CP3 design, materialized boundary and acceptance matrix live in:
+The complete accepted CP3 design, materialized boundary and closure evidence live in:
 
 `docs/development/backend-cp3-persistence-contract.md`
 
@@ -405,7 +411,7 @@ Key rules:
 - persistence adapters never commit implicitly;
 - no generic `Repository[T]` / generic Unit of Work;
 - liveness is process-only;
-- readiness performs a bounded real PostgreSQL probe;
+- readiness performs a bounded real PostgreSQL probe for the CP3 outage model;
 - no hidden SQL/transaction retry;
 - no long external/AI I/O while holding an unnecessary DB transaction.
 
@@ -461,46 +467,79 @@ This is intentionally stronger than using the ordinary LOCAL cluster because Pos
 
 The harness therefore proves the same DANTE image/envelope while keeping the ordinary LOCAL database and roles untouched.
 
-### CP3 current state
+The cluster readiness predicate uses `SHOW server_version_num = 180004`, avoiding package/distribution suffixes while retaining an exact PostgreSQL 18.4 assertion.
+
+Outage/recovery acceptance uses stop/start of the same disposable container. This closes live connections while preserving the database state needed to prove readiness recovery without restarting the backend process.
+
+### CP3 final state
 
 ```text
-CP3-01 stack/version design              CLOSED / MATERIALIZED
-CP3-02 connection/config/lifecycle       CLOSED / MATERIALIZED
-CP3-03 transaction architecture          CLOSED / MATERIALIZED
-CP3-04 Alembic/schema governance         CLOSED / MATERIALIZED
-CP3-05 PostgreSQL privileges             CLOSED / MATERIALIZED
-CP3-06 real PostgreSQL harness/matrix    CLOSED / MATERIALIZED
-CP3 uv.lock                              REMOTE / GENERATED BY uv
-CP3 direct QA                            NOT YET EARNED
+CP3-01 stack/version design              CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3-02 connection/config/lifecycle       CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3-03 transaction architecture          CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3-04 Alembic/schema governance         CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3-05 PostgreSQL privileges             CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3-06 real PostgreSQL harness/matrix    CLOSED / MATERIALIZED / DIRECT QA PASS
+CP3 uv.lock                              REMOTE / GENERATED BY uv / VERIFIED
+CP3 direct QA                            PASS
 ```
 
 No concrete Logical owner/table mapping is authorized by CP3. The technical probe objects created by tests exist only inside disposable acceptance databases and are not canonical schema.
 
-### Required next evidence
+### Direct closure evidence
 
-Before CP3 can close, directly execute and record:
+Implementation/direct-QA HEAD:
 
 ```text
-uv lock --check
-uv tree --locked --depth 1
-uv sync --locked
-ruff format --check
-ruff check
-mypy strict
-pytest -m "not postgres"
-pytest -m postgres
-full pytest
-uv build
-real migration base → head / head → base → head
-real privilege denials
-real commit/rollback/SAVEPOINT behavior
-stale pooled-connection recovery
-DB outage: live 200 / ready 503
-DB recovery: ready 200 without app restart
-remote exact-delta/readback
+35cf6440bc121a38342f6bbee72e210435a788a4
 ```
 
-If direct execution reveals defects, correct only the evidenced defects under a new exact Git gate. Do not weaken the acceptance matrix to make tests pass.
+Directly recorded on the canonical WSL/Docker workstation on 2026-08-20:
+
+```text
+uv lock --check                         PASS
+uv tree --locked --depth 1              PASS
+uv sync --locked                         PASS
+ruff format --check .                    PASS — 23 files already formatted
+ruff check .                             PASS
+mypy                                    PASS — 20 source files
+pytest -m "not postgres"                PASS — 32/32
+pytest -m postgres                       PASS — 18/18 in 15.61s
+full pytest                              PASS — 50/50 in 24.72s
+full-run coverage                        97.42% evidence only; not threshold
+uv build                                 PASS
+sdist + wheel                            PASS
+fresh DB → Alembic head                  PASS
+head → base → head                       PASS
+alembic check / no DANTE drift           PASS
+privilege allow/deny matrix              PASS
+runtime identity/search_path             PASS
+stale pooled-connection recovery         PASS
+real DB outage live 200 / ready 503      PASS
+DB recovery ready 200, no app restart    PASS
+commit / rollback / flush / SAVEPOINT    PASS
+```
+
+Remote exact-scope QA from the original CP3 PRE-SCOPE to the executable QA HEAD:
+
+```text
+PRE-SCOPE       a09936d168de48909d948425387b168d016911e8
+QA HEAD         35cf6440bc121a38342f6bbee72e210435a788a4
+ahead_by        45
+behind_by       0
+changed paths   27
+expected paths  27
+unexpected      0
+deleted         0
+```
+
+The 97.42% coverage figure is run evidence, not a permanent arbitrary project threshold.
+
+### Evidence-driven hardening finding
+
+`docker pause` was directly shown to represent a stronger frozen/blackholed-peer condition: TCP may remain open while PostgreSQL cannot respond, and driver cancellation/cleanup may exceed the Python-level readiness timeout.
+
+CP3 therefore does not claim a bounded wall-clock readiness result for a frozen/blackholed peer. That stronger scenario remains a separate hardening item; it is not hidden by the accepted stop/start outage test.
 
 ## 8. CP4 — Quality, architecture and CI enforcement
 
@@ -576,18 +615,17 @@ Resume in this exact order:
 ```text
 1. Read current project truth, this handoff and backend-cp3-persistence-contract.md.
 2. Verify feature/backend-scaffold, remote/local HEAD and clean tree.
-3. Treat CP1 and CP2 as CLOSED / DIRECT QA PASS.
-4. Treat CP3 design as CLOSED and implementation as MATERIALIZED; do not redesign it by default.
-5. Pull the current CP3 materialization to the canonical WSL workspace.
-6. Verify uv lock/sync and run Ruff format/lint + mypy + fast tests.
-7. Run the real PostgreSQL 18.4 acceptance suite using the disposable CP2-image cluster.
-8. Fix only direct evidence-backed defects under an exact correction gate.
-9. Run full pytest, uv build and remote exact-delta/readback QA.
-10. Record CP3 CLOSED / DIRECT QA PASS only after every required direct item passes.
-11. Proceed to CP4 only after CP3 PASS.
-12. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
+3. Treat CP1, CP2 and CP3 as CLOSED / DIRECT QA PASS.
+4. Preserve CP3 implementation/direct-QA HEAD 35cf6440bc121a38342f6bbee72e210435a788a4 as executable closure evidence.
+5. Begin CP4 quality/architecture/CI enforcement as a new bounded checkpoint.
+6. First inspect the real repository checks/workflows/protected-main state and current GitHub support before selecting CP4 writes.
+7. Define the CP4 command/check matrix only from commands already proven real and stable.
+8. Open a new exact Git write gate before any CP4 mutation.
+9. Do not make a GitHub check required until its real remote context has emitted, its name is stable and a deliberate failure is confirmed to block correctly.
+10. After CP4 direct QA, proceed to CP5 full scaffold QA/closure.
+11. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
 ```
 
 ### Immediate next action
 
-**Pull the current CP3 implementation and begin direct quality/acceptance execution. CP3 PASS is not yet earned.**
+**Begin CP4 read-only inspection/design. Do not create CI workflows or change protected-main requirements until the CP4 gate is explicitly approved.**
