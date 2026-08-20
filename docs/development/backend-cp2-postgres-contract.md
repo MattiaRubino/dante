@@ -1,13 +1,14 @@
 # Backend CP2 PostgreSQL Technical Contract
 
-- Status: **ACTIVE IMPLEMENTATION / DIRECT QA NOT YET EARNED**
+- Status: **CLOSED / DIRECT QA PASS**
 - Workstream: `docs/workstreams/backend-scaffold.md`
 - Branch: `feature/backend-scaffold`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Parent checkpoint: **CP1 CLOSED / DIRECT QA PASS**
-- CP2 design decisions: **APPROVED**
+- CP2 design decisions: **APPROVED / IMPLEMENTED / DIRECTLY VERIFIED**
 - Design/source verification date: **2026-08-20**
+- Direct closure date: **2026-08-20**
 - Implementation authority: **EVERY FURTHER WRITE STILL REQUIRES ITS OWN EXACT GATE**
 
 ## 1. Purpose
@@ -16,7 +17,7 @@ This document is the durable technical and acceptance contract for **CP2 — rep
 
 CP2 exists to prove a real PostgreSQL environment before DANTE adds application persistence code. It deliberately isolates database infrastructure from SQLAlchemy, psycopg, Alembic and Logical-to-physical schema work so failures can be attributed to the correct layer.
 
-CP2 does not earn PASS because files exist or a container starts. It closes only after direct Docker/PostgreSQL/capability/persistence/host-connectivity evidence succeeds on the canonical WSL/Docker Desktop workstation.
+CP2 did not earn PASS because files existed or a container started. It closed only after direct Docker/PostgreSQL/capability/persistence/host-connectivity evidence succeeded on the canonical WSL/Docker Desktop workstation.
 
 ## 2. Quality rule
 
@@ -69,7 +70,7 @@ cloud infrastructure
 CI database workflows
 ```
 
-Those boundaries return only after CP2 direct PASS.
+Those boundaries return only after CP2 direct PASS, under their own later checkpoint authority.
 
 ## 4. Decision 1 — DANTE-owned image strategy
 
@@ -119,6 +120,8 @@ This archive contains all released versions rather than only the current candida
 
 The image reuses the PostgreSQL Official Image PGDG signing key already present under `/usr/local/share/keyrings/postgres.gpg.asc`; it does not download a second trust root.
 
+The base image's final filesystem did not include the Debian `ca-certificates` package. CP2 therefore installs the Debian Trixie trust store before contacting the PGDG historical archive over HTTPS, verifies that the CA bundle exists, and preserves normal TLS certificate verification plus PGDG `signed-by` verification.
+
 The build verifies the installed package versions with `dpkg-query` and verifies that the PostGIS/vector extension control files exist.
 
 ### 4.3 Explicit non-strategies
@@ -130,7 +133,9 @@ CP2 does not:
 - use floating extension package versions;
 - run `apt upgrade`;
 - install a second PostgreSQL server;
-- add unselected extension bundles.
+- add unselected extension bundles;
+- disable TLS certificate verification;
+- allow unauthenticated APT packages.
 
 The objective is reproducible ownership of the DANTE database image without unnecessary supply-chain complexity.
 
@@ -160,11 +165,12 @@ Published host endpoint:
 
 The port is bound to loopback rather than all host interfaces.
 
-Expected consumers at CP2:
+Verified CP2 consumers:
 
 - WSL/Linux host tools;
-- DBeaver on Windows;
-- PyCharm Database Tools on Windows.
+- DBeaver on Windows.
+
+PyCharm Database Tools remains a supported equivalent host GUI path, but DBeaver supplied the direct CP2 Windows boundary evidence.
 
 A future Compose service would connect internally using `postgres:5432`; the backend remains direct-in-WSL during CP2.
 
@@ -202,7 +208,7 @@ The Compose secret mounts the password as:
 /run/secrets/postgres_password
 ```
 
-The real secret is never committed. It is generated with high-entropy random material under a restrictive local umask and must not be reused in DEV/UAT/PROD.
+The real secret is never committed. On the first workstation it was generated with high-entropy random material, created with mode `0600`, and directly verified as ignored by Git. It must not be reused in DEV/UAT/PROD.
 
 ### 5.4 Persistent data
 
@@ -238,6 +244,8 @@ Therefore:
 ```text
 RECREATE != RESET
 ```
+
+Both sides of this distinction were directly proven during CP2 closure.
 
 ### 5.5 Health
 
@@ -318,13 +326,13 @@ existing initialized volume
 
 Schema evolution is not implemented through edits to initdb scripts. Alembic/migration governance returns at CP3.
 
-If fresh initialization fails partway during CP2 development:
+If fresh initialization fails during future LOCAL setup:
 
 1. inspect the actual error;
 2. correct the cause through an authorized change;
-3. explicitly destroy the disposable LOCAL volume;
+3. explicitly destroy the disposable LOCAL volume when reset is intended;
 4. create a fresh cluster;
-5. rerun acceptance.
+5. rerun the applicable acceptance checks.
 
 No fake automatic rollback/resume layer is added around initdb.
 
@@ -344,7 +352,7 @@ Build:
 docker compose -f infra/compose/local.yaml build postgres
 ```
 
-First CP2 clean-build proof:
+Canonical clean-build proof:
 
 ```bash
 docker compose -f infra/compose/local.yaml build --no-cache postgres
@@ -370,31 +378,48 @@ docker compose -f infra/compose/local.yaml down --volumes
 
 The password must exist before Compose execution that consumes the secret definition.
 
-## 8. CP2 direct acceptance contract
+## 8. CP2 direct acceptance contract — SATISFIED
 
-CP2 remains **NOT PASS** until every applicable requirement below has direct evidence.
+CP2 remained **NOT PASS** until every applicable requirement below had direct evidence. All approved CP2 acceptance requirements were directly satisfied on 2026-08-20.
 
 ### 8.1 Repository/build evidence
 
 ```text
-exact authorized changed paths                         REQUIRED
-remote readback                                         REQUIRED
-Compose model parses                                   REQUIRED
-immutable base digest resolves                         REQUIRED
-clean/no-cache PostgreSQL image build                  REQUIRED
-installed PostGIS package exact                        REQUIRED
-installed pgvector package exact                       REQUIRED
+exact authorized changed paths                         PASS
+remote readback                                         PASS
+Compose model parses                                   PASS
+immutable base digest resolves                         PASS
+clean/no-cache PostgreSQL image build                  PASS
+installed PostGIS package exact                        PASS
+installed pgvector package exact                       PASS
+```
+
+Direct built-image evidence:
+
+```text
+PostgreSQL binary
+18.4 (Debian 18.4-1.pgdg13+1)
+
+postgresql-18-postgis-3
+3.6.4+dfsg-2.pgdg13+1
+
+postgresql-18-pgvector
+0.8.6-1.pgdg13+1
+
+PostGIS/vector extension control files
+PASS
 ```
 
 ### 8.2 Fresh-cluster evidence
 
-Start from no `postgres-data` volume and prove:
+The first accepted bootstrap started with the Compose named volume absent and directly proved:
 
 ```text
-container/service starts                               REQUIRED
-Compose health becomes healthy                         REQUIRED
-fresh initdb completes                                 REQUIRED
-010-extensions.sql completes                           REQUIRED
+container/service starts                               PASS
+Compose health becomes healthy                         PASS
+fresh initdb completes                                 PASS
+010-extensions.sql completes                           PASS
+CREATE EXTENSION x5                                    PASS
 ```
 
 Server version query:
@@ -403,199 +428,139 @@ Server version query:
 SHOW server_version;
 ```
 
-Expected:
+Observed:
 
 ```text
-18.4
+18.4 (Debian 18.4-1.pgdg13+1)
 ```
 
 ### 8.3 Extension inventory
 
-Run:
-
-```sql
-SELECT extname, extversion
-FROM pg_extension
-WHERE extname IN (
-    'postgis',
-    'vector',
-    'pg_trgm',
-    'unaccent',
-    'pg_stat_statements'
-)
-ORDER BY extname;
-```
-
-Required names:
+Observed direct inventory:
 
 ```text
-pg_stat_statements
-pg_trgm
-postgis
-unaccent
-vector
+pg_stat_statements  1.12
+pg_trgm             1.6
+postgis             3.6.4
+unaccent            1.1
+vector              0.8.6
 ```
 
-Required exact selected versions:
-
-```text
-postgis  3.6.4
-vector   0.8.6
-```
+Exactly the five selected CP2 extensions were present in the acceptance query, with the exact selected PostGIS and pgvector versions.
 
 ### 8.4 Capability probes
 
-PostGIS:
+Direct functional results:
 
-```sql
-SELECT PostGIS_Full_Version();
+```text
+PostGIS_Full_Version()                  PASS — POSTGIS 3.6.4 reported
+'[1,2,3]'::vector(3)                    PASS — [1,2,3]
+similarity('dante','dante')             PASS — 1
+unaccent('città')                       PASS — citta
+native PostgreSQL FTS                   PASS — true
 ```
 
-pgvector:
-
-```sql
-SELECT '[1,2,3]'::vector(3);
-```
-
-pg_trgm:
-
-```sql
-SELECT similarity('dante', 'dante');
-```
-
-Expected result: `1`.
-
-unaccent:
-
-```sql
-SELECT unaccent('città');
-```
-
-Expected result: `citta`.
-
-Native PostgreSQL FTS:
-
-```sql
-SELECT
-    to_tsvector('simple', 'dante personal operating system')
-    @@ plainto_tsquery('simple', 'dante');
-```
-
-Expected result: `true`.
-
-FTS is a native PostgreSQL capability; CP2 must not pretend it is a separately installed extension.
+FTS is a native PostgreSQL capability; CP2 does not pretend it is a separately installed extension.
 
 ### 8.5 `pg_stat_statements` proof
 
-Configuration:
-
-```sql
-SHOW shared_preload_libraries;
-SHOW compute_query_id;
-```
-
-Required:
+Direct configuration evidence:
 
 ```text
-shared_preload_libraries contains pg_stat_statements
+shared_preload_libraries = pg_stat_statements
 compute_query_id = on
 ```
 
-Functional collection proof:
+Functional collection probe:
 
 ```sql
 SELECT 424242 AS dante_pgss_probe;
-
-SELECT query, calls
-FROM pg_stat_statements
-WHERE query LIKE '%dante_pgss_probe%';
 ```
 
-The probe must be observable in statistics. Merely creating the extension is insufficient evidence.
+Observed in `pg_stat_statements`:
+
+```text
+SELECT $1 AS dante_pgss_probe | calls = 1
+```
+
+This proves actual statistics collection rather than extension presence alone.
 
 ### 8.6 Persistence proof
 
-Create a disposable QA object/value, for example:
+Disposable QA state:
 
-```sql
-CREATE TABLE cp2_persistence_probe (
-    marker text PRIMARY KEY
-);
-
-INSERT INTO cp2_persistence_probe(marker)
-VALUES ('dante-cp2-persisted');
+```text
+cp2_persistence_probe
+dante-cp2-persisted
 ```
 
-Then:
+After:
 
 ```text
 docker compose ... down
 docker compose ... up -d --wait
 ```
 
-After container recreation, query:
-
-```sql
-SELECT marker FROM cp2_persistence_probe;
-```
-
-Required value:
+the marker was still present with the exact value:
 
 ```text
 dante-cp2-persisted
 ```
 
-Then remove the QA table after the persistence proof unless the subsequent reset proof deliberately uses its existence as the reset marker.
+Named-volume persistence across container/network recreation therefore passed directly.
 
 ### 8.7 Destructive reset proof
 
-Run:
+After:
 
 ```text
 docker compose ... down --volumes
 docker compose ... up -d --wait
 ```
 
-Required:
+Docker directly reported removal and recreation of `dante-local_postgres-data`.
 
-- prior persistence probe no longer exists;
-- fresh cluster is healthy;
-- all five selected extensions are present again;
-- PostGIS/vector exact extension versions are still correct.
+Post-reset SQL proved:
 
-This directly proves the difference between container recreation and cluster reset.
+```text
+public.cp2_persistence_probe   ABSENT
+five selected extensions      PRESENT
+postgis                       3.6.4
+vector                        0.8.6
+container health              HEALTHY
+```
+
+This directly proves the difference between container recreation and cluster reset, plus deterministic fresh extension reinitialization.
 
 ### 8.8 Windows host connectivity
 
-DBeaver or PyCharm Database Tools on Windows must connect using:
+DBeaver on Windows directly connected through:
 
 ```text
 Host      127.0.0.1
 Port      5432
 Database  dante
 User      postgres
-Password  local secret file contents
+Password  workstation-local ignored secret
 ```
 
-Run from the GUI connection:
+The GUI query:
 
 ```sql
 SELECT current_database(), current_user, version();
 ```
 
-Required:
+returned:
 
 ```text
 current_database = dante
 current_user     = postgres
-PostgreSQL       = 18.4 line
+version          = PostgreSQL 18.4 ...
 ```
 
-This is direct host-boundary evidence and is not inferred from container health.
+This is direct Windows-host boundary evidence and is not inferred from container health.
 
-## 9. Expected CP2 final state
-
-Only after all direct acceptance passes may documentation state:
+## 9. CP2 final state — CLOSED / DIRECT QA PASS
 
 ```text
 DANTE PostgreSQL image       PASS
@@ -612,7 +577,7 @@ Windows GUI connectivity     PASS
 CP2                          CLOSED / DIRECT QA PASS
 ```
 
-Until then the status remains implementation/QA active.
+The final LOCAL database after the reset proof is a fresh healthy cluster with the selected extension envelope initialized and no persistence QA table retained.
 
 ## 10. Direct-validation limits
 
@@ -664,26 +629,22 @@ The Dockerfile intentionally pins the index digest rather than this platform-spe
 
 ## 12. Exact resume point
 
-After CP2 files are remotely materialized and read back, proceed in this order:
+CP2 is closed. Resume in this order:
 
 ```text
-1. Pull the exact CP2 implementation HEAD to the canonical WSL checkout.
-2. Confirm working tree clean before local-only secret creation.
-3. Generate infra/compose/secrets/postgres_password.local and verify Git ignores it.
-4. Run Compose config validation.
-5. Run the clean/no-cache PostgreSQL image build.
-6. Inspect installed package versions from the built image.
-7. Start from a fresh volume and wait for Compose health.
-8. Run server-version, extension inventory and capability probes.
-9. Prove pg_stat_statements configuration + real collection.
-10. Prove data persistence through down/up recreation.
-11. Prove destructive reset semantics with down --volumes.
-12. Prove Windows DBeaver/PyCharm host connectivity.
-13. Record final direct evidence through a separate exact documentation gate.
-14. Proceed to CP3 only after CP2 CLOSED / DIRECT QA PASS.
+1. Pull the CP2 closure documentation HEAD to the canonical WSL checkout.
+2. Verify feature/backend-scaffold remote/local HEAD and a clean working tree.
+3. Treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new direct evidence contradicts them.
+4. Begin CP3 READ-ONLY design/research for persistence, migrations and a real-PostgreSQL harness.
+5. Re-check current official versions/compatibility for SQLAlchemy 2.x, psycopg 3 and Alembic before freezing CP3 dependencies.
+6. Define typed DB settings, async engine/session ownership, transaction boundaries, migration authority and real PostgreSQL test lifecycle.
+7. Define the first runtime/migrator privilege split only where CP3 can directly test it.
+8. Keep concrete Logical-owner/table mapping out of CP3.
+9. Present a fresh exact CP3 Git write gate before any CP3 repository write.
+10. Proceed to CP4 only after CP3 direct acceptance passes.
 ```
 
-No CP3/application/schema work is authorized by this contract.
+No CP3/application/schema write is authorized by this CP2 closure record alone.
 
 ## 13. Direct implementation finding — PGDG archive TLS trust bootstrap
 
@@ -747,10 +708,10 @@ abandon the official PGDG archive
 source-build the GIS/vector stack merely to avoid the trust-store prerequisite
 ```
 
-This finding does not earn the clean-build requirement. After the repository repair is pulled, the same canonical command must be rerun:
+After the authorized repair was pulled, the same canonical clean-build command was rerun:
 
 ```bash
 docker compose -f infra/compose/local.yaml build --no-cache postgres
 ```
 
-Only a successful post-repair build can advance CP2 beyond the image-build acceptance boundary.
+It completed successfully and exported `dante-postgres-local:18.4`. The built-image version/control-file inspection then passed, so the TLS finding is **RESOLVED / DIRECTLY VERIFIED**.
