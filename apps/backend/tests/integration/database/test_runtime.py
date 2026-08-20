@@ -89,14 +89,14 @@ def test_liveness_survives_database_outage_and_readiness_recovers_without_app_re
         assert ready.status_code == 200
         assert ready.json() == {"status": "ready"}
 
-        postgres_cluster.pause()
+        postgres_cluster.stop()
         try:
             assert client.get("/health/live").status_code == 200
             unavailable = client.get("/health/ready")
             assert unavailable.status_code == 503
             assert unavailable.json() == {"status": "not_ready"}
         finally:
-            postgres_cluster.unpause()
+            postgres_cluster.start()
 
         deadline = time.monotonic() + 10
         recovered = None
@@ -121,11 +121,11 @@ def test_readiness_response_never_exposes_database_details(migrated_database: An
     )
 
     with TestClient(create_app(settings)) as client:
-        migrated_database.cluster.pause()
+        migrated_database.cluster.stop()
         try:
             response = client.get("/health/ready")
         finally:
-            migrated_database.cluster.unpause()
+            migrated_database.cluster.start()
 
     assert response.status_code == 503
     payload = response.text
