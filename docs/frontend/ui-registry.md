@@ -21,14 +21,14 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `home.topbar.brand` | DANTE/LifeOS historical lockup | WORKING | Product identity anchor. Final logo/skin treatment deferred. |
+| `home.topbar.brand` | DANTE/LifeOS historical lockup | WORKING | Product identity anchor. Final logo/skin treatment is the next B2 visual pass. |
 | `home.topbar.create` | Crea | PROTOTYPE_ONLY | Opens the current quick-create popover. No durable write/backend behavior is implied. Semantic overlap with Capture must be reviewed later. |
 | `home.topbar.nav.home` | Home | ACTIVE | Current Home navigation anchor. |
 | `home.topbar.nav.worlds` | Mondi | WORKING | Current nav prototype; click currently changes active visual state only, not a production route. |
 | `home.topbar.nav.today` | Oggi | WORKING | Current nav prototype; temporal vocabulary must not create a second competing Home identity. |
 | `home.topbar.search` | Cerca | PROTOTYPE_ONLY | Opens mock search popover; `Ctrl/Cmd+K` also opens it; `Esc`/outside click closes it. |
 | `home.topbar.reviewLegacy` | Review Queue / Da rivedere | DEPRECATED | Legacy topbar review popover still exists. It overlaps the accepted `home.contextRail.resolution` role and must be reconciled/removed in a later bounded scope. |
-| `home.topbar.launcher` | Tutto LifeOS | WORKING | Opens a placeholder secondary-function launcher; content explicitly remains undefined. |
+| `home.topbar.launcher` | Tutto LifeOS | WORKING | Opens a placeholder secondary-function launcher; content explicitly remains undefined. Product naming will be aligned in the branding pass. |
 | `home.topbar.account` | Profilo | PROTOTYPE_ONLY | Opens account/settings menu mock. |
 
 ## Home — conversational / AI surface
@@ -54,19 +54,25 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 ## Home — central stage
 
+Current working oracle: **B2 v21 responsive**. B2 remains open for add-affordance and visual identity/skin decisions.
+
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `home.stage` | — | WORKING | Large central context surface. Purpose is not yet final. B2 owns its redesign/definition. |
-| `home.stage.worlds` | WORLDS / Mondi | WORKING | Historical carousel of mixed life-category objects. Interaction exists, but `Worlds` is not accepted domain/IA vocabulary. |
-| `home.stage.worlds.previous` | — | PROTOTYPE_ONLY | Previous item / carousel navigation. |
-| `home.stage.worlds.next` | — | PROTOTYPE_ONLY | Next item / carousel navigation. |
-| `home.stage.worlds.select` | world item | PROTOTYPE_ONLY | Selecting a world updates the contextual right-side stage detail. |
-| `home.stage.worlds.open` | — | PROTOTYPE_ONLY | “Open item” affordance; deeper product destination is not yet defined. |
-| `home.stage.mode.previous` | — | ACTIVE | Switches central-stage surface backward. |
-| `home.stage.mode.next` | — | ACTIVE | Switches central-stage surface forward. |
-| `home.stage.stats` | Stats | WORKING | Current chart/stat prototype. B2 will decide whether this remains a separate mode or becomes another projection of meaningful continuity/trajectory. |
-| `home.stage.stats.previous` | — | PROTOTYPE_ONLY | Previous statistic/chart. |
-| `home.stage.stats.next` | — | PROTOTYPE_ONLY | Next statistic/chart. |
+| `home.stage` | — | WORKING | Shared central workspace and sole owner of outer stage geometry, selector anchor and lateral navigation anchors. Projection changes must not redefine those outer bounds. |
+| `home.stage.continuity` | Mondi | WORKING / LOCKED NAME | Carried-forward significant realities the user wants readily recoverable/resumable. Current visual grammar preserves the existing sphere carousel. Not a Domain Model taxonomy and not necessarily a persisted `World` entity. |
+| `home.stage.continuity.previous` | — | PROTOTYPE_ONLY | Previous continuity item/carousel navigation. |
+| `home.stage.continuity.next` | — | PROTOTYPE_ONLY | Next continuity item/carousel navigation. |
+| `home.stage.continuity.select` | mondo | PROTOTYPE_ONLY | Selects/centers a visible continuity item in the local prototype. |
+| `home.stage.continuity.open` | — | PROTOTYPE_ONLY | Existing deeper-open affordance lineage; final destination remains undefined. |
+| `home.stage.continuity.emptySlot` | + | WORKING / PROTOTYPE_ONLY | In partial state, unused existing sphere positions are rendered as ghost `+` slots. This is UI composition only; no placeholder backend entity is implied. Full-state persistent add placement is still unresolved. |
+| `home.stage.mode.previous` | — | ACTIVE | Switches central-stage projection backward without moving the stage shell/anchors. |
+| `home.stage.mode.next` | — | ACTIVE | Switches central-stage projection forward without moving the stage shell/anchors. |
+| `home.stage.signals` | Segnali | WORKING / LOCKED NAME | Compact analytical projection for values/deltas/trends/targets/planned-vs-actual/cautious patterns. Current desktop composition shows at most three complete visible items. |
+| `home.stage.signals.previous` | — | PROTOTYPE_ONLY | Previous Signal using the same carousel navigation grammar. |
+| `home.stage.signals.next` | — | PROTOTYPE_ONLY | Next Signal using the same carousel navigation grammar. |
+| `home.stage.signals.select` | segnale | PROTOTYPE_ONLY | Selects/centers a Signal in the local prototype. |
+
+Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is deprecated by the B2 projection IDs above; historical files/checkpoints remain evidence.
 
 ## Home — time / timeline
 
@@ -127,7 +133,7 @@ The accepted rail must **not** become:
 | `home.overlay.search` | search popover | PROTOTYPE_ONLY | Topbar search mock. |
 | `home.overlay.create` | create popover | PROTOTYPE_ONLY | Topbar create mock. |
 | `home.overlay.reviewLegacy` | review popover | DEPRECATED | Legacy duplicate to reconcile with Context Rail. |
-| `home.overlay.launcher` | Tutto LifeOS | WORKING | Placeholder. |
+| `home.overlay.launcher` | Tutto LifeOS | WORKING | Placeholder; branding pass will align product naming. |
 | `home.overlay.account` | account menu | PROTOTYPE_ONLY | Settings/profile mock. |
 | `home.overlay.calendar` | calendar popover | ACTIVE | Date navigation. |
 | `home.overlay.timelineOptions` | Vista e legenda | ACTIVE | Timeline view controls. |
@@ -135,7 +141,7 @@ The accepted rail must **not** become:
 | `home.overlay.eventDetail` | event modal | ACTIVE | Event detail surface in the existing prototype. |
 | `home.feedback.moveToast` | Annulla | ACTIVE | Temporary feedback + undo. |
 
-## Rejected / superseded in B1
+## Rejected / superseded
 
 | Technical ID / old label | Status | Replacement / reason |
 |---|---|---|
@@ -143,6 +149,7 @@ The accepted rail must **not** become:
 | side `Review` card | REMOVED | Replaced by `home.contextRail.resolution`; old generic review framing was weaker. |
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
 | short rail ending mid-column | REJECTED | Accepted rail stretches with the timeline column to avoid arbitrary empty lower space. |
+| generic `Stats` stage framing | DEPRECATED | Replaced by the more meaningful `home.stage.signals` / Segnali projection. |
 
 ## Maintenance rule
 
