@@ -1,13 +1,14 @@
 # Workstream — Frontend Engineering Foundation
 
-- Status: **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**
+- Status: **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / POST-CLOSURE QA PASS / PENDING MAIN INTEGRATION**
 - Branch: `feature/frontend-foundation`
 - Opening base: `7a1600c2167f68c9281d3ed77b32a3d954fbd061`
 - Passo-1 checkpoint: `dd23b86ba330f6296806297ef5c68acebbee65e6`
 - Passo-2 initial checkpoint: `0269672b6f1cd085fa935d400b774b098feb4c69`
 - Final-reviewed pre-closure HEAD: `28630c8d8a1133b785850de804d3a37495e0b3c8`
 - Closure content commit: `ba18a9d4668f3fa51c9da72118b5ffa69f03054e`
-- Post-closure knowledge-coverage QA: **REPAIR APPLIED / FINAL QA PENDING ON THIS COMMIT**
+- Knowledge-coverage repair commit: `9588c66caf57b3186f4d9e0c7a697b91d8d3dc90`
+- Post-closure knowledge-coverage QA: **PASS**
 - PR: **NONE**
 - Product/Domain/Logical/Physical/Engineering Foundation: **CONSUMED / NOT REOPENED**
 - Production frontend code/scaffold: **NOT STARTED**
@@ -20,6 +21,7 @@
 PASSO 1  technology selection                  PASS
 PASSO 2  application/package/data architecture PASS
 PASSO 3  clean review / closure                FINAL REVIEW PASS
+POST-QA  knowledge/evidence preservation       PASS
 ```
 
 Frontend Foundation is closed at design/architecture level, pending protected-main integration.
@@ -33,6 +35,7 @@ DESIGN CLOSED != IMPLEMENTED != INSTALLED != CONFIGURED != DIRECTLY VALIDATED
 - `../architecture/frontend-engineering-foundation.md`;
 - `../architecture/frontend-engineering-foundation-part-2.md`;
 - `../architecture/frontend-engineering-foundation-final-review.md`;
+- `../architecture/frontend-engineering-foundation-post-closure-qa.md`;
 - `../decisions/ADR-008-frontend-engineering-stack.md`;
 - `../decisions/ADR-009-frontend-architecture-boundaries.md`;
 - closed Engineering Foundation/repository layout;
@@ -71,10 +74,11 @@ Repaired before/through closure:
 1. repository root-topology inheritance;
 2. explicit feature-cycle prohibition;
 3. stale CURRENT status/architecture/navigation;
-4. stale CURRENT governance continuation;
-5. closure-alignment over-compression risk detected by knowledge-coverage QA and repaired by restoring detailed normative/current payloads.
+4. stale CURRENT governance continuation.
 
-Final target:
+Post-closure knowledge-coverage QA then detected and repaired closure-alignment over-compression risk while preserving the original Passo-3 evidence byte-for-byte.
+
+Final verified result:
 
 ```text
 BLOCKING ARCHITECTURE DEFECTS          0
@@ -85,13 +89,15 @@ FEATURE CYCLES ALLOWED                 NO
 FALSE DIRECT PASS CLAIMS               0
 STALE CURRENT CLOSURE BLOCKERS         0
 VALID REQUIREMENT LOST                 0
+ORIGINAL CLOSURE EVIDENCE PRESERVED    PASS
 ```
 
-Full evidence: `../architecture/frontend-engineering-foundation-final-review.md`.
+Full closure evidence: `../architecture/frontend-engineering-foundation-final-review.md`.
+Post-closure QA evidence: `../architecture/frontend-engineering-foundation-post-closure-qa.md`.
 
 ## 6. Direct-validation obligations
 
-Still NOT RUN. Post-integration materialization validates Node/pnpm/Turbo, pnpm native layout, Vite, Expo/RN active targets, strict TS graph, exports/import/cycles, tokens, real OpenAPI→Orval, Form, Query, PowerSync/OP-SQLite/SQLCipher, offline reconciliation, identity DB lifecycle, WSL↔Android, runtime config/Cloudflare, tests, Sentry/EAS when activated.
+Still **NOT RUN**. Post-integration materialization validates Node/pnpm/Turbo, pnpm native layout, Vite, Expo/RN active targets, strict TS graph, exports/import/cycles, tokens, real OpenAPI→Orval, Form, Query, PowerSync/OP-SQLite/SQLCipher, offline reconciliation, identity DB lifecycle, WSL↔Android, runtime config/Cloudflare, tests, Sentry/EAS when activated.
 
 Failure first reopens affected technology/adapter/boundary unless wider contradiction is proven.
 
@@ -112,19 +118,25 @@ FINAL REVIEW PRE-CLOSURE
 
 CLOSURE CONTENT
 ba18a9d4668f3fa51c9da72118b5ffa69f03054e
+
+KNOWLEDGE-COVERAGE REPAIR
+9588c66caf57b3186f4d9e0c7a697b91d8d3dc90
 ```
 
-The exact final post-closure-QA HEAD is verified remotely after the knowledge-coverage repair commit.
+The current branch HEAD containing this handoff is the final post-closure-QA checkpoint and must be reverified immediately before PR creation.
 
 ## 8. Exact next action
 
 ```text
 PENDING MAIN INTEGRATION
 
-PR creation     only with explicit authorization
-merge           only with explicit authorization + expected-head safety
-post-merge      reread/compare main + verify branch lifecycle
-then            fresh frontend materialization/scaffold/direct-validation scope
+1. compare exact main → feature/frontend-foundation diff
+2. prove expected documentation-only changed paths / unexpected 0
+3. open PR to protected main
+4. inspect exact PR file list and available real checks
+5. merge only with explicit authorization + expected-head safety
+6. post-merge reread/compare main and verify branch lifecycle
+7. then open fresh frontend materialization/scaffold/direct-validation scope
 ```
 
 Do not restart general technology/architecture research without concrete contradictory evidence or a materially changed requirement.
