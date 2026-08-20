@@ -34,6 +34,13 @@ PM-14 CLOSURE COMPLETE
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
 
+FRONTEND ENGINEERING FOUNDATION
+ACTIVE on feature/frontend-foundation
+PASSO 1 TECHNOLOGY SELECTION DESIGN COMPLETE
+PASSO 2 STRUCTURE / OWNERSHIP NOT STARTED
+PRODUCTION FRONTEND CODE NOT STARTED
+DIRECT FRONTEND VALIDATION NOT STARTED
+
 PRODUCTION BACKEND SCAFFOLD
 NOT STARTED
 
@@ -121,18 +128,21 @@ Selected PostgreSQL capabilities:
 
 ### Offline/sync
 
-- PowerSync Service 1.25.0 Open Edition;
+- PowerSync Service 1.25.0 Open Edition target from the accepted Physical Model;
 - encrypted SQLite local state;
 - PostgreSQL-backed PowerSync bucket storage;
 - explicit client-safe sync projections.
 
-Rules:
+Frontend-engineering implementation must preserve:
 
 ```text
 SQLite local copy != canonical truth
 PowerSync arrival order != conflict resolution
+offline capability = operation-specific
 consequential offline mutation → DANTE backend revalidation → PostgreSQL
 ```
+
+PowerSync JavaScript client packaging/version is selected separately in the active frontend workstream and does not rewrite the accepted Physical ownership semantics.
 
 ### Async/durable
 
@@ -187,7 +197,7 @@ apps/web
 apps/mobile
 ```
 
-Production implementation remains in the current repository; no new repo is planned. The historical repository name `lifeos` may be renamed to `dante` in a separate next governance scope.
+Production implementation remains in the current repository; no new repo is planned.
 
 ### Backend architecture
 
@@ -267,13 +277,21 @@ DANTE owns a reproducible LOCAL PostgreSQL build/configuration.
 - GitHub-hosted runner initially;
 - future OCI build-once/promote, attestation and SBOM at release boundary.
 
-### Explicit frontend defer
+### Frontend workstream activation
 
-Engineering Foundation v0 does **not** freeze Node/package-manager/Turborepo/web/mobile test/build/release details. Those return to the frontend workstream.
+The dedicated frontend workstream is now active on `feature/frontend-foundation`.
+
+Passo 1 has selected the frontend technology baseline in design. The durable branch-local authorities are:
+
+- `docs/architecture/frontend-engineering-foundation.md`;
+- `docs/decisions/ADR-008-frontend-engineering-stack.md`;
+- `docs/workstreams/frontend-foundation.md`.
+
+Until protected-main integration, these are newer unmerged workstream truth rather than integrated `main` authority.
 
 ### Explicit cloud defer
 
-Compute provider, IaC engine, registry and remote sizing are not selected until first remote environment.
+Backend compute provider, IaC engine, registry and remote sizing remain unselected until first remote backend infrastructure. The frontend workstream may select bounded Web-delivery/mobile-build services without silently selecting the backend compute/IaC platform.
 
 ## 7. Direct-validation truth
 
@@ -292,33 +310,37 @@ POWERSYNC DIRECT TEST    NOT RUN
 RESTATE DIRECT TEST      NOT RUN
 OBJECT RECOVERY TEST     NOT RUN
 SOLVER DIRECT TEST       NOT RUN
+FRONTEND DIRECT TEST     NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
+Frontend Passo-1 selections carry explicit direct-validation obligations into later materialization; they are not blanket direct-PASS claims.
+
 ## 8. Current repository branches/workstreams
 
-The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
-
-Engineering Foundation v0 is closed. No production scaffold has yet been created.
+- `feature/frontend-foundation` — **ACTIVE**, documentation/architecture work only at this checkpoint; Passo 1 design complete, Passo 2 next.
+- separate prototype/UX workstreams remain outside production frontend engineering authority.
+- Engineering Foundation v0 is closed.
+- no production frontend or backend scaffold has yet been created by this workstream.
 
 ## 9. Exact next action
 
+### Active frontend workstream
+
 ```text
-STEP 0
-Keep current repository.
-Decide/execute recommended rename `lifeos → dante`, or explicitly defer.
+PASSO 2
+Define the definitive frontend application/package structure,
+ownership and dependency direction as one coherent architecture pass.
 
-STEP 1
-Mandatory bootstrap + fresh exact Git write gate.
+THEN
+whole-foundation review / closure / PR / protected-main integration.
 
-STEP 2
-Create production scaffold for apps/backend and LOCAL PostgreSQL engineering baseline only.
-
-STEP 3
-QA the scaffold.
-
-STEP 4
-Begin concrete Logical → PostgreSQL mapping/schema implementation.
+ONLY AFTER FOUNDATION INTEGRATION
+materialize the production frontend scaffold and run direct validations.
 ```
 
-Do not reopen closed models/Foundation unless a concrete implementation contradiction supplies evidence for an explicit reopen.
+### Backend implementation remains separate
+
+The production backend scaffold remains **NOT STARTED** and requires its own bounded implementation gate. Frontend Foundation work does not authorize backend schema/business implementation.
+
+Do not reopen closed Product/Domain/Logical/Physical/Engineering decisions unless a concrete implementation contradiction supplies evidence for an explicit reopen.

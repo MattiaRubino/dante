@@ -19,18 +19,20 @@ A workstream handoff must contain, where applicable:
 
 ## Current workstreams
 
+- [`frontend-foundation.md`](frontend-foundation.md) — **ACTIVE on `feature/frontend-foundation`; Passo 1 technology selection DESIGN COMPLETE; Passo 2 frontend structure/ownership NOT STARTED; production frontend code and direct validation NOT STARTED**.
 - [`today-home.md`](today-home.md) — active Phase 4 Home/Today UX/product-structure workstream.
 
 ## Completed / integrated workstreams
 
-- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**, with Physical integration commit `e6f191bad947388a44defe2c15f4939345084f58`. Former branch `feature/physical-model` was merged and auto-deleted. Direct selected-stack implementation validation remains **NOT STARTED / DIRECT HG PASS 0**; the next separate operational scope is **Development Profile v0**.
-- [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**, with post-merge current-truth alignment through PR #14. Former branch `chore/pre-physical-coherence` was merged and auto-deleted.
+- [`engineering-foundation.md`](engineering-foundation.md) — **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated into `main` via PR #21**, establishing the current pre-implementation engineering baseline and deferring frontend-internal stack details to the dedicated frontend workstream.
+- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated into `main` via PR #15**. Direct selected-stack implementation validation remains carried forward and **NOT STARTED / DIRECT HG PASS 0**.
+- [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated into `main` via PR #13 / POST-MERGE VERIFIED**, with post-merge current-truth alignment through PR #14.
 - [`domain-model.md`](domain-model.md) and its canonical continuation parts — historical operational record for the **CLOSED** Core Domain Model / Domain Atlas integrated into `main` via PR #10. Do not treat older readiness/in-progress prose as current closure state.
 - Logical Model workstream documents and continuations — historical operational record for the **CLOSED** Logical Model integrated into `main` via PR #11.
 
-## Deferred / not currently executable workstreams
+## Historical / superseded planning handoffs
 
-- [`backend-foundation.md`](backend-foundation.md) — **NOT STARTED / DEFERRED**. The accepted Physical Model is now integrated, but Backend still requires its own explicit authorization and must consume the Development Profile/current security/runtime/integration/API prerequisites applicable to the chosen first slice. Do not create `feature/backend-foundation` or execute production backend/schema/API instructions without that separate gate.
+- [`backend-foundation.md`](backend-foundation.md) — historical pre-Engineering-Foundation deferred planning handoff. It is **not current implementation authority** and must not override the later closed [`engineering-foundation.md`](engineering-foundation.md) or current `main`.
 
 Completed/historical handoffs remain useful evidence, but current model/architecture authority and current `main` determine accepted execution truth.
 
@@ -41,12 +43,12 @@ The Physical target is closed and integrated. Current implementation must consum
 ```text
 PHYSICAL TARGET CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
+ENGINEERING FOUNDATION v0 CLOSED / ACCEPTED
 DIRECT HG PASS 0
 DIRECT IMPLEMENTATION VALIDATION NOT STARTED
 SELECTED != DEPLOYED
 SELECTED != DIRECT PASS
 NOT RUN != PASS
-NEXT Development Profile v0
 ```
 
 Version-sensitive selected-component claims still require current official primary-source verification where material. Any direct validation, implementation or Physical reopen requires a fresh exact branch/PRE-SCOPE/write gate.
@@ -70,4 +72,4 @@ Before continuing a workstream:
 
 If the work materially changes durable product/architecture truth, update the appropriate durable document/ADR/current baseline in the same PR rather than leaving that decision only in the handoff.
 
-A stale historical handoff never overrides a later accepted Domain/Logical/Pre-Physical/Physical closure or current project status merely because it contains detailed instructions.
+A stale historical handoff never overrides a later accepted Domain/Logical/Pre-Physical/Physical/Engineering closure or current project status merely because it contains detailed instructions.
