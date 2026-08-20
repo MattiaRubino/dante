@@ -1,16 +1,19 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 NEXT**
+- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING**
 - Branch: `feature/backend-scaffold`
 - Decision baseline PRE-SCOPE: `9f7c21857cf7a9c7300053370954c4b93f9bd96a`
 - CP1 closure implementation HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
 - CP2 implementation/repair HEAD before closure docs: `2d79c89d78b9031a1fe4323bbdcdb4b359fa87d6`
+- CP3 original materialization PRE-SCOPE: `a09936d168de48909d948425387b168d016911e8`
+- CP3 lock materialization HEAD: `17c00d2ac24d2efecfc52f7fa5f707f5b15c36cd`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
 - Concrete Logical → PostgreSQL schema: **OUT OF SCOPE UNTIL SCAFFOLD QA**
 - Detailed CP1 contract: `docs/development/backend-cp1-contract.md`
 - Detailed CP2 contract: `docs/development/backend-cp2-postgres-contract.md`
+- Detailed CP3 contract: `docs/development/backend-cp3-persistence-contract.md`
 
 ## 1. Purpose
 
@@ -34,7 +37,7 @@ CP2 reproducible LOCAL PostgreSQL
         CLOSED / DIRECT QA PASS
           ↓
 CP3 persistence + migrations + real PostgreSQL harness
-        NEXT
+        IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING
           ↓
 CP4 quality / CI enforcement
           ↓
@@ -136,13 +139,15 @@ fresh extension reinitialization       PASS
 Windows DBeaver connectivity           PASS
 ```
 
-Still not implemented:
+CP3 is materially implemented but not yet directly validated:
 
 ```text
-SQLAlchemy/psycopg persistence         NOT CREATED
-Alembic migration harness              NOT CREATED
-real PostgreSQL integration harness    NOT CREATED
-runtime/migrator application roles     NOT CREATED
+SQLAlchemy/psycopg persistence         MATERIALIZED / DIRECT QA PENDING
+Alembic migration harness              MATERIALIZED / DIRECT QA PENDING
+real PostgreSQL integration harness    MATERIALIZED / DIRECT QA PENDING
+runtime/migrator application roles     MATERIALIZED / DIRECT QA PENDING
+CP3 transaction tests                  MATERIALIZED / DIRECT QA PENDING
+CP3 DB outage/recovery tests           MATERIALIZED / DIRECT QA PENDING
 backend CI workflows                   NOT CREATED
 concrete business schema               NOT STARTED
 ```
@@ -158,7 +163,7 @@ CP1  Python/backend process + typed config                       CLOSED / DIRECT
  ↓
 CP2  reproducible LOCAL PostgreSQL infrastructure                CLOSED / DIRECT QA PASS
  ↓
-CP3  persistence + migration + real-PostgreSQL harness           NEXT
+CP3  persistence + migration + real-PostgreSQL harness           IMPLEMENTATION MATERIALIZED / DIRECT QA PENDING
  ↓
 CP4  repository quality/CI enforcement once real checks exist
  ↓
@@ -365,35 +370,137 @@ CP2                          CLOSED / DIRECT QA PASS
 
 CP2 does not imply application persistence, Alembic, privilege separation, Logical mapping, restore/PITR or Physical HG/PSV PASS.
 
-## 7. CP3 — Persistence, migrations and real PostgreSQL harness — NEXT
+## 7. CP3 — Persistence, migrations and real PostgreSQL harness — ACTIVE / QA PENDING
 
-CP3 is the active next checkpoint now that the DANTE PostgreSQL image/environment is directly operational.
+### Detailed authority
 
-It introduces the first real technical persistence boundary using the accepted stack:
+The complete accepted CP3 design, materialized boundary and acceptance matrix live in:
+
+`docs/development/backend-cp3-persistence-contract.md`
+
+Do not reconstruct CP3 from conversation history when that contract exists.
+
+### Accepted architecture
 
 ```text
-SQLAlchemy 2.x stable line
-psycopg 3
-async DB I/O boundary
-Alembic migration authority
+Settings / DatabaseSettings
+        ↓
+one AsyncEngine per process
+        ↓
+one async_sessionmaker per process
+        ↓
+one AsyncSession per application operation/task
+        ↓
+explicit transaction boundary
+        ↓
+PostgreSQL 18.4
 ```
 
-Expected responsibilities include, once exact current design/version research is approved:
+Key rules:
 
-- typed DB configuration;
-- async engine/session lifecycle;
-- one `AsyncSession` per use-case/task scope;
-- no global/shared concurrent session;
-- transaction ownership at application/use-case boundary;
-- Alembic environment/bootstrap;
-- clean database base → head migration proof;
-- real PostgreSQL connection/integration test;
-- migration/drift harness suitable for future schema work;
-- runtime/migrator privilege separation where the concrete harness activates those identities.
+- `postgresql+psycopg` async SQLAlchemy boundary;
+- `pool_pre_ping=True`;
+- `autobegin=False`, `expire_on_commit=False`, `autoflush=True`;
+- outer application operation owns commit/rollback;
+- persistence adapters never commit implicitly;
+- no generic `Repository[T]` / generic Unit of Work;
+- liveness is process-only;
+- readiness performs a bounded real PostgreSQL probe;
+- no hidden SQL/transaction retry;
+- no long external/AI I/O while holding an unnecessary DB transaction.
 
-No concrete Logical owner/table mapping is authorized by CP3. An empty/technical migration baseline may exist only if it is the cleanest truthful way to prove the migration machinery.
+### Alembic/schema governance
 
-CP3 requires its own READ-ONLY design/research, exact decisions and exact Git write gate before implementation.
+```text
+application schema     dante
+version table          dante.alembic_version
+one canonical DAG/head
+technical baseline     20260820_01
+```
+
+Alembic authenticates as `dante_migrator`, explicitly performs `SET ROLE dante_owner`, governs only the `dante` schema and does not treat `public` extension/provider objects as DANTE-owned schema.
+
+`metadata.create_all()` is not deployment authority.
+
+### PostgreSQL identity model
+
+```text
+dante_owner      NOLOGIN object owner
+dante_migrator   LOGIN / NOINHERIT / SET dante_owner allowed / ADMIN denied
+dante_runtime    LOGIN / NOINHERIT / no owner membership / DML-only posture
+```
+
+The runtime has no default DDL, TRUNCATE, TEMP, owner escalation, migration-history access or routine EXECUTE capability.
+
+### Materialized dependency resolution
+
+```text
+SQLAlchemy       2.0.52
+psycopg          3.3.4
+Alembic          1.19.1
+pytest-asyncio   1.4.0
+```
+
+The lock was generated directly with `uv` on the canonical WSL workstation and pushed at:
+
+```text
+17c00d2ac24d2efecfc52f7fa5f707f5b15c36cd
+```
+
+### Real PostgreSQL acceptance harness
+
+PostgreSQL-marked tests use the exact CP2-built image:
+
+```text
+dante-postgres-local:18.4
+```
+
+They start one disposable loopback-only cluster per pytest PostgreSQL session, then create fresh provisioned/migrated databases inside that isolated cluster.
+
+This is intentionally stronger than using the ordinary LOCAL cluster because PostgreSQL roles are cluster-global. Acceptance provisioning must not change the developer's real `dante_runtime` / `dante_migrator` credentials.
+
+The harness therefore proves the same DANTE image/envelope while keeping the ordinary LOCAL database and roles untouched.
+
+### CP3 current state
+
+```text
+CP3-01 stack/version design              CLOSED / MATERIALIZED
+CP3-02 connection/config/lifecycle       CLOSED / MATERIALIZED
+CP3-03 transaction architecture          CLOSED / MATERIALIZED
+CP3-04 Alembic/schema governance         CLOSED / MATERIALIZED
+CP3-05 PostgreSQL privileges             CLOSED / MATERIALIZED
+CP3-06 real PostgreSQL harness/matrix    CLOSED / MATERIALIZED
+CP3 uv.lock                              REMOTE / GENERATED BY uv
+CP3 direct QA                            NOT YET EARNED
+```
+
+No concrete Logical owner/table mapping is authorized by CP3. The technical probe objects created by tests exist only inside disposable acceptance databases and are not canonical schema.
+
+### Required next evidence
+
+Before CP3 can close, directly execute and record:
+
+```text
+uv lock --check
+uv tree --locked --depth 1
+uv sync --locked
+ruff format --check
+ruff check
+mypy strict
+pytest -m "not postgres"
+pytest -m postgres
+full pytest
+uv build
+real migration base → head / head → base → head
+real privilege denials
+real commit/rollback/SAVEPOINT behavior
+stale pooled-connection recovery
+DB outage: live 200 / ready 503
+DB recovery: ready 200 without app restart
+remote exact-delta/readback
+```
+
+If direct execution reveals defects, correct only the evidenced defects under a new exact Git gate. Do not weaken the acceptance matrix to make tests pass.
 
 ## 8. CP4 — Quality, architecture and CI enforcement
 
@@ -462,25 +569,25 @@ Until explicitly reopened by a later boundary, do not add:
 
 ## 11. Exact resume point for the next chat
 
-A new conversation must not redesign Engineering Foundation, repeat CP1/CP2 implementation work or jump directly into concrete PostgreSQL schema mapping.
+A new conversation must not redesign Engineering Foundation, repeat CP1/CP2 work, redesign CP3-01..CP3-06 or jump directly into concrete PostgreSQL business schema mapping.
 
 Resume in this exact order:
 
 ```text
-1. Read current project truth, this handoff, `backend-cp1-contract.md` and `backend-cp2-postgres-contract.md`.
-2. Verify `feature/backend-scaffold`, current remote/local HEAD and clean tree.
-3. Treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts them.
-4. Start CP3 READ-ONLY design/research for persistence, migrations and the real PostgreSQL harness.
-5. Re-check current official version/compatibility evidence for SQLAlchemy 2.x, psycopg 3 and Alembic.
-6. Decide typed DB configuration, async engine/session lifecycle, transaction ownership, migration authority and test-database lifecycle.
-7. Decide the minimum real runtime/migrator privilege split that CP3 can honestly exercise.
-8. Define direct CP3 acceptance evidence, including clean base → head migration and real PostgreSQL integration.
-9. Present a fresh exact CP3 Git write gate before any CP3 repository write.
-10. Only after explicit approval, materialize CP3 and run direct validation.
+1. Read current project truth, this handoff and backend-cp3-persistence-contract.md.
+2. Verify feature/backend-scaffold, remote/local HEAD and clean tree.
+3. Treat CP1 and CP2 as CLOSED / DIRECT QA PASS.
+4. Treat CP3 design as CLOSED and implementation as MATERIALIZED; do not redesign it by default.
+5. Pull the current CP3 materialization to the canonical WSL workspace.
+6. Verify uv lock/sync and run Ruff format/lint + mypy + fast tests.
+7. Run the real PostgreSQL 18.4 acceptance suite using the disposable CP2-image cluster.
+8. Fix only direct evidence-backed defects under an exact correction gate.
+9. Run full pytest, uv build and remote exact-delta/readback QA.
+10. Record CP3 CLOSED / DIRECT QA PASS only after every required direct item passes.
 11. Proceed to CP4 only after CP3 PASS.
 12. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
 ```
 
 ### Immediate next action
 
-**Begin CP3 READ-ONLY design/research. No CP3 repository write is authorized by this handoff alone.**
+**Pull the current CP3 implementation and begin direct quality/acceptance execution. CP3 PASS is not yet earned.**
