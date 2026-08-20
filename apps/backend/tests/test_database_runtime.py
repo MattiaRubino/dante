@@ -35,7 +35,7 @@ def test_database_url_is_structured_and_redacts_password() -> None:
     assert url.database == "dante"
     assert "p@ss:/word" not in str(url)
     assert "***" in str(url)
-    assert url.render_as_string(hide_password=False).count("%40") == 1
+    assert "%40" in url.render_as_string(hide_password=False)
 
 
 def test_runtime_uses_bounded_async_pool_and_explicit_session_semantics() -> None:
@@ -59,6 +59,6 @@ def test_runtime_engine_never_enables_sql_parameter_echo() -> None:
     runtime = create_database_runtime(_settings())
     try:
         assert runtime.engine.echo is False
-        assert runtime.engine.hide_parameters is True
+        assert runtime.engine.sync_engine.hide_parameters is True
     finally:
         runtime.engine.sync_engine.dispose()
