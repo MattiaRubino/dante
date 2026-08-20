@@ -21,9 +21,7 @@ def _current_revision(database: Any) -> str | None:
         )
     ) as connection:
         connection.execute("SET ROLE dante_owner")
-        row = connection.execute(
-            "SELECT version_num FROM dante.alembic_version"
-        ).fetchone()
+        row = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         return None if row is None else str(row[0])
 
 
@@ -38,9 +36,7 @@ def test_fresh_database_reaches_the_single_repository_head(
         user=provisioned_database.cluster.admin_user,
         password=provisioned_database.cluster.admin_password,
     ) as connection:
-        before = connection.execute(
-            "SELECT to_regclass('dante.alembic_version')"
-        ).fetchone()
+        before = connection.execute("SELECT to_regclass('dante.alembic_version')").fetchone()
         assert before == (None,)
 
     script = ScriptDirectory.from_config(alembic_config)
