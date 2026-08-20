@@ -135,6 +135,6 @@ async def test_savepoint_failure_preserves_outer_transaction(migrated_database: 
                     text("SELECT id, value FROM dante.cp3_transaction_probe ORDER BY id")
                 )
             ).all()
-            assert rows == [(1, "outer")]
+            assert [tuple(row) for row in rows] == [(1, "outer")]
     finally:
         await runtime.dispose()
