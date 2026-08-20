@@ -4,11 +4,11 @@ Each active/pending-integration workstream has one operational handoff. It is th
 
 ## Current / pending-integration workstreams
 
-- [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS on `feature/frontend-foundation`; PENDING MAIN INTEGRATION; production frontend scaffold/direct validation NOT STARTED**.
 - [`today-home.md`](today-home.md) — separate Phase-4 Home/Today UX/product-structure workstream; prototype/UX authority only, not production engineering authority.
 
 ## Completed / integrated workstreams
 
+- [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**; former `feature/frontend-foundation` branch merged/auto-deleted; production frontend scaffold/direct validation remain NOT STARTED.
 - [`engineering-foundation.md`](engineering-foundation.md) — **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #21**.
 - [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated via PR #15**; direct selected-stack implementation validation remains carried forward/not started.
 - [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated via PR #13 / post-merge aligned via PR #14**.
@@ -25,7 +25,7 @@ Each active/pending-integration workstream has one operational handoff. It is th
 PHYSICAL TARGET              CLOSED / ACCEPTED
 ENGINEERING FOUNDATION v0    CLOSED / ACCEPTED
 FRONTEND FOUNDATION          DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
-FRONTEND MAIN INTEGRATION    PENDING
+FRONTEND MAIN INTEGRATION    COMPLETE VIA PR #22
 DIRECT HG PASS               0
 FRONTEND DIRECT VALIDATION   NOT RUN
 SELECTED != DEPLOYED
@@ -36,8 +36,10 @@ Version-sensitive claims require current primary-source verification when materi
 
 ## Operational rule
 
-The handoff is the workstream save-game. Current `main` remains integrated authority; pending-integration branch truth is bounded to its workstream until merge.
+The handoff is the workstream save-game. Current `main` remains integrated authority; newer unmerged branch truth is bounded to its active workstream until merge.
 
-Before continuation read development operating/safety rules, verify branch/main relation, read complete current workstream specs/ADRs and consume closed model/Engineering authorities.
+Before continuation read development operating/safety rules, verify current Git relation, read complete applicable specs/ADRs and consume closed model/Engineering authorities.
+
+For frontend continuation, consume the integrated Frontend Foundation and open a fresh bounded materialization/scaffold/direct-validation workstream; do not restart general stack/architecture selection without concrete contradictory evidence.
 
 Durable architecture changes belong in appropriate current specs/ADRs, not only handoff text. Historical sources never override later current truth.
