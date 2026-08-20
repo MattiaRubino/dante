@@ -227,18 +227,17 @@ While there is one active developer:
 
 ## 17. Current branch/workstream continuation
 
-Current frontend Foundation design on `feature/frontend-foundation` is:
+Frontend Engineering Foundation status:
 
 ```text
 Passo 1 technology design     PASS
 Passo 2 architecture design   PASS
 Passo 3 clean review          FINAL REVIEW PASS
 Foundation design             CLOSED / ACCEPTED
-main integration              PENDING
+main integration              COMPLETE VIA PR #22
+former feature branch         MERGED / AUTO-DELETED
 ```
 
-PR creation and merge still require explicit authorization.
-
-Only after protected-main integration should a fresh branch/gate materialize production Web/Mobile/workspace artifacts and execute direct validations.
+The next frontend work is not another integration step. Open a fresh bounded branch/gate to materialize production Web/Mobile/workspace artifacts and execute direct validations progressively.
 
 Backend production scaffold remains a separate not-started workstream with its own future gate.
