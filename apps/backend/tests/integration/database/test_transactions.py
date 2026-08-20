@@ -5,6 +5,8 @@ from typing import Any
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 
 from dante.platform.database.runtime import create_database_runtime
 
@@ -12,9 +14,16 @@ pytestmark = pytest.mark.postgres
 
 
 async def _create_probe_table(database: Any) -> None:
-    runtime = create_database_runtime(database.runtime_settings())
+    engine = create_async_engine(
+        database.sqlalchemy_url(
+            "dante_migrator",
+            database.cluster.migrator_password,
+        ),
+        poolclass=NullPool,
+        hide_parameters=True,
+    )
     try:
-        async with runtime.engine.begin() as connection:
+        async with engine.begin() as connection:
             await connection.exec_driver_sql("SET ROLE dante_owner")
             await connection.exec_driver_sql(
                 "CREATE TABLE dante.cp3_transaction_probe ("
@@ -22,7 +31,7 @@ async def _create_probe_table(database: Any) -> None:
             )
             await connection.exec_driver_sql("RESET ROLE")
     finally:
-        await runtime.dispose()
+        await engine.dispose()
 
 
 @pytest.mark.asyncio
