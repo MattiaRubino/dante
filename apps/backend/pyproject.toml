@@ -14,7 +14,7 @@ dependencies = [
     "uvicorn[standard]>=0.52.1,<0.53",
     "sqlalchemy[asyncio]>=2.0.51,<2.1",
     "psycopg[binary]>=3.3.4,<3.4",
-    "alembic>=1.19.0,<1.20",
+    "alembic>=1.19.1,<1.20",
 ]
 
 [build-system]
@@ -69,6 +69,7 @@ select = [
     "PERF",
     "PIE",
     "PT",
+    "PTH",
     "PTH",
     "RET",
     "RUF",
