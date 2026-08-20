@@ -44,6 +44,18 @@ Changing `Cattura` to another product term must not require renaming the technic
 | `home.contextRail.capture.history` | Registro completo | Full log | WORKING | Deeper capture history access. |
 | `home.topbar.create` | Crea | Create | WORKING | Existing quick-create wording; semantic relationship to Capture to review later. |
 | `home.topbar.search` | Cerca | Search | WORKING | Stable functional verb, not yet formally locked. |
+| `access` | Accesso | Access | TECHNICAL_ONLY | Surface/workstream family covering unauthenticated entry, re-auth and first-run handoff. Not intended as a primary navigation label. |
+| `access.signIn` | Accedi a DANTE | Sign in to DANTE | WORKING | Neutral existing-account entry. `Bentornato` / `Welcome back` was rejected because it assumes prior use. |
+| `access.signUpEmail` | Crea il tuo account DANTE | Create your DANTE account | WORKING | DANTE-owned account creation begins with email; profile data comes later. |
+| `access.signUpPassword` | Proteggi il tuo account | Protect your account | WORKING | Password step after email. Exact backend password policy remains separate. |
+| `access.verifyEmail` | Controlla la tua email | Check your email | WORKING | Email verification UX. |
+| `access.forgotPassword` | Recupera l’accesso | Recover access | WORKING | Neutral recovery entry. |
+| `access.setupName` | Nome preferito | Preferred name | WORKING | Lightweight post-account setup field, not account identity authority. |
+| `access.setupLocale` | Lingua e fuso orario | Language and time zone | WORKING | Operational setup, not inferred preference semantics. |
+| `access.setupStart` | Da dove vuoi iniziare? | Where do you want to start? | WORKING | First-run branching prompt; choices are not permanent. |
+| `access.homeHandoff` | — | — | TECHNICAL_ONLY | Prototype handoff marker. It is not a replacement name/implementation for Home. |
+| rejected sign-in heading | Bentornato | Welcome back | REJECTED | Assumes the person has used DANTE before; replaced by neutral sign-in wording. |
+| rejected English auth wording | Login to DANTE | Login to DANTE | REJECTED | Less natural as a user-facing heading than `Sign in to DANTE`. |
 
 ## Rename procedure
 

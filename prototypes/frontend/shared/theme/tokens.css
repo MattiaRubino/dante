@@ -46,4 +46,26 @@
   --dante-font-size-body: 0.875rem;
   --dante-font-weight-medium: 590;
   --dante-font-weight-strong: 690;
+
+  /* Access A3.4 semantic mapping — light auth surface */
+  --dante-access-canvas: #f4f1eb;
+  --dante-access-surface: #fffdfa;
+  --dante-access-text-primary: #222f37;
+  --dante-access-text-secondary: #40505a;
+  --dante-access-text-muted: #6e777c;
+  --dante-access-text-soft: #949a9e;
+  --dante-access-border: #c9c3bc;
+  --dante-access-border-soft: #ddd8d1;
+  --dante-access-accent: #ea5c12;
+  --dante-access-accent-hover: #d94f0b;
+  --dante-access-accent-soft: rgba(234, 92, 18, 0.10);
+  --dante-access-danger: #b42318;
+  --dante-access-success: #1f7a4d;
+  --dante-access-focus-ring: 0 0 0 4px rgba(234, 92, 18, 0.13);
+  --dante-access-radius-field: 10px;
+  --dante-access-radius-provider: 11px;
+  --dante-access-radius-panel: 26px;
+  --dante-access-shadow-panel: 0 24px 70px rgba(34, 47, 55, 0.09), 0 3px 12px rgba(34, 47, 55, 0.04);
+  --dante-access-corner-mark-opacity: 0.22;
+  --dante-access-corner-mark-opacity-compact: 0.18;
 }

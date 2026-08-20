@@ -42,10 +42,34 @@ SHA-256  a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
 
 The accepted B1 result is reconstructed deterministically by `prototypes/frontend/home/work/build.py` from the retained complete baseline plus the accepted B1 override. This keeps the complete baseline, the editable/modular work source and the exact accepted result independently traceable.
 
+## Current Access state
+
+Access is developed on the bounded child branch `prototype/access-system` and does not change the accepted Home implementation.
+
+Current selected review checkpoint:
+
+```text
+A3.4 — Access System
+size     93897 bytes
+SHA-256  b1fa909765c1a82db64571ee467ede6bc344c34afc6093d0eae07f335840cec6
+status   SELECTED / APPROVED REVIEW CHECKPOINT / PRE-PRODUCTION
+```
+
+Read:
+
+- `docs/frontend/access/contract.md`
+- `docs/frontend/access/state-model.md`
+- `docs/frontend/access/current-checkpoint.md`
+- `docs/frontend/access/benchmark-2026-08-20.md`
+- `prototypes/frontend/access/README.md`
+
+The exact selected standalone HTML is preserved through a hash-verified archive because the review connector has a payload-size limit. This is storage/transport only; the restored artifact is the complete standalone HTML reviewed in-browser.
+
 ## Authorities
 
 - `ui-registry.md` — current inventory and behavior/status
 - `home/contract.md` — exact Home contract and non-regression
+- `access/contract.md` — current Access review contract on the bounded Access branch
 - `terminology.md` — names, technical IDs and naming history
 - `localization.md` + `prototypes/frontend/shared/locales/` — user-facing copy
 - `design-tokens.md` + `prototypes/frontend/shared/theme/tokens.css` — visual tokens

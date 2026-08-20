@@ -59,6 +59,33 @@ Panel and popover shadows.
 
 UI size/weight/line-height roles. Product headings and body copy should use roles rather than per-element arbitrary values.
 
+## Access A3.4 semantic mapping
+
+The selected Access checkpoint introduces a deliberately light auth surface while Home remains on the existing dark prototype palette. The shared token file therefore carries a separate `--dante-access-*` semantic family instead of overwriting Home roles.
+
+Current reviewed Access roles include:
+
+- `--dante-access-canvas`
+- `--dante-access-surface`
+- `--dante-access-text-primary`
+- `--dante-access-text-secondary`
+- `--dante-access-text-muted`
+- `--dante-access-border`
+- `--dante-access-accent`
+- `--dante-access-danger`
+- `--dante-access-success`
+- `--dante-access-focus-ring`
+- `--dante-access-radius-field`
+- `--dante-access-radius-provider`
+- `--dante-access-radius-panel`
+- `--dante-access-shadow-panel`
+- `--dante-access-corner-mark-opacity`
+- `--dante-access-corner-mark-opacity-compact`
+
+A3.4 is preserved as exact review bytes and is not retroactively rewritten only to replace its local CSS variables with shared names. Production frontend migration should map the accepted semantic roles to the shared tokens/components rather than copy the standalone CSS mechanically.
+
+The large cropped Living Orbits symbol is a visual treatment of the locked symbol master. Its geometry is not a design token and must not be reinterpreted as a new logo asset.
+
 ## Brand/skin boundary
 
 The eventual brand/skin pass may change token values substantially. It should not require structural rewrites if surfaces obey the token contract.

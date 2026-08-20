@@ -1,0 +1,33 @@
+{
+  "checkpoint": "Access A3.4",
+  "status": "PASS_FOR_APPROVED_REVIEW_CHECKPOINT",
+  "artifact": {
+    "size_bytes": 93897,
+    "sha256": "b1fa909765c1a82db64571ee467ede6bc344c34afc6093d0eae07f335840cec6",
+    "xz_size_bytes": 18400,
+    "xz_sha256": "923f97e10103ca27115433f7004c93134ce579fdedb5a91d28c4ac35a91cf146"
+  },
+  "browser": {
+    "engine": "Chromium",
+    "viewport_desktop": "1440x960",
+    "viewport_mobile": "390x844",
+    "page_errors": 0,
+    "screens": 18,
+    "reauth_overlay": true
+  },
+  "flows": {
+    "default_signin": "PASS",
+    "signup_email_to_password_to_verify": "PASS",
+    "verify_to_setup": "PASS",
+    "locale_it_en": "PASS",
+    "all_declared_screens_render": "PASS",
+    "mobile_brand_stage_hidden": "PASS"
+  },
+  "visual": {
+    "corner_mark_desktop_opacity": "0.22",
+    "corner_mark_compact_opacity": "0.18",
+    "full_opacity_a3_5": "REJECTED"
+  },
+  "backend_contract_frozen": false,
+  "production_frontend": false
+}

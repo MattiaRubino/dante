@@ -34,3 +34,14 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `ADDED` permanent frontend operational rule: registry + surface contract + terminology/localization/tokens + append-only history must stay synchronized with implementation.
 - `ADDED` stable English technical IDs independent from visible labels.
 - `ADDED` localization and semantic design-token authorities for new/touched UI.
+
+## 2026-08-20 — Access A3.4 selected review checkpoint
+
+- `ADDED` complete Access review contract/state model covering sign-in, DANTE-owned staged sign-up, verification, recovery/reset, provider handoff/error/linking, re-auth and lightweight first-run handoff.
+- `ADDED` Italian/English `access.*` locale registry mirrored from the selected standalone prototype.
+- `ADDED` semantic `--dante-access-*` token family for the reviewed light Access surface without changing Home token values.
+- `ADDED` exact hash-verified A3.4 standalone archive and browser QA evidence.
+- `CHANGED` Access selected checkpoint from A3.1 to A3.4.
+- `VISUAL_ONLY` replaced the generic desktop orbit decoration with a large cropped locked Living Orbits symbol at the selected muted opacity.
+- `REJECTED` A3.5 full-opacity corner-mark experiment as too visually dominant.
+- `NO_CHANGE` Home/B1/B2 implementation, backend auth/session/provider contracts, production React/framework choice and locked brand masters.

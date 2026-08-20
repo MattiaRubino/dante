@@ -103,6 +103,20 @@ The mature standalone temporal prototype evidence is preserved as historical reg
 
 The current Home artifact is approved prototype evidence. Visible labels such as `Worlds`, `Stats`, `Per te`, `Appunti` and `Review` remain working vocabulary until a deliberate naming/IA pass locks or replaces them.
 
+## 4A. Access research / selected review evidence
+
+On `prototype/access-system`:
+
+- `docs/frontend/access/benchmark-2026-08-20.md`
+- `docs/frontend/access/contract.md`
+- `docs/frontend/access/state-model.md`
+- `docs/frontend/access/current-checkpoint.md`
+- `prototypes/frontend/access/archive/a3-4-approved-2026-08-20/`
+
+The benchmark records official provider/security authorities and mature-product pattern observations used to reject the early low-fidelity Access attempts and converge on the selected A3.4 system. Provider/security documentation is authority for provider/security behavior; competitor product examples are pattern evidence only.
+
+A3.4 is the selected pre-production review checkpoint, not production frontend code or backend-auth truth.
+
 ## 5. Evidence-use rule
 
 When using research in design decisions:

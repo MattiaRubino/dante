@@ -44,6 +44,24 @@ For every **new or touched** user-facing string:
 
 The current monolithic standalone artifact still contains historical inline copy. This is transitional debt, not permission to add more untracked strings. As modules are touched, their user-facing copy must be migrated toward the locale registry.
 
+## Access A3.4 namespace
+
+The selected Access A3.4 review artifact contains complete Italian/English dictionaries internally so the standalone can switch locale without external dependencies. The same reviewed values are mirrored into the shared locale files with an `access.` prefix for future production migration.
+
+Examples:
+
+```text
+prototype key              shared key
+signin.title               access.signin.title
+signup.title               access.signup.title
+verify.title               access.verify.title
+setupStart.title           access.setupStart.title
+```
+
+The embedded prototype dictionary remains a self-contained review mechanism; `prototypes/frontend/shared/locales/` is the durable locale registry. Production React/runtime code should consume the shared namespace rather than depending on the prototype's inline object.
+
+Access A3.4 currently mirrors 125 keys for each locale and keeps Italian/English parity.
+
 ## Rename cost target
 
 A pure wording change should normally be:
