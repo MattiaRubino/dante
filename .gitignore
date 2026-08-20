@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+infra/compose/secrets/*.local
 *.pem
 *.key
 *.p12
