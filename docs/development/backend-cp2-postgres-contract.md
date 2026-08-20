@@ -684,3 +684,73 @@ After CP2 files are remotely materialized and read back, proceed in this order:
 ```
 
 No CP3/application/schema work is authorized by this contract.
+
+## 13. Direct implementation finding — PGDG archive TLS trust bootstrap
+
+The first canonical clean/no-cache image build on 2026-08-20 failed before any PostGIS or pgvector package installation.
+
+Observed failure boundary:
+
+```text
+https://apt-archive.postgresql.org/pub/repos/apt
+SSL connection failed: certificate verify failed
+```
+
+The subsequent `Unable to locate package` messages were downstream effects of the PGDG archive index not being downloaded; they were not evidence that the approved package versions were absent.
+
+Direct diagnosis used the exact pinned PostgreSQL base image. It proved:
+
+```text
+base OCI digest
+sha256:a02db8cac496f15b094798a38254f14d6e00741f709360e5e00bb6668ea31636
+
+ca-certificates in final base filesystem
+NOT INSTALLED
+
+PGDG signing key
+PRESENT at /usr/local/share/keyrings/postgres.gpg.asc
+```
+
+An ephemeral diagnostic container then installed Debian Trixie `ca-certificates` and verified the same archive TLS endpoint with OpenSSL:
+
+```text
+Verification: OK
+Verify return code: 0 (ok)
+```
+
+A second ephemeral proof preserved HTTPS and the existing PGDG `signed-by` keyring policy, refreshed the archive index successfully, and proved that the exact approved package versions are present in `trixie-pgdg-archive`:
+
+```text
+postgresql-18-postgis-3 | 3.6.4+dfsg-2.pgdg13+1
+postgresql-18-pgvector  | 0.8.6-1.pgdg13+1
+```
+
+Therefore the accepted repair is intentionally narrow:
+
+```text
+Debian Trixie repositories
+→ install ca-certificates
+→ verify non-empty system CA bundle
+→ switch PGDG source to HTTPS trixie-pgdg-archive
+→ keep signed-by=/usr/local/share/keyrings/postgres.gpg.asc
+→ install exact PostGIS/pgvector package pins
+```
+
+Explicitly rejected responses to this finding:
+
+```text
+disable TLS certificate verification
+allow unauthenticated APT packages
+replace HTTPS with an insecure bypass
+change approved extension versions
+abandon the official PGDG archive
+source-build the GIS/vector stack merely to avoid the trust-store prerequisite
+```
+
+This finding does not earn the clean-build requirement. After the repository repair is pulled, the same canonical command must be rerun:
+
+```bash
+docker compose -f infra/compose/local.yaml build --no-cache postgres
+```
+
+Only a successful post-repair build can advance CP2 beyond the image-build acceptance boundary.
