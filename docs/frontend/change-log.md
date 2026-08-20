@@ -34,3 +34,14 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `ADDED` permanent frontend operational rule: registry + surface contract + terminology/localization/tokens + append-only history must stay synchronized with implementation.
 - `ADDED` stable English technical IDs independent from visible labels.
 - `ADDED` localization and semantic design-token authorities for new/touched UI.
+
+## 2026-08-20 — B2 Central Stage v16 WIP checkpoint
+
+- `ADDED` a non-accepted WIP checkpoint preserving the current B2 central-stage direction before resize hardening and brand/logo alignment.
+- `CHANGED` working central-stage labels/direction to `Mondi` and `Segnali` in the saved preview lineage.
+- `CHANGED` working Signal composition to a maximum of three visible items with a centered compact track.
+- `CHANGED` working Signal navigation to follow the Mondi carousel grammar: previous/next, selection and drag/swipe.
+- `ADDED` working partial-Mondi empty-slot treatment using existing sphere positions rendered ghosted with `+` instead of adding new geometry.
+- `REMOVED` the experimental external add control from the saved WIP checkpoint.
+- `KNOWN_ISSUE` global browser/window resize is not stable; responsive/global geometry QA remains open.
+- `NO_CHANGE` accepted Home build remains B1 Context Rail v1. This WIP save does not close B2, does not promote new backend semantics, and does not finalize branding/logo treatment.
