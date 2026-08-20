@@ -1,14 +1,16 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1 CLOSED / CP2 NEXT**
+- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 NEXT**
 - Branch: `feature/backend-scaffold`
 - Decision baseline PRE-SCOPE: `9f7c21857cf7a9c7300053370954c4b93f9bd96a`
 - CP1 closure implementation HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
+- CP2 implementation/repair HEAD before closure docs: `2d79c89d78b9031a1fe4323bbdcdb4b359fa87d6`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
 - Concrete Logical → PostgreSQL schema: **OUT OF SCOPE UNTIL SCAFFOLD QA**
 - Detailed CP1 contract: `docs/development/backend-cp1-contract.md`
+- Detailed CP2 contract: `docs/development/backend-cp2-postgres-contract.md`
 
 ## 1. Purpose
 
@@ -29,9 +31,10 @@ CP1 Python/backend process + typed config
         CLOSED / DIRECT QA PASS
           ↓
 CP2 reproducible LOCAL PostgreSQL
-        NEXT
+        CLOSED / DIRECT QA PASS
           ↓
 CP3 persistence + migrations + real PostgreSQL harness
+        NEXT
           ↓
 CP4 quality / CI enforcement
           ↓
@@ -93,7 +96,7 @@ Detailed clean-machine/onboarding instructions are in:
 
 `docs/development/local-backend-workstation-bootstrap.md`
 
-CP1 is now materially implemented and directly validated:
+CP1 is materially implemented and directly validated:
 
 ```text
 apps/backend production project       CREATED / REMOTE
@@ -111,14 +114,35 @@ real /health/live HTTP                 PASS
 real /health/ready HTTP                PASS
 ```
 
+CP2 is materially implemented and directly validated:
+
+```text
+DANTE PostgreSQL LOCAL image           CREATED / REMOTE / BUILD PASS
+PostgreSQL                             18.4 / DIRECT PASS
+PostGIS package                        3.6.4 exact / DIRECT PASS
+pgvector package                       0.8.6 exact / DIRECT PASS
+fresh initdb                           PASS
+selected extension envelope            5/5 PASS
+PostGIS capability                     PASS
+pgvector capability                    PASS
+pg_trgm capability                     PASS
+unaccent capability                    PASS
+native PostgreSQL FTS                  PASS
+pg_stat_statements preload             PASS
+pg_stat_statements real collection     PASS
+named-volume persistence               PASS
+destructive volume reset               PASS
+fresh extension reinitialization       PASS
+Windows DBeaver connectivity           PASS
+```
+
 Still not implemented:
 
 ```text
-PostgreSQL 18.4 LOCAL image            NOT CREATED
-selected extension envelope            NOT DIRECTLY VERIFIED
 SQLAlchemy/psycopg persistence         NOT CREATED
 Alembic migration harness              NOT CREATED
 real PostgreSQL integration harness    NOT CREATED
+runtime/migrator application roles     NOT CREATED
 backend CI workflows                   NOT CREATED
 concrete business schema               NOT STARTED
 ```
@@ -130,11 +154,11 @@ Do not create the complete scaffold in one undifferentiated write.
 Use ordered checkpoints. Each checkpoint receives its own exact Git write gate, local direct validation and remote exact-delta QA before the next checkpoint is authorized.
 
 ```text
-CP1  Python/backend process + typed config                       CLOSED / PASS
+CP1  Python/backend process + typed config                       CLOSED / DIRECT QA PASS
  ↓
-CP2  reproducible LOCAL PostgreSQL infrastructure                NEXT
+CP2  reproducible LOCAL PostgreSQL infrastructure                CLOSED / DIRECT QA PASS
  ↓
-CP3  persistence + migration + real-PostgreSQL harness
+CP3  persistence + migration + real-PostgreSQL harness           NEXT
  ↓
 CP4  repository quality/CI enforcement once real checks exist
  ↓
@@ -258,11 +282,33 @@ frontend implementation
 
 The accepted application structure remains the architectural target, but empty layers are not materialized for ceremony.
 
-## 6. CP2 — Reproducible LOCAL PostgreSQL infrastructure — NEXT
+## 6. CP2 — Reproducible LOCAL PostgreSQL infrastructure — CLOSED
 
-CP2 is now the active next checkpoint because CP1 direct QA has passed and its lockfile is remotely verified.
+CP2 closed on 2026-08-20 after its complete approved direct acceptance contract passed on the canonical Windows 11 + WSL2 + Docker Desktop workstation.
 
-Goal:
+### Detailed authority
+
+The durable CP2 design, implementation findings, operating model and direct closure evidence live in:
+
+`docs/development/backend-cp2-postgres-contract.md`
+
+Do not reconstruct CP2 from chat history when that contract exists.
+
+### Materialized CP2 shape
+
+```text
+infra/
+├── local/postgres/
+│   ├── Dockerfile
+│   └── initdb/010-extensions.sql
+└── compose/
+    ├── local.yaml
+    └── README.md
+```
+
+The repository also ignores the workstation-local Compose secret file through `.gitignore`.
+
+### Final selected LOCAL database envelope
 
 ```text
 Docker Compose
@@ -278,48 +324,61 @@ PostgreSQL 18.4
 + native PostgreSQL FTS capability
 ```
 
-Requirements:
-
-- explicit/pinned component versions;
-- trusted PostgreSQL 18.4 base;
-- DANTE-owned reproducible build rather than an unpinned generic all-extensions image;
-- Linux container semantics;
-- deterministic initialization/bootstrap;
-- DANTE-scoped resource names;
-- synthetic LOCAL credentials only;
-- health check;
-- persistent LOCAL data through a Docker-managed volume unless an explicitly disposable test database is being used;
-- explicit reset/destruction procedure;
-- no production credentials;
-- host connection suitable for DBeaver/PyCharm Database Tools over the published LOCAL port;
-- extension installation, activation and version/capability queries directly verified;
-- `pg_stat_statements` preload configuration directly verified.
-
-Likely ownership boundary from the closed repository layout:
+Direct closure evidence includes:
 
 ```text
-infra/local/postgres/
-infra/compose/
+Compose config validation                 PASS
+immutable postgres:18.4-trixie digest     PASS
+clean/no-cache image build                PASS
+exact PostGIS/pgvector package pins       PASS
+fresh cluster init                        PASS
+010-extensions.sql                        PASS
+five selected extensions                  PASS
+functional capability probes              PASS
+pg_stat_statements actual collection      PASS
+normal down/up persistence                PASS
+down --volumes destructive reset          PASS
+fresh post-reset reinitialization          PASS
+Windows DBeaver 127.0.0.1:5432            PASS
 ```
 
-Exact files, image base, extension installation strategy, compose topology, volume naming, ports, credentials and initialization semantics must be researched/reviewed before the CP2 write gate rather than guessed here.
+The first clean build exposed a real TLS trust-store prerequisite: the pinned PostgreSQL base contained the PGDG signing key but did not have Debian `ca-certificates` installed in the final filesystem. The accepted repair installs the Debian trust store before using the PGDG historical archive over HTTPS and preserves both TLS verification and PGDG signed-repository verification. The repaired no-cache build passed directly.
 
 PgBouncer remains selected but is not forced into every day-one LOCAL connection. Its activation belongs to the concrete pooling/compatibility validation boundary.
 
-## 7. CP3 — Persistence, migrations and real PostgreSQL harness
+### CP2 final state
 
-CP3 starts only after the DANTE PostgreSQL image/environment is directly operational.
+```text
+DANTE PostgreSQL image       PASS
+PostgreSQL 18.4              PASS
+PostGIS 3.6.4                PASS
+pgvector 0.8.6               PASS
+pg_trgm                      PASS
+unaccent                     PASS
+pg_stat_statements           PASS
+native FTS                   PASS
+named-volume persistence     PASS
+explicit reset               PASS
+Windows GUI connectivity     PASS
+CP2                          CLOSED / DIRECT QA PASS
+```
+
+CP2 does not imply application persistence, Alembic, privilege separation, Logical mapping, restore/PITR or Physical HG/PSV PASS.
+
+## 7. CP3 — Persistence, migrations and real PostgreSQL harness — NEXT
+
+CP3 is the active next checkpoint now that the DANTE PostgreSQL image/environment is directly operational.
 
 It introduces the first real technical persistence boundary using the accepted stack:
 
 ```text
-SQLAlchemy 2.0 stable line
+SQLAlchemy 2.x stable line
 psycopg 3
 async DB I/O boundary
 Alembic migration authority
 ```
 
-Expected responsibilities include, once exact design is approved:
+Expected responsibilities include, once exact current design/version research is approved:
 
 - typed DB configuration;
 - async engine/session lifecycle;
@@ -333,6 +392,8 @@ Expected responsibilities include, once exact design is approved:
 - runtime/migrator privilege separation where the concrete harness activates those identities.
 
 No concrete Logical owner/table mapping is authorized by CP3. An empty/technical migration baseline may exist only if it is the cleanest truthful way to prove the migration machinery.
+
+CP3 requires its own READ-ONLY design/research, exact decisions and exact Git write gate before implementation.
 
 ## 8. CP4 — Quality, architecture and CI enforcement
 
@@ -401,23 +462,25 @@ Until explicitly reopened by a later boundary, do not add:
 
 ## 11. Exact resume point for the next chat
 
-A new conversation must not redesign Engineering Foundation, repeat CP1 implementation work or jump directly into PostgreSQL/schema code.
+A new conversation must not redesign Engineering Foundation, repeat CP1/CP2 implementation work or jump directly into concrete PostgreSQL schema mapping.
 
 Resume in this exact order:
 
 ```text
-1. Read current project truth, this handoff, and `docs/development/backend-cp1-contract.md`.
+1. Read current project truth, this handoff, `backend-cp1-contract.md` and `backend-cp2-postgres-contract.md`.
 2. Verify `feature/backend-scaffold`, current remote/local HEAD and clean tree.
-3. Treat CP1 as CLOSED / DIRECT QA PASS; do not reopen it without concrete evidence.
-4. Start CP2 READ-ONLY design/research for reproducible LOCAL PostgreSQL infrastructure.
-5. Re-check current official source/version evidence for PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6 and the selected built-in extensions.
-6. Decide the DANTE-owned image/build strategy, extension installation path, Compose topology, volume/persistence semantics, healthcheck, port and synthetic LOCAL credential model.
-7. Define direct CP2 acceptance evidence, including persistence across container recreation/restart and host GUI connectivity.
-8. Present a fresh exact CP2 Git write gate before creating any PostgreSQL/Compose file.
-9. Only after explicit approval, materialize CP2 and run direct validation.
-10. Proceed to CP3 only after CP2 PASS.
+3. Treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts them.
+4. Start CP3 READ-ONLY design/research for persistence, migrations and the real PostgreSQL harness.
+5. Re-check current official version/compatibility evidence for SQLAlchemy 2.x, psycopg 3 and Alembic.
+6. Decide typed DB configuration, async engine/session lifecycle, transaction ownership, migration authority and test-database lifecycle.
+7. Decide the minimum real runtime/migrator privilege split that CP3 can honestly exercise.
+8. Define direct CP3 acceptance evidence, including clean base → head migration and real PostgreSQL integration.
+9. Present a fresh exact CP3 Git write gate before any CP3 repository write.
+10. Only after explicit approval, materialize CP3 and run direct validation.
+11. Proceed to CP4 only after CP3 PASS.
+12. Keep concrete Logical → PostgreSQL owner/table mapping deferred until scaffold closure.
 ```
 
 ### Immediate next action
 
-**Begin CP2 READ-ONLY design/research. No PostgreSQL/Compose repository write is authorized by this handoff alone.**
+**Begin CP3 READ-ONLY design/research. No CP3 repository write is authorized by this handoff alone.**
