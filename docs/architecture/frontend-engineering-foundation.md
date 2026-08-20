@@ -1,16 +1,16 @@
 # Frontend Engineering Foundation
 
-- Status: **CURRENT WORKSTREAM SPECIFICATION — PASSO 1 DESIGN COMPLETE / PENDING MAIN INTEGRATION**
-- Workstream branch: `feature/frontend-foundation`
+- Status: **CURRENT SPECIFICATION — PASSO 1 DESIGN COMPLETE / INTEGRATED VIA PR #22**
+- Historical workstream branch: `feature/frontend-foundation` — **MERGED / AUTO-DELETED**
 - Decision date: 2026-08-20
 - Production frontend code: **NOT STARTED**
 - Dependencies installed/configured: **NO**
 - Direct implementation validation: **NOT STARTED**
-- Next boundary: **Passo 2 — frontend structure / ownership / dependency boundaries / local-dev and CI integration**
+- Next boundary: **fresh frontend materialization / scaffold / direct-validation workstream**
 
 ## 1. Purpose and authority
 
-This document is the current durable technical specification for the DANTE frontend-engineering foundation while the workstream is unmerged.
+This document is the current durable technology specification for the DANTE Frontend Engineering Foundation, integrated into `main` through PR #22.
 
 It consumes, and does not reopen, the closed Product, Domain, Logical, Physical and Engineering Foundation decisions. In particular:
 
@@ -21,7 +21,7 @@ It consumes, and does not reopen, the closed Product, Domain, Logical, Physical 
 - GitHub Actions remains the repository-wide primary CI/CD control plane;
 - frontend technology selection does not authorize product-surface implementation.
 
-After protected-main integration, this document becomes the current frontend technology authority unless a later explicit ADR/specification supersedes a decision.
+This document is the current frontend technology authority unless a later explicit ADR/specification supersedes a decision. The accepted application/package/data architecture is the companion `frontend-engineering-foundation-part-2.md`.
 
 ## 2. Evidence/status discipline
 
@@ -188,9 +188,18 @@ The old separate `@powersync/op-sqlite` package is not the target v2 packaging.
 
 ### 5.6 Web offline activation
 
-PowerSync Web remains an available selected capability, but **mandatory Web local-database/offline activation is not decided by Passo 1**.
+PowerSync Web remains an available selected capability, but mandatory Web local-database/offline activation is not part of the baseline.
 
-Passo 2 must decide the Web runtime activation boundary from actual requirements. The default must not become “offline everywhere” merely because PowerSync Web exists.
+Passo 2 resolved the runtime boundary as:
+
+```text
+WEB
+online-first baseline
+PowerSync Web local database = AVAILABLE / DORMANT
+browser PWA/service worker   = DORMANT / NOT BASELINE
+```
+
+Activation requires a concrete product/runtime requirement and direct browser validation; the Foundation does not default to “offline everywhere” merely because PowerSync Web exists.
 
 ## 6. API contracts and remote-state boundary
 
@@ -200,7 +209,7 @@ FastAPI OpenAPI is the transport-contract source. Orval 8 is selected for TypeSc
 
 Status: **SELECTED / DIRECT VALIDATION REQUIRED**.
 
-The exact generated-output placement and whether a particular endpoint receives generated TanStack Query helpers, Zod artifacts or MSW mocks belongs to Passo 2/materialization. Do not generate blanket HTTP query hooks for read models intentionally served from PowerSync local projections.
+The generated-output ownership and endpoint-specific Query/Zod/MSW policy are fixed by the companion Part-2 architecture and materialization rules. Do not generate blanket HTTP query hooks for read models intentionally served from PowerSync local projections.
 
 ### 6.2 TanStack Query
 
@@ -323,7 +332,7 @@ ESLint flat config
 + Prettier 3
 ```
 
-ESLint remains the architecture/lint authority rather than replacing the stack with Biome. Passo 2 will define dependency/import boundaries.
+ESLint remains the architecture/lint authority rather than replacing the stack with Biome. Part 2 defines dependency/import boundaries and their future executable enforcement.
 
 ### 11.2 Web testing
 
@@ -408,7 +417,7 @@ Use repository/provider-native secret mechanisms as appropriate:
 - Cloudflare secrets/variables for delivery/runtime scopes;
 - no live credential committed to Git.
 
-The exact env-file/config-module structure belongs to Passo 2.
+The accepted config/environment ownership is defined in the companion Part-2 specification and materialized only under a fresh implementation scope.
 
 ## 15. Direct-validation obligations carried into materialization
 
@@ -473,7 +482,7 @@ A later measured requirement may reopen a bounded decision through normal archit
 
 ```text
 FRONTEND TECHNOLOGY SELECTION
-DESIGN COMPLETE
+DESIGN COMPLETE / INTEGRATED VIA PR #22
 
 selected technologies are architecture decisions,
 not blanket direct-PASS claims.
@@ -492,11 +501,11 @@ DIRECT FRONTEND VALIDATION
 NOT STARTED
 ```
 
-No additional general technology-search phase is required before Passo 2.
+No additional general technology-search phase is required before materialization unless concrete contradictory evidence or a materially changed requirement appears.
 
-## 18. Next boundary — Passo 2
+## 18. Companion architecture and next boundary
 
-Passo 2 must define, in one coherent architecture pass:
+The integrated companion `frontend-engineering-foundation-part-2.md` defines:
 
 - exact `apps/web` and `apps/mobile` internal structure;
 - real shared-package map with actual consumers only;
@@ -510,4 +519,4 @@ Passo 2 must define, in one coherent architecture pass:
 - local Windows/WSL/Expo development workflow;
 - GitHub Actions integration and release boundaries.
 
-Passo 2 is architecture/structure design, not product-surface implementation.
+The next scope is production Foundation materialization/direct validation, not product-surface implementation and not another general architecture-selection pass.

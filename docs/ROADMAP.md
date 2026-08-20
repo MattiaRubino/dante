@@ -28,30 +28,16 @@ Frontend Engineering Foundation
         PASSO 2 PASS
         PASSO 3 FINAL REVIEW PASS
         DESIGN / ARCHITECTURE CLOSED / ACCEPTED
-        PENDING MAIN INTEGRATION
+        INTEGRATED VIA PR #22
 ```
 
 Architecture closure remains distinct from implementation/direct validation.
 
 ## Immediate next sequence
 
-### 1. Frontend Foundation protected-main integration
+### 1. Frontend production materialization
 
-The closed frontend design remains branch-local until integration.
-
-PR/merge follows repository safety:
-
-- explicit authorization before PR creation;
-- exact branch/main relation;
-- exact changed paths;
-- applicable real checks only;
-- expected-head merge safety;
-- post-merge main readback;
-- branch lifecycle verification.
-
-### 2. Frontend production materialization
-
-Only after Foundation integration, open a new exact scope to create real artifacts required for the accepted baseline:
+Frontend Foundation is integrated on `main` via PR #22. Open a fresh exact scope to create only real artifacts required for the accepted baseline:
 
 ```text
 root JS workspace manifests/config
@@ -66,35 +52,35 @@ Materialization progressively validates Node/pnpm/Turbo, Vite, Expo/RN, package 
 
 No dormant specialist receives placeholder infrastructure.
 
-### 3. Backend production scaffold — separate workstream
+### 2. Backend production scaffold — separate workstream
 
-Backend scaffold remains **NOT STARTED** and independent from Frontend Foundation closure.
+Backend scaffold remains **NOT STARTED** and independent from Frontend Foundation closure/integration.
 
 When separately authorized, materialize only real backend scaffold required by the closed Engineering Foundation under accepted `infra/` ownership.
 
-### 4. Concrete Logical → PostgreSQL implementation
+### 3. Concrete Logical → PostgreSQL implementation
 
 After backend scaffold QA, consume closed Logical contracts, review mappings, implement migrations, test against real PostgreSQL and build capability vertical slices.
 
-### 5. Product vertical slices
+### 4. Product vertical slices
 
 Production product surfaces begin only after relevant frontend/backend foundations and contracts exist.
 
 Prototype UX remains evidence/oracle; production implementation follows accepted feature/data/UI boundaries.
 
-### 6. Capability-triggered Physical implementation
+### 5. Capability-triggered Physical implementation
 
 Activate specialist components only at real requirements. Applicable validation obligations travel with activation.
 
-### 7. Remote DEV
+### 6. Remote DEV
 
 Activate shared remote integration only when LOCAL implementation benefits. Backend hosting/compute and IaC remain deliberate decisions at that boundary.
 
-### 8. UAT
+### 7. UAT
 
 Activate for real release candidates and applicable release/provider/performance/security/recovery rehearsal.
 
-### 9. PROD
+### 8. PROD
 
 Activate at production readiness with isolated production resources/identity/secrets and exact accepted artifacts.
 

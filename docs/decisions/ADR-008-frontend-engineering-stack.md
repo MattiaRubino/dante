@@ -1,6 +1,6 @@
 # ADR-008: Frontend Engineering Stack
 
-- Status: **ACCEPTED IN FRONTEND WORKSTREAM / PENDING MAIN INTEGRATION**
+- Status: **ACCEPTED / INTEGRATED VIA PR #22**
 - Date: 2026-08-20
 - Supersedes: [`ADR-001-client-platforms.md`](ADR-001-client-platforms.md)
 - Current specification: [`../architecture/frontend-engineering-foundation.md`](../architecture/frontend-engineering-foundation.md)
@@ -9,7 +9,7 @@
 
 ADR-001 selected Next.js + React for Web and Expo + React Native for Mobile before the dedicated frontend-engineering workstream had evaluated the complete DANTE stack against the closed Physical Model, local/offline semantics, backend boundary, monorepo governance and current 2026 ecosystem.
 
-The dedicated workstream now has enough evidence to replace that provisional Web framework choice and to fix the broader frontend engineering baseline.
+The dedicated workstream established enough evidence to replace that provisional Web framework choice and to fix the broader frontend engineering baseline. The accepted decision was integrated into protected `main` through PR #22.
 
 DANTE already has durable constraints that the frontend must consume:
 
@@ -109,8 +109,8 @@ DANTE optimizes sharing of contracts, validation, tokens, i18n, time semantics a
 - `apps/web` and `apps/mobile` remain separate first-class clients.
 - the frontend does not become a second canonical state authority;
 - PowerSync write behavior must follow operation-specific backend governance;
-- Web mandatory offline activation remains a Passo-2 runtime/data-boundary decision;
-- exact shared package boundaries remain a Passo-2 decision;
+- Web baseline is online-first; PowerSync Web/PWA activation remains dormant unless explicitly required;
+- exact shared package boundaries are governed by ADR-009 / the Part-2 specification;
 - selected technologies are not claimed as installed/configured/directly validated yet;
 - high-coupling integrations carry explicit materialization validation obligations.
 
@@ -118,7 +118,7 @@ DANTE optimizes sharing of contracts, validation, tokens, i18n, time semantics a
 
 ```text
 TECHNOLOGY SELECTION
-DESIGN COMPLETE
+DESIGN COMPLETE / INTEGRATED VIA PR #22
 
 INSTALLATION
 NOT STARTED

@@ -1,7 +1,7 @@
 # Frontend Engineering Foundation — Part 2: Application Architecture and Structure
 
-- Status: **CURRENT WORKSTREAM SPECIFICATION — PASSO 2 DESIGN COMPLETE / PASSO 3 REVIEW REPAIRED**
-- Workstream branch: `feature/frontend-foundation`
+- Status: **CURRENT SPECIFICATION — PASSO 2 DESIGN COMPLETE / PASSO 3 FINAL REVIEW PASS / INTEGRATED VIA PR #22**
+- Historical workstream branch: `feature/frontend-foundation` — **MERGED / AUTO-DELETED**
 - Decision date: 2026-08-20
 - Companion technology specification: [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md)
 - Repository-layout authority: [`../development/repository-layout-v0.md`](../development/repository-layout-v0.md)
@@ -746,7 +746,7 @@ Activated iOS builds use an accepted macOS-capable/cloud path.
 
 ## 28. Direct-validation carry-forward
 
-Passo 2 is design-complete. Validation remains for post-closure materialization.
+Passo 2 is design-complete. Validation remains for post-integration materialization.
 
 At minimum validate progressively:
 
@@ -777,22 +777,22 @@ A material failure reopens the affected technology/tooling adapter/boundary unle
 
 ```text
 PASSO 2
-DESIGN COMPLETE
+DESIGN COMPLETE / INTEGRATED VIA PR #22
 
 REPOSITORY-LAYOUT CONSISTENCY      PASS
-APPLICATION BOUNDARIES             ACCEPTED IN WORKSTREAM
-FEATURE-FIRST ARCHITECTURE         ACCEPTED IN WORKSTREAM
-DEPENDENCY DIRECTION               ACCEPTED IN WORKSTREAM
-PUBLIC-API-ONLY RULE               ACCEPTED IN WORKSTREAM
+APPLICATION BOUNDARIES             ACCEPTED
+FEATURE-FIRST ARCHITECTURE         ACCEPTED
+DEPENDENCY DIRECTION               ACCEPTED
+PUBLIC-API-ONLY RULE               ACCEPTED
 FEATURE CYCLES                     FORBIDDEN
-SHARED-PACKAGE POLICY              ACCEPTED IN WORKSTREAM
-DATA AUTHORITY MATRIX              ACCEPTED IN WORKSTREAM
-API/CODEGEN BOUNDARY               ACCEPTED IN WORKSTREAM
-POWERSYNC OWNERSHIP                ACCEPTED IN WORKSTREAM
-WEB ONLINE-FIRST / PWA DORMANT     ACCEPTED IN WORKSTREAM
-CONFIG/ENVIRONMENT MODEL           ACCEPTED IN WORKSTREAM
-UI/TOKEN/I18N/TIME BOUNDARIES      ACCEPTED IN WORKSTREAM
-TEST/CI/RELEASE ARCHITECTURE       ACCEPTED IN WORKSTREAM
+SHARED-PACKAGE POLICY              ACCEPTED
+DATA AUTHORITY MATRIX              ACCEPTED
+API/CODEGEN BOUNDARY               ACCEPTED
+POWERSYNC OWNERSHIP                ACCEPTED
+WEB ONLINE-FIRST / PWA DORMANT     ACCEPTED
+CONFIG/ENVIRONMENT MODEL           ACCEPTED
+UI/TOKEN/I18N/TIME BOUNDARIES      ACCEPTED
+TEST/CI/RELEASE ARCHITECTURE       ACCEPTED
 DEVELOPER POSTURE                  SELECTED / VALIDATION REQUIRED
 
 PRODUCTION CODE                    NOT STARTED
@@ -801,4 +801,4 @@ DEPENDENCIES INSTALLED             NO
 DIRECT VALIDATION                  NOT STARTED
 ```
 
-Next boundary is **Passo 3 — final clean review and closure decision**.
+The next boundary is a fresh bounded frontend materialization/scaffold/direct-validation workstream. No additional general architecture-selection pass is required unless concrete contradictory evidence or a materially changed requirement appears.

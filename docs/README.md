@@ -23,7 +23,7 @@ Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
 Frontend Engineering Foundation    DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
-Frontend main integration          PENDING
+Frontend main integration          COMPLETE VIA PR #22
 Production backend scaffold        NOT STARTED
 Production frontend scaffold       NOT STARTED
 Direct HG / frontend PSV           NOT RUN
@@ -56,12 +56,13 @@ Direct HG / frontend PSV           NOT RUN
 - `development/toolchain-and-dx-v0.md`
 - `development/testing-and-ci-v0.md`
 
-### Frontend Engineering Foundation — closed in design / pending integration
+### Frontend Engineering Foundation — closed in design / integrated via PR #22
 
-- `workstreams/frontend-foundation.md` — closure/handoff
+- `workstreams/frontend-foundation.md` — closure/integration handoff
 - `architecture/frontend-engineering-foundation.md` — Passo-1 technology specification
 - `architecture/frontend-engineering-foundation-part-2.md` — Passo-2 application/package/data-authority specification
 - `architecture/frontend-engineering-foundation-final-review.md` — Passo-3 final review/closure evidence
+- `architecture/frontend-engineering-foundation-post-closure-qa.md` — post-closure knowledge/evidence QA
 - `decisions/ADR-008-frontend-engineering-stack.md` — technology decision
 - `decisions/ADR-009-frontend-architecture-boundaries.md` — structural decision
 
@@ -101,10 +102,10 @@ Cloud/backend compute provider and IaC engine remain deferred until their real i
 ## Exact next handoff
 
 ```text
-1. Frontend Foundation design/architecture review is PASS and closed on its branch.
-2. Prepare PR integration only with explicit authorization.
-3. Merge only through protected-main workflow and expected-head safety.
-4. After integration open a new exact frontend materialization/direct-validation scope.
+1. Frontend Foundation design/architecture is CLOSED / ACCEPTED / integrated via PR #22.
+2. Open a fresh exact frontend materialization/scaffold/direct-validation scope.
+3. Materialize only real artifacts required by the accepted Foundation.
+4. Execute direct validations progressively; do not manufacture PASS.
 5. Backend scaffold remains a separate not-started implementation scope.
 ```
 

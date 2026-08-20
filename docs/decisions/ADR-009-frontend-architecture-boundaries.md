@@ -1,6 +1,6 @@
 # ADR-009: Frontend Application and Dependency Boundaries
 
-- Status: **ACCEPTED IN FRONTEND WORKSTREAM / PENDING MAIN INTEGRATION**
+- Status: **ACCEPTED / INTEGRATED VIA PR #22**
 - Date: 2026-08-20
 - Technology authority: [`ADR-008-frontend-engineering-stack.md`](ADR-008-frontend-engineering-stack.md)
 - Structural specification: [`../architecture/frontend-engineering-foundation-part-2.md`](../architecture/frontend-engineering-foundation-part-2.md)
@@ -11,6 +11,8 @@
 ADR-008 selected the frontend technology stack. DANTE also needs ownership/dependency rules that survive library upgrades and remain consistent with the already-accepted root repository topology.
 
 Without explicit boundaries, the frontend could still collapse into a client monolith where routes become feature implementations, state authorities duplicate, Web/Mobile leak platform details, shared packages become dumping grounds, frontend policy replaces backend authority or offline mechanisms proliferate without governance.
+
+The accepted decision was integrated into protected `main` through PR #22.
 
 ## Decision
 

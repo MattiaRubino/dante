@@ -25,7 +25,7 @@ CLOSED / ACCEPTED
 
 FRONTEND ENGINEERING FOUNDATION
 DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
-PENDING MAIN INTEGRATION
+INTEGRATED VIA PR #22
 PRODUCTION FRONTEND CODE NOT STARTED
 DIRECT FRONTEND VALIDATION NOT RUN
 
@@ -91,7 +91,7 @@ migrations              Alembic
 
 First LOCAL PostgreSQL baseline includes the full accepted extension envelope when materialized.
 
-## Frontend engineering baseline — closed design pending integration
+## Frontend engineering baseline — closed design / integrated
 
 Technology direction:
 
@@ -140,7 +140,7 @@ Architecture direction:
 - GitHub Actions primary CI/CD;
 - one authoritative WSL-backed checkout posture.
 
-Frontend authorities pending main integration:
+Frontend authorities integrated on `main` via PR #22:
 
 - `docs/architecture/frontend-engineering-foundation.md`;
 - `docs/architecture/frontend-engineering-foundation-part-2.md`;
@@ -168,7 +168,7 @@ PostgreSQL remains canonical. PowerSync/SQLite is bounded noncanonical local/syn
 
 GitHub Actions is repository-wide primary CI/CD. Required checks activate only after real stable emitted contexts exist.
 
-Frontend direct validation is intentionally **NOT RUN** until the closed Foundation is integrated and materialized under a new bounded scope.
+Frontend direct validation is intentionally **NOT RUN** until the closed Foundation is materialized under a new bounded scope.
 
 ## Direct evidence truth
 
@@ -200,9 +200,9 @@ Read before the next write:
 
 ```text
 FRONTEND
-prepare protected-main integration
-→ PR only with explicit authorization
-→ after integration open new materialization/direct-validation scope
+open a fresh bounded materialization/scaffold/direct-validation workstream
+→ materialize only accepted real workspace/app/package artifacts
+→ execute carried direct validations progressively
 
 BACKEND
 production scaffold remains separate and NOT STARTED

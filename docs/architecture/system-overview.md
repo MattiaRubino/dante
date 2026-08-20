@@ -8,7 +8,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and the closed branch-local Frontend Foundation pending protected-main integration.
+Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and the closed Frontend Engineering Foundation integrated via PR #22.
 
 Core invariants include:
 
@@ -246,13 +246,11 @@ RESTORE REHEARSAL         NOT RUN
 ## 16. Current next step
 
 ```text
-prepare protected-main integration for the closed Frontend Foundation
+open fresh bounded frontend materialization/direct-validation workstream
 ↓
-PR/merge only with explicit authorization and expected-head safety
+materialize accepted workspace/app/package boundaries
 ↓
-post-merge main readback
-↓
-after integration open new production frontend materialization/direct-validation scope
+execute carried direct validations progressively
 ```
 
 Backend production scaffold remains a separate not-started scope.

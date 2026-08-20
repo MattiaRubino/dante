@@ -1,15 +1,17 @@
 # Workstream — Frontend Engineering Foundation
 
-- Status: **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / POST-CLOSURE QA PASS / PENDING MAIN INTEGRATION**
-- Branch: `feature/frontend-foundation`
+- Status: **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / POST-CLOSURE QA PASS / INTEGRATED VIA PR #22**
+- Historical branch: `feature/frontend-foundation` — **MERGED / AUTO-DELETED**
 - Opening base: `7a1600c2167f68c9281d3ed77b32a3d954fbd061`
 - Passo-1 checkpoint: `dd23b86ba330f6296806297ef5c68acebbee65e6`
 - Passo-2 initial checkpoint: `0269672b6f1cd085fa935d400b774b098feb4c69`
 - Final-reviewed pre-closure HEAD: `28630c8d8a1133b785850de804d3a37495e0b3c8`
 - Closure content commit: `ba18a9d4668f3fa51c9da72118b5ffa69f03054e`
 - Knowledge-coverage repair commit: `9588c66caf57b3186f4d9e0c7a697b91d8d3dc90`
+- Final PR head: `ead0fe4fcfc6e9b8d70d09b7d0c185aa8876632a`
+- Main merge commit: `9116cd508d372cd56cf00403aa59633589b2d365`
 - Post-closure knowledge-coverage QA: **PASS**
-- PR: **#22 — OPEN / TARGET `main`**
+- PR: **#22 — MERGED**
 - Product/Domain/Logical/Physical/Engineering Foundation: **CONSUMED / NOT REOPENED**
 - Production frontend code/scaffold: **NOT STARTED**
 - Dependencies installed/configured: **NO**
@@ -22,9 +24,10 @@ PASSO 1  technology selection                  PASS
 PASSO 2  application/package/data architecture PASS
 PASSO 3  clean review / closure                FINAL REVIEW PASS
 POST-QA  knowledge/evidence preservation       PASS
+MAIN     protected-main integration             PASS via PR #22
 ```
 
-Frontend Foundation is closed at design/architecture level, pending protected-main integration through PR #22.
+Frontend Foundation is closed at design/architecture level and integrated into protected `main` through PR #22.
 
 ```text
 DESIGN CLOSED != IMPLEMENTED != INSTALLED != CONFIGURED != DIRECTLY VALIDATED
@@ -101,7 +104,7 @@ Still **NOT RUN**. Post-integration materialization validates Node/pnpm/Turbo, p
 
 Failure first reopens affected technology/adapter/boundary unless wider contradiction is proven.
 
-## 7. Git/continuation state
+## 7. Git/integration state
 
 ```text
 OPENING BASE
@@ -121,29 +124,33 @@ ba18a9d4668f3fa51c9da72118b5ffa69f03054e
 
 KNOWLEDGE-COVERAGE REPAIR
 9588c66caf57b3186f4d9e0c7a697b91d8d3dc90
-```
 
-Current integration vehicle:
+FINAL PR HEAD
+ead0fe4fcfc6e9b8d70d09b7d0c185aa8876632a
 
-```text
 PR #22
-feature/frontend-foundation → main
-OPEN
+MERGED
+
+MAIN MERGE COMMIT
+9116cd508d372cd56cf00403aa59633589b2d365
+
+FORMER BRANCH
+feature/frontend-foundation
+MERGED / AUTO-DELETED
 ```
 
-The PR head must be reverified immediately before merge; merge requires explicit authorization and expected-head safety.
+Post-merge QA confirmed the merge commit has the old `main` and exact PR head as parents and that the integration delta remained the exact 18 documentation paths approved for PR #22.
 
 ## 8. Exact next action
 
 ```text
-PENDING MAIN INTEGRATION — PR #22 OPEN
+FRONTEND FOUNDATION INTEGRATED
 
-1. verify exact PR changed paths remain expected
-2. inspect available real checks/statuses; do not invent missing checks
-3. verify PR remains mergeable and head has not moved unexpectedly
-4. merge only with explicit authorization + expected-head SHA
-5. post-merge reread/compare main and verify branch lifecycle
-6. then open fresh frontend materialization/scaffold/direct-validation scope
+1. open a fresh bounded frontend materialization/scaffold/direct-validation workstream
+2. reread current main + integrated Foundation authorities before writes
+3. materialize only real accepted workspace/app/package artifacts
+4. execute direct validations progressively and report failures truthfully
+5. do not implement product surfaces until relevant foundation/contracts exist
 ```
 
 Do not restart general technology/architecture research without concrete contradictory evidence or a materially changed requirement.

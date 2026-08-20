@@ -13,12 +13,12 @@ Engineering Foundation v0     CLOSED / ACCEPTED
 Frontend Foundation Passo 1   PASS
 Frontend Foundation Passo 2   PASS
 Frontend Foundation Passo 3   FINAL REVIEW PASS
-Frontend Foundation           DESIGN/ARCHITECTURE CLOSED / ACCEPTED / PENDING MAIN INTEGRATION
+Frontend Foundation           DESIGN/ARCHITECTURE CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 Production implementation     NOT STARTED
 Direct PSV                    NOT RUN
 ```
 
-`main` remains integrated authority. Frontend Foundation closure is branch-local until protected-main integration.
+`main` is integrated authority. Frontend Foundation design/architecture is now integrated through PR #22.
 
 ## 2. Current architecture entry points
 
@@ -27,6 +27,7 @@ Direct PSV                    NOT RUN
 - `frontend-engineering-foundation.md` — frontend technology specification
 - `frontend-engineering-foundation-part-2.md` — frontend application/package/dependency/data-authority specification
 - `frontend-engineering-foundation-final-review.md` — final review/closure evidence
+- `frontend-engineering-foundation-post-closure-qa.md` — post-closure knowledge/evidence QA
 - `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
 - `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR
 - `../workstreams/frontend-foundation.md` — frontend closure/integration handoff
@@ -88,13 +89,11 @@ Frontend implementation evidence first reopens the affected technology/adapter/b
 ## 7. Next architecture work
 
 ```text
-protected-main integration preparation
+open fresh bounded frontend materialization/direct-validation workstream
 ↓
-PR/merge only with explicit authorization
+materialize accepted workspace/app/package boundaries
 ↓
-post-merge readback
-↓
-new bounded frontend materialization/direct-validation scope
+execute carried direct validations progressively
 ```
 
 Direct implementation evidence remains NOT RUN until real artifacts execute the required scenarios.
