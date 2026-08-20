@@ -1,8 +1,9 @@
 # DANTE Backend CP3 — Persistence, migrations and real PostgreSQL contract
 
-- Status: **IMPLEMENTATION MATERIALIZED / DIRECT QA NOT YET EARNED**
+- Status: **CLOSED / DIRECT QA PASS**
 - Workstream: `feature/backend-scaffold`
 - Scope: technical persistence boundary only
+- Implementation/direct-QA HEAD: `35cf6440bc121a38342f6bbee72e210435a788a4`
 - Concrete Logical → PostgreSQL business mapping: **OUT OF SCOPE**
 
 ## 1. Purpose
@@ -331,74 +332,101 @@ no container per individual test
 
 Within the disposable acceptance cluster, tests create fresh databases, install the exact selected extension envelope, apply CP3 provisioning and destroy each database after use.
 
+The readiness probe for the acceptance cluster verifies the machine-readable PostgreSQL version with `SHOW server_version_num` and requires `180004`. This avoids depending on distribution/package suffixes while still proving exact PostgreSQL 18.4.
+
+DB outage/recovery acceptance uses `docker stop` / `docker start` on the same disposable cluster rather than `docker pause` / `docker unpause`. Stop/start represents a real dependency outage, closes live connections, preserves the same acceptance database for recovery and still leaves final unconditional container removal to the session fixture.
+
 If the CP2 image is missing, PostgreSQL tests fail explicitly; they are not silently skipped.
 
-## 12. Required CP3 acceptance evidence
+### Hardening finding retained after closure
 
-CP3 may be declared `CLOSED / DIRECT QA PASS` only after direct execution proves at minimum:
+A deliberately frozen PostgreSQL peer created with `docker pause` can leave an existing TCP connection open but non-responsive. Direct QA showed that in this blackholed/frozen-peer condition the Python-level readiness timeout can be exceeded while driver cancellation/cleanup itself waits on the unreachable peer.
+
+CP3 does **not** claim bounded wall-clock readiness for that stronger blackhole/frozen-peer scenario. It remains a separate hardening item and must not be silently converted into a CP3 PASS claim.
+
+## 12. CP3 direct acceptance evidence — PASS
+
+CP3 direct QA was completed on the canonical Windows 11 + WSL2/Linux + Docker Desktop workstation on 2026-08-20 against implementation/direct-QA HEAD:
+
+```text
+35cf6440bc121a38342f6bbee72e210435a788a4
+```
+
+Directly recorded evidence:
 
 ```text
 DEPENDENCIES
-uv lock --check
-uv tree --locked --depth 1
-uv sync --locked
-
-CONFIG/RUNTIME
-typed nested DB settings
-secret redaction
-safe URL construction
-AsyncEngine/sessionmaker lifecycle
-explicit session semantics
-engine disposal
-
-TRANSACTIONS
-autobegin disabled
-real commit
-real rollback
-multi-operation atomic rollback
-flush != commit
-SAVEPOINT behavior
-
-POSTGRESQL PRIVILEGES
-owner NOLOGIN
-migrator explicit SET ROLE
-runtime DML allowed
-runtime DDL denied
-runtime escalation denied
-runtime TEMP/TRUNCATE denied
-alembic_version denied
-object owner = dante_owner
-default privilege behavior
-routine default EXECUTE denied
-
-ALEMBIC
-fresh database → head
-exactly one head
-current == head
-head → base → head
-alembic check / no DANTE drift
-extension objects preserved and ignored by DANTE authority
-
-FAILURE/RECOVERY
-real runtime connection
-stale pooled connection recovery
-live remains 200 during DB outage
-ready becomes 503 during DB outage
-ready returns 200 after DB recovery without app restart
-readiness response leaks no DB details
+uv lock --check                         PASS
+uv tree --locked --depth 1              PASS
+uv sync --locked                         PASS
 
 QUALITY
-ruff format --check
-ruff check
-mypy strict
-pytest fast
-pytest postgres
-full pytest
-uv build
-remote exact-delta/readback
+ruff format --check .                    PASS — 23 files already formatted
+ruff check .                             PASS
+mypy                                    PASS — 20 source files
+pytest -m "not postgres"                PASS — 32/32
+pytest -m postgres                       PASS — 18/18 in 15.61s
+full pytest                              PASS — 50/50 in 24.72s
+full-run coverage                        97.42% evidence only; not a threshold
+uv build                                 PASS
+source distribution                      PASS
+typed wheel                              PASS
+
+ALEMBIC / SCHEMA
+fresh database → repository head         PASS
+single repository head                   PASS
+head → base → head                        PASS
+alembic check / no DANTE drift           PASS
+public extension objects preserved       PASS
+
+POSTGRESQL PRIVILEGES
+owner NOLOGIN                             PASS
+migrator explicit SET ROLE               PASS
+runtime expected DML/default grants       PASS
+runtime DDL/escalation denial             PASS
+runtime TEMP/TRUNCATE denial              PASS
+alembic_version runtime denial            PASS
+object owner = dante_owner                PASS
+default routine EXECUTE denial            PASS
+
+RUNTIME / FAILURE / RECOVERY
+runtime dedicated identity/search_path    PASS
+pool_pre_ping stale-connection recovery   PASS
+live 200 during real DB outage            PASS
+ready 503 during real DB outage           PASS
+ready 200 after DB restart                PASS — no backend restart
+readiness response secret/detail redaction PASS
+engine dispose after real use             PASS
+
+TRANSACTIONS
+autobegin=False behavior                  PASS
+real commit persistence                   PASS
+exception whole-transaction rollback      PASS
+flush != commit                           PASS
+SAVEPOINT outer-transaction preservation  PASS
 ```
 
-No item is PASS merely because code exists.
+Remote repository evidence after the executable QA:
+
+```text
+original CP3 PRE-SCOPE   a09936d168de48909d948425387b168d016911e8
+implementation QA HEAD   35cf6440bc121a38342f6bbee72e210435a788a4
+ahead_by                 45
+behind_by                0
+changed paths            27
+expected paths           27
+unexpected               0
+deleted                  0
+remote branch vs QA HEAD identical
+```
+
+The 97.42% full-run coverage is recorded only as evidence for this run. CP3 does not introduce an arbitrary permanent global coverage percentage.
+
+CP3 is therefore:
+
+```text
+CLOSED / DIRECT QA PASS
+```
 
 ## 13. Explicit non-claims
 
@@ -416,6 +444,7 @@ PgBouncer activation
 Restate
 backup/PITR activation
 production deployment
+blackholed/frozen-peer readiness wall-clock bound
 Physical HG/PSV blanket PASS
 ```
 
