@@ -1,38 +1,35 @@
 # Backend CP1 Technical Contract
 
-- Status: **ACTIVE IMPLEMENTATION / DIRECT QA IN PROGRESS**
+- Status: **CLOSED / DIRECT QA PASS**
 - Workstream: `docs/workstreams/backend-scaffold.md`
 - Branch: `feature/backend-scaffold`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
-- Contract checkpoint: **CP1-01 + CP1-02 + CP1-03 APPROVED / IMPLEMENTATION EVIDENCE ACTIVE**
+- Contract checkpoint: **CP1-01 + CP1-02 + CP1-03 CLOSED / IMPLEMENTED**
 - Version/source verification baseline: **2026-08-19**
-- First direct implementation evidence: **2026-08-20**
-- Implementation authority: **EVERY FURTHER WRITE STILL REQUIRES ITS OWN EXACT GATE**
+- Direct implementation/closure evidence: **2026-08-20**
+- CP1 implementation/lock closure HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
+- Implementation authority: **EVERY FUTURE WRITE STILL REQUIRES ITS OWN EXACT GATE**
 
 ## 1. Purpose
 
-This document is the durable technical contract for **CP1 — Backend Python/process/config foundation**.
+This document is the durable technical contract and closure record for **CP1 — Backend Python/process/config foundation**.
 
 It exists so a future developer, reviewer or conversation can answer, without reconstructing chat history:
 
-- what CP1 is trying to prove;
-- why each dependency exists;
+- what CP1 proves;
+- why each direct dependency exists;
 - what version policy is used;
 - why the Python distribution name and import namespace differ;
 - what each `DANTE_*` variable means;
-- which component consumes each variable;
-- which values are allowed or forbidden;
 - how LOCAL dotenv loading works;
-- why remote environments do not depend on `.env.local`;
 - how the FastAPI process is created;
 - what health/readiness mean at CP1;
 - why there is no lifespan/database/wiring layer yet;
 - which lint/type/test/coverage policies are enforced;
-- which commands must work;
-- which tests must exist before CP1 can pass;
-- what implementation findings changed an earlier design assumption;
-- what is deliberately deferred and at which trigger it returns.
+- what implementation findings changed earlier assumptions;
+- which commands directly passed;
+- what remains deliberately deferred and at which trigger it returns.
 
 The Engineering Foundation remains the parent architecture authority. This file specializes that accepted baseline for CP1; it does not reopen Domain, Logical or Physical design.
 
@@ -64,7 +61,7 @@ The quality target is instead:
 
 If two designs provide equal correctness, security, operability and future evolution, prefer the simpler one.
 
-## 3. CP1 scope
+## 3. CP1 scope and materialized tree
 
 CP1 materializes the smallest real DANTE backend project that can:
 
@@ -75,11 +72,11 @@ CP1 materializes the smallest real DANTE backend project that can:
 5. validate typed bootstrap configuration before accepting work;
 6. expose only technical process health/readiness probes;
 7. run real format/lint/type/test/build commands;
-8. prove the above through automated tests.
+8. prove the above through automated tests and real HTTP process checks.
 
-CP1 does **not** require PostgreSQL. PostgreSQL starts at CP2 and application persistence at CP3.
+CP1 does **not** require PostgreSQL. PostgreSQL begins at CP2 and application persistence at CP3.
 
-### Approved target tree
+Materialized tree:
 
 ```text
 apps/backend/
@@ -106,7 +103,7 @@ apps/backend/
     └── test_settings.py
 ```
 
-This tree has now been materialized except that `uv.lock` is still only generated locally and must not be called committed until its dedicated CP1-B write is completed and remotely verified.
+`apps/backend/uv.lock` is committed and remotely read back. `.coverage`, `.venv`, `.env.local`, build output and tool caches are generated/local state and are not source artifacts.
 
 ## 4. CP1-01 — dependency and version contract
 
@@ -116,7 +113,7 @@ This tree has now been materialized except that `uv.lock` is still only generate
 SUPPORTED PYTHON LINE    3.14.x
 INITIAL EXACT PIN        3.14.7
 PROJECT MANAGER          uv
-LOCKFILE                 apps/backend/uv.lock — REQUIRED TO BE COMMITTED
+LOCKFILE                 apps/backend/uv.lock — COMMITTED / REMOTE VERIFIED
 ```
 
 `apps/backend/.python-version` records `3.14.7`.
@@ -145,11 +142,9 @@ Rules:
 - upgrades are explicit reviewed changes;
 - CI/local verification uses locked/frozen behavior;
 - prereleases are not selected unless separately reviewed and approved;
-- a new package release appearing upstream must not silently change an already-locked DANTE checkout.
+- a new upstream release must not silently change an already-locked DANTE checkout.
 
-### 4.3 CP1 runtime dependencies
-
-Approved manifest envelope as of the 2026-08-19 source verification:
+### 4.3 Runtime dependencies
 
 ```toml
 [project]
@@ -163,16 +158,14 @@ dependencies = [
 
 Responsibilities:
 
-| Dependency | Why it is direct | CP1 role |
+| Dependency | Why direct | CP1 role |
 |---|---|---|
-| `fastapi` | DANTE imports and constructs the inbound HTTP/process host directly | application factory + technical health routes |
-| `pydantic` | DANTE uses Pydantic validation primitives directly in the settings boundary | validation/cross-field rules + mypy integration plugin |
-| `pydantic-settings` | accepted Foundation configuration boundary | process-environment → typed immutable settings |
-| `uvicorn[standard]` | accepted ASGI server for local process execution; `standard` provides the normal optimized/reload extras where supported | actual LOCAL server + reload workflow |
+| `fastapi` | DANTE constructs the inbound HTTP/process host directly | application factory + technical health routes |
+| `pydantic` | DANTE uses validation primitives directly | validation/cross-field rules + mypy integration plugin |
+| `pydantic-settings` | accepted configuration boundary | process environment → typed immutable settings |
+| `uvicorn[standard]` | accepted ASGI server | actual LOCAL server + supported reload/runtime extras |
 
-Do **not** use `fastapi[standard]` in CP1. The FastAPI standard bundle includes optional capabilities not currently exercised by DANTE, including template/form/email/CLI/cloud-related surface. CP1 keeps direct dependencies explicit and bounded to real responsibilities.
-
-`uvicorn[standard]` is accepted because the server itself is exercised immediately and its standard extras include the supported file-watching/performance dependencies. Python 3.14 compatibility of relevant Linux extras such as `uvloop`/`watchfiles` was checked during the CP1 research boundary and is also exercised by the actual `uv` resolution on the DANTE workstation.
+Do **not** use `fastapi[standard]` merely to acquire unrelated optional capabilities.
 
 ### 4.4 Quality dependencies
 
@@ -184,23 +177,7 @@ quality = [
 ]
 ```
 
-The 2026-08-19 research snapshot observed:
-
-```text
-Ruff stable observed              0.16.2
-mypy stable observed              2.3.0
-```
-
-The real `uv` resolution on 2026-08-20 then selected later patch releases that still satisfy the approved ranges:
-
-```text
-Ruff resolved                     0.16.3
-mypy resolved                     2.3.1
-```
-
-Official package metadata was rechecked after this resolution and those patch releases were confirmed as real stable releases compatible with the Python 3.14 line. Therefore the earlier transient statement that `ruff 0.16.3` / `mypy 2.3.1` were nonexistent or unverified is superseded by direct implementation evidence.
-
-The manifest floors remain `>=0.16.2` and `>=2.3.0`: they describe the accepted compatibility envelope, while the lockfile records the exact resolved graph. Do not raise lower bounds merely because a later patch was selected unless DANTE actually requires behavior introduced by that patch.
+The manifest floors describe the accepted compatibility envelope. The final lock resolved later compatible patch releases.
 
 ### 4.5 Test dependencies
 
@@ -218,12 +195,23 @@ Responsibilities:
 | Dependency | Why it exists |
 |---|---|
 | `pytest` | canonical backend test runner |
-| `httpx2` | current Starlette `TestClient` transport dependency; CP1 tests real ASGI routing rather than directly calling route functions |
-| `pytest-cov` | coverage measurement from the first real backend tests |
+| `httpx2` | current Starlette `TestClient` transport dependency |
+| `pytest-cov` | statement/branch coverage measurement |
 
-The original CP1 design used `httpx>=0.28.1,<0.29`. Direct execution invalidated that assumption after FastAPI resolved Starlette 1.6.0. During `uv run pytest`, Starlette attempted to import `httpx2`; because only `httpx` was installed it emitted `StarletteDeprecationWarning`, and DANTE's intentional `filterwarnings = ["error"]` policy correctly promoted that warning to a collection error.
+### 4.6 Evidence-driven `httpx` → `httpx2` correction
 
-DANTE did **not** weaken warnings-as-errors, pin Starlette backward or bypass `TestClient`. A temporary non-manifest proof was run instead:
+The original CP1 design used `httpx>=0.28.1,<0.29`.
+
+Direct execution invalidated that assumption after FastAPI resolved current Starlette behavior. `uv run pytest` failed during collection because Starlette attempted to use `httpx2`; with only `httpx` installed it emitted `StarletteDeprecationWarning`, and DANTE's intentional warnings-as-errors policy promoted the warning to an error.
+
+DANTE deliberately did **not**:
+
+- weaken warnings-as-errors;
+- pin Starlette backward;
+- bypass `TestClient`;
+- hide the warning.
+
+A temporary proof:
 
 ```text
 uv run --with "httpx2==2.9.1" pytest
@@ -233,9 +221,9 @@ uv run --with "httpx2==2.9.1" pytest
 → branch coverage 100.00%
 ```
 
-That evidence establishes the CP1 correction to `httpx2>=2.9.1,<3`. The 100% coverage value is evidence for this very small CP1 surface only; it does not create an arbitrary permanent percentage threshold.
+The manifest was then corrected to `httpx2>=2.9.1,<3`, the lock regenerated, the `.venv` synchronized from that lock and the canonical suite rerun successfully.
 
-### 4.6 Developer aggregate group
+### 4.7 Developer aggregate group
 
 ```toml
 [dependency-groups]
@@ -245,9 +233,7 @@ dev = [
 ]
 ```
 
-The aggregate exists for developer convenience without duplicating package declarations.
-
-### 4.7 Hypothesis posture
+### 4.8 Hypothesis posture
 
 Hypothesis remains an accepted backend testing tool but is deliberately **not a CP1 dependency**.
 
@@ -258,9 +244,7 @@ FIRST ACTIVATION              first meaningful property/invariant/state-space te
 PLACEHOLDER PROPERTY TEST     FORBIDDEN
 ```
 
-At activation, its then-current stable version and Python compatibility are reverified rather than freezing a stale version now.
-
-### 4.8 Persistence packages
+### 4.9 Persistence packages
 
 Do not install in CP1:
 
@@ -270,27 +254,34 @@ psycopg
 Alembic
 ```
 
-They remain selected by Engineering Foundation and return at CP3, after CP2 has produced a directly working DANTE PostgreSQL environment.
+They return at CP3 after CP2 provides a directly working DANTE PostgreSQL environment.
 
-Their exact current versions are reverified at CP3. Avoid carrying unused persistence dependencies through CP1 merely because they are known future choices.
+### 4.10 Final exact direct graph — 2026-08-20
 
-### 4.9 First real resolved direct graph — 2026-08-20
-
-The first `uv lock` on the canonical WSL/Linux workstation using CPython 3.14.7 resolved 38 packages. Before the TestClient compatibility finding, the direct project dependencies/groups resolved as:
+The final `uv lock` resolved **39 packages**. Direct project dependencies/groups:
 
 ```text
 fastapi             0.141.1
 pydantic            2.13.4
 pydantic-settings   2.15.0
 uvicorn             0.52.4
-httpx               0.28.1
-mypy                2.3.1
-pytest              9.1.1
-pytest-cov          7.1.0
-ruff                0.16.3
+httpx2               2.12.0
+mypy                 2.3.1
+pytest               9.1.1
+pytest-cov           7.1.0
+ruff                 0.16.3
 ```
 
-That locally generated lock is now intentionally **stale relative to the corrected manifest** because `httpx` has been replaced by `httpx2`. It must be regenerated by real `uv` after the corrected manifest is pulled. The regenerated lock, not the obsolete pre-correction graph above, will become the exact remote reproducibility authority when CP1-B is committed and read back from GitHub.
+Remote lock readback confirms:
+
+```text
+httpx2               2.12.0
+httpcore2             2.12.0
+httpx2-jsfetch         1.0
+truststore             0.10.4
+```
+
+The previous direct `httpx 0.28.1` project dependency is no longer in the final DANTE graph.
 
 ## 5. CP1-02 — package/build metadata contract
 
@@ -325,11 +316,7 @@ DANTE_BUILD_ID
 future OCI digest
 ```
 
-Do not introduce Git-derived dynamic versioning/setuptools-scm/hatch-vcs merely to manufacture a version number at CP1.
-
 ### 5.3 Build backend
-
-Approved:
 
 ```toml
 [build-system]
@@ -343,51 +330,20 @@ module-name = "dante"
 Why:
 
 - the backend is pure Python at CP1;
-- uv's native build backend is designed for `src/` projects and validates project structure/metadata;
-- `dante-backend` would otherwise normalize to the module name `dante_backend`, which is not the accepted DANTE namespace;
-- explicit `module-name = "dante"` preserves `src/dante` intentionally;
-- the upper bound follows uv's build-backend compatibility/versioning recommendation.
+- uv's native build backend fits `src/` projects;
+- `dante-backend` would otherwise normalize to module `dante_backend`;
+- explicit `module-name = "dante"` preserves the accepted namespace;
+- the upper bound follows the chosen uv build-backend compatibility posture.
 
 ### 5.4 Accidental PyPI publication barrier
 
-Approved project classifier:
-
 ```toml
 classifiers = [
     "Private :: Do Not Upload",
 ]
 ```
 
-Purpose: make PyPI reject accidental publication of the internal backend distribution. This is a safety barrier, not a substitute for credential/repository controls.
-
-### 5.5 Planned project metadata skeleton
-
-```toml
-[project]
-name = "dante-backend"
-version = "0.1.0"
-description = "DANTE production backend"
-readme = "README.md"
-requires-python = ">=3.14,<3.15"
-classifiers = [
-    "Private :: Do Not Upload",
-]
-dependencies = [
-    "fastapi>=0.141.1,<0.142",
-    "pydantic>=2.13.4,<3",
-    "pydantic-settings>=2.15.0,<3",
-    "uvicorn[standard]>=0.52.1,<0.53",
-]
-
-[build-system]
-requires = ["uv_build>=0.12.5,<0.13"]
-build-backend = "uv_build"
-
-[tool.uv.build-backend]
-module-name = "dante"
-```
-
-This is the approved design target. `uv` performs the real resolution and generates the authoritative lockfile during implementation.
+This is a safety barrier, not a substitute for credential/repository controls.
 
 ## 6. Ruff contract
 
@@ -400,113 +356,50 @@ line-length = 100
 src = ["src"]
 ```
 
-Reasons:
+### 6.2 Stable high-signal lint families
 
-- DANTE intentionally targets Python 3.14 syntax/semantics;
-- a 100-character line is a deliberate readability compromise for modern typed Python without making code excessively wide;
-- `src = ["src"]` helps Ruff classify DANTE imports as first-party.
-
-### 6.2 Lint families
-
-Approved stable high-signal baseline:
-
-```toml
-[tool.ruff.lint]
-select = [
-    "A",
-    "ASYNC",
-    "B",
-    "BLE",
-    "C4",
-    "DTZ",
-    "E4",
-    "E7",
-    "E9",
-    "F",
-    "G",
-    "I",
-    "LOG",
-    "N",
-    "PERF",
-    "PIE",
-    "PT",
-    "PTH",
-    "RET",
-    "RUF",
-    "S",
-    "SIM",
-    "T20",
-    "UP",
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
-    "S101",
-]
+```text
+A ASYNC B BLE C4 DTZ E4 E7 E9 F G I LOG N PERF PIE PT PTH RET RUF S SIM T20 UP
 ```
 
-Intent by family:
+Test-only ignore:
 
-- `A`: avoid accidental shadowing of Python builtins;
-- `ASYNC`: catch common async misuse;
-- `B`: bugbear correctness traps;
-- `BLE`: discourage blind/broad exception handling;
-- `C4`: clearer/correct comprehensions;
-- `DTZ`: timezone-aware datetime discipline;
-- `E4/E7/E9` + `F`: core pycodestyle/Pyflakes correctness;
-- `G/LOG`: safer/correct logging usage;
-- `I`: deterministic import ordering;
-- `N`: naming consistency;
-- `PERF`: obvious avoidable Python performance traps;
-- `PIE`: miscellaneous correctness/simplification checks;
-- `PT`: pytest-specific correctness/style;
-- `PTH`: prefer pathlib-style path operations;
-- `RET`: clearer return-flow correctness;
-- `RUF`: Ruff-native correctness checks;
-- `S`: security-adjacent static checks;
-- `SIM`: simplification where semantics stay clear;
-- `T20`: prevent stray `print`/`pprint` in production code;
-- `UP`: keep syntax aligned with the Python 3.14 target.
+```toml
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+```
 
-`S101` is ignored only in tests because ordinary `assert` is the canonical pytest assertion mechanism.
+`S101` is ignored only because ordinary `assert` is canonical pytest behavior.
 
-### 6.3 Explicit Ruff non-decisions
-
-Do not enable at CP1:
+Explicitly not enabled at CP1:
 
 ```text
 ALL
 preview rules
 unsafe automatic fixes in CI
 ANN as a duplicate type-enforcement system
-TC/type-checking import movement before the concrete Pydantic/SQLAlchemy graph exists
+TC/type-checking import movement before a concrete graph justifies it
 ```
 
-Mypy owns the primary static typing policy. Ruff complements it instead of duplicating every annotation rule.
+### 6.3 Direct Ruff findings
 
-### 6.4 Direct Ruff implementation findings — 2026-08-20
+The first real run found only narrow source-normalization issues:
 
-The first direct LOCAL run produced two narrow findings:
+1. formatter normalization in the `.env.local` test fixture string;
+2. three `RUF043` findings requiring raw regex strings in `pytest.raises(..., match=...)`.
 
-1. `ruff format --check .` requested one formatting-only rewrite in `tests/test_settings.py` for the `.env.local` fixture string;
-2. `ruff check .` then reported three `RUF043` findings because regex metacharacters in `pytest.raises(..., match=...)` were not marked as raw strings.
-
-The fixes were intentionally narrow:
-
-- accept Ruff's deterministic formatter output;
-- change the three regex strings to raw regex literals;
-- no test semantics or production behavior changed.
-
-After those fixes:
+After narrow repairs:
 
 ```text
 uv run ruff format --check .    PASS — 9 files already formatted
 uv run ruff check .             PASS — All checks passed
 ```
 
+The same commands passed again against the final `httpx2` locked environment.
+
 ## 7. mypy contract
 
-Approved implementation baseline after direct CP1 evidence:
+Final configuration:
 
 ```toml
 [tool.mypy]
@@ -517,14 +410,8 @@ warn_unreachable = true
 show_error_codes = true
 show_column_numbers = true
 pretty = true
-files = [
-    "src",
-    "tests",
-]
-enable_error_code = [
-    "explicit-override",
-    "exhaustive-match",
-]
+files = ["src", "tests"]
+enable_error_code = ["explicit-override", "exhaustive-match"]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -532,49 +419,22 @@ init_typed = true
 warn_required_dynamic_aliases = true
 ```
 
-Rationale:
+Rules:
 
-- `strict` remains the global baseline; it was **not** weakened to accommodate Pydantic;
-- `warn_unreachable` surfaces impossible/dead branches;
-- error codes make narrow exceptions auditable;
-- `explicit-override` requires deliberate override intent as inheritance appears;
-- `exhaustive-match` is valuable for DANTE's closed enums/state families and prevents silent omission of newly introduced cases;
-- tests are type-checked too;
-- the Pydantic plugin is used because DANTE intentionally relies on `BaseSettings` fields being satisfiable from the process environment rather than only explicit constructor arguments.
+- global `strict` is preserved;
+- tests are type-checked;
+- `explicit-override` and `exhaustive-match` remain enabled;
+- framework typing weaknesses are handled narrowly, never by lowering global strictness.
 
-### 7.1 Pydantic mypy plugin — evidence-driven decision change
+### 7.1 Pydantic plugin — evidence-driven decision
 
-The original CP1 design deliberately started with the plugin **OFF** to avoid adopting framework-specific type-checker behavior without evidence.
+The original design deliberately started with the plugin OFF.
 
-The first real strict-mypy run on 2026-08-20 produced **21 `call-arg` errors** in two files. Every error was the same semantic mismatch: plain mypy treated `env`, `release_sha` and `build_id` as required explicit constructor arguments and therefore rejected valid `Settings()` calls even though `BaseSettings` intentionally sources those values from the process environment.
+Real plain strict mypy produced **21 `call-arg` errors** because it treated environment-sourced `BaseSettings` fields as mandatory explicit constructor arguments.
 
-A temporary, non-repository mypy configuration then enabled:
+A temporary plugin proof reduced those to one diagnostic on the deliberate negative runtime mutation test. The plugin correctly recognized frozen `Settings.debug` as read-only.
 
-```toml
-plugins = ["pydantic.mypy"]
-
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
-```
-
-Result:
-
-```text
-initial plain strict mypy        21 errors
-strict mypy + pydantic plugin     1 error
-```
-
-The remaining error was not a production typing defect. It was the deliberate negative runtime test:
-
-```python
-settings.debug = True
-```
-
-The plugin correctly understood that frozen `Settings.debug` is read-only and rejected the assignment statically. The test must nevertheless perform that invalid assignment to prove Pydantic also rejects mutation **at runtime**.
-
-Therefore CP1 permanently changes posture to:
+Final posture:
 
 ```text
 PYDANTIC MYPY PLUGIN       ENABLED
@@ -584,89 +444,41 @@ RUNTIME IMMUTABILITY TEST  PRESERVED
 BROAD TYPE IGNORES         FORBIDDEN
 ```
 
-The one intentional negative-test line uses the narrow suppression:
+The one intentional test line is:
 
 ```python
 settings.debug = True  # type: ignore[misc]  # deliberate runtime immutability probe
 ```
 
-This is accepted because:
+Canonical final evidence:
 
-- it suppresses exactly the diagnostic that proves the static model is working;
-- it exists only so the runtime rejection path can be exercised;
-- it does not hide a production-code typing defect;
-- the reason is documented inline and here;
-- if the diagnostic code or test purpose changes, mypy's unused-ignore behavior under strict mode helps surface stale suppression.
-
-A third-party/framework typing weakness is handled with the narrowest justified integration or exception, never by lowering global strictness.
-
-### 7.2 Current mypy evidence state
-
-After the repository configuration update, **canonical `uv run mypy` must be rerun on the real WSL checkout before CP1 can earn PASS**. The temporary-config experiment proves the selected fix, but it is not a substitute for the post-pull canonical command.
+```text
+uv run mypy
+Success: no issues found in 8 source files
+```
 
 ## 8. pytest and coverage contract
 
-### 8.1 Pytest native TOML configuration
+Configuration principles:
 
-Pytest 9 supports native TOML configuration in `[tool.pytest]`.
+- pytest 9 native TOML configuration;
+- `--import-mode=importlib`;
+- strict pytest behavior;
+- warnings treated as errors;
+- coverage includes statement and branch measurement;
+- missing lines shown;
+- no arbitrary percentage threshold at CP1.
 
-Approved target:
-
-```toml
-[tool.pytest]
-minversion = "9.1"
-testpaths = [
-    "tests",
-]
-addopts = [
-    "-ra",
-    "--import-mode=importlib",
-    "--cov=dante",
-    "--cov-report=term-missing",
-]
-strict = true
-filterwarnings = [
-    "error",
-]
-```
-
-Reasons:
-
-- `--import-mode=importlib` is the recommended modern mode for new pytest projects and avoids mutating `sys.path` merely to make the source tree importable;
-- tests therefore exercise the installed `src`-layout package rather than relying on repository-root path accidents;
-- strict mode activates pytest's strict configuration/markers/parameter-id/xfail behavior and future strictness additions will arrive only through explicit pytest lock upgrades;
-- warnings are defects by default at this boundary;
-- if a dependency produces an unavoidable warning, add only a narrow documented filter for that exact warning after direct evidence.
-
-### 8.2 Coverage
-
-Approved target:
-
-```toml
-[tool.coverage.run]
-branch = true
-source = [
-    "dante",
-]
-relative_files = true
-
-[tool.coverage.report]
-show_missing = true
-precision = 2
-```
-
-Policy:
+Canonical final locked result:
 
 ```text
-statement coverage measured       YES
-branch coverage measured          YES
-missing lines shown               YES
-coverage percentage threshold     NO at CP1
+collected 25 items
+25 passed
+statement coverage 100.00%
+branch coverage    100.00%
 ```
 
-No arbitrary `80%`, `90%` or `100%` gate is invented before a meaningful application denominator exists. Critical behavior is required to have direct tests regardless of percentage.
-
-A threshold may be introduced later from measured reality and explicit risk policy; once introduced it is not silently lowered to make CI green.
+The 100% result is evidence for this **small CP1 surface only**. It does not establish a permanent global coverage target.
 
 ## 9. CP1-03 — configuration model
 
@@ -686,18 +498,14 @@ Do not create:
 
 ### 9.2 CP1 environment-variable registry
 
-Every CP1 variable is listed below. This registry is part of the contract.
-
 | External variable | Internal setting | Required | Secret | CP1 meaning | Consumer |
 |---|---|---:|---:|---|---|
-| `DANTE_ENV` | `env` | YES | NO | promotion/runtime identity: `local`, `dev`, `uat`, `prod` | bootstrap/config + environment-derived HTTP host behavior |
-| `DANTE_RELEASE_SHA` | `release_sha` | YES | NO | source/release identity associated with the running build; `local` marker allowed only in LOCAL | bootstrap metadata; future observability/release evidence |
-| `DANTE_BUILD_ID` | `build_id` | YES | NO | build/execution identity associated with the artifact/process; `local` marker allowed only in LOCAL | bootstrap metadata; future observability/release evidence |
-| `DANTE_DEBUG` | `debug` | NO | NO | FastAPI/application debug behavior only | `FastAPI(debug=...)`; never Uvicorn reload/workers |
+| `DANTE_ENV` | `env` | YES | NO | `local`, `dev`, `uat`, `prod` runtime identity | bootstrap/config + host behavior |
+| `DANTE_RELEASE_SHA` | `release_sha` | YES | NO | source/release identity; `local` marker only in LOCAL | bootstrap metadata/future observability |
+| `DANTE_BUILD_ID` | `build_id` | YES | NO | build/execution identity; `local` marker only in LOCAL | bootstrap metadata/future observability |
+| `DANTE_DEBUG` | `debug` | NO | NO | FastAPI application debug behavior only | `FastAPI(debug=...)` |
 
-### 9.3 `DANTE_ENV`
-
-Allowed values exactly at semantic level:
+### 9.3 Closed environment set
 
 ```text
 local
@@ -706,105 +514,45 @@ uat
 prod
 ```
 
-Represent with a closed Python `StrEnum` (or equivalently strict closed enum semantics):
+Represented by `Environment(StrEnum)`.
 
-```text
-Environment.LOCAL
-Environment.DEV
-Environment.UAT
-Environment.PROD
-```
+`TEST` is not a fifth promotion environment.
 
-Unknown values fail bootstrap before the application accepts work.
+### 9.4 Identity values
 
-`TEST` is not a fifth promotion environment. Automated tests construct/override a valid environment context explicitly.
+`DANTE_RELEASE_SHA` and `DANTE_BUILD_ID`:
 
-### 9.4 `DANTE_RELEASE_SHA`
+- are required;
+- are stripped and reject blank values;
+- permit `local` only when `DANTE_ENV=local`;
+- are not automatically exposed through health/API output.
 
-Required in every environment.
+Future exact artifact/Git-SHA formatting is deferred until the release pipeline exists.
 
-LOCAL accepted marker:
-
-```text
-local
-```
-
-DEV/UAT/PROD:
-
-- must be non-empty after whitespace normalization;
-- must not use the `local` marker;
-- exact future artifact/Git-SHA format enforcement is deferred until the real release/artifact pipeline exists;
-- do not expose this value automatically through public/health endpoints.
-
-The name is inherited from the accepted Foundation config contract. It is not the Python package version.
-
-### 9.5 `DANTE_BUILD_ID`
-
-Required in every environment.
-
-LOCAL accepted marker:
-
-```text
-local
-```
-
-DEV/UAT/PROD:
-
-- must be non-empty after whitespace normalization;
-- must not use the `local` marker;
-- provider/CI-specific format is intentionally deferred until the build pipeline exists;
-- do not expose it automatically through public/health endpoints.
-
-### 9.6 `DANTE_DEBUG`
-
-Default:
-
-```text
-false
-```
-
-Meaning:
-
-```text
-DANTE_DEBUG
-= application/FastAPI debug behavior
-!= Uvicorn --reload
-!= Uvicorn log level
-!= worker count
-!= developer environment identity
-```
-
-Hard safety invariant:
+### 9.5 Debug invariant
 
 ```text
 DANTE_ENV=prod + DANTE_DEBUG=true
 → BOOTSTRAP REJECT
 ```
 
-This prevents accidental production debug behavior/traceback exposure.
+`DANTE_DEBUG` controls FastAPI application debug behavior only; it does not control Uvicorn reload, host, port or workers.
 
-### 9.7 Variables deliberately not created
-
-Do not create these DANTE variables at CP1:
+### 9.6 Variables deliberately not created at CP1
 
 ```text
 DANTE_HOST
 DANTE_PORT
 DANTE_WORKERS
 DANTE_RELOAD
+DB variables
 ```
 
-Host/port/workers/reload belong to the ASGI server/runtime boundary. Uvicorn already owns CLI/`UVICORN_*` configuration for those concerns.
-
-Do not duplicate server configuration into the DANTE application namespace.
-
-No database variables exist at CP1 because PostgreSQL application connectivity does not exist until CP3.
+Host/port/workers/reload belong to the ASGI server/runtime boundary. DB configuration begins only when application DB connectivity exists.
 
 ## 10. Settings implementation semantics
 
-### 10.1 Model shape
-
-Conceptual target:
+Conceptual shape:
 
 ```python
 class Environment(StrEnum):
@@ -816,74 +564,35 @@ class Environment(StrEnum):
 
 class Settings(BaseSettings):
     env: Environment
-    release_sha: str
-    build_id: str
+    release_sha: IdentityValue
+    build_id: IdentityValue
     debug: bool = False
-
-    model_config = SettingsConfigDict(
-        env_prefix="DANTE_",
-        frozen=True,
-        extra="forbid",
-    )
 ```
 
-The implementation uses narrow string constraints/validators to trim/reject blank identity strings and enforce cross-field invariants while preserving the external variable names and semantics frozen above.
-
-Canonical external spelling is uppercase `DANTE_*`, as documented in `.env.example` and backend README.
-
-### 10.2 Cross-field bootstrap invariants
-
-At minimum:
+Configuration:
 
 ```text
-missing DANTE_ENV
-→ REJECT
-
-unknown DANTE_ENV
-→ REJECT
-
-missing/blank DANTE_RELEASE_SHA
-→ REJECT
-
-missing/blank DANTE_BUILD_ID
-→ REJECT
-
-prod + debug=true
-→ REJECT
-
-dev/uat/prod + release_sha=local
-→ REJECT
-
-dev/uat/prod + build_id=local
-→ REJECT
+env_prefix   DANTE_
+extra        forbid
+frozen       true
 ```
 
-LOCAL may use:
+Cross-field invariants directly tested:
 
 ```text
-DANTE_ENV=local
-DANTE_RELEASE_SHA=local
-DANTE_BUILD_ID=local
-DANTE_DEBUG=false
+missing DANTE_ENV                         REJECT
+unknown DANTE_ENV                         REJECT
+missing/blank DANTE_RELEASE_SHA           REJECT
+missing/blank DANTE_BUILD_ID              REJECT
+prod + debug=true                         REJECT
+dev/uat/prod + release_sha=local          REJECT
+dev/uat/prod + build_id=local             REJECT
+mutation after bootstrap                  REJECT
 ```
-
-### 10.3 Immutability
-
-`frozen=True` is required so validated process settings cannot be silently mutated after bootstrap.
-
-If runtime behavior needs to change later, use governed application state/config or restart/redeploy with new deployment configuration as appropriate; do not mutate the bootstrap settings object in place.
 
 ## 11. `.env.local` and configuration source model
 
-### 11.1 Committed safe contract
-
-CP1 commits:
-
-```text
-apps/backend/.env.example
-```
-
-Initial safe contents/shape:
+Committed safe example:
 
 ```dotenv
 DANTE_ENV=local
@@ -892,37 +601,21 @@ DANTE_BUILD_ID=local
 DANTE_DEBUG=false
 ```
 
-It contains no secret.
-
-### 11.2 Local-only file
-
 Developer convenience file:
 
 ```text
 apps/backend/.env.local
 ```
 
-is ignored by Git under the existing repository ignore policy.
+is ignored by Git.
 
-### 11.3 Critical loading rule
+Critical rule: `Settings` does **not** configure `env_file=".env.local"`.
 
-The `Settings` class does **not** configure `env_file=".env.local"`.
-
-The application reads the real process environment. LOCAL explicitly asks `uv` to load `.env.local` before the process starts:
-
-```bash
-uv run --env-file .env.local \
-  uvicorn dante.bootstrap.app:create_app \
-  --factory \
-  --reload
-```
-
-Flow:
+LOCAL flow:
 
 ```text
-LOCAL
 .env.local
-  ↓ explicit `uv run --env-file`
+  ↓ explicit uv --env-file
 process environment
   ↓
 Settings()
@@ -933,8 +626,7 @@ create_app()
 Remote flow:
 
 ```text
-DEV / UAT / PROD
-platform/deployment configuration + future secret manager/workload identity
+DEV / UAT / PROD deployment configuration
   ↓
 process environment / runtime injection
   ↓
@@ -943,20 +635,11 @@ Settings()
 create_app()
 ```
 
-Why this separation matters:
-
-- `.env.local` remains a developer convenience, not application configuration authority;
-- DEV/UAT/PROD cannot accidentally start reading a local dotenv merely because one happens to be present in a filesystem/image;
-- test configuration can be injected explicitly;
-- the same Settings model consumes the process environment regardless of source.
-
-A CP1 test directly proves that `Settings()` does not automatically discover/read `.env.local`.
+A direct test proves that `Settings()` does not auto-load `.env.local`.
 
 ## 12. FastAPI application factory contract
 
-### 12.1 Factory
-
-Approved public technical bootstrap shape:
+Public technical bootstrap shape:
 
 ```python
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -967,37 +650,16 @@ Behavior:
 
 ```text
 create_app(None)
-→ construct Settings() from current process environment
+→ Settings() from current process environment
 → validate/fail fast
 → construct FastAPI
 
 create_app(explicit_settings)
-→ use already-validated explicit Settings
+→ use already-validated settings
 → construct FastAPI
 ```
 
-This allows tests to inject settings without monkeypatching a global singleton.
-
-### 12.2 No global application/settings singleton as architecture
-
-Do not create a module-level `settings = Settings()`.
-
-Do not add `@lru_cache` merely because it appears in common FastAPI settings examples. That pattern is useful when settings are resolved repeatedly as a request dependency. CP1 constructs settings once at bootstrap, so repeated request-level construction/caching is unnecessary.
-
-The application factory is the composition boundary.
-
-### 12.3 `FastAPI(debug=...)`
-
-`settings.debug` controls FastAPI's application debug flag.
-
-Again:
-
-```text
-FastAPI debug flag
-!= Uvicorn reload
-```
-
-Production debug is rejected by Settings validation before app creation.
+No module-level `settings = Settings()` and no `@lru_cache` are introduced merely because they appear in common examples. CP1 constructs settings once at bootstrap.
 
 ## 13. Lifespan/wiring decision
 
@@ -1008,15 +670,9 @@ bootstrap/lifespan.py
 bootstrap/wiring.py
 ```
 
-Reason:
+There is no long-lived DB/provider resource or sufficiently large concrete component graph yet.
 
-- there is no long-lived DB/provider/resource to acquire and clean up yet;
-- there are not enough concrete implementations to justify a wiring module;
-- empty files/layers would be ceremony rather than architecture.
-
-When a real application-wide resource exists, FastAPI's current recommended startup/shutdown mechanism is the `lifespan` context manager. CP3 is a likely first point because the database engine/session infrastructure may create a real process-lifetime resource.
-
-Do not use deprecated/legacy startup/shutdown event handlers as the default future design when `lifespan` is applicable.
+When a real application-wide resource exists, FastAPI lifespan is the preferred startup/shutdown mechanism. CP3 is the likely first trigger.
 
 ## 14. Technical HTTP surface
 
@@ -1032,48 +688,28 @@ GET /health/ready
 ### 14.1 Liveness
 
 ```text
-GET /health/live
 200
 {"status":"ok"}
 ```
 
-Meaning at CP1:
+Meaning: process is alive and can answer HTTP.
 
-```text
-FastAPI process is alive and can answer HTTP
-```
-
-Liveness must not become dependent on PostgreSQL/provider availability later; external dependency failure should not make the process itself appear dead.
+Liveness must not later depend on external dependency availability.
 
 ### 14.2 Readiness
 
 ```text
-GET /health/ready
 200
 {"status":"ready"}
 ```
 
-Meaning at CP1:
+CP1 meaning: application construction/bootstrap configuration completed successfully.
 
-```text
-application construction/bootstrap configuration completed successfully
-```
+Because CP1 has no database/resource dependency, readiness performs no fake DB/provider check. Its semantics must be revisited when required runtime dependencies appear.
 
-Because CP1 has no database/resource dependency, readiness performs no fake DB/provider check.
+### 14.3 Exposure
 
-Readiness semantics must be explicitly revisited at the boundary where real required runtime dependencies appear. Do not silently redefine it by accident.
-
-### 14.3 Probe exposure
-
-Both routes:
-
-```text
-include_in_schema = false
-```
-
-They must not appear in the product OpenAPI contract.
-
-Responses remain deliberately minimal. Do not expose:
+Both routes use `include_in_schema=false` and expose no:
 
 - environment identity;
 - release SHA;
@@ -1085,8 +721,6 @@ Responses remain deliberately minimal. Do not expose:
 
 ## 15. OpenAPI/docs environment behavior
 
-CP1 policy:
-
 ```text
 LOCAL    /docs ON    /openapi.json ON    /redoc OFF
 DEV      /docs ON    /openapi.json ON    /redoc OFF
@@ -1094,257 +728,163 @@ UAT      /docs ON    /openapi.json ON    /redoc OFF
 PROD     /docs OFF   /openapi.json OFF   /redoc OFF
 ```
 
-No new environment variable controls this at CP1. It is deterministic technical host behavior derived from the validated `DANTE_ENV`.
+No extra environment variable controls this at CP1.
 
-This is transport-host configuration, not business logic.
-
-Future generated-client/release-contract workflows must use build/repository artifacts rather than depending on a production interactive documentation endpoint.
-
-## 16. LOCAL server command
-
-Canonical CP1 developer command from `apps/backend`:
-
-```bash
-uv run --env-file .env.local \
-  uvicorn dante.bootstrap.app:create_app \
-  --factory \
-  --reload
-```
-
-Meaning of each part:
-
-| Segment | Meaning |
-|---|---|
-| `uv run` | execute inside the locked DANTE backend project environment |
-| `--env-file .env.local` | LOCAL-only explicit dotenv injection into the process environment |
-| `uvicorn` | ASGI server process |
-| `dante.bootstrap.app:create_app` | import the DANTE application factory |
-| `--factory` | tell Uvicorn the target is a callable returning an ASGI app |
-| `--reload` | LOCAL developer file reload; not controlled by `DANTE_DEBUG` |
-
-Uvicorn host/port can remain its defaults initially. If a developer needs a different bind/port, use Uvicorn CLI/`UVICORN_*` semantics rather than adding DANTE application variables.
-
-## 17. CP1 standard commands
-
-The backend README documents these once implementation exists.
+## 16. Canonical LOCAL server command
 
 From `apps/backend`:
 
 ```bash
-# Resolve/bootstrap from the committed lockfile
-uv sync --locked
-
-# Prove the lockfile is current
-uv lock --check
-
-# Format locally (modifies files)
-uv run ruff format .
-
-# Format check (does not modify)
-uv run ruff format --check .
-
-# Lint
-uv run ruff check .
-
-# Typecheck
-uv run mypy
-
-# Tests + coverage according to pyproject configuration
-uv run pytest
-
-# Build source distribution + wheel
-uv build
-
-# LOCAL server
 uv run --env-file .env.local \
   uvicorn dante.bootstrap.app:create_app \
   --factory \
   --reload
 ```
 
-Do not create a decorative `[project.scripts]` command merely to shorten the Uvicorn invocation at CP1. Add a stable entrypoint only when it has a durable application/release purpose.
+Uvicorn owns host/port/workers/reload semantics; do not duplicate them into `DANTE_*` application configuration.
+
+## 17. CP1 standard commands
+
+```bash
+uv sync --locked
+uv lock --check
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
+uv run pytest
+uv build
+```
+
+Local formatting may use:
+
+```bash
+uv run ruff format .
+```
+
+Do not create a decorative project script merely to shorten the Uvicorn invocation.
 
 ## 18. CP1 test contract
 
-### 18.1 `test_settings.py`
+### 18.1 Settings tests
 
-Must directly prove at least:
+Directly prove:
 
 ```text
 valid LOCAL environment variables                       PASS
-valid explicit Settings construction for test injection PASS
+valid explicit Settings construction                    PASS
 missing DANTE_ENV                                       REJECT
 unknown DANTE_ENV                                       REJECT
-missing/blank DANTE_RELEASE_SHA                         REJECT
-missing/blank DANTE_BUILD_ID                            REJECT
-PROD + DANTE_DEBUG=true                                 REJECT
-DEV/UAT/PROD + release_sha=local                        REJECT
-DEV/UAT/PROD + build_id=local                           REJECT
+missing/blank release identity                          REJECT
+missing/blank build identity                            REJECT
+PROD + debug=true                                       REJECT
+remote + local identity markers                         REJECT
 settings mutation after bootstrap                       REJECT
-.env.local is not auto-loaded by Settings               PASS
+.env.local is not auto-loaded                           PASS
 ```
 
-Use pytest's environment-isolation facilities such as `monkeypatch`/temporary paths where appropriate; tests must not depend on the developer's actual shell environment.
+### 18.2 Bootstrap/HTTP tests
 
-The runtime immutability test deliberately performs an assignment that the Pydantic mypy plugin correctly rejects statically. The single `# type: ignore[misc]` on that exact line exists only to permit the negative runtime probe; do not broaden it to the function/file/module.
-
-### 18.2 `test_bootstrap.py`
-
-Must directly prove at least:
+Directly prove:
 
 ```text
-create_app(explicit valid settings)                     PASS
-GET /health/live                                        200 + exact minimal body
-GET /health/ready                                       200 + exact minimal body
+create_app(explicit settings)                           PASS
+GET /health/live                                        200 + exact body
+GET /health/ready                                       200 + exact body
 health routes absent from OpenAPI                       PASS
-LOCAL docs/OpenAPI available                            PASS
-DEV/UAT docs/OpenAPI available                          PASS as parametrized behavior
-PROD docs/OpenAPI disabled                              PASS
+LOCAL/DEV/UAT docs + OpenAPI                            PASS
+PROD docs + OpenAPI disabled                            PASS
 ReDoc disabled                                          PASS
 FastAPI debug reflects validated settings               PASS
 ```
 
-Tests use FastAPI/Starlette `TestClient` with its supported `httpx2` transport behavior. Calling route functions directly is not accepted as HTTP proof.
+Tests use FastAPI/Starlette `TestClient` with `httpx2`; calling route functions directly is not accepted as HTTP proof.
 
 ### 18.3 No fake tests
 
 Do not add:
 
-- a meaningless Hypothesis property;
+- meaningless Hypothesis properties;
 - empty architecture tests before a meaningful dependency graph exists;
 - database mocks in CP1;
 - placeholder provider tests;
-- a fake coverage target.
+- fake coverage targets.
 
-## 19. CP1 direct acceptance commands
+## 19. CP1 direct acceptance — FINAL EVIDENCE
 
-Before CP1 is called PASS, execute directly on the real WSL/Linux workstation:
-
-```text
-uv sync --locked                            REQUIRED
-uv lock --check                             REQUIRED
-Python resolved as 3.14.7                   REQUIRED
-import installed `dante` package            REQUIRED
-uv run ruff format --check .                REQUIRED
-uv run ruff check .                         REQUIRED
-uv run mypy                                 REQUIRED
-uv run pytest                               REQUIRED
-uv build                                    REQUIRED
-actual Uvicorn factory process startup       REQUIRED
-/health/live over HTTP                       REQUIRED
-/health/ready over HTTP                      REQUIRED
-```
-
-### 19.1 Direct evidence earned so far — 2026-08-20
-
-The following results were run on the real DANTE WSL/Linux checkout:
+Every CP1 acceptance obligation was run directly on the real WSL/Linux workstation against the final locked environment.
 
 ```text
-uv lock
-Python 3.14.7 / 38 packages resolved         PASS — pre-httpx2 correction graph
-
-uv lock --check                              PASS — before httpx2 manifest correction
-
-uv tree --locked --depth 1                    PASS — before httpx2 manifest correction
-exact initial direct versions recorded in §4.9
-
-uv sync --locked                              PASS — before httpx2 manifest correction
-created apps/backend/.venv
-installed dante-backend + 37 packages
-
-project runtime Python == 3.14.7              PASS
-project executable == apps/backend/.venv/...  PASS
-installed dante import from src/dante         PASS
-
-uv run ruff format --check .                  PASS after narrow formatter cleanup
-uv run ruff check .                           PASS after narrow RUF043 cleanup
-
-plain uv run mypy                             FAIL — 21 BaseSettings call-arg findings
-plugin experiment                             EXPECTED IMPROVEMENT — 1 deliberate frozen mutation finding
-canonical post-update uv run mypy             PASS — no issues found in 8 source files
-
-canonical uv run pytest with old httpx lock   FAIL — StarletteDeprecationWarning promoted to error
-uv run --with httpx2==2.9.1 pytest             PASS — 25/25; statement + branch coverage 100.00%
-canonical uv run pytest after regenerated lock REQUIRED
-
-uv build                                      NOT YET RUN
-actual Uvicorn factory startup                NOT YET RUN
-/health/live over HTTP                        NOT YET RUN
-/health/ready over HTTP                       NOT YET RUN
+uv lock                                    PASS — 39 packages resolved
+uv lock --check                            PASS
+uv tree --locked --depth 1                 PASS
+uv sync --locked                           PASS
+Python project interpreter                 PASS — 3.14.7
+installed `dante` src-layout import        PASS
+uv run ruff format --check .               PASS — 9 files already formatted
+uv run ruff check .                        PASS — All checks passed
+uv run mypy                                PASS — no issues in 8 source files
+uv run pytest                              PASS — 25/25
+statement coverage                         PASS — 100.00% on CP1 surface
+branch coverage                            PASS — 100.00% on CP1 surface
+uv build                                   PASS
+source distribution                        PASS — dante_backend-0.1.0.tar.gz
+wheel                                      PASS — dante_backend-0.1.0-py3-none-any.whl
+actual Uvicorn factory process startup     PASS
+GET /health/live over real HTTP            PASS — 200 / {"status":"ok"}
+GET /health/ready over real HTTP           PASS — 200 / {"status":"ready"}
+remote CP1 lock commit/readback             PASS
 ```
 
-The temporary `--with httpx2==2.9.1` run proves the dependency correction but is not a substitute for regenerating the repository lock and rerunning canonical `uv run pytest` from the final locked environment.
+Uvicorn real-process evidence included:
+
+```text
+127.0.0.1:8000
+WatchFiles reloader started
+server process started
+application startup complete
+```
+
+CP1 is therefore **CLOSED / DIRECT QA PASS**.
+
+This does not imply PostgreSQL, HG/PSV, recovery, migration or failure-injection validation.
 
 ## 20. File responsibility map
 
-When CP1 is materialized:
-
-| Path | Single primary responsibility |
+| Path | Primary responsibility |
 |---|---|
 | `apps/backend/.python-version` | exact initial Python interpreter pin |
 | `apps/backend/pyproject.toml` | project metadata, dependency intent, build/tool configuration |
 | `apps/backend/uv.lock` | exact resolved dependency graph |
 | `apps/backend/.env.example` | safe LOCAL configuration contract/example |
-| `apps/backend/README.md` | executable developer/operator commands + current variable reference |
-| `src/dante/__init__.py` | canonical installed package marker/minimal package metadata only |
-| `src/dante/bootstrap/app.py` | FastAPI application factory + CP1 technical routes/host configuration |
+| `apps/backend/README.md` | executable developer/operator commands + variable reference |
+| `src/dante/__init__.py` | canonical installed package marker |
+| `src/dante/bootstrap/app.py` | FastAPI application factory + CP1 technical routes/host behavior |
 | `src/dante/platform/config/settings.py` | environment enum + typed immutable settings + safety validation |
 | `tests/test_settings.py` | settings source/validation/immutability contract |
 | `tests/test_bootstrap.py` | real ASGI application/route/docs behavior |
 
-Do not hide unrelated responsibilities in these files to avoid creating a justified future file. Conversely, do not split a tiny cohesive responsibility into extra modules merely to make the tree look larger.
-
 ## 21. Configuration documentation discipline — permanent rule
 
-This section exists specifically to prevent future unexplained variables.
-
-No new backend `DANTE_*` variable is considered complete unless the same change records, at minimum:
+No new backend `DANTE_*` variable is complete unless the same change records, at minimum:
 
 ```text
 NAME
-canonical external spelling
-
 OWNER / DOMAIN
-which technical/application boundary owns it
-
 TYPE
-validated runtime type
-
 REQUIREDNESS
-which environments require it
-
 DEFAULT
-if any, and why it is safe
-
 SECRET CLASS
-secret / non-secret / user-governed application data
-
 SOURCE
-LOCAL dotenv, deployment config, secret manager, workload identity, etc.
-
 CONSUMER
-exact subsystem that reads the validated setting
-
 EFFECT
-what behavior it changes
-
 INVALID COMBINATIONS
-cross-field/environment safety rules
-
 EXPOSURE
-whether it may appear in logs/health/metrics/API
-
-ROTATION / LIFECYCLE
-where applicable
-
+ROTATION / LIFECYCLE where applicable
 TEST EVIDENCE
-validation/default/cross-field/redaction tests
-
 DOCUMENTATION
-.env.example + backend README + durable architecture/config doc when material
 ```
 
-At implementation time, the operational source of truth for existing variables is intentionally redundant in useful ways:
+Operational truth is intentionally represented in complementary forms:
 
 ```text
 Settings model
@@ -1354,93 +894,88 @@ Settings model
 = safe LOCAL contract/discoverability
 
 apps/backend/README.md
-= developer/operator explanation and commands
+= developer/operator usage
 
-docs/development/* contract
-= durable rationale/architecture/governance
+durable development docs
+= rationale/architecture/governance
 ```
 
-A variable must not appear only in tribal knowledge/chat history.
+A variable must not exist only in chat/tribal knowledge.
 
-## 22. Deferred CP1 items and return triggers
+## 22. Deferred items and return triggers
 
 | Deferred item | Why absent now | Return trigger |
 |---|---|---|
-| `lifespan.py` | no real process-lifetime resource | first real shared resource requiring acquire/release, likely CP3 DB engine |
-| `wiring.py` | no meaningful concrete component graph yet | composition root becomes clearer by extracting real wiring |
-| `platform/database` | no app DB connectivity until CP3 | CP3 |
-| SQLAlchemy/psycopg/Alembic | unused before real PostgreSQL harness | CP3 |
+| `lifespan.py` | no real process-lifetime resource | first real shared acquire/release resource, likely CP3 DB engine |
+| `wiring.py` | no meaningful concrete component graph yet | real composition root becomes large enough to extract |
+| `platform/database` | no app DB connectivity in CP1 | CP3 |
+| SQLAlchemy/psycopg/Alembic | unused before real PostgreSQL environment | CP3 |
 | Hypothesis dependency | no meaningful CP1 property/state space | first real invariant/property candidate |
-| architecture import tooling | too little package graph to justify a tool | CP4 or earlier if CP1 graph already provides real enforceable value |
-| backend OCI Dockerfile | normal inner loop runs directly in WSL; deployment packaging not active | artifact/deployment packaging boundary |
-| observability package | no fake telemetry scaffold | first real service observability implementation boundary |
+| architecture import tooling | package graph too small | CP4 or earlier only if real enforceable value appears |
+| backend OCI Dockerfile | deployment packaging not active | artifact/deployment packaging boundary |
+| observability package | no fake telemetry scaffold | first real service observability boundary |
 | auth/security package | no Auth implementation authorized | Auth workstream/vertical slice |
-| business `modules/` | concrete capability map not yet selected | real vertical slice after scaffold QA |
-| PostgreSQL | separate fault-isolated infrastructure checkpoint | CP2 |
-| schema/domain mappings | scaffold must pass first | post-CP5 Logical → PostgreSQL workstream |
+| business `modules/` | capability implementation not yet selected | real vertical slice after scaffold QA |
+| PostgreSQL | separate infrastructure checkpoint | CP2 |
+| concrete schema/domain mappings | scaffold must pass first | post-CP5 Logical → PostgreSQL workstream |
 
 ## 23. Source-verification record
 
-Research was first refreshed on **2026-08-19** before freezing the design contract. Version-sensitive implementation evidence was refreshed again on **2026-08-20** when the real resolver selected newer patch releases and when the Starlette TestClient transport dependency was exercised directly.
+Research was refreshed on 2026-08-19 before design freeze and version-sensitive evidence was refreshed again on 2026-08-20 during real implementation.
 
-Primary/official sources used include:
+Primary/official source families used:
 
-- uv build backend/config/dependency documentation: `https://docs.astral.sh/uv/`
-- FastAPI official documentation: `https://fastapi.tiangolo.com/`
-- Starlette official documentation/release notes for current `TestClient` transport behavior: `https://www.starlette.io/`
-- Uvicorn official settings documentation: `https://www.uvicorn.org/settings/`
-- Pydantic/Pydantic Settings documentation, including the official mypy integration/plugin documentation: `https://docs.pydantic.dev/`
-- pytest official documentation: `https://docs.pytest.org/`
-- authoritative package release metadata on PyPI for FastAPI, Pydantic, pydantic-settings, Uvicorn, Ruff, mypy, pytest, pytest-cov, HTTPX/HTTPX2 and relevant Uvicorn extras.
+- uv official documentation;
+- FastAPI official documentation;
+- Starlette official documentation/release notes;
+- Uvicorn official documentation;
+- Pydantic/Pydantic Settings official documentation, including mypy integration;
+- pytest official documentation;
+- authoritative package release metadata for the direct dependency set.
 
-Initial release observations used to choose the manifest floors on 2026-08-19:
+Initial observed versions explained the compatibility floors. The final exact implementation authority is the committed `uv.lock`.
+
+Important closure fact:
 
 ```text
-FastAPI stable observed         0.141.1
-Pydantic stable observed        2.13.4
-pydantic-settings observed      2.15.0
-Uvicorn stable observed         0.52.1
-Ruff stable observed            0.16.2
-mypy stable observed            2.3.0
-pytest stable observed          9.1.1
-pytest-cov stable observed      7.1.0
-HTTPX stable observed           0.28.1
+httpx initial assumption      historical / superseded
+httpx2 manifest envelope      >=2.9.1,<3
+httpx2 final locked version   2.12.0
 ```
-
-The initial HTTPX choice is historical evidence only and is superseded for CP1 by the direct Starlette 1.6.0 compatibility finding in §4.5. The corrected manifest uses `httpx2>=2.9.1,<3`; the final exact resolved version must be recorded after `uv` regenerates the lock.
 
 ## 24. Exact resume point
 
-A future conversation resuming CP1 must start here:
+CP1 is closed. A future conversation must not replay CP1 setup by default.
 
 ```text
-CP1-01 dependency/version policy       APPROVED / httpx2 correction materialized remotely
-CP1-02 pyproject/tooling design         APPROVED
-CP1-03 FastAPI/settings design          APPROVED
-CP1-A implementation                    MATERIALIZED REMOTELY
-Ruff formatter/lint findings            REPAIRED / DIRECT PASS
-Pydantic mypy plugin finding            REPAIRED / CANONICAL DIRECT PASS
-Starlette TestClient dependency finding REPAIRED IN MANIFEST / TEMPORARY TEST PROOF PASS
-uv.lock                                 GENERATED LOCALLY BUT STALE / MUST REGENERATE
-CP1 direct QA                           IN PROGRESS
-PostgreSQL / CP2                        NOT STARTED
+CP1-01 dependency/version policy       CLOSED / IMPLEMENTED
+CP1-02 pyproject/tooling design         CLOSED / IMPLEMENTED
+CP1-03 FastAPI/settings design          CLOSED / IMPLEMENTED
+CP1 source/manifests                    REMOTE
+CP1 uv.lock                             REMOTE / VERIFIED
+Ruff                                    DIRECT PASS
+mypy strict                             DIRECT PASS
+pytest                                  DIRECT PASS — 25/25
+CP1 coverage                            100% statement/branch evidence
+uv build                                DIRECT PASS
+real Uvicorn + HTTP probes              DIRECT PASS
+CP1                                     CLOSED / DIRECT QA PASS
+PostgreSQL / CP2                        NOT STARTED / NEXT
 ```
 
 Next sequence:
 
 ```text
-1. Pull the latest `feature/backend-scaffold` without losing the locally generated `uv.lock`.
-2. Verify the only local pending artifact remains `apps/backend/uv.lock`.
-3. Run `uv lock` to regenerate that file from the corrected `httpx2` manifest; never hand-edit it.
-4. Run `uv lock --check` and inspect `uv tree --locked --depth 1` to record the final exact graph.
-5. Run `uv sync --locked` so the project `.venv` exactly matches the regenerated lock.
-6. Re-run `uv run ruff format --check .`, `uv run ruff check .` and canonical `uv run mypy` against the final locked environment.
-7. Run canonical `uv run pytest`; only this locked run earns final pytest PASS.
-8. Run `uv build`.
-9. Start the real Uvicorn factory with explicit LOCAL env injection and verify `/health/live` + `/health/ready` over HTTP.
-10. Open/execute the dedicated CP1-B gate for the regenerated local `uv.lock`; never hand-write it.
-11. Prove exact remote delta/readback and then update CP1 status/evidence honestly.
-12. Proceed to CP2 only after every CP1 acceptance obligation is directly PASS.
+1. Read this contract + `docs/workstreams/backend-scaffold.md` + current project truth.
+2. Verify `feature/backend-scaffold`, current remote/local HEAD and clean tree.
+3. Treat CP1 as CLOSED unless new concrete evidence proves a contradiction.
+4. Start CP2 READ-ONLY design/research.
+5. Re-check current official evidence for PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6 and selected built-in extensions.
+6. Decide the DANTE-owned PostgreSQL image/build strategy and Compose topology.
+7. Define volume/persistence/reset semantics, healthcheck, published port, LOCAL credentials and extension activation.
+8. Define direct CP2 acceptance evidence including restart/recreation persistence and host GUI connectivity.
+9. Present an exact CP2 Git write gate before creating PostgreSQL/Compose files.
+10. Proceed to CP3 only after CP2 direct PASS.
 ```
 
-No PostgreSQL/schema/business implementation is authorized by this contract.
+No PostgreSQL/schema/business implementation is authorized by this CP1 contract.
