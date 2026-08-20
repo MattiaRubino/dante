@@ -133,7 +133,7 @@ def test_settings_are_immutable_after_bootstrap() -> None:
     )
 
     with pytest.raises(ValidationError, match="frozen"):
-        settings.debug = True
+        settings.debug = True  # type: ignore[misc]  # deliberate runtime immutability probe
 
 
 def test_dotenv_local_is_not_loaded_implicitly(
