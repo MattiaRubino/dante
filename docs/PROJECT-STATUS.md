@@ -39,7 +39,8 @@ DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
 PASSO 1 PASS
 PASSO 2 PASS
 PASSO 3 PASS
-PENDING MAIN INTEGRATION
+INTEGRATED VIA PR #22
+MERGE COMMIT 9116cd508d372cd56cf00403aa59633589b2d365
 PRODUCTION FRONTEND CODE NOT STARTED
 DIRECT FRONTEND VALIDATION NOT RUN
 
@@ -282,18 +283,19 @@ First LOCAL DB uses real PostgreSQL 18.4 with full selected extension envelope e
 - GitHub-hosted runner initially;
 - future build-once/promote + attestation/SBOM release posture.
 
-## 7. Frontend Engineering Foundation — closed design / pending integration
+## 7. Frontend Engineering Foundation — closed design / integrated via PR #22
 
-Durable branch authorities:
+Durable authorities are now integrated on `main`:
 
 - `docs/architecture/frontend-engineering-foundation.md`;
 - `docs/architecture/frontend-engineering-foundation-part-2.md`;
 - `docs/architecture/frontend-engineering-foundation-final-review.md`;
+- `docs/architecture/frontend-engineering-foundation-post-closure-qa.md`;
 - `docs/decisions/ADR-008-frontend-engineering-stack.md`;
 - `docs/decisions/ADR-009-frontend-architecture-boundaries.md`;
 - `docs/workstreams/frontend-foundation.md`.
 
-Until protected-main integration these are branch-local newer truth rather than integrated `main` authority.
+Protected-main integration completed through PR #22 at merge commit `9116cd508d372cd56cf00403aa59633589b2d365`. The former `feature/frontend-foundation` branch was merged and auto-deleted.
 
 ### Technology baseline
 
@@ -367,24 +369,23 @@ FRONTEND DIRECT TEST     NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-Frontend direct obligations move to post-integration materialization. Failure first reopens affected technology/adapter unless wider contradiction is proven.
+Frontend direct obligations move to the fresh post-integration materialization scope. Failure first reopens affected technology/adapter unless wider contradiction is proven.
 
 ## 9. Current repository branches/workstreams
 
-- `feature/frontend-foundation` — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**;
+- Frontend Engineering Foundation — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**; former `feature/frontend-foundation` branch merged/auto-deleted;
 - separate prototype/UX workstreams remain non-production evidence;
 - Engineering Foundation v0 closed;
-- frontend/backend production scaffolds not started by this workstream.
+- frontend/backend production scaffolds not started by the Foundation workstreams.
 
 ## 10. Exact next action
 
 ```text
 FRONTEND
-prepare protected-main integration
-→ PR only with explicit authorization
-→ merge only with explicit authorization + expected-head safety
-→ post-merge main readback
-→ fresh materialization/scaffold/direct-validation scope
+open a fresh bounded materialization/scaffold/direct-validation workstream
+→ materialize only accepted real workspace/app/package artifacts
+→ execute carried validation obligations progressively
+→ do not implement product surfaces until relevant foundation/contracts exist
 ```
 
 Backend production scaffold remains separate/not started and requires its own bounded gate.
