@@ -34,6 +34,15 @@ PM-14 CLOSURE COMPLETE
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
 
+FRONTEND ENGINEERING FOUNDATION
+DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+PASSO 1 PASS
+PASSO 2 PASS
+PASSO 3 PASS
+PENDING MAIN INTEGRATION
+PRODUCTION FRONTEND CODE NOT STARTED
+DIRECT FRONTEND VALIDATION NOT RUN
+
 PRODUCTION BACKEND SCAFFOLD
 NOT STARTED
 
@@ -79,6 +88,7 @@ absence/unknown != false
 MaterialStateRef != ETag/MVCC/provider revision
 idempotency != semantic identity
 HTTP/UI/tool/AuthZ string != canonical governed effect
+client local state != canonical accepted effect
 ```
 
 WL-H01..WL-H12 remain active and constrain implementation.
@@ -121,18 +131,22 @@ Selected PostgreSQL capabilities:
 
 ### Offline/sync
 
-- PowerSync Service 1.25.0 Open Edition;
+- PowerSync Service 1.25.0 Open Edition target from the accepted Physical Model;
 - encrypted SQLite local state;
 - PostgreSQL-backed PowerSync bucket storage;
 - explicit client-safe sync projections.
 
-Rules:
+Frontend implementation must preserve:
 
 ```text
 SQLite local copy != canonical truth
 PowerSync arrival order != conflict resolution
+offline capability = operation-specific
+local pending mutation != canonical effect
 consequential offline mutation → DANTE backend revalidation → PostgreSQL
 ```
+
+PowerSync JavaScript client packaging/version is selected by the closed Frontend Foundation and does not rewrite accepted Physical ownership semantics.
 
 ### Async/durable
 
@@ -185,17 +199,24 @@ one product monorepo
 apps/backend
 apps/web
 apps/mobile
+packages
+infra
+tooling
+tests/system
+docs
+prototypes
+.github
 ```
 
-Production implementation remains in the current repository; no new repo is planned. The historical repository name `lifeos` may be renamed to `dante` in a separate next governance scope.
+Paths are materialized only when real content exists. Production remains in the current repository.
 
 ### Backend architecture
 
 - capability-first modular monolith;
 - Domain/application/adapters separated;
-- FastAPI is an inbound adapter/process host;
-- no universal generic `Repository[T]`/BaseService/service locator/global DB session;
-- cross-module transactions allowed where accepted semantics require atomicity.
+- FastAPI inbound adapter/process host;
+- no universal `Repository[T]`/BaseService/service locator/global DB session;
+- cross-module transactions allowed when accepted semantics require atomicity.
 
 ### Backend toolchain
 
@@ -215,69 +236,119 @@ Alembic
 ### Developer environment
 
 - Linux canonical server semantics;
-- Windows 11 supported through WSL2/Linux;
-- repository/workflow kept in WSL filesystem for backend development;
-- PyCharm with WSL interpreter supported;
-- backend inner-loop process runs directly in WSL;
-- Docker Compose runs stateful LOCAL infrastructure;
-- future backend deployable packaged as immutable OCI image.
+- Windows 11 via WSL2/Linux;
+- one authoritative WSL-backed repository posture;
+- PyCharm WSL supported;
+- backend direct WSL inner loop;
+- Docker Compose stateful LOCAL infra;
+- future backend immutable OCI deployable.
 
 ### LOCAL PostgreSQL
 
-First LOCAL DB uses real PostgreSQL 18.4 and has the full selected extension envelope installed/enabled immediately, including pg_stat_statements preload configuration.
-
-DANTE owns a reproducible LOCAL PostgreSQL build/configuration.
+First LOCAL DB uses real PostgreSQL 18.4 with full selected extension envelope enabled, including pg_stat_statements preload. DANTE owns reproducible LOCAL PostgreSQL build/configuration.
 
 ### Persistence/migration
 
-- async DB I/O at technical boundaries; Domain/application sync/pure by default;
-- one AsyncSession per concurrent use-case/task scope;
+- async DB I/O technical boundaries; Domain/application sync/pure by default;
+- one AsyncSession per concurrent task/use-case;
 - application boundary owns transaction;
-- Alembic migration authority;
-- autogenerate candidate only;
-- applied migrations immutable;
+- Alembic authority/autogenerate candidate only/applied revisions immutable;
 - schema drift checked;
-- risk classification + online/staged PostgreSQL techniques where appropriate;
+- risk classification and staged/online PostgreSQL techniques;
 - expand → migrate → contract;
 - large backfills resumable/idempotent/bounded;
-- separate owner/migrator/runtime/replication/backup privilege classes;
-- `pg_dump`/`pg_restore` logical-copy path;
-- pgBackRest/WAL/PITR recovery path at accepted activation boundary;
-- raw PROD → DEV forbidden by default; production-derived lower-environment clones require sanitization/minimization.
+- separated DB privilege classes;
+- logical-copy path distinct from pgBackRest/WAL/PITR recovery;
+- raw PROD→DEV forbidden by default; production-derived lower data sanitized/minimized.
 
 ### Config/secrets
 
-- pydantic-settings typed/fail-fast immutable bootstrap configuration;
-- LOCAL safe `.env.example` + ignored `.env.local`;
-- remote hierarchy: minimize secrets → workload identity → provider secret manager → least privilege → rotation/revocation/audit;
-- GitHub OIDC preferred for future cloud deployment;
-- independent DEV/UAT/PROD and runtime/migrator credentials.
+- pydantic-settings typed/fail-fast immutable bootstrap config;
+- safe `.env.example` + ignored LOCAL `.env.local`;
+- minimize secrets → workload identity → provider secret manager → least privilege → rotation/revocation/audit;
+- GitHub OIDC preferred future cloud identity;
+- independent environment/workload credentials.
 
 ### Testing/CI
 
 - real PostgreSQL integration, never SQLite as PostgreSQL proof;
-- unit/application/property/state-machine/architecture/migration/concurrency/provider/API/privacy test layers;
-- PR/DEV/nightly/UAT cost tiers;
-- coverage tracked without arbitrary pre-code percentage;
+- unit/application/property/state-machine/architecture/migration/concurrency/provider/API/privacy layers;
+- PR/DEV/nightly/UAT tiers;
+- no arbitrary pre-code coverage floor;
 - GitHub Actions primary CI/CD;
-- protected-main real-check-before-required-check rule;
-- least-privilege workflow permissions;
-- immutable SHA-pinned Actions in protected workflows;
-- dependency review/CodeQL/secret protection when artifacts/source/capability exist;
+- real-check-before-required-check;
+- least privilege + SHA-pinned protected Actions;
+- dependency/CodeQL/secret controls when applicable;
 - GitHub-hosted runner initially;
-- future OCI build-once/promote, attestation and SBOM at release boundary.
+- future build-once/promote + attestation/SBOM release posture.
 
-### Explicit frontend defer
+## 7. Frontend Engineering Foundation — closed design / pending integration
 
-Engineering Foundation v0 does **not** freeze Node/package-manager/Turborepo/web/mobile test/build/release details. Those return to the frontend workstream.
+Durable branch authorities:
 
-### Explicit cloud defer
+- `docs/architecture/frontend-engineering-foundation.md`;
+- `docs/architecture/frontend-engineering-foundation-part-2.md`;
+- `docs/architecture/frontend-engineering-foundation-final-review.md`;
+- `docs/decisions/ADR-008-frontend-engineering-stack.md`;
+- `docs/decisions/ADR-009-frontend-architecture-boundaries.md`;
+- `docs/workstreams/frontend-foundation.md`.
 
-Compute provider, IaC engine, registry and remote sizing are not selected until first remote environment.
+Until protected-main integration these are branch-local newer truth rather than integrated `main` authority.
 
-## 7. Direct-validation truth
+### Technology baseline
 
-Never claim these have passed:
+```text
+Node 24 LTS
+TypeScript 6.0.x strict
+pnpm 11
+Turborepo 2.x
+React 19.2 + Vite 8 + TanStack Router
+React Native 0.86 + Expo SDK 57 + Expo Router
+PowerSync + encrypted SQLite
+TanStack Query 5
+TanStack Form
+Zod 4
+Orval 8
+```
+
+### Structural posture
+
+- feature-first Web/Mobile;
+- route/navigation adapters thin;
+- public-API-only and acyclic dependencies;
+- small real-consumer shared packages;
+- framework-free shared cores by default;
+- Data Authority Matrix before ambiguous data implementation;
+- canonical accepted effects backend/PostgreSQL only;
+- feature data firewall;
+- Mobile PowerSync app-owned initially;
+- Web online-first / PowerSync Web dormant;
+- browser PWA/service worker dormant;
+- identity-scoped local data;
+- React-free shared i18n;
+- versioned validated Web runtime public config;
+- exactly LOCAL/DEV/UAT/PROD;
+- Android+iOS supported targets with release gates when activated;
+- pnpm isolated preferred/direct-validation-required, hoisted evidence fallback;
+- WSL single-checkout posture, native bridge direct-validation required.
+
+### Final review
+
+Passo 3 repaired repository-layout inheritance, feature-cycle enforcement and stale CURRENT documentation/governance.
+
+```text
+BLOCKING ARCHITECTURE DEFECTS        0
+DOMAIN/LOGICAL/PHYSICAL REOPENS      0
+CANONICAL AUTHORITY CONFLICTS        0
+REPOSITORY-LAYOUT CONFLICTS          0 after repair
+FEATURE CYCLES ALLOWED               NO
+FALSE DIRECT PASS CLAIMS             0
+CURRENT-TRUTH CLOSURE BLOCKERS       0 after repair
+```
+
+## 8. Direct-validation truth
+
+Never claim these passed:
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
@@ -292,33 +363,30 @@ POWERSYNC DIRECT TEST    NOT RUN
 RESTATE DIRECT TEST      NOT RUN
 OBJECT RECOVERY TEST     NOT RUN
 SOLVER DIRECT TEST       NOT RUN
+FRONTEND DIRECT TEST     NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-## 8. Current repository branches/workstreams
+Frontend direct obligations move to post-integration materialization. Failure first reopens affected technology/adapter unless wider contradiction is proven.
 
-The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
+## 9. Current repository branches/workstreams
 
-Engineering Foundation v0 is closed. No production scaffold has yet been created.
+- `feature/frontend-foundation` — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**;
+- separate prototype/UX workstreams remain non-production evidence;
+- Engineering Foundation v0 closed;
+- frontend/backend production scaffolds not started by this workstream.
 
-## 9. Exact next action
+## 10. Exact next action
 
 ```text
-STEP 0
-Keep current repository.
-Decide/execute recommended rename `lifeos → dante`, or explicitly defer.
-
-STEP 1
-Mandatory bootstrap + fresh exact Git write gate.
-
-STEP 2
-Create production scaffold for apps/backend and LOCAL PostgreSQL engineering baseline only.
-
-STEP 3
-QA the scaffold.
-
-STEP 4
-Begin concrete Logical → PostgreSQL mapping/schema implementation.
+FRONTEND
+prepare protected-main integration
+→ PR only with explicit authorization
+→ merge only with explicit authorization + expected-head safety
+→ post-merge main readback
+→ fresh materialization/scaffold/direct-validation scope
 ```
 
-Do not reopen closed models/Foundation unless a concrete implementation contradiction supplies evidence for an explicit reopen.
+Backend production scaffold remains separate/not started and requires its own bounded gate.
+
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation decisions without concrete contradictory evidence or a materially changed requirement.

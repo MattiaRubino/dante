@@ -6,7 +6,7 @@
 
 ```text
 Product / North Star
-        CLOSED/CURRENT
+        CURRENT
           ↓
 Domain Model
         CLOSED
@@ -20,186 +20,91 @@ Pre-Physical Repository & Architecture Coherence
 Physical Model / Target Selection
         CLOSED / ACCEPTED
           ↓
-Current-truth dormant-component alignment
-        COMPLETE
-          ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
+          ↓
+Frontend Engineering Foundation
+        PASSO 1 PASS
+        PASSO 2 PASS
+        PASSO 3 FINAL REVIEW PASS
+        DESIGN / ARCHITECTURE CLOSED / ACCEPTED
+        PENDING MAIN INTEGRATION
 ```
 
-Engineering Foundation replaces the previously considered standalone Development Profile phase. Tool/runtime/infrastructure activation now happens under the closed Foundation contract and the implementation boundary that actually needs the capability.
+Architecture closure remains distinct from implementation/direct validation.
 
 ## Immediate next sequence
 
-### 0. Repository identity governance
+### 1. Frontend Foundation protected-main integration
 
-Keep the current repository; **do not create a new repository** for implementation.
+The closed frontend design remains branch-local until integration.
 
-Recommended small next operation:
+PR/merge follows repository safety:
 
-```text
-rename GitHub repository
-lifeos → dante
-```
-
-The rename must be an explicit governance write. If intentionally deferred, document that defer and continue on the same repository.
-
-### 1. Production repository/backend scaffold
-
-Open a fresh bounded branch/write gate and create only real scaffold required for:
-
-```text
-apps/backend
-Python 3.14.x / initial 3.14.7
-uv + pyproject.toml + uv.lock + .python-version
-src/dante
-Ruff
-mypy strict
-pytest + Hypothesis baseline
-architecture-test skeleton where an enforceable package graph exists
-pydantic-settings bootstrap
-SQLAlchemy + psycopg + Alembic bootstrap
-LOCAL Docker Compose
-DANTE-owned PostgreSQL 18.4 image/config
-full selected PostgreSQL extension envelope enabled
-initial migration harness
-initial real PostgreSQL integration harness
-initial GitHub Actions checks only where they can really execute
-```
-
-Do not create frontend implementation or unused remote-cloud scaffolding in this scope.
-
-### 2. Scaffold QA
-
-Before concrete schema work prove:
-
+- explicit authorization before PR creation;
+- exact branch/main relation;
 - exact changed paths;
-- clean locked dependency bootstrap;
-- backend can start in WSL/Linux;
-- PyCharm WSL interpreter workflow remains straightforward;
-- DANTE PostgreSQL image builds/starts;
-- selected extensions are installed/enabled and versions inspectable;
-- basic database connection works through selected driver/toolkit;
-- migration harness can create/upgrade an empty DB baseline;
-- initial unit/integration/architecture checks actually run;
-- real emitted CI contexts are observed before any required-check activation.
+- applicable real checks only;
+- expected-head merge safety;
+- post-merge main readback;
+- branch lifecycle verification.
 
-No direct Physical HG/PSV PASS may be claimed unless the specific required scenario/artifact is actually executed.
+### 2. Frontend production materialization
 
-### 3. Concrete Logical → PostgreSQL implementation
-
-After scaffold PASS:
+Only after Foundation integration, open a new exact scope to create real artifacts required for the accepted baseline:
 
 ```text
-consume closed Logical owner/ref/invariant contracts
-        ↓
-propose concrete physical mapping
-        ↓
-review schema/constraints/indexes/history semantics
-        ↓
-Alembic migration(s)
-        ↓
-real PostgreSQL tests
-        ↓
-persistence/application vertical slice
+root JS workspace manifests/config
+apps/web
+apps/mobile
+only real shared packages
+architecture lint/boundary/cycle enforcement
+selected test scaffolds that can actually run
 ```
 
-Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
+Materialization progressively validates Node/pnpm/Turbo, Vite, Expo/RN, package exports/boundaries/cycles, generated tokens, Orval when real OpenAPI exists, TanStack Form, PowerSync/OP-SQLite/SQLCipher, WSL↔Android tooling, runtime config and Cloudflare/EAS/Sentry only at applicable activation boundaries.
 
-### 4. Backend vertical slices
+No dormant specialist receives placeholder infrastructure.
 
-Build capability-by-capability:
+### 3. Backend production scaffold — separate workstream
 
-- explicit application use cases;
-- expected-state/idempotency/governance semantics;
-- transaction boundaries;
-- persistence adapters;
-- material history/provenance;
-- HTTP adapter only after semantic/application boundary is sound;
-- outbox/async effects when real Class-A use cases appear.
+Backend scaffold remains **NOT STARTED** and independent from Frontend Foundation closure.
 
-### 5. Frontend production engineering
+When separately authorized, materialize only real backend scaffold required by the closed Engineering Foundation under accepted `infra/` ownership.
 
-Frontend internal engineering remains on its own workstream/branch after the current frontend design/prototype work is ready.
+### 4. Concrete Logical → PostgreSQL implementation
 
-That scope will decide, against current evidence:
+After backend scaffold QA, consume closed Logical contracts, review mappings, implement migrations, test against real PostgreSQL and build capability vertical slices.
 
-- production web/mobile internal structure;
-- Node/package-manager/workspace/task tooling;
-- detailed web/mobile testing;
-- generated API-client consumption;
-- mobile build/release/EAS posture;
-- shared frontend package boundaries.
+### 5. Product vertical slices
 
-It consumes backend contracts; it does not reopen backend Foundation by default.
+Production product surfaces begin only after relevant frontend/backend foundations and contracts exist.
+
+Prototype UX remains evidence/oracle; production implementation follows accepted feature/data/UI boundaries.
 
 ### 6. Capability-triggered Physical implementation
 
-Activate selected components when their real feature boundary arrives:
-
-```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed planning capability
-
-Restate
-→ first real Class-B durable workflow
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
-```
-
-Applicable PSV obligations travel with activation.
+Activate specialist components only at real requirements. Applicable validation obligations travel with activation.
 
 ### 7. Remote DEV
 
-When LOCAL implementation has enough value to require real remote integration:
-
-- compare current hosting/compute options;
-- select provider and IaC engine deliberately;
-- create isolated DEV only;
-- use workload identity/secret manager/OIDC;
-- deploy exact immutable artifact;
-- validate remote config/network/provider wiring.
-
-Do not materialize UAT/PROD merely to have empty enterprise-looking environments.
+Activate shared remote integration only when LOCAL implementation benefits. Backend hosting/compute and IaC remain deliberate decisions at that boundary.
 
 ### 8. UAT
 
-Activate when a real release candidate exists.
-
-Use for:
-
-- migration rehearsal;
-- release deployment rehearsal;
-- E2E/provider compatibility;
-- performance/failure/security/recovery checks as applicable;
-- release acceptance.
+Activate for real release candidates and applicable release/provider/performance/security/recovery rehearsal.
 
 ### 9. PROD
 
-Activate at production readiness with:
+Activate at production readiness with isolated production resources/identity/secrets and exact accepted artifacts.
 
-- isolated production resources/identity/secrets;
-- accepted recovery posture;
-- observability/security release gates;
-- exact candidate artifact/digest;
-- controlled migration/release procedure;
-- post-deploy verification.
-
-## Persistent rule
+## Persistent rules
 
 ```text
-SELECTED ARCHITECTURE
-!= IMPLEMENTED COMPONENT
-
-DOCUMENTATION PASS
-!= DIRECT IMPLEMENTATION PASS
+SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
+DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
+CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
+ENVIRONMENT != GIT BRANCH
 ```
 
-The next conversation should start from the Engineering Foundation closure handoff rather than redesigning the same decisions.
+Continue from durable closure/handoff sources rather than redesigning closed decisions from chat memory.

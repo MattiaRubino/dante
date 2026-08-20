@@ -20,23 +20,13 @@ Normal flow:
 
 ```text
 bounded branch
-        ↓
+↓
 PR + applicable validation
-        ↓
+↓
 protected main
 ```
 
-Short-lived branch prefixes may reflect purpose, for example:
-
-```text
-feature/
-fix/
-chore/
-docs/
-prototype/
-```
-
-The prefix does not authorize work outside the explicit write gate.
+Short-lived prefixes may include `feature/`, `fix/`, `chore/`, `docs/`, `prototype/`. Prefix never authorizes work outside the explicit gate.
 
 ## 3. Existing repository
 
@@ -47,7 +37,7 @@ NEW REPOSITORY
 NO
 ```
 
-The repository may be renamed from historical `lifeos` to `dante` in a separate explicit governance operation. A rename preserves Git history and is preferred to creating a new production repo.
+Repository identity/name governance is separate from feature/architecture implementation and does not create a second production repository.
 
 ## 4. Exact write gate
 
@@ -76,9 +66,7 @@ EXPLICITLY OUT OF SCOPE
 <non-scope>
 ```
 
-Immediately before first write verify branch HEAD still equals PRE-SCOPE.
-
-If it moved: stop, inspect and re-gate.
+Immediately before first write verify branch HEAD still equals PRE-SCOPE. If moved: stop, inspect, re-gate.
 
 ## 5. Protected-main integration
 
@@ -90,7 +78,7 @@ Before merge:
 - inspect applicable real checks/statuses;
 - verify no unexpected branch movement;
 - merge with expected head when tooling supports it;
-- preserve workstream history with the repository's accepted merge strategy.
+- preserve accepted repository merge/history policy.
 
 After merge:
 
@@ -100,7 +88,7 @@ After merge:
 
 ## 6. Environment vocabulary
 
-DANTE lifecycle contexts:
+Exactly:
 
 ```text
 LOCAL
@@ -109,27 +97,20 @@ UAT
 PROD
 ```
 
-`TEST` may exist as an automated execution context but is not a promotion environment.
+`TEST` may exist as automated execution context but is not a promotion environment. Temporary preview environments may exist when useful.
 
-Optional preview environments may exist temporarily when useful.
+Frontend/mobile provider profile/channel names map to these DANTE contexts rather than creating a second taxonomy.
 
 ## 7. Activation
 
 ```text
-LOCAL
-first production implementation
-
-DEV
-when shared/remote integration becomes useful
-
-UAT
-when real release candidates exist
-
-PROD
-at production-readiness
+LOCAL   first production implementation
+DEV     when shared/remote integration is useful
+UAT     when real release candidates exist
+PROD    production readiness
 ```
 
-Environment definitions are fixed now; remote resources are not created until useful.
+Environment definitions are fixed; remote resources are not created merely for appearance.
 
 ## 8. LOCAL
 
@@ -139,25 +120,29 @@ Backend baseline:
 
 - Linux canonical semantics;
 - Windows supported through WSL2;
-- backend repo/worktree in WSL filesystem;
-- PyCharm WSL interpreter supported;
-- backend process direct in WSL for reload/debug;
+- one authoritative WSL-backed repository/worktree;
+- PyCharm WSL supported;
+- backend direct in WSL for reload/debug;
 - Docker Compose for stateful infra;
-- real PostgreSQL 18.4 with full selected extension envelope enabled;
-- synthetic/local credentials and data.
+- real PostgreSQL 18.4 with accepted extension envelope when materialized;
+- synthetic/local credentials/data.
 
-LOCAL is disposable/rebuildable where state is not intentionally retained.
+Frontend selected posture shares the same authoritative checkout. WSL↔Windows Android/ADB/Metro details are directly validated during materialization.
+
+LOCAL state is disposable/rebuildable where it is not intentionally retained.
 
 ## 9. DEV
 
 First shared remote integration environment.
 
-- accepted-main artifact only;
+- accepted-main artifacts only;
 - DEV-only state/credentials/secrets;
 - synthetic/shared non-production data;
 - remote config/network/provider integration;
 - no PROD credentials;
 - no raw PROD dump as convenience.
+
+Frontend Web/mobile technical deployment profiles/channels must map explicitly to DANTE DEV semantics.
 
 ## 10. UAT
 
@@ -167,17 +152,19 @@ Production-like release-candidate/acceptance environment.
 - migration/release rehearsal;
 - E2E/provider compatibility;
 - representative synthetic or explicitly sanitized/minimized data;
-- applicable security/performance/recovery/PSV gates.
+- applicable security/performance/recovery/PSV gates;
+- activated mobile targets use signed/device validation appropriate to that platform.
 
 ## 11. PROD
 
 Real released service/user data.
 
-- exact accepted candidate artifact;
+- exact accepted candidate/artifact identity;
 - isolated production state/identity/secrets;
 - controlled serialized migrations/releases where required;
 - accepted recovery/observability/security posture;
-- manual emergency infra changes reconciled into versioned desired state.
+- emergency infra changes reconciled into versioned desired state;
+- mobile store/update gates apply only to activated release targets.
 
 ## 12. Environment isolation
 
@@ -189,13 +176,13 @@ DEV identity != UAT identity != PROD identity
 DEV secrets != UAT secrets != PROD secrets
 ```
 
-When provider is selected, prefer its strong account/project/subscription-equivalent security boundary where operationally reasonable.
+When provider is selected, prefer strong account/project/subscription-equivalent boundaries where operationally reasonable.
 
-Cloud provider is intentionally deferred.
+Backend compute/cloud provider remains intentionally deferred until its real remote boundary.
 
 ## 13. GitHub Environments
 
-When remote deployment workflows activate, use GitHub Environments:
+When remote deployment workflows activate, use GitHub Environments such as:
 
 ```text
 dev
@@ -203,11 +190,11 @@ uat
 prod
 ```
 
-They control deployment workflow/credentials/protection/history as supported. They are not the runtime/cloud environment themselves.
+They govern deployment credentials/protection/history as supported. They are not runtime/cloud environments themselves.
 
 ## 14. Artifact promotion
 
-Future server default:
+Server default:
 
 ```text
 accepted main
@@ -220,24 +207,38 @@ accepted main
 
 Do not rebuild “the same release” separately without a platform-specific reason and explicit traceability.
 
-Frontend/mobile artifact semantics are deferred to frontend workstream.
+Frontend Web posture supports an immutable SPA artifact promoted across environments where the delivery platform permits, with versioned environment-specific **public** runtime configuration.
+
+Mobile artifact/update semantics follow Expo/EAS runtime-compatibility rules rather than pretending a native binary and OTA JS update are the same artifact class.
 
 ## 15. Required status checks
 
 A documented future job name is not a required check.
 
-Only after the real check exists, emits a stable context, has been observed on relevant PRs and genuinely must block merge may it become required on `main`.
+Only after a real check exists, emits a stable context, has been observed on relevant PRs and genuinely must block merge may it become required on `main`.
 
 ## 16. One-developer posture
 
 While there is one active developer:
 
 - PR + automated gates remain real;
-- do not create impossible/fake independent-review requirements;
-- add required reviewers/CODEOWNERS only when real independent ownership exists.
+- do not create fake independent-review requirements;
+- add CODEOWNERS/required reviewers only when real ownership exists.
 
-## 17. Next branch after Foundation
+## 17. Current branch/workstream continuation
 
-First small scope: repository rename decision/action `lifeos → dante`, or explicit defer.
+Current frontend Foundation design on `feature/frontend-foundation` is:
 
-Then create a dedicated production-scaffold branch from current `main` with an exact path gate for `apps/backend` and required local infrastructure/tooling only.
+```text
+Passo 1 technology design     PASS
+Passo 2 architecture design   PASS
+Passo 3 clean review          FINAL REVIEW PASS
+Foundation design             CLOSED / ACCEPTED
+main integration              PENDING
+```
+
+PR creation and merge still require explicit authorization.
+
+Only after protected-main integration should a fresh branch/gate materialize production Web/Mobile/workspace artifacts and execute direct validations.
+
+Backend production scaffold remains a separate not-started workstream with its own future gate.

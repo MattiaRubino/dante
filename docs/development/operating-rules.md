@@ -19,7 +19,7 @@ A user instruction may clarify/reopen a decision, but durable project truth chan
 
 ## 2. Mandatory bootstrap before design or writes
 
-Read, in order:
+Read in order:
 
 ```text
 README.md
@@ -37,57 +37,55 @@ README.md
 → current Git refs and relation to main
 ```
 
-For Physical-consuming backend implementation also reread at minimum:
+For Physical-consuming implementation also reread the accepted Physical target and applicable post-selection validation register.
 
-- PM-11 accepted Physical target;
-- PM-12 operational/stack posture;
-- post-selection validation register.
+For a production scaffold/materialization scope inspect the exact root tree, `.github`, existing config/manifests/workflows, current remote settings where relevant and the applicable closed/accepted Foundation sources.
 
-For the next production scaffold specifically, also inspect the exact root tree, `.github`, existing config/manifests/workflows, current branch protections/settings where relevant and the Engineering Foundation closure sources.
+## 3. Current closed/active engineering baseline
 
-## 3. Current closed engineering baseline
+Engineering Foundation v0 is **CLOSED / ACCEPTED** and is not reopened by default.
 
-Engineering Foundation v0 is **CLOSED / ACCEPTED**.
-
-Do not reopen it by default.
-
-Key backend decisions:
+Backend baseline:
 
 ```text
-one existing product monorepo
+one product monorepo
 apps/backend + apps/web + apps/mobile
 backend capability-first modular monolith
 Python 3.14.x / initial 3.14.7
 uv / Ruff / mypy strict / pytest / Hypothesis
-Windows backend through WSL2/Linux semantics
-PyCharm WSL workflow supported; repo IDE-neutral
+WSL2/Linux canonical backend semantics on Windows
+PyCharm WSL supported; repo IDE-neutral
 Docker Compose for LOCAL stateful infra
-PostgreSQL 18.4 + full selected extension envelope enabled from first LOCAL DB
-SQLAlchemy 2.0 stable line + psycopg 3 + Alembic
-typed pydantic-settings config
+PostgreSQL 18.4 + full selected extension envelope from first LOCAL DB
+SQLAlchemy 2.0 stable + psycopg 3 + Alembic
+pydantic-settings typed config
 risk-layered real-PostgreSQL testing
 GitHub Actions / protected main / supply-chain hardening
 LOCAL → DEV → UAT → PROD environments, not branches
 ```
 
-Frontend internal tooling/testing/release implementation is deferred to the frontend workstream.
+Frontend Engineering Foundation on `feature/frontend-foundation` is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**. Its branch-local specifications/ADRs/final-review evidence are newer workstream truth until protected-main integration. Direct implementation validation remains **NOT RUN**.
 
-Cloud provider/IaC engine is deferred to first remote infrastructure.
+Backend cloud compute/IaC remains deferred to first real remote infrastructure boundary.
 
 ## 4. Current next boundary
 
-Production implementation continues in the current repository. Do not create a new repository.
+Production implementation remains in the current repository. Do not create a new repository.
 
-Before scaffold:
+Frontend sequence:
 
 ```text
-repository rename decision
-lifeos → dante recommended
+prepare protected-main integration
+→ PR only with explicit authorization
+→ merge only with explicit authorization + expected-head safety
+→ post-merge main readback
+→ fresh exact materialization/scaffold scope
+→ execute direct frontend validations progressively
 ```
 
-Execute it in its own explicit governance scope or explicitly defer it.
+Backend production scaffold remains a separate **NOT STARTED** implementation scope and requires its own fresh gate.
 
-Then open the production scaffold workstream/gate under `apps/backend`.
+Repository rename history/governance is not an implicit prerequisite for frontend integration/materialization and must not be reintroduced as a blocking pseudo-phase.
 
 ## 5. No silent scope expansion
 
@@ -97,11 +95,12 @@ Examples:
 
 - backend scaffold does not authorize concrete Domain/Logical schema unless explicitly included;
 - Foundation closure does not authorize production code;
-- frontend prototype/design does not override backend architecture truth;
-- selected Physical component does not mean activated/deployed component;
-- cloud/provider decision is not inferred from recovery/object providers already selected for bounded roles.
+- frontend architecture does not authorize product-surface implementation;
+- prototype/design does not override production architecture truth;
+- selected Physical/frontend component does not mean activated/deployed component;
+- cloud/provider decision is not inferred from recovery/object/delivery providers already selected for bounded roles.
 
-When a material new decision appears, stop the decision—not necessarily the entire task—and establish the appropriate approval/gate before durable write.
+When a material new decision appears, stop that decision and establish the appropriate approval/gate before durable write.
 
 ## 6. Exact remote Git write gate
 
@@ -130,11 +129,11 @@ EXPLICITLY OUT OF SCOPE
 <what will not be touched>
 ```
 
-Immediately before first write:
+Immediately before the first write:
 
 ```text
 current HEAD == approved PRE-SCOPE → proceed
-current HEAD != approved PRE-SCOPE → STOP, inspect, re-gate
+current HEAD != approved PRE-SCOPE → STOP / inspect / re-gate
 ```
 
 Never silently continue on a moved branch.
@@ -143,7 +142,7 @@ Never silently continue on a moved branch.
 
 `main` is the only integrated source truth.
 
-Normal durable flow:
+Normal flow:
 
 ```text
 bounded branch
@@ -152,36 +151,27 @@ bounded branch
 → protected-main integration
 ```
 
-No direct protected-main edit/merge bypass is accepted merely for convenience.
-
-Use expected-head protection when merging through automation/tooling so a moved PR head cannot be merged silently.
+No direct-main bypass merely for convenience. Use expected-head protection when merging through tooling so a moved PR head cannot be merged silently.
 
 ## 8. Commit/write discipline
 
-Prefer commits that are:
+Commits should be bounded, reviewable, truthful and free from unrelated churn.
 
-- bounded by one coherent purpose;
-- reviewable;
-- truthful about what changed;
-- free from unrelated formatting/content churn.
+Do not manufacture one commit per tiny file when one coherent commit is safer. Do not combine unrelated decisions merely to reduce commit count.
 
-Do not manufacture one commit per tiny file when one atomic coherent commit is safer, and do not combine unrelated decisions merely to reduce commit count.
-
-Do not rewrite/force-push shared history casually. Any history rewrite requires an explicit reason/authorization and proof of branch ownership/safety.
+Do not rewrite/force-push shared history casually; any history rewrite requires explicit reason/authorization and proof of safety.
 
 ## 9. Post-write QA
 
 Against the approved PRE-SCOPE prove:
 
 - expected changed paths == actual;
-- expected CREATE == actual adds;
-- expected UPDATE == actual modifications;
-- expected DELETE == actual deletes;
+- CREATE/UPDATE/DELETE classification matches;
 - unexpected/out-of-scope == 0;
-- branch ahead/behind relationship is expected;
+- ahead/behind relation is expected;
 - remote payload/readback matches intended content;
-- PR changed paths are exact where a PR exists;
-- real checks/statuses are inspected when applicable;
+- PR changed paths are exact where applicable;
+- real checks/statuses are inspected where applicable;
 - protected-main integration uses expected head;
 - post-merge `main` is reread/compared;
 - branch lifecycle/autodelete is verified when relevant.
@@ -201,24 +191,17 @@ workflow/job exists
 → only then exact context may become required
 ```
 
-This remains true during the production scaffold.
+This applies equally to backend and frontend workflows.
 
 ## 11. Documentation is implementation
 
 Distinguish:
 
 ```text
-CURRENT SPECIFICATION
-current truth only
-
-ADR / TECHNICAL DECISION
-current decision + rationale/status/supersession
-
-HISTORICAL / VALIDATION EVIDENCE
-truthful chronology
-
-GIT / PR HISTORY
-recoverable implementation history
+CURRENT SPECIFICATION      current truth only
+ADR / TECH DECISION       current decision + rationale/status/supersession
+HISTORICAL / VALIDATION   truthful chronology/evidence
+GIT / PR HISTORY          recoverable history
 ```
 
 Do not rewrite historical evidence to pretend it knew later decisions.
@@ -237,23 +220,23 @@ Tool/size-driven document splits must be lossless physical partitioning, not sil
 
 ## 12. Historical evidence protection
 
-Closed validation/closure evidence remains historical and must not be edited merely to align wording with a later state.
+Closed validation/closure evidence remains historical and is not edited merely to align wording with a later state.
 
-In particular, PM-14 closure evidence remains protected historical evidence. Changes to historical artifacts require an explicit evidence-correction reason, not current-truth cleanup.
+Changes to historical artifacts require an explicit evidence-correction reason rather than current-truth cleanup.
 
-## 13. Domain/Logical/Physical reopen rule
+## 13. Domain/Logical/Physical/Engineering/Frontend reopen rule
 
-Engineering implementation consumes closed models.
+Implementation consumes closed models/Foundation decisions.
 
-A concrete contradiction found during implementation may reopen only the affected decision under an explicit architecture/model reopen scope.
+A concrete contradiction may reopen only the affected decision under an explicit scope.
 
-Do not weaken accepted semantics to fit a convenient database/ORM/API/tool behavior.
+Do not weaken accepted semantics to fit a convenient database/ORM/API/frontend/tool behavior.
 
-A failed applicable PSV may reopen the affected Physical decision but cannot silently weaken Domain/Logical requirements.
+A failed applicable validation may reopen the affected Physical/frontend technology/adapter decision but cannot silently weaken Domain/Logical requirements.
 
 ## 14. Implementation evidence truth
 
-Keep these distinctions explicit:
+Keep distinctions explicit:
 
 ```text
 selected != installed
@@ -262,27 +245,35 @@ configured != directly validated
 direct scenario PASS != complete system PASS
 ```
 
-Current direct selected-stack evidence remains NOT RUN until real artifacts/harness exist.
+Direct evidence remains NOT RUN until real artifacts/harness exist.
+
+Architecture/design closure may be truthful before implementation; it must not be mislabeled as implementation PASS.
 
 ## 15. Secrets / production data
 
-Never commit live credentials, keys, tokens, `.env` secrets or raw production DB dumps.
+Never commit live credentials, keys, tokens, `.env` secrets or raw production dumps.
 
-Lower-environment data is synthetic by default. Production-derived clones require explicit sanitization/minimization and authorization.
+Lower-environment data is synthetic by default. Production-derived clones require explicit sanitization/minimization/authorization.
 
 Normal PR CI receives no PROD deployment identity.
+
+Anything shipped in Web/mobile client bundles is public client configuration, not a secret.
 
 ## 16. Development environment discipline
 
 Backend canonical semantics are Linux.
 
-For the primary Windows workflow:
+Primary Windows posture:
 
-- keep backend repo/worktree in WSL filesystem;
-- run Python/uv/backend commands under WSL/Linux;
-- PyCharm may use a WSL interpreter for run/debug/test;
-- use Docker Compose for stateful LOCAL dependencies;
-- do not share one virtualenv between native Windows and WSL execution.
+- one authoritative repository/worktree in WSL filesystem;
+- Python/uv/backend under WSL/Linux semantics;
+- Node/pnpm/Turbo/Vite/Metro/Expo CLI may use the same WSL-backed checkout for the selected frontend posture;
+- PyCharm/JetBrains may use WSL tooling/interpreters;
+- Docker Compose owns stateful LOCAL dependencies;
+- do not maintain divergent Windows/WSL source clones;
+- do not share one virtualenv/node_modules environment across incompatible OS semantics.
+
+WSL↔Windows Android/ADB/Metro mechanics remain a directly validated tooling adapter, not a product architecture invariant.
 
 Repository commands remain CLI-reproducible and IDE-neutral.
 
@@ -300,18 +291,25 @@ Do not introduce without measured need:
 - multiple repositories;
 - extra permanent environment branches;
 - fake reviewer requirements;
-- placeholder IaC/services/directories.
+- placeholder IaC/services/directories;
+- speculative shared frontend packages;
+- dormant specialist libraries without a real consumer.
 
-When scale/ownership/security creates a real need, introduce the mechanism through explicit architecture change.
+Introduce mechanisms only when scale/ownership/security/product requirements create a real need.
 
 ## 18. Current continuation instruction
 
-A new chat should:
+A new chat must first read current `main`, current global status and any pending-integration workstream handoff.
 
-1. read current main and the Engineering Foundation closure handoff;
-2. verify repository/ref state;
-3. **not** restart Foundation selection;
-4. keep the current repository;
-5. address repository rename `lifeos → dante` as the first small governance decision/action, or explicitly defer;
-6. then create a fresh branch/gate for real `apps/backend` scaffold;
-7. run scaffold QA before concrete schema/business implementation.
+While `feature/frontend-foundation` is pending integration:
+
+```text
+verify branch relation
+→ read frontend-foundation closure handoff + both frontend specs + final review + ADR-008/009
+→ do not restart stack/architecture selection
+→ perform PR/integration work only with explicit authorization and exact scope
+```
+
+After Frontend Foundation integrates, the next frontend scope is a fresh bounded production materialization/scaffold + direct-validation workstream.
+
+Backend production scaffold remains separate and not implicitly authorized by frontend closure.
