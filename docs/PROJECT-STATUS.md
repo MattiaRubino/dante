@@ -41,8 +41,8 @@ MattiaRubino/lifeos → MattiaRubino/dante
 PRODUCTION BACKEND SCAFFOLD
 ACTIVE
 CP1 PYTHON/BACKEND PROCESS + TYPED CONFIG CLOSED / DIRECT QA PASS
-CP2 REPRODUCIBLE LOCAL POSTGRESQL NEXT
-CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS NOT STARTED
+CP2 REPRODUCIBLE LOCAL POSTGRESQL CLOSED / DIRECT QA PASS
+CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS NEXT
 CP4 QUALITY/CI ENFORCEMENT NOT STARTED
 CP5 FULL SCAFFOLD QA/CLOSURE NOT STARTED
 
@@ -51,7 +51,9 @@ NOT STARTED
 
 DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
 CP1 DIRECT PASS RECORDED
-DATABASE/HG VALIDATION NOT STARTED
+CP2 LOCAL POSTGRESQL DIRECT PASS RECORDED
+APPLICATION PERSISTENCE/HARNESS NOT STARTED
+DIRECT HG-01..HG-12 NOT RUN
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
 ```
@@ -236,7 +238,7 @@ Alembic
 
 First LOCAL DB uses real PostgreSQL 18.4 and has the full selected extension envelope installed/enabled immediately, including pg_stat_statements preload configuration.
 
-DANTE owns a reproducible LOCAL PostgreSQL build/configuration.
+DANTE owns a reproducible LOCAL PostgreSQL build/configuration. CP2 directly proved the selected image, capabilities, persistence/reset semantics and Windows host connectivity on the canonical workstation.
 
 ### Persistence/migration
 
@@ -339,29 +341,70 @@ Important implementation findings resolved without weakening quality policy:
 - warnings-as-errors preserved;
 - `.coverage` ignored as generated local state.
 
-## 8. Direct-validation truth beyond CP1
+## 8. Backend CP2 — direct LOCAL PostgreSQL truth
+
+CP2 is closed on `feature/backend-scaffold`. Durable authority and full acceptance evidence:
+
+`docs/development/backend-cp2-postgres-contract.md`
+
+Direct evidence earned on 2026-08-20:
+
+```text
+Compose model                               PASS
+immutable PostgreSQL base digest            PASS
+clean/no-cache DANTE image build            PASS
+PostgreSQL                                  18.4 PASS
+PostGIS package/extension                   3.6.4 PASS
+pgvector package/extension                  0.8.6 PASS
+pg_trgm                                     PASS
+unaccent                                    PASS
+native FTS                                  PASS
+pg_stat_statements preload                  PASS
+compute_query_id=on                         PASS
+pg_stat_statements real query collection    PASS
+fresh initdb + 010-extensions.sql           PASS
+named-volume persistence                    PASS
+down --volumes destructive reset            PASS
+fresh post-reset reinitialization            PASS
+Windows DBeaver host connection             PASS
+```
+
+The Windows GUI query directly returned:
+
+```text
+current_database = dante
+current_user     = postgres
+PostgreSQL       = 18.4 line
+```
+
+The first no-cache build exposed a missing `ca-certificates` trust-store prerequisite in the pinned PostgreSQL base image. The accepted repair preserved HTTPS and PGDG signed-repository verification; the repaired clean build passed directly.
+
+CP2 does not establish application SQLAlchemy/psycopg connectivity, Alembic migration behavior, privilege separation, concrete schema mapping, restore/PITR or HG/PSV PASS.
+
+## 9. Direct-validation truth beyond CP2
 
 Never claim these have passed:
 
 ```text
-DATABASE DEPLOYMENT      NOT STARTED
-FIXTURE/HARNESS          NOT STARTED
-DIRECT HG-01..HG-12      NOT RUN
-DIRECT HG PASS           0
-LOW/BASE/HIGH            NOT RUN
-RESTORE REHEARSAL        NOT RUN
-MIGRATION REHEARSAL      NOT RUN
-FAILURE INJECTION        NOT RUN
-POWERSYNC DIRECT TEST    NOT RUN
-RESTATE DIRECT TEST      NOT RUN
-OBJECT RECOVERY TEST     NOT RUN
-SOLVER DIRECT TEST       NOT RUN
-VERIFIED-RUN SCORE       NOT AVAILABLE
+APPLICATION DB CONNECTION/HARNESS    NOT STARTED
+ALEMBIC MIGRATION HARNESS            NOT STARTED
+RUNTIME/MIGRATOR PRIVILEGE SPLIT     NOT STARTED
+DIRECT HG-01..HG-12                  NOT RUN
+DIRECT HG PASS                       0
+LOW/BASE/HIGH                        NOT RUN
+RESTORE REHEARSAL                    NOT RUN
+MIGRATION REHEARSAL                  NOT RUN
+FAILURE INJECTION                    NOT RUN
+POWERSYNC DIRECT TEST                NOT RUN
+RESTATE DIRECT TEST                  NOT RUN
+OBJECT RECOVERY TEST                 NOT RUN
+SOLVER DIRECT TEST                   NOT RUN
+VERIFIED-RUN SCORE                   NOT AVAILABLE
 ```
 
-Workstation Docker/WSL smoke tests and CP1 application-process evidence do not count as PostgreSQL/database/HG/PSV validation.
+Workstation/CP1/CP2 evidence does not count as a blanket Physical HG/PSV pass.
 
-## 9. Current repository branches/workstreams
+## 10. Current repository branches/workstreams
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
@@ -373,16 +416,17 @@ Production Backend Scaffold is the active bounded workstream:
 branch             feature/backend-scaffold
 handoff            docs/workstreams/backend-scaffold.md
 CP1 contract        docs/development/backend-cp1-contract.md
-state              CP1 CLOSED / DIRECT QA PASS / CP2 NEXT
+CP2 contract        docs/development/backend-cp2-postgres-contract.md
+state              CP1 CLOSED / CP2 CLOSED / CP3 NEXT
 ```
 
 The verified workstation/bootstrap state is recorded in:
 
 `docs/development/local-backend-workstation-bootstrap.md`
 
-## 10. Exact next action
+## 11. Exact next action
 
-Do not repeat CP1 decisions/implementation by default and do not jump to concrete Logical schema implementation.
+Do not repeat CP1/CP2 decisions or implementation by default and do not jump to concrete Logical schema implementation.
 
 Resume from the active scaffold handoff:
 
@@ -391,31 +435,34 @@ STEP 1
 Verify feature/backend-scaffold, remote/local HEAD and clean tree.
 
 STEP 2
-Treat CP1 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts it.
+Treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts them.
 
 STEP 3
-Begin CP2 READ-ONLY design/research for DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
+Begin CP3 READ-ONLY design/research for persistence, migrations and the real PostgreSQL harness.
 
 STEP 4
-Re-check current official source/version evidence for PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6 and selected built-in extensions.
+Re-check current official version/compatibility evidence for SQLAlchemy 2.x, psycopg 3 and Alembic.
 
 STEP 5
-Decide image/build strategy, Compose topology, volume persistence/reset semantics, healthcheck, published port, synthetic LOCAL credentials and extension activation path.
+Decide typed DB settings, async engine/session lifecycle, transaction ownership and migration authority.
 
 STEP 6
-Define direct CP2 acceptance evidence, including persistence across restart/recreation and host GUI connectivity.
+Decide the real PostgreSQL test/harness lifecycle and the minimum runtime/migrator privilege split that can be exercised honestly in CP3.
 
 STEP 7
-Present an exact CP2 Git write gate before any PostgreSQL/Compose file is created.
+Define direct CP3 acceptance evidence, including real async connectivity and clean Alembic base → head migration.
 
 STEP 8
-After explicit approval, materialize CP2 and run direct validation.
+Present an exact CP3 Git write gate before any CP3 repository write.
 
 STEP 9
-Then CP3 persistence/migrations/real-PostgreSQL harness, CP4 CI enforcement, and CP5 scaffold closure.
+After explicit approval, materialize CP3 and run direct validation.
 
 STEP 10
+Then CP4 quality/CI enforcement and CP5 scaffold closure.
+
+STEP 11
 Only after scaffold QA begin concrete Logical → PostgreSQL mapping/schema implementation.
 ```
 
-The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation/CP1 are not reopened unless concrete implementation evidence reveals an actual contradiction.
+The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation/CP1/CP2 are not reopened unless concrete implementation evidence reveals an actual contradiction.
