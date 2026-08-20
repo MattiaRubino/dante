@@ -6,7 +6,7 @@
 
 - user-facing copy is addressable by stable locale keys;
 - Italian and English wording can evolve without renaming technical UI IDs;
-- future production frontend can migrate the same semantic key structure without inheriting prototype HTML coupling.
+- future production frontend/mobile can migrate the same semantic key structure without inheriting prototype HTML coupling.
 
 ## Locale files
 
@@ -21,17 +21,13 @@ Use semantic keys:
 
 ```text
 home.contextRail.capture.title
-home.contextRail.capture.subtitle
 home.contextRail.resolution.title
 home.actions.confirm
+access.signin.title
+access.network.offlineTitle
 ```
 
-Avoid keys that encode the current literal text:
-
-```text
-bad: home.cattura
-bad: button.conferma89euro
-```
+Avoid keys that encode current literal text.
 
 ## Operational rule
 
@@ -39,14 +35,22 @@ For every **new or touched** user-facing string:
 
 1. create/reuse a locale key;
 2. register it in both current locale files;
-3. keep technical identifiers independent of the displayed language;
+3. keep technical identifiers independent of displayed language;
 4. record naming status in `terminology.md` when the string is a product noun/label.
 
-The current monolithic standalone artifact still contains historical inline copy. This is transitional debt, not permission to add more untracked strings. As modules are touched, their user-facing copy must be migrated toward the locale registry.
+The standalone prototypes still contain embedded dictionaries so exact archived artifacts remain self-contained. `prototypes/frontend/shared/locales/` is the durable production-migration registry.
 
-## Access A3.4 namespace
+## Access namespace — cross-platform
 
-The selected Access A3.4 review artifact contains complete Italian/English dictionaries internally so the standalone can switch locale without external dependencies. The same reviewed values are mirrored into the shared locale files with an `access.` prefix for future production migration.
+Desktop A3.4 and Mobile M1.2 share the `access.*` semantic namespace. M1.2 + PRG-0 extends the durable Access dictionary to **128 keys per locale** with exact Italian/English parity.
+
+The shared files contain:
+
+```text
+18 existing home.* keys   preserved unchanged
+128 access.* keys         current Access production-migration copy
+146 total keys / locale
+```
 
 Examples:
 
@@ -56,11 +60,32 @@ signin.title               access.signin.title
 signup.title               access.signup.title
 verify.title               access.verify.title
 setupStart.title           access.setupStart.title
+network.offlineTitle       access.network.offlineTitle
+network.offlineBody        access.network.offlineBody
+network.retry              access.network.retry
 ```
 
-The embedded prototype dictionary remains a self-contained review mechanism; `prototypes/frontend/shared/locales/` is the durable locale registry. Production React/runtime code should consume the shared namespace rather than depending on the prototype's inline object.
+## Password-copy transition
 
-Access A3.4 currently mirrors 125 keys for each locale and keeps Italian/English parity.
+The immutable A3.4 archive still contains its historical `15+` review wording and must remain byte-identical.
+
+Future implementation authority is now the Mobile M1.2 / shared-locale copy:
+
+```text
+IT
+access.password.guideTitle  = Lunghezza minima
+access.password.proposal    = 12+ caratteri
+
+EN
+access.password.guideTitle  = Minimum length
+access.password.proposal    = 12+ characters
+```
+
+This is an intentional product/security policy transition, not accidental translation drift.
+
+## Mobile transport copy
+
+M1.2 adds localized offline transport-state copy under `access.network.*`. Offline is not a canonical account state and must not be translated into an invalid-credential message.
 
 ## Rename cost target
 
@@ -77,3 +102,5 @@ It must not require semantic rewiring.
 ## Translation policy
 
 English entries are working product translations, not proof of final marketing copy. When a term is `WORKING`, both languages can change while the technical ID remains stable.
+
+Security-relevant copy changes such as password minimum, recovery neutrality or provider scope separation are **not** treated as cosmetic translation changes; they require the relevant contract/changelog/security review.

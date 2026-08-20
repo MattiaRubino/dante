@@ -1,0 +1,35 @@
+{
+  "checkpoint": "Access Mobile M1.2 + PRG-0",
+  "status": "PASS_FOR_PRODUCTION_READY_SPECIFICATION_PRE_IMPLEMENTATION",
+  "artifact": {
+    "size_bytes": 107010,
+    "sha256": "2ae752ec0598d76f93eb0d7521d30340e7f673dd4d921c7263deb6c526a81676",
+    "xz_size_bytes": 21316,
+    "xz_sha256": "1c27aef77b33f8ea3a05ea05cd1c14508848f6049f2f2ed34cf8b8d83b36fc91"
+  },
+  "executable_baseline": {
+    "checkpoint": "M1.2 immediately before PRG-0 hardening",
+    "checks_passed": 30,
+    "checks_total": 30,
+    "engine": "Chromium",
+    "viewports": ["393x852", "412x915", "360x800", "393x520"],
+    "text_scales": ["100%", "125%", "150%", "200%"]
+  },
+  "prg0_static_final": {
+    "checks_passed": 18,
+    "checks_total": 18,
+    "locale_access_keys_per_language": 128,
+    "shared_keys_per_language": 146,
+    "duplicate_ids": 0,
+    "declared_screens": 18,
+    "inline_js_syntax": "PASS"
+  },
+  "final_browser_rerun": {
+    "status": "ENVIRONMENT_BLOCKED",
+    "error": "ERR_BLOCKED_BY_ADMINISTRATOR",
+    "claim_of_execution": false
+  },
+  "native_release_gates_open": true,
+  "backend_release_gates_open": true,
+  "production_executable": false
+}

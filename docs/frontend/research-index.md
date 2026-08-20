@@ -45,24 +45,7 @@ These existed only on the historical Phase 4 branch and are preserved byte-for-b
 
 ### Interaction Architecture guide
 
-Contains the frontend research synthesis across:
-
-- mixed-initiative interaction;
-- human-AI collaboration;
-- proactive assistants;
-- attention/interruption management;
-- situational awareness;
-- prospective memory/open loops;
-- personal information management;
-- contextual/ambient computing;
-- progressive disclosure;
-- adaptive/contextual and generative UI;
-- human-in-the-loop automation;
-- intention/goal/planning systems;
-- natural language vs direct manipulation;
-- longitudinal personal systems;
-- multi-actor coordination/privacy;
-- contemporary product patterns and failure modes.
+Contains the frontend research synthesis across mixed-initiative interaction, human-AI collaboration, proactive assistants, attention/interruption management, situational awareness, prospective memory/open loops, personal information management, contextual/ambient computing, progressive disclosure, adaptive/contextual and generative UI, human-in-the-loop automation, intention/goal/planning systems, natural language vs direct manipulation, longitudinal personal systems, multi-actor coordination/privacy and contemporary product patterns/failure modes.
 
 It also records the comparison of four architectural paradigms and the research shorthand `Stable Spine + Adaptive Contexts`. Treat that label as research shorthand, not product naming.
 
@@ -72,15 +55,7 @@ It also records the comparison of four architectural paradigms and the research 
 
 ### Frontend requirements
 
-`frontend-architecture-requirements-v0.md` synthesizes five recurrent usage families:
-
-- Daily / Immediate;
-- Continuity;
-- Capture + Retrieval;
-- Disruption + Adaptation;
-- Deep / Contextual.
-
-It also identifies architecture-level capabilities such as Orientation, Time, Communication/Capture, Continuation, Action/Adaptation, Retrieval/Inspection and Resolution/Review. These are working capability labels, not automatic navigation labels.
+`frontend-architecture-requirements-v0.md` synthesizes five recurrent usage families: Daily / Immediate, Continuity, Capture + Retrieval, Disruption + Adaptation and Deep / Contextual. It also identifies architecture-level capabilities such as Orientation, Time, Communication/Capture, Continuation, Action/Adaptation, Retrieval/Inspection and Resolution/Review. These are working capability labels, not automatic navigation labels.
 
 ### Cross-platform rule
 
@@ -88,22 +63,20 @@ It also identifies architecture-level capabilities such as Orientation, Time, Co
 
 ## 3. Historical timeline-behavior reference
 
-The mature standalone temporal prototype evidence is preserved as historical regression/reference material:
-
 - `docs/frontend/reference/phase4/frontend-master-v21.md`
 - `docs/frontend/reference/phase4/today-v21.md`
 - `tests/prototypes/today-v21-regression.py`
 
 `Today v21` is a historical milestone/regression authority, **not** the current name of the Home surface.
 
-## 4. Current visual/behavior oracle
+## 4. Current Home visual/behavior oracle
 
 - `docs/frontend/home/current-checkpoint.md`
 - `prototypes/frontend/home/current/home.html`
 
 The current Home artifact is approved prototype evidence. Visible labels such as `Worlds`, `Stats`, `Per te`, `Appunti` and `Review` remain working vocabulary until a deliberate naming/IA pass locks or replaces them.
 
-## 4A. Access research / selected review evidence
+## 4A. Access desktop research / selected evidence
 
 On `prototype/access-system`:
 
@@ -113,16 +86,41 @@ On `prototype/access-system`:
 - `docs/frontend/access/current-checkpoint.md`
 - `prototypes/frontend/access/archive/a3-4-approved-2026-08-20/`
 
-The benchmark records official provider/security authorities and mature-product pattern observations used to reject the early low-fidelity Access attempts and converge on the selected A3.4 system. Provider/security documentation is authority for provider/security behavior; competitor product examples are pattern evidence only.
+The benchmark records official provider/security authorities and mature-product pattern observations used to converge on the selected A3.4 desktop system. Provider/security documentation is authority for provider/security behavior; competitor product examples are pattern evidence only.
 
-A3.4 is the selected pre-production review checkpoint, not production frontend code or backend-auth truth.
+## 4B. Access Mobile / PRG-0 research and assurance evidence
+
+Current mobile/cross-platform authority set:
+
+- `docs/frontend/access/mobile-ui-registry.md`
+- `docs/frontend/access/mobile-technical-contract.md`
+- `docs/frontend/access/mobile-research-matrix.md`
+- `docs/frontend/access/mobile-production-readiness.md`
+- `docs/frontend/access/mobile-qa.md`
+- `prototypes/frontend/access/archive/mobile-m1-2-approved-2026-08-20/`
+
+The mobile research matrix distinguishes platform/standards authority from mature-product pattern evidence. PRG-0 adds explicit assurance targets and threat/account/session consequences so later backend/native implementation can execute against known requirements rather than reverse-engineering them from screens.
+
+Primary authority families used by PRG-0 include:
+
+- IETF RFC 8252 and RFC 9700;
+- OWASP MASVS v2 / MASTG / MAS Testing Profiles;
+- OWASP ASVS 5.0.0;
+- NIST SP 800-63B;
+- Android Credential Manager / Identity / App Links / insets / back / Play Integrity / Network Security Configuration;
+- Apple Authentication Services / AutoFill content types / Universal Links / LocalAuthentication / App Attest / ATS.
+
+Important current-standard note: MASVS v2 no longer defines the old formal L1/L2 verification levels; testing depth is expressed through MAS Testing Profiles. DANTE therefore targets relevant MASVS controls plus L2-profile testing where applicable instead of claiming a nonexistent modern `MASVS L2` certification.
+
+Access PRG-0 is a **production-ready specification**, not proof that the yet-unimplemented native app/backend has passed those standards. Real MAS/ASVS/native verification remains a release gate.
 
 ## 5. Evidence-use rule
 
 When using research in design decisions:
 
-1. state whether the point comes from current accepted product truth, Phase 4 accepted decision evidence, Phase 4 research synthesis, historical prototype behavior, or a new inference;
+1. state whether the point comes from current accepted product truth, Phase 4 accepted decision evidence, Phase 4 research synthesis, historical prototype behavior, standards/platform authority or a new inference;
 2. do not turn a research recommendation into an accepted product decision without explicit review;
 3. do not let competitor/product examples become templates by default;
 4. preserve later accepted semantic/model decisions when old research uses earlier vocabulary;
-5. keep research evidence available even when its proposed UI structure is rejected.
+5. keep research evidence available even when its proposed UI structure is rejected;
+6. do not label a prototype as standards-compliant when the relevant requirement can only be verified against production/native/backend implementation.

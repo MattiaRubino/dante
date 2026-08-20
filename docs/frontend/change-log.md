@@ -45,3 +45,20 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `VISUAL_ONLY` replaced the generic desktop orbit decoration with a large cropped locked Living Orbits symbol at the selected muted opacity.
 - `REJECTED` A3.5 full-opacity corner-mark experiment as too visually dominant.
 - `NO_CHANGE` Home/B1/B2 implementation, backend auth/session/provider contracts, production React/framework choice and locked brand masters.
+
+## 2026-08-20 — Mobile Access M1.2 + PRG-0
+
+- `ADDED` Mobile Access as a platform-native expression of the existing Access semantic system rather than a scaled desktop UI.
+- `ADDED` mobile technical contract covering client↔backend capabilities, session lifecycle, provider/OAuth, deep links, offline/error taxonomy, lifecycle, accessibility, privacy and security test obligations.
+- `ADDED` mobile-specific UI/behavior registry without forking global Access semantic IDs.
+- `ADDED` PRG-0 production-readiness gate with threat/abuse model, account/session lifecycle consequences, assurance targets, pinning/attestation decision gates and implementation release gates.
+- `CHANGED` future implementation password policy from the A3.4 historical 15+ review copy to the approved DANTE V1 `12+` policy, with no composition checklist, >=64 support, password-manager/paste support and required common/breached-password server checks.
+- `DOCUMENTED` the 12+ password-only policy as a deliberate variance from the current NIST 15-character baseline; no false compliance claim.
+- `ADDED` OWASP MASVS v2 + MAS Testing Profile assurance target for native clients and OWASP ASVS 5.0.0 Level-2 alignment target for backend with explicit exception register rather than false compliance.
+- `DOCUMENTED` current MFA/passkey absence as an ASVS `V6.3.3` exception until an accepted mechanism exists; compensating controls and MFA/passkey-ready architecture are required.
+- `ADDED` endpoint-pinning and Play Integrity/App Attest risk-signal gates with safe rotation/degraded-mode requirements.
+- `HARDENED` mobile reauth dialog semantics, AutoFill metadata, offline localization parity and security-safe Escape/cancel behavior.
+- `ADDED` exact hash-verified M1.2 PRG-0 archive plus executable-baseline and static/mechanical QA evidence.
+- `QA` immediately preceding M1.2 browser suite passed 30/30; final PRG-0 bytes pass 18/18 static/mechanical checks. A final Chromium rerun was environment-blocked and is explicitly not misreported as executed.
+- `NO_CHANGE` accepted Home implementation, backend code, locked brand masters, A3.4 historical bytes, production framework choice or concrete API route/token/schema design.
+- `STATUS` Access is now frozen for ordinary implementation as a **production-ready specification / pre-implementation**; native/backend release verification remains mandatory before any production-software claim.

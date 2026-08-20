@@ -1,0 +1,100 @@
+{
+  "artifact": {
+    "size_bytes": 107010,
+    "sha256": "2ae752ec0598d76f93eb0d7521d30340e7f673dd4d921c7263deb6c526a81676"
+  },
+  "checks_total": 18,
+  "checks_passed": 18,
+  "checks": [
+    {
+      "name": "duplicate_ids_zero",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "declared_screens_18",
+      "pass": true,
+      "detail": "18"
+    },
+    {
+      "name": "no_15_password_copy_or_threshold",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "12_threshold_present",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reauth_dialog_semantics",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reauth_current_password",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "forgot_email_autocomplete",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "no_generic_credential_persistence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "debug_label_current",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "copy_object_extractable",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "locale_key_parity",
+      "pass": true,
+      "detail": "it=128 en=128"
+    },
+    {
+      "name": "locale_key_count_128_each",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "offline_it_complete",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "offline_en_complete",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "password_copy_12_both",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "inline_js_syntax",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "otp_semantics",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "password_autocomplete_coverage",
+      "pass": true,
+      "detail": "[('signinPass', 'current-password'), ('signupPass', 'new-password'), (None, 'new-password'), (None, 'new-password'), (None, 'current-password'), ('reauthPass', 'current-password')]"
+    }
+  ]
+}

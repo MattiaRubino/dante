@@ -43,9 +43,9 @@
   "access.password.fair": "Ancora corta",
   "access.password.good": "Buona lunghezza",
   "access.password.strong": "Molto lunga",
-  "access.password.guideTitle": "Lunghezza consigliata",
-  "access.password.proposal": "15+ caratteri",
-  "access.password.length": "Hai raggiunto la lunghezza consigliata",
+  "access.password.guideTitle": "Lunghezza minima",
+  "access.password.proposal": "12+ caratteri",
+  "access.password.length": "Hai raggiunto il minimo di 12 caratteri",
   "access.password.unique": "Usa una frase lunga e unica, facile da ricordare per te",
   "access.password.manager": "Puoi incollare o generare la password con il tuo password manager",
   "access.password.note": "La password serve solo per proteggere l’accesso al tuo account DANTE. Il resto del profilo viene dopo.",
@@ -141,5 +141,8 @@
   "access.home.body": "Il setup iniziale è completo. Da qui DANTE apre Home e la guida continua solo quando serve.",
   "access.home.action": "Simula ritorno all’accesso",
   "access.reauth.title": "Sessione scaduta",
-  "access.reauth.body": "Accedi di nuovo per continuare. Il contesto corrente non viene perso."
+  "access.reauth.body": "Accedi di nuovo per continuare. Il contesto corrente non viene perso.",
+  "access.network.offlineTitle": "Sei offline.",
+  "access.network.offlineBody": "Riconnettiti per continuare.",
+  "access.network.retry": "Riprova"
 }
