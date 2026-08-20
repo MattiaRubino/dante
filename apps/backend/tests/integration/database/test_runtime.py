@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Any
 
@@ -32,7 +31,7 @@ async def test_runtime_connects_as_dedicated_identity_with_expected_search_path(
             ).one()
 
         assert row[0] == "dante_runtime"
-        assert row[1] == "dante,public"
+        assert str(row[1]).replace(" ", "") == "dante,public"
     finally:
         await runtime.dispose()
 
@@ -121,12 +120,12 @@ def test_readiness_response_never_exposes_database_details(migrated_database: An
         database=migrated_database.runtime_settings(readiness_timeout_seconds=0.25),
     )
 
-    migrated_database.cluster.pause()
-    try:
-        with TestClient(create_app(settings)) as client:
+    with TestClient(create_app(settings)) as client:
+        migrated_database.cluster.pause()
+        try:
             response = client.get("/health/ready")
-    finally:
-        migrated_database.cluster.unpause()
+        finally:
+            migrated_database.cluster.unpause()
 
     assert response.status_code == 503
     payload = response.text
@@ -142,4 +141,3 @@ async def test_engine_dispose_is_safe_after_real_use(migrated_database: Any) -> 
         assert await connection.scalar(text("SELECT 1")) == 1
 
     await runtime.dispose()
-    await asyncio.sleep(0)
