@@ -1,11 +1,12 @@
 # Local Backend Workstation Bootstrap
 
-- Status: **ACTIVE / VERIFIED THROUGH BACKEND CP1**
+- Status: **ACTIVE / VERIFIED THROUGH BACKEND CP2**
 - Scope: Windows 11 developer workstation bootstrap for DANTE backend work
 - Canonical backend development environment: **WSL2 + Ubuntu 24.04 LTS + Linux filesystem**
 - Verified workstation checkpoint date: **2026-08-20**
 - Backend CP1: **CLOSED / DIRECT QA PASS**
-- PostgreSQL LOCAL portion: **NEXT / NOT YET VERIFIED IN THIS GUIDE**
+- Backend CP2 / PostgreSQL LOCAL: **CLOSED / DIRECT QA PASS**
+- Next backend checkpoint: **CP3 READ-ONLY DESIGN/RESEARCH**
 
 ## 1. Purpose
 
@@ -16,13 +17,14 @@ It records both:
 1. the reusable installation procedure; and
 2. the exact verified checkpoint reached on the first DANTE workstation.
 
-The Engineering Foundation remains authoritative for architectural decisions. This document is an operational bootstrap guide and must not silently redefine those decisions.
+The Engineering Foundation and active checkpoint contracts remain authoritative for architectural decisions. This document is an operational bootstrap guide and must not silently redefine those decisions.
 
 ## 2. Target workstation model
 
 ```text
 Windows 11
 ├── PyCharm on Windows
+├── DBeaver or equivalent DB GUI on Windows
 ├── Docker Desktop on Windows
 │   └── WSL2 backend
 │
@@ -34,7 +36,8 @@ Windows 11
         ├── Python 3.14.7
         ├── Docker CLI / Compose via Docker Desktop integration
         └── /home/<user>/projects/dante
-            └── apps/backend/.venv
+            ├── apps/backend/.venv
+            └── infra/compose + infra/local/postgres
 ```
 
 Rules:
@@ -44,7 +47,9 @@ Rules:
 - Python for DANTE is managed by `uv`, not by replacing Ubuntu's system Python;
 - Docker Desktop provides the local container engine through WSL2;
 - do not install a second Docker Engine directly inside Ubuntu when using Docker Desktop WSL integration;
-- PostgreSQL is not installed directly on Windows or directly into Ubuntu for the DANTE LOCAL baseline.
+- PostgreSQL is not installed directly on Windows or directly into Ubuntu for the DANTE LOCAL baseline;
+- the DANTE LOCAL PostgreSQL server runs through the repository-owned Docker Compose definition;
+- Windows database GUIs are clients only, not alternate database servers.
 
 ## 3. Install WSL without an automatic distribution
 
@@ -678,23 +683,179 @@ Uvicorn factory startup   PASS
 
 `.env.local`, `.venv`, `.coverage`, build output and tool caches are local/generated state and are not committed as source artifacts; `uv.lock` is committed.
 
-## 18. PostgreSQL posture
+## 18. Bootstrap and operate DANTE LOCAL PostgreSQL — CP2 VERIFIED
 
 PostgreSQL server is **container-only** for the DANTE LOCAL baseline.
 
 Do not install a second PostgreSQL server on Windows or directly into Ubuntu.
 
-A Windows GUI such as DBeaver, PyCharm Database Tools or pgAdmin may later connect to the container over the published local port; the GUI is not the database server.
-
-Still not created at this checkpoint:
+Canonical repository-owned components:
 
 ```text
-PostgreSQL 18.4 LOCAL container               NOT CREATED
-DANTE-owned PostgreSQL image                  NOT CREATED
-selected extension envelope verification      NOT RUN
-SQLAlchemy/psycopg application persistence    NOT CREATED
-Alembic migration harness                     NOT CREATED
+infra/local/postgres/Dockerfile
+infra/local/postgres/initdb/010-extensions.sql
+infra/compose/local.yaml
+infra/compose/README.md
 ```
+
+The durable design/acceptance authority is:
+
+`docs/development/backend-cp2-postgres-contract.md`
+
+### 18.1 Create the workstation-local PostgreSQL password
+
+From repository root, create the local secret only if it does not already exist:
+
+```bash
+cd ~/projects/dante
+
+python3 - <<'PY'
+import os
+import secrets
+from pathlib import Path
+
+path = Path("infra/compose/secrets/postgres_password.local")
+
+if path.exists():
+    raise SystemExit(f"STOP: {path} already exists")
+
+path.parent.mkdir(parents=True, exist_ok=True)
+fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+with os.fdopen(fd, "w", encoding="utf-8") as file:
+    file.write(secrets.token_urlsafe(32) + "\n")
+
+print(f"created: {path}")
+PY
+```
+
+Verify without printing the secret:
+
+```bash
+stat -c '%a %n' infra/compose/secrets/postgres_password.local
+git check-ignore -v infra/compose/secrets/postgres_password.local
+git status --short
+```
+
+Required fundamentals:
+
+```text
+mode                 600
+Git ignore           PASS
+working tree         unchanged by secret creation
+```
+
+Never commit or paste the secret into documentation/chat evidence.
+
+### 18.2 Validate and build
+
+```bash
+docker compose -f infra/compose/local.yaml config --quiet
+```
+
+For the canonical clean-build proof:
+
+```bash
+docker compose -f infra/compose/local.yaml build --no-cache postgres
+```
+
+Routine later builds may use the standard build command documented in `infra/compose/README.md`.
+
+The first workstation directly verified the repaired clean build after discovering that the pinned PostgreSQL base required Debian `ca-certificates` before HTTPS access to the PGDG historical archive. The repository repair preserves TLS certificate verification and PGDG signed-repository verification.
+
+### 18.3 Start/stop
+
+Start and wait for health:
+
+```bash
+docker compose -f infra/compose/local.yaml up -d --wait
+```
+
+Inspect:
+
+```bash
+docker compose -f infra/compose/local.yaml ps
+docker compose -f infra/compose/local.yaml logs postgres
+```
+
+Normal stop that **preserves data**:
+
+```bash
+docker compose -f infra/compose/local.yaml down
+```
+
+Destructive LOCAL cluster reset:
+
+```bash
+docker compose -f infra/compose/local.yaml down --volumes
+```
+
+`down --volumes` destroys the Compose PostgreSQL named volume. Use it only when an explicit reset is intended.
+
+### 18.4 Verified CP2 database envelope
+
+The first workstation directly proved:
+
+```text
+PostgreSQL                       18.4
+PostGIS                          3.6.4
+pgvector                         0.8.6
+pg_trgm                          enabled / functional
+unaccent                         enabled / functional
+pg_stat_statements               enabled / preloaded / collecting
+native PostgreSQL FTS            functional
+Compose health                   PASS
+named-volume persistence         PASS
+destructive reset                PASS
+fresh reinitialization           PASS
+```
+
+The selected extension inventory observed after fresh initialization:
+
+```text
+pg_stat_statements  1.12
+pg_trgm             1.6
+postgis             3.6.4
+unaccent            1.1
+vector              0.8.6
+```
+
+### 18.5 Windows GUI connectivity
+
+The Windows GUI connects to the container; it does not replace it.
+
+Verified DBeaver connection:
+
+```text
+Host      127.0.0.1
+Port      5432
+Database  dante
+User      postgres
+Password  contents of the ignored workstation-local secret
+```
+
+To copy the password to the Windows clipboard without printing it in the terminal:
+
+```bash
+clip.exe < infra/compose/secrets/postgres_password.local
+```
+
+Direct GUI acceptance query:
+
+```sql
+SELECT current_database(), current_user, version();
+```
+
+First workstation observed:
+
+```text
+current_database = dante
+current_user     = postgres
+PostgreSQL       = 18.4 line
+```
+
+DBeaver therefore directly proved the Windows → loopback published port → Docker PostgreSQL boundary.
+
+CP2 does not yet add SQLAlchemy/psycopg application connectivity, Alembic, application DB settings, runtime/migrator identities or concrete schema mappings. Those return under CP3 or later bounded authority.
 
 ## 19. Current verified checkpoint
 
@@ -735,8 +896,20 @@ pytest                             PASS
 uv build                           PASS
 real HTTP probes                   PASS
 
-PostgreSQL LOCAL                   NOT STARTED
+backend CP2 PostgreSQL             CLOSED / DIRECT QA PASS
+DANTE PostgreSQL image             PASS
+PostgreSQL 18.4                    PASS
+selected extension envelope        PASS
+functional extension probes        PASS
+pg_stat_statements                 PASS
+named-volume persistence           PASS
+destructive reset                  PASS
+Windows DBeaver connectivity       PASS
+
+backend CP3                        NEXT / NOT STARTED
 ```
+
+The current post-reset LOCAL PostgreSQL state is a fresh healthy cluster with the selected extension envelope initialized and no CP2 persistence-probe table retained.
 
 ## 20. Resume rule
 
@@ -745,6 +918,7 @@ When continuing on a new machine or after interruption:
 1. identify the first section whose verification is not PASS;
 2. re-run the verification command for the immediately preceding PASS boundary;
 3. continue from there;
-4. never infer PostgreSQL/database/HG PASS from workstation or CP1 evidence;
-5. current next backend checkpoint is CP2 READ-ONLY design/research;
-6. before repository writes, follow the current exact Git write gate for the active branch/workstream.
+4. treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new direct evidence contradicts them;
+5. never infer application persistence, migration, HG/PSV or production PASS from CP2 infrastructure evidence;
+6. current next backend checkpoint is CP3 READ-ONLY design/research;
+7. before any repository write, follow the current exact Git write gate for the active branch/workstream.
