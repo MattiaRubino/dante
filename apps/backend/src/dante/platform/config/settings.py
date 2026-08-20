@@ -6,6 +6,8 @@ from typing import Annotated, Self
 from pydantic import StringConstraints, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from dante.platform.config.database import DatabaseSettings
+
 IdentityValue = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
@@ -23,6 +25,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="DANTE_",
+        env_nested_delimiter="__",
         extra="forbid",
         frozen=True,
     )
@@ -31,6 +34,7 @@ class Settings(BaseSettings):
     release_sha: IdentityValue
     build_id: IdentityValue
     debug: bool = False
+    database: DatabaseSettings
 
     @model_validator(mode="after")
     def validate_environment_safety(self) -> Self:
