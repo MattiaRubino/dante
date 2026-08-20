@@ -118,8 +118,7 @@ async def _configure_owner_defaults(connection: AsyncConnection[Any]) -> None:
             "GRANT USAGE ON SEQUENCES TO dante_runtime",
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
             "GRANT USAGE ON TYPES TO dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
+            "ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
         )
         for statement in statements:
             await connection.execute(statement)
