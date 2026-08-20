@@ -18,6 +18,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import sql
+from pydantic import SecretStr
 from sqlalchemy import URL
 
 from dante.platform.config.database import DatabaseSettings
@@ -80,7 +81,7 @@ class ProvisionedDatabase:
             port=self.cluster.port,
             name=self.name,
             user="dante_runtime",
-            password=self.cluster.runtime_password,
+            password=SecretStr(self.cluster.runtime_password),
             connect_timeout_seconds=1,
             pool_size=pool_size,
             max_overflow=max_overflow,
@@ -192,9 +193,9 @@ def _provision(cluster: PostgresCluster, database_name: str) -> None:
         port=cluster.port,
         name=database_name,
         admin_user=cluster.admin_user,
-        admin_password=cluster.admin_password,
-        migrator_password=cluster.migrator_password,
-        runtime_password=cluster.runtime_password,
+        admin_password=SecretStr(cluster.admin_password),
+        migrator_password=SecretStr(cluster.migrator_password),
+        runtime_password=SecretStr(cluster.runtime_password),
         connect_timeout_seconds=2,
     )
     asyncio.run(provision_database(settings))
