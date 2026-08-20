@@ -3,9 +3,9 @@
 import asyncio
 from typing import Any
 
+from psycopg import AsyncConnection, sql
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from psycopg import AsyncConnection, sql
 
 from dante.platform.config.database import (
     ConnectTimeoutSeconds,
@@ -81,14 +81,14 @@ async def _configure_database_privileges(
         sql.SQL("GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime").format(database)
     )
     await connection.execute(
-        sql.SQL(
-            "ALTER ROLE dante_runtime IN DATABASE {} SET search_path = dante, public"
-        ).format(database)
+        sql.SQL("ALTER ROLE dante_runtime IN DATABASE {} SET search_path = dante, public").format(
+            database
+        )
     )
     await connection.execute(
-        sql.SQL(
-            "ALTER ROLE dante_migrator IN DATABASE {} SET search_path = dante, public"
-        ).format(database)
+        sql.SQL("ALTER ROLE dante_migrator IN DATABASE {} SET search_path = dante, public").format(
+            database
+        )
     )
 
 
@@ -114,10 +114,8 @@ async def _configure_owner_defaults(connection: AsyncConnection[Any]) -> None:
         statements = (
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
             "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "GRANT USAGE ON SEQUENCES TO dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "GRANT USAGE ON TYPES TO dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante GRANT USAGE ON SEQUENCES TO dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante GRANT USAGE ON TYPES TO dante_runtime",
             "ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
         )
         for statement in statements:
