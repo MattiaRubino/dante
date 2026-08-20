@@ -144,41 +144,49 @@ The accepted rail must **not** become:
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
 | short rail ending mid-column | REJECTED | Accepted rail stretches with the timeline column to avoid arbitrary empty lower space. |
 
-## Access — A3.4 selected review checkpoint
+## Access — cross-platform production-ready specification (A3.4 desktop + M1.2 mobile)
 
-The detailed Access behavior contract lives in `docs/frontend/access/contract.md`. The rows below are the global inventory anchors.
+The global semantic contract lives in `docs/frontend/access/contract.md`. Mobile-specific representation/behavior is registered in `docs/frontend/access/mobile-ui-registry.md`; security/readiness obligations live in `docs/frontend/access/mobile-production-readiness.md`.
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `access.signIn` | Accedi a DANTE | ACTIVE / PRE-PRODUCTION | Existing-account entry via Google, Apple or email/password. Provider UI remains provider-owned. |
-| `access.signUpEmail` | Crea il tuo account DANTE | ACTIVE / PRE-PRODUCTION | First DANTE-owned account-creation step; validates email before password. |
-| `access.signUpPassword` | Proteggi il tuo account | ACTIVE / PRE-PRODUCTION | Long-password/password-manager-friendly review UX; exact backend policy not frozen. |
-| `access.verifyEmail` | Controlla la tua email | ACTIVE / PRE-PRODUCTION | Six-digit review UX with paste/advance/resend behavior; OTP backend semantics not frozen. |
-| `access.forgotPassword` | Recupera l’accesso | ACTIVE / PRE-PRODUCTION | Starts recovery without revealing account existence. |
-| `access.recoverySent` | Controlla la tua email | ACTIVE / PRE-PRODUCTION | Neutral recovery acknowledgement. |
-| `access.resetPassword` | Crea una nuova password | ACTIVE / PRE-PRODUCTION | Recovery reset screen. |
-| `access.resetComplete` | Password aggiornata | ACTIVE / PRE-PRODUCTION | Returns user toward normal sign-in; no prototype auto-login contract. |
-| `access.providerPending` | provider pending | PROTOTYPE_ONLY | DANTE-side provider launch/wait state; no fake chooser/consent UI. |
-| `access.providerError` | Accesso non completato | PROTOTYPE_ONLY | Provider cancellation/failure return. |
-| `access.accountLink` | Conferma il collegamento | PROTOTYPE_ONLY | Collision/linking UX; silent account merge explicitly excluded. |
-| `access.reauth` | Sessione scaduta | PROTOTYPE_ONLY | Re-auth overlay over existing application context. |
-| `access.setupName` | Nome preferito | ACTIVE / PRE-PRODUCTION | Lightweight post-account setup. |
-| `access.setupLocale` | Lingua e fuso orario | ACTIVE / PRE-PRODUCTION | Operational locale/time-zone confirmation. |
-| `access.setupStart` | Da dove vuoi iniziare? | ACTIVE / PRE-PRODUCTION | First-run branch to real item/import/demo/skip. |
-| `access.firstAction` | Crea la tua prima cosa reale | PROTOTYPE_ONLY | First real item review path. |
-| `access.import` | Importa nel tuo spazio | PROTOTYPE_ONLY | Separate import path; sign-in provider consent does not imply import authorization. |
-| `access.demo` | Una demo, senza sporcare i tuoi dati | PROTOTYPE_ONLY | Tutorial-only item isolated from real history. |
-| `access.homeHandoff` | Tutto pronto | PROTOTYPE_ONLY | Access/first-run completion mock only; accepted Home implementation is unchanged. |
-| `access.brand.cornerMark` | — | ACTIVE / VISUAL | Desktop-only cropped locked Living Orbits symbol. A3.4 selected opacity: `0.22` desktop / `0.18` compact desktop; hidden with brand stage at `<=900px`. |
-| `access.localeSelector` | Italiano / English | ACTIVE / PRE-PRODUCTION | Switches the complete review UI between IT/EN dictionaries. |
+| `access.signIn` | Accedi a DANTE | ACTIVE / PRE-IMPLEMENTATION | Existing-account entry via Google, Apple or email/password. Provider UI remains provider-owned. |
+| `access.signUpEmail` | Crea il tuo account DANTE | ACTIVE / PRE-IMPLEMENTATION | First DANTE-owned registration step; account creation remains lightweight and enumeration-resistant. |
+| `access.signUpPassword` | Proteggi il tuo account | ACTIVE / PRE-IMPLEMENTATION | V1 minimum `12+`, support `>=64`, no mandatory composition checklist; password managers/paste supported and server common/breached-password blocklists required. Hashing/session implementation remains backend-owned. |
+| `access.verifyEmail` | Controlla la tua email | ACTIVE / PRE-IMPLEMENTATION | Six-digit review UX with paste/AutoFill/resend behavior; challenge expiry, attempts, replay/supersession and rate limiting are server-owned. |
+| `access.forgotPassword` | Recupera l’accesso | ACTIVE / PRE-IMPLEMENTATION | Starts recovery without revealing account existence. |
+| `access.recoverySent` | Controlla la tua email | ACTIVE / PRE-IMPLEMENTATION | Neutral recovery acknowledgement. |
+| `access.resetPassword` | Crea una nuova password | ACTIVE / PRE-IMPLEMENTATION | Recovery reset state; proof validity and session consequences are backend-owned. |
+| `access.resetComplete` | Password aggiornata | ACTIVE / PRE-IMPLEMENTATION | Returns toward normal sign-in; no unsafe implicit auto-login contract. |
+| `access.providerPending` | provider pending | APPROVED SPEC / PROTOTYPE_ONLY | DANTE-side provider launch/wait state only; no fake chooser/consent UI. |
+| `access.providerError` | Accesso non completato | APPROVED SPEC / PROTOTYPE_ONLY | Provider cancellation/failure return without claiming account mutation. |
+| `access.accountLink` | Conferma il collegamento | APPROVED SPEC / PROTOTYPE_ONLY | Collision/linking requires proof of control of the existing DANTE account; silent merge excluded. |
+| `access.reauth` | Sessione scaduta | APPROVED SPEC / PROTOTYPE_ONLY | Re-auth over existing context; cancelling an expired-session reauth returns to signed-out Access. |
+| `access.setupName` | Nome preferito | ACTIVE / PRE-IMPLEMENTATION | Lightweight post-account setup. |
+| `access.setupLocale` | Lingua e fuso orario | ACTIVE / PRE-IMPLEMENTATION | Operational locale/time-zone confirmation. |
+| `access.setupStart` | Da dove vuoi iniziare? | ACTIVE / PRE-IMPLEMENTATION | First-run branch to real item/import/demo/skip. |
+| `access.firstAction` | Crea la tua prima cosa reale | APPROVED SPEC / PROTOTYPE_ONLY | First real item review path. |
+| `access.import` | Importa nel tuo spazio | APPROVED SPEC / PROTOTYPE_ONLY | Separate import authorization path; provider sign-in does not imply provider-data permission. |
+| `access.demo` | Una demo, senza sporcare i tuoi dati | APPROVED SPEC / PROTOTYPE_ONLY | Tutorial-only item isolated from real history. |
+| `access.homeHandoff` | Tutto pronto | APPROVED SPEC / PROTOTYPE_ONLY | Access completion mock only; accepted Home implementation remains separate. |
+| `access.brand.cornerMark` | — | ACTIVE / DESKTOP ORACLE | Desktop-only cropped locked Living Orbits symbol. A3.4 selected opacity: `0.22` desktop / `0.18` compact desktop; A3.5 full-opacity remains rejected. |
+| `access.localeSelector` | Italiano / English | ACTIVE / PRE-IMPLEMENTATION | Shared `access.*` locales are implementation-migration authority; IT/EN parity is required. |
+| `access.mobile.shell` | — | ACTIVE / MOBILE ORACLE | M1.2 full-screen phone expression; safe-area/system-bar/IME aware and not a scaled-down desktop composition. Reference/stress widths: iPhone `393`, Android `412`, minimum stress `360`. |
+| `access.mobile.back` | Indietro / system Back | APPROVED SPEC | Back follows the logical Access state graph; Android implementation must support modern system/predictive Back behavior. |
+| `access.mobile.offline` | Sei offline. | APPROVED SPEC | Offline/transport condition preserves logical auth state and never masquerades as invalid credentials. |
+| `access.mobile.autofill` | — | APPROVED SPEC | Native email/username/current-password/new-password/OTP semantics; password manager, paste and OTP AutoFill are first-class. |
+| `access.mobile.deepLink` | — | APPROVED SPEC | Security-sensitive continuation uses DANTE-owned HTTPS Universal Links / Verified App Links; server-side proof validation remains authoritative. |
 
 ### Access exclusions
 
-The selected Access review must **not** imply:
+The approved Access specification must **not** imply:
 
 - provider sign-in grants Calendar/Gmail/iCloud access;
-- DANTE owns the provider chooser/consent screen;
-- the prototype password/OTP values are frozen backend policy;
+- DANTE owns or recreates the provider chooser/consent screen;
+- provider email alone authorizes account linking/merging;
+- the mobile HTML oracle is production executable software;
+- OTP/session/token/link lifetimes or API/DB schema are frozen by the prototype;
+- A3.4's historical archived `15+` copy is implementation authority; M1.2/shared locales define the approved V1 `12+` policy;
 - onboarding/profile data is required before account creation;
 - the `home` handoff mock replaces the accepted Home artifact;
 - A3.5 full-opacity brand background is accepted.
