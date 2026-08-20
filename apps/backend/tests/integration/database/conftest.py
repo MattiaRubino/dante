@@ -129,8 +129,8 @@ def _wait_for_postgres(cluster: PostgresCluster) -> None:
                 password=cluster.admin_password,
                 connect_timeout=1,
             ) as connection:
-                version = connection.execute("SHOW server_version").fetchone()
-                if version is not None and version[0] == "18.4":
+                version = connection.execute("SHOW server_version_num").fetchone()
+                if version is not None and version[0] == "180004":
                     return
         except psycopg.Error as error:
             last_error = error
