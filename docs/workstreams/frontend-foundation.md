@@ -1,8 +1,9 @@
 # Workstream — Frontend Engineering Foundation
 
-- Status: **ACTIVE — PASSO 1 TECHNOLOGY SELECTION DESIGN COMPLETE / PASSO 2 NOT STARTED**
+- Status: **ACTIVE — PASSO 1 DESIGN COMPLETE / PASSO 2 DESIGN COMPLETE / PASSO 3 NEXT**
 - Branch: `feature/frontend-foundation`
 - Base/PRE-SCOPE at workstream opening: `7a1600c2167f68c9281d3ed77b32a3d954fbd061`
+- Passo-1 documentation checkpoint: `dd23b86ba330f6296806297ef5c68acebbee65e6`
 - PR: **NONE**
 - Product: **DANTE**
 - Domain Model: **CLOSED / CONSUMED / NOT REOPENED**
@@ -17,17 +18,19 @@
 
 Define the professional production frontend engineering foundation for DANTE with the same evidence/status discipline as the backend, while avoiding artificial phase proliferation.
 
-The workstream has three substantial passes:
+The workstream has exactly three substantial passes:
 
 ```text
 PASSO 1
 technology selection
 
 PASSO 2
-frontend architecture / structure / ownership / dev-test-CI integration
+frontend application/package architecture
+ownership / dependency direction / dev-test-CI model
 
 PASSO 3
-whole-foundation review / closure / PR / protected-main integration
+whole-foundation clean review
+closure / PR / protected-main integration
 ```
 
 Only after closure/integration may the production frontend scaffold/materialization begin under a new exact write scope.
@@ -44,7 +47,7 @@ This workstream decides:
 - test/quality/observability/release engineering;
 - local developer workflow and CI integration.
 
-This workstream does **not** implement product surfaces, translate standalone HTML prototypes into production code, change Domain/Logical/Physical semantics, or create placeholder application/package directories before structure is accepted.
+It does **not** implement product surfaces, mechanically convert standalone HTML prototypes, change Domain/Logical/Physical semantics, create placeholder packages/directories or manufacture direct validation evidence.
 
 Existing prototypes are UX/visual/interaction evidence only.
 
@@ -52,22 +55,24 @@ Existing prototypes are UX/visual/interaction evidence only.
 
 Read at minimum:
 
-1. [`../development/operating-rules.md`](../development/operating-rules.md);
-2. [`../development/documentation-and-handoff.md`](../development/documentation-and-handoff.md);
-3. [`engineering-foundation.md`](engineering-foundation.md);
-4. [`../physical-model/pm-12-accepted-physical-model-v1.md`](../physical-model/pm-12-accepted-physical-model-v1.md);
-5. [`../physical-model/recommendation/post-selection-validation-register-v1.md`](../physical-model/recommendation/post-selection-validation-register-v1.md);
-6. [`../architecture/frontend-engineering-foundation.md`](../architecture/frontend-engineering-foundation.md);
-7. [`../decisions/ADR-008-frontend-engineering-stack.md`](../decisions/ADR-008-frontend-engineering-stack.md);
-8. current Product/Domain/Logical authority as needed for semantic constraints.
+1. `../development/operating-rules.md`;
+2. `../development/documentation-and-handoff.md`;
+3. `engineering-foundation.md`;
+4. `../physical-model/pm-12-accepted-physical-model-v1.md`;
+5. `../physical-model/recommendation/post-selection-validation-register-v1.md`;
+6. `../architecture/frontend-engineering-foundation.md` — Passo 1;
+7. `../architecture/frontend-engineering-foundation-part-2.md` — Passo 2;
+8. `../decisions/ADR-008-frontend-engineering-stack.md`;
+9. `../decisions/ADR-009-frontend-architecture-boundaries.md`;
+10. current Product/Domain/Logical authority as needed.
 
-`main` remains the only integrated source of truth. This handoff is branch authority only for newer unmerged frontend-foundation work.
+`main` remains the only integrated source truth. This handoff is branch authority only for newer unmerged Frontend Foundation work.
 
-## 4. Last completed milestone — Passo 1
+## 4. Passo 1 — completed in design
 
-**Frontend Technology Selection is DESIGN COMPLETE.**
+Technology selection is design-complete.
 
-Core selected stack:
+Core stack:
 
 ```text
 Node 24 LTS
@@ -98,117 +103,187 @@ API
 FastAPI OpenAPI → Orval 8
 ```
 
-UI/engineering selections are fully enumerated in the current frontend architecture specification, including Radix/Tailwind, DTCG/Terrazzo tokens, Motion/Reanimated/Gesture Handler, i18next, Temporal, test tooling, Sentry, Cloudflare Web delivery and EAS mobile services.
+Complete UI/testing/release selections are in the Passo-1 specification.
 
-## 5. Decisions that must not be casually reopened
+## 5. Passo 2 — completed in design
 
-### Platform
+The definitive structural direction is now recorded in `frontend-engineering-foundation-part-2.md` and ADR-009.
 
-- Web is React DOM + Vite, not Next.js.
-- Mobile is React Native + Expo.
-- do not force React Native Web/Flutter/universal renderer merely to maximize code-sharing percentage.
-- pnpm owns JS workspaces; Turbo orchestrates frontend/JS tasks without becoming a framework over Expo/Vite.
+### 5.1 Repository/application architecture
 
-### State ownership
+- one product monorepo;
+- sibling `apps/backend`, `apps/web`, `apps/mobile` deployable boundaries;
+- no root `infra/` is invented by this Frontend Foundation;
+- Web delivery code may be co-located with Web when tool-coupled but remains delivery infrastructure, never business/backend authority;
+- no production imports from `prototypes/`.
 
-```text
-canonical DANTE state     backend/PostgreSQL
-synced local projection   PowerSync/SQLite
-remote request state      TanStack Query
-form state                TanStack Form
-component transient       React
-cross-tree transient      Zustand only when justified
-```
+### 5.2 Feature architecture
 
-Do not duplicate the same DANTE entity graph across those mechanisms.
+- feature-first Web and Mobile;
+- route/navigation files are thin adapters;
+- `bootstrap` is composition only;
+- platform capabilities live under app-local `platform/`;
+- DANTE platform UI systems live under app-local `ui/`;
+- no generic `common/shared/utils/services/hooks/misc` dumping grounds.
 
-### PowerSync writes
-
-Offline eligibility is operation-specific.
+### 5.3 Dependency/public API rules
 
 ```text
-synced entity/table
-!=
-automatically offline-writable operation
+packages              X→ apps
+web                   X→ mobile
+mobile                X→ web
+ui                    X→ features
+platform              X→ features
+feature internals     X→ other feature internals
+prototypes            X→ production
 ```
 
-Online consequential commands cross backend governance directly. Offline-eligible operations may stage locally/upload through PowerSync but must still pass backend expected-state/governance/AuthZ/conflict validation before canonical acceptance.
+Bootstrap and routers may consume other layers/features only through public APIs. Deep/private cross-boundary imports remain forbidden even from privileged composition layers.
 
-### React Native PowerSync packaging
+Materialization must enforce boundaries with exports + ESLint/boundary rules + workspace isolation/architecture checks.
 
-Target the PowerSync JS v2 React Native model: `@powersync/react-native` with its default OP-SQLite driver integration, `@op-engineering/op-sqlite` and SQLCipher. Do not plan around the removed old `@powersync/op-sqlite` package.
+### 5.4 Shared packages
 
-### CI/release
+Initial real cross-platform package candidates:
 
-- GitHub Actions = primary repository CI/CD orchestrator.
-- EAS Build/Submit/Update = selected mobile services.
-- EAS Workflows = optional/dormant.
+```text
+@dante/design-tokens
+@dante/i18n
+@dante/time
+```
 
-### Evidence status
+`@dante/api-client` is created only when real FastAPI OpenAPI exists.
 
-- TanStack Form = **SELECTED / DIRECT VALIDATION REQUIRED**, exact patch pin.
-- OP-SQLite/SQLCipher integration = **SELECTED / DIRECT VALIDATION REQUIRED**.
-- selected != direct PASS.
-- no mega pre-Passo-2 PSV is required; direct validation occurs during materialization of the accepted structure.
+Shared feature packages require real Web+Mobile consumers rather than speculative reuse.
 
-## 6. Passo-2 questions — current task
+Shared client cores are framework-free by default and may never own canonical Domain invariants, AuthZ/Authority decisions, conflict resolution, persistence semantics, accepted-effect authority or canonical material history.
 
-Passo 2 must be performed as one coherent architecture pass, not dozens of micro-phases.
+### 5.5 Workspace posture
 
-It must decide:
+- internal packages private/workspace-only;
+- `workspace:*` internal dependencies;
+- package `exports` controls public surfaces;
+- source-first TS packages by default;
+- workspace cycles forbidden;
+- pnpm isolated layout = **PREFERRED BASELINE / DIRECT VALIDATION REQUIRED**;
+- `nodeLinker: hoisted` = evidence-driven native compatibility fallback, not architecture failure.
 
-1. exact `apps/web` internal structure;
-2. exact `apps/mobile` internal structure;
-3. actual shared packages with real consumers only;
-4. feature/surface/component/shared boundaries;
-5. dependency direction and enforced forbidden imports;
-6. generated API contract/client ownership and placement;
-7. PowerSync client/sync ownership and Web offline activation boundary;
-8. auth/session ownership at client boundaries without inventing backend contracts;
-9. config/environment ownership;
-10. design-token and platform UI boundaries;
-11. time/i18n ownership;
-12. error handling/observability boundaries;
-13. unit/component/integration/E2E/visual/a11y test layout;
-14. local Windows/WSL/Expo development topology;
-15. GitHub Actions integration with Web and EAS release services.
+### 5.6 Data Authority Matrix
 
-Do not create directories/packages simply because they might be useful. A shared package must have a real boundary and consumer.
+Every persisted/read/write path must declare authority before implementation.
 
-## 7. Open questions intentionally reserved for Passo 2
+```text
+canonical accepted effect      backend/PostgreSQL
+synced local projection        PowerSync/SQLite noncanonical
+offline pending mutation       local staging only
+offline acceptance             backend governance/conflict checks
+remote request state           TanStack Query + typed API
+online governed command        FastAPI/backend
+route state                    router
+form draft                     TanStack Form
+component transient            React
+cross-tree transient           Zustand only when justified
+```
 
-- whether Web v1 activates a PowerSync local database or remains online-first initially;
-- exact generated-code package/location and generation boundary;
-- exact package map under `packages/`;
-- exact Web/Mobile feature folder structure;
-- exact ESLint/import-boundary rule implementation;
-- exact env/config file layout;
-- exact CI job graph and cache boundaries;
-- exact Windows/WSL placement for Web vs Expo tooling without duplicate repositories.
+An offline operation crosses local staging → upload → backend acceptance/rejection → reconciliation. Local staging never becomes canonical authority.
 
-These do not reopen Passo-1 technology selection.
+### 5.7 Data firewall
 
-## 8. Direct-validation register for later materialization
+Feature UI does not use direct HTTP/PowerSync/query-cache/storage coupling as its architecture. Feature `data/` boundaries select the correct adapter/path. No universal frontend `Repository<T>` is introduced.
 
-Direct execution remains **NOT RUN**. Carry at minimum:
+### 5.8 Offline posture
 
-- Node/pnpm/Turbo workspace real install/build/typecheck;
-- Vite production build;
-- Expo Android and iOS build path;
-- TypeScript strict cross-package compilation;
-- PowerSync v2 + OP-SQLite + SQLCipher encrypted open/write/reopen/read;
-- offline-eligible mutation upload/accept/reject/conflict reconciliation;
-- TanStack Form exact patch on Web + React Native + Zod;
-- Orval FastAPI OpenAPI generation + compile;
-- design-token compilation to CSS + Native TS;
-- selected Web/Mobile test stacks;
-- Sentry release/source-map flow when activated;
-- Cloudflare delivery when activated;
-- EAS Build/Submit/Update when activated.
+Mobile PowerSync lifecycle initially belongs to `apps/mobile/src/platform/sync/` when materialized.
 
-A failure may reopen only the affected technology decision unless evidence demonstrates wider architectural inconsistency.
+Web is **online-first**. PowerSync Web remains available/dormant.
 
-## 9. Current Git/write state
+Browser PWA/service worker is **DORMANT / NOT BASELINE** and requires an explicit requirement/design before activation.
+
+### 5.9 Identity/session
+
+Local data is identity-scoped; cross-account local-data leakage is forbidden.
+
+Session adapters are app/platform-owned. Frontend Foundation does not invent JWT/cookie/refresh-token contracts before backend security design.
+
+### 5.10 UI/shared semantics
+
+- separate DANTE Web and Native UI implementations;
+- shared semantic tokens, platform-specific representations allowed;
+- `@dante/i18n` React-free;
+- `@dante/time` owns Temporal semantics;
+- generated runtime source is deterministic/committed/drift-checked where appropriate.
+
+### 5.11 Config/environments
+
+One canonical vocabulary only:
+
+```text
+LOCAL
+DEV
+UAT
+PROD
+```
+
+Web public runtime config is versioned + Zod validated + fail-fast. A bounded Cloudflare delivery Worker may serve `/client-config` without becoming a DANTE BFF/backend.
+
+### 5.12 Platform release activation
+
+Android and iOS remain supported architectural targets. Platform-specific signed/device/store gates apply only when that platform is an activated release target.
+
+### 5.13 Testing/CI/developer posture
+
+- unit/component tests co-located;
+- Web E2E at app boundary;
+- Mobile Maestro at app boundary;
+- GitHub Actions remains CI/CD authority;
+- Turbo governs JS/frontend task graph only;
+- no guessed required checks;
+- one authoritative WSL-backed checkout preferred;
+- WSL↔Windows Android/Metro bridge = **DIRECT VALIDATION REQUIRED tooling adapter**;
+- no divergent Windows/WSL repo clones.
+
+## 6. Decisions not to reopen casually
+
+- React DOM + Vite Web / Expo+RN Mobile;
+- platform-specific renderers with selective semantic sharing;
+- feature-first/public-API-only architecture;
+- no generic shared dumping grounds;
+- Data Authority Matrix and backend canonical authority;
+- operation-specific offline eligibility;
+- feature data firewall;
+- small real-consumer shared-package extraction;
+- Web online-first / PowerSync Web dormant;
+- browser PWA/service-worker dormant;
+- identity-scoped local data;
+- GitHub Actions primary CI/CD;
+- EAS Build/Submit/Update selected services, EAS Workflows optional/dormant;
+- direct validation occurs during later materialization rather than a pre-closure mega laboratory.
+
+## 7. Direct-validation register carried forward
+
+Still **NOT RUN**. At materialization validate progressively:
+
+- Node/pnpm/Turbo real workspace;
+- preferred pnpm isolated layout + native graph;
+- hoisted fallback only if evidence requires it;
+- Vite build;
+- Expo Android runtime/build and iOS when target activation requires it;
+- TS strict package graph;
+- exports/import-boundary enforcement;
+- Orval against real OpenAPI when available;
+- TanStack Form + Zod Web/RN;
+- DTCG/Terrazzo outputs;
+- PowerSync + OP-SQLite + SQLCipher;
+- offline accept/reject/conflict reconciliation;
+- identity-scoped DB lifecycle;
+- WSL↔Windows Android tooling;
+- Web runtime config and Cloudflare delivery when activated;
+- selected test stacks;
+- Sentry/EAS release integration when activated.
+
+Failure reopens the affected technology/tooling adapter unless evidence proves broader architectural inconsistency.
+
+## 8. Git state
 
 Workstream opened from:
 
@@ -216,22 +291,32 @@ Workstream opened from:
 7a1600c2167f68c9281d3ed77b32a3d954fbd061
 ```
 
-The first durable write is documentation-only: current architecture specification + ADR supersession/new ADR + this handoff/current-state alignment. No frontend code or manifests belong to this documentation checkpoint.
-
-## 10. Exact next action
+Passo-1 checkpoint:
 
 ```text
-PASSO 2
-Design the definitive frontend repository/application/package structure
-and ownership/dependency rules as one coherent system.
+dd23b86ba330f6296806297ef5c68acebbee65e6
+```
 
-THEN
-review the Passo-2 architecture with the selected stack.
+No production/frontend materialization belongs to Passo 2.
+
+## 9. Exact next action
+
+```text
+PASSO 3
+Perform one clean-room whole-Frontend-Foundation review:
+Passo 1 technologies
++
+Passo 2 architecture/structure
++
+closed Product/Domain/Logical/Physical/Engineering constraints.
+
+IF PASS
+record closure / prepare PR / protected-main integration.
 
 DO NOT YET
 install packages
-create apps/web or apps/mobile scaffold
-create placeholder packages
+create production apps/packages scaffold
 implement product surfaces
-change prototypes
+activate Cloudflare/EAS/PowerSync
+claim direct validation PASS
 ```

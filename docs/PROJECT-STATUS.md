@@ -37,7 +37,8 @@ CLOSED / ACCEPTED / FINAL REVIEW PASS
 FRONTEND ENGINEERING FOUNDATION
 ACTIVE on feature/frontend-foundation
 PASSO 1 TECHNOLOGY SELECTION DESIGN COMPLETE
-PASSO 2 STRUCTURE / OWNERSHIP NOT STARTED
+PASSO 2 ARCHITECTURE / STRUCTURE DESIGN COMPLETE
+PASSO 3 WHOLE-FOUNDATION REVIEW / CLOSURE NEXT
 PRODUCTION FRONTEND CODE NOT STARTED
 DIRECT FRONTEND VALIDATION NOT STARTED
 
@@ -133,16 +134,17 @@ Selected PostgreSQL capabilities:
 - PostgreSQL-backed PowerSync bucket storage;
 - explicit client-safe sync projections.
 
-Frontend-engineering implementation must preserve:
+Frontend implementation must preserve:
 
 ```text
 SQLite local copy != canonical truth
 PowerSync arrival order != conflict resolution
 offline capability = operation-specific
+local pending mutation != canonical effect
 consequential offline mutation → DANTE backend revalidation → PostgreSQL
 ```
 
-PowerSync JavaScript client packaging/version is selected separately in the active frontend workstream and does not rewrite the accepted Physical ownership semantics.
+PowerSync JavaScript client packaging/version is selected separately in the active frontend workstream and does not rewrite accepted Physical ownership semantics.
 
 ### Async/durable
 
@@ -226,7 +228,7 @@ Alembic
 
 - Linux canonical server semantics;
 - Windows 11 supported through WSL2/Linux;
-- repository/workflow kept in WSL filesystem for backend development;
+- one authoritative WSL-backed repository/workflow posture;
 - PyCharm with WSL interpreter supported;
 - backend inner-loop process runs directly in WSL;
 - Docker Compose runs stateful LOCAL infrastructure;
@@ -277,23 +279,50 @@ DANTE owns a reproducible LOCAL PostgreSQL build/configuration.
 - GitHub-hosted runner initially;
 - future OCI build-once/promote, attestation and SBOM at release boundary.
 
-### Frontend workstream activation
+## 7. Frontend Engineering Foundation — active branch-local design
 
-The dedicated frontend workstream is now active on `feature/frontend-foundation`.
-
-Passo 1 has selected the frontend technology baseline in design. The durable branch-local authorities are:
+Passo 1 technology authority:
 
 - `docs/architecture/frontend-engineering-foundation.md`;
-- `docs/decisions/ADR-008-frontend-engineering-stack.md`;
+- `docs/decisions/ADR-008-frontend-engineering-stack.md`.
+
+Passo 2 architecture authority:
+
+- `docs/architecture/frontend-engineering-foundation-part-2.md`;
+- `docs/decisions/ADR-009-frontend-architecture-boundaries.md`.
+
+Operational handoff:
+
 - `docs/workstreams/frontend-foundation.md`.
 
-Until protected-main integration, these are newer unmerged workstream truth rather than integrated `main` authority.
+Until protected-main integration these are newer branch-local workstream truth rather than integrated `main` authority.
 
-### Explicit cloud defer
+### Passo-2 structural posture
 
-Backend compute provider, IaC engine, registry and remote sizing remain unselected until first remote backend infrastructure. The frontend workstream may select bounded Web-delivery/mobile-build services without silently selecting the backend compute/IaC platform.
+- feature-first Web/Mobile architecture;
+- route/navigation adapters kept thin;
+- public-API-only dependency direction including bootstrap/router;
+- small real-consumer shared packages;
+- framework-free shared cores by default;
+- Data Authority Matrix required before ambiguous data-path implementation;
+- canonical accepted effects remain backend/PostgreSQL authority;
+- feature data firewall isolates PowerSync/Query/API/storage mechanics;
+- mobile PowerSync app-owned initially;
+- Web online-first; PowerSync Web dormant;
+- browser PWA/service worker dormant;
+- identity-scoped local-data lifecycle;
+- `@dante/i18n` React-free;
+- versioned validated Web runtime public config;
+- canonical LOCAL/DEV/UAT/PROD vocabulary;
+- Android+iOS supported architectural targets with gates applied when release target is activated;
+- pnpm isolated preferred/direct-validation-required with evidence-driven hoisted fallback;
+- one authoritative WSL-backed checkout posture; native tooling bridge direct-validation required.
 
-## 7. Direct-validation truth
+### Explicit backend/cloud defer remains
+
+Backend compute provider, IaC engine, registry and remote sizing remain unselected until first remote backend infrastructure. Frontend Web delivery/mobile build service choices do not silently select backend compute/IaC topology.
+
+## 8. Direct-validation truth
 
 Never claim these have passed:
 
@@ -314,33 +343,35 @@ FRONTEND DIRECT TEST     NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-Frontend Passo-1 selections carry explicit direct-validation obligations into later materialization; they are not blanket direct-PASS claims.
+Frontend Passo-1/2 decisions carry direct-validation obligations into later materialization; they are not blanket direct-PASS claims.
 
-## 8. Current repository branches/workstreams
+## 9. Current repository branches/workstreams
 
-- `feature/frontend-foundation` — **ACTIVE**, documentation/architecture work only at this checkpoint; Passo 1 design complete, Passo 2 next.
+- `feature/frontend-foundation` — **ACTIVE**, documentation/architecture work only; Passo 1 and Passo 2 design complete; Passo 3 review/closure next.
 - separate prototype/UX workstreams remain outside production frontend engineering authority.
 - Engineering Foundation v0 is closed.
-- no production frontend or backend scaffold has yet been created by this workstream.
+- no production frontend/backend scaffold has been created by this frontend workstream.
 
-## 9. Exact next action
+## 10. Exact next action
 
 ### Active frontend workstream
 
 ```text
-PASSO 2
-Define the definitive frontend application/package structure,
-ownership and dependency direction as one coherent architecture pass.
+PASSO 3
+Perform one clean whole-Frontend-Foundation review.
 
-THEN
-whole-foundation review / closure / PR / protected-main integration.
+IF PASS
+record design/architecture closure
+prepare PR
+integrate through protected main
 
 ONLY AFTER FOUNDATION INTEGRATION
-materialize the production frontend scaffold and run direct validations.
+open a new bounded materialization/scaffold scope
+and execute direct validation obligations progressively.
 ```
 
 ### Backend implementation remains separate
 
 The production backend scaffold remains **NOT STARTED** and requires its own bounded implementation gate. Frontend Foundation work does not authorize backend schema/business implementation.
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering decisions unless a concrete implementation contradiction supplies evidence for an explicit reopen.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering decisions unless concrete implementation evidence justifies an explicit affected-scope reopen.
