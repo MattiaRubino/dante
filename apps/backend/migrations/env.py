@@ -3,12 +3,12 @@
 import asyncio
 
 from alembic import context
-from sqlalchemy import Connection, URL
+from sqlalchemy import URL, Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from dante.platform.config.database import MigrationDatabaseSettings
-from dante.platform.database.metadata import Base, DANTE_SCHEMA
+from dante.platform.database.metadata import DANTE_SCHEMA, Base
 
 config = context.config
 target_metadata = Base.metadata
