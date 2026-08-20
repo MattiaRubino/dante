@@ -1,7 +1,8 @@
 # DANTE — Home Contract
 
 **Status:** current pre-production behavior contract  
-**Accepted build:** B1 Context Rail v1  
+**Current working B2 baseline:** B2 Central Stage v21 responsive  
+**Last formally closed Home milestone:** B1 Context Rail v1  
 **Branch:** `prototype/frontend`
 
 This file tells a new chat/agent what the current Home is expected to contain and do. It is authoritative for Home behavior/intent at the prototype level; it does not create backend semantics.
@@ -49,6 +50,8 @@ Important: several topbar controls are mock/prototype interactions. Their presen
 
 The legacy topbar Review Queue is currently **deprecated** because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible only until a separate cleanup scope decides the final global access pattern.
 
+Visible LifeOS-era product strings/lockup are transitional historical UI and are scheduled for the dedicated DANTE branding pass; their presence does not change current product identity.
+
 ## 4. Conversational surface
 
 Natural language is a global interaction layer over the same DANTE reality, not a separate semantic product.
@@ -71,19 +74,13 @@ Per te
 
 Do not collapse all three into generic recommendations.
 
-## 6. Central stage — B2 WIP + B2.5 engineering contract
+## 6. Central stage — current B2 v21 working contract
 
-The last accepted Home remains B1; B2 is not visually closed.
+The current user-reviewed B2 working oracle is v21 responsive. B2 is still open; v21 is not a claim that all stage/product-identity decisions are closed.
 
-Current saved B2 working direction:
+### 6.1 Shared workspace
 
-- two projections: continuity (`Mondi`) and signals (`Segnali`);
-- continuity keeps the sphere-carousel lineage and desktop target of five visible positions;
-- a partial continuity state derives empty add slots in the UI rather than persisting placeholder backend entities;
-- signals uses the same navigation grammar and shows at most three complete visible items in the desktop guard matrix;
-- external add placement remains unresolved.
-
-B2.5 fixes the engineering ownership independent of final visual polish:
+The central stage is one shared workspace with stable outer ownership:
 
 ```text
 home.stage owns outer geometry
@@ -93,7 +90,67 @@ mode switch must not alter stage outer bounds
 AI expanded/collapsed reflow belongs to Home shell
 ```
 
-Machine-readable authority:
+Changing `Mondi ↔ Segnali` changes the projection inside the stage, not the surrounding shell.
+
+Changing AI expanded/collapsed may intentionally reflow/resize the stage exactly as the Home shell dictates; projections must adapt to the resulting real stage geometry rather than override that shell behavior.
+
+### 6.2 Mondi / continuity
+
+Technical ID: `home.stage.continuity`  
+Visible name: `Mondi` (`Worlds` in English)
+
+Role:
+
+> Significant realities the user wants readily recoverable, resumable or explorable over time.
+
+Rules:
+
+- not a Domain Model taxonomy;
+- not necessarily a persisted `World` entity;
+- current visual grammar preserves the established sphere carousel;
+- desktop target remains five visible sphere positions in the current guard matrix;
+- selection/previous/next/drag continue the existing interaction lineage;
+- in partial state, unused existing sphere positions may be rendered as ghost `+` slots;
+- those empty slots are UI composition only and must not become placeholder backend entities;
+- persistent/full-state add placement remains unresolved and must be decided separately.
+
+### 6.3 Segnali / signals
+
+Technical ID: `home.stage.signals`  
+Visible name: `Segnali` (`Signals` in English)
+
+Role:
+
+> Compact observations worth understanding at a glance: values, deltas, trends, planned-vs-actual, target progress, trajectories and cautious patterns where semantically justified.
+
+Rules:
+
+- no universal Life Score;
+- no arbitrary productivity/health/happiness scores;
+- no invented percentages without valid semantics/evidence;
+- correlation must not be presented as causation;
+- different signals may use different micro-visual grammars;
+- current desktop composition renders at most three complete visible Signal items;
+- Signal navigation/selection/drag uses the same interaction grammar as continuity;
+- Signal track remains an inner-stage concern and must not redefine stage outer geometry;
+- persistent add/configure affordance remains unresolved.
+
+### 6.4 Current responsive hardening
+
+v21 repairs the previously open working defect where window/parent reflow could leave stage content using stale geometry.
+
+Current direction:
+
+- stage rendering follows real physical stage geometry;
+- `ResizeObserver` may be used where a JS measurement is genuinely required;
+- ordinary layout adaptation should remain owned by CSS/container/layout contracts where possible;
+- Continuity spacing may adapt to the actual stage width to preserve the five-position target in the current desktop guard matrix;
+- Signals remains centered inside its own inner track;
+- projection-specific outer-geometry patches are forbidden.
+
+The current user-reviewed v21 previews are the working visual/behavior oracle. A fresh automated browser PASS for all 24 B2.5 matrix combinations is **not** claimed by this documentation scope; the machine-readable matrix remains the target for final automated verification.
+
+### 6.5 Machine-readable authority
 
 - `prototypes/frontend/shared/contracts/home-stage.contract.json`;
 - `prototypes/frontend/shared/contracts/home-stage.view-model.schema.json`;
@@ -239,7 +296,9 @@ Accepted B1 keeps both functions simultaneously visible.
 
 Current desktop rail is part of the web prototype. Existing narrower breakpoint behavior may hide the side rail. This does **not** mean Capture/Resolution are desktop-only capabilities. Mobile representation must be designed later under the cross-platform rule with the same semantics.
 
-For Home central-stage desktop work, the current engineering guard matrix is defined in `prototypes/frontend/shared/contracts/home-responsive.matrix.json` across widths 1856/1600/1366/1200/1024/901, AI expanded/collapsed and both stage modes. The known B2 global-resize defect remains open until this matrix passes on the actual artifact.
+For Home central-stage desktop work, the engineering guard matrix is defined in `prototypes/frontend/shared/contracts/home-responsive.matrix.json` across widths 1856/1600/1366/1200/1024/901, AI expanded/collapsed and both stage modes.
+
+The previous v16 global-resize defect is no longer the current working state: v21 is the user-reviewed responsive baseline. Final automated matrix execution remains a separate evidence requirement before full closure.
 
 Responsive rules must be owned by the correct layout/container boundary. Projection-specific patches must not silently redefine Home-shell or stage outer geometry.
 
@@ -273,7 +332,17 @@ For touched durable Home behavior, apply the applicable quality layers from `doc
 
 `tests/prototypes/frontend-preprod-contracts.py` is the initial framework-neutral contract-drift guard. It does not replace later production lint/type/component/E2E/visual/accessibility tooling.
 
-## 12. Documentation rule
+## 12. Current B2 open decisions
+
+Before B2 closure:
+
+1. decide whether/how persistent add affordances should exist for Mondi, Segnali and future stage projections;
+2. align logo/visible product naming to DANTE;
+3. review overall palette/skin;
+4. review Home background/atmosphere;
+5. rerun applicable final QA after those changes.
+
+## 13. Documentation rule
 
 Every Home change must update:
 
