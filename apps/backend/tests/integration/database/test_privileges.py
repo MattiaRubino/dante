@@ -49,13 +49,15 @@ def _create_privilege_probe(database: Any) -> None:
 
 
 def _assert_runtime_denied(database: Any, statement: str) -> None:
-    with _role_connection(
-        database,
-        "dante_runtime",
-        database.cluster.runtime_password,
-    ) as connection:
-        with pytest.raises(errors.InsufficientPrivilege):
-            connection.execute(statement)
+    with (
+        _role_connection(
+            database,
+            "dante_runtime",
+            database.cluster.runtime_password,
+        ) as connection,
+        pytest.raises(errors.InsufficientPrivilege),
+    ):
+        connection.execute(statement)
 
 
 def test_owner_migrator_and_runtime_roles_have_exact_security_posture(
