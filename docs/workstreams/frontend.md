@@ -13,6 +13,7 @@
 - Terminology registry: `docs/frontend/terminology.md`
 - Research/evidence index: `docs/frontend/research-index.md`
 - Pre-production engineering baseline: `docs/frontend/production-readiness/README.md`
+- Current B2 working checkpoint: `docs/frontend/home/checkpoints/b2-central-stage-v21-responsive.md`
 
 ## Purpose
 
@@ -117,7 +118,7 @@ fd9788212fbbd1ee40e53271cc39cedd9275b341
 
 This complete file is deliberately retained as the immutable pre-B1 baseline.
 
-## Current accepted Home build — B1 Context Rail v1
+## Last formally closed Home milestone — B1 Context Rail v1
 
 B1 is stored as a deterministic accepted override on top of the retained A2 baseline.
 
@@ -144,10 +145,48 @@ Accepted behavior:
 
 ## Current B2 / B2.5 state
 
-- B2 Central Stage v16 is saved WIP, not accepted/closed; global resize remains open.
-- B2.5 establishes the pre-production engineering foundation before further resize/brand work.
-- machine-readable stage contracts/fixtures live under `prototypes/frontend/shared/contracts/` and `fixtures/`.
-- `tests/prototypes/frontend-preprod-contracts.py` guards basic contract drift.
+### B2 Central Stage
+
+Current working visual/behavior oracle: **v21 responsive**.
+
+```text
+FULL
+size       762160
+SHA-256    b653b5455903d0978cae88ff76fb74c285d0104334871cdb9f406f6d945c4cde
+
+PARTIAL
+size       762090
+SHA-256    390f12cf6c327be27342dcc038d398fd2751c3e2a9cbab3fbf2d981092405763
+```
+
+Current accepted working direction:
+
+- projections are `Mondi` / `Segnali`;
+- stable technical IDs are `home.stage.continuity` / `home.stage.signals`;
+- Mondi preserves the current sphere carousel;
+- Continuity desktop target = five visible positions;
+- partial unused positions are ghost `+` slots inside existing sphere geometry;
+- Segnali uses the same previous/next, selection and drag/swipe grammar;
+- Segnali desktop maximum = three complete visible items;
+- stage outer geometry/selector/navigation anchors are projection-independent;
+- AI expanded/collapsed reflow remains Home-shell behavior;
+- v21 hardens resize against real stage geometry and fixes the previously isolated narrow overflow.
+
+User review accepted v21 as the current working baseline. A fresh automated PASS for every one of the 24 B2.5 browser-matrix cases is not claimed by the checkpoint; the matrix remains the target for final automated closure evidence.
+
+B2 is **OPEN** for:
+
+1. persistent/full-state add-affordance decision for Mondi, Segnali and future stage projections;
+2. DANTE logo/visible-name alignment;
+3. palette/skin review;
+4. background/atmosphere review;
+5. final applicable QA after those changes.
+
+### B2.5 production-readiness foundation
+
+- production-shaped component/state/data/backend-integration rules are established;
+- machine-readable stage contracts/fixtures live under `prototypes/frontend/shared/contracts/` and `fixtures/`;
+- `tests/prototypes/frontend-preprod-contracts.py` guards basic contract drift;
 - exact production web framework/toolchain versions remain a future explicit scaffold decision; this workstream does not silently supersede current client ADRs.
 
 ## Constraints carried forward
@@ -171,16 +210,17 @@ Accepted behavior:
 
 ## Immediate roadmap
 
-1. **B1 Context Rail** — accepted.
-2. **B2 Central Stage** — current WIP direction preserved; responsive/global geometry still open.
-3. **B2.5 Frontend Pre-Production Foundation v0** — establish production-shaped contracts/quality gates before further fragile iteration.
-4. repair/verify resize against the B2.5 geometry matrix without regressing AI expanded/collapsed behavior.
-5. naming + product identity/logo alignment.
-6. overlay grammar and real popup/sheet/dialog cases.
-7. complete Home functional review.
-8. final Home QA/checkpoint.
-9. production-web scaffold decision/gate when product surfaces are ready enough to migrate.
-10. Logger and later surfaces.
+1. **B1 Context Rail** — CLOSED / accepted.
+2. **B2.5 Frontend Pre-Production Foundation v0** — baseline established / QA PASS at contract layer.
+3. **B2 Central Stage v21 responsive** — current working visual/behavior baseline; B2 still open.
+4. decide the add-affordance model for Mondi / Segnali / future projections.
+5. align logo + visible product name to DANTE.
+6. review Home palette/skin and background/atmosphere using semantic tokens rather than arbitrary local values.
+7. overlay grammar and real popup/sheet/dialog cases.
+8. complete Home functional review.
+9. final Home QA/checkpoint including applicable automated responsive/visual/accessibility gates.
+10. production-web scaffold decision/gate when product surfaces are ready enough to migrate.
+11. Logger and later surfaces.
 
 ## Scope boundary
 
