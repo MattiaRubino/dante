@@ -4,35 +4,87 @@
 
 ## 1. Core rule
 
+Git branches represent source-change scope. Runtime environments represent deployed state.
+
 ```text
 BRANCH != ENVIRONMENT
 ```
 
-Branches represent source-change scope. DANTE does not use permanent develop/uat/staging/production branches as environment state.
+DANTE does not use permanent `develop`, `uat`, `staging` or `production` branches as environment state.
 
 ## 2. Integrated source truth
 
 Protected `main` is the only integrated source truth.
 
+Normal flow:
+
 ```text
 bounded branch
-→ PR + applicable validation
-→ protected main
+↓
+PR + applicable validation
+↓
+protected main
 ```
 
-Branch prefixes never authorize work outside the explicit gate.
+Short-lived prefixes may include `feature/`, `fix/`, `chore/`, `docs/`, `prototype/`. Prefix never authorizes work outside the explicit gate.
 
 ## 3. Existing repository
 
-Production continues in the current repository. **NEW REPOSITORY: NO.** Repository identity/name governance is separate from feature/architecture implementation.
+Production implementation continues in the current repository.
+
+```text
+NEW REPOSITORY
+NO
+```
+
+Repository identity/name governance is separate from feature/architecture implementation and does not create a second production repository.
 
 ## 4. Exact write gate
 
-Before remote mutation state exact branch, PRE-SCOPE, CREATE/UPDATE/DELETE, purpose and explicit out-of-scope. Immediately before first write verify HEAD == PRE-SCOPE; if moved, stop/inspect/re-gate.
+Before remote mutation:
+
+```text
+BRANCH
+<exact branch>
+
+PRE-SCOPE
+<exact SHA>
+
+CREATE
+<paths>
+
+UPDATE
+<paths>
+
+DELETE
+<paths>
+
+PURPOSE
+<bounded purpose>
+
+EXPLICITLY OUT OF SCOPE
+<non-scope>
+```
+
+Immediately before first write verify branch HEAD still equals PRE-SCOPE. If moved: stop, inspect, re-gate.
 
 ## 5. Protected-main integration
 
-Before merge inspect exact paths/checks/branch movement and use expected-head protection where supported. After merge reread/compare main and verify branch lifecycle.
+Durable work integrates through PR.
+
+Before merge:
+
+- inspect exact changed paths;
+- inspect applicable real checks/statuses;
+- verify no unexpected branch movement;
+- merge with expected head when tooling supports it;
+- preserve accepted repository merge/history policy.
+
+After merge:
+
+- reread/compare `main`;
+- verify exact integration result;
+- verify branch lifecycle/autodelete when relevant.
 
 ## 6. Environment vocabulary
 
@@ -45,38 +97,78 @@ UAT
 PROD
 ```
 
-`TEST` may be an automated context, not a promotion environment. Temporary previews may exist. Frontend/mobile provider names map to these DANTE contexts.
+`TEST` may exist as automated execution context but is not a promotion environment. Temporary preview environments may exist when useful.
+
+Frontend/mobile provider profile/channel names map to these DANTE contexts rather than creating a second taxonomy.
 
 ## 7. Activation
 
 ```text
 LOCAL   first production implementation
-DEV     shared/remote integration when useful
-UAT     real release candidates
+DEV     when shared/remote integration is useful
+UAT     when real release candidates exist
 PROD    production readiness
 ```
 
-Remote resources are not created for appearance.
+Environment definitions are fixed; remote resources are not created merely for appearance.
 
 ## 8. LOCAL
 
-Backend: Linux canonical semantics, Windows through WSL2, one authoritative WSL-backed worktree, PyCharm WSL supported, backend direct in WSL, Docker Compose stateful infra, real PostgreSQL when materialized, synthetic data.
+LOCAL is the individual developer context.
 
-Frontend selected posture shares the authoritative checkout. WSL↔Windows Android/ADB/Metro is validated during materialization.
+Backend baseline:
+
+- Linux canonical semantics;
+- Windows supported through WSL2;
+- one authoritative WSL-backed repository/worktree;
+- PyCharm WSL supported;
+- backend direct in WSL for reload/debug;
+- Docker Compose for stateful infra;
+- real PostgreSQL 18.4 with accepted extension envelope when materialized;
+- synthetic/local credentials/data.
+
+Frontend selected posture shares the same authoritative checkout. WSL↔Windows Android/ADB/Metro details are directly validated during materialization.
+
+LOCAL state is disposable/rebuildable where it is not intentionally retained.
 
 ## 9. DEV
 
-Accepted-main artifacts only; DEV-only state/credentials/secrets; synthetic non-production data; no PROD credentials/raw dumps. Frontend deployment profiles map explicitly to DEV.
+First shared remote integration environment.
+
+- accepted-main artifacts only;
+- DEV-only state/credentials/secrets;
+- synthetic/shared non-production data;
+- remote config/network/provider integration;
+- no PROD credentials;
+- no raw PROD dump as convenience.
+
+Frontend Web/mobile technical deployment profiles/channels must map explicitly to DANTE DEV semantics.
 
 ## 10. UAT
 
-Exact release candidate, migration/release rehearsal, E2E/provider compatibility, representative synthetic/sanitized data, applicable security/performance/recovery/PSV gates; signed/device validation for activated mobile targets.
+Production-like release-candidate/acceptance environment.
+
+- exact candidate identity;
+- migration/release rehearsal;
+- E2E/provider compatibility;
+- representative synthetic or explicitly sanitized/minimized data;
+- applicable security/performance/recovery/PSV gates;
+- activated mobile targets use signed/device validation appropriate to that platform.
 
 ## 11. PROD
 
-Exact accepted candidate/artifact, isolated production state/identity/secrets, controlled releases/migrations, accepted recovery/observability/security posture; mobile store/update gates only for activated targets.
+Real released service/user data.
 
-## 12. Isolation
+- exact accepted candidate/artifact identity;
+- isolated production state/identity/secrets;
+- controlled serialized migrations/releases where required;
+- accepted recovery/observability/security posture;
+- emergency infra changes reconciled into versioned desired state;
+- mobile store/update gates apply only to activated release targets.
+
+## 12. Environment isolation
+
+Target:
 
 ```text
 DEV state != UAT state != PROD state
@@ -84,36 +176,69 @@ DEV identity != UAT identity != PROD identity
 DEV secrets != UAT secrets != PROD secrets
 ```
 
-Backend compute/cloud provider remains deferred until its real boundary.
+When provider is selected, prefer strong account/project/subscription-equivalent boundaries where operationally reasonable.
+
+Backend compute/cloud provider remains intentionally deferred until its real remote boundary.
 
 ## 13. GitHub Environments
 
-When deployment workflows activate, GitHub Environments such as `dev`, `uat`, `prod` govern credentials/protection/history; they are not the runtime environments themselves.
+When remote deployment workflows activate, use GitHub Environments such as:
+
+```text
+dev
+uat
+prod
+```
+
+They govern deployment credentials/protection/history as supported. They are not runtime/cloud environments themselves.
 
 ## 14. Artifact promotion
 
-Server default: accepted main → build once → immutable artifact/digest → DEV → exact UAT → exact PROD.
+Server default:
 
-Web supports an immutable SPA artifact promoted where platform permits with versioned environment-specific **public** runtime config.
+```text
+accepted main
+→ build once
+→ immutable artifact/digest
+→ DEV
+→ exact UAT candidate
+→ exact PROD candidate
+```
 
-Mobile binary/OTA semantics follow Expo/EAS runtime compatibility; native binary and OTA update are distinct artifact classes.
+Do not rebuild “the same release” separately without a platform-specific reason and explicit traceability.
+
+Frontend Web posture supports an immutable SPA artifact promoted across environments where the delivery platform permits, with versioned environment-specific **public** runtime configuration.
+
+Mobile artifact/update semantics follow Expo/EAS runtime-compatibility rules rather than pretending a native binary and OTA JS update are the same artifact class.
 
 ## 15. Required status checks
 
-A future job name is not a required check. Require only real stable observed contexts whose failure genuinely must block merge.
+A documented future job name is not a required check.
+
+Only after a real check exists, emits a stable context, has been observed on relevant PRs and genuinely must block merge may it become required on `main`.
 
 ## 16. One-developer posture
 
-PR + automated gates remain real; no fake independent reviewer requirement; add CODEOWNERS/required reviewers only when real ownership exists.
+While there is one active developer:
 
-## 17. Current Frontend Foundation continuation
+- PR + automated gates remain real;
+- do not create fake independent-review requirements;
+- add CODEOWNERS/required reviewers only when real ownership exists.
+
+## 17. Current branch/workstream continuation
+
+Current frontend Foundation design on `feature/frontend-foundation` is:
 
 ```text
-feature/frontend-foundation
-DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
-PENDING MAIN INTEGRATION
+Passo 1 technology design     PASS
+Passo 2 architecture design   PASS
+Passo 3 clean review          FINAL REVIEW PASS
+Foundation design             CLOSED / ACCEPTED
+main integration              PENDING
 ```
 
-PR creation and merge require explicit authorization. After protected-main integration, open a fresh materialization/direct-validation branch/gate.
+PR creation and merge still require explicit authorization.
 
-Backend production scaffold remains a separate NOT STARTED workstream.
+Only after protected-main integration should a fresh branch/gate materialize production Web/Mobile/workspace artifacts and execute direct validations.
+
+Backend production scaffold remains a separate not-started workstream with its own future gate.

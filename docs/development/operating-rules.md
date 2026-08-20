@@ -2,87 +2,147 @@
 
 - Status: **CURRENT**
 
-Durable repository truth outranks conversational memory.
+These rules govern repository-backed project work. Durable repository truth outranks conversational memory.
 
 ## 1. Authority order
 
-1. current `main` code/migrations/tests and accepted model/ADR;
+When sources conflict:
+
+1. current `main` code/migrations/tests and current accepted model/ADR;
 2. current durable product/domain/logical/architecture/engineering docs on `main`;
 3. active bounded workstream handoff for newer unmerged work;
-4. other current active-workstream sources;
+4. other current sources inside that workstream;
 5. historical evidence/closed branches/Git history;
 6. conversation memory.
 
-A user instruction may reopen a decision, but durable truth changes only through approved repository scope.
+A user instruction may clarify/reopen a decision, but durable project truth changes only through an approved repository scope.
 
-## 2. Mandatory bootstrap
+## 2. Mandatory bootstrap before design or writes
+
+Read in order:
 
 ```text
 README.md
 → docs/README.md
 → docs/PROJECT-STATUS.md
-→ agent-operating-manual.md
-→ operating-rules.md
-→ documentation-and-handoff.md
-→ branching-and-environments.md
-→ repository-engineering-safety.md
-→ active workstream handoff if any
-→ current architecture/model index + linked sources
-→ relevant ADR/evidence
+→ docs/development/agent-operating-manual.md
+→ docs/development/operating-rules.md
+→ docs/development/documentation-and-handoff.md
+→ docs/development/branching-and-environments.md
+→ docs/development/repository-engineering-safety.md
+→ active workstream handoff, if any
+→ current model/architecture index + linked accepted sources
+→ relevant ADR/evidence/methodology
 → relevant code/tests/manifests
-→ Git refs/relation to main
+→ current Git refs and relation to main
 ```
 
-Physical-consuming implementation also reads accepted Physical targets/registers. Production materialization inspects actual root/config/workflows/settings and applicable Foundation sources.
+For Physical-consuming implementation also reread the accepted Physical target and applicable post-selection validation register.
 
-## 3. Current engineering baseline
+For a production scaffold/materialization scope inspect the exact root tree, `.github`, existing config/manifests/workflows, current remote settings where relevant and the applicable closed/accepted Foundation sources.
 
-Engineering Foundation v0: **CLOSED / ACCEPTED**.
+## 3. Current closed/active engineering baseline
 
-Frontend Engineering Foundation: **DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS on `feature/frontend-foundation`, PENDING MAIN INTEGRATION**.
+Engineering Foundation v0 is **CLOSED / ACCEPTED** and is not reopened by default.
 
-Direct frontend implementation validation remains **NOT RUN**.
+Backend baseline:
 
-Backend cloud compute/IaC remains deferred to its real remote boundary.
+```text
+one product monorepo
+apps/backend + apps/web + apps/mobile
+backend capability-first modular monolith
+Python 3.14.x / initial 3.14.7
+uv / Ruff / mypy strict / pytest / Hypothesis
+WSL2/Linux canonical backend semantics on Windows
+PyCharm WSL supported; repo IDE-neutral
+Docker Compose for LOCAL stateful infra
+PostgreSQL 18.4 + full selected extension envelope from first LOCAL DB
+SQLAlchemy 2.0 stable + psycopg 3 + Alembic
+pydantic-settings typed config
+risk-layered real-PostgreSQL testing
+GitHub Actions / protected main / supply-chain hardening
+LOCAL → DEV → UAT → PROD environments, not branches
+```
+
+Frontend Engineering Foundation on `feature/frontend-foundation` is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**. Its branch-local specifications/ADRs/final-review evidence are newer workstream truth until protected-main integration. Direct implementation validation remains **NOT RUN**.
+
+Backend cloud compute/IaC remains deferred to first real remote infrastructure boundary.
 
 ## 4. Current next boundary
 
+Production implementation remains in the current repository. Do not create a new repository.
+
+Frontend sequence:
+
 ```text
-Frontend Foundation
 prepare protected-main integration
 → PR only with explicit authorization
-→ merge only with explicit authorization/expected-head safety
-→ post-merge readback
-→ new bounded materialization/direct-validation scope
+→ merge only with explicit authorization + expected-head safety
+→ post-merge main readback
+→ fresh exact materialization/scaffold scope
+→ execute direct frontend validations progressively
 ```
 
-Backend production scaffold remains a separate NOT STARTED scope.
+Backend production scaffold remains a separate **NOT STARTED** implementation scope and requires its own fresh gate.
+
+Repository rename history/governance is not an implicit prerequisite for frontend integration/materialization and must not be reintroduced as a blocking pseudo-phase.
 
 ## 5. No silent scope expansion
 
-A bounded task does not authorize adjacent work. Foundation closure does not authorize production code. Frontend architecture does not authorize product-surface implementation. Selected component does not mean activated/deployed. Provider decisions are not inferred from providers already selected for bounded roles.
+A bounded task does not authorize adjacent work.
 
-New material decisions require appropriate approval/gate.
+Examples:
+
+- backend scaffold does not authorize concrete Domain/Logical schema unless explicitly included;
+- Foundation closure does not authorize production code;
+- frontend architecture does not authorize product-surface implementation;
+- prototype/design does not override production architecture truth;
+- selected Physical/frontend component does not mean activated/deployed component;
+- cloud/provider decision is not inferred from recovery/object/delivery providers already selected for bounded roles.
+
+When a material new decision appears, stop that decision and establish the appropriate approval/gate before durable write.
 
 ## 6. Exact remote Git write gate
 
-Before any remote content write state exact:
+Before a remote Git write, state:
 
 ```text
 BRANCH
+<exact branch>
+
 PRE-SCOPE
+<exact current SHA>
+
 CREATE
+<exact paths>
+
 UPDATE
+<exact paths>
+
 DELETE
+<exact paths>
+
 PURPOSE
+<bounded purpose>
+
 EXPLICITLY OUT OF SCOPE
+<what will not be touched>
 ```
 
-Immediately before first write verify current HEAD == PRE-SCOPE; if moved, stop/inspect/re-gate.
+Immediately before the first write:
+
+```text
+current HEAD == approved PRE-SCOPE → proceed
+current HEAD != approved PRE-SCOPE → STOP / inspect / re-gate
+```
+
+Never silently continue on a moved branch.
 
 ## 7. Protected main
 
-`main` is only integrated truth.
+`main` is the only integrated source truth.
+
+Normal flow:
 
 ```text
 bounded branch
@@ -91,89 +151,165 @@ bounded branch
 → protected-main integration
 ```
 
-No direct-main convenience bypass. Use expected-head safety when merging through tooling.
+No direct-main bypass merely for convenience. Use expected-head protection when merging through tooling so a moved PR head cannot be merged silently.
 
 ## 8. Commit/write discipline
 
-Commits are bounded, reviewable, truthful and free from unrelated churn. Do not manufacture micro-commits or combine unrelated changes merely for count. Shared history rewrite requires explicit reason/authorization/safety proof.
+Commits should be bounded, reviewable, truthful and free from unrelated churn.
+
+Do not manufacture one commit per tiny file when one coherent commit is safer. Do not combine unrelated decisions merely to reduce commit count.
+
+Do not rewrite/force-push shared history casually; any history rewrite requires explicit reason/authorization and proof of safety.
 
 ## 9. Post-write QA
 
-Prove against PRE-SCOPE:
+Against the approved PRE-SCOPE prove:
 
-- expected paths == actual;
-- CREATE/UPDATE/DELETE match;
-- unexpected == 0;
-- branch relation expected;
-- remote readback matches;
-- PR paths/checks exact where applicable;
-- expected-head merge safety;
-- post-merge main readback;
-- branch lifecycle verification where relevant.
+- expected changed paths == actual;
+- CREATE/UPDATE/DELETE classification matches;
+- unexpected/out-of-scope == 0;
+- ahead/behind relation is expected;
+- remote payload/readback matches intended content;
+- PR changed paths are exact where applicable;
+- real checks/statuses are inspected where applicable;
+- protected-main integration uses expected head;
+- post-merge `main` is reread/compared;
+- branch lifecycle/autodelete is verified when relevant.
 
-Never call PASS/CLOSED merely from a successful write API.
+Never call a workstream PASS/CLOSED only because a write API returned success.
 
-## 10. Required-check activation
+## 10. Required-check activation rule
 
-A check becomes required only after the real workflow/job runs on relevant PRs, emits a stable observed context, success/failure is observed and failure genuinely must block merge. Never guess future check names.
+Never configure a guessed future status-check name.
+
+```text
+workflow/job exists
++ runs on relevant PR
++ stable emitted context verified remotely
++ success/failure observed
++ failure genuinely means merge must stop
+→ only then exact context may become required
+```
+
+This applies equally to backend and frontend workflows.
 
 ## 11. Documentation is implementation
 
+Distinguish:
+
 ```text
-CURRENT SPECIFICATION    current truth
-ADR                      decision/rationale/status/supersession
-HISTORICAL/VALIDATION    truthful chronology
-GIT/PR HISTORY           recoverable history
+CURRENT SPECIFICATION      current truth only
+ADR / TECH DECISION       current decision + rationale/status/supersession
+HISTORICAL / VALIDATION   truthful chronology/evidence
+GIT / PR HISTORY          recoverable history
 ```
 
-Before replacing/deleting meaningful current docs prove no valid requirement/rationale is lost and navigation/current truth is repaired. Tool-limit splits are lossless, not summaries.
+Do not rewrite historical evidence to pretend it knew later decisions.
+
+Before deleting/replacing meaningful current docs prove:
+
+```text
+unclassified meaningful content = 0
+valid requirement lost = 0
+current truth represented = PASS
+rationale worth retaining mapped = PASS
+references/navigation repaired = PASS
+```
+
+Tool/size-driven document splits must be lossless physical partitioning, not silent summaries.
 
 ## 12. Historical evidence protection
 
-Historical/closure evidence is not rewritten merely to align wording with later state. Corrections require an explicit evidence reason.
+Closed validation/closure evidence remains historical and is not edited merely to align wording with a later state.
 
-## 13. Reopen rule
+Changes to historical artifacts require an explicit evidence-correction reason rather than current-truth cleanup.
 
-Implementation consumes closed Domain/Logical/Physical/Engineering/Frontend Foundation decisions. A concrete contradiction may reopen only the affected decision under explicit scope. Never weaken semantics to fit convenient tools.
+## 13. Domain/Logical/Physical/Engineering/Frontend reopen rule
 
-Failed validation may reopen an affected technology/adapter/Physical decision but not silently weaken Domain/Logical authority.
+Implementation consumes closed models/Foundation decisions.
 
-## 14. Evidence truth
+A concrete contradiction may reopen only the affected decision under an explicit scope.
+
+Do not weaken accepted semantics to fit a convenient database/ORM/API/frontend/tool behavior.
+
+A failed applicable validation may reopen the affected Physical/frontend technology/adapter decision but cannot silently weaken Domain/Logical requirements.
+
+## 14. Implementation evidence truth
+
+Keep distinctions explicit:
 
 ```text
 selected != installed
 installed != configured
 configured != directly validated
-direct scenario PASS != whole-system PASS
+direct scenario PASS != complete system PASS
 ```
 
-Architecture closure may precede implementation and must never be relabeled as direct PASS.
+Direct evidence remains NOT RUN until real artifacts/harness exist.
+
+Architecture/design closure may be truthful before implementation; it must not be mislabeled as implementation PASS.
 
 ## 15. Secrets / production data
 
-Never commit credentials/tokens/secrets/raw production dumps. Lower-environment data synthetic by default; production-derived clones require explicit sanitization/minimization/authorization. Normal PR CI gets no PROD identity. Anything shipped in Web/mobile client bundles is public config, not a secret.
+Never commit live credentials, keys, tokens, `.env` secrets or raw production dumps.
+
+Lower-environment data is synthetic by default. Production-derived clones require explicit sanitization/minimization/authorization.
+
+Normal PR CI receives no PROD deployment identity.
+
+Anything shipped in Web/mobile client bundles is public client configuration, not a secret.
 
 ## 16. Development environment discipline
 
-Primary Windows posture uses one authoritative WSL-backed checkout. Python/backend and selected Node/frontend tooling use that source tree under their accepted semantics; JetBrains/PyCharm supported; Docker Compose owns stateful LOCAL dependencies.
+Backend canonical semantics are Linux.
 
-No divergent Windows/WSL source clones and no cross-OS environment sharing that violates runtime semantics. WSL↔Windows Android/ADB/Metro is a directly validated tooling adapter.
+Primary Windows posture:
 
-Repository commands remain CLI reproducible and IDE neutral.
+- one authoritative repository/worktree in WSL filesystem;
+- Python/uv/backend under WSL/Linux semantics;
+- Node/pnpm/Turbo/Vite/Metro/Expo CLI may use the same WSL-backed checkout for the selected frontend posture;
+- PyCharm/JetBrains may use WSL tooling/interpreters;
+- Docker Compose owns stateful LOCAL dependencies;
+- do not maintain divergent Windows/WSL source clones;
+- do not share one virtualenv/node_modules environment across incompatible OS semantics.
+
+WSL↔Windows Android/ADB/Metro mechanics remain a directly validated tooling adapter, not a product architecture invariant.
+
+Repository commands remain CLI-reproducible and IDE-neutral.
 
 ## 17. No enterprise cosplay
 
-Do not introduce without measured need: microservices, Kubernetes, broker/service zoo, self-hosted CI, merge queue, multiple repos, permanent environment branches, fake reviewers, placeholder infra/services/directories, speculative shared frontend packages or dormant specialist libraries without consumers.
+Professional quality means real boundaries/evidence, not maximum component count.
+
+Do not introduce without measured need:
+
+- microservices;
+- Kubernetes;
+- brokers/service zoo;
+- self-hosted CI runners;
+- merge queues;
+- multiple repositories;
+- extra permanent environment branches;
+- fake reviewer requirements;
+- placeholder IaC/services/directories;
+- speculative shared frontend packages;
+- dormant specialist libraries without a real consumer.
+
+Introduce mechanisms only when scale/ownership/security/product requirements create a real need.
 
 ## 18. Current continuation instruction
 
-Until Frontend Foundation integrates:
+A new chat must first read current `main`, current global status and any pending-integration workstream handoff.
+
+While `feature/frontend-foundation` is pending integration:
 
 ```text
-verify feature/frontend-foundation relation to main
-→ read closure handoff + both frontend specs + final review + ADR-008/009
-→ do not restart technology/architecture selection
-→ perform integration work only under explicit scope/authorization
+verify branch relation
+→ read frontend-foundation closure handoff + both frontend specs + final review + ADR-008/009
+→ do not restart stack/architecture selection
+→ perform PR/integration work only with explicit authorization and exact scope
 ```
 
-After integration, open a fresh frontend materialization/direct-validation workstream. Backend production scaffold remains separate/not implicitly authorized.
+After Frontend Foundation integrates, the next frontend scope is a fresh bounded production materialization/scaffold + direct-validation workstream.
+
+Backend production scaffold remains separate and not implicitly authorized by frontend closure.

@@ -11,11 +11,14 @@ CURRENT
 
 DOMAIN MODEL
 CLOSED
+integrated via protected-main workflow
 Whole-Domain PASS WITH HARDENING
+POST-WRITE QA PASS
 
 LOGICAL MODEL
 CLOSED
 Whole-Logical PASS WITH HARDENING
+REMOTE QA PASS
 WL-H01..WL-H12 ACTIVE
 
 PRE-PHYSICAL COHERENCE
@@ -58,7 +61,19 @@ DANTE is a personal operating system designed to help people understand, organiz
 
 Compass: **Understand life. Shape what comes next.**
 
-Important invariants include life central rather than task/calendar centric; planned vs actual preserved; user authority/authorship; material history/provenance; privacy; honest uncertainty; progressive complexity; personal-first not personal-only; AI not product authority; possibility != decision/action/preference; Effort != Execution != Outcome != Goal Progress.
+Important product invariants include:
+
+- life central, not task/calendar centric;
+- planned vs actual preserved;
+- user authority and authorship;
+- historical/material truth;
+- privacy and provenance;
+- honest uncertainty;
+- progressive complexity;
+- personal-first, not personal-only;
+- AI is not the product authority;
+- possibility != action/decision/preference;
+- Effort != Execution != Outcome != Goal Progress.
 
 ## 3. Core identity/governance invariants
 
@@ -78,29 +93,109 @@ client local state != canonical accepted effect
 
 WL-H01..WL-H12 remain active and constrain implementation.
 
-## 4. Accepted Physical target
+## 4. Logical model
 
-PostgreSQL 18.4 remains sole canonical persistence/material-history authority.
+57/57 owners are classified.
 
-Selected database capability envelope remains PostGIS, pgvector, native FTS, pg_trgm, unaccent, pg_stat_statements and PgBouncer target posture.
+Native identity owners include Person, Living Referent, Asset, Place, Content Artifact, Collective, Possibility, Goal, Plan, Activity, Event, Routine, Occurrence, Session and Observation.
 
-Offline/sync remains PowerSync + encrypted SQLite bounded local/noncanonical state:
+Reference families:
+
+```text
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
+```
+
+No implementation scope may mechanically translate 57 Logical owners into 57 services/modules/tables by assumption.
+
+## 5. Accepted Physical target
+
+### Canonical persistence
+
+```text
+PostgreSQL 18.4
+sole canonical persistence + material history authority
+```
+
+Selected PostgreSQL capabilities:
+
+- PostGIS 3.6.4;
+- pgvector 0.8.6;
+- native full-text search;
+- pg_trgm;
+- unaccent;
+- pg_stat_statements;
+- PgBouncer 1.25.2.
+
+### Offline/sync
+
+- PowerSync Service 1.25.0 Open Edition target from the accepted Physical Model;
+- encrypted SQLite local state;
+- PostgreSQL-backed PowerSync bucket storage;
+- explicit client-safe sync projections.
+
+Frontend implementation must preserve:
 
 ```text
 SQLite local copy != canonical truth
 PowerSync arrival order != conflict resolution
 offline capability = operation-specific
 local pending mutation != canonical effect
-consequential offline mutation → backend governance/revalidation → PostgreSQL
+consequential offline mutation → DANTE backend revalidation → PostgreSQL
 ```
 
-Class-A async, Restate Class-B target, object, recovery, solver and observability decisions remain unchanged and activate only at accepted boundaries.
+PowerSync JavaScript client packaging/version is selected by the closed Frontend Foundation and does not rewrite accepted Physical ownership semantics.
 
-## 5. Closed Engineering Foundation v0
+### Async/durable
 
-Repository root ownership reserves one monorepo with:
+Class A:
+
+- PostgreSQL transactional outbox + bounded worker.
+
+Class B:
+
+- Restate selected;
+- Restate Python SDK 1.0.3 / Server 1.7.2 target posture;
+- **dormant / not active** until first real Class-B durable workflow;
+- self-hosted vs Cloud EU deferred until activation.
+
+### Objects
+
+- Cloudflare R2 Standard;
+- EU jurisdiction;
+- private;
+- raw bytes only;
+- PostgreSQL owns ContentArtifact identity/metadata/provenance/visibility/retention/hash/locator semantics.
+
+### Recovery
+
+- pgBackRest 2.59.0;
+- AWS S3 Standard `eu-south-1`;
+- Versioning + accepted Object Lock GOVERNANCE posture;
+- recovery copies noncanonical;
+- anti-resurrection required;
+- **dormant** until recovery/production boundary or real rehearsal.
+
+### Solver
+
+- OR-Tools 9.15 CP-SAT candidate mechanism;
+- UNKNOWN != INFEASIBLE.
+
+### Observability
+
+- OpenTelemetry;
+- Grafana Alloy 1.18.0;
+- Grafana Cloud EU;
+- privacy-minimized operational telemetry.
+
+## 6. Engineering Foundation v0 — closed
+
+### Repository
 
 ```text
+one product monorepo
 apps/backend
 apps/web
 apps/mobile
@@ -113,11 +208,92 @@ prototypes
 .github
 ```
 
-Paths are materialized only when real content exists.
+Paths are materialized only when real content exists. Production remains in the current repository.
 
-Backend baseline remains Python 3.14.x/uv/Ruff/mypy/pytest/Hypothesis, WSL2/Linux, Docker Compose, PostgreSQL 18.4, SQLAlchemy/psycopg/Alembic, typed config, real-PostgreSQL testing and GitHub Actions/protected-main supply-chain posture.
+### Backend architecture
 
-## 6. Frontend Engineering Foundation — closed design pending integration
+- capability-first modular monolith;
+- Domain/application/adapters separated;
+- FastAPI inbound adapter/process host;
+- no universal `Repository[T]`/BaseService/service locator/global DB session;
+- cross-module transactions allowed when accepted semantics require atomicity.
+
+### Backend toolchain
+
+```text
+Python             3.14.x
+initial pin         3.14.7
+uv
+Ruff
+mypy strict
+pytest
+Hypothesis
+SQLAlchemy 2.0 stable line
+psycopg 3
+Alembic
+```
+
+### Developer environment
+
+- Linux canonical server semantics;
+- Windows 11 via WSL2/Linux;
+- one authoritative WSL-backed repository posture;
+- PyCharm WSL supported;
+- backend direct WSL inner loop;
+- Docker Compose stateful LOCAL infra;
+- future backend immutable OCI deployable.
+
+### LOCAL PostgreSQL
+
+First LOCAL DB uses real PostgreSQL 18.4 with full selected extension envelope enabled, including pg_stat_statements preload. DANTE owns reproducible LOCAL PostgreSQL build/configuration.
+
+### Persistence/migration
+
+- async DB I/O technical boundaries; Domain/application sync/pure by default;
+- one AsyncSession per concurrent task/use-case;
+- application boundary owns transaction;
+- Alembic authority/autogenerate candidate only/applied revisions immutable;
+- schema drift checked;
+- risk classification and staged/online PostgreSQL techniques;
+- expand → migrate → contract;
+- large backfills resumable/idempotent/bounded;
+- separated DB privilege classes;
+- logical-copy path distinct from pgBackRest/WAL/PITR recovery;
+- raw PROD→DEV forbidden by default; production-derived lower data sanitized/minimized.
+
+### Config/secrets
+
+- pydantic-settings typed/fail-fast immutable bootstrap config;
+- safe `.env.example` + ignored LOCAL `.env.local`;
+- minimize secrets → workload identity → provider secret manager → least privilege → rotation/revocation/audit;
+- GitHub OIDC preferred future cloud identity;
+- independent environment/workload credentials.
+
+### Testing/CI
+
+- real PostgreSQL integration, never SQLite as PostgreSQL proof;
+- unit/application/property/state-machine/architecture/migration/concurrency/provider/API/privacy layers;
+- PR/DEV/nightly/UAT tiers;
+- no arbitrary pre-code coverage floor;
+- GitHub Actions primary CI/CD;
+- real-check-before-required-check;
+- least privilege + SHA-pinned protected Actions;
+- dependency/CodeQL/secret controls when applicable;
+- GitHub-hosted runner initially;
+- future build-once/promote + attestation/SBOM release posture.
+
+## 7. Frontend Engineering Foundation — closed design / pending integration
+
+Durable branch authorities:
+
+- `docs/architecture/frontend-engineering-foundation.md`;
+- `docs/architecture/frontend-engineering-foundation-part-2.md`;
+- `docs/architecture/frontend-engineering-foundation-final-review.md`;
+- `docs/decisions/ADR-008-frontend-engineering-stack.md`;
+- `docs/decisions/ADR-009-frontend-architecture-boundaries.md`;
+- `docs/workstreams/frontend-foundation.md`.
+
+Until protected-main integration these are branch-local newer truth rather than integrated `main` authority.
 
 ### Technology baseline
 
@@ -135,79 +311,82 @@ Zod 4
 Orval 8
 ```
 
-### Architecture baseline
+### Structural posture
 
-- Web/Mobile feature-first;
-- thin router/navigation adapters;
-- public-API-only and acyclic dependency direction;
-- app-local UI/platform boundaries;
-- only real-consumer shared packages;
-- framework-free shared client cores by default;
-- formal Data Authority Matrix;
-- backend/PostgreSQL canonical accepted-effect authority;
+- feature-first Web/Mobile;
+- route/navigation adapters thin;
+- public-API-only and acyclic dependencies;
+- small real-consumer shared packages;
+- framework-free shared cores by default;
+- Data Authority Matrix before ambiguous data implementation;
+- canonical accepted effects backend/PostgreSQL only;
 - feature data firewall;
 - Mobile PowerSync app-owned initially;
 - Web online-first / PowerSync Web dormant;
 - browser PWA/service worker dormant;
 - identity-scoped local data;
-- React-free shared i18n core;
-- Temporal time boundary;
-- versioned/fail-fast Web runtime public config;
-- LOCAL/DEV/UAT/PROD only;
-- GitHub Actions primary CI/CD;
-- WSL single-checkout developer posture with native bridge direct-validation obligation.
+- React-free shared i18n;
+- versioned validated Web runtime public config;
+- exactly LOCAL/DEV/UAT/PROD;
+- Android+iOS supported targets with release gates when activated;
+- pnpm isolated preferred/direct-validation-required, hoisted evidence fallback;
+- WSL single-checkout posture, native bridge direct-validation required.
 
-### Passo-3 review
+### Final review
 
-Final review repaired root-topology inheritance, feature-cycle policy and stale current documentation/governance before closure.
-
-Result:
+Passo 3 repaired repository-layout inheritance, feature-cycle enforcement and stale CURRENT documentation/governance.
 
 ```text
 BLOCKING ARCHITECTURE DEFECTS        0
 DOMAIN/LOGICAL/PHYSICAL REOPENS      0
 CANONICAL AUTHORITY CONFLICTS        0
 REPOSITORY-LAYOUT CONFLICTS          0 after repair
+FEATURE CYCLES ALLOWED               NO
 FALSE DIRECT PASS CLAIMS             0
 CURRENT-TRUTH CLOSURE BLOCKERS       0 after repair
 ```
 
-Final review authority: `docs/architecture/frontend-engineering-foundation-final-review.md`.
+## 8. Direct-validation truth
 
-## 7. Direct-validation truth
+Never claim these passed:
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
-BACKEND SCAFFOLD         NOT STARTED
-FRONTEND SCAFFOLD        NOT STARTED
-DIRECT HG                NOT RUN
-FRONTEND DIRECT TEST     NOT RUN
-POWERSYNC DIRECT TEST    NOT RUN
+FIXTURE/HARNESS          NOT STARTED
+DIRECT HG-01..HG-12      NOT RUN
+DIRECT HG PASS           0
+LOW/BASE/HIGH            NOT RUN
 RESTORE REHEARSAL        NOT RUN
-PRODUCTION DEPLOYMENT    NOT STARTED
+MIGRATION REHEARSAL      NOT RUN
+FAILURE INJECTION        NOT RUN
+POWERSYNC DIRECT TEST    NOT RUN
+RESTATE DIRECT TEST      NOT RUN
+OBJECT RECOVERY TEST     NOT RUN
+SOLVER DIRECT TEST       NOT RUN
+FRONTEND DIRECT TEST     NOT RUN
+VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-Frontend direct validations move to post-integration materialization. A failure first reopens the affected technology/adapter/boundary unless evidence proves wider inconsistency.
+Frontend direct obligations move to post-integration materialization. Failure first reopens affected technology/adapter unless wider contradiction is proven.
 
-## 8. Current repository workstreams
+## 9. Current repository branches/workstreams
 
-- `feature/frontend-foundation` — design/architecture **CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**;
-- prototype/UX work remains separate evidence and does not authorize production implementation;
-- backend production scaffold remains separate and not started.
+- `feature/frontend-foundation` — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**;
+- separate prototype/UX workstreams remain non-production evidence;
+- Engineering Foundation v0 closed;
+- frontend/backend production scaffolds not started by this workstream.
 
-## 9. Exact next action
+## 10. Exact next action
 
 ```text
 FRONTEND
-prepare PR / protected-main integration
-only with explicit authorization
-↓
-after integration create a fresh materialization/scaffold scope
-↓
-execute direct validations progressively
-
-BACKEND
-separate production scaffold scope remains NOT STARTED
+prepare protected-main integration
+→ PR only with explicit authorization
+→ merge only with explicit authorization + expected-head safety
+→ post-merge main readback
+→ fresh materialization/scaffold/direct-validation scope
 ```
+
+Backend production scaffold remains separate/not started and requires its own bounded gate.
 
 Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation decisions without concrete contradictory evidence or a materially changed requirement.
