@@ -29,8 +29,8 @@ class DatabaseRuntime:
             async with timeout(self.readiness_timeout_seconds):
                 async with self.engine.connect() as connection:
                     result = await connection.execute(text("SELECT 1"))
-                    return result.scalar_one() == 1
-        except (OSError, SQLAlchemyError, TimeoutError):
+                    return bool(result.scalar_one() == 1)
+        except OSError, SQLAlchemyError, TimeoutError:
             return False
 
     async def dispose(self) -> None:
