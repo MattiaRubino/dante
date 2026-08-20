@@ -4,16 +4,14 @@ This directory is the durable documentation authority for DANTE.
 
 ## Current authority order
 
-When sources conflict, use this order:
+When sources conflict:
 
-1. current `main` code/migrations/tests and current accepted model/ADR;
+1. current `main` code/migrations/tests and accepted model/ADR;
 2. current durable product/domain/logical/architecture/engineering docs on `main`;
 3. active bounded workstream handoff for newer unmerged work;
 4. other current sources inside that workstream;
 5. historical evidence/closed branches/Git history;
 6. conversation memory.
-
-Conversation instructions may clarify intent but do not silently override durable repository truth.
 
 ## Current lifecycle status
 
@@ -24,9 +22,12 @@ Logical Model                      CLOSED
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
+Frontend Foundation Passo 1        DESIGN COMPLETE / branch-local
+Frontend Foundation Passo 2        DESIGN COMPLETE / branch-local
+Frontend Foundation Passo 3        CLEAN REVIEW IN PROGRESS
 Production backend scaffold        NOT STARTED
-Concrete PostgreSQL schema         NOT STARTED
-Direct HG / PSV                    NOT RUN
+Production frontend scaffold       NOT STARTED
+Direct HG / frontend PSV           NOT RUN
 ```
 
 ## Mandatory entry points
@@ -47,14 +48,22 @@ Direct HG / PSV                    NOT RUN
 
 ### Engineering Foundation — closed
 
-- `workstreams/engineering-foundation.md` — closure/handoff and exact next boundary
-- `development/engineering-foundation-v0.md` — master engineering contract
-- `development/repository-layout-v0.md` — monorepo/path ownership
-- `development/application-structure-v0.md` — backend modular architecture
-- `development/environments-and-promotion-v0.md` — LOCAL/DEV/UAT/PROD
-- `development/config-and-secrets-v0.md` — backend configuration/secrets
-- `development/toolchain-and-dx-v0.md` — Python/WSL2/PyCharm/Docker/PostgreSQL local developer baseline
-- `development/testing-and-ci-v0.md` — backend testing/CI/security/supply-chain baseline
+- `workstreams/engineering-foundation.md`
+- `development/engineering-foundation-v0.md`
+- `development/repository-layout-v0.md`
+- `development/application-structure-v0.md`
+- `development/environments-and-promotion-v0.md`
+- `development/config-and-secrets-v0.md`
+- `development/toolchain-and-dx-v0.md`
+- `development/testing-and-ci-v0.md`
+
+### Frontend Engineering Foundation — active branch-local
+
+- `workstreams/frontend-foundation.md` — live save-game/current step
+- `architecture/frontend-engineering-foundation.md` — Passo-1 technology specification
+- `architecture/frontend-engineering-foundation-part-2.md` — Passo-2 application/package/data-authority specification
+- `decisions/ADR-008-frontend-engineering-stack.md` — technology decision
+- `decisions/ADR-009-frontend-architecture-boundaries.md` — structural decision
 
 ### Architecture
 
@@ -64,55 +73,45 @@ Direct HG / PSV                    NOT RUN
 
 ### Domain / Logical / Physical
 
-Use the model indexes and their linked accepted sources. For any Physical-consuming implementation, at minimum reread:
+Use their indexes and accepted linked sources. Any Physical-consuming implementation also consumes the post-selection validation register.
 
-- PM-11 accepted target;
-- PM-12 selected stack/operational posture;
-- post-selection validation register.
+Historical evidence remains historical.
 
-Historical evidence remains historical. Do not rewrite it to pretend it knew later decisions.
+## Current engineering direction
 
-## Engineering Foundation final decisions
-
-The closed backend/repository baseline is:
+One product monorepo with accepted root ownership for:
 
 ```text
-one product monorepo
 apps/backend + apps/web + apps/mobile
-backend capability-first modular monolith
-Python 3.14.x / initial 3.14.7
-uv / Ruff / mypy strict / pytest / Hypothesis
-Windows 11 host supported via WSL2/Linux backend semantics
-PyCharm WSL interpreter supported; repo remains IDE-neutral
-Docker Compose for LOCAL stateful infrastructure
-PostgreSQL 18.4 with full selected extension envelope enabled from first LOCAL DB
-SQLAlchemy 2.0 stable line + psycopg 3 + Alembic
-risk-governed migrations / logical copy / recovery separation
-typed pydantic-settings configuration
-workload identity + secret manager + OIDC target
-risk-layered real-PostgreSQL testing
-GitHub Actions / protected main / supply-chain hardening
+packages
+infra
+tooling
+tests/system
+docs
+prototypes
+.github
 ```
 
-Frontend internal tooling/testing/release implementation is explicitly deferred to the dedicated frontend workstream.
+Paths are created only when real content exists.
 
-Cloud/compute provider and IaC engine are explicitly deferred until first remote infrastructure.
+Backend Engineering Foundation is closed. Frontend Passo 1 and Passo 2 are design-complete on the active branch and Passo 3 clean review/closure is next.
+
+Frontend durable rules include feature-first platform-specific apps, public-API-only/acyclic dependencies, real-consumer shared packages, explicit Data Authority Matrix, backend canonical effect authority, Web online-first, mobile local/offline PowerSync posture, PWA/service-worker dormant, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
+
+Cloud/backend compute provider and IaC engine remain deferred until their real infrastructure boundary.
 
 ## Repository identity
 
-Production implementation continues in the existing repository. Creating a new repo is not the plan.
-
-The historical GitHub repository name `lifeos` may be renamed to `dante` in a separate governance operation. The next conversation should address that small decision/action before the production scaffold unless explicitly deferred.
+Continue in the existing repository. Creating a new implementation repo is not the plan.
 
 ## Exact next handoff
 
 ```text
-1. Mandatory bootstrap from current main.
-2. Keep current repository; decide/execute `lifeos → dante` rename or explicitly defer.
-3. Open a fresh exact Git write gate for production scaffold.
-4. Scaffold apps/backend + LOCAL PostgreSQL/migration/test/config/CI baseline only.
-5. Run scaffold QA.
-6. Only then begin concrete Logical → PostgreSQL implementation.
+1. Complete Frontend Foundation Passo 3 clean review.
+2. If blockers == 0, record frontend design/architecture closure.
+3. Prepare/integrate through protected main only with explicit authorization.
+4. After integration, open a new exact scope for production frontend materialization/direct validation.
+5. Backend scaffold remains a separate not-started implementation scope.
 ```
 
-No production application code or concrete schema is authorized merely by Engineering Foundation closure; every next write still requires its own exact scope.
+No production code/direct PASS is authorized merely by design closure.

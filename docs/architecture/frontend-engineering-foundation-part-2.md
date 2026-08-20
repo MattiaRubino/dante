@@ -1,29 +1,23 @@
 # Frontend Engineering Foundation — Part 2: Application Architecture and Structure
 
-- Status: **CURRENT WORKSTREAM SPECIFICATION — PASSO 2 DESIGN COMPLETE / PENDING PASSO 3 REVIEW**
+- Status: **CURRENT WORKSTREAM SPECIFICATION — PASSO 2 DESIGN COMPLETE / PASSO 3 REVIEW REPAIRED**
 - Workstream branch: `feature/frontend-foundation`
 - Decision date: 2026-08-20
 - Companion technology specification: [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md)
+- Repository-layout authority: [`../development/repository-layout-v0.md`](../development/repository-layout-v0.md)
 - Decision ADR: [`../decisions/ADR-009-frontend-architecture-boundaries.md`](../decisions/ADR-009-frontend-architecture-boundaries.md)
 - Production frontend code: **NOT STARTED**
 - Direct implementation validation: **NOT STARTED**
 
 ## 1. Purpose
 
-This document fixes the durable application/package architecture for the DANTE Web and Mobile clients after Passo 1 selected the frontend technology stack.
+This document fixes the durable Web/Mobile application, package, ownership and dependency architecture after Passo 1 selected the frontend technology stack.
 
-The objective is not to predict every future library. The objective is to make library upgrades, provider substitutions and platform evolution local rather than architectural rewrites.
+The goal is not to freeze library versions forever. The goal is to keep future framework/provider upgrades local so they do not force a frontend architectural rewrite.
 
-This specification consumes and does not reopen:
+This specification consumes and does not reopen the accepted Product, Domain, Logical, Physical, Engineering Foundation and repository-layout authorities.
 
-- Product/North Star;
-- closed Domain Model;
-- closed Logical Model and WL-H01..WL-H12;
-- accepted Physical Model;
-- closed Engineering Foundation v0;
-- Passo-1 frontend technology decisions in `frontend-engineering-foundation.md` and ADR-008.
-
-Key status discipline remains:
+Status discipline:
 
 ```text
 selected != installed
@@ -32,11 +26,11 @@ configured != directly validated
 architecture accepted != implementation evidence
 ```
 
-## 2. Repository target map
+## 2. Repository topology and ownership
 
-The production repository remains one DANTE monorepo.
+The repository root topology was already accepted by Engineering Foundation v0. Frontend Foundation **extends the deferred internals of `apps/web`, `apps/mobile` and real frontend packages; it does not redefine the root topology**.
 
-Conceptual target:
+Accepted conceptual repository shape:
 
 ```text
 dante/
@@ -45,8 +39,15 @@ dante/
 │   ├── web/
 │   └── mobile/
 ├── packages/
-├── prototypes/
+├── infra/
+│   ├── local/
+│   ├── compose/
+│   └── iac/
+├── tooling/
+├── tests/
+│   └── system/
 ├── docs/
+├── prototypes/
 ├── .github/
 ├── package.json
 ├── pnpm-workspace.yaml
@@ -57,20 +58,39 @@ dante/
 └── prettier.config.mjs
 ```
 
-This is an **authorized shape**, not authorization to create every path immediately.
+The shape is an ownership contract, **not** authorization to create empty directories. Paths are materialized only when real content exists.
 
-Rules:
+Root ownership remains:
 
-- directories/packages are materialized only when they have real content and consumers;
-- `apps/backend`, `apps/web`, `apps/mobile` are sibling deployable application boundaries;
-- this Frontend Foundation does not invent a root `infra/` directory that does not yet exist;
-- future infrastructure layout remains owned by the relevant infrastructure/backend governance scope;
-- bounded Web-delivery code may be physically co-located with the Web app when toolchain coupling makes that the cleanest deployable unit, while remaining semantically delivery infrastructure rather than product/business logic;
-- `prototypes/` is evidence/oracle only and production code must not import from it.
+- `apps/*` — deployable applications;
+- `packages/*` — only genuine shared artifacts/contracts;
+- `infra/*` — infrastructure definitions, never DANTE business logic;
+- `tooling/*` — deterministic repository engineering utilities only;
+- `tests/system/*` — true black-box/cross-application/deployed-system validation only;
+- `docs/*` — durable project authority;
+- `prototypes/*` — non-production evidence/oracle.
+
+Production apps/packages must never import from `prototypes/`.
+
+### 2.1 Web-delivery code versus infrastructure authority
+
+A small Cloudflare Worker tightly coupled to the Web deployable may be physically co-located under `apps/web/worker/` when Wrangler/Vite deployment makes that the cleanest application delivery unit.
+
+Semantic ownership remains bounded:
+
+```text
+apps/web/worker
+application-specific Web delivery/bootstrap adapter
+
+infra/*
+provider/infrastructure desired-state ownership when materialized
+```
+
+The Web Worker may expose bounded public bootstrap configuration such as `/client-config`; it must not become a DANTE BFF, business backend, canonical-state owner, persistence layer or general user-data processing service.
 
 ## 3. Web application boundary
 
-Target internal shape when materialized:
+Target internal shape when real content exists:
 
 ```text
 apps/web/
@@ -82,7 +102,7 @@ apps/web/
 │   ├── ui/
 │   ├── platform/
 │   └── config/
-├── worker/
+├── worker/                    # only when Web delivery adapter is materialized
 ├── tests/
 │   └── e2e/
 ├── .storybook/
@@ -94,41 +114,23 @@ apps/web/
 └── package.json
 ```
 
-### 3.1 Web responsibilities
+Responsibilities:
 
-- `bootstrap/` is the composition root: providers, startup ordering, runtime config validation and app assembly;
-- `routes/` contains TanStack Router route adapters, guards, search/path validation, preload/orchestration and feature entry selection;
-- `features/` contains vertical client capabilities;
-- `ui/` owns DANTE Web design-system implementation;
-- `platform/` owns browser-specific capabilities such as session adapter, observability adapter, browser integrations and optional future sync adapter;
-- `config/` owns typed public runtime configuration interfaces/validation;
-- `worker/` may own Cloudflare delivery/bootstrap endpoints but **must not** become a DANTE BFF, business backend, canonical-state owner or user-data processing layer.
+- `bootstrap/` — composition root, providers, startup ordering, validated config and application assembly;
+- `routes/` — TanStack Router adapters, typed path/search state, guards, preload/orchestration and feature entry selection;
+- `features/` — vertical client capabilities;
+- `ui/` — DANTE Web design-system implementation;
+- `platform/` — browser/session/observability/browser integration and optional future Web sync adapters;
+- `config/` — typed public runtime config schema/access;
+- `worker/` — bounded Web delivery/bootstrap adapter only.
 
-### 3.2 Router rule
+Route files do not own product rules, direct persistence semantics, feature-private data adapters, canonical mutation decisions or large feature UI implementations.
 
-Route files are adapters, not feature implementations.
-
-They may own:
-
-- route parameters;
-- typed URL/search state;
-- navigation guards;
-- preload/orchestration;
-- feature entry composition.
-
-They must not own:
-
-- product business rules;
-- direct database semantics;
-- feature-private data adapters;
-- large UI implementations;
-- canonical mutation decisions.
-
-`routeTree.gen.ts` is generated, committed runtime source, never hand edited and subject to deterministic drift checks.
+`routeTree.gen.ts` is generated, committed runtime source, never hand edited and drift checked.
 
 ## 4. Mobile application boundary
 
-Target internal shape when materialized:
+Target internal shape when real content exists:
 
 ```text
 apps/mobile/
@@ -147,20 +149,20 @@ apps/mobile/
 └── package.json
 ```
 
-### 4.1 Mobile responsibilities
+Responsibilities:
 
-- `app/` contains Expo Router navigation adapters only;
-- `src/bootstrap/` owns provider/runtime composition;
-- `src/features/` contains native feature implementations;
-- `src/ui/` owns DANTE Native design-system implementation;
-- `src/platform/` owns device/native capabilities, session adapter, PowerSync lifecycle, secure-storage adapters, observability adapters and native integrations;
-- `src/config/` owns typed public mobile configuration validation.
+- `app/` — Expo Router navigation adapters only;
+- `src/bootstrap/` — app/runtime/provider composition;
+- `src/features/` — native feature implementations;
+- `src/ui/` — DANTE Native design system;
+- `src/platform/` — native/device/session/PowerSync/secure-storage/observability integrations;
+- `src/config/` — typed public mobile config validation.
 
-Expo Router files must remain thin navigation adapters and consume feature public APIs rather than feature internals.
+Expo route files consume feature public APIs rather than feature internals.
 
 ## 5. Feature-first architecture
 
-A feature may grow conceptually into:
+A feature may grow into:
 
 ```text
 features/<feature>/
@@ -170,22 +172,20 @@ features/<feature>/
 └── ui/
 ```
 
-These subdirectories are **not mandatory boilerplate**. A small feature stays small.
+Subdirectories are optional and appear only when complexity justifies them.
 
-Meaning:
+- `index.ts` — feature public API;
+- `model/` — view/input/client workflow models and pure client logic;
+- `data/` — feature-specific API/Query/PowerSync/governed-command adapters;
+- `ui/` — platform-specific feature presentation.
 
-- `index.ts` is the feature public API;
-- `model/` owns view/input/client workflow models and pure feature logic;
-- `data/` owns the feature-specific boundary to API, TanStack Query, PowerSync or governed command adapters;
-- `ui/` owns platform-specific feature presentation.
+Do not create repository-wide dumping grounds such as generic `common/`, `shared/`, `helpers/`, `utils/`, `services/`, `hooks/` or `misc/` without a precise owner and responsibility.
 
-Forbidden generic dumping-ground directories include repository-wide `common/`, `shared/`, `helpers/`, `utils/`, `services/`, `hooks/` or `misc/` without a concrete owner/boundary.
+Hooks live with the feature/platform/UI system that owns their semantics.
 
-A hook belongs to the feature/platform/UI system that owns its semantics.
+## 6. Dependency direction, public APIs and cycles
 
-## 6. Dependency direction and public APIs
-
-Architecture is enforced, not merely documented.
+Architecture is executable policy, not naming convention.
 
 High-level direction:
 
@@ -201,7 +201,7 @@ features
  packages
 ```
 
-Mandatory forbidden directions:
+Forbidden directions:
 
 ```text
 packages                X→ apps
@@ -210,50 +210,53 @@ mobile                  X→ web
 ui                      X→ features
 platform                X→ features
 feature A internals     X→ feature B internals
-prototypes              X→ production apps/packages
+production              X→ prototypes
+infra                   X→ application-source ownership
 ```
 
-### 6.1 Public-API-only rule
+Cross-feature use may occur only through feature public APIs and must remain acyclic.
 
-The privileged layers are not backdoors.
+```text
+FEATURE DEPENDENCY CYCLES
+FORBIDDEN
+```
+
+If feature A and feature B require each other, the design must be repaired by moving orchestration to an appropriate higher owner/capability or extracting a genuinely shared lower-level semantic boundary. Cycles are not solved with deep-import exceptions.
+
+### 6.1 Public-API-only privileged layers
 
 ```text
 bootstrap
 may know all authorized layers
-ONLY through their public APIs
+ONLY through public APIs
 
 routes
 may know features
 ONLY through feature public APIs
 ```
 
-Therefore this is permitted:
-
-```ts
-import { ProfileFeature } from "@/features/profile";
-```
-
-and deep/private cross-boundary imports are forbidden even from bootstrap or route code.
+Deep/private cross-boundary imports remain forbidden even in composition/router code.
 
 ### 6.2 Enforcement
 
-Materialization must enforce the architecture through a combination of:
+Materialization enforces boundaries using the appropriate combination of:
 
 - package `exports`;
 - ESLint flat config;
-- typed rules where useful;
-- `eslint-plugin-boundaries` or equivalent accepted boundary enforcement;
+- typed lint rules where useful;
+- `eslint-plugin-boundaries` or an equivalent accepted architecture-rule mechanism;
 - restricted/deep-import rules;
 - pnpm workspace isolation;
+- feature/package cycle detection;
 - architecture tests/checks.
 
-A boundary violation must become a local/CI failure, not a review convention only.
+A violation fails locally/CI rather than remaining a review-only convention.
 
 ## 7. Shared-package policy
 
-Shared packages exist only for real cross-application semantics.
+Shared packages exist only for real multi-consumer semantics.
 
-Initial package candidates with genuine Web+Mobile consumers:
+Initial cross-platform package candidates with genuine Web+Mobile use:
 
 ```text
 @dante/design-tokens
@@ -263,18 +266,18 @@ Initial package candidates with genuine Web+Mobile consumers:
 
 `@dante/api-client` is created only when real FastAPI OpenAPI exists.
 
-Shared feature packages are extracted only after real cross-platform reuse exists:
+Shared feature packages are extracted only after actual cross-platform reuse exists:
 
 ```text
 packages/features/<capability>
 → @dante/feature-<capability>
 ```
 
-Code that merely *looks reusable* is not sufficient reason to extract a package.
+Code that merely looks reusable is not sufficient reason to extract a package.
 
-### 7.1 Shared feature-core prohibition
+### 7.1 Frontend shared brain is not backend authority
 
-A shared frontend feature core may contain only platform-neutral client logic such as:
+A shared frontend feature core may contain platform-neutral client logic such as:
 
 - pure state machines;
 - frontend workflow logic;
@@ -283,7 +286,7 @@ A shared frontend feature core may contain only platform-neutral client logic su
 - draft/input schemas;
 - frontend validation and UX policy.
 
-It must not own:
+It may never own:
 
 ```text
 canonical Domain invariants
@@ -303,37 +306,27 @@ frontend shared brain
 DANTE backend/domain/application authority
 ```
 
-Frontend validation improves UX and client-boundary safety. Backend/application validation remains authoritative for consequential acceptance.
+Frontend validation improves UX/client-boundary safety. Backend/application validation governs consequential acceptance.
 
-### 7.2 Shared core framework posture
+### 7.2 Framework-free shared core default
 
-Shared core packages are framework-free by default.
-
-They must not depend on React, React Native, Expo, Vite, DOM APIs, platform storage, PowerSync implementation or TanStack Query implementation unless a later package-specific architecture decision proves that dependency belongs there.
+Shared core packages are framework/platform-free by default. They do not depend on React, React Native, Expo, Vite, DOM APIs, platform storage, PowerSync implementation or TanStack Query implementation unless a later package-specific decision demonstrates that dependency belongs there.
 
 ## 8. Workspace/package semantics
 
-Internal packages are:
-
-```text
-private
-workspace-only
-not independently published by default
-```
+Internal packages are private, workspace-only and not independently published by default.
 
 Internal dependencies use `workspace:*`.
 
-Package public surfaces use `package.json` `exports`; deep imports into internal paths are forbidden.
+Package public surfaces use `package.json` `exports`; private/deep imports are forbidden.
 
-Internal shared packages are source-first TypeScript by default: Vite/Metro consume workspace source directly rather than forcing a mini build/publish pipeline for every internal package.
+Shared packages are source-first TypeScript by default so Vite/Metro can consume workspace source without forcing a mini publish/build pipeline for every package.
 
 Independent package versioning/Changesets is not introduced without a real distribution/ownership requirement.
 
-Workspace cycles are forbidden and must fail validation.
+Workspace cycles are forbidden and validated.
 
 ## 9. pnpm dependency-layout posture
-
-Selected baseline:
 
 ```text
 pnpm isolated dependency layout
@@ -341,28 +334,28 @@ PREFERRED BASELINE
 DIRECT VALIDATION REQUIRED
 ```
 
-Because native React Native dependencies can have resolution/layout constraints, the accepted fallback is:
+Accepted fallback:
 
 ```text
 nodeLinker: hoisted
-ALLOWED FALLBACK
+ALLOWED
 ONLY when concrete native/toolchain evidence requires it
 ```
 
-Changing the linker because of proven native compatibility constraints does **not** reopen the monorepo architecture or package-manager decision.
+An evidence-driven linker fallback does not reopen pnpm or the monorepo architecture.
 
 Supply-chain posture at materialization includes:
 
 - committed lockfile;
 - frozen lockfile in CI;
-- explicit `minimumReleaseAge`/strict policy as accepted for pnpm 11;
-- no blanket approval of dependency lifecycle scripts;
-- explicit native dependency review;
-- grouped/controlled dependency updates rather than blind native auto-merge.
+- explicit accepted pnpm release-age policy;
+- no blanket dependency lifecycle-script approval;
+- native dependency review;
+- grouped/controlled dependency update PRs rather than blind native auto-merge.
 
 ## 10. Data Authority Matrix
 
-Every persisted/read/write path must declare its authority class before implementation. Ambiguous authority blocks implementation until classified.
+Every persisted/read/write path declares authority before implementation. Ambiguous authority blocks implementation until classified.
 
 | State/effect class | Authority/owner | Client mechanism |
 | --- | --- | --- |
@@ -376,8 +369,6 @@ Every persisted/read/write path must declare its authority class before implemen
 | form draft state | client | TanStack Form |
 | component transient state | client | React |
 | cross-tree transient UI | client | Zustand only when justified |
-
-### 10.1 No universal single-class fiction
 
 An offline-eligible operation intentionally crosses several stages:
 
@@ -393,9 +384,7 @@ canonical commit OR rejection
 reconciliation
 ```
 
-Therefore operation classification must preserve the distinction between **local staging** and **canonical effect authority**.
-
-### 10.2 No duplicated authority
+Local staging is never canonical effect authority.
 
 Forbidden by default:
 
@@ -405,27 +394,19 @@ owned simultaneously by
 PowerSync + TanStack Query cache + Zustand + ad-hoc fetch state
 ```
 
-A feature's `data/` boundary chooses the appropriate path while hiding implementation mechanics from feature UI.
-
 ## 11. Feature data firewall
 
-Feature UI must not directly import or depend on transport/sync internals as its primary architecture.
-
-Target:
+Feature UI consumes feature-specific data/model boundaries rather than being architecturally coupled directly to HTTP, PowerSync, query-cache or storage internals.
 
 ```text
 feature UI
    ↓
-feature data/model public boundary
+feature data/model boundary
    ↓
-┌───────────────┬────────────────┬──────────────────┐
-│               │                │                  │
-PowerSync       TanStack Query   governed command  other bounded adapter
-│               │                │
-SQLite          FastAPI          FastAPI
+PowerSync | TanStack Query | governed command | bounded adapter
 ```
 
-Do not create a generic frontend `Repository<T>` abstraction. Use capability/operation-specific queries and commands with concrete meaning.
+No generic frontend `Repository<T>` abstraction is introduced. Queries/commands remain capability/operation specific.
 
 ## 12. API/codegen boundary
 
@@ -433,13 +414,13 @@ When real FastAPI OpenAPI exists:
 
 ```text
 FastAPI
-  ↓ OpenAPI
+↓ OpenAPI
 Orval
-  ↓
+↓
 @dante/api-client
 ```
 
-Target package shape:
+Target package:
 
 ```text
 packages/api-client/
@@ -453,116 +434,98 @@ packages/api-client/
 Rules:
 
 - generated code is never hand edited;
-- the package is React-free and router-free;
-- the generated client does not own session storage, environment reading or canonical error policy;
-- callers inject/configure transport/session capabilities at app boundaries;
-- do not generate blanket TanStack Query ownership for data intentionally served through PowerSync;
+- package is React/router free;
+- generated client does not own session storage, env reading or canonical error policy;
+- app boundaries supply transport/session configuration;
+- do not generate blanket Query ownership for PowerSync-backed reads;
 - feature `data/` adapters map transport/sync errors into feature-meaningful states.
 
 ## 13. Generated-source policy
 
-Generated artifacts that are required runtime/reviewable source are committed when appropriate, including:
+Runtime/reviewable generated source is committed where appropriate, including:
 
 - TanStack `routeTree.gen.ts`;
 - Orval generated transport code;
 - generated Web/Native design-token outputs;
-- generated i18n key/type metadata where activated.
-
-Policy:
+- generated i18n key/type metadata when activated.
 
 ```text
 source authority
 → deterministic generator
 → generated source committed
 → CI regeneration
-→ git diff must be empty
+→ clean diff required
 ```
 
-No generated artifact becomes semantic authority merely because it is committed.
+Generated output never becomes semantic authority merely because it is committed.
 
-## 14. PowerSync and offline ownership
+## 14. PowerSync/offline ownership
 
-### 14.1 Mobile
+### Mobile
 
-Mobile PowerSync runtime is initially app-owned:
+Initial PowerSync runtime ownership:
 
 ```text
 apps/mobile/src/platform/sync/
 ```
 
-It owns infrastructure concerns such as:
+It owns database lifecycle, PowerSync connection, OP-SQLite/SQLCipher integration, upload connector, sync status and identity-scoped DB lifecycle. Feature-specific query/operation semantics stay inside feature data boundaries.
 
-- database lifecycle;
-- PowerSync connection lifecycle;
-- OP-SQLite/SQLCipher integration;
-- upload connector;
-- sync status;
-- identity-scoped local-database lifecycle.
+Do not create `packages/sync` for one consumer.
 
-Feature-specific queries/operations remain in feature `data/` boundaries.
-
-Do **not** create `packages/sync` for one consumer. Extract only if a second real runtime shares meaningful implementation.
-
-### 14.2 Web
-
-Web baseline is:
+### Web
 
 ```text
-online-first
+online-first baseline
 PowerSync Web local database = AVAILABLE / DORMANT
 ```
 
-Activation requires a concrete product/runtime requirement and direct browser validation. Feature data boundaries must permit later activation without feature/UI restructuring.
+Future activation requires a concrete requirement and direct browser validation. Feature data boundaries must permit activation without feature/UI restructuring.
 
-### 14.3 Browser PWA/service worker
+### Browser PWA/service worker
 
 ```text
 PWA / browser service worker
 DORMANT / NOT BASELINE
 ```
 
-Do not introduce a second browser offline/cache lifecycle simply as a generic performance enhancement. Activation requires an explicit product/runtime requirement and cache/session/update design.
+Do not create a second browser offline/cache lifecycle as a generic optimization. Activation requires explicit product/runtime, cache, session and update design.
 
-Cloudflare Worker delivery infrastructure is a separate concept from browser Service Workers.
+Cloudflare Workers and browser Service Workers are separate concepts.
 
-## 15. Local-data identity isolation
+## 15. Identity-scoped local data
 
 Cross-account local-data leakage is architecturally forbidden.
 
-Local DB namespace/key/lifecycle must be scoped to the authenticated identity/principal context accepted by the eventual security contract.
+Local DB namespace/key/lifecycle is scoped to the accepted authenticated identity/principal context.
 
-Account/session switching must support a safe sequence equivalent to:
+Safe identity switching must support a sequence equivalent to:
 
 ```text
-stop synchronization
-close local database
-clear in-memory identity-sensitive state
+stop sync
+close DB
+clear identity-sensitive memory
 change identity scope
-open the correct database/key
-resume appropriate synchronization
+open correct DB/key
+resume appropriate sync
 ```
 
-Exact logout retention/wipe policy remains dependent on the accepted AuthN/security contract, but one user's local data must never become another user's local view by reuse accident.
+Exact logout retention/wipe policy waits for the real AuthN/security contract. Reusing one user's local data as another user's view is never acceptable.
 
 ## 16. Auth/session boundary
 
-Frontend Foundation does not invent JWT/cookie/refresh-token/provider contracts before backend AuthN/AuthZ design exists.
+Frontend Foundation does not invent JWT/cookie/refresh-token/provider contracts before backend security design.
 
-Each app owns a platform session adapter:
+App-local adapters:
 
 ```text
 apps/web/src/platform/session/
 apps/mobile/src/platform/session/
 ```
 
-Features consume a session capability/public API, not storage mechanics.
+Features consume session public capability, not storage mechanics.
 
-Rules:
-
-- `@dante/api-client` remains auth-storage agnostic;
-- Zustand is not session authority;
-- mobile secrets/tokens, if required, use appropriate platform secure storage rather than ordinary async/plain storage;
-- Web security choices are made with the real backend/session contract, not guessed now.
+`@dante/api-client` is auth-storage agnostic. Zustand is not session authority. Mobile sensitive credentials/tokens, if needed, use platform secure storage rather than ordinary plain/async storage.
 
 ## 17. UI/design-system ownership
 
@@ -586,22 +549,16 @@ apps/mobile/src/ui/
 └── motion/
 ```
 
-Platform UI layers shield feature code from direct dependence on low-level libraries where practical.
-
-Typical ownership:
+DANTE UI layers shield features from low-level vendor primitives where practical.
 
 ```text
 Web UI     → Radix / Tailwind / CSS vars / Motion / Lucide
 Mobile UI  → RN primitives / StyleSheet / Reanimated / Gesture Handler / Lucide Native
 ```
 
-Features consume DANTE UI components/primitives rather than spreading vendor primitives throughout feature code.
-
 ## 18. Design-token authority
 
 `@dante/design-tokens` owns one semantic token source and deterministic platform outputs.
-
-Conceptual shape:
 
 ```text
 packages/design-tokens/
@@ -609,18 +566,15 @@ packages/design-tokens/
 │   ├── primitives.*
 │   ├── semantic.*
 │   └── platform overrides when justified
-├── generated/
-│   ├── web.css
-│   └── native.ts
-└── compiler/config
+└── generated/
+    ├── web.css
+    └── native.ts
 ```
-
-Important rule:
 
 ```text
 shared semantic token
 !=
-identical pixel value on Web and Mobile
+identical pixel value Web/Mobile
 ```
 
 Meaning is shared; platform representation may differ deliberately.
@@ -629,44 +583,21 @@ Meaning is shared; platform representation may differ deliberately.
 
 `@dante/i18n` is framework-free.
 
-It owns:
+It owns supported locales, resource contracts/resources, keys/types, fallback rules and common semantic messages.
 
-- supported locales;
-- translation resources/contracts;
-- keys/types;
-- fallback rules;
-- common semantic messages.
+It does not own React integration, `react-i18next` bootstrap, browser/native detection or persistence/storage.
 
-It does **not** own:
-
-- React integration;
-- `react-i18next` bootstrap;
-- browser/native language detection;
-- persistence/storage.
-
-Web/Mobile bootstrap layers wire `react-i18next` and platform detection/persistence as needed.
-
-Base resources required for core UX should be bundle-available rather than requiring network access to render the application language.
+Web/Mobile bootstrap wires React integration and platform detection/persistence. Core UX resources are bundle-available rather than network-required.
 
 ## 20. Time ownership
 
-`@dante/time` is the semantic frontend time boundary.
+`@dante/time` is the semantic frontend time boundary and distinguishes Temporal concepts such as Instant, PlainDate, PlainTime, ZonedDateTime and Duration.
 
-Use Temporal concepts according to meaning:
-
-- Instant;
-- PlainDate;
-- PlainTime;
-- ZonedDateTime;
-- Duration.
-
-JavaScript `Date` is not the universal DANTE semantic time type.
-
-Transport strings are converted/mapped at data boundaries rather than through ad-hoc component-level parsing.
+JavaScript `Date` is not the universal DANTE semantic time type. Transport strings are mapped at data boundaries, not parsed ad hoc in components.
 
 ## 21. Environment vocabulary
 
-DANTE uses exactly the existing lifecycle vocabulary:
+Frontend uses the existing DANTE vocabulary only:
 
 ```text
 LOCAL
@@ -675,31 +606,17 @@ UAT
 PROD
 ```
 
-Frontend tools may have technical profile/channel names, but documentation and deployment meaning map back to those four contexts.
-
-No separate permanent frontend environment taxonomy is created.
+Tool-specific profile/channel names map to these contexts. No parallel permanent frontend environment taxonomy exists.
 
 ## 22. Web runtime public configuration
 
-The Web delivery target supports one immutable SPA artifact promoted across environments while environment-specific **public** configuration is supplied at runtime.
+One immutable Web SPA artifact can be promoted across DEV/UAT/PROD where the delivery platform permits while environment-specific **public** configuration is supplied at runtime.
 
-Conceptual flow:
+A bounded `/client-config` endpoint may be served by the app-coupled delivery Worker.
 
-```text
-same Web artifact
-↓
-DEV
-↓
-UAT
-↓
-PROD
-```
+The config is versioned and validated before normal bootstrap.
 
-A bounded delivery endpoint such as `/client-config` may be served by the co-located Cloudflare Worker.
-
-The configuration is versioned and validated before application bootstrap.
-
-Minimum contract shape conceptually includes:
+Conceptual contract:
 
 ```text
 schemaVersion
@@ -712,130 +629,83 @@ release metadata
 
 Rules:
 
-- Zod validates the entire config at bootstrap;
-- unsupported `schemaVersion` fails clearly before normal app operation;
-- components do not read scattered `import.meta.env` values as application configuration;
-- client configuration is public by definition and contains no secrets;
-- Worker delivery code does not become business/API authority.
+- Zod validates the whole config;
+- unsupported schema version fails clearly before normal operation;
+- components do not read scattered `import.meta.env` config;
+- client config is public and contains no secrets;
+- delivery Worker has no business/API authority.
 
-## 23. Mobile configuration/release contexts
+## 23. Mobile configuration and release activation
 
-Expo/EAS technical profiles/channels map to DANTE `LOCAL/DEV/UAT/PROD` semantics.
-
-Platform release activation is independent:
+EAS technical profiles/channels map to DANTE LOCAL/DEV/UAT/PROD semantics.
 
 ```text
 Android
 SUPPORTED ARCHITECTURAL TARGET
 
- iOS
+iOS
 SUPPORTED ARCHITECTURAL TARGET
 ```
 
-A platform's signed-build/device/store gates are mandatory only when that platform is an activated release target.
+Signed-build/device/store gates are mandatory when that platform is an activated release target. An inactive iOS release does not block a Web/Android release; activating iOS later requires no architectural rewrite.
 
-Not releasing iOS initially does not block an accepted Web/Android release. Activating iOS later does not require a frontend architecture redesign.
-
-EAS Update runtime compatibility remains governed; OTA must never deliver JS/assets incompatible with the installed native runtime.
+EAS Update remains runtime-compatibility governed; OTA never delivers code incompatible with the installed native runtime.
 
 ## 24. Observability/error boundary
 
-Sentry remains behind app/platform integration boundaries rather than being imported arbitrarily throughout feature code.
+Sentry stays behind bootstrap/error-boundary/platform-observability integrations and a small set of authorized instrumentation points.
 
-Preferred ownership:
-
-```text
-bootstrap
-error boundaries
-platform/observability
-few authorized instrumentation points
-```
-
-Feature UI consumes semantic error states, not raw HTTP/PowerSync/vendor error objects as its core contract.
+Feature UI consumes semantic errors rather than raw HTTP/PowerSync/vendor errors as its core contract.
 
 Privacy defaults:
 
 - minimize personal/sensitive payloads;
-- no observability shadow personal-data store;
-- Session Replay remains off until an explicit privacy/product review activates it;
-- release/source-map validation occurs when Sentry activation becomes real.
+- no telemetry shadow personal-data store;
+- Session Replay off until explicit privacy/product activation;
+- source-map/release validation when Sentry activation becomes real.
 
 ## 25. Testing architecture
 
-Unit/component tests are co-located with their owner where practical:
+Unit/component tests are co-located with their owner where practical.
 
 ```text
 Thing.ts
 Thing.test.ts
-
 Thing.tsx
 Thing.test.tsx
 Thing.stories.tsx
 ```
 
-Application-level tests live at their application boundary:
+Application-level E2E lives at the app boundary:
 
 ```text
 apps/web/tests/e2e/
 apps/mobile/.maestro/
 ```
 
-Risk/cost tiers:
+PR baseline progressively includes applicable lint/boundaries, strict typecheck, unit/component tests, generated drift, Storybook/a11y, critical Web E2E, mobile Jest/RNTL and Expo/tooling smoke checks.
 
-### PR baseline
+Accepted-main/DEV/scheduled tiers add broader browser/integration/native/resilience checks when applicable.
 
-- lint/boundaries;
-- TypeScript strict typecheck;
-- unit/component tests;
-- generated-code drift;
-- Storybook build/a11y where activated;
-- critical Web E2E;
-- mobile Jest/RNTL;
-- Expo/tooling diagnostics/export smoke where applicable.
-
-### Accepted-main/DEV/scheduled
-
-- broader browser matrix;
-- integration/contract checks;
-- Android native validation where applicable;
-- higher-cost resilience/performance scenarios when real code warrants them.
-
-### UAT/release
-
-- release browser matrix;
-- signed build for each activated mobile target;
-- runtime/device E2E for each activated target;
-- deployment/source-map/update compatibility validation;
-- applicable security/privacy/performance/recovery gates.
+UAT/release applies browser/release, signed build, device E2E, source-map/update compatibility and applicable security/privacy/performance/recovery gates for activated targets.
 
 Cloud build success alone is not runtime QA.
 
 ## 26. CI/CD architecture
 
-GitHub Actions remains the repository-wide primary control plane.
+GitHub Actions remains repository-wide CI/CD authority.
 
-Frontend workflow responsibilities are separated rather than accumulated into one monolithic workflow. Intended categories may include:
+Frontend workflow responsibilities are separated conceptually, e.g. quality, Web E2E, Mobile quality, contract/codegen, Web deployment and Mobile release. These labels are not pre-authorized required-check names.
 
-```text
-frontend quality
-Web E2E
-Mobile quality
-frontend contract/codegen
-Web deployment
-Mobile release
-```
+A status check becomes required only after its real emitted context is observed and its failure genuinely must block merge.
 
-These are responsibilities, **not pre-authorized required-check names**.
+Turbo orchestrates the JS/frontend task graph only, never backend/Python authority.
 
-A check becomes required only after it exists, runs on the relevant PRs, emits a stable observed context and genuinely must block merge under the existing repository rule.
-
-Turborepo orchestrates the JS/frontend task graph only. It does not become the backend/Python orchestration authority.
-
-Remote Turbo cache remains dormant until measured CI/developer benefit justifies activation; initial posture uses local/CI caching without unnecessary vendor coupling.
+Remote Turbo cache stays dormant until measured benefit justifies it.
 
 ## 27. Developer topology
 
-Primary supported developer posture:
+Preferred posture:
 
 ```text
 one authoritative Git checkout in WSL filesystem
@@ -862,7 +732,7 @@ SELECTED DEVELOPER POSTURE
 DIRECT VALIDATION REQUIRED
 ```
 
-The WSL↔Windows Android/ADB/Metro bridge is a tooling adapter, not a product architecture invariant. If direct validation requires a different bridge/networking approach, adapt that boundary without creating divergent Windows/WSL source-of-truth clones.
+WSL↔Windows Metro/ADB mechanics are a tooling adapter, not product architecture. Adapt that bridge if direct evidence requires it without creating divergent Windows/WSL source trees.
 
 Hard rule:
 
@@ -872,27 +742,27 @@ no divergent Windows + WSL source trees
 no shared cross-OS node_modules environment
 ```
 
-Local iOS build is not expected on Windows; activated iOS build uses an accepted macOS-capable/cloud path such as EAS.
+Activated iOS builds use an accepted macOS-capable/cloud path.
 
 ## 28. Direct-validation carry-forward
 
-Passo 2 is design-complete. Direct validation remains intentionally deferred to materialization after Foundation closure/integration.
+Passo 2 is design-complete. Validation remains for post-closure materialization.
 
 At minimum validate progressively:
 
 1. Node 24 + pnpm 11 + Turbo real workspace;
 2. preferred isolated dependency layout with Expo/native graph;
-3. documented hoisted fallback only if direct evidence requires it;
+3. hoisted fallback only if evidence requires it;
 4. Vite/React production build;
-5. Expo/RN Android build/runtime and iOS build/runtime when target activation requires it;
-6. TypeScript strict cross-package compilation;
-7. package `exports` and forbidden-import enforcement;
-8. ESLint architecture boundaries;
-9. deterministic token generation to Web CSS + Native TS;
-10. real FastAPI OpenAPI → Orval generation/compile when API exists;
-11. TanStack Form exact pinned patch on Web + RN + Zod;
+5. Expo/RN build/runtime for activated mobile targets;
+6. strict cross-package TypeScript;
+7. package exports/public API enforcement;
+8. ESLint dependency/cycle boundaries;
+9. deterministic design-token generation;
+10. real OpenAPI → Orval generation/compile when API exists;
+11. TanStack Form pinned patch on Web + RN + Zod;
 12. TanStack Query remote path;
-13. PowerSync + OP-SQLite + SQLCipher encrypted open/write/reopen/read;
+13. PowerSync + OP-SQLite + SQLCipher encrypted lifecycle;
 14. offline upload/accept/reject/conflict reconciliation;
 15. identity-scoped local DB lifecycle;
 16. WSL Metro ↔ Windows Android tooling;
@@ -901,7 +771,7 @@ At minimum validate progressively:
 19. selected Web/Mobile test stacks;
 20. Sentry/EAS release integrations when activated.
 
-A material failure reopens the affected technology/tooling adapter or boundary only unless evidence proves a wider architectural contradiction.
+A material failure reopens the affected technology/tooling adapter/boundary unless evidence demonstrates wider contradiction.
 
 ## 29. Passo-2 verdict
 
@@ -909,14 +779,16 @@ A material failure reopens the affected technology/tooling adapter or boundary o
 PASSO 2
 DESIGN COMPLETE
 
+REPOSITORY-LAYOUT CONSISTENCY      PASS
 APPLICATION BOUNDARIES             ACCEPTED IN WORKSTREAM
 FEATURE-FIRST ARCHITECTURE         ACCEPTED IN WORKSTREAM
 DEPENDENCY DIRECTION               ACCEPTED IN WORKSTREAM
 PUBLIC-API-ONLY RULE               ACCEPTED IN WORKSTREAM
+FEATURE CYCLES                     FORBIDDEN
 SHARED-PACKAGE POLICY              ACCEPTED IN WORKSTREAM
 DATA AUTHORITY MATRIX              ACCEPTED IN WORKSTREAM
 API/CODEGEN BOUNDARY               ACCEPTED IN WORKSTREAM
-POWER SYNC OWNERSHIP               ACCEPTED IN WORKSTREAM
+POWERSYNC OWNERSHIP                ACCEPTED IN WORKSTREAM
 WEB ONLINE-FIRST / PWA DORMANT     ACCEPTED IN WORKSTREAM
 CONFIG/ENVIRONMENT MODEL           ACCEPTED IN WORKSTREAM
 UI/TOKEN/I18N/TIME BOUNDARIES      ACCEPTED IN WORKSTREAM
@@ -929,4 +801,4 @@ DEPENDENCIES INSTALLED             NO
 DIRECT VALIDATION                  NOT STARTED
 ```
 
-Next boundary is **Passo 3 — whole Frontend Foundation clean review, closure decision and protected-main integration preparation**.
+Next boundary is **Passo 3 — final clean review and closure decision**.

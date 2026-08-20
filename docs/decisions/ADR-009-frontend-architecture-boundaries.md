@@ -3,29 +3,41 @@
 - Status: **ACCEPTED IN FRONTEND WORKSTREAM / PENDING MAIN INTEGRATION**
 - Date: 2026-08-20
 - Technology authority: [`ADR-008-frontend-engineering-stack.md`](ADR-008-frontend-engineering-stack.md)
-- Current structural specification: [`../architecture/frontend-engineering-foundation-part-2.md`](../architecture/frontend-engineering-foundation-part-2.md)
+- Structural specification: [`../architecture/frontend-engineering-foundation-part-2.md`](../architecture/frontend-engineering-foundation-part-2.md)
+- Inherited repository-layout authority: [`../development/repository-layout-v0.md`](../development/repository-layout-v0.md)
 
 ## Context
 
-ADR-008 selected the frontend technology stack, but a durable DANTE frontend also requires stable ownership and dependency boundaries that survive library upgrades.
+ADR-008 selected the frontend technology stack. DANTE also needs ownership/dependency rules that survive library upgrades and remain consistent with the already-accepted root repository topology.
 
-Without explicit structure, the selected tools could still collapse into a client monolith where:
-
-- route files become feature implementations;
-- PowerSync, TanStack Query, Zustand and ad-hoc fetch state duplicate ownership;
-- Web and Mobile import each other's platform details;
-- shared packages become generic dumping grounds;
-- frontend validation accidentally grows into backend/domain authority;
-- generated clients own session/config semantics;
-- browser/mobile offline mechanisms proliferate without one authority model.
-
-The closed Physical and Engineering Foundations already require singular canonical authority, operation-specific offline capability, one product monorepo and real rather than cosmetic architecture controls.
+Without explicit boundaries, the frontend could still collapse into a client monolith where routes become feature implementations, state authorities duplicate, Web/Mobile leak platform details, shared packages become dumping grounds, frontend policy replaces backend authority or offline mechanisms proliferate without governance.
 
 ## Decision
 
-### 1. Application boundaries
+### 1. Inherit root repository layout
 
-Keep three sibling deployable application boundaries:
+Frontend Foundation does not redefine the closed Engineering Foundation root topology.
+
+Reserved ownership remains:
+
+```text
+apps/
+packages/
+infra/
+tooling/
+tests/system/
+docs/
+prototypes/
+.github/
+```
+
+Paths are created only when real content exists.
+
+`infra/` owns infrastructure definitions and never DANTE business logic. Application-specific Web delivery/bootstrap code may be co-located with `apps/web` when it belongs to the Web deployable/toolchain; provider/infrastructure desired state remains under the accepted infrastructure ownership model.
+
+### 2. Application boundaries
+
+Keep sibling deployable boundaries:
 
 ```text
 apps/backend
@@ -33,77 +45,69 @@ apps/web
 apps/mobile
 ```
 
-Web and Mobile are first-class platform-specific clients. They share semantics/contracts selectively but not one forced renderer or universal UI implementation.
+Web and Mobile are first-class platform-specific clients with selective semantic sharing, not one forced renderer.
 
-### 2. Feature-first application architecture
+### 3. Feature-first architecture
 
-Web and Mobile use vertical `features/<capability>` ownership rather than global technical dumping grounds.
+Web and Mobile use vertical `features/<capability>` ownership. Routes/navigation are adapters. Platform integrations are app-local `platform/`; DANTE UI implementations are app-local `ui/`; assembly is `bootstrap/`.
 
-Routes/navigation are adapters. Platform integrations live in app-local `platform/` boundaries. DANTE UI systems live in app-local `ui/` boundaries. App assembly lives in `bootstrap/`.
+### 4. Public API and acyclic dependency direction
 
-### 3. Public API and dependency direction
+Cross-boundary dependencies use public APIs only. Bootstrap/router are not deep-import backdoors.
 
-Cross-boundary dependencies use public APIs only.
+Feature dependencies must remain acyclic. Cycles require boundary/orchestration repair rather than import exceptions.
 
-Even bootstrap and router layers may not deep-import feature internals.
+Architecture enforcement is executable through package exports, ESLint/boundary rules, workspace/cycle validation and architecture checks.
 
-Architecture enforcement is executable through package exports, ESLint/boundary rules, workspace isolation and architecture checks.
+### 5. Shared-package extraction
 
-### 4. Shared-package extraction
+Shared packages are created only for real multi-consumer semantics. Initial genuine shared candidates are design tokens, i18n and time. API client appears only when real OpenAPI exists. Shared feature packages require actual Web+Mobile reuse.
 
-Shared packages are created only for real cross-application consumers.
+Shared client cores are framework-free by default and may never own canonical Domain/AuthZ/conflict/persistence/accepted-effect/material-history authority.
 
-Initial real shared semantics are design tokens, i18n and time. The API client is created only once real OpenAPI exists. Shared feature packages are extracted only after actual Web+Mobile reuse exists.
+### 6. Data Authority Matrix
 
-Shared client code is framework-free by default and may never own canonical Domain/AuthZ/conflict/persistence/accepted-effect authority.
-
-### 5. Data Authority Matrix
-
-Every data/read/write path declares its authority before implementation.
+Every persisted/read/write path declares authority before implementation.
 
 Canonical accepted state/effects remain backend/PostgreSQL authority.
 
-PowerSync/SQLite may own synchronized local projections and offline pending state but not canonical acceptance.
+PowerSync/SQLite may own synchronized local projections and offline pending state, not canonical acceptance.
 
 TanStack Query owns request/response remote state, not synchronized local projections by default.
 
-React/TanStack Form/Zustand own only their bounded client/transient classes.
+React/TanStack Form/Zustand own only bounded client/transient classes.
 
-An offline-eligible operation intentionally crosses local staging, upload, backend governance and reconciliation; local staging is never confused with canonical effect authority.
+Offline-eligible operations cross local staging, upload, backend governance and reconciliation; local staging never becomes canonical effect authority.
 
-### 6. Feature data firewall
+### 7. Feature data firewall
 
-Feature UI consumes feature-specific data/model boundaries rather than directly coupling its architecture to HTTP, PowerSync, query-cache or storage implementation.
+Feature UI consumes feature-specific data/model boundaries rather than direct architectural coupling to HTTP, PowerSync, query cache or storage implementation. No universal frontend `Repository<T>` is introduced.
 
-No universal frontend `Repository<T>` abstraction is introduced.
+### 8. Web/Mobile offline posture
 
-### 7. Web and Mobile offline posture
+Mobile activates selected PowerSync + encrypted SQLite when materialized.
 
-Mobile activates the selected PowerSync + encrypted SQLite architecture when materialized.
+Web starts online-first. PowerSync Web is available/dormant and may activate later behind the same feature data boundaries.
 
-Web starts online-first. PowerSync Web remains available/dormant and may activate later without changing feature architecture.
+Browser PWA/service-worker offline behavior is dormant by default and requires explicit design before activation.
 
-Browser PWA/service-worker offline behavior is also dormant by default and requires an explicit requirement/design before activation.
+### 9. Package-manager layout qualification
 
-### 8. Package-manager layout qualification
+pnpm remains selected. Isolated layout is preferred and directly validated with Expo/native dependencies. `nodeLinker: hoisted` is an accepted evidence-driven fallback and does not reopen the monorepo architecture.
 
-pnpm remains selected. Isolated dependency layout is the preferred baseline and must be directly validated with Expo/native dependencies.
+### 10. Platform-neutral shared cores
 
-`nodeLinker: hoisted` is an accepted evidence-driven fallback and does not reopen the monorepo architecture.
+`@dante/i18n`, `@dante/time`, API contracts and shared feature cores remain framework/platform-free by default. React/RN integration belongs to app bootstrap/platform/UI boundaries.
 
-### 9. Platform-neutral shared cores
+### 11. Runtime configuration
 
-`@dante/i18n`, `@dante/time`, API contracts and shared feature cores remain framework/platform-free by default. React/React Native integration belongs to app bootstrap/platform/UI boundaries.
+Web uses versioned, Zod-validated public runtime config so one immutable SPA artifact can be promoted across DANTE DEV/UAT/PROD where the platform permits.
 
-### 10. Runtime configuration
+A bounded Cloudflare Worker may serve Web delivery/bootstrap config but is not a DANTE BFF/business backend.
 
-Web uses a versioned, Zod-validated public runtime configuration boundary so one immutable SPA artifact can be promoted across DANTE DEV/UAT/PROD where the delivery platform permits.
+### 12. Environment vocabulary
 
-A bounded Cloudflare Worker may serve Web delivery/bootstrap config but is not a DANTE BFF or business backend.
-
-### 11. Environment vocabulary
-
-Frontend tooling maps to the existing DANTE lifecycle vocabulary only:
+Frontend tooling maps to existing DANTE contexts only:
 
 ```text
 LOCAL
@@ -112,56 +116,43 @@ UAT
 PROD
 ```
 
-No parallel frontend environment taxonomy is created.
+### 13. Platform release activation
 
-### 12. Platform release activation
+Android and iOS are supported architectural targets. Signed build/device/store gates apply when a platform is an activated release target; inactive iOS does not block a Web/Android release.
 
-Android and iOS are supported architectural targets. Signed build/device/store QA gates apply when that platform is an activated release target; an inactive iOS release does not block a Web/Android release.
+### 14. Developer topology
 
-### 13. Developer topology
-
-One authoritative WSL-backed checkout remains the preferred developer posture. WSL↔Windows Metro/ADB details are a directly validated tooling adapter, not a product architecture invariant.
+One authoritative WSL-backed checkout remains preferred. WSL↔Windows Metro/ADB details are a directly validated tooling adapter, not product architecture.
 
 ## Consequences
 
 Positive:
 
-- library upgrades do not redefine product architecture;
-- Web/Mobile remain independently native to their platforms;
+- framework/provider upgrades do not redefine product architecture;
+- Web/Mobile stay native to their platforms;
+- root path ownership remains consistent with Engineering Foundation;
+- feature/package cycles and deep-import backdoors are forbidden;
 - state/data authority is explicit;
 - offline semantics preserve backend governance;
-- feature internals remain locally owned;
-- shared packages stay small and purposeful;
-- vendor/platform adapters can change without feature rewrites;
+- shared packages stay small/purposeful;
+- adapters can change without feature rewrites;
 - architecture violations can fail locally/CI.
 
 Costs:
 
-- public APIs and import rules require discipline;
-- data-path classification must happen before ambiguous implementation;
-- code may remain duplicated temporarily until real reuse justifies extraction;
-- some tooling/native integration details remain direct-validation obligations.
+- public APIs and cycle rules require discipline;
+- data authority must be classified before ambiguous implementation;
+- some duplication remains until real reuse justifies extraction;
+- native/tooling details retain direct-validation obligations.
 
 ## Explicit non-decisions
 
-This ADR does not:
-
-- create directories or packages;
-- choose concrete product features;
-- define AuthN token/cookie contracts;
-- define backend API routes;
-- activate PowerSync Web;
-- activate a browser PWA/service worker;
-- create root infrastructure layout;
-- claim pnpm isolated/native compatibility has already passed;
-- claim WSL/Android tooling has already passed;
-- require iOS release activation;
-- claim any direct implementation PASS.
+This ADR does not create directories/packages, choose product features, define AuthN token/cookie contracts, define backend routes, activate PowerSync Web, activate a browser PWA/service worker, materialize infrastructure, claim pnpm-isolated/WSL/native PASS, require iOS release activation or claim direct implementation PASS.
 
 ## Validation/reopen rule
 
-Materialization must execute the carried validation register. A failed native/tooling integration may reopen the affected adapter/layout choice without reopening the core feature/dependency/data-authority architecture unless evidence demonstrates a wider contradiction.
+Materialization executes the carried validation register. A failed native/tooling integration first reopens the affected adapter/layout choice, not the core feature/dependency/data-authority architecture unless evidence proves wider contradiction.
 
-## Supersession
+## Relationship to ADR-008
 
-This ADR does not supersede ADR-008. ADR-008 owns technology selection; ADR-009 owns frontend application/package/dependency/data-authority architecture. Together with the two frontend engineering specifications they form the current unmerged Frontend Foundation design authority.
+ADR-008 owns technology selection. ADR-009 owns frontend application/package/dependency/data-authority architecture. Neither supersedes the other.
