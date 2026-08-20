@@ -31,7 +31,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """Report process liveness without depending on external services."""
         return {"status": "ok"}
 
-    @app.get("/health/ready", include_in_schema=False)
+    @app.get("/health/ready", include_in_schema=False, response_model=None)
     async def health_ready(request: Request) -> dict[str, str] | JSONResponse:
         """Report readiness only when the runtime PostgreSQL boundary is reachable."""
         database_runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
