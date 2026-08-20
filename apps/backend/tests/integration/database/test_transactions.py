@@ -5,10 +5,10 @@ from typing import Any
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import InvalidRequestError
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from dante.platform.database.runtime import create_database_runtime
+from dante.platform.database.runtime import DatabaseRuntime, create_database_runtime
 
 pytestmark = pytest.mark.postgres
 
@@ -32,6 +32,41 @@ async def _create_probe_table(database: Any) -> None:
             await connection.exec_driver_sql("RESET ROLE")
     finally:
         await engine.dispose()
+
+
+async def _run_forced_application_rollback(runtime: DatabaseRuntime) -> None:
+    async with runtime.session_factory.begin() as session:
+        await session.execute(
+            text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'first')")
+        )
+        await session.execute(
+            text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (2, 'second')")
+        )
+        raise RuntimeError("force rollback")
+
+
+async def _run_flush_then_rollback(runtime: DatabaseRuntime) -> None:
+    async with runtime.session_factory.begin() as session:
+        await session.execute(
+            text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'flushed')")
+        )
+        await session.flush()
+
+        async with runtime.engine.connect() as observer:
+            observed = await observer.scalar(
+                text("SELECT count(*) FROM dante.cp3_transaction_probe WHERE id = 1")
+            )
+            assert observed == 0
+
+        raise RuntimeError("rollback after flush")
+
+
+async def _run_nested_failure(session: AsyncSession) -> None:
+    async with session.begin_nested():
+        await session.execute(
+            text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (2, 'nested')")
+        )
+        raise RuntimeError("savepoint rollback")
 
 
 @pytest.mark.asyncio
@@ -70,14 +105,7 @@ async def test_exception_rolls_back_entire_application_transaction(migrated_data
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
         with pytest.raises(RuntimeError, match="force rollback"):
-            async with runtime.session_factory.begin() as session:
-                await session.execute(
-                    text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'first')")
-                )
-                await session.execute(
-                    text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (2, 'second')")
-                )
-                raise RuntimeError("force rollback")
+            await _run_forced_application_rollback(runtime)
 
         async with runtime.session_factory.begin() as session:
             count = await session.scalar(text("SELECT count(*) FROM dante.cp3_transaction_probe"))
@@ -92,19 +120,7 @@ async def test_flush_does_not_commit(migrated_database: Any) -> None:
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
         with pytest.raises(RuntimeError, match="rollback after flush"):
-            async with runtime.session_factory.begin() as session:
-                await session.execute(
-                    text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'flushed')")
-                )
-                await session.flush()
-
-                async with runtime.engine.connect() as observer:
-                    observed = await observer.scalar(
-                        text("SELECT count(*) FROM dante.cp3_transaction_probe WHERE id = 1")
-                    )
-                    assert observed == 0
-
-                raise RuntimeError("rollback after flush")
+            await _run_flush_then_rollback(runtime)
 
         async with runtime.session_factory.begin() as session:
             count = await session.scalar(text("SELECT count(*) FROM dante.cp3_transaction_probe"))
@@ -123,11 +139,7 @@ async def test_savepoint_failure_preserves_outer_transaction(migrated_database: 
                 text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'outer')")
             )
             with pytest.raises(RuntimeError, match="savepoint rollback"):
-                async with session.begin_nested():
-                    await session.execute(
-                        text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (2, 'nested')")
-                    )
-                    raise RuntimeError("savepoint rollback")
+                await _run_nested_failure(session)
 
         async with runtime.session_factory.begin() as session:
             rows = (
