@@ -9,7 +9,7 @@
 - Closure content commit: `ba18a9d4668f3fa51c9da72118b5ffa69f03054e`
 - Knowledge-coverage repair commit: `9588c66caf57b3186f4d9e0c7a697b91d8d3dc90`
 - Post-closure knowledge-coverage QA: **PASS**
-- PR: **NONE**
+- PR: **#22 — OPEN / TARGET `main`**
 - Product/Domain/Logical/Physical/Engineering Foundation: **CONSUMED / NOT REOPENED**
 - Production frontend code/scaffold: **NOT STARTED**
 - Dependencies installed/configured: **NO**
@@ -24,7 +24,7 @@ PASSO 3  clean review / closure                FINAL REVIEW PASS
 POST-QA  knowledge/evidence preservation       PASS
 ```
 
-Frontend Foundation is closed at design/architecture level, pending protected-main integration.
+Frontend Foundation is closed at design/architecture level, pending protected-main integration through PR #22.
 
 ```text
 DESIGN CLOSED != IMPLEMENTED != INSTALLED != CONFIGURED != DIRECTLY VALIDATED
@@ -123,20 +123,27 @@ KNOWLEDGE-COVERAGE REPAIR
 9588c66caf57b3186f4d9e0c7a697b91d8d3dc90
 ```
 
-The current branch HEAD containing this handoff is the final post-closure-QA checkpoint and must be reverified immediately before PR creation.
+Current integration vehicle:
+
+```text
+PR #22
+feature/frontend-foundation → main
+OPEN
+```
+
+The PR head must be reverified immediately before merge; merge requires explicit authorization and expected-head safety.
 
 ## 8. Exact next action
 
 ```text
-PENDING MAIN INTEGRATION
+PENDING MAIN INTEGRATION — PR #22 OPEN
 
-1. compare exact main → feature/frontend-foundation diff
-2. prove expected documentation-only changed paths / unexpected 0
-3. open PR to protected main
-4. inspect exact PR file list and available real checks
-5. merge only with explicit authorization + expected-head safety
-6. post-merge reread/compare main and verify branch lifecycle
-7. then open fresh frontend materialization/scaffold/direct-validation scope
+1. verify exact PR changed paths remain expected
+2. inspect available real checks/statuses; do not invent missing checks
+3. verify PR remains mergeable and head has not moved unexpectedly
+4. merge only with explicit authorization + expected-head SHA
+5. post-merge reread/compare main and verify branch lifecycle
+6. then open fresh frontend materialization/scaffold/direct-validation scope
 ```
 
 Do not restart general technology/architecture research without concrete contradictory evidence or a materially changed requirement.
