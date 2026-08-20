@@ -40,13 +40,14 @@ class PostgresCluster:
     runtime_password: str
     container_name: str
 
-    def pause(self) -> None:
-        """Pause PostgreSQL for dependency-failure acceptance tests."""
-        _docker("pause", self.container_name)
+    def stop(self) -> None:
+        """Stop PostgreSQL while preserving the disposable acceptance cluster."""
+        _docker("stop", "--signal", "SIGINT", "--timeout", "5", self.container_name)
 
-    def unpause(self) -> None:
-        """Resume PostgreSQL after a dependency-failure acceptance test."""
-        _docker("unpause", self.container_name)
+    def start(self) -> None:
+        """Restart PostgreSQL and wait for the exact CP3 acceptance version."""
+        _docker("start", self.container_name)
+        _wait_for_postgres(self)
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,7 +234,6 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     _docker(
         "run",
         "--detach",
-        "--rm",
         "--name",
         cluster.container_name,
         "--publish",
