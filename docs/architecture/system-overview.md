@@ -2,15 +2,13 @@
 
 - Status: **CURRENT ARCHITECTURE OVERVIEW**
 
-## 1. Product
+## 1. Product and authority
 
-DANTE is a personal operating system whose canonical truth represents real life over time while preserving authority, provenance, uncertainty and the distinction between intention, execution and outcome.
+DANTE is a personal operating system whose canonical truth represents real life over time while preserving authority, provenance, uncertainty and distinctions between intention, execution and outcome.
 
 Compass: **Understand life. Shape what comes next.**
 
-## 2. Architectural authority
-
-Implementation consumes the closed Product/Domain/Logical/Physical models and the closed Engineering Foundation.
+Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and the active branch-local Frontend Foundation until integration.
 
 Core invariants include:
 
@@ -25,13 +23,14 @@ absence/unknown != false
 MaterialStateRef != ETag/MVCC/provider revision
 idempotency != semantic identity
 AI/solver output != accepted canonical effect
+client local state != canonical accepted effect
 ```
 
 WL-H01..WL-H12 remain active.
 
-## 3. Repository/application topology
+## 2. Repository/application topology
 
-One product monorepo:
+One product monorepo with accepted ownership:
 
 ```text
 DANTE repository
@@ -40,16 +39,16 @@ DANTE repository
 │   └── capability-first modular monolith
 │
 ├── apps/web
-│   └── client boundary; internal engineering deferred
+│   └── React DOM/Vite client; feature-first
 │
 ├── apps/mobile
-│   └── client boundary; internal engineering deferred
+│   └── Expo/React Native client; feature-first
 │
 ├── packages
-│   └── only genuinely shared contracts/artifacts
+│   └── only genuine multi-consumer contracts/artifacts
 │
 ├── infra
-│   └── LOCAL and future remote infrastructure definitions
+│   └── LOCAL/future remote infrastructure definitions
 │
 ├── tooling
 ├── tests/system
@@ -58,9 +57,9 @@ DANTE repository
 └── .github
 ```
 
-Production implementation continues in the existing repository. A rename from historical `lifeos` to `dante` is a separate governance step; a new repo is not planned.
+Paths are materialized only when real content exists. Production implementation continues in the existing repository; a new production repo is not planned.
 
-## 4. Backend architecture
+## 3. Backend architecture
 
 Target internal shape:
 
@@ -78,245 +77,182 @@ apps/backend/src/dante
         └── outbound/persistence|integrations
 ```
 
-The shape expresses dependency direction, not mandatory empty folders.
+FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
 
-FastAPI is an inbound adapter/process host.
+## 4. Frontend architecture
 
-SQLAlchemy/persistence/provider/runtime objects remain outside Domain identity.
+Web and Mobile are sibling governed clients with platform-specific renderers and selective shared semantics.
 
-Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
+Web conceptual internals:
 
-## 5. Canonical persistence
+```text
+bootstrap
+routes
+features
+ui
+platform
+config
+```
+
+Mobile conceptual internals:
+
+```text
+app/          Expo Router adapters
+src/bootstrap
+src/features
+src/ui
+src/platform
+src/config
+```
+
+Structural rules:
+
+- feature-first;
+- routes/navigation are thin adapters;
+- public-API-only cross-boundary imports;
+- feature dependency cycles forbidden;
+- Web/Mobile do not import each other's private implementation;
+- UI/platform layers do not depend upward on feature internals;
+- no generic shared/common/utils dumping grounds;
+- production never imports prototypes;
+- architecture rules become executable checks when materialized.
+
+Shared packages are extracted only for real multi-consumer semantics. Initial real candidates are design tokens, i18n and time. Shared client cores remain framework-free by default and never own backend/domain authority.
+
+## 5. Canonical persistence and client data authority
 
 ```text
 PostgreSQL 18.4
-SOLE CANONICAL PERSISTENCE AUTHORITY
+SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
 ```
 
-It owns canonical material state/history required by the accepted Logical/Physical model.
+Selected DB capabilities remain PostGIS, pgvector, native FTS, pg_trgm, unaccent, pg_stat_statements and PgBouncer target posture.
 
-Selected DB capabilities:
-
-- PostGIS 3.6.4;
-- pgvector 0.8.6;
-- native FTS;
-- pg_trgm;
-- unaccent;
-- pg_stat_statements;
-- PgBouncer 1.25.2 target.
-
-The first LOCAL DB already has the full extension envelope installed/enabled. “Enabled” does not mean every capability is already used by application code.
-
-## 6. Persistence/application boundary
+Frontend Data Authority Matrix:
 
 ```text
-application use case
-        ↓
-capability-shaped persistence boundary
-        ↓
-SQLAlchemy 2.0 / psycopg 3
-        ↓
-PostgreSQL
+canonical accepted state/effect   backend + PostgreSQL
+synced local projection           PowerSync/SQLite noncanonical
+offline pending mutation          local staging only
+offline acceptance                backend governance/conflict checks
+remote request state              TanStack Query + typed API
+online governed command           FastAPI/backend
+form draft                        TanStack Form
+component transient               React
+cross-tree transient              Zustand only when justified
 ```
 
-Rules:
+An offline operation crosses staging → upload → backend accept/reject → reconciliation. Local arrival/staging does not define semantic truth.
 
-- ORM != Domain;
-- no universal generic CRUD repository;
-- one AsyncSession per concurrent use-case/task scope;
-- application/use-case boundary owns transaction;
-- implicit/lazy DB I/O does not leak into Domain/application logic;
-- cross-capability transaction remains possible inside the modular monolith where accepted semantics require atomicity.
+## 6. Frontend data/API boundary
 
-## 7. Schema evolution
+Feature UI consumes feature data/model boundaries rather than direct architecture-level coupling to HTTP, PowerSync, query cache or storage implementation.
 
-```text
-Alembic revision history
-= deployment schema-change authority
-```
+Real FastAPI OpenAPI eventually feeds Orval-generated React-free/auth-storage-agnostic transport code. Generated code is derivative, deterministic and drift checked where committed.
 
-Policy:
+## 7. Offline/sync
 
-- autogenerate candidate only;
-- applied revisions immutable;
-- clean base→head tests;
-- metadata/schema drift detection;
-- lock/rewrite/data-loss review;
-- online/staged PostgreSQL techniques where appropriate;
-- expand → migrate → contract for breaking evolution;
-- large backfills as bounded resumable/idempotent jobs;
-- separate runtime/migrator/owner privileges.
+Selected Physical target remains PowerSync + encrypted SQLite bounded local state.
 
-Logical copy and disaster recovery are different mechanisms:
+Mobile activates that path when materialized, with PowerSync runtime initially owned by the Mobile platform adapter.
 
-```text
-pg_dump / pg_restore
-logical copies / bounded clone workflows
+Web starts online-first; PowerSync Web is available/dormant.
 
-pgBackRest + WAL/PITR + AWS S3
-recovery-grade path when recovery boundary activates
-```
+Browser PWA/service-worker offline behavior is dormant/not baseline.
 
-## 8. Offline/sync
+Local client databases are identity scoped; cross-account local-data leakage is forbidden.
 
-Selected target:
+## 8. UI/shared semantics
 
-- PowerSync Open Edition;
-- encrypted SQLite local state;
-- PostgreSQL-backed PowerSync bucket storage;
-- explicit client-safe sync projections.
+Web owns a DANTE UI layer over selected Web primitives/styling. Mobile owns a separate DANTE Native UI layer. Shared semantic design tokens may intentionally render differently per platform.
 
-Invariants:
+`@dante/i18n` is framework-free; app bootstrap wires React integration/platform detection/persistence.
 
-```text
-SQLite local state != canonical truth
-PowerSync arrival order != conflict resolution
-consequential offline mutation → backend revalidation → PostgreSQL
-```
+`@dante/time` owns Temporal-based semantic time handling.
 
-PowerSync is not implemented merely because the target is selected.
+## 9. Configuration/secrets
 
-## 9. Async/durable work
+Backend uses typed pydantic-settings fail-fast configuration.
 
-### Class A
+Frontend public config is typed/validated and contains no secrets.
 
-PostgreSQL transactional outbox + bounded worker.
+Web runtime config is versioned and Zod validated so one SPA artifact can be promoted across environments where the delivery platform permits. An app-coupled Cloudflare Worker may serve bounded bootstrap config but is not a DANTE BFF/business backend.
 
-Where semantics require atomicity:
+Remote secret posture remains workload identity → provider secret manager → least privilege → rotation/revocation/audit, with GitHub OIDC preferred where supported.
 
-```text
-canonical state transition
-+
-outbox record
-= same PostgreSQL transaction
-```
+## 10. Environments
 
-### Class B
-
-Restate is selected but dormant until first real Class-B durable workflow.
-
-Restate runtime state never becomes canonical DANTE history by default.
-
-## 10. Content artifacts / object bytes
-
-When activated:
-
-```text
-PostgreSQL
-owns ContentArtifact identity/metadata/provenance/visibility/retention/hash/locator
-
-Cloudflare R2
-owns private raw object bytes only
-```
-
-R2 is private and EU-jurisdiction target under the accepted Physical posture.
-
-## 11. Recovery
-
-Selected target:
-
-- pgBackRest 2.59.0;
-- AWS S3 Standard eu-south-1;
-- Versioning/Object Lock posture defined by Physical model;
-- WAL/PITR;
-- anti-resurrection requirement;
-- recovery copies noncanonical.
-
-Initial implementation posture remains dormant until recovery/production boundary or real rehearsal.
-
-Once active, backup verification and restore rehearsal are mandatory evidence.
-
-## 12. Solver
-
-OR-Tools CP-SAT is the selected candidate mechanism when solver-backed planning arrives.
-
-```text
-UNKNOWN != INFEASIBLE
-```
-
-Solver output remains candidate/derived context until accepted through governed application semantics.
-
-## 13. Observability
-
-Selected target:
-
-- OpenTelemetry;
-- Grafana Alloy;
-- Grafana Cloud EU;
-- pg_stat_statements.
-
-Observability is privacy-minimized operational telemetry, not a shadow user-data store or canonical history.
-
-Backend design includes correlation/release identity and secret/payload redaction boundaries from the first service scaffold.
-
-## 14. Configuration/secrets
-
-Backend uses typed `pydantic-settings` configuration with fail-fast validation and immutable runtime state.
-
-Remote target:
-
-```text
-workload/federated identity
-→ provider secret manager
-→ least privilege
-→ rotation/revocation/audit
-```
-
-GitHub OIDC is preferred for future cloud deployment identity.
-
-DEV/UAT/PROD identities/secrets/state remain isolated.
-
-## 15. Environments
+Exactly:
 
 ```text
 LOCAL → DEV → UAT → PROD
 ```
 
-These are runtime lifecycle contexts, not Git branches.
+They are runtime contexts, not Git branches. Frontend/mobile tool profile/channel names map to the same four contexts.
 
-- LOCAL activates with first implementation;
-- remote DEV when remote integration is useful;
-- UAT with real release candidates;
-- PROD at production readiness.
+## 11. Async/durable/object/recovery/solver
 
-Cloud/compute provider and IaC engine are intentionally deferred.
+Class A async: PostgreSQL transactional outbox + bounded worker.
 
-## 16. CI/security
+Class B: Restate selected/dormant until a real Class-B workflow.
 
-GitHub Actions is the primary CI/CD control plane.
+ContentArtifact raw bytes: private Cloudflare R2 when activated; PostgreSQL owns authority/metadata.
 
-Backend quality target includes:
+Recovery: pgBackRest + WAL/PITR + AWS S3 accepted target at recovery boundary.
 
-- Ruff/mypy;
-- unit/application/Hypothesis;
-- architecture tests;
-- real PostgreSQL integration/migration/concurrency;
-- privacy/non-interference tests;
-- dependency/security analysis;
-- real-check-before-required-check branch-protection rule;
-- least-privilege workflows and immutable Action SHA pinning;
-- no production deployment identity in ordinary PRs;
-- future artifact digest/provenance/SBOM release evidence.
+Solver: OR-Tools CP-SAT; `UNKNOWN != INFEASIBLE`; solver output remains candidate until governed acceptance.
 
-## 17. Frontend relationship
+## 12. Observability
 
-`apps/web` and `apps/mobile` consume governed backend contracts.
+Backend: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements target.
 
-Their internal package/tool/test/build decisions are deliberately deferred to the frontend workstream. They cannot bypass backend authority for consequential canonical mutations.
+Frontend: Sentry behind bounded app/platform observability adapters when activated.
 
-## 18. Current direct evidence boundary
+All observability is privacy-minimized operational telemetry, never canonical history or a shadow personal-data store.
+
+## 13. Testing/CI/release
+
+GitHub Actions is repository-wide primary CI/CD authority.
+
+Backend validation remains risk-layered with real PostgreSQL evidence.
+
+Frontend validation progressively covers lint/dependency/cycle boundaries, strict TS, unit/component, generated drift, Web E2E, Mobile tests and release/device validation for activated targets.
+
+Status checks become required only after real stable emitted contexts are observed.
+
+Android and iOS are supported architectural targets; platform-specific signed/device/store gates apply only when each platform is activated for release.
+
+## 14. Developer posture
+
+Canonical backend semantics remain Linux. Primary Windows posture is one authoritative WSL-backed repository checkout with JetBrains/PyCharm UI on Windows as desired.
+
+Frontend keeps one authoritative checkout; WSL↔Windows Metro/ADB specifics are a direct-validation tooling adapter. Divergent Windows/WSL source clones are forbidden.
+
+## 15. Direct evidence boundary
 
 Architecture/design closure is not implementation proof.
 
 ```text
 BACKEND SCAFFOLD          NOT STARTED
+FRONTEND SCAFFOLD         NOT STARTED
 DATABASE DEPLOYMENT       NOT STARTED
 CONCRETE SCHEMA           NOT STARTED
 DIRECT HG                 NOT RUN
+FRONTEND DIRECT TEST      NOT RUN
 PSV                       NOT RUN
 RESTORE REHEARSAL         NOT RUN
 ```
 
-## 19. Next system-building step
+## 16. Current next step
 
-Keep the current repository. Resolve the small repository rename decision (`lifeos → dante`) first, then open an exact write gate for the real `apps/backend` scaffold and LOCAL PostgreSQL/migration/test/config/CI baseline.
+```text
+finish Frontend Foundation Passo 3 clean review
+↓
+if blockers == 0 record design/architecture closure
+↓
+prepare protected-main integration
+↓
+after integration open new production frontend materialization scope
+```
+
+Backend production scaffold remains a separate not-started scope.
