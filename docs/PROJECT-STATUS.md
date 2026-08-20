@@ -40,16 +40,18 @@ MattiaRubino/lifeos → MattiaRubino/dante
 
 PRODUCTION BACKEND SCAFFOLD
 ACTIVE
-CP1-01 DEPENDENCY/VERSION POLICY APPROVED
-CP1-02 PYPROJECT/QUALITY TOOLING APPROVED
-CP1-03 FASTAPI/SETTINGS/HEALTH CONTRACT APPROVED
-CP1 IMPLEMENTATION NOT STARTED
+CP1 PYTHON/BACKEND PROCESS + TYPED CONFIG CLOSED / DIRECT QA PASS
+CP2 REPRODUCIBLE LOCAL POSTGRESQL NEXT
+CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS NOT STARTED
+CP4 QUALITY/CI ENFORCEMENT NOT STARTED
+CP5 FULL SCAFFOLD QA/CLOSURE NOT STARTED
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
 NOT STARTED
 
 DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
-NOT STARTED
+CP1 DIRECT PASS RECORDED
+DATABASE/HG VALIDATION NOT STARTED
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
 ```
@@ -214,7 +216,7 @@ uv
 Ruff
 mypy strict
 pytest
-Hypothesis
+Hypothesis when meaningful
 SQLAlchemy 2.0 stable line
 psycopg 3
 Alembic
@@ -283,7 +285,61 @@ Engineering Foundation v0 does **not** freeze Node/package-manager/Turborepo/web
 
 Compute provider, IaC engine, registry and remote sizing are not selected until first remote environment.
 
-## 7. Direct-validation truth
+## 7. Backend CP1 — direct implementation truth
+
+CP1 is closed on `feature/backend-scaffold` with implementation/lock closure HEAD:
+
+```text
+02d113d772cdb247faebb3cef4d857d125266da3
+```
+
+Materialized runtime/tooling:
+
+```text
+Python              3.14.7
+fastapi             0.141.1
+pydantic            2.13.4
+pydantic-settings   2.15.0
+uvicorn             0.52.4
+httpx2               2.12.0
+mypy                 2.3.1
+pytest               9.1.1
+pytest-cov           7.1.0
+ruff                 0.16.3
+```
+
+Direct WSL/Linux evidence earned on 2026-08-20:
+
+```text
+uv lock --check                         PASS
+uv tree --locked --depth 1              PASS
+uv sync --locked                         PASS
+Python project interpreter 3.14.7       PASS
+installed dante src-layout import        PASS
+ruff format --check                      PASS
+ruff check                               PASS
+mypy strict                              PASS
+pytest                                   PASS — 25/25
+CP1 statement coverage                   100.00%
+CP1 branch coverage                      100.00%
+uv build                                 PASS
+real Uvicorn factory startup             PASS
+GET /health/live over real HTTP          PASS — 200 / {"status":"ok"}
+GET /health/ready over real HTTP         PASS — 200 / {"status":"ready"}
+remote uv.lock readback                  PASS
+```
+
+Coverage 100% is evidence for the very small CP1 surface, **not** a permanent arbitrary threshold.
+
+Important implementation findings resolved without weakening quality policy:
+
+- Pydantic mypy plugin enabled after real strict-mypy evidence;
+- narrow runtime immutability-test suppression only;
+- Starlette TestClient dependency corrected from `httpx` to `httpx2`;
+- warnings-as-errors preserved;
+- `.coverage` ignored as generated local state.
+
+## 8. Direct-validation truth beyond CP1
 
 Never claim these have passed:
 
@@ -303,11 +359,9 @@ SOLVER DIRECT TEST       NOT RUN
 VERIFIED-RUN SCORE       NOT AVAILABLE
 ```
 
-Workstation Docker/WSL smoke tests are direct evidence of the developer environment only. They do not count as PostgreSQL/database/HG/PSV validation.
+Workstation Docker/WSL smoke tests and CP1 application-process evidence do not count as PostgreSQL/database/HG/PSV validation.
 
-CP1 design approval is documentation/design evidence only. No CP1 implementation command has yet earned PASS.
-
-## 8. Current repository branches/workstreams
+## 9. Current repository branches/workstreams
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
@@ -319,46 +373,43 @@ Production Backend Scaffold is the active bounded workstream:
 branch             feature/backend-scaffold
 handoff            docs/workstreams/backend-scaffold.md
 CP1 contract        docs/development/backend-cp1-contract.md
-state              CP1-01/02/03 APPROVED / IMPLEMENTATION NOT STARTED
+state              CP1 CLOSED / DIRECT QA PASS / CP2 NEXT
 ```
 
-The CP1 contract is deliberately self-contained and records the complete variable registry, version ranges/rationale, `pyproject`/Ruff/mypy/pytest/coverage policy, FastAPI application-factory behavior, LOCAL `.env.local` loading, health/readiness semantics, standard commands and acceptance tests.
-
-The verified workstation bootstrap is recorded in:
+The verified workstation/bootstrap state is recorded in:
 
 `docs/development/local-backend-workstation-bootstrap.md`
 
-## 9. Exact next action
+## 10. Exact next action
 
-Do not repeat the already-closed CP1 decisions by default and do not jump to PostgreSQL or concrete schema implementation.
+Do not repeat CP1 decisions/implementation by default and do not jump to concrete Logical schema implementation.
 
-Resume from the active scaffold handoff + CP1 contract:
+Resume from the active scaffold handoff:
 
 ```text
 STEP 1
 Verify feature/backend-scaffold, remote/local HEAD and clean tree.
 
 STEP 2
-Re-check upstream package evidence only if version-sensitive facts materially changed since 2026-08-19.
+Treat CP1 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts it.
 
 STEP 3
-Present a fresh exact CP1 implementation Git write gate covering the approved apps/backend file set only.
+Begin CP2 READ-ONLY design/research for DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
 
 STEP 4
-After explicit approval, materialize CP1:
-Python package + pyproject/uv.lock + FastAPI factory + typed settings + health routes + real tests + backend README/.env example.
+Re-check current official source/version evidence for PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6 and selected built-in extensions.
 
 STEP 5
-Generate the lockfile with uv; never hand-write it.
+Decide image/build strategy, Compose topology, volume persistence/reset semantics, healthcheck, published port, synthetic LOCAL credentials and extension activation path.
 
 STEP 6
-Run every direct CP1 acceptance command listed in `docs/development/backend-cp1-contract.md` on the real WSL/Linux workstation.
+Define direct CP2 acceptance evidence, including persistence across restart/recreation and host GUI connectivity.
 
 STEP 7
-Run remote exact-delta/readback QA and record actual resolved versions/evidence.
+Present an exact CP2 Git write gate before any PostgreSQL/Compose file is created.
 
 STEP 8
-Only after CP1 PASS, design/gate CP2 DANTE-owned LOCAL PostgreSQL 18.4 infrastructure.
+After explicit approval, materialize CP2 and run direct validation.
 
 STEP 9
 Then CP3 persistence/migrations/real-PostgreSQL harness, CP4 CI enforcement, and CP5 scaffold closure.
@@ -367,4 +418,4 @@ STEP 10
 Only after scaffold QA begin concrete Logical → PostgreSQL mapping/schema implementation.
 ```
 
-The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation are not reopened unless concrete implementation evidence reveals an actual contradiction.
+The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation/CP1 are not reopened unless concrete implementation evidence reveals an actual contradiction.
