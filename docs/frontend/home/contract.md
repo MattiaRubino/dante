@@ -21,13 +21,11 @@ It must not become a universal dashboard, ontology browser or AI-only cockpit.
 
 ## 2. Structural regions
 
-Current composition:
-
 ```text
 GLOBAL TOPBAR
 ORIENTATION / CURRENT SITUATION
 AI / CONVERSATIONAL SURFACE
-CENTRAL STAGE (Worlds / Stats working prototype)
+CENTRAL STAGE
 DAY / TIMELINE
 RIGHT CONTEXT RAIL
 ```
@@ -36,24 +34,13 @@ The registry at `docs/frontend/ui-registry.md` enumerates controls and statuses.
 
 ## 3. Topbar
 
-Current prototype contains:
+Current prototype contains Create, Home/Mondi/Oggi nav controls, Search, legacy Review Queue, secondary launcher and profile/settings menu. Several controls remain mock/prototype interactions; presence does not imply production routing, persistence or backend services.
 
-- Create;
-- Home / Mondi / Oggi nav controls;
-- Search;
-- legacy Review Queue;
-- secondary launcher;
-- profile/settings menu.
-
-Important: several topbar controls are mock/prototype interactions. Their presence does not imply production routing, persistence or backend services.
-
-The legacy topbar Review Queue is currently **deprecated** because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible only until a separate cleanup scope decides the final global access pattern.
+The legacy topbar Review Queue is deprecated because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible until a separate cleanup scope decides the final global access pattern.
 
 ## 4. Conversational surface
 
-Natural language is a global interaction layer over the same DANTE reality, not a separate semantic product.
-
-Current Home keeps a first-class structured GUI. AI availability must not be required to understand the operational core.
+Natural language is a global interaction layer over the same DANTE reality, not a separate semantic product. Current Home keeps a first-class structured GUI. AI availability must not be required to understand the operational core.
 
 ## 5. Orientation
 
@@ -71,13 +58,36 @@ Per te
 
 Do not collapse all three into generic recommendations.
 
-## 6. Central stage — currently unresolved B2 scope
+## 6. Central stage — B2 WIP + B2.5 engineering contract
 
-`Worlds` / `Stats` are working prototype modes only.
+The last accepted Home remains B1; B2 is not visually closed.
 
-Current interaction may remain functional while B2 answers the actual user jobs. Do not canonize current mixed `Worlds` categories or generic Stats merely because they exist.
+Current saved B2 working direction:
 
-No B1 change is authorized in this region.
+- two projections: continuity (`Mondi`) and signals (`Segnali`);
+- continuity keeps the sphere-carousel lineage and desktop target of five visible positions;
+- a partial continuity state derives empty add slots in the UI rather than persisting placeholder backend entities;
+- signals uses the same navigation grammar and shows at most three complete visible items in the desktop guard matrix;
+- external add placement remains unresolved.
+
+B2.5 fixes the engineering ownership independent of final visual polish:
+
+```text
+home.stage owns outer geometry
+mode selector/navigation anchors belong to home.stage
+continuity/signals own only inner layout
+mode switch must not alter stage outer bounds
+AI expanded/collapsed reflow belongs to Home shell
+```
+
+Machine-readable authority:
+
+- `prototypes/frontend/shared/contracts/home-stage.contract.json`
+- `prototypes/frontend/shared/contracts/home-stage.view-model.schema.json`
+- `prototypes/frontend/shared/contracts/home-responsive.matrix.json`
+- `prototypes/frontend/shared/fixtures/home-stage.v0.json`
+
+These are frontend view contracts, **not** Domain/DTO/database contracts.
 
 ## 7. Timeline
 
@@ -88,25 +98,23 @@ The current timeline preserves the mature temporal behavior lineage:
 - nonlinear density;
 - overlap lanes;
 - zoom with semantic anchor;
-- filters that do not redefine underlying geometry semantics;
-- grouped expansion while keeping time common;
+- visibility filters;
+- grouped expansion with common time;
 - cluster-based margins;
 - event focus/subtasks;
 - precise anchored time picker;
-- drag/move with existing snap/cross-day/undo behavior;
+- drag/move with snap/cross-day/undo behavior;
 - calendar/date navigation;
 - return-to-now;
 - environmental/day route.
 
-B1 does not alter these semantics.
+B2/B2.5 do not authorize timeline semantic changes.
 
 ## 8. Context Rail — B1 accepted contract
 
 ### 8.1 Purpose
 
-`home.contextRail` is one integrated secondary surface adjacent to the timeline.
-
-It supports two complementary directions:
+`home.contextRail` is one integrated secondary surface adjacent to the timeline supporting:
 
 ```text
 USER -> DANTE     Capture
@@ -117,112 +125,60 @@ It is intentionally subordinate to the timeline.
 
 ### 8.2 Geometry
 
-- one outer surface, not two visually unrelated floating cards;
+- one outer surface, not two unrelated cards;
 - stretches with the timeline column;
-- does not intentionally leave a large arbitrary empty block under its content;
-- yields/disappears with the existing timeline expansion behavior;
-- no extra floating toolbar/control is added around it.
+- no arbitrary large lower void by design;
+- yields/disappears with existing timeline expansion;
+- no extra floating toolbar around it.
 
 ### 8.3 Capture
 
 Technical ID: `home.contextRail.capture`
 
-Job:
+Job: let the user tell DANTE something with minimal friction without classifying first.
 
-> Let the user tell DANTE something with minimal friction without classifying it first.
+Current prototype: free-text composer, voice/attachment affordances, submit, small recent trace and `Registro completo`.
 
-Allowed examples:
-
-- observation;
-- expense statement;
-- fact;
-- idea;
-- intention;
-- quick reminder-like input;
-- Actual/report;
-- attachment/voice entry when those capabilities are eventually implemented.
-
-Current prototype content:
-
-- free text composer;
-- voice icon button;
-- attachment icon button;
-- submit icon button;
-- small trace of recent captured entries;
-- explicit `Registro completo` deeper-history affordance.
-
-Must **not** become:
-
-- a generic notes app;
-- a taxonomic form requiring Goal/Task/Observation/etc. before capture;
-- a second AI transcript;
-- an infinite history feed.
+Must not become a generic notes app, taxonomic form, second AI transcript or infinite history feed.
 
 ### 8.4 Resolution
 
 Technical ID: `home.contextRail.resolution`
 
-Job:
+Job: surface matters whose semantic state materially benefits from user decision, confirmation, correction or deeper inspection.
 
-> Surface matters whose semantic state materially benefits from a user decision, confirmation, correction or deeper inspection.
+Current prototype examples include workout outcome, uncertain expense category and moved-meeting conflict.
 
-Current prototype examples:
-
-- outcome of today's workout: `Fatto / Parziale / Saltato`;
-- uncertain expense category: `Conferma / Correggi`;
-- moved meeting conflict: deeper details.
-
-Allowed:
-
-- explicit confirmation;
-- simple 2–3 option choice;
-- simple correction;
-- open a deeper surface;
-- later/snooze only where semantics explicitly permit it.
-
-Must **not** become:
-
-- notifications center;
-- generic alert feed;
-- generic reminders;
-- normal upcoming events;
-- `Per te`;
-- `In evidenza`;
-- metrics/stats;
-- every unknown in the model.
+Must not become notifications, generic alerts/reminders, normal upcoming events, `Per te`, `In evidenza`, metrics or every unknown in the model.
 
 Resolution state and attention delivery remain separate.
 
 ### 8.5 Deep escalation
 
-If resolution needs history, provenance, many fields, complex scope, comparison or significant consequences, the rail must not cram the workflow into ~306px. It escalates to the future controlled overlay/sheet/contextual-surface grammar.
+Complex resolution requiring history/provenance/many fields/comparison/significant consequences escalates to the future controlled overlay/sheet/contextual-surface grammar.
 
 ### 8.6 Rejected behavior
 
-The B1 preview briefly tested chevrons that changed the rail into hidden `balanced/capture-focus/resolution-focus` states.
-
-**REJECTED.**
-
-Reason:
-
-- unclear mental model;
-- expansion often added blank space rather than information;
-- unnecessary hidden state;
-- reduced predictability.
-
-Accepted B1 keeps both functions simultaneously visible.
+B1 focus/expand chevrons and hidden balanced/focus states are **REJECTED**: unclear mental model, unnecessary hidden state and often blank expansion. Accepted B1 keeps both functions visible.
 
 ## 9. Responsive/cross-platform qualification
 
-Current desktop rail is part of the web prototype. Existing narrower breakpoint behavior may hide the side rail. This does **not** mean Capture/Resolution are desktop-only capabilities. Mobile representation must be designed later under the cross-platform rule with the same semantics.
+Current desktop rail is part of the web prototype. Existing narrower breakpoint behavior may hide it; Capture/Resolution are not therefore desktop-only capabilities. Mobile representation must later preserve semantic outcomes.
 
-## 10. Documentation rule
+For Home central-stage desktop work, the current engineering guard matrix is defined in `home-responsive.matrix.json` across widths 1856/1600/1366/1200/1024/901, AI expanded/collapsed and both stage modes. The known B2 global-resize defect remains open until this matrix passes on the actual artifact.
 
-Every Home change must update:
+## 10. Frontend/backend pre-production boundary
 
-- UI registry;
-- this contract when behavior/role/state changes;
-- terminology/localization when copy/names change;
-- tokens when visual semantic values change;
-- change log;
-- current checkpoint / QA when accepted artifact changes.
+For touched durable Home features:
+
+```text
+frontend view model != backend DTO != Domain model != persistence row
+```
+
+Prototype fixtures are synthetic. Components must not invent endpoint paths, consume ORM/database shapes or make ad-hoc direct HTTP calls as their architectural contract. Real backend integration will use explicit adapters/runtime validation and backend-authoritative AuthZ.
+
+See `docs/frontend/production-readiness/backend-integration-contract.md`.
+
+## 11. Documentation / quality rule
+
+Every Home change updates applicable registry, contract, terminology/localization, tokens, change log and checkpoint/QA. From B2.5, touched durable behavior also updates applicable production-readiness contract/fixture/test evidence.

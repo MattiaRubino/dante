@@ -1,0 +1,32 @@
+{
+  "format": "dante-responsive-matrix-v0",
+  "contractVersion": "0.1.0",
+  "scope": "home.stage desktop pre-production guardrail",
+  "viewportsPx": [1856, 1600, 1366, 1200, 1024, 901],
+  "aiStates": ["expanded", "collapsed"],
+  "modes": ["home.stage.continuity", "home.stage.signals"],
+  "expectedCartesianCases": 24,
+  "globalInvariants": [
+    "no unexpected horizontal page overflow",
+    "AI collapse/expand round-trip restores initial shell geometry",
+    "mode switch does not change stage bounding box",
+    "mode switch does not move stage selector or lateral navigation anchors",
+    "timeline and contextual rail remain outside stage ownership",
+    "no console error caused by stage interaction"
+  ],
+  "modeRules": {
+    "home.stage.continuity": {
+      "desktopTargetVisibleItems": 5,
+      "mustFitTargetAtAllMatrixWidths": true,
+      "adaptiveScaleOrSpacingAllowed": true,
+      "modeSpecificOuterGeometryOverrideAllowed": false
+    },
+    "home.stage.signals": {
+      "maxVisibleItems": 3,
+      "allVisibleItemsMustBeComplete": true,
+      "centerTrackWithinStage": true,
+      "modeSpecificOuterGeometryOverrideAllowed": false
+    }
+  },
+  "requiredInteractionChecks": ["MODE_PREVIOUS", "MODE_NEXT", "ITEM_PREVIOUS", "ITEM_NEXT", "ITEM_SELECT", "DRAG_SEQUENCE"]
+}

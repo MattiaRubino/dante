@@ -12,12 +12,15 @@
 - Current UI registry: `docs/frontend/ui-registry.md`
 - Terminology registry: `docs/frontend/terminology.md`
 - Research/evidence index: `docs/frontend/research-index.md`
+- Pre-production engineering baseline: `docs/frontend/production-readiness/README.md`
 
 ## Purpose
 
 This is the shared pre-production frontend workspace. It supersedes `prototype/phase-4-today-home` as the active prototype continuation branch and allows Home, Logger and later surfaces to evolve without forcing them into one monolithic standalone HTML artifact.
 
 This branch is not the production frontend implementation. Production framework/runtime selection and application architecture remain a later explicit engineering scope.
+
+From B2.5 onward, "prototype" does not mean disposable engineering. Accepted UX behavior is paired with production-shaped component/state/data/responsive contracts so migration to `apps/web` does not require semantic rediscovery.
 
 ## Mandatory frontend documentation invariant
 
@@ -47,6 +50,24 @@ For every frontend change, update the applicable authorities in the same bounded
 - Prototype-only or mock controls must be explicitly marked as such; presence must never imply implemented backend semantics.
 - Documentation and implementation must move in the same bounded scope. If they diverge, the scope is not closed.
 
+## Pre-production engineering invariant — B2.5+
+
+Every durable/touched frontend feature must progressively establish the applicable production-shape contract:
+
+```text
+component responsibility
++ state ownership
++ semantic events/intents
++ frontend view model
++ data-source boundary
++ responsive/container rules
++ loading/empty/error/unavailable behavior
++ accessibility outcome
++ executable regression evidence
+```
+
+`frontend view model != backend DTO != Domain model != persistence row` is mandatory. Prototype fixtures remain synthetic and do not invent backend semantics/endpoints.
+
 ## Frontend bootstrap order
 
 For any new chat/agent continuing frontend work, read in this order:
@@ -59,15 +80,16 @@ For any new chat/agent continuing frontend work, read in this order:
 6. `docs/frontend/terminology.md`;
 7. `docs/frontend/localization.md`;
 8. `docs/frontend/design-tokens.md`;
-9. current checkpoint / QA record;
-10. research/evidence index when making semantic/UX decisions;
-11. implementation only after the authorities above are understood.
+9. `docs/frontend/production-readiness/README.md` and linked engineering contracts;
+10. current checkpoint / QA record;
+11. research/evidence index when making semantic/UX decisions;
+12. implementation only after the authorities above are understood.
 
 ## Source precedence
 
 1. current `main` Product/North Star, accepted Domain/Logical/Physical semantics and repository rules;
-2. this workstream handoff and mandatory invariant;
-3. frontend registry + current surface contract;
+2. this workstream handoff and mandatory invariants;
+3. frontend registry + current surface contract + production-readiness contracts;
 4. terminology/localization/design-token authorities;
 5. current checkpoint;
 6. modular work source and deterministic build output;
@@ -120,6 +142,14 @@ Accepted behavior:
 - timeline expansion still yields the rail's horizontal space;
 - deep/complex resolution is intentionally deferred to the future overlay/sheet grammar.
 
+## Current B2 / B2.5 state
+
+- B2 Central Stage v16 is saved WIP, not accepted/closed; global resize remains open.
+- B2.5 establishes the pre-production engineering foundation before further resize/brand work.
+- machine-readable stage contracts/fixtures live under `prototypes/frontend/shared/contracts/` and `fixtures/`.
+- `tests/prototypes/frontend-preprod-contracts.py` guards basic contract drift.
+- exact production web framework/toolchain versions remain a future explicit scaffold decision; this workstream does not silently supersede current client ADRs.
+
 ## Constraints carried forward
 
 - one persistent semantic reality, multiple projections/surfaces;
@@ -141,16 +171,17 @@ Accepted behavior:
 
 ## Immediate roadmap
 
-1. **B1 Context Rail** — accepted, documentation/operational hardening in progress;
-2. audit and register the rest of the current Home surface;
-3. **B2 central stage** — define actual purpose/content of current `Worlds` / `Stats`;
-4. naming pass;
-5. overlay grammar and real popup/sheet/dialog cases;
-6. complete Home functional review;
-7. final product identity treatment / skin;
-8. Home QA and final pre-production checkpoint;
-9. Logger and later surfaces.
+1. **B1 Context Rail** — accepted.
+2. **B2 Central Stage** — current WIP direction preserved; responsive/global geometry still open.
+3. **B2.5 Frontend Pre-Production Foundation v0** — establish production-shaped contracts/quality gates before further fragile iteration.
+4. repair/verify resize against the B2.5 geometry matrix without regressing AI expanded/collapsed behavior.
+5. naming + product identity/logo alignment.
+6. overlay grammar and real popup/sheet/dialog cases.
+7. complete Home functional review.
+8. final Home QA/checkpoint.
+9. production-web scaffold decision/gate when product surfaces are ready enough to migrate.
+10. Logger and later surfaces.
 
 ## Scope boundary
 
-Do not silently start production frontend implementation, choose production framework/runtime, invent backend contracts from prototype convenience, alter accepted semantic models, or promote historical UI vocabulary into final Information Architecture without explicit review.
+Do not silently start production frontend implementation, choose/supersede production framework/runtime, invent backend endpoints/contracts from prototype convenience, alter accepted semantic models, or promote historical UI vocabulary into final Information Architecture without explicit review.

@@ -4,7 +4,7 @@ This directory documents the pre-production frontend workstream on `prototype/fr
 
 It validates product surfaces, interaction behavior, information hierarchy, naming, overlay grammar, visual language, responsive/cross-platform behavior and coded UX prototypes before production frontend implementation.
 
-It is not the production application codebase.
+It is not the production application codebase, but from B2.5 onward durable/touched behavior is shaped with production-grade boundaries so later `apps/web` migration is implementation work rather than semantic rediscovery.
 
 ## Mandatory bootstrap
 
@@ -16,10 +16,11 @@ A frontend continuation must read:
 4. `docs/frontend/terminology.md`
 5. `docs/frontend/localization.md`
 6. `docs/frontend/design-tokens.md`
-7. current checkpoint / QA
-8. `docs/frontend/research-index.md` when semantic/UX reasoning is required
+7. `docs/frontend/production-readiness/README.md`
+8. current checkpoint / QA
+9. `docs/frontend/research-index.md` when semantic/UX reasoning is required
 
-The permanent documentation invariant is defined in `docs/workstreams/frontend.md`: implementation, behavior registry, terminology, copy, visual tokens and history must stay synchronized in the same bounded scope.
+The permanent documentation invariant is defined in `docs/workstreams/frontend.md`: implementation, behavior registry, terminology, copy, visual tokens, engineering contracts and history must stay synchronized in the same bounded scope.
 
 ## Current Home state
 
@@ -40,7 +41,7 @@ size     760281 bytes
 SHA-256  a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
 ```
 
-The accepted B1 result is reconstructed deterministically by `prototypes/frontend/home/work/build.py` from the retained complete baseline plus the accepted B1 override. This keeps the complete baseline, the editable/modular work source and the exact accepted result independently traceable.
+B2 Central Stage v16 remains saved WIP, not accepted. Global resize is still open. B2.5 adds production-readiness contracts/quality gates without promoting B2 visually.
 
 ## Authorities
 
@@ -49,6 +50,9 @@ The accepted B1 result is reconstructed deterministically by `prototypes/fronten
 - `terminology.md` — names, technical IDs and naming history
 - `localization.md` + `prototypes/frontend/shared/locales/` — user-facing copy
 - `design-tokens.md` + `prototypes/frontend/shared/theme/tokens.css` — visual tokens
+- `production-readiness/` — component/data/backend-handoff/quality architecture
+- `prototypes/frontend/shared/contracts/` — machine-readable framework-neutral contracts
+- `prototypes/frontend/shared/fixtures/` — synthetic contract fixtures
 - `change-log.md` — append-only frontend history
 
 `docs/frontend/reference/phase4/` remains evidence, not current truth when newer authorities conflict.

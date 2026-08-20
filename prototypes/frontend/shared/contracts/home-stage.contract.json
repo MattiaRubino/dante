@@ -1,0 +1,63 @@
+{
+  "format": "dante-frontend-contract-v0",
+  "contractVersion": "0.1.0",
+  "id": "home.stage",
+  "status": "preproduction-working",
+  "semanticBoundary": {
+    "viewModelIsNotDomainModel": true,
+    "viewModelIsNotBackendDto": true,
+    "viewModelIsNotPersistenceRow": true,
+    "prototypeDataDoesNotCreateBackendSemantics": true
+  },
+  "modes": [
+    {
+      "id": "home.stage.continuity",
+      "workingLabel": "Mondi",
+      "projection": "continuity",
+      "targetVisibleItems": 5
+    },
+    {
+      "id": "home.stage.signals",
+      "workingLabel": "Segnali",
+      "projection": "signals",
+      "maxVisibleItems": 3
+    }
+  ],
+  "uiStates": ["loading", "ready", "empty", "partial", "full", "overflow", "error", "unavailable"],
+  "interactionStates": ["idle", "dragging", "settling"],
+  "events": [
+    "MODE_PREVIOUS",
+    "MODE_NEXT",
+    "ITEM_PREVIOUS",
+    "ITEM_NEXT",
+    "ITEM_SELECT",
+    "DRAG_START",
+    "DRAG_MOVE",
+    "DRAG_END",
+    "ADD_REQUEST"
+  ],
+  "geometryOwnership": {
+    "owner": "home.stage",
+    "outerGeometryMayBeChangedByModes": false,
+    "selectorOwnedByStage": true,
+    "navigationOwnedByStage": true,
+    "viewportOwnedByStage": true,
+    "modeProjectionOwnsOnlyInnerLayout": true
+  },
+  "dataBoundary": {
+    "sourceInterface": "projection-adapter",
+    "mockAndHttpMustShareViewModelContract": true,
+    "runtimeValidationRequiredAtUntrustedBoundary": true,
+    "componentMustNotCallHttpDirectly": true,
+    "componentMustNotConsumeOrmOrDatabaseShape": true
+  },
+  "invariants": [
+    "Changing stage mode does not change outer stage geometry.",
+    "Stage selector and lateral navigation anchors are mode-independent.",
+    "Signals render at most three complete visible items in the desktop pre-production matrix.",
+    "Continuity empty add slots are UI composition and are not persisted backend placeholder entities.",
+    "Window or parent-layout resize must not require mode-specific outer-geometry patches.",
+    "AI expanded/collapsed reflow is owned by the Home shell.",
+    "No visual projection creates canonical DANTE truth."
+  ]
+}

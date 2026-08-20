@@ -45,3 +45,14 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `REMOVED` the experimental external add control from the saved WIP checkpoint.
 - `KNOWN_ISSUE` global browser/window resize is not stable; responsive/global geometry QA remains open.
 - `NO_CHANGE` accepted Home build remains B1 Context Rail v1. This WIP save does not close B2, does not promote new backend semantics, and does not finalize branding/logo treatment.
+
+## 2026-08-20 — B2.5 Frontend Pre-Production Foundation v0
+
+- `ADDED` production-readiness authorities for component architecture, backend integration, quality gates and production-web handoff.
+- `ADDED` framework-neutral Home-stage machine-readable state/event/geometry/data-boundary contract.
+- `ADDED` JSON Schema for the Home-stage frontend view model and synthetic full/partial fixtures.
+- `ADDED` 24-case desktop responsive matrix: six widths × AI expanded/collapsed × continuity/signals.
+- `ADDED` executable stdlib contract-drift guard under `tests/prototypes/frontend-preprod-contracts.py`.
+- `CHANGED` frontend workflow so touched durable behavior is expected to carry production-shaped contracts before `apps/web` migration.
+- `NO_CHANGE` accepted Home visual build remains B1; B2 responsive defect remains open.
+- `NO_CHANGE` no production framework/package versions, backend endpoints, database schema or auth transport strategy are selected by this scope.
