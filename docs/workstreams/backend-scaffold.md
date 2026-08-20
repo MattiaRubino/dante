@@ -1,8 +1,9 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1-01..03 APPROVED / IMPLEMENTATION NOT STARTED**
+- Status: **ACTIVE / CP1 CLOSED / CP2 NEXT**
 - Branch: `feature/backend-scaffold`
 - Decision baseline PRE-SCOPE: `9f7c21857cf7a9c7300053370954c4b93f9bd96a`
+- CP1 closure implementation HEAD: `02d113d772cdb247faebb3cef4d857d125266da3`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
@@ -24,7 +25,17 @@ ENGINEERING FOUNDATION v0
 PRODUCTION BACKEND SCAFFOLD
         ACTIVE
           ↓
-SCAFFOLD QA
+CP1 Python/backend process + typed config
+        CLOSED / DIRECT QA PASS
+          ↓
+CP2 reproducible LOCAL PostgreSQL
+        NEXT
+          ↓
+CP3 persistence + migrations + real PostgreSQL harness
+          ↓
+CP4 quality / CI enforcement
+          ↓
+CP5 scaffold QA / closure
           ↓
 CONCRETE LOGICAL → POSTGRESQL
         NEXT WORKSTREAM BOUNDARY
@@ -53,17 +64,15 @@ The required standard is:
 
 A simpler design is preferred when it preserves the same correctness, operability, security and future migration options.
 
-## 3. Current verified starting state
+## 3. Current verified state
 
-Repository/workstation evidence already completed before scaffold implementation:
+Repository/workstation evidence:
 
 ```text
 GitHub repository                     MattiaRubino/dante
 active branch                         feature/backend-scaffold
 repository rename                     COMPLETE
 local workspace                       /home/mattia/projects/dante
-local/remote branch sync              PASS at decision baseline
-working tree                          CLEAN at decision baseline
 
 Windows 11 host                       PASS
 WSL2                                  PASS
@@ -84,13 +93,27 @@ Detailed clean-machine/onboarding instructions are in:
 
 `docs/development/local-backend-workstation-bootstrap.md`
 
+CP1 is now materially implemented and directly validated:
+
+```text
+apps/backend production project       CREATED / REMOTE
+backend virtual environment            CREATED BY uv sync
+FastAPI process/bootstrap              CREATED / DIRECT STARTUP PASS
+backend typed settings                 CREATED / TESTED
+uv.lock                                COMMITTED / REMOTE VERIFIED
+Ruff                                   DIRECT PASS
+mypy strict                            DIRECT PASS
+pytest                                 25/25 PASS
+CP1 statement coverage                 100.00%
+CP1 branch coverage                    100.00%
+uv build                               PASS
+real /health/live HTTP                 PASS
+real /health/ready HTTP                PASS
+```
+
 Still not implemented:
 
 ```text
-apps/backend production project       NOT CREATED
-backend virtual environment            NOT CREATED BY REPOSITORY SCAFFOLD
-FastAPI process/bootstrap              NOT CREATED
-backend typed settings                 NOT CREATED
 PostgreSQL 18.4 LOCAL image            NOT CREATED
 selected extension envelope            NOT DIRECTLY VERIFIED
 SQLAlchemy/psycopg persistence         NOT CREATED
@@ -107,9 +130,9 @@ Do not create the complete scaffold in one undifferentiated write.
 Use ordered checkpoints. Each checkpoint receives its own exact Git write gate, local direct validation and remote exact-delta QA before the next checkpoint is authorized.
 
 ```text
-CP1  Python/backend process + typed config
+CP1  Python/backend process + typed config                       CLOSED / PASS
  ↓
-CP2  reproducible LOCAL PostgreSQL infrastructure
+CP2  reproducible LOCAL PostgreSQL infrastructure                NEXT
  ↓
 CP3  persistence + migration + real-PostgreSQL harness
  ↓
@@ -120,7 +143,7 @@ CP5  full scaffold QA + closure/handoff
 
 A checkpoint may be split further if implementation evidence shows that doing so improves reviewability or fault isolation.
 
-## 5. CP1 — Backend Python/process/config foundation — APPROVED DESIGN
+## 5. CP1 — Backend Python/process/config foundation — CLOSED
 
 ### Goal
 
@@ -128,7 +151,7 @@ Materialize the smallest real backend project that can be installed reproducibly
 
 ### Detailed authority
 
-The complete frozen CP1 design is intentionally kept in one self-contained document:
+The complete CP1 design and implementation evidence live in:
 
 `docs/development/backend-cp1-contract.md`
 
@@ -143,13 +166,15 @@ That document is the authority for:
 - OpenAPI/docs environment behavior;
 - standard commands;
 - test obligations;
-- file responsibilities;
+- implementation findings and corrections;
+- exact resolved dependency evidence;
+- direct acceptance evidence;
 - deferred-item triggers;
 - permanent configuration-documentation discipline.
 
 Do not reconstruct those decisions from conversation memory when the contract exists.
 
-### Approved target shape
+### Materialized CP1 shape
 
 ```text
 apps/backend/
@@ -176,22 +201,40 @@ apps/backend/
     └── test_settings.py
 ```
 
-The exact file set remains subject to the CP1 implementation write gate. A file is removed from the gate if implementation evidence shows it has no real purpose; additional files require explicit discussion/gate expansion.
-
-### CP1 decisions frozen
+### CP1 final state
 
 ```text
-CP1-01 dependency/version policy        APPROVED
-CP1-02 pyproject/tooling policy          APPROVED
-CP1-03 FastAPI/settings/health policy    APPROVED
-CP1 source/manifests                     NOT CREATED
-CP1 uv.lock                              NOT CREATED
-CP1 direct QA                            NOT RUN
+CP1-01 dependency/version policy        CLOSED / IMPLEMENTED
+CP1-02 pyproject/tooling policy          CLOSED / IMPLEMENTED
+CP1-03 FastAPI/settings/health policy    CLOSED / IMPLEMENTED
+CP1 source/manifests                     REMOTE
+CP1 uv.lock                              REMOTE / VERIFIED
+CP1 direct QA                            PASS
 ```
 
-Version-sensitive research was refreshed on 2026-08-19 before the detailed contract was frozen. The implementation lockfile is still generated by `uv` and becomes exact dependency evidence only after CP1 is materialized.
+Final direct project graph on 2026-08-20:
 
-### CP1 explicitly does not create
+```text
+fastapi             0.141.1
+pydantic            2.13.4
+pydantic-settings   2.15.0
+uvicorn             0.52.4
+httpx2               2.12.0
+mypy                 2.3.1
+pytest               9.1.1
+pytest-cov           7.1.0
+ruff                 0.16.3
+```
+
+Important evidence-driven corrections during CP1:
+
+- Pydantic's mypy plugin was enabled after plain strict mypy produced false-positive `BaseSettings()` constructor errors;
+- one narrow `type: ignore[misc]` remains only on the deliberate runtime frozen-settings mutation probe;
+- `httpx` was replaced by `httpx2` after current Starlette `TestClient` behavior emitted a deprecation warning that DANTE correctly promoted to an error;
+- warnings-as-errors and global mypy strictness were preserved;
+- `.coverage` is ignored as a generated local artifact.
+
+### CP1 explicitly did not create
 
 ```text
 modules/ capability tree
@@ -215,9 +258,9 @@ frontend implementation
 
 The accepted application structure remains the architectural target, but empty layers are not materialized for ceremony.
 
-## 6. CP2 — Reproducible LOCAL PostgreSQL infrastructure
+## 6. CP2 — Reproducible LOCAL PostgreSQL infrastructure — NEXT
 
-CP2 starts only after CP1 direct QA passes.
+CP2 is now the active next checkpoint because CP1 direct QA has passed and its lockfile is remotely verified.
 
 Goal:
 
@@ -245,8 +288,10 @@ Requirements:
 - DANTE-scoped resource names;
 - synthetic LOCAL credentials only;
 - health check;
-- disposable local state unless explicitly documented otherwise;
+- persistent LOCAL data through a Docker-managed volume unless an explicitly disposable test database is being used;
+- explicit reset/destruction procedure;
 - no production credentials;
+- host connection suitable for DBeaver/PyCharm Database Tools over the published LOCAL port;
 - extension installation, activation and version/capability queries directly verified;
 - `pg_stat_statements` preload configuration directly verified.
 
@@ -257,7 +302,7 @@ infra/local/postgres/
 infra/compose/
 ```
 
-Exact files/config/init strategy are decided before the CP2 write gate rather than guessed here.
+Exact files, image base, extension installation strategy, compose topology, volume naming, ports, credentials and initialization semantics must be researched/reviewed before the CP2 write gate rather than guessed here.
 
 PgBouncer remains selected but is not forced into every day-one LOCAL connection. Its activation belongs to the concrete pooling/compatibility validation boundary.
 
@@ -356,23 +401,23 @@ Until explicitly reopened by a later boundary, do not add:
 
 ## 11. Exact resume point for the next chat
 
-A new conversation must not redesign Engineering Foundation, repeat CP1 research by default or jump directly into PostgreSQL/schema code.
+A new conversation must not redesign Engineering Foundation, repeat CP1 implementation work or jump directly into PostgreSQL/schema code.
 
 Resume in this exact order:
 
 ```text
 1. Read current project truth, this handoff, and `docs/development/backend-cp1-contract.md`.
 2. Verify `feature/backend-scaffold`, current remote/local HEAD and clean tree.
-3. CP1-01/02/03 are approved; CP1 implementation files do not exist yet.
-4. Re-check version-sensitive upstream evidence only if time/current releases materially changed.
-5. Present the exact CP1 implementation Git write gate with every created/updated path.
-6. Only after explicit approval, materialize CP1.
-7. Generate `uv.lock` through uv; never hand-write it.
-8. Run the direct acceptance commands in the CP1 contract on the real WSL workstation.
-9. Prove exact remote delta/readback and update actual resolved-version/evidence status.
-10. Proceed to CP2 only after CP1 PASS.
+3. Treat CP1 as CLOSED / DIRECT QA PASS; do not reopen it without concrete evidence.
+4. Start CP2 READ-ONLY design/research for reproducible LOCAL PostgreSQL infrastructure.
+5. Re-check current official source/version evidence for PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6 and the selected built-in extensions.
+6. Decide the DANTE-owned image/build strategy, extension installation path, Compose topology, volume/persistence semantics, healthcheck, port and synthetic LOCAL credential model.
+7. Define direct CP2 acceptance evidence, including persistence across container recreation/restart and host GUI connectivity.
+8. Present a fresh exact CP2 Git write gate before creating any PostgreSQL/Compose file.
+9. Only after explicit approval, materialize CP2 and run direct validation.
+10. Proceed to CP3 only after CP2 PASS.
 ```
 
 ### Immediate next action
 
-**Prepare and review the exact CP1 implementation write gate. No CP1 source/manifest write is authorized by this handoff itself.**
+**Begin CP2 READ-ONLY design/research. No PostgreSQL/Compose repository write is authorized by this handoff alone.**
