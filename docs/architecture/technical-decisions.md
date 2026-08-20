@@ -132,7 +132,7 @@ Capability-first modular monolith.
 
 ## TD-11 — Frontend application architecture
 
-**ACCEPTED / FRONTEND FOUNDATION FINAL REVIEW PASS / PENDING MAIN INTEGRATION**
+**ACCEPTED / FRONTEND FOUNDATION FINAL REVIEW PASS / INTEGRATED VIA PR #22**
 
 Platform boundary:
 
@@ -163,7 +163,7 @@ Shared-package policy:
 
 ## TD-12 — Frontend language/toolchain
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 ```text
 Node 24 LTS
@@ -178,7 +178,7 @@ Turbo orchestrates the JS/frontend task graph only; GitHub Actions remains repos
 
 ## TD-13 — Frontend data/state authority
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 Data Authority Matrix:
 
@@ -198,7 +198,7 @@ Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/
 
 ## TD-14 — Frontend offline posture
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 Mobile activates PowerSync + encrypted SQLite when materialized, initially app-owned under the Mobile platform sync boundary.
 
@@ -210,7 +210,7 @@ Local mobile data is identity-scoped; cross-account local-data leakage is forbid
 
 ## TD-15 — Frontend API/codegen
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 FastAPI OpenAPI → Orval 8 → React-free/auth-storage-agnostic `@dante/api-client` when real OpenAPI exists.
 
@@ -218,7 +218,7 @@ Generated transport source is deterministic, committed where runtime/reviewabili
 
 ## TD-16 — Frontend UI/tokens/i18n/time
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 Web UI: DANTE layer over Radix + Tailwind/CSS variables + Motion where required.
 
@@ -232,7 +232,7 @@ One DTCG-compatible semantic token source produces platform outputs; shared toke
 
 ## TD-17 — Frontend Web runtime config/delivery
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 Web supports one immutable SPA artifact promoted across environments where the platform permits, with versioned Zod-validated public runtime configuration.
 
@@ -240,7 +240,7 @@ Cloudflare Workers Static Assets remains selected Web delivery target. An app-co
 
 ## TD-18 — Mobile build/release
 
-**ACCEPTED / PENDING MAIN INTEGRATION**
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 EAS Build/Submit/Update selected. EAS Workflows optional/dormant because GitHub Actions remains primary orchestration.
 
@@ -342,14 +342,12 @@ Protected workflows use least privilege and immutable Action SHA pinning. Supply
 
 Backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure.
 
-Frontend Foundation is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**.
+Frontend Foundation is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
 
 ```text
-prepare protected-main integration
-→ PR only with explicit authorization
-→ merge only with explicit authorization + expected-head safety
-→ post-merge main readback
-→ new bounded frontend materialization/direct-validation scope
+open fresh bounded frontend materialization/direct-validation workstream
+→ materialize accepted workspace/app/package boundaries
+→ execute carried direct validations progressively
 ```
 
 Backend production scaffold remains a separate **NOT STARTED** workstream and is not silently authorized by Frontend Foundation.
