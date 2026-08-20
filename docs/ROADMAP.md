@@ -24,128 +24,79 @@ Engineering Foundation v0
         CLOSED / ACCEPTED
           ↓
 Frontend Engineering Foundation
-        PASSO 1 DESIGN COMPLETE
-        PASSO 2 DESIGN COMPLETE
-        PASSO 3 CLEAN REVIEW IN PROGRESS
+        PASSO 1 PASS
+        PASSO 2 PASS
+        PASSO 3 FINAL REVIEW PASS
+        DESIGN / ARCHITECTURE CLOSED / ACCEPTED
+        PENDING MAIN INTEGRATION
 ```
 
-Engineering Foundation replaced the previously considered standalone Development Profile phase. Runtime/infrastructure activation occurs at the implementation boundary that actually needs it.
+Architecture closure remains distinct from implementation/direct validation.
 
 ## Immediate next sequence
 
-### 1. Frontend Foundation Passo 3
+### 1. Frontend Foundation protected-main integration
 
-Perform one clean whole-foundation review across:
+The closed frontend design remains branch-local until integration.
 
-```text
-Passo-1 technology selections
-+
-Passo-2 architecture/ownership boundaries
-+
-closed Product/Domain/Logical/Physical/Engineering constraints
-```
+PR/merge follows repository safety:
 
-If blocking design/documentation defects are zero:
-
-```text
-record Frontend Foundation design/architecture closure
-→ prepare protected-main integration
-```
-
-Do not require a pre-closure mega PSV. Direct implementation validation is carried into materialization.
-
-### 2. Protected-main integration
-
-Frontend Foundation remains branch-local until reviewed integration.
-
-PR/merge follows normal repository safety:
-
+- explicit authorization before PR creation;
+- exact branch/main relation;
 - exact changed paths;
-- branch relation to main;
-- real checks if applicable;
-- expected-head merge protection;
-- post-merge readback;
+- applicable real checks only;
+- expected-head merge safety;
+- post-merge main readback;
 - branch lifecycle verification.
 
-No PR or merge is implied without explicit authorization.
+### 2. Frontend production materialization
 
-### 3. Frontend production materialization
-
-Only after Foundation integration, open a new exact scope to create real artifacts required for the selected/accepted baseline:
+Only after Foundation integration, open a new exact scope to create real artifacts required for the accepted baseline:
 
 ```text
 root JS workspace manifests/config
 apps/web
 apps/mobile
 only real shared packages
-architecture lint/boundary enforcement
-selected test scaffolds that can really run
+architecture lint/boundary/cycle enforcement
+selected test scaffolds that can actually run
 ```
 
-Materialization progressively validates Node/pnpm/Turbo, Vite, Expo/RN, package exports/boundaries, generated tokens, Orval when real OpenAPI exists, TanStack Form, PowerSync/OP-SQLite/SQLCipher, WSL↔Android tooling, Web runtime config, Cloudflare/EAS/Sentry only at their activation boundaries.
+Materialization progressively validates Node/pnpm/Turbo, Vite, Expo/RN, package exports/boundaries/cycles, generated tokens, Orval when real OpenAPI exists, TanStack Form, PowerSync/OP-SQLite/SQLCipher, WSL↔Android tooling, runtime config and Cloudflare/EAS/Sentry only at applicable activation boundaries.
 
-Do not create placeholder packages/directories for dormant specialists.
+No dormant specialist receives placeholder infrastructure.
 
-### 4. Backend production scaffold — separate workstream
+### 3. Backend production scaffold — separate workstream
 
 Backend scaffold remains **NOT STARTED** and independent from Frontend Foundation closure.
 
-When authorized, create only real backend scaffold required by the already-closed Engineering Foundation:
+When separately authorized, materialize only real backend scaffold required by the closed Engineering Foundation under accepted `infra/` ownership.
 
-- `apps/backend`;
-- Python/uv/tooling;
-- typed config;
-- SQLAlchemy/psycopg/Alembic;
-- LOCAL Compose/PostgreSQL under accepted `infra/` ownership;
-- real PostgreSQL test/migration harness;
-- only CI checks that can actually execute.
+### 4. Concrete Logical → PostgreSQL implementation
 
-### 5. Concrete Logical → PostgreSQL implementation
+After backend scaffold QA, consume closed Logical contracts, review mappings, implement migrations, test against real PostgreSQL and build capability vertical slices.
 
-After backend scaffold QA, consume closed Logical owner/ref/invariant contracts, review concrete mapping, implement migrations, test against real PostgreSQL and build persistence/application vertical slices.
+### 5. Product vertical slices
 
-Do not mechanically translate 57 Logical owners into 57 services/modules/tables.
+Production product surfaces begin only after relevant frontend/backend foundations and contracts exist.
 
-### 6. Product vertical slices
+Prototype UX remains evidence/oracle; production implementation follows accepted feature/data/UI boundaries.
 
-Production product surfaces begin only after the relevant frontend/backend foundations and contracts exist.
+### 6. Capability-triggered Physical implementation
 
-Prototype UX is evidence/oracle; production implementation is deliberate and follows accepted feature/data/UI boundaries.
+Activate specialist components only at real requirements. Applicable validation obligations travel with activation.
 
-### 7. Capability-triggered Physical implementation
+### 7. Remote DEV
 
-Activate selected specialist components only at real requirements:
+Activate shared remote integration only when LOCAL implementation benefits. Backend hosting/compute and IaC remain deliberate decisions at that boundary.
 
-```text
-PowerSync + encrypted SQLite
-→ mobile/local-offline capability and later Web only if explicitly activated
+### 8. UAT
 
-R2
-→ ContentArtifact byte flow
+Activate for real release candidates and applicable release/provider/performance/security/recovery rehearsal.
 
-OR-Tools
-→ solver-backed capability
+### 9. PROD
 
-Restate
-→ first Class-B durable workflow
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real rehearsal
-```
-
-Applicable validation obligations travel with activation.
-
-### 8. Remote DEV
-
-Activate shared remote integration only when LOCAL implementation benefits from it. Select backend hosting/compute and IaC deliberately at that boundary; use isolated state/identity/secrets and immutable artifact deployment.
-
-### 9. UAT
-
-Activate for real release candidates and applicable migration/release/E2E/provider/performance/security/recovery rehearsal.
-
-### 10. PROD
-
-Activate at production readiness with isolated production resources/identity/secrets, accepted recovery/observability/security posture and exact candidate artifacts.
+Activate at production readiness with isolated production resources/identity/secrets and exact accepted artifacts.
 
 ## Persistent rules
 
@@ -156,4 +107,4 @@ CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
 ```
 
-Continue from durable workstream handoffs rather than redesigning closed decisions from chat memory.
+Continue from durable closure/handoff sources rather than redesigning closed decisions from chat memory.

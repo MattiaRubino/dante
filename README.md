@@ -24,10 +24,8 @@ ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
 
 FRONTEND ENGINEERING FOUNDATION
-ACTIVE on feature/frontend-foundation
-PASSO 1 DESIGN COMPLETE
-PASSO 2 DESIGN COMPLETE
-PASSO 3 CLEAN REVIEW IN PROGRESS
+DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+PENDING MAIN INTEGRATION
 PRODUCTION FRONTEND CODE NOT STARTED
 DIRECT FRONTEND VALIDATION NOT RUN
 
@@ -93,9 +91,9 @@ migrations              Alembic
 
 First LOCAL PostgreSQL baseline includes the full accepted extension envelope when materialized.
 
-## Frontend engineering baseline — active unmerged workstream
+## Frontend engineering baseline — closed design pending integration
 
-Passo 1 technology direction:
+Technology direction:
 
 ```text
 Node 24 LTS
@@ -121,7 +119,7 @@ Zod 4
 Orval 8
 ```
 
-Passo 2 architecture direction:
+Architecture direction:
 
 - feature-first Web/Mobile;
 - thin route/navigation adapters;
@@ -142,15 +140,14 @@ Passo 2 architecture direction:
 - GitHub Actions primary CI/CD;
 - one authoritative WSL-backed checkout posture.
 
-Current frontend authorities on the active branch:
+Frontend authorities pending main integration:
 
 - `docs/architecture/frontend-engineering-foundation.md`;
 - `docs/architecture/frontend-engineering-foundation-part-2.md`;
+- `docs/architecture/frontend-engineering-foundation-final-review.md`;
 - `docs/decisions/ADR-008-frontend-engineering-stack.md`;
 - `docs/decisions/ADR-009-frontend-architecture-boundaries.md`;
 - `docs/workstreams/frontend-foundation.md`.
-
-Until protected-main integration these are branch-local newer truth, not integrated `main` authority.
 
 ## Environment model
 
@@ -161,17 +158,17 @@ UAT
 PROD
 ```
 
-Environments are not Git branches. Frontend/mobile tool-specific profiles map to these four contexts.
+Environments are not Git branches. Frontend/mobile provider profiles map to these contexts.
 
 ## Selected Physical target remains unchanged
 
-PostgreSQL remains canonical. PowerSync/SQLite is bounded noncanonical local/sync state. Class-A async uses transactional outbox when needed; Restate remains selected/dormant until real Class-B use; R2, recovery, solver and observability targets remain governed by their accepted activation boundaries.
+PostgreSQL remains canonical. PowerSync/SQLite is bounded noncanonical local/sync state. Class-A async uses transactional outbox when needed; Restate remains selected/dormant until real Class-B work; R2, recovery, solver and observability targets retain their accepted activation boundaries.
 
 ## Testing and delivery
 
-GitHub Actions is the repository-wide primary CI/CD control plane. Required checks are activated only after real stable contexts exist and have been observed.
+GitHub Actions is repository-wide primary CI/CD. Required checks activate only after real stable emitted contexts exist.
 
-Frontend direct validation is intentionally **NOT RUN** until the accepted Foundation is materialized under a new bounded scaffold scope.
+Frontend direct validation is intentionally **NOT RUN** until the closed Foundation is integrated and materialized under a new bounded scope.
 
 ## Direct evidence truth
 
@@ -194,20 +191,21 @@ Read before the next write:
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
 3. development operating/safety/handoff rules
-4. `docs/workstreams/frontend-foundation.md` for the active frontend workstream
-5. both frontend engineering specifications + ADR-008/ADR-009
+4. `docs/workstreams/frontend-foundation.md`
+5. both frontend engineering specs + final review + ADR-008/ADR-009
 6. closed Engineering Foundation/repository layout
-7. accepted Physical sources and validation register as applicable.
+7. accepted Physical sources/register as applicable.
 
 ### Exact next boundary
 
 ```text
 FRONTEND
-finish Passo 3 clean review
-→ if PASS, record closure and prepare protected-main integration
+prepare protected-main integration
+→ PR only with explicit authorization
+→ after integration open new materialization/direct-validation scope
 
 BACKEND
-production scaffold remains a separate bounded scope and is still NOT STARTED
+production scaffold remains separate and NOT STARTED
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering decisions by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Foundation decisions by default.

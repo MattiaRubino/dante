@@ -22,9 +22,8 @@ Logical Model                      CLOSED
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
-Frontend Foundation Passo 1        DESIGN COMPLETE / branch-local
-Frontend Foundation Passo 2        DESIGN COMPLETE / branch-local
-Frontend Foundation Passo 3        CLEAN REVIEW IN PROGRESS
+Frontend Engineering Foundation    DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+Frontend main integration          PENDING
 Production backend scaffold        NOT STARTED
 Production frontend scaffold       NOT STARTED
 Direct HG / frontend PSV           NOT RUN
@@ -57,11 +56,12 @@ Direct HG / frontend PSV           NOT RUN
 - `development/toolchain-and-dx-v0.md`
 - `development/testing-and-ci-v0.md`
 
-### Frontend Engineering Foundation — active branch-local
+### Frontend Engineering Foundation — closed in design / pending integration
 
-- `workstreams/frontend-foundation.md` — live save-game/current step
+- `workstreams/frontend-foundation.md` — closure/handoff
 - `architecture/frontend-engineering-foundation.md` — Passo-1 technology specification
 - `architecture/frontend-engineering-foundation-part-2.md` — Passo-2 application/package/data-authority specification
+- `architecture/frontend-engineering-foundation-final-review.md` — Passo-3 final review/closure evidence
 - `decisions/ADR-008-frontend-engineering-stack.md` — technology decision
 - `decisions/ADR-009-frontend-architecture-boundaries.md` — structural decision
 
@@ -73,7 +73,7 @@ Direct HG / frontend PSV           NOT RUN
 
 ### Domain / Logical / Physical
 
-Use their indexes and accepted linked sources. Any Physical-consuming implementation also consumes the post-selection validation register.
+Use their indexes and accepted linked sources. Physical-consuming implementation also consumes the applicable post-selection validation register.
 
 Historical evidence remains historical.
 
@@ -94,23 +94,17 @@ prototypes
 
 Paths are created only when real content exists.
 
-Backend Engineering Foundation is closed. Frontend Passo 1 and Passo 2 are design-complete on the active branch and Passo 3 clean review/closure is next.
-
-Frontend durable rules include feature-first platform-specific apps, public-API-only/acyclic dependencies, real-consumer shared packages, explicit Data Authority Matrix, backend canonical effect authority, Web online-first, mobile local/offline PowerSync posture, PWA/service-worker dormant, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
+Frontend durable rules include feature-first platform-specific apps, public-API-only/acyclic dependencies, real-consumer shared packages, Data Authority Matrix, backend canonical effect authority, Web online-first, Mobile PowerSync local/offline posture, PWA/service-worker dormant, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
 
 Cloud/backend compute provider and IaC engine remain deferred until their real infrastructure boundary.
-
-## Repository identity
-
-Continue in the existing repository. Creating a new implementation repo is not the plan.
 
 ## Exact next handoff
 
 ```text
-1. Complete Frontend Foundation Passo 3 clean review.
-2. If blockers == 0, record frontend design/architecture closure.
-3. Prepare/integrate through protected main only with explicit authorization.
-4. After integration, open a new exact scope for production frontend materialization/direct validation.
+1. Frontend Foundation design/architecture review is PASS and closed on its branch.
+2. Prepare PR integration only with explicit authorization.
+3. Merge only through protected-main workflow and expected-head safety.
+4. After integration open a new exact frontend materialization/direct-validation scope.
 5. Backend scaffold remains a separate not-started implementation scope.
 ```
 

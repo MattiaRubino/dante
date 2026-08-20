@@ -10,66 +10,62 @@ Logical Model                 CLOSED
 Pre-Physical coherence        CLOSED
 Physical target               CLOSED / ACCEPTED
 Engineering Foundation v0     CLOSED / ACCEPTED
-Frontend Foundation Passo 1   DESIGN COMPLETE / branch-local
-Frontend Foundation Passo 2   DESIGN COMPLETE / branch-local
-Frontend Foundation Passo 3   CLEAN REVIEW IN PROGRESS
+Frontend Foundation Passo 1   PASS
+Frontend Foundation Passo 2   PASS
+Frontend Foundation Passo 3   FINAL REVIEW PASS
+Frontend Foundation           DESIGN/ARCHITECTURE CLOSED / ACCEPTED / PENDING MAIN INTEGRATION
 Production implementation     NOT STARTED
 Direct PSV                    NOT RUN
 ```
 
-`main` remains integrated authority. Frontend Foundation documents on `feature/frontend-foundation` are newer unmerged workstream truth until protected-main integration.
+`main` remains integrated authority. Frontend Foundation closure is branch-local until protected-main integration.
 
 ## 2. Current architecture entry points
 
-- `system-overview.md` — system/component/authority overview
-- `technical-decisions.md` — accepted technical decision register
+- `system-overview.md` — current system/component/authority overview
+- `technical-decisions.md` — current decision register
 - `frontend-engineering-foundation.md` — frontend technology specification
 - `frontend-engineering-foundation-part-2.md` — frontend application/package/dependency/data-authority specification
+- `frontend-engineering-foundation-final-review.md` — final review/closure evidence
 - `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
 - `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR
-- `../workstreams/frontend-foundation.md` — active frontend handoff
+- `../workstreams/frontend-foundation.md` — frontend closure/integration handoff
 - `../workstreams/engineering-foundation.md` — closed Engineering Foundation handoff
 - `../development/engineering-foundation-v0.md` — backend engineering contract
-- `../development/repository-layout-v0.md` — accepted root topology/path ownership inherited by frontend
+- `../development/repository-layout-v0.md` — accepted root topology/path ownership
 
 ## 3. Current system direction
 
-One DANTE product monorepo:
+One DANTE product monorepo with `apps/backend`, `apps/web`, `apps/mobile` and accepted root ownership for `packages/`, `infra/`, `tooling/`, `tests/system/`, `docs/`, `prototypes/`, `.github/`. Paths are materialized only when real content exists.
 
-```text
-apps/backend
-apps/web
-apps/mobile
-```
-
-Accepted root ownership also reserves `packages/`, `infra/`, `tooling/`, `tests/system/`, `docs/`, `prototypes/` and `.github/`; paths are materialized only when real content exists.
-
-Backend starts as a capability-first modular monolith. PostgreSQL 18.4 remains sole canonical persistence authority.
+Backend is a capability-first modular monolith. PostgreSQL 18.4 remains sole canonical persistence/material-history authority.
 
 Frontend is platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Data paths preserve backend canonical authority and operation-specific offline governance.
 
-## 4. Frontend Foundation branch-local decisions
+## 4. Frontend Foundation accepted design
 
-Passo 1 selects the TypeScript/React/Vite/Expo/pnpm/Turbo/PowerSync/Query/Form/Zod/Orval/UI/test/release baseline.
+Passo 1 fixes the TypeScript/React/Vite/Expo/pnpm/Turbo/PowerSync/Query/Form/Zod/Orval/UI/test/release baseline.
 
 Passo 2 fixes:
 
 - inherited repository root ownership;
 - feature-first Web/Mobile architecture;
 - public-API-only and acyclic dependency direction;
-- small real-consumer shared packages;
+- real-consumer shared-package policy;
 - framework-free shared cores by default;
 - Data Authority Matrix;
 - feature data firewall;
-- mobile local-first/offline capability with backend-governed effects;
-- Web online-first with PowerSync Web + browser PWA/service worker dormant;
+- mobile local/offline capability with backend-governed canonical effects;
+- Web online-first with PowerSync Web + browser PWA/SW dormant;
 - identity-scoped local data;
 - session adapters without invented backend protocol;
 - design-token/UI/i18n/time/config boundaries;
 - LOCAL/DEV/UAT/PROD vocabulary;
 - versioned Web runtime public config;
 - GitHub Actions CI/CD authority;
-- WSL-backed single-checkout developer posture with native bridge direct-validation obligation.
+- WSL-backed single-checkout developer posture with native bridge direct validation.
+
+Passo 3 clean review found and repaired root-topology inheritance, feature-cycle enforcement and stale CURRENT documentation/governance. Blocking defects after repair: **0**.
 
 ## 5. Remaining bounded deferrals
 
@@ -78,29 +74,27 @@ Passo 2 fixes:
 - concrete product feature inventory/folder contents;
 - PowerSync Web activation;
 - browser PWA/service-worker activation;
-- cloud/backend compute provider and IaC engine;
+- backend cloud compute/IaC;
 - infrastructure materialization timing;
 - platform release activation schedule;
 - dormant specialist activation based on measured need.
 
 ## 6. Architecture reopen discipline
 
-Closed Domain/Logical/Physical/Engineering decisions are not casually reselected.
+Closed Domain/Logical/Physical/Engineering/Frontend Foundation decisions are not casually reselected.
 
-Frontend design reopens only with concrete contradictory evidence/material requirements. Native/tooling validation failure first reopens its affected adapter/tooling choice.
+Frontend implementation evidence first reopens the affected technology/adapter/boundary rather than the entire architecture unless a wider contradiction is proven.
 
 ## 7. Next architecture work
 
 ```text
-finish Frontend Foundation Passo 3
+protected-main integration preparation
 ↓
-closure decision / PR preparation
+PR/merge only with explicit authorization
 ↓
-protected-main integration after authorization
+post-merge readback
 ↓
-new bounded materialization scope
-↓
-direct validation progressively
+new bounded frontend materialization/direct-validation scope
 ```
 
 Direct implementation evidence remains NOT RUN until real artifacts execute the required scenarios.

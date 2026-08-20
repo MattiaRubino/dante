@@ -8,7 +8,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and the active branch-local Frontend Foundation until integration.
+Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and the closed branch-local Frontend Foundation pending integration.
 
 Core invariants include:
 
@@ -34,22 +34,11 @@ One product monorepo with accepted ownership:
 
 ```text
 DANTE repository
-│
-├── apps/backend
-│   └── capability-first modular monolith
-│
-├── apps/web
-│   └── React DOM/Vite client; feature-first
-│
-├── apps/mobile
-│   └── Expo/React Native client; feature-first
-│
-├── packages
-│   └── only genuine multi-consumer contracts/artifacts
-│
-├── infra
-│   └── LOCAL/future remote infrastructure definitions
-│
+├── apps/backend     capability-first modular monolith
+├── apps/web         React DOM/Vite client; feature-first
+├── apps/mobile      Expo/React Native client; feature-first
+├── packages         genuine multi-consumer contracts/artifacts only
+├── infra            LOCAL/future remote infrastructure definitions
 ├── tooling
 ├── tests/system
 ├── docs
@@ -57,76 +46,37 @@ DANTE repository
 └── .github
 ```
 
-Paths are materialized only when real content exists. Production implementation continues in the existing repository; a new production repo is not planned.
+Paths are materialized only when real content exists. Production continues in the existing repository.
 
 ## 3. Backend architecture
 
-Target internal shape:
-
-```text
-apps/backend/src/dante
-├── bootstrap
-├── kernel
-├── platform
-└── modules/<capability>
-    ├── domain
-    ├── application
-    ├── ports
-    └── adapters
-        ├── inbound/http
-        └── outbound/persistence|integrations
-```
-
-FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
+`apps/backend/src/dante` uses bootstrap/kernel/platform/capability modules with Domain/application/ports/adapters separation. FastAPI is an inbound adapter/process host; SQLAlchemy/provider/runtime objects stay outside Domain identity; capability boundaries are behavior/cohesion based.
 
 ## 4. Frontend architecture
 
 Web and Mobile are sibling governed clients with platform-specific renderers and selective shared semantics.
 
-Web conceptual internals:
+Web: bootstrap, routes, features, ui, platform, config.
 
-```text
-bootstrap
-routes
-features
-ui
-platform
-config
-```
+Mobile: Expo `app/` route adapters plus `src/bootstrap`, `features`, `ui`, `platform`, `config`.
 
-Mobile conceptual internals:
-
-```text
-app/          Expo Router adapters
-src/bootstrap
-src/features
-src/ui
-src/platform
-src/config
-```
-
-Structural rules:
+Rules:
 
 - feature-first;
-- routes/navigation are thin adapters;
-- public-API-only cross-boundary imports;
+- routes/navigation thin adapters;
+- public-API-only imports;
 - feature dependency cycles forbidden;
-- Web/Mobile do not import each other's private implementation;
+- no Web↔Mobile private implementation imports;
 - UI/platform layers do not depend upward on feature internals;
 - no generic shared/common/utils dumping grounds;
 - production never imports prototypes;
 - architecture rules become executable checks when materialized.
 
-Shared packages are extracted only for real multi-consumer semantics. Initial real candidates are design tokens, i18n and time. Shared client cores remain framework-free by default and never own backend/domain authority.
+Shared packages appear only for real multi-consumer semantics. Shared client cores are framework-free by default and never own backend/domain authority.
 
 ## 5. Canonical persistence and client data authority
 
-```text
-PostgreSQL 18.4
-SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
-```
-
-Selected DB capabilities remain PostGIS, pgvector, native FTS, pg_trgm, unaccent, pg_stat_statements and PgBouncer target posture.
+PostgreSQL 18.4 is sole canonical persistence/material-history authority.
 
 Frontend Data Authority Matrix:
 
@@ -142,95 +92,67 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-An offline operation crosses staging → upload → backend accept/reject → reconciliation. Local arrival/staging does not define semantic truth.
+Offline operation crosses staging → upload → backend accept/reject → reconciliation. Local arrival/staging never defines semantic truth.
 
 ## 6. Frontend data/API boundary
 
-Feature UI consumes feature data/model boundaries rather than direct architecture-level coupling to HTTP, PowerSync, query cache or storage implementation.
+Feature UI consumes feature data/model boundaries rather than direct architecture-level coupling to HTTP, PowerSync, query cache or storage internals.
 
-Real FastAPI OpenAPI eventually feeds Orval-generated React-free/auth-storage-agnostic transport code. Generated code is derivative, deterministic and drift checked where committed.
+Real FastAPI OpenAPI feeds Orval-generated React-free/auth-storage-agnostic transport code when it exists. Generated code is derivative/deterministic/drift checked where committed.
 
 ## 7. Offline/sync
 
-Selected Physical target remains PowerSync + encrypted SQLite bounded local state.
+Mobile activates PowerSync + encrypted SQLite when materialized, initially app-owned by the Mobile platform adapter.
 
-Mobile activates that path when materialized, with PowerSync runtime initially owned by the Mobile platform adapter.
+Web starts online-first; PowerSync Web is available/dormant. Browser PWA/service-worker offline behavior is dormant/not baseline.
 
-Web starts online-first; PowerSync Web is available/dormant.
-
-Browser PWA/service-worker offline behavior is dormant/not baseline.
-
-Local client databases are identity scoped; cross-account local-data leakage is forbidden.
+Local client DBs are identity scoped; cross-account local-data leakage is forbidden.
 
 ## 8. UI/shared semantics
 
-Web owns a DANTE UI layer over selected Web primitives/styling. Mobile owns a separate DANTE Native UI layer. Shared semantic design tokens may intentionally render differently per platform.
+Web owns DANTE Web UI; Mobile owns separate DANTE Native UI. Shared semantic tokens may render differently per platform.
 
-`@dante/i18n` is framework-free; app bootstrap wires React integration/platform detection/persistence.
-
-`@dante/time` owns Temporal-based semantic time handling.
+`@dante/i18n` is framework-free; app bootstrap wires React integration/detection/persistence. `@dante/time` owns Temporal-based semantic time handling.
 
 ## 9. Configuration/secrets
 
-Backend uses typed pydantic-settings fail-fast configuration.
+Backend uses typed pydantic-settings. Frontend public config is typed/validated and contains no secrets.
 
-Frontend public config is typed/validated and contains no secrets.
+Web runtime config is versioned/Zod validated so one SPA artifact can be promoted where delivery permits. An app-coupled Cloudflare Worker may serve bounded bootstrap config but is not a DANTE BFF/business backend.
 
-Web runtime config is versioned and Zod validated so one SPA artifact can be promoted across environments where the delivery platform permits. An app-coupled Cloudflare Worker may serve bounded bootstrap config but is not a DANTE BFF/business backend.
-
-Remote secret posture remains workload identity → provider secret manager → least privilege → rotation/revocation/audit, with GitHub OIDC preferred where supported.
+Remote secret posture remains workload identity → provider secret manager → least privilege → rotation/revocation/audit.
 
 ## 10. Environments
 
-Exactly:
-
-```text
-LOCAL → DEV → UAT → PROD
-```
-
-They are runtime contexts, not Git branches. Frontend/mobile tool profile/channel names map to the same four contexts.
+Exactly `LOCAL → DEV → UAT → PROD`; runtime contexts, not Git branches. Frontend/mobile provider profiles map to the same contexts.
 
 ## 11. Async/durable/object/recovery/solver
 
-Class A async: PostgreSQL transactional outbox + bounded worker.
-
-Class B: Restate selected/dormant until a real Class-B workflow.
-
-ContentArtifact raw bytes: private Cloudflare R2 when activated; PostgreSQL owns authority/metadata.
-
-Recovery: pgBackRest + WAL/PITR + AWS S3 accepted target at recovery boundary.
-
-Solver: OR-Tools CP-SAT; `UNKNOWN != INFEASIBLE`; solver output remains candidate until governed acceptance.
+Class A async remains PostgreSQL transactional outbox + bounded worker. Restate is selected/dormant for Class B. ContentArtifact bytes use private R2 when activated with PostgreSQL authority. Recovery and solver target postures remain unchanged.
 
 ## 12. Observability
 
 Backend: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements target.
 
-Frontend: Sentry behind bounded app/platform observability adapters when activated.
+Frontend: Sentry behind bounded app/platform adapters when activated.
 
-All observability is privacy-minimized operational telemetry, never canonical history or a shadow personal-data store.
+Telemetry remains privacy-minimized and noncanonical.
 
 ## 13. Testing/CI/release
 
-GitHub Actions is repository-wide primary CI/CD authority.
-
-Backend validation remains risk-layered with real PostgreSQL evidence.
+GitHub Actions is repository-wide CI/CD authority.
 
 Frontend validation progressively covers lint/dependency/cycle boundaries, strict TS, unit/component, generated drift, Web E2E, Mobile tests and release/device validation for activated targets.
 
 Status checks become required only after real stable emitted contexts are observed.
 
-Android and iOS are supported architectural targets; platform-specific signed/device/store gates apply only when each platform is activated for release.
+Android/iOS are supported architectural targets; platform-specific release gates apply when activated.
 
 ## 14. Developer posture
 
-Canonical backend semantics remain Linux. Primary Windows posture is one authoritative WSL-backed repository checkout with JetBrains/PyCharm UI on Windows as desired.
-
-Frontend keeps one authoritative checkout; WSL↔Windows Metro/ADB specifics are a direct-validation tooling adapter. Divergent Windows/WSL source clones are forbidden.
+Canonical backend semantics remain Linux. Primary Windows posture is one authoritative WSL-backed checkout. Frontend shares the checkout; WSL↔Windows Metro/ADB is a direct-validation tooling adapter. Divergent source clones are forbidden.
 
 ## 15. Direct evidence boundary
-
-Architecture/design closure is not implementation proof.
 
 ```text
 BACKEND SCAFFOLD          NOT STARTED
@@ -246,13 +168,11 @@ RESTORE REHEARSAL         NOT RUN
 ## 16. Current next step
 
 ```text
-finish Frontend Foundation Passo 3 clean review
+prepare protected-main integration for the closed Frontend Foundation
 ↓
-if blockers == 0 record design/architecture closure
+PR/merge only with explicit authorization
 ↓
-prepare protected-main integration
-↓
-after integration open new production frontend materialization scope
+after integration open new production frontend materialization/direct-validation scope
 ```
 
 Backend production scaffold remains a separate not-started scope.

@@ -1,52 +1,51 @@
 # Workstream — Frontend Engineering Foundation
 
-- Status: **ACTIVE — PASSO 1 DESIGN COMPLETE / PASSO 2 DESIGN COMPLETE / PASSO 3 CLEAN REVIEW IN PROGRESS**
+- Status: **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / PENDING MAIN INTEGRATION**
 - Branch: `feature/frontend-foundation`
-- Base/PRE-SCOPE at workstream opening: `7a1600c2167f68c9281d3ed77b32a3d954fbd061`
+- Opening base: `7a1600c2167f68c9281d3ed77b32a3d954fbd061`
 - Passo-1 checkpoint: `dd23b86ba330f6296806297ef5c68acebbee65e6`
 - Passo-2 initial checkpoint: `0269672b6f1cd085fa935d400b774b098feb4c69`
+- Final-reviewed pre-closure HEAD: `28630c8d8a1133b785850de804d3a37495e0b3c8`
 - PR: **NONE**
-- Product: **DANTE**
-- Domain: **CLOSED / CONSUMED / NOT REOPENED**
-- Logical: **CLOSED / CONSUMED / WL-H01..WL-H12 ACTIVE**
-- Physical: **CLOSED / SELECTED / ACCEPTED / CONSUMED**
-- Engineering Foundation v0: **CLOSED / ACCEPTED / CONSUMED**
-- Production frontend code: **NOT STARTED**
+- Product/Domain/Logical/Physical/Engineering Foundation: **CONSUMED / NOT REOPENED**
+- Production frontend code/scaffold: **NOT STARTED**
 - Dependencies installed/configured: **NO**
-- Direct frontend validation: **NOT STARTED**
+- Direct frontend validation: **NOT RUN**
 
-## 1. Workstream contract
+## 1. Workstream contract and result
 
-Exactly three substantial passes:
+Three substantial passes only:
 
 ```text
-PASSO 1  technology selection
-PASSO 2  application/package/ownership architecture
-PASSO 3  whole-foundation clean review + closure/integration preparation
+PASSO 1  technology selection                        PASS
+PASSO 2  application/package/data architecture       PASS
+PASSO 3  clean review / closure                      FINAL REVIEW PASS
 ```
 
-Only after closure and protected-main integration may a new bounded scope materialize the production frontend scaffold and run direct validations.
+Frontend Foundation is closed at **design/architecture level**. It remains unmerged until protected-main integration.
 
-This workstream does not implement product surfaces, mechanically convert prototypes, weaken Domain/Logical/Physical semantics, create empty ceremonial directories or manufacture direct PASS evidence.
+```text
+DESIGN CLOSED
+!= IMPLEMENTED
+!= INSTALLED
+!= CONFIGURED
+!= DIRECTLY VALIDATED
+```
 
-## 2. Current authorities
+## 2. Durable authorities
 
-Read:
+- `../architecture/frontend-engineering-foundation.md` — Passo 1;
+- `../architecture/frontend-engineering-foundation-part-2.md` — Passo 2;
+- `../architecture/frontend-engineering-foundation-final-review.md` — Passo 3 closure evidence;
+- `../decisions/ADR-008-frontend-engineering-stack.md` — technology ADR;
+- `../decisions/ADR-009-frontend-architecture-boundaries.md` — architecture ADR;
+- closed Engineering Foundation/repository layout;
+- accepted Physical target/register;
+- closed Product/Domain/Logical authorities.
 
-1. development operating/safety/handoff rules;
-2. closed Engineering Foundation and repository layout;
-3. accepted Physical target and validation register;
-4. `../architecture/frontend-engineering-foundation.md`;
-5. `../architecture/frontend-engineering-foundation-part-2.md`;
-6. ADR-008;
-7. ADR-009;
-8. current Product/Domain/Logical authority as required.
+`main` remains integrated truth. These frontend sources are pending-integration branch authority until merge.
 
-`main` remains integrated truth; this branch is authority only for newer unmerged Frontend Foundation decisions.
-
-## 3. Passo 1 — design complete
-
-Selected core:
+## 3. Accepted technology baseline
 
 ```text
 Node 24 LTS
@@ -76,13 +75,13 @@ API
 FastAPI OpenAPI → Orval 8
 ```
 
-Complete UI/testing/release selections remain in the Passo-1 specification.
+Complete UI/testing/release selection remains in Passo 1.
 
-## 4. Passo 2 — design complete after clean-review repair
+## 4. Accepted architecture baseline
 
-### Repository ownership
+### Root/application ownership
 
-Frontend consumes the closed repository topology rather than replacing it:
+Frontend inherits accepted repository ownership:
 
 ```text
 apps/
@@ -95,35 +94,22 @@ prototypes/
 .github/
 ```
 
-These are ownership reservations; empty paths are not created without real content.
+No empty ceremonial directories.
 
-### Application architecture
+### Feature/dependency architecture
 
 - Web/Mobile feature-first;
-- route/navigation files thin adapters;
+- thin route/navigation adapters;
 - bootstrap composition only;
-- platform capabilities app-local;
-- DANTE UI implementations app-local;
-- no generic dumping-ground folders.
-
-### Dependency rules
-
-```text
-packages              X→ apps
-web                   X→ mobile
-mobile                X→ web
-ui                    X→ features
-platform              X→ features
-feature internals     X→ other feature internals
-production            X→ prototypes
-feature cycles        FORBIDDEN
-```
-
-Bootstrap/router consume other layers/features only through public APIs.
+- app-local UI/platform boundaries;
+- public-API-only cross-boundary imports;
+- feature dependency cycles forbidden;
+- no generic dumping grounds;
+- no production prototype imports.
 
 ### Shared packages
 
-Initial real candidates:
+Initial real shared candidates:
 
 ```text
 @dante/design-tokens
@@ -131,17 +117,17 @@ Initial real candidates:
 @dante/time
 ```
 
-API client only with real OpenAPI. Shared feature packages only after real Web+Mobile reuse. Shared client cores are framework-free by default and never own canonical backend/domain authority.
+API client only with real OpenAPI; shared feature packages only after real Web+Mobile reuse. Shared cores framework-free by default and never own canonical backend/domain authority.
 
-### Workspace posture
+### Workspace/tooling
 
-- private/workspace-only internal packages;
+- private workspace-only packages;
 - `workspace:*`;
-- package exports;
-- source-first TypeScript by default;
+- controlled package `exports`;
+- source-first TS default;
 - workspace/feature cycles forbidden;
-- pnpm isolated preferred + direct validation;
-- evidence-driven `nodeLinker: hoisted` fallback accepted.
+- pnpm isolated preferred/direct-validation-required;
+- evidence-driven hoisted fallback allowed.
 
 ### Data Authority Matrix
 
@@ -158,97 +144,76 @@ component transient         React
 cross-tree transient        Zustand only when justified
 ```
 
-Offline operation = local staging → upload → backend accept/reject → reconciliation. Local staging never becomes canonical authority.
+Offline operation = staging → upload → backend accept/reject → reconciliation. Local staging never canonical.
 
-### Data firewall
+### Data/offline/session
 
-Feature UI uses feature data/model boundaries; no direct HTTP/PowerSync/query-cache/storage architecture and no universal frontend `Repository<T>`.
-
-### Offline/session
-
-- Mobile PowerSync app-owned initially under platform sync;
-- Web online-first;
-- PowerSync Web dormant;
-- browser PWA/service worker dormant;
-- local data identity-scoped;
+- feature data/model firewall;
+- no universal frontend Repository;
+- Mobile PowerSync app-owned initially;
+- Web online-first / PowerSync Web dormant;
+- browser PWA/SW dormant;
+- identity-scoped local DB;
 - app-local session adapters;
-- no invented JWT/cookie contract.
+- no invented AuthN token/cookie contract.
 
-### UI/shared semantics
+### UI/shared semantics/config
 
-- distinct DANTE Web and Native UI systems;
-- shared semantic tokens with platform-specific output allowed;
-- `@dante/i18n` React-free;
-- `@dante/time` owns Temporal semantics;
-- generated runtime source deterministic/committed/drift checked when appropriate.
+- separate DANTE Web/Native UI implementations;
+- shared semantic tokens with platform-specific representation;
+- React-free `@dante/i18n`;
+- Temporal `@dante/time`;
+- deterministic generated runtime source/drift checks;
+- versioned/Zod-validated Web public runtime config;
+- exactly LOCAL/DEV/UAT/PROD.
 
-### Config/environments
+### Release/CI/developer posture
 
-Exactly:
+- Android+iOS supported targets; gates apply when activated;
+- GitHub Actions primary CI/CD;
+- Turbo JS/frontend graph only;
+- no guessed required checks;
+- one authoritative WSL-backed checkout;
+- WSL↔Windows Android/Metro direct-validation adapter;
+- EAS Build/Submit/Update selected; Workflows optional/dormant.
+
+## 5. Passo-3 final review
+
+Clean review found and repaired before closure:
+
+1. repository-layout inheritance (`infra/`, `tooling/`, `tests/system`);
+2. missing explicit feature-cycle prohibition;
+3. stale CURRENT status/roadmap/architecture summaries;
+4. stale CURRENT governance continuation.
+
+Final result:
 
 ```text
-LOCAL
-DEV
-UAT
-PROD
+BLOCKING ARCHITECTURE DEFECTS          0
+DOMAIN/LOGICAL/PHYSICAL REOPENS        0
+CANONICAL AUTHORITY CONFLICTS          0
+REPOSITORY LAYOUT CONFLICTS            0 after repair
+FEATURE-CYCLE LOOPHOLE                 CLOSED
+FALSE DIRECT PASS CLAIMS               0
+STALE CURRENT CLOSURE BLOCKERS         0 after repair
 ```
 
-Web public runtime config versioned + Zod validated + fail-fast. App-coupled Cloudflare Worker may serve bounded bootstrap config but is not business/backend authority.
+Full evidence: `../architecture/frontend-engineering-foundation-final-review.md`.
 
-### Platform release
+## 6. Direct-validation obligations carried forward
 
-Android/iOS are supported architectural targets; signed/device/store gates apply when each platform is activated for release.
+Still **NOT RUN**. Materialization must progressively validate:
 
-### Testing/CI/developer posture
-
-- co-located unit/component tests;
-- app-level Web E2E/Maestro;
-- GitHub Actions authority;
-- Turbo JS/frontend graph only;
-- no guessed required-check names;
-- one authoritative WSL-backed checkout preferred;
-- WSL↔Windows Android/Metro adapter direct-validation required;
-- no divergent source clones.
-
-## 5. Passo-3 findings so far
-
-Clean review identified and repaired two non-technology issues before closure:
-
-1. **repository-layout contradiction** — the first Passo-2 draft omitted the already-accepted `infra/`, `tooling/`, `tests/system` root ownership. Corrected to consume `repository-layout-v0.md` rather than redefine root topology;
-2. **feature-cycle gap** — public cross-feature imports were permitted but acyclicity was not explicit. Feature dependency cycles are now forbidden/enforceable.
-
-Global current-truth/navigation files were also stale from Engineering Foundation and are aligned in the same repair scope.
-
-No Product/Domain/Logical/Physical semantic reopen resulted from these repairs.
-
-## 6. Decisions not to reopen casually
-
-- React DOM/Vite Web and Expo/RN Mobile;
-- platform-specific renderers with semantic sharing;
-- feature-first/public-API-only/acyclic architecture;
-- inherited root path ownership;
-- small real-consumer shared package policy;
-- Data Authority Matrix + backend canonical authority;
-- feature data firewall;
-- operation-specific offline eligibility;
-- Web online-first, PowerSync Web dormant, browser SW/PWA dormant;
-- identity-scoped local data;
-- GitHub Actions primary CI/CD;
-- direct validation belongs to later materialization, not a pre-closure mega laboratory.
-
-## 7. Direct-validation register
-
-Still **NOT RUN**. Carry forward at minimum:
-
-- Node/pnpm/Turbo workspace;
-- isolated native graph + evidence-driven hoisted fallback;
+- Node/pnpm/Turbo real workspace;
+- preferred isolated native dependency graph / hoisted fallback only if evidenced;
 - Vite production build;
-- Expo/RN for activated targets;
-- strict TS graph;
+- Expo/RN active targets;
+- strict TS package graph;
 - exports/import/cycle enforcement;
-- Orval against real OpenAPI when available;
-- TanStack Form/Zod Web+RN;
-- DTCG/Terrazzo outputs;
+- deterministic tokens;
+- real OpenAPI→Orval when API exists;
+- TanStack Form Web/RN/Zod;
+- TanStack Query remote path;
 - PowerSync/OP-SQLite/SQLCipher;
 - offline accept/reject/conflict reconciliation;
 - identity-scoped DB lifecycle;
@@ -257,34 +222,42 @@ Still **NOT RUN**. Carry forward at minimum:
 - selected tests;
 - Sentry/EAS integrations when activated.
 
-Failure first reopens the affected adapter/technology unless evidence proves wider contradiction.
+Failure first reopens affected technology/adapter/boundary unless wider contradiction is proven.
 
-## 8. Current Git state
+## 7. Git/continuation state
 
 ```text
 OPENING BASE
 7a1600c2167f68c9281d3ed77b32a3d954fbd061
 
-PASSO 1 CHECKPOINT
+PASSO 1
 dd23b86ba330f6296806297ef5c68acebbee65e6
 
-PASSO 2 INITIAL CHECKPOINT
+PASSO 2 INITIAL
 0269672b6f1cd085fa935d400b774b098feb4c69
+
+FINAL-REVIEWED PRE-CLOSURE HEAD
+28630c8d8a1133b785850de804d3a37495e0b3c8
 ```
 
-## 9. Exact next action
+Final closure commit is the commit containing this handoff plus the Passo-3 final-review document; verify exact remote HEAD during closure QA.
+
+## 8. Exact next action
 
 ```text
-COMPLETE PASSO 3 CLEAN REVIEW
+PENDING MAIN INTEGRATION
 
-IF BLOCKERS == 0
-record Frontend Foundation design/architecture closure
-prepare PR integration scope
+PR creation
+ONLY with explicit authorization
 
-DO NOT YET
-create production scaffold
-install packages
-implement product surfaces
-claim direct implementation PASS
-create/merge PR without explicit authorization
+merge
+ONLY with explicit authorization + expected-head protection
+
+post-merge
+reread/compare main + verify branch lifecycle
+
+then
+new bounded frontend materialization/scaffold/direct-validation scope
 ```
+
+Do not restart general frontend technology/architecture research without concrete contradictory evidence or a materially changed requirement.
