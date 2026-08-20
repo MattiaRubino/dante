@@ -1,6 +1,6 @@
 # DANTE — B2.5 Frontend Pre-Production Foundation v0
 
-**Status:** FOUNDATION BASELINE / B2 VISUAL WORK STILL OPEN  
+**Status:** FOUNDATION BASELINE / QA PASS / B2 VISUAL WORK STILL OPEN  
 **Date:** 2026-08-20  
 **Branch:** `prototype/frontend`  
 **PRE-SCOPE:** `bb2ddc396763b06aa4406035baab837d8e2b704b`
@@ -52,8 +52,33 @@ Key B2 working constraints preserved:
 
 The last formally accepted Home build remains B1 Context Rail v1. B2 v16 remains a saved WIP oracle while responsive hardening continues against this new engineering baseline.
 
-## Validation qualification
+## Validation
 
-The machine-readable contract test is designed to run without third-party Python packages and validates contract-version coherence, mode/state consistency, 24 required responsive matrix combinations, three-signal maximum, five-continuity target and fixture identity/basic shape.
+The machine-readable contract test is stdlib-only and covers contract-version coherence, mode/state consistency, 24 required responsive matrix combinations, three-signal maximum, five-continuity target and fixture identity/basic shape.
 
-Repository post-write path/HEAD verification remains required after this checkpoint is written.
+Local execution of the committed guard logic against the v0 contract shape:
+
+```text
+frontend pre-production contracts: PASS
+contractVersion=0.1.0
+responsiveCases=24
+signalsMaxVisible=3
+continuityTargetVisible=5
+```
+
+Qualification: this is contract-layer evidence, not browser/visual responsive evidence. The actual B2 resize matrix remains to be run against the repaired Home artifact.
+
+## Post-write remote QA
+
+Against PRE-SCOPE `bb2ddc396763b06aa4406035baab837d8e2b704b`:
+
+```text
+expected physical paths   17
+actual physical paths     17
+added                     12
+modified                   5
+deleted                    0
+unexpected                 0
+```
+
+The branch remained a linear fast-forward from PRE-SCOPE. Important contract/test/checkpoint payloads were read back from the remote branch. The final branch HEAD is recorded by Git and must be re-read before the next write gate.
