@@ -2,8 +2,9 @@
 
 **Branch:** `prototype/frontend`  
 **Status:** **APPROVED WORKING VISUAL/BEHAVIOR CHECKPOINT**  
-**Current accepted build:** **B1 Context Rail v1**  
-**Nature:** standalone HTML/CSS/JavaScript coded UX prototype; not production application code.
+**Current working B2 baseline:** **B2 Central Stage v21 responsive**  
+**Last formally closed Home milestone:** **B1 Context Rail v1**  
+**Nature:** standalone HTML/CSS/JavaScript coded UX prototype with production-shaped contracts; not production application code.
 
 ## Retained complete baseline
 
@@ -23,9 +24,9 @@ Git blob
 fd9788212fbbd1ee40e53271cc39cedd9275b341
 ```
 
-## Current accepted B1 output
+## Last formally closed Home milestone — B1
 
-The current accepted Home is reconstructed from the retained complete baseline plus the accepted B1 override through `prototypes/frontend/home/work/build.py`.
+B1 Context Rail v1 remains the last completely closed Home milestone and is reconstructed from the retained A2 baseline plus the accepted B1 override through `prototypes/frontend/home/work/build.py`.
 
 ```text
 size
@@ -38,11 +39,7 @@ result
 DETERMINISTIC BUILD MATCH
 ```
 
-The user visually reviewed and accepted the v3 preview corresponding to this exact byte identity.
-
-## B1 functional delta
-
-Accepted:
+B1 accepted:
 
 - one integrated context rail beside timeline;
 - Capture = user -> DANTE low-friction unclassified capture;
@@ -52,50 +49,94 @@ Accepted:
 - rail stretches down with the timeline column;
 - existing timeline expansion still yields/removes the rail.
 
-Rejected during iteration:
+## Current B2 working baseline — v21
 
-- initial visually compressed/mixed composition;
-- rail stopping early and leaving large unused lower space;
-- ambiguous focus/expand chevrons.
+The current B2 continuation oracle is the user-reviewed responsive v21 state.
+
+### Full
+
+```text
+DANTE_Home_B2_full_responsive_guarded_preview_v21.html
+size       762160 bytes
+SHA-256    b653b5455903d0978cae88ff76fb74c285d0104334871cdb9f406f6d945c4cde
+```
+
+### Partial
+
+```text
+DANTE_Home_B2_partial_responsive_guarded_preview_v21.html
+size       762090 bytes
+SHA-256    390f12cf6c327be27342dcc038d398fd2751c3e2a9cbab3fbf2d981092405763
+```
+
+Durable checkpoint:
+
+`docs/frontend/home/checkpoints/b2-central-stage-v21-responsive.md`
+
+Deterministic archive:
+
+`prototypes/frontend/home/archive/b2-central-stage-v21/`
+
+## B2 v21 functional/visual direction
+
+- stage projections: `Mondi` / `Segnali`;
+- stable technical IDs: `home.stage.continuity` / `home.stage.signals`;
+- Mondi retains the sphere-carousel visual lineage;
+- desktop Continuity target = five visible sphere positions;
+- partial state renders unused existing sphere positions as ghost `+` slots;
+- Segnali uses the same previous/next, selection and drag/swipe grammar;
+- Segnali desktop maximum = three complete visible items;
+- Signal track is centered within the stage;
+- mode switch preserves stage shell/selector/lateral-navigation anchors;
+- AI expanded/collapsed reflow remains Home-shell behavior;
+- resize hardening follows real physical stage geometry and adapts Continuity spacing in the narrow critical state.
+
+## Current QA evidence
+
+```text
+B2 v21 user visual/resize review       ACCEPTED WORKING BASELINE
+full duplicate DOM IDs                 0
+partial duplicate DOM IDs              0
+full inline JS syntax failures         0
+partial inline JS syntax failures      0
+critical 901px + AI collapsed overflow corrected
+B2.5 contract drift guard              PASS
+B2.5 responsive target cases           24
+fresh automated 24-case browser PASS   NOT CLAIMED
+```
+
+The complete browser-matrix rerun is not represented as PASS in this checkpoint. User review accepted the v21 responsive behavior, while the B2.5 matrix remains the formal target for final automated verification.
+
+## Open before B2 closure
+
+1. decide whether/how a `+` / add affordance should exist for full Mondi, Segnali and future stage projections;
+2. align visible logo/product naming to DANTE;
+3. review overall Home palette;
+4. review background/atmosphere;
+5. run final applicable Home/B2 QA after those changes.
 
 ## Non-regression / intentionally unchanged
 
-B1 does not redesign:
+The v21 checkpoint does not authorize changes to:
 
 - timeline semantics;
-- calendar/day ribbon;
-- timeline toolbar;
-- Worlds/Stats;
-- overall Home navigation;
-- brand/skin;
-- production frontend stack;
-- backend/domain/logical/physical semantics.
-
-## Current static evidence
-
-```text
-accepted output size            760281
-accepted output SHA-256         a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
-DOM IDs                         114
-duplicate DOM IDs               0
-style blocks                    38
-inline scripts                  20
-inline JS syntax failures       0
-embedded day-ribbon PNG size    281038 bytes
-embedded day-ribbon PNG SHA-256 9a273c238835dfd66b65544004d75e2adba03971add634a35e86d7fe10f0cc4d
-```
-
-Browser smoke was not independently rerun in this documentation/write scope. Visual acceptance is based on the user-reviewed B1 v3 standalone preview.
+- calendar/day ribbon semantics;
+- context-rail B1 meaning;
+- backend/domain/logical/physical semantics;
+- production framework/runtime selection;
+- real backend endpoints or persistence contracts.
 
 ## Current authorities
 
 Read before Home work:
 
 - `docs/workstreams/frontend.md`
+- `docs/frontend/README.md`
 - `docs/frontend/ui-registry.md`
 - `docs/frontend/home/contract.md`
 - `docs/frontend/terminology.md`
 - `docs/frontend/localization.md`
 - `docs/frontend/design-tokens.md`
+- `docs/frontend/production-readiness/README.md`
 - this checkpoint
 - `docs/frontend/research-index.md` when semantic research is needed.
