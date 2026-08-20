@@ -42,7 +42,7 @@ PRODUCTION BACKEND SCAFFOLD
 ACTIVE
 CP1 PYTHON/BACKEND PROCESS + TYPED CONFIG CLOSED / DIRECT QA PASS
 CP2 REPRODUCIBLE LOCAL POSTGRESQL CLOSED / DIRECT QA PASS
-CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS NEXT
+CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS ACTIVE / IMPLEMENTATION MATERIALIZED / DIRECT QA NOT YET EARNED
 CP4 QUALITY/CI ENFORCEMENT NOT STARTED
 CP5 FULL SCAFFOLD QA/CLOSURE NOT STARTED
 
@@ -52,7 +52,8 @@ NOT STARTED
 DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
 CP1 DIRECT PASS RECORDED
 CP2 LOCAL POSTGRESQL DIRECT PASS RECORDED
-APPLICATION PERSISTENCE/HARNESS NOT STARTED
+CP3 SOURCE/LOCK/HARNESS MATERIALIZED
+CP3 DIRECT QA NOT YET RUN
 DIRECT HG-01..HG-12 NOT RUN
 DIRECT HG PASS 0
 VERIFIED-RUN SCORE NOT AVAILABLE
@@ -358,7 +359,6 @@ PostGIS package/extension                   3.6.4 PASS
 pgvector package/extension                  0.8.6 PASS
 pg_trgm                                     PASS
 unaccent                                    PASS
-native FTS                                  PASS
 pg_stat_statements preload                  PASS
 compute_query_id=on                         PASS
 pg_stat_statements real query collection    PASS
@@ -381,20 +381,56 @@ The first no-cache build exposed a missing `ca-certificates` trust-store prerequ
 
 CP2 does not establish application SQLAlchemy/psycopg connectivity, Alembic migration behavior, privilege separation, concrete schema mapping, restore/PITR or HG/PSV PASS.
 
-## 9. Direct-validation truth beyond CP2
+## 9. Backend CP3 — implementation truth, QA pending
 
-Never claim these have passed:
+CP3 design CP3-01..CP3-06 is closed and materialization is active under:
+
+`docs/development/backend-cp3-persistence-contract.md`
+
+Materialized technical surface includes:
 
 ```text
-APPLICATION DB CONNECTION/HARNESS    NOT STARTED
-ALEMBIC MIGRATION HARNESS            NOT STARTED
-RUNTIME/MIGRATOR PRIVILEGE SPLIT     NOT STARTED
+SQLAlchemy async runtime
+psycopg 3
+Alembic environment + technical baseline
+nested typed database settings
+FastAPI database lifespan
+DB-aware readiness
+schema dante metadata authority
+owner/migrator/runtime provisioning
+real PostgreSQL acceptance harness
+transaction/migration/privilege/runtime tests
+```
+
+Exact locked persistence/tooling resolution:
+
+```text
+SQLAlchemy       2.0.52
+psycopg          3.3.4
+Alembic          1.19.1
+pytest-asyncio   1.4.0
+```
+
+The PostgreSQL acceptance harness uses one disposable cluster created from the already certified `dante-postgres-local:18.4` image per pytest PostgreSQL session. This keeps the ordinary LOCAL `dante` database and cluster-global application-role credentials untouched while exercising the exact CP2 image/envelope.
+
+**No CP3 direct PASS is recorded yet.** The materialized source, migrations and tests still require direct WSL/Docker execution.
+
+## 10. Direct-validation truth beyond CP2
+
+Never claim these have passed until the CP3 acceptance run records direct evidence:
+
+```text
+APPLICATION DB CONNECTION/HARNESS    MATERIALIZED / DIRECT QA NOT RUN
+ALEMBIC MIGRATION HARNESS            MATERIALIZED / DIRECT QA NOT RUN
+RUNTIME/MIGRATOR PRIVILEGE SPLIT     MATERIALIZED / DIRECT QA NOT RUN
+CP3 TRANSACTION ACCEPTANCE           MATERIALIZED / DIRECT QA NOT RUN
+CP3 READINESS FAILURE/RECOVERY        MATERIALIZED / DIRECT QA NOT RUN
 DIRECT HG-01..HG-12                  NOT RUN
 DIRECT HG PASS                       0
 LOW/BASE/HIGH                        NOT RUN
 RESTORE REHEARSAL                    NOT RUN
 MIGRATION REHEARSAL                  NOT RUN
-FAILURE INJECTION                    NOT RUN
+FAILURE INJECTION                    NOT RUN beyond bounded CP3 acceptance
 POWERSYNC DIRECT TEST                NOT RUN
 RESTATE DIRECT TEST                  NOT RUN
 OBJECT RECOVERY TEST                 NOT RUN
@@ -404,7 +440,7 @@ VERIFIED-RUN SCORE                   NOT AVAILABLE
 
 Workstation/CP1/CP2 evidence does not count as a blanket Physical HG/PSV pass.
 
-## 10. Current repository branches/workstreams
+## 11. Current repository branches/workstreams
 
 The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
 
@@ -413,20 +449,21 @@ Engineering Foundation v0 is closed. Repository rename is complete.
 Production Backend Scaffold is the active bounded workstream:
 
 ```text
-branch             feature/backend-scaffold
-handoff            docs/workstreams/backend-scaffold.md
-CP1 contract        docs/development/backend-cp1-contract.md
-CP2 contract        docs/development/backend-cp2-postgres-contract.md
-state              CP1 CLOSED / CP2 CLOSED / CP3 NEXT
+branch              feature/backend-scaffold
+handoff             docs/workstreams/backend-scaffold.md
+CP1 contract         docs/development/backend-cp1-contract.md
+CP2 contract         docs/development/backend-cp2-postgres-contract.md
+CP3 contract         docs/development/backend-cp3-persistence-contract.md
+state               CP1 CLOSED / CP2 CLOSED / CP3 ACTIVE / DIRECT QA PENDING
 ```
 
 The verified workstation/bootstrap state is recorded in:
 
 `docs/development/local-backend-workstation-bootstrap.md`
 
-## 11. Exact next action
+## 12. Exact next action
 
-Do not repeat CP1/CP2 decisions or implementation by default and do not jump to concrete Logical schema implementation.
+Do not redesign CP1, CP2 or CP3 and do not jump to concrete Logical schema implementation.
 
 Resume from the active scaffold handoff:
 
@@ -435,28 +472,28 @@ STEP 1
 Verify feature/backend-scaffold, remote/local HEAD and clean tree.
 
 STEP 2
-Treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new concrete evidence contradicts them.
+Treat CP1 and CP2 as CLOSED / DIRECT QA PASS.
 
 STEP 3
-Begin CP3 READ-ONLY design/research for persistence, migrations and the real PostgreSQL harness.
+Pull the current CP3 materialization and verify the locked dependency graph.
 
 STEP 4
-Re-check current official version/compatibility evidence for SQLAlchemy 2.x, psycopg 3 and Alembic.
+Run non-mutating format/lint, mypy strict and fast pytest first.
 
 STEP 5
-Decide typed DB settings, async engine/session lifecycle, transaction ownership and migration authority.
+Run the real PostgreSQL 18.4 acceptance suite against the disposable CP2-image cluster.
 
 STEP 6
-Decide the real PostgreSQL test/harness lifecycle and the minimum runtime/migrator privilege split that can be exercised honestly in CP3.
+Resolve only evidence-backed CP3 defects inside a new exact correction gate if required.
 
 STEP 7
-Define direct CP3 acceptance evidence, including real async connectivity and clean Alembic base → head migration.
+Run the complete backend validation: locked dependency checks, full pytest and uv build.
 
 STEP 8
-Present an exact CP3 Git write gate before any CP3 repository write.
+Run remote exact-delta/readback QA.
 
 STEP 9
-After explicit approval, materialize CP3 and run direct validation.
+Only after direct evidence is complete, record CP3 CLOSED / DIRECT QA PASS.
 
 STEP 10
 Then CP4 quality/CI enforcement and CP5 scaffold closure.
