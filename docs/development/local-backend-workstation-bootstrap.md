@@ -1,10 +1,11 @@
 # Local Backend Workstation Bootstrap
 
-- Status: **ACTIVE / VERIFIED THROUGH DOCKER DESKTOP + WSL INTEGRATION**
+- Status: **ACTIVE / VERIFIED THROUGH BACKEND CP1**
 - Scope: Windows 11 developer workstation bootstrap for DANTE backend work
 - Canonical backend development environment: **WSL2 + Ubuntu 24.04 LTS + Linux filesystem**
-- Verified workstation checkpoint date: **2026-08-19**
-- PostgreSQL/backend scaffold portion: **NEXT / NOT YET VERIFIED IN THIS GUIDE**
+- Verified workstation checkpoint date: **2026-08-20**
+- Backend CP1: **CLOSED / DIRECT QA PASS**
+- PostgreSQL LOCAL portion: **NEXT / NOT YET VERIFIED IN THIS GUIDE**
 
 ## 1. Purpose
 
@@ -33,6 +34,7 @@ Windows 11
         ├── Python 3.14.7
         ├── Docker CLI / Compose via Docker Desktop integration
         └── /home/<user>/projects/dante
+            └── apps/backend/.venv
 ```
 
 Rules:
@@ -266,7 +268,7 @@ Current repository remote:
 https://github.com/MattiaRubino/dante.git
 ```
 
-At the initial backend-scaffold checkpoint, the working branch is:
+At the current backend-scaffold checkpoint, the working branch is:
 
 ```text
 feature/backend-scaffold
@@ -367,7 +369,47 @@ platform             Linux
 DANTE interpreter    /home/mattia/.local/bin/python3.14
 ```
 
-## 11. PyCharm usage model
+## 11. Bootstrap the DANTE backend environment
+
+After CP1 exists on the active branch:
+
+```bash
+cd ~/projects/dante/apps/backend
+uv sync --locked
+uv lock --check
+```
+
+`uv sync --locked` creates the repository-local backend environment:
+
+```text
+/home/<user>/projects/dante/apps/backend/.venv
+```
+
+The first workstation directly verified:
+
+```text
+project Python       3.14.7
+project executable   apps/backend/.venv/bin/python3
+installed namespace  dante from apps/backend/src/dante
+```
+
+The lockfile is repository authority for the exact dependency graph. Do not hand-edit it.
+
+Current CP1 direct graph after final resolver/remote verification:
+
+```text
+fastapi             0.141.1
+pydantic            2.13.4
+pydantic-settings   2.15.0
+uvicorn             0.52.4
+httpx2               2.12.0
+mypy                 2.3.1
+pytest               9.1.1
+pytest-cov           7.1.0
+ruff                 0.16.3
+```
+
+## 12. PyCharm usage model
 
 The repository remains inside WSL but is opened from PyCharm running on Windows.
 
@@ -379,7 +421,7 @@ Windows path shape:
 
 or the equivalent `\\wsl$\...` path supported by the workstation.
 
-Target model once the backend virtual environment exists:
+Verified backend interpreter target:
 
 ```text
 PyCharm on Windows
@@ -389,11 +431,11 @@ WSL Ubuntu-24.04 project
 /home/<user>/projects/dante/apps/backend/.venv/bin/python
 ```
 
-Do not let the IDE manufacture an unrelated Windows Python environment before the repository-controlled backend scaffold exists.
+Do not let the IDE manufacture an unrelated Windows Python environment.
 
 IDE convenience must never be required for repository correctness: build/test/lint/type/migration commands remain CLI-capable.
 
-## 12. Install Docker Desktop on Windows
+## 13. Install Docker Desktop on Windows
 
 Use Docker Desktop for Windows with the **WSL2 backend**.
 
@@ -437,7 +479,7 @@ Disk image location D:\Docker\DesktopData\DockerDesktopWSL
 
 Therefore Docker images, layers, build cache and Docker-managed volume data for this workstation are anchored on the secondary `D:` drive rather than the Windows system drive.
 
-## 13. Verify Docker inside Ubuntu
+## 14. Verify Docker inside Ubuntu
 
 With Docker Desktop running and `Ubuntu-24.04` integration enabled, open Ubuntu and run:
 
@@ -469,7 +511,7 @@ Docker architecture    x86_64
 
 These Docker/Compose versions are workstation evidence, not permanent DANTE pins unless later repository-controlled infrastructure declares one.
 
-## 14. Docker socket permission case encountered on the first workstation
+## 15. Docker socket permission case encountered on the first workstation
 
 The first workstation initially showed:
 
@@ -544,7 +586,7 @@ Apply & Restart
 
 After reopening Ubuntu, the CLI and daemon were available correctly.
 
-## 15. Docker end-to-end smoke test
+## 16. Docker end-to-end smoke test
 
 Run without `sudo`:
 
@@ -582,13 +624,67 @@ hello-world container           PASS
 Docker data location on D:      PASS
 ```
 
-## 16. PostgreSQL posture
+## 17. Verify backend CP1
+
+From `apps/backend`:
+
+```bash
+uv lock --check
+uv tree --locked --depth 1
+uv sync --locked
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
+uv run pytest
+uv build
+```
+
+The first workstation directly verified all commands above on the final locked environment.
+
+Final CP1 test evidence:
+
+```text
+pytest                  25/25 PASS
+statement coverage      100.00%
+branch coverage         100.00%
+```
+
+The 100% value describes the small CP1 surface only and is not a permanent arbitrary threshold.
+
+For real process verification:
+
+```bash
+cp .env.example .env.local
+uv run --env-file .env.local \
+  uvicorn dante.bootstrap.app:create_app \
+  --factory \
+  --reload
+```
+
+In a second WSL terminal:
+
+```bash
+curl -sS http://127.0.0.1:8000/health/live; printf '\n'
+curl -sS http://127.0.0.1:8000/health/ready; printf '\n'
+```
+
+First workstation evidence:
+
+```text
+Uvicorn factory startup   PASS
+/health/live              {"status":"ok"}
+/health/ready             {"status":"ready"}
+```
+
+`.env.local`, `.venv`, `.coverage`, build output and tool caches are local/generated state and are not committed as source artifacts; `uv.lock` is committed.
+
+## 18. PostgreSQL posture
 
 PostgreSQL server is **container-only** for the DANTE LOCAL baseline.
 
 Do not install a second PostgreSQL server on Windows or directly into Ubuntu.
 
-A Windows GUI such as PyCharm Database Tools or pgAdmin may later connect to the container over the published local port; the GUI is not the database server.
+A Windows GUI such as DBeaver, PyCharm Database Tools or pgAdmin may later connect to the container over the published local port; the GUI is not the database server.
 
 Still not created at this checkpoint:
 
@@ -596,13 +692,13 @@ Still not created at this checkpoint:
 PostgreSQL 18.4 LOCAL container               NOT CREATED
 DANTE-owned PostgreSQL image                  NOT CREATED
 selected extension envelope verification      NOT RUN
-backend application scaffold                  NOT CREATED
-backend virtual environment                   NOT CREATED
+SQLAlchemy/psycopg application persistence    NOT CREATED
+Alembic migration harness                     NOT CREATED
 ```
 
-## 17. Current verified checkpoint
+## 19. Current verified checkpoint
 
-As of the first workstation bootstrap:
+As of 2026-08-20:
 
 ```text
 Repository                         MattiaRubino/dante
@@ -629,16 +725,26 @@ Docker daemon access               PASS
 Docker hello-world                 PASS
 Docker data location on D:         PASS
 
+backend CP1 project                PASS
+backend .venv                      PASS
+locked dependency graph            PASS / REMOTE
+FastAPI factory process            PASS
+Ruff                               PASS
+mypy strict                        PASS
+pytest                             PASS
+uv build                           PASS
+real HTTP probes                   PASS
+
 PostgreSQL LOCAL                   NOT STARTED
-backend scaffold files             NOT CREATED BY THIS CHECKPOINT
 ```
 
-## 18. Resume rule
+## 20. Resume rule
 
 When continuing on a new machine or after interruption:
 
 1. identify the first section whose verification is not PASS;
 2. re-run the verification command for the immediately preceding PASS boundary;
 3. continue from there;
-4. never infer Docker/database/backend-scaffold PASS from an earlier workstation step alone;
-5. before repository writes, follow the current exact Git write gate for the active branch/workstream.
+4. never infer PostgreSQL/database/HG PASS from workstation or CP1 evidence;
+5. current next backend checkpoint is CP2 READ-ONLY design/research;
+6. before repository writes, follow the current exact Git write gate for the active branch/workstream.
