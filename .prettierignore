@@ -4,6 +4,7 @@ coverage/
 **/dist/
 **/build/
 **/.expo/
+**/routeTree.gen.ts
 docs/
 prototypes/
 apps/backend/
