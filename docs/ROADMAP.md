@@ -42,9 +42,9 @@ The closed Frontend Foundation is being materialized under its own bounded works
 
 Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled semantically when either workstream integrates.
 
-### Backend production scaffold — CLOSED ON FEATURE BRANCH / PENDING INTEGRATION
+### Backend production scaffold — CLOSED / INTEGRATED
 
-Branch:
+Historical implementation branch:
 
 `feature/backend-scaffold`
 
@@ -67,7 +67,8 @@ CP5 full scaffold QA / closure
 CLOSED / DIRECT INTEGRATED QA PASS
 
 PR #24
-OPEN / MERGE NOT YET AUTHORIZED
+MERGED INTO PROTECTED main
+POST-MERGE BACKEND CI PASS
 ```
 
 ## CP4 closure evidence
@@ -150,34 +151,30 @@ CP4 required remote workflows              SUCCESS on CP5 PRE-SCOPE
 
 One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL `/forwards/expose` HTTP 500 during disposable-container port forwarding. The created diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
 
+## Backend scaffold integration evidence
+
+```text
+pre-merge main                          ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold final HEAD     46b775bfbfc4747daff341d973df133646dbd0c8
+PR #24                                  MERGED
+merge commit / protected main           41680497c94b0c2f4830679b93f8eb6f1d543f8d
+Backend CI push-main run                32502330955 SUCCESS
+```
+
+The merge commit has the expected prior-main and final-feature parents. Post-merge readback proved protected `main` contains the scaffold. No CodeQL activation, ruleset mutation, frontend mutation or concrete business schema was included in the merge operation.
+
 ## Immediate backend sequence
 
-### 1. Integrate the closed scaffold
+### 1. Concrete Logical → PostgreSQL implementation
 
-PR #24 is the active backend integration PR. The next backend operation is a **fresh exact merge gate**, not more CP5 implementation.
+The production backend scaffold is now closed and verified on protected `main`. The next backend boundary is concrete Logical → PostgreSQL mapping through a fresh bounded workstream/gate.
 
-Before merge:
-
-- revalidate exact `feature/backend-scaffold` HEAD;
-- revalidate current protected `main`;
-- require `Backend CI Gate` and `Dependency Review` green on the actual merge candidate;
-- ensure branch is up to date;
-- ensure no unresolved review threads or unexpected delta;
-- perform no auto-merge or unrelated repository mutation.
-
-After merge:
-
-- verify protected `main` contains the scaffold;
-- verify push-to-main CI completes green;
-- reconcile durable status/handoff truth;
-- only then mark scaffold integration complete.
-
-### 2. Concrete Logical → PostgreSQL implementation
-
-After verified scaffold integration:
+The first step is **not** to create all tables mechanically. It is to consume the closed Logical owner/ref/invariant contracts plus the accepted Physical PostgreSQL posture and propose a coherent concrete mapping.
 
 ```text
 consume closed Logical owner/ref/invariant contracts
+        ↓
+consume accepted Physical PostgreSQL constraints
         ↓
 propose concrete physical mapping
         ↓
@@ -192,7 +189,7 @@ persistence/application vertical slice
 
 Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
 
-### 3. Product vertical slices
+### 2. Product vertical slices
 
 Once the first concrete persistence mapping exists, product work proceeds vertically rather than by completing every layer in isolation:
 
@@ -232,7 +229,7 @@ pgBackRest + AWS S3
 
 ## CodeQL boundary
 
-CodeQL remains a separate post-backend-main activation boundary. CP4/CP5 closure does not authorize a custom CodeQL workflow or required CodeQL check.
+CodeQL remains a separate post-backend-main activation boundary. Backend scaffold integration does not authorize a custom CodeQL workflow or required CodeQL check.
 
 ## Remote environments
 
@@ -263,5 +260,7 @@ WORKFLOW EXISTS != TRUSTED CHECK
 TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 CLOSED FEATURE BRANCH != INTEGRATED MAIN UNTIL VERIFIED MERGE
 ```
+
+Backend scaffold now satisfies the final rule: its protected-main merge and post-merge CI were directly verified.
 
 Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.

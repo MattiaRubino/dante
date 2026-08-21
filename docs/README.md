@@ -27,14 +27,14 @@ Engineering Foundation v0          CLOSED / ACCEPTED
 Frontend Engineering Foundation    CLOSED / ACCEPTED / FINAL REVIEW PASS
 Frontend main integration          COMPLETE VIA PR #22
 Frontend materialization           ACTIVE ON feature/frontend-materialization / DIRECT PASS NOT YET EARNED
-Production backend scaffold        CLOSED ON feature/backend-scaffold / DIRECT QA PASS
+Production backend scaffold        INTEGRATED IN PROTECTED main / DIRECT QA PASS
 Backend CP1                        CLOSED / DIRECT QA PASS
 Backend CP2                        CLOSED / DIRECT QA PASS
 Backend CP3                        CLOSED / DIRECT QA PASS
 Backend CP4                        CLOSED / DIRECT REMOTE QA PASS
 Backend CP5                        CLOSED / DIRECT INTEGRATED QA PASS
-Backend integration PR #24         OPEN / MERGE NOT YET AUTHORIZED
-Concrete PostgreSQL business map   NOT STARTED / NEXT AFTER SCAFFOLD INTEGRATION
+Backend integration PR #24         MERGED / POST-MERGE BACKEND CI PASS
+Concrete PostgreSQL business map   NOT STARTED / NEXT BACKEND IMPLEMENTATION BOUNDARY
 Direct HG / blanket PSV            NOT RUN
 ```
 
@@ -55,9 +55,9 @@ Direct HG / blanket PSV            NOT RUN
 - `development/repository-engineering-safety.md`
 - `development/github-main-ruleset.json`
 
-### Backend scaffold — closed on feature branch / pending integration
+### Backend scaffold — closed / integrated
 
-- `workstreams/backend-scaffold.md` — production-backend scaffold handoff, CP1–CP5 evidence and exact resume point
+- `workstreams/backend-scaffold.md` — production-backend scaffold handoff, CP1–CP5 evidence and verified main-integration record
 - `development/backend-cp1-contract.md` — CP1 Python/process/config authority
 - `development/backend-cp2-postgres-contract.md` — CP2 LOCAL PostgreSQL authority
 - `development/backend-cp3-persistence-contract.md` — CP3 persistence/migrations/privileges/real-PostgreSQL authority
@@ -118,7 +118,7 @@ prototypes
 
 Paths are created only when real content exists.
 
-Backend closed-scaffold truth includes Python 3.14.7, exact uv 0.12.5 project authority, Ruff, mypy strict, pytest, SQLAlchemy 2.0 stable, psycopg 3, Alembic, the DANTE-owned PostgreSQL 18.4 image, least-privilege application roles, real PostgreSQL acceptance harness, calibrated CI and protected-main required checks.
+Backend integrated-scaffold truth includes Python 3.14.7, exact uv 0.12.5 project authority, Ruff, mypy strict, pytest, SQLAlchemy 2.0 stable, psycopg 3, Alembic, the DANTE-owned PostgreSQL 18.4 image, least-privilege application roles, real PostgreSQL acceptance harness, calibrated CI and protected-main required checks.
 
 Frontend durable rules include feature-first platform-specific apps, public-API-only acyclic dependencies, real-consumer shared packages, Data Authority Matrix, backend canonical effect authority, Web online-first, Mobile PowerSync local/offline posture, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
 
@@ -126,7 +126,7 @@ Cloud/backend compute provider and IaC engine remain deferred until their real i
 
 ## CI truth
 
-CP4 is closed on `feature/backend-scaffold` after direct local, remote green, deliberate-red and recovery-green evidence.
+CP4 is closed and integrated into protected `main` via PR #24 after direct local, remote green, deliberate-red and recovery-green evidence.
 
 Materialized:
 
@@ -180,16 +180,29 @@ real Uvicorn startup                      PASS
 
 A single intervening Docker Desktop/WSL `/forwards/expose` 500 was isolated to local port-forwarding state; the subsequent clean full suite passed 50/50. No backend source change was required.
 
+## Backend scaffold protected-main integration
+
+Verified integration record:
+
+```text
+PR #24                                  MERGED
+pre-merge main                          ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold final HEAD     46b775bfbfc4747daff341d973df133646dbd0c8
+merge commit / protected main           41680497c94b0c2f4830679b93f8eb6f1d543f8d
+Backend CI push-main run                32502330955 SUCCESS
+```
+
+The merge commit has exactly the expected two parents. The merge gate did not delete the feature branch, activate CodeQL, mutate frontend, alter the ruleset or start concrete business-schema implementation.
+
 ## Exact next handoffs
 
 ```text
 BACKEND
-1. Treat CP1–CP5 as CLOSED / DIRECT QA PASS.
-2. PR #24 remains the active backend integration PR and is not auto-merged.
-3. Next backend action is a fresh explicit merge gate for PR #24 into protected main.
-4. Revalidate required checks on the actual merge candidate and verify main after merge.
-5. Concrete Logical → PostgreSQL becomes the next implementation boundary only after verified scaffold integration.
-6. CodeQL remains a separate post-main activation boundary and is not implicitly authorized.
+1. Treat CP1–CP5 and backend scaffold integration as CLOSED / DIRECT QA PASS.
+2. Protected main contains the accepted production backend scaffold via merged PR #24.
+3. Concrete Logical → PostgreSQL is now the next backend implementation boundary.
+4. Start that boundary through a fresh exact workstream/gate that consumes the closed Logical and Physical authorities.
+5. CodeQL remains a separate post-main activation boundary and is not implicitly authorized.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
