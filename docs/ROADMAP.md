@@ -42,7 +42,7 @@ The closed Frontend Foundation is being materialized under its own bounded works
 
 Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled semantically when either workstream integrates.
 
-### Backend production scaffold — ACTIVE
+### Backend production scaffold — CLOSED ON FEATURE BRANCH / PENDING INTEGRATION
 
 Branch:
 
@@ -64,7 +64,10 @@ CP4 quality / CI enforcement
 CLOSED / DIRECT REMOTE QA PASS
 
 CP5 full scaffold QA / closure
-NEXT
+CLOSED / DIRECT INTEGRATED QA PASS
+
+PR #24
+OPEN / MERGE NOT YET AUTHORIZED
 ```
 
 ## CP4 closure evidence
@@ -109,7 +112,7 @@ Dependency Review     SUCCESS
 
 M6 proved that the aggregate gate fails when a mandatory upstream job fails while PostgreSQL remains independently diagnostic. Dependency Review failed for an intentional deny rule against a real dependency already visible from `apps/backend/uv.lock`; no vulnerable package was introduced.
 
-Protected `main` now requires:
+Protected `main` requires:
 
 ```text
 Backend CI Gate
@@ -120,40 +123,58 @@ The ruleset also requires the PR branch to be up to date with protected `main` b
 
 Repository owner enabled the Actions full-length-SHA requirement. The current connector cannot directly read that setting; it remains explicitly classified as owner-applied / connector-unverifiable.
 
+## CP5 closure evidence
+
+CP5 re-proved the integrated scaffold without adding business schema or changing backend source:
+
+```text
+exact branch / current-main relation       PASS
+uv 0.12.5                                  PASS
+Python 3.14.7                               PASS
+locked dependency bootstrap                PASS
+Ruff format/lint                           PASS
+mypy strict                                PASS
+fast pytest                                32/32 PASS
+package build                              PASS
+canonical PostgreSQL image rebuild         PASS
+PostgreSQL acceptance                      18/18 PASS
+full backend pytest                        50/50 PASS
+full-run coverage                          97.42% evidence only
+LOCAL PostgreSQL healthy                   PASS
+explicit database provisioning             PASS
+real Uvicorn factory startup               PASS
+/health/live                               200 PASS
+/health/ready                              200 PASS
+CP4 required remote workflows              SUCCESS on CP5 PRE-SCOPE
+```
+
+One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL `/forwards/expose` HTTP 500 during disposable-container port forwarding. The created diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
+
 ## Immediate backend sequence
 
-### 1. CP5 full scaffold QA / closure
+### 1. Integrate the closed scaffold
 
-CP5 is now the only next backend checkpoint.
+PR #24 is the active backend integration PR. The next backend operation is a **fresh exact merge gate**, not more CP5 implementation.
 
-It should re-prove the integrated scaffold as a whole without adding business schema:
+Before merge:
 
-- exact current branch/main relation;
-- clean locked uv bootstrap;
-- Python 3.14.7;
-- backend process startup;
-- `/health/live` and readiness behavior;
-- Ruff format/lint;
-- mypy strict;
-- backend pytest;
-- package build;
-- canonical `dante-postgres-local:18.4` rebuild;
-- PostgreSQL 18.4 + selected extensions;
-- SQLAlchemy/psycopg async connection;
-- Alembic base → head and drift expectations;
-- real PostgreSQL integration harness;
-- protected-main required CI contexts remain emitted and green;
-- current repository safety/ruleset truth remains coherent.
+- revalidate exact `feature/backend-scaffold` HEAD;
+- revalidate current protected `main`;
+- require `Backend CI Gate` and `Dependency Review` green on the actual merge candidate;
+- ensure branch is up to date;
+- ensure no unresolved review threads or unexpected delta;
+- perform no auto-merge or unrelated repository mutation.
 
-CP5 must not become a disguised domain/business implementation phase.
+After merge:
 
-### 2. Backend scaffold integration
+- verify protected `main` contains the scaffold;
+- verify push-to-main CI completes green;
+- reconcile durable status/handoff truth;
+- only then mark scaffold integration complete.
 
-PR #24 is the active backend integration PR. It must not be merged until a separate explicit merge gate is approved and the relevant required checks are green on the actual merge candidate.
+### 2. Concrete Logical → PostgreSQL implementation
 
-### 3. Concrete Logical → PostgreSQL implementation
-
-Only after scaffold closure:
+After verified scaffold integration:
 
 ```text
 consume closed Logical owner/ref/invariant contracts
@@ -171,9 +192,22 @@ persistence/application vertical slice
 
 Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
 
-## Product vertical slices
+### 3. Product vertical slices
 
-Production product surfaces begin only after the relevant frontend/backend foundations, scaffolds and contracts exist. Prototype UX remains evidence/oracle; production implementation follows accepted feature/data/UI boundaries.
+Once the first concrete persistence mapping exists, product work proceeds vertically rather than by completing every layer in isolation:
+
+```text
+user capability
+→ required canonical data
+→ domain/application behavior
+→ PostgreSQL mapping + migration
+→ persistence adapter
+→ API boundary
+→ frontend consumption
+→ end-to-end acceptance
+```
+
+Frontend materialization may continue in parallel on its separate worktree.
 
 ## Capability-triggered Physical implementation
 
@@ -198,7 +232,7 @@ pgBackRest + AWS S3
 
 ## CodeQL boundary
 
-CodeQL remains a separate post-backend-main activation boundary. CP4 closure does not authorize a custom CodeQL workflow or required CodeQL check.
+CodeQL remains a separate post-backend-main activation boundary. CP4/CP5 closure does not authorize a custom CodeQL workflow or required CodeQL check.
 
 ## Remote environments
 
@@ -227,6 +261,7 @@ CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
 WORKFLOW EXISTS != TRUSTED CHECK
 TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
+CLOSED FEATURE BRANCH != INTEGRATED MAIN UNTIL VERIFIED MERGE
 ```
 
 Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.
