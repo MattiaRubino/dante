@@ -2,9 +2,9 @@
 
 - Status: **CURRENT TRUTH**
 - Product: **DANTE**
-- Branch-local current work: `feature/backend-scaffold`
-- Protected-main truth reconciled from: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Active backend integration PR: `#24`
+- Protected-main truth reconciled from: `41680497c94b0c2f4830679b93f8eb6f1d543f8d`
+- Backend integration PR `#24`: **MERGED**
+- Frontend materialization workstream: `feature/frontend-materialization`
 
 ## 1. Executive state
 
@@ -41,13 +41,13 @@ ACTIVE ON feature/frontend-materialization
 DIRECT FRONTEND VALIDATION NOT YET EARNED
 
 PRODUCTION BACKEND SCAFFOLD
-CLOSED ON feature/backend-scaffold / DIRECT QA PASS
+INTEGRATED IN PROTECTED main / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
 CP4 CLOSED / DIRECT REMOTE QA PASS
 CP5 CLOSED / DIRECT INTEGRATED QA PASS
-PR #24 OPEN / MERGE NOT YET AUTHORIZED
+PR #24 MERGED / POST-MERGE BACKEND CI PASS
 
 PROTECTED-MAIN CI ENFORCEMENT
 Backend CI Gate REQUIRED
@@ -56,13 +56,13 @@ branch up-to-date REQUIRED
 source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / NEXT AFTER VERIFIED SCAFFOLD INTEGRATION
+NOT STARTED / NEXT BACKEND IMPLEMENTATION BOUNDARY
 
 DIRECT HG-01..HG-12
 NOT RUN / PASS 0
 ```
 
-Architecture/design closure does not imply implementation PASS. Branch-local implementation evidence outranks older `main` status text only for this still-unmerged backend workstream.
+Architecture/design closure does not imply implementation PASS. Current protected `main` now contains the accepted backend scaffold; future backend implementation must consume the closed Product/Domain/Logical/Physical/Engineering authorities rather than reopen them by default.
 
 ## 2. Product and semantic invariants
 
@@ -385,12 +385,47 @@ Closure decision:
 ```text
 CP5
 CLOSED / DIRECT INTEGRATED QA PASS
-
-PRODUCTION BACKEND SCAFFOLD
-CLOSED ON FEATURE BRANCH / PENDING PROTECTED-MAIN INTEGRATION
 ```
 
-## 11. Current direct-validation non-claims
+## 11. Backend scaffold protected-main integration — VERIFIED / PASS
+
+Approved merge candidate:
+
+```text
+pre-merge protected main              ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold final HEAD   46b775bfbfc4747daff341d973df133646dbd0c8
+```
+
+PR #24 merged using the accepted merge-commit method. GitHub produced:
+
+```text
+merge commit / current protected main 41680497c94b0c2f4830679b93f8eb6f1d543f8d
+parent 1                              ff46eb16b971b1fde96eef9047b09faa02e1a5db
+parent 2                              46b775bfbfc4747daff341d973df133646dbd0c8
+```
+
+Post-merge verification:
+
+```text
+PR #24 state                          CLOSED / MERGED
+protected main == merge SHA           PASS
+merge parentage                       PASS
+Backend CI push-main run 32502330955 SUCCESS
+```
+
+The merge gate performed no branch deletion, CodeQL activation, ruleset mutation, frontend mutation, concrete business-schema implementation or other unrelated repository write.
+
+Final scaffold integration decision:
+
+```text
+PRODUCTION BACKEND SCAFFOLD
+CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
+
+POST-MERGE BACKEND CI
+PASS
+```
+
+## 12. Current direct-validation non-claims
 
 Do not extrapolate scaffold evidence into blanket Physical or production validation:
 
@@ -408,32 +443,36 @@ FRONTEND DIRECT MATERIALIZATION PASS   NOT YET EARNED
 CONCRETE BUSINESS DB SCHEMA            NOT STARTED
 ```
 
-## 12. Active branches / workstreams
+## 13. Active branches / workstreams
 
 ```text
 feature/backend-scaffold
-→ CP1–CP5 CLOSED / DIRECT QA PASS
-→ PR #24 active; merge not authorized yet
-→ next action: separate explicit merge gate
+→ CLOSED historical implementation branch
+→ CP1–CP5 accepted
+→ integrated into protected main via merged PR #24
 
 feature/frontend-materialization
 → frontend production materialization
 → separate worktree/workstream
+
+BACKEND NEXT
+→ Concrete Logical → PostgreSQL
+→ fresh bounded workstream/gate required before implementation
 ```
 
-The workstreams may proceed in parallel. Shared global documentation must be reconciled semantically at integration time; one workstream must not overwrite newer protected-main truth from the other.
+Frontend and backend work may proceed in parallel. Shared global documentation must be reconciled semantically at integration time; one workstream must not overwrite newer protected-main truth from the other.
 
-## 13. Exact next backend action
+## 14. Exact next backend action
 
 ```text
-1. Treat CP1–CP5 as closed accepted backend scaffold checkpoints.
-2. Do not add more implementation to CP5.
-3. Open a fresh exact merge gate for PR #24.
-4. Revalidate branch HEAD, current main, required checks, up-to-date state, review threads and exact PR delta on the actual merge candidate.
-5. Merge only with explicit authorization and the accepted merge-commit method.
-6. Perform post-merge readback and push-to-main CI verification before declaring scaffold integration complete.
-7. Keep CodeQL a separate post-main boundary.
-8. Start concrete Logical → PostgreSQL mapping only after verified scaffold integration.
+1. Treat CP1–CP5 and protected-main scaffold integration as closed accepted evidence.
+2. Do not reopen the scaffold without concrete contradictory evidence.
+3. Open a fresh bounded workstream/gate for Concrete Logical → PostgreSQL.
+4. Consume the closed Logical owner/ref/invariant authorities and accepted Physical PostgreSQL posture before proposing mappings.
+5. Do not mechanically map 57 Logical owners to 57 tables/services.
+6. Review concrete tables/constraints/indexes/history semantics before migrations.
+7. Keep CodeQL a separate explicitly authorized post-main boundary.
+8. Preserve frontend materialization as an independent parallel workstream.
 ```
 
 Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3/CP4/CP5 decisions without concrete contradictory evidence.
