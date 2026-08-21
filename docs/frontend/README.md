@@ -44,14 +44,16 @@ SHA-256  a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0
 Current B2 working visual/behavior baseline:
 
 ```text
-B2 Central Stage v21 responsive
-FULL SHA-256     b653b5455903d0978cae88ff76fb74c285d0104334871cdb9f406f6d945c4cde
-PARTIAL SHA-256  390f12cf6c327be27342dcc038d398fd2751c3e2a9cbab3fbf2d981092405763
+B2 Central Stage v22 no persistent add
+FULL SHA-256     18e1ae3d6558164975c8783f24a8f86051be57daeb9093661e1c5ee6a9fe6f76
+PARTIAL SHA-256  f6ee524db98a799c81fa2c704e751e34af3d1e02482f72eb006b20630ef1ada3
 ```
 
-v21 supersedes v16 as the current B2 continuation oracle after user-reviewed resize hardening. B2 is **not closed**: add-affordance, DANTE logo/name alignment, palette/background and final QA remain open.
+v22 supersedes v21 as the current B2 continuation oracle. The stage add/configuration decision is now fixed: Home has no persistent `+`, partial states show only real items, and an empty state may hand off to a dedicated management surface.
 
-B2.5 provides the production-readiness contracts/quality gates that now govern further durable work.
+B2 remains **open** for DANTE logo/name alignment, palette/background work and final QA.
+
+B2.5 provides the production-readiness contracts/quality gates that govern further durable work. The current Home-stage machine-readable contract version is `0.2.0`.
 
 ## Authorities
 
@@ -68,10 +70,10 @@ B2.5 provides the production-readiness contracts/quality gates that now govern f
 
 Current B2 checkpoint:
 
-`docs/frontend/home/checkpoints/b2-central-stage-v21-responsive.md`
+`docs/frontend/home/checkpoints/b2-central-stage-v22-no-persistent-add.md`
 
 Current deterministic B2 archive:
 
-`prototypes/frontend/home/archive/b2-central-stage-v21/`
+`prototypes/frontend/home/archive/b2-central-stage-v22/`
 
 `docs/frontend/reference/phase4/` remains evidence, not current truth when newer authorities conflict.
