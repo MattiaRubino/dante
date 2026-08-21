@@ -2,7 +2,7 @@
 
 - Status: **CURRENT DECISION REGISTER**
 
-This file summarizes current accepted technical decisions. Detailed rationale/constraints live in linked Domain/Logical/Physical/Engineering Foundation sources.
+This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs.
 
 ## TD-01 — Canonical persistence
 
@@ -29,47 +29,37 @@ Selected target:
 - pg_stat_statements;
 - PgBouncer 1.25.2.
 
-Engineering Foundation adds: the full extension envelope is installed/enabled from the first LOCAL PostgreSQL baseline so compatibility is exercised early, even before every feature uses the capability.
-
-PgBouncer activation remains tied to concrete pooling/replication validation.
+Full selected extension envelope is installed/enabled from the first LOCAL PostgreSQL baseline when materialized. PgBouncer activation remains tied to concrete validation.
 
 ## TD-03 — Offline/sync
 
 **ACCEPTED TARGET / NOT IMPLEMENTED**
 
-PowerSync Open Edition + encrypted SQLite bounded local state.
+PowerSync + encrypted SQLite bounded local state.
 
 ```text
 SQLite != canonical truth
 PowerSync arrival order != conflict resolution
-consequential offline mutation → backend revalidation → PostgreSQL
+offline capability = operation-specific
+local pending mutation != canonical accepted effect
+consequential offline mutation → backend governance/revalidation → PostgreSQL
 ```
+
+Frontend Data Authority Matrix further qualifies client ownership without changing Physical authority.
 
 ## TD-04 — Async/durable work
 
 **ACCEPTED**
 
-Class A:
+Class A: PostgreSQL transactional outbox + bounded worker.
 
-```text
-PostgreSQL transactional outbox + bounded worker
-```
-
-Class B:
-
-```text
-Restate selected
-initially DORMANT
-activation = first real Class-B durable workflow
-```
+Class B: Restate selected, initially dormant; activate at first real Class-B durable workflow.
 
 ## TD-05 — Object bytes
 
 **ACCEPTED TARGET / NOT IMPLEMENTED**
 
-Cloudflare R2 Standard, private, EU jurisdiction, raw bytes only.
-
-PostgreSQL remains authority for ContentArtifact identity/metadata/provenance/visibility/retention/hash/locator semantics.
+Cloudflare R2 Standard, private, EU jurisdiction, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
 
 ## TD-06 — Recovery
 
@@ -78,11 +68,9 @@ PostgreSQL remains authority for ContentArtifact identity/metadata/provenance/vi
 ```text
 pgBackRest 2.59.0
 + AWS S3 Standard eu-south-1
-+ accepted Versioning/Object Lock GOVERNANCE posture
++ Versioning/Object Lock GOVERNANCE posture
 + WAL/PITR
 ```
-
-Activation at recovery/production boundary or real recovery rehearsal.
 
 Recovery copies remain noncanonical and anti-resurrection obligations remain active.
 
@@ -90,37 +78,43 @@ Recovery copies remain noncanonical and anti-resurrection obligations remain act
 
 **ACCEPTED TARGET / NOT IMPLEMENTED**
 
-OR-Tools CP-SAT.
-
-`UNKNOWN != INFEASIBLE`.
-
-Solver result remains candidate/derived until governed acceptance.
+OR-Tools CP-SAT. `UNKNOWN != INFEASIBLE`. Solver output remains candidate/derived until governed acceptance.
 
 ## TD-08 — Observability
 
 **ACCEPTED TARGET**
 
-OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
+Backend: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
+
+Frontend: Sentry selected behind bounded Web/Mobile observability adapters when activated.
 
 Operational telemetry is privacy-minimized and noncanonical.
 
-## TD-09 — Repository strategy
+## TD-09 — Repository strategy and root ownership
 
 **ACCEPTED**
 
-One DANTE product monorepo.
+One DANTE product monorepo; keep current repository.
+
+Accepted root ownership reserves:
 
 ```text
-apps/backend
-apps/web
-apps/mobile
+apps/
+  backend/
+  web/
+  mobile/
+packages/
+infra/
+tooling/
+tests/system/
+docs/
+prototypes/
+.github/
 ```
 
-Keep the current repository; do **not** create a new production repository.
+Paths are created only when real content exists. No empty ceremonial tree.
 
-Repository rename from historical `lifeos` to `dante` is a separate governance action and is the recommended next small step before scaffold unless explicitly deferred.
-
-Extract a separate repository only after a real independent ownership/security/release/scale lifecycle appears.
+`infra/` owns infrastructure definitions, never business logic. Production apps do not import prototypes.
 
 ## TD-10 — Backend architecture
 
@@ -130,112 +124,190 @@ Capability-first modular monolith.
 
 - no 57 owners → 57 modules mechanical translation;
 - no generic CRUD `Repository[T]` semantic model;
-- no BaseService/service locator/global session;
+- no BaseService/service locator/global DB session;
 - Domain/application meaning independent of FastAPI/SQLAlchemy/provider SDK identity;
 - explicit composition root;
-- cross-module private implementation not a public interface;
-- truthful cross-module ACID transactions allowed where semantics require them.
+- private module implementation is not a public interface;
+- cross-module ACID transaction allowed when semantics require it.
 
-## TD-11 — Frontend boundary
+## TD-11 — Frontend application architecture
 
-**ACCEPTED BOUNDARY / INTERNAL ENGINEERING DEFERRED**
+**ACCEPTED / FRONTEND FOUNDATION FINAL REVIEW PASS / INTEGRATED VIA PR #22**
 
-`apps/web` and `apps/mobile` are sibling governed clients in the monorepo.
-
-Engineering Foundation does not freeze Node/package manager/task graph/test runners/EAS/shared UI or detailed client source structure. Those decisions belong to the frontend workstream.
-
-## TD-12 — Backend language/runtime
-
-**ACCEPTED**
+Platform boundary:
 
 ```text
-Python supported line     3.14.x
-initial bootstrap pin     3.14.7
-package manager           uv
-source root               apps/backend/src/dante
+apps/web     React DOM + Vite + TanStack Router
+apps/mobile  React Native + Expo + Expo Router
 ```
 
-Ruff, mypy strict, pytest and Hypothesis are the accepted backend quality/test baseline.
+Structural rules:
 
-## TD-13 — Developer OS/workflow
+- feature-first Web/Mobile architecture;
+- route/navigation files are thin adapters;
+- bootstrap/router consume other layers only through public APIs;
+- feature dependency cycles are forbidden;
+- Web and Mobile never import each other's private/platform implementation;
+- app-local `ui/` and `platform/` boundaries;
+- production never imports `prototypes/`;
+- architecture rules become executable lint/package/cycle checks during materialization.
 
-**ACCEPTED**
+Shared-package policy:
 
-Canonical backend/server semantics: Linux.
+- only real multi-consumer packages;
+- initial real candidates: `@dante/design-tokens`, `@dante/i18n`, `@dante/time`;
+- API client only when real OpenAPI exists;
+- shared feature package only after real Web+Mobile reuse;
+- framework-free shared cores by default;
+- shared frontend logic never owns canonical Domain/AuthZ/conflict/persistence/accepted-effect authority.
 
-Primary Windows workflow:
+## TD-12 — Frontend language/toolchain
+
+**ACCEPTED / INTEGRATED VIA PR #22**
 
 ```text
-Windows 11
-→ WSL2/Linux
-→ repo in WSL filesystem
-→ Python/uv/backend under Linux semantics
+Node 24 LTS
+TypeScript 6.0.x strict
+pnpm 11
+Turborepo 2.x
 ```
 
-PyCharm with WSL interpreter is supported as the user's primary IDE. Repository commands remain IDE-neutral/CLI reproducible.
+pnpm isolated layout is preferred/direct-validation-required. Evidence-driven `nodeLinker: hoisted` fallback is allowed without reopening the architecture.
 
-## TD-14 — LOCAL container model
+Turbo orchestrates the JS/frontend task graph only; GitHub Actions remains repository-wide CI/CD authority.
 
-**ACCEPTED**
+## TD-13 — Frontend data/state authority
 
-Backend application process runs directly in WSL/Linux for normal reload/debug.
+**ACCEPTED / INTEGRATED VIA PR #22**
 
-Docker Compose owns LOCAL stateful dependencies.
+Data Authority Matrix:
 
-Future deployed backend uses OCI container packaging.
+```text
+canonical accepted state/effect   backend + PostgreSQL
+synced local projection           PowerSync/SQLite noncanonical
+offline pending mutation          local staging only
+offline acceptance                backend governance/conflict checks
+remote request state              TanStack Query + typed API
+online governed command           FastAPI/backend
+form draft                        TanStack Form
+component transient               React
+cross-tree transient              Zustand only when justified
+```
 
-## TD-15 — Persistence toolkit
+Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/query-cache/storage ownership. No universal frontend `Repository<T>`.
+
+## TD-14 — Frontend offline posture
+
+**ACCEPTED / INTEGRATED VIA PR #22**
+
+Mobile activates PowerSync + encrypted SQLite when materialized, initially app-owned under the Mobile platform sync boundary.
+
+Web baseline is online-first. PowerSync Web local DB is available/dormant.
+
+Browser PWA/service-worker offline behavior is dormant/not baseline and requires explicit design before activation.
+
+Local mobile data is identity-scoped; cross-account local-data leakage is forbidden.
+
+## TD-15 — Frontend API/codegen
+
+**ACCEPTED / INTEGRATED VIA PR #22**
+
+FastAPI OpenAPI → Orval 8 → React-free/auth-storage-agnostic `@dante/api-client` when real OpenAPI exists.
+
+Generated transport source is deterministic, committed where runtime/reviewability requires it and drift checked. Generated Query ownership is not forced onto PowerSync-backed reads.
+
+## TD-16 — Frontend UI/tokens/i18n/time
+
+**ACCEPTED / INTEGRATED VIA PR #22**
+
+Web UI: DANTE layer over Radix + Tailwind/CSS variables + Motion where required.
+
+Mobile UI: DANTE RN layer over StyleSheet/Reanimated/Gesture Handler.
+
+One DTCG-compatible semantic token source produces platform outputs; shared token meaning does not require identical pixel values.
+
+`@dante/i18n` is framework-free; app bootstrap wires React integration/detection/persistence.
+
+`@dante/time` owns Temporal-based semantic time handling; JavaScript `Date` is not the universal DANTE time type.
+
+## TD-17 — Frontend Web runtime config/delivery
+
+**ACCEPTED / INTEGRATED VIA PR #22**
+
+Web supports one immutable SPA artifact promoted across environments where the platform permits, with versioned Zod-validated public runtime configuration.
+
+Cloudflare Workers Static Assets remains selected Web delivery target. An app-coupled Worker may serve bounded bootstrap config such as `/client-config` but is not a DANTE BFF/business backend.
+
+## TD-18 — Mobile build/release
+
+**ACCEPTED / INTEGRATED VIA PR #22**
+
+EAS Build/Submit/Update selected. EAS Workflows optional/dormant because GitHub Actions remains primary orchestration.
+
+Android and iOS are supported architectural targets; signed/device/store gates apply when each platform is activated for release.
+
+## TD-19 — Backend language/runtime
 
 **ACCEPTED**
 
 ```text
-SQLAlchemy 2.0 stable line
+Python 3.14.x
+initial pin 3.14.7
+uv
+apps/backend/src/dante
+Ruff
+mypy strict
+pytest
+Hypothesis
+```
+
+## TD-20 — Developer OS/workflow
+
+**ACCEPTED / FRONTEND QUALIFIED**
+
+Backend canonical semantics: Linux. Primary Windows posture uses one authoritative WSL-backed repository checkout with PyCharm/JetBrains supported.
+
+Frontend keeps the same single-checkout posture. WSL↔Windows Metro/ADB mechanics are a tooling adapter requiring direct validation, not a product architecture invariant.
+
+No divergent Windows/WSL source-tree clones or shared cross-OS node_modules environment.
+
+## TD-21 — LOCAL container/persistence toolkit
+
+**ACCEPTED**
+
+Backend process direct in WSL/Linux for normal reload/debug; Docker Compose owns LOCAL stateful dependencies; future backend deployable uses OCI packaging.
+
+Persistence toolkit:
+
+```text
+SQLAlchemy 2.0 stable
 psycopg 3
 Alembic
 ```
 
-Async DB I/O at technical boundaries; Domain/application logic synchronous/pure by default.
+Async DB I/O at technical boundaries; Domain/application sync/pure by default; application boundary owns transaction.
 
-One AsyncSession per concurrent task/use-case. Application boundary owns transaction.
-
-ORM != Domain.
-
-## TD-16 — Migration governance
+## TD-22 — Migration/copy/recovery governance
 
 **ACCEPTED**
 
-- Alembic revisions are deployment schema authority;
+- Alembic revision history = deployment schema-change authority;
 - autogenerate candidate only;
 - applied revisions immutable;
-- no unrepresented manual remote DDL;
-- base→head and schema drift CI;
-- migration risk classification;
-- PostgreSQL online/staged techniques where appropriate;
+- schema drift tested;
+- risk review + PostgreSQL staged/online techniques;
 - expand → migrate → contract;
 - large backfills bounded/resumable/idempotent;
-- separate DB owner/migrator/runtime/replication/backup privilege classes.
+- separated DB privilege classes;
+- `pg_dump`/`pg_restore` logical-copy role distinct from pgBackRest/WAL/PITR recovery;
+- raw PROD → DEV forbidden by default;
+- PostgreSQL major upgrade is a separate platform operation.
 
-`alembic downgrade` is not assumed to be universal production rollback.
-
-## TD-17 — DB copy/recovery separation
-
-**ACCEPTED**
-
-```text
-pg_dump / pg_restore
-logical copy/clone/migration-test use
-
-pgBackRest + WAL/PITR
-recovery-grade use at activation boundary
-```
-
-Raw PROD → DEV is forbidden by default. Production-derived lower-environment data requires explicit sanitization/minimization/authorization.
-
-PostgreSQL major upgrade is a separate platform operation, not an ordinary DANTE migration.
-
-## TD-18 — Environment model
+## TD-23 — Environment/config/secrets
 
 **ACCEPTED**
+
+Exactly:
 
 ```text
 LOCAL
@@ -246,115 +318,42 @@ PROD
 
 Environment != Git branch.
 
-Remote environment activation is progressive; provider-native security/isolation boundaries are required where practical.
+Backend uses typed fail-fast pydantic-settings and remote workload identity/secret-manager/OIDC posture.
 
-## TD-19 — Cloud/IaC
+Frontend tool-specific profiles/channels map to the same four contexts. Client config is public and never contains secrets.
 
-**DEFERRED INTENTIONALLY**
-
-Compute provider, IaC engine, registry and remote sizing are not selected until first remote infrastructure.
-
-Existing AWS/R2 selections for bounded recovery/object roles do not imply backend compute hosting provider.
-
-## TD-20 — Configuration/secrets
-
-**ACCEPTED**
-
-- pydantic-settings typed/fail-fast immutable backend configuration;
-- `.env.local` LOCAL only + safe committed `.env.example`;
-- separate non-secret config / secret / build identity / domain configuration;
-- remote posture: minimize secret → workload identity → provider secret manager → least privilege → rotation/revocation/audit;
-- GitHub OIDC preferred for CI-to-cloud;
-- independent environment/workload credentials;
-- secrets never baked/committed/logged.
-
-## TD-21 — Backend testing
-
-**ACCEPTED**
-
-Risk-layered testing:
-
-- unit/domain;
-- application/use-case;
-- Hypothesis property/state-machine;
-- architecture;
-- real DANTE PostgreSQL integration;
-- migration/drift;
-- concurrency/expected-state/idempotency/multi-owner/outbox;
-- provider/API contract;
-- privacy/non-interference;
-- release/recovery/PSV at applicable boundary.
-
-SQLite is not PostgreSQL correctness evidence.
-
-No arbitrary coverage threshold before first real vertical slice.
-
-## TD-22 — CI/CD
+## TD-24 — Testing/CI/supply chain
 
 **ACCEPTED**
 
 GitHub Actions primary CI/CD.
 
-- protected `main`;
-- explicit least-privilege permissions;
-- protected workflow Actions pinned to immutable full commit SHAs;
-- normal PRs receive no PROD/deployment identity;
-- OIDC future cloud deployment;
-- real emitted check verified before required-check activation;
-- GitHub-hosted runners initially;
-- fake independent human-review requirement not introduced while there is one active developer;
-- merge queue/self-hosted runners deferred until measured need.
+Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL/migration/concurrency/provider/API/privacy/release validation.
 
-## TD-23 — Supply chain
+Frontend uses co-located unit/component tests, app-level Web E2E/Mobile Maestro, strict type/boundary/cycle checks and higher-cost release validation only where applicable.
 
-**ACCEPTED ACTIVATION POLICY**
+Required-check names are never guessed; activate only after real stable emitted contexts are observed.
 
-As corresponding artifacts exist:
+Protected workflows use least privilege and immutable Action SHA pinning. Supply-chain controls activate with real artifacts/manifests/capabilities; production artifact provenance/SBOM applies at release boundary.
 
-- dependency review;
-- CodeQL Python;
-- secret scanning/push protection where available;
-- container/IaC scanning;
-- immutable artifact promotion;
-- production artifact provenance/attestation;
-- SBOM/dependency inventory at production release boundary.
+## TD-25 — Cloud/IaC and current next boundary
 
-Security tooling execution is evidence of that tool, not proof of complete security.
+**PARTLY DEFERRED / CURRENT HANDOFF**
 
-## TD-24 — Selected technologies not to reintroduce casually
+Backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure.
 
-Closed Physical selection excluded or did not select as default canonical mechanisms, among others:
-
-- TypeDB/XTDB/SurrealDB as primary persistence;
-- Neo4j;
-- Qdrant;
-- OpenSearch;
-- TimescaleDB;
-- Redis/Valkey;
-- Kafka/RabbitMQ/NATS;
-- Debezium;
-- dedicated event store/universal event sourcing;
-- Temporal/DBOS/Celery as default durable workflow stack;
-- Zero/Electric/CRDT local-first canonical authority;
-- MongoDB for PowerSync;
-- large `bytea` object store;
-- public R2;
-- separate vector/graph/search servers;
-- pg_cron as workflow engine;
-- Object Lock Compliance as default recovery posture.
-
-Do not reintroduce them without a materially changed requirement/evidence and explicit architecture reopen.
-
-## TD-25 — Current next boundary
-
-**ACCEPTED HANDOFF**
+Frontend Foundation is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
 
 ```text
-1. Keep current repository.
-2. Decide/execute recommended `lifeos → dante` rename or explicitly defer.
-3. Fresh exact write gate for production apps/backend scaffold.
-4. Scaffold QA.
-5. Concrete Logical → PostgreSQL implementation.
+open fresh bounded frontend materialization/direct-validation workstream
+→ materialize accepted workspace/app/package boundaries
+→ execute carried direct validations progressively
 ```
 
-Engineering Foundation v0 is closed and is not the next thing to redesign.
+Backend production scaffold remains a separate **NOT STARTED** workstream and is not silently authorized by Frontend Foundation.
+
+## Selected technologies not to reintroduce casually
+
+Closed Physical/Engineering/Frontend selections exclude or do not select as current defaults, among others: separate graph/vector/search/event-store canonical databases; Redis/Valkey/Kafka/RabbitMQ/NATS/Debezium by default; universal event sourcing; Temporal/DBOS/Celery default workflow stack; Zero/Electric/CRDT canonical authority; Next.js for the authenticated DANTE Web app; Flutter/React Native Web universal renderer; Nx baseline; Redux as default state authority; browser PowerSync TanStack adapter alpha; generic PWA/service-worker offline baseline.
+
+Reopen only with materially changed requirements/evidence and explicit scope.
