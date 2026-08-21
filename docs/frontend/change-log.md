@@ -70,3 +70,19 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `OPEN` persistent/add affordance for full Mondi/Segnali/future projections remains undecided.
 - `OPEN` DANTE logo/name alignment, palette review and background/atmosphere remain the next visual scope.
 - `NO_CHANGE` no backend endpoint/schema, Domain model or production-framework selection is introduced.
+
+## 2026-08-21 — B2 Central Stage v22 no persistent add
+
+- `ADDED` user-reviewed B2 v22 checkpoint and deterministic full/partial delta archive from v21.
+- `CHANGED` current B2 working oracle from v21 to v22.
+- `BEHAVIOR_CHANGED` Home central stage is now explicitly a read/navigate/open projection rather than a configuration CRUD surface.
+- `REMOVED` persistent/add-slot affordances from Home; there is no persistent `+` for Mondi or Segnali.
+- `REMOVED` partial-Mondi ghost `+` slots; partial state now contains only real items.
+- `CHANGED` true empty state may expose a contextual management CTA so the surface is not a dead end; the CTA opens the dedicated management/creation surface rather than mutating Home directly.
+- `CHANGED` Mondi creation/edit/order/archive/removal and Segnali selection/configuration/order/removal are assigned to dedicated management surfaces outside Home.
+- `CHANGED` machine-readable Home-stage contract from `0.1.0` to `0.2.0`; `ADD_REQUEST` is removed and `OPEN_MANAGEMENT` is the management-entry intent.
+- `CHANGED` empty fixture active indexes to `null` and added an explicit empty fixture; no placeholder entity/item is manufactured.
+- `QA` v0.2.0 stdlib contract-drift guard passes locally and verifies no persistent add, partial-real-items-only and empty-management-entry semantics.
+- `QA_LIMIT` a fresh automated browser PASS for every 24 responsive matrix combination is still not claimed.
+- `OPEN` DANTE logo/name alignment, palette review, background/atmosphere and final QA remain.
+- `NO_CHANGE` no backend endpoint/schema, Domain model or production-framework selection is introduced.
