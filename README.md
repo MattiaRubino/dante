@@ -32,13 +32,13 @@ ACTIVE ON feature/frontend-materialization
 DIRECT FRONTEND VALIDATION NOT YET EARNED
 
 PRODUCTION BACKEND SCAFFOLD
-CLOSED ON feature/backend-scaffold / DIRECT QA PASS
+INTEGRATED IN PROTECTED main / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
 CP4 CLOSED / DIRECT REMOTE QA PASS
 CP5 CLOSED / DIRECT INTEGRATED QA PASS
-PR #24 OPEN / MERGE NOT YET AUTHORIZED
+PR #24 MERGED / POST-MERGE BACKEND CI PASS
 
 PROTECTED-MAIN CI
 Backend CI Gate REQUIRED
@@ -47,7 +47,7 @@ branch up-to-date REQUIRED
 required-check source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / NEXT AFTER BACKEND SCAFFOLD INTEGRATION
+NOT STARTED / NEXT BACKEND IMPLEMENTATION BOUNDARY
 
 DIRECT SELECTED-STACK VALIDATION / PSV
 NOT RUN BEYOND EXPLICITLY RECORDED SCAFFOLD ACCEPTANCE
@@ -185,7 +185,7 @@ Dependency Review     SUCCESS
 
 The deliberate red did not introduce a vulnerable package: Dependency Review temporarily denied the already-visible FastAPI dependency and failed for that policy violation. Backend CI Gate independently proved fail-closed behavior when a mandatory upstream job failed.
 
-Protected `main` now requires:
+Protected `main` requires:
 
 ```text
 Backend CI Gate
@@ -228,6 +228,19 @@ CP4 required remote workflows             SUCCESS on PRE-SCOPE
 
 One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL port-forwarding `/forwards/expose` HTTP 500 while Docker held a newly created container on an otherwise unused loopback port. After removing that diagnostic container, the clean full suite passed 50/50. This is recorded as a transient local Docker forwarding event, not as a backend/database test failure.
 
+## Backend scaffold protected-main integration
+
+PR #24 merged the closed CP1–CP5 scaffold into protected `main` using the accepted merge-commit method.
+
+```text
+pre-merge main                         ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold HEAD          46b775bfbfc4747daff341d973df133646dbd0c8
+merge commit / protected main          41680497c94b0c2f4830679b93f8eb6f1d543f8d
+Backend CI push-main run               32502330955 SUCCESS
+```
+
+The merge commit has the expected two parents: the prior protected-main SHA and the final scaffold feature HEAD. PR #24 is closed/merged. No branch deletion, CodeQL activation, ruleset mutation, frontend mutation or concrete business-schema implementation was part of the merge gate.
+
 ## Direct evidence truth
 
 ```text
@@ -249,6 +262,8 @@ CP5 POSTGRESQL QA                        18/18 PASS
 CP5 FULL BACKEND QA                      50/50 PASS
 CP5 REAL STARTUP + LIVE + READY          PASS
 CP5                                      CLOSED / DIRECT INTEGRATED QA PASS
+BACKEND SCAFFOLD MAIN INTEGRATION        PASS
+POST-MERGE BACKEND CI                    PASS
 CONCRETE BUSINESS DB SCHEMA              NOT STARTED
 DIRECT HG-01..HG-12                      NOT RUN
 RESTORE/PITR REHEARSAL                   NOT RUN
@@ -294,9 +309,9 @@ Read before the next backend write:
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
 3. development operating/safety/handoff rules
-4. `docs/workstreams/backend-scaffold.md`
-5. `docs/development/backend-cp4-ci-contract.md`
-6. CP1/CP2/CP3 contracts as needed.
+4. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
+5. closed Logical Model owner/ref/invariant authorities
+6. applicable Physical target/validation authorities.
 
 Exact active boundaries:
 
@@ -306,11 +321,10 @@ feature/frontend-materialization
 → continue its independent bounded materialization/direct-validation workstream
 
 BACKEND
-feature/backend-scaffold
-→ CP1–CP5 CLOSED / DIRECT QA PASS
-→ PR #24 remains open and unmerged
-→ next action is a separate explicit merge gate into protected main
-→ after verified scaffold integration, concrete Logical → PostgreSQL becomes the next backend implementation boundary
+protected main contains the complete CP1–CP5 production backend scaffold
+→ backend scaffold integration VERIFIED / PASS
+→ Concrete Logical → PostgreSQL is the next backend implementation boundary
+→ start it only through a fresh bounded workstream/gate
 ```
 
 Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default.
