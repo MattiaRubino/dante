@@ -57,6 +57,11 @@ jobs:
           uv --version
           uv run --locked python --version
 
+      - name: CP4-M6 deliberate calibration failure
+        run: |
+          echo "Intentional CP4-M6 calibration failure"
+          exit 1
+
       - name: Ruff format check
         working-directory: apps/backend
         run: uv run --locked ruff format --check .
