@@ -24,6 +24,8 @@ Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
 Frontend Engineering Foundation    DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
 Frontend main integration          COMPLETE VIA PR #22
+Frontend materialization           ACTIVE on feature/frontend-materialization
+Frontend workstation preflight     FM-00 NOT RUN
 Production backend scaffold        NOT STARTED
 Production frontend scaffold       NOT STARTED
 Direct HG / frontend PSV           NOT RUN
@@ -44,6 +46,13 @@ Direct HG / frontend PSV           NOT RUN
 - `development/documentation-and-handoff.md`
 - `development/branching-and-environments.md`
 - `development/repository-engineering-safety.md`
+
+### Active Frontend Materialization workstream
+
+- `workstreams/frontend-materialization.md` — active materialization/validation handoff and phase ledger
+- `development/frontend-local-development.md` — WSL/Windows/Docker setup, installation and onboarding runbook
+
+The current exact next action is **FM-00 read-only workstation preflight**. Do not install Node/pnpm or materialize manifests/apps until that preflight is reviewed.
 
 ### Engineering Foundation — closed
 
@@ -103,10 +112,11 @@ Cloud/backend compute provider and IaC engine remain deferred until their real i
 
 ```text
 1. Frontend Foundation design/architecture is CLOSED / ACCEPTED / integrated via PR #22.
-2. Open a fresh exact frontend materialization/scaffold/direct-validation scope.
-3. Materialize only real artifacts required by the accepted Foundation.
-4. Execute direct validations progressively; do not manufacture PASS.
-5. Backend scaffold remains a separate not-started implementation scope.
+2. Frontend Materialization is ACTIVE on feature/frontend-materialization.
+3. Run FM-00 read-only WSL workstation preflight.
+4. Review actual runtime/tooling paths before any installation.
+5. Materialize runtime/workspace/Web/Mobile/shared packages progressively with direct evidence.
+6. Backend scaffold remains a separate not-started implementation scope.
 ```
 
-No production code/direct PASS is authorized merely by design closure.
+No production code/direct PASS is authorized merely by design closure or by opening the materialization workstream.
