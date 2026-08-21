@@ -24,10 +24,7 @@ Engineering Foundation v0
         CLOSED / ACCEPTED
           ↓
 Frontend Engineering Foundation
-        PASSO 1 PASS
-        PASSO 2 PASS
-        PASSO 3 FINAL REVIEW PASS
-        DESIGN / ARCHITECTURE CLOSED / ACCEPTED
+        CLOSED / ACCEPTED / FINAL REVIEW PASS
         INTEGRATED VIA PR #22
 ```
 
@@ -64,19 +61,15 @@ CP3 persistence/migrations/privileges/real PostgreSQL
 CLOSED / DIRECT QA PASS
 
 CP4 quality / CI enforcement
-DESIGN CLOSED
-M1 CLOSED
-M2 MATERIALIZED / REMOTE READBACK PASS
-M3 DIRECT LOCAL QA PASS
-M4 CURRENT MAIN RECONCILED
-POST-MERGE REGRESSION QA NEXT
-REMOTE PR CALIBRATION NOT RUN
+CLOSED / DIRECT REMOTE QA PASS
 
 CP5 full scaffold QA / closure
-NOT STARTED
+NEXT
 ```
 
-CP4 materialized:
+## CP4 closure evidence
+
+Materialized:
 
 ```text
 Backend CI
@@ -92,69 +85,73 @@ Dependabot
 └── GitHub Actions
 ```
 
-Required status checks remain **0** until real remote calibration proves stable emitted contexts and failure semantics.
-
-## Immediate backend sequence
-
-### 1. CP4 post-main reconciliation regression
-
-Run on the reconciled branch:
-
-- exact locked uv bootstrap;
-- Ruff format/lint;
-- mypy strict;
-- non-PostgreSQL tests;
-- backend build;
-- canonical `dante-postgres-local:18.4` rebuild;
-- PostgreSQL-marked acceptance.
-
-Do not infer PASS from the pre-merge M3 run.
-
-### 2. CP4 real PR green calibration
-
-After regression PASS, open the real PR to current protected `main` and observe:
+Real PR #24 calibration:
 
 ```text
-Backend Quality
-Backend PostgreSQL
+M5 GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+
+M6 DELIBERATE RED
+Backend Quality       FAILURE
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       FAILURE
+Dependency Review     FAILURE
+
+M7 RECOVERY GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+```
+
+M6 proved that the aggregate gate fails when a mandatory upstream job fails while PostgreSQL remains independently diagnostic. Dependency Review failed for an intentional deny rule against a real dependency already visible from `apps/backend/uv.lock`; no vulnerable package was introduced.
+
+Protected `main` now requires:
+
+```text
 Backend CI Gate
 Dependency Review
 ```
 
-Record exact emitted contexts/source and real logs.
+The ruleset also requires the PR branch to be up to date with protected `main` before merge. Both checks are selected from source GitHub Actions.
 
-### 3. CP4 deliberate red
+Repository owner enabled the Actions full-length-SHA requirement. The current connector cannot directly read that setting; it remains explicitly classified as owner-applied / connector-unverifiable.
 
-Under a separately bounded calibration change, prove:
+## Immediate backend sequence
 
-- mandatory upstream failure makes `Backend CI Gate` fail;
-- Dependency Review detects the intended dependency-policy violation;
-- a real `uv.lock` dependency delta is visible/evaluated before Dependency Review can be promoted.
+### 1. CP5 full scaffold QA / closure
 
-### 4. CP4 recovery green
+CP5 is now the only next backend checkpoint.
 
-Restore the branch without weakening policy and prove all intended checks green again.
+It should re-prove the integrated scaffold as a whole without adding business schema:
 
-### 5. Required-check / repository settings decision
+- exact current branch/main relation;
+- clean locked uv bootstrap;
+- Python 3.14.7;
+- backend process startup;
+- `/health/live` and readiness behavior;
+- Ruff format/lint;
+- mypy strict;
+- backend pytest;
+- package build;
+- canonical `dante-postgres-local:18.4` rebuild;
+- PostgreSQL 18.4 + selected extensions;
+- SQLAlchemy/psycopg async connection;
+- Alembic base → head and drift expectations;
+- real PostgreSQL integration harness;
+- protected-main required CI contexts remain emitted and green;
+- current repository safety/ruleset truth remains coherent.
 
-Only after green → red → recovery green:
+CP5 must not become a disguised domain/business implementation phase.
 
-- consider stable required contexts;
-- bind expected GitHub Actions source where supported;
-- consider repository full-SHA enforcement where supported;
-- reread effective rules/protection after any mutation.
+### 2. Backend scaffold integration
 
-No required check is configured merely because YAML exists.
+PR #24 is the active backend integration PR. It must not be merged until a separate explicit merge gate is approved and the relevant required checks are green on the actual merge candidate.
 
-### 6. CP4 closure
-
-Record `CLOSED / DIRECT QA PASS` only when the CP4 acceptance matrix is truthfully satisfied or an item is explicitly deferred as unsupported/out of boundary.
-
-### 7. CP5 scaffold QA / closure
-
-Perform the final integrated scaffold acceptance/handoff.
-
-### 8. Concrete Logical → PostgreSQL implementation
+### 3. Concrete Logical → PostgreSQL implementation
 
 Only after scaffold closure:
 
@@ -180,7 +177,7 @@ Production product surfaces begin only after the relevant frontend/backend found
 
 ## Capability-triggered Physical implementation
 
-Activate specialist components only at real requirements. Applicable validation obligations travel with activation:
+Activate specialist components only at real requirements:
 
 ```text
 PowerSync + encrypted SQLite
@@ -198,6 +195,10 @@ Restate
 pgBackRest + AWS S3
 → recovery/production boundary or real recovery rehearsal
 ```
+
+## CodeQL boundary
+
+CodeQL remains a separate post-backend-main activation boundary. CP4 closure does not authorize a custom CodeQL workflow or required CodeQL check.
 
 ## Remote environments
 
@@ -224,7 +225,8 @@ SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
 DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
 CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
-WORKFLOW EXISTS != REQUIRED CHECK PROVEN
+WORKFLOW EXISTS != TRUSTED CHECK
+TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 ```
 
 Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.
