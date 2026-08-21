@@ -1,19 +1,20 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **ACTIVE / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / CP4 CLOSED / DIRECT QA PASS / CP5 NEXT**
+- Status: **CLOSED / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / CP4 CLOSED / CP5 CLOSED / DIRECT QA PASS / PENDING MAIN INTEGRATION**
 - Branch: `feature/backend-scaffold`
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
-- Concrete Logical → PostgreSQL schema: **OUT OF SCOPE UNTIL CP5 CLOSURE**
+- Concrete Logical → PostgreSQL schema: **NEXT ONLY AFTER VERIFIED SCAFFOLD INTEGRATION**
+- Active integration PR: `#24` — **OPEN / UNMERGED**
 - CP1 authority: `docs/development/backend-cp1-contract.md`
 - CP2 authority: `docs/development/backend-cp2-postgres-contract.md`
 - CP3 authority: `docs/development/backend-cp3-persistence-contract.md`
 - CP4 authority: `docs/development/backend-cp4-ci-contract.md`
 
-## 1. Purpose
+## 1. Purpose and final state
 
-This workstream turns the closed Engineering Foundation into the first production backend scaffold, one directly verifiable checkpoint at a time.
+This workstream turned the closed Engineering Foundation into the first production backend scaffold, one directly verifiable checkpoint at a time.
 
 ```text
 ENGINEERING FOUNDATION v0
@@ -32,13 +33,16 @@ CP4 quality / CI enforcement
         CLOSED / DIRECT REMOTE QA PASS
           ↓
 CP5 full scaffold QA / closure
-        NEXT
+        CLOSED / DIRECT INTEGRATED QA PASS
+          ↓
+PROTECTED-MAIN INTEGRATION OF PR #24
+        NEXT / EXPLICIT MERGE GATE REQUIRED
           ↓
 CONCRETE LOGICAL → POSTGRESQL
-        NEXT WORKSTREAM BOUNDARY
+        NEXT IMPLEMENTATION BOUNDARY AFTER VERIFIED MERGE
 ```
 
-The scaffold remains infrastructure/application bootstrap. CP1–CP4 do not authorize concrete business tables, repositories, use cases or product API slices.
+The scaffold is infrastructure/application bootstrap. CP1–CP5 do not authorize concrete business tables, repositories, use cases or product API slices.
 
 ## 2. Quality bar
 
@@ -56,9 +60,7 @@ Required qualities:
 - CI checks that are directly proven before becoming mandatory;
 - no fake reviewers, placeholder architecture, arbitrary coverage gates or unused infrastructure.
 
-## 3. Durable checkpoint evidence
-
-### CP1 — CLOSED / DIRECT QA PASS
+## 3. CP1 — CLOSED / DIRECT QA PASS
 
 Implementation/closure HEAD:
 
@@ -84,7 +86,7 @@ real Uvicorn startup PASS
 
 CP1 statement/branch coverage 100% is historical evidence for that small surface only, not a permanent project threshold.
 
-### CP2 — CLOSED / DIRECT QA PASS
+## 4. CP2 — CLOSED / DIRECT QA PASS
 
 Materialized LOCAL infrastructure:
 
@@ -109,7 +111,7 @@ native PostgreSQL FTS
 
 Direct evidence includes exact-image build, clean/fresh init, capability probes, `pg_stat_statements` collection, named-volume persistence/reset and Windows DBeaver connectivity.
 
-### CP3 — CLOSED / DIRECT QA PASS
+## 5. CP3 — CLOSED / DIRECT QA PASS
 
 Implementation/direct-QA HEAD:
 
@@ -165,7 +167,7 @@ outage/recovery          PASS
 
 The frozen/blackholed-peer readiness scenario remains a separate hardening finding and was not falsely claimed solved.
 
-## 4. CP4 — CLOSED / DIRECT REMOTE QA PASS
+## 6. CP4 — CLOSED / DIRECT REMOTE QA PASS
 
 CP4 materialized:
 
@@ -202,7 +204,7 @@ M4 consumed protected `main`:
 ff46eb16b971b1fde96eef9047b09faa02e1a5db
 ```
 
-Two-parent merge:
+Two-parent reconciliation:
 
 ```text
 6a8122249f13f9b8553f511c47b4185c6e3e6540
@@ -268,33 +270,9 @@ Backend CI Gate       FAILURE
 Dependency Review     FAILURE — intentional deny-packages policy
 ```
 
-Runs:
-
-```text
-Backend CI          32478656632
-Dependency Review   32478656892
-```
-
-Gate log proved:
-
-```text
-QUALITY_RESULT=failure
-POSTGRES_RESULT=success
-```
-
-and exited red. Dependency Review rejected `fastapi@0.141.1` through the supported `pkg:pypi/fastapi` deny rule. No vulnerable dependency was added.
+Gate log proved `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected `fastapi@0.141.1` through the supported `pkg:pypi/fastapi` deny rule. No vulnerable dependency was added.
 
 ### M7 — recovery green
-
-Temporary calibration edits were restored byte-for-byte to the M5 workflow blobs:
-
-```text
-backend-ci.yml
-20056674477dd0fc2778d7f4d217a7158f0cd2c0
-
-dependency-review.yml
-c311f1e0df157b518a7b9883eeaa1a3f96833874
-```
 
 Recovery HEAD:
 
@@ -326,32 +304,7 @@ Backend CI Gate
 Dependency Review
 ```
 
-Both are selected from source **GitHub Actions**.
-
-Also enabled:
-
-```text
-Require branches to be up to date before merging
-```
-
-Not enabled:
-
-```text
-Do not require status checks on creation
-```
-
-Preserved:
-
-```text
-PR required
-0 approvals while one regular maintainer exists
-review-thread resolution required
-merge commits allowed/required method
-main deletion blocked
-force pushes/non-fast-forward blocked
-no bypass
-no merge queue
-```
+Both are selected from source **GitHub Actions**. The ruleset also requires the PR branch to be up to date before merging. PR required, zero approvals for the single-maintainer state, review-thread resolution, deletion protection and force-push protection remain preserved.
 
 Repository owner also enabled the GitHub Actions setting requiring full-length Action SHAs. The connector cannot directly read this setting; the limitation is explicitly documented rather than reported as API PASS.
 
@@ -370,78 +323,130 @@ CLOSED / DIRECT REMOTE QA PASS
 
 Detailed acceptance evidence and non-claims live in `docs/development/backend-cp4-ci-contract.md`.
 
-## 5. What CP4 does not authorize
+## 7. CP5 — CLOSED / DIRECT INTEGRATED QA PASS
 
-CP4 closure does not authorize:
+CP5 was deliberately a full-scaffold acceptance/closure checkpoint, not an implementation phase.
 
-```text
-frontend CI
-CodeQL activation
-production deployment
-cloud identity/IaC
-business/domain schema
-business repositories/use cases/API
-PowerSync activation
-Restate activation
-R2 activation
-OR-Tools activation
-pgBackRest recovery activation
-Physical HG/PSV blanket PASS
-```
-
-## 6. CP5 — full scaffold QA / closure — NEXT
-
-CP5 is the final scaffold boundary before concrete Logical → PostgreSQL implementation.
-
-At minimum CP5 must verify the integrated scaffold truth still holds, including:
+Approved PRE-SCOPE:
 
 ```text
-exact branch/current-main relation
-clean locked backend dependency bootstrap
-Python 3.14.7
-backend process startup
-health/live + readiness behavior
-Ruff/mypy/pytest
-canonical PostgreSQL image
-PostgreSQL 18.4 + extension envelope
-SQLAlchemy/psycopg async connection
-Alembic base → head
-real PostgreSQL acceptance harness
-CP4 required CI contexts still emitted and green
-repository ruleset current truth
+35eca3a6b1fc9bbc691672e29ac975e640a49bf4
 ```
 
-CP5 must not become a disguised business-schema implementation phase.
+Remote preflight proved:
 
-## 7. Persistent non-goals until scaffold closure
+```text
+feature/backend-scaffold == PRE-SCOPE     PASS
+main ancestor / behind_by=0               PASS
+PR #24 open / unmerged / mergeable        PASS
+review threads                             0
+Backend CI on PRE-SCOPE                    SUCCESS
+Dependency Review on PRE-SCOPE             SUCCESS
+```
+
+Canonical WSL2/Linux workstation acceptance proved:
+
+```text
+branch synchronization                     PASS
+uv 0.12.5                                  PASS
+Python 3.14.7                               PASS
+uv lock --check                            PASS
+uv sync --locked                           PASS
+uv tree --locked --depth 1                 PASS
+Ruff format --check                        PASS
+Ruff lint                                  PASS
+mypy strict                                PASS
+fast pytest                                32/32 PASS
+uv build                                   PASS
+canonical dante-postgres-local:18.4 build  PASS
+PostgreSQL pytest                          18/18 PASS
+full pytest                                50/50 PASS
+full-run coverage                          97.42% evidence only
+LOCAL Compose PostgreSQL                   HEALTHY
+explicit DB role/security provisioning     PASS
+real Uvicorn factory startup               PASS
+GET /health/live                           200 {"status":"ok"}
+GET /health/ready                          200 {"status":"ready"}
+```
+
+The workstation `.env.local` initially existed but predated the CP3 database configuration. It was aligned to the repository-controlled `.env.example` using locally generated ignored runtime/migrator credentials and explicit idempotent provisioning. No credential was printed into project documentation or committed.
+
+### Docker Desktop transient observed during CP5
+
+Immediately after one successful dedicated PostgreSQL run, a subsequent full-suite invocation failed before PostgreSQL test execution because Docker Desktop/WSL could not expose a newly selected loopback port:
+
+```text
+docker run exit 125
+ports are not available
+/forwards/expose returned unexpected status: 500
+container state: Created
+Linux listener on requested port: none
+```
+
+The failed diagnostic container was removed. The next clean `uv run --locked pytest` passed all **50/50** tests in 16.13 seconds. Because the PostgreSQL suite had already passed 18/18 and the clean full suite then passed 50/50 without code changes, this is recorded as transient Docker Desktop/WSL forwarding behavior rather than an application, database or test-harness regression.
+
+### CP5 scope integrity
+
+CP5 made no changes to:
+
+```text
+backend source
+tests
+dependencies
+uv.lock
+migrations
+PostgreSQL implementation
+CI workflows
+ruleset settings
+frontend
+business schema
+Logical → PostgreSQL implementation
+main
+```
+
+Closure decision:
+
+```text
+CP5
+CLOSED / DIRECT INTEGRATED QA PASS
+
+PRODUCTION BACKEND SCAFFOLD
+CLOSED ON feature/backend-scaffold
+PENDING PROTECTED-MAIN INTEGRATION VIA PR #24
+```
+
+## 8. Persistent non-goals after scaffold closure
 
 Do not add by convenience:
 
-- concrete 57-owner table mapping;
+- concrete 57-owner table mapping before the scaffold is verified on protected `main`;
 - business capability modules merely to reserve names;
-- business API routes;
-- AuthN/AuthZ product implementation;
-- cloud/IaC provider resources;
-- production deployment pipeline;
+- business API routes without their real vertical slice;
+- AuthN/AuthZ product implementation without its capability boundary;
+- cloud/IaC provider resources without a real remote boundary;
+- production deployment pipeline without release infrastructure requirements;
 - PowerSync/Restate/R2/OR-Tools activation without a real capability trigger;
 - Kafka/Redis/event-sourcing infrastructure not justified by measured need.
 
-## 8. Exact resume point
+## 9. Exact resume point
 
 A new conversation must resume here:
 
 ```text
-1. Read current main/current branch truth, this handoff and CP4 contract.
-2. Treat CP1, CP2, CP3 and CP4 as CLOSED / DIRECT QA PASS.
-3. Treat PR #24 as the active backend integration PR; do not merge it without an explicit merge gate.
-4. Treat Backend CI Gate and Dependency Review as protected-main required checks.
-5. Treat full-SHA repository enforcement as owner-applied but connector-readback-limited.
-6. Start CP5 with a fresh exact gate.
-7. CP5 is full scaffold QA/closure only.
-8. Concrete Logical → PostgreSQL mapping remains deferred until CP5 closes.
-9. Frontend materialization continues independently on its separate worktree/branch and shared docs must be semantically reconciled at integration time.
+1. Read current protected main, current feature/backend-scaffold, this handoff and CP4 contract.
+2. Treat CP1, CP2, CP3, CP4 and CP5 as CLOSED / DIRECT QA PASS.
+3. Treat the production backend scaffold as CLOSED ON FEATURE BRANCH, not yet integrated into main.
+4. Treat PR #24 as the active backend integration PR; do not merge it without a fresh explicit merge gate.
+5. Treat Backend CI Gate and Dependency Review as protected-main required checks.
+6. Treat full-SHA repository enforcement as owner-applied but connector-readback-limited.
+7. Revalidate exact branch/main relation and final required checks on the actual merge candidate.
+8. If explicitly authorized, merge PR #24 using the accepted merge-commit method only.
+9. After merge, verify protected-main readback and push-to-main CI before calling scaffold integration complete.
+10. Keep CodeQL as a separate post-main boundary.
+11. Start concrete Logical → PostgreSQL only after verified scaffold integration.
+12. Frontend materialization continues independently on feature/frontend-materialization; shared docs must be reconciled semantically at integration time.
 ```
 
 ### Immediate next action
 
-**CP5 is NEXT. Do not merge PR #24, activate CodeQL or start concrete business-schema mapping without a fresh exact gate.**
+**Open a fresh exact merge gate for PR #24. Do not add more CP5 implementation, activate CodeQL, start concrete business-schema mapping or mutate protected `main` without the appropriate next gate.**
