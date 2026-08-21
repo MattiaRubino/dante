@@ -1,12 +1,14 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-00 WORKSTATION PREFLIGHT NOT RUN**
+- Status: **ACTIVE — FM-02A ROOT WORKSPACE BASELINE PASS**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
+- Current validated workspace commit: `c3f7945da7137b2bdd9e9f8922af452f1a79770f`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **NOT STARTED**
-- Dependencies installed/configured: **NO**
-- Direct frontend validation: **NOT RUN**
+- Production frontend scaffold: **ROOT WORKSPACE MATERIALIZATION STARTED**
+- Machine runtime baseline: **PASS**
+- Project dependencies: **NONE YET**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02 PASS; remaining register NOT RUN**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -26,8 +28,6 @@ This workstream consumes rather than redesigns:
 
 ## 2. Evidence discipline
 
-Materialization uses the repository truth model:
-
 ```text
 selected != installed
 installed != configured
@@ -37,11 +37,11 @@ direct scenario PASS != whole-frontend PASS
 
 No component receives a direct `PASS` merely because a package was added or a command returned successfully once.
 
-Version-sensitive dependencies must be reverified against current primary documentation immediately before installation. The accepted major/line remains the design baseline; exact patches are fixed during materialization after compatibility verification.
+Version-sensitive dependencies are reverified against current primary documentation immediately before installation. The accepted major/line remains the design baseline; exact patches are fixed during materialization after compatibility verification.
 
-## 3. Developer topology to materialize
+## 3. Developer topology
 
-Primary local posture:
+Primary LOCAL posture:
 
 ```text
 WINDOWS 11
@@ -51,7 +51,7 @@ WINDOWS 11
 └── Docker Desktop
 
 WSL2 / Linux
-├── authoritative DANTE Git checkout
+├── linked DANTE Git worktree(s)
 ├── Git
 ├── Node / pnpm / Turbo
 ├── Vite
@@ -77,86 +77,153 @@ PowerSync service   Docker only when its real LOCAL integration scope activates
 Hard invariant:
 
 ```text
-ONE authoritative checkout
-NO divergent Windows + WSL source trees
+ONE authoritative Git repository/history
+purpose-specific linked Git worktrees inside WSL are allowed
+NO divergent independent Windows + WSL clones/source trees
 NO cross-OS shared node_modules tree
+```
+
+Observed parallel worktree topology:
+
+```text
+/home/mattia/projects/dante
+feature/backend-scaffold
+
+/home/mattia/projects/dante-frontend
+feature/frontend-materialization
 ```
 
 Detailed developer/onboarding authority: `../development/frontend-local-development.md`.
 
 ## 4. Materialization phases
 
-### FM-00 — workstation preflight
+### FM-00 — workstation preflight — PASS
 
-Goal: establish actual machine state before installation.
-
-Read-only evidence includes:
-
-- WSL distro/kernel/version;
-- repository physical path and branch/HEAD;
-- Git;
-- existing Node/npm/pnpm/Corepack state;
-- Docker CLI / Compose reachability;
-- Windows WSL/Docker/Android tooling where required.
-
-No installation or repository manifest is authorized until the preflight result is reviewed.
-
-Gate result statuses:
+Observed:
 
 ```text
-FM-00 NOT RUN
-FM-00 PASS
-FM-00 PASS WITH REPAIR REQUIRED
-FM-00 BLOCKED
+WSL2 kernel                 PASS
+Ubuntu                      24.04.4 LTS
+Git                         2.43.0 /usr/bin/git
+Docker CLI                  29.7.2 /usr/bin/docker
+Docker Compose              5.4.0
+frontend checkout           /home/mattia/projects/dante-frontend
+Windows Node leakage        none observed
 ```
 
-### FM-01 — runtime and package-manager baseline
+The preflight initially found no Linux Node/npm/pnpm/Corepack installation, which allowed a clean runtime setup.
 
-Materialize machine-level frontend runtime tooling in WSL only after FM-00.
+### FM-01 — runtime and package-manager baseline — PASS
 
-Design baseline:
+Materialized machine-level WSL frontend tooling:
 
 ```text
-Node       24 LTS
-pnpm       11
+fnm         1.39.0
+Node        24.19.0
+npm         11.17.0
+pnpm        11.22.0
 ```
 
-Exact supported patch/version-manager mechanism is verified before installation.
+Observed installation prerequisites for this path:
 
-Requirements:
+```text
+unzip
+libatomic1
+```
 
-- Node resolves from Linux/WSL, not a Windows executable leaked into PATH;
-- pnpm resolves from the governed WSL toolchain;
-- no project library is installed globally;
-- repository declares Node/pnpm expectations;
-- version verification commands are recorded.
+`libatomic1` was required by the pnpm standalone Linux executable on this Ubuntu 24.04 WSL installation.
+
+Direct checks:
+
+```text
+node Linux-side resolution      PASS
+npm Linux-side resolution       PASS
+pnpm Linux-side resolution      PASS
+isolated login-shell selection  PASS
+fnm .node-version selection     PASS
+```
 
 ### FM-02 — root JavaScript workspace
 
-Materialize only real root artifacts required by the accepted Foundation, expected to include as applicable:
+#### FM-02A — minimal workspace authority — PASS
+
+Repository authorities now exist:
 
 ```text
+.node-version
 package.json
 pnpm-workspace.yaml
 pnpm-lock.yaml
-turbo.json
-tsconfig.base.json
-eslint.config.mjs
-prettier.config.mjs
-Node version authority
 ```
+
+Exact runtime/package-manager authority:
+
+```text
+Node        24.19.0
+pnpm        11.22.0
+```
+
+Workspace roots are reserved for real consumers only:
+
+```text
+apps/*
+packages/*
+```
+
+Direct evidence:
+
+```text
+pnpm install                       PASS
+pnpm install --frozen-lockfile     PASS
+lockfile generated by pnpm         PASS
+unexpected apps/                   0
+unexpected packages/               0
+unexpected node_modules/           0 in empty-workspace baseline
+```
+
+Remote commit:
+
+```text
+c3f7945da7137b2bdd9e9f8922af452f1a79770f
+build: establish frontend workspace runtime baseline
+```
+
+Exact changed paths in that commit:
+
+```text
+.node-version
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+```
+
+No Web, Mobile, shared package or product code was created.
+
+#### FM-02B — root engineering tooling — NEXT
+
+Expected accepted root engineering tooling, when directly materialized:
+
+```text
+TypeScript 6.0.x strict
+Turborepo 2.x
+ESLint flat config + typescript-eslint typed rules
+Prettier 3.x
+root scripts / task graph
+root tsconfig authority
+```
+
+Before writing FM-02B, exact current patches and compatibility must be reverified from primary sources.
 
 Requirements:
 
 - private monorepo/workspace;
 - one shared lockfile;
-- `workspace:*` for internal packages;
+- `workspace:*` for internal packages when they exist;
 - frozen-lockfile CI posture when CI activates;
 - dependency lifecycle/build scripts explicitly governed;
 - strict TypeScript baseline;
-- repository scripts are predictable and documented.
-
-No empty app/package directories are created only to match a diagram.
+- repository scripts predictable and documented;
+- no empty app/package directories merely to match a diagram.
 
 ### FM-03 — minimal Web application
 
@@ -193,7 +260,7 @@ Before product UI:
 - Windows Android emulator/device can consume the WSL-hosted development runtime;
 - the WSL↔Windows Metro/ADB bridge is directly proven rather than assumed.
 
-Android and iOS remain supported architectural targets. Only activated release targets receive release/device gates; initial local Windows validation focuses on Android.
+Android and iOS remain supported architectural targets. Initial local Windows validation focuses on Android; release/device gates activate only for real release targets.
 
 ### FM-05 — first genuine shared packages
 
@@ -206,15 +273,6 @@ Materialize only packages with immediate real Web+Mobile consumers. Initial acce
 ```
 
 Do not create `@dante/api-client` before real FastAPI OpenAPI exists. Do not create a shared feature package before genuine cross-platform reuse exists.
-
-Directly validate:
-
-- workspace resolution;
-- package exports;
-- no deep/private cross-boundary import;
-- Web consumption;
-- Mobile consumption;
-- framework-free core rules.
 
 ### FM-06 — architecture, test and generation enforcement
 
@@ -236,7 +294,7 @@ A future GitHub required check is not configured until its real emitted context 
 Closure requires evidence that a clean developer path can reproduce the accepted base:
 
 ```text
-clean authoritative checkout
+clean authoritative checkout/worktree
 → governed runtime versions
 → install
 → lint
@@ -251,37 +309,35 @@ Only after this baseline is directly validated should a product feature such as 
 
 ## 5. Carried direct-validation register
 
-All start as **NOT RUN**:
-
 ```text
-FM-V01 Node 24 WSL runtime resolution
-FM-V02 pnpm 11 install/workspace resolution
-FM-V03 preferred isolated dependency layout with Expo/native graph
-FM-V04 evidence-driven hoisted fallback if required
-FM-V05 Turbo task graph
-FM-V06 TypeScript strict cross-workspace graph
-FM-V07 ESLint/import/boundary/cycle enforcement
-FM-V08 Vite/React production build
-FM-V09 Windows browser ↔ WSL Vite
-FM-V10 Expo SDK 57 / RN compatible baseline
-FM-V11 WSL Metro ↔ Windows Android emulator/device
-FM-V12 package exports / forbidden deep imports
-FM-V13 DTCG → Web CSS + Native TS token generation
-FM-V14 Web/Mobile i18n shared-core consumption
-FM-V15 Temporal/time shared-core consumption
-FM-V16 TanStack Form Web + RN + Zod when first real form activates
-FM-V17 TanStack Query remote path when first real remote path exists
-FM-V18 OpenAPI → Orval when real backend OpenAPI exists
-FM-V19 PowerSync + OP-SQLite + SQLCipher encrypted lifecycle when sync scope activates
-FM-V20 offline upload/accept/reject/conflict reconciliation when backend path exists
-FM-V21 identity-scoped local DB lifecycle when Auth/session scope exists
-FM-V22 versioned Web runtime config when delivery bootstrap activates
-FM-V23 Cloudflare deployment when remote Web delivery activates
-FM-V24 Sentry integration when observability activates
-FM-V25 EAS build/update/release path when mobile release infrastructure activates
+FM-V01 Node 24 WSL runtime resolution — PASS
+FM-V02 pnpm 11 install/workspace resolution — PASS
+FM-V03 preferred isolated dependency layout with Expo/native graph — NOT RUN
+FM-V04 evidence-driven hoisted fallback if required — NOT RUN
+FM-V05 Turbo task graph — NOT RUN
+FM-V06 TypeScript strict cross-workspace graph — NOT RUN
+FM-V07 ESLint/import/boundary/cycle enforcement — NOT RUN
+FM-V08 Vite/React production build — NOT RUN
+FM-V09 Windows browser ↔ WSL Vite — NOT RUN
+FM-V10 Expo SDK 57 / RN compatible baseline — NOT RUN
+FM-V11 WSL Metro ↔ Windows Android emulator/device — NOT RUN
+FM-V12 package exports / forbidden deep imports — NOT RUN
+FM-V13 DTCG → Web CSS + Native TS token generation — NOT RUN
+FM-V14 Web/Mobile i18n shared-core consumption — NOT RUN
+FM-V15 Temporal/time shared-core consumption — NOT RUN
+FM-V16 TanStack Form Web + RN + Zod when first real form activates — NOT RUN
+FM-V17 TanStack Query remote path when first real remote path exists — NOT RUN
+FM-V18 OpenAPI → Orval when real backend OpenAPI exists — NOT RUN
+FM-V19 PowerSync + OP-SQLite + SQLCipher encrypted lifecycle when sync scope activates — NOT RUN
+FM-V20 offline upload/accept/reject/conflict reconciliation when backend path exists — NOT RUN
+FM-V21 identity-scoped local DB lifecycle when Auth/session scope exists — NOT RUN
+FM-V22 versioned Web runtime config when delivery bootstrap activates — NOT RUN
+FM-V23 Cloudflare deployment when remote Web delivery activates — NOT RUN
+FM-V24 Sentry integration when observability activates — NOT RUN
+FM-V25 EAS build/update/release path when mobile release infrastructure activates — NOT RUN
 ```
 
-Not every validation belongs to the initial scaffold commit. Deferred items remain explicit `NOT RUN`, never silently converted to PASS.
+Deferred items remain explicit `NOT RUN`, never silently converted to PASS.
 
 ## 6. Product-feature boundary
 
@@ -317,8 +373,6 @@ Chat memory is never required to reproduce the frontend environment.
 
 Each materialization slice gets its own exact remote write gate and QA.
 
-Do not combine unrelated environment repairs, dependency additions, Web scaffold, Mobile scaffold and product feature work merely to reduce commit count.
-
 Before each dependency/materialization write:
 
 1. verify branch HEAD;
@@ -333,9 +387,9 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-00 WORKSTATION PREFLIGHT
+FM-02B ROOT ENGINEERING TOOLING
 ```
 
-No installation yet.
+FM-00, FM-01 and FM-02A are directly validated. Reverify exact current patches and compatibility for the accepted TypeScript 6.x, Turborepo 2.x, ESLint/typescript-eslint and Prettier lines, then materialize only the root engineering tooling required by the accepted Foundation.
 
-Run the read-only WSL preflight from `../development/frontend-local-development.md`, return the complete output, classify the existing machine state, and only then authorize FM-01 installation/repair.
+Web, Mobile, shared packages and product surfaces remain outside FM-02A/FM-02B unless separately gated.

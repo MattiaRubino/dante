@@ -3,11 +3,11 @@
 - Status: **CURRENT FOR `feature/frontend-materialization`**
 - Purpose: reproducible frontend workstation setup, installation guidance and LOCAL topology
 - Foundation authority: Frontend Engineering Foundation integrated via PR #22
-- Current execution state: **FM-00 PREFLIGHT NOT RUN**
+- Current execution state: **FM-02A ROOT WORKSPACE BASELINE PASS**
 
 ## 1. Core posture
 
-DANTE uses one authoritative repository checkout under WSL/Linux semantics.
+DANTE uses one authoritative Git repository/history with working directories under WSL/Linux semantics. Purpose-specific linked Git worktrees inside WSL are allowed when backend/frontend or other bounded workstreams run concurrently.
 
 ```text
 Windows 11
@@ -17,7 +17,7 @@ Windows 11
 └── Docker Desktop
 
 WSL2 / Linux
-├── Git checkout
+├── linked DANTE Git worktree(s)
 ├── Node / pnpm / Turbo
 ├── Vite
 ├── Metro / Expo CLI
@@ -30,7 +30,7 @@ Docker is used for real stateful/local infrastructure, not as a blanket wrapper 
 Normal LOCAL ownership:
 
 ```text
-Git checkout             WSL filesystem
+Git worktrees            WSL filesystem
 Node/pnpm/Turbo          WSL
 Vite                     WSL
 Metro/Expo CLI           WSL
@@ -41,29 +41,38 @@ Docker daemon            Docker Desktop / WSL integration
 PostgreSQL               Docker when backend LOCAL infra is active
 ```
 
-## 2. Filesystem invariant
+## 2. Filesystem and worktree invariant
 
-Preferred repository location is inside the Linux filesystem, for example:
+Preferred paths live inside the Linux filesystem, for example:
 
 ```text
 /home/<user>/projects/dante
-~/projects/dante
+/home/<user>/projects/dante-frontend
 ```
 
-Avoid using a Windows-backed repository path such as `/mnt/c/...` as the authoritative checkout unless concrete evidence forces a different choice.
+Observed current topology:
+
+```text
+/home/mattia/projects/dante
+feature/backend-scaffold
+
+/home/mattia/projects/dante-frontend
+feature/frontend-materialization
+```
+
+Avoid a Windows-backed authoritative path such as `/mnt/c/...` unless concrete evidence forces a different choice.
 
 Hard rules:
 
 ```text
-one authoritative checkout
-no second Windows clone used for the same active work
+one authoritative Git repository/history
+linked purpose-specific worktrees inside WSL are allowed
+no divergent independent Windows + WSL clones for active development
 no shared cross-OS node_modules
 no manual file copying between Windows and WSL source trees
 ```
 
 ## 3. Python analogy for frontend dependency management
-
-Conceptual mapping:
 
 | Backend/Python | Frontend/TypeScript |
 | --- | --- |
@@ -74,15 +83,13 @@ Conceptual mapping:
 | `.venv` | project dependency graph exposed through `node_modules` |
 | `uv sync` | `pnpm install` |
 
-The analogy is useful but not exact.
+The analogy is useful but not exact. A Python virtual environment carries an isolated interpreter environment. Frontend `node_modules` governs project dependencies while Node itself is a WSL runtime whose required version is declared by the repository.
 
-A Python virtual environment carries an isolated interpreter environment. Frontend `node_modules` governs project dependencies while Node itself is normally a machine/runtime-level tool in WSL whose required version is declared by the repository.
-
-The repository therefore governs both:
+The repository governs both:
 
 ```text
 runtime expectation
-Node exact accepted line/patch policy
+Node exact accepted patch
 
 project dependency graph
 package.json + pnpm-lock.yaml
@@ -93,7 +100,7 @@ package.json + pnpm-lock.yaml
 Machine/WSL level:
 
 - Git;
-- Node runtime/version-management mechanism;
+- Node runtime/version manager;
 - pnpm activation mechanism;
 - Docker CLI integration;
 - Android platform tooling on Windows.
@@ -115,41 +122,40 @@ Repository-managed dependencies include, when materialized:
 
 Project libraries are not installed globally for convenience.
 
-Avoid patterns such as:
+Avoid:
 
 ```text
 npm install -g vite
 npm install -g typescript
 npm install -g expo
+sudo npm ...
 ```
 
-unless a future tool explicitly requires global installation and that exception is documented.
+unless a future tool explicitly requires a documented global exception.
 
-Do not use `sudo npm ...` to repair project dependency problems.
+## 5. Current version governance
 
-## 5. Version governance
-
-Accepted design baseline:
+Accepted design baseline and current materialized runtime pin:
 
 ```text
 Node        24 LTS
+current pin 24.19.0
 pnpm        11
-TypeScript  6.0.x strict
-Turbo       2.x
+current pin 11.22.0
+TypeScript  6.0.x strict   NOT INSTALLED YET
+Turbo       2.x            NOT INSTALLED YET
 ```
 
-Exact patches are resolved during materialization using current primary documentation and real compatibility constraints.
+Current repository authorities:
 
-Repository authorities will record versions through the appropriate combination of:
+```text
+.node-version
+package.json
+pnpm-workspace.yaml
+pnpm-lock.yaml
+```
 
-- root `package.json`;
-- `packageManager` declaration;
-- `engines`/runtime policy where useful;
-- a Node version file/tooling contract;
-- `pnpm-lock.yaml`;
-- app/package manifests.
-
-The lockfile is committed. Normal CI will use frozen-lockfile semantics once CI exists.
+`package.json` declares Node `24.19.0` and pnpm `11.22.0`; `.node-version` declares Node `24.19.0`. The lockfile is committed. Normal CI will use frozen-lockfile semantics once CI exists.
 
 Do not perform broad blind upgrades such as `pnpm update --latest` on the production workspace without an explicit dependency-upgrade scope and validation.
 
@@ -174,15 +180,13 @@ Vite
 Metro / Expo CLI
 ```
 
-Reasons include faster feedback, simpler IDE/debug integration, fewer filesystem/network indirections and cleaner Android tooling integration.
-
 Docker container lifecycle and persistent data lifecycle are separate. Stateful services use explicit persistent volumes/storage where required.
 
 ## 7. Browser and Mobile networking
 
 ### Web
 
-The target normal path is:
+Target path:
 
 ```text
 Vite in WSL
@@ -192,11 +196,11 @@ localhost/forwarded dev port
 Windows browser
 ```
 
-This path must be directly validated during FM-03 rather than assumed.
+This path is validated during FM-03 rather than assumed.
 
 ### Mobile
 
-The target normal path is:
+Target path:
 
 ```text
 Metro / Expo CLI in WSL
@@ -206,13 +210,11 @@ WSL↔Windows network + Android tooling bridge
 Android emulator/device on Windows
 ```
 
-The exact networking/ADB adapter is not pre-guessed. Start from the default current WSL posture, observe evidence, then configure only what is actually necessary.
-
-A tooling/network repair may change the adapter without reopening the frontend architecture.
+The exact networking/ADB adapter is not pre-guessed. Start from the default current WSL posture, observe evidence, then configure only what is necessary.
 
 ## 8. Command policy
 
-Repository scripts should become the normal entry point once the workspace exists.
+Repository scripts become the normal entry point once the workspace tooling exists.
 
 Target ergonomic surface, as applicable:
 
@@ -225,116 +227,174 @@ pnpm test
 pnpm build
 ```
 
-Individual app/package commands may exist, but developers should not need undocumented command sequences from chat history.
+Prefer project-local execution through pnpm rather than unrelated global binaries.
 
-When invoking repository tools directly, prefer project-local execution through pnpm rather than unrelated global binaries.
+## 9. FM-00 observed preflight — PASS
 
-## 9. FM-00 — read-only WSL preflight
+Observed on 2026-08-21:
 
-Run this before installing or repairing frontend tooling.
+```text
+frontend worktree
+/home/mattia/projects/dante-frontend
+feature/frontend-materialization
 
-From the authoritative DANTE checkout in WSL:
+WSL
+Ubuntu 24.04.4 LTS
+Linux / WSL2
+
+Git
+2.43.0
+/usr/bin/git
+
+Docker
+29.7.2
+/usr/bin/docker
+Docker Compose 5.4.0
+```
+
+The preflight found no Linux Node/npm/pnpm/Corepack installation. Windows paths are present in WSL interoperability PATH, so every frontend runtime executable must be checked to resolve Linux-side.
+
+## 10. FM-01 installation path — PASS
+
+### Machine prerequisites observed
+
+For the chosen installation path:
 
 ```bash
-printf '\n=== LOCATION / GIT ===\n'
-pwd
-git rev-parse --show-toplevel
-git status --short --branch
-git rev-parse HEAD
-
-printf '\n=== LINUX / WSL ===\n'
-uname -a
-cat /etc/os-release
-
-printf '\n=== GIT ===\n'
-git --version
-command -v git
-
-printf '\n=== NODE / NPM / PNPM / COREPACK ===\n'
-command -v node || true
-node --version 2>/dev/null || true
-command -v npm || true
-npm --version 2>/dev/null || true
-command -v pnpm || true
-pnpm --version 2>/dev/null || true
-command -v corepack || true
-corepack --version 2>/dev/null || true
-
-printf '\n=== DOCKER ===\n'
-command -v docker || true
-docker --version 2>/dev/null || true
-docker compose version 2>/dev/null || true
+sudo apt-get install -y unzip libatomic1
 ```
 
-This block is diagnostic only. It must not install, remove or alter packages.
+`unzip` is required by the fnm installation path used here.
 
-Return the complete output for review.
+`libatomic1` was required by the pnpm standalone Linux executable on this Ubuntu 24.04 WSL installation. The missing library manifested as:
 
-## 10. Optional Windows-side preflight
-
-Run only when requested after the WSL output is classified.
-
-Likely evidence includes:
-
-```powershell
-wsl --version
-wsl -l -v
+```text
+error while loading shared libraries: libatomic.so.1
 ```
 
-Android Studio/SDK/emulator and Docker Desktop integration are inspected when their phase becomes applicable rather than front-loading unrelated configuration.
+The repair is to install `libatomic1`, verify it through `ldconfig`, then rerun the pinned pnpm installer. Do not switch package-manager strategy merely because this prerequisite is missing.
 
-## 11. FM-00 review criteria
+### Node version manager
 
-The preflight review classifies:
+Observed:
 
-### Repository
+```text
+fnm 1.39.0
+```
 
-- correct repository;
-- authoritative checkout resides in WSL filesystem;
-- expected branch;
-- expected HEAD relationship;
-- no unrelated local changes before setup work.
+Bash integration:
 
-### Runtime
+```bash
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --use-on-cd --shell bash)"
+fi
+```
 
-- whether Node exists;
-- exact Node version;
-- exact executable path;
-- whether it is Linux-native;
-- whether npm/pnpm/Corepack already exist and where they resolve.
+The repository `.node-version` is authoritative for the current Node patch:
 
-### Docker
+```text
+24.19.0
+```
 
-- CLI presence;
-- Compose availability;
-- whether WSL can reach the Docker daemon when needed.
+### pnpm
 
-### Repairs
+Observed standalone installation:
 
-Every required repair is proposed explicitly before it is executed. Do not layer several package managers/version managers until one path works.
+```text
+PNPM_HOME=/home/mattia/.local/share/pnpm
+pnpm 11.22.0
+```
 
-## 12. Installation principles after FM-00
+Observed shell setup:
 
-When FM-01 is authorized:
+```bash
+export PNPM_HOME="/home/mattia/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+```
 
-1. verify the currently supported Node 24 LTS patch and pnpm 11 line against current primary sources;
-2. choose one clean WSL Node version-management/runtime installation mechanism;
-3. install/activate only what is missing;
-4. verify executable paths and versions;
-5. record repository runtime declarations;
-6. do not install React/Vite/Expo globally;
-7. create no production app until runtime/package-manager evidence is clean.
+## 11. Runtime direct checks — PASS
 
-If the machine already has an acceptable clean runtime, do not reinstall merely for uniformity.
+Observed normal shell:
+
+```text
+fnm        1.39.0
+Node       24.19.0
+npm        11.17.0
+pnpm       11.22.0
+```
+
+Observed executable ownership:
+
+```text
+node       Linux-side fnm multishell path
+npm        Linux-side fnm multishell path
+pnpm       /home/mattia/.local/share/pnpm/bin/pnpm
+```
+
+An isolated login-shell test with a minimal inherited environment directly proved:
+
+```text
+node=v24.19.0
+npm=11.17.0
+pnpm=11.22.0
+fnm=fnm 1.39.0
+fnm-current=v24.19.0
+```
+
+No `/mnt/c/...` runtime executable leakage was observed.
+
+## 12. FM-02A root workspace — PASS
+
+Current files:
+
+```text
+.node-version
+package.json
+pnpm-workspace.yaml
+pnpm-lock.yaml
+```
+
+Workspace reservation:
+
+```yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
+
+No empty `apps/` or `packages/` directory is created merely to match the architecture diagram.
+
+Direct checks:
+
+```text
+pnpm install                       PASS
+pnpm install --frozen-lockfile     PASS
+lockfile generation                PASS
+unexpected apps/                   0
+unexpected packages/               0
+unexpected node_modules/           0 in empty-workspace baseline
+```
+
+Remote baseline commit:
+
+```text
+c3f7945da7137b2bdd9e9f8922af452f1a79770f
+build: establish frontend workspace runtime baseline
+```
 
 ## 13. Clean-machine/onboarding acceptance target
 
-A future developer should be able to start from repository documentation and reach a working frontend without chat context.
-
-The final materialized runbook must make this path reproducible:
+A future developer should be able to start from repository documentation and reach a working frontend without chat context:
 
 ```text
-clone/open authoritative WSL checkout
+clone or create linked WSL worktree
+→ install documented machine prerequisites
+→ install/activate fnm
 → select governed Node runtime
 → activate governed pnpm
 → install locked dependencies
@@ -343,6 +403,8 @@ clone/open authoritative WSL checkout
 → start Mobile on supported local target
 → diagnose failures from documented ownership boundaries
 ```
+
+This target is not fully PASS until later materialization phases exist and are directly exercised.
 
 ## 14. Troubleshooting discipline
 
@@ -359,7 +421,7 @@ record durable fix if it is project-specific
 
 Do not respond to dependency/tooling failures with random global installs, blanket cache deletion, force flags or broad version changes unless evidence justifies them.
 
-Examples of owning layers:
+Examples:
 
 ```text
 Node executable/version        workstation runtime
@@ -373,6 +435,6 @@ PostgreSQL                     Docker/backend LOCAL infra
 
 ## 15. Current next action
 
-Run **FM-00 read-only WSL preflight** from section 9 and return the complete output.
+Proceed to **FM-02B root engineering tooling** only after current primary-source version and compatibility verification.
 
-No installation is authorized by this runbook until that output is reviewed.
+FM-02B may materialize the accepted root TypeScript/Turbo/lint/format baseline. It does not authorize Web, Mobile, shared packages or product feature code.
