@@ -26,6 +26,9 @@ build/
 web-build/
 coverage/
 
+# Expo generated TypeScript environment
+apps/mobile/expo-env.d.ts
+
 # Mobile signing / generated native artifacts
 *.jks
 *.keystore
