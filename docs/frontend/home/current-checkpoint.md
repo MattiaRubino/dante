@@ -2,7 +2,7 @@
 
 **Branch:** `prototype/frontend`  
 **Status:** **APPROVED WORKING VISUAL/BEHAVIOR CHECKPOINT**  
-**Current working B2 baseline:** **B2 Central Stage v21 responsive**  
+**Current working B2 baseline:** **B2 Central Stage v22 no persistent add**  
 **Last formally closed Home milestone:** **B1 Context Rail v1**  
 **Nature:** standalone HTML/CSS/JavaScript coded UX prototype with production-shaped contracts; not production application code.
 
@@ -49,82 +49,106 @@ B1 accepted:
 - rail stretches down with the timeline column;
 - existing timeline expansion still yields/removes the rail.
 
-## Current B2 working baseline — v21
+## Current B2 working baseline — v22
 
-The current B2 continuation oracle is the user-reviewed responsive v21 state.
+The current B2 continuation oracle is the user-reviewed v22 state with no persistent add affordance.
 
 ### Full
 
 ```text
-DANTE_Home_B2_full_responsive_guarded_preview_v21.html
-size       762160 bytes
-SHA-256    b653b5455903d0978cae88ff76fb74c285d0104334871cdb9f406f6d945c4cde
+DANTE_Home_B2_full_no_add_preview_v22.html
+size       761337 bytes
+SHA-256    18e1ae3d6558164975c8783f24a8f86051be57daeb9093661e1c5ee6a9fe6f76
 ```
 
 ### Partial
 
 ```text
-DANTE_Home_B2_partial_responsive_guarded_preview_v21.html
-size       762090 bytes
-SHA-256    390f12cf6c327be27342dcc038d398fd2751c3e2a9cbab3fbf2d981092405763
+DANTE_Home_B2_partial_no_add_preview_v22.html
+size       760579 bytes
+SHA-256    f6ee524db98a799c81fa2c704e751e34af3d1e02482f72eb006b20630ef1ada3
 ```
 
 Durable checkpoint:
 
-`docs/frontend/home/checkpoints/b2-central-stage-v21-responsive.md`
+`docs/frontend/home/checkpoints/b2-central-stage-v22-no-persistent-add.md`
 
 Deterministic archive:
 
-`prototypes/frontend/home/archive/b2-central-stage-v21/`
+`prototypes/frontend/home/archive/b2-central-stage-v22/`
 
-## B2 v21 functional/visual direction
+## B2 v22 functional/visual direction
 
 - stage projections: `Mondi` / `Segnali`;
 - stable technical IDs: `home.stage.continuity` / `home.stage.signals`;
 - Mondi retains the sphere-carousel visual lineage;
-- desktop Continuity target = five visible sphere positions;
-- partial state renders unused existing sphere positions as ghost `+` slots;
+- desktop Continuity target = five visible real items where enough items exist;
+- partial state renders only actual Mondi; no ghost `+` slots and no placeholder entities;
 - Segnali uses the same previous/next, selection and drag/swipe grammar;
 - Segnali desktop maximum = three complete visible items;
 - Signal track is centered within the stage;
 - mode switch preserves stage shell/selector/lateral-navigation anchors;
 - AI expanded/collapsed reflow remains Home-shell behavior;
-- resize hardening follows real physical stage geometry and adapts Continuity spacing in the narrow critical state.
+- v21 responsive hardening is preserved;
+- Home stage is read/navigate/open rather than a configuration CRUD surface;
+- no persistent `+` is shown for Mondi or Segnali;
+- true empty state may provide a contextual management CTA;
+- Mondi/Segnali creation and configuration live in dedicated management surfaces.
+
+## Current machine-readable contract
+
+```text
+contractVersion                         0.2.0
+persistentAddAffordance                 false
+configurationInHome                     false
+partialRendersOnlyRealItems             true
+emptyStateMayOfferManagementEntry       true
+directCreateMutationFromStage           false
+ADD_REQUEST                              removed
+OPEN_MANAGEMENT                          active intent
+```
+
+An empty fixture uses `activeIndex: null`; the UI does not manufacture a selected index when no real item exists.
 
 ## Current QA evidence
 
 ```text
-B2 v21 user visual/resize review       ACCEPTED WORKING BASELINE
-full duplicate DOM IDs                 0
-partial duplicate DOM IDs              0
-full inline JS syntax failures         0
-partial inline JS syntax failures      0
-critical 901px + AI collapsed overflow corrected
-B2.5 contract drift guard              PASS
-B2.5 responsive target cases           24
-fresh automated 24-case browser PASS   NOT CLAIMED
+B2 v22 user review                      ACCEPTED WORKING BASELINE
+full duplicate DOM IDs                  0
+partial duplicate DOM IDs               0
+full inline JS syntax failures          0
+partial inline JS syntax failures       0
+ghost/add mechanism in v22 preview      absent
+B2.5/v0.2 contract drift guard          PASS
+B2.5 responsive target cases            24
+fresh automated 24-case browser PASS    NOT CLAIMED
 ```
 
-The complete browser-matrix rerun is not represented as PASS in this checkpoint. User review accepted the v21 responsive behavior, while the B2.5 matrix remains the formal target for final automated verification.
+Current contract guard:
+
+```text
+frontend pre-production contracts: PASS
+contractVersion=0.2.0
+responsiveCases=24
+signalsMaxVisible=3
+continuityTargetVisible=5
+persistentAdd=false
+partialRealItemsOnly=true
+emptyManagementEntry=true
+```
+
+The complete browser-matrix rerun is not represented as PASS in this checkpoint. User review accepted the v22 behavior, while the B2.5 matrix remains the formal target for final automated verification.
 
 ## Open before B2 closure
 
-1. decide whether/how a `+` / add affordance should exist for full Mondi, Segnali and future stage projections;
-2. align visible logo/product naming to DANTE;
-3. review overall Home palette;
-4. review background/atmosphere;
-5. run final applicable Home/B2 QA after those changes.
+1. align visible logo/product naming to DANTE;
+2. review overall Home palette;
+3. review background/atmosphere;
+4. run final applicable Home/B2 responsive/visual/accessibility QA after those changes.
 
 ## Non-regression / intentionally unchanged
 
-The v21 checkpoint does not authorize changes to:
-
-- timeline semantics;
-- calendar/day ribbon semantics;
-- context-rail B1 meaning;
-- backend/domain/logical/physical semantics;
-- production framework/runtime selection;
-- real backend endpoints or persistence contracts.
+The v22 checkpoint does not authorize changes to timeline semantics, calendar/day ribbon semantics, context-rail B1 meaning, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
 
 ## Current authorities
 
