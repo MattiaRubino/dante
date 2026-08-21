@@ -1,6 +1,6 @@
 {
   "format": "dante-frontend-contract-v0",
-  "contractVersion": "0.1.0",
+  "contractVersion": "0.2.0",
   "id": "home.stage",
   "status": "preproduction-working",
   "semanticBoundary": {
@@ -23,6 +23,13 @@
       "maxVisibleItems": 3
     }
   ],
+  "homeRole": {
+    "allowed": ["read", "navigate", "open"],
+    "persistentAddAffordance": false,
+    "configurationInHome": false,
+    "partialRendersOnlyRealItems": true,
+    "emptyStateMayOfferManagementEntry": true
+  },
   "uiStates": ["loading", "ready", "empty", "partial", "full", "overflow", "error", "unavailable"],
   "interactionStates": ["idle", "dragging", "settling"],
   "events": [
@@ -34,8 +41,15 @@
     "DRAG_START",
     "DRAG_MOVE",
     "DRAG_END",
-    "ADD_REQUEST"
+    "OPEN_MANAGEMENT"
   ],
+  "managementBoundary": {
+    "entryIntent": "OPEN_MANAGEMENT",
+    "emptyStateEntryAllowed": true,
+    "directCreateMutationFromStage": false,
+    "continuityManagement": "dedicated-surface",
+    "signalsManagement": "dedicated-surface"
+  },
   "geometryOwnership": {
     "owner": "home.stage",
     "outerGeometryMayBeChangedByModes": false,
@@ -55,7 +69,10 @@
     "Changing stage mode does not change outer stage geometry.",
     "Stage selector and lateral navigation anchors are mode-independent.",
     "Signals render at most three complete visible items in the desktop pre-production matrix.",
-    "Continuity empty add slots are UI composition and are not persisted backend placeholder entities.",
+    "Home stage has no persistent add affordance.",
+    "Partial projections render only real items; no ghost add slots or placeholder entities.",
+    "Empty state may offer a contextual management entry so the surface is not a dead end.",
+    "Creation and configuration are handled by dedicated management surfaces outside Home stage.",
     "Window or parent-layout resize must not require mode-specific outer-geometry patches.",
     "AI expanded/collapsed reflow is owned by the Home shell.",
     "No visual projection creates canonical DANTE truth."
