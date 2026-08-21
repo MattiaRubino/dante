@@ -32,12 +32,13 @@ ACTIVE ON feature/frontend-materialization
 DIRECT FRONTEND VALIDATION NOT YET EARNED
 
 PRODUCTION BACKEND SCAFFOLD
-ACTIVE
+CLOSED ON feature/backend-scaffold / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
 CP4 CLOSED / DIRECT REMOTE QA PASS
-CP5 NEXT
+CP5 CLOSED / DIRECT INTEGRATED QA PASS
+PR #24 OPEN / MERGE NOT YET AUTHORIZED
 
 PROTECTED-MAIN CI
 Backend CI Gate REQUIRED
@@ -46,7 +47,7 @@ branch up-to-date REQUIRED
 required-check source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / DEFERRED UNTIL CP5 CLOSURE
+NOT STARTED / NEXT AFTER BACKEND SCAFFOLD INTEGRATION
 
 DIRECT SELECTED-STACK VALIDATION / PSV
 NOT RUN BEYOND EXPLICITLY RECORDED SCAFFOLD ACCEPTANCE
@@ -197,6 +198,36 @@ Repository owner also enabled the Actions setting requiring full-length Action S
 
 No arbitrary coverage threshold is introduced.
 
+## CP5 final integrated scaffold acceptance
+
+CP5 re-proved the complete scaffold on the canonical WSL2/Linux workstation without adding business schema or changing backend implementation.
+
+Direct evidence:
+
+```text
+remote PRE-SCOPE / branch relation        PASS
+main ancestry / behind_by=0               PASS
+uv 0.12.5                                 PASS
+Python 3.14.7                              PASS
+uv lock --check / sync --locked           PASS
+Ruff format + lint                        PASS
+mypy strict                               PASS
+fast pytest                               32/32 PASS
+canonical PostgreSQL image rebuild        PASS
+PostgreSQL acceptance                     18/18 PASS
+full backend pytest                       50/50 PASS
+full-run coverage                         97.42% evidence only
+wheel + sdist build                       PASS
+LOCAL PostgreSQL Compose health           PASS
+explicit DB security provisioning         PASS
+real Uvicorn factory startup              PASS
+GET /health/live                          200 {"status":"ok"}
+GET /health/ready                         200 {"status":"ready"}
+CP4 required remote workflows             SUCCESS on PRE-SCOPE
+```
+
+One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL port-forwarding `/forwards/expose` HTTP 500 while Docker held a newly created container on an otherwise unused loopback port. After removing that diagnostic container, the clean full suite passed 50/50. This is recorded as a transient local Docker forwarding event, not as a backend/database test failure.
+
 ## Direct evidence truth
 
 ```text
@@ -213,7 +244,11 @@ CP4 DELIBERATE RED                       PASS
 CP4 RECOVERY GREEN                       PASS
 CP4 REQUIRED-CHECK PROMOTION             APPLIED
 CP4                                      CLOSED / DIRECT REMOTE QA PASS
-CP5                                      NEXT
+CP5 FAST QA                              32/32 PASS
+CP5 POSTGRESQL QA                        18/18 PASS
+CP5 FULL BACKEND QA                      50/50 PASS
+CP5 REAL STARTUP + LIVE + READY          PASS
+CP5                                      CLOSED / DIRECT INTEGRATED QA PASS
 CONCRETE BUSINESS DB SCHEMA              NOT STARTED
 DIRECT HG-01..HG-12                      NOT RUN
 RESTORE/PITR REHEARSAL                   NOT RUN
@@ -272,10 +307,10 @@ feature/frontend-materialization
 
 BACKEND
 feature/backend-scaffold
-→ CP1–CP4 CLOSED / DIRECT QA PASS
-→ CP5 full scaffold QA / closure NEXT
-→ do not merge PR #24 without explicit merge authorization
-→ concrete Logical → PostgreSQL mapping only after CP5 closure
+→ CP1–CP5 CLOSED / DIRECT QA PASS
+→ PR #24 remains open and unmerged
+→ next action is a separate explicit merge gate into protected main
+→ after verified scaffold integration, concrete Logical → PostgreSQL becomes the next backend implementation boundary
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP4 decisions by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default.
