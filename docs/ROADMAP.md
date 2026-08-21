@@ -2,11 +2,11 @@
 
 - Status: **CURRENT**
 
-## Completed architecture/design sequence
+## Completed architecture / design sequence
 
 ```text
 Product / North Star
-        CLOSED/CURRENT
+        CURRENT
           ↓
 Domain Model
         CLOSED
@@ -20,80 +20,143 @@ Pre-Physical Repository & Architecture Coherence
 Physical Model / Target Selection
         CLOSED / ACCEPTED
           ↓
-Current-truth dormant-component alignment
-        COMPLETE
-          ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
           ↓
-Repository identity governance
-        COMPLETE
-        MattiaRubino/lifeos → MattiaRubino/dante
+Frontend Engineering Foundation
+        PASSO 1 PASS
+        PASSO 2 PASS
+        PASSO 3 FINAL REVIEW PASS
+        DESIGN / ARCHITECTURE CLOSED / ACCEPTED
+        INTEGRATED VIA PR #22
 ```
 
-Engineering Foundation replaces the previously considered standalone Development Profile phase. Tool/runtime/infrastructure activation now happens under the closed Foundation contract and the implementation boundary that actually needs the capability.
+Architecture closure remains distinct from implementation/direct validation.
 
-## Immediate next sequence
+## Active implementation workstreams
 
-### 0. Repository identity governance — COMPLETE
+### Frontend production materialization — ACTIVE
 
-The current repository is retained; **do not create a new repository** for implementation.
+Branch:
 
-Completed governance operation:
+`feature/frontend-materialization`
+
+The closed Frontend Foundation is being materialized under its own bounded workstream. Direct frontend PASS is earned only by the real carried validations; active branch status is not evidence by itself.
+
+Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled semantically when either workstream integrates.
+
+### Backend production scaffold — ACTIVE
+
+Branch:
+
+`feature/backend-scaffold`
+
+Current checkpoint truth:
 
 ```text
-historical GitHub repository   MattiaRubino/lifeos
-current GitHub repository      MattiaRubino/dante
-rename                         COMPLETE
+CP1 Python/process/config
+CLOSED / DIRECT QA PASS
+
+CP2 reproducible LOCAL PostgreSQL
+CLOSED / DIRECT QA PASS
+
+CP3 persistence/migrations/privileges/real PostgreSQL
+CLOSED / DIRECT QA PASS
+
+CP4 quality / CI enforcement
+DESIGN CLOSED
+M1 CLOSED
+M2 MATERIALIZED / REMOTE READBACK PASS
+M3 DIRECT LOCAL QA PASS
+M4 CURRENT MAIN RECONCILED
+POST-MERGE REGRESSION QA NEXT
+REMOTE PR CALIBRATION NOT RUN
+
+CP5 full scaffold QA / closure
+NOT STARTED
 ```
 
-The repository rename is no longer a pending prerequisite for production implementation.
-
-### 1. Production repository/backend scaffold
-
-Open a fresh bounded branch/write gate and create only real scaffold required for:
+CP4 materialized:
 
 ```text
-apps/backend
-Python 3.14.x / initial 3.14.7
-uv + pyproject.toml + uv.lock + .python-version
-src/dante
-Ruff
-mypy strict
-pytest + Hypothesis baseline
-architecture-test skeleton where an enforceable package graph exists
-pydantic-settings bootstrap
-SQLAlchemy + psycopg + Alembic bootstrap
-LOCAL Docker Compose
-DANTE-owned PostgreSQL 18.4 image/config
-full selected PostgreSQL extension envelope enabled
-initial migration harness
-initial real PostgreSQL integration harness
-initial GitHub Actions checks only where they can really execute
+Backend CI
+├── Backend Quality
+├── Backend PostgreSQL
+└── Backend CI Gate
+
+Dependency Review
+└── separate repository-wide workflow
+
+Dependabot
+├── uv
+└── GitHub Actions
 ```
 
-Do not create frontend implementation or unused remote-cloud scaffolding in this scope.
+Required status checks remain **0** until real remote calibration proves stable emitted contexts and failure semantics.
 
-### 2. Scaffold QA
+## Immediate backend sequence
 
-Before concrete schema work prove:
+### 1. CP4 post-main reconciliation regression
 
-- exact changed paths;
-- clean locked dependency bootstrap;
-- backend can start in WSL/Linux;
-- PyCharm WSL interpreter workflow remains straightforward;
-- DANTE PostgreSQL image builds/starts;
-- selected extensions are installed/enabled and versions inspectable;
-- basic database connection works through selected driver/toolkit;
-- migration harness can create/upgrade an empty DB baseline;
-- initial unit/integration/architecture checks actually run;
-- real emitted CI contexts are observed before any required-check activation.
+Run on the reconciled branch:
 
-No direct Physical HG/PSV PASS may be claimed unless the specific required scenario/artifact is actually executed.
+- exact locked uv bootstrap;
+- Ruff format/lint;
+- mypy strict;
+- non-PostgreSQL tests;
+- backend build;
+- canonical `dante-postgres-local:18.4` rebuild;
+- PostgreSQL-marked acceptance.
 
-### 3. Concrete Logical → PostgreSQL implementation
+Do not infer PASS from the pre-merge M3 run.
 
-After scaffold PASS:
+### 2. CP4 real PR green calibration
+
+After regression PASS, open the real PR to current protected `main` and observe:
+
+```text
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
+Dependency Review
+```
+
+Record exact emitted contexts/source and real logs.
+
+### 3. CP4 deliberate red
+
+Under a separately bounded calibration change, prove:
+
+- mandatory upstream failure makes `Backend CI Gate` fail;
+- Dependency Review detects the intended dependency-policy violation;
+- a real `uv.lock` dependency delta is visible/evaluated before Dependency Review can be promoted.
+
+### 4. CP4 recovery green
+
+Restore the branch without weakening policy and prove all intended checks green again.
+
+### 5. Required-check / repository settings decision
+
+Only after green → red → recovery green:
+
+- consider stable required contexts;
+- bind expected GitHub Actions source where supported;
+- consider repository full-SHA enforcement where supported;
+- reread effective rules/protection after any mutation.
+
+No required check is configured merely because YAML exists.
+
+### 6. CP4 closure
+
+Record `CLOSED / DIRECT QA PASS` only when the CP4 acceptance matrix is truthfully satisfied or an item is explicitly deferred as unsupported/out of boundary.
+
+### 7. CP5 scaffold QA / closure
+
+Perform the final integrated scaffold acceptance/handoff.
+
+### 8. Concrete Logical → PostgreSQL implementation
+
+Only after scaffold closure:
 
 ```text
 consume closed Logical owner/ref/invariant contracts
@@ -111,36 +174,13 @@ persistence/application vertical slice
 
 Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
 
-### 4. Backend vertical slices
+## Product vertical slices
 
-Build capability-by-capability:
+Production product surfaces begin only after the relevant frontend/backend foundations, scaffolds and contracts exist. Prototype UX remains evidence/oracle; production implementation follows accepted feature/data/UI boundaries.
 
-- explicit application use cases;
-- expected-state/idempotency/governance semantics;
-- transaction boundaries;
-- persistence adapters;
-- material history/provenance;
-- HTTP adapter only after semantic/application boundary is sound;
-- outbox/async effects when real Class-A use cases appear.
+## Capability-triggered Physical implementation
 
-### 5. Frontend production engineering
-
-Frontend internal engineering remains on its own workstream/branch after the current frontend design/prototype work is ready.
-
-That scope will decide, against current evidence:
-
-- production web/mobile internal structure;
-- Node/package-manager/workspace/task tooling;
-- detailed web/mobile testing;
-- generated API-client consumption;
-- mobile build/release/EAS posture;
-- shared frontend package boundaries.
-
-It consumes backend contracts; it does not reopen backend Foundation by default.
-
-### 6. Capability-triggered Physical implementation
-
-Activate selected components when their real feature boundary arrives:
+Activate specialist components only at real requirements. Applicable validation obligations travel with activation:
 
 ```text
 PowerSync + encrypted SQLite
@@ -159,52 +199,32 @@ pgBackRest + AWS S3
 → recovery/production boundary or real recovery rehearsal
 ```
 
-Applicable PSV obligations travel with activation.
-
-### 7. Remote DEV
-
-When LOCAL implementation has enough value to require real remote integration:
-
-- compare current hosting/compute options;
-- select provider and IaC engine deliberately;
-- create isolated DEV only;
-- use workload identity/secret manager/OIDC;
-- deploy exact immutable artifact;
-- validate remote config/network/provider wiring.
-
-Do not materialize UAT/PROD merely to have empty enterprise-looking environments.
-
-### 8. UAT
-
-Activate when a real release candidate exists.
-
-Use for:
-
-- migration rehearsal;
-- release deployment rehearsal;
-- E2E/provider compatibility;
-- performance/failure/security/recovery checks as applicable;
-- release acceptance.
-
-### 9. PROD
-
-Activate at production readiness with:
-
-- isolated production resources/identity/secrets;
-- accepted recovery posture;
-- observability/security release gates;
-- exact candidate artifact/digest;
-- controlled migration/release procedure;
-- post-deploy verification.
-
-## Persistent rule
+## Remote environments
 
 ```text
-SELECTED ARCHITECTURE
-!= IMPLEMENTED COMPONENT
+LOCAL
+→ current implementation boundary
 
-DOCUMENTATION PASS
-!= DIRECT IMPLEMENTATION PASS
+DEV
+→ activate when shared remote integration provides real value
+
+UAT
+→ activate for real release candidates
+
+PROD
+→ activate only at production readiness
 ```
 
-The next implementation boundary is the production backend scaffold under the closed Engineering Foundation contract.
+Backend hosting/compute, IaC and remote sizing remain deliberate decisions at the first real remote-infrastructure boundary.
+
+## Persistent rules
+
+```text
+SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
+DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
+CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
+ENVIRONMENT != GIT BRANCH
+WORKFLOW EXISTS != REQUIRED CHECK PROVEN
+```
+
+Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.
