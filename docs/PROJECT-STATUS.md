@@ -41,12 +41,13 @@ ACTIVE ON feature/frontend-materialization
 DIRECT FRONTEND VALIDATION NOT YET EARNED
 
 PRODUCTION BACKEND SCAFFOLD
-ACTIVE
+CLOSED ON feature/backend-scaffold / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
 CP4 CLOSED / DIRECT REMOTE QA PASS
-CP5 NEXT
+CP5 CLOSED / DIRECT INTEGRATED QA PASS
+PR #24 OPEN / MERGE NOT YET AUTHORIZED
 
 PROTECTED-MAIN CI ENFORCEMENT
 Backend CI Gate REQUIRED
@@ -55,7 +56,7 @@ branch up-to-date REQUIRED
 source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / DEFERRED UNTIL CP5 CLOSURE
+NOT STARTED / NEXT AFTER VERIFIED SCAFFOLD INTEGRATION
 
 DIRECT HG-01..HG-12
 NOT RUN / PASS 0
@@ -279,13 +280,6 @@ HEAD:
 739680d11fe5c33a4974f069c2fdcce9e71a4fe0
 ```
 
-Runs:
-
-```text
-Backend CI          32478656632
-Dependency Review   32478656892
-```
-
 Observed:
 
 ```text
@@ -298,8 +292,6 @@ Dependency Review     FAILURE — intentional deny-packages policy
 Gate log observed `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected `fastapi@0.141.1` through `pkg:pypi/fastapi`. No vulnerable package was added.
 
 ### M7 — recovery green
-
-Temporary workflow changes were restored byte-for-byte to the M5 blobs.
 
 Recovery HEAD:
 
@@ -318,33 +310,14 @@ All four intended checks/jobs returned green.
 
 ### M8 — protected-main promotion
 
-Existing ruleset `lifeos-main-safety` now requires:
+Existing ruleset `lifeos-main-safety` requires:
 
 ```text
 Backend CI Gate
 Dependency Review
 ```
 
-Both were selected in the GitHub UI with source **GitHub Actions**.
-
-Also enabled:
-
-```text
-Require branches to be up to date before merging
-```
-
-Preserved:
-
-```text
-PR required
-0 approving reviews
-review-thread resolution required
-merge method merge
-deletion blocked
-force pushes blocked
-no bypass
-no merge queue
-```
+Both were selected in the GitHub UI with source **GitHub Actions**. Branch up-to-date, PR-before-merge, zero approvals for the current single-maintainer state, review-thread resolution, deletion protection and force-push protection remain active.
 
 Repository owner enabled the Actions setting requiring full-length commit SHA pins. The connected GitHub integration cannot directly read that setting; it is recorded as owner-applied / connector-unverifiable.
 
@@ -357,7 +330,67 @@ CP4
 CLOSED / DIRECT REMOTE QA PASS
 ```
 
-## 10. Current direct-validation non-claims
+## 10. Backend CP5 — CLOSED / DIRECT INTEGRATED QA PASS
+
+CP5 PRE-SCOPE:
+
+```text
+35eca3a6b1fc9bbc691672e29ac975e640a49bf4
+```
+
+Before QA, the remote branch was identical to that PRE-SCOPE, current `main` was an ancestor with `behind_by = 0`, PR #24 was open/unmerged/mergeable, no review threads were present and both CP4 workflows on PRE-SCOPE were green.
+
+Canonical WSL2/Linux workstation evidence:
+
+```text
+branch synchronized to PRE-SCOPE             PASS
+uv 0.12.5                                    PASS
+Python 3.14.7                                 PASS
+uv lock --check                              PASS
+uv sync --locked                             PASS
+uv tree --locked                             PASS
+Ruff format --check                          PASS
+Ruff lint                                    PASS
+mypy strict                                  PASS
+fast pytest                                  32/32 PASS
+uv build wheel + sdist                       PASS
+canonical PostgreSQL image rebuild           PASS
+PostgreSQL acceptance                        18/18 PASS
+full backend pytest                          50/50 PASS
+full-run coverage                            97.42% evidence only
+LOCAL Compose PostgreSQL                     HEALTHY
+explicit owner/migrator/runtime provisioning PASS
+real Uvicorn factory startup                 PASS
+GET /health/live                             200 {"status":"ok"}
+GET /health/ready                            200 {"status":"ready"}
+```
+
+The local `.env.local` initially predated CP3 database variables; it was brought up to the repository-controlled `.env.example` contract using workstation-local ignored credentials. No secret was committed and no repository source change was required.
+
+One full-suite invocation immediately after a dedicated PostgreSQL run hit Docker Desktop/WSL forwarding state rather than test logic:
+
+```text
+docker run exit 125
+/forwards/expose returned unexpected status: 500
+container state: Created
+requested loopback port: no Linux listener
+```
+
+The diagnostic container was removed. A clean subsequent `uv run --locked pytest` completed **50/50 PASS**, so the event is classified as a transient Docker Desktop/WSL port-forwarding failure rather than an application, PostgreSQL or test-harness regression.
+
+CP5 added no business schema, backend source, tests, dependency, migration or CI changes.
+
+Closure decision:
+
+```text
+CP5
+CLOSED / DIRECT INTEGRATED QA PASS
+
+PRODUCTION BACKEND SCAFFOLD
+CLOSED ON FEATURE BRANCH / PENDING PROTECTED-MAIN INTEGRATION
+```
+
+## 11. Current direct-validation non-claims
 
 Do not extrapolate scaffold evidence into blanket Physical or production validation:
 
@@ -372,15 +405,16 @@ OBJECT RECOVERY TEST                   NOT RUN
 SOLVER DIRECT TEST                     NOT RUN
 PRODUCTION DEPLOYMENT                  NOT STARTED
 FRONTEND DIRECT MATERIALIZATION PASS   NOT YET EARNED
+CONCRETE BUSINESS DB SCHEMA            NOT STARTED
 ```
 
-## 11. Active branches / workstreams
+## 12. Active branches / workstreams
 
 ```text
 feature/backend-scaffold
-→ CP1–CP4 CLOSED
-→ CP5 NEXT
+→ CP1–CP5 CLOSED / DIRECT QA PASS
 → PR #24 active; merge not authorized yet
+→ next action: separate explicit merge gate
 
 feature/frontend-materialization
 → frontend production materialization
@@ -389,17 +423,17 @@ feature/frontend-materialization
 
 The workstreams may proceed in parallel. Shared global documentation must be reconciled semantically at integration time; one workstream must not overwrite newer protected-main truth from the other.
 
-## 12. Exact next backend action
+## 13. Exact next backend action
 
 ```text
-1. Treat CP1–CP4 as closed accepted backend scaffold checkpoints.
-2. Open a fresh exact gate for CP5.
-3. CP5 performs integrated scaffold QA / closure only.
-4. Verify current main/branch relation again before any integration decision.
-5. Verify protected required contexts remain emitted and green.
-6. Do not merge PR #24 without explicit merge authorization.
-7. Do not activate CodeQL inside CP5 unless separately authorized by its accepted post-main boundary.
-8. Start concrete Logical → PostgreSQL mapping only after CP5 closes.
+1. Treat CP1–CP5 as closed accepted backend scaffold checkpoints.
+2. Do not add more implementation to CP5.
+3. Open a fresh exact merge gate for PR #24.
+4. Revalidate branch HEAD, current main, required checks, up-to-date state, review threads and exact PR delta on the actual merge candidate.
+5. Merge only with explicit authorization and the accepted merge-commit method.
+6. Perform post-merge readback and push-to-main CI verification before declaring scaffold integration complete.
+7. Keep CodeQL a separate post-main boundary.
+8. Start concrete Logical → PostgreSQL mapping only after verified scaffold integration.
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3/CP4 decisions without concrete contradictory evidence.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3/CP4/CP5 decisions without concrete contradictory evidence.
