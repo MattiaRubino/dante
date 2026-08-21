@@ -1,6 +1,6 @@
 {
   "format": "dante-responsive-matrix-v0",
-  "contractVersion": "0.1.0",
+  "contractVersion": "0.2.0",
   "scope": "home.stage desktop pre-production guardrail",
   "viewportsPx": [1856, 1600, 1366, 1200, 1024, 901],
   "aiStates": ["expanded", "collapsed"],
@@ -12,6 +12,7 @@
     "mode switch does not change stage bounding box",
     "mode switch does not move stage selector or lateral navigation anchors",
     "timeline and contextual rail remain outside stage ownership",
+    "no persistent add control participates in stage geometry",
     "no console error caused by stage interaction"
   ],
   "modeRules": {
@@ -19,14 +20,21 @@
       "desktopTargetVisibleItems": 5,
       "mustFitTargetAtAllMatrixWidths": true,
       "adaptiveScaleOrSpacingAllowed": true,
+      "partialContainsOnlyRealItems": true,
+      "ghostAddSlotsAllowed": false,
+      "persistentAddAffordanceAllowed": false,
+      "emptyStateManagementEntryMayAppear": true,
       "modeSpecificOuterGeometryOverrideAllowed": false
     },
     "home.stage.signals": {
       "maxVisibleItems": 3,
       "allVisibleItemsMustBeComplete": true,
       "centerTrackWithinStage": true,
+      "persistentAddAffordanceAllowed": false,
+      "emptyStateManagementEntryMayAppear": true,
       "modeSpecificOuterGeometryOverrideAllowed": false
     }
   },
-  "requiredInteractionChecks": ["MODE_PREVIOUS", "MODE_NEXT", "ITEM_PREVIOUS", "ITEM_NEXT", "ITEM_SELECT", "DRAG_SEQUENCE"]
+  "requiredInteractionChecks": ["MODE_PREVIOUS", "MODE_NEXT", "ITEM_PREVIOUS", "ITEM_NEXT", "ITEM_SELECT", "DRAG_SEQUENCE"],
+  "requiredStateChecks": ["PARTIAL_REAL_ITEMS_ONLY", "EMPTY_MANAGEMENT_ENTRY"]
 }
