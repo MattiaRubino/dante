@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+infra/compose/secrets/*.local
 *.pem
 *.key
 *.p12
@@ -13,6 +14,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
 .venv/
 venv/
 

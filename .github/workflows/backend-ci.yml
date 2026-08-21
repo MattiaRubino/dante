@@ -1,0 +1,142 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: backend-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    name: Backend Quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+
+      - name: Verify locked dependency graph
+        working-directory: apps/backend
+        run: uv lock --check
+
+      - name: Synchronize locked environment
+        working-directory: apps/backend
+        run: uv sync --locked
+
+      - name: Show toolchain versions
+        working-directory: apps/backend
+        run: |
+          uv --version
+          uv run --locked python --version
+
+      - name: Ruff format check
+        working-directory: apps/backend
+        run: uv run --locked ruff format --check .
+
+      - name: Ruff lint
+        working-directory: apps/backend
+        run: uv run --locked ruff check .
+
+      - name: mypy strict
+        working-directory: apps/backend
+        run: uv run --locked mypy
+
+      - name: Fast test suite
+        working-directory: apps/backend
+        run: uv run --locked pytest -m "not postgres"
+
+      - name: Build backend package
+        working-directory: apps/backend
+        run: uv build
+
+  postgres:
+    name: Backend PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install canonical uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          working-directory: apps/backend
+          checksum: 68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+          enable-cache: false
+
+      - name: Install project Python
+        working-directory: apps/backend
+        run: uv python install
+
+      - name: Verify locked dependency graph
+        working-directory: apps/backend
+        run: uv lock --check
+
+      - name: Synchronize locked environment
+        working-directory: apps/backend
+        run: uv sync --locked
+
+      - name: Show toolchain versions
+        working-directory: apps/backend
+        run: |
+          uv --version
+          uv run --locked python --version
+
+      - name: Build canonical PostgreSQL image
+        run: docker build --pull --tag dante-postgres-local:18.4 infra/local/postgres
+
+      - name: PostgreSQL acceptance suite
+        working-directory: apps/backend
+        run: uv run --locked pytest -m postgres -vv
+
+  gate:
+    name: Backend CI Gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    needs:
+      - quality
+      - postgres
+    if: ${{ always() }}
+    steps:
+      - name: Require all mandatory backend jobs
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          POSTGRES_RESULT: ${{ needs.postgres.result }}
+        run: |
+          printf 'Backend Quality: %s\n' "$QUALITY_RESULT"
+          printf 'Backend PostgreSQL: %s\n' "$POSTGRES_RESULT"
+          [[ "$QUALITY_RESULT" == "success" ]]
+          [[ "$POSTGRES_RESULT" == "success" ]]

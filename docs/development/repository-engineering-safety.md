@@ -1,17 +1,16 @@
 # Repository Engineering Safety
 
-- Status: **CURRENT — Phase 11 QA PASS**
-- Scope: repository integration safety before and during Physical/backend production implementation
-- Repository: `MattiaRubino/lifeos`
+- Status: **CURRENT — Phase 11 QA PASS + CP4 REQUIRED-CHECK PROMOTION APPLIED**
+- Scope: repository integration safety for DANTE production workstreams
+- Repository: `MattiaRubino/dante`
 - Default branch: `main`
-- Physical Model: **CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
-- Direct selected-stack implementation validation: **NOT STARTED / DIRECT HG PASS 0**
-- Backend Foundation: **NOT STARTED / DEFERRED**
-- Development Profile v0: **NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE**
+- Main ruleset: `lifeos-main-safety`
+- Backend CP4: **CLOSED / DIRECT REMOTE QA PASS**
+- Frontend materialization: **ACTIVE ON `feature/frontend-materialization`**
 
 ## Purpose
 
-Make the repository enforce the Git discipline LifeOS already documents without inventing premature CI, enterprise ceremony or implementation infrastructure.
+Make the repository enforce the Git discipline DANTE documents without inventing fake review ceremony or unproven CI gates.
 
 ```text
 DOCUMENTED REPOSITORY POLICY
@@ -19,7 +18,7 @@ DOCUMENTED REPOSITORY POLICY
 GITHUB SETTING ACTUALLY APPLIED
 ```
 
-Phase 11 closed only because both the policy and the applicable GitHub-side protections were verified where the connector permits verification.
+A repository-side control is recorded as effective only after the relevant evidence exists. When the connected GitHub integration cannot read a setting directly, that limitation is stated instead of converting user/admin application into false API evidence.
 
 ## Authority
 
@@ -29,9 +28,10 @@ This file complements, and does not replace:
 - `operating-rules.md`;
 - `branching-and-environments.md`;
 - `documentation-and-handoff.md`;
+- `github-main-ruleset.json`;
 - the active workstream handoff.
 
-Existing project rules remain authoritative:
+Persistent operating rules:
 
 ```text
 main = one integrated source of truth
@@ -42,13 +42,11 @@ no force-push of shared history for cosmetic cleanup
 remote evidence required before PASS / CLOSED
 ```
 
-## Phase 11 verified repository state
+## Historical Phase 11 baseline
 
-Verified on 2026-08-17 after GitHub-side application:
+Phase 11 established the first protected-main posture before real CI existed:
 
 ```text
-repository visibility              public
-default branch                     main
 ruleset                            lifeos-main-safety
 ruleset enforcement                active
 ruleset target                     ~DEFAULT_BRANCH
@@ -61,205 +59,217 @@ review-thread resolution           required
 allowed merge method               merge
 required status checks             0
 GitHub Actions workflows           0
-auto-delete merged head branches  enabled
-confirmed accidental refs          absent
-Physical Model                     NOT STARTED / NOT AUTHORIZED at Phase-11 closure
-Backend Foundation                 NOT STARTED / DEFERRED
 ```
 
-The ruleset was verified remotely through GitHub's repository ruleset API. The three confirmed accidental refs `__do_not_create__`, `__noop_should_fail__` and `__tmp_should_not_create__` were verified absent after cleanup. The earlier `__no-op__` ref was already absent before Phase 11 closure.
+Zero required checks was correct at that time because no stable workflow context existed. That historical state remains evidence, not current policy.
 
-Dependabot and secret/code-scanning alert state is not readable through the connected GitHub integration because the relevant endpoints return `403 Resource not accessible by integration`. The user/admin applied the requested repository security settings, but this connector limitation is recorded rather than converted into false API evidence.
+## Current main protection after Backend CP4
 
-## Current safety objective
+CP4 created, calibrated and recovered the first stable integration checks on real PR #24 before promotion.
 
-The repository is currently owner-driven. Safety prevents destructive mistakes without creating gates that require nonexistent reviewers or nonexistent CI.
+Current intended/effective ruleset definition is stored in:
 
-Current main protection therefore is:
+`docs/development/github-main-ruleset.json`
+
+Current protection posture:
 
 ```text
-protect main from deletion
-protect main from force-push / non-fast-forward updates
-require integration through pull request
-require review conversations to be resolved
-require zero approvals while no independent reviewer exists
-require zero status checks while no stable checks exist
-preserve merge commits/history
+name                                   lifeos-main-safety
+target                                 ~DEFAULT_BRANCH
+enforcement                            active
+bypass                                 none
+main deletion                          blocked
+main force push / non-fast-forward     blocked
+pull request before merge              required
+required approving reviews             0
+review-thread resolution                required
+allowed merge method                   merge
+required checks                        Backend CI Gate
+                                       Dependency Review
+required-check source                  GitHub Actions
+require branch up to date              enabled
+do not enforce checks on creation      false
+merge queue                            not enabled
 ```
 
-## Main branch ruleset
-
-Canonical repository definition:
-
-`github-main-ruleset.json`
-
-Current verified identity:
+The two required checks were promoted only after this direct sequence on PR #24:
 
 ```text
-name        lifeos-main-safety
-target      branch
-enforcement active
-condition   ~DEFAULT_BRANCH
-bypass      none
+M5 GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+
+M6 DELIBERATE RED
+Backend Quality       FAILURE — explicit calibration step
+Backend PostgreSQL    SUCCESS — independent path preserved
+Backend CI Gate       FAILURE — mandatory upstream failure propagated
+Dependency Review     FAILURE — denied existing FastAPI dependency
+
+M7 RECOVERY GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
 ```
 
-Current effective rules:
+The M6 dependency-policy failure did **not** add a vulnerable dependency. It temporarily used the supported `deny-packages` policy against `pkg:pypi/fastapi`, which Dependency Review had already proven visible through the real `apps/backend/uv.lock` PR delta. The temporary workflow changes were then restored byte-for-byte to their M5 green blobs before M7.
+
+## Required-check identities
+
+Promoted contexts:
 
 ```text
-DELETE TARGET REF
-blocked
-
-FORCE PUSH / NON-FAST-FORWARD
-blocked
-
-PULL REQUEST BEFORE MERGE
-required
-
-APPROVING REVIEWS
-0
-
-REVIEW THREAD RESOLUTION
-required
-
-ALLOWED MERGE METHOD
-merge
-
-REQUIRED STATUS CHECKS
-none until real stable checks exist
+Backend CI Gate
+Dependency Review
 ```
 
-## Why zero approvals is intentional
+Both were selected in the GitHub ruleset UI with source **GitHub Actions**. The canonical JSON records GitHub Actions integration ID `15368` so the repository definition does not intentionally degrade source binding to an arbitrary producer.
 
-A required approval adds real safety only when an independent reviewer can provide it. In the current owner-driven repository, requiring one approval would either block legitimate work or force an artificial bypass.
+`Backend Quality` and `Backend PostgreSQL` are intentionally not separately required. They are mandatory upstream jobs of `Backend CI Gate`; M6 proved that the gate fails when a mandatory upstream result is non-success.
 
-Reconsider the review count when:
+## Why zero approvals remains intentional
 
-- another regular human maintainer/reviewer exists; or
-- an accepted governance process assigns independent approval responsibility.
+A required approval adds real safety only when an independent reviewer exists. DANTE is currently owner-driven, so requiring one approval would either block legitimate work or encourage artificial bypass behavior.
 
-Changing `0 → 1+` is a repository-policy change and should be gated/documented.
-
-## Why required checks are empty now
-
-Phase 11 verified:
+Current policy therefore remains:
 
 ```text
-GitHub Actions workflows = 0
-required status checks   = 0
+required approving reviews = 0
+review-thread resolution    = required
 ```
 
-A required check MUST NOT be configured merely because a future check name sounds desirable.
-
-Activation rule:
-
-```text
-check exists
-+ runs on the relevant pull-request path
-+ produces a stable unique context name
-+ has demonstrated successful execution
-+ is materially required for integration safety
-→ MAY become required
-```
-
-No required check should make `main` unmergeable because the underlying workflow does not exist.
-
-## Future check classes
-
-These are categories, not current workflow names or implementation authorization:
-
-```text
-backend tests
-backend lint
-backend type checks
-backend security/static analysis
-
-web tests/lint/types/build
-mobile equivalent checks where applicable
-
-Physical/migration validation
-only when an accepted Physical implementation exists
-
-benchmark evidence validation
-only when executable benchmark tooling exists and produces stable useful checks
-```
-
-Concrete workflow names, runners, language versions and tool selections belong to the future implementation scope that creates them.
-
-Direct selected-stack validation may later create bounded tests/harnesses under exact gated paths. Their existence does not automatically justify a required `main` status check; promotion still requires the stable-context protocol below.
+Reconsider `0 → 1+` only when another regular human maintainer/reviewer exists or an accepted governance process assigns independent review responsibility.
 
 ## Required-check promotion protocol
 
-Before adding a status check to the main ruleset:
+The permanent protocol is now exercised rather than theoretical:
+
+```text
+workflow/job exists
++ runs on relevant PR
++ stable emitted context observed remotely
++ success observed
++ deliberate failure observed
++ failure genuinely means merge must stop
++ recovery green observed
+→ exact context may become required
+```
+
+For future checks:
 
 1. create the real workflow/check in an approved scope;
-2. run it on a real branch/PR;
-3. confirm the exact emitted context name;
-4. confirm it does not depend on unavailable production secrets for normal PR validation;
-5. confirm its failure means integration should actually stop;
-6. update this contract/ruleset only if the check should become mandatory;
-7. re-read effective branch rules after applying the change.
+2. run it on a real PR;
+3. record the exact emitted context;
+4. prove normal green behavior;
+5. prove a bounded deliberate failure for the intended reason;
+6. restore green without weakening policy;
+7. only then open a repository/ruleset mutation gate;
+8. update `github-main-ruleset.json` and this file with the resulting truth.
 
-## Merge/history posture
+A workflow name that merely sounds desirable is never sufficient.
 
-LifeOS preserves workstream PRE-SCOPEs, checkpoint SHAs and intermediate evidence in Git history.
+## Branch-up-to-date policy
 
-The current ruleset therefore allows only merge commits for protected-main pull-request integration. A future merge-policy change requires explicit evaluation of evidence/history consequences.
+`Require branches to be up to date before merging` is enabled for the required checks.
 
-# Security posture
+This is intentional for the current monorepo because backend and frontend workstreams can advance independently. A candidate integration must therefore be tested against the latest protected `main`, rather than relying on a green run against stale base code.
 
-## Secrets
+This setting does not authorize merge queues. Merge queue remains deferred until actual merge volume or contention justifies it.
 
-Repository rules prohibit secrets and personal production data in commits.
+## GitHub Actions full-SHA policy
 
-Secret scanning / push protection should remain enabled where available for this public repository. Their dashboard/API state could not be independently read through the current connector, so future security audits should re-check them using an API/session with sufficient permissions.
+Repository Actions settings were updated by the repository owner during CP4 M8 to enable:
 
-Do not place production secrets in repository files, real example credentials, Actions workflow source, CI logs/artifacts or benchmark fixtures.
+```text
+Require actions to be pinned to a full-length commit SHA
+```
 
-Physical/direct-validation fixtures must be synthetic/non-sensitive. Raw validation artifacts committed or durably referenced must not contain real personal production data or credentials.
+The connected GitHub integration does not expose a read endpoint for this repository setting, so evidence classification is:
+
+```text
+owner/admin application         CONFIRMED BY USER
+connector direct readback       UNAVAILABLE
+workflow compatibility          PASS — current workflows already use full SHAs
+negative non-SHA rejection test NOT RUN
+```
+
+Do not call this connector-verified when it is not. The backend workflows themselves already use immutable full-length Action SHAs and continued to execute successfully.
+
+## Workflow security posture
+
+Backend CP4 directly proved the following on GitHub-hosted `ubuntu-24.04` runners:
+
+```text
+workflow default permissions        none
+Backend Quality                     contents: read
+Backend PostgreSQL                  contents: read
+Dependency Review                   contents: read
+Backend CI Gate                     no repository grant; metadata read implicit
+checkout persist-credentials        false
+pull_request_target                 absent
+PROD/deployment credentials         absent from ordinary PR validation
+```
+
+The selected external Actions are pinned by full commit SHA. `setup-uv` also verifies the selected uv 0.12.5 Linux archive with the recorded SHA-256.
+
+## Dependency Review posture
+
+Dependency Review is repository-wide and currently protects PR dependency changes at:
+
+```text
+fail-on-severity   moderate
+fail-on-scopes     runtime, development, unknown
+comment writing    disabled
+```
+
+M5 directly proved that GitHub Dependency Review sees the real `apps/backend/uv.lock` dependency delta. M6 directly proved that an intentional denied-package policy violation makes the check fail. M7 proved recovery.
+
+No license allowlist/denylist is introduced without a real DANTE license policy.
 
 ## Dependabot
 
-Dependabot alerts were disabled at the initial Phase 11 inventory. The requested admin action was applied by the repository owner, but the connector cannot independently verify the resulting state because the vulnerability-alerts endpoint is inaccessible to the integration.
+`.github/dependabot.yml` now exists because real package ecosystems exist. Current version-update scopes are:
 
-Do not create `.github/dependabot.yml` merely to populate the repository. Dependency-update scheduling belongs when actual package ecosystems/manifests exist.
+```text
+uv             /apps/backend
+GitHub Actions /
+```
 
-## Code scanning
+Dependabot and Dependency Review are complementary: Dependabot proposes updates; Dependency Review evaluates dependency changes in PRs.
 
-No code-scanning workflow is created by Phase 11.
+Alert/security dashboard APIs may remain connector-limited. Do not infer their state when the connector cannot read it.
 
-Code scanning / CodeQL becomes relevant when actual source code/harness code exists and the concrete language/build topology is known. A future code-scanning gate must produce real results before becoming a required main check.
+## Code scanning / CodeQL
 
-Benchmark/direct-validation harness code is not production backend code by identity; security/static analysis requirements must be chosen according to the actual code introduced and its risk.
+CodeQL is intentionally not activated by Backend CP4.
+
+Accepted later boundary:
+
+```text
+backend integrated into current main
+→ verify current GitHub default-setup support
+→ activate CodeQL default setup
+→ observe emitted results/checks
+→ consider required-check promotion separately
+```
+
+Do not create a custom CodeQL workflow merely to duplicate supported default setup.
 
 ## CODEOWNERS
 
-`CODEOWNERS` is intentionally not created now. A single owner naming himself as code owner does not create independent review safety. Introduce CODEOWNERS when ownership/reviewer responsibility becomes meaningfully distributed.
+`CODEOWNERS` remains intentionally absent while one owner is the only regular maintainer. A self-review requirement does not create independent review safety.
+
+Introduce CODEOWNERS only when ownership/reviewer responsibility becomes meaningfully distributed.
 
 ## SECURITY.md
 
-Phase 11 does not create a public vulnerability-reporting policy before a production/released security process exists. Revisit before public production release or when external vulnerability reporting becomes operationally meaningful.
+A public vulnerability-reporting policy remains deferred until a production/released security process exists. Revisit before public production release or when external vulnerability reporting becomes operationally meaningful.
 
-# Branch hygiene
+## Branch hygiene
 
-## Active branches
-
-Do not delete branches merely because they look old.
-
-Known active bounded branches relevant to current project work include:
-
-```text
-prototype/phase-4-today-home
-```
-
-The former `feature/physical-model` branch is no longer active. It was merged into protected `main` via PR #15 at merge commit `e6f191bad947388a44defe2c15f4939345084f58` and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
-
-`chore/pre-physical-coherence` is **not active**: it was merged into protected `main` via PR #13 and auto-deleted after successful merge. Its accepted result is now part of `main`; Git/PR history preserves its evidence.
-
-The prototype branch has an open draft pull request and must not be removed while active.
-
-## Historical branches
-
-Historical/model/documentation branches may be deleted only after proving:
+Do not delete branches merely because they look old. Delete only after proving:
 
 ```text
 unique accepted work not integrated       0
@@ -267,190 +277,94 @@ current active work owned by branch       0
 required evidence available elsewhere     PASS
 ```
 
-Deletion is hygiene, not a way to hide project history.
-
-## Confirmed accidental refs
-
-Phase 11 classified and cleaned:
+Current relevant active branches include:
 
 ```text
-__do_not_create__          absent
-__noop_should_fail__       absent
-__tmp_should_not_create__  absent
-__no-op__                  already absent before closure
+feature/backend-scaffold
+feature/frontend-materialization
+prototype/phase-4-today-home   where still active/current
 ```
 
-Each confirmed accidental ref that still existed was an ancestor of `main`, so no unique branch-only project history was lost.
+Merged branches may be auto-deleted because repository auto-delete for merged head branches is enabled. Git/PR history remains the evidence source.
 
-## Automatic merged-branch cleanup
+Confirmed accidental refs previously cleaned remain historical evidence and must not be recreated.
 
-Verified repository setting:
+## Merge/history posture
+
+DANTE preserves checkpoint SHAs and intermediate evidence in Git history. The protected-main ruleset therefore continues to allow merge commits rather than requiring linear history.
+
+A future merge-policy change requires an explicit evaluation of evidence/history consequences.
+
+## Current verification classification
 
 ```text
-Automatically delete head branches after merge = enabled
+Phase 11 baseline protections             PASS
+Backend CP4 real PR green                  PASS
+Backend CP4 deliberate red                 PASS
+Backend CP4 recovery green                 PASS
+Backend CI Gate failure propagation        PASS
+Dependency Review uv.lock visibility       PASS
+Dependency Review policy failure           PASS
+required contexts selected                 PASS — UI evidence
+required context source                    GitHub Actions — UI evidence
+branch-up-to-date requirement              ENABLED — UI evidence
+full-SHA repository requirement            USER-APPLIED / CONNECTOR-UNVERIFIABLE
+main deletion protection                   preserved
+main force-push protection                 preserved
+PR-before-merge                            preserved
+required approvals                         0 / preserved
+review-thread resolution                   preserved
+merge method                               merge / preserved
+merge queue                                absent
 ```
 
-This reduces stale working-branch accumulation without deleting unmerged active branches. PR #13, post-merge alignment PR #14 and Physical integration PR #15 all exercised the merged-head cleanup path.
+Classic branch-protection readback may continue to show zero classic required contexts because DANTE uses a repository ruleset. Do not misread classic branch protection as the ruleset authority.
 
-# Phase 11 verification evidence
+## Persistent non-claims
 
-Core repository-safety verification:
+Repository safety does not imply:
 
 ```text
-ruleset lifeos-main-safety present                 PASS
-ruleset enforcement active                        PASS
-ruleset target ~DEFAULT_BRANCH                    PASS
-bypass actors none                                PASS
-main deletion protection                          PASS
-main non-fast-forward/force-push protection       PASS
-pull request required                             PASS
-required approvals = 0                            PASS
-review-thread resolution required                 PASS
-allowed merge method = merge                      PASS
-required status checks = 0                        PASS / expected today
-auto-delete merged branches = true                PASS
-__do_not_create__                                 404 / PASS
-__noop_should_fail__                              404 / PASS
-__tmp_should_not_create__                          404 / PASS
-main SHA unchanged during settings application    PASS
+complete security assurance
+CodeQL PASS
+frontend CI PASS
+production deployment safety
+restore/PITR rehearsal
+Physical HG/PSV blanket PASS
+independent human review
 ```
 
-Connector-limited security verification:
+Each future control is promoted only after its real boundary exists and is directly proven.
+
+## Current downstream state
 
 ```text
-Dependabot alerts API           403 / connector-unverifiable
-secret scanning alert API       403 / connector-unverifiable
-code scanning alert API         403 / connector-unverifiable
-```
-
-These connector permission limits do not invalidate the verified branch-integration protections; they remain explicit future audit items rather than inferred PASS/FAIL values.
-
-## Later protected-integration evidence
-
-The closed Pre-Physical and Physical workstreams exercised the accepted repository-safety posture through PR #13, current-truth alignment PR #14 and Physical integration PR #15:
-
-```text
-PR #13 mergeable before merge               PASS
-review threads                              0
-required / emitted status checks            0 / expected under current policy
-expected head SHA lock                      used
-merge method                                merge
-merged                                      PASS
-main merge commit                           74593ae283ce5a1d22335502480ee3fa54be0436
-final branch tree vs merged main tree       0 file differences
-merged head branch auto-delete              PASS
-
-PR #14 current-truth alignment              MERGED / PASS
-main after alignment                        3de84bb49f9cef30e88e9bde4961ed84335daa79
-alignment branch tree vs merged main        0 file differences
-alignment head branch auto-delete           PASS
-
-PR #15 Physical Model integration           MERGED / PASS
-main after Physical merge                   e6f191bad947388a44defe2c15f4939345084f58
-former feature/physical-model branch         AUTO-DELETED
-```
-
-This later integration evidence does not change the Phase 11 policy; it demonstrates that the effective controls worked as designed.
-
-# Physical/direct-validation repository safety
-
-The closed Physical Model and its carried-forward direct implementation validation add execution/evidence risks that must be treated explicitly.
-
-```text
-BENCHMARK / VALIDATION HARNESS
-!= production backend automatically
-
-RAW VALIDATION ARTIFACT
-!= current repository specification
-
-OFFICIAL PRODUCT CLAIM
-!= direct execution evidence
-
-SELECTED
-!= DIRECT PASS
-```
-
-Physical/direct-validation-specific safety rules:
-
-1. every new mapping/schema/harness/evidence path requires an exact separately approved write gate;
-2. do not commit real production credentials or personal data into selected-stack databases/fixtures;
-3. record exact selected component version/edition/deployment and hardware for reproducibility where material;
-4. retain or durably reference raw evidence with hashes/reproduction metadata;
-5. do not rely on ephemeral Actions artifacts alone for final direct-validation evidence;
-6. validation infrastructure must not silently become production architecture;
-7. an unexecuted tier/test remains `NOT RUN`;
-8. insufficient/contradictory evidence remains `HOLD`;
-9. PM-11 selection and PM-12 acceptance do not create direct PASS;
-10. Physical closure/integration does not authorize Backend Foundation.
-
-# Future production readiness
-
-Repository safety must evolve with the codebase rather than remain frozen at this documentation-first stage.
-
-```text
-now
-main ruleset + PR discipline + branch hygiene/security settings
-+ closed/integrated Physical target
-+ Development Profile v0 next
-
-selected-stack direct validation / backend implementation
-real tests/harness validation as appropriate
-
-stable useful workflow contexts
-optionally promote material checks into required main rules
-
-accepted Physical implementation/migrations exist
-add real Physical/migration checks
-
-backend implementation begins
-real backend tests/lint/types/security workflows
-
-release/deployment exists
-add environment/release protections based on actual promotion design
-```
-
-Release tags, deployment environments, merge queues and environment approvals are intentionally premature today.
-
-# Phase 11 acceptance and current downstream state
-
-```text
-repository inventory complete                 PASS
-ruleset definition complete                   PASS
-ruleset applied and remotely verified         PASS
-future-check activation policy complete       PASS
-branch-hygiene classification complete        PASS
-confirmed accidental refs removed             PASS
-auto-delete merged branches                   PASS
-security-setting connector limits recorded    PASS
-Domain reopen required                        0
-Logical reopen required                       0
-```
-
-Current state:
-
-```text
-PHASE 11
-QA PASS
-
-PRE-PHYSICAL COHERENCE
-DEFINITIVE CLOSED / FINAL QA PASS
-INTEGRATED / POST-MERGE VERIFIED
-
 PHYSICAL MODEL
 CLOSED / SELECTED / ACCEPTED
-INTEGRATED INTO MAIN VIA PR #15
-selected canonical primary PostgreSQL 18.4
-former feature/physical-model MERGED / AUTO-DELETED
 
-DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
-NOT STARTED
-DIRECT HG PASS 0
+ENGINEERING FOUNDATION v0
+CLOSED / ACCEPTED
 
-BACKEND FOUNDATION
-NOT STARTED / DEFERRED
+FRONTEND ENGINEERING FOUNDATION
+CLOSED / ACCEPTED / INTEGRATED
 
-DEVELOPMENT PROFILE v0
-NOT STARTED / NEXT SEPARATE OPERATIONAL SCOPE
+FRONTEND MATERIALIZATION
+ACTIVE
+
+BACKEND CP1
+CLOSED / DIRECT QA PASS
+
+BACKEND CP2
+CLOSED / DIRECT QA PASS
+
+BACKEND CP3
+CLOSED / DIRECT QA PASS
+
+BACKEND CP4
+CLOSED / DIRECT REMOTE QA PASS
+
+BACKEND CP5
+NEXT
 ```
 
-The next repository risk gate is the separately bounded Development Profile v0 scope. Any later direct selected-stack validation, backend schema/API implementation, CI promotion or repository-policy change requires its own exact authorization rather than inheriting permission from Physical closure.
+Any later repository-policy mutation requires its own exact authorization. CP4 closure does not authorize PR #24 merge, CodeQL activation, CP5 implementation, frontend integration or concrete Logical → PostgreSQL business mapping.
