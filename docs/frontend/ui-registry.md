@@ -54,23 +54,31 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 ## Home — central stage
 
-Current working oracle: **B2 v21 responsive**. B2 remains open for add-affordance and visual identity/skin decisions.
+Current working oracle: **B2 v22 no persistent add**. B2 remains open for DANTE product identity/skin and final QA.
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `home.stage` | — | WORKING | Shared central workspace and sole owner of outer stage geometry, selector anchor and lateral navigation anchors. Projection changes must not redefine those outer bounds. |
-| `home.stage.continuity` | Mondi | WORKING / LOCKED NAME | Carried-forward significant realities the user wants readily recoverable/resumable. Current visual grammar preserves the existing sphere carousel. Not a Domain Model taxonomy and not necessarily a persisted `World` entity. |
+| `home.stage` | — | WORKING | Shared central workspace and sole owner of outer stage geometry, selector anchor and lateral navigation anchors. Home-stage role is read/navigate/open; it is not a configuration CRUD surface. |
+| `home.stage.continuity` | Mondi | WORKING / LOCKED NAME | Carried-forward significant realities the user wants readily recoverable/resumable. Current visual grammar preserves the existing sphere carousel. Partial state renders only real items. Not a Domain Model taxonomy and not necessarily a persisted `World` entity. |
 | `home.stage.continuity.previous` | — | PROTOTYPE_ONLY | Previous continuity item/carousel navigation. |
 | `home.stage.continuity.next` | — | PROTOTYPE_ONLY | Next continuity item/carousel navigation. |
 | `home.stage.continuity.select` | mondo | PROTOTYPE_ONLY | Selects/centers a visible continuity item in the local prototype. |
 | `home.stage.continuity.open` | — | PROTOTYPE_ONLY | Existing deeper-open affordance lineage; final destination remains undefined. |
-| `home.stage.continuity.emptySlot` | + | WORKING / PROTOTYPE_ONLY | In partial state, unused existing sphere positions are rendered as ghost `+` slots. This is UI composition only; no placeholder backend entity is implied. Full-state persistent add placement is still unresolved. |
 | `home.stage.mode.previous` | — | ACTIVE | Switches central-stage projection backward without moving the stage shell/anchors. |
 | `home.stage.mode.next` | — | ACTIVE | Switches central-stage projection forward without moving the stage shell/anchors. |
-| `home.stage.signals` | Segnali | WORKING / LOCKED NAME | Compact analytical projection for values/deltas/trends/targets/planned-vs-actual/cautious patterns. Current desktop composition shows at most three complete visible items. |
+| `home.stage.signals` | Segnali | WORKING / LOCKED NAME | Compact analytical projection for values/deltas/trends/targets/planned-vs-actual/cautious patterns. Current desktop composition shows at most three complete visible items. No persistent add/configure control is part of Home. |
 | `home.stage.signals.previous` | — | PROTOTYPE_ONLY | Previous Signal using the same carousel navigation grammar. |
 | `home.stage.signals.next` | — | PROTOTYPE_ONLY | Next Signal using the same carousel navigation grammar. |
 | `home.stage.signals.select` | segnale | PROTOTYPE_ONLY | Selects/centers a Signal in the local prototype. |
+
+Stage management rule:
+
+- no persistent `+` in Home for Mondi, Segnali or future projections by default;
+- `partial` means the real items that exist, not visual capacity slots;
+- `full/overflow` keeps normal projection navigation;
+- a true `empty` state may expose a contextual CTA that opens the dedicated management/creation surface;
+- that CTA is a navigation/management-entry intent, not a direct Home mutation;
+- Mondi and Segnali management surfaces own creation/configuration/order/removal.
 
 Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is deprecated by the B2 projection IDs above; historical files/checkpoints remain evidence.
 
@@ -150,6 +158,7 @@ The accepted rail must **not** become:
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
 | short rail ending mid-column | REJECTED | Accepted rail stretches with the timeline column to avoid arbitrary empty lower space. |
 | generic `Stats` stage framing | DEPRECATED | Replaced by the more meaningful `home.stage.signals` / Segnali projection. |
+| `home.stage.continuity.emptySlot` / ghost `+` | REMOVED | v22 removes capacity/add slots from Home. Partial state renders only real items; creation/configuration belongs to dedicated management surfaces. |
 
 ## Maintenance rule
 
