@@ -19,4 +19,3 @@ jobs:
           fail-on-severity: moderate
           fail-on-scopes: runtime, development, unknown
           comment-summary-in-pr: never
-          deny-packages: pkg:pypi/fastapi
