@@ -46,31 +46,13 @@ Validation failure is an integration error, not an `empty` state.
 
 ## 5. Server state vs UI state
 
-Server/source-backed data must use a production server-state layer with explicit:
+Server/source-backed data must use a production server-state layer with explicit cache keys/identity, freshness/staleness policy, deduplication, cancellation, retry/backoff appropriate to operation type, invalidation/refetch rules and pagination/windowing where needed.
 
-- cache keys/identity;
-- freshness/staleness policy;
-- deduplication;
-- cancellation;
-- retry/backoff appropriate to operation type;
-- invalidation/refetch rules;
-- pagination/windowing where needed.
-
-UI-only state remains outside the server cache.
-
-No specific library is frozen here; the `apps/web` scaffold decision must select one or explicitly justify not needing one.
+UI-only state remains outside the server cache. No specific library is frozen here; the `apps/web` scaffold decision must select one or explicitly justify not needing one.
 
 ## 6. Mutations
 
-Every real mutation contract must classify:
-
-- idempotency requirement;
-- optimistic update allowed/not allowed;
-- expected-state/concurrency behavior;
-- retry safety;
-- success confirmation;
-- partial/async completion semantics;
-- failure recovery/undo when meaningful.
+Every real mutation contract must classify idempotency, optimistic-update eligibility, expected-state/concurrency behavior, retry safety, success confirmation, partial/async completion semantics and failure recovery/undo where meaningful.
 
 Consequential writes must not be made optimistic merely for visual speed.
 
@@ -114,3 +96,29 @@ The accepted Physical target may later provide bounded client-safe sync projecti
 ## 12. Contract evolution
 
 Breaking transport changes require explicit version/evolution handling. Production should prefer compatible additive evolution and contract tests between backend and client. The frontend view-model contract may evolve independently through explicit adapters.
+
+The Home-stage frontend contract moved from `0.1.0` to `0.2.0` when its interaction semantics changed; changing meaning under the same contract version is not the accepted pattern.
+
+## 13. Home projection vs management commands
+
+For the Home central stage:
+
+```text
+Home projection query
+!= management mutation
+```
+
+The Home stage consumes projection-oriented read data and supports navigation/open behavior. It does not directly own create/configure/order/remove mutations for Mondi or Segnali.
+
+Current boundary:
+
+- `partial` contains only real items;
+- no ghost/add placeholder travels through the data contract;
+- no persistent add affordance exists in the normal Home projection;
+- a true empty state may emit `OPEN_MANAGEMENT`;
+- `OPEN_MANAGEMENT` transfers the user to the dedicated management feature;
+- Mondi creation/edit/order/archive/removal commands are owned by the Mondi management feature;
+- Segnali selection/configuration/order/removal commands are owned by the Signals management feature;
+- Home does not invent or call a create endpoint merely because an empty-state CTA exists.
+
+When real APIs are designed, management commands receive their own explicit transport/runtime-validation/idempotency/concurrency contracts. They are not inferred from Home projection DTOs.
