@@ -2,6 +2,8 @@
 
 - Status: **CURRENT TRUTH**
 - Product: **DANTE**
+- Branch-local current work: `feature/backend-scaffold`
+- Protected-main truth reconciled from: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
 
 ## 1. Executive state
 
@@ -11,7 +13,6 @@ CURRENT
 
 DOMAIN MODEL
 CLOSED
-integrated via protected-main workflow
 Whole-Domain PASS WITH HARDENING
 POST-WRITE QA PASS
 
@@ -34,39 +35,44 @@ PM-14 CLOSURE COMPLETE
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
 
-REPOSITORY IDENTITY GOVERNANCE
-COMPLETE
-MattiaRubino/lifeos → MattiaRubino/dante
+FRONTEND ENGINEERING FOUNDATION
+DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+INTEGRATED VIA PR #22
+
+FRONTEND MATERIALIZATION
+ACTIVE ON feature/frontend-materialization
+DIRECT FRONTEND VALIDATION NOT YET EARNED
 
 PRODUCTION BACKEND SCAFFOLD
 ACTIVE
-CP1 PYTHON/BACKEND PROCESS + TYPED CONFIG CLOSED / DIRECT QA PASS
-CP2 REPRODUCIBLE LOCAL POSTGRESQL CLOSED / DIRECT QA PASS
-CP3 PERSISTENCE/MIGRATIONS/REAL-POSTGRESQL HARNESS CLOSED / DIRECT QA PASS
-CP4 QUALITY/CI ENFORCEMENT NEXT / NOT STARTED
-CP5 FULL SCAFFOLD QA/CLOSURE NOT STARTED
+CP1 CLOSED / DIRECT QA PASS
+CP2 CLOSED / DIRECT QA PASS
+CP3 CLOSED / DIRECT QA PASS
+CP4 DESIGN CLOSED
+CP4-M1 CLOSED
+CP4-M2 MATERIALIZED / REMOTE READBACK PASS
+CP4-M3 CLOSED / DIRECT LOCAL QA PASS
+CP4-M4 MAIN RECONCILIATION MATERIALIZED
+POST-MERGE REGRESSION QA NEXT
+CP4 REMOTE GREEN/RED/RECOVERY CALIBRATION NOT RUN
+CP5 NOT STARTED
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
 NOT STARTED
 
-DIRECT SELECTED-STACK IMPLEMENTATION VALIDATION
-CP1 DIRECT PASS RECORDED
-CP2 LOCAL POSTGRESQL DIRECT PASS RECORDED
-CP3 DIRECT PASS RECORDED
-CP3 POSTGRESQL ACCEPTANCE 18/18 PASS
-CP3 FULL BACKEND PYTEST 50/50 PASS
-DIRECT HG-01..HG-12 NOT RUN
-DIRECT HG PASS 0
-VERIFIED-RUN SCORE NOT AVAILABLE
+DIRECT HG-01..HG-12
+NOT RUN / PASS 0
 ```
 
-## 2. Product/North Star
+Architecture/design closure does not imply implementation PASS. Branch-local implementation evidence outranks older `main` status text only for this still-unmerged backend workstream.
+
+## 2. Product and semantic invariants
 
 DANTE is a personal operating system designed to help people understand, organize and improve their real life by turning intentions, needs and possibilities into outcomes they can realistically pursue.
 
 Compass: **Understand life. Shape what comes next.**
 
-Important product invariants include:
+Persistent invariants include:
 
 - life central, not task/calendar centric;
 - planned vs actual preserved;
@@ -76,51 +82,27 @@ Important product invariants include:
 - honest uncertainty;
 - progressive complexity;
 - personal-first, not personal-only;
-- AI is not the product authority;
+- AI is not product authority;
 - possibility != action/decision/preference;
-- Effort != Execution != Outcome != Goal Progress.
-
-## 3. Core identity/governance invariants
-
-```text
-Person != Account != Principal != Actor
-Authority != AuthZ decision
-Consent != Authority
-Visibility != Authority
-provider state != canonical DANTE state
-derived projection != canonical truth
-absence/unknown != false
-MaterialStateRef != ETag/MVCC/provider revision
-idempotency != semantic identity
-HTTP/UI/tool/AuthZ string != canonical governed effect
-```
+- Effort != Execution != Outcome != Goal Progress;
+- Person != Account != Principal != Actor;
+- provider state != canonical DANTE state;
+- derived projection != canonical truth;
+- absence/unknown != false;
+- idempotency != semantic identity;
+- client local state != canonical accepted effect.
 
 WL-H01..WL-H12 remain active and constrain implementation.
 
-## 4. Logical model
+## 3. Logical / Physical authority
 
-57/57 owners are classified.
+The Logical Model remains closed. 57/57 owners are classified and implementation must not mechanically translate owners into one-table/one-service assumptions.
 
-Native identity owners include Person, Living Referent, Asset, Place, Content Artifact, Collective, Possibility, Goal, Plan, Activity, Event, Routine, Occurrence, Session and Observation.
-
-Reference families:
-
-```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
-```
-
-No implementation scope may mechanically translate 57 Logical owners into 57 services/modules/tables by assumption.
-
-## 5. Accepted Physical target
-
-### Canonical persistence
+Canonical persistence remains:
 
 ```text
 PostgreSQL 18.4
-sole canonical persistence + material history authority
+sole canonical persistence + material-history authority
 ```
 
 Selected PostgreSQL capabilities:
@@ -128,434 +110,293 @@ Selected PostgreSQL capabilities:
 - PostGIS 3.6.4;
 - pgvector 0.8.6;
 - native full-text search;
-- pg_trgm;
-- unaccent;
-- pg_stat_statements;
-- PgBouncer 1.25.2.
+- `pg_trgm`;
+- `unaccent`;
+- `pg_stat_statements`;
+- PgBouncer 1.25.2 selected, activation bounded.
 
-### Offline/sync
+Other selected targets remain bounded and noncanonical where applicable: PowerSync + encrypted SQLite, PostgreSQL transactional outbox, Restate, R2, pgBackRest + AWS S3 `eu-south-1`, OR-Tools CP-SAT and OpenTelemetry/Grafana.
 
-- PowerSync Service 1.25.0 Open Edition;
-- encrypted SQLite local state;
-- PostgreSQL-backed PowerSync bucket storage;
-- explicit client-safe sync projections.
+No specialist target is implicitly active merely because it is selected.
 
-Rules:
+## 4. Engineering Foundation and repository
+
+Repository identity governance is complete:
 
 ```text
-SQLite local copy != canonical truth
-PowerSync arrival order != conflict resolution
-consequential offline mutation → DANTE backend revalidation → PostgreSQL
+historical repository   MattiaRubino/lifeos
+current repository      MattiaRubino/dante
 ```
 
-### Async/durable
-
-Class A:
-
-- PostgreSQL transactional outbox + bounded worker.
-
-Class B:
-
-- Restate selected;
-- Restate Python SDK 1.0.3 / Server 1.7.2 target posture;
-- **dormant / not active** until first real Class-B durable workflow;
-- self-hosted vs Cloud EU deferred until activation.
-
-### Objects
-
-- Cloudflare R2 Standard;
-- EU jurisdiction;
-- private;
-- raw bytes only;
-- PostgreSQL owns ContentArtifact identity/metadata/provenance/visibility/retention/hash/locator semantics.
-
-### Recovery
-
-- pgBackRest 2.59.0;
-- AWS S3 Standard `eu-south-1`;
-- Versioning + accepted Object Lock GOVERNANCE posture;
-- recovery copies noncanonical;
-- anti-resurrection required;
-- **dormant** until recovery/production boundary or real rehearsal.
-
-### Solver
-
-- OR-Tools 9.15 CP-SAT candidate mechanism;
-- UNKNOWN != INFEASIBLE.
-
-### Observability
-
-- OpenTelemetry;
-- Grafana Alloy 1.18.0;
-- Grafana Cloud EU;
-- privacy-minimized operational telemetry.
-
-## 6. Engineering Foundation v0 — closed
-
-### Repository
+Accepted monorepo ownership includes:
 
 ```text
-one product monorepo
 apps/backend
 apps/web
 apps/mobile
+packages
+infra
+tooling
+tests/system
+docs
+prototypes
+.github
 ```
 
-Production implementation remains in the current repository; no new repo is planned. Repository identity governance is complete and the current GitHub repository is `MattiaRubino/dante`; `MattiaRubino/lifeos` is historical identity only.
+Paths are created only for real content.
 
-### Backend architecture
+Backend architecture remains a capability-first modular monolith with Domain/application/adapters separated, explicit transaction ownership and no universal generic Repository/BaseService/service locator/global DB session.
 
-- capability-first modular monolith;
-- Domain/application/adapters separated;
-- FastAPI is an inbound adapter/process host;
-- no universal generic `Repository[T]`/BaseService/service locator/global DB session;
-- cross-module transactions allowed where accepted semantics require atomicity.
+## 5. Frontend Engineering Foundation
 
-### Backend toolchain
+The Frontend Engineering Foundation is integrated into protected `main` via PR #22 and remains closed in design/architecture.
+
+Accepted baseline includes:
 
 ```text
-Python             3.14.x
-initial pin         3.14.7
-uv
-Ruff
-mypy strict
-pytest
-Hypothesis when meaningful
-SQLAlchemy 2.0 stable line
-psycopg 3
-Alembic
+Node 24 LTS
+TypeScript 6.0.x strict
+pnpm 11
+Turborepo 2.x
+React 19.2 / Vite 8 / TanStack Router
+React Native 0.86 / Expo SDK 57 / Expo Router
+PowerSync + encrypted SQLite
+TanStack Query 5
+TanStack Form
+Zod 4
+Orval 8
 ```
 
-### Developer environment
+Structural rules include feature-first Web/Mobile, public-API-only acyclic dependencies, small real-consumer shared packages, a Data Authority Matrix, backend canonical effect authority, feature data firewall, Mobile local/offline capability, Web online-first posture, identity-scoped local data and platform-specific UI implementations over shared semantic tokens.
 
-- Linux canonical server semantics;
-- Windows 11 supported through WSL2/Linux;
-- repository/workflow kept in WSL filesystem for backend development;
-- PyCharm with WSL interpreter supported;
-- backend inner-loop process runs directly in WSL;
-- Docker Compose runs stateful LOCAL infrastructure;
-- future backend deployable packaged as immutable OCI image.
+The separate `feature/frontend-materialization` workstream is active. Its existence is not direct frontend validation PASS.
 
-### LOCAL PostgreSQL
+## 6. Backend CP1 — CLOSED / DIRECT QA PASS
 
-First LOCAL DB uses real PostgreSQL 18.4 and has the full selected extension envelope installed/enabled immediately, including pg_stat_statements preload configuration.
+Implementation/closure HEAD:
 
-DANTE owns a reproducible LOCAL PostgreSQL build/configuration. CP2 directly proved the selected image, capabilities, persistence/reset semantics and Windows host connectivity on the canonical workstation.
+`02d113d772cdb247faebb3cef4d857d125266da3`
 
-### Persistence/migration
-
-- async DB I/O at technical boundaries; Domain/application sync/pure by default;
-- one AsyncSession per concurrent use-case/task scope;
-- application boundary owns transaction;
-- Alembic migration authority;
-- autogenerate candidate only;
-- applied migrations immutable;
-- schema drift checked;
-- risk classification + online/staged PostgreSQL techniques where appropriate;
-- expand → migrate → contract;
-- large backfills resumable/idempotent/bounded;
-- separate owner/migrator/runtime/replication/backup privilege classes;
-- `pg_dump`/`pg_restore` logical-copy path;
-- pgBackRest/WAL/PITR recovery path at accepted activation boundary;
-- raw PROD → DEV forbidden by default; production-derived lower-environment clones require sanitization/minimization.
-
-### Config/secrets
-
-- pydantic-settings typed/fail-fast immutable bootstrap configuration;
-- LOCAL safe `.env.example` + ignored `.env.local`;
-- remote hierarchy: minimize secrets → workload identity → provider secret manager → least privilege → rotation/revocation/audit;
-- GitHub OIDC preferred for future cloud deployment;
-- independent DEV/UAT/PROD and runtime/migrator credentials.
-
-### Testing/CI
-
-- real PostgreSQL integration, never SQLite as PostgreSQL proof;
-- unit/application/property/state-machine/architecture/migration/concurrency/provider/API/privacy test layers;
-- PR/DEV/nightly/UAT cost tiers;
-- coverage tracked without arbitrary pre-code percentage;
-- GitHub Actions primary CI/CD;
-- protected-main real-check-before-required-check rule;
-- least-privilege workflow permissions;
-- immutable SHA-pinned Actions in protected workflows;
-- dependency review/CodeQL/secret protection when artifacts/source/capability exist;
-- GitHub-hosted runner initially;
-- future OCI build-once/promote, attestation and SBOM at release boundary.
-
-### Explicit frontend defer
-
-Engineering Foundation v0 does **not** freeze Node/package-manager/Turborepo/web/mobile test/build/release details. Those return to the frontend workstream.
-
-### Explicit cloud defer
-
-Compute provider, IaC engine, registry and remote sizing are not selected until first remote environment.
-
-## 7. Backend CP1 — direct implementation truth
-
-CP1 is closed on `feature/backend-scaffold` with implementation/lock closure HEAD:
+Direct evidence includes:
 
 ```text
-02d113d772cdb247faebb3cef4d857d125266da3
+Python 3.14.7 project interpreter      PASS
+uv locked bootstrap                    PASS
+Ruff format/lint                       PASS
+mypy strict                            PASS
+pytest                                 25/25 PASS
+uv build                               PASS
+real Uvicorn factory startup           PASS
+/health/live                           200 PASS
+/health/ready                          200 PASS
 ```
 
-Materialized runtime/tooling:
+CP1 coverage 100% was evidence for that small surface only, never a permanent threshold.
+
+## 7. Backend CP2 — CLOSED / DIRECT QA PASS
+
+Direct LOCAL PostgreSQL evidence includes:
 
 ```text
-Python              3.14.7
-fastapi             0.141.1
-pydantic            2.13.4
-pydantic-settings   2.15.0
-uvicorn             0.52.4
-httpx2               2.12.0
-mypy                 2.3.1
-pytest               9.1.1
-pytest-cov           7.1.0
-ruff                 0.16.3
+PostgreSQL                             18.4 PASS
+PostGIS                                3.6.4 PASS
+pgvector                               0.8.6 PASS
+pg_trgm                                PASS
+unaccent                               PASS
+pg_stat_statements preload/query       PASS
+fresh init                             PASS
+named-volume persistence               PASS
+destructive reset                      PASS
+Windows DBeaver host connection        PASS
 ```
 
-Direct WSL/Linux evidence earned on 2026-08-20:
+The accepted DANTE-owned image is `dante-postgres-local:18.4`.
 
-```text
-uv lock --check                         PASS
-uv tree --locked --depth 1              PASS
-uv sync --locked                         PASS
-Python project interpreter 3.14.7       PASS
-installed dante src-layout import        PASS
-ruff format --check                      PASS
-ruff check                               PASS
-mypy strict                              PASS
-pytest                                   PASS — 25/25
-CP1 statement coverage                   100.00%
-CP1 branch coverage                      100.00%
-uv build                                 PASS
-real Uvicorn factory startup             PASS
-GET /health/live over real HTTP          PASS — 200 / {"status":"ok"}
-GET /health/ready over real HTTP         PASS — 200 / {"status":"ready"}
-remote uv.lock readback                  PASS
-```
-
-Coverage 100% is evidence for the very small CP1 surface, **not** a permanent arbitrary threshold.
-
-Important implementation findings resolved without weakening quality policy:
-
-- Pydantic mypy plugin enabled after real strict-mypy evidence;
-- narrow runtime immutability-test suppression only;
-- Starlette TestClient dependency corrected from `httpx` to `httpx2`;
-- warnings-as-errors preserved;
-- `.coverage` ignored as generated local state.
-
-## 8. Backend CP2 — direct LOCAL PostgreSQL truth
-
-CP2 is closed on `feature/backend-scaffold`. Durable authority and full acceptance evidence:
-
-`docs/development/backend-cp2-postgres-contract.md`
-
-Direct evidence earned on 2026-08-20:
-
-```text
-Compose model                               PASS
-immutable PostgreSQL base digest            PASS
-clean/no-cache DANTE image build            PASS
-PostgreSQL                                  18.4 PASS
-PostGIS package/extension                   3.6.4 PASS
-pgvector package/extension                  0.8.6 PASS
-pg_trgm                                     PASS
-unaccent                                    PASS
-pg_stat_statements preload                  PASS
-compute_query_id=on                         PASS
-pg_stat_statements real query collection    PASS
-fresh initdb + 010-extensions.sql           PASS
-named-volume persistence                    PASS
-down --volumes destructive reset            PASS
-fresh post-reset reinitialization            PASS
-Windows DBeaver host connection             PASS
-```
-
-The Windows GUI query directly returned:
-
-```text
-current_database = dante
-current_user     = postgres
-PostgreSQL       = 18.4 line
-```
-
-The first no-cache build exposed a missing `ca-certificates` trust-store prerequisite in the pinned PostgreSQL base image. The accepted repair preserved HTTPS and PGDG signed-repository verification; the repaired clean build passed directly.
-
-CP2 does not establish application SQLAlchemy/psycopg connectivity, Alembic migration behavior, privilege separation, concrete schema mapping, restore/PITR or HG/PSV PASS.
-
-## 9. Backend CP3 — direct implementation truth — CLOSED
-
-CP3 design CP3-01..CP3-06, implementation and direct QA are closed under:
-
-`docs/development/backend-cp3-persistence-contract.md`
+## 8. Backend CP3 — CLOSED / DIRECT QA PASS
 
 Implementation/direct-QA HEAD:
 
-```text
-35cf6440bc121a38342f6bbee72e210435a788a4
-```
+`35cf6440bc121a38342f6bbee72e210435a788a4`
 
-Materialized technical surface includes:
+Materialized boundaries include SQLAlchemy async runtime, psycopg 3, Alembic technical baseline, typed database settings, FastAPI DB lifespan/readiness, `dante` schema metadata authority, owner/migrator/runtime provisioning and the real PostgreSQL acceptance harness.
 
-```text
-SQLAlchemy async runtime
-psycopg 3
-Alembic environment + technical baseline
-nested typed database settings
-FastAPI database lifespan
-DB-aware readiness
-schema dante metadata authority
-owner/migrator/runtime provisioning
-real PostgreSQL acceptance harness
-transaction/migration/privilege/runtime tests
-```
-
-Exact locked persistence/tooling resolution:
-
-```text
-SQLAlchemy       2.0.52
-psycopg          3.3.4
-Alembic          1.19.1
-pytest-asyncio   1.4.0
-```
-
-The PostgreSQL acceptance harness uses one disposable cluster created from the already certified `dante-postgres-local:18.4` image per pytest PostgreSQL session. This keeps the ordinary LOCAL `dante` database and cluster-global application-role credentials untouched while exercising the exact CP2 image/envelope.
-
-The exact cluster version check uses `SHOW server_version_num = 180004`. Real outage/recovery acceptance uses stop/start of that same disposable cluster so live connections close, database state survives the outage and readiness recovery is proved without restarting the backend.
-
-Direct WSL/Docker evidence earned on 2026-08-20:
+Direct closure evidence:
 
 ```text
 uv lock --check                         PASS
-uv tree --locked --depth 1              PASS
-uv sync --locked                         PASS
-ruff format --check .                    PASS — 23 files already formatted
-ruff check .                             PASS
-mypy                                    PASS — 20 source files
-pytest -m "not postgres"                PASS — 32/32
-pytest -m postgres                       PASS — 18/18 in 15.61s
-full pytest                              PASS — 50/50 in 24.72s
-full-run coverage                        97.42% evidence only; not threshold
-uv build                                 PASS
-source distribution                      PASS
-wheel                                    PASS
-Alembic fresh DB/head/round-trip/drift    PASS
-runtime/migrator/owner privilege matrix   PASS
-runtime identity/search_path              PASS
-stale pooled-connection recovery          PASS
-DB outage live 200 / ready 503            PASS
-DB recovery ready 200 without app restart PASS
-commit/rollback/flush/SAVEPOINT            PASS
+uv sync --locked                        PASS
+Ruff                                    PASS
+mypy                                    PASS
+fast pytest                             32/32 PASS
+PostgreSQL pytest                       18/18 PASS in 15.61s
+full pytest                             50/50 PASS in 24.72s
+full-run coverage                       97.42% evidence only
+uv build / sdist / wheel                PASS
+Alembic fresh/head/round-trip/drift     PASS
+privilege matrix                        PASS
+runtime identity/search_path            PASS
+stale-connection recovery               PASS
+DB stop/start outage recovery           PASS
+transaction semantics                   PASS
 ```
 
-Remote exact-scope QA from original CP3 PRE-SCOPE to executable QA HEAD:
+The frozen/blackholed-peer readiness behavior remains an explicit hardening finding, not a claimed CP3 PASS.
+
+## 9. Backend CP4 — Quality / CI enforcement
+
+Detailed authority:
+
+`docs/development/backend-cp4-ci-contract.md`
+
+### M1 — evidence freeze — CLOSED
 
 ```text
-PRE-SCOPE       a09936d168de48909d948425387b168d016911e8
-QA HEAD         35cf6440bc121a38342f6bbee72e210435a788a4
-ahead_by        45
-behind_by       0
-changed paths   27
-expected paths  27
-unexpected      0
-deleted         0
+canonical workstation uv              0.12.5
+Python authority                       apps/backend/.python-version = 3.14.7
+uv Linux x86_64 SHA-256                68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
 ```
 
-The 97.42% coverage figure is evidence for the full CP3 closure run, not a permanent arbitrary project threshold.
-
-Evidence-driven hardening finding retained after closure: `docker pause` demonstrated a stronger frozen/blackholed-peer condition where TCP can stay open while PostgreSQL cannot answer and driver cancellation/cleanup can exceed the Python-level readiness timeout. CP3 does not claim a bounded wall-clock result for that stronger scenario.
-
-CP3 final state:
+Pinned Actions:
 
 ```text
-CLOSED / DIRECT QA PASS
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+astral-sh/setup-uv v9.0.0
+c771a70e6277c0a99b617c7a806ffedaca235ff9
+
+actions/dependency-review-action v5.0.0
+a1d282b36b6f3519aa1f3fc636f609c47dddb294
 ```
 
-## 10. Direct-validation truth beyond CP3
+### M2 — materialization — REMOTE READBACK PASS
 
-CP3 directly established the application persistence boundary below. Do not extrapolate these PASS results into blanket Physical validation:
+Executable/config HEAD before main reconciliation:
+
+`eb8d33fa85d6409dfcc60eba663cb32b64d65aee`
+
+Exactly materialized:
 
 ```text
-APPLICATION DB CONNECTION/HARNESS    DIRECT QA PASS
-ALEMBIC MIGRATION HARNESS            DIRECT QA PASS
-RUNTIME/MIGRATOR PRIVILEGE SPLIT     DIRECT QA PASS
-CP3 TRANSACTION ACCEPTANCE           DIRECT QA PASS
-CP3 READINESS FAILURE/RECOVERY        DIRECT QA PASS for real stop/start outage
-FROZEN/BLACKHOLED-PEER READINESS     HARDENING / NOT CLAIMED PASS
-DIRECT HG-01..HG-12                  NOT RUN
-DIRECT HG PASS                       0
-LOW/BASE/HIGH                        NOT RUN
-RESTORE REHEARSAL                    NOT RUN
-MIGRATION REHEARSAL                  NOT RUN beyond CP3 technical migration acceptance
-FAILURE INJECTION                    NOT RUN beyond bounded CP3 acceptance
-POWERSYNC DIRECT TEST                NOT RUN
-RESTATE DIRECT TEST                  NOT RUN
-OBJECT RECOVERY TEST                 NOT RUN
-SOLVER DIRECT TEST                   NOT RUN
-VERIFIED-RUN SCORE                   NOT AVAILABLE
+.github/workflows/backend-ci.yml
+.github/workflows/dependency-review.yml
+.github/dependabot.yml
+apps/backend/pyproject.toml
 ```
 
-Workstation/CP1/CP2/CP3 evidence does not count as a blanket Physical HG/PSV pass.
+`apps/backend/uv.lock` was untouched.
 
-## 11. Current repository branches/workstreams
-
-The separate Phase-4 frontend/prototype work remains outside backend Engineering Foundation implementation authority.
-
-Engineering Foundation v0 is closed. Repository rename is complete.
-
-Production Backend Scaffold is the active bounded workstream:
+Backend CI structure:
 
 ```text
-branch              feature/backend-scaffold
-handoff             docs/workstreams/backend-scaffold.md
-CP1 contract         docs/development/backend-cp1-contract.md
-CP2 contract         docs/development/backend-cp2-postgres-contract.md
-CP3 contract         docs/development/backend-cp3-persistence-contract.md
-state               CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / DIRECT QA PASS / CP4 NEXT
+Backend Quality
+Backend PostgreSQL
+        ↓
+Backend CI Gate
+PASS iff both mandatory upstream jobs == success
 ```
 
-The verified workstation/bootstrap state is recorded in:
+Dependency Review is separate and repository-wide. Required checks remain **0** pending calibration.
 
-`docs/development/local-backend-workstation-bootstrap.md`
+### M3 — direct local QA — CLOSED / PASS
 
-## 12. Exact next action
-
-Do not redesign CP1, CP2 or CP3 and do not jump to concrete Logical schema implementation.
-
-Resume from the active scaffold handoff:
+At exact HEAD `eb8d33fa85d6409dfcc60eba663cb32b64d65aee`:
 
 ```text
-STEP 1
-Verify feature/backend-scaffold, remote/local HEAD and clean tree.
-
-STEP 2
-Treat CP1, CP2 and CP3 as CLOSED / DIRECT QA PASS.
-
-STEP 3
-Begin CP4 read-only inspection of current repository quality checks, GitHub Actions state and protected-main settings.
-
-STEP 4
-Select only CI/checks backed by commands already directly proven stable.
-
-STEP 5
-Define CP4 quality/architecture/CI enforcement and its direct acceptance matrix.
-
-STEP 6
-Open a new exact Git write gate before any CP4 mutation.
-
-STEP 7
-Run the emitted CI contexts remotely before considering any required-check protection.
-
-STEP 8
-Deliberately verify a stable required context blocks a failing merge before requiring it on protected main.
-
-STEP 9
-Resolve only evidence-backed CP4 defects under narrow correction gates.
-
-STEP 10
-After CP4 direct QA, execute CP5 full scaffold QA/closure.
-
-STEP 11
-Only after scaffold QA begin concrete Logical → PostgreSQL mapping/schema implementation.
+uv 0.12.5                              PASS
+uv lock --check                         PASS
+uv sync --locked                        PASS
+Ruff format                             PASS — 23 files
+Ruff lint                               PASS
+mypy strict                             PASS — 20 source files
+pytest -m "not postgres"                PASS — 32/32 in 0.69s
+uv build                                PASS
+sdist + wheel                           PASS
+canonical PostgreSQL image rebuild      PASS
+pytest -m postgres -vv                  PASS — 18/18 in 15.59s
+final worktree                          CLEAN
 ```
 
-The scaffold workstream quality bar is production-grade and future-team-ready, but it explicitly rejects placeholder structure and unnecessary complexity. Closed models/Foundation/CP1/CP2/CP3 are not reopened unless concrete implementation evidence reveals an actual contradiction.
+77.84% fast-suite and 91.75% PostgreSQL-slice coverage are evidence only.
+
+### M4 — protected-main reconciliation — MATERIALIZED
+
+Pre-reconciliation facts:
+
+```text
+backend PRE-SCOPE      eb8d33fa85d6409dfcc60eba663cb32b64d65aee
+current main           ff46eb16b971b1fde96eef9047b09faa02e1a5db
+merge base             7a1600c2167f68c9281d3ed77b32a3d954fbd061
+backend vs main        92 ahead / 28 behind
+```
+
+Only four paths had independent changes on both sides:
+
+```text
+README.md
+docs/PROJECT-STATUS.md
+docs/README.md
+docs/ROADMAP.md
+```
+
+Fourteen other changed `main` paths were imported byte-identically. The two-parent reconciliation commit is:
+
+`6a8122249f13f9b8553f511c47b4185c6e3e6540`
+
+After that merge, `main` is an ancestor of the backend branch (`behind_by = 0`). The four global documents are being semantically reconciled to preserve both newer frontend/main truth and newer backend/workstream truth.
+
+**Post-merge backend regression QA has not yet run and is not claimed PASS.**
+
+## 10. Direct-validation non-claims
+
+Do not extrapolate scaffold evidence into blanket Physical validation:
+
+```text
+CP4 REMOTE PR GREEN                    NOT RUN
+CP4 DELIBERATE RED                     NOT RUN
+CP4 RECOVERY GREEN                     NOT RUN
+DEPENDENCY REVIEW uv DELTA PROOF       NOT RUN
+REQUIRED STATUS CHECK PROMOTION        NOT RUN
+CODEQL POST-MAIN ACTIVATION            NOT RUN
+DIRECT HG-01..HG-12                    NOT RUN
+DIRECT HG PASS                         0
+RESTORE/PITR REHEARSAL                 NOT RUN
+POWERSYNC DIRECT TEST                  NOT RUN
+RESTATE DIRECT TEST                    NOT RUN
+OBJECT RECOVERY TEST                   NOT RUN
+SOLVER DIRECT TEST                     NOT RUN
+PRODUCTION DEPLOYMENT                  NOT STARTED
+```
+
+## 11. Active branches / workstreams
+
+```text
+feature/backend-scaffold
+→ backend production scaffold
+→ CP4 post-main regression QA next
+
+feature/frontend-materialization
+→ frontend production materialization
+→ separate worktree/workstream
+```
+
+The workstreams are allowed to proceed in parallel. Shared global documentation must be reconciled semantically when integrating the second branch; branch-local work must not overwrite newer protected-main truth.
+
+## 12. Exact next backend action
+
+```text
+1. Pull the reconciled feature/backend-scaffold HEAD.
+2. Verify clean worktree and exact remote/local HEAD.
+3. Re-run locked backend quality QA after main reconciliation.
+4. Rebuild dante-postgres-local:18.4 and run PostgreSQL 18/18 acceptance.
+5. If green, record M4 regression PASS.
+6. Open the real CP4 calibration PR against current main.
+7. Observe Backend Quality / Backend PostgreSQL / Backend CI Gate / Dependency Review remotely.
+8. Perform bounded deliberate-red calibration.
+9. Restore recovery green.
+10. Only then consider a separate required-check/settings gate.
+11. Close CP4 only after truthful acceptance evidence.
+12. Proceed to CP5, then concrete Logical → PostgreSQL mapping.
+```
+
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3 decisions without concrete contradictory evidence.
