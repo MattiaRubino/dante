@@ -27,13 +27,14 @@ Engineering Foundation v0          CLOSED / ACCEPTED
 Frontend Engineering Foundation    CLOSED / ACCEPTED / FINAL REVIEW PASS
 Frontend main integration          COMPLETE VIA PR #22
 Frontend materialization           ACTIVE ON feature/frontend-materialization / DIRECT PASS NOT YET EARNED
-Production backend scaffold        ACTIVE
+Production backend scaffold        CLOSED ON feature/backend-scaffold / DIRECT QA PASS
 Backend CP1                        CLOSED / DIRECT QA PASS
 Backend CP2                        CLOSED / DIRECT QA PASS
 Backend CP3                        CLOSED / DIRECT QA PASS
 Backend CP4                        CLOSED / DIRECT REMOTE QA PASS
-Backend CP5                        NEXT
-Concrete PostgreSQL business map   NOT STARTED
+Backend CP5                        CLOSED / DIRECT INTEGRATED QA PASS
+Backend integration PR #24         OPEN / MERGE NOT YET AUTHORIZED
+Concrete PostgreSQL business map   NOT STARTED / NEXT AFTER SCAFFOLD INTEGRATION
 Direct HG / blanket PSV            NOT RUN
 ```
 
@@ -54,14 +55,16 @@ Direct HG / blanket PSV            NOT RUN
 - `development/repository-engineering-safety.md`
 - `development/github-main-ruleset.json`
 
-### Backend scaffold — active
+### Backend scaffold — closed on feature branch / pending integration
 
-- `workstreams/backend-scaffold.md` — production-backend scaffold handoff and exact resume point
+- `workstreams/backend-scaffold.md` — production-backend scaffold handoff, CP1–CP5 evidence and exact resume point
 - `development/backend-cp1-contract.md` — CP1 Python/process/config authority
 - `development/backend-cp2-postgres-contract.md` — CP2 LOCAL PostgreSQL authority
 - `development/backend-cp3-persistence-contract.md` — CP3 persistence/migrations/privileges/real-PostgreSQL authority
 - `development/backend-cp4-ci-contract.md` — CP4 CI/security/calibration closure authority
 - `development/local-backend-workstation-bootstrap.md` — verified WSL2/Docker/PyCharm-oriented workstation bootstrap
+
+CP5 did not create a new implementation contract because it was an integration-acceptance/closure checkpoint, not a new runtime architecture boundary. Its durable evidence is recorded in the workstream handoff, project status, roadmap and backend README.
 
 ### Engineering Foundation — closed
 
@@ -115,7 +118,7 @@ prototypes
 
 Paths are created only when real content exists.
 
-Backend current branch truth includes Python 3.14.7, exact uv 0.12.5 project authority, Ruff, mypy strict, pytest, SQLAlchemy 2.0 stable, psycopg 3, Alembic, the DANTE-owned PostgreSQL 18.4 image and real PostgreSQL acceptance harness.
+Backend closed-scaffold truth includes Python 3.14.7, exact uv 0.12.5 project authority, Ruff, mypy strict, pytest, SQLAlchemy 2.0 stable, psycopg 3, Alembic, the DANTE-owned PostgreSQL 18.4 image, least-privilege application roles, real PostgreSQL acceptance harness, calibrated CI and protected-main required checks.
 
 Frontend durable rules include feature-first platform-specific apps, public-API-only acyclic dependencies, real-consumer shared packages, Data Authority Matrix, backend canonical effect authority, Web online-first, Mobile PowerSync local/offline posture, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
 
@@ -142,7 +145,7 @@ Backend CI Gate
 Dependency Review
 ```
 
-Protected `main` now requires:
+Protected `main` requires:
 
 ```text
 Backend CI Gate
@@ -155,16 +158,38 @@ Repository owner also enabled full-length Action SHA enforcement. The connected 
 
 No arbitrary coverage threshold was introduced.
 
+## CP5 closure truth
+
+CP5 re-ran the integrated backend scaffold on the canonical WSL2/Linux workstation and directly observed:
+
+```text
+uv 0.12.5 / Python 3.14.7                 PASS
+locked bootstrap                          PASS
+Ruff + mypy                               PASS
+fast pytest                               32/32 PASS
+canonical PostgreSQL image rebuild        PASS
+PostgreSQL acceptance                     18/18 PASS
+full pytest                               50/50 PASS
+wheel + sdist                             PASS
+LOCAL PostgreSQL healthy                  PASS
+explicit DB provisioning                  PASS
+real Uvicorn startup                      PASS
+/health/live                              200 PASS
+/health/ready                             200 PASS
+```
+
+A single intervening Docker Desktop/WSL `/forwards/expose` 500 was isolated to local port-forwarding state; the subsequent clean full suite passed 50/50. No backend source change was required.
+
 ## Exact next handoffs
 
 ```text
 BACKEND
-1. Treat CP1–CP4 as CLOSED / DIRECT QA PASS.
+1. Treat CP1–CP5 as CLOSED / DIRECT QA PASS.
 2. PR #24 remains the active backend integration PR and is not auto-merged.
-3. Start CP5 with a fresh exact gate.
-4. CP5 performs full scaffold QA / closure only.
-5. Do not start concrete Logical → PostgreSQL mapping until CP5 closes.
-6. Do not activate CodeQL merely because CP4 closed; that remains a separate post-main boundary.
+3. Next backend action is a fresh explicit merge gate for PR #24 into protected main.
+4. Revalidate required checks on the actual merge candidate and verify main after merge.
+5. Concrete Logical → PostgreSQL becomes the next implementation boundary only after verified scaffold integration.
+6. CodeQL remains a separate post-main activation boundary and is not implicitly authorized.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
