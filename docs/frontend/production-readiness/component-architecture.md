@@ -26,6 +26,8 @@ HomeShell
 
 This is a responsibility map, not authorization to create React components yet.
 
+Dedicated management surfaces for Mondi and Segnali are **not** children of the Home stage by default. They are separate feature surfaces opened through an explicit management intent.
+
 ## 3. Geometry ownership
 
 `HomeShell` owns composition between AI, central stage, timeline and rail.
@@ -45,7 +47,8 @@ Forbidden:
 - mode-specific edits to the stage outer bounds;
 - a child positioning stage navigation relative to unrelated panels;
 - global viewport patches inside a projection;
-- duplicated expanded/collapsed geometry rules per mode.
+- duplicated expanded/collapsed geometry rules per mode;
+- persistent add controls that participate in or redefine stage geometry.
 
 ## 4. State ownership
 
@@ -92,7 +95,34 @@ settling
 
 These dimensions are separate. An `overflow` data state can still be `dragging`; an `error` state must not masquerade as `empty`.
 
-## 6. Event/intention model
+For an empty projection, `activeIndex` is `null`. The client must not manufacture index `0` when there is no real item.
+
+## 6. Home-stage responsibility and management boundary
+
+The Home central stage is:
+
+```text
+READ
+NAVIGATE
+OPEN
+```
+
+It is not a configuration CRUD surface.
+
+Permanent rules:
+
+- no persistent `+` or add button in the normal Home-stage composition;
+- partial state renders only real items;
+- no ghost/capacity slots are represented as view-model items;
+- no placeholder entities are created to fill visual positions;
+- full/overflow remains ordinary projection navigation;
+- an empty state may show a contextual CTA so the stage is not a dead end;
+- that CTA opens the dedicated management/creation surface;
+- creation/configuration/removal/order commands are owned by the dedicated Mondi/Signals feature surface, not `CentralStage`.
+
+This boundary keeps `CentralStage` stable as more projections are added and prevents content rendering, management workflow and persistence concerns from collapsing into one component.
+
+## 7. Event/intention model
 
 The stage exposes semantic intents rather than DOM-specific callbacks:
 
@@ -105,16 +135,20 @@ ITEM_SELECT
 DRAG_START
 DRAG_MOVE
 DRAG_END
-ADD_REQUEST
+OPEN_MANAGEMENT
 ```
 
-Production implementation may map these to reducers/state machines/hooks, but must retain equivalent observable behavior and test coverage.
+`OPEN_MANAGEMENT` is a navigation/feature-entry intent. It does not mean “perform create now”.
 
-## 7. Responsive architecture
+The previous working `ADD_REQUEST` event is not part of contract v0.2.0.
+
+Production implementation may map these intents to reducers/state machines/hooks, but must retain equivalent observable behavior and test coverage.
+
+## 8. Responsive architecture
 
 Use parent/container geometry for component decisions. Global viewport width governs Home composition; central-stage available container width governs projection layout.
 
-JavaScript measurement is allowed only where real geometry/math requires it (for example carousel transforms) and must observe the actual owner container, not duplicate CSS breakpoints in unrelated scripts.
+JavaScript measurement is allowed only where real geometry/math requires it and must observe the actual owner container, not duplicate CSS breakpoints in unrelated scripts.
 
 Resize must be reversible and deterministic:
 
@@ -122,16 +156,8 @@ Resize must be reversible and deterministic:
 state A → resize/reflow → state B → reverse resize/reflow → equivalent state A
 ```
 
-## 8. Production migration rule
+The current desktop guard matrix remains six widths × AI expanded/collapsed × continuity/signals. The absence of a persistent add control is itself an invariant: management affordances must not become a new source of geometry drift.
 
-The prototype DOM structure is not a public API. Production migration preserves:
+## 9. Production migration rule
 
-- component responsibilities;
-- state ownership;
-- intents;
-- view-model contracts;
-- responsive invariants;
-- accessibility outcomes;
-- visual oracle where accepted.
-
-It does not preserve incidental selectors, historical CSS cascade or monolithic script layout.
+The prototype DOM structure is not a public API. Production migration preserves component responsibilities, state ownership, intents, view-model contracts, management boundaries, responsive invariants, accessibility outcomes and the accepted visual oracle. It does not preserve incidental selectors, historical CSS cascade or monolithic script layout.
