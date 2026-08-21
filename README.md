@@ -36,21 +36,23 @@ ACTIVE
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
-CP4 DESIGN CLOSED
-CP4 M1/M2/M3 COMPLETE
-CP4 MATERIALIZED / DIRECT LOCAL QA PASS
-CURRENT MAIN RECONCILED
-POST-MERGE REGRESSION QA NEXT
-REMOTE PR CALIBRATION NOT RUN
+CP4 CLOSED / DIRECT REMOTE QA PASS
+CP5 NEXT
+
+PROTECTED-MAIN CI
+Backend CI Gate REQUIRED
+Dependency Review REQUIRED
+branch up-to-date REQUIRED
+required-check source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED
+NOT STARTED / DEFERRED UNTIL CP5 CLOSURE
 
 DIRECT SELECTED-STACK VALIDATION / PSV
 NOT RUN BEYOND EXPLICITLY RECORDED SCAFFOLD ACCEPTANCE
 ```
 
-Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario has actually run.
+Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario actually ran.
 
 ## Production repository direction
 
@@ -103,7 +105,7 @@ driver                  psycopg 3
 migrations              Alembic
 ```
 
-The materialized LOCAL PostgreSQL baseline uses the accepted extension envelope:
+The materialized LOCAL PostgreSQL baseline uses:
 
 - PostGIS 3.6.4;
 - pgvector 0.8.6;
@@ -140,9 +142,87 @@ Zod 4
 Orval 8
 ```
 
-Accepted frontend architecture includes feature-first Web/Mobile, thin route/navigation adapters, public-API-only acyclic dependencies, small real-consumer shared packages, a formal Data Authority Matrix, a feature data firewall, Mobile PowerSync local/offline posture, Web online-first posture, identity-scoped local storage, separate Web/Native UI implementations with shared semantic tokens, React-free shared i18n, Temporal-based time handling and versioned fail-fast Web runtime public config.
+Accepted frontend architecture includes feature-first Web/Mobile, thin route/navigation adapters, public-API-only acyclic dependencies, small real-consumer shared packages, a formal Data Authority Matrix, backend canonical effect authority, Mobile PowerSync local/offline posture, Web online-first posture, identity-scoped local storage and platform-specific UI implementations over shared semantic tokens.
 
-Frontend Foundation authorities were integrated into protected `main` via PR #22. Production frontend materialization continues independently on `feature/frontend-materialization`; no direct frontend PASS is inferred from its active status.
+Frontend production materialization continues independently on `feature/frontend-materialization`; no direct frontend PASS is inferred from branch activity.
+
+## Backend CI and protected-main enforcement
+
+CP4 materialized and directly calibrated:
+
+```text
+Backend CI
+├── Backend Quality
+├── Backend PostgreSQL
+└── Backend CI Gate
+
+Dependency Review
+└── repository-wide dependency policy check
+```
+
+Remote PR #24 calibration directly proved:
+
+```text
+M5 GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+
+M6 DELIBERATE RED
+Backend Quality       FAILURE
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       FAILURE
+Dependency Review     FAILURE
+
+M7 RECOVERY GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+```
+
+The deliberate red did not introduce a vulnerable package: Dependency Review temporarily denied the already-visible FastAPI dependency and failed for that policy violation. Backend CI Gate independently proved fail-closed behavior when a mandatory upstream job failed.
+
+Protected `main` now requires:
+
+```text
+Backend CI Gate
+Dependency Review
+```
+
+Both are bound in the ruleset UI to **GitHub Actions**. The branch must be up to date before merge. Zero approvals remains intentional while one regular maintainer exists; PR-before-merge, review-thread resolution, deletion protection and force-push protection remain in place.
+
+Repository owner also enabled the Actions setting requiring full-length Action SHAs. The connected API cannot directly read that setting, so it is recorded as owner-applied rather than falsely API-verified.
+
+No arbitrary coverage threshold is introduced.
+
+## Direct evidence truth
+
+```text
+CP1 BACKEND PROCESS / CONFIG             DIRECT QA PASS
+CP2 LOCAL POSTGRESQL                     DIRECT QA PASS
+CP3 PERSISTENCE / MIGRATIONS             DIRECT QA PASS
+CP3 POSTGRESQL ACCEPTANCE                18/18 PASS
+CP3 FULL BACKEND PYTEST                  50/50 PASS
+CP4 LOCAL FAST QA                        32/32 PASS
+CP4 LOCAL POSTGRESQL QA                  18/18 PASS
+CP4 POST-MAIN REGRESSION                 PASS
+CP4 REMOTE PR GREEN                      PASS
+CP4 DELIBERATE RED                       PASS
+CP4 RECOVERY GREEN                       PASS
+CP4 REQUIRED-CHECK PROMOTION             APPLIED
+CP4                                      CLOSED / DIRECT REMOTE QA PASS
+CP5                                      NEXT
+CONCRETE BUSINESS DB SCHEMA              NOT STARTED
+DIRECT HG-01..HG-12                      NOT RUN
+RESTORE/PITR REHEARSAL                   NOT RUN
+POWERSYNC DIRECT TEST                    NOT RUN
+RESTATE DIRECT TEST                      NOT RUN
+PRODUCTION DEPLOYMENT                    NOT STARTED
+```
+
+Coverage values recorded during scaffold tests remain evidence only, not project thresholds.
 
 ## Environment model
 
@@ -155,7 +235,7 @@ PROD
 
 Environments are not Git branches. Activation remains progressive and provider-specific infrastructure is selected only when the real boundary requires it.
 
-## Persistence / selected Physical posture
+## Selected Physical posture
 
 Selected targets remain unchanged:
 
@@ -172,51 +252,6 @@ Selected targets remain unchanged:
 
 No specialist component becomes active merely because it is selected.
 
-## Testing and delivery
-
-Backend CP1–CP3 commands have direct WSL/Linux evidence. CP4 has materialized repository CI on `feature/backend-scaffold`:
-
-```text
-Backend CI
-├── Backend Quality
-├── Backend PostgreSQL
-└── Backend CI Gate
-
-Dependency Review
-└── separate repository-wide workflow
-```
-
-The workflows use explicit `ubuntu-24.04`, least-privilege permissions, immutable Action SHAs, exact uv 0.12.5 with checksum verification, locked installs and the real DANTE PostgreSQL image/harness. Required status checks remain **0** until a real PR proves green, deliberate red and recovery-green behavior and the exact emitted contexts are observed.
-
-No arbitrary coverage threshold is introduced.
-
-## Direct evidence truth
-
-Current branch-local evidence includes:
-
-```text
-CP1 BACKEND PROCESS / CONFIG            DIRECT QA PASS
-CP2 LOCAL POSTGRESQL                    DIRECT QA PASS
-CP3 PERSISTENCE / MIGRATIONS            DIRECT QA PASS
-CP3 POSTGRESQL ACCEPTANCE               18/18 PASS
-CP3 FULL BACKEND PYTEST                 50/50 PASS
-CP4 LOCAL QUALITY RE-RUN                32/32 FAST PASS
-CP4 LOCAL POSTGRESQL RE-RUN             18/18 PASS
-CP4 BACKEND PACKAGE BUILD               PASS
-CP4 REMOTE PR GREEN                     NOT RUN
-CP4 DELIBERATE RED                      NOT RUN
-CP4 RECOVERY GREEN                      NOT RUN
-REQUIRED STATUS CHECKS                  0
-CONCRETE BUSINESS DB SCHEMA             NOT STARTED
-DIRECT HG-01..HG-12                     NOT RUN
-RESTORE/PITR REHEARSAL                  NOT RUN
-POWERSYNC DIRECT TEST                   NOT RUN
-RESTATE DIRECT TEST                     NOT RUN
-PRODUCTION DEPLOYMENT                   NOT STARTED
-```
-
-The CP4 local PostgreSQL re-run completed 18/18 tests in 15.59s on Python 3.14.7 after rebuilding `dante-postgres-local:18.4`. Coverage percentages remain evidence only, not quality thresholds.
-
 ## Where to continue
 
 Read before the next backend write:
@@ -226,26 +261,21 @@ Read before the next backend write:
 3. development operating/safety/handoff rules
 4. `docs/workstreams/backend-scaffold.md`
 5. `docs/development/backend-cp4-ci-contract.md`
-6. CP1/CP2/CP3 contracts as needed
-7. accepted Physical sources/register for any Physical-consuming scope.
+6. CP1/CP2/CP3 contracts as needed.
 
-### Exact active boundaries
+Exact active boundaries:
 
 ```text
 FRONTEND
 feature/frontend-materialization
-→ continue its own bounded materialization/direct-validation workstream
+→ continue its independent bounded materialization/direct-validation workstream
 
 BACKEND
 feature/backend-scaffold
-→ run post-main-reconciliation regression QA
-→ real CP4 calibration PR green
-→ deliberate red
-→ recovery green
-→ only then consider required-check repository settings
-→ CP4 closure
-→ CP5 scaffold closure
-→ concrete Logical → PostgreSQL mapping
+→ CP1–CP4 CLOSED / DIRECT QA PASS
+→ CP5 full scaffold QA / closure NEXT
+→ do not merge PR #24 without explicit merge authorization
+→ concrete Logical → PostgreSQL mapping only after CP5 closure
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation decisions by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP4 decisions by default.
