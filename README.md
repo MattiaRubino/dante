@@ -23,14 +23,34 @@ CLOSED / SELECTED / ACCEPTED
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
 
+FRONTEND ENGINEERING FOUNDATION
+DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+INTEGRATED VIA PR #22
+
+FRONTEND MATERIALIZATION
+ACTIVE ON feature/frontend-materialization
+DIRECT FRONTEND VALIDATION NOT YET EARNED
+
 PRODUCTION BACKEND SCAFFOLD
+ACTIVE
+CP1 CLOSED / DIRECT QA PASS
+CP2 CLOSED / DIRECT QA PASS
+CP3 CLOSED / DIRECT QA PASS
+CP4 DESIGN CLOSED
+CP4 M1/M2/M3 COMPLETE
+CP4 MATERIALIZED / DIRECT LOCAL QA PASS
+CURRENT MAIN RECONCILED
+POST-MERGE REGRESSION QA NEXT
+REMOTE PR CALIBRATION NOT RUN
+
+CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
 NOT STARTED
 
 DIRECT SELECTED-STACK VALIDATION / PSV
-NOT RUN
+NOT RUN BEYOND EXPLICITLY RECORDED SCAFFOLD ACCEPTANCE
 ```
 
-Engineering Foundation v0 is the final pre-implementation engineering baseline. There is no separate standalone Development Profile phase.
+Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario has actually run.
 
 ## Production repository direction
 
@@ -41,22 +61,31 @@ apps/
 ├── backend/
 ├── web/
 └── mobile/
+packages/
+infra/
+tooling/
+tests/system/
+docs/
+prototypes/
+.github/
 ```
+
+These are ownership boundaries, not an instruction to create empty directories.
 
 - `apps/backend` is the server-side application boundary;
 - `apps/web` and `apps/mobile` are sibling client boundaries;
-- backend internal engineering is fixed by Engineering Foundation v0;
-- web/mobile internal engineering/tooling remains deferred to the dedicated frontend workstream;
-- do **not** create a new repository for production implementation.
+- `infra/` owns infrastructure definitions when materialized, never business logic;
+- production apps do not import from `prototypes/`;
+- do **not** create a second implementation repository.
 
-Repository identity governance is complete: the historical GitHub repository `MattiaRubino/lifeos` was renamed to `MattiaRubino/dante`. Production implementation continues in `MattiaRubino/dante`; the rename is no longer a pending implementation prerequisite.
+Repository identity governance is complete: `MattiaRubino/lifeos` is historical identity and production implementation continues in `MattiaRubino/dante`.
 
 ## Backend engineering baseline
 
 ```text
 Python                 3.14.x
-initial pin             3.14.7
-package manager         uv
+current scaffold pin    3.14.7
+package manager         uv 0.12.5 exact project requirement
 source root             apps/backend/src/dante
 format/lint             Ruff
 type checking           mypy strict
@@ -74,7 +103,7 @@ driver                  psycopg 3
 migrations              Alembic
 ```
 
-The first LOCAL PostgreSQL baseline includes the full selected extension envelope installed/enabled:
+The materialized LOCAL PostgreSQL baseline uses the accepted extension envelope:
 
 - PostGIS 3.6.4;
 - pgvector 0.8.6;
@@ -83,7 +112,37 @@ The first LOCAL PostgreSQL baseline includes the full selected extension envelop
 - `pg_stat_statements` with preload configuration;
 - native PostgreSQL full-text search.
 
-LOCAL uses a DANTE-owned reproducible PostgreSQL image/build/configuration.
+PostgreSQL remains the sole canonical persistence and material-history authority.
+
+## Frontend engineering baseline — closed design / integrated
+
+```text
+Node 24 LTS
+TypeScript 6.0.x strict
+pnpm 11
+Turborepo 2.x
+
+Web
+React 19.2 + React DOM
+Vite 8
+TanStack Router
+
+Mobile
+React Native 0.86
+Expo SDK 57
+Expo Router
+
+Data
+PowerSync + encrypted SQLite
+TanStack Query 5
+TanStack Form
+Zod 4
+Orval 8
+```
+
+Accepted frontend architecture includes feature-first Web/Mobile, thin route/navigation adapters, public-API-only acyclic dependencies, small real-consumer shared packages, a formal Data Authority Matrix, a feature data firewall, Mobile PowerSync local/offline posture, Web online-first posture, identity-scoped local storage, separate Web/Native UI implementations with shared semantic tokens, React-free shared i18n, Temporal-based time handling and versioned fail-fast Web runtime public config.
+
+Frontend Foundation authorities were integrated into protected `main` via PR #22. Production frontend materialization continues independently on `feature/frontend-materialization`; no direct frontend PASS is inferred from its active status.
 
 ## Environment model
 
@@ -94,110 +153,99 @@ UAT
 PROD
 ```
 
-These are environments, **not Git branches**.
+Environments are not Git branches. Activation remains progressive and provider-specific infrastructure is selected only when the real boundary requires it.
 
-Activation is progressive:
+## Persistence / selected Physical posture
 
-- LOCAL: first implementation;
-- DEV: when remote/shared integration becomes useful;
-- UAT: when real release candidates exist;
-- PROD: production-readiness.
-
-Cloud/compute provider and IaC engine remain intentionally unselected until the first remote-infrastructure boundary.
-
-## Persistence/recovery posture
-
-Schema evolution is migration-governed:
-
-- Alembic revisions are authoritative deployment history;
-- autogenerate creates candidates only;
-- applied revisions are immutable;
-- schema drift is tested;
-- risky changes use expand → migrate → contract;
-- large backfills are bounded/resumable/idempotent jobs;
-- runtime/migrator/owner/replication/backup privileges are separated as they activate;
-- `pg_dump`/`pg_restore` provide logical-copy workflows;
-- pgBackRest + WAL/PITR + AWS S3 remains the selected recovery target and stays dormant until the accepted recovery/production boundary or real rehearsal need.
-
-## Testing and delivery
-
-Backend validation is risk-layered:
-
-- unit/domain;
-- application/use-case;
-- Hypothesis property/state-machine;
-- architecture boundaries;
-- real PostgreSQL integration;
-- migration/drift;
-- concurrency/idempotency/multi-owner/outbox atomicity;
-- provider contract;
-- HTTP/API contract;
-- privacy/non-interference including WL-H12;
-- release/recovery/PSV at applicable boundaries.
-
-GitHub Actions is the primary CI/CD control plane. Protected workflow policy includes least-privilege permissions, immutable Action SHA pinning, no production identity in normal PRs, OIDC for future cloud deployment, real-check-before-required-check discipline, and production artifact provenance/SBOM at the release boundary.
-
-## Selected Physical target remains unchanged
-
-Key target components include:
+Selected targets remain unchanged:
 
 - PostgreSQL 18.4 canonical persistence;
 - PostGIS / pgvector / native FTS / pg_trgm / unaccent / pg_stat_statements;
-- PgBouncer 1.25.2;
-- PowerSync + encrypted SQLite for bounded offline/local state when activated;
-- PostgreSQL transactional outbox for Class-A async work;
+- PgBouncer 1.25.2 selected, not forced into every day-one path;
+- PowerSync + encrypted SQLite for bounded noncanonical local/offline state when activated;
+- PostgreSQL transactional outbox for Class-A async work when required;
 - Restate for Class-B durable work, initially dormant;
 - Cloudflare R2 for private ContentArtifact bytes when activated;
-- pgBackRest + AWS S3 eu-south-1 for recovery, initially dormant;
+- pgBackRest + AWS S3 `eu-south-1` for recovery, initially dormant;
 - OR-Tools CP-SAT for solver capability when activated;
 - OpenTelemetry + Grafana Alloy + Grafana Cloud EU observability target.
 
-No specialist component is implicitly active merely because it is selected.
+No specialist component becomes active merely because it is selected.
+
+## Testing and delivery
+
+Backend CP1–CP3 commands have direct WSL/Linux evidence. CP4 has materialized repository CI on `feature/backend-scaffold`:
+
+```text
+Backend CI
+├── Backend Quality
+├── Backend PostgreSQL
+└── Backend CI Gate
+
+Dependency Review
+└── separate repository-wide workflow
+```
+
+The workflows use explicit `ubuntu-24.04`, least-privilege permissions, immutable Action SHAs, exact uv 0.12.5 with checksum verification, locked installs and the real DANTE PostgreSQL image/harness. Required status checks remain **0** until a real PR proves green, deliberate red and recovery-green behavior and the exact emitted contexts are observed.
+
+No arbitrary coverage threshold is introduced.
 
 ## Direct evidence truth
 
-Do not infer implementation PASS from architecture closure.
+Current branch-local evidence includes:
 
 ```text
-DATABASE DEPLOYMENT      NOT STARTED
-BACKEND SCAFFOLD         NOT STARTED
-CONCRETE DB SCHEMA       NOT STARTED
-MIGRATION IMPLEMENTATION NOT STARTED
-DIRECT HG                NOT RUN
-DIRECT HG PASS           0
-PSV                      NOT RUN
-RESTORE REHEARSAL        NOT RUN
-PRODUCTION DEPLOYMENT    NOT STARTED
+CP1 BACKEND PROCESS / CONFIG            DIRECT QA PASS
+CP2 LOCAL POSTGRESQL                    DIRECT QA PASS
+CP3 PERSISTENCE / MIGRATIONS            DIRECT QA PASS
+CP3 POSTGRESQL ACCEPTANCE               18/18 PASS
+CP3 FULL BACKEND PYTEST                 50/50 PASS
+CP4 LOCAL QUALITY RE-RUN                32/32 FAST PASS
+CP4 LOCAL POSTGRESQL RE-RUN             18/18 PASS
+CP4 BACKEND PACKAGE BUILD               PASS
+CP4 REMOTE PR GREEN                     NOT RUN
+CP4 DELIBERATE RED                      NOT RUN
+CP4 RECOVERY GREEN                      NOT RUN
+REQUIRED STATUS CHECKS                  0
+CONCRETE BUSINESS DB SCHEMA             NOT STARTED
+DIRECT HG-01..HG-12                     NOT RUN
+RESTORE/PITR REHEARSAL                  NOT RUN
+POWERSYNC DIRECT TEST                   NOT RUN
+RESTATE DIRECT TEST                     NOT RUN
+PRODUCTION DEPLOYMENT                   NOT STARTED
 ```
+
+The CP4 local PostgreSQL re-run completed 18/18 tests in 15.59s on Python 3.14.7 after rebuilding `dante-postgres-local:18.4`. Coverage percentages remain evidence only, not quality thresholds.
 
 ## Where to continue
 
-Read in this order before the next write:
+Read before the next backend write:
 
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
-3. `docs/development/agent-operating-manual.md`
-4. `docs/development/operating-rules.md`
-5. `docs/development/documentation-and-handoff.md`
-6. `docs/development/branching-and-environments.md`
-7. `docs/development/repository-engineering-safety.md`
-8. `docs/workstreams/engineering-foundation.md`
-9. `docs/development/engineering-foundation-v0.md`
-10. PM-11 / PM-12 / post-selection validation register as required by the next scope.
+3. development operating/safety/handoff rules
+4. `docs/workstreams/backend-scaffold.md`
+5. `docs/development/backend-cp4-ci-contract.md`
+6. CP1/CP2/CP3 contracts as needed
+7. accepted Physical sources/register for any Physical-consuming scope.
 
-### Exact next boundary
+### Exact active boundaries
 
 ```text
-REPOSITORY IDENTITY
-COMPLETE
-MattiaRubino/lifeos → MattiaRubino/dante
+FRONTEND
+feature/frontend-materialization
+→ continue its own bounded materialization/direct-validation workstream
 
-STEP 1
-Open a fresh exact write gate for the real production scaffold under
-`apps/backend` and LOCAL PostgreSQL infrastructure.
-
-STEP 2
-After scaffold QA, begin concrete Logical → PostgreSQL implementation.
+BACKEND
+feature/backend-scaffold
+→ run post-main-reconciliation regression QA
+→ real CP4 calibration PR green
+→ deliberate red
+→ recovery green
+→ only then consider required-check repository settings
+→ CP4 closure
+→ CP5 scaffold closure
+→ concrete Logical → PostgreSQL mapping
 ```
 
-Do not reopen Domain/Logical/Physical/Engineering Foundation by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation decisions by default.
