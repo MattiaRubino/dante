@@ -24,15 +24,15 @@ Logical Model                      CLOSED
 Pre-Physical coherence             CLOSED
 Physical target                    CLOSED / ACCEPTED
 Engineering Foundation v0          CLOSED / ACCEPTED
-Frontend Engineering Foundation    DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+Frontend Engineering Foundation    CLOSED / ACCEPTED / FINAL REVIEW PASS
 Frontend main integration          COMPLETE VIA PR #22
 Frontend materialization           ACTIVE ON feature/frontend-materialization / DIRECT PASS NOT YET EARNED
 Production backend scaffold        ACTIVE
 Backend CP1                        CLOSED / DIRECT QA PASS
 Backend CP2                        CLOSED / DIRECT QA PASS
 Backend CP3                        CLOSED / DIRECT QA PASS
-Backend CP4                        MATERIALIZED / LOCAL QA PASS / MAIN RECONCILED / REGRESSION QA NEXT
-Backend CP5                        NOT STARTED
+Backend CP4                        CLOSED / DIRECT REMOTE QA PASS
+Backend CP5                        NEXT
 Concrete PostgreSQL business map   NOT STARTED
 Direct HG / blanket PSV            NOT RUN
 ```
@@ -52,14 +52,15 @@ Direct HG / blanket PSV            NOT RUN
 - `development/documentation-and-handoff.md`
 - `development/branching-and-environments.md`
 - `development/repository-engineering-safety.md`
+- `development/github-main-ruleset.json`
 
 ### Backend scaffold — active
 
-- `workstreams/backend-scaffold.md` — active production-backend scaffold handoff and exact resume point
-- `development/backend-cp1-contract.md` — CP1 Python/process/config contract and direct evidence
-- `development/backend-cp2-postgres-contract.md` — CP2 LOCAL PostgreSQL contract and direct evidence
-- `development/backend-cp3-persistence-contract.md` — CP3 persistence/migrations/privileges/real-PostgreSQL contract and direct evidence
-- `development/backend-cp4-ci-contract.md` — CP4 CI/security/calibration contract and current materialization evidence
+- `workstreams/backend-scaffold.md` — production-backend scaffold handoff and exact resume point
+- `development/backend-cp1-contract.md` — CP1 Python/process/config authority
+- `development/backend-cp2-postgres-contract.md` — CP2 LOCAL PostgreSQL authority
+- `development/backend-cp3-persistence-contract.md` — CP3 persistence/migrations/privileges/real-PostgreSQL authority
+- `development/backend-cp4-ci-contract.md` — CP4 CI/security/calibration closure authority
 - `development/local-backend-workstation-bootstrap.md` — verified WSL2/Docker/PyCharm-oriented workstation bootstrap
 
 ### Engineering Foundation — closed
@@ -75,15 +76,15 @@ Direct HG / blanket PSV            NOT RUN
 
 ### Frontend Engineering Foundation — closed / integrated
 
-- `workstreams/frontend-foundation.md` — closure/integration handoff
-- `architecture/frontend-engineering-foundation.md` — technology specification
-- `architecture/frontend-engineering-foundation-part-2.md` — application/package/data-authority specification
-- `architecture/frontend-engineering-foundation-final-review.md` — final review/closure evidence
-- `architecture/frontend-engineering-foundation-post-closure-qa.md` — post-closure knowledge/evidence QA
-- `decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
-- `decisions/ADR-009-frontend-architecture-boundaries.md` — frontend structural ADR
+- `workstreams/frontend-foundation.md`
+- `architecture/frontend-engineering-foundation.md`
+- `architecture/frontend-engineering-foundation-part-2.md`
+- `architecture/frontend-engineering-foundation-final-review.md`
+- `architecture/frontend-engineering-foundation-post-closure-qa.md`
+- `decisions/ADR-008-frontend-engineering-stack.md`
+- `decisions/ADR-009-frontend-architecture-boundaries.md`
 
-The currently active frontend materialization handoff lives on the separate branch `feature/frontend-materialization`; do not invent a branch-local file here before that branch is integrated.
+The active frontend materialization handoff lives on the separate branch `feature/frontend-materialization`; do not invent a branch-local replacement here before that workstream is integrated.
 
 ### Architecture
 
@@ -122,7 +123,9 @@ Cloud/backend compute provider and IaC engine remain deferred until their real i
 
 ## CI truth
 
-CP4 has materialized on `feature/backend-scaffold`:
+CP4 is closed on `feature/backend-scaffold` after direct local, remote green, deliberate-red and recovery-green evidence.
+
+Materialized:
 
 ```text
 .github/workflows/backend-ci.yml
@@ -130,20 +133,38 @@ CP4 has materialized on `feature/backend-scaffold`:
 .github/dependabot.yml
 ```
 
-Local QA has directly passed, but remote PR calibration has not yet run. Required status checks therefore remain **0**. No remote green/red/recovery PASS may be inferred from YAML existence.
+Observed on real PR #24:
+
+```text
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
+Dependency Review
+```
+
+Protected `main` now requires:
+
+```text
+Backend CI Gate
+Dependency Review
+```
+
+Both were selected in the GitHub ruleset UI from source **GitHub Actions**, and the branch must be up to date before merge. Required checks are enforced through the `lifeos-main-safety` repository ruleset; classic branch-protection context output is not the ruleset authority.
+
+Repository owner also enabled full-length Action SHA enforcement. The connected GitHub integration cannot directly read that setting, so documentation records it as owner-applied / connector-unverifiable rather than false API PASS.
+
+No arbitrary coverage threshold was introduced.
 
 ## Exact next handoffs
 
 ```text
 BACKEND
-1. Current main is reconciled into feature/backend-scaffold.
-2. Run post-reconciliation locked quality + real PostgreSQL regression QA.
-3. Open real CP4 calibration PR only after regression PASS.
-4. Observe exact emitted checks.
-5. Deliberate red → recovery green.
-6. Only then consider required-check repository settings.
-7. Close CP4, then CP5 scaffold closure.
-8. Concrete Logical → PostgreSQL mapping starts only after scaffold closure.
+1. Treat CP1–CP4 as CLOSED / DIRECT QA PASS.
+2. PR #24 remains the active backend integration PR and is not auto-merged.
+3. Start CP5 with a fresh exact gate.
+4. CP5 performs full scaffold QA / closure only.
+5. Do not start concrete Logical → PostgreSQL mapping until CP5 closes.
+6. Do not activate CodeQL merely because CP4 closed; that remains a separate post-main boundary.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
