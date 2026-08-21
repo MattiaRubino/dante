@@ -4,6 +4,7 @@
 - Product: **DANTE**
 - Branch-local current work: `feature/backend-scaffold`
 - Protected-main truth reconciled from: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
+- Active backend integration PR: `#24`
 
 ## 1. Executive state
 
@@ -27,16 +28,12 @@ DEFINITIVE CLOSED / FINAL QA PASS
 
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
-PM-11 COMPLETE
-PM-12 COMPLETE
-PM-13 QA PASS
-PM-14 CLOSURE COMPLETE
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
 
 FRONTEND ENGINEERING FOUNDATION
-DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+CLOSED / ACCEPTED / FINAL REVIEW PASS
 INTEGRATED VIA PR #22
 
 FRONTEND MATERIALIZATION
@@ -48,17 +45,17 @@ ACTIVE
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS
 CP3 CLOSED / DIRECT QA PASS
-CP4 DESIGN CLOSED
-CP4-M1 CLOSED
-CP4-M2 MATERIALIZED / REMOTE READBACK PASS
-CP4-M3 CLOSED / DIRECT LOCAL QA PASS
-CP4-M4 MAIN RECONCILIATION MATERIALIZED
-POST-MERGE REGRESSION QA NEXT
-CP4 REMOTE GREEN/RED/RECOVERY CALIBRATION NOT RUN
-CP5 NOT STARTED
+CP4 CLOSED / DIRECT REMOTE QA PASS
+CP5 NEXT
+
+PROTECTED-MAIN CI ENFORCEMENT
+Backend CI Gate REQUIRED
+Dependency Review REQUIRED
+branch up-to-date REQUIRED
+source GitHub Actions
 
 CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED
+NOT STARTED / DEFERRED UNTIL CP5 CLOSURE
 
 DIRECT HG-01..HG-12
 NOT RUN / PASS 0
@@ -151,23 +148,7 @@ Backend architecture remains a capability-first modular monolith with Domain/app
 
 The Frontend Engineering Foundation is integrated into protected `main` via PR #22 and remains closed in design/architecture.
 
-Accepted baseline includes:
-
-```text
-Node 24 LTS
-TypeScript 6.0.x strict
-pnpm 11
-Turborepo 2.x
-React 19.2 / Vite 8 / TanStack Router
-React Native 0.86 / Expo SDK 57 / Expo Router
-PowerSync + encrypted SQLite
-TanStack Query 5
-TanStack Form
-Zod 4
-Orval 8
-```
-
-Structural rules include feature-first Web/Mobile, public-API-only acyclic dependencies, small real-consumer shared packages, a Data Authority Matrix, backend canonical effect authority, feature data firewall, Mobile local/offline capability, Web online-first posture, identity-scoped local data and platform-specific UI implementations over shared semantic tokens.
+Accepted baseline includes Node 24 LTS, TypeScript 6.0.x strict, pnpm 11, Turborepo 2.x, React 19.2/Vite 8/TanStack Router, React Native 0.86/Expo SDK 57/Expo Router, PowerSync + encrypted SQLite, TanStack Query/Form, Zod 4 and Orval 8.
 
 The separate `feature/frontend-materialization` workstream is active. Its existence is not direct frontend validation PASS.
 
@@ -175,9 +156,11 @@ The separate `feature/frontend-materialization` workstream is active. Its existe
 
 Implementation/closure HEAD:
 
-`02d113d772cdb247faebb3cef4d857d125266da3`
+```text
+02d113d772cdb247faebb3cef4d857d125266da3
+```
 
-Direct evidence includes:
+Direct evidence:
 
 ```text
 Python 3.14.7 project interpreter      PASS
@@ -191,11 +174,9 @@ real Uvicorn factory startup           PASS
 /health/ready                          200 PASS
 ```
 
-CP1 coverage 100% was evidence for that small surface only, never a permanent threshold.
-
 ## 7. Backend CP2 — CLOSED / DIRECT QA PASS
 
-Direct LOCAL PostgreSQL evidence includes:
+Direct LOCAL PostgreSQL evidence:
 
 ```text
 PostgreSQL                             18.4 PASS
@@ -210,17 +191,19 @@ destructive reset                      PASS
 Windows DBeaver host connection        PASS
 ```
 
-The accepted DANTE-owned image is `dante-postgres-local:18.4`.
+Accepted image: `dante-postgres-local:18.4`.
 
 ## 8. Backend CP3 — CLOSED / DIRECT QA PASS
 
 Implementation/direct-QA HEAD:
 
-`35cf6440bc121a38342f6bbee72e210435a788a4`
+```text
+35cf6440bc121a38342f6bbee72e210435a788a4
+```
 
 Materialized boundaries include SQLAlchemy async runtime, psycopg 3, Alembic technical baseline, typed database settings, FastAPI DB lifespan/readiness, `dante` schema metadata authority, owner/migrator/runtime provisioning and the real PostgreSQL acceptance harness.
 
-Direct closure evidence:
+Direct closure:
 
 ```text
 uv lock --check                         PASS
@@ -228,135 +211,157 @@ uv sync --locked                        PASS
 Ruff                                    PASS
 mypy                                    PASS
 fast pytest                             32/32 PASS
-PostgreSQL pytest                       18/18 PASS in 15.61s
-full pytest                             50/50 PASS in 24.72s
+PostgreSQL pytest                       18/18 PASS
+full pytest                             50/50 PASS
 full-run coverage                       97.42% evidence only
 uv build / sdist / wheel                PASS
-Alembic fresh/head/round-trip/drift     PASS
+Alembic acceptance                      PASS
 privilege matrix                        PASS
-runtime identity/search_path            PASS
 stale-connection recovery               PASS
-DB stop/start outage recovery           PASS
+DB outage recovery                      PASS
 transaction semantics                   PASS
 ```
 
 The frozen/blackholed-peer readiness behavior remains an explicit hardening finding, not a claimed CP3 PASS.
 
-## 9. Backend CP4 — Quality / CI enforcement
+## 9. Backend CP4 — CLOSED / DIRECT REMOTE QA PASS
 
 Detailed authority:
 
 `docs/development/backend-cp4-ci-contract.md`
 
-### M1 — evidence freeze — CLOSED
+### M1–M4
 
 ```text
-canonical workstation uv              0.12.5
-Python authority                       apps/backend/.python-version = 3.14.7
-uv Linux x86_64 SHA-256                68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+uv authority                      0.12.5
+Python authority                  3.14.7
+workflow/config materialization   PASS
+local fast suite                  32/32 PASS
+local PostgreSQL suite            18/18 PASS
+protected-main reconciliation     PASS
+post-merge regression             PASS
+main behind_by                    0 after reconciliation
 ```
 
-Pinned Actions:
+### M5 — real PR green
+
+PR #24 green-calibration HEAD:
 
 ```text
-actions/checkout v7.0.1
-3d3c42e5aac5ba805825da76410c181273ba90b1
-
-astral-sh/setup-uv v9.0.0
-c771a70e6277c0a99b617c7a806ffedaca235ff9
-
-actions/dependency-review-action v5.0.0
-a1d282b36b6f3519aa1f3fc636f609c47dddb294
+bf9d364c59f02857125e228c6b223c13650ab78f
 ```
 
-### M2 — materialization — REMOTE READBACK PASS
-
-Executable/config HEAD before main reconciliation:
-
-`eb8d33fa85d6409dfcc60eba663cb32b64d65aee`
-
-Exactly materialized:
+Runs:
 
 ```text
-.github/workflows/backend-ci.yml
-.github/workflows/dependency-review.yml
-.github/dependabot.yml
-apps/backend/pyproject.toml
+Backend CI          32477974221   SUCCESS
+Dependency Review   32477974220   SUCCESS
 ```
 
-`apps/backend/uv.lock` was untouched.
-
-Backend CI structure:
+Observed:
 
 ```text
-Backend Quality
-Backend PostgreSQL
-        ↓
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+```
+
+Remote logs proved uv 0.12.5, Python 3.14.7, checksum-backed uv setup, locked dependency bootstrap, Ruff, mypy, 32/32 fast tests, package build, canonical PostgreSQL image build and 18/18 PostgreSQL acceptance.
+
+Dependency Review directly enumerated the real `apps/backend/uv.lock` delta.
+
+### M6 — deliberate red
+
+HEAD:
+
+```text
+739680d11fe5c33a4974f069c2fdcce9e71a4fe0
+```
+
+Runs:
+
+```text
+Backend CI          32478656632
+Dependency Review   32478656892
+```
+
+Observed:
+
+```text
+Backend Quality       FAILURE — intentional calibration step
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       FAILURE
+Dependency Review     FAILURE — intentional deny-packages policy
+```
+
+Gate log observed `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected `fastapi@0.141.1` through `pkg:pypi/fastapi`. No vulnerable package was added.
+
+### M7 — recovery green
+
+Temporary workflow changes were restored byte-for-byte to the M5 blobs.
+
+Recovery HEAD:
+
+```text
+df0a7c4fd3c7fe844fe56052fe7999732f186ee5
+```
+
+Runs:
+
+```text
+Backend CI          32478852443   SUCCESS
+Dependency Review   32478852454   SUCCESS
+```
+
+All four intended checks/jobs returned green.
+
+### M8 — protected-main promotion
+
+Existing ruleset `lifeos-main-safety` now requires:
+
+```text
 Backend CI Gate
-PASS iff both mandatory upstream jobs == success
+Dependency Review
 ```
 
-Dependency Review is separate and repository-wide. Required checks remain **0** pending calibration.
+Both were selected in the GitHub UI with source **GitHub Actions**.
 
-### M3 — direct local QA — CLOSED / PASS
-
-At exact HEAD `eb8d33fa85d6409dfcc60eba663cb32b64d65aee`:
+Also enabled:
 
 ```text
-uv 0.12.5                              PASS
-uv lock --check                         PASS
-uv sync --locked                        PASS
-Ruff format                             PASS — 23 files
-Ruff lint                               PASS
-mypy strict                             PASS — 20 source files
-pytest -m "not postgres"                PASS — 32/32 in 0.69s
-uv build                                PASS
-sdist + wheel                           PASS
-canonical PostgreSQL image rebuild      PASS
-pytest -m postgres -vv                  PASS — 18/18 in 15.59s
-final worktree                          CLEAN
+Require branches to be up to date before merging
 ```
 
-77.84% fast-suite and 91.75% PostgreSQL-slice coverage are evidence only.
-
-### M4 — protected-main reconciliation — MATERIALIZED
-
-Pre-reconciliation facts:
+Preserved:
 
 ```text
-backend PRE-SCOPE      eb8d33fa85d6409dfcc60eba663cb32b64d65aee
-current main           ff46eb16b971b1fde96eef9047b09faa02e1a5db
-merge base             7a1600c2167f68c9281d3ed77b32a3d954fbd061
-backend vs main        92 ahead / 28 behind
+PR required
+0 approving reviews
+review-thread resolution required
+merge method merge
+deletion blocked
+force pushes blocked
+no bypass
+no merge queue
 ```
 
-Only four paths had independent changes on both sides:
+Repository owner enabled the Actions setting requiring full-length commit SHA pins. The connected GitHub integration cannot directly read that setting; it is recorded as owner-applied / connector-unverifiable.
+
+The canonical ruleset definition is `docs/development/github-main-ruleset.json`.
+
+### CP4 closure decision
 
 ```text
-README.md
-docs/PROJECT-STATUS.md
-docs/README.md
-docs/ROADMAP.md
+CP4
+CLOSED / DIRECT REMOTE QA PASS
 ```
 
-Fourteen other changed `main` paths were imported byte-identically. The two-parent reconciliation commit is:
+## 10. Current direct-validation non-claims
 
-`6a8122249f13f9b8553f511c47b4185c6e3e6540`
-
-After that merge, `main` is an ancestor of the backend branch (`behind_by = 0`). The four global documents are being semantically reconciled to preserve both newer frontend/main truth and newer backend/workstream truth.
-
-**Post-merge backend regression QA has not yet run and is not claimed PASS.**
-
-## 10. Direct-validation non-claims
-
-Do not extrapolate scaffold evidence into blanket Physical validation:
+Do not extrapolate scaffold evidence into blanket Physical or production validation:
 
 ```text
-CP4 REMOTE PR GREEN                    NOT RUN
-CP4 DELIBERATE RED                     NOT RUN
-CP4 RECOVERY GREEN                     NOT RUN
-DEPENDENCY REVIEW uv DELTA PROOF       NOT RUN
-REQUIRED STATUS CHECK PROMOTION        NOT RUN
 CODEQL POST-MAIN ACTIVATION            NOT RUN
 DIRECT HG-01..HG-12                    NOT RUN
 DIRECT HG PASS                         0
@@ -366,37 +371,35 @@ RESTATE DIRECT TEST                    NOT RUN
 OBJECT RECOVERY TEST                   NOT RUN
 SOLVER DIRECT TEST                     NOT RUN
 PRODUCTION DEPLOYMENT                  NOT STARTED
+FRONTEND DIRECT MATERIALIZATION PASS   NOT YET EARNED
 ```
 
 ## 11. Active branches / workstreams
 
 ```text
 feature/backend-scaffold
-→ backend production scaffold
-→ CP4 post-main regression QA next
+→ CP1–CP4 CLOSED
+→ CP5 NEXT
+→ PR #24 active; merge not authorized yet
 
 feature/frontend-materialization
 → frontend production materialization
 → separate worktree/workstream
 ```
 
-The workstreams are allowed to proceed in parallel. Shared global documentation must be reconciled semantically when integrating the second branch; branch-local work must not overwrite newer protected-main truth.
+The workstreams may proceed in parallel. Shared global documentation must be reconciled semantically at integration time; one workstream must not overwrite newer protected-main truth from the other.
 
 ## 12. Exact next backend action
 
 ```text
-1. Pull the reconciled feature/backend-scaffold HEAD.
-2. Verify clean worktree and exact remote/local HEAD.
-3. Re-run locked backend quality QA after main reconciliation.
-4. Rebuild dante-postgres-local:18.4 and run PostgreSQL 18/18 acceptance.
-5. If green, record M4 regression PASS.
-6. Open the real CP4 calibration PR against current main.
-7. Observe Backend Quality / Backend PostgreSQL / Backend CI Gate / Dependency Review remotely.
-8. Perform bounded deliberate-red calibration.
-9. Restore recovery green.
-10. Only then consider a separate required-check/settings gate.
-11. Close CP4 only after truthful acceptance evidence.
-12. Proceed to CP5, then concrete Logical → PostgreSQL mapping.
+1. Treat CP1–CP4 as closed accepted backend scaffold checkpoints.
+2. Open a fresh exact gate for CP5.
+3. CP5 performs integrated scaffold QA / closure only.
+4. Verify current main/branch relation again before any integration decision.
+5. Verify protected required contexts remain emitted and green.
+6. Do not merge PR #24 without explicit merge authorization.
+7. Do not activate CodeQL inside CP5 unless separately authorized by its accepted post-main boundary.
+8. Start concrete Logical → PostgreSQL mapping only after CP5 closes.
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3 decisions without concrete contradictory evidence.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3/CP4 decisions without concrete contradictory evidence.
