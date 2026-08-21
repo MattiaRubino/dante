@@ -3,8 +3,21 @@
 Production backend application for DANTE.
 
 CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL
-PostgreSQL 18.4 image/envelope. CP3 activates application persistence, Alembic authority, PostgreSQL
-role separation and the real PostgreSQL acceptance harness.
+PostgreSQL 18.4 image/envelope. CP3 activated application persistence, Alembic authority, PostgreSQL
+role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main
+enforcement. CP5 has now re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation.
+
+## Scaffold status
+
+```text
+CP1   CLOSED / DIRECT QA PASS
+CP2   CLOSED / DIRECT QA PASS
+CP3   CLOSED / DIRECT QA PASS
+CP4   CLOSED / DIRECT REMOTE QA PASS
+CP5   CLOSED / DIRECT INTEGRATED QA PASS
+```
+
+PR #24 remains open and unmerged. Concrete Logical → PostgreSQL business implementation starts only after a separate protected-main integration gate succeeds.
 
 ## Runtime contract
 
@@ -34,7 +47,7 @@ uv tree --locked --depth 1
 `pyproject.toml` records bounded compatibility policy; `uv.lock` records the exact resolved graph.
 Never hand-edit `uv.lock`.
 
-Current CP3 persistence resolution is:
+Current persistence resolution is:
 
 ```text
 SQLAlchemy       2.0.52
@@ -159,7 +172,7 @@ autoflush=True
 ```
 
 The outer application-operation boundary owns commit/rollback. Persistence adapters never commit
-implicitly. There is no generic `Repository[T]` or generic Unit of Work in CP3.
+implicitly. There is no generic `Repository[T]` or generic Unit of Work in the closed scaffold.
 
 ## API documentation behavior
 
@@ -184,7 +197,7 @@ uv run mypy
 # Fast tests only — no PostgreSQL acceptance container
 uv run pytest -m "not postgres"
 
-# Real PostgreSQL 18.4 CP3 acceptance tests
+# Real PostgreSQL 18.4 acceptance tests
 uv run pytest -m postgres
 
 # Full backend suite; includes the real PostgreSQL harness
@@ -202,9 +215,34 @@ This design protects the ordinary LOCAL `dante` database and its cluster-global 
 credentials from destructive acceptance testing while exercising the exact same DANTE PostgreSQL
 image/envelope.
 
+## CP5 integrated acceptance evidence
+
+The final scaffold QA re-ran the production bootstrap on the actual WSL2/Linux workstation:
+
+```text
+uv 0.12.5                                  PASS
+Python 3.14.7                               PASS
+uv lock --check / sync --locked            PASS
+Ruff format + lint                         PASS
+mypy strict                                PASS
+fast pytest                                32/32 PASS
+canonical PostgreSQL image rebuild         PASS
+PostgreSQL pytest                          18/18 PASS
+full pytest                                50/50 PASS
+full-run coverage                          97.42% evidence only
+uv build wheel + sdist                     PASS
+LOCAL Compose PostgreSQL healthy           PASS
+explicit provisioning                      PASS
+real Uvicorn factory startup               PASS
+GET /health/live                           200 {"status":"ok"}
+GET /health/ready                          200 {"status":"ready"}
+```
+
+One immediately repeated full-suite launch hit a Docker Desktop/WSL `/forwards/expose` HTTP 500 while creating a disposable PostgreSQL container on a loopback port that had no Linux listener. After the diagnostic container was removed, a clean full run passed 50/50. The event is treated as transient local Docker port-forwarding behavior, not as an application or PostgreSQL acceptance failure.
+
 ## Boundaries
 
-CP3 still does not authorize:
+The closed scaffold still does not authorize:
 
 - concrete Logical → PostgreSQL business tables/mappings;
 - business repositories/adapters;
