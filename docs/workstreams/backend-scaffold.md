@@ -1,12 +1,14 @@
 # Workstream — Production Backend Scaffold
 
-- Status: **CLOSED / CP1 CLOSED / CP2 CLOSED / CP3 CLOSED / CP4 CLOSED / CP5 CLOSED / DIRECT QA PASS / PENDING MAIN INTEGRATION**
-- Branch: `feature/backend-scaffold`
+- Status: **CLOSED / CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED IN PROTECTED main**
+- Historical implementation branch: `feature/backend-scaffold`
+- Integration PR: `#24` — **MERGED**
+- Integration merge SHA: `41680497c94b0c2f4830679b93f8eb6f1d543f8d`
+- Post-merge Backend CI: `32502330955` — **SUCCESS**
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Engineering Foundation v0: **CLOSED / CONSUMED / NOT REOPENED**
-- Concrete Logical → PostgreSQL schema: **NEXT ONLY AFTER VERIFIED SCAFFOLD INTEGRATION**
-- Active integration PR: `#24` — **OPEN / UNMERGED**
+- Concrete Logical → PostgreSQL: **NEXT BACKEND IMPLEMENTATION BOUNDARY**
 - CP1 authority: `docs/development/backend-cp1-contract.md`
 - CP2 authority: `docs/development/backend-cp2-postgres-contract.md`
 - CP3 authority: `docs/development/backend-cp3-persistence-contract.md`
@@ -14,7 +16,7 @@
 
 ## 1. Purpose and final state
 
-This workstream turned the closed Engineering Foundation into the first production backend scaffold, one directly verifiable checkpoint at a time.
+This workstream turned the closed Engineering Foundation into the first production backend scaffold and directly verified it checkpoint by checkpoint before integrating it into protected `main`.
 
 ```text
 ENGINEERING FOUNDATION v0
@@ -35,20 +37,23 @@ CP4 quality / CI enforcement
 CP5 full scaffold QA / closure
         CLOSED / DIRECT INTEGRATED QA PASS
           ↓
-PROTECTED-MAIN INTEGRATION OF PR #24
-        NEXT / EXPLICIT MERGE GATE REQUIRED
+PR #24 → PROTECTED main
+        MERGED / VERIFIED
+          ↓
+POST-MERGE BACKEND CI
+        PASS
           ↓
 CONCRETE LOGICAL → POSTGRESQL
-        NEXT IMPLEMENTATION BOUNDARY AFTER VERIFIED MERGE
+        NEXT BACKEND IMPLEMENTATION BOUNDARY
 ```
 
-The scaffold is infrastructure/application bootstrap. CP1–CP5 do not authorize concrete business tables, repositories, use cases or product API slices.
+The scaffold is infrastructure/application bootstrap. Its closure does not itself authorize arbitrary business tables, repositories, use cases or API slices; those belong to the next bounded implementation workstream.
 
 ## 2. Quality bar
 
 DANTE targets production-grade engineering without unnecessary complexity.
 
-Required qualities:
+Required qualities preserved through this workstream:
 
 - reproducible Linux/WSL bootstrap;
 - exact reviewed runtime/toolchain state;
@@ -57,7 +62,7 @@ Required qualities:
 - real PostgreSQL semantics where PostgreSQL behavior matters;
 - explicit transaction/session ownership;
 - secure configuration and least-privilege runtime identities;
-- CI checks that are directly proven before becoming mandatory;
+- CI checks directly proven before becoming mandatory;
 - no fake reviewers, placeholder architecture, arbitrary coverage gates or unused infrastructure.
 
 ## 3. CP1 — CLOSED / DIRECT QA PASS
@@ -198,34 +203,7 @@ M4 protected-main reconciliation                PASS
 M4 post-merge full backend regression           PASS
 ```
 
-M4 consumed protected `main`:
-
-```text
-ff46eb16b971b1fde96eef9047b09faa02e1a5db
-```
-
-Two-parent reconciliation:
-
-```text
-6a8122249f13f9b8553f511c47b4185c6e3e6540
-```
-
-Tested reconciled HEAD:
-
-```text
-ba0d994e983cf3e5add6ad640c238999f418e236
-```
-
-After reconciliation `main` was an ancestor of the backend branch and `behind_by = 0`.
-
 ### M5 — real PR green
-
-Calibration PR:
-
-```text
-#24
-feature/backend-scaffold → main
-```
 
 M5 HEAD:
 
@@ -251,8 +229,6 @@ Dependency Review     SUCCESS
 
 Remote logs directly proved uv 0.12.5, Python 3.14.7, checksum-backed uv install, locked sync, Ruff, mypy, 32/32 fast tests, package build, canonical PostgreSQL image build and 18/18 PostgreSQL acceptance.
 
-Dependency Review directly enumerated the real `apps/backend/uv.lock` delta.
-
 ### M6 — deliberate red
 
 M6 HEAD:
@@ -270,7 +246,7 @@ Backend CI Gate       FAILURE
 Dependency Review     FAILURE — intentional deny-packages policy
 ```
 
-Gate log proved `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected `fastapi@0.141.1` through the supported `pkg:pypi/fastapi` deny rule. No vulnerable dependency was added.
+Gate log proved `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected the existing `fastapi@0.141.1` through the supported deny rule. No vulnerable dependency was added.
 
 ### M7 — recovery green
 
@@ -313,15 +289,6 @@ Canonical ruleset definition:
 ```text
 docs/development/github-main-ruleset.json
 ```
-
-### CP4 final result
-
-```text
-CP4
-CLOSED / DIRECT REMOTE QA PASS
-```
-
-Detailed acceptance evidence and non-claims live in `docs/development/backend-cp4-ci-contract.md`.
 
 ## 7. CP5 — CLOSED / DIRECT INTEGRATED QA PASS
 
@@ -409,17 +376,51 @@ Closure decision:
 ```text
 CP5
 CLOSED / DIRECT INTEGRATED QA PASS
-
-PRODUCTION BACKEND SCAFFOLD
-CLOSED ON feature/backend-scaffold
-PENDING PROTECTED-MAIN INTEGRATION VIA PR #24
 ```
 
-## 8. Persistent non-goals after scaffold closure
+## 8. Protected-main integration — VERIFIED / PASS
+
+Final scaffold feature HEAD:
+
+```text
+46b775bfbfc4747daff341d973df133646dbd0c8
+```
+
+Immediately before the authorized merge, PR #24 was open, mergeable, not draft, up to date with protected `main`, had zero unresolved review threads, and the required PR checks were green.
+
+The accepted merge-commit method produced:
+
+```text
+pre-merge protected main              ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold final HEAD   46b775bfbfc4747daff341d973df133646dbd0c8
+merge commit                          41680497c94b0c2f4830679b93f8eb6f1d543f8d
+```
+
+Remote readback proved the merge commit has exactly those two parent SHAs and protected `main` points exactly to the merge SHA. PR #24 is closed/merged.
+
+The push-triggered Backend CI run on actual protected `main` was:
+
+```text
+32502330955   SUCCESS
+```
+
+Integration decision:
+
+```text
+PRODUCTION BACKEND SCAFFOLD
+CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
+
+POST-MERGE BACKEND CI
+PASS
+```
+
+No branch deletion, CodeQL activation, ruleset mutation, frontend mutation or concrete Logical → PostgreSQL implementation was included in the merge gate.
+
+## 9. Persistent non-goals after scaffold integration
 
 Do not add by convenience:
 
-- concrete 57-owner table mapping before the scaffold is verified on protected `main`;
+- mechanical 57-owner → 57-table translation;
 - business capability modules merely to reserve names;
 - business API routes without their real vertical slice;
 - AuthN/AuthZ product implementation without its capability boundary;
@@ -428,25 +429,25 @@ Do not add by convenience:
 - PowerSync/Restate/R2/OR-Tools activation without a real capability trigger;
 - Kafka/Redis/event-sourcing infrastructure not justified by measured need.
 
-## 9. Exact resume point
+## 10. Final resume point
 
-A new conversation must resume here:
+A new backend conversation must resume here:
 
 ```text
-1. Read current protected main, current feature/backend-scaffold, this handoff and CP4 contract.
+1. Read current protected main and current project-status/roadmap authorities.
 2. Treat CP1, CP2, CP3, CP4 and CP5 as CLOSED / DIRECT QA PASS.
-3. Treat the production backend scaffold as CLOSED ON FEATURE BRANCH, not yet integrated into main.
-4. Treat PR #24 as the active backend integration PR; do not merge it without a fresh explicit merge gate.
-5. Treat Backend CI Gate and Dependency Review as protected-main required checks.
+3. Treat the production backend scaffold as CLOSED / INTEGRATED IN PROTECTED main.
+4. Treat PR #24 and merge SHA 41680497c94b0c2f4830679b93f8eb6f1d543f8d as verified historical integration evidence.
+5. Treat Backend CI Gate and Dependency Review as protected-main required PR checks.
 6. Treat full-SHA repository enforcement as owner-applied but connector-readback-limited.
-7. Revalidate exact branch/main relation and final required checks on the actual merge candidate.
-8. If explicitly authorized, merge PR #24 using the accepted merge-commit method only.
-9. After merge, verify protected-main readback and push-to-main CI before calling scaffold integration complete.
-10. Keep CodeQL as a separate post-main boundary.
-11. Start concrete Logical → PostgreSQL only after verified scaffold integration.
+7. Concrete Logical → PostgreSQL is the next backend implementation boundary.
+8. Open that boundary only through a fresh exact workstream/gate.
+9. Consume the closed Logical owner/ref/invariant contracts and accepted Physical PostgreSQL posture before proposing concrete mappings.
+10. Do not mechanically create one table/service per Logical owner.
+11. Keep CodeQL as a separate explicitly authorized post-main boundary.
 12. Frontend materialization continues independently on feature/frontend-materialization; shared docs must be reconciled semantically at integration time.
 ```
 
 ### Immediate next action
 
-**Open a fresh exact merge gate for PR #24. Do not add more CP5 implementation, activate CodeQL, start concrete business-schema mapping or mutate protected `main` without the appropriate next gate.**
+**Open a fresh bounded Concrete Logical → PostgreSQL workstream/gate. Do not reopen CP1–CP5, activate CodeQL or mutate unrelated frontend/global surfaces without the appropriate explicit scope.**
