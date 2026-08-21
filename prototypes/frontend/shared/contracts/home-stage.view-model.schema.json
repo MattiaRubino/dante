@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["contractVersion", "mode", "status", "continuity", "signals"],
   "properties": {
-    "contractVersion": {"const": "0.1.0"},
+    "contractVersion": {"const": "0.2.0"},
     "mode": {"enum": ["home.stage.continuity", "home.stage.signals"]},
     "status": {"enum": ["loading", "ready", "empty", "partial", "full", "overflow", "error", "unavailable"]},
     "continuity": {
@@ -14,7 +14,7 @@
       "additionalProperties": false,
       "required": ["activeIndex", "items"],
       "properties": {
-        "activeIndex": {"type": "integer", "minimum": 0},
+        "activeIndex": {"type": ["integer", "null"], "minimum": 0},
         "items": {"type": "array", "items": {"$ref": "#/$defs/continuityItem"}}
       }
     },
@@ -23,7 +23,7 @@
       "additionalProperties": false,
       "required": ["activeIndex", "items"],
       "properties": {
-        "activeIndex": {"type": "integer", "minimum": 0},
+        "activeIndex": {"type": ["integer", "null"], "minimum": 0},
         "items": {"type": "array", "items": {"$ref": "#/$defs/signalItem"}}
       }
     }
