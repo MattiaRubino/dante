@@ -1,9 +1,12 @@
 # DANTE Backend CP4 — Quality and CI enforcement contract
 
-- Status: **DESIGN CLOSED / MATERIALIZATION NOT STARTED**
+- Status: **M1–M4 MATERIALIZED / M4 POST-MERGE REGRESSION PASS / M5 NEXT**
 - Workstream: `feature/backend-scaffold`
 - CP4 design PRE-SCOPE: `495e484c6ac729f24dc43dc2dbba8cc4d359a568`
 - CP3 implementation/direct-QA HEAD consumed: `35cf6440bc121a38342f6bbee72e210435a788a4`
+- M4 PRE-SCOPE / post-merge regression HEAD: `ba0d994e983cf3e5add6ad640c238999f418e236`
+- M4 main consumed: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
+- M4 two-parent merge commit: `6a8122249f13f9b8553f511c47b4185c6e3e6540`
 - Scope: backend repository quality/CI enforcement only
 - Concrete Logical → PostgreSQL business mapping: **OUT OF SCOPE**
 - Frontend CI: **OUT OF SCOPE**
@@ -117,7 +120,7 @@ fast/non-PostgreSQL pytest
 backend package build
 ```
 
-The materialized command sequence must preserve frozen/locked semantics. `uv run --locked` is used where supported/applicable so an individual CI command cannot silently rewrite dependency resolution. `uv build` is executed only after the lock has been explicitly checked and the environment synchronized from locked state.
+The materialized command sequence preserves frozen/locked semantics. `uv run --locked` is used where supported/applicable so an individual CI command cannot silently rewrite dependency resolution. `uv build` is executed only after the lock has been explicitly checked and the environment synchronized from locked state.
 
 The job does not upload the built wheel/sdist merely to create an artifact. CP4 proves buildability; release artifact retention/promotion belongs to a later release boundary.
 
@@ -213,7 +216,7 @@ push to accepted main
 
 Every integrated main commit should be allowed to complete its own validation evidence.
 
-The exact concurrency expression is an implementation detail and must be validated on GitHub rather than copied blindly from an example.
+The materialized workflow implements this policy with event-aware concurrency; real behavior still requires M5/M6 remote calibration.
 
 ## 10. Runner posture
 
@@ -280,69 +283,67 @@ Current accepted pin:
 3.14.7
 ```
 
-CI must consume that file rather than maintain a second hand-written Python version in workflow YAML unless a directly evidenced technical limitation requires it.
+CI consumes that file rather than maintaining a second hand-written Python version in workflow YAML.
 
-The intended bootstrap runs in the backend project context so `uv python install` and subsequent commands respect `.python-version`.
+The bootstrap runs in the backend project context so `uv python install` and subsequent commands respect `.python-version`.
 
 ## 14. uv version authority and parity
 
-CP4 introduces one exact uv tool-version authority in:
+M1/M2 established and materialized one exact uv tool-version authority in:
 
 ```text
 apps/backend/pyproject.toml
 
 [tool.uv]
-required-version = "==X.Y.Z"
+required-version = "==0.12.5"
 ```
 
-`X.Y.Z` is intentionally **not invented by this design contract**. Immediately before materialization:
-
-1. read the canonical workstation's actual `uv --version`;
-2. verify the selected supported/current version and its compatibility;
-3. record one exact value;
-4. use that same authority for CI.
-
-The setup action must explicitly discover the backend project under `apps/backend`, for example through its supported backend working-directory/version-file mechanism. Root-level automatic discovery must not be assumed because DANTE's backend `pyproject.toml` is not at repository root.
-
-Desired invariant:
+Canonical workstation evidence for CP4:
 
 ```text
-workstation uv version
-=
-pyproject exact required-version
-=
-CI-installed uv version
+uv 0.12.5
 ```
 
-A mismatch fails rather than silently using another uv version.
+Desired and materialized pre-PR invariant:
+
+```text
+workstation uv version        0.12.5
+pyproject required-version    ==0.12.5
+CI requested uv authority     apps/backend/pyproject.toml
+```
+
+The exact installed CI version still requires direct M5 workflow evidence. A mismatch must fail rather than silently using another uv version.
 
 ## 15. uv binary checksum verification
 
 Pinning the setup Action commit is not by itself the entire uv binary trust boundary.
 
-During materialization, verify that the selected exact uv binary is covered by the checksum mechanism of the pinned `astral-sh/setup-uv` revision. If the action's bundled known-checksum set does not contain the selected uv release, supply/verify the official checksum through a supported mechanism or select a compatible action revision.
+M1/M2 selected `astral-sh/setup-uv` v9.0.0 at immutable commit `c771a70e6277c0a99b617c7a806ffedaca235ff9` and materialized explicit checksum verification for uv 0.12.5:
 
-Do **not** solve a checksum mismatch by disabling verification merely to make CI pass.
+```text
+68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2
+```
+
+Verification is not disabled. Direct remote checksum/install evidence is still earned only when M5 executes the workflow.
 
 ## 16. Action pinning
 
 Protected/relevant workflows use external and official Actions by immutable full-length commit SHA.
 
-Readable version/tag information may appear only as an adjacent comment, for example conceptually:
+Materialized pins:
 
 ```text
-uses: owner/action@<40-char-commit-sha> # vX.Y.Z
+actions/checkout
+3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+astral-sh/setup-uv
+c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
+
+actions/dependency-review-action
+a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
 ```
 
-Current design-time candidates were verified for:
-
-```text
-actions/checkout                   current v7 line
-astral-sh/setup-uv                 current v9 line
-actions/dependency-review-action   current v5 line
-```
-
-Exact action commit SHAs must be revalidated immediately before workflow materialization. A stale design-time observation is not permission to copy an outdated SHA blindly.
+These pins are materialized repository truth. M5 still must prove that the selected revisions execute correctly in DANTE's real PR context.
 
 ## 17. Action-source repository policy
 
@@ -352,9 +353,16 @@ Do not activate a narrow Action-source allowlist now. DANTE is a monorepo and fu
 
 ## 18. Finite timeouts and hang policy
 
-Every material job receives a finite `timeout-minutes` value.
+Materialized finite job timeouts are:
 
-The exact initial values are selected during materialization using the real expected workload plus cold-run margin; they are not guessed in this design document. PostgreSQL receives enough margin for a cold Docker image build and its real acceptance suite.
+```text
+Backend Quality      15 minutes
+Backend PostgreSQL   30 minutes
+Backend CI Gate       5 minutes
+Dependency Review    10 minutes
+```
+
+These values provide bounded failure while retaining cold-run margin for the real PostgreSQL image build. M5 will provide the first remote timing evidence.
 
 A timeout is a failure, not a hidden retry-until-green policy.
 
@@ -364,7 +372,7 @@ CP3's `docker pause` finding is useful precedent: a hung dependency path is inve
 
 Dependency review is repository-wide rather than nested under backend CI.
 
-Frozen structure:
+Materialized structure:
 
 ```text
 Workflow: Dependency Review
@@ -375,18 +383,18 @@ display name: Dependency Review
 
 It runs on pull requests and has its own future required-check promotion path.
 
-Initial policy:
+Materialized initial policy:
 
 ```text
 fail-on-severity     moderate
 fail-on-scopes       runtime, development, unknown
 permissions          contents: read
-PR comment writing   disabled/not required
+PR comment writing   disabled
 ```
 
 No license allowlist/denylist is invented without a real DANTE license policy. License policy is separate from vulnerability detection.
 
-Dependency Review is not considered proven for DANTE's uv dependency graph merely because GitHub documentation says uv-related dependency features exist. CP4 must directly exercise a real `uv.lock` dependency change and verify that the workflow detects/evaluates the intended dependency delta.
+Dependency Review is not considered proven for DANTE's uv dependency graph merely because YAML exists. CP4 must directly exercise a real `uv.lock` dependency change and verify that the workflow detects/evaluates the intended dependency delta.
 
 If uv dependency review is not correctly represented, the check remains non-required until the actual supported mechanism is identified and proven.
 
@@ -405,18 +413,14 @@ Neither candidate is required at workflow creation time.
 
 ## 21. Dependabot posture
 
-Current GitHub capability has been verified to include version-update support for the `uv` ecosystem and for `github-actions`.
-
-CP4 materialization may therefore add Dependabot configuration for:
+M2 materialized weekly Dependabot version updates for:
 
 ```text
-uv
-GitHub Actions
+uv            /apps/backend
+GitHub Actions /
 ```
 
 Dependabot PRs must run the same applicable validation as human dependency PRs.
-
-Exact update cadence/grouping remains a bounded implementation detail; do not create arbitrary daily churn merely because automation exists.
 
 Dependency Review and Dependabot are complementary:
 
@@ -505,73 +509,141 @@ Where GitHub rulesets support binding the required status check to its expected 
 
 After applying required checks, reread effective protection/ruleset state and prove that `main` remains mergeable only when the intended checks pass.
 
-## 26. Main reconciliation requirement
+## 26. Main reconciliation requirement — M4 COMPLETE
 
-At CP4 design time, `feature/backend-scaffold` is behind current `main` because frontend Foundation/current-truth work was integrated separately.
+At CP4 design time, `feature/backend-scaffold` was behind current `main` because frontend Foundation/current-truth work had been integrated separately.
 
-The current design gate deliberately does not merge `main` merely to write this backend-local CP4 contract/handoff.
-
-Before the real calibration PR, required-check promotion or global/current-truth documentation write:
+M4 consumed current `main`:
 
 ```text
-fetch current main
-inspect branch/main delta
-reconcile overlapping current truth semantically
-preserve newer accepted frontend/global decisions
-resolve conflicts deliberately
-re-run applicable backend QA after reconciliation
+main consumed
+ff46eb16b971b1fde96eef9047b09faa02e1a5db
+
+M4 PRE-SCOPE / tested post-merge HEAD
+ba0d994e983cf3e5add6ad640c238999f418e236
+
+two-parent merge commit
+6a8122249f13f9b8553f511c47b4185c6e3e6540
 ```
 
-Do not allow an older branch copy of `docs/PROJECT-STATUS.md` or other global documents to overwrite newer `main` truth.
+The merge imported the 14 non-overlapping `main` paths byte-identically and reconciled the four shared current-truth documents semantically:
+
+```text
+README.md
+docs/PROJECT-STATUS.md
+docs/README.md
+docs/ROADMAP.md
+```
+
+Remote reconciliation evidence before the regression run:
+
+```text
+main → feature/backend-scaffold
+behind_by       0
+ahead_by        97
+main ancestor   YES
+```
+
+M4 PRE-SCOPE → reconciled HEAD contained exactly 18 expected paths and no unexpected backend/CI/database mutations.
+
+After reconciliation, the canonical WSL/Docker workstation reran the accepted backend regression surface on exact HEAD `ba0d994e983cf3e5add6ad640c238999f418e236` and directly reported all commands PASS:
+
+```text
+git status --short                       CLEAN
+uv --version                             0.12.5
+uv lock --check                          PASS
+uv sync --locked                         PASS
+ruff format --check .                    PASS
+ruff check .                             PASS
+mypy                                    PASS
+pytest -m "not postgres"                PASS — 32/32
+uv build                                PASS
+docker build --pull dante-postgres...   PASS
+pytest -m postgres -vv                   PASS — 18/18
+final git status                         CLEAN
+final HEAD                               ba0d994e983cf3e5add6ad640c238999f418e236
+```
+
+Therefore M4 reconciliation/regression is **DIRECT PASS**. This does not imply remote GitHub Actions PASS; that begins at M5.
 
 ## 27. CP4 materialization sequence
 
-After this design contract closes, proceed without another broad research phase:
+Proceed without another broad research phase:
 
 ```text
 CP4-M1
 read exact canonical workstation uv version
 revalidate selected Action releases/full SHAs/checksum support
 choose finite initial job timeouts
+STATUS: COMPLETE
 
 CP4-M2
 materialize exact uv required-version
 materialize Backend CI workflow
 materialize Dependency Review workflow
 materialize Dependabot config where still supported
+STATUS: COMPLETE
 
 CP4-M3
 run local non-mutating validation where meaningful
 remote exact-delta/readback QA
+STATUS: COMPLETE
 
 CP4-M4
 reconcile current main before calibration PR
+rerun applicable backend regression suite after reconciliation
+STATUS: COMPLETE / DIRECT PASS
 
 CP4-M5
 real PR green calibration
 inspect workflow runs/jobs/logs/exact emitted contexts
+STATUS: NEXT / NOT STARTED
 
 CP4-M6
 deliberate red calibration
 prove aggregate-gate failure semantics
 prove Dependency Review behavior on a real dependency-policy violation/uv delta
+STATUS: NOT STARTED
 
 CP4-M7
 recovery green
+STATUS: NOT STARTED
 
 CP4-M8
 only then propose a separate repository/ruleset-settings gate
 for required-check/full-SHA enforcement that is actually supported and verified
+STATUS: NOT STARTED
 
 CP4-M9
 record CP4 closure evidence
+STATUS: NOT STARTED
 ```
 
 Any direct failure may reopen only the affected CP4 implementation detail. Do not weaken CP1–CP3 semantics to fit CI convenience.
 
+### M1–M4 materialized evidence snapshot
+
+```text
+uv authority                            0.12.5 / pyproject exact match
+Backend CI YAML                         MATERIALIZED
+Dependency Review YAML                  MATERIALIZED
+Dependabot uv/github-actions             MATERIALIZED
+Actions full-SHA pins                   MATERIALIZED
+uv checksum                             MATERIALIZED
+finite timeouts                         MATERIALIZED
+local fast suite                        PASS — 32/32
+local PostgreSQL suite                  PASS — 18/18
+post-main regression                    PASS
+main behind_by                          0
+required checks                         0 / unchanged
+remote PR workflow calibration          NOT RUN
+exact emitted check contexts            NOT RECORDED
+remote deliberate-red calibration       NOT RUN
+```
+
 ## 28. CP4 direct acceptance matrix
 
-CP4 cannot close from YAML existence alone.
+CP4 cannot close from YAML existence or M4 local regression alone.
 
 Required evidence, as applicable:
 
@@ -582,54 +654,55 @@ remote changed paths exact                     PASS
 unexpected paths                               0
 
 BOOTSTRAP
-canonical workstation uv exact version         RECORDED
-pyproject exact required-version                MATCH
-CI uv version                                   MATCH
-Python .python-version                          CONSUMED
-CI Python version                               3.14.7
-uv checksum verification                        PASS
-locked dependency bootstrap                     PASS
+canonical workstation uv exact version         RECORDED — 0.12.5
+pyproject exact required-version                MATCH — ==0.12.5
+CI uv version                                   PENDING M5 REMOTE EXECUTION
+Python .python-version                          MATERIALIZED / M5 EXECUTION PENDING
+CI Python version                               PENDING M5 REMOTE EXECUTION
+uv checksum verification                        MATERIALIZED / M5 EXECUTION PENDING
+locked dependency bootstrap                     LOCAL PASS / REMOTE PENDING
 
 BACKEND QUALITY
-Ruff format                                     PASS REMOTELY
-Ruff lint                                       PASS REMOTELY
-mypy strict                                     PASS REMOTELY
-fast pytest                                     PASS REMOTELY
-uv build                                        PASS REMOTELY
+Ruff format                                     LOCAL PASS / REMOTE PENDING
+Ruff lint                                       LOCAL PASS / REMOTE PENDING
+mypy strict                                     LOCAL PASS / REMOTE PENDING
+fast pytest                                     LOCAL PASS — 32/32 / REMOTE PENDING
+uv build                                        LOCAL PASS / REMOTE PENDING
 
 POSTGRESQL
-repository PostgreSQL image build               PASS REMOTELY
-PostgreSQL-marked acceptance                    PASS REMOTELY
-no SQLite substitution                          PASS
+repository PostgreSQL image build               LOCAL PASS / REMOTE PENDING
+PostgreSQL-marked acceptance                    LOCAL PASS — 18/18 / REMOTE PENDING
+no SQLite substitution                          PASS BY MATERIALIZED DESIGN/HARNESS
 
 AGGREGATION
-quality success + postgres success              gate PASS
-mandatory upstream deliberate failure           gate FAIL
-mandatory upstream skipped/cancelled semantics  non-success / gate FAIL
-recovery                                        gate PASS
+quality success + postgres success              PENDING M5
+gate PASS                                       PENDING M5
+mandatory upstream deliberate failure           PENDING M6
+gate FAIL on non-success upstream                PENDING M6
+recovery                                        PENDING M7
 
 DEPENDENCY REVIEW
-workflow executes on real PR                    PASS
-exact emitted context                           RECORDED
-real dependency-policy deliberate violation     FAIL AS EXPECTED
-uv.lock delta visibility/evaluation              DIRECTLY PROVEN
-recovery                                        PASS
+workflow executes on real PR                    PENDING M5
+exact emitted context                           PENDING M5
+real dependency-policy deliberate violation     PENDING M6
+uv.lock delta visibility/evaluation             PENDING M6
+recovery                                        PENDING M7
 
 SECURITY
-workflow default permissions                    none
-checkout jobs                                   contents: read only
-checkout credentials persistence                disabled
-PROD/deployment secrets in PR CI                0
+workflow default permissions                    MATERIALIZED none
+checkout jobs                                   MATERIALIZED contents: read only
+checkout credentials persistence                MATERIALIZED disabled
+PROD/deployment secrets in PR CI                0 BY WORKFLOW DESIGN; REMOTE PENDING
 pull_request_target                             absent
-Actions                                          full-SHA pinned
+Actions                                         full-SHA pinned
 finite timeouts                                 present
 
 REPOSITORY PROMOTION
 required checks before calibration              0
-exact real check names observed                 PASS
-expected source binding                         VERIFIED where supported
-full-SHA repository enforcement                 VERIFIED where supported
-ruleset reread after mutation                   PASS when mutation occurs
+exact real check names observed                 PENDING M5
+expected source binding                         PENDING where supported
+full-SHA repository enforcement                 PENDING separate M8 gate where supported
+ruleset reread after mutation                   PENDING when mutation occurs
 ```
 
 Items marked `where supported` remain explicitly unsupported/unverified rather than being converted into false PASS evidence.
