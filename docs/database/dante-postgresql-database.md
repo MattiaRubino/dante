@@ -1367,13 +1367,13 @@ A persisted, material Recurrence follows the already-closed address/state order:
 ```text
 concrete recurring source (Routine/Event or another later accepted source)
 → recurrence scoped owner
-→ scoped_address when stable Recurrence addressability is required
+→ required scoped_address for the material Recurrence
 → recurrence.definition MaterialStateRef
 → recurrence_state header
 → exactly one family-specific recurrence-state payload
 → effective-range/boundary rows where applicable
 → current recurrence.definition binding
-→ Occurrence generation context may bind the exact governing MaterialStateRef
+→ Occurrence generation context binds the exact governing Recurrence state
 ```
 
 No generated Occurrence is required merely to prove the Recurrence schema.
@@ -1508,16 +1508,19 @@ no false UTC conversion of floating local values
 daterange/tstzrange bound semantics preserved where used
 elapsed recurrence rejects zero/negative interval and calendar-month substitution
 calendar recurrence keeps wall-clock/zone semantics through DST policy
+calendar weekday selector rejects duplicate non-ordinal weekday rows through NULLS NOT DISTINCT uniqueness
 quota recurrence preserves explicit period frame and does not invent ordinal quota identity
 completion-relative recurrence cannot generate the next chain without a qualifying anchor when the rule requires one
 anchor-stream recurrence keeps qualifying anchor contract distinct from generic Trigger
 cyclic recurrence preserves position/cycle semantics
 exactly one recurrence family payload per recurrence definition MaterialStateRef
 family discriminator/payload mismatch rejected
+family payload MaterialStateRef without matching recurrence_state rejected by FK
 current recurrence state explicit; MAX/time/UUID inference absent
 world vs recorded chronology where material
 lazy occurrence locator → persisted Occurrence continuity
-materialized historical Occurrence retains governing recurrence/source MaterialStateRef
+materialized historical Occurrence binds exact governing recurrence.definition MaterialStateRef
+governing source MaterialStateRef, when separately material, cannot be confused with governing Recurrence state
 unordered quota slots do not gain fake ordinal identity
 ```
 
@@ -1739,9 +1742,10 @@ The companion family is:
 
 ```text
 dante.occurrence_generation
-  occurrence_ref                   uuid PRIMARY KEY
-  source_native_ref                uuid NOT NULL
-  governing_material_state_ref     uuid NOT NULL
+  occurrence_ref                       uuid PRIMARY KEY
+  source_native_ref                    uuid NOT NULL
+  governing_recurrence_state_ref       uuid NOT NULL
+  governing_source_state_ref           uuid NULL
 ```
 
 Constraints:
@@ -1756,12 +1760,21 @@ source_native_ref
 → ON DELETE NO ACTION
 → current accepted generation-source eligibility: routine OR event
 
-governing_material_state_ref
+governing_recurrence_state_ref
 → FK dante.material_state_address(material_state_ref)
 → ON DELETE NO ACTION
+→ MUST be facet recurrence.definition
+→ MUST belong to the Recurrence bound to source_native_ref
+
+governing_source_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION when present
+→ MUST belong to source_native_ref and an explicitly generation-relevant source facet
 ```
 
-A bounded database eligibility check verifies the source family and that the governing MaterialStateRef is an applicable material state for the source/Recurrence generation context. If a later accepted generative source family is added, its eligibility is a reviewed schema change.
+A bounded database eligibility check verifies the source family, exact `recurrence.definition` ownership and the optional source-state ownership/facet. The two MaterialStateRefs are deliberately separate: the exact Recurrence definition that generated the instance is not silently conflated with an optional material Routine/Event source state that also affected generation.
+
+If a later accepted generative source family is added, its eligibility is a reviewed schema change.
 
 Family-specific virtual coordinates are **not** forced into this common row. Calendar coordinates, quota-period slots, qualifying completion anchors, anchor-stream facts and cycle positions remain recurrence/occurrence-family-specific typed structures. In particular, unordered quota slots do not receive a fabricated semantic ordinal.
 
@@ -1909,6 +1922,8 @@ custom unit labels do not imply a global conversion definition
 
 A specific owner may add a stricter `numeric(p,s)`, range CHECK or controlled unit vocabulary only when its Domain contract proves that bound. There is no universal `unit` entity/catalog in the kernel.
 
+`unit_code` is a normalized semantic token owned/validated by the consuming quantity-kind contract, not an arbitrary display label. Where a standard unit vocabulary is adopted later, that is a bounded vocabulary decision; custom units requiring conversion/versioning do not gain a fake global conversion rule.
+
 #### MonetaryAmount
 
 Canonical persisted shape at the containing owner/state:
@@ -1940,14 +1955,14 @@ SQLAlchemy may package these column pairs as immutable value/composite Python ty
 
 A persisted Recurrence is a scoped LR-05 definition, not a native owner and not a universal Rule root.
 
-When Recurrence has independent history/reference because it governs canonical repeated generation/applicability, the concrete identity row is:
+When Recurrence is persisted as canonical repeated generation/applicability state, its structural history is material because historical Occurrences/rules must remain explainable. The concrete identity row is:
 
 ```text
 dante.recurrence
   recurrence_ref uuid PRIMARY KEY
 ```
 
-`recurrence_ref` is a UUIDv7 ScopedRecordRef. An applicable `dante.scoped_address` row uses scoped family `recurrence` when shared scoped/material addressing is required.
+`recurrence_ref` is a UUIDv7 ScopedRecordRef. The material persisted form therefore **requires** its matching `dante.scoped_address` row with scoped family `recurrence`; this is what permits the Recurrence to own `MaterialStateRef` history without becoming LR-01.
 
 The accepted definition state uses facet:
 
@@ -1969,6 +1984,8 @@ Constraints:
 ```text
 material_state_ref
 → FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+→ address MUST be scoped owner recurrence_ref + facet recurrence.definition
 
 recurrence_ref
 → FK dante.recurrence(recurrence_ref)
@@ -1985,7 +2002,16 @@ family_code
   )
 ```
 
-A bounded deferred completeness constraint requires **exactly one** family payload row matching `family_code` by commit. No RRULE/provider string/JSON payload is canonical Recurrence truth.
+Every family payload table below uses:
+
+```text
+material_state_ref
+→ PRIMARY KEY
+→ FK dante.recurrence_state(material_state_ref)
+→ ON DELETE NO ACTION
+```
+
+A bounded deferred completeness constraint requires **exactly one** family payload row matching `family_code` by commit and rejects any second/wrong-family payload. No RRULE/provider string/JSON payload is canonical Recurrence truth.
 
 #### Effective range / boundaries
 
@@ -1998,6 +2024,8 @@ dante.recurrence_effective_range_state
   expected_occurrence_count   integer NULL
 ```
 
+`material_state_ref` is also an FK to `dante.recurrence_state(material_state_ref)` with `ON DELETE NO ACTION`.
+
 `range_kind` is bounded to:
 
 ```text
@@ -2006,17 +2034,19 @@ until_boundary
 expected_count
 ```
 
-Checks enforce:
+Checks plus one bounded deferred cross-table completeness constraint enforce:
 
 ```text
 expected_count
-→ expected_occurrence_count > 0 and no until boundary
+→ expected_occurrence_count > 0 and no effective_until boundary
 
 until_boundary
-→ exactly one typed effective-until boundary exists
+→ expected_occurrence_count IS NULL
+→ exactly one typed effective_until boundary exists by COMMIT
 
 open
-→ neither expected count nor effective-until boundary exists
+→ expected_occurrence_count IS NULL
+→ no effective_until boundary exists
 ```
 
 Temporal boundaries use recurrence-specific typed rows rather than one generic temporal object:
@@ -2034,7 +2064,9 @@ dante.recurrence_temporal_boundary_state
   PRIMARY KEY(material_state_ref, boundary_role)
 ```
 
-`boundary_role` is bounded to the roles actually used by Recurrence such as:
+`material_state_ref` is an FK to `dante.recurrence_state(material_state_ref)` with `ON DELETE NO ACTION`.
+
+`boundary_role` is bounded to the roles actually used by Recurrence:
 
 ```text
 pattern_anchor
@@ -2051,7 +2083,16 @@ named_zone_local
 absolute_instant
 ```
 
-Row-local CHECK constraints enforce the exact valid column combination. Named-zone values may carry a separate accepted resolved instant where consequence/history requires it under section 21.3.
+Row-local CHECK constraints enforce the exact valid column combination:
+
+```text
+date             → date_value only
+floating_local   → local_value only
+named_zone_local → local_value + zone_id
+absolute_instant → instant_value only
+```
+
+Named-zone values may carry a separate accepted resolved instant in the applicable owner-specific resolved-value columns/state when consequence/history requires it under section 21.3; `instant_value` in this discriminated row is not simultaneously populated just to duplicate the resolved instant.
 
 A structural `this-and-future` revision may additionally bind the new recurrence state to the exact boundary Occurrence through an owner-specific typed revision/effect relation; it is not encoded by rewriting old states.
 
@@ -2075,9 +2116,10 @@ Closed constraints:
 ```text
 frequency_code     IN ('day','week','month','year')
 interval_count     > 0
-clock_basis_code   IN ('floating_local','named_zone','absolute')
+clock_basis_code   IN ('floating_local','named_zone','absolute_utc')
 named_zone         → zone_id required
-floating/absolute  → zone_id absent unless the specific absolute pattern uses UTC as explicit frame
+floating_local     → zone_id absent
+absolute_utc       → zone_id absent; UTC basis is intrinsic to the code
 ```
 
 Normalized selectors:
@@ -2099,8 +2141,12 @@ dante.recurrence_calendar_weekday_state
   weekday_number     smallint NOT NULL CHECK 1..7
   ordinal            smallint NULL
   CHECK ordinal IS NULL OR (ordinal BETWEEN -5 AND 5 AND ordinal <> 0)
-  UNIQUE(material_state_ref, weekday_number, ordinal)
+  UNIQUE NULLS NOT DISTINCT (material_state_ref, weekday_number, ordinal)
 ```
+
+Each selector table FK-targets `dante.recurrence_calendar_state(material_state_ref)` with `ON DELETE NO ACTION`.
+
+`NULLS NOT DISTINCT` is deliberate PostgreSQL 18 behavior: without it, two non-ordinal rows for the same weekday would both be allowed because ordinary UNIQUE treats NULL values as distinct.
 
 Positive/negative month-day and weekday ordinals preserve exact ordinal/last-position semantics; invalid-date and DST policy are explicit only when the pattern can encounter those conditions. No calendar-library default silently becomes canonical policy.
 
@@ -2145,9 +2191,12 @@ Constraints:
 quota_count      > 0
 period_span      > 0
 period_unit_code IN ('day','week','month','year')
-frame_code       IN ('floating_local','named_zone','absolute')
+frame_code       IN ('floating_local','named_zone','absolute_utc')
 named_zone       → zone_id required
-week_start       → NULL unless period_unit_code='week'; otherwise CHECK 1..7
+other frames     → zone_id absent
+period_unit='week' → week_start required AND CHECK 1..7
+other period units → week_start NULL
+period_span > 1    → anchor_date required to establish period phase
 ```
 
 The period frame, not device/library locale, decides membership. The quota creates expected cardinality; no `slot_number`/ordinal is canonical for equivalent future slots unless another accepted relation gives them real order.
@@ -2220,8 +2269,10 @@ Constraints:
 ```text
 cycle_length       > 0
 position_span      > 0
-position_unit_code IN ('day','week','elapsed_interval')
+position_unit_code IN ('day','week')
 ```
+
+The currently accepted cyclic examples are calendar-position cycles (`2 days on / 2 days off`, week rotations). A future truly elapsed sub-day cycle must be reviewed explicitly rather than overloading `position_span` with an unspecified elapsed unit; the existing elapsed-interval family remains available for pure fixed-duration repetition.
 
 Ordered positions are explicit:
 
@@ -2235,6 +2286,8 @@ dante.recurrence_cycle_position_state
   PRIMARY KEY(material_state_ref, position_index)
   CHECK position_index >= 0
 ```
+
+`material_state_ref` FK-targets `dante.recurrence_cyclic_state(material_state_ref)` with `ON DELETE NO ACTION`.
 
 A bounded deferred check requires positions to cover exactly `0 .. cycle_length-1` for the accepted state. `position_code` may carry owner-specific position semantics only when the source contract defines them; it is not a generic metadata payload.
 
