@@ -9,7 +9,7 @@
 - Current backend workstream: `feature/logical-postgresql` — **CP6 ACTIVE / DESIGN-FIRST**
 - Current PostgreSQL technical image: **`dante-postgres-local:18.6`**
 - PostgreSQL 18.6 technical regression: **DIRECT REMOTE QA PASS — run `32568664940` / HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
-- Current CP6 checkpoint: **CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED**
+- Current CP6 checkpoint: **CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
 
 ## 1. Purpose and evidence split
 
@@ -385,7 +385,7 @@ installed namespace  dante from apps/backend/src/dante
 
 The lockfile is repository authority for the exact dependency graph. Do not hand-edit it.
 
-Current project resolution at the CP6-02 review includes:
+Current project resolution at the CP6-02 closure includes:
 
 ```text
 fastapi             0.141.1
@@ -643,9 +643,13 @@ Historical CP2 design/acceptance authority:
 
 `docs/development/backend-cp2-postgres-contract.md`
 
-Current CP6 reusable database doctrine:
+Closed CP6 reusable database doctrine:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Gate 02 closure evidence:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
 ### 18.1 Create the workstation-local PostgreSQL password
 
@@ -859,12 +863,12 @@ Protected main                     contains CP1–CP5 via merged PR #24
 CP1–CP5                            CLOSED / INTEGRATED / DIRECT QA PASS
 CP6-00                             COMPLETE
 CP6-01                             CLOSED / GATE 01 PASS
-CP6-02                             ACTIVE / CANDIDATE / PRE-CLOSURE
+CP6-02                             CLOSED / GATE 02 PASS
+CP6-03                             NEXT / NOT STARTED
 PostgreSQL architecture            major 18
 Physical/CP2/CP3 exact patch       18.4 historical
 current PostgreSQL patch           18.6
 18.6 technical regression          DIRECT REMOTE QA PASS
-Gate 02                            NOT PASSED
 business persistence schema        NOT IMPLEMENTED
 Vertical #1 implementation         POST-CP6 / NOT STARTED
 ```
@@ -881,7 +885,7 @@ When continuing on a new machine or after interruption:
 6. use `uv run pytest -m postgres` for the current real PostgreSQL acceptance boundary;
 7. never infer business schema, HG/PSV, recovery or production PASS from technical infrastructure evidence;
 8. for CP6, current durable authority is `docs/workstreams/logical-postgresql.md`;
-9. current CP6 resume point is CP6-02 final independent Constitution review, followed only if clean by a separately-gated Gate 02 closure;
-10. CP6-03 begins only after Gate 02 PASS;
+9. treat CP6-02 as CLOSED / GATE 02 PASS and consume its closure record plus closed Constitution;
+10. current CP6 resume point is CP6-03 read/research/design-first;
 11. Vertical #1 implementation begins only after whole CP6 closure;
 12. before any repository write, follow the exact Git write gate for the active branch/workstream.
