@@ -2,22 +2,23 @@
 
 # Backend CP6-01 — Concrete Persistence Coverage Map — Part 2 / Cross-Cutting Hardening
 
-- **Status:** CP6-01 HARDENING CANDIDATE / FINAL INDEPENDENT REVIEW REQUIRED / GATE 01 NOT PASSED
+- **Status:** CLOSED / GATE 01 PASS
 - **Created:** 2026-08-21
 - **Last hardening:** 2026-08-22
+- **Closed:** 2026-08-22
 - **Branch:** `feature/logical-postgresql`
 - **Part-1 authority:** `docs/development/backend-cp6-01-concrete-persistence-coverage.md`
 - **CP6 authority:** `docs/workstreams/logical-postgresql.md`
+- **Closure record:** `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 - **Purpose:** close cross-cutting coverage and traceability gaps without changing the 57/57 Logical census, reopening Domain/Logical/Physical, or introducing business DDL.
 
-This continuation is normative only for CP6-01 coverage hardening. It does not alter upstream semantic dispositions. Where this continuation refines Part 1 on cross-cutting applicability or stage ownership, this continuation is the newer CP6-01 interpretation. Upstream Domain/Logical/Physical authority remains higher than either CP6-01 document.
+This continuation is normative for CP6-01 cross-cutting coverage. It does not alter upstream semantic dispositions. Part 1 owns the exact 57/57 owner ledger; this Part 2 is the single CP6-01 cross-cutting ledger. Upstream Domain/Logical/Physical authority remains higher than either CP6-01 document.
 
 ```text
 THIS DOCUMENT
-= CP6-01 coverage hardening
+= CP6-01 cross-cutting coverage authority
 
 THIS DOCUMENT
-!= Gate 01 PASS
 != CP6-02 Constitution
 != business schema
 != Physical Model redesign
@@ -59,7 +60,7 @@ No Domain owner, Logical representation, Physical selection or accepted topology
 
 Part 1 correctly accounts for all 57 accepted Domain concepts and exactly 15 LR-01 native owners. Persistence readiness also depends on cross-cutting contracts that are intentionally **not Domain owners**.
 
-Therefore Gate 01 requires:
+Gate 01 therefore covers:
 
 ```text
 57 / 57 Domain concept coverage
@@ -129,7 +130,7 @@ only after the exact selected-stack subject exists and is executed
 
 `Account`, `Principal`, `ReferenceAddress`, governed-operation vocabulary, Capacity Claim pressure and technical persistence mechanisms may be persistence-relevant without becoming members of the Domain census.
 
-### F-11 — SC-017 / SC-018 traceability is now canonical and singular
+### F-11 — SC-017 / SC-018 traceability is canonical and singular
 
 The canonical Physical Benchmark Scenario Corpus defines:
 
@@ -141,7 +142,7 @@ SC-018
 FTS mixed filter/query
 ```
 
-Post-closure documentation maintenance on 2026-08-22 reconciles every active Physical/CP6 carry-forward reference to that canonical meaning:
+Post-closure documentation maintenance on 2026-08-22 reconciled every active Physical/CP6 carry-forward reference to that canonical meaning:
 
 ```text
 PSV-06 -> SC-017 search hidden-result non-interference
@@ -596,25 +597,27 @@ Selected target capabilities do not generate speculative CP6-01 tables. Their ma
 
 ---
 
-## 14. Gate-01 preflight after hardening
+## 14. Gate-01 closure result
+
+The independent post-write/readback A→S control was completed before the separately authorized closure operation.
 
 ```text
-57 / 57 Domain concepts accounted                      CANDIDATE PASS
-15 / 15 LR-01 native owners                            CANDIDATE PASS
-LR-01..LR-13 representation roles                      CANDIDATE PASS
-cross-cutting/non-owner contracts                      CANDIDATE PASS
-ReferenceAddress family separation                     CANDIDATE PASS
-material/history/chronology pressure                    CANDIDATE PASS
-canonical/provider/derived/security boundaries          CANDIDATE PASS
-dependency pressure                                    CANDIDATE PASS
-WL-H01..WL-H12 applicability                           CANDIDATE PASS
-PG-R01..PG-R10 applicability/stage                     CANDIDATE PASS
-DEFER-WL01..20 disposition                             CANDIDATE PASS
-HG-01..HG-12 carry-forward                             CANDIDATE PASS
-SC-001..SC-035 exact canonical names/stages            CANDIDATE PASS
-PSV-01..47 + PSV-28A/B stage ownership                 CANDIDATE PASS
-SC-017/SC-018 traceability                              REPAIRED / FINAL RECHECK REQUIRED
-CP3 technical-vs-semantic evidence distinction          CANDIDATE PASS
+57 / 57 Domain concepts accounted                      PASS
+15 / 15 LR-01 native owners                            PASS
+LR-01..LR-13 representation roles                      PASS
+cross-cutting/non-owner contracts                      PASS
+ReferenceAddress family separation                     PASS
+material/history/chronology pressure                    PASS
+canonical/provider/derived/security boundaries          PASS
+dependency pressure                                    PASS
+WL-H01..WL-H12 applicability                           PASS
+PG-R01..PG-R10 applicability/stage                     PASS
+DEFER-WL01..20 disposition                             PASS
+HG-01..HG-12 carry-forward                             PASS
+SC-001..SC-035 exact canonical names/stages            PASS
+PSV-01..47 + PSV-28A/B stage ownership                 PASS
+SC-017/SC-018 traceability                             PASS / SINGULAR
+CP3 technical-vs-semantic evidence distinction          PASS
 
 semantic owner reclassification                         0
 additional Domain owner                                  0
@@ -630,61 +633,37 @@ persistence adapter                                      0
 Physical Model redesign/reopen                           0
 ```
 
----
-
-## 15. Mandatory final independent control
-
-Gate 01 may become PASS only after a fresh post-write/readback control checks:
-
-```text
-A  Domain final closure / no new owner
-B  Whole-Logical exact 57/57 census
-C  exact 15 LR-01 native set
-D  latest Slice/Representation hardenings
-E  WL-H01..12
-F  LR-01..LR-13
-G  DEFER-WL01..20
-H  Governed Operation / Effect Contract
-I  ReferenceAddress + Reference Contract
-J  accepted PostgreSQL mapping
-K  PG-R01..10
-L  HG-01..12
-M  canonical SC-001..SC-035 names/assertions
-N  PM-11/12/13/14 selected/accepted truth
-O  full PSV register and exact SC bindings
-P  CP3 actual technical evidence
-Q  CP6 durable handoff
-R  CP6-01 Part 1 + this Part 2
-S  exact Git PRE-SCOPE → HEAD delta
-```
-
-Specific failure questions:
-
-```text
-Does any CP6 text create a Domain owner not in the 57?
-Does any non-owner construct silently become semantic identity?
-Does any cross-cutting contract disappear behind the 57 rows?
-Does any CLOSED Physical decision get reopened?
-Does any SC identifier have more than one active meaning?
-Does any unexecuted HG/SC/PSV become PASS?
-Does any selected capability become required before a real trigger?
-Does technical evidence get overstated as business-semantic evidence?
-Does PostgreSQL convenience weaken a Logical invariant?
-Does any business DDL/table/column/index leak into CP6-01?
-```
-
-Any unsafe answer means:
-
-```text
-GATE 01
-HOLD
-```
-
-Only a clean final control may authorize a separate closure record stating:
+Formal checkpoint state:
 
 ```text
 CP6-01
-GATE 01 PASS
+CLOSED / GATE 01 PASS
+```
+
+The closure record is `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`.
+
+---
+
+## 15. Final evidence boundary retained after closure
+
+Closure means the coverage/staging contract is complete; it does **not** convert staged future execution into direct PASS.
+
+```text
+HG-09 retention/redaction/tombstone/restore     HOLD until destructive proof
+HG-11 schema/data evolution                     HOLD until actual V1→V2 proof
+HG-12 recoverability/evidence quality           HOLD until recovery proof
+
+PSV items                                      remain at assigned stages
+business schema                                NOT IMPLEMENTED
+Vertical #1 implementation                     NOT STARTED
+```
+
+The closure is therefore compatible with both statements:
+
+```text
+CP6-01 GATE 01 PASS
+AND
+business-semantic HG direct PASS = 0 unless exact scenarios execute
 ```
 
 ---
@@ -692,16 +671,11 @@ GATE 01 PASS
 ## 16. Resume point
 
 ```text
-POST-WRITE REMOTE READBACK
+CP6-01
+CLOSED / GATE 01 PASS
         ↓
-FINAL INDEPENDENT CONTROL A→S
-        ↓
-if defect → bounded repair
-        ↓
-if clean → Gate 01 closure write gate
-        ↓
-only after Gate 01 closure
 CP6-02 PostgreSQL Persistence Constitution
+NEXT / NOT STARTED
 ```
 
-No business DDL, business migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by this continuation.
+CP6-02 may now start under its own exact design/write gates. No business DDL, business migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by this continuation or by Gate 01 closure.

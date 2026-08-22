@@ -1,7 +1,7 @@
 # DANTE System Overview
 
 - Status: **CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW**
-- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE**
+- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 NEXT**
 - Current CP6 branch: `feature/logical-postgresql`
 
 ## 1. Product and authority
@@ -165,6 +165,25 @@ An offline operation crosses staging → upload → backend accept/reject → re
 
 The active backend boundary is **CP6 — Concrete Persistence Readiness**.
 
+CP6-01 is now formally closed:
+
+```text
+CP6-01
+CLOSED / GATE 01 PASS
+```
+
+Closure authority:
+
+`docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
+
+The next unfinished checkpoint is:
+
+```text
+CP6-02
+POSTGRESQL PERSISTENCE CONSTITUTION
+NEXT / NOT STARTED
+```
+
 CP6 does not repeat Domain, Logical or Physical modeling. It consumes those closed authorities and must finish with:
 
 ```text
@@ -271,6 +290,7 @@ BACKEND SCAFFOLD CP1–CP5       CLOSED / DIRECT QA PASS / INTEGRATED
 LOCAL POSTGRESQL 18.4          DIRECT QA PASS
 CP3 TECHNICAL PERSISTENCE      DIRECT QA PASS
 DANTE SCHEMA / ALEMBIC BASE    MATERIALIZED / DIRECT QA PASS
+CP6-01 COVERAGE GATE           CLOSED / GATE 01 PASS
 CONCRETE BUSINESS DB SCHEMA    NOT IMPLEMENTED
 VERTICAL #1                    NOT IMPLEMENTED
 SEMANTIC HG DIRECT PASS        0 unless an actual qualifying business scenario executes
@@ -287,9 +307,10 @@ CP6-00 authority reconstruction
 COMPLETE
         ↓
 CP6-01 concrete persistence coverage
-ACTIVE / GATE 01 PENDING CLOSURE
+CLOSED / GATE 01 PASS
         ↓
 CP6-02 PostgreSQL Persistence Constitution
+NEXT / NOT STARTED
         ↓
 CP6-03 Concrete Relational Topology
        + Implementation Dependency DAG

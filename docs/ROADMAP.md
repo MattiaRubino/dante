@@ -53,10 +53,11 @@ COMPLETE
         ↓
 CP6-01
 Concrete Persistence Coverage Map
-ACTIVE / GATE 01 PENDING CLOSURE
+CLOSED / GATE 01 PASS
         ↓
 CP6-02
 PostgreSQL Persistence Constitution
+NEXT / NOT STARTED
         ↓
 CP6-03
 Concrete Relational Topology
@@ -78,6 +79,10 @@ Whole Persistence Readiness / Clean-Room QA
         ↓
 CP6 CLOSED
 ```
+
+CP6-01 closure authority:
+
+`docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
 CP6 must end at:
 
@@ -250,6 +255,8 @@ explicit transaction ownership
 ```
 
 CP6 therefore does **not** need to reselect the database or rebuild technical persistence infrastructure. It must turn the closed semantic/Physical contracts into reusable concrete relational rules, then exactly design the first vertical.
+
+CP6-01 has completed the whole-model persistence coverage and staging map. CP6-02 is now the active next checkpoint and must close the reusable PostgreSQL constitution without leaking into business DDL.
 
 CP6 does not mechanically translate 57 Logical concepts into 57 tables/modules/services.
 

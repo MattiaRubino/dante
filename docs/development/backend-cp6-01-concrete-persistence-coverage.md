@@ -1,11 +1,13 @@
 # Backend CP6-01 — Concrete Persistence Coverage Map — Part 1 / 57-of-57 Owner Ledger
 
-- **Status:** CP6-01 OWNER LEDGER CANDIDATE / HARDENED / FINAL INDEPENDENT REVIEW REQUIRED / GATE 01 NOT PASSED
+- **Status:** CLOSED / GATE 01 PASS
 - **Created:** 2026-08-21
 - **Hardened:** 2026-08-22
+- **Closed:** 2026-08-22
 - **Branch:** `feature/logical-postgresql`
 - **CP6 authority:** `docs/workstreams/logical-postgresql.md`
 - **Canonical continuation:** `docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md`
+- **Closure record:** `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 - **Purpose:** account for every one of the 57 CLOSED Logical concepts at the concrete-persistence obligation level without re-performing semantic discovery and without designing business DDL.
 - **Write boundary:** documentation only. This document authorizes no business schema, migration, SQLAlchemy business mapping, persistence adapter, use case or API.
 
@@ -31,7 +33,7 @@ cross-cutting / non-owner contracts
 
 Part 1 MUST NOT be used as an alternate source for cross-cutting risk/scenario/PSV applicability. Part 2 is the single CP6-01 cross-cutting ledger. Upstream Domain/Logical/Physical authorities outrank both.
 
-The prior pre-hardening Part-1 draft remains only in Git history; it is not current repository authority.
+The prior candidate/pre-hardening drafts remain only in Git history; they are not current repository authority.
 
 ---
 
@@ -457,17 +459,19 @@ Exact business tables/columns/indexes remain vertical-specific and are not desig
 
 ---
 
-## 9. Owner-ledger candidate verdict
+## 9. Gate-01 closure result
+
+The final independent Part 1 + Part 2 + source-authority review is complete and the separately authorized closure record has been produced.
 
 ```text
-57 / 57 Domain concepts accounted                  CANDIDATE PASS
-15 / 15 LR-01 native owners                        CANDIDATE PASS
+57 / 57 Domain concepts accounted                  PASS
+15 / 15 LR-01 native owners                        PASS
 Actor / Subject / Resource wrapper identity        0
-owner-level addressability pressure                CANDIDATE PASS
-owner-level material/history pressure              CANDIDATE PASS
-owner-level remaining-stage classification         CANDIDATE PASS
-aggregate physical-family pressure                 CANDIDATE PASS
-dependency-pressure inputs                         CANDIDATE PASS
+owner-level addressability pressure                PASS
+owner-level material/history pressure              PASS
+owner-level remaining-stage classification         PASS
+aggregate physical-family pressure                 PASS
+dependency-pressure inputs                         PASS
 
 new Domain owner                                   0
 generic Entity/Thing requirement                   0
@@ -482,59 +486,25 @@ persistence adapter                                0
 Physical Model reopen                              0
 ```
 
-This verdict remains **candidate** until the complete Part 1 + Part 2 + source-authority final review is closed.
-
----
-
-## 10. Gate-01 final-review boundary
-
-Gate 01 can be closed only if the final independent pass confirms together:
-
-```text
-Part 1
-57/57 owner ledger
-+ exact 15 LR-01
-+ family/dependency pressure
-
-Part 2
-cross-cutting/non-owner ledger
-+ LR-01..13
-+ WL-H01..12
-+ PG-R01..10
-+ DEFER-WL01..20
-+ HG-01..12
-+ SC-001..35 canonical names
-+ full PSV register
-+ CP3 evidence separation
-
-Repository
-exact branch scope
-+ no business implementation
-+ no upstream model reopen
-+ current-truth documents coherent with CP6
-```
-
-If any mismatch is found, Gate 01 remains HOLD and the conflicting current authority must be repaired rather than documented as a parallel truth.
-
-Only after a clean final pass may a separately authorized closure record state:
+Formal checkpoint state:
 
 ```text
 CP6-01
-GATE 01 PASS
+CLOSED / GATE 01 PASS
 ```
+
+The closure record is authoritative for the gate evidence and repository write boundary.
 
 ---
 
-## 11. Resume point
+## 10. Resume point
 
 ```text
-FINAL INDEPENDENT CP6-01 REVIEW
-        ↓
-if defect → clean current-authority repair
-        ↓
-if clean → separate Gate 01 closure write
+CP6-01
+CLOSED / GATE 01 PASS
         ↓
 CP6-02 PostgreSQL Persistence Constitution
+NEXT / NOT STARTED
 ```
 
-No business DDL, migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by CP6-01.
+CP6-02 may now begin under its own design/write gates. No business DDL, migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by CP6-01 closure.

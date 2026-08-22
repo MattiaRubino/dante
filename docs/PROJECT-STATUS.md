@@ -62,7 +62,8 @@ CP6 — CONCRETE PERSISTENCE READINESS
 ACTIVE ON feature/logical-postgresql
 DESIGN-FIRST
 CP6-00 COMPLETE
-CP6-01 ACTIVE / GATE 01 PENDING CLOSURE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 NEXT / NOT STARTED
 NO BUSINESS SCHEMA / MIGRATION / MAPPING / ADAPTER AUTHORIZED IN CP6
 
 CP6 TERMINAL TARGET
@@ -77,6 +78,10 @@ NOT RUN / PASS 0 UNLESS A QUALIFYING BUSINESS SCENARIO IS ACTUALLY EXECUTED
 ```
 
 Architecture/design closure does not imply implementation PASS. CP2/CP3 directly prove the technical PostgreSQL substrate; they do not retroactively discharge business-semantic HG/PSV obligations.
+
+CP6-01 closure authority:
+
+`docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
 ## 2. Product and semantic invariants
 
@@ -446,7 +451,8 @@ feature/logical-postgresql
 → ACTIVE backend CP6 Concrete Persistence Readiness
 → design-first / no business implementation in CP6
 → CP6-00 complete
-→ CP6-01 active pending Gate 01 closure
+→ CP6-01 CLOSED / GATE 01 PASS
+→ CP6-02 NEXT / NOT STARTED
 
 feature/frontend-materialization
 → independent frontend production materialization workstream
@@ -458,9 +464,9 @@ Frontend and backend work may proceed in parallel. Shared global documentation m
 
 ```text
 1. Treat Product/Domain/Logical/Physical/Engineering and CP1–CP5 as closed accepted authority.
-2. Continue CP6 from docs/workstreams/logical-postgresql.md.
-3. Close CP6-01 only after its independent 57/57 + cross-cutting + HG/SC/PSV review is clean.
-4. Proceed to CP6-02 PostgreSQL Persistence Constitution only after Gate 01 closure.
+2. Treat CP6-01 as CLOSED / GATE 01 PASS; do not redo the 57/57 or cross-cutting coverage census.
+3. Start CP6-02 PostgreSQL Persistence Constitution only under its own exact design/write gate.
+4. Resolve genuinely global PostgreSQL rules in CP6-02 without inventing vertical-specific DDL.
 5. Do not create business tables, business migrations, SQLAlchemy business mappings or persistence adapters merely to prove CP6 foundation claims.
 6. CP6-03 builds Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition without reopening the Physical Model.
 7. CP6-04 selects Vertical #1 by evidence.
