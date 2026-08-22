@@ -62,6 +62,7 @@ Patch-level maintenance inside PostgreSQL 18 does not rewrite Physical/CP2/CP3 h
 ### Active backend CP6 — Concrete PostgreSQL Database
 
 - `workstreams/logical-postgresql.md` — **current CP6 execution scope, durable handoff and exact resume point**
+- `database/README.md` — **DANTE Database System of Record contract; mandatory database documentation/dictionary/consistency authority for CP6-03/04/05 and later schema evolution**
 - `development/backend-cp6-01-concrete-persistence-coverage.md` — exact 57/57 owner/role ledger
 - `development/backend-cp6-01-concrete-persistence-coverage-part-2.md` — cross-cutting/non-owner persistence ledger; Gate 03 must preserve this coverage as well as 57/57 Domain coverage
 - `development/backend-cp6-01-concrete-persistence-coverage-closure.md` — Gate 01 closure
@@ -93,12 +94,14 @@ The current remaining CP6 sequence is:
 CP6-03
 WHOLE DANTE DATABASE BLUEPRINT
 57/57 + CP6-01 Part-2 cross-cutting/non-owner persistence pressure
++ initialize the permanent Database System of Record from the approved blueprint
         ↓
 CP6-04
 WHOLE DANTE DATABASE MATERIALIZATION
++ keep dictionary/reference synchronized in the same database changes
         ↓
 CP6-05
-WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+WHOLE DATABASE DIRECT QA + DOCUMENTATION/SCHEMA CONSISTENCY + CP6 CLOSURE
         ↓
 POST-CP6
 FIRST PRODUCT VERTICAL APPLICATION PHASE
@@ -157,6 +160,10 @@ The active frontend materialization handoff lives on the separate branch `featur
 - `decisions/ADR-003-primary-database.md` — retained historical PostgreSQL rationale; old pre-Physical posture explicitly historical
 - `decisions/ADR-007-domain-model-informed-persistence-boundaries.md` — active semantic persistence guardrail; old Physical competition explicitly historical
 - `decisions/ADR-010-postgresql-persistence-constitution.md` — current cross-cutting PostgreSQL persistence decision
+
+### Database
+
+- `database/README.md` — current database documentation governance and System-of-Record contract. As CP6-03/04 materialize real content, the human-readable database reference, structured dictionary, generated reference/diagrams and evolution material are created only when their real subject exists.
 
 ### Domain / Logical / Physical
 
@@ -268,16 +275,17 @@ BACKEND
 3. Treat CP6-01 as CLOSED / GATE 01 PASS.
 4. Treat CP6-02 as CLOSED / GATE 02 PASS.
 5. Consume ADR-010 + the closed CP6-02 Constitution as reusable PostgreSQL doctrine.
-6. Preserve PostgreSQL 18.6 direct technical evidence at run 32568664940 / HEAD ec3dc795....
-7. Start CP6-03 as the WHOLE DANTE DATABASE BLUEPRINT.
-8. Preserve both 57/57 Domain coverage and 100% CP6-01 Part-2 cross-cutting/non-owner accounting.
-9. Derive every database structure already determinable from Domain + Logical + Physical + Constitution.
-10. Do not defer determinable DB schema by merely calling it vertical-specific.
-11. Do not invent speculative future schema merely to make the blueprint look complete.
-12. After Gate 03, CP6-04 materially implements the approved DANTE database through reviewed migrations/mappings/tests.
-13. CP6-05 directly validates the whole materialized DB and closes CP6.
-14. Only after CP6 closure does the first product vertical application phase begin.
-15. CodeQL remains a separate activation boundary and is not implicitly authorized.
+6. Consume docs/database/README.md as the permanent Database System-of-Record contract.
+7. Preserve PostgreSQL 18.6 direct technical evidence at run 32568664940 / HEAD ec3dc795....
+8. Start CP6-03 as the WHOLE DANTE DATABASE BLUEPRINT and initialize the real Database Architecture & Reference + machine-readable dictionary from the approved design.
+9. Preserve both 57/57 Domain coverage and 100% CP6-01 Part-2 cross-cutting/non-owner accounting.
+10. Derive every database structure already determinable from Domain + Logical + Physical + Constitution.
+11. Do not defer determinable DB schema by merely calling it vertical-specific.
+12. Do not invent speculative future schema merely to make the blueprint look complete.
+13. After Gate 03, CP6-04 materially implements the approved DANTE database through reviewed migrations/mappings/tests while updating its Database System of Record in the same changes.
+14. CP6-05 directly validates the whole materialized DB, including applicable documentation/dictionary/SQLAlchemy/Alembic/PostgreSQL consistency, and closes CP6.
+15. Only after CP6 closure does the first product vertical application phase begin.
+16. CodeQL remains a separate activation boundary and is not implicitly authorized.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
