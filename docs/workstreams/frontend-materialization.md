@@ -1,18 +1,19 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-05B SHARED I18N PASS**
+- Status: **ACTIVE — FM-05C SHARED TIME PASS / FM-05 COMPLETE**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated workspace commit: `5e5fae5d696a5da6b457e3198b70f642245ec323`
+- Current validated workspace commit: `aeb43e9e5ed7add42464e61f5c02acd6a53fed85`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS + SHARED I18N MATERIALIZED**
+- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS + SHARED I18N + SHARED TIME MATERIALIZED**
 - Machine runtime baseline: **PASS**
 - Root engineering dependencies: **INSTALLED / PINNED / LOCKED**
 - Minimal Web dependency graph: **INSTALLED / PINNED / LOCKED**
 - Minimal Mobile dependency graph: **INSTALLED / PINNED / LOCKED / DIRECTLY RUNTIME-VALIDATED**
 - Shared design-token package: **MATERIALIZED / GENERATED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
 - Shared i18n package: **MATERIALIZED / IT+EN / STRICTLY TYPED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
-- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13/FM-V14 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
+- Shared time package: **MATERIALIZED / TEMPORAL SEMANTICS / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13/FM-V14/FM-V15 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -473,7 +474,7 @@ build: lock minimal mobile runtime
 
 FM-04 directly proves the minimal Mobile runtime at its stated scope. It does not prove iOS runtime, production release builds, OTA delivery, PowerSync/native encrypted storage, authentication integration or product UI.
 
-### FM-05 — first genuine shared packages
+### FM-05 — first genuine shared packages — COMPLETE
 
 #### FM-05A — `@dante/design-tokens` — PASS
 
@@ -860,13 +861,180 @@ feat: materialize shared i18n
 
 FM-05B does **not** authorize language-selector UI, browser/native locale detection, locale persistence/storage, remote translation loading, third languages or `i18next-cli` extraction tooling.
 
-#### FM-05C — `@dante/time` — NEXT
+#### FM-05C — `@dante/time` — PASS
 
-Materialize the shared Temporal semantic boundary under its own bounded gate and direct Web+Mobile consumption evidence.
+The third genuine shared package is materialized and directly consumed by both Web and Mobile. It provides a framework/platform-free Temporal semantic boundary instead of allowing JavaScript `Date` to become a universal DANTE time container.
+
+Materialized package:
+
+```text
+packages/time/
+├── package.json
+├── tsconfig.json
+└── src/
+    └── index.ts
+```
+
+Materialization-time technology revalidation retained **Temporal** as the accepted semantic model while refining the fallback implementation candidate from `@js-temporal/polyfill` to:
+
+```text
+temporal-polyfill  1.0.4
+```
+
+The refinement is implementation-level, not a semantic redesign. The chosen package is source-first compatible, materially more current against the Temporal specification at this checkpoint, prefers native Temporal when the host provides it and provides a cleaner future removal path. Web and Hermes acceptance still depends on direct runtime evidence rather than package selection alone.
+
+Shared semantic vocabulary:
+
+```text
+Instant
+PlainDate
+PlainTime
+PlainDateTime
+ZonedDateTime
+Duration
+```
+
+Durable distinctions:
+
+```text
+Instant
+→ absolute point on the timeline
+
+PlainDate
+→ calendar date without time or timezone
+
+PlainTime
+→ wall-clock time without date or timezone
+
+PlainDateTime
+→ local date + time without timezone
+
+ZonedDateTime
+→ civil date/time bound to an IANA timezone
+
+Duration
+→ amount/length of time
+```
+
+A locale such as `it` or `en` is not a timezone. Locale remains an i18n concern; timezone detection, preference and persistence remain app/platform concerns until separately activated.
+
+The initial public primitives are intentionally narrow:
+
+```text
+Temporal
+parseInstant
+parsePlainDate
+parsePlainTime
+parsePlainDateTime
+parseZonedDateTime
+parseDuration
+instantToZonedDateTime
+zonedDateTimeToInstant
+```
+
+This package does not own product scheduling rules, presentation labels, relative-time copy, reminders, backend serialization contracts or device/user timezone selection.
+
+Real consumers:
+
+```text
+@dante/web
+  dependency: @dante/time = workspace:*
+  runtime diagnostic converts a fixed Instant to Europe/Rome
+
+@dante/mobile
+  dependency: @dante/time = workspace:*
+  runtime diagnostic performs the same conversion through Metro/Hermes
+```
+
+Direct semantic/static validation:
+
+```text
+temporal-polyfill registry pin 1.0.4          PASS
+Instant parse                                  PASS
+PlainDate preservation                         PASS
+PlainTime parse                                PASS
+PlainDateTime + Duration arithmetic            PASS
+ZonedDateTime parse                            PASS
+Instant ↔ ZonedDateTime round-trip             PASS
+Europe/Rome DST-sensitive conversion           PASS
+expo install --check                           PASS
+@dante/time typecheck                          PASS
+root Turbo typecheck across 5 packages         PASS
+root lint                                      PASS
+root format check                              PASS
+root Turbo build                               PASS
+pnpm install --frozen-lockfile                 PASS
+git diff --check                               PASS
+authorized implementation paths                8
+unexpected paths                               0
+```
+
+DST evidence deliberately crosses the Europe/Rome spring transition on 2026-03-29:
+
+```text
+2026-03-29T00:30:00Z
+→ 2026-03-29 01:30 +01:00 Europe/Rome
+
+2026-03-29T01:30:00Z
+→ 2026-03-29 03:30 +02:00 Europe/Rome
+```
+
+Direct Web runtime evidence:
+
+```text
+Vite in WSL
+↓
+Windows Firefox
+↓
+@dante/time
+↓
+2026-08-22T18:00:00Z
+→ Europe/Rome
+→ 2026-08-22T20:00:00+02:00[Europe/Rome]
+PASS
+```
+
+Direct Mobile runtime evidence:
+
+```text
+Metro / Expo CLI in WSL
+↓
+Windows ADB reverse
+↓
+Expo Go 57.0.9 / Hermes
+↓
+@dante/time
+↓
+2026-08-22T20:00:00+02:00[Europe/Rome]
+PASS
+```
+
+Observed Web production build after activating the Temporal-consuming route:
+
+```text
+Vite                         8.2.1
+modules transformed          146
+Temporal-consuming route     61.27 kB raw
+Temporal-consuming route     21.49 kB gzip
+build result                 PASS
+```
+
+This footprint is recorded as observed evidence, not classified as a failure or accepted long-term budget. FM-06 and future product-surface performance work may establish explicit bundle budgets when there is a real production surface to measure.
+
+Validated implementation commit:
+
+```text
+aeb43e9e5ed7add42464e61f5c02acd6a53fed85
+feat: materialize shared time semantics
+```
+
+FM-05C does **not** authorize product scheduling logic, calendar UI, timezone auto-detection/persistence, user timezone preference, locale-formatting policy, relative-time presentation, reminders, backend time serialization contracts, PowerSync or product UI.
+
+FM-05 is now complete at its accepted scope: all three initial genuine shared packages have real Web+Mobile consumers and direct evidence.
 
 Do not create `@dante/api-client` before real FastAPI OpenAPI exists. Do not create a shared feature package before genuine cross-platform reuse exists.
 
-### FM-06 — architecture, test and generation enforcement
+### FM-06 — architecture, test and generation enforcement — NEXT
 
 Activate only real checks with real consumers, including as applicable:
 
@@ -906,8 +1074,8 @@ FM-V01 Node 24 WSL runtime resolution — PASS
 FM-V02 pnpm 11 install/workspace resolution — PASS
 FM-V03 preferred isolated dependency layout with Expo/native graph — PASS
 FM-V04 evidence-driven hoisted fallback if required — NOT RUN
-FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + I18N + WEB + MOBILE TYPECHECK; DESIGN-TOKENS + WEB BUILD
-FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + I18N + WEB + MOBILE
+FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + I18N + TIME + WEB + MOBILE TYPECHECK; DESIGN-TOKENS + WEB BUILD
+FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + I18N + TIME + WEB + MOBILE
 FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE + SHARED-PACKAGE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
 FM-V08 Vite/React production build — PASS
 FM-V09 Windows browser ↔ WSL Vite — PASS
@@ -916,7 +1084,7 @@ FM-V11 WSL Metro ↔ Windows Android emulator/device — PASS
 FM-V12 package exports / forbidden deep imports — PACKAGE EXPORTS + REAL WEB/MOBILE PUBLIC-SURFACE CONSUMPTION PASS; FORBIDDEN DEEP-IMPORT REJECTION NOT RUN
 FM-V13 DTCG → Web CSS + Native TS token generation — PASS
 FM-V14 Web/Mobile i18n shared-core consumption — PASS
-FM-V15 Temporal/time shared-core consumption — NOT RUN
+FM-V15 Temporal/time shared-core consumption — PASS
 FM-V16 TanStack Form Web + RN + Zod when first real form activates — NOT RUN
 FM-V17 TanStack Query remote path when first real remote path exists — NOT RUN
 FM-V18 OpenAPI → Orval when real backend OpenAPI exists — NOT RUN
@@ -979,9 +1147,9 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-05C @dante/time
+FM-06 architecture / test / generation enforcement
 ```
 
-FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04, FM-05A and FM-05B are directly validated at their stated scope.
+FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04, FM-05A, FM-05B and FM-05C are directly validated at their stated scope. FM-05 shared-package materialization is complete.
 
-FM-05C may materialize only the shared Temporal semantics that receive immediate genuine Web+Mobile consumers. Product UI, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
+FM-06 must now turn already-real architecture and generation boundaries into executable checks without inventing empty feature structure or claiming validation for checks that have not been directly exercised. Product UI, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
