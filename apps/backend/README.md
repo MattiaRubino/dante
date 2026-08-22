@@ -18,9 +18,9 @@ PR #24 MERGED / POST-MERGE BACKEND CI PASS
 
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
-CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 NEXT / NOT STARTED
 POSTGRESQL 18.6 FOUNDATION REGRESSION DIRECT REMOTE QA PASS
-GATE 02 NOT PASSED
 ```
 
 No business table, business Alembic migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by CP6.
@@ -89,9 +89,13 @@ The complete CP3 database contract lives in:
 
 `docs/development/backend-cp3-persistence-contract.md`
 
-The reusable CP6-02 candidate database constitution lives in:
+The closed CP6-02 database constitution lives in:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Formal Gate 02 closure evidence lives in:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
 ## LOCAL database security provisioning
 
@@ -292,4 +296,4 @@ The closed scaffold and active CP6 still do not authorize:
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
 - production deployment or blanket Physical HG/PSV PASS.
 
-Current next backend action is the final independent review of the CP6-02 Constitution and, only if clean, a separately-gated Gate 02 closure. CP6-03 begins only after Gate 02 PASS.
+Current next backend action is **CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition**, starting read/research/design-first under its own exact gate. CP6-03 does not implement Vertical #1.
