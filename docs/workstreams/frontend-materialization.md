@@ -1,17 +1,18 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-05A SHARED DESIGN TOKENS PASS**
+- Status: **ACTIVE — FM-05B SHARED I18N PASS**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated workspace commit: `acd846a06614270fda9d66542a3fdc87fca7202e`
+- Current validated workspace commit: `5e5fae5d696a5da6b457e3198b70f642245ec323`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS MATERIALIZED**
+- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS + SHARED I18N MATERIALIZED**
 - Machine runtime baseline: **PASS**
 - Root engineering dependencies: **INSTALLED / PINNED / LOCKED**
 - Minimal Web dependency graph: **INSTALLED / PINNED / LOCKED**
 - Minimal Mobile dependency graph: **INSTALLED / PINNED / LOCKED / DIRECTLY RUNTIME-VALIDATED**
 - Shared design-token package: **MATERIALIZED / GENERATED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
-- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
+- Shared i18n package: **MATERIALIZED / IT+EN / STRICTLY TYPED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13/FM-V14 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -210,7 +211,7 @@ Materialized exact root engineering pins:
 TypeScript          6.0.3
 Turborepo           2.10.11
 ESLint              10.8.1
-@eslint/js          10.0.1
+@eslint/js           10.0.1
 typescript-eslint   8.67.0
 Prettier            3.9.0
 ```
@@ -674,13 +675,194 @@ acd846a06614270fda9d66542a3fdc87fca7202e
 feat: materialize shared design tokens
 ```
 
-#### FM-05B — `@dante/i18n` — NEXT
+#### FM-05B — `@dante/i18n` — PASS
 
-Materialize only a framework-free shared i18n core with immediate real Web+Mobile consumption. React/browser/native integration remains app-owned.
+The second genuine shared package is materialized and directly consumed by both Web and Mobile.
 
-#### FM-05C — `@dante/time` — PLANNED
+Ownership boundary:
 
-Materialize the shared Temporal semantic boundary after FM-05B under its own bounded gate and direct Web+Mobile consumption evidence.
+```text
+@dante/i18n
+supported locale policy
+bundle-local resources
+resource shape / key typing
+fallback semantics
+shared framework-free i18next options
+
+apps/web + apps/mobile
+react-i18next integration
+runtime bootstrap
+future platform detection/persistence adapters
+```
+
+Materialized package:
+
+```text
+packages/i18n/
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── index.ts
+    └── resources/
+        ├── it/common.ts
+        └── en/common.ts
+```
+
+Exact i18n baseline:
+
+```text
+i18next        26.3.6
+react-i18next  17.0.11
+
+Italian  (it)  PRIMARY / DEFAULT / FALLBACK
+English  (en)  SUPPORTED SECONDARY
+other locales  NOT YET SUPPORTED
+```
+
+The initial namespace is deliberately only `common`. New namespaces such as `access`, `home`, `settings` or `validation` appear only when real product consumers exist; empty placeholder catalogs are forbidden.
+
+The Italian and English `common` resources have the same structural key contract. Italian is the source shape for `CommonResource`; the English catalog must satisfy that shape at compile time.
+
+Public/shared runtime policy:
+
+```text
+resources are bundled with the application
+no translation CDN/network requirement for core UX
+initAsync = false
+defaultNS = common
+strictKeyChecks = true
+enableSelector = strict
+```
+
+Real consumers:
+
+```text
+@dante/web
+  @dante/i18n = workspace:*
+  apps/web/src/bootstrap/i18n.ts owns React integration
+  browser diagnostic route consumes strict typed selectors
+
+@dante/mobile
+  @dante/i18n = workspace:*
+  apps/mobile/src/bootstrap/i18n.ts owns React integration
+  Android diagnostic route consumes strict typed selectors
+```
+
+Direct static validation:
+
+```text
+pnpm install --frozen-lockfile                 PASS
+expo install --check                           PASS
+@dante/i18n typecheck                          PASS
+root Turbo typecheck across 4 packages         PASS
+root lint                                      PASS
+root format check                              PASS
+root Turbo build                               PASS
+Vite package/runtime resolution probe          PASS
+strict selector Italian runtime                PASS
+changeLanguage('en') runtime                    PASS
+strict selector English runtime                PASS
+git diff --check                               PASS
+authorized implementation paths                14
+unexpected paths                               0
+```
+
+Direct Web runtime evidence:
+
+```text
+Vite in WSL
+↓
+Windows Firefox
+↓
+@dante/i18n + react-i18next
+↓
+Italian diagnostic route visibly renders
+PASS
+```
+
+Observed visible Web copy included `Frontend pronto`, `Percorso`, `Scopo` and `Scaffold diagnostico FM-03`.
+
+Direct Mobile runtime evidence:
+
+```text
+Metro / Expo CLI in WSL
+↓
+Windows ADB reverse
+↓
+Expo Go 57.0.9
+↓
+@dante/i18n + react-i18next
+↓
+Italian diagnostic route visibly renders
+PASS
+```
+
+Observed visible Mobile copy included `Runtime nativo pronto`, `Percorso`, `Scopo`, `Scaffold diagnostico FM-04`, `Test gesto` and the Italian gesture instruction.
+
+English is directly validated through the real i18next core/runtime path using `changeLanguage('en')`; language-selector UI, detection and persistence are intentionally outside FM-05B.
+
+##### Source-first TypeScript resolution diagnosis
+
+The first package version used explicit `.ts` extensions for its own internal imports. The package-local typecheck accepted them because its `tsconfig` temporarily allowed importing TypeScript extensions, but consuming Web typecheck failed with `TS5097` because the source-first package is compiled under the consumer's bundler-oriented TypeScript configuration.
+
+The durable repair is extensionless internal package imports:
+
+```text
+./resources/it/common
+./resources/en/common
+../it/common
+```
+
+No consumer `tsconfig` workaround, package build pipeline or duplicate compiled package was added.
+
+A follow-up probe using plain Node ESM plus `--experimental-strip-types` then failed to resolve those extensionless source imports. That probe was rejected as **non-representative**: native Node ESM resolution is not the Vite/Metro `moduleResolution: Bundler` runtime contract used by the frontend applications.
+
+The valid Web-side resolution/runtime probe uses Vite SSR to load the real Web bootstrap. It directly proved:
+
+```text
+Vite resolves @dante/i18n source-first package     PASS
+strict selector Italian runtime                    PASS
+changeLanguage('en')                               PASS
+strict selector English runtime                    PASS
+```
+
+This distinction is retained so a future repair does not regress a correct Vite/Metro package merely to satisfy an unrelated native-Node probe.
+
+##### UI authority model fixed by FM-05A/FM-05B
+
+Important product presentation values must not become scattered literals without an owning authority:
+
+```text
+user-visible copy / labels / messages / a11y text
+→ @dante/i18n
+
+colors / radii / spacing / typography / shadows / theme semantics
+→ @dante/design-tokens
+
+Button / Card / control visual states and composition
+→ platform design-system implementation
+
+logos / images / illustrations / background artwork
+→ versioned asset authority
+
+click behavior / client workflow / feature decisions
+→ owning feature logic
+```
+
+The boundaries deliberately separate content, visual semantics, reusable UI implementation, assets and behavior. A future copy change should normally change a catalog entry; a future palette/theme decision should normally change token authority rather than require hunting through unrelated feature files.
+
+Validated implementation commit:
+
+```text
+5e5fae5d696a5da6b457e3198b70f642245ec323
+feat: materialize shared i18n
+```
+
+FM-05B does **not** authorize language-selector UI, browser/native locale detection, locale persistence/storage, remote translation loading, third languages or `i18next-cli` extraction tooling.
+
+#### FM-05C — `@dante/time` — NEXT
+
+Materialize the shared Temporal semantic boundary under its own bounded gate and direct Web+Mobile consumption evidence.
 
 Do not create `@dante/api-client` before real FastAPI OpenAPI exists. Do not create a shared feature package before genuine cross-platform reuse exists.
 
@@ -724,16 +906,16 @@ FM-V01 Node 24 WSL runtime resolution — PASS
 FM-V02 pnpm 11 install/workspace resolution — PASS
 FM-V03 preferred isolated dependency layout with Expo/native graph — PASS
 FM-V04 evidence-driven hoisted fallback if required — NOT RUN
-FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + WEB BUILD; DESIGN-TOKENS + WEB + MOBILE TYPECHECK
-FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + WEB + MOBILE
-FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
+FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + I18N + WEB + MOBILE TYPECHECK; DESIGN-TOKENS + WEB BUILD
+FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + I18N + WEB + MOBILE
+FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE + SHARED-PACKAGE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
 FM-V08 Vite/React production build — PASS
 FM-V09 Windows browser ↔ WSL Vite — PASS
 FM-V10 Expo SDK 57 / RN compatible baseline — PASS
 FM-V11 WSL Metro ↔ Windows Android emulator/device — PASS
 FM-V12 package exports / forbidden deep imports — PACKAGE EXPORTS + REAL WEB/MOBILE PUBLIC-SURFACE CONSUMPTION PASS; FORBIDDEN DEEP-IMPORT REJECTION NOT RUN
 FM-V13 DTCG → Web CSS + Native TS token generation — PASS
-FM-V14 Web/Mobile i18n shared-core consumption — NOT RUN
+FM-V14 Web/Mobile i18n shared-core consumption — PASS
 FM-V15 Temporal/time shared-core consumption — NOT RUN
 FM-V16 TanStack Form Web + RN + Zod when first real form activates — NOT RUN
 FM-V17 TanStack Query remote path when first real remote path exists — NOT RUN
@@ -797,11 +979,9 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-05B @dante/i18n
+FM-05C @dante/time
 ```
 
-FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04 and FM-05A are directly validated at their stated scope.
+FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04, FM-05A and FM-05B are directly validated at their stated scope.
 
-FM-05B may materialize only the framework-free shared i18n semantics/resources that receive immediate genuine Web+Mobile consumers. React integration, browser/native locale detection and persistence remain app/platform owned.
-
-`@dante/time` remains the next planned shared package after i18n. Access/Home product surfaces, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
+FM-05C may materialize only the shared Temporal semantics that receive immediate genuine Web+Mobile consumers. Product UI, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
