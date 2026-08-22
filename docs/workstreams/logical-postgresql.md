@@ -11,6 +11,8 @@
 - Upstream Physical Model: **CLOSED / SELECTED / ACCEPTED / PostgreSQL 18.4 CANONICAL PRIMARY**
 - Production backend scaffold: **CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED IN PROTECTED main**
 - CP6-00: **READ-ONLY AUTHORITY RECONSTRUCTION COMPLETE**
+- CP6-01: **CONTENT + HARDENING COMPLETE / FINAL INDEPENDENT REVIEW CLEAN / GATE 01 CLOSURE WRITE PENDING**
+- CP6-02: **NOT STARTED / BLOCKED UNTIL GATE 01 CLOSURE**
 - Business schema/migrations: **NOT STARTED / OUT OF CP6 IMPLEMENTATION SCOPE**
 - Vertical #1 implementation: **OUT OF CP6 / NEXT SEPARATELY AUTHORIZED PHASE AFTER CP6 CLOSURE**
 
@@ -150,6 +152,25 @@ infra/local/postgres/
 infra/compose/
 .github/workflows/backend-ci.yml
 .github/workflows/dependency-review.yml
+```
+
+Current CP6-01 authority is split deliberately into two non-competing responsibilities:
+
+```text
+docs/development/backend-cp6-01-concrete-persistence-coverage.md
+= exact 57/57 owner/role persistence ledger
+
+
+docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
+= cross-cutting/non-owner coverage
+  + LR-01..LR-13
+  + WL-H01..WL-H12
+  + PG-R01..PG-R10
+  + DEFER-WL01..20
+  + HG-01..HG-12
+  + SC-001..SC-035
+  + full PSV stage ledger
+  + CP3 technical-vs-semantic evidence reconciliation
 ```
 
 Do not stop at Part 1 of a split canonical document. Size/tool-limit splits are lossless continuations, not summaries.
@@ -552,7 +573,14 @@ PSV-05 WL-H12 system-level non-interference
 PSV-35 PostgreSQL selected mapping end-to-end smoke corpus
 ```
 
-and all later specialist obligations when their capability is activated.
+The full CP6-01 Part 2 ledger additionally preserves exact current bindings for every PSV ID, including the canonical search mapping:
+
+```text
+PSV-06 → SC-017 Search hidden-result non-interference
+PSV-07 → SC-018 FTS mixed filter/query correctness under applicable Visibility/user/scope filtering
+```
+
+Canonical `SC-*` names come only from `docs/architecture/physical-benchmark-scenario-corpus.md`; downstream ledgers must not rename them.
 
 `SELECTED`, `ACCEPTED`, `STATIC PASS-CONDITIONAL` and `ARCHITECTURE QA PASS` do not equal direct runtime PASS.
 
@@ -666,6 +694,34 @@ CP6-00 completion does not authorize later checkpoint writes automatically.
 
 ## 13. CP6-01 — Concrete Persistence Coverage Map
 
+### Current checkpoint status
+
+```text
+CONTENT / OWNER LEDGER                  COMPLETE
+CROSS-CUTTING HARDENING                COMPLETE
+SECOND INDEPENDENT REVIEW              COMPLETE
+FINAL A→S INDEPENDENT REVIEW           CLEAN
+CURRENT-TRUTH DOCUMENT RECONCILIATION  COMPLETE
+GATE 01 CLOSURE RECORD                 PENDING SEPARATE WRITE GATE
+```
+
+Current authoritative artifacts:
+
+```text
+docs/development/backend-cp6-01-concrete-persistence-coverage.md
+    57/57 owner/role persistence ledger
+
+docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
+    cross-cutting/non-owner + LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger
+```
+
+The final review found and cleanly repaired two classes of pre-existing/current-document drift before closure:
+
+1. `SC-017/SC-018` traceability was reconciled at the active Physical/PSV authorities to the canonical Scenario Corpus, so there is one current meaning per SC identifier.
+2. current-status documents were reconciled so PM-era `backend/database not started` statements remain historical phase-time evidence and cannot override CP2/CP3 direct technical PostgreSQL truth.
+
+Part 1 was also normalized so it is no longer a second, stale cross-cutting applicability ledger. Part 1 owns the exact 57/57 owner ledger; Part 2 owns the cross-cutting ledger.
+
 ### Purpose
 
 Translate the existing 57/57 Logical disposition into a **concrete implementation-obligation map** without repeating semantic owner discovery.
@@ -720,30 +776,36 @@ CP6-01 must derive:
 6. PG-R01..10 applicability map;
 7. PSV stage/applicability map.
 
-### Gate 01
-
-Do not advance until:
+### Gate 01 acceptance contract
 
 ```text
-57 / 57 concepts accounted                         PASS
-15 / 15 LR-01 families accounted                   PASS
-reference pressure classified                      PASS
-materiality/history pressure classified            PASS
-canonical/provider/derived boundaries classified   PASS
-dependency pressure classified                     PASS
-WL-H01..12 applicability complete                  PASS
-PG-R01..10 applicability complete                  PASS
-PSV applicability/stage complete                   PASS
-semantic owner reclassification                    0
-generic semantic fallback                          0
-unexplained JSONB fallback                          0
-unclassified persistence family                     0
-accidental upstream architecture reopen             0
+57 / 57 concepts accounted                         PASS REQUIRED
+15 / 15 LR-01 families accounted                   PASS REQUIRED
+reference pressure classified                      PASS REQUIRED
+materiality/history pressure classified            PASS REQUIRED
+canonical/provider/derived boundaries classified   PASS REQUIRED
+dependency pressure classified                     PASS REQUIRED
+WL-H01..12 applicability complete                  PASS REQUIRED
+PG-R01..10 applicability complete                  PASS REQUIRED
+PSV applicability/stage complete                   PASS REQUIRED
+semantic owner reclassification                    0 REQUIRED
+generic semantic fallback                          0 REQUIRED
+unexplained JSONB fallback                          0 REQUIRED
+unclassified persistence family                     0 REQUIRED
+accidental upstream architecture reopen             0 REQUIRED
+current active traceability contradiction           0 REQUIRED
+business DDL                                        0 REQUIRED
 ```
+
+The content/final-review evidence currently satisfies the contract, but the checkpoint does not become formally `GATE 01 PASS` until the separately gated closure record/status write is committed and remotely verified.
 
 No business DDL is authorized by Gate 01.
 
 ## 14. CP6-02 — PostgreSQL Persistence Constitution
+
+### Status
+
+**NOT STARTED / BLOCKED UNTIL FORMAL CP6-01 GATE 01 CLOSURE.**
 
 ### Purpose
 
@@ -1466,33 +1528,107 @@ After the write:
 
 `main` remains protected and normal integration remains feature branch → PR → required checks → merge-commit path under current repository rules.
 
-## 23. Temporary bootstrap retirement
+## 23. Bootstrap retirement — COMPLETE
 
-The branch currently also contains:
+The temporary session bootstrap:
 
 ```text
 docs/workstreams/logical-postgresql-bootstrap.md
 ```
 
-That file is intentionally temporary.
+was retired under its own bounded gate after this durable handoff had been remotely written and verified.
 
-This durable handoff must first be remotely written and verified. Only **after** that verification may the temporary bootstrap be deleted under a separate explicit gate with a fresh PRE-SCOPE.
-
-Do not combine bootstrap deletion with creation of this durable authority.
-
-## 24. Resume point
-
-A fresh session resuming CP6 must establish:
+Current branch truth:
 
 ```text
-1. live feature branch HEAD and relation to protected main;
-2. this durable workstream handoff is current and readable;
-3. temporary bootstrap has been retired only if a later gated deletion proves it;
-4. CP6-00 remains complete unless repository drift materially invalidates it;
-5. next unfinished checkpoint is CP6-01;
-6. CP6-01 consumes the existing 57/57 Logical census rather than recreating it;
-7. no business schema/migration/mapping/adapter may be created before CP6 closure;
-8. Vertical #1 implementation begins only in the separately authorized post-CP6 phase.
+TEMPORARY BOOTSTRAP PRESENT
+NO
+
+DURABLE CP6 WORKSTREAM AUTHORITY
+YES
 ```
 
-Immediate next work after this handoff and bootstrap retirement is **CP6-01 — Concrete Persistence Coverage Map**, starting READ-ONLY/design-first from the complete closed Logical corpus and accepted PostgreSQL mapping.
+A future session must not search for or depend on the retired bootstrap. Git history retains the historical bootstrap if provenance is needed.
+
+## 24. Current CP6-01 final-review result
+
+The independent CP6-01 review reconstructed and reconciled:
+
+```text
+A  Domain final closure / no new owner
+B  Whole-Logical exact 57/57 census
+C  exact 15 LR-01 native set
+D  latest Slice/Representation hardenings
+E  WL-H01..12
+F  LR-01..LR-13
+G  DEFER-WL01..20
+H  Governed Operation / Effect Contract
+I  ReferenceAddress + Reference Contract
+J  accepted PostgreSQL mapping
+K  PG-R01..10
+L  HG-01..12
+M  canonical SC-001..SC-035 names/assertions
+N  PM-11/12/13/14 selected/accepted truth
+O  full PSV register and exact SC bindings
+P  CP3 actual technical evidence
+Q  this durable CP6 handoff
+R  CP6-01 Part 1 + Part 2
+S  exact Git scope / no business implementation
+```
+
+Final content verdict before closure write:
+
+```text
+57 / 57 Domain concepts                         CLEAN
+15 / 15 LR-01 native owners                     CLEAN
+LR-01..LR-13                                    CLEAN
+cross-cutting/non-owner coverage                CLEAN
+WL-H01..WL-H12                                  CLEAN
+PG-R01..PG-R10                                  CLEAN
+DEFER-WL01..20                                  CLEAN
+HG-01..HG-12 carry-forward                      CLEAN
+SC-001..SC-035 canonical names/stages           CLEAN
+full PSV stage ownership                       CLEAN
+CP3 technical vs semantic evidence separation   CLEAN
+current active documentation contradictions     0 identified after repair
+semantic owner reclassification                 0
+generic semantic fallback                       0
+unexplained canonical JSONB fallback            0
+business DDL                                    0
+business migration                              0
+business SQLAlchemy mapping                     0
+persistence adapter                             0
+Physical Model reopen                           0
+false direct HG/PSV PASS                        0
+```
+
+This is the evidence basis for the next **separately authorized CP6-01 closure write**. The review itself does not silently mutate the formal checkpoint status to PASS.
+
+## 25. Resume point
+
+A fresh session resuming the backend CP6 workstream must establish:
+
+```text
+1. live feature/logical-postgresql HEAD and relation to protected main;
+2. this durable handoff is current and readable;
+3. CP6-00 is COMPLETE;
+4. temporary bootstrap is RETIRED;
+5. CP6-01 Part 1 is the exact 57/57 owner ledger;
+6. CP6-01 Part 2 is the single cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger;
+7. CP6-01 final independent content review is CLEAN;
+8. formal Gate 01 closure write is the next unfinished action;
+9. CP6-02 MUST NOT start before that closure is remotely committed and verified;
+10. no business schema/migration/mapping/adapter may be created anywhere in CP6;
+11. Vertical #1 implementation begins only in the separately authorized post-CP6 phase.
+```
+
+Immediate next action:
+
+```text
+CP6-01 GATE 01 CLOSURE WRITE
+        ↓ remote readback + exact delta QA
+        ↓
+CP6-02 POSTGRESQL PERSISTENCE CONSTITUTION
+```
+
+No Domain, Logical or Physical redesign is implied by this resume point.
