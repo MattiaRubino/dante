@@ -185,15 +185,6 @@ def _drop_database(cluster: PostgresCluster, database_name: str) -> None:
             "WHERE datname = %s AND pid <> pg_backend_pid()",
             (database_name,),
         )
-
-    with psycopg.connect(
-        host=cluster.host,
-        port=cluster.port,
-        dbname="postgres",
-        user=cluster.admin_user,
-        password=cluster.admin_password,
-        autocommit=True,
-    ) as connection:
         connection.execute(sql.SQL("DROP DATABASE {}").format(sql.Identifier(database_name)))
 
 
@@ -298,4 +289,3 @@ def migrated_database(
     """Return a fresh provisioned database migrated from base to repository head."""
     command.upgrade(alembic_config, "head")
     return provisioned_database
-
