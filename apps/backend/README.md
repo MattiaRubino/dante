@@ -4,7 +4,7 @@ Production backend application for DANTE.
 
 CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 subsequently merged the closed scaffold into protected `main`.
 
-CP6 now consumes that foundation for Concrete Persistence Readiness. The PostgreSQL architecture remains major line 18; CP6 refreshed the current technical patch from 18.4 to 18.6 and directly re-proved the technical foundation remotely without adding business schema.
+CP6 now consumes that foundation to derive and materialize the concrete DANTE PostgreSQL database from the closed Domain + Logical + Physical model. The PostgreSQL architecture remains major line 18; CP6 refreshed the current technical patch from 18.4 to 18.6 and directly re-proved the technical foundation remotely before business-schema materialization begins.
 
 ## Current status
 
@@ -19,11 +19,28 @@ PR #24 MERGED / POST-MERGE BACKEND CI PASS
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 NEXT / NOT STARTED
+CP6-03 NEXT / NOT STARTED — WHOLE DANTE DATABASE BLUEPRINT
 POSTGRESQL 18.6 FOUNDATION REGRESSION DIRECT REMOTE QA PASS
 ```
 
-No business table, business Alembic migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by CP6.
+Current CP6 execution boundary:
+
+```text
+CP6-03
+whole DANTE database blueprint
+        ↓
+CP6-04
+real database materialization
+Alembic schema + tables + constraints + indexes + SQLAlchemy mappings
+        ↓
+CP6-05
+whole-database direct PostgreSQL QA + CP6 closure
+        ↓
+POST-CP6
+first product vertical application implementation
+```
+
+CP6 may therefore create business-schema migrations and SQLAlchemy database mappings once the whole-database blueprint authorizes them. CP6 does **not** implement the first product vertical's application use cases, product persistence adapters, API or frontend.
 
 ## Runtime contract
 
@@ -97,6 +114,10 @@ Formal Gate 02 closure evidence lives in:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
+Current CP6 execution scope and resume point live in:
+
+`docs/workstreams/logical-postgresql.md`
+
 ## LOCAL database security provisioning
 
 The PostgreSQL container starts with the platform/bootstrap administrator `postgres`. CP3 adds the application security boundary through the explicit provisioning command:
@@ -137,7 +158,7 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The first revision is the technical CP3 baseline `20260820_01`; it intentionally creates no business schema.
+The first revision is the technical CP3 baseline `20260820_01`; it intentionally creates no business schema. CP6-04 will add reviewed business-schema revisions only after CP6-03 closes the whole-database blueprint and materialization order.
 
 PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
 
@@ -278,17 +299,25 @@ Backend CI Gate               SUCCESS
 current test corpus           50 / 50 covered across the two mandatory CI lanes
 ```
 
-This is **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It does not convert any business-semantic HG/PSV item into PASS and does not implement business persistence.
+This is **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It does not convert any business-semantic HG/PSV item into PASS and predates the concrete DANTE business-database materialization stage.
 
 PostgreSQL 18.6 release-note review found no current DANTE post-upgrade cleanup action: DANTE currently has no business GIN indexes, `btree_gist`, `ltree`, custom logical-decoding output plugin or `pgcrypto` use. Future PowerSync/logical-replication activation must review `output_plugin_libraries` and any then-applicable maintenance requirements.
 
 ## Boundaries
 
-The closed scaffold and active CP6 still do not authorize:
+CP6 now explicitly authorizes, after the relevant blueprint/write gates:
 
-- concrete Logical → PostgreSQL business tables/mappings during CP6;
-- business repositories/adapters during CP6;
-- product API routes as an implied consequence of persistence readiness;
+- concrete Logical → PostgreSQL DANTE business tables;
+- Alembic business-schema migrations;
+- SQLAlchemy mappings that materialize the approved database model;
+- concrete DB constraints, indexes, privileges and database-level support structures;
+- real PostgreSQL tests of those database structures.
+
+CP6 still does **not** automatically authorize:
+
+- first-product-vertical application persistence adapters/use cases;
+- product API routes merely because database objects exist;
+- frontend behavior;
 - AuthN/AuthZ product implementation;
 - direct AI database access;
 - PowerSync, Restate, PgBouncer or pgBackRest activation merely because selected;
@@ -296,4 +325,4 @@ The closed scaffold and active CP6 still do not authorize:
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
 - production deployment or blanket Physical HG/PSV PASS.
 
-Current next backend action is **CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition**, starting read/research/design-first under its own exact gate. CP6-03 does not implement Vertical #1.
+Current next backend action is **CP6-03 — Whole DANTE Database Blueprint**. It derives the full concrete relational schema and implementation/migration DAG from the closed 57/57 model and Constitution. Only after Gate 03 does CP6-04 begin real database materialization. First product vertical application work begins only after CP6 closes.
