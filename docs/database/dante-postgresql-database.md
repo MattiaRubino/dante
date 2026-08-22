@@ -2906,3 +2906,800 @@ NOT YET EARNED
 ```
 
 No business migration, SQLAlchemy business mapping, provisioning implementation, persistence adapter, API or product vertical is authorized merely by this candidate blueprint.
+
+---
+
+## 25. Object-level closure pass II — Schedule / Actual / Outcome / Milestone / Agreement
+
+This pass consumes the complete accepted Domain continuations and Logical Time/Reality + Relationships/Governance contracts for five high-pressure contextual/result families. It is later than sections 14–24 and therefore **supersedes only the provisional statements for these five families where this section is more specific**. It does not reopen the already-closed reference/material-state topology, DB-U07 temporal value doctrine, or Recurrence semantics.
+
+The pass deliberately distinguishes:
+
+```text
+relational envelope that closed authority determines now
+!=
+semantic payload that would require an invented universal vocabulary
+```
+
+No `status`, `result_code`, generic terms JSON, generic temporal payload, universal parent tree or cross-domain enum is introduced merely to make a candidate table look complete.
+
+### 25.1 Schedule — scoped accepted-placement identity/topology CLOSED; exact coarse encoding locally open
+
+Schedule is a dependent accepted temporal placement, not a timestamp pair embedded into Activity/Event/Occurrence.
+
+The stable contextual envelope is:
+
+```text
+dante.schedule
+  schedule_ref         uuid PRIMARY KEY
+  subject_native_ref   uuid NOT NULL
+```
+
+Rules:
+
+```text
+schedule_ref
+→ UUIDv7 ScopedRecordRef
+→ matching dante.scoped_address(scoped_ref)
+→ scoped_family = schedule
+
+subject_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ bounded Reference Contract owner_family IN ('activity','event','occurrence')
+
+schedule subject binding
+→ immutable under ordinary runtime authority
+
+one subject
+→ MAY own multiple independent Schedule placements when semantics permit
+→ therefore NO global UNIQUE(subject_native_ref)
+```
+
+The chosen identity is **one independently revisionable accepted placement**, not one generic Schedule container holding anonymous blocks. This preserves divisible Activity cases such as two accepted placements for one Activity while allowing each placement to carry its own material revision history.
+
+Schedule current material truth uses the existing scoped current-binding topology:
+
+```text
+facet_code = 'schedule.placement'
+
+Schedule row
+→ scoped_address
+→ MaterialStateRef
+→ owner-specific Schedule placement payload
+→ dante.scoped_current_material_state when one current accepted placement state exists
+```
+
+The stable state-envelope design name is:
+
+```text
+dante.schedule_placement_state
+  material_state_ref   uuid PRIMARY KEY
+  schedule_ref         uuid NOT NULL
+```
+
+with:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+→ exact scoped owner = schedule_ref
+→ exact facet = schedule.placement
+
+schedule_ref
+→ FK dante.schedule(schedule_ref)
+→ ON DELETE NO ACTION
+```
+
+The exact typed temporal payload must use DB-U07 representations and must never duplicate current time fields on Activity/Event/Occurrence. Historical placement states remain immutable-by-policy; a material reschedule creates a new MaterialStateRef and the explicit current binding moves to the new state.
+
+Schedule absence remains valid:
+
+```text
+no Schedule row ever created
+→ subject has no accepted placement history
+
+historical Schedule row exists + no currently applicable placement binding
+→ previously scheduled / now unscheduled or unresolved under the owning lifecycle semantics
+```
+
+No synthetic row/value is created for:
+
+```text
+UNSCHEDULED
+POSTPONED
+AVAILABLE
+```
+
+because those words do not all belong to Schedule placement state and some belong to lifecycle/constraint/product interpretation.
+
+#### SCH-U01 — exact coarse accepted-placement encoding
+
+DB-U07 correctly preserves coarse/partial precision as a semantic requirement, but current closed authority does **not** yet define a deterministic database vocabulary for a Schedule such as:
+
+```text
+Tuesday afternoon
+```
+
+DANTE therefore MUST NOT silently invent boundaries such as `12:00–18:00`, nor materialize a free-form `precision_code='afternoon'` whose semantics are not closed.
+
+SCH-U01 closes only when the accepted Time/Schedule authority determines the exact typed representation and bounded vocabulary for coarse accepted placements, including any day-part semantics. Exact date, floating-local, named-zone, absolute-instant and exact range variants may continue to consume DB-U07; a generic wide nullable temporal blob is not authorized.
+
+#### SCH-U02 — current-binding cessation / unscheduling lifecycle
+
+Removing current accepted Schedule placement is not the same as deleting Schedule history or cancelling its subject. SCH-U02 must close the exact database operation and privilege posture for:
+
+```text
+current schedule.placement binding exists
+→ accepted placement becomes absent without new replacement placement
+→ historical Schedule + historical MaterialStateRefs remain reconstructible
+```
+
+The closure must remain compatible with the shared current-binding topology and DB-U14. In particular, CP6 must not grant blanket DELETE on `scoped_current_material_state` merely to support one Schedule use case unless bounded database enforcement proves that other facets cannot be erased incorrectly.
+
+### 25.2 Actual — scoped realization envelope + known realization/non-realization axis CLOSED; physical cardinality/facets locally open
+
+Actual remains the contextual realization of one specific intended/expected native subject. It does not become a universal reality root.
+
+Stable envelope:
+
+```text
+dante.actual
+  actual_ref           uuid PRIMARY KEY
+  subject_native_ref   uuid NOT NULL
+```
+
+Rules:
+
+```text
+actual_ref
+→ UUIDv7 ScopedRecordRef
+→ matching scoped_address family actual
+
+subject_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ bounded Reference Contract owner_family IN ('activity','event','occurrence')
+
+subject binding
+→ immutable under ordinary runtime authority
+```
+
+The accepted semantic default remains one canonical realization context for one expectation rather than multiplying Actual rows for Session/Observation/Participation facets. However the Domain explicitly deferred final physical cardinality; therefore this pass **does not yet freeze `UNIQUE(subject_native_ref)`**. ACT-U01 must reclose that exact SQL cardinality before implementation.
+
+Current material realization uses:
+
+```text
+facet_code = 'actual.realization'
+```
+
+with stable state-envelope design name:
+
+```text
+dante.actual_realization_state
+  material_state_ref      uuid PRIMARY KEY
+  actual_ref              uuid NOT NULL
+  realization_occurred    boolean NOT NULL
+```
+
+Meaning is deliberately narrow:
+
+```text
+NO established Actual/current realization state
+→ realization UNKNOWN / not established
+
+realization_occurred = false
+→ KNOWN NON-REALIZATION of the expectation
+
+realization_occurred = true
+→ SOME realization of the expectation is established
+```
+
+`true` does **not** mean completed/successful/passed, and `false` does not encode every possible Outcome. Partial, different, replaced, failed, accepted, passed and similar semantics remain outside this boolean.
+
+The state row must satisfy:
+
+```text
+material_state_ref
+→ FK material_state_address
+→ exact scoped owner actual_ref
+→ exact facet actual.realization
+
+actual_ref
+→ FK dante.actual(actual_ref)
+→ ON DELETE NO ACTION
+```
+
+A new correction/reconciliation creates a new MaterialStateRef; current accepted realization moves through the existing scoped current binding rather than overwriting the old payload.
+
+Where actual execution Sessions materially compose a particular realization state, the typed relation candidate is:
+
+```text
+dante.actual_realization_session
+  material_state_ref   uuid NOT NULL
+  session_ref          uuid NOT NULL
+
+  PRIMARY KEY(material_state_ref, session_ref)
+```
+
+with direct homogeneous FK to `dante.session(session_ref)` and an exact eligibility check that `material_state_ref` is `actual.realization`. No Session is required for ordinary Event Actual, and spontaneous Session may exist without an Actual.
+
+#### ACT-U01 — remaining Actual physical closure
+
+ACT-U01 must close, without a generic status/result payload:
+
+```text
+whether one canonical Actual per subject is enforced by UNIQUE(subject_native_ref) or by a narrower semantic key
+exact optional Actual timing facet shape where Actual itself owns realized chronology rather than Session/Observation
+replacement/substitution relation topology
+how progressive establishment/reconciliation affects physical cardinality
+exact indexes once those FKs/query paths are frozen
+```
+
+The open item does not weaken the closed unknown-vs-known-non-realization distinction.
+
+### 25.3 Outcome — semantic envelope defined; universal concrete result table NOT authorized
+
+Outcome remains contextual result/disposition of a specific Actual when such result semantics materially matter.
+
+Closed dependency:
+
+```text
+Outcome
+→ belongs to one exact Actual realization context
+→ does not replace Actual / Session / Observation / Milestone / Confirmation / Provenance / Contribution
+```
+
+If a concrete Outcome family becomes materially persistent and independently addressable, its relational envelope must use:
+
+```text
+outcome_ref   UUIDv7 ScopedRecordRef
+actual_ref    direct FK to dante.actual(actual_ref)
+```
+
+However current closed authority explicitly rejects a universal Outcome vocabulary. Therefore CP6-03 does **not** implementation-authorize any of:
+
+```text
+dante.outcome(result_code text)
+universal Outcome ENUM
+completed/partial/skipped/passed/failed global result taxonomy
+JSONB result payload as semantic escape hatch
+one Outcome per participant by default
+```
+
+The design handle `outcome` remains reserved for a concrete typed result family only after its result semantics are closed. The Database Dictionary must not advertise a materialized universal Outcome table before that happens.
+
+Shared result and actor-scoped Contribution remain separate: one shared Outcome may coexist with several Contributions without duplicating the Outcome per Actor.
+
+#### OUT-U01 — first concrete typed Outcome result family
+
+OUT-U01 closes when an accepted owner/context provides a deterministic typed result family with:
+
+```text
+exact result semantics/vocabulary
+exact cardinality against Actual
+material-state/history requirement
+conflicting contextual assertion behavior
+correction/reconciliation behavior
+SQL columns/constraints
+privilege posture
+direct positive/negative tests
+```
+
+Until then the correct CP6 disposition is **NO universal concrete result payload**, not a placeholder schema.
+
+### 25.4 Milestone — scoped contextual checkpoint + material Goal/Plan context set CLOSED
+
+Milestone is a persistent dependent checkpoint whose meaning requires context from at least one Goal and/or Plan and may truthfully matter to more than one of either. No rigid `Goal → Plan → Milestone` parent tree is accepted.
+
+Stable contextual owner:
+
+```text
+dante.milestone
+  milestone_ref   uuid PRIMARY KEY
+```
+
+Rules:
+
+```text
+milestone_ref
+→ UUIDv7 ScopedRecordRef
+→ matching scoped_address family milestone
+```
+
+The contextual meaning is material and version-sensitive, so the exact context set is represented as one Milestone-owned material state rather than mutable sparse parent FKs:
+
+```text
+facet_code = 'milestone.context'
+
+dante.milestone_context_state
+  material_state_ref   uuid PRIMARY KEY
+  milestone_ref        uuid NOT NULL
+
+dante.milestone_context_goal
+  material_state_ref   uuid NOT NULL
+  goal_ref             uuid NOT NULL
+  PRIMARY KEY(material_state_ref, goal_ref)
+
+dante.milestone_context_plan
+  material_state_ref   uuid NOT NULL
+  plan_ref             uuid NOT NULL
+  PRIMARY KEY(material_state_ref, plan_ref)
+```
+
+FKs:
+
+```text
+milestone_context_state.material_state_ref
+→ material_state_address
+→ exact scoped owner milestone_ref
+→ exact facet milestone.context
+
+milestone_context_state.milestone_ref
+→ dante.milestone(milestone_ref)
+→ ON DELETE NO ACTION
+
+milestone_context_goal.goal_ref
+→ dante.goal(goal_ref)
+→ ON DELETE NO ACTION
+
+milestone_context_plan.plan_ref
+→ dante.plan(plan_ref)
+→ ON DELETE NO ACTION
+
+child material_state_ref
+→ dante.milestone_context_state(material_state_ref)
+→ ON DELETE NO ACTION
+```
+
+A deferred database invariant must require, by COMMIT:
+
+```text
+COUNT(goal links) + COUNT(plan links) >= 1
+```
+
+for each live `milestone.context` state. Multiple Goal and/or Plan links are valid. Duplicate links reject through the composite PKs.
+
+Context revision creates a new MaterialStateRef when materially consequential; old context remains reconstructible. This does not imply every newly added supporting fact changes Milestone identity.
+
+Milestone does **not** receive universal columns for:
+
+```text
+reached boolean
+status enum
+progress_percent
+completed_at
+```
+
+Attainment remains Evidence/Evaluation-backed. Target date/window remains temporal target semantics, not Schedule placement.
+
+#### MIL-U01 — definition/target/attainment physical facets
+
+MIL-U01 must close the exact typed persistence boundaries among:
+
+```text
+Milestone checkpoint definition/material state
+Milestone target date/window/expectation
+Criterion/Evaluation/Evidence-backed attainment
+historical reached/effective time where material
+waiver/cancellation/supersession only if an accepted lifecycle requires them
+```
+
+No stored percentage or independent attainment truth may duplicate its underlying Evidence/Evaluation basis.
+
+### 25.5 Agreement — scoped n-ary shared-assent topology CLOSED; terms eligibility/provenance locally open
+
+Agreement is contextual multi-party mutual assent to the **same materially specific terms state**. It is neither a native owner nor pairwise `agreed_with` edges.
+
+Stable contextual owner:
+
+```text
+dante.agreement
+  agreement_ref   uuid PRIMARY KEY
+```
+
+Rules:
+
+```text
+agreement_ref
+→ UUIDv7 ScopedRecordRef
+→ matching scoped_address family agreement
+```
+
+The accepted shared-assent state is material:
+
+```text
+facet_code = 'agreement.shared_assent'
+
+dante.agreement_shared_assent_state
+  material_state_ref          uuid PRIMARY KEY
+  agreement_ref               uuid NOT NULL
+  terms_material_state_ref    uuid NOT NULL
+```
+
+with:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ exact scoped owner agreement_ref
+→ exact facet agreement.shared_assent
+
+agreement_ref
+→ FK dante.agreement(agreement_ref)
+→ ON DELETE NO ACTION
+
+terms_material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+→ bounded eligible terms-bearing owner/facet contract to be closed by AGR-U01
+```
+
+The parties that share that assent are preserved as an n-ary set bound to the exact Agreement material state:
+
+```text
+dante.agreement_party_assent
+  agreement_material_state_ref   uuid NOT NULL
+  party_native_ref               uuid NOT NULL
+
+  PRIMARY KEY(agreement_material_state_ref, party_native_ref)
+```
+
+Reference Contract:
+
+```text
+agreement_material_state_ref
+→ FK dante.agreement_shared_assent_state(material_state_ref)
+→ ON DELETE NO ACTION
+
+party_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ bounded owner_family IN ('person','collective')
+```
+
+A deferred database invariant requires at least two distinct party rows for each live accepted shared-assent state. The composite PK already rejects duplicate party entries.
+
+All parties in one `agreement_shared_assent_state` necessarily bind the same `terms_material_state_ref` because terms are owned once by the parent material state rather than repeated independently on each party row.
+
+Material amendment:
+
+```text
+terms T1 + parties P1/P2 → Agreement state A1
+material terms T2       → new Agreement MaterialStateRef A2
+A1 party rows remain historical
+A2 requires its own applicable party-assent rows
+```
+
+Old assent therefore cannot silently float from T1 to T2.
+
+A true Collective may be one Agreement party. DANTE does not expand it into all current members and does not infer Collective assent from member assent or vice versa.
+
+Actual acting Actor / represented party / Principal / governance basis are not collapsed into `party_native_ref`. On-behalf-of semantics remain Representation/provenance/governance concerns.
+
+#### AGR-U01 — exact terms-state and on-behalf-of/provenance contract
+
+AGR-U01 must close:
+
+```text
+exact eligible terms_material_state_ref owner/facet families
+whether a dedicated Agreement terms owner/state is required in any accepted ordinary case
+exact material equivalence/applicability enforcement at DB boundary
+on-behalf-of assent binding to actual Actor + represented party + Authority/Representation basis where material
+Provenance/recorded chronology required for consequential assent
+exact indexes once query/cardinality pressure is frozen
+```
+
+`terms_material_state_ref` may never mean “any MaterialStateRef in the database”. Consumer-specific database eligibility is mandatory.
+
+### 25.6 Migration-DAG consequences of pass II
+
+No CP6-04 business migration is authorized yet, but the dependency order for these families is now constrained.
+
+```text
+LR-01 native owner identity shells
+→ native_address support for Activity/Event/Occurrence/Person/Collective targets
+
+scoped contextual owner tables
+→ schedule
+→ actual
+→ milestone
+→ agreement
+
+scoped_address dispatcher vocabulary
+→ add only the concrete scoped families above
+
+material_state_address + current-binding control foundation
+→ unchanged
+
+owner-specific material state payloads
+→ schedule_placement_state after SCH-U01/02 closure
+→ actual_realization_state after ACT-U01 exact cardinality/facet closure
+→ milestone_context_state + Goal/Plan child relations
+→ agreement_shared_assent_state + party rows after AGR-U01 exact terms eligibility closure
+
+Outcome
+→ no universal migration until OUT-U01 closes a concrete typed result family
+```
+
+Insert ordering for a material contextual state follows the already-closed control contract:
+
+```text
+create scoped semantic row
+→ create scoped_address projection
+→ create material_state_address
+→ create exact owner-specific state payload + immutable child rows
+→ satisfy deferred payload totality/cardinality constraints
+→ create/update current binding where applicable
+→ COMMIT
+```
+
+### 25.7 SQLAlchemy mapping consequences
+
+CP6-04 mapping direction is now:
+
+```text
+Schedule
+Actual
+Milestone
+Agreement
+→ independent semantic row classes
+→ no shared ContextualEntity mapped superclass
+
+SchedulePlacementState
+ActualRealizationState
+MilestoneContextState
+AgreementSharedAssentState
+→ owner/facet-specific immutable-by-policy state classes
+
+ActualRealizationSession
+MilestoneContextGoal
+MilestoneContextPlan
+AgreementPartyAssent
+→ explicit typed relation/association mappings
+
+Outcome
+→ no generic mapped class until OUT-U01 closes a real result family
+```
+
+Reference Python types preserve `NativeRef`, `ScopedRecordRef` and `MaterialStateRef` distinctions. Temporal helper/composite types may encode the exact DB-U07 variants after SCH-U01 closes remaining coarse Schedule precision; they do not create ORM identity.
+
+No generic repository/UoW/base-service layer is introduced by these mappings.
+
+### 25.8 Structural index posture for pass II
+
+Only structurally justified indexes are accepted now:
+
+```text
+schedule PK(schedule_ref)
+actual PK(actual_ref)
+milestone PK(milestone_ref)
+agreement PK(agreement_ref)
+
+milestone_context_goal PK(material_state_ref, goal_ref)
+milestone_context_plan PK(material_state_ref, plan_ref)
+agreement_party_assent PK(agreement_material_state_ref, party_native_ref)
+actual_realization_session PK(material_state_ref, session_ref)
+```
+
+Additional indexes on:
+
+```text
+schedule.subject_native_ref
+actual.subject_native_ref
+goal_ref
+plan_ref
+party_native_ref
+session_ref
+terms_material_state_ref
+```
+
+remain under DB-U15 until the final FK lookup/query graph proves they are needed; DANTE does not index every FK by reflex.
+
+No temporal GiST/EXCLUDE index is introduced for Schedule merely because ranges exist. Overlap/conflict semantics belong to Capacity/Availability/owner policy and are not a universal Schedule invariant.
+
+### 25.9 Object-level privilege implications
+
+Pending final DB-U21 matrix, these objects constrain the least-privilege direction:
+
+```text
+schedule / actual / milestone / agreement owner rows
+→ runtime SELECT + INSERT for accepted creation paths
+→ PK/subject binding UPDATE denied under ordinary runtime behavior
+→ DELETE denied until DB-U14 exact lifecycle proves it
+
+immutable material state payloads
+→ runtime SELECT + INSERT
+→ UPDATE denied
+→ DELETE denied except a later explicitly governed DB-U14 mechanism that preserves MaterialStateRef totality
+
+actual_realization_session
+milestone_context_goal
+milestone_context_plan
+agreement_party_assent
+→ treated as immutable components of one material state after acceptance
+→ ordinary UPDATE/DELETE denied
+
+current binding
+→ INSERT/UPDATE only as already required
+→ Schedule cessation DELETE remains SCH-U02-specific and must not broaden other-facet authority
+
+trigger/integrity routines
+→ no direct runtime EXECUTE by default
+
+sequences
+→ none required by UUIDv7 semantic identities
+```
+
+Exact GRANT/REVOKE remains migration-owned in the same change that creates each object.
+
+### 25.10 Direct PostgreSQL proof matrix added by pass II
+
+#### Schedule
+
+```text
+Activity subject accepted                                PASS
+Event subject accepted                                   PASS
+Occurrence subject accepted                              PASS
+wrong native owner family                                REJECT
+missing native_address                                   REJECT
+multiple independent Schedule rows for one Activity      PASS
+material state wrong scoped owner/facet                  REJECT
+material reschedule preserves old state                  PASS
+current state selected only by explicit binding          PASS
+synthetic UNSCHEDULED payload                            absent by schema
+coarse day-part encoding                                 STAGED until SCH-U01
+current binding cessation/unscheduling                   STAGED until SCH-U02
+```
+
+#### Actual
+
+```text
+Activity/Event/Occurrence subject accepted               PASS
+wrong subject family                                     REJECT
+no Actual/current state                                  remains UNKNOWN
+realization_occurred=false                               known non-realization
+realization_occurred=true                                established realization; not universal success
+wrong owner/facet state                                  REJECT
+Session link to real Session                             PASS
+Session link duplicate in same state                    REJECT by PK
+Event Actual without Session                             PASS
+spontaneous Session without Actual                       PASS
+correction creates new MaterialStateRef                  PASS
+exact subject cardinality/replacement/time facets        STAGED until ACT-U01
+```
+
+#### Outcome
+
+```text
+universal Outcome enum/table                             absent by design
+unconfirmed encoded as Outcome                           absent by design
+shared Outcome duplicated per Contribution              forbidden by design
+first concrete typed result family                       STAGED until OUT-U01
+```
+
+#### Milestone
+
+```text
+Milestone scoped identity/address                        PASS
+context state with Goal only                             PASS
+context state with Plan only                             PASS
+context state with Goal + Plan                           PASS
+context state with multiple Goals/Plans                  PASS
+context state with zero Goal/Plan links by COMMIT        REJECT
+same Goal/Plan duplicate link                            REJECT by PK
+reached/progress universal columns                       absent by schema
+attainment duplicates underlying Evidence/Evaluation     forbidden by design
+exact target/attainment facets                           STAGED until MIL-U01
+```
+
+#### Agreement
+
+```text
+Agreement scoped identity/address                        PASS
+Person party                                             PASS
+Collective party                                         PASS
+wrong party owner family                                 REJECT
+one-party shared-assent state by COMMIT                  REJECT
+two or more distinct parties                            PASS
+duplicate party                                          REJECT by PK
+all parties bind same parent terms MaterialStateRef      PASS by structure
+material terms amendment reuses old assent automatically REJECT by structure
+old shared-assent state/history preserved                PASS
+arbitrary MaterialStateRef accepted as terms             REJECT once AGR-U01 contract closes
+on-behalf-of collapsed into party identity                forbidden by design
+```
+
+### 25.11 Local object-level unresolved register from pass II
+
+These are not vague TODOs and do not authorize placeholder schema.
+
+| ID | Exact remaining parameter | Why it remains open | Closure trigger |
+|---|---|---|---|
+| SCH-U01 | coarse accepted Schedule placement encoding | current authority requires coarse precision but does not define exact day-part/bounded vocabulary | close exact Time/Schedule representation without invented clock boundaries or free-text precision codes |
+| SCH-U02 | Schedule current-binding cessation / unscheduling operation | historical Schedule must survive while current placement may become absent; shared current-binding DELETE privilege cannot be widened casually | close DB operation + DB-U14/DB-U21-safe privilege/integrity path |
+| ACT-U01 | Actual exact subject cardinality + optional timing/replacement facets | semantic default is one contextual realization, but Domain explicitly deferred physical cardinality and specialist realization facets | close exact UNIQUE/key rule, realized chronology ownership and replacement relation topology |
+| OUT-U01 | first concrete typed Outcome result family | Domain rejects a universal result enum/payload | first accepted result context with exact typed vocabulary and cardinality |
+| MIL-U01 | Milestone definition/target/attainment facet split | context is now concrete; target and evaluation-backed attainment still require exact physical ownership | close Criterion/Evaluation/Evidence + target physical contract without duplicate reality |
+| AGR-U01 | Agreement terms-state eligibility + consequential assent provenance | Agreement must bind one exact material terms state, but not every MaterialStateRef is eligible and on-behalf-of attribution is separate | close bounded terms owner/facet set + Representation/Authority/Provenance binding |
+
+```text
+PASS-II LOCAL UNRESOLVED ITEMS
+6
+
+UNCLASSIFIED PASS-II ITEMS
+0
+```
+
+The six items are Gate-03 blockers only to the extent their current concepts require concrete CP6 materialization; they are not permission to manufacture a generic fallback.
+
+### 25.12 Accumulated audit result after pass II
+
+The new topology was regressed against the already-closed identity/reference/material-state/value/time/spatial/capacity decisions.
+
+```text
+15 LR-01 identity owners                                  PASS
+NativeRef topology                                        PASS
+ScopedRecordRef topology                                  PASS
+MaterialStateRef totality                                 PASS
+current binding topology                                  PASS
+typed lineage                                             PASS
+
+Schedule heterogeneous NativeRef {Activity,Event,Occurrence} PASS
+Actual heterogeneous NativeRef {Activity,Event,Occurrence}   PASS
+Milestone Goal/Plan context with homogeneous FKs             PASS
+Agreement party NativeRef {Person,Collective}                 PASS
+Agreement n-ary same-terms binding                            PASS
+Outcome exact Actual dependency                               PASS
+
+NO generic Entity                                          PASS
+NO generic Relationship                                    PASS
+NO generic TemporalEvent                                   PASS
+NO global status enum                                      PASS
+NO global Outcome enum                                     PASS
+NO generic Agreement terms JSON/EAV                        PASS
+NO artificial Milestone parent tree                        PASS
+
+Schedule != Actual                                         PASS
+Actual != Outcome                                          PASS
+Outcome != Milestone                                       PASS
+Agreement != Consent / Authority                           PASS
+Schedule != Capacity                                       PASS
+Schedule != Recurrence                                     PASS
+
+DB-U11 Place/PostGIS                                       UNAFFECTED / PASS
+DB-U13 Quantity/Money                                      UNAFFECTED / PASS
+DB-U16 Capacity Claim                                      UNAFFECTED / PASS
+DB-U12 Recurrence                                          UNAFFECTED / REMAINS OPEN ONLY AS PREVIOUSLY CLASSIFIED
+DB-U21 ACL direction                                       COMPATIBLE / STILL OPEN
+```
+
+One audit correction is deliberate: the read-only derivation initially considered freezing `UNIQUE(actual.subject_native_ref)`, but the canonical Actual Domain authority still states that final physical cardinality must not be frozen prematurely. The blueprint therefore records the semantic one-context default while keeping the exact SQL cardinality in ACT-U01. This is a hardening, not a semantic reopening of Actual.
+
+### 25.13 Current CP6-03 status after pass II
+
+This pass moves the object graph forward but does not earn Gate 03.
+
+```text
+Schedule envelope / subject contract / material ownership     CLOSED
+Schedule exact coarse placement + cessation path               SCH-U01 / SCH-U02 OPEN
+
+Actual envelope / subject contract / realization axis          CLOSED
+Actual exact SQL cardinality / optional facets                 ACT-U01 OPEN
+
+Outcome universal fallback                                    REJECTED
+Outcome concrete typed family                                 OUT-U01 OPEN
+
+Milestone scoped identity + material Goal/Plan context         CLOSED
+Milestone target/attainment physical split                     MIL-U01 OPEN
+
+Agreement scoped n-ary same-terms assent topology              CLOSED
+Agreement terms eligibility/provenance                         AGR-U01 OPEN
+
+PASS-II UNCLASSIFIED                                           0
+CP6 BUSINESS DDL AUTHORIZED                                    NO
+GATE 03                                                        NOT YET EARNED
+```
+
+The next semantic pass should therefore consume the specific LR-03 relation/governance families and the Criterion/Evaluation/Temporal Constraint pressures needed to close the remaining dependencies, rather than inventing placeholder payloads for the six local open items.
