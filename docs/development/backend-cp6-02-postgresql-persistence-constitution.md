@@ -1,17 +1,19 @@
 # Backend CP6-02 — PostgreSQL Persistence Constitution
 
-- **Status:** ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED
+- **Status:** CLOSED / GATE 02 PASS
 - **Created:** 2026-08-22
+- **Closed:** 2026-08-22
 - **Branch:** `feature/logical-postgresql`
 - **Original candidate PRE-SCOPE:** `b556f96d05889c8962efc0e727c208a56a4a0012`
 - **Upstream checkpoint:** CP6-01 **CLOSED / GATE 01 PASS**
 - **CP6 authority:** `docs/workstreams/logical-postgresql.md`
+- **Closure record:** `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 - **Business schema / migrations / SQLAlchemy business mappings / adapters:** **NOT AUTHORIZED / NOT STARTED**
 - **Purpose:** close reusable PostgreSQL persistence doctrine for DANTE without designing every business table, reopening Domain/Logical/Physical architecture, or implementing Vertical #1.
 
-This document is the **active CP6-02 candidate constitution**. It records the full design position after repository reconstruction, PostgreSQL/standard review, external engineering benchmark, the PostgreSQL 18.6 technical refresh and direct remote regression. It does not itself close Gate 02.
+This document is the **closed and accepted CP6-02 PostgreSQL Persistence Constitution**. It records the full design position after repository reconstruction, PostgreSQL/standard review, external engineering benchmark, the PostgreSQL 18.6 technical refresh and direct remote regression, independent whole-Constitution review, review-hardening repair and clean targeted post-repair verification. Formal Gate 02 closure evidence is recorded separately in the closure record above.
 
-Current pre-closure flow:
+Closure flow:
 
 ```text
 CP6-01
@@ -19,7 +21,6 @@ CLOSED / GATE 01 PASS
         ↓
 CP6-02
 POSTGRESQL PERSISTENCE CONSTITUTION
-ACTIVE / CANDIDATE / PRE-CLOSURE
         ↓
 PostgreSQL 18.6 foundation refresh
 DIRECT REMOTE QA PASS
@@ -35,15 +36,19 @@ final independent whole-Constitution review
 HARDENING FINDINGS IDENTIFIED
         ↓
 review-hardening repair
-THIS CANDIDATE REVISION
+APPLIED
         ↓
 targeted post-repair verification
-PENDING
+CLEAN
         ↓
-separate Gate 02 closure
+GATE 02
+CLOSED / PASS
+        ↓
+CP6-03
+NEXT / NOT STARTED
 ```
 
-Gate 02 remains **NOT PASSED** until the targeted post-repair verification is clean and a separate closure write is explicitly authorized and verified.
+Gate 02 is **PASS**. This closes global reusable PostgreSQL doctrine only; it does not convert staged business-semantic HG/SC/PSV obligations into PASS and does not authorize business implementation.
 
 ---
 
@@ -1652,40 +1657,42 @@ technology patch lifecycle                  ADOPT
 
 ---
 
-## 29. Candidate Gate-02 preflight
+## 29. Gate-02 closure result
 
 ### Constitution content after independent-review repair
 
 ```text
-TECH lifecycle                              CANDIDATE PASS
-ID identity                                 HARDENING APPLIED / CANDIDATE PASS
-REF addressing                              HARDENING APPLIED / CANDIDATE PASS
-MAT material state                         HARDENING APPLIED / CANDIDATE PASS
-HIST history                                CANDIDATE PASS
-TIM temporal                                CANDIDATE PASS
-MISS missingness                            CANDIDATE PASS
-LIFE lifecycle/retention                    CANDIDATE PASS
-TYP PostgreSQL types                        CANDIDATE PASS
-REL relations                               CANDIDATE PASS
-CON constraints                             CANDIDATE PASS
-IDX indexes                                 CANDIDATE PASS
-TX transactions/concurrency                 HARDENING APPLIED / CANDIDATE PASS
-IDEM idempotency                            HARDENING APPLIED / CANDIDATE PASS
-PROV provenance                             CANDIDATE PASS
-CAP capability boundaries                   CANDIDATE PASS
-MIG migration/evolution                     HARDENING APPLIED / CANDIDATE PASS
-SEC ownership/privileges                    CANDIDATE PASS
-QA direct-proof doctrine                    HARDENING APPLIED / CANDIDATE PASS
+TECH lifecycle                              PASS
+ID identity                                 PASS
+REF addressing                              PASS
+MAT material state                         PASS
+HIST history                                PASS
+TIM temporal                                PASS
+MISS missingness                            PASS
+LIFE lifecycle/retention                    PASS
+TYP PostgreSQL types                        PASS
+REL relations                               PASS
+CON constraints                             PASS
+IDX indexes                                 PASS
+TX transactions/concurrency                 PASS
+IDEM idempotency                            PASS
+PROV provenance                             PASS
+CAP capability boundaries                   PASS
+MIG migration/evolution                     PASS
+SEC ownership/privileges                    PASS
+QA direct-proof doctrine                    PASS
 ```
 
 ### Required barriers
 
 ```text
-all inherited decisions traceable                    CANDIDATE PASS
-remaining exact choices explicitly vertical-specific CANDIDATE PASS
-PG-R01..10 proof path assigned                        CANDIDATE PASS
-HG/SC/PSV stage truth preserved                       CANDIDATE PASS
-external benchmark completed                         CANDIDATE PASS
+all genuinely global concrete decisions closed       PASS
+all inherited decisions traceable                    PASS
+all remaining choices explicitly vertical-specific   PASS
+all direct-proof obligations staged/owned             PASS
+PG-R01..10 proof path assigned                        PASS
+HG/SC/PSV stage truth preserved                       PASS
+external benchmark completed                         PASS
 CP3 contradiction                                    0
 Logical contradiction                                0
 Physical technology/selection contradiction          0
@@ -1701,30 +1708,26 @@ business SQLAlchemy mapping                           0
 persistence adapter                                   0
 ```
 
-### Final independent-review findings incorporated by this repair
+### Final independent-review findings incorporated and verified
 
 ```text
 IR-01 idempotency uniqueness ambiguity
-REPAIRED — unique reservation identity = operation scope + idempotency key;
-fingerprint immutable comparison field; different fingerprint conflicts
+REPAIRED / VERIFIED CLEAN
 
 IR-02 heterogeneous NativeRef alternate one-of-N FK path
-REPAIRED — removed; accepted Physical hybrid is direct FK if homogeneous,
-bounded native-address anchor if genuinely heterogeneous
+REPAIRED / VERIFIED CLEAN
 
 IR-03 MaterialStateRef address/control mechanism left optional
-REPAIRED — bounded material-state address/control family required;
-exact table topology remains CP6-03/05
+REPAIRED / VERIFIED CLEAN
 
 IR-04 UUID storage/index posture insufficiently explicit
-HARDENED — PostgreSQL native uuid, ordinary PK/UNIQUE B-tree default,
-no redundant index, UUIDv7 order non-semantic
+HARDENED / VERIFIED CLEAN
 
 IR-05 operational timeout/error taxonomy missing
-HARDENED — bounded PostgreSQL time-budget doctrine + distinguishable conflict/failure classes
+HARDENED / VERIFIED CLEAN
 
 IR-06 PostgreSQL non-transactional migration DDL boundary missing
-HARDENED — isolated autocommit/non-transactional operation rule + failure cleanup
+HARDENED / VERIFIED CLEAN
 ```
 
 ### Gate-02 blocker status
@@ -1739,46 +1742,38 @@ RESOLVED / PASS / NO CURRENT POST-UPGRADE ACTION
 future logical-replication activation remains trigger-bound
 
 B-03 final post-refresh whole-Constitution independent review
-HARDENING FINDINGS IDENTIFIED / REPAIR APPLIED
-TARGETED POST-REPAIR VERIFICATION PENDING
+RESOLVED / HARDENING APPLIED / TARGETED POST-REPAIR VERIFICATION CLEAN
 
-B-04 formal Gate-02 closure write
-OPEN / NOT YET AUTHORIZED OR EXECUTED
+B-04 formal Gate-02 closure
+RESOLVED / CLOSURE RECORD WRITTEN UNDER APPROVED CLOSURE GATE
 ```
 
 Therefore:
 
 ```text
 CP6-02
-ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CLOSED / GATE 02 PASS
+
+POSTGRESQL PERSISTENCE CONSTITUTION
+CLOSED / ACCEPTED
 ```
 
 ---
 
 ## 30. Next execution boundary
 
-Technology refresh, direct technical evidence and current-truth reconciliation are complete. The independent whole-Constitution review found bounded concrete hardenings and this revision applies them without business implementation or upstream semantic reopen.
+CP6-02 is closed. Technology refresh, direct technical evidence, current-truth reconciliation, external benchmark, whole-Constitution independent review, review-hardening repair and targeted post-repair verification are complete.
 
 Next:
-
-```text
-1. remotely read back this repaired Constitution and exact Git delta;
-2. run a targeted post-repair review over:
-   ID / REF / MAT / TX / IDEM / MIG / QA /
-   Physical mapping / WL-H05..07 / PG-R01..05 / Gate matrix;
-3. confirm the repair introduced no new contradiction, generic root or unstaged proof claim;
-4. if and only if that targeted review is CLEAN, propose a separate exact Gate-02 closure write;
-5. only after formal Gate 02 PASS may CP6-03 begin.
-```
-
-After Gate 02 closure, and only then:
 
 ```text
 CP6-03
 Concrete Relational Topology
 + Implementation Dependency DAG
 + Vertical Decomposition
+NEXT / NOT STARTED
 ```
 
-No business table, column, migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by this candidate constitution.
+CP6-03 begins read/research/design-first under its own exact gate and consumes this Constitution as closed authority. It may make the exact relational-topology choices explicitly assigned to CP6-03, but it must not reopen global CP6-02 rules without concrete contradictory evidence.
+
+No business table, column, migration, SQLAlchemy business mapping, persistence adapter, application use case or business API is authorized by this closed Constitution or by Gate 02.
