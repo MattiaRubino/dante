@@ -2,8 +2,9 @@
 
 - Status: **CURRENT TRUTH**
 - Product: **DANTE**
-- Protected-main truth reconciled from: `41680497c94b0c2f4830679b93f8eb6f1d543f8d`
+- Protected-main truth anchor: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Backend integration PR `#24`: **MERGED**
+- Backend persistence-readiness workstream: `feature/logical-postgresql` — **CP6 ACTIVE / DESIGN-FIRST**
 - Frontend materialization workstream: `feature/frontend-materialization`
 
 ## 1. Executive state
@@ -21,6 +22,7 @@ LOGICAL MODEL
 CLOSED
 Whole-Logical PASS WITH HARDENING
 REMOTE QA PASS
+57 / 57 CLASSIFIED
 WL-H01..WL-H12 ACTIVE
 
 PRE-PHYSICAL COHERENCE
@@ -28,6 +30,7 @@ DEFINITIVE CLOSED / FINAL QA PASS
 
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+POSTGRESQL 18.4 SOLE CANONICAL PRIMARY
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
@@ -38,7 +41,7 @@ INTEGRATED VIA PR #22
 
 FRONTEND MATERIALIZATION
 ACTIVE ON feature/frontend-materialization
-DIRECT FRONTEND VALIDATION NOT YET EARNED
+DIRECT FRONTEND VALIDATION ONLY AS EARNED BY ITS WORKSTREAM
 
 PRODUCTION BACKEND SCAFFOLD
 INTEGRATED IN PROTECTED main / DIRECT QA PASS
@@ -55,14 +58,25 @@ Dependency Review REQUIRED
 branch up-to-date REQUIRED
 source GitHub Actions
 
-CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / NEXT BACKEND IMPLEMENTATION BOUNDARY
+CP6 — CONCRETE PERSISTENCE READINESS
+ACTIVE ON feature/logical-postgresql
+DESIGN-FIRST
+CP6-00 COMPLETE
+CP6-01 ACTIVE / GATE 01 PENDING CLOSURE
+NO BUSINESS SCHEMA / MIGRATION / MAPPING / ADAPTER AUTHORIZED IN CP6
 
-DIRECT HG-01..HG-12
-NOT RUN / PASS 0
+CP6 TERMINAL TARGET
+CONCRETE POSTGRESQL FOUNDATION CLOSED / READY
+VERTICAL #1 SELECTED / EXACTLY DESIGNED / READY FOR IMPLEMENTATION
+
+VERTICAL #1 BUSINESS IMPLEMENTATION
+POST-CP6 / SEPARATELY AUTHORIZED
+
+DIRECT BUSINESS-SEMANTIC HG-01..HG-12
+NOT RUN / PASS 0 UNLESS A QUALIFYING BUSINESS SCENARIO IS ACTUALLY EXECUTED
 ```
 
-Architecture/design closure does not imply implementation PASS. Current protected `main` now contains the accepted backend scaffold; future backend implementation must consume the closed Product/Domain/Logical/Physical/Engineering authorities rather than reopen them by default.
+Architecture/design closure does not imply implementation PASS. CP2/CP3 directly prove the technical PostgreSQL substrate; they do not retroactively discharge business-semantic HG/PSV obligations.
 
 ## 2. Product and semantic invariants
 
@@ -87,14 +101,15 @@ Persistent invariants include:
 - provider state != canonical DANTE state;
 - derived projection != canonical truth;
 - absence/unknown != false;
+- MaterialStateRef != ETag/MVCC/provider revision;
 - idempotency != semantic identity;
 - client local state != canonical accepted effect.
 
-WL-H01..WL-H12 remain active and constrain implementation.
+`WL-H01..WL-H12` remain active and constrain implementation.
 
 ## 3. Logical / Physical authority
 
-The Logical Model remains closed. 57/57 owners are classified and implementation must not mechanically translate owners into one-table/one-service assumptions.
+The Logical Model remains closed. 57/57 Domain concepts are classified and implementation must not mechanically translate them into one-table/one-service assumptions.
 
 Canonical persistence remains:
 
@@ -102,6 +117,18 @@ Canonical persistence remains:
 PostgreSQL 18.4
 sole canonical persistence + material-history authority
 ```
+
+Accepted PostgreSQL mapping thesis remains:
+
+```text
+owner-specific canonical families
++ owner-specific material-state/history families
++ specific typed relation families
++ bounded technical anchors only where genuinely heterogeneous addressing requires them
++ separate provider/derived/runtime concerns
+```
+
+Forbidden canonical shortcuts remain universal Entity/Thing, universal Relationship/edge, EAV/property-bag kernel, universal event ontology and JSONB required-semantic escape hatches.
 
 Selected PostgreSQL capabilities:
 
@@ -151,7 +178,7 @@ The Frontend Engineering Foundation is integrated into protected `main` via PR #
 
 Accepted baseline includes Node 24 LTS, TypeScript 6.0.x strict, pnpm 11, Turborepo 2.x, React 19.2/Vite 8/TanStack Router, React Native 0.86/Expo SDK 57/Expo Router, PowerSync + encrypted SQLite, TanStack Query/Form, Zod 4 and Orval 8.
 
-The separate `feature/frontend-materialization` workstream is active. Its existence is not direct frontend validation PASS.
+The separate `feature/frontend-materialization` workstream remains independent from backend CP6. Its existence is not a blanket direct frontend PASS.
 
 ## 6. Backend CP1 — CLOSED / DIRECT QA PASS
 
@@ -225,11 +252,11 @@ transaction semantics                   PASS
 
 The frozen/blackholed-peer readiness behavior remains an explicit hardening finding, not a claimed CP3 PASS.
 
+CP3 deliberately contains no business owner/history/relation schema. Therefore CP3 technical QA is not a semantic HG/PSV PASS.
+
 ## 9. Backend CP4 — CLOSED / DIRECT REMOTE QA PASS
 
-Detailed authority:
-
-`docs/development/backend-cp4-ci-contract.md`
+Detailed authority: `docs/development/backend-cp4-ci-contract.md`.
 
 ### M1–M4
 
@@ -268,10 +295,6 @@ Backend CI Gate       SUCCESS
 Dependency Review     SUCCESS
 ```
 
-Remote logs proved uv 0.12.5, Python 3.14.7, checksum-backed uv setup, locked dependency bootstrap, Ruff, mypy, 32/32 fast tests, package build, canonical PostgreSQL image build and 18/18 PostgreSQL acceptance.
-
-Dependency Review directly enumerated the real `apps/backend/uv.lock` delta.
-
 ### M6 — deliberate red
 
 HEAD:
@@ -289,11 +312,11 @@ Backend CI Gate       FAILURE
 Dependency Review     FAILURE — intentional deny-packages policy
 ```
 
-Gate log observed `QUALITY_RESULT=failure`, `POSTGRES_RESULT=success` and exited red. Dependency Review rejected `fastapi@0.141.1` through `pkg:pypi/fastapi`. No vulnerable package was added.
+No vulnerable package was added.
 
 ### M7 — recovery green
 
-Recovery HEAD:
+HEAD:
 
 ```text
 df0a7c4fd3c7fe844fe56052fe7999732f186ee5
@@ -306,7 +329,7 @@ Backend CI          32478852443   SUCCESS
 Dependency Review   32478852454   SUCCESS
 ```
 
-All four intended checks/jobs returned green.
+All intended checks/jobs returned green.
 
 ### M8 — protected-main promotion
 
@@ -317,13 +340,7 @@ Backend CI Gate
 Dependency Review
 ```
 
-Both were selected in the GitHub UI with source **GitHub Actions**. Branch up-to-date, PR-before-merge, zero approvals for the current single-maintainer state, review-thread resolution, deletion protection and force-push protection remain active.
-
-Repository owner enabled the Actions setting requiring full-length commit SHA pins. The connected GitHub integration cannot directly read that setting; it is recorded as owner-applied / connector-unverifiable.
-
 The canonical ruleset definition is `docs/development/github-main-ruleset.json`.
-
-### CP4 closure decision
 
 ```text
 CP4
@@ -337,8 +354,6 @@ CP5 PRE-SCOPE:
 ```text
 35eca3a6b1fc9bbc691672e29ac975e640a49bf4
 ```
-
-Before QA, the remote branch was identical to that PRE-SCOPE, current `main` was an ancestor with `behind_by = 0`, PR #24 was open/unmerged/mergeable, no review threads were present and both CP4 workflows on PRE-SCOPE were green.
 
 Canonical WSL2/Linux workstation evidence:
 
@@ -365,22 +380,9 @@ GET /health/live                             200 {"status":"ok"}
 GET /health/ready                            200 {"status":"ready"}
 ```
 
-The local `.env.local` initially predated CP3 database variables; it was brought up to the repository-controlled `.env.example` contract using workstation-local ignored credentials. No secret was committed and no repository source change was required.
-
-One full-suite invocation immediately after a dedicated PostgreSQL run hit Docker Desktop/WSL forwarding state rather than test logic:
-
-```text
-docker run exit 125
-/forwards/expose returned unexpected status: 500
-container state: Created
-requested loopback port: no Linux listener
-```
-
-The diagnostic container was removed. A clean subsequent `uv run --locked pytest` completed **50/50 PASS**, so the event is classified as a transient Docker Desktop/WSL port-forwarding failure rather than an application, PostgreSQL or test-harness regression.
+One immediate full-suite invocation after a dedicated PostgreSQL run hit a transient Docker Desktop/WSL `/forwards/expose` HTTP 500. The diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
 
 CP5 added no business schema, backend source, tests, dependency, migration or CI changes.
-
-Closure decision:
 
 ```text
 CP5
@@ -396,33 +398,22 @@ pre-merge protected main              ff46eb16b971b1fde96eef9047b09faa02e1a5db
 feature/backend-scaffold final HEAD   46b775bfbfc4747daff341d973df133646dbd0c8
 ```
 
-PR #24 merged using the accepted merge-commit method. GitHub produced:
+PR #24 merged using the accepted merge-commit method:
 
 ```text
-merge commit / current protected main 41680497c94b0c2f4830679b93f8eb6f1d543f8d
+merge commit                          41680497c94b0c2f4830679b93f8eb6f1d543f8d
 parent 1                              ff46eb16b971b1fde96eef9047b09faa02e1a5db
 parent 2                              46b775bfbfc4747daff341d973df133646dbd0c8
-```
-
-Post-merge verification:
-
-```text
-PR #24 state                          CLOSED / MERGED
-protected main == merge SHA           PASS
-merge parentage                       PASS
 Backend CI push-main run 32502330955 SUCCESS
 ```
 
-The merge gate performed no branch deletion, CodeQL activation, ruleset mutation, frontend mutation, concrete business-schema implementation or other unrelated repository write.
+Later protected-main documentation reconciliation is included in the current main anchor recorded at the top of this file.
 
 Final scaffold integration decision:
 
 ```text
 PRODUCTION BACKEND SCAFFOLD
 CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
-
-POST-MERGE BACKEND CI
-PASS
 ```
 
 ## 12. Current direct-validation non-claims
@@ -430,18 +421,18 @@ PASS
 Do not extrapolate scaffold evidence into blanket Physical or production validation:
 
 ```text
-CODEQL POST-MAIN ACTIVATION            NOT RUN
-DIRECT HG-01..HG-12                    NOT RUN
-DIRECT HG PASS                         0
+DIRECT BUSINESS HG-01..HG-12           NOT RUN / PASS 0
 RESTORE/PITR REHEARSAL                 NOT RUN
 POWERSYNC DIRECT TEST                  NOT RUN
 RESTATE DIRECT TEST                    NOT RUN
 OBJECT RECOVERY TEST                   NOT RUN
 SOLVER DIRECT TEST                     NOT RUN
 PRODUCTION DEPLOYMENT                  NOT STARTED
-FRONTEND DIRECT MATERIALIZATION PASS   NOT YET EARNED
-CONCRETE BUSINESS DB SCHEMA            NOT STARTED
+CONCRETE BUSINESS DB SCHEMA            NOT IMPLEMENTED
+VERTICAL #1 BUSINESS IMPLEMENTATION    NOT STARTED
 ```
+
+The PostgreSQL technical substrate is already real; the business persistence layer is not.
 
 ## 13. Active branches / workstreams
 
@@ -449,30 +440,46 @@ CONCRETE BUSINESS DB SCHEMA            NOT STARTED
 feature/backend-scaffold
 → CLOSED historical implementation branch
 → CP1–CP5 accepted
-→ integrated into protected main via merged PR #24
+→ integrated into protected main via PR #24
+
+feature/logical-postgresql
+→ ACTIVE backend CP6 Concrete Persistence Readiness
+→ design-first / no business implementation in CP6
+→ CP6-00 complete
+→ CP6-01 active pending Gate 01 closure
 
 feature/frontend-materialization
-→ frontend production materialization
-→ separate worktree/workstream
-
-BACKEND NEXT
-→ Concrete Logical → PostgreSQL
-→ fresh bounded workstream/gate required before implementation
+→ independent frontend production materialization workstream
 ```
 
-Frontend and backend work may proceed in parallel. Shared global documentation must be reconciled semantically at integration time; one workstream must not overwrite newer protected-main truth from the other.
+Frontend and backend work may proceed in parallel. Shared global documentation must preserve the newest reconciled truth rather than letting one workstream restore stale status from another.
 
-## 14. Exact next backend action
+## 14. Exact current backend action
 
 ```text
-1. Treat CP1–CP5 and protected-main scaffold integration as closed accepted evidence.
-2. Do not reopen the scaffold without concrete contradictory evidence.
-3. Open a fresh bounded workstream/gate for Concrete Logical → PostgreSQL.
-4. Consume the closed Logical owner/ref/invariant authorities and accepted Physical PostgreSQL posture before proposing mappings.
-5. Do not mechanically map 57 Logical owners to 57 tables/services.
-6. Review concrete tables/constraints/indexes/history semantics before migrations.
-7. Keep CodeQL a separate explicitly authorized post-main boundary.
-8. Preserve frontend materialization as an independent parallel workstream.
+1. Treat Product/Domain/Logical/Physical/Engineering and CP1–CP5 as closed accepted authority.
+2. Continue CP6 from docs/workstreams/logical-postgresql.md.
+3. Close CP6-01 only after its independent 57/57 + cross-cutting + HG/SC/PSV review is clean.
+4. Proceed to CP6-02 PostgreSQL Persistence Constitution only after Gate 01 closure.
+5. Do not create business tables, business migrations, SQLAlchemy business mappings or persistence adapters merely to prove CP6 foundation claims.
+6. CP6-03 builds Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition without reopening the Physical Model.
+7. CP6-04 selects Vertical #1 by evidence.
+8. CP6-05 designs Vertical #1 exactly.
+9. CP6-06 proves only genuinely materialized/non-speculative PostgreSQL foundation behavior.
+10. CP6-07 closes whole persistence readiness.
+11. Only after CP6 closure does a separately authorized phase implement Vertical #1.
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation/CP1/CP2/CP3/CP4/CP5 decisions without concrete contradictory evidence.
+CP6 terminal boundary:
+
+```text
+CONCRETE POSTGRESQL FOUNDATION
+CLOSED / READY
+
+VERTICAL #1
+SELECTED
+EXACTLY DESIGNED
+READY FOR IMPLEMENTATION
+```
+
+Do not reopen closed decisions without concrete contradictory evidence.

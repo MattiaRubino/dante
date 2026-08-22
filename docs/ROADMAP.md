@@ -1,6 +1,7 @@
 # DANTE Roadmap
 
 - Status: **CURRENT**
+- Current backend workstream: `feature/logical-postgresql` — **CP6 Concrete Persistence Readiness ACTIVE / DESIGN-FIRST**
 
 ## Completed architecture / design sequence
 
@@ -12,13 +13,14 @@ Domain Model
         CLOSED
           ↓
 Logical Model
-        CLOSED
+        CLOSED / 57 OF 57 / WL-H01..WL-H12
           ↓
 Pre-Physical Repository & Architecture Coherence
         CLOSED
           ↓
 Physical Model / Target Selection
-        CLOSED / ACCEPTED
+        CLOSED / SELECTED / ACCEPTED
+        PostgreSQL 18.4 canonical primary
           ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
@@ -30,7 +32,77 @@ Frontend Engineering Foundation
 
 Architecture closure remains distinct from implementation/direct validation.
 
-## Active implementation workstreams
+## Active workstreams
+
+### Backend CP6 — Concrete Persistence Readiness — ACTIVE
+
+Branch:
+
+`feature/logical-postgresql`
+
+CP6 is the bounded transition from the closed Domain/Logical/Physical architecture and closed CP1–CP5 technical backend foundation into a concrete reusable PostgreSQL persistence foundation.
+
+It is **design/readiness**, not Vertical #1 business implementation.
+
+Current sequence:
+
+```text
+CP6-00
+Authority Reconstruction & Scope Freeze
+COMPLETE
+        ↓
+CP6-01
+Concrete Persistence Coverage Map
+ACTIVE / GATE 01 PENDING CLOSURE
+        ↓
+CP6-02
+PostgreSQL Persistence Constitution
+        ↓
+CP6-03
+Concrete Relational Topology
++ Implementation Dependency DAG
++ Vertical Decomposition
+        ↓
+CP6-04
+Vertical #1 Selection
+        ↓
+CP6-05
+Vertical #1 Exact Persistence Design
+        ↓
+CP6-06
+PostgreSQL Foundation Direct Readiness Proof
+only where genuinely executable without speculative business structures
+        ↓
+CP6-07
+Whole Persistence Readiness / Clean-Room QA
+        ↓
+CP6 CLOSED
+```
+
+CP6 must end at:
+
+```text
+CONCRETE POSTGRESQL FOUNDATION
+CLOSED / READY
+
+VERTICAL #1
+SELECTED
+EXACTLY DESIGNED
+READY FOR IMPLEMENTATION
+```
+
+The following belong to the **separate post-CP6 Vertical #1 implementation phase**, not CP6:
+
+```text
+business Alembic migration(s)
+business SQLAlchemy mappings
+persistence adapter
+application use case
+business API
+vertical end-to-end implementation
+```
+
+Do not create speculative shared tables/primitives merely to produce direct-proof evidence inside CP6.
 
 ### Frontend production materialization — ACTIVE
 
@@ -38,9 +110,9 @@ Branch:
 
 `feature/frontend-materialization`
 
-The closed Frontend Foundation is being materialized under its own bounded workstream. Direct frontend PASS is earned only by the real carried validations; active branch status is not evidence by itself.
+The closed Frontend Foundation is being materialized under its own bounded workstream. Direct frontend PASS is earned only by its real carried validations; active branch status is not evidence by itself.
 
-Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled semantically when either workstream integrates.
+Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled to the newest current truth rather than restoring stale phase-time status.
 
 ### Backend production scaffold — CLOSED / INTEGRATED
 
@@ -122,8 +194,6 @@ Dependency Review
 
 The ruleset also requires the PR branch to be up to date with protected `main` before merge. Both checks are selected from source GitHub Actions.
 
-Repository owner enabled the Actions full-length-SHA requirement. The current connector cannot directly read that setting; it remains explicitly classified as owner-applied / connector-unverifiable.
-
 ## CP5 closure evidence
 
 CP5 re-proved the integrated scaffold without adding business schema or changing backend source:
@@ -149,7 +219,7 @@ real Uvicorn factory startup               PASS
 CP4 required remote workflows              SUCCESS on CP5 PRE-SCOPE
 ```
 
-One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL `/forwards/expose` HTTP 500 during disposable-container port forwarding. The created diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
+One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a transient Docker Desktop/WSL `/forwards/expose` HTTP 500 during disposable-container port forwarding. The diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
 
 ## Backend scaffold integration evidence
 
@@ -157,54 +227,55 @@ One immediate full-suite rerun after the dedicated PostgreSQL suite encountered 
 pre-merge main                          ff46eb16b971b1fde96eef9047b09faa02e1a5db
 feature/backend-scaffold final HEAD     46b775bfbfc4747daff341d973df133646dbd0c8
 PR #24                                  MERGED
-merge commit / protected main           41680497c94b0c2f4830679b93f8eb6f1d543f8d
+merge commit                            41680497c94b0c2f4830679b93f8eb6f1d543f8d
 Backend CI push-main run                32502330955 SUCCESS
 ```
 
-The merge commit has the expected prior-main and final-feature parents. Post-merge readback proved protected `main` contains the scaffold. No CodeQL activation, ruleset mutation, frontend mutation or concrete business schema was included in the merge operation.
+Post-merge readback proved protected `main` contains the scaffold. No concrete business schema was included in that integration.
 
-## Immediate backend sequence
+## CP6 implementation boundary
 
-### 1. Concrete Logical → PostgreSQL implementation
-
-The production backend scaffold is now closed and verified on protected `main`. The next backend boundary is concrete Logical → PostgreSQL mapping through a fresh bounded workstream/gate.
-
-The first step is **not** to create all tables mechanically. It is to consume the closed Logical owner/ref/invariant contracts plus the accepted Physical PostgreSQL posture and propose a coherent concrete mapping.
+The PostgreSQL technical substrate already exists through CP2/CP3:
 
 ```text
-consume closed Logical owner/ref/invariant contracts
-        ↓
-consume accepted Physical PostgreSQL constraints
-        ↓
-propose concrete physical mapping
-        ↓
-review schema/constraints/indexes/history semantics
-        ↓
-Alembic migration(s)
-        ↓
-real PostgreSQL tests
-        ↓
-persistence/application vertical slice
+LOCAL PostgreSQL 18.4
+selected extension envelope
+SQLAlchemy 2 async
+psycopg 3
+Alembic
+schema dante
+owner/migrator/runtime role separation
+real PostgreSQL acceptance harness
+explicit transaction ownership
 ```
 
-Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
+CP6 therefore does **not** need to reselect the database or rebuild technical persistence infrastructure. It must turn the closed semantic/Physical contracts into reusable concrete relational rules, then exactly design the first vertical.
 
-### 2. Product vertical slices
+CP6 does not mechanically translate 57 Logical concepts into 57 tables/modules/services.
 
-Once the first concrete persistence mapping exists, product work proceeds vertically rather than by completing every layer in isolation:
+## Post-CP6 product vertical implementation
+
+After CP6 closes, the first selected vertical proceeds through a separately authorized implementation phase:
 
 ```text
-user capability
-→ required canonical data
-→ domain/application behavior
-→ PostgreSQL mapping + migration
-→ persistence adapter
-→ API boundary
-→ frontend consumption
-→ end-to-end acceptance
+CP6 exact Vertical #1 design
+        ↓
+business migration(s)
+        ↓
+SQLAlchemy business mapping
+        ↓
+persistence adapter
+        ↓
+application behavior
+        ↓
+API boundary where required
+        ↓
+frontend consumption where required
+        ↓
+direct PostgreSQL / system acceptance
 ```
 
-Frontend materialization may continue in parallel on its separate worktree.
+The exact selected vertical is not assumed in advance; CP6-03/04 determines it from topology and dependencies.
 
 ## Capability-triggered Physical implementation
 
@@ -213,6 +284,9 @@ Activate specialist components only at real requirements:
 ```text
 PowerSync + encrypted SQLite
 → real offline/multi-device implementation
+
+PostgreSQL transactional outbox
+→ real Class-A async requirement
 
 R2
 → real ContentArtifact byte flow
@@ -229,13 +303,13 @@ pgBackRest + AWS S3
 
 ## CodeQL boundary
 
-CodeQL remains a separate post-backend-main activation boundary. Backend scaffold integration does not authorize a custom CodeQL workflow or required CodeQL check.
+CodeQL remains a separate explicitly authorized boundary. CP6 does not silently activate it.
 
 ## Remote environments
 
 ```text
 LOCAL
-→ current implementation boundary
+→ current implementation context
 
 DEV
 → activate when shared remote integration provides real value
@@ -254,13 +328,13 @@ Backend hosting/compute, IaC and remote sizing remain deliberate decisions at th
 ```text
 SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
 DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
+CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
 CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
 WORKFLOW EXISTS != TRUSTED CHECK
 TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 CLOSED FEATURE BRANCH != INTEGRATED MAIN UNTIL VERIFIED MERGE
+CP6 READY FOR IMPLEMENTATION != VERTICAL ALREADY IMPLEMENTED
 ```
-
-Backend scaffold now satisfies the final rule: its protected-main merge and post-merge CI were directly verified.
 
 Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.

@@ -4,35 +4,40 @@
 - Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained in historical evidence and technical identifiers)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
-- Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- PM-00: **QA PASS**
-- PM-01: **PASS-CONDITIONAL**
-- PM-02: **COMPLETE**
-- PM-03: **STATIC COMPLETE / 0 REJECTS**
-- PM-04A: **COMPLETE / 0 EXECUTION-WORTHY GAPS**
-- PM-04B: **NOT ADMITTED**
-- PM-05: **COMPLETE**
-- PM-06: **EVIDENCE QUALIFICATION COMPLETE / DIRECT PERFORMANCE NOT RUN**
-- PM-07: **EVIDENCE QUALIFICATION COMPLETE / DIRECT DESTRUCTIVE RUNS NOT RUN**
-- PM-08: **SECONDARY/SPECIALIST QUALIFICATION COMPLETE**
-- PM-09: **EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE**
-- PM-10: **FINAL STACK RECOMMENDATION COMPLETE**
-- PM-11: **EXPLICIT TARGET STACK SELECTION COMPLETE**
-- PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
-- PM-13: **CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS**
-- PM-14: **BRANCH / WORKSTREAM CLOSURE COMPLETE**
-- Protected-main integration after PM-14: **PR #15 COMPLETE**
-- Selected canonical primary: **PostgreSQL 18.4**
-- Selected target companion stack: **ESTABLISHED**
-- Direct implementation execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
-- Backend Foundation: **NOT STARTED / DEFERRED**
-- Development Profile v0: **NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE**
+- Main baseline during Physical workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
+- Current project progression: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE on `feature/logical-postgresql`**
+- Physical semantic benchmark/direct HG corpus: **DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
+- Business persistence schema: **NOT IMPLEMENTED**
 - Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
 - pgBackRest + AWS S3 initial DEV posture: **DORMANT / NOT ACTIVE until recovery/production boundary or real recovery rehearsal**
+
+Historical Physical checkpoint results:
+
+```text
+PM-00   QA PASS
+PM-01   PASS-CONDITIONAL
+PM-02   COMPLETE
+PM-03   STATIC COMPLETE / 0 REJECTS
+PM-04A  COMPLETE / 0 EXECUTION-WORTHY GAPS
+PM-04B  NOT ADMITTED
+PM-05   COMPLETE
+PM-06   EVIDENCE QUALIFICATION COMPLETE / DIRECT PERFORMANCE NOT RUN
+PM-07   EVIDENCE QUALIFICATION COMPLETE / DIRECT DESTRUCTIVE RUNS NOT RUN
+PM-08   SECONDARY/SPECIALIST QUALIFICATION COMPLETE
+PM-09   EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
+PM-10   FINAL STACK RECOMMENDATION COMPLETE
+PM-11   EXPLICIT TARGET STACK SELECTION COMPLETE
+PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
+PM-13   CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
+PM-14   BRANCH / WORKSTREAM CLOSURE COMPLETE
+PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
+```
 
 ## Purpose
 
 This directory contains the evidence, selection and accepted target Physical architecture that translates the CLOSED DANTE Domain + Logical Model into bounded implementation mechanisms without weakening semantic ownership.
+
+The Physical Model is closed. Later backend work consumes it; later implementation progress does not retroactively change the phase-time evidence recorded in PM-00..PM-14.
 
 ```text
 DOMAIN + LOGICAL
@@ -58,17 +63,26 @@ research
 
 ## Current authority order
 
-For current target architecture read:
+For current Physical target architecture read:
 
 1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
 2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
 3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
 4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch/workstream closure evidence produced before PR #15;
-5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
-6. [`result-register-v1.md`](result-register-v1.md) — current result ledger;
-7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — workstream closure/handoff.
+5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — current direct implementation-validation carry-forward;
+6. [`result-register-v1.md`](result-register-v1.md) — Physical result ledger;
+7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — Physical workstream closure/handoff.
 
-PM-01..PM-10 remain evidence/rationale history and must not override later PM-11/12 current selected truth. PM-14 remains truthful historical closure evidence for the state before protected-main integration.
+For **current project implementation status after Physical closure**, use:
+
+```text
+../PROJECT-STATUS.md
+../ROADMAP.md
+../workstreams/logical-postgresql.md
+../development/backend-cp3-persistence-contract.md
+```
+
+PM-00..PM-14 preserve their phase-time evidence. A historical statement such as `DATABASE DEPLOYMENT NOT STARTED` inside a PM-era record describes the state at that checkpoint and must not override later CP2/CP3 direct evidence.
 
 ## Non-negotiable barriers
 
@@ -88,6 +102,7 @@ FINALIST != PREFERRED
 PREFERRED != SELECTED
 SELECTED != DEPLOYED
 SELECTED != DIRECT PASS
+CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
 ```
 
 No universal Entity/Thing/EAV/generic-edge canonical shortcut is accepted.
@@ -193,7 +208,7 @@ Offline is operation-specific. Arrival order does not define truth. Universal co
 
 ## Initial DEV activation posture already fixed
 
-The target stack includes components that are intentionally **selected but dormant in initial DEV**. This posture is current operational truth and is consumed by Development Profile v0 rather than reopened there.
+The target stack includes components intentionally selected but dormant in initial DEV.
 
 ```text
 RESTATE RUNTIME
@@ -209,7 +224,9 @@ ACTIVATION TRIGGER = recovery/production boundary
                      OR real recovery-rehearsal requirement
 ```
 
-`SELECTED != DEPLOYED` is therefore directly applicable here.
+`SELECTED != DEPLOYED` remains directly applicable.
+
+The PostgreSQL transactional outbox is selected for bounded Class-A work but is **not** assigned the same formal `DORMANT` status; materialize it only when a real Class-A requirement exists.
 
 ## Restate deployment semantics
 
@@ -226,7 +243,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-Because Restate is dormant in initial DEV, choosing self-hosted vs Cloud EU is **not a current Development Profile v0 decision**. That decision opens only when the first real Class-B activation trigger exists. For the current Python path, do not assume the client-side journal encryption currently documented only for TypeScript; journal payload minimization remains mandatory.
+Because Restate is dormant in initial DEV, self-hosted vs Cloud EU opens only when Restate activation is triggered. For the current Python path, do not assume client-side journal encryption documented only for TypeScript; journal payload minimization remains mandatory.
 
 ## Object / recovery semantics
 
@@ -239,9 +256,7 @@ PostgreSQL -> pgBackRest -> S3
 R2 raw bytes -> separate S3 backup repository
 ```
 
-This recovery target is selected but **not activated in initial DEV**. Activation occurs at the recovery/production boundary or earlier only when an actual recovery-rehearsal requirement makes it necessary.
-
-Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-resurrection semantics. Object Lock Compliance is not the default.
+This recovery target is selected but not activated in initial DEV. Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-resurrection semantics. Object Lock Compliance is not the default.
 
 ## Solver semantics
 
@@ -284,9 +299,11 @@ Object Lock Compliance as default
 
 Reintroduction requires an explicit later architecture reopen based on material new requirements/evidence.
 
-## Direct execution truth
+## Direct execution truth — phase-time vs current project state
 
-Target selection, PM-13 QA, closure and PR #15 integration did **not** execute the selected stack:
+### Physical-phase snapshot
+
+At PM-11/12/13/14 closure, the selected stack had not yet been directly implemented. Those historical records correctly retain values such as:
 
 ```text
 DATABASE DEPLOYMENT      NOT STARTED
@@ -302,6 +319,27 @@ OBJECT RECOVERY            NOT RUN
 SOLVER                     NOT RUN
 VERIFIED-RUN SCORE        NOT AVAILABLE
 ```
+
+### Current project truth after Physical closure
+
+Later backend work has now directly established:
+
+```text
+BACKEND CP1–CP5                  CLOSED / INTEGRATED / DIRECT QA PASS
+LOCAL POSTGRESQL 18.4            MATERIALIZED / DIRECT QA PASS
+POSTGIS 3.6.4                    LOCAL ENVELOPE DIRECT QA PASS
+PGVECTOR 0.8.6                   LOCAL ENVELOPE DIRECT QA PASS
+PG_TRGM / UNACCENT               LOCAL ENVELOPE DIRECT QA PASS
+PG_STAT_STATEMENTS               LOCAL ENVELOPE DIRECT QA PASS
+SQLALCHEMY / PSYCOPG             MATERIALIZED
+ALEMBIC TECHNICAL BASELINE       MATERIALIZED / DIRECT QA PASS
+DANTE SCHEMA / ROLE MODEL        MATERIALIZED / DIRECT QA PASS
+REAL POSTGRESQL TEST HARNESS      MATERIALIZED / DIRECT QA PASS
+BUSINESS PERSISTENCE SCHEMA       NOT IMPLEMENTED
+SEMANTIC HG DIRECT PASS           0 unless a qualifying business scenario is actually executed
+```
+
+CP3 technical acceptance does not retroactively discharge business-semantic HG/PSV obligations.
 
 The full mandatory implementation/release register is [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md).
 
@@ -320,29 +358,7 @@ DOMAIN/LOGICAL IMPLICIT REOPENS    0
 
 Verdict: **QA PASS — architecture/documentation coherence**.
 
-This is not a direct runtime/database/recovery PASS.
-
-## Development Profile v0 boundary
-
-A later separate operational scope decides only the **remaining unresolved** questions, such as:
-
-```text
-which selected components without an already-fixed posture are active immediately
-self-hosted vs managed where an active component actually requires that choice now
-accounts / credentials / environment setup
-initial observability activation
-upgrade / production triggers
-```
-
-It must not reopen the already-fixed initial posture:
-
-```text
-Restate initial DEV = DORMANT until real Class-B need
-Restate deployment mode = deferred until Restate activation
-pgBackRest + AWS S3 initial DEV = DORMANT until recovery/production boundary or real rehearsal need
-```
-
-A component being dormant in DEV does not remove it from the accepted target. A DEV deployment choice does not silently change target architecture.
+This remains distinct from direct runtime/database/recovery/business validation.
 
 ## Current boundary
 
@@ -350,23 +366,27 @@ A component being dormant in DEV does not remove it from the accepted target. A 
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
-PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
-FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
 
-PM-13
-QA PASS
+BACKEND FOUNDATION CP1–CP5
+CLOSED / INTEGRATED / DIRECT QA PASS
 
-PM-14
-BRANCH / WORKSTREAM CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
+CONCRETE PERSISTENCE READINESS — CP6
+ACTIVE / DESIGN-FIRST
+BRANCH feature/logical-postgresql
 
-DIRECT IMPLEMENTATION VALIDATION
-NOT STARTED / CARRIED FORWARD
+CP6 TERMINAL BOUNDARY
+CONCRETE POSTGRESQL FOUNDATION CLOSED / READY
+VERTICAL #1 SELECTED / EXACTLY DESIGNED / READY FOR IMPLEMENTATION
 
-NEXT
-Development Profile v0
-Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
-pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
+VERTICAL #1 BUSINESS IMPLEMENTATION
+POST-CP6 / SEPARATELY AUTHORIZED
 
-BACKEND
-NOT STARTED / DEFERRED
+BUSINESS MIGRATIONS / SQLALCHEMY BUSINESS MAPPINGS / PERSISTENCE ADAPTERS
+NOT AUTHORIZED BY CP6
+
+RESTATE
+DORMANT UNTIL REAL CLASS-B NEED
+
+pgBackRest + AWS S3
+DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY OR REAL REHEARSAL
 ```
