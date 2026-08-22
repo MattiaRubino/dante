@@ -338,99 +338,312 @@ ExternalRef
 
 They may all use SQL `uuid` somewhere in their physical representation; that does not make them interchangeable.
 
-### 7.1 NativeRef
+### 7.1 NativeRef — bounded heterogeneous address topology CLOSED
 
 ```text
 homogeneous target contract
 → direct FK to concrete native-owner table
 
 genuinely heterogeneous native target contract
-→ bounded native-address control mechanism
+→ bounded dante.native_address control row
 ```
 
-A heterogeneous reference must preserve database-enforced:
+`native_address` exists only as technical address/control infrastructure. It is **not** a mandatory semantic parent row for every native owner and it is not an Entity/Thing table. A row is created when an existing native owner needs to participate in a heterogeneous NativeRef contract or another accepted technical mechanism, such as MaterialState owner addressing, requires the bounded address.
+
+#### Concrete control table — `dante.native_address`
 
 ```text
-address existence
-concrete owner existence
-concrete owner family
-consumer-slot family eligibility
-lifecycle continuity where required
+native_ref     uuid  PRIMARY KEY
+owner_family   text  NOT NULL
 ```
 
-Application-only `type + uuid` is rejected.
+`native_ref` is the same stable UUIDv7 identity already owned by the concrete LR-01 owner. The address row does not mint a second semantic identity.
 
-#### Candidate shared family — `native_address`
-
-**Status:** REQUIRED ONLY TO THE EXTENT ACTUAL HETEROGENEOUS NativeRef CONTRACTS REQUIRE IT; exact topology OPEN in CP6-03.
-
-The accepted Physical/Constitution requires a bounded native-address mechanism where heterogeneous NativeRef exists, but CP6-03 must still enumerate every actual consumer contract before freezing:
+`owner_family` is a bounded technical discriminator. The accepted family vocabulary is exactly the 15 LR-01 native-owner families:
 
 ```text
-participating owner families
-owner-family representation
-1:1 owner binding
-consumer eligibility enforcement
-retirement/tombstone behavior
-constraint-vs-trigger mechanism
+person
+living_referent
+asset
+place
+content_artifact
+collective
+possibility
+goal
+plan
+activity
+event
+routine
+occurrence
+session
+observation
 ```
 
-The object must remain address infrastructure only. It must never accumulate generic domain properties.
+The implementation MUST reject any other `owner_family`. The concrete migration may express the closed set as deterministic `text + CHECK`; a PostgreSQL ENUM is not required and the value is not runtime-extensible metadata.
 
-### 7.2 ScopedRecordRef
+#### Owner binding
 
-Concrete LR-02 / qualified relation records receive a stable scoped address only when independent addressability/history/reconciliation justifies it.
+The concrete owner row exists **before** its optional `native_address` projection is inserted.
+
+On `native_address` INSERT, database-local integrity verifies:
+
+```text
+native_ref exists in the concrete owner table selected by owner_family
+```
+
+The dispatcher is bounded to the 15 accepted owner tables. Unknown family values reject. `native_ref` and `owner_family` are immutable after insertion under ordinary runtime authority.
+
+A custom cross-table check is required because PostgreSQL `CHECK` constraints are row-local and cannot truthfully enforce existence in one of multiple unrelated owner tables. The mechanism therefore uses a narrow schema-qualified trigger/constraint function only for the cross-table part that FK/CHECK cannot express.
+
+Owner deletion/retirement must not leave a live address falsely claiming an extant owner. Until DB-U14 closes owner-specific lifecycle, physical deletion of an addressed owner is not an ordinary runtime operation. The final lifecycle design must either retain the truthful owner/tombstone continuity or remove the address in the same governed lifecycle operation when no surviving references/history require it.
+
+#### Heterogeneous consumer shape
+
+A heterogeneous NativeRef slot stores the reference UUID and uses:
+
+```text
+consumer.target_native_ref
+    → FK dante.native_address(native_ref)
+    → ON DELETE NO ACTION
+```
+
+The concrete Reference Contract additionally installs a bounded eligibility check that compares the referenced `native_address.owner_family` with the exact allowed family set for that semantic slot. This eligibility check is database-enforced through a narrow trigger because a normal FK cannot express “FK target exists and its discriminator belongs to this consumer-specific subset”.
+
+The allowed family set is owned by the consuming semantic Reference Contract, not by `native_address` globally.
+
+This deliberately avoids:
+
+```text
+application-only type + uuid
+one-of-N nullable FKs for one heterogeneous slot
+global generic target_kind + target_id semantics
+```
+
+Homogeneous slots continue to bypass `native_address` and use direct concrete-owner FKs.
+
+#### Index posture
+
+```text
+PRIMARY KEY(native_ref)
+→ sufficient canonical address lookup index
+
+owner_family
+→ no standalone index by default
+```
+
+No redundant UUID index is added. Any later owner-family scan index requires a real query/maintenance need under DB-U15.
+
+#### SQLAlchemy shape
+
+CP6-04 may map `native_address` as a small technical row class. It MUST NOT become a polymorphic ORM base for native semantic owners. Concrete owner mappings remain independent.
+
+#### Direct proof obligation
+
+At CP6-04/05, real PostgreSQL must prove at least:
+
+```text
+valid existing owner + correct owner_family anchor       PASS
+unknown owner_family                                    REJECT
+nonexistent concrete owner                              REJECT
+owner UUID in wrong concrete family                     REJECT
+heterogeneous consumer valid family                     PASS
+heterogeneous consumer wrong family                     REJECT
+heterogeneous consumer missing address                  REJECT by FK
+attempt to mutate native_ref / owner_family             REJECT
+address payload beyond bounded control contract         absent by schema
+```
+
+This closes **DB-U01** at the control-topology level. Exact heterogeneous consumer eligibility sets are closed with their concept-specific Reference Contracts rather than being guessed globally.
+
+### 7.2 ScopedRecordRef — shared bounded address topology REQUIRED / CLOSED
+
+Concrete LR-02 or qualified-relation records receive stable ScopedRecordRef only when independent addressability, material history, reconciliation or cross-record referencing justifies it.
 
 ```text
 homogeneous scoped target
 → direct FK to concrete scoped family where possible
 
 genuinely heterogeneous scoped target
-→ separate bounded scoped-address mechanism MAY be required
+→ dante.scoped_address
+
+MaterialStateRef owned by addressable contextual families
+→ dante.scoped_address as the scoped owner-address space
 ```
 
-Native, scoped and material address spaces must not collapse into one generic reference table.
+The shared scoped address mechanism is required because the closed model already contains multiple independently addressable/material contextual families — for example Agreement terms/state, Schedule and consequential governance/contextual records — whose MaterialStateRef control must preserve a discriminated scoped owner address without collapsing those families into one semantic root.
 
-#### Candidate shared family — `scoped_address`
-
-**Status:** CONDITIONAL / NOT YET PROVEN NECESSARY AS A SHARED TABLE.
-
-CP6-03 must first identify a real heterogeneous ScopedRecordRef consumer. If none exists, no shared scoped-address table will be created merely for symmetry.
-
-### 7.3 MaterialStateRef
-
-Material semantic states use stable explicit addresses independent from PostgreSQL MVCC tokens, hashes, provider revisions or timestamps.
-
-A bounded material-state address/control family is **required**.
-
-Conceptual contract:
+#### Concrete control table — `dante.scoped_address`
 
 ```text
-MaterialStateRef UUID
-+
-exact semantic owner address
-+
-exact material facet/purpose
-+
-owner-specific state payload row
-+
-explicit current accepted-state binding where required
+scoped_ref      uuid  PRIMARY KEY
+scoped_family   text  NOT NULL
 ```
 
-#### Required shared family — `material_state_address`
+`scoped_ref` is the stable UUIDv7 ScopedRecordRef of the concrete contextual record. The concrete scoped record remains the semantic owner; `scoped_address` is only a bounded address projection.
 
-**Status:** REQUIRED FAMILY / EXACT COLUMNS AND OWNER-ADDRESS TOPOLOGY TO BE CLOSED IN CP6-03.
+`scoped_family` is a schema-controlled technical discriminator. The accepted value set is the set of concrete ScopedRecordRef-owning families that survive the complete CP6-03 object-level derivation. The set is not runtime extensible. Each newly accepted scoped family updates the schema-controlled bounded family validation in the same change as that family.
 
-It is a technical control structure, not a semantic Fact/Version table.
+The concrete contextual record exists before its `scoped_address` row is created. A schema-qualified bounded integrity trigger validates that `scoped_ref` exists in the concrete table selected by `scoped_family`; unknown families reject. `scoped_ref` and `scoped_family` are immutable under ordinary runtime authority.
 
-It must be possible for PostgreSQL to reject:
+A scoped owner that never needs stable ScopedRecordRef does **not** receive a ceremonial `scoped_address` row.
+
+#### Heterogeneous scoped consumer shape
+
+A genuine heterogeneous ScopedRecordRef consumer uses:
 
 ```text
-missing state address
-state address with no matching owner-specific state row
-wrong owner
-wrong facet
-invalid current-state binding
+consumer.target_scoped_ref
+    → FK dante.scoped_address(scoped_ref)
+    → ON DELETE NO ACTION
+```
+
+plus a database-enforced consumer-specific family-eligibility check against `scoped_address.scoped_family`.
+
+Homogeneous scoped references use direct concrete-table FKs and do not route through the shared address table.
+
+#### Index / ORM / proof posture
+
+```text
+PRIMARY KEY(scoped_ref)
+→ canonical scoped-address lookup
+
+scoped_family
+→ no standalone index without DB-U15 proof
+```
+
+SQLAlchemy may map a technical `ScopedAddress` row but MUST NOT use it as a semantic mapped superclass.
+
+Direct PostgreSQL proof mirrors NativeRef:
+
+```text
+correct scoped family                               PASS
+unknown scoped family                               REJECT
+missing concrete scoped row                         REJECT
+wrong concrete scoped family                        REJECT
+heterogeneous consumer wrong family                 REJECT
+heterogeneous consumer dangling address             REJECT by FK
+address mutation                                    REJECT
+```
+
+This closes **DB-U02**. The exact final `scoped_family` vocabulary is populated by the remaining object-level family derivation; that inventory work does not reopen the shared topology decision.
+
+### 7.3 MaterialStateRef — owner-address and facet topology CLOSED
+
+Material semantic states use stable explicit addresses independent from PostgreSQL MVCC tokens, hashes, provider revisions, UUID order or timestamps.
+
+The shared material-state control layer is required and remains technical only.
+
+#### Concrete control table — `dante.material_state_address`
+
+```text
+material_state_ref   uuid  PRIMARY KEY
+native_owner_ref     uuid  NULL
+scoped_owner_ref     uuid  NULL
+facet_code           text  NOT NULL
+```
+
+Foreign keys:
+
+```text
+native_owner_ref
+→ dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+
+scoped_owner_ref
+→ dante.scoped_address(scoped_ref)
+→ ON DELETE NO ACTION
+```
+
+Row-local owner-space invariant:
+
+```text
+exactly one of native_owner_ref / scoped_owner_ref is non-NULL
+```
+
+This is an intentional two-address-space discriminator, **not** the forbidden one-of-N owner-FK encoding of a heterogeneous NativeRef slot. It distinguishes two already-closed reference families (`NativeRef` versus `ScopedRecordRef`) and keeps both referential paths database-enforced.
+
+`material_state_ref`, owner address and `facet_code` are immutable under ordinary runtime authority. The table stores no semantic payload, generic status, generic history fields or provider state.
+
+#### Facet representation — `facet_code`
+
+`facet_code` is PostgreSQL `text` with stable schema-owned values.
+
+It is not:
+
+```text
+a PostgreSQL-wide semantic enum hierarchy
+a runtime-extensible lookup taxonomy
+a universal Fact/Version type
+a substitute for the owner-specific state table
+```
+
+Each materialized state family receives one stable globally unambiguous code, using a documented owner/family-qualified convention such as:
+
+```text
+agreement.terms
+goal.state
+schedule.placement
+```
+
+Exact codes are frozen when each material state family is derived. The accepted set is schema-controlled; unknown facet codes reject. A facet addition is a reviewed schema/database-reference change, not runtime metadata insertion.
+
+A bounded cross-table integrity dispatcher maps each accepted `facet_code` to its exact owner address space/family and exact owner-specific material-state payload table. That dispatcher enforces what ordinary row-local CHECK/FK constraints cannot:
+
+```text
+facet is recognized
+owner address space is correct for that facet
+owner family is eligible for that facet
+exact owner-specific material-state payload row exists
+payload row binds the same MaterialStateRef
+payload row binds the same concrete owner
+```
+
+Owner-specific state payload tables remain the semantic authority. Their baseline shape is:
+
+```text
+material_state_ref
+→ PRIMARY KEY
+→ FK dante.material_state_address(material_state_ref)
+
+concrete owner FK
+→ native or scoped concrete owner table
+
+owner/facet-specific payload columns
+→ defined by that concept/facet
+```
+
+The payload table is 1:1 with its `material_state_ref`. A narrow deferred constraint trigger on the address/control side permits the address row and payload row to be inserted in the same transaction and requires the complete state to exist by commit. Payload-side validation rejects wrong owner/facet immediately or at the selected constraint boundary.
+
+This closes **DB-U03** and **DB-U04**.
+
+#### Structural indexes
+
+```text
+PRIMARY KEY(material_state_ref)
+
+INDEX(native_owner_ref, facet_code)
+WHERE native_owner_ref IS NOT NULL
+
+INDEX(scoped_owner_ref, facet_code)
+WHERE scoped_owner_ref IS NOT NULL
+```
+
+The two partial owner/facet indexes are justified by material-history reconstruction and owner/facet state lookup; they also support owner-side integrity/lifecycle checks. They are not generic “index every FK” decoration. Final names follow the CP3 deterministic naming convention.
+
+#### Direct proof obligation
+
+Real PostgreSQL must prove:
+
+```text
+exactly-one owner address invariant                        PASS
+missing native/scoped address                             REJECT by FK
+unknown facet_code                                        REJECT
+facet with wrong owner address space                      REJECT
+facet with wrong concrete owner family                    REJECT
+missing owner-specific payload by commit                  REJECT
+payload MaterialStateRef mismatch                         REJECT
+payload owner mismatch                                    REJECT
+attempt to mutate state address owner/facet/ref            REJECT
 ```
 
 ### 7.4 ExternalRef
@@ -460,13 +673,15 @@ For every concept/facet that crosses the materiality threshold:
 ```text
 stable semantic owner/contextual record
         ↓
-owner-specific immutable-by-policy material-state rows
+optional bounded native/scoped owner-address projection
         ↓
-MaterialStateRef control/address
+dante.material_state_address
         ↓
-explicit current accepted-state binding
+owner-specific immutable-by-policy material-state row
         ↓
-typed correction/replacement/reconciliation lineage
+explicit current accepted-state binding where required
+        ↓
+typed owner-specific correction/replacement/reconciliation lineage
 ```
 
 Current truth is not inferred from:
@@ -487,28 +702,129 @@ Examples of eventual families may include concept-specific state tables such as 
 
 There is no universal semantic state payload table.
 
-### 8.3 Current-state control
+Every material-state payload family owns its semantic columns and chronology. `material_state_address` owns only address/control facts.
 
-A concrete current-state mechanism is required wherever the accepted model needs a current material state.
+### 8.3 Current accepted-state binding topology CLOSED
 
-**Open topology question:** whether the final implementation uses narrowly shared technical current-binding control plus owner-specific constraints, owner-specific current-binding tables/columns, or a bounded hybrid.
+Where the accepted model needs singular current material truth for an owner/facet, DANTE uses two bounded technical current-binding tables that preserve the NativeRef/ScopedRecordRef separation.
 
-Whatever mechanism is selected must enforce:
+#### `dante.native_current_material_state`
 
 ```text
-current state exists
-current state belongs to same owner
-current state belongs to same facet
-current state is a valid accepted state
+native_owner_ref     uuid  NOT NULL
+facet_code           text  NOT NULL
+material_state_ref   uuid  NOT NULL
+
+PRIMARY KEY(native_owner_ref, facet_code)
+UNIQUE(material_state_ref)
+
+FK native_owner_ref
+→ dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+
+FK material_state_ref
+→ dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
 ```
 
-### 8.4 Lineage
+#### `dante.scoped_current_material_state`
 
-Correction, replacement and reconciliation must preserve typed meaning.
+```text
+scoped_owner_ref     uuid  NOT NULL
+facet_code           text  NOT NULL
+material_state_ref   uuid  NOT NULL
 
-The database must not invent one universal `state_edge(type, from, to)` graph merely because it is convenient.
+PRIMARY KEY(scoped_owner_ref, facet_code)
+UNIQUE(material_state_ref)
 
-CP6-03 must decide which lineage relationships can be represented by bounded technical control and which must remain owner-specific semantic relationships.
+FK scoped_owner_ref
+→ dante.scoped_address(scoped_ref)
+→ ON DELETE NO ACTION
+
+FK material_state_ref
+→ dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+```
+
+The composite primary key guarantees at most one current accepted MaterialStateRef per owner/facet in each address space. `UNIQUE(material_state_ref)` states the reciprocal invariant: one exact MaterialStateRef cannot simultaneously be the current binding for another owner/facet.
+
+A narrow database trigger validates, on INSERT/UPDATE, that the selected `material_state_address` has:
+
+```text
+same address space
+same owner ref
+same facet_code
+```
+
+Because material-state address ownership/facet is immutable, this validation cannot silently become stale later.
+
+Normal mutation of current truth is therefore:
+
+```text
+insert new MaterialStateRef/control row
+→ insert exact owner-specific immutable state payload
+→ validate complete state
+→ update current binding from old state_ref to new state_ref
+→ commit under the operation's applicable expected-state/concurrency rule
+```
+
+The current-binding tables contain no semantic payload and no lifecycle history. Past truth remains in owner-specific material-state/history structures.
+
+No owner-specific sparse `current_*_state_ref` column proliferation is required, and no generic `owner_kind + owner_id` current-state table is introduced.
+
+This closes **DB-U05**.
+
+#### Current-binding direct proof
+
+```text
+first current state for owner/facet                        PASS
+replacement with another valid same-owner/same-facet state PASS
+second simultaneous row for same owner/facet               REJECT by PK
+same MaterialStateRef bound twice                           REJECT by UNIQUE
+wrong owner                                                 REJECT
+wrong facet                                                 REJECT
+wrong address space                                         REJECT
+dangling MaterialStateRef                                   REJECT by FK
+current selected by MAX/UUID order                          absent by design
+```
+
+### 8.4 Lineage topology CLOSED
+
+DANTE does **not** create a shared `material_state_edge`, `state_lineage(type, from, to)` or universal history graph.
+
+Lineage is classified as follows:
+
+```text
+simple owner/facet-specific one-predecessor correction/replacement
+→ explicit typed FK column(s) on the concrete material-state family when that exactly represents the semantics
+
+owner/facet-specific multi-predecessor or metadata-bearing lineage
+→ dedicated owner/facet-specific lineage relation table
+
+Reconciliation as a material semantic resolution
+→ concrete Reconciliation contextual family referencing the competing MaterialStateRefs / sources and the resulting accepted state as required
+
+technical correlation/causation
+→ technical provenance/runtime fields or relations
+→ never substituted for semantic correction/replacement/reconciliation
+```
+
+The exact relation name and cardinality are owned by the concrete concept/facet. Examples such as `corrects_material_state_ref`, `replaces_material_state_ref` or a specific `<family>_state_lineage` table are accepted only when the corresponding Domain semantics require them.
+
+Rules:
+
+```text
+correction != replacement != reconciliation
+old MaterialStateRef remains stable
+new accepted meaning receives a new MaterialStateRef
+no semantic state payload is overwritten to fake history
+no generic lineage type vocabulary is introduced merely for reuse
+same-family/same-owner/facet eligibility is database-enforced for each concrete lineage relation
+```
+
+Reusable SQLAlchemy/migration helpers may reduce technical repetition, but they must not create a shared semantic mapped/table root.
+
+This closes **DB-U06**.
 
 ### 8.5 Chronology
 
@@ -644,6 +960,8 @@ NOT NULL / FK / UNIQUE / CHECK
 → application validation as additional semantic layer, not substitute for enforceable DB truth
 ```
 
+For the bounded address/material-state controls closed in sections 7–8, trigger use is restricted to cross-table owner/family/facet/payload equality/existence that PostgreSQL row-local CHECK and ordinary FK constraints cannot fully express. It is not product workflow logic.
+
 ### 12.2 Foreign keys
 
 Every FK must document:
@@ -708,6 +1026,21 @@ A material stale-write-sensitive mutation uses expected `MaterialStateRef` or an
 
 No external provider effect is described as atomically rolled back with PostgreSQL.
 
+### 13.1 Control-row transaction ordering
+
+The bounded control topology uses explicit transaction ordering rather than deferring ordinary FKs by convenience:
+
+```text
+native/scoped semantic owner exists
+→ optional address row is inserted and owner existence is checked
+→ material_state_address is inserted
+→ owner-specific material-state payload is inserted
+→ deferred completeness check fires no later than COMMIT
+→ current binding may be inserted/updated after the complete state exists
+```
+
+A `DEFERRABLE INITIALLY DEFERRED` **constraint trigger** is permitted for the address→payload completeness invariant because the two rows are intentionally created in one transaction and PostgreSQL permits constraint-trigger execution at transaction end. Ordinary direct FKs remain immediate unless a concrete transaction genuinely requires deferral.
+
 ---
 
 ## 14. Candidate relational family inventory
@@ -736,6 +1069,8 @@ This inventory is the first CP6-03 concrete map. `REQUIRED` means the closed mod
 
 No table above inherits from a common semantic Entity table.
 
+A `native_address` row is a lazy bounded technical projection created only when a concrete owner must participate in heterogeneous/address-control semantics; the canonical owner row above remains the semantic identity owner.
+
 ### 14.2 Contextual / realization / result families — LR-02 / LR-06
 
 | Concept | Candidate family | Status | Key rule |
@@ -751,6 +1086,8 @@ No table above inherits from a common semantic Entity table.
 | Request | `request` contextual family | CONDITIONAL | Request != effect/Authority/idempotency key |
 | Resource Requirement | structured requirement + contextual address where justified | CONDITIONAL | specification semantics remain distinct from Allocation |
 | Schedule | `schedule` dependent placement family | REQUIRED when accepted placement is persisted | distinct from Occurrence/Session/Actual/Capacity Claim |
+
+Addressable/material contextual families use `scoped_address` only when the exact family owns a justified ScopedRecordRef.
 
 ### 14.3 Specific relation families — LR-03
 
@@ -801,7 +1138,7 @@ The object-level pass will determine whether repeated value shapes merit SQLAlch
 
 | Logical role | Candidate persistence family | Status |
 |---|---|---|
-| LR-07 material history | owner-specific material-state rows + bounded MaterialStateRef control + typed lineage | REQUIRED where material |
+| LR-07 material history | owner-specific material-state rows + `material_state_address` + bounded current-state controls + typed owner-specific lineage | REQUIRED where material |
 | LR-08 derived/effective | view/materialized/cache/query structures | CONDITIONAL / only for real derived/query need |
 | LR-09 provider/external | provider mapping/revision/apply/sync/reconciliation structures | GENUINELY DEFERRED until concrete integration contract unless a closed concept requires a provider-neutral field now |
 | LR-10 flexible metadata | owner-bound bounded JSONB/typed metadata | CONDITIONAL / never a global property bag |
@@ -884,18 +1221,18 @@ Gate-03 exact table/column contract                  NOT YET PASS
 
 ## 16. CP6-01 Part-2 cross-cutting/non-owner disposition — initial matrix
 
-Gate 03 requires 100% accounting beyond the 57 Domain concepts. This initial matrix uses the final allowed disposition vocabulary but remains subject to object-level proof before Gate 03.
+Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses the final allowed disposition vocabulary but remains subject to the remaining object-level proof before Gate 03.
 
-| Construct | Initial disposition | Current CP6-03 reasoning / exact trigger |
+| Construct | Current disposition | Current CP6-03 reasoning / exact trigger |
 |---|---|---|
 | ReferenceAddress | NO INDEPENDENT PERSISTENCE as universal root | represented by the four discriminated address contracts and concrete bounded mechanisms |
-| Reference Contract | NO INDEPENDENT PERSISTENCE | enforced through concrete FK/anchor eligibility constraints per consuming slot |
-| NativeRef | MATERIALIZE IN CP6 | native owner UUIDs + direct FKs; bounded native-address control where real heterogeneous contracts prove need |
-| ScopedRecordRef | MATERIALIZE IN CP6 where concrete scoped families require stable address | no shared scoped anchor unless heterogeneous scoped consumer is proven |
-| MaterialStateRef | MATERIALIZE IN CP6 | required bounded material-state address/control family + owner-specific state rows |
+| Reference Contract | NO INDEPENDENT PERSISTENCE | homogeneous direct FK; heterogeneous native/scoped address + database-enforced consumer-family eligibility |
+| NativeRef | MATERIALIZE IN CP6 | native owner UUIDs + direct FKs; `native_address` now CLOSED as the bounded heterogeneous/material-owner control topology |
+| ScopedRecordRef | MATERIALIZE IN CP6 where concrete scoped families require stable address | shared `scoped_address` topology now CLOSED; rows exist only for justified addressable contextual families |
+| MaterialStateRef | MATERIALIZE IN CP6 | `material_state_address` owner-space/facet topology CLOSED + owner-specific state rows |
 | ExternalRef | GENUINELY DEFERRED for generic/shared provider structures | trigger = first concrete integration/provider contract; no provider ontology invented now |
-| Current accepted-state binding | MATERIALIZE IN CP6 where material state exists | exact shared-vs-owner-specific topology must enforce same owner/facet |
-| Correction/replacement/reconciliation lineage | MATERIALIZE IN CP6 where material history exists | typed lineage; no universal event/state graph |
+| Current accepted-state binding | MATERIALIZE IN CP6 where material state exists | `native_current_material_state` / `scoped_current_material_state` topology CLOSED |
+| Correction/replacement/reconciliation lineage | MATERIALIZE IN CP6 where material history exists | owner/facet-specific typed lineage; no universal state graph; topology CLOSED |
 | World/effective chronology | MATERIALIZE IN CP6 per family where material | exact type/range determined by concept chronology |
 | Recorded/learned/accepted chronology | MATERIALIZE IN CP6 per family where material | separate from world chronology only when needed |
 | Governed Operation / Effect Contract | NO INDEPENDENT PERSISTENCE as universal operation owner | operation-specific persistence/provenance fields when a concrete consequential effect exists |
@@ -936,67 +1273,85 @@ The exact Alembic revision batches are frozen only after table/column derivation
    Alembic base
    SQLAlchemy MetaData/Base
         ↓
-1. CORE IDENTITY OBJECTS
+1. SEMANTIC OWNER / SCOPED ROW FOUNDATIONS
    15 LR-01 canonical owner tables
-   + bounded native-address control if concrete hetero NativeRef contracts require it
+   + concrete scoped/contextual tables as their derivations are frozen
         ↓
-2. MATERIAL-STATE CONTROL FOUNDATION
-   MaterialStateRef address/control
-   + exact owner/facet binding mechanism
-   + current-state control mechanism
+2. BOUNDED ADDRESS CONTROL
+   native_address
+   scoped_address
+   + schema-qualified family-validation trigger functions
         ↓
-3. OWNER-SPECIFIC MATERIAL STATE / HISTORY
-   state rows
+3. MATERIAL-STATE CONTROL FOUNDATION
+   material_state_address
+   native_current_material_state
+   scoped_current_material_state
+   + owner-space/facet/current-binding validation functions
+        ↓
+4. OWNER-SPECIFIC MATERIAL STATE / HISTORY
+   exact material-state payload rows
    chronology
-   correction/replacement/reconciliation lineage
+   owner/facet-specific correction/replacement/reconciliation lineage
+   + deferred address→payload completeness constraints
         ↓
-4. DEPENDENT / CONTEXTUAL FAMILIES
+5. DEPENDENT / CONTEXTUAL FAMILIES
    Agreement / Schedule / Milestone / Actual / Proposal / Decision / Request / etc.
+   (where not already required as addressable owner prerequisites)
         ↓
-5. SPECIFIC RELATION FAMILIES
+6. SPECIFIC RELATION FAMILIES
    Membership / Responsibility / Participation / Ownership / Consent / Authority / Visibility / etc.
         ↓
-6. RULE / POLICY / SPECIFICATION FAMILIES
+7. RULE / POLICY / SPECIFICATION FAMILIES
    Recurrence / Temporal Constraint / Criterion / Availability / Conditional Policy / Resource Requirement
         ↓
-7. RESULT / GOVERNANCE / PROVENANCE COMPLETION
+8. RESULT / GOVERNANCE / PROVENANCE COMPLETION
    Outcome / material Evaluation / reconciliation / exact provenance bindings
         ↓
-8. PROVIDER / DERIVED / SPECIALIST STRUCTURES
+9. PROVIDER / DERIVED / SPECIALIST STRUCTURES
    only where closed authority and real trigger justify materialization
         ↓
-9. DOCUMENTATION + INTROSPECTION QA
+10. DOCUMENTATION + INTROSPECTION QA
    dictionary / generated reference / diagrams / schema drift / direct tests
 ```
 
 This is a dependency DAG, not a product roadmap. Specific families can move earlier/later when their FK/material-state dependencies prove it.
 
-### 17.1 Cyclic-integrity caution
+### 17.1 Address-control insertion dependency
 
-Heterogeneous native-address integrity may require a staged migration shape because the address controller and concrete owner tables can depend on one another conceptually.
+The closed control topology avoids circular semantic ownership by treating address rows as **bounded projections of already-existing semantic owners**, not parents that every owner must inherit from.
 
-CP6-03 must select a PostgreSQL-enforceable design that preserves:
-
-```text
-anchor exists
-concrete owner exists
-owner family matches
-one owner binding only
-consumer contract eligibility
-```
-
-without making the anchor a semantic superclass.
-
-The migration plan may therefore need:
+Normal order:
 
 ```text
-create control table
-→ create concrete owner tables / bindings
-→ install bounded constraint/trigger enforcement
-→ verify wrong-family/dangling rejection
+create concrete native/scoped semantic row
+→ when heterogeneous/material addressing is actually required, create matching native_address/scoped_address
+→ validate address family against concrete owner
+→ create material_state_address when a material state is accepted
+→ create exact owner-specific state payload
+→ satisfy deferred completeness check by COMMIT
+→ create/update explicit current binding where required
 ```
 
-This is not permission for application-only integrity.
+This pattern preserves:
+
+```text
+concrete semantic owner remains authoritative
+address exists only for a real owner
+no universal Entity/Thing row
+no application-only referential integrity
+```
+
+### 17.2 Restore / bulk-load validation implication
+
+Custom cross-table trigger enforcement is not a replacement for restore/evolution QA. CP6-05 must include explicit integrity scans that can prove after migration/restore-style loading that:
+
+```text
+no native/scoped address is orphaned or family-mismatched
+no material_state_address lacks/mismatches its payload
+no current binding mismatches owner/facet/state
+```
+
+Destructive backup/restore evidence itself remains staged under HG-09/HG-12/PSV as already defined.
 
 ---
 
@@ -1018,6 +1373,20 @@ Alembic remains deployed-schema authority
 ```
 
 Reusable Python mixins/types are allowed only for technical repetition that does not imply semantic inheritance.
+
+The bounded control objects may be represented by technical mappings such as:
+
+```text
+NativeAddress
+ScopedAddress
+MaterialStateAddress
+NativeCurrentMaterialState
+ScopedCurrentMaterialState
+```
+
+Those classes are persistence-control rows only. Native/scoped semantic owners do not inherit from them in SQLAlchemy.
+
+Reference-family Python types continue to distinguish `NativeRef`, `ScopedRecordRef` and `MaterialStateRef` even though their SQL scalar is `uuid`.
 
 Each final Database Dictionary entry will point to its SQLAlchemy mapping when one exists.
 
@@ -1046,9 +1415,16 @@ Database Dictionary object coverage
 native UUID round-trip
 UUIDv7 generation/storage
 homogeneous FK integrity
-heterogeneous native reference: valid target PASS
-heterogeneous native reference: wrong family REJECT
-heterogeneous native reference: dangling target REJECT
+native_address valid existing owner/family PASS
+native_address unknown family REJECT
+native_address nonexistent owner REJECT
+heterogeneous native reference valid target PASS
+heterogeneous native reference wrong family REJECT
+heterogeneous native reference dangling target REJECT
+scoped_address valid existing owner/family PASS
+scoped_address unknown/wrong/missing owner REJECT
+heterogeneous scoped wrong family/dangling target REJECT
+address ref/family mutation REJECT
 anchor leakage / forbidden generic payload REJECT by design/schema
 ```
 
@@ -1058,12 +1434,18 @@ Maps especially to PG-R01 / PG-R02.
 
 ```text
 MaterialStateRef exists exactly once
+exactly one native/scoped owner address present
+unknown material facet rejected
+facet owner-space/family mismatch rejected
 state row belongs to correct owner/facet
-missing state row rejected
+missing state payload rejected by commit
 wrong owner rejected
 wrong facet rejected
 current binding points to valid same-owner/same-facet accepted state
+one current state per owner/facet enforced
+one MaterialStateRef cannot be current for another owner/facet
 correction creates new state rather than silent overwrite
+owner-specific typed lineage rejects wrong-owner/facet links
 historical state remains reconstructible
 ```
 
@@ -1102,6 +1484,7 @@ explicit negative states remain distinguishable
 NO ACTION lifecycle defaults hold
 retired/tombstoned stable identity not reused
 redacted/unavailable does not become never-existed
+address/owner continuity remains truthful under the final DB-U14 lifecycle design
 ```
 
 ### 19.7 Concurrency
@@ -1135,6 +1518,16 @@ SC-017 / SC-018 remain canonical scenario identifiers where applicable.
 
 The machine-readable dictionary defined by `docs/database/README.md` will be instantiated only once concrete objects reach stable names/fields during CP6-03.
 
+The five bounded control objects now have stable design names and must receive dictionary entries when dictionary files are instantiated:
+
+```text
+native_address
+scoped_address
+material_state_address
+native_current_material_state
+scoped_current_material_state
+```
+
 Every materialized table will eventually have a structured entry accounting for, as applicable:
 
 ```text
@@ -1161,25 +1554,30 @@ Generated schema/ER material must be derived from SQLAlchemy/PostgreSQL where pr
 
 ## 21. CP6-03 unresolved-parameter register
 
-These are design questions that remain after the first whole-database inventory. They are not generic “TBD” placeholders: each exists because the authority chain must still be traced to a concrete decision.
+The first six opening questions are now closed in sections 7–8:
+
+```text
+DB-U01 native_address topology                         CLOSED
+DB-U02 scoped_address topology                         CLOSED
+DB-U03 MaterialStateRef owner-address encoding         CLOSED
+DB-U04 material facet representation                   CLOSED
+DB-U05 current accepted-state binding topology         CLOSED
+DB-U06 lineage topology                                CLOSED
+```
+
+The remaining questions are not generic “TBD” placeholders: each exists because the authority chain must still be traced to a concrete decision.
 
 | ID | Unresolved parameter | Why not guessed now | Closure requirement |
 |---|---|---|---|
-| DB-U01 | exact `native_address` relational topology and participating owner families | bounded heterogeneous integrity is required, but every concrete consuming Reference Contract must be enumerated first | prove owner existence/family/eligibility with PostgreSQL and no semantic-root leakage |
-| DB-U02 | whether a shared `scoped_address` table is needed | Physical says MAY only for genuine heterogeneous scoped addressing | identify at least one real heterogeneous ScopedRecordRef consumer or reject shared table |
-| DB-U03 | MaterialStateRef owner-address encoding across native/scoped owners | must preserve exact owner/facet without universal semantic root | select bounded referentially enforced topology |
-| DB-U04 | material facet representation | generic text/enum/lookup choice cannot be made before actual facet sets are enumerated | enumerate facets and select typed bounded representation |
-| DB-U05 | current accepted-state binding topology | shared control vs owner-specific binding must preserve same-owner/same-facet integrity | produce enforceable relational design + negative tests |
-| DB-U06 | correction/replacement/reconciliation lineage topology | must not become a universal semantic history graph | classify lineage relationships into bounded technical vs owner-specific semantic forms |
 | DB-U07 | exact chronology columns/ranges per family | no blanket bitemporality or universal created_at semantics | derive temporal needs from each Domain concept |
-| DB-U08 | final PostgreSQL object naming convention | names must follow actual family shapes and remain readable/stable | freeze deterministic naming before dictionary generation |
+| DB-U08 | final PostgreSQL object naming convention beyond the five closed control tables | names must follow actual family shapes and remain readable/stable | freeze deterministic naming before dictionary generation |
 | DB-U09 | Account persistence | Domain keeps Account separate but detailed access model is deferred | remain genuinely deferred unless another closed authority determines enough schema |
 | DB-U10 | Principal/security persistence | AuthN/AuthZ context not yet closed as independent registry | preserve separation and defer independent registry until security contract |
 | DB-U11 | Place geometry type/SRID/indexes | PostGIS selected, but exact geometry semantics must come from Place authority | derive exact geometry/address facets; no speculative spatial schema |
 | DB-U12 | Recurrence family parameter tables/columns | recurrence families are known; exact lossless structured parameters require concept-level derivation | close each accepted family representation |
 | DB-U13 | Monetary Amount / Quantity exact numeric precision/unit representation | semantic value families exist but storage precision cannot be guessed globally | derive accepted precision/range/unit requirements |
-| DB-U14 | owner-specific lifecycle/tombstone fields | no global deleted_at/tombstone table | derive permitted lifecycle continuity per owner/family |
-| DB-U15 | structural FK indexes and query indexes | index doctrine is closed but actual FK/query graph is not yet final | justify every index against structure/query proof |
+| DB-U14 | owner-specific lifecycle/tombstone fields | no global deleted_at/tombstone table | derive permitted lifecycle continuity per owner/family, including addressed-owner deletion/retirement |
+| DB-U15 | remaining structural FK indexes and query indexes | index doctrine is closed but full FK/query graph is not yet final | justify every index against structure/query proof; preserve the owner/facet indexes already closed for material_state_address |
 | DB-U16 | Capacity Claim disposition | persistence pressure exists outside 57 but exact concrete family must be traced | resolve to MATERIALIZE / NO INDEPENDENT / GENUINELY DEFERRED with exact owner |
 | DB-U17 | provider/integration object shapes | no concrete provider contract is active | remain deferred unless closed Domain data requires provider-neutral persistence now |
 | DB-U18 | idempotency table timing | persistent semantics are closed but no qualifying product operation exists yet | materialize only at first real operation requiring persistent reservation |
@@ -1187,8 +1585,8 @@ These are design questions that remain after the first whole-database inventory.
 | DB-U20 | derived/search/vector persisted structures | selected capabilities do not imply activation | create only from real query/search requirement and test basis |
 
 ```text
-UNRESOLVED PARAMETERS AT CP6-03 OPEN
-20
+UNRESOLVED PARAMETERS CURRENT
+14
 
 UNCLASSIFIED PARAMETERS ALLOWED AT GATE 03
 0
@@ -1225,6 +1623,8 @@ For each required/conditional family:
 ```
 
 No object is called complete before this chain is satisfied.
+
+The next highest-leverage derivation must consume the complete Domain concept specifications rather than reopening the now-closed reference-control topology.
 
 ---
 
@@ -1276,8 +1676,14 @@ COMPLETE
 PART-2 INITIAL DISPOSITION
 OPEN / ONE EXPLICIT OPEN DERIVATION (Capacity Claim)
 
+REFERENCE / MATERIAL-STATE CONTROL TOPOLOGY
+DB-U01..DB-U06 CLOSED
+
 EXACT TABLE/COLUMN/CONSTRAINT BLUEPRINT
 IN PROGRESS
+
+UNRESOLVED DB-U ITEMS
+14
 
 GATE 03
 NOT YET EARNED
