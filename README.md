@@ -52,8 +52,8 @@ CP6 — CONCRETE PERSISTENCE READINESS
 ACTIVE ON feature/logical-postgresql
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
-CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 NEXT / NOT STARTED
 
 CURRENT POSTGRESQL TECHNICAL PATCH
 PostgreSQL 18.6
@@ -288,7 +288,8 @@ POSTGRESQL 18.6 FOUNDATION REGRESSION    DIRECT REMOTE QA PASS
 18.6 POSTGRESQL LANE                     18/18 PASS
 18.6 BACKEND CI GATE                     SUCCESS
 CP6-01                                   CLOSED / GATE 01 PASS
-CP6-02                                   ACTIVE / CANDIDATE / GATE 02 NOT PASSED
+CP6-02                                   CLOSED / GATE 02 PASS
+CP6-03                                   NEXT / NOT STARTED
 CONCRETE BUSINESS DB SCHEMA              NOT STARTED
 DIRECT BUSINESS HG-01..HG-12             NOT RUN / PASS 0
 RESTORE/PITR REHEARSAL                   NOT RUN
@@ -336,10 +337,11 @@ Read before the next backend write:
 3. `docs/ROADMAP.md`
 4. `docs/workstreams/logical-postgresql.md`
 5. `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-6. development operating/safety/handoff rules
-7. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
-8. closed Logical Model owner/ref/invariant authorities
-9. applicable Physical target/validation authorities.
+6. `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+7. development operating/safety/handoff rules
+8. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
+9. closed Logical Model owner/ref/invariant authorities
+10. applicable Physical target/validation authorities.
 
 Exact active boundaries:
 
@@ -352,11 +354,11 @@ BACKEND
 feature/logical-postgresql
 → CP6 Concrete Persistence Readiness ACTIVE
 → CP6-01 CLOSED / GATE 01 PASS
-→ CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+→ CP6-02 CLOSED / GATE 02 PASS
 → PostgreSQL 18.6 technical refresh + direct remote regression PASS
-→ NEXT: final independent whole-Constitution review
-→ only if clean: separate Gate 02 closure
-→ CP6-03 starts only after Gate 02 PASS
+→ CP6-03 NEXT / NOT STARTED
+→ next: read/research/design-first relational topology + dependency DAG + vertical decomposition
+→ no business implementation inside CP6
 ```
 
 Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default. Do not implement Vertical #1 inside CP6.
