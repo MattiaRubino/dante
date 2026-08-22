@@ -1,88 +1,167 @@
-# Workstream — CP6 Concrete Persistence Readiness
+# Workstream — CP6 Concrete PostgreSQL Database
 
-- Status: **ACTIVE / DESIGN-FIRST / NO BUSINESS IMPLEMENTATION AUTHORIZED**
+- Status: **ACTIVE / DATABASE BLUEPRINT + MATERIALIZATION**
 - Product: **DANTE**
 - Repository: `MattiaRubino/dante`
 - Branch: `feature/logical-postgresql`
 - Protected-main anchor at branch origin: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
-- CP6 durable-handoff PRE-SCOPE: `6c01e6aa6432824ae27478e2b91d8b809bc54bfb`
+- Current scope-realignment PRE-SCOPE: `7ac8b5be7b61c85f1b0952206d5bbd6a3a58a6b2`
 - Upstream Domain Model: **CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE**
 - Upstream Logical Model: **CLOSED / 57 OF 57 CLASSIFIED / WL-H01..WL-H12 ACTIVE**
 - Upstream Physical Model: **CLOSED / SELECTED / ACCEPTED / PostgreSQL 18 MAJOR FAMILY; exact phase-time patch 18.4**
 - Production backend scaffold: **CP1–CP5 CLOSED / DIRECT QA PASS / INTEGRATED IN PROTECTED main**
-- CP6-00: **READ-ONLY AUTHORITY RECONSTRUCTION COMPLETE**
+- CP6-00: **COMPLETE**
 - CP6-01: **CLOSED / GATE 01 PASS**
-- CP6-01 closure: `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 - CP6-02: **CLOSED / GATE 02 PASS**
-- CP6-02 Constitution: `docs/development/backend-cp6-02-postgresql-persistence-constitution.md` — **CLOSED / ACCEPTED**
-- CP6-02 closure: `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
-- CP6-02 independent review: **COMPLETE / HARDENING APPLIED / TARGETED POST-REPAIR VERIFICATION CLEAN**
 - CP6-03: **NEXT / NOT STARTED**
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 - PostgreSQL 18.6 evidence: **Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
-- Business schema/migrations: **NOT STARTED / OUT OF CP6 IMPLEMENTATION SCOPE**
-- Vertical #1 implementation: **OUT OF CP6 / NEXT SEPARATELY AUTHORIZED PHASE AFTER CP6 CLOSURE**
+- Current DANTE business database: **NOT YET MATERIALIZED**
+- First product vertical: **POST-CP6 / NOT PART OF THIS WORKSTREAM**
 
-## 1. Purpose
+## 1. Purpose — corrected execution boundary
 
-CP6 is the bounded transition from the already-closed DANTE semantic/physical architecture into a concrete, reusable PostgreSQL persistence foundation.
+CP6 is the phase that turns the already-closed DANTE Domain + Logical + Physical model into the **concrete PostgreSQL database of DANTE**.
 
-It is **not** another Domain, Logical or Physical modeling cycle. The extensive upstream work exists precisely so this stage can translate accepted meaning into concrete relational rules without re-discovering or weakening that meaning.
+The workstream is not a generic foundation exercise and it is not a first-product-vertical implementation.
 
-CP6 must end with:
+The intended sequence is:
 
 ```text
 CLOSED DOMAIN
-+
-CLOSED LOGICAL
-+
-ACCEPTED PHYSICAL POSTGRESQL MAPPING
-+
-CLOSED CP1–CP5 BACKEND FOUNDATION
++ CLOSED LOGICAL
++ ACCEPTED PHYSICAL POSTGRESQL MAPPING
++ CLOSED POSTGRESQL CONSTITUTION
         ↓
-CONCRETE POSTGRESQL PERSISTENCE FOUNDATION
-CLOSED / READY
-        +
-VERTICAL #1
-SELECTED
-EXACTLY DESIGNED
-READY FOR IMPLEMENTATION
+WHOLE DANTE DATABASE BLUEPRINT
+        ↓
+REAL POSTGRESQL MATERIALIZATION
+        ↓
+DIRECT DATABASE QA / CLEAN-ROOM REVIEW
+        ↓
+CP6 CLOSED
+        ↓
+SEPARATE FIRST PRODUCT VERTICAL PHASE
 ```
 
-CP6 must **not** implement Vertical #1. The first business Alembic migration, first business SQLAlchemy mapping, first business persistence adapter and first application operation for Vertical #1 belong to the separately authorized phase that starts only after CP6 is closed.
+### What CP6 MUST do
 
-The quality target is deliberately high:
+CP6 MUST derive, design and then materially implement everything that is already determinable from the closed model without inventing application behavior that belongs to a later product vertical.
 
-- consume the full closed Domain → Logical → Physical evidence chain;
-- preserve semantic ownership and reverse mapping;
-- close genuinely global PostgreSQL decisions once, not repeatedly per vertical;
-- establish concrete relational topology and implementation dependency order;
-- design Vertical #1 to implementation-ready precision;
-- directly prove only those PostgreSQL-foundation claims that can be proved without inventing speculative business schema;
-- carry any vertical-dependent direct proof forward honestly rather than manufacturing a paper or synthetic PASS.
+That includes, where the closed model requires it:
 
-## 2. Authority and precedence
+```text
+relational families and concrete tables
+owner identities and address/control structures
+specific relations and relation tables
+MaterialStateRef address/control structures
+owner-specific material-state/history structures
+explicit current-state bindings
+history / correction / replacement / reconciliation structures
+canonical/provider/derived separation
+provenance and governance persistence structures
+typed PostgreSQL columns
+PK / FK / UNIQUE / CHECK / EXCLUDE / range constraints
+required reference-family integrity
+structural indexes and index justification
+migration dependency order
+Alembic business-schema migrations
+SQLAlchemy mappings for the materialized database
+owner / migrator / runtime privilege posture for those objects
+real PostgreSQL positive/negative acceptance tests
+real migration fresh→head / drift / upgrade-path proof where applicable
+real concurrency / reference / history proof where the materialized database makes it executable
+```
+
+### What CP6 MUST NOT do
+
+CP6 MUST NOT implement the first product vertical as an application slice.
+
+Out of scope until CP6 is closed:
+
+```text
+first-vertical application use cases
+first-vertical application services
+first-vertical persistence adapters that encode application behavior
+business HTTP/API routes
+frontend consumption
+product workflow orchestration
+product-specific UI behavior
+activation of dormant specialist infrastructure without a real database-level trigger
+```
+
+The important boundary is therefore:
+
+```text
+DATABASE DESIGN + DATABASE IMPLEMENTATION
+= CP6
+
+FIRST APPLICATION VERTICAL
+= AFTER CP6
+```
+
+## 2. Scope-realignment authority
+
+This section corrects the process boundary that had become too restrictive during CP6-02 planning.
+
+The technical decisions closed by CP6-01 and CP6-02 remain valid and are **not reopened**.
+
+In particular, the following remain closed:
+
+```text
+57 / 57 Logical classification
+15 LR-01 native owners
+LR-01..LR-13 meanings
+WL-H01..WL-H12
+NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef separation
+PostgreSQL 18 as sole canonical persistence/material-history authority
+owner-specific canonical/history/relation thesis
+UUIDv7 / native PostgreSQL uuid posture
+bounded heterogeneous NativeRef anchor rule
+bounded MaterialStateRef address/control rule
+current-state explicit binding rule
+missingness / history / temporal rules
+constraint / index / transaction / idempotency rules
+Alembic migration doctrine
+owner / migrator / runtime privilege model
+specialist-capability activation boundaries
+```
+
+What is superseded is only earlier **process/staging prose** that said or implied any of the following:
+
+```text
+no business schema anywhere in CP6
+no business Alembic migrations anywhere in CP6
+no SQLAlchemy business mappings anywhere in CP6
+exact DANTE tables/columns must wait for a product vertical
+CP6 ends with Vertical #1 selected/designed but with the DANTE database still unmaterialized
+```
+
+Those statements are no longer current CP6 execution authority.
+
+They must be read narrowly as describing the bounded CP6-01/CP6-02 checkpoints themselves, which correctly created no business schema while coverage and global PostgreSQL rules were still being closed.
+
+This scope correction does **not** retroactively change the truth of Gate 01 or Gate 02: those gates passed without business DDL, exactly as recorded.
+
+## 3. Authority and precedence
 
 Repository truth outranks conversation memory.
 
-Use the current project precedence from the development operating rules:
+For CP6, use this order:
 
-1. current protected-main code, migrations, tests and accepted model/ADR truth;
-2. current durable Product / Domain / Logical / Physical / architecture / engineering documents;
-3. this active bounded CP6 workstream handoff for newer unmerged work;
-4. other current workstream sources;
-5. historical evidence, closed branches, PR/Git history;
-6. conversation memory.
+1. protected-main code/migrations/tests and accepted model/ADR truth;
+2. closed Domain / Logical / Physical authorities;
+3. closed CP6-01 coverage artifacts;
+4. closed CP6-02 PostgreSQL Constitution for technical doctrine;
+5. **this workstream for current CP6 execution scope and resume point**;
+6. current project-status / roadmap entry points;
+7. historical evidence / closed branches / conversation memory.
 
-Implementation convenience never outranks accepted semantics.
+Where older CP6-02 process prose conflicts with section 1–2 of this workstream, section 1–2 is the current execution-boundary authority. CP6-02 technical doctrine remains closed and fully authoritative.
 
-A closed upstream decision is reopened only when **concrete contradictory implementation evidence** proves the affected decision cannot hold. Any reopen must be targeted and separately gated. A preference for easier SQL, ORM mappings, fewer joins or a generic schema is not reopen evidence.
+## 4. Mandatory continuation bootstrap
 
-## 3. Mandatory continuation bootstrap
-
-A fresh session working on CP6 must reconstruct repository authority, not rely on this handoff alone.
-
-At minimum read/verify:
+Before a material CP6 write, read or verify at minimum:
 
 ```text
 README.md
@@ -99,37 +178,34 @@ docs/development/repository-engineering-safety.md
 this workstream handoff
 ```
 
-Then consume the complete closed upstream workstreams and all canonical continuation parts they require:
+Then consume the relevant closed model authorities rather than re-deriving them from memory.
+
+### CP6-01 authority
 
 ```text
-docs/workstreams/domain-model.md
-+ canonical Domain continuations through final closure
+docs/development/backend-cp6-01-concrete-persistence-coverage.md
+= exact 57/57 owner/role persistence ledger
 
-docs/workstreams/logical-model.md
-+ logical-model-part-2.md ... logical-model-part-9.md
-+ complete split Logical payloads
+docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
+= cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger
 
-docs/workstreams/pre-physical-coherence.md
-
-docs/workstreams/physical-model.md
-
-docs/workstreams/engineering-foundation.md
-
-docs/workstreams/backend-scaffold.md
+docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md
+= Gate 01 closure
 ```
 
-Current Logical authority includes, at minimum:
+### CP6-02 authority
 
 ```text
-docs/logical-model/whole-logical-model-v1.md
-docs/logical-model/checkpoints/whole-logical-v1-validation.md
-docs/logical-model/checkpoints/whole-logical-v1-remote-qa.md
-docs/logical-model/decision-and-assumption-register-v1-part-9.md
-docs/logical-model/traceability-and-regression-ledger-v1-part-9.md
-docs/logical-model/test-corpus-v1-part-9.md
+docs/development/backend-cp6-02-postgresql-persistence-constitution.md
+= closed reusable PostgreSQL doctrine
+
+docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md
+= Gate 02 closure
 ```
 
-Current Physical-consuming authority includes, at minimum:
+### Physical-consuming authority
+
+At minimum:
 
 ```text
 docs/physical-model/README.md
@@ -139,104 +215,14 @@ docs/physical-model/pm-03-semantic-hard-gate-preflight-v1.md
 docs/physical-model/pm-11-explicit-selection-v1.md
 docs/physical-model/pm-12-accepted-physical-model-v1.md
 docs/physical-model/pm-13-clean-room-qa-v1.md
-docs/physical-model/final-stack-capability-matrix-v1.md
-docs/physical-model/final-stack-audit-v1.md
 docs/physical-model/recommendation/post-selection-validation-register-v1.md
 ```
 
-The `postgresql-18.4-v1.md` path and PM exact versions are phase-time Physical evidence. Current compatible PostgreSQL patch maintenance is recorded by this active workstream and the closed CP6-02 Constitution, not by renaming historical Physical artifacts.
+The `18.4` Physical files preserve phase-time evidence. Current compatible PostgreSQL patch is 18.6.
 
-Current backend persistence authority includes the real CP3 implementation and tests, especially:
-
-```text
-docs/development/backend-cp3-persistence-contract.md
-apps/backend/src/dante/platform/config/database.py
-apps/backend/src/dante/platform/database/runtime.py
-apps/backend/src/dante/platform/database/metadata.py
-apps/backend/src/dante/platform/database/provisioning.py
-apps/backend/src/dante/bootstrap/
-apps/backend/migrations/
-apps/backend/tests/
-infra/local/postgres/
-infra/compose/
-.github/workflows/backend-ci.yml
-.github/workflows/dependency-review.yml
-```
-
-Current CP6-01 authority is split deliberately into two non-competing responsibilities plus one closure record:
-
-```text
-docs/development/backend-cp6-01-concrete-persistence-coverage.md
-= exact 57/57 owner/role persistence ledger
-
-docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
-= cross-cutting/non-owner coverage
-  + LR-01..LR-13
-  + WL-H01..WL-H12
-  + PG-R01..PG-R10
-  + DEFER-WL01..20
-  + HG-01..HG-12
-  + SC-001..SC-035
-  + full PSV stage ledger
-  + CP3 technical-vs-semantic evidence reconciliation
-
-docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md
-= formal Gate 01 closure evidence
-```
-
-Current CP6-02 authority:
-
-```text
-docs/development/backend-cp6-02-postgresql-persistence-constitution.md
-= reusable PostgreSQL persistence Constitution
-= CLOSED / ACCEPTED / GATE 02 PASS
-
-docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md
-= formal Gate 02 closure evidence
-```
-
-Do not stop at Part 1 of a split canonical document. Size/tool-limit splits are lossless continuations, not summaries.
-
-## 4. CP6 classification discipline
-
-Every material question encountered in CP6 must be classified before work proceeds.
-
-```text
-INHERITED / CLOSED
-accepted upstream decision;
-consume and apply;
-do not re-decide for convenience.
-
-CONCRETE DECISION
-upstream semantics/architecture deliberately left exact PostgreSQL implementation open;
-CP6 must resolve it at the appropriate checkpoint.
-
-VERTICAL-SPECIFIC
-not required to make the global persistence foundation coherent;
-defer until the relevant vertical design, beginning with CP6-05 for Vertical #1.
-
-DIRECT-PROOF
-meaning/mechanism already accepted;
-remaining work is executable evidence, not a new architecture decision.
-```
-
-This classification is mandatory in CP6-01 and CP6-02 decision registers and remains applicable downstream.
-
-It prevents two opposite failures:
-
-```text
-FAILURE A
-repeating Domain / Logical / Physical design already closed
-
-FAILURE B
-calling an unresolved concrete PostgreSQL choice “already decided”
-```
-
-## 5. Inherited semantic baseline — CLOSED / DO NOT REOPEN BY CONVENIENCE
+## 5. Inherited semantic baseline
 
 ### 5.1 Whole Logical coverage
-
-The closed Logical Model already establishes:
 
 ```text
 DOMAIN CONCEPTS CLASSIFIED       57 / 57
@@ -248,11 +234,11 @@ OWNERLESS MATERIAL STATE          0
 REQUIRED UNIVERSAL ROOTS           0
 ```
 
-CP6 consumes that classification. It does not perform another missing-concept census.
+CP6 consumes this model. It does not run another owner census.
 
-### 5.2 Native identity owners
+### 5.2 LR-01 native identity set
 
-The accepted LR-01 native identity set is exactly:
+Exactly:
 
 ```text
 Person
@@ -272,11 +258,9 @@ Session
 Observation
 ```
 
-`Actor`, `Subject` and `Resource` remain contextual roles/capabilities and do not gain native wrapper identity merely because heterogeneous persistence/querying would be easier.
+`Actor`, `Subject` and `Resource` remain roles/capabilities, not generic native owners.
 
-### 5.3 Logical representation vocabulary
-
-The accepted representation kernel remains:
+### 5.3 Representation families
 
 ```text
 LR-01 Native identity-bearing record
@@ -296,8 +280,6 @@ LR-13 Specialist extension record
 
 ### 5.4 Reference families
 
-Reference addressability remains discriminated:
-
 ```text
 NativeRef
 ScopedRecordRef
@@ -305,29 +287,11 @@ MaterialStateRef
 ExternalRef
 ```
 
-Do not collapse those families into one semantic `kind + id` reference root.
+No universal semantic `kind + id` root.
 
-No universal `ActorRef`, `SubjectRef`, `ResourceRef`, `TermsRef`, `ProjectionRef` or semantic `RelationRef` is required.
+### 5.5 High-risk non-collapse invariants
 
-### 5.5 State-layer separation
-
-The accepted model distinguishes:
-
-```text
-canonical DANTE state
-material historical state
-derived / projection state
-external / provider state
-unresolved / candidate state
-security / AuthZ runtime state
-transient computation state
-```
-
-Storage co-location never makes those layers semantically equivalent.
-
-### 5.6 High-risk non-collapse invariants
-
-At minimum preserve:
+Preserve at minimum:
 
 ```text
 Person != Account != Principal != Actor
@@ -339,121 +303,42 @@ Occurrence != Schedule != Session != Actual
 Actual != Observation != Outcome
 Evidence != Provenance
 Version != Reconciliation
-Quantity != Monetary Amount
-Asset != Resource role
-Responsibility != Participation != Coordination Stewardship
 Authority != Visibility
 Agreement != Consent
 Ownership != Possession
 Collective != current Membership set
 Schedule != Capacity Claim != Resource Allocation != Actual use
-provider state != canonical DANTE state automatically
+provider state != canonical DANTE state
 derived projection != canonical truth
 current state != historical state
 correction != silent overwrite
-shared reality != per-recipient duplicate reality
 AI/solver inference != accepted canonical effect
 ```
 
-## 6. WL-H01..WL-H12 — active implementation obligations
+## 6. WL-H01..WL-H12 remain active
 
-All twelve Whole-Logical hardenings remain active throughout CP6 and subsequent vertical implementation.
+All twelve Whole-Logical hardenings constrain blueprint, materialization and direct QA.
 
-```text
-WL-H01
-Agreement terms bind to a justified owned MaterialStateRef;
-no generic ownerless TermsRef.
-
-WL-H02
-Governed consequential effects preserve operation family, semantic target/facet,
-material target state where required, effect semantics, context/purpose,
-preconditions and governance requirements;
-HTTP route/AuthZ action/UI button != canonical effect.
-
-WL-H03
-Projection/disclosure surfaces retain bounded source, derivation/profile,
-material basis, purpose/context and disclosure boundary;
-no universal ProjectionRef.
-
-WL-H04
-absence / no record != false / no / inactive / declined / cancelled /
-known non-realization.
-
-WL-H05
-stale-write-sensitive consequential mutation requires expected MaterialStateRef
-or semantic equivalent; mismatch never silently overwrites accepted state.
-
-WL-H06
-idempotency controls retry/effect duplication and remains distinct from semantic identity.
-
-WL-H07
-multi-owner invariants use truthful atomic consistency where co-located;
-otherwise explicit staged/partial state + reconciliation/compensation.
-
-WL-H08
-canonical DANTE state != provider apply/sync state.
-
-WL-H09
-consequential LR-08 use revalidates or binds material derivation basis;
-stale derived state cannot silently become canonical effect.
-
-WL-H10
-retention/redaction/tombstone behavior preserves truthful permitted historical continuity;
-retired NativeRef is never reused.
-
-WL-H11
-consequential AuthZ provenance remains reconstructible without redefining
-Authority, Consent, Actor or Domain history as technical AuthZ state.
-
-WL-H12
-selective disclosure includes inference/non-interference across counts,
-existence, ranking, errors, timing, explanations, candidates, aggregates and relations.
-```
-
-CP6-01 maps applicability; CP6-02 defines reusable physical rules where global; CP6-05 applies them exactly to Vertical #1; vertical-dependent executable proof belongs to the later implementation phase unless CP6-06 can prove a foundation rule without speculative business structures.
-
-## 7. Inherited PostgreSQL Physical baseline — CLOSED
-
-### 7.1 Canonical authority and patch lifecycle
+Especially:
 
 ```text
-POSTGRESQL ARCHITECTURE
-PostgreSQL 18 major family
-= sole canonical DANTE persistence and material-history authority
-
-PHYSICAL PHASE-TIME EXACT PATCH
-PostgreSQL 18.4
-= selected/accepted historical evidence
-
-CP2 / CP3 ORIGINAL DIRECT EVIDENCE
-PostgreSQL 18.4
-= historical exact direct PASS
-
-CURRENT CP6 TECHNICAL PATCH
-PostgreSQL 18.6
-= configuration refresh APPLIED
-= direct remote foundation regression PASS
+WL-H01 Agreement terms bind justified owned MaterialStateRef
+WL-H02 governed consequential effects preserve semantic target/effect/governance basis
+WL-H03 projections preserve source/material/disclosure basis
+WL-H04 absence != explicit negative
+WL-H05 stale-write-sensitive mutation uses expected MaterialStateRef/semantic equivalent
+WL-H06 idempotency != semantic identity
+WL-H07 multi-owner invariant gets truthful atomicity or staged/reconciliation semantics
+WL-H08 canonical state != provider apply/sync state
+WL-H09 consequential derived use binds/revalidates derivation basis
+WL-H10 retention/redaction/tombstone preserves truthful continuity and no ID reuse
+WL-H11 AuthZ provenance does not redefine Domain governance
+WL-H12 selective disclosure includes non-interference across indirect surfaces
 ```
 
-Compatible maintenance patches inside PostgreSQL 18 do not reopen Domain/Logical/Physical architecture. Historical 18.4 records remain exact and are not rewritten as 18.6 evidence.
+## 7. Closed PostgreSQL mapping thesis
 
-Selected adjacent PostgreSQL capabilities remain bounded mechanisms:
-
-```text
-PostGIS 3.6.4
-pgvector 0.8.6
-native FTS
-pg_trgm
-unaccent
-pg_stat_statements
-PgBouncer 1.25.2 selected, not automatically active day one
-```
-
-Noncanonical companion mechanisms remain noncanonical, including encrypted SQLite/PowerSync, Restate, R2, recovery S3, OR-Tools and observability systems.
-
-### 7.2 Accepted PostgreSQL mapping thesis
-
-The accepted PostgreSQL design is:
+The concrete database must follow the accepted thesis:
 
 ```text
 owner-specific canonical tables/families
@@ -462,128 +347,473 @@ owner-specific material-state/history tables/families
 +
 specific relation tables/families
 +
-bounded technical address/state anchors only where genuine heterogeneous addressing requires them
+bounded technical address/control structures only where genuine heterogeneous addressing requires them
 +
-separate integration/projection/technical concerns without semantic collapse
+separate provider / projection / technical concerns
 ```
 
-Explicitly rejected:
+Rejected globally:
 
 ```text
 universal Entity / Thing table
-universal Relationship table
-generic canonical EAV/property bag
-universal event-log ontology
-JSONB as required semantic escape hatch
+universal Relationship / generic edge table
+canonical EAV / property bag
+universal event ontology
+universal Fact/Version semantic payload root
+JSONB required-semantic escape hatch
 PostgreSQL inheritance as ontology
 ```
 
-### 7.3 NativeRef physical rule
+### NativeRef
 
 ```text
-homogeneous target family
-→ direct FK preferred
+homogeneous target
+→ direct FK
 
-genuinely heterogeneous NativeRef target family
-→ bounded technical native-address anchor REQUIRED
+genuinely heterogeneous NativeRef
+→ bounded native-address anchor
 ```
 
-For one heterogeneous NativeRef Reference Contract, one-of-N nullable owner FKs are not an alternate Physical strategy. Multiple direct FKs remain valid only when they represent different semantic fields/relations rather than one polymorphic reference slot.
-
-The native-address anchor is not a semantic superclass, cannot own generic Domain properties/lifecycle and must not become a universal Entity table. Database integrity must preserve anchor existence, concrete owner existence, owner family and consuming Reference Contract eligibility.
-
-### 7.4 ScopedRecordRef physical rule
-
-Concrete LR-02 records own stable scoped identity where addressability is justified. A separate bounded scoped-address mechanism may exist only for genuine heterogeneous scoped addressing. Native/scoped/material/external addressing must not collapse into one generic reference space.
-
-### 7.5 MaterialStateRef physical rule
-
-Material semantic state has explicit stable identity independent from storage/MVCC tokens.
+### MaterialStateRef
 
 ```text
-MaterialStateRef
-!= xmin/xid
-!= updated_at
-!= row hash
-!= ETag
-!= provider revision
+stable UUIDv7 MaterialStateRef
++
+bounded material-state address/control record
++
+exact owner + facet
++
+owner-specific material-state payload row
++
+explicit current accepted-state binding where required
 ```
 
-Accepted baseline:
+Material-state control infrastructure is not a universal semantic Fact/Version table.
 
-```text
-stable semantic owner
-+
-bounded material-state address/control family
-  - stable MaterialStateRef
-  - exact semantic owner address
-  - exact material facet/purpose
-  - bounded technical address/control metadata only
-+
-owner-specific material-state row bound to that MaterialStateRef
-+
-explicit current accepted material-state binding where required
-+
-retained owner-specific material states/history
-+
-typed correction/replacement/reconciliation lineage
-+
-effective/world chronology where material
-+
-recorded/learned chronology where material
-```
-
-The material-state address/control family is required infrastructure for MaterialStateRef but is not a universal `Fact`/`Version` payload table. Exact table names/columns/constraint topology remain CP6-03/05 design work.
-
-Current accepted state is not semantically “the row with the highest revision number”.
-
-### 7.6 Relation physical rule
+### Relations
 
 ```text
 simple binary LR-03
-→ specific association table/family with concrete eligible endpoints
+→ specific relation table/family
 
 qualified/material/consequential LR-03
-→ contextual relation record with scoped identity/history/governance/provenance where required
+→ contextual relation record with scoped identity/history/governance as required
 
-n-ary semantics
-→ real contextual/n-ary representation
+true n-ary relation
+→ preserve n-ary semantics
 ```
 
-No universal `from_ref, relation_type, to_ref, payload` fallback is accepted.
+## 8. Existing technical PostgreSQL foundation
 
-### 7.7 Concurrency physical rule
-
-Use the narrowest PostgreSQL mechanism that truthfully protects the concrete invariant:
+Already materialized and frozen through CP3:
 
 ```text
-NOT NULL / CHECK / FK / UNIQUE
-DEFERRABLE where transaction-end validity is required
-partial UNIQUE where predicate-bounded uniqueness is required
-EXCLUDE/range constraints where applicable
-conditional updates / row-key coordination
-SERIALIZABLE for predicate/write-skew-sensitive consequential operations
+schema                               dante
+SQLAlchemy async                     2.0 stable line
+psycopg                              3
+Alembic                              one environment / one DAG / one head
+one AsyncEngine per process
+one async_sessionmaker per process
+one AsyncSession per app operation
+autobegin=False
+autoflush=True
+expire_on_commit=False
+outer app operation owns commit/rollback
+adapter may flush, never implicit commit
+READ COMMITTED default
+
+dante_owner                          NOLOGIN
+dante_migrator                       LOGIN NOINHERIT + bounded SET ROLE
+dante_runtime                        LOGIN NOINHERIT / runtime DML posture
 ```
 
-Default backend isolation remains `READ COMMITTED`; CP6 must not switch the entire application to SERIALIZABLE for convenience.
+No generic `Repository[T]`, generic UnitOfWork or generic BaseService is introduced merely for uniformity.
 
-### 7.8 Schema evolution physical rule
+### Current PostgreSQL patch evidence
 
-Accepted direction:
+```text
+PostgreSQL architecture             major 18
+Physical / CP2 / CP3 exact patch   18.4 / historical exact evidence
+current technical patch            18.6
+PostGIS                            3.6.4
+pgvector                           0.8.6
+Backend CI run                    32568664940
+executed HEAD                     ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+Backend Quality                   SUCCESS / 32 fast tests PASS
+Backend PostgreSQL                SUCCESS / 18 PostgreSQL tests PASS
+Backend CI Gate                   SUCCESS
+current corpus                    50 / 50 covered across mandatory CI lanes
+18.6 release-note impact          PASS / NO CURRENT POST-UPGRADE ACTION
+```
 
-1. additive/backward-readable evolution where practical;
-2. new semantic shape without silently reinterpreting old rows;
-3. explicit data migration/backfill with provenance/checkpoint where required;
-4. preserve NativeRef/ScopedRecordRef/MaterialStateRef continuity;
-5. preserve historical temporal/governance meaning;
-6. preserve tombstone/redaction semantics;
-7. remove obsolete structures only after read/write cutover evidence.
+Historical 18.4 evidence is never rewritten as 18.6 evidence.
 
-ORM autogeneration/implicit synchronization never substitutes for reviewed migration semantics.
+## 9. CP6-01 — CLOSED / GATE 01 PASS
 
-## 8. PostgreSQL risk register carried into CP6
+Gate 01 established complete persistence coverage before concrete schema design.
 
-The accepted Physical mapping already identified ten PostgreSQL-specific proof/risk lanes. CP6 must consume them rather than invent a replacement risk list.
+Closure summary:
+
+```text
+57 / 57 Domain concepts                         PASS
+15 / 15 LR-01 native owners                     PASS
+LR-01..LR-13                                    PASS
+reference pressure                              PASS
+materiality/history pressure                    PASS
+canonical/provider/derived boundaries           PASS
+dependency pressure                             PASS
+WL-H01..WL-H12                                  PASS
+PG-R01..PG-R10                                  PASS
+DEFER-WL01..20                                  COMPLETE
+HG-01..HG-12 carry-forward                      COMPLETE / TRUTHFUL
+SC-001..SC-035 canonical names/stages           PASS
+full PSV stage ownership                        PASS
+semantic owner reclassification                 0
+generic semantic fallback                       0
+unexplained canonical JSONB fallback            0
+business DDL at Gate 01                         0
+```
+
+The fact that Gate 01 itself had zero business DDL is phase-local truth, not a prohibition on later CP6 materialization.
+
+## 10. CP6-02 — CLOSED / GATE 02 PASS
+
+Gate 02 closed reusable PostgreSQL doctrine.
+
+Closed rule families:
+
+```text
+TECH  technology lifecycle
+ID    physical identity
+REF   reference addressing
+MAT   material state/current truth
+HIST  historical truth
+TIM   temporal truth
+MISS  missing/unknown/negative
+LIFE  lifecycle/retention/tombstone
+TYP   PostgreSQL types
+REL   relation doctrine
+CON   constraints
+IDX   indexes
+TX    transaction/concurrency
+IDEM  idempotency
+PROV  provenance
+CAP   PostgreSQL capability boundaries
+MIG   migration/evolution
+SEC   ownership/privileges
+QA    direct persistence acceptance
+```
+
+Final targeted post-repair review was CLEAN.
+
+The fact that Gate 02 itself created no business schema is also phase-local truth. CP6-02 had to close global rules before whole-database blueprint/materialization began.
+
+## 11. Remaining CP6 plan — simplified and concrete
+
+The remaining work is intentionally reduced to three real stages. Do not fragment it into additional documentation-only pseudo-phases.
+
+```text
+CP6-03  WHOLE DANTE DATABASE BLUEPRINT
+        ↓
+CP6-04  WHOLE DANTE DATABASE MATERIALIZATION
+        ↓
+CP6-05  WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6 FIRST PRODUCT VERTICAL
+```
+
+Earlier CP6 planning that described CP6-04 as “Vertical #1 Selection”, CP6-05 as “Vertical #1 Exact Persistence Design”, CP6-06 and CP6-07 as separate pre-vertical layers is superseded by this current workstream plan.
+
+No information is lost: their useful topology, dependency, direct-proof and clean-room requirements are absorbed into CP6-03..05 below.
+
+## 12. CP6-03 — Whole DANTE Database Blueprint
+
+### Status
+
+```text
+NEXT / NOT STARTED
+```
+
+### Purpose
+
+Translate the complete closed model into the concrete relational database blueprint before implementation.
+
+This stage must answer **what the DANTE database actually is**.
+
+### Required outputs
+
+For the entire 57/57 model, derive where applicable:
+
+```text
+concrete table/family name
+semantic owner/role
+canonical vs contextual vs relation vs state/history vs provider/derived role
+columns and exact meaning
+PostgreSQL type
+PK
+stable IDs
+FK / target family
+UNIQUE
+CHECK
+NULL/missingness semantics
+range / EXCLUDE / temporal constraints
+material-state address/control binding
+current-state binding
+history/lineage/correction behavior
+relation topology
+provenance/governance binding
+retention/tombstone/redaction behavior
+structural/query index requirement
+privilege posture
+dependency/prerequisite
+migration batch/order
+SQLAlchemy mapping shape
+required direct tests
+```
+
+### Dependency/materialization DAG
+
+The blueprint MUST produce an explicit implementation order.
+
+At minimum distinguish:
+
+```text
+technical CP3 base already present
+shared bounded address/control structures
+native owner families
+dependent/contextual records
+material-state/history structures
+specific relation families
+rules/specifications/results
+provider/integration structures
+derived/query structures
+specialist structures only when selected capability is actually required by the closed model
+```
+
+The DAG is about database dependencies, not a product-vertical roadmap.
+
+### Non-speculative rule
+
+A concrete table/column/constraint is included when it follows from accepted Domain/Logical/Physical/Constitution truth.
+
+Do not omit a determinable database structure merely by labeling it “vertical-specific”.
+
+Conversely, do not invent a field, state, index, precision, SRID, recurrence parameter or product workflow whose semantics were not actually closed upstream.
+
+Where something is truly not determinable, record the exact unresolved parameter and why; do not create a placeholder schema pretending it is known.
+
+### Gate 03
+
+```text
+57 / 57 persistence coverage preserved                    PASS
+all determinable relational families concrete              PASS
+all determinable tables/columns/types concrete             PASS
+all determinable PK/FK/reference topology concrete         PASS
+all determinable material-state/history topology concrete  PASS
+all determinable relation topology concrete                PASS
+all determinable constraints concrete                      PASS
+all determinable structural indexes justified              PASS
+migration/materialization DAG complete                      PASS
+SQLAlchemy mapping plan complete                            PASS
+direct-test plan complete                                  PASS
+unclassified database family                               0
+generic Entity/Relationship/EAV shortcut                    0
+speculative placeholder schema                              0
+application Vertical #1 implementation                      0
+```
+
+Only after Gate 03 is clean does real DANTE database materialization begin.
+
+## 13. CP6-04 — Whole DANTE Database Materialization
+
+### Purpose
+
+Implement the approved CP6-03 blueprint in the repository and real PostgreSQL environment.
+
+This is where CP6 stops being mainly documentation and starts producing the real DANTE database.
+
+### Authorized implementation classes
+
+After their exact write gates, CP6-04 may create/update:
+
+```text
+Alembic business-schema revisions
+DANTE business tables
+bounded native/scoped/material-state address/control tables
+owner-specific canonical tables
+owner-specific material-state/history tables
+specific relation tables
+provider/integration tables where already determined
+bounded derived/query persistence where already determined
+PostgreSQL constraints and indexes
+SQLAlchemy business mappings / metadata
+mapping-specific value codecs/types where required
+object ownership/default privileges/grants
+real PostgreSQL acceptance fixtures/tests
+migration/drift checks
+```
+
+### Required implementation discipline
+
+```text
+one Alembic DAG/head
+no metadata.create_all deployment authority
+applied migration history immutable
+reviewed deterministic naming
+native PostgreSQL types over generic payloads
+FK/reference integrity in DB
+NO ACTION delete default unless semantic proof says otherwise
+MaterialStateRef != storage token
+explicit current-state binding
+history not silent overwrite
+provider/derived state not canonical automatically
+outer transaction ownership preserved
+runtime DDL denied
+```
+
+### Implementation batching
+
+Do not attempt one giant migration if the dependency DAG supports safer bounded batches.
+
+Each batch must have:
+
+```text
+exact PRE-SCOPE
+exact CREATE/UPDATE/DELETE paths
+migration dependency relation
+fresh-DB migration proof
+negative constraint/reference proof where executable
+schema-drift proof
+remote/local readback
+```
+
+### What remains out of scope in CP6-04
+
+```text
+application use cases
+business service orchestration
+product API
+frontend
+first product vertical behavior
+provider workflow activation without real need
+PowerSync/Restate/R2/pgBackRest activation merely to complete a checklist
+```
+
+A SQLAlchemy mapping is allowed because it is part of materializing the DANTE database contract. A product persistence adapter/use case is not automatically allowed because that belongs to application behavior.
+
+## 14. CP6-05 — Whole Database Direct QA + CP6 Closure
+
+### Purpose
+
+Prove that the materialized DANTE database matches the closed model and blueprint, then close CP6.
+
+### Required direct QA
+
+Use real PostgreSQL for PostgreSQL semantics.
+
+Where the materialized schema makes the proof applicable, cover:
+
+```text
+fresh database → Alembic head
+single canonical Alembic head
+schema drift / metadata alignment
+owner/migrator/runtime privilege matrix
+all material FK/reference integrity
+wrong-family and dangling-reference rejection
+positive/negative CHECK/UNIQUE/EXCLUDE cases
+missingness distinctions where represented
+MaterialStateRef owner/facet/current-binding integrity
+history reconstruction / correction without false overwrite
+idempotency structures if materialized by the database model
+expected-state/concurrency behavior where schema-level subject exists
+transaction rollback/atomicity
+migration downgrade only where truthful
+upgrade path from prior supported schema state once such prior state exists
+PostGIS/FTS/pgvector only where the concrete database actually materializes those selected capabilities
+```
+
+### Truthful staged evidence
+
+Some evidence cannot exist before a real application vertical, real V1→V2 evolution, destructive restore or dormant specialist activation.
+
+Those items remain explicitly staged rather than being faked.
+
+Examples:
+
+```text
+HG-09 destructive retention/restore
+HG-11 real V1→V2 semantic evolution
+HG-12 destructive recovery
+PSV-01 old-backup anti-resurrection
+specialist activation proofs without an activated consumer
+application-level governed-effect scenarios that require a real use case
+```
+
+### Clean-room closure question
+
+A fresh engineer should be able to inspect repository truth and answer:
+
+```text
+what is the DANTE database?
+what tables/families exist and why?
+what does every column mean?
+how are references enforced?
+how are current and historical states represented?
+what must PostgreSQL reject?
+what migration history creates the schema?
+what SQLAlchemy mappings correspond to it?
+what privileges apply?
+what direct tests prove the database contract?
+what is still intentionally deferred because it requires application behavior or later lifecycle evidence?
+```
+
+### CP6 closure condition
+
+Only after CP6-05 PASS may the workstream become:
+
+```text
+CP6
+CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+
+DANTE DATABASE
+BLUEPRINT COMPLETE
+MATERIALIZED TO MAXIMUM NON-SPECULATIVE EXTENT
+MIGRATED
+MAPPED
+DIRECTLY TESTED
+QA CLEAN
+
+FIRST PRODUCT VERTICAL
+NOT YET IMPLEMENTED
+NEXT SEPARATE PHASE
+```
+
+## 15. Post-CP6 — First product vertical
+
+The first product vertical starts **after CP6 closure** under a new separately approved workstream/branch boundary.
+
+It consumes the database already derived and materially implemented from Domain/Logical/Physical.
+
+Its purpose is not “invent the database for that vertical from scratch”.
+
+It adds the first coherent application behavior over the already-materialized persistence model, for example as applicable:
+
+```text
+application use cases
+capability-specific persistence adapters
+commands/queries
+business governance orchestration
+API boundary
+frontend/mobile consumption
+end-to-end semantic scenarios
+vertical-specific HG/PSV evidence
+```
+
+If real implementation uncovers a database requirement that genuinely could not have been determined during CP6, it may trigger a normal reviewed schema evolution. That is feedback, not the default plan.
+
+## 16. PostgreSQL risk / proof carry-forward
+
+The accepted Physical risk lanes remain active:
 
 ```text
 PG-R01 technical anchor leakage
@@ -598,1056 +828,76 @@ PG-R09 selective disclosure/non-interference
 PG-R10 retention/restore anti-resurrection
 ```
 
-Each risk must receive one of:
+CP6-03 assigns each risk to concrete database structures/tests where determinable.
+CP6-04 materializes the corresponding DB mechanism where applicable.
+CP6-05 directly proves what now has a real executable subject and truthfully carries the rest forward.
 
-```text
-FOUNDATION RULE CLOSED IN CP6
-DIRECTLY PROVABLE IN CP6 WITHOUT SPECULATIVE BUSINESS STRUCTURE
-VERTICAL #1 DESIGN OBLIGATION
-LATER VERTICAL IMPLEMENTATION PROOF
-RELEASE/RECOVERY STAGE PROOF
-```
+## 17. Post-selection validation carry-forward
 
-No risk may disappear merely because it is inconvenient to test now.
+The Physical PSV register remains authoritative.
 
-## 9. Post-selection validation carry-forward
-
-The Physical post-selection validation register remains authoritative. In particular, preserve stage ownership for:
+Especially preserve:
 
 ```text
 PSV-01 old-backup anti-resurrection
-PSV-02 actual V1 → V2 mapping/schema evolution
+PSV-02 actual V1→V2 mapping/schema evolution
 PSV-03 destructive restore + semantic verification
 PSV-04 capacity/backpressure truthful degradation
 PSV-05 WL-H12 system-level non-interference
-PSV-35 PostgreSQL selected mapping end-to-end smoke corpus
-```
-
-The full CP6-01 Part 2 ledger additionally preserves exact current bindings for every PSV ID, including the canonical search mapping:
-
-```text
 PSV-06 → SC-017 Search hidden-result non-interference
-PSV-07 → SC-018 FTS mixed filter/query correctness under applicable Visibility/user/scope filtering
+PSV-07 → SC-018 FTS mixed filter/query correctness
+PSV-35 selected PostgreSQL mapping end-to-end smoke corpus
 ```
 
-Canonical `SC-*` names come only from `docs/architecture/physical-benchmark-scenario-corpus.md`; downstream ledgers must not rename them.
+A design or schema object existing is not a direct semantic PASS unless the qualifying scenario actually executes.
 
-`SELECTED`, `ACCEPTED`, `STATIC PASS-CONDITIONAL` and `ARCHITECTURE QA PASS` do not equal direct runtime PASS.
+## 18. Specialist activation remains trigger-bound
 
-CP6 may close only directly applicable foundation evidence. Anything requiring the real business vertical, real historical data evolution, real restore/recovery or an inactive specialist remains explicitly carried forward to the correct later stage.
+Selection does not mean activation.
 
-## 10. Inherited CP1–CP5 backend foundation — CLOSED
-
-CP6 extends the existing persistence foundation; it must not create a parallel architecture.
-
-Already frozen and directly tested in the original scaffold evidence:
+Still dormant until a real requirement exists:
 
 ```text
-Python 3.14.7 initial scaffold runtime
-uv lock/build authority
-Ruff
-mypy strict
-pytest / real PostgreSQL test lane
-
-PostgreSQL 18.4 ORIGINAL LOCAL ENVELOPE / HISTORICAL DIRECT PASS
-application schema dante
-SQLAlchemy 2 async
-psycopg 3
-Alembic
-
-one AsyncEngine per process
-one async_sessionmaker per process
-one AsyncSession per application operation/task
-expire_on_commit=False
-autobegin=False
-autoflush=True
-outer application operation owns commit/rollback
-adapter may flush but does not implicitly commit
-
-one shared SQLAlchemy Base/MetaData
-schema = dante
-existing naming convention
-
-one Alembic environment
-one migration DAG
-one canonical head on integrated main
-version table = dante.alembic_version
-online migrations only
-migration DDL under SET ROLE dante_owner
-runtime access to alembic_version denied
-
-roles
-dante_owner     NOLOGIN object/schema owner
-dante_migrator  LOGIN/NOINHERIT with bounded SET ROLE
-dante_runtime   LOGIN/NOINHERIT / DML-only posture
+PgBouncer
+PowerSync / logical replication
+Restate
+Cloudflare R2
+pgBackRest + S3
+OR-Tools
+additional observability components
 ```
 
-Current maintenance-patch reproof:
+If the closed database model itself requires a PostgreSQL-native structure such as PostGIS geometry or FTS indexing, CP6 may materialize/test that database structure. This does not automatically activate the surrounding product/runtime capability.
 
-```text
-PostgreSQL 18.6                        DIRECT REMOTE QA PASS
-PostGIS 3.6.4                          PASS
-pgvector 0.8.6                         PASS
-Backend CI run                         32568664940
-executed HEAD                          ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-Backend Quality                        SUCCESS / 32 fast tests PASS
-Backend PostgreSQL                     SUCCESS / 18 PostgreSQL tests PASS
-Backend CI Gate                        SUCCESS
-current test corpus                    50/50 covered across mandatory CI lanes
-18.6 release-note impact               PASS / NO CURRENT POST-UPGRADE ACTION
-```
+## 19. Explicit non-goals
 
-The 18.6 reproof preserves CP3 transaction, migration, privilege and runtime architecture. It does not implement business persistence and does not convert semantic HG/PSV obligations into PASS.
+Unless concrete contradictory evidence forces a separately gated reopen, CP6 does not:
 
-Do not introduce generic `Repository[T]`, generic UnitOfWork, generic BaseService or a second persistence metadata system merely for uniformity.
-
-## 11. CP6 scope and terminal boundary
-
-CP6 is a readiness/foundation phase, not the first business vertical implementation phase.
-
-It must close:
-
-```text
-whole-model concrete persistence coverage
-PostgreSQL persistence constitution
-concrete relational topology
-implementation dependency DAG
-vertical decomposition
-Vertical #1 selection
-Vertical #1 exact persistence design
-applicable non-speculative PostgreSQL foundation proof
-whole readiness / clean-room QA
-```
-
-It must terminate at:
-
-```text
-CONCRETE POSTGRESQL FOUNDATION
-CLOSED / READY
-
-VERTICAL #1
-SELECTED
-EXACTLY DESIGNED
-READY FOR IMPLEMENTATION
-```
-
-The next separately authorized phase implements Vertical #1.
-
-## 12. CP6-00 — Authority Reconstruction & Scope Freeze
-
-**Status: COMPLETE / READ-ONLY.**
-
-Purpose:
-
-- verify live branch/main relation;
-- reconstruct complete Domain → Logical → Physical authority;
-- inspect current CP3/CP5 implementation rather than relying on design memory;
-- identify closed vs truly open concrete persistence decisions;
-- establish this CP6 checkpoint plan before business schema work.
-
-Completion criteria:
-
-```text
-Domain authority reconstructed              PASS
-Logical 57/57 + WL-H01..12 reconstructed    PASS
-Physical PostgreSQL mapping reconstructed   PASS
-PG-R01..10 reconstructed                    PASS
-PSV carry-forward reconstructed             PASS
-CP3/CP5 implementation reconstructed        PASS
-business schema started                     NO
-```
-
-CP6-00 completion does not authorize later checkpoint writes automatically.
-
-## 13. CP6-01 — Concrete Persistence Coverage Map
-
-### Current checkpoint status
-
-```text
-CONTENT / OWNER LEDGER                  COMPLETE
-CROSS-CUTTING HARDENING                COMPLETE
-SECOND INDEPENDENT REVIEW              COMPLETE
-FINAL A→S INDEPENDENT REVIEW           CLEAN
-CURRENT-TRUTH DOCUMENT RECONCILIATION  COMPLETE
-GATE 01 CLOSURE RECORD                 WRITTEN / VERIFIED
-CHECKPOINT                              CLOSED / GATE 01 PASS
-```
-
-Current authoritative artifacts:
-
-```text
-docs/development/backend-cp6-01-concrete-persistence-coverage.md
-    57/57 owner/role persistence ledger
-
-docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
-    cross-cutting/non-owner + LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger
-
-docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md
-    Gate 01 closure evidence
-```
-
-The final review found and cleanly repaired two classes of pre-existing/current-document drift before closure:
-
-1. `SC-017/SC-018` traceability was reconciled at the active Physical/PSV authorities to the canonical Scenario Corpus, so there is one current meaning per SC identifier.
-2. current-status documents were reconciled so PM-era `backend/database not started` statements remain historical phase-time evidence and cannot override CP2/CP3 direct technical PostgreSQL truth.
-
-Part 1 was also normalized so it is no longer a second, stale cross-cutting applicability ledger. Part 1 owns the exact 57/57 owner ledger; Part 2 owns the cross-cutting ledger.
-
-### Purpose
-
-Translate the existing 57/57 Logical disposition into a **concrete implementation-obligation map** without repeating semantic owner discovery.
-
-This checkpoint answers:
-
-> Given the already accepted meaning, what persistence family, reference/material/history pressure, dependency and later proof obligation does each concept impose on the concrete PostgreSQL architecture?
-
-### Required row-level coverage
-
-For every accepted Domain concept record at least:
-
-```text
-Domain concept
-existing Logical disposition / LR class
-canonical / contextual / relation / value / rule / result /
-history / projection / provider / flexible / unresolved / profile / specialist role
-
-identity/addressability pressure
-NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef / none
-
-concrete persistence family
-material-state pressure: none / conditional / required
-history pressure: none / lightweight / material
-effective/world chronology pressure
-recorded/learned chronology pressure
-reference-contract pressure
-constraint/invariant class
-transaction/concurrency pressure
-provenance/governance pressure
-retention/redaction/tombstone pressure
-query/access pressure
-PostGIS / FTS / pg_trgm / pgvector / JSONB pressure where justified
-WL-H01..WL-H12 applicability
-PG-R01..PG-R10 applicability
-PSV applicability
-upstream/dependency pressure
-classification: INHERITED/CLOSED | CONCRETE DECISION | VERTICAL-SPECIFIC | DIRECT-PROOF
-```
-
-This is **not** table/column design for all 57 concepts.
-
-### Required aggregate outputs
-
-CP6-01 derives:
-
-1. complete 57/57 concrete-persistence coverage matrix;
-2. physical-family map;
-3. dependency-pressure graph inputs;
-4. closed-vs-open concrete decision register;
-5. WL-H01..12 applicability map;
-6. PG-R01..10 applicability map;
-7. PSV stage/applicability map.
-
-### Gate 01 — PASS
-
-```text
-57 / 57 concepts accounted                         PASS
-15 / 15 LR-01 families accounted                   PASS
-reference pressure classified                      PASS
-materiality/history pressure classified            PASS
-canonical/provider/derived boundaries classified   PASS
-dependency pressure classified                     PASS
-WL-H01..12 applicability complete                  PASS
-PG-R01..10 applicability complete                  PASS
-PSV applicability/stage complete                   PASS
-semantic owner reclassification                    0
-generic semantic fallback                          0
-unexplained JSONB fallback                          0
-unclassified persistence family                    0
-accidental upstream architecture reopen             0
-current active traceability contradiction           0
-business DDL                                        0
-```
-
-No business DDL is authorized by Gate 01.
-
-## 14. CP6-02 — PostgreSQL Persistence Constitution
-
-### Status
-
-```text
-CLOSED / GATE 02 PASS
-```
-
-Closed authority:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-
-Formal closure authority:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
-
-Closure evidence status:
-
-```text
-Constitution families                                  PASS / CLOSED
-external benchmark                                     COMPLETE
-PostgreSQL 18.4 → 18.6 technical refresh               APPLIED
-PostgreSQL 18.6 direct remote regression                PASS
-PostgreSQL 18.6 release-note impact review              PASS / NO CURRENT ACTION
-current-truth reconciliation                            COMPLETE / VERIFIED
-final independent whole-Constitution review             COMPLETE
-review-hardening repair                                 APPLIED
-post-repair targeted verification                       CLEAN
-formal Gate 02 closure                                  WRITTEN / VERIFIED
-```
-
-The PostgreSQL 18.6 direct evidence is versioned and exact:
-
-```text
-Backend CI run                   32568664940
-workflow event                   workflow_dispatch
-executed HEAD                    ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-Backend Quality                  SUCCESS
-fast pytest                      32 / 32 PASS
-Backend PostgreSQL               SUCCESS
-PostgreSQL pytest                18 / 18 PASS
-Backend CI Gate                  SUCCESS
-current test corpus              50 / 50 covered across the two mandatory CI lanes
-```
-
-The 18.6 run does **not** relabel CP2/CP3 historical evidence as 18.6 and does not discharge business-semantic HG/PSV.
-
-The independent whole-Constitution review found bounded concrete hardenings rather than an upstream architecture failure. The repair closed and the targeted verification confirmed:
-
-```text
-IR-01 idempotency uniqueness
-→ unique reservation identity = operation scope + idempotency key
-→ material-operation fingerprint is immutable comparison field
-→ same key + different fingerprint conflicts
-
-IR-02 heterogeneous NativeRef
-→ homogeneous contract uses direct FK
-→ genuinely heterogeneous NativeRef contract uses bounded native-address anchor
-→ one-of-N FKs are not an alternate representation of one polymorphic NativeRef slot
-
-IR-03 MaterialStateRef
-→ bounded material-state address/control family required
-→ owner-specific state payload remains semantic authority
-→ exact table topology remains CP6-03/05
-
-IR-04 UUID persistence/index posture
-→ PostgreSQL native uuid
-→ ordinary PK/UNIQUE B-tree default
-→ no redundant PK/UNIQUE index
-→ UUIDv7 ordering never semantic chronology
-
-IR-05 runtime DB time/error posture
-→ bounded statement/transaction/lock/idle time budgets
-→ no universal magic timeout
-→ expected-state/constraint/serialization/deadlock/timeout/ambiguous outcome remain distinguishable
-
-IR-06 migration autocommit boundary
-→ PostgreSQL DDL that cannot run in a normal transaction is isolated deliberately
-→ unrelated DDL is not mixed into that boundary
-→ failure/INVALID-artifact cleanup is explicit
-```
-
-### Purpose
-
-Close the global reusable PostgreSQL rules that future verticals must consume instead of re-deciding repeatedly.
-
-This is the DANTE database constitution. It is **not** the complete future database DDL.
-
-### Required constitution families
-
-#### TECH — Technology lifecycle
-
-Close rules for major-family vs patch-level authority, supported stable release policy, exact evidence versioning, security/maintenance review and capability activation triggers.
-
-#### ID — Physical identity
-
-Close rules for:
-
-```text
-primary-key/identifier strategy
-identifier type selection
-generation locus
-opacity/exposure
-sortability where justified
-offline-safe issuance implications
-immutability/non-reuse
-index/storage implications
-```
-
-#### REF — Reference addressing
-
-Close concrete reusable mechanics for:
-
-```text
-direct homogeneous FKs
-bounded native heterogeneous addressing
-scoped-record addressing
-material-state addressing
-external issuer-scoped addressing
-target-family eligibility enforcement
-dangling-reference prevention
-```
-
-No universal semantic root.
-
-#### MAT — Material state / current truth
-
-Close reusable rules for:
-
-```text
-MaterialStateRef physical shape
-state-owner/facet binding
-current accepted-state binding
-owner-specific material state
-immutability/update policy
-correction
-replacement
-reconciliation
-lineage
-mapping/schema revision metadata
-```
-
-#### HIST / TIM — Historical and temporal truth
-
-Close reusable rules for:
-
-```text
-material history retention
-world/effective chronology
-recorded/learned/accepted chronology
-current vs historical access
-historical reconstruction
-when dual chronology is required vs unnecessary
-```
-
-No universal bitemporal Fact table.
-
-#### MISS — Missing / unknown / negative
-
-Close the representation doctrine for:
-
-```text
-NULL
-row absence
-explicit unknown
-explicit negative
-not-applicable
-redacted
-unavailable
-retired
-```
-
-No global `missing == false` convention.
-
-#### TYP — PostgreSQL type/finite-state doctrine
-
-Define decision rules for applicable:
-
-```text
-PostgreSQL ENUM
-text + CHECK
-reference/lookup table
-DOMAIN/composite where justified
-arrays
-range/multirange
-typed JSONB only within accepted boundaries
-```
-
-Do not select one mechanism globally without semantic/evolution reasons.
-
-#### REL — Relation doctrine
-
-Define reusable physical patterns for:
-
-```text
-specific simple binary relation
-qualified/material relation
-n-ary relation
-addressable relation state
-governance-bearing relation
-relation history
-```
-
-No generic semantic edge fallback.
-
-#### PROV — Provenance/authorship
-
-Define a bounded persistence pattern capable, where consequence requires, of reconstructing applicable:
-
-```text
-operation family
-semantic target/facet
-expected MaterialStateRef
-actual Actor
-represented party
-Principal/security context reference
-Authority / Consent / Visibility / Agreement material basis
-purpose/context
-idempotency reference
-correlation/causation
-resulting canonical effect
-provider/runtime outcome separately
-```
-
-This remains technical provenance, not a new universal Domain Operation/Command owner.
-
-#### LIFE — Lifecycle / retention / tombstone
-
-Close rules for:
-
-```text
-retirement
-logical removal where justified
-payload redaction
-minimal tombstone/reference continuity
-identity non-reuse
-lineage minimization
-anti-resurrection requirements
-```
-
-#### CON — Constraint doctrine
-
-Define which invariant classes belong in:
-
-```text
-NOT NULL
-CHECK
-FK
-UNIQUE
-partial UNIQUE
-DEFERRABLE constraints
-EXCLUDE/range constraints
-trigger only when clearly justified
-transactional application check only when DB-local declarative enforcement is insufficient
-```
-
-Prefer database-enforced local structural truth where PostgreSQL can express it correctly.
-
-#### TX — Transaction/concurrency doctrine
-
-Create an explicit matrix:
-
-```text
-invariant/race class
-expected-state requirement
-constraint strategy
-locking/conditional-write strategy
-isolation escalation
-retry/reconciliation semantics
-observable conflict/error behavior
-required direct concurrency proof stage
-```
-
-Default remains CP3 `READ COMMITTED`; escalation is invariant-specific.
-
-#### IDEM — Idempotency doctrine
-
-Close reusable rules for:
-
-```text
-operation scope
-idempotency key
-material operation fingerprint
-same-operation replay
-materially-different reuse conflict
-result retention
-lifetime/expiry only where justified
-```
-
-Idempotency never becomes Domain identity.
-
-#### IDX — Index doctrine
-
-Define evidence/rules for:
-
-```text
-FK-supporting indexes
-unique indexes
-partial indexes
-composite key order
-INCLUDE/covering indexes
-range/GiST/GIN use
-search indexes
-redundant-index avoidance
-query-driven index justification
-```
-
-Do not pre-design every future vertical index.
-
-#### CAP — PostgreSQL capability boundaries
-
-Define operational use rules for:
-
-```text
-PostGIS
-native FTS
-pg_trgm
-unaccent
-pgvector
-JSONB
-```
-
-Preserve:
-
-```text
-geometry/geography != Place identity
-search/vector result != canonical truth
-JSONB != required semantic escape hatch
-provider/raw/flexible metadata may use bounded JSONB where accepted
-```
-
-#### MIG — Migration/evolution doctrine
-
-Close rules for:
-
-```text
-Alembic single-head discipline
-revision naming/ordering/dependency
-reviewed DDL
-schema/data migration separation where useful
-backfill/checkpoint/provenance
-expand → migrate → contract
-forward compatibility
-safe downgrade where genuinely reversible
-forward-fix where downgrade would lie or destroy semantic evidence
-destructive change requirements
-read/write cutover
-schema drift checks
-identity/reference/material-history continuity
-```
-
-#### SEC — Ownership/privilege doctrine
-
-Consume CP3's owner/migrator/runtime split and define how future DANTE business objects inherit that posture. Do not redesign the role architecture without concrete contradictory evidence.
-
-#### QA — Direct persistence acceptance doctrine
-
-Define required future proof classes, including:
-
-```text
-positive constraint acceptance
-negative constraint rejection
-wrong ref-family rejection
-dangling-reference rejection
-history reconstruction
-unknown vs explicit negative
-expected-state concurrency
-multi-owner race where applicable
-rollback/atomicity
-runtime privilege rejection
-fresh DB → head
-single Alembic head
-schema drift
-real data evolution
-recovery/anti-resurrection at the correct later stage
-```
-
-### Gate 02 — PASS
-
-```text
-all genuinely global concrete decisions closed       PASS
-all inherited decisions traceable                    PASS
-all remaining decisions explicitly vertical-specific PASS
-all direct-proof obligations have stage/owner        PASS
-
-universal Entity root                      0
-universal Relationship root                0
-generic canonical EAV                      0
-generic history/event ontology             0
-provider token == MaterialStateRef          0
-NULL-as-universal-negative                  0
-silent consequential LWW                    0
-implicit ORM schema authority               0
-
-CP3 contradiction                           0
-Logical contradiction                       0
-Physical contradiction                      0
-
-PG-R01..PG-R10 concrete proof path         complete
-applicable PSV ownership/stage              complete
-```
-
-No business DDL is authorized by Gate 02.
-
-Closure blockers:
-
-```text
-B-01 PostgreSQL 18.6 technical refresh       RESOLVED / DIRECT REMOTE QA PASS
-B-02 18.6 release-note impact review         RESOLVED / PASS / NO CURRENT ACTION
-B-03 final whole-Constitution review          RESOLVED / HARDENING APPLIED / TARGETED VERIFICATION CLEAN
-B-04 formal Gate-02 closure                   RESOLVED / WRITTEN / VERIFIED
-```
-
-```text
-CP6-02
-CLOSED / GATE 02 PASS
-
-CP6-03
-NEXT / NOT STARTED
-```
-
-## 15. CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition
-
-### Naming boundary
-
-The Physical Model is already CLOSED / SELECTED / ACCEPTED. CP6-03 does **not** redesign the Physical Model and therefore must not be called a new “Physical Topology” phase.
-
-CP6-03 maps the accepted Logical/Physical contracts into concrete relational families and implementation order.
-
-### Required outputs
-
-#### A. Concrete relational topology
-
-Establish how the DANTE `dante` relational namespace is organized conceptually and concretely across families such as:
-
-```text
-native canonical owner families
-dependent/material contextual families
-material-state/history families
-specific relation families
-rule/specification families
-provenance/governance support
-provider/integration state
-derived/projection/read structures
-bounded technical support structures
-specialist-extension boundaries
-```
-
-This does not require separate PostgreSQL schemas. CP3 already established application schema `dante`; any proposal to change that requires explicit contradictory evidence and a separate decision.
-
-#### B. Implementation dependency DAG
-
-Model foundation and vertical prerequisites explicitly:
-
-```text
-which persistence primitive/rule must exist before which family
-which owner identity is required before dependent records
-which history/reference/governance foundation a vertical needs
-which dependencies are structural vs merely query/product ordering
-```
-
-The DAG exists to prevent partial implementation from discovering hidden foundational dependencies mid-vertical.
-
-#### C. Vertical decomposition
-
-Define coherent implementation verticals from the dependency graph and product/domain structure.
-
-A vertical is not automatically:
-
-```text
-one Domain owner
-one Logical owner
-one table
-one API route
-one screen
-one repository
-```
-
-A vertical may legitimately combine multiple owners/relations/foundation concerns when that is the smallest coherent implementable capability boundary.
-
-### Gate 03
-
-Require:
-
-```text
-relational families coherent                 PASS
-foundation dependencies explicit             PASS
-vertical boundaries explicit                 PASS
-vertical dependency order explicit           PASS
-57/57 coverage preserved                     PASS
-no capability reserved by placeholder code   PASS
-no speculative business DDL                  PASS
-Physical Model redesign                      0
-```
-
-## 16. CP6-04 — Vertical #1 Selection
-
-### Purpose
-
-Select the first business vertical **after** the topology and dependency DAG reveal which candidate is the strongest initial implementation/crash-test of the foundation.
-
-Do not pre-select Access, Identity, Goal, Planning or any other candidate merely because it feels natural.
-
-### Selection criteria
-
-Compare serious candidates against at least:
-
-```text
-foundation/dependency leverage
-semantic coverage
-reference-contract coverage
-history/material-state pressure
-concurrency pressure
-provenance/governance pressure
-query usefulness
-product usefulness
-implementation complexity
-risk
-ability to expose foundation defects early
-amount of speculative prerequisite work required
-```
-
-Choose the best evidence-backed first vertical, not necessarily the easiest.
-
-### Gate 04
-
-Record:
-
-```text
-candidate set
-comparison criteria
-trade-offs
-selected Vertical #1
-rejected/deferred alternatives and reasons
-exact prerequisite foundation
-```
-
-Selection does not authorize implementation.
-
-## 17. CP6-05 — Vertical #1 Exact Persistence Design
-
-### Purpose
-
-Design Vertical #1 to a level where the next phase can implement it without inventing persistence architecture on the fly.
-
-### Required design precision
-
-Where applicable define completely:
-
-```text
-relational tables/families
-columns
-PostgreSQL types
-PK
-FK
-UNIQUE
-CHECK
-partial UNIQUE
-DEFERRABLE constraints
-EXCLUDE/range constraints
-indexes
-reference topology
-material-state topology
-current-state binding
-history/lineage
-chronology
-provenance/governance binding
-missing/unknown/negative semantics
-retention/redaction/tombstone behavior
-transaction boundaries
-expected-state algorithm
-locking/isolation/retry strategy
-idempotency where applicable
-primary query shapes
-index justification
-SQLAlchemy mapping shape
-Alembic migration plan/order
-runtime privilege implications
-acceptance-test plan
-```
-
-This is **design only**.
-
-CP6-05 may specify the exact migration that the next phase should create, but it must not create that migration.
-
-CP6-05 may specify SQLAlchemy mapped structures, but it must not add the mapped classes.
-
-CP6-05 may specify a capability persistence adapter boundary, but it must not implement the adapter.
-
-### Gate 05
-
-A fresh implementer should be able to answer from repository documentation, without conversation memory:
-
-```text
-what tables need to exist?
-what does every column mean?
-what are the PK/FK/reference rules?
-what is current vs historical state?
-what must PostgreSQL reject?
-what race conditions must fail safely?
-what migration should be written?
-what SQLAlchemy mappings should be written?
-what queries drive indexes?
-what direct tests prove correctness?
-```
-
-If major persistence architecture decisions remain to be invented during the next implementation phase, Gate 05 is not PASS.
-
-## 18. CP6-06 — PostgreSQL Foundation Direct Readiness Proof
-
-### Boundary
-
-CP6-06 proves the **PostgreSQL foundation**, not Vertical #1.
-
-It may close direct evidence only when the subject already exists or can be exercised without manufacturing speculative business persistence.
-
-### CP6-06 MAY
-
-- re-prove existing CP2/CP3 PostgreSQL envelope/foundation where CP6 relies on it;
-- directly validate already-materialized migration, role, transaction, extension and metadata behavior;
-- directly validate a chosen global PostgreSQL rule when that proof does not create a speculative canonical/business primitive;
-- use the isolated real-PostgreSQL test harness for non-business foundation verification;
-- record explicit evidence gaps that intrinsically require the future business implementation;
-- classify each PG-R/HG/PSV item by actual proof stage.
-
-The PostgreSQL 18.6 maintenance regression performed during CP6-02 is valid foundation evidence and may be consumed by CP6-06; CP6-06 must not re-run it merely for ceremony unless later branch/runtime drift makes reproof material.
-
-### CP6-06 MUST NOT
-
-```text
-create business tables merely to get evidence
-create speculative shared canonical primitives merely to get evidence
-create Vertical #1 Alembic migrations
-create Vertical #1 SQLAlchemy mappings
-create Vertical #1 persistence adapters
-create Vertical #1 application operations
-create business API routes
-claim vertical-dependent HG/PSV items PASS before implementation exists
-activate dormant specialist infrastructure solely to satisfy a paper checklist
-```
-
-### Non-speculative proof rule
-
-A direct test is permitted only if its subject is one of:
-
-```text
-already materialized CP2/CP3 foundation
-an accepted PostgreSQL capability exercised without becoming DANTE business schema
-an actual CP6 foundation artifact independently justified for production use
-```
-
-A table/primitive whose only reason to exist is “so CP6 can test it” is forbidden.
-
-### Gate 06
-
-Produce a truth-preserving ledger:
-
-```text
-FOUNDATION DIRECT PASS
-DIRECTLY TESTABLE BUT FAIL
-NOT YET APPLICABLE — VERTICAL IMPLEMENTATION REQUIRED
-NOT YET APPLICABLE — REAL V1→V2 EVOLUTION REQUIRED
-NOT YET APPLICABLE — RECOVERY/RELEASE STAGE REQUIRED
-NOT YET APPLICABLE — SPECIALIST DORMANT
-```
-
-A NOT-YET-APPLICABLE result is valid when the required real subject does not exist yet. It must carry an explicit future owner/stage.
-
-CP6-06 is complete when no direct-proof obligation is ambiguously staged, not when every future Physical PSV item is falsely green.
-
-## 19. CP6-07 — Whole Persistence Readiness / Clean-Room QA
-
-### Purpose
-
-Independently verify the new concrete persistence foundation and Vertical #1 design without re-running Domain/Logical discovery.
-
-Core question:
-
-> Can a fresh engineer reconstruct and implement Vertical #1 from repository truth without conversation memory and without inventing new global database rules?
-
-### Required review
-
-Check at minimum:
-
-```text
-Domain meaning preserved
-Logical 57/57 dispositions preserved
-WL-H01..12 preserved
-accepted PostgreSQL Physical mapping preserved
-CP3 persistence architecture preserved
-
-CP6-01 coverage complete
-CP6-02 constitution complete
-CP6-03 relational topology complete
-CP6-03 dependency DAG complete
-CP6-03 vertical decomposition complete
-CP6-04 Vertical #1 selection justified
-CP6-05 Vertical #1 exact design complete
-CP6-06 direct-proof ledger truthful
-
-open architecture blockers = 0
-unregistered concrete assumptions = 0
-generic semantic escape hatches = 0
-accidental specialist activation = 0
-conversation-only material decision = 0
-```
-
-### Closure condition
-
-Only after CP6-07 PASS may the workstream state become:
-
-```text
-CP6
-CLOSED / CONCRETE PERSISTENCE READINESS PASS
-
-CONCRETE POSTGRESQL FOUNDATION
-CLOSED / READY
-
-VERTICAL #1
-SELECTED
-EXACTLY DESIGNED
-READY FOR IMPLEMENTATION
-```
-
-No Vertical #1 implementation is part of CP6 closure.
-
-## 20. Phase after CP6
-
-The next phase is separately authorized **after CP6 closure** and owns Vertical #1 implementation.
-
-Its scope may include, after its own exact gate:
-
-```text
-approved Vertical #1 Alembic business migration(s)
-approved SQLAlchemy business mappings
-approved capability-specific persistence adapter
-approved application operation(s)
-real PostgreSQL semantic/constraint/concurrency acceptance
-vertical-specific HG/PSV discharge
-later API boundary only when separately authorized by that phase plan
-```
-
-Do not assume the next phase's formal checkpoint name/number until it is explicitly established after CP6 closure.
-
-## 21. Explicit CP6 non-goals
-
-Unless separately reopened by contradictory evidence, CP6 does not:
-
-- revalidate or redesign the Domain kernel;
-- redo the Logical owner census;
+- redesign Domain semantics;
+- rerun the Logical owner census;
 - redefine LR-01..LR-13;
-- reconsider the four accepted ReferenceAddress families at semantic level;
-- re-run PostgreSQL-vs-TypeDB technology selection;
-- redesign the accepted Physical target stack;
-- change the canonical authority away from PostgreSQL;
+- change the four reference families;
+- reselect PostgreSQL vs another canonical database;
+- change canonical authority away from PostgreSQL;
 - create a universal Entity/Thing root;
 - create a universal Relationship/edge root;
 - create canonical EAV/property-bag storage;
 - adopt universal event sourcing as ontology;
 - use JSONB to hide required semantics;
-- create one repository/service/module per Logical concept mechanically;
+- create one service/module/API route per Logical concept mechanically;
 - create generic Repository/UoW/BaseService abstractions;
-- implement Vertical #1;
-- create Vertical #1 business migrations;
-- create Vertical #1 business SQLAlchemy mappings;
-- create Vertical #1 persistence adapters;
-- create application use cases or business APIs;
+- implement the first product vertical;
+- create application use cases or product APIs;
 - implement AuthN/AuthZ product behavior;
-- activate PowerSync, Restate, R2, OR-Tools, PgBouncer or pgBackRest/S3 merely because selected;
-- add Redis/Kafka/Neo4j/Qdrant/OpenSearch/Kubernetes/microservices by convenience;
-- change frontend or brand assets;
+- activate dormant specialist infrastructure merely because selected;
+- mutate frontend or brand assets;
 - mutate CI/rulesets/CodeQL without separate authorization;
 - mutate protected `main` directly;
-- merge this branch without the normal protected PR path.
+- merge this branch outside the protected PR path.
 
-## 22. Write/gate discipline
+## 20. Write / gate discipline
 
-Every material repository mutation requires its own exact gate:
+Every material repository mutation requires an exact bounded gate:
 
 ```text
 BRANCH
@@ -1672,221 +922,56 @@ EXPLICITLY OUT OF SCOPE
 <bounded non-scope>
 ```
 
-Immediately before the first write, verify:
+Immediately before the first write verify current branch HEAD equals approved PRE-SCOPE.
+
+After writes:
 
 ```text
-current branch HEAD == approved PRE-SCOPE
+remote readback
+PRE-SCOPE → HEAD compare
+added/modified/deleted counts
+unexpected paths = 0
+branch relation to protected main
+applicable tests/checks
+truthful checkpoint status
 ```
 
-If not identical, stop, inspect drift and re-gate.
+Do not call a checkpoint PASS/CLOSED before its evidence contract is satisfied.
 
-After the write:
+## 21. Current resume point
 
-- fetch/read the written remote payload;
-- compare exact PRE-SCOPE → new HEAD;
-- verify added/modified/deleted path counts;
-- verify unexpected paths = 0;
-- verify branch relation to protected main;
-- run applicable checks/tests where the scope has executable content;
-- do not call a checkpoint PASS/CLOSED until its exact evidence contract is satisfied.
-
-`main` remains protected and normal integration remains feature branch → PR → required checks → merge-commit path under current repository rules.
-
-## 23. Bootstrap retirement — COMPLETE
-
-The temporary session bootstrap:
+A fresh session must establish:
 
 ```text
-docs/workstreams/logical-postgresql-bootstrap.md
-```
-
-was retired under its own bounded gate after this durable handoff had been remotely written and verified.
-
-Current branch truth:
-
-```text
-TEMPORARY BOOTSTRAP PRESENT
-NO
-
-DURABLE CP6 WORKSTREAM AUTHORITY
-YES
-```
-
-A future session must not search for or depend on the retired bootstrap. Git history retains the historical bootstrap if provenance is needed.
-
-## 24. CP6-01 closure evidence
-
-The independent CP6-01 review reconstructed and reconciled:
-
-```text
-A  Domain final closure / no new owner
-B  Whole-Logical exact 57/57 census
-C  exact 15 LR-01 native set
-D  latest Slice/Representation hardenings
-E  WL-H01..12
-F  LR-01..LR-13
-G  DEFER-WL01..20
-H  Governed Operation / Effect Contract
-I  ReferenceAddress + Reference Contract
-J  accepted PostgreSQL mapping
-K  PG-R01..10
-L  HG-01..12
-M  canonical SC-001..SC-035 names/assertions
-N  PM-11/12/13/14 selected/accepted truth
-O  full PSV register and exact SC bindings
-P  CP3 actual technical evidence
-Q  this durable CP6 handoff
-R  CP6-01 Part 1 + Part 2
-S  exact Git scope / no business implementation
-```
-
-Closure verdict:
-
-```text
-57 / 57 Domain concepts                         PASS
-15 / 15 LR-01 native owners                     PASS
-LR-01..LR-13                                    PASS
-cross-cutting/non-owner coverage                PASS
-WL-H01..WL-H12                                  PASS
-PG-R01..PG-R10                                  PASS
-DEFER-WL01..20                                  COMPLETE
-HG-01..HG-12 carry-forward                      COMPLETE / TRUTHFUL
-SC-001..SC-035 canonical names/stages           PASS
-full PSV stage ownership                        PASS
-CP3 technical vs semantic evidence separation   PASS
-current active documentation contradictions     0
-semantic owner reclassification                 0
-generic semantic fallback                       0
-unexplained canonical JSONB fallback            0
-business DDL                                    0
-business migration                              0
-business SQLAlchemy mapping                     0
-persistence adapter                             0
-Physical Model reopen                           0
-false direct HG/PSV PASS                        0
-```
-
-Formal closure authority:
-
-`docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
-
-## 25. CP6-02 closure evidence
-
-CP6-02 is formally closed. The Constitution completed technology refresh, external benchmark, direct technical reproof, release-note review, current-truth reconciliation, whole-Constitution independent review, bounded hardening repair and targeted clean verification before Gate 02 closure.
-
-Exact technical evidence retained:
-
-```text
-PostgreSQL architecture family          18
-Physical phase-time exact patch         18.4
-CP2/CP3 original direct patch           18.4 / historical exact evidence
-current CP6 technical patch             18.6
-Docker/config/test/CI refresh            APPLIED
-PostGIS                                 3.6.4
-pgvector                                0.8.6
-Backend CI run                          32568664940
-executed HEAD                           ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-Backend Quality                         SUCCESS
-fast tests                              32 / 32 PASS
-Backend PostgreSQL                      SUCCESS
-PostgreSQL tests                        18 / 18 PASS
-Backend CI Gate                         SUCCESS
-current test corpus                     50 / 50 covered across mandatory lanes
-release-note impact                     PASS / NO CURRENT POST-UPGRADE ACTION
-current-truth reconciliation            COMPLETE / VERIFIED
-whole-Constitution review               COMPLETE
-review hardening                        APPLIED
-post-repair targeted verification       CLEAN
-```
-
-The release-note finding is bounded to the currently materialized foundation. DANTE currently has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring an 18.6-specific post-update action. Future PowerSync/logical-replication activation must review `output_plugin_libraries` and then-current maintenance requirements.
-
-Independent-review repair closure:
-
-```text
-ID UUID persistence/index hardening             PASS
-REF heterogeneous NativeRef correction          PASS
-MAT material-state address/control correction   PASS
-TX timeout/error taxonomy hardening              PASS
-IDEM uniqueness/atomicity correction             PASS
-MIG autocommit/non-transactional DDL hardening  PASS
-QA direct-proof staging                          PASS
-business implementation                         0
-upstream semantic reopen                        0
-```
-
-Gate 02 result:
-
-```text
-all genuinely global concrete decisions closed       PASS
-all inherited decisions traceable                    PASS
-all remaining decisions explicitly vertical-specific PASS
-all direct-proof obligations have stage/owner        PASS
-universal Entity root                                0
-universal Relationship root                          0
-generic canonical EAV                                0
-generic history/event ontology                       0
-provider token == MaterialStateRef                    0
-NULL-as-universal-negative                            0
-silent consequential LWW                             0
-implicit ORM schema authority                         0
-CP3 contradiction                                     0
-Logical contradiction                                 0
-Physical contradiction                                0
-PG-R01..PG-R10 concrete proof path                    complete
-applicable PSV ownership/stage                        complete
-business DDL                                          0
-business migration                                    0
-business SQLAlchemy mapping                           0
-persistence adapter                                   0
-```
-
-Formal closure authority:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
-
-```text
-CP6-02
-CLOSED / GATE 02 PASS
-
-CP6-03
-NEXT / NOT STARTED
-```
-
-## 26. Resume point
-
-A fresh session resuming the backend CP6 workstream must establish:
-
-```text
-1. live feature/logical-postgresql HEAD and relation to protected main;
-2. this durable handoff is current and readable;
-3. CP6-00 is COMPLETE;
-4. temporary bootstrap is RETIRED;
-5. CP6-01 is CLOSED / GATE 01 PASS;
-6. CP6-01 Part 1 is the exact 57/57 owner ledger;
-7. CP6-01 Part 2 is the single cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger;
-8. the CP6-01 closure record is present and authoritative;
-9. CP6-02 Constitution is CLOSED / ACCEPTED / GATE 02 PASS;
-10. the CP6-02 closure record is present and authoritative;
-11. PostgreSQL architecture remains major 18; exact Physical/CP2/CP3 historical evidence remains 18.4;
-12. current PostgreSQL technical patch is 18.6 and the foundation regression is DIRECT REMOTE QA PASS at run 32568664940 / HEAD ec3dc795...;
-13. CP6-02 independent-review hardenings are part of closed authority and targeted post-repair verification is CLEAN;
-14. CP6-03 is NEXT / NOT STARTED;
-15. no business schema/migration/mapping/adapter may be created anywhere in CP6;
-16. Vertical #1 implementation begins only in the separately authorized post-CP6 phase.
+1. feature/logical-postgresql live HEAD / protected-main relation;
+2. CP6-00 COMPLETE;
+3. CP6-01 CLOSED / GATE 01 PASS;
+4. CP6-02 CLOSED / GATE 02 PASS;
+5. PostgreSQL architecture = major 18;
+6. Physical/CP2/CP3 historical exact patch = 18.4;
+7. current technical patch = 18.6 / DIRECT REMOTE QA PASS;
+8. this workstream supersedes earlier CP6 process prose that prohibited all business DB materialization;
+9. CP6-03 is NEXT and means WHOLE DANTE DATABASE BLUEPRINT;
+10. CP6-04 will materially implement the approved whole-database blueprint;
+11. CP6-05 will run whole-database direct QA and close CP6;
+12. first product vertical begins only after CP6 is closed.
 ```
 
 Immediate next action:
 
 ```text
-CP6-03
-CONCRETE RELATIONAL TOPOLOGY
-+ IMPLEMENTATION DEPENDENCY DAG
-+ VERTICAL DECOMPOSITION
+CP6-03 — WHOLE DANTE DATABASE BLUEPRINT
 
-READ / RESEARCH / DESIGN FIRST
-        ↓
-GATE 03 only after the complete topology/DAG/vertical-decomposition contract is satisfied
+consume 57/57 + closed Constitution
+→ concrete relational families/tables/columns/types
+→ PK/FK/reference topology
+→ material-state/history/current-binding topology
+→ relation/provenance/provider/derived topology
+→ constraints/indexes/privileges
+→ implementation dependency + migration DAG
+→ SQLAlchemy mapping plan
+→ real PostgreSQL test plan
+→ Gate 03
 ```
 
-CP6-03 consumes the closed CP6-02 Constitution. No Domain, Logical or Physical redesign is implied by this resume point, and no CP6-03 repository write is authorized by the CP6-02 closure gate.
+No new Domain/Logical/Physical discovery cycle is implied.
