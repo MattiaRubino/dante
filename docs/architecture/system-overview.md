@@ -1,7 +1,7 @@
 # DANTE System Overview
 
 - Status: **CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW**
-- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED**
+- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
 - Current CP6 branch: `feature/logical-postgresql`
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 
@@ -184,19 +184,28 @@ CLOSED / GATE 01 PASS
 
 CP6-02
 POSTGRESQL PERSISTENCE CONSTITUTION
-ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CLOSED / GATE 02 PASS
+
+CP6-03
+CONCRETE RELATIONAL TOPOLOGY
++ IMPLEMENTATION DEPENDENCY DAG
++ VERTICAL DECOMPOSITION
+NEXT / NOT STARTED
 ```
 
 CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
-CP6-02 candidate authority:
+CP6-02 closed Constitution:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
 
-The CP6-02 technology-refresh boundary is now directly proved:
+CP6-02 closure authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+
+The CP6-02 technology-refresh boundary is directly proved:
 
 ```text
 PostgreSQL 18.6 image build         PASS
@@ -210,12 +219,7 @@ HEAD                                ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 release-note impact                 PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
-What remains before Gate 02:
-
-```text
-final independent whole-Constitution review
-separate formal Gate 02 closure write
-```
+Gate 02 additionally records the completed external benchmark, independent whole-Constitution review, repair of all identified hardenings and clean targeted post-repair verification. Global reusable PostgreSQL doctrine is therefore closed; remaining exact topology choices are explicitly assigned to CP6-03/05 or later proof stages.
 
 CP6 does not repeat Domain, Logical or Physical modeling. It consumes those closed authorities and must finish with:
 
@@ -339,7 +343,8 @@ POSTGRESQL 18.6                CURRENT TECHNICAL PATCH
 CP3 TECHNICAL PERSISTENCE      DIRECT QA PASS
 DANTE SCHEMA / ALEMBIC BASE    MATERIALIZED / DIRECT QA PASS
 CP6-01 COVERAGE GATE           CLOSED / GATE 01 PASS
-CP6-02 CONSTITUTION            ACTIVE / CANDIDATE / GATE 02 NOT PASSED
+CP6-02 CONSTITUTION            CLOSED / GATE 02 PASS
+CP6-03                         NEXT / NOT STARTED
 CONCRETE BUSINESS DB SCHEMA    NOT IMPLEMENTED
 VERTICAL #1                    NOT IMPLEMENTED
 SEMANTIC HG DIRECT PASS        0 unless an actual qualifying business scenario executes
@@ -359,15 +364,13 @@ CP6-01 concrete persistence coverage
 CLOSED / GATE 01 PASS
         ↓
 CP6-02 PostgreSQL Persistence Constitution
-ACTIVE / CANDIDATE / PRE-CLOSURE
+CLOSED / GATE 02 PASS
 18.6 TECHNICAL REGRESSION PASS
-FINAL INDEPENDENT REVIEW NEXT
-GATE 02 NOT PASSED
         ↓
 CP6-03 Concrete Relational Topology
        + Implementation Dependency DAG
        + Vertical Decomposition
-       STARTS ONLY AFTER GATE 02 PASS
+       NEXT / NOT STARTED
         ↓
 CP6-04 Vertical #1 selection
         ↓
