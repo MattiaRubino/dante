@@ -1,6 +1,8 @@
 # Physical Model Acceptance Test Matrix v1
 
-- Status: **CURRENT — PM-14 TARGET CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15 / DIRECT EXECUTION NOT STARTED**
+- Status: **CURRENT PHYSICAL ACCEPTANCE LEDGER — PM-14 TARGET CLOSURE COMPLETE / INTEGRATED INTO MAIN VIA PR #15**
+- Physical business-semantic HG/direct benchmark corpus: **NOT EXECUTED / DIRECT HG PASS 0**
+- Current technical PostgreSQL substrate after Physical closure: **CP2/CP3 DIRECT QA PASS**
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Main integration: `e6f191bad947388a44defe2c15f4939345084f58`
 - Primary finalists: PostgreSQL 18.4, TypeDB CE 3.12.3
@@ -9,7 +11,7 @@
 - PM-12 accepted Physical Model: **ESTABLISHED**
 - PM-13 architecture/documentation QA: **PASS**
 - PM-14 branch closure: **COMPLETE**
-- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no architecture, selection, qualification or direct-execution status changed.**
+- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no architecture, selection, qualification or execution result changed.**
 
 ## Result-layer rule
 
@@ -36,10 +38,10 @@ PM-13 ARCHITECTURE/DOCUMENTATION QA
 !=
 VERIFIED-RUN BENCHMARK SCORE
 !=
-DIRECT EXECUTION
+DIRECT BUSINESS-SEMANTIC HG EXECUTION
 ```
 
-`EVIDENCE-QUALIFIED != DIRECT PASS`, `PREFERRED != SELECTED`, `SELECTED != DEPLOYED`, and `NOT RUN != PASS`.
+`EVIDENCE-QUALIFIED != DIRECT PASS`, `PREFERRED != SELECTED`, `SELECTED != DEPLOYED`, `NOT RUN != PASS`, and `CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS`.
 
 ## Primary disposition
 
@@ -52,7 +54,7 @@ DIRECT EXECUTION
 
 ## Direct hard-gate status
 
-No direct LifeOS database correctness/destructive run has occurred.
+No direct DANTE **business-semantic HG/destructive scenario** run has occurred merely by virtue of Physical selection or CP3 technical foundation work.
 
 | Gate | PostgreSQL | TypeDB | XTDB | SurrealDB |
 |---|---|---|---|---|
@@ -69,7 +71,9 @@ No direct LifeOS database correctness/destructive run has occurred.
 | HG-11 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 | HG-12 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
 
-Direct HG PASS count: `0`.
+Direct business-semantic HG PASS count: `0`.
+
+CP2/CP3 later directly proved the technical PostgreSQL container, selected extension envelope, Alembic technical baseline, role/privilege model and transaction/test harness. Those proofs are real and current, but do not satisfy the business-semantic HG rows above.
 
 ## Direct benchmark tiers
 
@@ -117,15 +121,15 @@ None is declared PASS.
 
 | Capability / component | PM-11/12 status | Direct validation | Authority rule |
 |---|---|---|---|
-| PostgreSQL 18.4 | SELECTED / ACCEPTED | NOT RUN | sole canonical persistence |
-| PostGIS 3.6.4 | SELECTED | NOT RUN | technical geo capability only |
-| PostgreSQL FTS + pg_trgm + unaccent | SELECTED | NOT RUN | derived/query capability |
-| pgvector 0.8.6 | SELECTED | NOT RUN | derived vector index only |
-| pg_stat_statements | SELECTED | NOT RUN | operational telemetry only |
+| PostgreSQL 18.4 | SELECTED / ACCEPTED | technical substrate later CP2/CP3 PASS; semantic corpus NOT RUN | sole canonical persistence |
+| PostGIS 3.6.4 | SELECTED | local extension envelope CP2 PASS; accepted geo corpus NOT RUN | technical geo capability only |
+| PostgreSQL FTS + pg_trgm + unaccent | SELECTED | pg_trgm/unaccent envelope CP2 PASS; search corpus NOT RUN | derived/query capability |
+| pgvector 0.8.6 | SELECTED | local extension envelope CP2 PASS; vector corpus NOT RUN | derived vector index only |
+| pg_stat_statements | SELECTED | CP2 local preload/query PASS | operational telemetry only |
 | PgBouncer 1.25.2 | SELECTED | NOT RUN | connection layer only |
 | encrypted SQLite | SELECTED bounded local/offline | NOT RUN | never canonical |
 | PowerSync 1.25.0 Open Edition | SELECTED / HARDENING REQUIRED | NOT RUN | sync/projection only |
-| PostgreSQL outbox + bounded worker | SELECTED | NOT RUN | bounded async runtime |
+| PostgreSQL outbox + bounded worker | SELECTED | NOT MATERIALIZED | bounded async runtime |
 | Restate runtime | SELECTED / HARDENING REQUIRED | NOT RUN | durable runtime only |
 | Restate self-hosted | ALLOWED / FIRST-CLASS | NOT RUN | deployment option |
 | Restate Cloud EU | ALLOWED MANAGED OPTION | NOT RUN | deployment option; not mandatory |
@@ -147,7 +151,7 @@ POWERSYNC DELIVERY ORDER
 != CONFLICT RESOLUTION
 
 OFFLINE MUTATION
-must re-enter LifeOS backend
+must re-enter DANTE backend
 and revalidate expected state + governance + AuthZ
 before canonical PostgreSQL commit
 ```
@@ -255,28 +259,21 @@ LOST PSV OBLIGATIONS
 
 This does not discharge direct implementation tests.
 
-## Closure / integration
+## Current project boundary
 
 ```text
-PM-11 COMPLETE
-TARGET STACK SELECTED
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
 
-PM-12 COMPLETE
-ACCEPTED PHYSICAL MODEL ESTABLISHED
+BACKEND FOUNDATION CP1–CP5
+CLOSED / INTEGRATED / DIRECT QA PASS
 
-PM-13 QA PASS
-ARCHITECTURE / DOCUMENTATION COHERENCE
+CP6 CONCRETE PERSISTENCE READINESS
+ACTIVE / DESIGN-FIRST
 
-PM-14 BRANCH CLOSURE COMPLETE
+BUSINESS PERSISTENCE SCHEMA
+NOT IMPLEMENTED
 
-PR #15
-PROTECTED-MAIN INTEGRATION COMPLETE
-MAIN e6f191bad947388a44defe2c15f4939345084f58
-FORMER feature/physical-model MERGED / AUTO-DELETED
-
-DIRECT HG PASS
-0
-
-NEXT
-Development Profile v0 as separate scope
+BUSINESS-SEMANTIC HG / PSV DIRECT PROOF
+ONLY WHEN THE EXACT REAL SUBJECT EXISTS AND IS EXECUTED
 ```

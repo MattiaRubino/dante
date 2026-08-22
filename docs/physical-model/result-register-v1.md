@@ -1,6 +1,6 @@
 # Physical Model Result Register v1
 
-- Status: **CURRENT — TARGET-ARCHITECTURE CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
+- Status: **CURRENT PHYSICAL TARGET / RESULT LEDGER — TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
 - Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained in historical evidence and technical identifiers)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
@@ -13,9 +13,10 @@
 - PM-13 architecture/documentation QA: **PASS**
 - PM-14 branch/workstream closure: **COMPLETE**
 - Protected-main integration after PM-14: **PR #15 COMPLETE**
-- Direct execution: **NOT STARTED**
-- Verified-run benchmark score: **NOT AVAILABLE**
-- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no Physical decision or execution result changed.**
+- Current project progression after Physical closure: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE**
+- Physical business-semantic HG direct execution: **PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
+- Business persistence schema: **NOT IMPLEMENTED**
+- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no Physical decision or validation obligation changed.**
 
 ## Result-language rule
 
@@ -31,9 +32,10 @@ SECONDARY != CANONICAL
 LOCAL != CANONICAL
 RUNTIME != DOMAIN HISTORY
 NOT RUN != PASS
+CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
 ```
 
-## Phase state
+## Physical phase state
 
 ```text
 PM-00   QA PASS
@@ -103,19 +105,15 @@ PM-11
 NOT SELECTED
 ```
 
-TypeDB retains the strongest pure relation/role/n-ary semantic fit but is not part of the accepted target architecture.
+TypeDB retains strong relation/role/n-ary semantic fit but is not part of the accepted target architecture.
 
-### Prior challengers
+Prior challengers XTDB 2.1.0 and SurrealDB Community 3.2.3 remain historical evidence only.
 
-```text
-XTDB 2.1.0
-NOT SELECTED / historical evidence retained
+## Direct execution truth — distinguish Physical phase from current backend foundation
 
-SurrealDB Community 3.2.3
-NOT SELECTED / historical evidence retained
-```
+### Physical-phase business-semantic benchmark snapshot
 
-## Direct execution truth
+PM-11/12/13/14 did not execute the selected stack against the DANTE semantic/destructive benchmark corpus:
 
 ```text
 P0 HG-01..HG-12       NOT RUN
@@ -123,23 +121,42 @@ P1 HG-01..HG-12       NOT RUN
 P2 HG-01..HG-12       NOT RUN
 P3 HG-01..HG-12       NOT RUN
 
-DIRECT HG PASS         0
-DATABASE DEPLOYMENT    NOT STARTED
-HARNESS                 NOT STARTED
-LOW/BASE/HIGH           NOT RUN
-RESTORE                  NOT RUN
-MIGRATION                NOT RUN
-FAILURE INJECTION        NOT RUN
-GRAPH/SEARCH/VECTOR      NOT RUN
-SQLITE/POWERSYNC         NOT RUN
-RESTATE                  NOT RUN
-OBJECT RECOVERY          NOT RUN
-SOLVER                    NOT RUN
-BENCHMARK HOST           HOLD / DORMANT
-VERIFIED-RUN SCORE       NOT AVAILABLE
+DIRECT SEMANTIC HG PASS  0
+LOW/BASE/HIGH            NOT RUN
+SEMANTIC RESTORE CORPUS  NOT RUN
+REAL BUSINESS V1→V2      NOT RUN
+FAILURE INJECTION         NOT RUN
+POWERSYNC                  NOT RUN
+RESTATE                    NOT RUN
+OBJECT RECOVERY            NOT RUN
+SOLVER                     NOT RUN
+VERIFIED-RUN SCORE        NOT AVAILABLE
 ```
 
-No PM-09/10/11/12/13/14 disposition or PR #15 integration is evidence that a direct hard gate ran.
+These remain truthful unexecuted business/system obligations unless later exact artifacts directly discharge them.
+
+### Current technical implementation after Physical closure
+
+Subsequent CP1–CP5 work has directly established a technical backend persistence substrate:
+
+```text
+BACKEND CP1–CP5                 CLOSED / INTEGRATED / DIRECT QA PASS
+LOCAL POSTGRESQL 18.4           MATERIALIZED / DIRECT QA PASS
+POSTGIS 3.6.4                   LOCAL ENVELOPE DIRECT QA PASS
+PGVECTOR 0.8.6                  LOCAL ENVELOPE DIRECT QA PASS
+PG_TRGM / UNACCENT              LOCAL ENVELOPE DIRECT QA PASS
+PG_STAT_STATEMENTS              LOCAL ENVELOPE DIRECT QA PASS
+SQLALCHEMY 2 ASYNC              MATERIALIZED
+PSYCOPG 3                       MATERIALIZED
+ALEMBIC                         MATERIALIZED / TECHNICAL BASELINE PASS
+SCHEMA dante                    MATERIALIZED
+OWNER/MIGRATOR/RUNTIME ROLES    MATERIALIZED / DIRECT QA PASS
+REAL POSTGRESQL TEST HARNESS     MATERIALIZED / DIRECT QA PASS
+BUSINESS PERSISTENCE SCHEMA      NOT IMPLEMENTED
+VERTICAL #1                      NOT IMPLEMENTED
+```
+
+Therefore old PM-era phrases such as `DATABASE DEPLOYMENT NOT STARTED` are historical phase-time evidence, not current project status. CP3 technical QA still does not manufacture semantic HG/PSV PASS.
 
 ## PM-09 score retained
 
@@ -238,7 +255,7 @@ GLOBAL DEFAULT
 NONE
 ```
 
-Current Python path must not assume TypeScript-only client-side journal encryption. Journal minimization and the later privacy/operability deployment review are mandatory carry-forward conditions.
+Current Python path must not assume TypeScript-only client-side journal encryption. Journal minimization and the later privacy/operability deployment review remain mandatory carry-forward conditions.
 
 ## Technology exclusions
 
@@ -304,7 +321,7 @@ observability privacy
 
 `SC-017` and `SC-018` retain their canonical names from the Physical Benchmark Scenario Corpus and are distinct obligations.
 
-All remain `NOT RUN` until direct selected-stack artifacts exist.
+All remain `NOT RUN` until the corresponding selected-stack/business artifact exists and is directly executed.
 
 ## PM-13 clean-room result
 
@@ -338,18 +355,12 @@ PM-13  pm-13-clean-room-qa-v1.md
 PM-14  pm-14-closure-v1.md
 ```
 
-## Current closure state
+## Current boundary
 
 ```text
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
-
-PHYSICAL INTEGRATION COMMIT
-e6f191bad947388a44defe2c15f4939345084f58
-
-FORMER BRANCH
-feature/physical-model MERGED / AUTO-DELETED
 
 SELECTED CANONICAL PRIMARY
 PostgreSQL 18.4
@@ -361,14 +372,25 @@ PM-13 QA
 PASS
 
 PM-14
-BRANCH / WORKSTREAM CLOSURE COMPLETE
+HISTORICAL PHYSICAL WORKSTREAM CLOSURE COMPLETE
 
-DIRECT EXECUTION
-NOT STARTED
+BACKEND FOUNDATION CP1–CP5
+CLOSED / INTEGRATED / DIRECT QA PASS
 
-NEXT
-Development Profile v0 — separate operational scope
+CP6 CONCRETE PERSISTENCE READINESS
+ACTIVE / DESIGN-FIRST
+feature/logical-postgresql
 
-BACKEND
-NOT STARTED / DEFERRED
+BUSINESS PERSISTENCE
+NOT IMPLEMENTED
+
+CP6 TERMINAL BOUNDARY
+CONCRETE POSTGRESQL FOUNDATION CLOSED / READY
+VERTICAL #1 SELECTED / EXACTLY DESIGNED / READY FOR IMPLEMENTATION
+
+VERTICAL #1 IMPLEMENTATION
+SEPARATE POST-CP6 AUTHORIZED PHASE
+
+DIRECT BUSINESS-SEMANTIC HG PASS
+0 unless qualifying scenarios are actually executed
 ```
