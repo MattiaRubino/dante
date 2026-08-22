@@ -13,7 +13,8 @@
 - CP6-00: **COMPLETE**
 - CP6-01: **CLOSED / GATE 01 PASS**
 - CP6-02: **CLOSED / GATE 02 PASS**
-- CP6-03: **NEXT / NOT STARTED**
+- CP6-03: **ACTIVE / WHOLE DATABASE BLUEPRINT OPEN / GATE 03 NOT YET EARNED**
+- CP6-03 blueprint/reference: **`docs/database/dante-postgresql-database.md`**
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 - PostgreSQL 18.6 evidence: **Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
 - Current DANTE business database: **NOT YET MATERIALIZED**
@@ -174,6 +175,9 @@ docs/development/operating-rules.md
 docs/development/documentation-and-handoff.md
 docs/development/branching-and-environments.md
 docs/development/repository-engineering-safety.md
+
+docs/database/README.md
+docs/database/dante-postgresql-database.md
 
 this workstream handoff
 ```
@@ -537,7 +541,13 @@ No information is lost: their useful topology, dependency, direct-proof and clea
 ### Status
 
 ```text
-NEXT / NOT STARTED
+ACTIVE / CANDIDATE BLUEPRINT OPEN / GATE 03 NOT YET EARNED
+```
+
+Current blueprint/reference:
+
+```text
+docs/database/dante-postgresql-database.md
 ```
 
 ### Purpose
@@ -1026,7 +1036,7 @@ A fresh session must establish:
 7. current technical patch = 18.6 / DIRECT REMOTE QA PASS;
 8. this workstream supersedes earlier CP6 process prose that prohibited all business DB materialization;
 9. ADR-010 records the accepted PostgreSQL Persistence Constitution without duplicating it;
-10. CP6-03 is NEXT and means WHOLE DANTE DATABASE BLUEPRINT;
+10. CP6-03 is ACTIVE and its canonical blueprint/reference is docs/database/dante-postgresql-database.md;
 11. Gate 03 requires 57/57 PLUS 100% CP6-01 Part-2 cross-cutting/non-owner accounting;
 12. whole database = maximum non-speculative persistence derivable from closed authority, not speculative future schema;
 13. CP6-04 will materially implement the approved whole-database blueprint;
@@ -1037,20 +1047,20 @@ A fresh session must establish:
 Immediate next action:
 
 ```text
-CP6-03 — WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 — CONTINUE WHOLE DANTE DATABASE BLUEPRINT
 
-consume 57/57
-+ consume CP6-01 Part-2 cross-cutting/non-owner ledger 100%
-+ consume closed Constitution / ADR-010
-→ classify each non-57 construct as MATERIALIZE / NO INDEPENDENT PERSISTENCE / GENUINELY DEFERRED
-→ concrete relational families/tables/columns/types
-→ PK/FK/reference topology
-→ material-state/history/current-binding topology
-→ relation/provenance/provider/derived topology
-→ constraints/indexes/privileges
-→ implementation dependency + migration DAG
-→ SQLAlchemy mapping plan
-→ real PostgreSQL test plan
+continue docs/database/dante-postgresql-database.md
+→ execute object-level derivation from complete Domain concept specs
+→ close exact tables/columns/types
+→ close PK/FK/reference topology
+→ close material-state/history/current-binding topology
+→ close relation/provenance/provider/derived topology
+→ close constraints/indexes/privileges
+→ close implementation dependency + migration DAG
+→ close SQLAlchemy mapping plan
+→ instantiate Database Dictionary entries for stable objects
+→ close real PostgreSQL test plan
+→ eliminate every DB-U / unclassified cross-cutting item
 → Gate 03
 ```
 
