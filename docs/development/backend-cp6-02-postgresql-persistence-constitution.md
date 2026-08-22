@@ -29,13 +29,21 @@ run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 PASS / NO CURRENT POST-UPGRADE ACTION
         ↓
 current-truth reconciliation
+COMPLETE / VERIFIED
         ↓
 final independent whole-Constitution review
+HARDENING FINDINGS IDENTIFIED
+        ↓
+review-hardening repair
+THIS CANDIDATE REVISION
+        ↓
+targeted post-repair verification
+PENDING
         ↓
 separate Gate 02 closure
 ```
 
-Gate 02 remains **NOT PASSED** until the final independent review is clean and a separate closure write is explicitly authorized and verified.
+Gate 02 remains **NOT PASSED** until the targeted post-repair verification is clean and a separate closure write is explicitly authorized and verified.
 
 ---
 
@@ -115,13 +123,16 @@ External evidence is deliberately separated from DANTE authority. It answers: �
 | EB-008 PostgreSQL RLS — https://www.postgresql.org/docs/18/ddl-rowsecurity.html | owner/BYPASSRLS bypass exists; referential integrity bypasses RLS and may create covert channels | **ADAPT** as defense-in-depth only; **REJECT** RLS as Domain Authority/Consent/Visibility truth |
 | EB-009 IANA TZDB — https://www.iana.org/time-zones | TZDB changes with political offset/DST rules; current review version 2026c | **ADOPT** IANA-zone semantics for future civil time |
 | EB-010 ISO 4217 — https://www.iso.org/iso-4217-currency-codes.html | explicit three-letter/three-digit currency representation and minor-unit metadata | **ADOPT** explicit currency semantics |
-| EB-011 Stripe idempotency — https://docs.stripe.com/api/idempotent_requests | same key replays prior result; incompatible parameters under same key error | **ADAPT** scope + key + material-operation fingerprint |
+| EB-011 Stripe idempotency — https://docs.stripe.com/api/idempotent_requests | same key replays prior result; incompatible parameters under same key error | **ADAPT** scope + key reservation identity with immutable material-operation fingerprint comparison |
 | EB-012 Stripe online migrations — https://stripe.com/blog/online-migrations | dual-write/backfill/read-cutover/write-cutover/removal for large online changes | **ADAPT** expand → migrate/backfill → verify → cutover → contract |
 | EB-013 GitLab migration guide — https://docs.gitlab.com/development/migration_style_guide/ | zero-downtime discipline, staged operations, roll-forward production practice, explicit irreversible cases | **ADAPT** migration classes, lock-risk review, truthful reversibility |
 | EB-014 Linear local-first — https://linear.app/now/rebuilding-delta-sync-read-path | clients keep local DB; checkpoint/delta-sync is permission-aware | **ADAPT**: local identity/sync can exist without granting local canonical effect authority |
 | EB-015 Linear CASCADE incident — https://linear.app/now/linear-incident-on-jan-24th-2024 | destructive cascade in migration deleted broad dependent production data | **ADOPT barrier**: `ON DELETE NO ACTION` default; CASCADE requires explicit semantic proof |
 | EB-016 Notion Postgres sharding — https://www.notion.com/blog/sharding-postgres-at-notion | single Postgres served five years/four orders growth; sharding introduced under measured CPU/VACUUM/TXID pressure | **REJECT premature sharding/partitioning**; preserve future locality possibilities |
 | EB-017 Notion re-shard — https://www.notion.com/blog/the-great-re-shard | PgBouncer + Postgres fleet, data locality by workspace, zero-downtime re-shard | **ADAPT principle only**; no present DANTE sharding topology |
+| EB-018 PostgreSQL client timeouts — https://www.postgresql.org/docs/18/runtime-config-client.html | statement/transaction/lock/idle-in-transaction timeouts protect different failure/holding modes and should not be indiscriminately global | **ADOPT doctrine**: bounded operational time budgets, values operation/environment-specific |
+| EB-019 PostgreSQL `CREATE INDEX CONCURRENTLY` — https://www.postgresql.org/docs/18/sql-createindex.html | concurrent index creation cannot run inside a transaction block and can leave an invalid index after failure | **ADOPT migration barrier**: isolate non-transactional DDL and define cleanup/retry |
+| EB-020 Alembic `autocommit_block()` — https://alembic.sqlalchemy.org/en/1.19.1/api/runtime.html | Alembic exposes an explicit autocommit block for PostgreSQL DDL that requires transaction-independent execution | **ADOPT when required**; never mix unrelated DDL into that boundary |
 
 External evidence never overrides the closed Logical/Physical model. `ADOPT` means “compatible and useful for DANTE”, not “copy company architecture”.
 
@@ -292,6 +303,14 @@ DANTE MUST NOT encode owner family, lifecycle or authorization semantics into cu
 
 Sequences/identity integers MAY be used for technical counters/order positions/internal append identifiers where global DANTE addressability is not required. They MUST NOT silently become NativeRef/ScopedRecordRef/MaterialStateRef.
 
+### ID-10 — Stable UUID storage and index posture
+
+DANTE stable UUID identities MUST use PostgreSQL native `uuid`, not `text`/`varchar` encodings.
+
+Normal PK/UNIQUE UUID access uses PostgreSQL's ordinary B-tree support unless a real query/invariant requires another structure. A separate index MUST NOT duplicate an existing PK/UNIQUE index merely because the identifier is UUIDv7.
+
+UUIDv7 ordering/locality MAY reduce random-insert pressure and support technical ordering diagnostics, but semantic queries MUST NOT use UUID order as a substitute for explicit chronology.
+
 ---
 
 ## 6. REF — Reference addressing constitution
@@ -300,21 +319,44 @@ Sequences/identity integers MAY be used for technical counters/order positions/i
 
 When a reference slot accepts one concrete persistent target family, it MUST use a direct PostgreSQL foreign key unless concrete contradictory evidence exists.
 
-### REF-02 — Small closed heterogeneous contract MAY use explicit one-of-N FKs
+### REF-02 — Genuinely heterogeneous NativeRef contract → bounded native-address anchor
 
-When a heterogeneous reference:
+A single `NativeRef` Reference Contract that accepts multiple unrelated native owner families MUST use the bounded native-address infrastructure inherited from the accepted PostgreSQL Physical mapping.
 
-- accepts a small explicit stable set of target families;
-- appears in few concrete contracts;
-- is not itself a cross-cutting reusable address;
+```text
+homogeneous NativeRef contract
+→ direct owner FK
 
-it MAY use one nullable FK column per eligible family plus a row-local exactly-one presence constraint.
+genuinely heterogeneous NativeRef contract
+→ bounded native-address anchor
+```
 
-No numeric threshold such as “three types” is constitutional; topology is justified by reuse/evolution/query pressure.
+A one-of-N nullable-FK encoding MUST NOT be introduced as an alternate implementation of that one heterogeneous NativeRef contract merely because the accepted family set is small.
 
-### REF-03 — Reusable/cross-cutting heterogeneous address MAY use bounded anchor
+Multiple nullable/direct FKs remain valid when they represent **different semantic fields/relations**, not one polymorphic reference slot.
 
-A separate address anchor is justified only when the heterogeneous address itself must be stable/reusable across multiple consumers or when repeating one-of-N FKs would obscure the accepted ReferenceAddress contract.
+### REF-03 — Native anchor integrity is database-enforced
+
+The bounded native-address mechanism MUST preserve all of:
+
+```text
+stable native address identifier
+concrete native owner family
+concrete owner existence
+Reference Contract target-family eligibility
+minimal retirement/tombstone continuity where required
+```
+
+The database MUST be able to reject:
+
+```text
+missing anchor
+anchor without valid concrete owner
+wrong owner family for the consuming Reference Contract
+dangling native target
+```
+
+Application-only `type + uuid` validation is insufficient.
 
 ### REF-04 — Anchor is technical address infrastructure only
 
@@ -333,19 +375,23 @@ It MUST NOT own generic Domain fields such as name/title/description/status/gene
 
 Native, scoped, material-state and external addressing MUST NOT collapse into one universal semantic `kind + id` table.
 
-If physical anchors are required, their families remain separated by semantic address class.
+Their physical address/control spaces remain distinct even if implementation conventions are shared.
 
 ### REF-06 — `type + uuid` without DB integrity is FORBIDDEN
 
 A polymorphic pair checked only by application code does not satisfy DANTE referential integrity. The database MUST be able to reject an ineligible family and a dangling target through FK/anchor/constraint/trigger machinery appropriate to the concrete topology.
 
-### REF-07 — ScopedRecordRef remains contextual
+### REF-07 — ScopedRecordRef remains contextual and separately addressable
 
 An LR-02/qualified relation receives a stable ScopedRecordRef only when independent addressability, history, reconciliation or cross-record referencing justifies it. Persistence convenience MUST NOT inflate every dependent record into a native owner.
 
-### REF-08 — MaterialStateRef references exact semantic state
+For a homogeneous scoped target, direct FK remains preferred. Genuine heterogeneous ScopedRecordRef addressing MAY use a **separate bounded scoped-address mechanism**. It MUST NOT route through the native-address or material-state address space.
 
-MaterialStateRef MUST point to an explicit accepted material-state address. It MUST NOT be represented by MVCC token, updated timestamp, row hash, ETag, provider revision or “latest row”.
+### REF-08 — MaterialStateRef references exact semantic state through the material-state address/control family
+
+MaterialStateRef MUST resolve through the explicit bounded material-state address/control mechanism defined by MAT-10 and MUST bind to one exact accepted owner/facet material-state row.
+
+It MUST NOT be represented by MVCC token, updated timestamp, row hash, ETag, provider revision or “latest row”.
 
 ### REF-09 — ExternalRef is issuer-scoped
 
@@ -444,9 +490,37 @@ LR-08/LR-09 data may propose or inform a new canonical state but MUST NOT overwr
 
 A stale-write-sensitive operation MUST bind the expected MaterialStateRef or a documented semantic equivalent. Comparing only `updated_at`, ETag, MVCC xid/xmin or provider revision is insufficient.
 
-### MAT-10 — No universal material-state table is mandated at CP6-02
+### MAT-10 — Bounded material-state address/control family is required
 
-The constitution defines semantics and reusable constraints. Whether a bounded material-state address/control anchor is physically justified is decided in CP6-03 from real cross-family consumers; owner-specific material-state rows remain the default accepted thesis.
+The accepted PostgreSQL Physical mapping requires an explicit stable material-state address layer plus owner-specific material-state rows. CP6-02 therefore closes the existence of that bounded address/control family; CP6-03/05 may choose its exact table name, columns and decomposition but MUST NOT make the mechanism optional.
+
+Minimum contract:
+
+```text
+MaterialStateRef
+→ PostgreSQL uuid / UUIDv7 stable technical address
+
+material-state address/control record
+→ exact semantic owner address
+→ exact material facet/purpose
+→ bounded technical address/control metadata only
+
+owner-specific material-state row
+→ owns the semantic state payload
+→ binds exactly one MaterialStateRef
+
+current accepted-state binding
+→ explicit MaterialStateRef
+→ same-owner / same-facet valid
+```
+
+The database MUST enforce the concrete one-to-one/existence/eligibility invariants selected by CP6-03/05 so a MaterialStateRef cannot resolve to a missing state, a different owner or an ineligible facet.
+
+### MAT-11 — Material-state address/control is not a universal semantic state table
+
+The material-state address/control family MUST NOT own arbitrary business state, generic payload, generic lifecycle or universal `Fact`/`Version` semantics.
+
+Owner-specific material-state rows remain the semantic authority. The shared layer exists only for stable heterogeneous material-state addressing/control and continuity.
 
 ---
 
@@ -806,7 +880,7 @@ Before adding an index, review PK/UNIQUE/other indexes for prefix/equivalent cov
 
 ### IDX-08 — Large index construction uses migration-safe method
 
-`CREATE INDEX CONCURRENTLY` or other staged approach MAY be required for live large tables. Transaction/lock behavior must be planned explicitly.
+`CREATE INDEX CONCURRENTLY` or other staged approach MAY be required for live large tables. Transaction/lock behavior must be planned explicitly and MIG-19 applies when the operation cannot run inside a normal transaction block.
 
 ### IDX-09 — Patch upgrade maintenance findings are part of lifecycle QA
 
@@ -881,31 +955,63 @@ PostgreSQL advisory locks MAY be used only when the invariant has a stable lock 
 
 If the client loses connection after commit may have occurred, recovery MUST use idempotency/result lookup/reconciliation, not assume rollback and execute a second effect.
 
+### TX-13 — Runtime database work has bounded operational time budgets
+
+DANTE runtime/database operations MUST have an explicit strategy for bounded waiting/execution using the applicable PostgreSQL mechanisms such as:
+
+```text
+statement_timeout
+transaction_timeout
+lock_timeout
+idle_in_transaction_session_timeout
+```
+
+The constitution does **not** define one universal numeric value. Exact budgets are operation/environment/workload-specific and must not be imposed globally where they would break legitimate maintenance or long operations.
+
+A timeout means the operation exceeded a technical budget. It does not prove that an external effect did not occur and does not authorize blind retry.
+
+### TX-14 — Database failure/conflict classes remain distinguishable
+
+Application persistence boundaries MUST preserve enough technical distinction to handle at least:
+
+```text
+expected-state mismatch
+unique/exclusion/invariant conflict
+serialization failure
+deadlock
+statement/lock/transaction timeout
+connection failure before known commit
+ambiguous connection loss where commit outcome is unknown
+```
+
+Raw PostgreSQL errors/SQLSTATEs are technical evidence, not product semantics. The application layer maps them to the appropriate governed outcome without collapsing retryable conflicts, semantic conflicts and ambiguous outcomes into one generic error.
+
 ---
 
 ## 17. IDEM — Idempotency constitution
 
-### IDEM-01 — Identity tuple
+### IDEM-01 — Reservation identity is scope + idempotency key
 
-A persistent idempotency record, where required, is keyed by:
+A persistent idempotency reservation, where required, MUST have one unique reservation identity:
 
 ```text
 operation scope
 + caller-provided/generated idempotency key
-+ normalized material-operation fingerprint
 ```
+
+The normalized material-operation fingerprint is a separate immutable field on that reservation. It is **not** part of the uniqueness identity, because allowing `(scope,key,fingerprint)` as the unique tuple would permit the same key to reserve two materially different operations.
 
 ### IDEM-02 — Same key + same material operation
 
-May replay/return the prior accepted execution/result according to the operation contract rather than execute a duplicate effect.
+If the existing reservation fingerprint matches the normalized material operation, the caller MAY wait for/replay/return the established execution/result according to the operation contract instead of creating a duplicate effect.
 
 ### IDEM-03 — Same key + different material operation
 
-MUST conflict. A key cannot be silently rebound to another operation.
+MUST conflict/reject. A reserved `(operation_scope, idempotency_key)` cannot be silently rebound to another fingerprint or operation.
 
-### IDEM-04 — Concurrent duplicate requests serialize on the idempotency identity
+### IDEM-04 — Concurrent duplicate requests serialize on the reservation identity
 
-Only one material execution may win. Waiting/replaying callers observe the established result/state rather than race into duplicate effects.
+Only one reservation/material execution may win for a given `(operation_scope, idempotency_key)`. Waiting/replaying callers observe the established result/state rather than race into duplicate effects.
 
 ### IDEM-05 — Validation-before-reservation is bounded
 
@@ -926,6 +1032,27 @@ Key/record MUST NOT become NativeRef, Request/Decision identity, authorization t
 ### IDEM-09 — Provider effect requires provider-safe semantics
 
 For external side effects, use provider idempotency where available plus DANTE reconciliation. DANTE retry must not assume an external effect failed merely because its response was lost.
+
+### IDEM-10 — DB-local canonical effect and idempotency reservation are transactionally coordinated
+
+When the entire material effect is canonical PostgreSQL state, the idempotency reservation/claim, resulting canonical effect and retained result binding MUST be coordinated by the same outer PostgreSQL application transaction or another equally strong database-local atomic mechanism.
+
+A committed canonical effect MUST NOT exist with an idempotency reservation state that falsely says no execution occurred, and a committed reservation MUST NOT claim a canonical result that rolled back.
+
+### IDEM-11 — External-effect path uses explicit durable coordination
+
+When the operation includes an external/provider effect that cannot share the PostgreSQL transaction, DANTE MUST use the applicable combination of:
+
+```text
+DANTE idempotency reservation
+canonical pending/staged state where required
+transactional outbox when Class-A publication/effect dispatch is applicable
+provider idempotency where available
+provider receipt/outcome tracking
+reconciliation for ambiguous outcome
+```
+
+No retry policy may infer external rollback from a missing/failed response.
 
 ---
 
@@ -1125,6 +1252,22 @@ Moving 18 → 19 is not automatic patch maintenance and requires compatibility/p
 
 Inherited from CP3.
 
+### MIG-19 — Non-transactional PostgreSQL DDL is an explicit isolated boundary
+
+PostgreSQL operations that cannot run inside a normal transaction block, including `CREATE INDEX CONCURRENTLY`, MUST be isolated deliberately in their own migration step/revision boundary as appropriate.
+
+When Alembic `autocommit_block()` or equivalent autocommit execution is required:
+
+```text
+the loss/change of transaction atomicity is explicit
+unrelated DDL/data changes MUST NOT be mixed into the autocommit block
+preconditions and already-applied state MUST be idempotently inspectable
+failure cleanup/retry MUST account for PostgreSQL artifacts such as INVALID indexes
+post-operation verification is mandatory before later contract/removal steps rely on it
+```
+
+A migration author MUST NOT assume that Alembic's ordinary transactional wrapper makes non-transactional PostgreSQL DDL atomic.
+
 ---
 
 ## 21. SEC — Database ownership/privilege constitution
@@ -1277,6 +1420,40 @@ No arbitrary benchmark threshold is constitutional before representative data/qu
 
 Hypothesis MAY be used for range boundaries, value normalization, fingerprints and constraint-adjacent pure logic, but it does not replace real PostgreSQL execution.
 
+### QA-16 — New constitution hardenings have explicit direct-proof stages
+
+The final independent review added reusable rules whose proof must remain honestly staged:
+
+```text
+UUIDv7 native PostgreSQL round-trip/generation compatibility
+→ CP6-06 when exercisable without business schema; otherwise first implementation using stable DANTE IDs
+
+bounded heterogeneous native-address integrity
+→ first real representative heterogeneous NativeRef implementation
+→ must reject wrong family + dangling target
+
+material-state address/current binding integrity
+→ first real material-state implementation
+→ must reject missing/wrong-owner/wrong-facet/current-binding corruption
+
+idempotency reservation identity
+→ first operation requiring persistent idempotency
+→ same key + same fingerprint replay
+→ same key + different fingerprint conflict
+→ concurrent duplicate serialization
+→ atomic DB-local effect/result binding
+
+timeout/error classification
+→ CP6-06 for already-materialized technical behavior where non-speculative;
+   operation-specific budgets/conflicts with first qualifying vertical
+
+non-transactional migration boundary
+→ first migration requiring PostgreSQL autocommit/non-transactional DDL
+→ failure/INVALID-artifact cleanup and verification
+```
+
+No business table is created merely to make these items green.
+
 ---
 
 ## 23. Vertical-specific decision register
@@ -1287,8 +1464,8 @@ The following are intentionally **not** global CP6-02 choices:
 exact business table names
 exact business column names
 exact owner-specific material-state table shape
-whether a material-state address anchor is justified by real consumers
-exact ReferenceAddress anchor table topology
+exact material-state address/control table name, columns and constraint topology
+exact native/scoped ReferenceAddress anchor table names/columns and concrete constraint topology
 which qualified relations require ScopedRecordRef
 exact recurrence encoding/parameters
 exact Place geometry/geography/SRID
@@ -1303,6 +1480,15 @@ exact outbox schema
 exact PowerSync publication/schema
 exact Restate workflow state
 exact ContentArtifact object-flow schema
+exact operation/environment timeout values
+```
+
+What is **not** vertical-specific anymore:
+
+```text
+genuinely heterogeneous NativeRef uses bounded native-address infrastructure
+material-state address/control family exists for MaterialStateRef
+idempotency reservation uniqueness is scope + key, not scope + key + fingerprint
 ```
 
 CP6-03 builds topology/dependency/vertical decomposition; CP6-05 designs Vertical #1 exactly.
@@ -1318,6 +1504,7 @@ canonical EAV/property bag                          FORBIDDEN
 universal event-log ontology                        FORBIDDEN
 universal Fact/Version payload table                FORBIDDEN
 generic kind+uuid reference without DB integrity    FORBIDDEN
+one-of-N FK as alternate encoding of one heterogeneous NativeRef contract FORBIDDEN
 provider ID promoted to NativeRef                   FORBIDDEN
 MVCC/ETag/provider revision == MaterialStateRef      FORBIDDEN
 absence/NULL == false globally                      FORBIDDEN
@@ -1332,6 +1519,9 @@ Alembic autogenerate as semantic authority          FORBIDDEN
 fake reversible destructive migration               FORBIDDEN
 speculative sharding/partitioning                    FORBIDDEN
 specialist capability activation without trigger    FORBIDDEN
+blind retry after timeout/ambiguous commit           FORBIDDEN
+scope+key+fingerprint as idempotency uniqueness      FORBIDDEN
+unrelated DDL inside required autocommit boundary    FORBIDDEN
 ```
 
 ---
@@ -1340,8 +1530,8 @@ specialist capability activation without trigger    FORBIDDEN
 
 | Risk | Constitution owner | Remaining direct evidence |
 |---|---|---|
-| PG-R01 anchor leakage | REF-03..06 | representative bounded anchor only when topology justifies it |
-| PG-R02 heterogeneous integrity | REF-02..10 + CON | wrong-family/dangling real proof post-implementation |
+| PG-R01 anchor leakage | REF-02..07 + MAT-10/11 | representative bounded native/scoped/material address mechanisms when first implemented |
+| PG-R02 heterogeneous integrity | REF-01..10 + CON | wrong-family/dangling real proof post-implementation |
 | PG-R03 history maintainability | MAT/HIST | representative LR-01/LR-02/LR-03 business state |
 | PG-R04 expected-state concurrency | MAT-09 + TX | SC-001 real race |
 | PG-R05 multi-owner write skew | TX + CON | representative predicate/invariant race |
@@ -1351,7 +1541,7 @@ specialist capability activation without trigger    FORBIDDEN
 | PG-R09 disclosure/non-interference | CAP-06 + SEC + QA-11 | security/search/system proof |
 | PG-R10 retention/restore | LIFE + MIG + QA-12 | destructive recovery/anti-resurrection |
 
-No PG-R item is relabeled business-semantic direct PASS by this design document or by the 18.6 technical regression.
+No PG-R item is relabeled business-semantic direct PASS by this design document, by the 18.6 technical regression or by this review hardening.
 
 ---
 
@@ -1409,7 +1599,7 @@ PSV status remains as assigned by CP6-01. This constitution changes stage owners
 | adapter may flush, not commit | PRESERVED |
 | default `READ COMMITTED` | PRESERVED |
 | stronger isolation per invariant | MADE CONCRETE BY TX |
-| no hidden retry | PRESERVED |
+| no hidden retry | PRESERVED / STRENGTHENED BY TX-12..14 + IDEM |
 | one Alembic DAG/head | PRESERVED |
 | reviewed autogenerate | PRESERVED / STRENGTHENED |
 | owner/migrator/runtime split | PRESERVED |
@@ -1425,14 +1615,18 @@ CP3 contradiction identified: **0**.
 
 ```text
 UUIDv7                                      ADOPT / BOUNDED
+native PostgreSQL uuid storage              ADOPT
+ordinary PK/UNIQUE B-tree UUID index        ADOPT DEFAULT
+UUIDv7 ordering as semantic chronology      REJECT
 application-side issuance                  ADOPT
 backend as online default issuer           ADOPT
 future authorized offline issuance         MAY / TRIGGERED
 database-only stable-ID issuance            REJECT
-UUIDv7 timestamp as chronology              REJECT
-homogeneous direct FK                       ADOPT
-one-of-N FK for bounded union               MAY
-bounded address anchor                      MAY WHEN REUSE/EVOLUTION JUSTIFIES
+homogeneous NativeRef direct FK              ADOPT
+heterogeneous NativeRef bounded anchor       ADOPT / INHERITED PHYSICAL
+one-of-N FK for one heterogeneous NativeRef  REJECT
+separate bounded scoped address anchor       MAY WHEN GENUINELY HETEROGENEOUS
+bounded material-state address/control       ADOPT / REQUIRED
 kind+id without DB RI                       REJECT
 ON DELETE NO ACTION default                 ADOPT
 CASCADE default                             REJECT
@@ -1442,11 +1636,16 @@ declarative constraints first               ADOPT
 PG18 temporal constraints                   ADOPT WHEN EXACT
 global SERIALIZABLE                         REJECT
 whole-transaction retry when SERIALIZABLE   ADOPT
+bounded DB operation time budgets           ADOPT / VALUES LOCAL
+blind retry after timeout/ambiguous commit  REJECT
+idempotency unique scope+key                 ADOPT
+fingerprint in idempotency uniqueness        REJECT
 RLS as Domain governance                    REJECT
 RLS as defense-in-depth                     MAY
 speculative indexes                         REJECT
 speculative partition/sharding              REJECT
 expand/backfill/cutover/contract             ADOPT
+isolated non-transactional migration DDL    ADOPT WHEN REQUIRED
 fake migration reversibility                REJECT
 technology patch lifecycle                  ADOPT
 ```
@@ -1455,13 +1654,13 @@ technology patch lifecycle                  ADOPT
 
 ## 29. Candidate Gate-02 preflight
 
-### Constitution content
+### Constitution content after independent-review repair
 
 ```text
 TECH lifecycle                              CANDIDATE PASS
-ID identity                                 CANDIDATE PASS
-REF addressing                              CANDIDATE PASS
-MAT material state                         CANDIDATE PASS
+ID identity                                 HARDENING APPLIED / CANDIDATE PASS
+REF addressing                              HARDENING APPLIED / CANDIDATE PASS
+MAT material state                         HARDENING APPLIED / CANDIDATE PASS
 HIST history                                CANDIDATE PASS
 TIM temporal                                CANDIDATE PASS
 MISS missingness                            CANDIDATE PASS
@@ -1470,13 +1669,13 @@ TYP PostgreSQL types                        CANDIDATE PASS
 REL relations                               CANDIDATE PASS
 CON constraints                             CANDIDATE PASS
 IDX indexes                                 CANDIDATE PASS
-TX transactions/concurrency                 CANDIDATE PASS
-IDEM idempotency                            CANDIDATE PASS
+TX transactions/concurrency                 HARDENING APPLIED / CANDIDATE PASS
+IDEM idempotency                            HARDENING APPLIED / CANDIDATE PASS
 PROV provenance                             CANDIDATE PASS
 CAP capability boundaries                   CANDIDATE PASS
-MIG migration/evolution                     CANDIDATE PASS
+MIG migration/evolution                     HARDENING APPLIED / CANDIDATE PASS
 SEC ownership/privileges                    CANDIDATE PASS
-QA direct-proof doctrine                    CANDIDATE PASS
+QA direct-proof doctrine                    HARDENING APPLIED / CANDIDATE PASS
 ```
 
 ### Required barriers
@@ -1489,7 +1688,7 @@ HG/SC/PSV stage truth preserved                       CANDIDATE PASS
 external benchmark completed                         CANDIDATE PASS
 CP3 contradiction                                    0
 Logical contradiction                                0
-Physical contradiction                               0
+Physical technology/selection contradiction          0
 semantic owner reclassification                      0
 universal Entity/Relationship/EAV                     0
 provider token == MaterialStateRef                    0
@@ -1500,6 +1699,32 @@ business DDL                                          0
 business migration                                    0
 business SQLAlchemy mapping                           0
 persistence adapter                                   0
+```
+
+### Final independent-review findings incorporated by this repair
+
+```text
+IR-01 idempotency uniqueness ambiguity
+REPAIRED — unique reservation identity = operation scope + idempotency key;
+fingerprint immutable comparison field; different fingerprint conflicts
+
+IR-02 heterogeneous NativeRef alternate one-of-N FK path
+REPAIRED — removed; accepted Physical hybrid is direct FK if homogeneous,
+bounded native-address anchor if genuinely heterogeneous
+
+IR-03 MaterialStateRef address/control mechanism left optional
+REPAIRED — bounded material-state address/control family required;
+exact table topology remains CP6-03/05
+
+IR-04 UUID storage/index posture insufficiently explicit
+HARDENED — PostgreSQL native uuid, ordinary PK/UNIQUE B-tree default,
+no redundant index, UUIDv7 order non-semantic
+
+IR-05 operational timeout/error taxonomy missing
+HARDENED — bounded PostgreSQL time-budget doctrine + distinguishable conflict/failure classes
+
+IR-06 PostgreSQL non-transactional migration DDL boundary missing
+HARDENED — isolated autocommit/non-transactional operation rule + failure cleanup
 ```
 
 ### Gate-02 blocker status
@@ -1514,7 +1739,8 @@ RESOLVED / PASS / NO CURRENT POST-UPGRADE ACTION
 future logical-replication activation remains trigger-bound
 
 B-03 final post-refresh whole-Constitution independent review
-OPEN / NOT YET COMPLETE
+HARDENING FINDINGS IDENTIFIED / REPAIR APPLIED
+TARGETED POST-REPAIR VERIFICATION PENDING
 
 B-04 formal Gate-02 closure write
 OPEN / NOT YET AUTHORIZED OR EXECUTED
@@ -1532,17 +1758,17 @@ GATE 02 NOT PASSED
 
 ## 30. Next execution boundary
 
-The technology-refresh and direct technical evidence boundaries are complete. The current-truth reconciliation updates current documentation to that exact evidence without rewriting historical 18.4 records.
+Technology refresh, direct technical evidence and current-truth reconciliation are complete. The independent whole-Constitution review found bounded concrete hardenings and this revision applies them without business implementation or upstream semantic reopen.
 
 Next:
 
 ```text
-1. finish/verify current-truth reconciliation with exact Git delta and remote readback;
-2. perform a fresh independent whole-Constitution review against:
-   CP6-01 / WL-H / PG-R / HG / SC / PSV / Physical / CP3 /
-   PostgreSQL 18.6 direct evidence / 18.6 release-note impact / external evidence;
-3. repair any defect at source rather than documenting parallel truths;
-4. if and only if the independent review is CLEAN, propose a separate exact Gate-02 closure write;
+1. remotely read back this repaired Constitution and exact Git delta;
+2. run a targeted post-repair review over:
+   ID / REF / MAT / TX / IDEM / MIG / QA /
+   Physical mapping / WL-H05..07 / PG-R01..05 / Gate matrix;
+3. confirm the repair introduced no new contradiction, generic root or unstaged proof claim;
+4. if and only if that targeted review is CLEAN, propose a separate exact Gate-02 closure write;
 5. only after formal Gate 02 PASS may CP6-03 begin.
 ```
 
