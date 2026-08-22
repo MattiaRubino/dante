@@ -2,6 +2,7 @@
   "name": "dante",
   "private": true,
   "scripts": {
+    "architecture:check": "dependency-cruise --config dependency-cruiser.config.mjs -- apps/web/src apps/mobile/app apps/mobile/src packages/design-tokens packages/i18n packages/time",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "format": "prettier --write .",
@@ -18,6 +19,7 @@
   "packageManager": "pnpm@11.22.0",
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "dependency-cruiser": "18.2.0",
     "eslint": "10.8.1",
     "prettier": "3.9.0",
     "turbo": "2.10.11",
