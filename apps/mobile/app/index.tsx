@@ -1,3 +1,4 @@
+import { radii } from '@dante/design-tokens/native';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
     maxWidth: 620,
     borderWidth: 1,
     borderColor: '#374151',
-    borderRadius: 20,
+    borderRadius: radii.card,
     backgroundColor: '#1f2937',
     padding: 28,
   },
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   statusItem: {
     flex: 1,
     minHeight: 84,
-    borderRadius: 12,
+    borderRadius: radii.panel,
     backgroundColor: '#111827',
     padding: 16,
   },
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: '#4b5563',
-    borderRadius: 12,
+    borderRadius: radii.panel,
     backgroundColor: '#273449',
     padding: 16,
   },
