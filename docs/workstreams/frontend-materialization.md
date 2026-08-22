@@ -1,16 +1,17 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-04 MINIMAL MOBILE APPLICATION PASS**
+- Status: **ACTIVE — FM-05A SHARED DESIGN TOKENS PASS**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated workspace commit: `3c150c4806191f0347b64c645d53168123ce0ede`
+- Current validated workspace commit: `acd846a06614270fda9d66542a3fdc87fca7202e`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE MATERIALIZED**
+- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS MATERIALIZED**
 - Machine runtime baseline: **PASS**
 - Root engineering dependencies: **INSTALLED / PINNED / LOCKED**
 - Minimal Web dependency graph: **INSTALLED / PINNED / LOCKED**
 - Minimal Mobile dependency graph: **INSTALLED / PINNED / LOCKED / DIRECTLY RUNTIME-VALIDATED**
-- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V08/FM-V09/FM-V10/FM-V11 PASS; remaining register scoped below**
+- Shared design-token package: **MATERIALIZED / GENERATED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -473,13 +474,213 @@ FM-04 directly proves the minimal Mobile runtime at its stated scope. It does no
 
 ### FM-05 — first genuine shared packages
 
-Materialize only packages with immediate real Web+Mobile consumers. Initial accepted candidates:
+#### FM-05A — `@dante/design-tokens` — PASS
+
+The first genuine shared package is materialized and directly consumed by both Web and Mobile.
+
+The package exists because a real duplicated semantic already existed in both diagnostic applications: card/panel radii. FM-05A intentionally did **not** promote the diagnostic color palette or typography into canonical DANTE design decisions.
+
+Materialized package:
 
 ```text
-@dante/design-tokens
-@dante/i18n
-@dante/time
+packages/design-tokens/
+├── package.json
+├── tsconfig.json
+├── terrazzo.config.ts
+├── tokens/
+│   ├── primitives.json
+│   └── semantic.json
+├── tooling/
+│   └── native-plugin.ts
+└── generated/
+    ├── web.css
+    └── native.ts
 ```
+
+Exact token compiler line:
+
+```text
+@terrazzo/cli         2.7.1
+@terrazzo/parser      2.7.1
+@terrazzo/plugin-css  2.7.1
+DTCG source model     2025.10
+```
+
+Initial shared semantics are deliberately narrow:
+
+```text
+primitive.radius.12   12px
+primitive.radius.20   20px
+
+semantic.radius.panel → primitive.radius.12
+semantic.radius.card  → primitive.radius.20
+```
+
+Generation path:
+
+```text
+DTCG token source
+        ↓
+Terrazzo 2.7.1
+       / \
+      /   \
+Web CSS   Native TypeScript
+```
+
+Generated Web output exposes CSS custom properties. Generated Native output exposes typed numeric React Native radii. Generated files are committed, deterministic and never semantic authority over their source tokens.
+
+Real consumers:
+
+```text
+@dante/web
+  dependency: @dante/design-tokens = workspace:*
+  import: @dante/design-tokens/web.css
+  runtime: generated CSS variables
+
+@dante/mobile
+  dependency: @dante/design-tokens = workspace:*
+  import: @dante/design-tokens/native
+  runtime: generated radii.card / radii.panel
+```
+
+Public package surface:
+
+```json
+{
+  ".": {
+    "react-native": "./generated/native.ts",
+    "default": "./generated/native.ts"
+  },
+  "./native": "./generated/native.ts",
+  "./web.css": "./generated/web.css"
+}
+```
+
+The root export is retained intentionally because direct FM-05A runtime diagnosis established that the initial subpath-only export map was insufficient for the observed Expo SDK 57 / Metro workspace resolution path even though Node resolved the same subpath.
+
+Direct static validation:
+
+```text
+pnpm install --frozen-lockfile                 PASS
+Terrazzo token lint                            PASS
+DTCG → Web CSS generation                      PASS
+DTCG → Native TypeScript generation            PASS
+second generation SHA equality                 PASS
+@dante/design-tokens typecheck                 PASS
+root Turbo typecheck across 3 packages         PASS
+root lint                                      PASS
+root format check                              PASS
+root Turbo build                               PASS
+git diff --check                               PASS
+authorized implementation paths                15
+unexpected paths                               0
+```
+
+Turbo now exercises a genuine multi-workspace graph:
+
+```text
+typecheck:
+@dante/design-tokens + @dante/web + @dante/mobile
+
+build:
+@dante/design-tokens → @dante/web
+```
+
+Direct Web runtime evidence:
+
+```text
+Vite in WSL
+↓
+Windows Firefox
+↓
+@dante/design-tokens/web.css
+↓
+DANTE Web diagnostic route renders
+PASS
+```
+
+Direct Mobile runtime evidence:
+
+```text
+Metro / Expo CLI in WSL
+↓
+Windows ADB reverse
+↓
+Expo Go 57.0.9
+↓
+@dante/design-tokens/native
+↓
+generated/native.ts
+↓
+DANTE Mobile diagnostic route renders
+PASS
+```
+
+##### Metro workspace package-resolution diagnosis
+
+The initial Mobile bare import failed with:
+
+```text
+@dante/design-tokens/native could not be found within the project
+```
+
+The diagnosis was intentionally one-variable-at-a-time.
+
+Evidence collected before changing architecture:
+
+```text
+pnpm workspace symlink                               PASS
+node_modules/@dante/design-tokens symlink            PASS
+Node import.meta.resolve("@dante/design-tokens/native") PASS
+resolved target = packages/design-tokens/generated/native.ts
+Metro watchFolders includes packages/design-tokens   PASS
+Metro nodeModulesPaths includes app/root node_modules PASS
+Metro package-exports support enabled                PASS
+Metro TypeScript source extension enabled            PASS
+```
+
+A Metro `--clear` restart did **not** repair the failure and is not the durable fix.
+
+A temporary relative-import probe:
+
+```text
+../../../packages/design-tokens/generated/native
+```
+
+rendered DANTE Mobile successfully after a clean workstation restart. That proved Metro could see and execute the external workspace TypeScript file; the failure was therefore isolated to the bare package/public-entry resolution path rather than workspace visibility, TypeScript support or pnpm linking.
+
+The durable package repair was to add the root `"."` export with `react-native` and `default` conditions while preserving the explicit `./native` and `./web.css` public subpaths. After restoring the real bare import, DANTE Mobile rendered successfully.
+
+No workaround was introduced in any of these layers:
+
+```text
+no metro.config.js
+no manual watchFolders
+no nodeModulesPaths override
+no nodeLinker: hoisted
+no pnpm hoisting change
+no Windows Node runtime
+no alternate clone
+no tunnel
+no project updates.url
+```
+
+This diagnosis is part of the durable implementation record so a future developer does not repeat the same broad troubleshooting loop.
+
+Validated implementation commit:
+
+```text
+acd846a06614270fda9d66542a3fdc87fca7202e
+feat: materialize shared design tokens
+```
+
+#### FM-05B — `@dante/i18n` — NEXT
+
+Materialize only a framework-free shared i18n core with immediate real Web+Mobile consumption. React/browser/native integration remains app-owned.
+
+#### FM-05C — `@dante/time` — PLANNED
+
+Materialize the shared Temporal semantic boundary after FM-05B under its own bounded gate and direct Web+Mobile consumption evidence.
 
 Do not create `@dante/api-client` before real FastAPI OpenAPI exists. Do not create a shared feature package before genuine cross-platform reuse exists.
 
@@ -523,15 +724,15 @@ FM-V01 Node 24 WSL runtime resolution — PASS
 FM-V02 pnpm 11 install/workspace resolution — PASS
 FM-V03 preferred isolated dependency layout with Expo/native graph — PASS
 FM-V04 evidence-driven hoisted fallback if required — NOT RUN
-FM-V05 Turbo task graph — REAL @dante/web BUILD/TYPECHECK TASK EXECUTION PASS; MULTI-WORKSPACE GRAPH NOT RUN
-FM-V06 TypeScript strict cross-workspace graph — BASE CONFIG PROBE + WEB APP TYPECHECK PASS; CROSS-WORKSPACE NOT RUN
+FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + WEB BUILD; DESIGN-TOKENS + WEB + MOBILE TYPECHECK
+FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + WEB + MOBILE
 FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
 FM-V08 Vite/React production build — PASS
 FM-V09 Windows browser ↔ WSL Vite — PASS
 FM-V10 Expo SDK 57 / RN compatible baseline — PASS
 FM-V11 WSL Metro ↔ Windows Android emulator/device — PASS
-FM-V12 package exports / forbidden deep imports — NOT RUN
-FM-V13 DTCG → Web CSS + Native TS token generation — NOT RUN
+FM-V12 package exports / forbidden deep imports — PACKAGE EXPORTS + REAL WEB/MOBILE PUBLIC-SURFACE CONSUMPTION PASS; FORBIDDEN DEEP-IMPORT REJECTION NOT RUN
+FM-V13 DTCG → Web CSS + Native TS token generation — PASS
 FM-V14 Web/Mobile i18n shared-core consumption — NOT RUN
 FM-V15 Temporal/time shared-core consumption — NOT RUN
 FM-V16 TanStack Form Web + RN + Zod when first real form activates — NOT RUN
@@ -596,11 +797,11 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-05 FIRST GENUINE SHARED PACKAGES
+FM-05B @dante/i18n
 ```
 
-FM-00, FM-01, FM-02A, FM-02B, FM-03 and FM-04 are directly validated at their stated scope.
+FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04 and FM-05A are directly validated at their stated scope.
 
-FM-05 may materialize only shared packages with immediate genuine Web+Mobile consumers. The accepted initial candidates remain `@dante/design-tokens`, `@dante/i18n` and `@dante/time`; each still requires its own bounded gate and direct consumption evidence.
+FM-05B may materialize only the framework-free shared i18n semantics/resources that receive immediate genuine Web+Mobile consumers. React integration, browser/native locale detection and persistence remain app/platform owned.
 
-Access/Home product surfaces, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
+`@dante/time` remains the next planned shared package after i18n. Access/Home product surfaces, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
