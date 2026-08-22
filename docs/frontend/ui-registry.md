@@ -54,7 +54,7 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 ## Home — central stage
 
-Current working oracle: **B2 v23 branding layer over B2 v22 no persistent add**. B2 remains open for background/atmosphere, palette review and final QA.
+Current working oracle: **B2 v24 visual skin over B2 v23 branding over B2 v22 no persistent add**. B2 remains open for remaining shell/details and final responsive/visual/accessibility QA.
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|

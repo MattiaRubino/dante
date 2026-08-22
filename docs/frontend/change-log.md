@@ -100,3 +100,18 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `QA` FULL final visual treatment explicitly accepted by user; PARTIAL receives the identical shared layer.
 - `QA_LIMIT` fresh 24-case browser matrix, accessibility rerun and separate PARTIAL browser visual review are not claimed.
 - `OPEN` background/atmosphere, overall palette/color system, later explicit `Crea` placement review, and final QA remain.
+
+## 2026-08-22 — B2 Home Visual Skin v24
+
+- `ADDED` user-reviewed B2 v24 visual-skin checkpoint over v23 branding / v22 Home-stage semantics.
+- `CHANGED` working Home palette from generic navy/purple emphasis to charcoal surfaces with restrained DANTE orange emphasis.
+- `ADDED` accepted 1920×1080 cosmos/neural atmosphere, stored as ordered Base64 parts plus a size/SHA-verified restore script, and one shared v23 -> v24 CSS layer.
+- `CHANGED` central-stage background opacity only enough to expose the accepted atmosphere; stage layout/geometry is unchanged.
+- `REMOVED` obsolete decorative `#netCanvas` from the accepted visual composition.
+- `REGRESSION_CAUGHT` an intermediate cleanup also hid `#fxCanvas` and `.magnet-line`, causing Mondi spheres to lose animation/effects; that state was rejected before save.
+- `FIXED` final v24 cleanup hides only `#netCanvas`; `#fxCanvas` and `.magnet-line` are deliberately untouched.
+- `VISUAL_ONLY` the existing `Crea` control is orange-filled in the accepted working skin; Create-vs-Capture semantics/placement remain open and unchanged.
+- `NO_CHANGE` Mondi/Segnali contract, no-persistent-add rule, timeline, Context Rail semantics, backend/API/Domain/logical/physical semantics.
+- `QA` final combined preview accepted by user after the Mondi regression fix; outer review-wrapper JavaScript passes `node --check`.
+- `QA_LIMIT` fresh 24-case browser matrix, accessibility rerun, separate PARTIAL browser review and production semantic-token migration are not claimed.
+- `OPEN` remaining shell/detail decisions, semantic-token productionization and final responsive/visual/accessibility QA.
