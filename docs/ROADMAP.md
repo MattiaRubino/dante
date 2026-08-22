@@ -58,15 +58,14 @@ CLOSED / GATE 01 PASS
         ↓
 CP6-02
 PostgreSQL Persistence Constitution
-ACTIVE / CANDIDATE / PRE-CLOSURE
+CLOSED / GATE 02 PASS
 PostgreSQL 18.6 technical refresh DIRECT REMOTE QA PASS
-GATE 02 NOT PASSED
         ↓
 CP6-03
 Concrete Relational Topology
 + Implementation Dependency DAG
 + Vertical Decomposition
-NOT STARTED — BLOCKED UNTIL GATE 02 PASS
+NEXT / NOT STARTED
         ↓
 CP6-04
 Vertical #1 Selection
@@ -88,11 +87,15 @@ CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
-CP6-02 candidate authority:
+CP6-02 closed Constitution:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
 
-Current CP6-02 technical evidence:
+CP6-02 closure authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+
+Retained CP6-02 technical evidence:
 
 ```text
 PostgreSQL architecture              major 18
@@ -107,7 +110,7 @@ Backend CI Gate                      SUCCESS
 18.6 release-note impact             PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
-The immediate next action is the final independent whole-Constitution review. Only if that review is clean may a separate Gate 02 closure write occur.
+The immediate next action is **CP6-03 read/research/design-first**. Gate 02 closes global PostgreSQL doctrine; it does not authorize business DDL, business mappings/adapters or Vertical #1 implementation.
 
 CP6 must end at:
 
@@ -286,7 +289,7 @@ explicit transaction ownership
 
 CP6 therefore does **not** need to reselect the database or rebuild technical persistence infrastructure. It must turn the closed semantic/Physical contracts into reusable concrete relational rules, then exactly design the first vertical.
 
-CP6-01 completed the whole-model persistence coverage and staging map. CP6-02 now contains the candidate reusable PostgreSQL Constitution and has directly re-proved the 18.6 technical foundation. What remains before Gate 02 is the final independent whole-Constitution review and a separate closure write.
+CP6-01 closed the whole-model persistence coverage and staging map. CP6-02 has now **closed the reusable PostgreSQL Constitution at Gate 02** after the 18.6 technical reproof, external benchmark, independent review, repair and targeted clean verification. CP6-03 now consumes that closed doctrine to build the concrete relational family topology, dependency DAG and vertical decomposition.
 
 CP6 does not mechanically translate 57 Logical concepts into 57 tables/modules/services.
 
