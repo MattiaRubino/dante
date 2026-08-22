@@ -14,11 +14,20 @@ Frontend Foundation Passo 1   PASS
 Frontend Foundation Passo 2   PASS
 Frontend Foundation Passo 3   FINAL REVIEW PASS
 Frontend Foundation           DESIGN/ARCHITECTURE CLOSED / ACCEPTED / INTEGRATED VIA PR #22
-Production implementation     NOT STARTED
-Direct PSV                    NOT RUN
+Frontend materialization      ACTIVE ON feature/frontend-materialization
+Production backend scaffold   CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
+Backend CP6                   ACTIVE ON feature/logical-postgresql
+Backend CP6-01                CLOSED / GATE 01 PASS
+Backend CP6-02                CLOSED / GATE 02 PASS
+Backend CP6-03                NEXT / WHOLE DANTE DATABASE BLUEPRINT
+PostgreSQL architecture       18 major family / sole canonical persistence + material-history authority
+Physical exact patch          18.4 / HISTORICAL PHASE-TIME SELECTION
+Current PostgreSQL patch      18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
+Current DANTE business DB     NOT YET MATERIALIZED
+Direct business HG / PSV      ONLY AS EXACTLY EARNED
 ```
 
-`main` is integrated authority. Frontend Foundation design/architecture is now integrated through PR #22.
+`main` is integrated authority for closed shared foundations. Current unmerged backend CP6 truth lives on `feature/logical-postgresql`; current frontend materialization truth lives on `feature/frontend-materialization`.
 
 ## 2. Current architecture entry points
 
@@ -28,8 +37,12 @@ Direct PSV                    NOT RUN
 - `frontend-engineering-foundation-part-2.md` — frontend application/package/dependency/data-authority specification
 - `frontend-engineering-foundation-final-review.md` — final review/closure evidence
 - `frontend-engineering-foundation-post-closure-qa.md` — post-closure knowledge/evidence QA
+- `../decisions/ADR-003-primary-database.md` — historical PostgreSQL-primary rationale with current replacement authority identified
+- `../decisions/ADR-007-domain-model-informed-persistence-boundaries.md` — active semantic persistence guardrail with historical Physical posture qualified
 - `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
 - `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR
+- `../decisions/ADR-010-postgresql-persistence-constitution.md` — accepted reusable PostgreSQL persistence doctrine ADR
+- `../workstreams/logical-postgresql.md` — active CP6 database blueprint/materialization handoff
 - `../workstreams/frontend-foundation.md` — frontend closure/integration handoff
 - `../workstreams/engineering-foundation.md` — closed Engineering Foundation handoff
 - `../development/engineering-foundation-v0.md` — backend engineering contract
@@ -39,9 +52,11 @@ Direct PSV                    NOT RUN
 
 One DANTE product monorepo with `apps/backend`, `apps/web`, `apps/mobile` and accepted root ownership for `packages/`, `infra/`, `tooling/`, `tests/system/`, `docs/`, `prototypes/`, `.github/`. Paths are materialized only when real content exists.
 
-Backend is a capability-first modular monolith. PostgreSQL 18.4 remains sole canonical persistence/material-history authority.
+Backend is a capability-first modular monolith. PostgreSQL **18 major family** is the sole canonical persistence/material-history authority. PostgreSQL **18.4** remains exact historical Physical/CP2/CP3 evidence; PostgreSQL **18.6** is the current repository-controlled maintenance patch and has a direct remote technical-foundation regression PASS.
 
-Frontend is platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Data paths preserve backend canonical authority and operation-specific offline governance.
+CP6 now converts the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database: CP6-03 blueprint, CP6-04 materialization, CP6-05 direct database QA/closure. The first product vertical is post-CP6.
+
+Frontend is platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Data paths preserve backend canonical authority and operation-specific offline governance. Frontend materialization is already active on its dedicated bounded branch.
 
 ## 4. Frontend Foundation accepted design
 
@@ -70,30 +85,37 @@ Passo 3 clean review found and repaired root-topology inheritance, feature-cycle
 
 ## 5. Remaining bounded deferrals
 
-- exact backend AuthN/AuthZ protocol;
-- concrete API routes/versioning;
-- concrete product feature inventory/folder contents;
+- exact backend AuthN/AuthZ application protocol where not already fixed by security/persistence authority;
+- concrete product API routes/versioning;
+- concrete product feature inventory/folder contents beyond materialized workstreams;
 - PowerSync Web activation;
 - browser PWA/service-worker activation;
 - backend cloud compute/IaC;
-- infrastructure materialization timing;
+- remote infrastructure materialization timing;
 - platform release activation schedule;
-- dormant specialist activation based on measured need.
+- dormant specialist activation based on real need.
+
+These deferrals do not authorize CP6 to omit database structures already determinable from closed Domain/Logical/Physical/CP6 authority.
 
 ## 6. Architecture reopen discipline
 
-Closed Domain/Logical/Physical/Engineering/Frontend Foundation decisions are not casually reselected.
+Closed Domain/Logical/Physical/Engineering/Frontend Foundation and CP6-02 PostgreSQL-doctrine decisions are not casually reselected.
 
-Frontend implementation evidence first reopens the affected technology/adapter/boundary rather than the entire architecture unless a wider contradiction is proven.
+Implementation evidence first reopens the affected technology/adapter/boundary rather than the entire architecture unless a wider contradiction is proven.
 
 ## 7. Next architecture work
 
 ```text
-open fresh bounded frontend materialization/direct-validation workstream
-↓
-materialize accepted workspace/app/package boundaries
-↓
-execute carried direct validations progressively
+BACKEND
+CP6-03 WHOLE DANTE DATABASE BLUEPRINT
+→ account for 57/57 plus CP6-01 Part-2 cross-cutting/non-owner persistence pressure
+→ derive maximum non-speculative relational design from closed authorities
+→ Gate 03
+→ CP6-04 real database materialization
+→ CP6-05 direct database QA / CP6 closure
+
+FRONTEND
+continue feature/frontend-materialization independently under its own workstream
 ```
 
-Direct implementation evidence remains NOT RUN until real artifacts execute the required scenarios.
+Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
