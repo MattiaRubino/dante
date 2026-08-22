@@ -636,7 +636,7 @@ ordinary address DELETE
 
 A narrow deferred constraint trigger on the address/control side permits the address row and payload row to be inserted in the same transaction and requires the complete live state to exist by commit. A paired payload-side deferred integrity check/guard must also reject deletion or mutation that would leave a live address incomplete. Payload-side validation rejects wrong owner/facet immediately or at the selected constraint boundary.
 
-Privacy/redaction/retention can later permit semantic payload removal only through the explicit `DB-U14` lifecycle contract, with truthful tombstone/redacted/unavailable continuity where policy allows it. Until that lifecycle path is closed, direct ordinary runtime deletion of a material-state payload is not an accepted operation.
+Privacy/redaction/retention **does not create an exception to MaterialStateRef totality**. `DB-U14` may later define which protected fields are removed, replaced or rendered unavailable and what minimal owner-specific redacted/tombstone representation survives, but a live `material_state_ref` MUST still resolve to exactly one valid owner/facet persistence representation. `DB-U14` therefore chooses the truthful surviving representation; it never authorizes `material_state_address` to remain live while its semantic payload disappears completely. Until that lifecycle path is closed, direct ordinary runtime deletion of a material-state payload is not an accepted operation.
 
 This hardening preserves the closed DB-U03/DB-U04 topology; it closes a missing **bidirectional completeness invariant** rather than introducing a new semantic state root.
 
@@ -670,7 +670,7 @@ payload owner mismatch                                    REJECT
 direct payload delete leaving live address                REJECT by commit
 address delete with surviving payload/current/history     REJECT
 attempt to mutate state address owner/facet/ref            REJECT
-governed redaction/tombstone exception                    only after DB-U14 closes exact lifecycle semantics
+governed redaction/tombstone                              preserves one resolvable owner-specific representation under DB-U14
 ```
 
 ### 7.4 ExternalRef
@@ -731,7 +731,7 @@ There is no universal semantic state payload table.
 
 Every material-state payload family owns its semantic columns and chronology. `material_state_address` owns only address/control facts.
 
-The live address↔payload relationship is bidirectionally complete under section 7.3. A material payload cannot be removed as ordinary cleanup while its MaterialStateRef remains live, and a control address cannot be used to represent an owner/facet state whose semantic payload does not exist.
+The live address↔payload relationship is bidirectionally complete under section 7.3. A material payload cannot be removed as ordinary cleanup while its MaterialStateRef remains live, and a control address cannot be used to represent an owner/facet state whose semantic payload does not exist. Governed redaction may remove protected fields only while preserving an owner-specific redacted/tombstone representation that keeps the MaterialStateRef resolvable and truthful.
 
 ### 8.3 Current accepted-state binding topology CLOSED
 
@@ -1074,11 +1074,20 @@ A `DEFERRABLE INITIALLY DEFERRED` **constraint trigger** is permitted for the ad
 
 ### 13.2 Object privilege topology — DB-U21 OPEN / BLOCKER BEFORE CP6-04
 
-The real CP3 provisioning currently grants `dante_runtime` broad `SELECT, INSERT, UPDATE, DELETE` privileges on all existing and future tables in schema `dante`. That was a valid technical foundation posture while no DANTE business tables existed. It is **not** sufficient for the concrete database now being designed because several accepted structures are immutable-by-policy or control-only.
+The real CP3 provisioning currently grants `dante_runtime` broad `SELECT, INSERT, UPDATE, DELETE` on all existing/future tables, `USAGE` on all existing/future sequences, and default `USAGE` on types in schema `dante`; it also revokes default routine execution from `PUBLIC`. That was an acceptable technical-foundation posture while no DANTE business objects existed. It is **not** sufficient for the concrete database now being designed because several accepted structures are immutable-by-policy, control-only or should not be executable/usable by runtime merely because they exist.
 
-Gate 03 must therefore produce an exact per-object privilege matrix before materialization.
+Gate 03 must therefore produce an exact per-object privilege matrix across the PostgreSQL object classes that can affect runtime authority:
 
-Minimum class posture to close, table by table:
+```text
+tables / partitioned tables where ever introduced
+views / materialized views when introduced
+sequences / identity helpers when genuinely required
+types / domains owned by DANTE
+routines / functions / procedures
+schema usage and migration-history boundaries
+```
+
+Minimum class posture to close:
 
 ```text
 native/scoped/material address-control rows
@@ -1088,7 +1097,7 @@ native/scoped/material address-control rows
 accepted immutable-by-policy material-state payload rows
 → runtime SELECT + INSERT as required
 → ordinary UPDATE denied
-→ ordinary DELETE denied unless an explicit DB-U14 lifecycle/redaction path requires a narrower controlled mechanism
+→ ordinary DELETE denied; DB-U14 may expose only a narrower governed redaction mechanism while preserving MaterialStateRef totality
 
 current accepted-state bindings
 → runtime SELECT + INSERT + UPDATE as required by accepted-state replacement
@@ -1097,20 +1106,55 @@ current accepted-state bindings
 native/contextual/relation owner rows
 → exact DML by concrete lifecycle; never inherited mechanically from one blanket all-table grant
 
+views / materialized views
+→ runtime SELECT only when they are an accepted runtime read surface
+→ no privilege by symmetry
+
+sequences
+→ runtime USAGE/SELECT only when a concrete runtime write path actually consumes that sequence
+→ UUIDv7 semantic IDs do not justify blanket sequence access
+
+types / domains
+→ runtime USAGE only for concrete types/domains required by runtime-accessible objects
+→ no blanket grant merely because a type exists in schema dante
+
+routines
+→ no runtime EXECUTE by default
+→ trigger-backed integrity does not justify exposing a callable runtime API
+→ any explicit runtime-callable routine requires a concrete contract, least-privilege review and direct tests
+
 migration history / DDL / ownership
 → remains unavailable to dante_runtime
 ```
 
-This is a **design class baseline**, not permission to grant DML mechanically. Every concrete object still receives its exact least-privilege entry.
+This is a **design class baseline**, not permission to grant privileges mechanically. Every concrete object still receives its exact least-privilege entry.
 
-CP6-04 must also reconcile the provisioning implementation itself. In particular, the current broad default/all-table grants must be replaced or followed by deterministic object-specific revokes/grants so that running provisioning/reconciliation later cannot silently re-open `UPDATE`/`DELETE` on immutable/control tables.
+The post-repair audit fixes the privilege-ownership direction for CP6-04:
 
-Gate-03 privilege closure therefore requires both:
+```text
+PROVISIONING
+→ owns cluster/database role creation, credentials, schema ownership/usage foundation and safe PUBLIC revokes
+→ MUST NOT act as a blanket business-object ACL reconciler
+→ MUST NOT install broad future-business default DML/sequence/type/routine grants
+
+ALEMBIC BUSINESS MIGRATION
+→ creates/changes a concrete DANTE business/control object
+→ grants/revokes the exact approved runtime privileges for that object in the same reviewed schema change
+→ updates the Database Dictionary privilege record in the same change
+```
+
+Existing CP3 broad defaults/all-object reconciliation must therefore be removed or narrowed during CP6-04 before the business schema is considered safe. Re-running provisioning after CP6-04 must be idempotent **without changing the approved ACLs of existing business objects** and without causing future business objects to inherit broad privileges automatically.
+
+Gate-03 privilege closure therefore requires:
 
 ```text
 complete object-level runtime privilege matrix
 +
-provisioning/default-privilege reconciliation design that preserves that matrix over repeated provisioning
+provisioning role/schema-foundation design with no blanket business ACL authority
++
+migration-owned exact ACL application design for tables/views/sequences/types/domains/routines
++
+proof that repeated provisioning cannot broaden those ACLs
 ```
 
 No `SECURITY DEFINER` or alternate privileged mutation path is introduced merely to evade this matrix. Any later exceptional controlled routine requires the existing Constitution gate and explicit security tests.
@@ -1307,7 +1351,7 @@ Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses
 | Reference Contract | NO INDEPENDENT PERSISTENCE | homogeneous direct FK; heterogeneous native/scoped address + database-enforced consumer-family eligibility |
 | NativeRef | MATERIALIZE IN CP6 | native owner UUIDs + direct FKs; `native_address` CLOSED as bounded heterogeneous/material-owner control topology |
 | ScopedRecordRef | MATERIALIZE IN CP6 where concrete scoped families require stable address | shared `scoped_address` topology CLOSED; rows exist only for justified addressable contextual families |
-| MaterialStateRef | MATERIALIZE IN CP6 | `material_state_address` owner-space/facet topology CLOSED + owner-specific state rows; live address↔payload totality is bidirectional |
+| MaterialStateRef | MATERIALIZE IN CP6 | `material_state_address` owner-space/facet topology CLOSED + owner-specific state rows; live address↔payload totality is bidirectional and survives redaction through an owner-specific resolvable representation |
 | ExternalRef | GENUINELY DEFERRED for generic/shared provider structures | trigger = first concrete integration/provider contract; no provider ontology invented now |
 | Current accepted-state binding | MATERIALIZE IN CP6 where material state exists | `native_current_material_state` / `scoped_current_material_state` topology CLOSED |
 | Correction/replacement/reconciliation lineage | MATERIALIZE IN CP6 where material history exists | owner/facet-specific typed lineage; no universal state graph; topology CLOSED |
@@ -1330,7 +1374,7 @@ Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses
 | Subject role | NO INDEPENDENT PERSISTENCE | owning Reference Contract stores eligible target; no SubjectRef |
 | Resource role | NO INDEPENDENT PERSISTENCE | concrete eligible provider/value/service/pool/specialist representation; no ResourceRef |
 | Capacity Claim pressure | CONDITIONAL OWNER-SPECIFIC MATERIALIZATION / NO UNIVERSAL ROOT | owner/context-specific qualified commitment relation; ScopedRecordRef only when material/addressable; historical Schedule/material basis reconstructible |
-| Tombstone/retirement/redaction continuity | MATERIALIZE IN CP6 where owner lifecycle requires it | owner-specific/minimal continuity; NO generic semantic Tombstone owner; must also close owner↔address and material-address↔payload destructive lifecycle paths |
+| Tombstone/retirement/redaction continuity | MATERIALIZE IN CP6 where owner lifecycle requires it | owner-specific/minimal continuity; NO generic semantic Tombstone owner; must close owner↔address and material-address↔owner-specific redacted/tombstone representation without breaking MaterialStateRef totality |
 | Anti-resurrection reconciliation | GENUINELY DEFERRED as executable recovery mechanism | trigger = destructive recovery/restore stage; schema must not make later enforcement impossible |
 | Transactional outbox | GENUINELY DEFERRED | trigger = first real Class-A async external effect; not Domain history/event store |
 | PowerSync/encrypted SQLite | GENUINELY DEFERRED | trigger = offline/mobile activation; PostgreSQL remains canonical |
@@ -1388,10 +1432,10 @@ The exact Alembic revision batches are frozen only after table/column derivation
 8. RESULT / GOVERNANCE / PROVENANCE COMPLETION
    Outcome / material Evaluation / reconciliation / exact provenance bindings
         ↓
-9. OBJECT PRIVILEGE RECONCILIATION
-   exact per-object dante_runtime DML matrix
-   provisioning/default privilege changes
-   deterministic revokes/grants that survive repeated provisioning
+9. OBJECT PRIVILEGE CLOSURE + APPLICATION
+   exact per-object dante_runtime matrix across tables/views/sequences/types/domains/routines
+   provisioning narrowed to role/schema foundation without blanket business ACL reconciliation
+   migration-owned exact GRANT/REVOKE for each concrete object
         ↓
 10. PROVIDER / DERIVED / SPECIALIST STRUCTURES
    only where closed authority and real trigger justify materialization
@@ -1434,7 +1478,7 @@ Custom cross-table trigger enforcement is not a replacement for restore/evolutio
 
 ```text
 no native/scoped address is orphaned or family-mismatched
-no live material_state_address lacks/mismatches its payload
+no live material_state_address lacks/mismatches its owner-specific payload or redacted/tombstone representation
 no payload exists without its matching material_state_address
 no current binding mismatches owner/facet/state
 ```
@@ -1508,7 +1552,7 @@ Reference-family Python types continue to distinguish `NativeRef`, `ScopedRecord
 
 The 15 native owner tables map to 15 independent semantic row classes with no polymorphic base table. Reusable Quantity/MonetaryAmount and temporal column bundles may use SQLAlchemy value/composite helpers; value-object convenience must not create an extra persistence identity.
 
-Recurrence mapping follows the reclosed DB-U12 ownership mode rather than one mandatory scoped ORM shape. Owner-bound recurrence state maps as part of the concrete source/state persistence family; an independently addressable Recurrence may map to its own scoped row only when the LR-05 addressability/lifecycle threshold justifies it. In both modes family dispatch remains explicit typed persistence logic, not SQLAlchemy polymorphic semantic inheritance and not a generic Rule model.
+Recurrence mapping follows the **revalidated owner-bound versus independently scoped boundary while DB-U12 remains open**. Owner-bound recurrence state maps as part of the concrete source/state persistence family; an independently addressable Recurrence may map to its own scoped row only when the LR-05 addressability/lifecycle threshold justifies it. The exact common header and family mapping are not frozen until DB-U12 recloses. In both modes family dispatch remains explicit typed persistence logic, not SQLAlchemy polymorphic semantic inheritance and not a generic Rule model.
 
 Each final Database Dictionary entry will point to its SQLAlchemy mapping when one exists.
 
@@ -1529,9 +1573,12 @@ SQLAlchemy metadata vs Alembic/PostgreSQL drift
 role ownership/grants
 runtime DDL denial
 Database Dictionary object coverage
-per-object dante_runtime privilege matrix matches the approved blueprint
+per-object dante_runtime privilege matrix matches the approved blueprint across tables/views/sequences/types/domains/routines
 runtime UPDATE/DELETE denied on immutable/control objects where not explicitly authorized
-re-running provisioning/reconciliation does not broaden restricted table privileges
+runtime sequence/type/routine privileges absent unless the exact object contract requires them
+new business objects do not inherit blanket runtime DML/USAGE/EXECUTE through default privileges
+re-running provisioning/reconciliation does not broaden any approved business-object ACL
+migration-created business objects receive their exact approved ACL in the same schema change
 ```
 
 ### 19.2 Identity/reference
@@ -1576,7 +1623,7 @@ one MaterialStateRef cannot be current for another owner/facet
 correction creates new state rather than silent overwrite
 owner-specific typed lineage rejects wrong-owner/facet links
 historical state remains reconstructible
-redaction/tombstone exception is tested only after DB-U14 defines it
+governed redaction/tombstone preserves a resolvable owner-specific state representation and permitted continuity under DB-U14
 ```
 
 Maps especially to PG-R03 / PG-R07 and WL-H05.
@@ -1606,13 +1653,14 @@ named-zone consequential resolution preserves original local value + zone + acce
 no false UTC conversion of floating local values
 daterange/tstzrange bound semantics preserved where used
 elapsed recurrence rejects zero/negative interval and calendar-month substitution
-calendar recurrence keeps wall-clock/zone semantics through an explicitly accepted DST policy where that pressure exists
+calendar recurrence keeps wall-clock/zone semantics only through an explicitly accepted DST policy where that pressure exists
+calendar recurrence has no placeholder/free-text policy field standing in for an unclosed invalid-date/DST vocabulary
 calendar weekday selector rejects duplicate non-ordinal weekday rows through NULLS NOT DISTINCT uniqueness
 quota recurrence preserves explicit period frame and does not invent ordinal quota identity
 completion-relative recurrence cannot generate the next chain without a qualifying anchor when the rule requires one
 anchor-stream recurrence keeps qualifying anchor contract distinct from generic Trigger
 cyclic recurrence preserves position/cycle semantics and an explicit phase basis where required
-exactly one recurrence family payload per material recurrence definition state
+exactly one recurrence family payload per material recurrence state
 family discriminator/payload mismatch rejected
 owner-bound recurrence does not manufacture a scoped recurrence identity
 independently scoped recurrence exists only when its addressability/lifecycle contract is justified
@@ -1656,7 +1704,7 @@ NO ACTION lifecycle defaults hold
 retired/tombstoned stable identity not reused
 redacted/unavailable does not become never-existed
 native/scoped owner ↔ address continuity remains truthful under DB-U14
-live material-state address ↔ payload continuity remains truthful under DB-U14
+MaterialStateRef totality remains true through redaction/tombstone; no live address resolves to missing semantic representation
 ```
 
 ### 19.9 Concurrency
@@ -1713,7 +1761,7 @@ UNIQUE/CHECK/EXCLUDE/trigger invariants
 indexes + reason
 MaterialState/current/history behavior
 lifecycle/retention/tombstone
-privileges
+privileges, including related view/sequence/type/domain/routine ACL where applicable
 migration traceability
 SQLAlchemy mapping
 proof/test IDs
@@ -2164,7 +2212,32 @@ dante.recurrence_state(material_state_ref, recurrence_ref, family_code)
 
 is therefore **not implementation-frozen** because mandatory `recurrence_ref` would reintroduce the rejected identity inflation. DB-U12 reclosure must choose the exact header decomposition and facet/owner validation for both modes.
 
-The family-specific tables and columns below survive this audit as **candidate typed payload shapes**. Their semantic family boundaries are retained, while the remaining exact constraint gaps listed after them must close before Gate 03.
+The family-specific structures below remain **candidate typed payload pressure**, not blanket implementation authorization. A candidate field whose value requires a semantic policy/vocabulary that closed authority has not yet fixed does not become a nullable text escape hatch, free-form code, placeholder enum or “decide later” JSON field merely to make the table executable. Gate 03 must either derive the exact semantics/vocabulary or leave that field/variant unauthorized until its explicit closure trigger exists.
+
+This applies especially to:
+
+```text
+invalid-date behavior
+DST-gap behavior
+DST-overlap behavior
+calendar-relative frame/zone behavior
+pattern/cycle phase requirements
+qualifying-anchor vocabularies
+```
+
+The anti-placeholder rule is:
+
+```text
+closed semantic vocabulary / invariant
+→ exact typed column + CHECK/FK/trigger contract may be frozen
+
+semantic vocabulary / invariant still open
+→ candidate pressure remains documented
+→ no free-text policy column
+→ no generic policy_code placeholder
+→ no JSON semantic escape hatch
+→ no invented enum values
+```
 
 #### Effective range / boundaries — RETAINED SHAPE, CONSTRAINT HARDENING REQUIRED
 
@@ -2248,7 +2321,7 @@ DB-U12 reclosure must make exact which recurrence families/parameter combination
 
 #### Family 1 — calendar / wall-clock — SEMANTIC SHAPE RETAINED
 
-Candidate payload:
+Candidate payload pressure:
 
 ```text
 dante.recurrence_calendar_state
@@ -2258,9 +2331,9 @@ dante.recurrence_calendar_state
   clock_basis_code     text NOT NULL
   wall_time            time without time zone NULL
   zone_id              text NULL
-  invalid_date_policy  text NULL
-  dst_gap_policy       text NULL
-  dst_overlap_policy   text NULL
+  invalid_date_policy  <NOT IMPLEMENTATION-AUTHORIZED UNTIL VOCABULARY CLOSES>
+  dst_gap_policy       <NOT IMPLEMENTATION-AUTHORIZED UNTIL VOCABULARY CLOSES>
+  dst_overlap_policy   <NOT IMPLEMENTATION-AUTHORIZED UNTIL VOCABULARY CLOSES>
 ```
 
 Closed constraints retained:
@@ -2309,7 +2382,7 @@ exact pattern_anchor requirement for interval_count / selector combinations
 exact historical named-zone boundary resolution placement where materially consequential
 ```
 
-No calendar-library default may silently supply any of those semantics.
+No calendar-library default may silently supply any of those semantics, and no policy field is materialized merely to hold an unknown future answer.
 
 #### Family 2 — elapsed interval — SEMANTIC SHAPE RETAINED
 
@@ -2383,7 +2456,7 @@ dante.recurrence_completion_relative_state
   <calendar-frame/zone basis if calendar offset is admitted>
 ```
 
-`anchor_feature_code` remains a schema-owned Recurrence vocabulary identifying the qualifying established reality feature; it is not arbitrary expression text.
+`anchor_feature_code` remains a schema-owned Recurrence vocabulary identifying the qualifying established reality feature; it is not arbitrary expression text. The exact accepted vocabulary must be derived from the admitted anchor contract before implementation; it is not a free-text placeholder.
 
 Closed portion:
 
@@ -2413,7 +2486,7 @@ dante.recurrence_anchor_stream_state
   <calendar-frame/zone basis if calendar offset is admitted>
 ```
 
-`anchor_family_code` and `anchor_feature_code` remain a bounded Recurrence-specific Reference Contract over accepted qualifying anchor streams such as Session/Actual/Observation facets. They cannot encode arbitrary state predicates or downstream actions.
+`anchor_family_code` and `anchor_feature_code` remain a bounded Recurrence-specific Reference Contract over accepted qualifying anchor streams such as Session/Actual/Observation facets. Their exact accepted vocabulary must close with that Reference Contract before implementation. They cannot encode arbitrary state predicates or downstream actions and cannot survive as unconstrained free-text placeholders.
 
 Elapsed-offset constraints mirror the completion-relative family. Calendar offsets have the same unresolved deterministic frame/zone requirement and are not implementation-authorized until DB-U12 recloses it.
 
@@ -2521,7 +2594,9 @@ named-zone boundary accepted-resolution placement where consequential
 completion-relative calendar-offset frame/zone semantics
 anchor-stream calendar-offset frame/zone semantics
 cyclic phase/anchor representation
+exact qualifying-anchor vocabularies where persisted
 family payload totality/exclusivity constraints
+zero free-text/placeholder/JSON policy fields for semantics not yet closed
 Occurrence governing-state eligibility across both ownership modes
 SQLAlchemy mapping shape for both modes
 migration ordering and privilege matrix entries
@@ -2594,7 +2669,8 @@ Future CP6-04 migration grouping must respect at least:
 material recurrence state
 → owner-bound path by default when no independent Recurrence addressability exists
 → independently scoped Recurrence path only when exact LR-05 addressability/lifecycle trigger is proven
-→ six typed family payloads after DB-U12 recloses exact header/facet/constraint topology
+→ six typed family payloads only after DB-U12 recloses exact header/facet/constraint/policy topology
+→ no placeholder policy columns are materialized to stand in for unclosed semantics
 
 Occurrence
 → occurrence_generation after native/material address prerequisites
@@ -2610,8 +2686,9 @@ Capacity Claim
 → only inside first concrete owner/context family that actually owns the commitment
 
 object privileges
-→ per-object matrix applied with migrations/provisioning changes
-→ CP3 blanket runtime UPDATE/DELETE grants must not survive on immutable/control objects
+→ provisioning narrowed to role/schema foundation
+→ CP3 blanket runtime DML/sequence/type grants removed or narrowed before business-object safety is claimed
+→ each business/control migration owns exact approved table/view/sequence/type/domain/routine ACLs in the same change
 ```
 
 No table exists solely to make the future QA matrix green.
@@ -2625,8 +2702,8 @@ The following global/database parameters remain closed after the audit:
 ```text
 DB-U01 native_address topology                         CLOSED / lifecycle path depends on DB-U14
 DB-U02 scoped_address topology                         CLOSED / lifecycle path depends on DB-U14
-DB-U03 MaterialStateRef owner-address encoding         CLOSED / bidirectional live payload completeness hardened
-DB-U04 material facet representation                   CLOSED / bidirectional live payload completeness hardened
+DB-U03 MaterialStateRef owner-address encoding         CLOSED / bidirectional totality hardened; redaction cannot break totality
+DB-U04 material facet representation                   CLOSED / bidirectional totality hardened; redaction cannot break totality
 DB-U05 current accepted-state binding topology         CLOSED
 DB-U06 lineage topology                                CLOSED
 DB-U07 typed chronology/temporal physical contract     CLOSED
@@ -2635,7 +2712,7 @@ DB-U13 MonetaryAmount / Quantity physical values       CLOSED
 DB-U16 Capacity Claim persistence disposition          CLOSED
 ```
 
-The whole-blueprint audit **reopened DB-U12 only at the physical ownership/constraint level**. The six accepted Recurrence semantic families remain closed upstream and are not being semantically redesigned.
+The whole-blueprint audit **reopened DB-U12 only at the physical ownership/constraint level**. The targeted post-repair revalidation confirmed that owner-bound-by-default / independently-scoped-when-justified is aligned with Domain, Logical, Physical and CP6-01. The six accepted Recurrence semantic families remain closed upstream and are not being semantically redesigned.
 
 The remaining questions are not generic “TBD” placeholders. Each has an explicit current disposition and closure condition.
 
@@ -2644,14 +2721,14 @@ The remaining questions are not generic “TBD” placeholders. Each has an expl
 | DB-U08 | final PostgreSQL object naming beyond currently frozen control/native design names | freeze remaining concrete relation/context/state names with their object derivations before dictionary generation; Recurrence object names wait for DB-U12 reclosure |
 | DB-U09 | Account persistence | genuinely deferred: Domain keeps Account separate and detailed access model is not closed; do not invent login/account tables |
 | DB-U10 | Principal/security persistence | genuinely deferred: AuthN/AuthZ independent registry not closed; preserve Actor/Person separation and later provenance binding |
-| DB-U12 | Recurrence physical ownership + exact constraint contract | REOPENED by whole-blueprint audit: preserve six semantic families, but close owner-bound vs independently scoped topology, exact anchor/policy/frame/zone/selector constraints, family totality, source ownership and Occurrence governing-state eligibility before implementation |
-| DB-U14 | owner/family-specific lifecycle/tombstone fields and destructive continuity | derive actual retirement/redaction/delete continuity per owner/relation; close native/scoped owner↔address behavior and permitted material-address↔payload tombstone/redaction exception; no global deleted_at or tombstone semantic root |
+| DB-U12 | Recurrence physical ownership + exact constraint contract | REOPENED by whole-blueprint audit; owner-bound/scoped boundary revalidated PASS. Still close exact anchor/policy/frame/zone/selector/qualifying-anchor constraints, family totality, source ownership and Occurrence governing-state eligibility; no placeholder policy fields are allowed |
+| DB-U14 | owner/family-specific lifecycle/tombstone fields and destructive continuity | derive actual retirement/redaction/delete continuity per owner/relation; close native/scoped owner↔address behavior and the owner-specific redacted/tombstone representation that preserves MaterialStateRef totality; no global deleted_at or tombstone semantic root |
 | DB-U15 | remaining structural FK indexes and query indexes | final FK/query graph must justify each; preserve already-closed PK/UNIQUE/material owner-facet indexes and add none speculatively |
 | DB-U17 | provider/integration object shapes | genuinely deferred until first concrete integration/provider contract |
 | DB-U18 | idempotency table timing | genuinely deferred until first persistent material operation requiring reservation/replay semantics |
 | DB-U19 | transactional outbox timing | genuinely deferred until first real Class-A async external effect |
 | DB-U20 | derived/search/vector persisted structures | genuinely deferred until a real query/search/vector consumer proves materialization/index need |
-| DB-U21 | object-level runtime privilege matrix + CP3 provisioning reconciliation | Gate-03 blocker before CP6-04: close exact DML per database object and redesign broad default/all-table runtime grants so repeated provisioning cannot regrant UPDATE/DELETE on immutable/control tables |
+| DB-U21 | object-level runtime privilege matrix + CP3 provisioning reconciliation | Gate-03 blocker before CP6-04. Privilege ownership direction is now fixed: provisioning owns role/schema foundation with no blanket business ACL grants; migrations own exact ACLs across tables/views/sequences/types/domains/routines. Exact object-by-object matrix still must close |
 
 ```text
 UNRESOLVED PARAMETERS CURRENT
@@ -2669,16 +2746,38 @@ UNCLASSIFIED PARAMETERS ALLOWED AT GATE 03
 
 The next CP6-03 work continues in this same database specification; it does not create another methodology document and it does not reopen DB-U01..DB-U07/11/13/16 unless contradictory evidence is found.
 
-Before adding the next semantic family block, the current audit repair requires targeted revalidation of:
+### 23.1 Targeted post-repair revalidation — PASS / HARDENINGS INTEGRATED
+
+The whole-blueprint repair was rechecked against the current Whole-Logical model, accepted PostgreSQL Physical mapping, CP6-01 ledgers, CP6-02 Constitution and the real CP3 provisioning code before opening another semantic block.
+
+Result:
 
 ```text
-DB-U12 Recurrence physical ownership/constraint boundary
-DB-U03/04 bidirectional MaterialState live address↔payload integrity
-DB-U21 privilege/provisioning closure requirements
-DB-U14 dependencies explicitly carried by DB-U01/02 and material payload deletion semantics
+DB-U12 owner-bound vs independently scoped Recurrence boundary
+REVALIDATED / PASS
+six semantic families unchanged
+exact physical policy/anchor/frame constraints remain legitimately open
+
+DB-U03 / DB-U04 MaterialState totality
+REVALIDATED / PASS
+redaction/tombstone is NOT an exception to resolvability
+DB-U14 must preserve one owner-specific resolvable state representation
+
+DB-U21 privilege/provisioning pressure
+REVALIDATED / REAL CODE PRESSURE CONFIRMED
+CP3 broad table DML + sequence/type privileges are too broad for future immutable/control business objects
+provisioning→role/schema foundation direction FIXED
+migration-owned exact business ACL direction FIXED
+object-by-object matrix remains open
+
+DB-U14 lifecycle dependency
+REVALIDATED / CORRECTLY OPEN
+no universal deletion/tombstone policy invented
 ```
 
-Highest-value remaining semantic work after that revalidation remains:
+No contradiction requiring Domain, Logical, Physical, CP6-01 or CP6-02 reopening was found.
+
+Highest-value remaining semantic work now resumes with:
 
 ```text
 owner-specific material state families actually required by the 15 LR-01 owners
@@ -2727,7 +2826,8 @@ Account explicitly accounted                                  PASS
 Principal/security context explicitly accounted               PASS
 reference-address/control families explicitly accounted       PASS
 MaterialState control/current binding explicitly accounted    PASS
-MaterialState live address↔payload integrity bidirectional     PASS
+MaterialState live address↔owner-specific representation       PASS
+MaterialState totality preserved through redaction/tombstone   PASS
 idempotency/provenance/correlation explicitly accounted       PASS
 provider/derived/tombstone/outbox pressures accounted         PASS
 all determinable relational families concrete                 PASS
@@ -2738,7 +2838,8 @@ all determinable relation topology concrete                   PASS
 all determinable constraints concrete                         PASS
 all determinable structural indexes justified                 PASS
 object-level runtime privilege matrix complete                PASS
-CP3 provisioning/default privilege reconciliation designed    PASS
+CP3 provisioning narrowed to role/schema foundation           PASS
+migration-owned exact business ACL design complete             PASS
 migration/materialization DAG complete                         PASS
 SQLAlchemy mapping plan complete                               PASS
 direct-test plan complete                                     PASS
@@ -2769,7 +2870,8 @@ COMPLETE / UNCLASSIFIED 0
 
 REFERENCE / MATERIAL-STATE CONTROL TOPOLOGY
 DB-U01..DB-U06 CLOSED
-DB-U03/04 BIDIRECTIONAL LIVE PAYLOAD COMPLETENESS HARDENED
+DB-U03/04 BIDIRECTIONAL TOTALITY HARDENED
+REDACTION/TOMBSTONE CANNOT BREAK MATERIALSTATEREF RESOLVABILITY
 DB-U01/02 DESTRUCTIVE LIFECYCLE DEPENDENCY → DB-U14
 
 LR-01 NATIVE IDENTITY-SHELL BASELINE
@@ -2780,10 +2882,18 @@ DB-U07 / DB-U11 / DB-U13 / DB-U16 CLOSED
 
 RECURRENCE
 SIX SEMANTIC FAMILIES RETAINED
-DB-U12 PHYSICAL OWNERSHIP / EXACT CONSTRAINT CONTRACT REOPENED
+OWNER-BOUND / INDEPENDENTLY-SCOPED BOUNDARY REVALIDATED PASS
+DB-U12 EXACT PHYSICAL CONSTRAINT CONTRACT OPEN
+ZERO PLACEHOLDER POLICY FIELDS ALLOWED
 
 DATABASE PRIVILEGES
 DB-U21 OPEN / BLOCKER BEFORE CP6-04
+PROVISIONING ROLE/SCHEMA FOUNDATION DIRECTION FIXED
+MIGRATION-OWNED BUSINESS ACL DIRECTION FIXED
+EXACT OBJECT MATRIX STILL OPEN
+
+TARGETED POST-REPAIR REVALIDATION
+PASS / HARDENINGS INTEGRATED
 
 EXACT REMAINING SEMANTIC TABLE/COLUMN/CONSTRAINT BLUEPRINT
 IN PROGRESS
