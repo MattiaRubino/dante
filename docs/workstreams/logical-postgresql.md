@@ -201,6 +201,9 @@ docs/development/backend-cp6-02-postgresql-persistence-constitution.md
 
 docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md
 = Gate 02 closure
+
+docs/decisions/ADR-010-postgresql-persistence-constitution.md
+= durable architectural acceptance record
 ```
 
 ### Physical-consuming authority
@@ -458,6 +461,7 @@ Closure summary:
 57 / 57 Domain concepts                         PASS
 15 / 15 LR-01 native owners                     PASS
 LR-01..LR-13                                    PASS
+cross-cutting / non-owner coverage              PASS
 reference pressure                              PASS
 materiality/history pressure                    PASS
 canonical/provider/derived boundaries           PASS
@@ -475,6 +479,8 @@ business DDL at Gate 01                         0
 ```
 
 The fact that Gate 01 itself had zero business DDL is phase-local truth, not a prohibition on later CP6 materialization.
+
+CP6-01 Part 2 is a mandatory Gate-03 input because **57/57 Domain coverage is necessary but not sufficient**. Persistence-relevant non-57/cross-cutting constructs such as `Account`, `Principal`, reference-address/control families, idempotency/provenance/correlation controls, provider/derived state, tombstone/retirement continuity, outbox/capability-triggered state and other Part-2 entries must not disappear merely because they are not Domain owners.
 
 ## 10. CP6-02 — CLOSED / GATE 02 PASS
 
@@ -540,7 +546,16 @@ Translate the complete closed model into the concrete relational database bluepr
 
 This stage must answer **what the DANTE database actually is**.
 
-### Required outputs
+`WHOLE DANTE DATABASE` has a strict meaning:
+
+```text
+maximum non-speculative persistence
+that is derivable today from closed Domain + Logical + Physical + CP6 authority
+```
+
+It does **not** mean inventing every table DANTE might conceivably need in the future.
+
+### Required outputs — Domain coverage
 
 For the entire 57/57 model, derive where applicable:
 
@@ -570,6 +585,56 @@ migration batch/order
 SQLAlchemy mapping shape
 required direct tests
 ```
+
+### Required outputs — CP6-01 Part-2 cross-cutting/non-owner coverage
+
+Gate 03 MUST also account for **100% of the CP6-01 Part-2 persistence-relevant constructs**, including constructs intentionally outside the 57 Domain census.
+
+Every Part-2 entry must receive exactly one implementation disposition:
+
+```text
+MATERIALIZE IN CP6
+→ independent/shared/concrete persistence is required and determinable now
+
+NO INDEPENDENT PERSISTENCE
+→ represented through another accepted owner/value/reference/mechanism;
+  exact owning representation must be named
+
+GENUINELY DEFERRED
+→ cannot be materialized without inventing semantics or activating a dormant capability;
+  exact reason + exact future owner/stage/trigger must be recorded
+```
+
+At minimum explicitly account for:
+
+```text
+Account
+Principal / security context
+ReferenceAddress / reference-family control
+NativeRef heterogeneous anchor pressure
+ScopedRecordRef heterogeneous addressing pressure where justified
+MaterialStateRef address/control
+current accepted-state binding
+correction/replacement/reconciliation lineage
+Governed Operation / Effect persistence pressure
+idempotency
+correlation / causation technical linkage
+projection / disclosure basis
+provider / sync / apply state
+flexible metadata boundary
+candidate / unresolved persistence pressure
+product/profile pressure
+specialist-extension pressure
+Actor / Subject / Resource role addressing
+Capacity Claim persistence pressure
+tombstone / retirement / redaction continuity
+anti-resurrection reconciliation pressure
+transactional outbox capability-triggered state
+PowerSync/local noncanonical state boundary
+search/vector/derived index/cache pressure
+```
+
+This accounting does **not** turn those constructs into new Domain owners.
 
 ### Dependency/materialization DAG
 
@@ -605,21 +670,30 @@ Where something is truly not determinable, record the exact unresolved parameter
 ### Gate 03
 
 ```text
-57 / 57 persistence coverage preserved                    PASS
-all determinable relational families concrete              PASS
-all determinable tables/columns/types concrete             PASS
-all determinable PK/FK/reference topology concrete         PASS
-all determinable material-state/history topology concrete  PASS
-all determinable relation topology concrete                PASS
-all determinable constraints concrete                      PASS
-all determinable structural indexes justified              PASS
-migration/materialization DAG complete                      PASS
-SQLAlchemy mapping plan complete                            PASS
-direct-test plan complete                                  PASS
-unclassified database family                               0
-generic Entity/Relationship/EAV shortcut                    0
-speculative placeholder schema                              0
-application Vertical #1 implementation                      0
+57 / 57 persistence coverage preserved                         PASS
+CP6-01 Part-2 cross-cutting/non-owner constructs accounted    100%
+Account explicitly accounted                                  PASS
+Principal/security context explicitly accounted               PASS
+reference-address/control families explicitly accounted       PASS
+MaterialState control/current binding explicitly accounted    PASS
+idempotency/provenance/correlation explicitly accounted       PASS
+provider/derived/tombstone/outbox pressures accounted         PASS
+all determinable relational families concrete                 PASS
+all determinable tables/columns/types concrete                PASS
+all determinable PK/FK/reference topology concrete            PASS
+all determinable material-state/history topology concrete     PASS
+all determinable relation topology concrete                   PASS
+all determinable constraints concrete                         PASS
+all determinable structural indexes justified                 PASS
+migration/materialization DAG complete                         PASS
+SQLAlchemy mapping plan complete                               PASS
+direct-test plan complete                                     PASS
+unclassified cross-cutting persistence construct              0
+unclassified database family                                  0
+accidental new Domain owner                                    0
+generic Entity/Relationship/EAV shortcut                       0
+speculative placeholder schema                                 0
+application Vertical #1 implementation                         0
 ```
 
 Only after Gate 03 is clean does real DANTE database materialization begin.
@@ -951,10 +1025,13 @@ A fresh session must establish:
 6. Physical/CP2/CP3 historical exact patch = 18.4;
 7. current technical patch = 18.6 / DIRECT REMOTE QA PASS;
 8. this workstream supersedes earlier CP6 process prose that prohibited all business DB materialization;
-9. CP6-03 is NEXT and means WHOLE DANTE DATABASE BLUEPRINT;
-10. CP6-04 will materially implement the approved whole-database blueprint;
-11. CP6-05 will run whole-database direct QA and close CP6;
-12. first product vertical begins only after CP6 is closed.
+9. ADR-010 records the accepted PostgreSQL Persistence Constitution without duplicating it;
+10. CP6-03 is NEXT and means WHOLE DANTE DATABASE BLUEPRINT;
+11. Gate 03 requires 57/57 PLUS 100% CP6-01 Part-2 cross-cutting/non-owner accounting;
+12. whole database = maximum non-speculative persistence derivable from closed authority, not speculative future schema;
+13. CP6-04 will materially implement the approved whole-database blueprint;
+14. CP6-05 will run whole-database direct QA and close CP6;
+15. first product vertical begins only after CP6 is closed.
 ```
 
 Immediate next action:
@@ -962,7 +1039,10 @@ Immediate next action:
 ```text
 CP6-03 — WHOLE DANTE DATABASE BLUEPRINT
 
-consume 57/57 + closed Constitution
+consume 57/57
++ consume CP6-01 Part-2 cross-cutting/non-owner ledger 100%
++ consume closed Constitution / ADR-010
+→ classify each non-57 construct as MATERIALIZE / NO INDEPENDENT PERSISTENCE / GENUINELY DEFERRED
 → concrete relational families/tables/columns/types
 → PK/FK/reference topology
 → material-state/history/current-binding topology
