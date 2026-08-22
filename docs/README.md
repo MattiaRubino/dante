@@ -15,6 +15,8 @@ When sources conflict:
 
 Conversation instructions may clarify intent but do not silently override durable repository truth.
 
+For the active CP6 branch, `workstreams/logical-postgresql.md` is the current execution-boundary authority. Its scope-realignment section supersedes older CP6 process/staging prose that prohibited all business-database materialization, while leaving closed CP6-01/02 technical decisions intact.
+
 ## Current lifecycle status
 
 ```text
@@ -36,13 +38,14 @@ Backend CP3                        CLOSED / DIRECT QA PASS — PostgreSQL 18.4 h
 Backend CP4                        CLOSED / DIRECT REMOTE QA PASS
 Backend CP5                        CLOSED / DIRECT INTEGRATED QA PASS
 Backend integration PR #24         MERGED / POST-MERGE BACKEND CI PASS
-Backend CP6                        ACTIVE ON feature/logical-postgresql / DESIGN-FIRST
+Backend CP6                        ACTIVE ON feature/logical-postgresql / DATABASE BLUEPRINT + MATERIALIZATION
 Backend CP6-01                     CLOSED / GATE 01 PASS
 Backend CP6-02                     CLOSED / GATE 02 PASS
-Backend CP6-03                     NEXT / NOT STARTED
+Backend CP6-03                     NEXT / WHOLE DANTE DATABASE BLUEPRINT
 Current PostgreSQL patch           18.6
 PostgreSQL 18.6 regression         DIRECT REMOTE QA PASS / run 32568664940
-Vertical #1 implementation         POST-CP6 / NOT STARTED
+Current DANTE business database    NOT YET MATERIALIZED
+First product vertical             POST-CP6 / NOT STARTED
 Direct business HG / blanket PSV   NOT RUN
 ```
 
@@ -56,9 +59,9 @@ Patch-level maintenance inside PostgreSQL 18 does not rewrite Physical/CP2/CP3 h
 - `PROJECT-STATUS.md`
 - `ROADMAP.md`
 
-### Active backend CP6 — Concrete Persistence Readiness
+### Active backend CP6 — Concrete PostgreSQL Database
 
-- `workstreams/logical-postgresql.md` — durable CP6 handoff and exact resume point
+- `workstreams/logical-postgresql.md` — **current CP6 execution scope, durable handoff and exact resume point**
 - `development/backend-cp6-01-concrete-persistence-coverage.md` — exact 57/57 owner/role ledger
 - `development/backend-cp6-01-concrete-persistence-coverage-part-2.md` — cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger
 - `development/backend-cp6-01-concrete-persistence-coverage-closure.md` — Gate 01 closure
@@ -81,7 +84,23 @@ current test corpus                    50 / 50 covered across mandatory CI lanes
 18.6 release-note impact               PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
-The next backend checkpoint is **CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition**. It begins read/research/design-first; Gate 02 does not authorize business DDL or Vertical #1 implementation.
+Gate 02 itself did not create business DDL; that is exact historical Gate-02 scope truth. It is **not** a prohibition on later CP6 database materialization.
+
+The current remaining CP6 sequence is:
+
+```text
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+        ↓
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
+        ↓
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
+```
 
 ### Development governance
 
@@ -99,9 +118,9 @@ The next backend checkpoint is **CP6-03 — Concrete Relational Topology + Imple
 - `development/backend-cp2-postgres-contract.md` — CP2 LOCAL PostgreSQL 18.4 historical direct authority
 - `development/backend-cp3-persistence-contract.md` — CP3 persistence/migrations/privileges/real-PostgreSQL 18.4 historical direct authority
 - `development/backend-cp4-ci-contract.md` — CP4 CI/security/calibration closure authority
-- `development/local-backend-workstation-bootstrap.md` — active WSL2/Docker/PyCharm-oriented workstation/bootstrap guide with phase-time evidence distinguished from current runtime truth
+- `development/local-backend-workstation-bootstrap.md` — WSL2/Docker/PyCharm-oriented workstation/bootstrap guide; current CP6 scope comes from the active workstream
 
-CP5 did not create a new implementation contract because it was an integration-acceptance/closure checkpoint, not a new runtime architecture boundary. Its durable evidence is recorded in the workstream handoff, project status, roadmap and backend README.
+CP5 did not create a new implementation contract because it was an integration-acceptance/closure checkpoint, not a new runtime architecture boundary. Its durable evidence is recorded in the closed backend-scaffold workstream and historical contracts.
 
 ### Engineering Foundation — closed
 
@@ -156,6 +175,8 @@ prototypes
 Paths are created only when real content exists.
 
 Backend current truth includes Python 3.14.7, exact uv 0.12.5 project authority, Ruff, mypy strict, pytest, SQLAlchemy 2.0 stable, psycopg 3, Alembic, least-privilege application roles, a real PostgreSQL acceptance harness, calibrated CI and protected-main required checks. The accepted persistence architecture is PostgreSQL 18; the current repository-owned image is PostgreSQL 18.6 with PostGIS 3.6.4 and pgvector 0.8.6. Its technical foundation regression passed remotely in run `32568664940`.
+
+CP6 now uses that technical foundation to design and then materially implement the concrete DANTE database derived from the closed model. Database materialization is not the same thing as implementing the first product vertical.
 
 Frontend durable rules include feature-first platform-specific apps, public-API-only acyclic dependencies, real-consumer shared packages, Data Authority Matrix, backend canonical effect authority, Web online-first, Mobile PowerSync local/offline posture, identity-scoped local data, shared semantic tokens with platform-specific UI and one DANTE LOCAL/DEV/UAT/PROD vocabulary.
 
@@ -240,10 +261,13 @@ BACKEND
 3. Treat CP6-01 as CLOSED / GATE 01 PASS.
 4. Treat CP6-02 as CLOSED / GATE 02 PASS.
 5. Preserve PostgreSQL 18.6 direct technical evidence at run 32568664940 / HEAD ec3dc795....
-6. Start CP6-03 read/research/design-first from the closed Constitution and full CP6-01 coverage ledger.
-7. Do not create business DDL merely to materialize topology or obtain proof.
-8. Do not implement Vertical #1 anywhere inside CP6.
-9. CodeQL remains a separate activation boundary and is not implicitly authorized.
+6. Start CP6-03 as the WHOLE DANTE DATABASE BLUEPRINT.
+7. Derive every database structure already determinable from Domain + Logical + Physical + Constitution.
+8. Do not defer determinable DB schema by merely calling it vertical-specific.
+9. After Gate 03, CP6-04 materially implements the approved DANTE database through reviewed migrations/mappings/tests.
+10. CP6-05 directly validates the whole materialized DB and closes CP6.
+11. Only after CP6 closure does the first product vertical application phase begin.
+12. CodeQL remains a separate activation boundary and is not implicitly authorized.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
