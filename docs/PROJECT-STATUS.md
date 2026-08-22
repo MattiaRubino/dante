@@ -65,8 +65,8 @@ ACTIVE ON feature/logical-postgresql
 DESIGN-FIRST
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
-CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 NEXT / NOT STARTED
 NO BUSINESS SCHEMA / MIGRATION / MAPPING / ADAPTER AUTHORIZED IN CP6
 
 CURRENT POSTGRESQL TECHNICAL PATCH
@@ -93,9 +93,13 @@ CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
-CP6-02 candidate authority:
+CP6-02 closed Constitution:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+CP6-02 closure authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
 ## 2. Product and semantic invariants
 
@@ -510,9 +514,9 @@ feature/logical-postgresql
 → design-first / no business implementation in CP6
 → CP6-00 COMPLETE
 → CP6-01 CLOSED / GATE 01 PASS
-→ CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+→ CP6-02 CLOSED / GATE 02 PASS
+→ CP6-03 NEXT / NOT STARTED
 → PostgreSQL 18.6 refresh DIRECT REMOTE QA PASS
-→ Gate 02 NOT PASSED
 
 feature/frontend-materialization
 → independent frontend production materialization workstream
@@ -525,18 +529,17 @@ Frontend and backend work may proceed in parallel. Shared global documentation m
 ```text
 1. Treat Product/Domain/Logical/Physical/Engineering and CP1–CP5 as closed accepted authority.
 2. Treat CP6-01 as CLOSED / GATE 01 PASS; do not redo the 57/57 or cross-cutting coverage census.
-3. Treat the CP6-02 PostgreSQL Persistence Constitution as ACTIVE / CANDIDATE / PRE-CLOSURE.
-4. Treat PostgreSQL 18.6 technical refresh + remote regression as DIRECT REMOTE QA PASS.
+3. Treat CP6-02 as CLOSED / GATE 02 PASS; consume the closed PostgreSQL Persistence Constitution rather than re-deciding its global rules.
+4. Preserve PostgreSQL 18.6 technical refresh + remote regression as DIRECT REMOTE QA PASS.
 5. Keep PostgreSQL 18.4 Physical/CP2/CP3 evidence historical and exact; do not rewrite it.
-6. Perform the final independent whole-Constitution review against CP6-01 / WL-H / PG-R / HG / SC / PSV / Physical / CP3 / 18.6 direct evidence / external evidence.
-7. If the review finds a defect, repair it at source before closure.
-8. Only if clean, perform a separate Gate 02 closure write.
-9. CP6-03 builds Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition only after Gate 02 PASS.
-10. CP6-04 selects Vertical #1 by evidence.
-11. CP6-05 designs Vertical #1 exactly.
-12. CP6-06 proves only genuinely materialized/non-speculative PostgreSQL foundation behavior.
-13. CP6-07 closes whole persistence readiness.
-14. Only after CP6 closure does a separately authorized phase implement Vertical #1.
+6. Start CP6-03 read/research/design-first: Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition.
+7. Preserve the closed Constitution decisions on UUIDv7, NativeRef anchors, MaterialStateRef address/control, idempotency, constraints, transactions, migrations, security and QA.
+8. Do not create business DDL merely to materialize topology or obtain proof.
+9. CP6-04 selects Vertical #1 by evidence.
+10. CP6-05 designs Vertical #1 exactly.
+11. CP6-06 proves only genuinely materialized/non-speculative PostgreSQL foundation behavior.
+12. CP6-07 closes whole persistence readiness.
+13. Only after CP6 closure does a separately authorized phase implement Vertical #1.
 ```
 
 CP6 terminal boundary:
