@@ -9,6 +9,7 @@
 - PM-12 accepted Physical Model: **ESTABLISHED**
 - PM-13 architecture/documentation QA: **PASS**
 - PM-14 branch closure: **COMPLETE**
+- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no architecture, selection, qualification or direct-execution status changed.**
 
 ## Result-layer rule
 
@@ -193,11 +194,14 @@ old-backup anti-resurrection
 ## Search/vector/projection mandatory tests
 
 ```text
-SC-017/018 non-interference
+SC-017 search hidden-result non-interference
+SC-018 FTS mixed filter/query correctness under applicable Visibility/user/scope filtering
 SC-019 filtered vector recall/relevance
 SC-020 projection freshness/material basis
 SC-021 deletion propagation
 ```
+
+`SC-017` and `SC-018` are separate canonical scenarios and MUST NOT be merged under one label.
 
 ## Solver mandatory tests
 

@@ -15,6 +15,7 @@
 - Protected-main integration after PM-14: **PR #15 COMPLETE**
 - Direct execution: **NOT STARTED**
 - Verified-run benchmark score: **NOT AVAILABLE**
+- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical scenario corpus; no Physical decision or execution result changed.**
 
 ## Result-language rule
 
@@ -289,7 +290,8 @@ SC-030 actual DANTE V1->V2 evolution
 SC-031 destructive restore + semantic verification
 SC-032 capacity/backpressure
 WL-H12 system-level non-interference
-SC-017/018 search non-interference
+SC-017 search hidden-result non-interference
+SC-018 FTS mixed filter/query correctness under applicable Visibility/user/scope filtering
 SC-019 filtered vector recall
 SC-020/021 projection freshness/deletion propagation
 PowerSync replication/offline conflict/local encryption
@@ -299,6 +301,8 @@ PostGIS/PgBouncer interactions
 OR-Tools status/governance corpus
 observability privacy
 ```
+
+`SC-017` and `SC-018` retain their canonical names from the Physical Benchmark Scenario Corpus and are distinct obligations.
 
 All remain `NOT RUN` until direct selected-stack artifacts exist.
 
