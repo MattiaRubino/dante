@@ -1,15 +1,16 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-03 MINIMAL WEB APPLICATION PASS**
+- Status: **ACTIVE — FM-04 MINIMAL MOBILE APPLICATION PASS**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated workspace commit: `1568d90091064162da9a438f3555675f1921c226`
+- Current validated workspace commit: `3c150c4806191f0347b64c645d53168123ce0ede`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB MATERIALIZED**
+- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE MATERIALIZED**
 - Machine runtime baseline: **PASS**
 - Root engineering dependencies: **INSTALLED / PINNED / LOCKED**
 - Minimal Web dependency graph: **INSTALLED / PINNED / LOCKED**
-- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V08/FM-V09 PASS; remaining register scoped below**
+- Minimal Mobile dependency graph: **INSTALLED / PINNED / LOCKED / DIRECTLY RUNTIME-VALIDATED**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V08/FM-V09/FM-V10/FM-V11 PASS; remaining register scoped below**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -392,19 +393,83 @@ Remote lockfile readback confirms exact Web dependency specifiers/resolutions fo
 
 FM-03 therefore directly proves the minimal Web platform at its stated scope. It does **not** prove production product UI, Web delivery to Cloudflare, E2E testing, shared packages, authentication transport, or Mobile.
 
-### FM-04 — minimal Mobile application — NEXT
+### FM-04 — minimal Mobile application — PASS
 
-Materialize `apps/mobile` with the exact Expo SDK 57-compatible dependency graph resolved at that time.
+A real `apps/mobile` workspace now exists as a deliberately minimal Expo/React Native diagnostic scaffold. It does not implement Access/Home product UI, shared application state, backend contracts, PowerSync or release infrastructure.
 
-Before product UI:
+Materialized compatibility baseline:
 
-- Expo/Metro starts from WSL;
-- typecheck/lint/bundle baseline passes;
-- Expo diagnostics pass at the supported level;
-- Windows Android emulator/device can consume the WSL-hosted development runtime;
-- the WSL↔Windows Metro/ADB bridge is directly proven rather than assumed.
+```text
+Expo                         57.0.9
+React Native                 0.86.2
+React                        19.2.3
+Expo Router                  57.0.9
+React Native Gesture Handler 2.32.0
+React Native Reanimated      4.5.1
+React Native Safe Area       5.7.0
+React Native Screens         4.26.2
+React Native Worklets        0.10.1
+```
 
-Android and iOS remain supported architectural targets. Initial local Windows validation focuses on Android; release/device gates activate only for real release targets.
+Repository/mobile configuration directly validated:
+
+```text
+apps/mobile/package.json
+apps/mobile/app.config.ts
+apps/mobile/tsconfig.json
+apps/mobile/app/_layout.tsx
+apps/mobile/app/index.tsx
+apps/mobile/.gitignore
+pnpm-lock.yaml
+```
+
+Direct closure checks:
+
+```text
+pnpm install --frozen-lockfile              PASS
+expo install --check                        PASS
+expo-doctor                                 PASS — 21/21 checks
+@dante/mobile typecheck                     PASS
+@dante/mobile lint                          PASS
+@dante/web typecheck                        PASS
+@dante/web production build                 PASS
+root lint                                   PASS
+root format check                           PASS
+git diff --check                            PASS
+```
+
+Direct Android runtime evidence on the observed Windows 11 + WSL2 workstation:
+
+```text
+Windows Android emulator                    PASS
+ADB device bridge                           PASS
+adb reverse tcp:8081 tcp:8081               PASS
+Metro / Expo CLI in WSL                     PASS
+Android Expo manifest                       HTTP 200
+Android Hermes bundle                       HTTP 200 / 9,162,793 bytes
+Expo Go                                     57.0.9
+Expo Go → Metro reachability                PASS
+DANTE "/" route render                      PASS
+Gesture Handler runtime probe               PASS
+Reanimated runtime probe                    PASS
+```
+
+The manifest directly advertised the Metro bundle at `http://127.0.0.1:8081/...expo-router/entry.bundle?...`. Runtime log evidence then showed Metro reachable, the JS bundle loading, React Native executing `main` with the DANTE manifest, and native Reanimated/Gesture Handler libraries loading. The emulator visibly rendered `DANTE MOBILE / Native runtime ready / Route / / Purpose FM-04 diagnostic scaffold`, and the gesture probe reacted to direct input.
+
+Observed Expo Go bootstrap warnings from `expo-updates`, `ExpoHeadlessAppLoader` and other client-internal modules did not prevent DANTE bundle execution or render and are not treated as project configuration failures. In particular, no `updates.url` is added merely to silence Expo Go client logging.
+
+The WSL React Native DevTools helper also reported a missing `libnspr4.so`; Metro continued and the DANTE runtime passed. That warning is therefore recorded as non-blocking for FM-04 and does not justify unrelated workstation package installation.
+
+Expo Go is accepted here only as the bounded local diagnostic client used to prove the SDK 57 runtime path. It is not the future production/native-capability boundary; development builds and EAS/release gates activate only when their real scope requires them.
+
+Validated implementation commit:
+
+```text
+3c150c4806191f0347b64c645d53168123ce0ede
+build: lock minimal mobile runtime
+```
+
+FM-04 directly proves the minimal Mobile runtime at its stated scope. It does not prove iOS runtime, production release builds, OTA delivery, PowerSync/native encrypted storage, authentication integration or product UI.
 
 ### FM-05 — first genuine shared packages
 
@@ -456,15 +521,15 @@ Only after this baseline is directly validated should a product feature such as 
 ```text
 FM-V01 Node 24 WSL runtime resolution — PASS
 FM-V02 pnpm 11 install/workspace resolution — PASS
-FM-V03 preferred isolated dependency layout with Expo/native graph — NOT RUN
+FM-V03 preferred isolated dependency layout with Expo/native graph — PASS
 FM-V04 evidence-driven hoisted fallback if required — NOT RUN
 FM-V05 Turbo task graph — REAL @dante/web BUILD/TYPECHECK TASK EXECUTION PASS; MULTI-WORKSPACE GRAPH NOT RUN
 FM-V06 TypeScript strict cross-workspace graph — BASE CONFIG PROBE + WEB APP TYPECHECK PASS; CROSS-WORKSPACE NOT RUN
-FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
+FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
 FM-V08 Vite/React production build — PASS
 FM-V09 Windows browser ↔ WSL Vite — PASS
-FM-V10 Expo SDK 57 / RN compatible baseline — NOT RUN
-FM-V11 WSL Metro ↔ Windows Android emulator/device — NOT RUN
+FM-V10 Expo SDK 57 / RN compatible baseline — PASS
+FM-V11 WSL Metro ↔ Windows Android emulator/device — PASS
 FM-V12 package exports / forbidden deep imports — NOT RUN
 FM-V13 DTCG → Web CSS + Native TS token generation — NOT RUN
 FM-V14 Web/Mobile i18n shared-core consumption — NOT RUN
@@ -531,9 +596,11 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-04 MINIMAL MOBILE APPLICATION
+FM-05 FIRST GENUINE SHARED PACKAGES
 ```
 
-FM-00, FM-01, FM-02A, FM-02B and FM-03 are directly validated at their stated scope. Before materializing Mobile, reverify the exact Expo SDK 57 / React Native 0.86 / React 19.2-compatible dependency graph and the current recommended Expo tooling path.
+FM-00, FM-01, FM-02A, FM-02B, FM-03 and FM-04 are directly validated at their stated scope.
 
-FM-04 must remain a minimal diagnostic Mobile scaffold whose purpose is to prove Expo/React Native dependency resolution, WSL Metro operation and Windows Android emulator/device reachability. Shared packages, Access/Home product surfaces, PowerSync, EAS release infrastructure and backend contracts remain outside FM-04 unless separately gated.
+FM-05 may materialize only shared packages with immediate genuine Web+Mobile consumers. The accepted initial candidates remain `@dante/design-tokens`, `@dante/i18n` and `@dante/time`; each still requires its own bounded gate and direct consumption evidence.
+
+Access/Home product surfaces, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
