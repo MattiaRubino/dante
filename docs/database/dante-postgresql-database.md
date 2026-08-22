@@ -851,6 +851,8 @@ world/effective interval
 recorded/accepted instant/interval
 ```
 
+The reusable physical encoding contract and owner-family chronology placement are closed in section 21.3.
+
 ---
 
 ## 9. Relation topology
@@ -943,7 +945,7 @@ bounded low-consequence metadata   JSONB allowed only when explicitly justified
 provider/raw payload               bounded JSONB allowed where integration contract needs it
 ```
 
-Exact numeric precision, geometry shape/SRID, recurrence parameters and other domain-specific types are not guessed; they are closed during object-level derivation.
+Exact numeric/temporal/recurrence value contracts are closed in section 21. Place spatial shape remains intentionally absent from the mandatory Place identity row; PostGIS activation is trigger-bound as specified there.
 
 ---
 
@@ -1054,22 +1056,24 @@ This inventory is the first CP6-03 concrete map. `REQUIRED` means the closed mod
 | Person | `person` | REQUIRED | conditional owner-specific material state/history |
 | Living Referent | `living_referent` | REQUIRED | conditional owner-specific material state/history |
 | Asset | `asset` | REQUIRED | conditional owner-specific material state/history |
-| Place | `place` | REQUIRED | conditional material address/geometry history; PostGIS shape unresolved |
+| Place | `place` | REQUIRED | no mandatory geometry/address payload; spatial state is trigger-bound |
 | Content Artifact | `content_artifact` | REQUIRED | material content-state/history when exact revision matters |
 | Collective | `collective` | REQUIRED | identity independent from membership; governance/state history conditional |
 | Possibility | `possibility` | REQUIRED once retained as canonical | candidate state before acceptance remains noncanonical |
 | Goal | `goal` | REQUIRED | material lifecycle/history when consequential |
 | Plan | `plan` | REQUIRED | exact material plan history when later meaning depends on revision |
 | Activity | `activity` | REQUIRED | material state/history when consequential |
-| Event | `event` | REQUIRED | material state/history conditional |
-| Routine | `routine` | REQUIRED | governing material state/history when Occurrences depend on exact state |
-| Occurrence | `occurrence` | REQUIRED once individually distinguished | lazy pre-materialization locator remains separate from native identity |
-| Session | `session` | REQUIRED | correction/split/merge history conditional |
-| Observation | `observation` | REQUIRED | material correction/history required for material observations |
+| Event | `event` | REQUIRED | temporal placement remains Schedule; material state/history conditional |
+| Routine | `routine` | REQUIRED | Recurrence remains separate LR-05; governing state/history when Occurrences depend on exact state |
+| Occurrence | `occurrence` | REQUIRED once individually distinguished | lazy pre-materialization locator remains separate from native identity; generation context retained |
+| Session | `session` | REQUIRED | execution chronology is state, not identity; correction/split/merge history conditional |
+| Observation | `observation` | REQUIRED | effective assertion chronology/payload remain owner-specific; material correction/history required when material |
 
 No table above inherits from a common semantic Entity table.
 
 A `native_address` row is a lazy bounded technical projection created only when a concrete owner must participate in heterogeneous/address-control semantics; the canonical owner row above remains the semantic identity owner.
+
+The exact identity-shell columns for all 15 owners are closed in section 21.1.
 
 ### 14.2 Contextual / realization / result families — LR-02 / LR-06
 
@@ -1120,7 +1124,7 @@ Exact endpoint tables/cardinalities/qualification fields are closed concept-by-c
 | Availability | baseline/rule + material override family | REQUIRED where accepted rules/overrides exist | effective availability remains derived |
 | Conditional Policy | typed policy/specification family | REQUIRED where accepted | no universal Rule(type,payload) |
 | Criterion | structured criterion family | REQUIRED where accepted | exact state retained for consequential Evaluation basis |
-| Recurrence | structured recurrence family | REQUIRED | canonical model not reduced to provider/RRULE format |
+| Recurrence | `recurrence` scoped definition + material `recurrence.definition` state + six family-specific typed payloads | REQUIRED where canonical recurrence is persisted | no RRULE/provider-string canonical kernel; exact family contract CLOSED |
 | Resource Requirement | structured requirement specification | REQUIRED where accepted | contextual address only where justified |
 | Temporal Constraint | structured temporal constraint family | REQUIRED | distinct from Schedule |
 
@@ -1128,11 +1132,11 @@ Exact endpoint tables/cardinalities/qualification fields are closed concept-by-c
 
 | Concept | Persistence disposition |
 |---|---|
-| Monetary Amount | NO independent identity/root; owner-bound typed amount + explicit currency semantics |
-| Quantity | NO independent identity/root by default; owner-bound typed magnitude/unit representation |
+| Monetary Amount | NO independent identity/root; owner-bound `numeric` amount + explicit three-letter currency code contract |
+| Quantity | NO independent identity/root; owner-bound exact `numeric` magnitude + bounded unit semantics |
 | Capacity | NO universal Capacity owner; typed value/rule/contextual representation as accepted consumer requires |
 
-The object-level pass will determine whether repeated value shapes merit SQLAlchemy composites or bounded dependent tables without inventing semantic identity.
+Repeated Quantity/MonetaryAmount shapes may use SQLAlchemy composites/helpers, but no shared semantic row identity is introduced.
 
 ### 14.6 Cross-cutting history / projection / integration families
 
@@ -1155,57 +1159,57 @@ This table ensures every Domain concept reaches a concrete database disposition.
 | # | Concept | Logical role | Initial CP6-03 database disposition |
 |---:|---|---|---|
 | 01 | Acknowledgement | LR-03 | specific attestation relation; persistent qualification only where material/addressable |
-| 02 | Activity | LR-01 | required native canonical owner family; state/history derived next |
+| 02 | Activity | LR-01 | required native canonical owner family; identity shell CLOSED, semantic state derivation continues |
 | 03 | Actor | contextual role | NO ROOT; actual eligible referent carried by owning operation/provenance/relation |
 | 04 | Actual | LR-06/LR-02 | specific realization family for material canonical Actual |
 | 05 | Agreement | LR-02 + n-ary relation | required contextual Agreement + terms MaterialState + party assent topology |
-| 06 | Asset | LR-01 | required native canonical owner family |
+| 06 | Asset | LR-01 | required native canonical owner family; identity shell CLOSED |
 | 07 | Authority | LR-03/LR-02/LR-05/LR-08 | governance relation/state + basis + derived effective view; no generic ACL truth |
 | 08 | Availability | LR-05/LR-02/LR-08 | structured rule/override; effective state derived |
 | 09 | Capacity | LR-04/LR-05/LR-02/LR-08 | NO native root; typed capacity/rule/material context as consumer requires |
-| 10 | Collective | LR-01 | required native canonical owner family independent of member set |
+| 10 | Collective | LR-01 | required native canonical owner family independent of member set; identity shell CLOSED |
 | 11 | Conditional Policy | LR-05 | structured policy/specification family |
 | 12 | Confirmation | LR-03 | specific attestation relation; material qualification conditional |
 | 13 | Consent | LR-03/LR-02 | specific governance relation/state with material history when consequential |
-| 14 | Content Artifact | LR-01 | required native canonical owner; byte storage remains separate bounded capability |
+| 14 | Content Artifact | LR-01 | required native canonical owner; byte storage remains separate bounded capability; identity shell CLOSED |
 | 15 | Contribution | LR-03 | specific contribution/attribution relation |
 | 16 | Coordination Stewardship | LR-03 | specific stewardship relation |
 | 17 | Criterion | LR-05 | structured criterion/specification family |
 | 18 | Evaluation | LR-08 / LR-02 | derived by default; material snapshot only when consequential |
 | 19 | Decision | LR-02 | conditional independent decision record when lifecycle/history matters |
 | 20 | Dependency | LR-03 | specific directional contingency relation |
-| 21 | Event | LR-01 | required native canonical owner family |
+| 21 | Event | LR-01 | required native canonical owner family; temporal placement remains Schedule; identity shell CLOSED |
 | 22 | Evidence | LR-03 | typed source→evaluation/context use relation; exact source state when required |
-| 23 | Goal | LR-01 | required native canonical owner family |
+| 23 | Goal | LR-01 | required native canonical owner family; identity shell CLOSED |
 | 24 | Interpersonal Relationship | LR-03 | bounded Person-to-Person specific relation family |
-| 25 | Living Referent | LR-01 | required native canonical owner family distinct from Person/Asset |
+| 25 | Living Referent | LR-01 | required native canonical owner family distinct from Person/Asset; identity shell CLOSED |
 | 26 | Membership | LR-03 | specific membership relation; Collective identity remains independent |
 | 27 | Milestone | LR-02 | dependent milestone family; material address/history where justified |
-| 28 | Monetary Amount | LR-04 | NO ROOT; typed owner-bound amount/currency value |
-| 29 | Observation | LR-01 | required native canonical owner + material correction/history when material |
-| 30 | Occurrence | LR-01 when distinguished | native owner once persisted; lazy locator before differentiation |
+| 28 | Monetary Amount | LR-04 | NO ROOT; exact owner-bound numeric/currency contract CLOSED |
+| 29 | Observation | LR-01 | required native canonical owner; identity shell + temporal placement contract CLOSED; payload/state derivation continues |
+| 30 | Occurrence | LR-01 when distinguished | native owner once individually distinguished; lazy locator before row materialization; generation context preserved |
 | 31 | Outcome | LR-06/LR-02 | specific result/disposition family when materially persistent |
 | 32 | Ownership | LR-03 | specific ownership relation |
 | 33 | Participation | LR-03 | specific intended/response/actual participation relation semantics |
-| 34 | Person | LR-01 | required native canonical owner; separate from Account/Principal |
-| 35 | Place | LR-01 | required native owner; geo representation closed in object-level pass |
-| 36 | Plan | LR-01 | required native owner; material plan-state history when revision matters |
+| 34 | Person | LR-01 | required native canonical owner; separate from Account/Principal; identity shell CLOSED |
+| 35 | Place | LR-01 | required native owner; no universal geometry/address field; PostGIS activation trigger CLOSED |
+| 36 | Plan | LR-01 | required native owner; material plan-state history when revision matters; identity shell CLOSED |
 | 37 | Possession | LR-03 | specific possession/custody relation |
-| 38 | Possibility | LR-01 once canonical | required native owner after acceptance; pre-acceptance candidates noncanonical |
+| 38 | Possibility | LR-01 once canonical | required native owner after acceptance; pre-acceptance candidates noncanonical; identity shell CLOSED |
 | 39 | Proposal | LR-02 | conditional proposal record; target exact state when consequential |
 | 40 | Provenance | LR-07 | bounded typed lineage/provenance attached to concrete effects/states; NO universal graph root |
-| 41 | Quantity | LR-04 | NO ROOT; typed owner-bound magnitude/unit value |
+| 41 | Quantity | LR-04 | NO ROOT; exact owner-bound magnitude/unit contract CLOSED |
 | 42 | Reconciliation | LR-02/LR-07 | material reconciliation record where resolution/history matters |
-| 43 | Recurrence | LR-05 | structured recurrence specification; exact families/parameters derived next |
+| 43 | Recurrence | LR-05 | scoped typed definition when persisted + six family-specific material-state payloads; physical family contract CLOSED |
 | 44 | Representation | LR-03/LR-02 | specific on-behalf-of governance relation/state |
 | 45 | Request | LR-02 | conditional directed request record; distinct from effect/idempotency identity |
 | 46 | Resource Allocation | LR-03/LR-02 | specific allocation relation/contextual record when material |
 | 47 | Resource Requirement | LR-05/LR-02 | structured requirement; scoped record where materially addressable |
 | 48 | Resource | contextual role | NO ROOT; eligible concrete provider/value/service/pool/specialist target |
 | 49 | Responsibility | LR-03 | specific responsibility relation family |
-| 50 | Routine | LR-01 | required native owner + governing material state/history for dependent Occurrences |
+| 50 | Routine | LR-01 | required native owner; Recurrence separate; identity shell CLOSED |
 | 51 | Schedule | LR-02 | dependent accepted-placement family; material/scoped when consequential |
-| 52 | Session | LR-01 | required native execution-episode owner family |
+| 52 | Session | LR-01 | required native execution-episode owner; identity shell CLOSED; actual chronology belongs to state |
 | 53 | Subject | contextual role | NO ROOT; eligible ReferenceAddress target through owning contract |
 | 54 | Temporal Constraint | LR-05 | structured temporal constraint family distinct from Schedule |
 | 55 | Verification | Evaluation purpose/profile | NO ROOT; represented through applicable Evaluation form |
@@ -1219,22 +1223,22 @@ Gate-03 exact table/column contract                  NOT YET PASS
 
 ---
 
-## 16. CP6-01 Part-2 cross-cutting/non-owner disposition — initial matrix
+## 16. CP6-01 Part-2 cross-cutting/non-owner disposition — current matrix
 
-Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses the final allowed disposition vocabulary but remains subject to the remaining object-level proof before Gate 03.
+Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses the final allowed disposition vocabulary and now contains no `OPEN DERIVATION` entry.
 
 | Construct | Current disposition | Current CP6-03 reasoning / exact trigger |
 |---|---|---|
 | ReferenceAddress | NO INDEPENDENT PERSISTENCE as universal root | represented by the four discriminated address contracts and concrete bounded mechanisms |
 | Reference Contract | NO INDEPENDENT PERSISTENCE | homogeneous direct FK; heterogeneous native/scoped address + database-enforced consumer-family eligibility |
-| NativeRef | MATERIALIZE IN CP6 | native owner UUIDs + direct FKs; `native_address` now CLOSED as the bounded heterogeneous/material-owner control topology |
-| ScopedRecordRef | MATERIALIZE IN CP6 where concrete scoped families require stable address | shared `scoped_address` topology now CLOSED; rows exist only for justified addressable contextual families |
+| NativeRef | MATERIALIZE IN CP6 | native owner UUIDs + direct FKs; `native_address` CLOSED as bounded heterogeneous/material-owner control topology |
+| ScopedRecordRef | MATERIALIZE IN CP6 where concrete scoped families require stable address | shared `scoped_address` topology CLOSED; rows exist only for justified addressable contextual families |
 | MaterialStateRef | MATERIALIZE IN CP6 | `material_state_address` owner-space/facet topology CLOSED + owner-specific state rows |
 | ExternalRef | GENUINELY DEFERRED for generic/shared provider structures | trigger = first concrete integration/provider contract; no provider ontology invented now |
 | Current accepted-state binding | MATERIALIZE IN CP6 where material state exists | `native_current_material_state` / `scoped_current_material_state` topology CLOSED |
 | Correction/replacement/reconciliation lineage | MATERIALIZE IN CP6 where material history exists | owner/facet-specific typed lineage; no universal state graph; topology CLOSED |
-| World/effective chronology | MATERIALIZE IN CP6 per family where material | exact type/range determined by concept chronology |
-| Recorded/learned/accepted chronology | MATERIALIZE IN CP6 per family where material | separate from world chronology only when needed |
+| World/effective chronology | MATERIALIZE IN CP6 per family where material | reusable typed temporal contract CLOSED; concrete semantic columns stay owner-specific |
+| Recorded/learned/accepted chronology | MATERIALIZE IN CP6 per family where material | separate from world chronology only when required; absolute instants use `timestamptz` |
 | Governed Operation / Effect Contract | NO INDEPENDENT PERSISTENCE as universal operation owner | operation-specific persistence/provenance fields when a concrete consequential effect exists |
 | Governed Operation Request | GENUINELY DEFERRED | trigger = first post-CP6 application operation whose audit/recovery semantics require persistent request state |
 | Execution receipt/result | GENUINELY DEFERRED | trigger = first runtime/provider operation requiring durable execution receipt; never automatically Actual/Outcome |
@@ -1251,14 +1255,17 @@ Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses
 | Actor role | NO INDEPENDENT PERSISTENCE | owning record stores concrete eligible referent/address; no ActorRef |
 | Subject role | NO INDEPENDENT PERSISTENCE | owning Reference Contract stores eligible target; no SubjectRef |
 | Resource role | NO INDEPENDENT PERSISTENCE | concrete eligible provider/value/service/pool/specialist representation; no ResourceRef |
-| Capacity Claim pressure | OPEN DERIVATION — expected contextual/material representation | exact accepted capacity-claim semantics must be traced from closed time/resource authorities before final disposition |
+| Capacity Claim pressure | CONDITIONAL OWNER-SPECIFIC MATERIALIZATION / NO UNIVERSAL ROOT | owner/context-specific qualified commitment relation; ScopedRecordRef only when material/addressable; historical Schedule/material basis reconstructible |
 | Tombstone/retirement/redaction continuity | MATERIALIZE IN CP6 where owner lifecycle requires it | owner-specific/minimal continuity; NO generic semantic Tombstone owner |
 | Anti-resurrection reconciliation | GENUINELY DEFERRED as executable recovery mechanism | trigger = destructive recovery/restore stage; schema must not make later enforcement impossible |
 | Transactional outbox | GENUINELY DEFERRED | trigger = first real Class-A async external effect; not Domain history/event store |
 | PowerSync/encrypted SQLite | GENUINELY DEFERRED | trigger = offline/mobile activation; PostgreSQL remains canonical |
 | Search/vector indexes/caches | GENUINELY DEFERRED except concrete indexes justified by the database model | trigger = real search/vector/query consumer; no speculative pgvector/GIN materialization |
 
-The single remaining `OPEN DERIVATION` entry above is deliberately visible. Gate 03 cannot pass while any cross-cutting construct remains unclassified.
+```text
+UNCLASSIFIED CROSS-CUTTING CONSTRUCTS
+0
+```
 
 ---
 
@@ -1353,9 +1360,27 @@ no current binding mismatches owner/facet/state
 
 Destructive backup/restore evidence itself remains staged under HG-09/HG-12/PSV as already defined.
 
+### 17.3 Recurrence sub-DAG
+
+A persisted, material Recurrence follows the already-closed address/state order:
+
+```text
+concrete recurring source (Routine/Event or another later accepted source)
+→ recurrence scoped owner
+→ scoped_address when stable Recurrence addressability is required
+→ recurrence.definition MaterialStateRef
+→ recurrence_state header
+→ exactly one family-specific recurrence-state payload
+→ effective-range/boundary rows where applicable
+→ current recurrence.definition binding
+→ Occurrence generation context may bind the exact governing MaterialStateRef
+```
+
+No generated Occurrence is required merely to prove the Recurrence schema.
+
 ---
 
-## 18. SQLAlchemy mapping plan — initial
+## 18. SQLAlchemy mapping plan — current
 
 The existing canonical SQLAlchemy `Base.metadata` remains the single application metadata authority for DANTE-owned PostgreSQL objects.
 
@@ -1388,13 +1413,17 @@ Those classes are persistence-control rows only. Native/scoped semantic owners d
 
 Reference-family Python types continue to distinguish `NativeRef`, `ScopedRecordRef` and `MaterialStateRef` even though their SQL scalar is `uuid`.
 
+The 15 native owner tables map to 15 independent semantic row classes with no polymorphic base table. Reusable Quantity/MonetaryAmount and temporal column bundles may use SQLAlchemy value/composite helpers; value-object convenience must not create an extra persistence identity.
+
+Recurrence maps as a scoped Recurrence row + material `RecurrenceState` header + one typed family-state row. Family dispatch is explicit application persistence logic over the discriminator; it is not SQLAlchemy polymorphic semantic inheritance and it does not authorize a generic Rule model.
+
 Each final Database Dictionary entry will point to its SQLAlchemy mapping when one exists.
 
 Views/generated/projection objects do not require ORM classes merely for symmetry.
 
 ---
 
-## 19. Direct PostgreSQL proof plan — initial
+## 19. Direct PostgreSQL proof plan — current
 
 CP6-03 must end with an exact test matrix. Current required categories include:
 
@@ -1414,6 +1443,8 @@ Database Dictionary object coverage
 ```text
 native UUID round-trip
 UUIDv7 generation/storage
+15 owner PKs reject duplicate identity
+native owner PK mutation forbidden by persistence contract
 homogeneous FK integrity
 native_address valid existing owner/family PASS
 native_address unknown family REJECT
@@ -1461,22 +1492,59 @@ Consent/Authority/Visibility history where material
 Representation preserves Actor vs represented party
 Membership does not redefine Collective identity
 Ownership != Possession constraints/structures remain separate
+Capacity Claim does not collapse into Schedule/Allocation/Actual use
+material Capacity Claim retains/reconstructs exact temporal/material basis
 ```
 
 Maps especially to PG-R06 and WL-H01/WL-H11.
 
-### 19.5 Temporal/Occurrence
+### 19.5 Temporal / Recurrence / Occurrence
 
 ```text
+date-only remains date-only
+floating local != named-zone local != absolute instant
+named-zone consequential resolution preserves original local value + zone + accepted resolved instant
+no false UTC conversion of floating local values
+daterange/tstzrange bound semantics preserved where used
+elapsed recurrence rejects zero/negative interval and calendar-month substitution
+calendar recurrence keeps wall-clock/zone semantics through DST policy
+quota recurrence preserves explicit period frame and does not invent ordinal quota identity
+completion-relative recurrence cannot generate the next chain without a qualifying anchor when the rule requires one
+anchor-stream recurrence keeps qualifying anchor contract distinct from generic Trigger
+cyclic recurrence preserves position/cycle semantics
+exactly one recurrence family payload per recurrence definition MaterialStateRef
+family discriminator/payload mismatch rejected
+current recurrence state explicit; MAX/time/UUID inference absent
 world vs recorded chronology where material
-range/exclusion constraints where applicable
 lazy occurrence locator → persisted Occurrence continuity
+materialized historical Occurrence retains governing recurrence/source MaterialStateRef
 unordered quota slots do not gain fake ordinal identity
 ```
 
 Maps especially to PG-R07 / PG-R08.
 
-### 19.6 Missingness/lifecycle
+### 19.6 Quantity / MonetaryAmount
+
+```text
+exact decimal round-trip without binary-float substitution
+NaN/+Infinity/-Infinity rejected for canonical amounts
+Quantity requires non-empty bounded unit semantics
+MonetaryAmount requires explicit three-letter uppercase currency code
+PostgreSQL money absent
+no Quantity/MonetaryAmount identity table
+source/display/conversion rounding does not rewrite material source representation
+```
+
+### 19.7 Place / PostGIS boundary
+
+```text
+Place persists with only native identity and no mandatory geometry/address
+no speculative GiST/SP-GiST spatial index exists
+PostGIS capability presence does not manufacture canonical spatial truth
+future spatial facet cannot be introduced without explicit shape/SRID/index/query contract
+```
+
+### 19.8 Missingness/lifecycle
 
 ```text
 absence does not encode universal false
@@ -1487,7 +1555,7 @@ redacted/unavailable does not become never-existed
 address/owner continuity remains truthful under the final DB-U14 lifecycle design
 ```
 
-### 19.7 Concurrency
+### 19.9 Concurrency
 
 When a concrete subject exists:
 
@@ -1500,7 +1568,7 @@ whole transaction rolls back atomically on local invariant failure
 
 Maps to PG-R04 / PG-R05.
 
-### 19.8 Derived/provider boundaries
+### 19.10 Derived/provider boundaries
 
 Only after a concrete subject exists:
 
@@ -1528,6 +1596,8 @@ native_current_material_state
 scoped_current_material_state
 ```
 
+The 15 native owner identity-table names and the Recurrence family names in section 21 are now stable design names as well; dictionary materialization still waits for the remaining object-level table/column graph so one coherent dictionary is generated rather than a sequence of partial files.
+
 Every materialized table will eventually have a structured entry accounting for, as applicable:
 
 ```text
@@ -1552,9 +1622,735 @@ Generated schema/ER material must be derived from SQLAlchemy/PostgreSQL where pr
 
 ---
 
-## 21. CP6-03 unresolved-parameter register
+## 21. Object-level closure pass I — LR-01 identity shells + temporal/value/recurrence/spatial/capacity contracts
 
-The first six opening questions are now closed in sections 7–8:
+This section consumes the complete canonical continuations for the 15 LR-01 owners together with the accepted Time/Reality and Resources/Values/Capacity logical slices. It closes the deterministic part of their relational baseline without inventing owner payload columns that the Domain does not establish.
+
+The central rule is:
+
+```text
+stable native identity
+!= current mutable semantic payload
+!= MaterialStateRef
+!= relation membership
+!= Schedule / Recurrence / Actual
+!= provider identity
+```
+
+### 21.1 Exact LR-01 native identity-shell tables — CLOSED
+
+The minimum canonical row for each LR-01 owner is intentionally narrow:
+
+```text
+dante.person
+  person_ref              uuid PRIMARY KEY
+
+dante.living_referent
+  living_referent_ref     uuid PRIMARY KEY
+
+dante.asset
+  asset_ref               uuid PRIMARY KEY
+
+dante.place
+  place_ref               uuid PRIMARY KEY
+
+dante.content_artifact
+  content_artifact_ref    uuid PRIMARY KEY
+
+dante.collective
+  collective_ref          uuid PRIMARY KEY
+
+dante.possibility
+  possibility_ref         uuid PRIMARY KEY
+
+dante.goal
+  goal_ref                uuid PRIMARY KEY
+
+dante.plan
+  plan_ref                uuid PRIMARY KEY
+
+dante.activity
+  activity_ref            uuid PRIMARY KEY
+
+dante.event
+  event_ref               uuid PRIMARY KEY
+
+dante.routine
+  routine_ref             uuid PRIMARY KEY
+
+dante.occurrence
+  occurrence_ref          uuid PRIMARY KEY
+
+dante.session
+  session_ref             uuid PRIMARY KEY
+
+dante.observation
+  observation_ref         uuid PRIMARY KEY
+```
+
+Rules applying to all 15:
+
+```text
+SQL type                         PostgreSQL uuid
+ID policy                        UUIDv7
+normal issuer                    backend application boundary
+DB-generated semantic ID         not the default
+PK update                        forbidden under ordinary runtime behavior
+semantic parent FK               none
+created_at / updated_at          none by convention
+name / title                     none by convention
+status                           none by convention
+deleted_at / is_deleted          none by convention
+metadata JSONB                   none by convention
+native_address FK                none on owner row
+```
+
+`native_address` remains an optional technical projection of an already-existing owner. The owner row does not depend on the address row.
+
+This identity shell is not permission to establish semantically empty business objects. The application operation that creates a canonical owner must establish every companion semantic row/state required by that concept at the same consistency boundary. The distinction is that those facts are **not identity columns** and therefore do not belong in the native-owner PK shell merely for CRUD convenience.
+
+Owner-specific separation is now fixed as follows:
+
+| Native owner | Not part of native identity row | Where the fact belongs |
+|---|---|---|
+| Person | name/contact/account/provider identity/relationships | owner-specific semantic state, typed relation, Account/ExternalRef boundary as applicable |
+| Living Referent | species/classification/current descriptive state | owner-specific state; no Asset collapse |
+| Asset | model/classification/ownership/possession/location/provider ID | owner-specific state or the exact relation/provider family |
+| Place | name/address/coordinates/geometry/home-work role/provider ID | owner-specific spatial/descriptive state or specific spatial relation/provider mapping |
+| Content Artifact | bytes/content revision/provider object | content material state + bounded byte-storage/provider boundary |
+| Collective | current member set/governance | Membership/governance relations and material state where required |
+| Possibility | pre-acceptance candidate interpretation | LR-11 before canonical retention; owner-specific state after it becomes canonical |
+| Goal | progress/status/Plan/criteria/target timing/governor | Goal state, Criterion/Evaluation, relations and temporal value semantics |
+| Plan | Activities/current strategy/status/Schedule | Plan material state + typed relations; Schedule remains separate |
+| Activity | Schedule/performer/Actual/status | Activity state + typed relations + Schedule/Actual families |
+| Event | current start/end/current venue/Actual/participants | Schedule, specific spatial/participation relations and Actual |
+| Routine | recurrence expression/generated instances/current schedule | Recurrence + Occurrence + Schedule; Routine remains source policy identity |
+| Occurrence | current datetime/Schedule/Actual | generation context + Schedule/Actual; moved instance keeps same identity |
+| Session | start/end/current duration/Activity identity | Session execution state + typed realization relations |
+| Observation | subject/property/value/effective time/provider evidence | Observation assertion/material state + typed subject/value/provenance contracts |
+
+The table shell therefore remains stable even when ordinary semantic state changes. Material state is added only at the CP6-02 materiality threshold; low-consequence current fields do not automatically receive history merely because the owner has native identity.
+
+### 21.2 Occurrence generation-context requirement
+
+A materialized `Occurrence` must retain enough generation context to explain why that expected instance exists under the exact governing source/rule state.
+
+The companion family is:
+
+```text
+dante.occurrence_generation
+  occurrence_ref                   uuid PRIMARY KEY
+  source_native_ref                uuid NOT NULL
+  governing_material_state_ref     uuid NOT NULL
+```
+
+Constraints:
+
+```text
+occurrence_ref
+→ FK dante.occurrence(occurrence_ref)
+→ ON DELETE NO ACTION
+
+source_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ current accepted generation-source eligibility: routine OR event
+
+governing_material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+```
+
+A bounded database eligibility check verifies the source family and that the governing MaterialStateRef is an applicable material state for the source/Recurrence generation context. If a later accepted generative source family is added, its eligibility is a reviewed schema change.
+
+Family-specific virtual coordinates are **not** forced into this common row. Calendar coordinates, quota-period slots, qualifying completion anchors, anchor-stream facts and cycle positions remain recurrence/occurrence-family-specific typed structures. In particular, unordered quota slots do not receive a fabricated semantic ordinal.
+
+A purely virtual, still-indistinguishable future quota slot does not require an `occurrence` row. Once an individual expected instance is semantically distinguished, its UUID identity is stable and subsequent materialization does not create a different Occurrence.
+
+### 21.3 Typed temporal physical contract — DB-U07 CLOSED
+
+DANTE does not create a universal `temporal_value` table. Temporal meaning is embedded through typed column bundles in the exact semantic owner/state that owns the fact.
+
+Closed physical encodings:
+
+| Semantic temporal form | PostgreSQL representation | Required rule |
+|---|---|---|
+| civil/date-only | `date` | never converted to midnight UTC merely for storage |
+| floating local datetime | `timestamp without time zone` | no zone/instant may be inferred from device locale |
+| named-zone local datetime | `timestamp without time zone` + `zone_id text` | `zone_id` stores the IANA zone identifier; original civil meaning remains canonical |
+| consequential resolved named-zone datetime | named-zone columns + `resolved_at timestamptz` | retains the exact accepted instant used historically; later tzdb changes do not rewrite it |
+| absolute instant | `timestamptz` | one fixed instant; display zone is not canonical identity |
+| date range | `daterange` | bounds/inclusivity declared by the owning semantic family |
+| absolute-instant range | `tstzrange` | bounds/inclusivity declared by the owning semantic family |
+| local/zoned range | paired typed local boundaries + one explicit frame/zone contract | do not fake a UTC range when the source meaning is local/floating |
+| elapsed duration | `interval` restricted to an elapsed-duration contract or exact numeric elapsed quantity where the family requires fixed arithmetic | calendar-relative month/day semantics must not be smuggled into elapsed recurrence |
+| coarse/partial precision | semantic value + bounded `precision_code` where needed | no invented minute/second precision |
+
+DANTE does not use `time with time zone`/`timetz` as a substitute for named-zone semantics because a UTC offset is not an IANA time-zone rule set.
+
+`zone_id` is schema/application validated against the accepted IANA vocabulary used by the runtime. It is not a foreign key to a mutable provider-owned timezone table.
+
+Where a named-zone value becomes consequentially resolved, storing `resolved_at` alongside the originating local value and `zone_id` is sufficient to preserve which instant DANTE actually accepted; future timezone-rule updates may affect future recurrence expansion but do not reinterpret the historical accepted instant.
+
+Chronology placement for the current database families is closed as follows:
+
+```text
+15 LR-01 identity rows
+→ no mandatory chronology column
+
+MaterialState control address
+→ no generic semantic created_at/current_at ordering
+
+owner/facet-specific material state
+→ world/effective chronology only where the concept requires it
+→ recorded/learned/accepted chronology only where materially distinct
+
+Schedule
+→ accepted placement chronology owned by Schedule state
+
+Session
+→ actual execution chronology owned by Session state
+
+Observation
+→ effective/observed chronology owned by Observation assertion/state
+→ recorded/learned chronology separate only where material
+
+Recurrence
+→ pattern anchor/effective range belong to Recurrence state
+→ source creation time is never the implicit recurrence anchor
+
+Occurrence
+→ original/generation coordinate belongs to occurrence-generation context
+→ current placement remains Schedule
+
+Goal/Plan/Activity/Event/Routine
+→ target/horizon/constraint/recurrence/schedule time does not become an identity-row timestamp
+```
+
+Specific semantic column names are owned by the concrete state/relation family (`observed_at`, `accepted_at`, `effective_range`, etc.); a global `created_at`/`updated_at` doctrine remains rejected.
+
+### 21.4 Place/PostGIS disposition — DB-U11 CLOSED
+
+The only universally required Place table remains:
+
+```text
+dante.place
+  place_ref uuid PRIMARY KEY
+```
+
+The current Domain authority explicitly defines:
+
+```text
+Place != address
+Place != coordinates / geometry
+Place != provider Place ID
+```
+
+Therefore CP6 does **not** invent any of:
+
+```text
+place.geometry geometry(Point, 4326)
+place.geography geography(Point, 4326)
+place.latitude / place.longitude
+one universal postal-address column set
+one universal Place spatial index
+```
+
+PostGIS remains an accepted PostgreSQL capability but **no canonical Place spatial column or GiST/SP-GiST index is activated merely because the extension is available**.
+
+The first future canonical spatial facet must explicitly establish before migration:
+
+```text
+what the stored shape means
+Point / Polygon / Multi* / another reviewed shape
+geometry vs geography semantics
+SRID / coordinate-reference contract
+2D / Z / M requirements
+source vs accepted geometry
+correction/history/materiality
+required spatial operations
+exact GiST/SP-GiST index reason
+```
+
+Trigger for that activation:
+
+```text
+first closed DANTE capability whose canonical behavior requires persisted geometry
+(e.g. exact distance/geofence/spatial-containment/query semantics)
+```
+
+Address/geocoder/provider coordinates may exist as source/evidence/integration state without silently becoming canonical Place geometry.
+
+DB-U11 is therefore closed as **NO UNIVERSAL MANDATORY SPATIAL COLUMN; FUTURE OWNER-SPECIFIC SPATIAL FACET TRIGGER-BOUND**. This is a concrete negative design decision, not an unresolved placeholder.
+
+### 21.5 Quantity and MonetaryAmount value contract — DB-U13 CLOSED
+
+Neither value family receives an identity table.
+
+#### Quantity
+
+Canonical persisted shape at the containing owner/state:
+
+```text
+<magnitude_column>   numeric NOT NULL
+<unit_code_column>   text    NOT NULL
+```
+
+Rules:
+
+```text
+numeric is exact decimal storage
+no global precision/scale is imposed
+NaN / +Infinity / -Infinity are rejected for canonical Quantity values
+unit_code must be non-empty and normalized under the consuming quantity-kind contract
+unit semantics do not encode the measured property/Subject
+custom unit labels do not imply a global conversion definition
+```
+
+A specific owner may add a stricter `numeric(p,s)`, range CHECK or controlled unit vocabulary only when its Domain contract proves that bound. There is no universal `unit` entity/catalog in the kernel.
+
+#### MonetaryAmount
+
+Canonical persisted shape at the containing owner/state:
+
+```text
+<amount_column>         numeric NOT NULL
+<currency_code_column>  text    NOT NULL
+```
+
+Rules:
+
+```text
+PostgreSQL money type                         FORBIDDEN
+NaN / +Infinity / -Infinity                   REJECTED
+currency_code syntactic contract              ^[A-Z]{3}$
+currency semantic vocabulary                  ISO-4217-compatible where applicable
+Currency native entity                        NONE
+FX rate/provider basis                        separate contextual/provenance state
+converted display/value                       derived; never mutates source amount
+```
+
+A current external currency-code catalog is not used as a hard FK that could make historically valid codes unreadable after vocabulary change. Specialist non-fiat/token/instrument semantics remain outside the kernel MonetaryAmount contract.
+
+PostgreSQL `numeric` does not by itself preserve source lexical precision as a semantic claim. If source precision/rounding is consequential, the containing state/provenance retains the material source representation or explicit source-scale/rounding basis. Display scale is never inferred to be source precision merely from the stored numeric value.
+
+SQLAlchemy may package these column pairs as immutable value/composite Python types for application ergonomics. Such Python values do not create ORM identity or a shared database row.
+
+### 21.6 Recurrence physical family contract — DB-U12 CLOSED
+
+A persisted Recurrence is a scoped LR-05 definition, not a native owner and not a universal Rule root.
+
+When Recurrence has independent history/reference because it governs canonical repeated generation/applicability, the concrete identity row is:
+
+```text
+dante.recurrence
+  recurrence_ref uuid PRIMARY KEY
+```
+
+`recurrence_ref` is a UUIDv7 ScopedRecordRef. An applicable `dante.scoped_address` row uses scoped family `recurrence` when shared scoped/material addressing is required.
+
+The accepted definition state uses facet:
+
+```text
+recurrence.definition
+```
+
+Common material-state header:
+
+```text
+dante.recurrence_state
+  material_state_ref   uuid PRIMARY KEY
+  recurrence_ref       uuid NOT NULL
+  family_code          text NOT NULL
+```
+
+Constraints:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+
+recurrence_ref
+→ FK dante.recurrence(recurrence_ref)
+→ ON DELETE NO ACTION
+
+family_code
+→ CHECK IN (
+    'calendar_wall_clock',
+    'elapsed_interval',
+    'quota_per_period',
+    'completion_relative',
+    'anchor_stream_relative',
+    'cyclic_positional'
+  )
+```
+
+A bounded deferred completeness constraint requires **exactly one** family payload row matching `family_code` by commit. No RRULE/provider string/JSON payload is canonical Recurrence truth.
+
+#### Effective range / boundaries
+
+Recurrence range semantics are represented separately from family parameters:
+
+```text
+dante.recurrence_effective_range_state
+  material_state_ref          uuid PRIMARY KEY
+  range_kind                  text NOT NULL
+  expected_occurrence_count   integer NULL
+```
+
+`range_kind` is bounded to:
+
+```text
+open
+until_boundary
+expected_count
+```
+
+Checks enforce:
+
+```text
+expected_count
+→ expected_occurrence_count > 0 and no until boundary
+
+until_boundary
+→ exactly one typed effective-until boundary exists
+
+open
+→ neither expected count nor effective-until boundary exists
+```
+
+Temporal boundaries use recurrence-specific typed rows rather than one generic temporal object:
+
+```text
+dante.recurrence_temporal_boundary_state
+  material_state_ref   uuid NOT NULL
+  boundary_role        text NOT NULL
+  boundary_kind        text NOT NULL
+  date_value           date NULL
+  local_value          timestamp without time zone NULL
+  zone_id              text NULL
+  instant_value        timestamptz NULL
+
+  PRIMARY KEY(material_state_ref, boundary_role)
+```
+
+`boundary_role` is bounded to the roles actually used by Recurrence such as:
+
+```text
+pattern_anchor
+effective_from
+effective_until
+```
+
+`boundary_kind` is a discriminated union:
+
+```text
+date
+floating_local
+named_zone_local
+absolute_instant
+```
+
+Row-local CHECK constraints enforce the exact valid column combination. Named-zone values may carry a separate accepted resolved instant where consequence/history requires it under section 21.3.
+
+A structural `this-and-future` revision may additionally bind the new recurrence state to the exact boundary Occurrence through an owner-specific typed revision/effect relation; it is not encoded by rewriting old states.
+
+#### Family 1 — calendar / wall-clock
+
+```text
+dante.recurrence_calendar_state
+  material_state_ref   uuid PRIMARY KEY
+  frequency_code       text NOT NULL
+  interval_count       integer NOT NULL
+  clock_basis_code     text NOT NULL
+  wall_time            time without time zone NULL
+  zone_id              text NULL
+  invalid_date_policy  text NULL
+  dst_gap_policy       text NULL
+  dst_overlap_policy   text NULL
+```
+
+Closed constraints:
+
+```text
+frequency_code     IN ('day','week','month','year')
+interval_count     > 0
+clock_basis_code   IN ('floating_local','named_zone','absolute')
+named_zone         → zone_id required
+floating/absolute  → zone_id absent unless the specific absolute pattern uses UTC as explicit frame
+```
+
+Normalized selectors:
+
+```text
+dante.recurrence_calendar_month_state
+  material_state_ref uuid NOT NULL
+  month_number       smallint NOT NULL CHECK 1..12
+  PRIMARY KEY(material_state_ref, month_number)
+
+dante.recurrence_calendar_month_day_state
+  material_state_ref uuid NOT NULL
+  month_day          smallint NOT NULL
+  PRIMARY KEY(material_state_ref, month_day)
+  CHECK month_day IN [-31..-1] OR [1..31]
+
+dante.recurrence_calendar_weekday_state
+  material_state_ref uuid NOT NULL
+  weekday_number     smallint NOT NULL CHECK 1..7
+  ordinal            smallint NULL
+  CHECK ordinal IS NULL OR (ordinal BETWEEN -5 AND 5 AND ordinal <> 0)
+  UNIQUE(material_state_ref, weekday_number, ordinal)
+```
+
+Positive/negative month-day and weekday ordinals preserve exact ordinal/last-position semantics; invalid-date and DST policy are explicit only when the pattern can encounter those conditions. No calendar-library default silently becomes canonical policy.
+
+#### Family 2 — elapsed interval
+
+```text
+dante.recurrence_elapsed_interval_state
+  material_state_ref   uuid PRIMARY KEY
+  elapsed_seconds      numeric NOT NULL
+  anchor_mode_code     text NOT NULL
+  anchor_instant       timestamptz NULL
+```
+
+Constraints:
+
+```text
+elapsed_seconds finite AND > 0
+anchor_mode_code IN ('fixed_anchor','previous_expected')
+fixed_anchor      → anchor_instant required
+previous_expected → anchor_instant is the initial seed only when explicitly established
+```
+
+Fixed elapsed seconds deliberately prevent `every 24 elapsed hours` from silently becoming calendar-day recurrence.
+
+#### Family 3 — quota per period
+
+```text
+dante.recurrence_quota_state
+  material_state_ref   uuid PRIMARY KEY
+  quota_count          integer NOT NULL
+  period_unit_code     text NOT NULL
+  period_span          integer NOT NULL
+  frame_code           text NOT NULL
+  zone_id              text NULL
+  week_start           smallint NULL
+  anchor_date          date NULL
+```
+
+Constraints:
+
+```text
+quota_count      > 0
+period_span      > 0
+period_unit_code IN ('day','week','month','year')
+frame_code       IN ('floating_local','named_zone','absolute')
+named_zone       → zone_id required
+week_start       → NULL unless period_unit_code='week'; otherwise CHECK 1..7
+```
+
+The period frame, not device/library locale, decides membership. The quota creates expected cardinality; no `slot_number`/ordinal is canonical for equivalent future slots unless another accepted relation gives them real order.
+
+#### Family 4 — completion relative
+
+```text
+dante.recurrence_completion_relative_state
+  material_state_ref       uuid PRIMARY KEY
+  anchor_feature_code      text NOT NULL
+  offset_kind              text NOT NULL
+  elapsed_offset_seconds   numeric NULL
+  calendar_offset_months   integer NULL
+  calendar_offset_days     integer NULL
+```
+
+`anchor_feature_code` is a schema-owned Recurrence vocabulary identifying the qualifying established reality feature, for example an applicable actual completion/end feature; it is not arbitrary expression text.
+
+Checks enforce exactly one offset representation:
+
+```text
+offset_kind='elapsed'
+→ finite elapsed_offset_seconds > 0
+→ calendar offsets NULL
+
+offset_kind='calendar'
+→ at least one non-zero calendar month/day component
+→ elapsed offset NULL
+```
+
+The rule cannot silently substitute Schedule end for Actual/other qualifying reality. When no qualifying anchor exists, the next sequential expectation may remain undefined.
+
+#### Family 5 — anchor-stream relative
+
+```text
+dante.recurrence_anchor_stream_state
+  material_state_ref      uuid PRIMARY KEY
+  anchor_family_code      text NOT NULL
+  anchor_feature_code     text NOT NULL
+  offset_kind             text NOT NULL
+  elapsed_offset_seconds  numeric NULL
+  calendar_offset_months  integer NULL
+  calendar_offset_days    integer NULL
+```
+
+`anchor_family_code` and `anchor_feature_code` form a bounded Recurrence-specific Reference Contract over accepted qualifying anchor streams such as Session/Actual/Observation facets. They cannot encode arbitrary state predicates or downstream actions.
+
+The same offset one-of invariant used by completion-relative recurrence applies. Qualifying-filter semantics that exceed this bounded anchor contract must be represented through another accepted typed Criterion/Policy/relation, never hidden in JSON or free-form SQL.
+
+This preserves:
+
+```text
+anchor-stream recurrence
+!= generic Trigger
+!= Conditional Policy
+```
+
+#### Family 6 — cyclic positional
+
+```text
+dante.recurrence_cyclic_state
+  material_state_ref   uuid PRIMARY KEY
+  cycle_length         integer NOT NULL
+  position_span        integer NOT NULL
+  position_unit_code   text NOT NULL
+```
+
+Constraints:
+
+```text
+cycle_length       > 0
+position_span      > 0
+position_unit_code IN ('day','week','elapsed_interval')
+```
+
+Ordered positions are explicit:
+
+```text
+dante.recurrence_cycle_position_state
+  material_state_ref   uuid NOT NULL
+  position_index       integer NOT NULL
+  generates_expected  boolean NOT NULL
+  position_code        text NULL
+
+  PRIMARY KEY(material_state_ref, position_index)
+  CHECK position_index >= 0
+```
+
+A bounded deferred check requires positions to cover exactly `0 .. cycle_length-1` for the accepted state. `position_code` may carry owner-specific position semantics only when the source contract defines them; it is not a generic metadata payload.
+
+#### Recurrence source binding
+
+DANTE does not use:
+
+```text
+recurrence.owner_kind
+recurrence.owner_id
+```
+
+A concrete source binds Recurrence through owner-specific typed relations/direct FKs. Current accepted Occurrence-generating native sources are Routine and recurring Event semantics. Repeated Temporal Constraint applicability may reuse Recurrence without generating Occurrences. Source cardinality is owned by the consuming concept and is not generalized into one polymorphic parent field.
+
+#### Recurrence state/history
+
+A structural rule change creates a new `recurrence.definition` MaterialStateRef and updates the explicit scoped current-state binding under the applicable expected-state rule. Historical states and already-distinguished Occurrences remain reconstructible under the state that governed them.
+
+```text
+Recurrence state v1
+→ historical Occurrences retain v1 basis
+
+Recurrence state v2
+→ current/future generation follows v2 according to effective boundary
+```
+
+Purely virtual future candidates may be regenerated. An already materialized Occurrence with history is reconciled; it is never silently deleted/recreated because new expansion differs.
+
+### 21.7 Capacity Claim disposition — DB-U16 CLOSED
+
+Capacity Claim does **not** become one universal `capacity_claim`/`reservation` root merely because several resource contexts may commit capacity.
+
+Closed disposition:
+
+```text
+Capacity Claim
+→ LR-03 owner/context-specific qualified commitment relation
+→ LR-02 + ScopedRecordRef only when material lifecycle/history/addressability requires it
+→ NO native identity
+→ NO universal Reservation root
+```
+
+A concrete material claim family must own exact:
+
+```text
+capacity-bearing target/reference contract
+claiming purpose/context
+quantity/capacity dimension where applicable
+accepted temporal footprint
+material Requirement/Allocation basis where applicable
+Decision/Authority/Provenance basis where consequential
+```
+
+Historical temporal truth is preserved through either:
+
+```text
+claim → exact Schedule MaterialStateRef
+```
+
+or:
+
+```text
+claim-owned accepted temporal footprint/material state
+```
+
+according to the concrete claim family. A later Schedule move cannot make an old claim appear to have always occupied the new time.
+
+Mandatory separations:
+
+```text
+Capacity Claim != Schedule
+Capacity Claim != Resource Allocation
+Capacity Claim != Actual utilization
+Capacity Claim != Ownership / Possession
+Capacity Claim != universal inventory/financial reservation
+```
+
+If no accepted capacity commitment exists, no ceremonial claim row is created.
+
+### 21.8 Migration / mapping / direct-proof consequences of this pass
+
+This design pass does not authorize CP6 business DDL. It fixes future materialization order and proof obligations.
+
+Future CP6-04 migration grouping must respect at least:
+
+```text
+15 native owner identity shells
+→ bounded native-address dispatcher update
+
+recurrence scoped owner
+→ scoped-address family update
+→ material-state facet recurrence.definition
+→ recurrence state header
+→ six family payload tables + selector/boundary tables
+→ current binding
+
+Occurrence
+→ occurrence_generation after native/material address prerequisites
+
+Quantity/MonetaryAmount
+→ columns/composites only inside real consuming state tables
+
+Place
+→ no spatial column/index in baseline migration
+
+Capacity Claim
+→ only inside first concrete owner/context family that actually owns the commitment
+```
+
+No table exists solely to make the future QA matrix green.
+
+---
+
+## 22. CP6-03 unresolved-parameter register
+
+The following global/database parameters are closed:
 
 ```text
 DB-U01 native_address topology                         CLOSED
@@ -1563,72 +2359,81 @@ DB-U03 MaterialStateRef owner-address encoding         CLOSED
 DB-U04 material facet representation                   CLOSED
 DB-U05 current accepted-state binding topology         CLOSED
 DB-U06 lineage topology                                CLOSED
+DB-U07 typed chronology/temporal physical contract     CLOSED
+DB-U11 Place/PostGIS mandatory-spatial disposition     CLOSED
+DB-U12 Recurrence six-family physical contract         CLOSED
+DB-U13 MonetaryAmount / Quantity physical values       CLOSED
+DB-U16 Capacity Claim persistence disposition          CLOSED
 ```
 
-The remaining questions are not generic “TBD” placeholders: each exists because the authority chain must still be traced to a concrete decision.
+The remaining questions are not generic “TBD” placeholders. Each has an explicit current disposition and closure condition.
 
-| ID | Unresolved parameter | Why not guessed now | Closure requirement |
-|---|---|---|---|
-| DB-U07 | exact chronology columns/ranges per family | no blanket bitemporality or universal created_at semantics | derive temporal needs from each Domain concept |
-| DB-U08 | final PostgreSQL object naming convention beyond the five closed control tables | names must follow actual family shapes and remain readable/stable | freeze deterministic naming before dictionary generation |
-| DB-U09 | Account persistence | Domain keeps Account separate but detailed access model is deferred | remain genuinely deferred unless another closed authority determines enough schema |
-| DB-U10 | Principal/security persistence | AuthN/AuthZ context not yet closed as independent registry | preserve separation and defer independent registry until security contract |
-| DB-U11 | Place geometry type/SRID/indexes | PostGIS selected, but exact geometry semantics must come from Place authority | derive exact geometry/address facets; no speculative spatial schema |
-| DB-U12 | Recurrence family parameter tables/columns | recurrence families are known; exact lossless structured parameters require concept-level derivation | close each accepted family representation |
-| DB-U13 | Monetary Amount / Quantity exact numeric precision/unit representation | semantic value families exist but storage precision cannot be guessed globally | derive accepted precision/range/unit requirements |
-| DB-U14 | owner-specific lifecycle/tombstone fields | no global deleted_at/tombstone table | derive permitted lifecycle continuity per owner/family, including addressed-owner deletion/retirement |
-| DB-U15 | remaining structural FK indexes and query indexes | index doctrine is closed but full FK/query graph is not yet final | justify every index against structure/query proof; preserve the owner/facet indexes already closed for material_state_address |
-| DB-U16 | Capacity Claim disposition | persistence pressure exists outside 57 but exact concrete family must be traced | resolve to MATERIALIZE / NO INDEPENDENT / GENUINELY DEFERRED with exact owner |
-| DB-U17 | provider/integration object shapes | no concrete provider contract is active | remain deferred unless closed Domain data requires provider-neutral persistence now |
-| DB-U18 | idempotency table timing | persistent semantics are closed but no qualifying product operation exists yet | materialize only at first real operation requiring persistent reservation |
-| DB-U19 | transactional outbox timing | selected Class-A mechanism but no real Class-A operation exists | defer until real async external effect trigger |
-| DB-U20 | derived/search/vector persisted structures | selected capabilities do not imply activation | create only from real query/search requirement and test basis |
+| ID | Remaining parameter | Current reason / closure requirement |
+|---|---|---|
+| DB-U08 | final PostgreSQL object naming beyond currently frozen control/native/recurrence design names | freeze remaining concrete relation/context/state names with their object derivations before dictionary generation |
+| DB-U09 | Account persistence | genuinely deferred: Domain keeps Account separate and detailed access model is not closed; do not invent login/account tables |
+| DB-U10 | Principal/security persistence | genuinely deferred: AuthN/AuthZ independent registry not closed; preserve Actor/Person separation and later provenance binding |
+| DB-U14 | owner/family-specific lifecycle/tombstone fields | derive actual retirement/redaction/delete continuity per owner/relation; no global deleted_at or tombstone semantic root |
+| DB-U15 | remaining structural FK indexes and query indexes | final FK/query graph must justify each; preserve already-closed PK/UNIQUE/material owner-facet indexes and add none speculatively |
+| DB-U17 | provider/integration object shapes | genuinely deferred until first concrete integration/provider contract |
+| DB-U18 | idempotency table timing | genuinely deferred until first persistent material operation requiring reservation/replay semantics |
+| DB-U19 | transactional outbox timing | genuinely deferred until first real Class-A async external effect |
+| DB-U20 | derived/search/vector persisted structures | genuinely deferred until a real query/search/vector consumer proves materialization/index need |
 
 ```text
 UNRESOLVED PARAMETERS CURRENT
-14
+9
 
 UNCLASSIFIED PARAMETERS ALLOWED AT GATE 03
 0
 ```
 
+`GENUINELY DEFERRED` is a classified final CP6-03 disposition when current closed authority cannot truthfully determine a schema and the future trigger is explicit. It is not permission to create a placeholder table.
+
 ---
 
-## 22. Next derivation pass — object-level contract
+## 23. Next derivation pass — remaining concrete owner/context/relation contract
 
-The next CP6-03 work does not create another methodology document.
+The next CP6-03 work continues in this same database specification; it does not create another methodology document and it does not reopen DB-U01..DB-U07/11/12/13/16.
 
-It expands this specification through a repeatable object-level derivation pass.
-
-For each required/conditional family:
+Highest-value remaining work is now the concrete semantic payload/relation graph:
 
 ```text
-1. read complete Domain concept specification / canonical continuations
-2. read Whole-Logical disposition + WL-H pressure
-3. read CP6-01 ledger entry
-4. apply Physical mapping + Constitution
-5. define exact table(s)
-6. define exact columns and PostgreSQL types
-7. define PK/FK/reference contracts
-8. define NULL/missingness semantics
-9. define UNIQUE/CHECK/EXCLUDE/trigger integrity
-10. define material-state/current/history behavior
-11. define lifecycle/delete behavior
-12. justify structural indexes
-13. define SQLAlchemy mapping shape
-14. define migration dependencies
-15. define direct PostgreSQL tests
-16. create/update Database Dictionary entry
-17. close or update every affected DB-U item
+owner-specific material state families actually required by the 15 LR-01 owners
+Schedule / Actual / Outcome / Milestone contextual topology
+Agreement + terms + assent
+specific LR-03 relation endpoints/cardinalities
+Temporal Constraint / Criterion / Availability / Resource Requirement structured families
+governance state families
+owner-specific lifecycle/tombstone semantics
+remaining FK + structural index review
+final stable names
+Database Dictionary generation
 ```
 
-No object is called complete before this chain is satisfied.
+For each remaining required/conditional family:
 
-The next highest-leverage derivation must consume the complete Domain concept specifications rather than reopening the now-closed reference-control topology.
+```text
+1. consume complete canonical Domain + Logical authority
+2. define exact table(s) and columns
+3. define PK/FK/Reference Contract
+4. define NULL/missingness semantics
+5. define UNIQUE/CHECK/EXCLUDE/trigger integrity
+6. define material-state/current/history behavior
+7. define lifecycle/delete behavior
+8. justify structural indexes
+9. define SQLAlchemy mapping shape
+10. define migration dependencies
+11. define direct PostgreSQL tests
+12. create/update Database Dictionary entry
+13. close/update affected DB-U item
+```
+
+No object is called complete before that chain is satisfied.
 
 ---
 
-## 23. Gate 03 acceptance contract
+## 24. Gate 03 acceptance contract
 
 CP6-03 cannot close until all of the following are true:
 
@@ -1668,22 +2473,28 @@ CP6-03
 ACTIVE
 
 WHOLE DATABASE INVENTORY
-OPENED
+ACTIVE / PROGRESSIVE
 
-57/57 INITIAL TRACEABILITY
+57/57 TRACEABILITY
 COMPLETE
 
-PART-2 INITIAL DISPOSITION
-OPEN / ONE EXPLICIT OPEN DERIVATION (Capacity Claim)
+PART-2 CROSS-CUTTING DISPOSITION
+COMPLETE / UNCLASSIFIED 0
 
 REFERENCE / MATERIAL-STATE CONTROL TOPOLOGY
 DB-U01..DB-U06 CLOSED
 
-EXACT TABLE/COLUMN/CONSTRAINT BLUEPRINT
+LR-01 NATIVE IDENTITY-SHELL BASELINE
+15 / 15 CLOSED
+
+TEMPORAL / PLACE / RECURRENCE / VALUE / CAPACITY PASS
+DB-U07 / DB-U11 / DB-U12 / DB-U13 / DB-U16 CLOSED
+
+EXACT REMAINING SEMANTIC TABLE/COLUMN/CONSTRAINT BLUEPRINT
 IN PROGRESS
 
 UNRESOLVED DB-U ITEMS
-14
+9
 
 GATE 03
 NOT YET EARNED
