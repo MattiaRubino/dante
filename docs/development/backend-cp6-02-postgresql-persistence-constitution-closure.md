@@ -6,8 +6,8 @@
 - **Closure PRE-SCOPE:** `8b2d00b993c0cb9b40df64a85909c792a7e057ea`
 - **Checkpoint:** CP6-02 — PostgreSQL Persistence Constitution
 - **Closed Constitution:** `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-- **Next checkpoint:** CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition
-- **Business implementation:** NOT AUTHORIZED / NOT STARTED
+- **Next checkpoint at closure time:** CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition
+- **Business implementation at Gate 02:** NOT AUTHORIZED / NOT STARTED
 
 ## 1. Closure purpose
 
@@ -428,7 +428,7 @@ NONE
 
 The closure scope is documentation/status reconciliation only. No business implementation or unrelated code/infra mutation is authorized by this write.
 
-## 11. Next checkpoint
+## 11. Next checkpoint at closure time
 
 ```text
 CP6-03
@@ -438,6 +438,48 @@ Concrete Relational Topology
 NEXT / NOT STARTED
 ```
 
-CP6-03 begins read/research/design-first and consumes the closed CP6-01 coverage ledger plus the closed CP6-02 Constitution.
+At Gate-02 closure time, CP6-03 was defined as read/research/design-first and Gate 02 itself did not authorize business DDL. This is exact historical closure-time scope truth.
 
-CP6-03 does not implement Vertical #1 and does not inherit authorization to create business DDL from this closure.
+## 12. Post-closure editorial / authority maintenance — 2026-08-22
+
+A later independent editor/architecture review found that the Gate-02 closure's statement that current-truth reconciliation was complete had been too broad as an **editorial-current-state claim**.
+
+The technical CP6-02 review and Gate-02 result remain valid. However, several files marked `CURRENT` outside the immediate closure entrypoint set still contained stale pre-Physical/pre-scaffold language, including architecture index/technical-decision wording and historical ADR sections labelled as current.
+
+Post-closure maintenance therefore corrected those current-authority surfaces and added ADR-010 as the durable architectural acceptance record for the Constitution.
+
+This maintenance explicitly distinguishes:
+
+```text
+CP6-02 TECHNICAL CONSTITUTION / GATE 02
+CLOSED / PASS / NOT REOPENED
+
+ORIGINAL CURRENT-TRUTH RECONCILIATION CLAIM
+editorially incomplete outside the immediate closure surfaces
+
+LATER EDITORIAL REPAIR
+repairs CURRENT architecture/decision wording
+qualifies historical ADR posture
+adds ADR-010
+hardens Gate 03 cross-cutting coverage
+```
+
+No Domain/Logical/Physical decision was changed. No CP6-02 technical rule was changed. No business schema/migration/mapping was introduced by this maintenance.
+
+The active CP6 workstream now supersedes the old process/staging interpretation that prohibited business database materialization throughout all of CP6. That later execution-boundary repair does **not** retroactively alter the fact that CP6-02 itself correctly closed with zero business DDL.
+
+The current CP6-03 contract is now:
+
+```text
+WHOLE DANTE DATABASE BLUEPRINT
+= maximum non-speculative persistence derivable from closed authority
+
+coverage requirement
+= 57 / 57 Domain concepts
++ 100% CP6-01 Part-2 cross-cutting/non-owner persistence constructs accounted
+
+first product vertical
+= POST-CP6
+```
+
+Current execution authority for CP6-03 and later stages is `docs/workstreams/logical-postgresql.md`.
