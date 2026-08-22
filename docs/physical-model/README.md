@@ -5,7 +5,7 @@
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 - Main baseline during Physical workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- Current project progression: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE on `feature/logical-postgresql`; CP6-01 CLOSED / GATE 01 PASS; CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE**
+- Current project progression: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE on `feature/logical-postgresql`; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
 - Physical semantic benchmark/direct HG corpus: **DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Business persistence schema: **NOT IMPLEMENTED**
 - Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
@@ -109,6 +109,7 @@ For **current project implementation/runtime status after Physical closure**, us
 ../ROADMAP.md
 ../workstreams/logical-postgresql.md
 ../development/backend-cp6-02-postgresql-persistence-constitution.md
+../development/backend-cp6-02-postgresql-persistence-constitution-closure.md
 ../development/backend-cp3-persistence-contract.md
 ```
 
@@ -422,8 +423,8 @@ CONCRETE PERSISTENCE READINESS — CP6
 ACTIVE / DESIGN-FIRST
 BRANCH feature/logical-postgresql
 CP6-01 CLOSED / GATE 01 PASS
-CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 NEXT / NOT STARTED
 
 CP6 TERMINAL BOUNDARY
 CONCRETE POSTGRESQL FOUNDATION CLOSED / READY
