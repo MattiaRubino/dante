@@ -13,9 +13,11 @@
 - CP6-00: **READ-ONLY AUTHORITY RECONSTRUCTION COMPLETE**
 - CP6-01: **CLOSED / GATE 01 PASS**
 - CP6-01 closure: `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
-- CP6-02: **ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED**
-- CP6-02 candidate: `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-- CP6-02 independent review: **HARDENING FINDINGS IDENTIFIED / REPAIR APPLIED / TARGETED POST-REPAIR VERIFICATION PENDING**
+- CP6-02: **CLOSED / GATE 02 PASS**
+- CP6-02 Constitution: `docs/development/backend-cp6-02-postgresql-persistence-constitution.md` — **CLOSED / ACCEPTED**
+- CP6-02 closure: `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+- CP6-02 independent review: **COMPLETE / HARDENING APPLIED / TARGETED POST-REPAIR VERIFICATION CLEAN**
+- CP6-03: **NEXT / NOT STARTED**
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 - PostgreSQL 18.6 evidence: **Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
 - Business schema/migrations: **NOT STARTED / OUT OF CP6 IMPLEMENTATION SCOPE**
@@ -142,7 +144,7 @@ docs/physical-model/final-stack-audit-v1.md
 docs/physical-model/recommendation/post-selection-validation-register-v1.md
 ```
 
-The `postgresql-18.4-v1.md` path and PM exact versions are phase-time Physical evidence. Current compatible PostgreSQL patch maintenance is recorded by this active workstream and CP6-02, not by renaming historical Physical artifacts.
+The `postgresql-18.4-v1.md` path and PM exact versions are phase-time Physical evidence. Current compatible PostgreSQL patch maintenance is recorded by this active workstream and the closed CP6-02 Constitution, not by renaming historical Physical artifacts.
 
 Current backend persistence authority includes the real CP3 implementation and tests, especially:
 
@@ -182,15 +184,15 @@ docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md
 = formal Gate 01 closure evidence
 ```
 
-Current CP6-02 candidate authority:
+Current CP6-02 authority:
 
 ```text
 docs/development/backend-cp6-02-postgresql-persistence-constitution.md
 = reusable PostgreSQL persistence Constitution
-= ACTIVE / CANDIDATE / PRE-CLOSURE
-= independent review hardening applied
-= targeted post-repair verification pending
-= Gate 02 NOT PASSED
+= CLOSED / ACCEPTED / GATE 02 PASS
+
+docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md
+= formal Gate 02 closure evidence
 ```
 
 Do not stop at Part 1 of a split canonical document. Size/tool-limit splits are lossless continuations, not summaries.
@@ -218,7 +220,7 @@ meaning/mechanism already accepted;
 remaining work is executable evidence, not a new architecture decision.
 ```
 
-This classification is mandatory in CP6-01 and CP6-02 decision registers.
+This classification is mandatory in CP6-01 and CP6-02 decision registers and remains applicable downstream.
 
 It prevents two opposite failures:
 
@@ -873,27 +875,30 @@ No business DDL is authorized by Gate 01.
 ### Status
 
 ```text
-ACTIVE / CANDIDATE / PRE-CLOSURE
-GATE 02 NOT PASSED
+CLOSED / GATE 02 PASS
 ```
 
-Candidate authority:
+Closed authority:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
 
-Current evidence status:
+Formal closure authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+
+Closure evidence status:
 
 ```text
-Constitution families drafted/reviewed                 CANDIDATE COMPLETE
+Constitution families                                  PASS / CLOSED
 external benchmark                                     COMPLETE
 PostgreSQL 18.4 → 18.6 technical refresh               APPLIED
 PostgreSQL 18.6 direct remote regression                PASS
 PostgreSQL 18.6 release-note impact review              PASS / NO CURRENT ACTION
 current-truth reconciliation                            COMPLETE / VERIFIED
-final independent whole-Constitution review             COMPLETE / HARDENING FINDINGS IDENTIFIED
+final independent whole-Constitution review             COMPLETE
 review-hardening repair                                 APPLIED
-post-repair targeted verification                       PENDING
-formal Gate 02 closure                                  NOT YET AUTHORIZED/WRITTEN
+post-repair targeted verification                       CLEAN
+formal Gate 02 closure                                  WRITTEN / VERIFIED
 ```
 
 The PostgreSQL 18.6 direct evidence is versioned and exact:
@@ -912,7 +917,7 @@ current test corpus              50 / 50 covered across the two mandatory CI lan
 
 The 18.6 run does **not** relabel CP2/CP3 historical evidence as 18.6 and does not discharge business-semantic HG/PSV.
 
-The independent whole-Constitution review found bounded concrete hardenings rather than an upstream architecture failure. The applied repair closes these design ambiguities while keeping direct proof staged honestly:
+The independent whole-Constitution review found bounded concrete hardenings rather than an upstream architecture failure. The repair closed and the targeted verification confirmed:
 
 ```text
 IR-01 idempotency uniqueness
@@ -1242,9 +1247,7 @@ real data evolution
 recovery/anti-resurrection at the correct later stage
 ```
 
-### Gate 02
-
-Do not advance until:
+### Gate 02 — PASS
 
 ```text
 all genuinely global concrete decisions closed       PASS
@@ -1271,14 +1274,21 @@ applicable PSV ownership/stage              complete
 
 No business DDL is authorized by Gate 02.
 
-Current blockers after the review-hardening repair:
+Closure blockers:
 
 ```text
 B-01 PostgreSQL 18.6 technical refresh       RESOLVED / DIRECT REMOTE QA PASS
 B-02 18.6 release-note impact review         RESOLVED / PASS / NO CURRENT ACTION
-B-03 final whole-Constitution review          HARDENING FINDINGS IDENTIFIED / REPAIR APPLIED
-     targeted post-repair verification       PENDING
-B-04 formal Gate-02 closure write             OPEN
+B-03 final whole-Constitution review          RESOLVED / HARDENING APPLIED / TARGETED VERIFICATION CLEAN
+B-04 formal Gate-02 closure                   RESOLVED / WRITTEN / VERIFIED
+```
+
+```text
+CP6-02
+CLOSED / GATE 02 PASS
+
+CP6-03
+NEXT / NOT STARTED
 ```
 
 ## 15. CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition
@@ -1760,11 +1770,11 @@ Formal closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
-## 25. CP6-02 current evidence / pre-closure state
+## 25. CP6-02 closure evidence
 
-The candidate Constitution has completed its technology refresh, direct technical reproof and current-truth reconciliation. Its independent whole-Constitution review found bounded concrete hardening needs; those hardenings are now applied, but Gate 02 remains open until targeted post-repair verification and a separate closure write.
+CP6-02 is formally closed. The Constitution completed technology refresh, external benchmark, direct technical reproof, release-note review, current-truth reconciliation, whole-Constitution independent review, bounded hardening repair and targeted clean verification before Gate 02 closure.
 
-Exact current technical evidence:
+Exact technical evidence retained:
 
 ```text
 PostgreSQL architecture family          18
@@ -1784,35 +1794,64 @@ Backend CI Gate                         SUCCESS
 current test corpus                     50 / 50 covered across mandatory lanes
 release-note impact                     PASS / NO CURRENT POST-UPGRADE ACTION
 current-truth reconciliation            COMPLETE / VERIFIED
+whole-Constitution review               COMPLETE
+review hardening                        APPLIED
+post-repair targeted verification       CLEAN
 ```
 
 The release-note finding is bounded to the currently materialized foundation. DANTE currently has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring an 18.6-specific post-update action. Future PowerSync/logical-replication activation must review `output_plugin_libraries` and then-current maintenance requirements.
 
-Independent-review repair state:
+Independent-review repair closure:
 
 ```text
-ID UUID persistence/index hardening             APPLIED
-REF heterogeneous NativeRef correction          APPLIED
-MAT material-state address/control correction   APPLIED
-TX timeout/error taxonomy hardening              APPLIED
-IDEM uniqueness/atomicity correction             APPLIED
-MIG autocommit/non-transactional DDL hardening  APPLIED
-QA direct-proof staging                          APPLIED
+ID UUID persistence/index hardening             PASS
+REF heterogeneous NativeRef correction          PASS
+MAT material-state address/control correction   PASS
+TX timeout/error taxonomy hardening              PASS
+IDEM uniqueness/atomicity correction             PASS
+MIG autocommit/non-transactional DDL hardening  PASS
+QA direct-proof staging                          PASS
 business implementation                         0
 upstream semantic reopen                        0
 ```
 
-Current Gate-02 blockers:
+Gate 02 result:
 
 ```text
-B-01 PostgreSQL 18.6 technical refresh       RESOLVED / DIRECT REMOTE QA PASS
-B-02 18.6 release-note impact review         RESOLVED / PASS / NO CURRENT ACTION
-B-03 final independent whole-Constitution review HARDENING FINDINGS IDENTIFIED / REPAIR APPLIED
-     targeted post-repair verification       PENDING
-B-04 formal Gate-02 closure write             OPEN
+all genuinely global concrete decisions closed       PASS
+all inherited decisions traceable                    PASS
+all remaining decisions explicitly vertical-specific PASS
+all direct-proof obligations have stage/owner        PASS
+universal Entity root                                0
+universal Relationship root                          0
+generic canonical EAV                                0
+generic history/event ontology                       0
+provider token == MaterialStateRef                    0
+NULL-as-universal-negative                            0
+silent consequential LWW                             0
+implicit ORM schema authority                         0
+CP3 contradiction                                     0
+Logical contradiction                                 0
+Physical contradiction                                0
+PG-R01..PG-R10 concrete proof path                    complete
+applicable PSV ownership/stage                        complete
+business DDL                                          0
+business migration                                    0
+business SQLAlchemy mapping                           0
+persistence adapter                                   0
 ```
 
-Gate 02 therefore remains **NOT PASSED**.
+Formal closure authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+
+```text
+CP6-02
+CLOSED / GATE 02 PASS
+
+CP6-03
+NEXT / NOT STARTED
+```
 
 ## 26. Resume point
 
@@ -1827,12 +1866,12 @@ A fresh session resuming the backend CP6 workstream must establish:
 6. CP6-01 Part 1 is the exact 57/57 owner ledger;
 7. CP6-01 Part 2 is the single cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger;
 8. the CP6-01 closure record is present and authoritative;
-9. CP6-02 Constitution exists and is ACTIVE / CANDIDATE / PRE-CLOSURE;
-10. PostgreSQL architecture remains major 18; exact Physical/CP2/CP3 historical evidence remains 18.4;
-11. current PostgreSQL technical patch is 18.6 and the foundation regression is DIRECT REMOTE QA PASS at run 32568664940 / HEAD ec3dc795...;
-12. current-truth reconciliation is COMPLETE / VERIFIED;
-13. whole-Constitution review hardening findings were repaired in ID/REF/MAT/TX/IDEM/MIG/QA;
-14. Gate 02 is NOT PASSED because targeted post-repair verification and formal closure remain open;
+9. CP6-02 Constitution is CLOSED / ACCEPTED / GATE 02 PASS;
+10. the CP6-02 closure record is present and authoritative;
+11. PostgreSQL architecture remains major 18; exact Physical/CP2/CP3 historical evidence remains 18.4;
+12. current PostgreSQL technical patch is 18.6 and the foundation regression is DIRECT REMOTE QA PASS at run 32568664940 / HEAD ec3dc795...;
+13. CP6-02 independent-review hardenings are part of closed authority and targeted post-repair verification is CLEAN;
+14. CP6-03 is NEXT / NOT STARTED;
 15. no business schema/migration/mapping/adapter may be created anywhere in CP6;
 16. Vertical #1 implementation begins only in the separately authorized post-CP6 phase.
 ```
@@ -1840,20 +1879,14 @@ A fresh session resuming the backend CP6 workstream must establish:
 Immediate next action:
 
 ```text
-CP6-02 TARGETED POST-REPAIR VERIFICATION
+CP6-03
+CONCRETE RELATIONAL TOPOLOGY
++ IMPLEMENTATION DEPENDENCY DAG
++ VERTICAL DECOMPOSITION
 
-review exactly:
-ID / REF / MAT / TX / IDEM / MIG / QA
-+ accepted PostgreSQL Physical mapping
-+ WL-H05..WL-H07
-+ PG-R01..PG-R05
-+ Gate-02 matrix
-+ exact Git delta / remote payload
+READ / RESEARCH / DESIGN FIRST
         ↓
-if and only if CLEAN
-propose separate GATE 02 CLOSURE WRITE
-        ↓
-CP6-03 only after formal GATE 02 PASS
+GATE 03 only after the complete topology/DAG/vertical-decomposition contract is satisfied
 ```
 
-No Domain, Logical or Physical redesign is implied by this resume point.
+CP6-03 consumes the closed CP6-02 Constitution. No Domain, Logical or Physical redesign is implied by this resume point, and no CP6-03 repository write is authorized by the CP6-02 closure gate.
