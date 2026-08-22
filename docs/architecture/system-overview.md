@@ -1,7 +1,7 @@
 # DANTE System Overview
 
 - Status: **CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW**
-- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
+- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT — WHOLE DANTE DATABASE BLUEPRINT**
 - Current CP6 branch: `feature/logical-postgresql`
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 
@@ -11,7 +11,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes closed Product/Domain/Logical/Physical models, closed Engineering Foundation and closed Frontend Engineering Foundation. Current implementation work must consume those authorities rather than reinterpret them for framework or storage convenience.
+Implementation consumes closed Product/Domain/Logical/Physical models and closed engineering foundations. Framework or storage convenience does not redefine accepted semantics.
 
 Core invariants include:
 
@@ -31,28 +31,18 @@ client local state != canonical accepted effect
 
 `WL-H01..WL-H12` remain active.
 
-## 2. Repository/application topology
+## 2. Repository / application topology
 
-One product monorepo with accepted ownership:
+One product monorepo:
 
 ```text
 DANTE repository
 │
 ├── apps/backend
-│   └── capability-first modular monolith
-│
 ├── apps/web
-│   └── React DOM/Vite client; feature-first
-│
 ├── apps/mobile
-│   └── Expo/React Native client; feature-first
-│
 ├── packages
-│   └── only genuine multi-consumer contracts/artifacts
-│
 ├── infra
-│   └── LOCAL/future remote infrastructure definitions
-│
 ├── tooling
 ├── tests/system
 ├── docs
@@ -60,11 +50,7 @@ DANTE repository
 └── .github
 ```
 
-Paths are materialized only when real content exists. Production implementation continues in the existing repository; a new production repo is not planned.
-
-## 3. Backend architecture and current foundation
-
-Accepted internal shape:
+Backend accepted internal shape:
 
 ```text
 apps/backend/src/dante
@@ -82,7 +68,7 @@ apps/backend/src/dante
 
 FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
 
-Current backend foundation truth:
+## 3. Backend technical foundation
 
 ```text
 CP1 process/config foundation                   CLOSED / DIRECT QA PASS
@@ -95,53 +81,21 @@ PostgreSQL 18.6 technical refresh               APPLIED
 PostgreSQL 18.6 foundation regression           DIRECT REMOTE QA PASS
 ```
 
-CP3 already materializes SQLAlchemy async, psycopg 3, Alembic, schema `dante`, role separation, explicit transaction ownership and real PostgreSQL acceptance. It deliberately contains no business persistence mapping.
-
-The CP6 PostgreSQL 18.6 refresh does not change that architecture. It reuses and directly re-proves the existing foundation on the current maintenance patch.
-
-## 4. Frontend architecture
-
-Web and Mobile are sibling governed clients with platform-specific renderers and selective shared semantics.
-
-Web conceptual internals:
+CP3 already materializes:
 
 ```text
-bootstrap
-routes
-features
-ui
-platform
-config
+SQLAlchemy async
+psycopg 3
+Alembic
+schema dante
+owner / migrator / runtime role separation
+explicit transaction ownership
+real PostgreSQL acceptance harness
 ```
 
-Mobile conceptual internals:
+It deliberately started with no DANTE business persistence mapping. CP6 now builds that concrete database from the closed model.
 
-```text
-app/          Expo Router adapters
-src/bootstrap
-src/features
-src/ui
-src/platform
-src/config
-```
-
-Structural rules:
-
-- feature-first;
-- routes/navigation are thin adapters;
-- public-API-only cross-boundary imports;
-- feature dependency cycles forbidden;
-- Web/Mobile do not import each other's private implementation;
-- UI/platform layers do not depend upward on feature internals;
-- no generic shared/common/utils dumping grounds;
-- production never imports prototypes;
-- architecture rules become executable checks when materialized.
-
-Shared packages are extracted only for real multi-consumer semantics. Shared client cores remain framework-free by default and never own backend/domain authority.
-
-Frontend production materialization proceeds under its own bounded workstream and may run in parallel with backend CP6. Its direct-validation status is governed by the frontend workstream/current project status, not by historical scaffold wording in this overview.
-
-## 5. Canonical persistence and client data authority
+## 4. Canonical persistence authority
 
 ```text
 PostgreSQL 18 major family
@@ -153,9 +107,168 @@ current technical patch           18.6
 18.6 technical regression         DIRECT REMOTE QA PASS
 ```
 
-Selected DB capabilities remain PostGIS 3.6.4, pgvector 0.8.6, native FTS, pg_trgm, unaccent, pg_stat_statements and bounded PgBouncer posture.
+Selected PostgreSQL capabilities remain PostGIS 3.6.4, pgvector 0.8.6, native FTS, `pg_trgm`, `unaccent`, `pg_stat_statements` and bounded PgBouncer posture.
 
-Frontend Data Authority Matrix:
+Accepted relational thesis:
+
+```text
+owner-specific canonical families
++ owner-specific material-state/history families
++ specific typed relation families
++ bounded technical address/control structures only where genuine heterogeneous addressing requires them
++ separate provider / derived / runtime concerns
+```
+
+Rejected globally:
+
+```text
+universal Entity / Thing
+universal Relationship / generic edge
+canonical EAV/property bag
+universal event ontology
+universal Fact/Version semantic payload root
+JSONB required-semantic escape hatch
+```
+
+## 5. Reference / material-state architecture
+
+Reference families remain distinct:
+
+```text
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
+```
+
+Closed PostgreSQL rules:
+
+```text
+homogeneous NativeRef
+→ direct FK
+
+genuinely heterogeneous NativeRef
+→ bounded native-address anchor
+
+MaterialStateRef
+→ PostgreSQL uuid / UUIDv7 stable address
+→ bounded material-state address/control
+→ exact owner + facet
+→ owner-specific material-state row
+→ explicit current accepted-state binding where required
+```
+
+Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
+
+## 6. CP6 — Concrete PostgreSQL Database
+
+CP6's current execution scope is owned by:
+
+`docs/workstreams/logical-postgresql.md`
+
+CP6 does **not** repeat Domain, Logical or Physical modeling.
+
+Closed checkpoints:
+
+```text
+CP6-00  COMPLETE
+CP6-01  CLOSED / GATE 01 PASS
+CP6-02  CLOSED / GATE 02 PASS
+```
+
+Current remaining sequence:
+
+```text
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+        ↓
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
+        ↓
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
+```
+
+This replaces the earlier process plan that put Vertical #1 selection/design inside CP6 and prohibited all business-database materialization.
+
+The closed CP6-02 Constitution remains technical authority. Only its old process/staging prose is superseded where it conflicts with the current workstream.
+
+### CP6-03 — blueprint
+
+CP6-03 derives, for the full closed model where applicable:
+
+```text
+concrete tables/families
+columns + PostgreSQL types
+PK / FK / reference-family integrity
+UNIQUE / CHECK / EXCLUDE / temporal constraints
+NativeRef / ScopedRecordRef / MaterialStateRef topology
+current-state bindings
+owner-specific history/material-state topology
+specific relation topology
+provider / derived DB structures already required
+provenance/governance persistence structures
+structural indexes
+privilege posture
+SQLAlchemy mapping plan
+implementation/migration dependency DAG
+real PostgreSQL test plan
+```
+
+### CP6-04 — materialization
+
+After Gate 03, CP6 may materially implement the approved DANTE database through exact write gates:
+
+```text
+Alembic business-schema migrations
+DANTE business tables
+bounded address/control structures
+owner-specific canonical and history tables
+specific relation tables
+constraints / indexes
+SQLAlchemy database mappings
+object ownership / grants
+real PostgreSQL DB tests
+```
+
+### CP6-05 — direct QA / closure
+
+CP6-05 proves the materialized DB against the closed model and blueprint using real PostgreSQL where PostgreSQL semantics are involved.
+
+CP6 closes only when the DANTE database is:
+
+```text
+BLUEPRINT COMPLETE
+MATERIALIZED TO MAXIMUM NON-SPECULATIVE EXTENT
+MIGRATED
+MAPPED
+DIRECTLY TESTED
+QA CLEAN
+```
+
+## 7. Boundary to first product vertical
+
+Database materialization is not the same thing as first-product-vertical application implementation.
+
+Out of CP6:
+
+```text
+first-product-vertical application use cases
+application services
+product persistence adapters that encode application behavior
+business API routes
+frontend behavior
+product workflow orchestration
+```
+
+The first product vertical starts only after CP6 closes and consumes the already-materialized database. A later real requirement may evolve the DB normally, but determinable schema is not postponed by default.
+
+## 8. Frontend / client data authority
+
+Frontend Data Authority Matrix remains:
 
 ```text
 canonical accepted state/effect   backend + PostgreSQL
@@ -169,114 +282,90 @@ component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-An offline operation crosses staging → upload → backend accept/reject → reconciliation. Local arrival/staging does not define semantic truth.
+Local arrival/staging never defines canonical truth.
 
-## 6. Concrete persistence boundary — CP6
+Frontend production materialization proceeds independently on `feature/frontend-materialization`.
 
-The active backend boundary is **CP6 — Concrete Persistence Readiness**.
+## 9. Offline / specialist capabilities
 
-```text
-CP6-00
-COMPLETE
-
-CP6-01
-CLOSED / GATE 01 PASS
-
-CP6-02
-POSTGRESQL PERSISTENCE CONSTITUTION
-CLOSED / GATE 02 PASS
-
-CP6-03
-CONCRETE RELATIONAL TOPOLOGY
-+ IMPLEMENTATION DEPENDENCY DAG
-+ VERTICAL DECOMPOSITION
-NEXT / NOT STARTED
-```
-
-CP6-01 closure authority:
-
-`docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
-
-CP6-02 closed Constitution:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
-
-CP6-02 closure authority:
-
-`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
-
-The CP6-02 technology-refresh boundary is directly proved:
+Selected Physical targets remain bounded by real activation triggers.
 
 ```text
-PostgreSQL 18.6 image build         PASS
-PostGIS 3.6.4                       PASS
-pgvector 0.8.6                      PASS
-Backend Quality                     SUCCESS / 32 fast tests PASS
-Backend PostgreSQL                  SUCCESS / 18 PostgreSQL tests PASS
-Backend CI Gate                     SUCCESS
-run                                 32568664940
-HEAD                                ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-release-note impact                 PASS / NO CURRENT POST-UPGRADE ACTION
+PowerSync + encrypted SQLite      offline/sync consumer required
+PgBouncer                         real connection-pressure value
+PostgreSQL outbox                 real Class-A async requirement
+Restate                           real Class-B durable workflow
+Cloudflare R2                     real ContentArtifact byte flow
+pgBackRest + S3                   recovery/production boundary or rehearsal
+OR-Tools                          solver-backed capability
 ```
 
-Gate 02 additionally records the completed external benchmark, independent whole-Constitution review, repair of all identified hardenings and clean targeted post-repair verification. Global reusable PostgreSQL doctrine is therefore closed; remaining exact topology choices are explicitly assigned to CP6-03/05 or later proof stages.
+A PostgreSQL-native DB structure required by the concrete DANTE schema may be materialized in CP6 without automatically activating the surrounding runtime/product capability.
 
-CP6 does not repeat Domain, Logical or Physical modeling. It consumes those closed authorities and must finish with:
+## 10. Transactions / migrations / privileges
+
+Frozen CP3 posture remains:
 
 ```text
-CONCRETE POSTGRESQL FOUNDATION
-CLOSED / READY
+one AsyncEngine per process
+one async_sessionmaker per process
+one AsyncSession per application operation
+autobegin=False
+autoflush=True
+expire_on_commit=False
+outer application operation owns transaction
+adapter may flush / never implicit commit
+READ COMMITTED default
+one Alembic DAG / one canonical head
+metadata.create_all() not deployment authority
 
-VERTICAL #1
-SELECTED
-EXACTLY DESIGNED
-READY FOR IMPLEMENTATION
+dante_owner      NOLOGIN
+dante_migrator   LOGIN NOINHERIT + bounded SET ROLE
+dante_runtime    LOGIN NOINHERIT / runtime DML posture
 ```
 
-CP6 does **not** implement Vertical #1.
+CP6-02's transaction, idempotency, migration and privilege doctrine remains closed and applies to the real database materialized in CP6-04.
 
-Not authorized inside CP6:
+## 11. Current direct evidence
 
 ```text
-Vertical #1 business Alembic migrations
-Vertical #1 SQLAlchemy business mappings
-Vertical #1 persistence adapter
-application use case
-business API
-speculative shared table/primitive created only to obtain direct proof
+Backend CI run                32568664940
+workflow event                workflow_dispatch
+executed HEAD                 ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+PostgreSQL 18.6 image         PASS
+PostGIS 3.6.4                 PASS
+pgvector 0.8.6                PASS
+Backend Quality               SUCCESS / 32 tests PASS
+Backend PostgreSQL            SUCCESS / 18 tests PASS
+Backend CI Gate               SUCCESS
+current corpus                50 / 50 covered across mandatory lanes
+release-note impact           PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
-The first business implementation begins only in the separately authorized post-CP6 vertical phase.
+This proves the technical PostgreSQL foundation before DANTE business-database materialization. It does not pre-prove later schema or semantic scenarios.
 
-## 7. Offline/sync
+## 12. Current non-claims
 
-Selected Physical target remains PowerSync + encrypted SQLite bounded local state.
+```text
+DANTE BUSINESS DATABASE        NOT YET MATERIALIZED
+FIRST PRODUCT VERTICAL         NOT IMPLEMENTED
+SEMANTIC HG BLANKET PASS       NO
+REAL V1→V2 DB EVOLUTION        NOT RUN
+RESTORE/PITR REHEARSAL         NOT RUN
+POWERSYNC DIRECT TEST          NOT RUN
+RESTATE DIRECT TEST            NOT RUN
+PRODUCTION DEPLOYMENT          NOT STARTED
+```
 
-Mobile activates that path when a real offline/sync implementation requires it. Web remains online-first unless a separately accepted need activates a broader local/sync path.
+## 13. Testing / CI
 
-Local client databases are identity scoped; cross-account local-data leakage is forbidden.
+GitHub Actions remains repository-wide CI/CD authority.
 
-PowerSync/logical replication is not active in the current backend. When it is activated, PostgreSQL maintenance review must include then-current logical-decoding policy, including `output_plugin_libraries` introduced in PostgreSQL 18.6.
+Protected `main` requires the accepted backend aggregate gate and dependency review checks. Current PostgreSQL evidence was earned through a real `workflow_dispatch`, not inferred from workflow existence.
 
-## 8. UI/shared semantics
+The 32 fast + 18 PostgreSQL lanes cover the current 50-test corpus; they are not represented as one single 50-test `pytest` invocation.
 
-Web owns a DANTE UI layer over selected Web primitives/styling. Mobile owns a separate DANTE Native UI layer. Shared semantic design tokens may intentionally render differently per platform.
-
-`@dante/i18n` is framework-free; app bootstrap wires React integration/platform detection/persistence.
-
-`@dante/time` owns Temporal-based semantic time handling.
-
-## 9. Configuration/secrets
-
-Backend uses typed pydantic-settings fail-fast configuration.
-
-Frontend public config is typed/validated and contains no secrets.
-
-Web runtime config is versioned and validated so one SPA artifact can be promoted across environments where the delivery platform permits. An app-coupled Cloudflare Worker may serve bounded bootstrap config but is not a DANTE BFF/business backend.
-
-Remote secret posture remains workload identity → provider secret manager → least privilege → rotation/revocation/audit, with GitHub OIDC preferred where supported.
-
-## 10. Environments
+## 14. Environments / developer posture
 
 Exactly:
 
@@ -284,107 +373,34 @@ Exactly:
 LOCAL → DEV → UAT → PROD
 ```
 
-They are runtime contexts, not Git branches.
+Environments are runtime contexts, not Git branches.
 
-## 11. Async/durable/object/recovery/solver
+Canonical backend semantics remain Linux. Windows development uses the authoritative WSL-backed checkout; divergent Windows/WSL source clones are forbidden.
 
-Class A async target: PostgreSQL transactional outbox + bounded worker, materialized only on real Class-A need.
-
-Class B: Restate selected/dormant until a real Class-B workflow.
-
-ContentArtifact raw bytes: private Cloudflare R2 when activated; PostgreSQL owns authority/metadata.
-
-Recovery: pgBackRest + WAL/PITR + AWS S3 accepted target at recovery boundary.
-
-Solver: OR-Tools CP-SAT; `UNKNOWN != INFEASIBLE`; solver output remains candidate until governed acceptance.
-
-## 12. Observability
-
-Backend target: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
-
-Frontend: Sentry behind bounded app/platform observability adapters when activated.
-
-All observability is privacy-minimized operational telemetry, never canonical history or a shadow personal-data store.
-
-## 13. Testing/CI/release
-
-GitHub Actions is repository-wide primary CI/CD authority.
-
-Backend validation is risk-layered and includes a real PostgreSQL lane. Protected `main` requires the accepted backend aggregate gate and dependency review checks.
-
-Current PostgreSQL 18.6 evidence was earned through a real `workflow_dispatch` run, not inferred from workflow existence:
+## 15. Current backend sequence
 
 ```text
-run                  32568664940
-Backend Quality      SUCCESS
-Backend PostgreSQL   SUCCESS
-Backend CI Gate      SUCCESS
-```
-
-The fast and PostgreSQL lanes cover the current 50-test corpus as 32 + 18 tests. This must not be misreported as a single full-`pytest` invocation.
-
-Frontend validation progressively covers lint/dependency/cycle boundaries, strict TS, unit/component, generated drift, Web E2E, Mobile tests and release/device validation for activated targets.
-
-Architecture/design closure remains distinct from direct implementation validation.
-
-## 14. Developer posture
-
-Canonical backend semantics remain Linux. Primary Windows posture is one authoritative WSL-backed repository checkout with JetBrains/PyCharm UI on Windows as desired.
-
-Frontend keeps one authoritative checkout; WSL↔Windows Metro/ADB specifics are a direct-validation tooling adapter. Divergent Windows/WSL source clones are forbidden.
-
-## 15. Current direct-evidence boundary
-
-```text
-BACKEND SCAFFOLD CP1–CP5       CLOSED / DIRECT QA PASS / INTEGRATED
-POSTGRESQL 18.4                HISTORICAL PHYSICAL/CP2/CP3 EXACT EVIDENCE
-POSTGRESQL 18.6                CURRENT TECHNICAL PATCH
-18.6 FOUNDATION REGRESSION     DIRECT REMOTE QA PASS
-CP3 TECHNICAL PERSISTENCE      DIRECT QA PASS
-DANTE SCHEMA / ALEMBIC BASE    MATERIALIZED / DIRECT QA PASS
-CP6-01 COVERAGE GATE           CLOSED / GATE 01 PASS
-CP6-02 CONSTITUTION            CLOSED / GATE 02 PASS
-CP6-03                         NEXT / NOT STARTED
-CONCRETE BUSINESS DB SCHEMA    NOT IMPLEMENTED
-VERTICAL #1                    NOT IMPLEMENTED
-SEMANTIC HG DIRECT PASS        0 unless an actual qualifying business scenario executes
-PSV                            only per exact executed selected-stack artifact
-RESTORE/PITR REHEARSAL         NOT RUN
-```
-
-The old Physical phase statement `DATABASE DEPLOYMENT NOT STARTED` is historical phase-time evidence and is superseded for current technical implementation status by CP2/CP3 and the later 18.6 regression. Technical QA does not convert business-semantic HG/PSV into PASS.
-
-## 16. Current backend sequence
-
-```text
-CP6-00 authority reconstruction
+CP6-00
 COMPLETE
         ↓
-CP6-01 concrete persistence coverage
+CP6-01
 CLOSED / GATE 01 PASS
         ↓
-CP6-02 PostgreSQL Persistence Constitution
+CP6-02
 CLOSED / GATE 02 PASS
-18.6 TECHNICAL REGRESSION PASS
         ↓
-CP6-03 Concrete Relational Topology
-       + Implementation Dependency DAG
-       + Vertical Decomposition
-       NEXT / NOT STARTED
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+NEXT
         ↓
-CP6-04 Vertical #1 selection
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
         ↓
-CP6-05 Vertical #1 exact persistence design
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
         ↓
-CP6-06 PostgreSQL foundation direct readiness proof
-       only where non-speculative and genuinely executable
-        ↓
-CP6-07 whole persistence readiness / clean-room QA
-        ↓
-CP6 CLOSED
-        ↓
-SEPARATE POST-CP6 PHASE
-Vertical #1 implementation
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
 ```
 
-Current durable backend authority: `docs/workstreams/logical-postgresql.md`.
+Current durable backend execution authority: `docs/workstreams/logical-postgresql.md`.
