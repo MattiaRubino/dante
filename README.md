@@ -48,12 +48,12 @@ Dependency Review REQUIRED
 branch up-to-date REQUIRED
 required-check source GitHub Actions
 
-CP6 — CONCRETE PERSISTENCE READINESS
+CP6 — CONCRETE POSTGRESQL DATABASE
 ACTIVE ON feature/logical-postgresql
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 NEXT / NOT STARTED
+CP6-03 NEXT / NOT STARTED — WHOLE DANTE DATABASE BLUEPRINT
 
 CURRENT POSTGRESQL TECHNICAL PATCH
 PostgreSQL 18.6
@@ -61,7 +61,10 @@ configuration refresh APPLIED
 foundation regression DIRECT REMOTE QA PASS
 Backend CI run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 
-VERTICAL #1 BUSINESS IMPLEMENTATION
+CURRENT DANTE BUSINESS DATABASE
+NOT YET MATERIALIZED
+
+FIRST PRODUCT VERTICAL
 POST-CP6 / NOT STARTED / SEPARATELY AUTHORIZED
 
 DIRECT BUSINESS-SEMANTIC HG / blanket PSV
@@ -69,6 +72,29 @@ NOT RUN BEYOND EXACTLY RECORDED QUALIFYING EVIDENCE
 ```
 
 Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario actually ran. PostgreSQL 18.4 remains the exact historical Physical/CP2/CP3 evidence patch; the current CP6 technical patch is 18.6. Patch maintenance inside PostgreSQL 18 does not rewrite historical evidence or reopen the selected persistence architecture.
+
+## Current CP6 execution boundary
+
+CP6 now has one concrete job: turn the closed Domain + Logical + Physical model into the real DANTE PostgreSQL database before the first product vertical begins.
+
+```text
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+        ↓
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
+Alembic + tables + constraints + indexes + SQLAlchemy mappings + DB tests
+        ↓
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
+```
+
+Earlier process language that prohibited all business schema/migrations/mappings anywhere in CP6 is superseded. CP6-01 and CP6-02 themselves correctly created none; later CP6 stages may materialize every database structure already determinable from the closed model. First-product-vertical application behavior, product persistence adapters, APIs and frontend remain post-CP6.
+
+Current execution authority: `docs/workstreams/logical-postgresql.md`.
 
 ## Production repository direction
 
@@ -289,8 +315,8 @@ POSTGRESQL 18.6 FOUNDATION REGRESSION    DIRECT REMOTE QA PASS
 18.6 BACKEND CI GATE                     SUCCESS
 CP6-01                                   CLOSED / GATE 01 PASS
 CP6-02                                   CLOSED / GATE 02 PASS
-CP6-03                                   NEXT / NOT STARTED
-CONCRETE BUSINESS DB SCHEMA              NOT STARTED
+CP6-03                                   NEXT / WHOLE DANTE DATABASE BLUEPRINT
+CONCRETE DANTE BUSINESS DB               NOT YET MATERIALIZED
 DIRECT BUSINESS HG-01..HG-12             NOT RUN / PASS 0
 RESTORE/PITR REHEARSAL                   NOT RUN
 POWERSYNC DIRECT TEST                    NOT RUN
@@ -352,13 +378,14 @@ feature/frontend-materialization
 
 BACKEND
 feature/logical-postgresql
-→ CP6 Concrete Persistence Readiness ACTIVE
+→ CP6 Concrete PostgreSQL Database ACTIVE
 → CP6-01 CLOSED / GATE 01 PASS
 → CP6-02 CLOSED / GATE 02 PASS
 → PostgreSQL 18.6 technical refresh + direct remote regression PASS
-→ CP6-03 NEXT / NOT STARTED
-→ next: read/research/design-first relational topology + dependency DAG + vertical decomposition
-→ no business implementation inside CP6
+→ CP6-03 NEXT / WHOLE DANTE DATABASE BLUEPRINT
+→ CP6-04 after Gate 03 / REAL DATABASE MATERIALIZATION
+→ CP6-05 / WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+→ first product vertical only after CP6 closes
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default. Do not implement Vertical #1 inside CP6.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default. Do not implement the first product vertical application inside CP6.
