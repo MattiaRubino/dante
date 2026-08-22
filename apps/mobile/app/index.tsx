@@ -1,5 +1,6 @@
 import { radii } from '@dante/design-tokens/native';
 import { StatusBar } from 'expo-status-bar';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -10,6 +11,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MobileRuntimeReady() {
+  const { t } = useTranslation('common');
   const pressed = useSharedValue(0);
 
   const tapGesture = Gesture.Tap()
@@ -30,29 +32,40 @@ export default function MobileRuntimeReady() {
       <StatusBar style="light" />
       <View style={styles.screen}>
         <View style={styles.card}>
-          <Text style={styles.eyebrow}>DANTE MOBILE</Text>
-          <Text style={styles.title}>Native runtime ready</Text>
+          <Text style={styles.eyebrow}>
+            {t(($) => $.common.runtime.mobile.eyebrow)}
+          </Text>
+          <Text style={styles.title}>
+            {t(($) => $.common.runtime.mobile.title)}
+          </Text>
           <Text style={styles.copy}>
-            Minimal Expo SDK 57, React Native 0.86, and Expo Router diagnostic
-            scaffold. Product UI is not materialized in this checkpoint.
+            {t(($) => $.common.runtime.mobile.description)}
           </Text>
 
           <View style={styles.statusGrid}>
             <View style={styles.statusItem}>
-              <Text style={styles.statusLabel}>Route</Text>
+              <Text style={styles.statusLabel}>
+                {t(($) => $.common.runtime.labels.route)}
+              </Text>
               <Text style={styles.statusValue}>/</Text>
             </View>
             <View style={styles.statusItem}>
-              <Text style={styles.statusLabel}>Purpose</Text>
-              <Text style={styles.statusValue}>FM-04 diagnostic scaffold</Text>
+              <Text style={styles.statusLabel}>
+                {t(($) => $.common.runtime.labels.purpose)}
+              </Text>
+              <Text style={styles.statusValue}>
+                {t(($) => $.common.runtime.mobile.purpose)}
+              </Text>
             </View>
           </View>
 
           <GestureDetector gesture={tapGesture}>
             <Animated.View style={[styles.gestureProbe, animatedStyle]}>
-              <Text style={styles.gestureProbeTitle}>Gesture probe</Text>
+              <Text style={styles.gestureProbeTitle}>
+                {t(($) => $.common.gesture.title)}
+              </Text>
               <Text style={styles.gestureProbeCopy}>
-                Tap this surface to exercise Gesture Handler + Reanimated.
+                {t(($) => $.common.gesture.description)}
               </Text>
             </Animated.View>
           </GestureDetector>

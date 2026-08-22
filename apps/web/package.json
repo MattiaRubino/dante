@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "@dante/design-tokens": "workspace:*",
+    "@dante/i18n": "workspace:*",
     "@tanstack/react-router": "1.170.31",
+    "i18next": "26.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-i18next": "17.0.11"
   },
   "devDependencies": {
     "@tanstack/router-plugin": "1.168.34",
