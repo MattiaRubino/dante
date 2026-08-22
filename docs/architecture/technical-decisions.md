@@ -9,9 +9,16 @@ This file summarizes current accepted technical decisions. Detailed rationale an
 **ACCEPTED**
 
 ```text
-PostgreSQL 18.4
+PostgreSQL 18 major family
 sole canonical persistence + material-history authority
+
+Physical exact phase-time patch   18.4 / HISTORICAL
+CP2 / CP3 original direct patch   18.4 / HISTORICAL EXACT
+current repository patch          18.6
+18.6 foundation regression        DIRECT REMOTE QA PASS
 ```
+
+Patch maintenance inside PostgreSQL 18 does not reopen the selected architecture and does not rewrite historical 18.4 evidence.
 
 No separate graph/vector/search/event-store database is canonical by default.
 
@@ -29,7 +36,7 @@ Selected target:
 - pg_stat_statements;
 - PgBouncer 1.25.2.
 
-Full selected extension envelope is installed/enabled from the first LOCAL PostgreSQL baseline when materialized. PgBouncer activation remains tied to concrete validation.
+The current repository-owned PostgreSQL 18.6 image preserves the selected PostGIS/pgvector envelope. PgBouncer activation remains tied to concrete validation.
 
 ## TD-03 — Offline/sync
 
@@ -289,7 +296,7 @@ Async DB I/O at technical boundaries; Domain/application sync/pure by default; a
 
 ## TD-22 — Migration/copy/recovery governance
 
-**ACCEPTED**
+**ACCEPTED / QUALIFIED BY CP6-02 CONSTITUTION**
 
 - Alembic revision history = deployment schema-change authority;
 - autogenerate candidate only;
@@ -299,9 +306,12 @@ Async DB I/O at technical boundaries; Domain/application sync/pure by default; a
 - expand → migrate → contract;
 - large backfills bounded/resumable/idempotent;
 - separated DB privilege classes;
+- non-transactional PostgreSQL DDL isolated explicitly when required;
 - `pg_dump`/`pg_restore` logical-copy role distinct from pgBackRest/WAL/PITR recovery;
 - raw PROD → DEV forbidden by default;
 - PostgreSQL major upgrade is a separate platform operation.
+
+Detailed current PostgreSQL persistence/migration doctrine is governed by ADR-010 and the closed CP6-02 Constitution.
 
 ## TD-23 — Environment/config/secrets
 
@@ -342,15 +352,38 @@ Protected workflows use least privilege and immutable Action SHA pinning. Supply
 
 Backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure.
 
-Frontend Foundation is **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
+Frontend Foundation is **CLOSED / ACCEPTED / integrated via PR #22**. Frontend materialization is already **ACTIVE** on `feature/frontend-materialization` under its own bounded workstream.
+
+Backend production scaffold CP1–CP5 is **CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS**.
+
+Current backend boundary:
 
 ```text
-open fresh bounded frontend materialization/direct-validation workstream
-→ materialize accepted workspace/app/package boundaries
-→ execute carried direct validations progressively
+feature/logical-postgresql
+CP6 Concrete PostgreSQL Database ACTIVE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 NEXT / WHOLE DANTE DATABASE BLUEPRINT
+→ CP6-04 WHOLE DANTE DATABASE MATERIALIZATION
+→ CP6-05 WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+→ first product vertical only after CP6
 ```
 
-Backend production scaffold remains a separate **NOT STARTED** workstream and is not silently authorized by Frontend Foundation.
+## TD-26 — PostgreSQL Persistence Constitution
+
+**ACCEPTED / CROSS-CUTTING**
+
+DANTE accepts the reusable PostgreSQL persistence doctrine closed by CP6-02.
+
+ADR authority:
+
+`docs/decisions/ADR-010-postgresql-persistence-constitution.md`
+
+Detailed normative authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+The durable consequences include stable UUID/reference addressing, bounded heterogeneous anchors, material-state/current-history separation, typed relation/constraint doctrine, transaction/concurrency/idempotency rules, migration/evolution posture and owner/migrator/runtime privilege separation. The technical decision register intentionally does not duplicate the full Constitution.
 
 ## Selected technologies not to reintroduce casually
 
