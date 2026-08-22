@@ -86,3 +86,17 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `QA_LIMIT` a fresh automated browser PASS for every 24 responsive matrix combination is still not claimed.
 - `OPEN` DANTE logo/name alignment, palette review, background/atmosphere and final QA remain.
 - `NO_CHANGE` no backend endpoint/schema, Domain model or production-framework selection is introduced.
+
+## 2026-08-22 — B2 Home Branding v23
+
+- `ADDED` user-reviewed B2 v23 branding checkpoint over the existing v22 structural/behavioral oracle.
+- `ADDED` one deterministic shared branding layer for both FULL and PARTIAL v22 states; no variant-specific brand behavior is introduced.
+- `CHANGED` topbar identity from the historical placeholder lockup to the approved DANTE symbol geometry plus approved wordmark geometry.
+- `VISUAL_ONLY` topbar wordmark foreground is white on the current dark surface; the symbol retains approved charcoal/orange fills. This is a frontend dark-surface derivative, not a new brand master.
+- `CHANGED` AI identity from placeholder orb + visible `LifeOS` label to the approved DANTE symbol only; no visible `DANTE` label is added there.
+- `REJECTED` white backing panel around the brand signature, all-light symbol treatment, dark/unreadable wordmark, and text label beside the AI symbol.
+- `PINNED` brand source geometry to integrated commit `db02da603f3779d8c7fcb1d7601f6f66f8a23241`.
+- `NO_CHANGE` Mondi/Segnali behavior, v22 no-add semantics, timeline, context rail, `Crea`, background, general palette, backend/API/Domain semantics.
+- `QA` FULL final visual treatment explicitly accepted by user; PARTIAL receives the identical shared layer.
+- `QA_LIMIT` fresh 24-case browser matrix, accessibility rerun and separate PARTIAL browser visual review are not claimed.
+- `OPEN` background/atmosphere, overall palette/color system, later explicit `Crea` placement review, and final QA remain.
