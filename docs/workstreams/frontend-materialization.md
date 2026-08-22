@@ -1,11 +1,11 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-05C SHARED TIME PASS / FM-05 COMPLETE**
+- Status: **ACTIVE — FM-06A DEPENDENCY ARCHITECTURE PASS / FM-06 IN PROGRESS**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated workspace commit: `aeb43e9e5ed7add42464e61f5c02acd6a53fed85`
+- Current validated workspace commit: `38dbbd3efb764a8419f4498d27a2e29a3602fc5d`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS + SHARED I18N + SHARED TIME MATERIALIZED**
+- Production frontend scaffold: **ROOT WORKSPACE + ENGINEERING TOOLING + MINIMAL WEB + MINIMAL MOBILE + SHARED DESIGN TOKENS + SHARED I18N + SHARED TIME + CURRENT DEPENDENCY ARCHITECTURE ENFORCEMENT MATERIALIZED**
 - Machine runtime baseline: **PASS**
 - Root engineering dependencies: **INSTALLED / PINNED / LOCKED**
 - Minimal Web dependency graph: **INSTALLED / PINNED / LOCKED**
@@ -13,7 +13,7 @@
 - Shared design-token package: **MATERIALIZED / GENERATED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
 - Shared i18n package: **MATERIALIZED / IT+EN / STRICTLY TYPED / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
 - Shared time package: **MATERIALIZED / TEMPORAL SEMANTICS / WEB+MOBILE DIRECTLY RUNTIME-VALIDATED**
-- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13/FM-V14/FM-V15 PASS; FM-V12 package-export/public-surface portion PASS; remaining register scoped below**
+- Direct frontend validation: **PARTIAL — FM-V01/FM-V02/FM-V03/FM-V05/FM-V06/FM-V08/FM-V09/FM-V10/FM-V11/FM-V13/FM-V14/FM-V15 PASS; FM-V07 CURRENT REAL ARCHITECTURE/CYCLE ENFORCEMENT PASS WITH FUTURE FEATURE-SPECIFIC RULES NOT RUN; FM-V12 PUBLIC SURFACES + REPRESENTATIVE FORBIDDEN DEEP-IMPORT REJECTION PASS; remaining register scoped below**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
 ## 1. Purpose
@@ -1034,18 +1034,131 @@ FM-05 is now complete at its accepted scope: all three initial genuine shared pa
 
 Do not create `@dante/api-client` before real FastAPI OpenAPI exists. Do not create a shared feature package before genuine cross-platform reuse exists.
 
-### FM-06 — architecture, test and generation enforcement — NEXT
+### FM-06 — architecture, test and generation enforcement — IN PROGRESS
 
-Activate only real checks with real consumers, including as applicable:
+FM-06 is intentionally split into bounded executable slices. Each slice activates only checks backed by real repository structure or a real runtime/build boundary.
 
-- ESLint architecture/boundary rules;
-- feature/package cycle detection;
-- strict typecheck;
-- unit/component baseline;
-- Web build and E2E smoke;
-- Mobile test/bundle smoke;
-- deterministic generated-source drift checks;
-- design-token generation.
+#### FM-06A — dependency architecture + cycle enforcement — PASS
+
+Implementation commit:
+
+```text
+38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+build: enforce frontend dependency architecture
+```
+
+Materialized enforcement:
+
+```text
+dependency-cruiser 18.2.0
+dependency-cruiser.config.mjs
+pnpm architecture:check
+```
+
+Compatibility was reverified at materialization time against the actual workspace baseline:
+
+```text
+Node        24.19.0
+TypeScript  6.0.3
+```
+
+The current real DANTE graph directly passed:
+
+```text
+33 modules
+40 dependencies cruised
+0 enforced violations
+```
+
+The executable rules now reject:
+
+```text
+unresolvable production frontend source imports
+source dependency cycles
+Web -> Mobile source dependency
+Mobile -> Web source dependency
+shared package -> apps dependency
+production frontend -> prototypes dependency
+shared core -> React / React DOM / React Native / react-i18next / Expo / Vite dependency
+```
+
+The rule set deliberately stops following `node_modules` internals while preserving the dependency edge from DANTE-owned source to an external package. Dependency-cruiser therefore validates DANTE architecture, not the internal implementation graph of Terrazzo, i18next, Temporal or other third-party packages.
+
+Direct negative-probe evidence:
+
+```text
+Web -> Mobile deliberate violation                 REJECTED / PASS
+Mobile -> Web deliberate violation                 REJECTED / PASS
+shared package -> app deliberate violation         REJECTED / PASS
+source cycle deliberate violation                  REJECTED / PASS
+shared core -> React deliberate violation           REJECTED / PASS
+```
+
+Package surface evidence:
+
+```text
+@dante/design-tokens/native                         RESOLVES / PASS
+@dante/design-tokens/web.css                        RESOLVES / PASS
+@dante/i18n                                         RESOLVES / PASS
+@dante/time                                         RESOLVES / PASS
+representative forbidden @dante deep imports       REJECTED / PASS
+```
+
+Regression evidence after the architecture checks:
+
+```text
+5-package strict TypeScript graph                  PASS
+root lint                                           PASS
+root format check                                   PASS
+Web production build                               PASS
+pnpm install --frozen-lockfile                     PASS
+git diff --check                                   PASS
+authorized implementation paths                    4
+unexpected implementation paths                    0
+remote commit/readback                              PASS
+```
+
+Two diagnostic failures are intentionally retained because they encode future troubleshooting knowledge rather than product defects.
+
+Attempt 1:
+
+```text
+combined shared-core framework regex
+-> dependency-cruiser safe-regex rejection
+-> replaced by small atomic path patterns
+```
+
+This was configuration safety failure before graph analysis; it was not a DANTE architecture violation.
+
+Attempt 2:
+
+```text
+package directories supplied as cruise roots
+-> package-local node_modules also gathered as initial files
+-> 151 third-party/internal violations reported
+-> doNotFollow.path = 'node_modules'
+```
+
+The second result was also not 151 DANTE violations. The repair preserves the external dependency boundary while preventing recursive analysis of dependency internals. No hoisting, dependency exception or resolver weakening was introduced.
+
+FM-06A only claims rules backed by current real structure. It does **not** yet claim feature-to-feature public API enforcement, route-to-feature rules, `ui/`/`platform/` isolation or feature-cycle semantics because those real product directories/consumers do not yet exist.
+
+#### FM-06B — generated-source drift enforcement — NEXT
+
+FM-06B must now turn the already-real committed generation authorities into executable drift checks, especially:
+
+```text
+DTCG / Terrazzo source -> generated Web CSS + Native TypeScript
+TanStack Router route source -> apps/web/src/routeTree.gen.ts
+```
+
+The gate should prove both a clean current repository and deliberate generated-source drift rejection. Do not mix Vitest, Playwright, Mobile bundle smoke or CI orchestration into FM-06B.
+
+#### FM-06C — unit-test baseline — NOT RUN
+
+#### FM-06D — Web E2E + Mobile bundle smoke — NOT RUN
+
+#### FM-06E — CI orchestration after local checks are real — NOT RUN
 
 A future GitHub required check is not configured until its real emitted context has been observed and proven meaningful.
 
@@ -1059,9 +1172,11 @@ clean authoritative checkout/worktree
 → install
 → lint
 → typecheck
+→ architecture check
 → Web build/run
 → Mobile baseline/run on applicable local target
 → shared-package imports
+→ generated-source drift checks
 → architecture violations rejected
 ```
 
@@ -1076,12 +1191,12 @@ FM-V03 preferred isolated dependency layout with Expo/native graph — PASS
 FM-V04 evidence-driven hoisted fallback if required — NOT RUN
 FM-V05 Turbo task graph — MULTI-WORKSPACE PASS: DESIGN-TOKENS + I18N + TIME + WEB + MOBILE TYPECHECK; DESIGN-TOKENS + WEB BUILD
 FM-V06 TypeScript strict cross-workspace graph — PASS: DESIGN-TOKENS + I18N + TIME + WEB + MOBILE
-FM-V07 ESLint/import/boundary/cycle enforcement — ROOT + WEB + MOBILE + SHARED-PACKAGE LINT PASS; ARCHITECTURE/BOUNDARY/CYCLE NOT RUN
+FM-V07 ESLint/import/boundary/cycle enforcement — PASS FOR CURRENT REAL PACKAGE/APPLICATION ARCHITECTURE + CYCLE RULES VIA DEPENDENCY-CRUISER; FUTURE FEATURE/UI/PLATFORM-SPECIFIC RULES NOT RUN UNTIL REAL STRUCTURE EXISTS
 FM-V08 Vite/React production build — PASS
 FM-V09 Windows browser ↔ WSL Vite — PASS
 FM-V10 Expo SDK 57 / RN compatible baseline — PASS
 FM-V11 WSL Metro ↔ Windows Android emulator/device — PASS
-FM-V12 package exports / forbidden deep imports — PACKAGE EXPORTS + REAL WEB/MOBILE PUBLIC-SURFACE CONSUMPTION PASS; FORBIDDEN DEEP-IMPORT REJECTION NOT RUN
+FM-V12 package exports / forbidden deep imports — PASS: REAL WEB/MOBILE PUBLIC-SURFACE CONSUMPTION + REPRESENTATIVE FORBIDDEN DEEP-IMPORT REJECTION
 FM-V13 DTCG → Web CSS + Native TS token generation — PASS
 FM-V14 Web/Mobile i18n shared-core consumption — PASS
 FM-V15 Temporal/time shared-core consumption — PASS
@@ -1147,9 +1262,9 @@ Before each dependency/materialization write:
 ## 9. Exact next action
 
 ```text
-FM-06 architecture / test / generation enforcement
+FM-06B generated-source drift enforcement
 ```
 
-FM-00, FM-01, FM-02A, FM-02B, FM-03, FM-04, FM-05A, FM-05B and FM-05C are directly validated at their stated scope. FM-05 shared-package materialization is complete.
+FM-00 through FM-05C and FM-06A are directly validated at their stated scopes. FM-06A now enforces current real dependency architecture, cycles and representative package-surface/deep-import boundaries. FM-06B must next enforce deterministic committed generated-source drift for the authorities that already exist.
 
-FM-06 must now turn already-real architecture and generation boundaries into executable checks without inventing empty feature structure or claiming validation for checks that have not been directly exercised. Product UI, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.
+Product UI, PowerSync, EAS release infrastructure and invented backend contracts remain outside this closure unless separately gated.

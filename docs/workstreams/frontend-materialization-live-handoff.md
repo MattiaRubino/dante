@@ -18,6 +18,17 @@ A new chat must first read this file completely, then read these durable authori
 
 Do not restart discovery from memory and do not redesign already accepted decisions unless new evidence contradicts them.
 
+Then verify the live branch before any write:
+
+```bash
+git fetch origin feature/frontend-materialization
+git rev-parse HEAD
+git rev-parse origin/feature/frontend-materialization
+git status --short
+```
+
+The documentation-closure commit containing this file is self-referential and therefore cannot embed its own Git SHA without requiring another commit. Resolve the exact current documentation HEAD from the branch. The last validated implementation SHA is recorded explicitly below.
+
 ## 1. Repository / branch / workstation
 
 Repository:
@@ -66,16 +77,24 @@ NO independent divergent Windows clone
 NO cross-OS shared node_modules
 ```
 
-## 2. Current remote checkpoint
+## 2. Current checkpoint
 
-Current durable remote HEAD before FM-06A:
+Last directly validated implementation commit:
 
 ```text
-61d19795867e13818a2d43252906b565d23e96e5
-docs: close FM-05C shared time
+38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+build: enforce frontend dependency architecture
 ```
 
-FM-06A must start only if local HEAD and `origin/feature/frontend-materialization` still equal this SHA.
+State represented by this handoff:
+
+```text
+FM-06A DEPENDENCY ARCHITECTURE ENFORCEMENT — PASS
+FM-06 IN PROGRESS
+NEXT = FM-06B GENERATED-SOURCE DRIFT ENFORCEMENT
+```
+
+The exact documentation-closure SHA is the branch HEAD containing this updated file. A new chat must resolve it from `origin/feature/frontend-materialization` rather than trusting an older pasted SHA.
 
 ## 3. Completed frontend materialization
 
@@ -292,7 +311,7 @@ aeb43e9e5ed7add42464e61f5c02acd6a53fed85
 feat: materialize shared time semantics
 ```
 
-Documentation closure / current remote HEAD:
+Documentation closure:
 
 ```text
 61d19795867e13818a2d43252906b565d23e96e5
@@ -347,6 +366,78 @@ Observed Temporal Web route footprint:
 This is observed evidence, not yet a permanent performance budget.
 
 FM-05 is COMPLETE.
+
+### FM-06A dependency architecture enforcement — PASS
+
+Implementation:
+
+```text
+38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+build: enforce frontend dependency architecture
+```
+
+Tooling:
+
+```text
+dependency-cruiser 18.2.0
+dependency-cruiser.config.mjs
+pnpm architecture:check
+```
+
+Current real graph:
+
+```text
+33 modules
+40 dependencies cruised
+0 enforced violations
+```
+
+Current executable boundaries:
+
+```text
+unresolvable production frontend source imports forbidden
+source dependency cycles forbidden
+Web -> Mobile forbidden
+Mobile -> Web forbidden
+shared packages -> apps forbidden
+production frontend -> prototypes forbidden
+shared core -> React / React DOM / React Native / react-i18next / Expo / Vite forbidden
+```
+
+Negative probes all passed by being rejected by the intended rule:
+
+```text
+Web -> Mobile
+Mobile -> Web
+shared package -> app
+source cycle
+shared core -> React
+```
+
+Package-surface probes:
+
+```text
+@dante/design-tokens/native public PASS
+@dante/design-tokens/web.css public PASS
+@dante/i18n public PASS
+@dante/time public PASS
+representative forbidden deep imports rejected PASS
+```
+
+Regression after probes:
+
+```text
+5-package typecheck PASS
+lint PASS
+format PASS
+Web build PASS
+frozen install PASS
+git diff --check PASS
+4 implementation paths / 0 unexpected
+remote readback PASS
+```
+
+FM-06A explicitly does NOT yet claim feature-to-feature, route-to-feature, `ui/` or `platform/` enforcement because those real structures do not yet exist.
 
 ## 4. UI / content authority model
 
@@ -506,38 +597,34 @@ Do not introduce tunnel/hoisting/Metro config/Windows Node without concrete cont
 FM-06 is intentionally split:
 
 ```text
-FM-06A dependency architecture + cycle enforcement
-FM-06B generated-source drift enforcement
-FM-06C unit-test baseline
-FM-06D Web E2E + Mobile bundle smoke
-FM-06E CI orchestration after local checks are real
+FM-06A dependency architecture + cycle enforcement    PASS
+FM-06B generated-source drift enforcement             NEXT
+FM-06C unit-test baseline                              NOT RUN
+FM-06D Web E2E + Mobile bundle smoke                   NOT RUN
+FM-06E CI orchestration after local checks are real    NOT RUN
 ```
 
 Do not create a giant enforcement commit.
 
 Do not enforce feature/ui/platform rules before those real structures exist.
 
-## 9. CURRENT SLICE — FM-06A
+## 9. LAST CLOSED SLICE — FM-06A
 
-Status at creation of this handoff:
-
-```text
-APPROVED / MATERIALIZATION ABOUT TO RUN
-NOT YET PASS
-NOT YET COMMITTED
-```
-
-Current FM-06A implementation state:
+Final state:
 
 ```text
-STATIC / NEGATIVE-PROBE QA PASS
-COMMIT + PUSH ABOUT TO RUN
+PASS
+COMMITTED
+PUSHED
+REMOTE READBACK PASS
 ```
 
-Observed diagnostics retained:
-- attempt 1: unsafe combined regex -> repaired with atomic safe patterns;
-- attempt 2: package-root scan included node_modules -> repaired with
-  `doNotFollow.path = 'node_modules'`, preserving external boundary visibility.
+Implementation commit:
+
+```text
+38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+build: enforce frontend dependency architecture
+```
 
 Accepted dependency after materialization-time revalidation:
 
@@ -554,7 +641,7 @@ TypeScript: >=2 <7
 
 This covers DANTE Node 24.19.0 + TypeScript 6.0.3.
 
-FM-06A must enforce only currently real boundaries:
+FM-06A enforces only currently real boundaries:
 
 ```text
 source dependency cycles       FORBIDDEN
@@ -566,7 +653,7 @@ framework/platform imports from shared cores FORBIDDEN
 unresolvable source imports    FORBIDDEN
 ```
 
-Public package surfaces must remain usable:
+Public package surfaces remain usable:
 
 ```text
 @dante/design-tokens/native
@@ -575,7 +662,7 @@ Public package surfaces must remain usable:
 @dante/time
 ```
 
-Forbidden deep imports must be directly rejected, including representative probes under:
+Representative forbidden deep imports are directly rejected under:
 
 ```text
 @dante/time/src/...
@@ -594,11 +681,7 @@ feature cycle semantics
 
 because those real directories/consumers do not yet exist.
 
-## 10. FM-06A exact repository gate
-
-The user's latest instruction explicitly approved proceeding with FM-06A and requested this live handoff file.
-
-The script shown with this file uses this exact gate:
+## 10. FM-06A implementation gate — HISTORICAL RECORD
 
 ```text
 BRANCH
@@ -617,38 +700,14 @@ pnpm-lock.yaml
 
 DELETE
 none
+```
 
-PURPOSE
-Materialize FM-06A executable dependency-architecture enforcement
-and establish the disposable live handoff/save-game used for every
-subsequent frontend-materialization slice.
+Result:
 
-VALIDATE
-dependency-cruiser current real graph PASS
-deliberate Web -> Mobile violation FAIL
-deliberate Mobile -> Web violation FAIL
-deliberate shared package -> app violation FAIL
-deliberate source cycle FAIL
-deliberate shared-core framework import FAIL
-public @dante exports PASS
-forbidden @dante deep imports FAIL
-existing typecheck/lint/format/build PASS
-frozen install PASS
-exact authorized delta
-commit/push/remote readback only after all gates PASS
-
-EXPLICITLY OUT OF SCOPE
-feature-layer enforcement not backed by real directories
-Vitest
-Playwright
-Mobile bundle smoke
-generated-source drift checks
-GitHub Actions
-product UI
-Access/Home
-PowerSync
-backend contracts
-main synchronization
+```text
+4 authorized paths
+0 unexpected paths
+commit 38dbbd3efb764a8419f4498d27a2e29a3602fc5d
 ```
 
 ## 10A. FM-06A attempt-1 diagnostic record
@@ -679,12 +738,11 @@ with an array of small independently safe path regexes
 covering package specifiers and resolved node_modules paths
 ```
 
-No hoisting, resolver override, package-layout change or architecture exception is introduced.
+No hoisting, resolver override, package-layout change or architecture exception was introduced.
 
 ## 10B. FM-06A attempt-2 diagnostic record
 
-The second FM-06A execution passed configuration safety, then the current-graph
-check reported 151 violations.
+The second FM-06A execution passed configuration safety, then the current-graph check reported 151 violations.
 
 The reported paths showed the cause directly:
 
@@ -694,8 +752,7 @@ packages/time/node_modules/temporal-polyfill/...
 packages/i18n/node_modules/i18next/...
 ```
 
-The two apparent framework-boundary errors were also inside Terrazzo's own
-`node_modules` subtree, not in DANTE shared-package source.
+The two apparent framework-boundary errors were also inside Terrazzo's own `node_modules` subtree, not in DANTE shared-package source.
 
 Interpretation:
 
@@ -711,50 +768,70 @@ Accepted repair follows dependency-cruiser's documented filter semantics:
 doNotFollow.path = 'node_modules'
 ```
 
-This excludes `node_modules` from the initial root-file gather while still
-allowing an external dependency reached from DANTE source to appear as a
-dependency boundary node; dependency-cruiser then stops traversal there.
+This excludes `node_modules` from the initial root-file gather while still allowing an external dependency reached from DANTE source to appear as a dependency boundary node; dependency-cruiser then stops traversal there.
 
-The architecture rules remain unchanged. No dependency is installed, hoisted,
-ignored by package name, or granted an exception.
+The architecture rules remained unchanged. No dependency was installed, hoisted, ignored by package name, or granted an exception.
 
-## 11. If the FM-06A script fails
+## 11. CURRENT SLICE — FM-06B GENERATED-SOURCE DRIFT ENFORCEMENT
 
-Do NOT blindly rerun from the beginning after it has created files.
-
-Instead:
-1. preserve terminal output;
-2. inspect the first failing gate only;
-3. keep local HEAD at PRE-SCOPE;
-4. verify changed paths are only the four authorized paths;
-5. fix one variable;
-6. rerun the smallest relevant check;
-7. update this handoff with the failure and accepted repair before commit.
-
-If dependency-cruiser itself exposes resolution behavior that differs from the expected pnpm/Vite/Metro graph, do not immediately add hoisting or broad resolver overrides.
-
-## 12. What comes after FM-06A PASS
-
-First:
-- verify implementation commit on remote;
-- update this live handoff to the actual FM-06A commit SHA/status.
-
-Then perform a separate documentation closure gate for the durable docs:
-- `docs/workstreams/frontend-materialization.md`
-- `docs/development/frontend-local-development.md`
-- live handoff update if still needed.
-
-After FM-06A closure:
+Status:
 
 ```text
-NEXT = FM-06B generated-source drift enforcement
+NEXT / READ-ONLY DESIGN REQUIRED BEFORE WRITE GATE
 ```
 
-FM-06B should focus on authorities that already generate committed source, especially:
-- design-token deterministic generation;
-- TanStack route-tree generated source.
+FM-06B should focus only on generated sources that are already real and committed:
 
-Do not mix unit tests, E2E and CI into FM-06B.
+```text
+Design tokens
+DTCG semantic/primitives source
+-> Terrazzo generation
+-> packages/design-tokens/generated/web.css
+-> packages/design-tokens/generated/native.ts
+
+Web routing
+apps/web/src/routes/*
+-> TanStack Router plugin/codegen
+-> apps/web/src/routeTree.gen.ts
+```
+
+Required professional behavior:
+
+```text
+clean generated state must PASS
+deliberately drifted generated token output must FAIL
+deliberately drifted routeTree.gen.ts must FAIL
+check must be deterministic and non-destructive on success
+repair/regenerate command must remain explicit
+```
+
+Do not mix these into FM-06B:
+
+```text
+Vitest
+Playwright
+Mobile bundle smoke
+GitHub Actions
+product UI
+Access/Home
+PowerSync
+backend contracts
+```
+
+Before FM-06B writes, inspect the actual current TanStack Router generation command/path and the exact Terrazzo generation behavior. Do not invent a generator command from memory.
+
+## 12. Live handoff maintenance rule
+
+After every substantive slice or meaningful failure:
+
+1. update the exact validated implementation SHA;
+2. record PASS / FAIL / NOT RUN accurately;
+3. record diagnostic failures and accepted repair when they are reusable knowledge;
+4. record the exact next slice and its boundaries;
+5. keep prior durable decisions intact;
+6. never rely on chat history alone.
+
+For a documentation commit that updates this file, do not attempt to embed that commit's own SHA in the same commit. Record the implementation SHA and resolve the documentation HEAD from the branch.
 
 ## 13. Future queued work after FM-06
 
@@ -772,7 +849,7 @@ Among the carried validation register:
 
 ```text
 hoisted pnpm fallback                         NOT RUN / not needed
-full architecture feature/boundary rules      NOT RUN
+feature-specific architecture rules           NOT RUN
 TanStack Form + Zod real form                 NOT RUN
 TanStack Query first remote path              NOT RUN
 OpenAPI -> Orval                              NOT RUN
@@ -787,4 +864,3 @@ iOS runtime/release                            NOT RUN
 ```
 
 Preserve these as NOT RUN until their real scope activates.
-
