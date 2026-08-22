@@ -30,7 +30,9 @@ DEFINITIVE CLOSED / FINAL QA PASS
 
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
-POSTGRESQL 18.4 SOLE CANONICAL PRIMARY
+POSTGRESQL 18 MAJOR FAMILY
+SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
+PHYSICAL PHASE-TIME EXACT PATCH 18.4
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED / FINAL REVIEW PASS
@@ -46,8 +48,8 @@ DIRECT FRONTEND VALIDATION ONLY AS EARNED BY ITS WORKSTREAM
 PRODUCTION BACKEND SCAFFOLD
 INTEGRATED IN PROTECTED main / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
-CP2 CLOSED / DIRECT QA PASS
-CP3 CLOSED / DIRECT QA PASS
+CP2 CLOSED / DIRECT QA PASS — POSTGRESQL 18.4 HISTORICAL EXACT EVIDENCE
+CP3 CLOSED / DIRECT QA PASS — POSTGRESQL 18.4 HISTORICAL EXACT EVIDENCE
 CP4 CLOSED / DIRECT REMOTE QA PASS
 CP5 CLOSED / DIRECT INTEGRATED QA PASS
 PR #24 MERGED / POST-MERGE BACKEND CI PASS
@@ -63,8 +65,16 @@ ACTIVE ON feature/logical-postgresql
 DESIGN-FIRST
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
-CP6-02 NEXT / NOT STARTED
+CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+GATE 02 NOT PASSED
 NO BUSINESS SCHEMA / MIGRATION / MAPPING / ADAPTER AUTHORIZED IN CP6
+
+CURRENT POSTGRESQL TECHNICAL PATCH
+18.6
+CONFIGURATION REFRESH APPLIED
+DIRECT REMOTE FOUNDATION REGRESSION PASS
+RUN 32568664940
+HEAD ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 
 CP6 TERMINAL TARGET
 CONCRETE POSTGRESQL FOUNDATION CLOSED / READY
@@ -77,11 +87,15 @@ DIRECT BUSINESS-SEMANTIC HG-01..HG-12
 NOT RUN / PASS 0 UNLESS A QUALIFYING BUSINESS SCENARIO IS ACTUALLY EXECUTED
 ```
 
-Architecture/design closure does not imply implementation PASS. CP2/CP3 directly prove the technical PostgreSQL substrate; they do not retroactively discharge business-semantic HG/PSV obligations.
+Architecture/design closure does not imply implementation PASS. CP2/CP3 directly prove the technical PostgreSQL 18.4 substrate at their historical checkpoint; CP6 has now directly re-proved the same technical foundation on PostgreSQL 18.6. Neither technical result retroactively discharges business-semantic HG/PSV obligations.
 
 CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
+
+CP6-02 candidate authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
 
 ## 2. Product and semantic invariants
 
@@ -116,12 +130,23 @@ Persistent invariants include:
 
 The Logical Model remains closed. 57/57 Domain concepts are classified and implementation must not mechanically translate them into one-table/one-service assumptions.
 
-Canonical persistence remains:
+Canonical persistence architecture remains:
 
 ```text
-PostgreSQL 18.4
+PostgreSQL 18 major family
 sole canonical persistence + material-history authority
 ```
+
+Version truth is deliberately split:
+
+```text
+Physical exact phase-time selection      PostgreSQL 18.4
+CP2 / CP3 original direct evidence       PostgreSQL 18.4 / HISTORICAL EXACT
+current CP6 technical patch              PostgreSQL 18.6
+current 18.6 foundation regression       DIRECT REMOTE QA PASS
+```
+
+Patch maintenance inside PostgreSQL 18 is lifecycle maintenance and does not reopen Domain, Logical or Physical architecture.
 
 Accepted PostgreSQL mapping thesis remains:
 
@@ -209,7 +234,7 @@ real Uvicorn factory startup           PASS
 
 ## 7. Backend CP2 — CLOSED / DIRECT QA PASS
 
-Direct LOCAL PostgreSQL evidence:
+This section is historical direct evidence and remains tied to the exact patch actually executed.
 
 ```text
 PostgreSQL                             18.4 PASS
@@ -224,7 +249,7 @@ destructive reset                      PASS
 Windows DBeaver host connection        PASS
 ```
 
-Accepted image: `dante-postgres-local:18.4`.
+Historical accepted image: `dante-postgres-local:18.4`.
 
 ## 8. Backend CP3 — CLOSED / DIRECT QA PASS
 
@@ -236,7 +261,7 @@ Implementation/direct-QA HEAD:
 
 Materialized boundaries include SQLAlchemy async runtime, psycopg 3, Alembic technical baseline, typed database settings, FastAPI DB lifespan/readiness, `dante` schema metadata authority, owner/migrator/runtime provisioning and the real PostgreSQL acceptance harness.
 
-Direct closure:
+Original direct closure on PostgreSQL 18.4:
 
 ```text
 uv lock --check                         PASS
@@ -278,17 +303,10 @@ main behind_by                    0 after reconciliation
 
 ### M5 — real PR green
 
-PR #24 green-calibration HEAD:
-
 ```text
-bf9d364c59f02857125e228c6b223c13650ab78f
-```
-
-Runs:
-
-```text
-Backend CI          32477974221   SUCCESS
-Dependency Review   32477974220   SUCCESS
+HEAD               bf9d364c59f02857125e228c6b223c13650ab78f
+Backend CI          32477974221 SUCCESS
+Dependency Review   32477974220 SUCCESS
 ```
 
 Observed:
@@ -302,15 +320,8 @@ Dependency Review     SUCCESS
 
 ### M6 — deliberate red
 
-HEAD:
-
 ```text
-739680d11fe5c33a4974f069c2fdcce9e71a4fe0
-```
-
-Observed:
-
-```text
+HEAD                  739680d11fe5c33a4974f069c2fdcce9e71a4fe0
 Backend Quality       FAILURE — intentional calibration step
 Backend PostgreSQL    SUCCESS
 Backend CI Gate       FAILURE
@@ -321,17 +332,10 @@ No vulnerable package was added.
 
 ### M7 — recovery green
 
-HEAD:
-
 ```text
-df0a7c4fd3c7fe844fe56052fe7999732f186ee5
-```
-
-Runs:
-
-```text
-Backend CI          32478852443   SUCCESS
-Dependency Review   32478852454   SUCCESS
+HEAD               df0a7c4fd3c7fe844fe56052fe7999732f186ee5
+Backend CI          32478852443 SUCCESS
+Dependency Review   32478852454 SUCCESS
 ```
 
 All intended checks/jobs returned green.
@@ -360,7 +364,7 @@ CP5 PRE-SCOPE:
 35eca3a6b1fc9bbc691672e29ac975e640a49bf4
 ```
 
-Canonical WSL2/Linux workstation evidence:
+Canonical WSL2/Linux workstation evidence against the then-current PostgreSQL 18.4 envelope:
 
 ```text
 branch synchronized to PRE-SCOPE             PASS
@@ -421,9 +425,63 @@ PRODUCTION BACKEND SCAFFOLD
 CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
 ```
 
-## 12. Current direct-validation non-claims
+## 12. PostgreSQL 18.6 CP6 technical refresh — DIRECT REMOTE QA PASS
 
-Do not extrapolate scaffold evidence into blanket Physical or production validation:
+CP6 retained PostgreSQL major 18 and performed a maintenance-patch refresh only:
+
+```text
+18.4 → 18.6
+```
+
+Operational pins were updated in the repository-owned Docker base, Compose image, PostgreSQL acceptance harness and Backend CI. PostGIS `3.6.4` and pgvector `0.8.6` remained unchanged.
+
+Direct remote evidence:
+
+```text
+Backend CI run                         32568664940
+workflow event                         workflow_dispatch
+executed HEAD                          ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+PostgreSQL base                        18.6-trixie
+base OCI index digest                  sha256:ae6c78831cbc35fa3a4aaf4d763ddacf6183d6004774cc2dc28b3920410d1d1a
+PostGIS                                3.6.4 PASS
+pgvector                               0.8.6 PASS
+
+Backend Quality                        SUCCESS
+Ruff format/lint                       PASS
+mypy strict                            PASS
+fast pytest                            32/32 PASS
+wheel + sdist                          PASS
+
+Backend PostgreSQL                     SUCCESS
+PostgreSQL acceptance                  18/18 PASS
+Alembic fresh → head                   PASS
+Alembic head/base/head                 PASS
+Alembic drift check                    PASS
+owner/migrator/runtime privilege tests PASS
+runtime/search_path                    PASS
+stale connection recovery              PASS
+DB outage/readiness recovery           PASS
+transaction semantics                  PASS
+
+Backend CI Gate                        SUCCESS
+complete current test corpus           50/50 covered across two mandatory CI lanes
+```
+
+This is a direct technical-foundation PASS, not a business-semantic HG/PSV PASS.
+
+PostgreSQL 18.6 release-note impact review is also complete. Current DANTE has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring a post-upgrade action. Result:
+
+```text
+18.6 RELEASE-NOTE IMPACT
+PASS / NO CURRENT POST-UPGRADE ACTION
+```
+
+Future PowerSync/logical-replication activation must re-check `output_plugin_libraries` and then-current PostgreSQL maintenance requirements.
+
+## 13. Current direct-validation non-claims
+
+Do not extrapolate technical-foundation evidence into blanket Physical or production validation:
 
 ```text
 DIRECT BUSINESS HG-01..HG-12           NOT RUN / PASS 0
@@ -437,9 +495,9 @@ CONCRETE BUSINESS DB SCHEMA            NOT IMPLEMENTED
 VERTICAL #1 BUSINESS IMPLEMENTATION    NOT STARTED
 ```
 
-The PostgreSQL technical substrate is already real; the business persistence layer is not.
+The PostgreSQL technical substrate is real and current on 18.6; the business persistence layer is not.
 
-## 13. Active branches / workstreams
+## 14. Active branches / workstreams
 
 ```text
 feature/backend-scaffold
@@ -450,9 +508,11 @@ feature/backend-scaffold
 feature/logical-postgresql
 → ACTIVE backend CP6 Concrete Persistence Readiness
 → design-first / no business implementation in CP6
-→ CP6-00 complete
+→ CP6-00 COMPLETE
 → CP6-01 CLOSED / GATE 01 PASS
-→ CP6-02 NEXT / NOT STARTED
+→ CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+→ PostgreSQL 18.6 refresh DIRECT REMOTE QA PASS
+→ Gate 02 NOT PASSED
 
 feature/frontend-materialization
 → independent frontend production materialization workstream
@@ -460,20 +520,23 @@ feature/frontend-materialization
 
 Frontend and backend work may proceed in parallel. Shared global documentation must preserve the newest reconciled truth rather than letting one workstream restore stale status from another.
 
-## 14. Exact current backend action
+## 15. Exact current backend action
 
 ```text
 1. Treat Product/Domain/Logical/Physical/Engineering and CP1–CP5 as closed accepted authority.
 2. Treat CP6-01 as CLOSED / GATE 01 PASS; do not redo the 57/57 or cross-cutting coverage census.
-3. Start CP6-02 PostgreSQL Persistence Constitution only under its own exact design/write gate.
-4. Resolve genuinely global PostgreSQL rules in CP6-02 without inventing vertical-specific DDL.
-5. Do not create business tables, business migrations, SQLAlchemy business mappings or persistence adapters merely to prove CP6 foundation claims.
-6. CP6-03 builds Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition without reopening the Physical Model.
-7. CP6-04 selects Vertical #1 by evidence.
-8. CP6-05 designs Vertical #1 exactly.
-9. CP6-06 proves only genuinely materialized/non-speculative PostgreSQL foundation behavior.
-10. CP6-07 closes whole persistence readiness.
-11. Only after CP6 closure does a separately authorized phase implement Vertical #1.
+3. Treat the CP6-02 PostgreSQL Persistence Constitution as ACTIVE / CANDIDATE / PRE-CLOSURE.
+4. Treat PostgreSQL 18.6 technical refresh + remote regression as DIRECT REMOTE QA PASS.
+5. Keep PostgreSQL 18.4 Physical/CP2/CP3 evidence historical and exact; do not rewrite it.
+6. Perform the final independent whole-Constitution review against CP6-01 / WL-H / PG-R / HG / SC / PSV / Physical / CP3 / 18.6 direct evidence / external evidence.
+7. If the review finds a defect, repair it at source before closure.
+8. Only if clean, perform a separate Gate 02 closure write.
+9. CP6-03 builds Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition only after Gate 02 PASS.
+10. CP6-04 selects Vertical #1 by evidence.
+11. CP6-05 designs Vertical #1 exactly.
+12. CP6-06 proves only genuinely materialized/non-speculative PostgreSQL foundation behavior.
+13. CP6-07 closes whole persistence readiness.
+14. Only after CP6 closure does a separately authorized phase implement Vertical #1.
 ```
 
 CP6 terminal boundary:

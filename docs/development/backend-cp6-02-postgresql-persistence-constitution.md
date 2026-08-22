@@ -1,15 +1,17 @@
 # Backend CP6-02 — PostgreSQL Persistence Constitution
 
-- **Status:** CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED
+- **Status:** ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED
 - **Created:** 2026-08-22
 - **Branch:** `feature/logical-postgresql`
-- **PRE-SCOPE:** `b556f96d05889c8962efc0e727c208a56a4a0012`
+- **Original candidate PRE-SCOPE:** `b556f96d05889c8962efc0e727c208a56a4a0012`
 - **Upstream checkpoint:** CP6-01 **CLOSED / GATE 01 PASS**
 - **CP6 authority:** `docs/workstreams/logical-postgresql.md`
 - **Business schema / migrations / SQLAlchemy business mappings / adapters:** **NOT AUTHORIZED / NOT STARTED**
 - **Purpose:** close reusable PostgreSQL persistence doctrine for DANTE without designing every business table, reopening Domain/Logical/Physical architecture, or implementing Vertical #1.
 
-This document is a **candidate constitution**. It records the full CP6-02 design position after repository reconstruction, PostgreSQL/standard review and external engineering benchmark. It does not itself close Gate 02. Gate 02 requires the technology-refresh boundary, remote readback, whole-constitution independent review and an explicit closure write.
+This document is the **active CP6-02 candidate constitution**. It records the full design position after repository reconstruction, PostgreSQL/standard review, external engineering benchmark, the PostgreSQL 18.6 technical refresh and direct remote regression. It does not itself close Gate 02.
+
+Current pre-closure flow:
 
 ```text
 CP6-01
@@ -17,13 +19,23 @@ CLOSED / GATE 01 PASS
         ↓
 CP6-02
 POSTGRESQL PERSISTENCE CONSTITUTION
-CANDIDATE / PRE-CLOSURE
+ACTIVE / CANDIDATE / PRE-CLOSURE
         ↓
 PostgreSQL 18.6 foundation refresh
-+ final independent review
+DIRECT REMOTE QA PASS
+run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+        ↓
+18.6 release-note impact review
+PASS / NO CURRENT POST-UPGRADE ACTION
+        ↓
+current-truth reconciliation
+        ↓
+final independent whole-Constitution review
         ↓
 separate Gate 02 closure
 ```
+
+Gate 02 remains **NOT PASSED** until the final independent review is clean and a separate closure write is explicitly authorized and verified.
 
 ---
 
@@ -129,26 +141,32 @@ maintenance patch
 
 A compatible PostgreSQL 18 maintenance/security patch does **not** reopen Domain, Logical or Physical architecture.
 
-### TECH-02 — Current PostgreSQL patch target
+### TECH-02 — Current PostgreSQL patch and exact evidence
 
-At this review:
+Current version truth:
 
 ```text
+Physical exact phase-time PostgreSQL patch       18.4
 CP2 / CP3 directly executed PostgreSQL version   18.4
-current supported PostgreSQL 18 patch target     18.6
+current supported PostgreSQL 18 technical patch  18.6
 ```
 
 Therefore:
 
 ```text
-CP3 18.4 direct evidence
-REMAINS TRUE HISTORICAL EVIDENCE
+CP2 / CP3 18.4 direct evidence
+REMAINS TRUE HISTORICAL EXACT EVIDENCE
 
-18.6
-MUST receive fresh technical foundation regression before Gate 02 closure
+PostgreSQL 18.6
+CONFIGURATION REFRESH APPLIED
+DIRECT REMOTE FOUNDATION REGRESSION PASS
+Backend CI run 32568664940
+executed HEAD ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 ```
 
-No prior test record may be rewritten as if it ran on 18.6.
+The 18.6 regression directly built the pinned `postgres:18.6-trixie` base, preserved PostGIS 3.6.4 and pgvector 0.8.6, passed the 32-test fast lane, passed the 18-test real-PostgreSQL lane and passed the aggregate Backend CI Gate.
+
+No prior test record is rewritten as if it ran on 18.6.
 
 ### TECH-03 — Stable release channel only
 
@@ -176,6 +194,17 @@ Before a major persistence/release checkpoint:
 - security/critical fixes MUST be reviewed;
 - upgrade impact MUST be classified as patch maintenance vs architecture change;
 - direct evidence MUST remain tied to the exact executed version.
+
+PostgreSQL 18.6 release-note impact was reviewed for the materialized DANTE boundary. Current DANTE has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring a current post-upgrade action.
+
+Result:
+
+```text
+POSTGRESQL 18.6 RELEASE-NOTE IMPACT
+PASS / NO CURRENT POST-UPGRADE ACTION
+```
+
+This result is bounded to the current materialized foundation. When PowerSync/logical replication is activated, the activation boundary MUST review the then-current PostgreSQL logical-decoding policy, including `output_plugin_libraries`, and all then-applicable upgrade actions.
 
 ### TECH-05 — No activation by selection alone
 
@@ -783,6 +812,8 @@ Before adding an index, review PK/UNIQUE/other indexes for prefix/equivalent cov
 
 If PostgreSQL/extension release notes require REINDEX or cleanup, that becomes an explicit upgrade action/evidence item; it is not ignored because the major version stayed the same.
 
+The PostgreSQL 18.6 review found no current DANTE GIN/`btree_gist`/`ltree` object requiring such action. This does not waive future release-specific review.
+
 ### IDX-10 — No speculative partitioning/sharding
 
 Partitioning/sharding requires measured table/query/maintenance pressure and an explicit later architecture decision. CP6-02 does not pre-partition the 57-owner model.
@@ -981,6 +1012,8 @@ Activation requires connection-pressure value and compatibility proof. Migration
 
 Only approved downstream projections/local staging may sync. Local mutation never becomes canonical solely because it exists offline. Consequential conflict/governance is resolved by backend acceptance. PSV-11..20 remain staged.
 
+When PowerSync/logical replication is activated, its technical gate MUST review current PostgreSQL logical-decoding restrictions and allowlisting, including `output_plugin_libraries` in PostgreSQL 18.6+, rather than assuming the current dormant posture qualifies future replication runtime.
+
 ### CAP-09 — Transactional outbox is Class-A runtime mechanism
 
 Activate only on real asynchronous external/publication need. Outbox is technical runtime state, not Domain history or universal event store.
@@ -1082,6 +1115,8 @@ Migration/mapping revision is an evidence/technical concern. Per-row revision me
 
 18.4 → 18.6 belongs to the technical PostgreSQL image/envelope and regression boundary. Business migration history is not rewritten to represent the server patch.
 
+The actual 18.6 refresh has now directly validated this boundary without adding an Alembic revision.
+
 ### MIG-17 — Major PostgreSQL upgrade is separate architecture/runtime boundary
 
 Moving 18 → 19 is not automatic patch maintenance and requires compatibility/performance/extension/migration review.
@@ -1152,26 +1187,39 @@ SQLite/mocks MUST NOT qualify FK/range/locking/isolation/Alembic/role/RLS/PostGI
 
 Each direct evidence run records exact PostgreSQL patch and relevant extension versions.
 
-### QA-03 — Patch refresh regression
+### QA-03 — Patch refresh regression — CURRENT 18.6 PASS
 
-Before Gate 02 closure, PostgreSQL 18.6 must re-run the applicable CP2/CP3 technical foundation corpus without changing business schema.
+The CP6 patch refresh has directly re-run the applicable CP2/CP3 technical foundation corpus on PostgreSQL 18.6 without changing business schema.
 
-At minimum verify:
+Exact evidence:
 
 ```text
-server 18.6 exactness
-selected stable extension envelope
-fresh init / persistence/reset where applicable
-provisioning roles/default privileges
-Alembic fresh → head
-single head / drift check
-runtime privilege denial
-transaction commit/rollback/savepoint
-pool/readiness outage/recovery
-build/quality/full backend regression
+Backend CI run                         32568664940
+workflow event                         workflow_dispatch
+executed HEAD                          ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+PostgreSQL base                        postgres:18.6-trixie
+base index digest                      sha256:ae6c78831cbc35fa3a4aaf4d763ddacf6183d6004774cc2dc28b3920410d1d1a
+PostGIS                                3.6.4 PASS
+pgvector                               0.8.6 PASS
+Backend Quality                        SUCCESS
+fast test lane                         32 / 32 PASS
+Backend PostgreSQL                     SUCCESS
+real PostgreSQL lane                   18 / 18 PASS
+Backend CI Gate                        SUCCESS
+current test corpus                    50 / 50 covered across mandatory lanes
 ```
 
-18.6 release-note-specific maintenance/security actions must be reviewed for the DANTE image/envelope.
+The PostgreSQL lane directly covered Alembic fresh→head, head/base/head round-trip, no-drift check, privilege posture, runtime identity/search path, stale-connection recovery, outage/readiness recovery, commit/rollback/flush/savepoint semantics and related CP3 foundation behavior.
+
+This must not be misreported as one single full-`pytest` 50/50 invocation; CI deliberately split the corpus into the fast and PostgreSQL lanes.
+
+PostgreSQL 18.6 release-note-specific impact review is also complete:
+
+```text
+PASS / NO CURRENT POST-UPGRADE ACTION
+```
+
+The current boundary has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring an 18.6-specific action. Future activation/objects reopen only their applicable maintenance checks.
 
 ### QA-04 — Constraint proof is positive + negative
 
@@ -1303,7 +1351,7 @@ specialist capability activation without trigger    FORBIDDEN
 | PG-R09 disclosure/non-interference | CAP-06 + SEC + QA-11 | security/search/system proof |
 | PG-R10 retention/restore | LIFE + MIG + QA-12 | destructive recovery/anti-resurrection |
 
-No PG-R item is relabeled direct PASS by this design document.
+No PG-R item is relabeled business-semantic direct PASS by this design document or by the 18.6 technical regression.
 
 ---
 
@@ -1367,7 +1415,7 @@ PSV status remains as assigned by CP6-01. This constitution changes stage owners
 | owner/migrator/runtime split | PRESERVED |
 | runtime DDL denied | PRESERVED |
 | PostgreSQL 18.4 direct evidence | PRESERVED AS HISTORICAL EXACT EVIDENCE |
-| current PostgreSQL patch | REFRESH REQUIRED TO 18.6 BEFORE GATE 02 |
+| current PostgreSQL patch | 18.6 / DIRECT REMOTE QA PASS — run 32568664940 @ ec3dc795... |
 
 CP3 contradiction identified: **0**.
 
@@ -1454,19 +1502,29 @@ business SQLAlchemy mapping                           0
 persistence adapter                                   0
 ```
 
-### Gate-02 blockers still intentionally open
+### Gate-02 blocker status
 
 ```text
-B-01 PostgreSQL technical target refresh 18.4 → 18.6 not yet executed
-B-02 18.6 release-note-specific DANTE impact review not yet directly validated
-B-03 final post-refresh whole-constitution independent review not yet complete
-B-04 formal Gate-02 closure write not yet authorized/executed
+B-01 PostgreSQL technical target refresh 18.4 → 18.6
+RESOLVED / DIRECT REMOTE QA PASS
+run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+B-02 PostgreSQL 18.6 release-note-specific DANTE impact review
+RESOLVED / PASS / NO CURRENT POST-UPGRADE ACTION
+future logical-replication activation remains trigger-bound
+
+B-03 final post-refresh whole-Constitution independent review
+OPEN / NOT YET COMPLETE
+
+B-04 formal Gate-02 closure write
+OPEN / NOT YET AUTHORIZED OR EXECUTED
 ```
 
 Therefore:
 
 ```text
 CP6-02
+ACTIVE / CANDIDATE / PRE-CLOSURE
 GATE 02 NOT PASSED
 ```
 
@@ -1474,18 +1532,18 @@ GATE 02 NOT PASSED
 
 ## 30. Next execution boundary
 
-Before Gate 02 can close:
+The technology-refresh and direct technical evidence boundaries are complete. The current-truth reconciliation updates current documentation to that exact evidence without rewriting historical 18.4 records.
+
+Next:
 
 ```text
-1. keep this constitution candidate unchanged unless evidence finds a defect;
-2. separately gate technical PostgreSQL 18.4 → 18.6 maintenance refresh;
-3. rebuild/verify the selected stable extension envelope;
-4. re-run applicable CP2/CP3 technical PostgreSQL evidence on 18.6;
-5. record exact versioned evidence without rewriting 18.4 history;
-6. perform a fresh independent constitution review against:
-   CP6-01 / WL-H / PG-R / HG / SC / PSV / Physical / CP3 / external evidence;
-7. repair any current contradiction at source rather than documenting parallel truths;
-8. only then perform a separate Gate-02 closure write.
+1. finish/verify current-truth reconciliation with exact Git delta and remote readback;
+2. perform a fresh independent whole-Constitution review against:
+   CP6-01 / WL-H / PG-R / HG / SC / PSV / Physical / CP3 /
+   PostgreSQL 18.6 direct evidence / 18.6 release-note impact / external evidence;
+3. repair any defect at source rather than documenting parallel truths;
+4. if and only if the independent review is CLEAN, propose a separate exact Gate-02 closure write;
+5. only after formal Gate 02 PASS may CP6-03 begin.
 ```
 
 After Gate 02 closure, and only then:

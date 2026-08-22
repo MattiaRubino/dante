@@ -112,7 +112,7 @@ addopts = [
 strict = true
 filterwarnings = ["error"]
 markers = [
-    "postgres: requires the real DANTE PostgreSQL 18.4 integration boundary",
+    "postgres: requires the real DANTE PostgreSQL 18.6 integration boundary",
 ]
 asyncio_mode = "strict"
 

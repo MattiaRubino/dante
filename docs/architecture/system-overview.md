@@ -1,8 +1,9 @@
 # DANTE System Overview
 
 - Status: **CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW**
-- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 NEXT**
+- Current backend progression: **CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE; CP6-01 CLOSED / GATE 01 PASS; CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED**
 - Current CP6 branch: `feature/logical-postgresql`
+- Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 
 ## 1. Product and authority
 
@@ -84,15 +85,19 @@ FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects 
 Current backend foundation truth:
 
 ```text
-CP1 process/config foundation              CLOSED / DIRECT QA PASS
-CP2 LOCAL PostgreSQL 18.4                  CLOSED / DIRECT QA PASS
-CP3 persistence/migrations/privileges      CLOSED / DIRECT QA PASS
-CP4 CI enforcement                         CLOSED / DIRECT REMOTE QA PASS
-CP5 integrated scaffold QA                 CLOSED / DIRECT INTEGRATED QA PASS
-PR #24                                     MERGED / POST-MERGE CI PASS
+CP1 process/config foundation                   CLOSED / DIRECT QA PASS
+CP2 LOCAL PostgreSQL 18.4                       CLOSED / DIRECT QA PASS / HISTORICAL EXACT
+CP3 persistence/migrations/privileges 18.4      CLOSED / DIRECT QA PASS / HISTORICAL EXACT
+CP4 CI enforcement                              CLOSED / DIRECT REMOTE QA PASS
+CP5 integrated scaffold QA                      CLOSED / DIRECT INTEGRATED QA PASS
+PR #24                                          MERGED / POST-MERGE CI PASS
+PostgreSQL 18.6 technical refresh               APPLIED
+PostgreSQL 18.6 foundation regression           DIRECT REMOTE QA PASS
 ```
 
 CP3 already materializes SQLAlchemy async, psycopg 3, Alembic, schema `dante`, role separation, explicit transaction ownership and real PostgreSQL acceptance. It deliberately contains no business persistence mapping.
+
+The CP6 PostgreSQL 18.6 refresh does not change that architecture. It reuses and directly re-proves the existing foundation on the current maintenance patch.
 
 ## 4. Frontend architecture
 
@@ -139,11 +144,16 @@ Frontend production materialization proceeds under its own bounded workstream an
 ## 5. Canonical persistence and client data authority
 
 ```text
-PostgreSQL 18.4
+PostgreSQL 18 major family
 SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
+
+Physical phase-time exact patch   18.4
+CP2/CP3 original direct evidence  18.4 / historical exact
+current technical patch           18.6
+18.6 technical regression         DIRECT REMOTE QA PASS
 ```
 
-Selected DB capabilities remain PostGIS, pgvector, native FTS, pg_trgm, unaccent, pg_stat_statements and bounded PgBouncer posture.
+Selected DB capabilities remain PostGIS 3.6.4, pgvector 0.8.6, native FTS, pg_trgm, unaccent, pg_stat_statements and bounded PgBouncer posture.
 
 Frontend Data Authority Matrix:
 
@@ -165,23 +175,46 @@ An offline operation crosses staging → upload → backend accept/reject → re
 
 The active backend boundary is **CP6 — Concrete Persistence Readiness**.
 
-CP6-01 is now formally closed:
-
 ```text
+CP6-00
+COMPLETE
+
 CP6-01
 CLOSED / GATE 01 PASS
+
+CP6-02
+POSTGRESQL PERSISTENCE CONSTITUTION
+ACTIVE / CANDIDATE / PRE-CLOSURE
+GATE 02 NOT PASSED
 ```
 
-Closure authority:
+CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
 
-The next unfinished checkpoint is:
+CP6-02 candidate authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+The CP6-02 technology-refresh boundary is now directly proved:
 
 ```text
-CP6-02
-POSTGRESQL PERSISTENCE CONSTITUTION
-NEXT / NOT STARTED
+PostgreSQL 18.6 image build         PASS
+PostGIS 3.6.4                       PASS
+pgvector 0.8.6                      PASS
+Backend Quality                     SUCCESS / 32 fast tests PASS
+Backend PostgreSQL                  SUCCESS / 18 PostgreSQL tests PASS
+Backend CI Gate                     SUCCESS
+run                                 32568664940
+HEAD                                ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+release-note impact                 PASS / NO CURRENT POST-UPGRADE ACTION
+```
+
+What remains before Gate 02:
+
+```text
+final independent whole-Constitution review
+separate formal Gate 02 closure write
 ```
 
 CP6 does not repeat Domain, Logical or Physical modeling. It consumes those closed authorities and must finish with:
@@ -218,6 +251,8 @@ Selected Physical target remains PowerSync + encrypted SQLite bounded local stat
 Mobile activates that path when a real offline/sync implementation requires it. Web remains online-first unless a separately accepted need activates a broader local/sync path.
 
 Local client databases are identity scoped; cross-account local-data leakage is forbidden.
+
+PowerSync/logical replication is not active in the current backend. When it is activated, PostgreSQL maintenance review must include then-current logical-decoding policy, including `output_plugin_libraries` introduced in PostgreSQL 18.6.
 
 ## 8. UI/shared semantics
 
@@ -271,7 +306,18 @@ All observability is privacy-minimized operational telemetry, never canonical hi
 
 GitHub Actions is repository-wide primary CI/CD authority.
 
-Backend validation is risk-layered and already includes a real PostgreSQL lane. Protected `main` requires the accepted backend aggregate gate and dependency review checks.
+Backend validation is risk-layered and includes a real PostgreSQL lane. Protected `main` requires the accepted backend aggregate gate and dependency review checks.
+
+Current PostgreSQL 18.6 evidence was earned through a real `workflow_dispatch` run, not inferred from workflow existence:
+
+```text
+run                  32568664940
+Backend Quality      SUCCESS
+Backend PostgreSQL   SUCCESS
+Backend CI Gate      SUCCESS
+```
+
+The fast and PostgreSQL lanes cover the current 50-test corpus as 32 + 18 tests. This must not be misreported as a single full-`pytest` invocation.
 
 Frontend validation progressively covers lint/dependency/cycle boundaries, strict TS, unit/component, generated drift, Web E2E, Mobile tests and release/device validation for activated targets.
 
@@ -287,10 +333,13 @@ Frontend keeps one authoritative checkout; WSL↔Windows Metro/ADB specifics are
 
 ```text
 BACKEND SCAFFOLD CP1–CP5       CLOSED / DIRECT QA PASS / INTEGRATED
-LOCAL POSTGRESQL 18.4          DIRECT QA PASS
+POSTGRESQL 18.4                HISTORICAL PHYSICAL/CP2/CP3 EXACT EVIDENCE
+POSTGRESQL 18.6                CURRENT TECHNICAL PATCH
+18.6 FOUNDATION REGRESSION     DIRECT REMOTE QA PASS
 CP3 TECHNICAL PERSISTENCE      DIRECT QA PASS
 DANTE SCHEMA / ALEMBIC BASE    MATERIALIZED / DIRECT QA PASS
 CP6-01 COVERAGE GATE           CLOSED / GATE 01 PASS
+CP6-02 CONSTITUTION            ACTIVE / CANDIDATE / GATE 02 NOT PASSED
 CONCRETE BUSINESS DB SCHEMA    NOT IMPLEMENTED
 VERTICAL #1                    NOT IMPLEMENTED
 SEMANTIC HG DIRECT PASS        0 unless an actual qualifying business scenario executes
@@ -298,7 +347,7 @@ PSV                            only per exact executed selected-stack artifact
 RESTORE/PITR REHEARSAL         NOT RUN
 ```
 
-The old Physical phase statement `DATABASE DEPLOYMENT NOT STARTED` is historical phase-time evidence and is superseded for current implementation status by CP2/CP3. CP3 technical QA does not, however, convert business-semantic HG/PSV into PASS.
+The old Physical phase statement `DATABASE DEPLOYMENT NOT STARTED` is historical phase-time evidence and is superseded for current technical implementation status by CP2/CP3 and the later 18.6 regression. Technical QA does not convert business-semantic HG/PSV into PASS.
 
 ## 16. Current backend sequence
 
@@ -310,11 +359,15 @@ CP6-01 concrete persistence coverage
 CLOSED / GATE 01 PASS
         ↓
 CP6-02 PostgreSQL Persistence Constitution
-NEXT / NOT STARTED
+ACTIVE / CANDIDATE / PRE-CLOSURE
+18.6 TECHNICAL REGRESSION PASS
+FINAL INDEPENDENT REVIEW NEXT
+GATE 02 NOT PASSED
         ↓
 CP6-03 Concrete Relational Topology
        + Implementation Dependency DAG
        + Vertical Decomposition
+       STARTS ONLY AFTER GATE 02 PASS
         ↓
 CP6-04 Vertical #1 selection
         ↓

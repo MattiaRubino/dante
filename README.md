@@ -19,6 +19,8 @@ WL-H01..WL-H12 ACTIVE
 
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
+PostgreSQL 18 major family is the canonical persistence architecture
+Physical phase-time exact patch: PostgreSQL 18.4
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
@@ -34,8 +36,8 @@ DIRECT FRONTEND VALIDATION NOT YET EARNED
 PRODUCTION BACKEND SCAFFOLD
 INTEGRATED IN PROTECTED main / DIRECT QA PASS
 CP1 CLOSED / DIRECT QA PASS
-CP2 CLOSED / DIRECT QA PASS
-CP3 CLOSED / DIRECT QA PASS
+CP2 CLOSED / DIRECT QA PASS — original PostgreSQL 18.4 evidence
+CP3 CLOSED / DIRECT QA PASS — original PostgreSQL 18.4 evidence
 CP4 CLOSED / DIRECT REMOTE QA PASS
 CP5 CLOSED / DIRECT INTEGRATED QA PASS
 PR #24 MERGED / POST-MERGE BACKEND CI PASS
@@ -46,14 +48,27 @@ Dependency Review REQUIRED
 branch up-to-date REQUIRED
 required-check source GitHub Actions
 
-CONCRETE LOGICAL → POSTGRESQL IMPLEMENTATION
-NOT STARTED / NEXT BACKEND IMPLEMENTATION BOUNDARY
+CP6 — CONCRETE PERSISTENCE READINESS
+ACTIVE ON feature/logical-postgresql
+CP6-00 COMPLETE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+GATE 02 NOT PASSED
 
-DIRECT SELECTED-STACK VALIDATION / PSV
-NOT RUN BEYOND EXPLICITLY RECORDED SCAFFOLD ACCEPTANCE
+CURRENT POSTGRESQL TECHNICAL PATCH
+PostgreSQL 18.6
+configuration refresh APPLIED
+foundation regression DIRECT REMOTE QA PASS
+Backend CI run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+VERTICAL #1 BUSINESS IMPLEMENTATION
+POST-CP6 / NOT STARTED / SEPARATELY AUTHORIZED
+
+DIRECT BUSINESS-SEMANTIC HG / blanket PSV
+NOT RUN BEYOND EXACTLY RECORDED QUALIFYING EVIDENCE
 ```
 
-Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario actually ran.
+Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario actually ran. PostgreSQL 18.4 remains the exact historical Physical/CP2/CP3 evidence patch; the current CP6 technical patch is 18.6. Patch maintenance inside PostgreSQL 18 does not rewrite historical evidence or reopen the selected persistence architecture.
 
 ## Production repository direction
 
@@ -86,28 +101,30 @@ Repository identity governance is complete: `MattiaRubino/lifeos` is historical 
 ## Backend engineering baseline
 
 ```text
-Python                 3.14.x
-current scaffold pin    3.14.7
-package manager         uv 0.12.5 exact project requirement
-source root             apps/backend/src/dante
-format/lint             Ruff
-type checking           mypy strict
-unit/integration runner pytest
-property testing        Hypothesis where meaningful
+Python                   3.14.x
+current scaffold pin      3.14.7
+package manager           uv 0.12.5 exact project requirement
+source root               apps/backend/src/dante
+format/lint               Ruff
+type checking             mypy strict
+unit/integration runner   pytest
+property testing          Hypothesis where meaningful
 
-server semantics        Linux
-Windows workflow        WSL2/Linux
-primary user IDE        PyCharm with WSL interpreter supported
-local stateful infra    Docker Compose
+server semantics          Linux
+Windows workflow          WSL2/Linux
+primary user IDE          PyCharm with WSL interpreter supported
+local stateful infra      Docker Compose
 
-canonical persistence   PostgreSQL 18.4
-ORM/SQL toolkit         SQLAlchemy 2.0 stable line
-driver                  psycopg 3
-migrations              Alembic
+canonical persistence     PostgreSQL 18 major family
+current technical patch   PostgreSQL 18.6
+ORM/SQL toolkit           SQLAlchemy 2.0 stable line
+driver                    psycopg 3
+migrations                Alembic
 ```
 
-The materialized LOCAL PostgreSQL baseline uses:
+The materialized current LOCAL PostgreSQL baseline uses:
 
+- PostgreSQL 18.6;
 - PostGIS 3.6.4;
 - pgvector 0.8.6;
 - `pg_trgm`;
@@ -116,6 +133,8 @@ The materialized LOCAL PostgreSQL baseline uses:
 - native PostgreSQL full-text search.
 
 PostgreSQL remains the sole canonical persistence and material-history authority.
+
+The current 18.6 technical envelope was directly re-proved on GitHub Actions run `32568664940` against HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`: Backend Quality, Backend PostgreSQL and Backend CI Gate all succeeded; the fast lane passed 32/32 tests and the PostgreSQL lane passed 18/18 tests, covering the current 50-test corpus across the two mandatory lanes.
 
 ## Frontend engineering baseline — closed design / integrated
 
@@ -198,9 +217,9 @@ Repository owner also enabled the Actions setting requiring full-length Action S
 
 No arbitrary coverage threshold is introduced.
 
-## CP5 final integrated scaffold acceptance
+## Historical CP5 final integrated scaffold acceptance
 
-CP5 re-proved the complete scaffold on the canonical WSL2/Linux workstation without adding business schema or changing backend implementation.
+CP5 re-proved the complete scaffold on the canonical WSL2/Linux workstation without adding business schema or changing backend implementation. This evidence used the then-current PostgreSQL 18.4 envelope and remains historically exact.
 
 Direct evidence:
 
@@ -245,8 +264,8 @@ The merge commit has the expected two parents: the prior protected-main SHA and 
 
 ```text
 CP1 BACKEND PROCESS / CONFIG             DIRECT QA PASS
-CP2 LOCAL POSTGRESQL                     DIRECT QA PASS
-CP3 PERSISTENCE / MIGRATIONS             DIRECT QA PASS
+CP2 LOCAL POSTGRESQL 18.4                DIRECT QA PASS / HISTORICAL EXACT
+CP3 PERSISTENCE / MIGRATIONS 18.4        DIRECT QA PASS / HISTORICAL EXACT
 CP3 POSTGRESQL ACCEPTANCE                18/18 PASS
 CP3 FULL BACKEND PYTEST                  50/50 PASS
 CP4 LOCAL FAST QA                        32/32 PASS
@@ -264,8 +283,14 @@ CP5 REAL STARTUP + LIVE + READY          PASS
 CP5                                      CLOSED / DIRECT INTEGRATED QA PASS
 BACKEND SCAFFOLD MAIN INTEGRATION        PASS
 POST-MERGE BACKEND CI                    PASS
+POSTGRESQL 18.6 FOUNDATION REGRESSION    DIRECT REMOTE QA PASS
+18.6 FAST LANE                           32/32 PASS
+18.6 POSTGRESQL LANE                     18/18 PASS
+18.6 BACKEND CI GATE                     SUCCESS
+CP6-01                                   CLOSED / GATE 01 PASS
+CP6-02                                   ACTIVE / CANDIDATE / GATE 02 NOT PASSED
 CONCRETE BUSINESS DB SCHEMA              NOT STARTED
-DIRECT HG-01..HG-12                      NOT RUN
+DIRECT BUSINESS HG-01..HG-12             NOT RUN / PASS 0
 RESTORE/PITR REHEARSAL                   NOT RUN
 POWERSYNC DIRECT TEST                    NOT RUN
 RESTATE DIRECT TEST                      NOT RUN
@@ -287,9 +312,9 @@ Environments are not Git branches. Activation remains progressive and provider-s
 
 ## Selected Physical posture
 
-Selected targets remain unchanged:
+The Physical target remains unchanged. Its exact phase-time PostgreSQL patch was 18.4; current patch maintenance within selected major line 18 is lifecycle-managed downstream.
 
-- PostgreSQL 18.4 canonical persistence;
+- PostgreSQL 18 major family — sole canonical persistence/material-history authority; Physical phase-time patch 18.4; current CP6 technical patch 18.6;
 - PostGIS / pgvector / native FTS / pg_trgm / unaccent / pg_stat_statements;
 - PgBouncer 1.25.2 selected, not forced into every day-one path;
 - PowerSync + encrypted SQLite for bounded noncanonical local/offline state when activated;
@@ -308,10 +333,13 @@ Read before the next backend write:
 
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
-3. development operating/safety/handoff rules
-4. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
-5. closed Logical Model owner/ref/invariant authorities
-6. applicable Physical target/validation authorities.
+3. `docs/ROADMAP.md`
+4. `docs/workstreams/logical-postgresql.md`
+5. `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+6. development operating/safety/handoff rules
+7. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
+8. closed Logical Model owner/ref/invariant authorities
+9. applicable Physical target/validation authorities.
 
 Exact active boundaries:
 
@@ -321,10 +349,14 @@ feature/frontend-materialization
 → continue its independent bounded materialization/direct-validation workstream
 
 BACKEND
-protected main contains the complete CP1–CP5 production backend scaffold
-→ backend scaffold integration VERIFIED / PASS
-→ Concrete Logical → PostgreSQL is the next backend implementation boundary
-→ start it only through a fresh bounded workstream/gate
+feature/logical-postgresql
+→ CP6 Concrete Persistence Readiness ACTIVE
+→ CP6-01 CLOSED / GATE 01 PASS
+→ CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+→ PostgreSQL 18.6 technical refresh + direct remote regression PASS
+→ NEXT: final independent whole-Constitution review
+→ only if clean: separate Gate 02 closure
+→ CP6-03 starts only after Gate 02 PASS
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default. Do not implement Vertical #1 inside CP6.

@@ -5,11 +5,40 @@
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
 - Main baseline during Physical workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- Current project progression: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE on `feature/logical-postgresql`**
+- Current project progression: **backend CP1–CP5 CLOSED / INTEGRATED / DIRECT QA PASS; CP6 Concrete Persistence Readiness ACTIVE on `feature/logical-postgresql`; CP6-01 CLOSED / GATE 01 PASS; CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE**
 - Physical semantic benchmark/direct HG corpus: **DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
 - Business persistence schema: **NOT IMPLEMENTED**
 - Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
 - pgBackRest + AWS S3 initial DEV posture: **DORMANT / NOT ACTIVE until recovery/production boundary or real recovery rehearsal**
+
+## PostgreSQL version truth
+
+The Physical Model selected PostgreSQL as the canonical primary and recorded **PostgreSQL 18.4** as the exact patch available and evaluated at Physical closure. That 18.4 value remains phase-time evidence and is not rewritten.
+
+Current downstream lifecycle truth is:
+
+```text
+ARCHITECTURE FAMILY
+PostgreSQL 18
+sole canonical persistence / material-history authority
+
+PHYSICAL PHASE-TIME EXACT PATCH
+PostgreSQL 18.4
+historical selection evidence
+
+CP2 / CP3 ORIGINAL DIRECT EVIDENCE
+PostgreSQL 18.4
+historical exact direct PASS
+
+CURRENT CP6 TECHNICAL PATCH
+PostgreSQL 18.6
+configuration refresh APPLIED
+direct remote foundation regression PASS
+Backend CI run 32568664940
+HEAD ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+```
+
+A compatible maintenance patch inside PostgreSQL 18 is lifecycle maintenance and does not reopen the accepted Physical architecture. A future PostgreSQL major-version change is a separate review boundary.
 
 Historical Physical checkpoint results:
 
@@ -63,9 +92,9 @@ research
 
 ## Current authority order
 
-For current Physical target architecture read:
+For the accepted Physical target architecture read:
 
-1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
+1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack at phase time;
 2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
 3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
 4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch/workstream closure evidence produced before PR #15;
@@ -73,16 +102,17 @@ For current Physical target architecture read:
 6. [`result-register-v1.md`](result-register-v1.md) — Physical result ledger;
 7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — Physical workstream closure/handoff.
 
-For **current project implementation status after Physical closure**, use:
+For **current project implementation/runtime status after Physical closure**, use:
 
 ```text
 ../PROJECT-STATUS.md
 ../ROADMAP.md
 ../workstreams/logical-postgresql.md
+../development/backend-cp6-02-postgresql-persistence-constitution.md
 ../development/backend-cp3-persistence-contract.md
 ```
 
-PM-00..PM-14 preserve their phase-time evidence. A historical statement such as `DATABASE DEPLOYMENT NOT STARTED` inside a PM-era record describes the state at that checkpoint and must not override later CP2/CP3 direct evidence.
+PM-00..PM-14 preserve their phase-time evidence. A historical statement such as `DATABASE DEPLOYMENT NOT STARTED` or `PostgreSQL 18.4 selected target` inside a PM-era record describes the state/version at that checkpoint and must not override later CP2/CP3/CP6 direct implementation truth.
 
 ## Non-negotiable barriers
 
@@ -102,6 +132,7 @@ FINALIST != PREFERRED
 PREFERRED != SELECTED
 SELECTED != DEPLOYED
 SELECTED != DIRECT PASS
+POSTGRESQL PATCH REFRESH != PHYSICAL REOPEN
 CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
 ```
 
@@ -109,9 +140,12 @@ No universal Entity/Thing/EAV/generic-edge canonical shortcut is accepted.
 
 ## Accepted target stack
 
+The following is the **accepted Physical phase-time target**. Exact versions are retained as selection evidence; downstream compatible patch maintenance is separately lifecycle-managed.
+
 ```text
 CANONICAL PRIMARY
-PostgreSQL 18.4
+PostgreSQL 18.4 phase-time exact patch
+Architecture family: PostgreSQL 18
 
 POSTGRESQL CAPABILITIES
 PostGIS 3.6.4
@@ -205,6 +239,8 @@ PostgreSQL canonical
 ```
 
 Offline is operation-specific. Arrival order does not define truth. Universal consequential last-write-wins is rejected. Visibility/Consent/delete/redaction must propagate to affected local/projection copies.
+
+PowerSync/logical replication is not currently active. When activated, its runtime boundary must consume then-current PostgreSQL logical-decoding policy; PostgreSQL 18.6 introduced `output_plugin_libraries`, so activation must explicitly review that setting and any current release-note requirements.
 
 ## Initial DEV activation posture already fixed
 
@@ -309,7 +345,7 @@ At PM-11/12/13/14 closure, the selected stack had not yet been directly implemen
 DATABASE DEPLOYMENT      NOT STARTED
 FIXTURE/HARNESS           NOT STARTED
 DIRECT HG PASS            0
-LOW/BASE/HIGH            NOT RUN
+LOW/BASE/HIGH             NOT RUN
 RESTORE                   NOT RUN
 MIGRATION                 NOT RUN
 FAILURE INJECTION         NOT RUN
@@ -322,24 +358,31 @@ VERIFIED-RUN SCORE        NOT AVAILABLE
 
 ### Current project truth after Physical closure
 
-Later backend work has now directly established:
+Later backend work directly established the technical PostgreSQL substrate, first on 18.4 and now on current patch 18.6:
 
 ```text
 BACKEND CP1–CP5                  CLOSED / INTEGRATED / DIRECT QA PASS
-LOCAL POSTGRESQL 18.4            MATERIALIZED / DIRECT QA PASS
-POSTGIS 3.6.4                    LOCAL ENVELOPE DIRECT QA PASS
-PGVECTOR 0.8.6                   LOCAL ENVELOPE DIRECT QA PASS
-PG_TRGM / UNACCENT               LOCAL ENVELOPE DIRECT QA PASS
-PG_STAT_STATEMENTS               LOCAL ENVELOPE DIRECT QA PASS
+POSTGRESQL 18.4                  ORIGINAL CP2/CP3 HISTORICAL DIRECT PASS
+CURRENT POSTGRESQL 18.6          CONFIGURED / DIRECT REMOTE QA PASS
+18.6 CI RUN                      32568664940
+18.6 EXECUTED HEAD               ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+POSTGIS 3.6.4                    CURRENT ENVELOPE DIRECT REMOTE QA PASS
+PGVECTOR 0.8.6                   CURRENT ENVELOPE DIRECT REMOTE QA PASS
+PG_TRGM / UNACCENT               CURRENT ENVELOPE ACCEPTANCE COVERAGE
+PG_STAT_STATEMENTS               CURRENT ENVELOPE ACCEPTANCE COVERAGE
 SQLALCHEMY / PSYCOPG             MATERIALIZED
 ALEMBIC TECHNICAL BASELINE       MATERIALIZED / DIRECT QA PASS
 DANTE SCHEMA / ROLE MODEL        MATERIALIZED / DIRECT QA PASS
-REAL POSTGRESQL TEST HARNESS      MATERIALIZED / DIRECT QA PASS
-BUSINESS PERSISTENCE SCHEMA       NOT IMPLEMENTED
-SEMANTIC HG DIRECT PASS           0 unless a qualifying business scenario is actually executed
+REAL POSTGRESQL TEST HARNESS     MATERIALIZED / DIRECT QA PASS
+BUSINESS PERSISTENCE SCHEMA      NOT IMPLEMENTED
+SEMANTIC HG DIRECT PASS          0 unless a qualifying business scenario is actually executed
 ```
 
-CP3 technical acceptance does not retroactively discharge business-semantic HG/PSV obligations.
+The PostgreSQL 18.6 run directly passed Backend Quality, Backend PostgreSQL and Backend CI Gate; 32 fast tests and 18 real-PostgreSQL tests covered the current 50-test corpus across the two mandatory lanes.
+
+PostgreSQL 18.6 release-note impact review found no current DANTE post-upgrade action because the current boundary has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object. This finding is bounded to the current materialized foundation; future capability activation must re-evaluate then-applicable maintenance actions.
+
+CP3/CP6 technical acceptance does not retroactively discharge business-semantic HG/PSV obligations.
 
 The full mandatory implementation/release register is [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md).
 
@@ -366,13 +409,21 @@ This remains distinct from direct runtime/database/recovery/business validation.
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
 INTEGRATED INTO MAIN VIA PR #15
+PostgreSQL 18 architecture family
+phase-time exact patch 18.4
 
 BACKEND FOUNDATION CP1–CP5
 CLOSED / INTEGRATED / DIRECT QA PASS
 
+CURRENT POSTGRESQL TECHNICAL PATCH
+18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
+
 CONCRETE PERSISTENCE READINESS — CP6
 ACTIVE / DESIGN-FIRST
 BRANCH feature/logical-postgresql
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 ACTIVE / CANDIDATE / PRE-CLOSURE
+GATE 02 NOT PASSED
 
 CP6 TERMINAL BOUNDARY
 CONCRETE POSTGRESQL FOUNDATION CLOSED / READY

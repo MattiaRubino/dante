@@ -20,7 +20,8 @@ Pre-Physical Repository & Architecture Coherence
           ↓
 Physical Model / Target Selection
         CLOSED / SELECTED / ACCEPTED
-        PostgreSQL 18.4 canonical primary
+        PostgreSQL 18 major family canonical
+        exact Physical phase-time patch 18.4
           ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
@@ -30,7 +31,7 @@ Frontend Engineering Foundation
         INTEGRATED VIA PR #22
 ```
 
-Architecture closure remains distinct from implementation/direct validation.
+Architecture closure remains distinct from implementation/direct validation. PostgreSQL patch maintenance within accepted major line 18 does not reopen the Physical selection.
 
 ## Active workstreams
 
@@ -57,12 +58,15 @@ CLOSED / GATE 01 PASS
         ↓
 CP6-02
 PostgreSQL Persistence Constitution
-NEXT / NOT STARTED
+ACTIVE / CANDIDATE / PRE-CLOSURE
+PostgreSQL 18.6 technical refresh DIRECT REMOTE QA PASS
+GATE 02 NOT PASSED
         ↓
 CP6-03
 Concrete Relational Topology
 + Implementation Dependency DAG
 + Vertical Decomposition
+NOT STARTED — BLOCKED UNTIL GATE 02 PASS
         ↓
 CP6-04
 Vertical #1 Selection
@@ -83,6 +87,27 @@ CP6 CLOSED
 CP6-01 closure authority:
 
 `docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md`
+
+CP6-02 candidate authority:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Current CP6-02 technical evidence:
+
+```text
+PostgreSQL architecture              major 18
+Physical/CP2/CP3 exact evidence      18.4 / historical
+current technical patch              18.6
+configuration refresh                APPLIED
+Backend CI run                       32568664940
+executed HEAD                        ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+Backend Quality                      SUCCESS / 32 fast tests PASS
+Backend PostgreSQL                   SUCCESS / 18 PostgreSQL tests PASS
+Backend CI Gate                      SUCCESS
+18.6 release-note impact             PASS / NO CURRENT POST-UPGRADE ACTION
+```
+
+The immediate next action is the final independent whole-Constitution review. Only if that review is clean may a separate Gate 02 closure write occur.
 
 CP6 must end at:
 
@@ -133,9 +158,11 @@ CLOSED / DIRECT QA PASS
 
 CP2 reproducible LOCAL PostgreSQL
 CLOSED / DIRECT QA PASS
+ORIGINAL POSTGRESQL 18.4 EVIDENCE
 
 CP3 persistence/migrations/privileges/real PostgreSQL
 CLOSED / DIRECT QA PASS
+ORIGINAL POSTGRESQL 18.4 EVIDENCE
 
 CP4 quality / CI enforcement
 CLOSED / DIRECT REMOTE QA PASS
@@ -199,9 +226,9 @@ Dependency Review
 
 The ruleset also requires the PR branch to be up to date with protected `main` before merge. Both checks are selected from source GitHub Actions.
 
-## CP5 closure evidence
+## Historical CP5 closure evidence
 
-CP5 re-proved the integrated scaffold without adding business schema or changing backend source:
+CP5 re-proved the integrated scaffold against the then-current PostgreSQL 18.4 image without adding business schema or changing backend source:
 
 ```text
 exact branch / current-main relation       PASS
@@ -240,11 +267,14 @@ Post-merge readback proved protected `main` contains the scaffold. No concrete b
 
 ## CP6 implementation boundary
 
-The PostgreSQL technical substrate already exists through CP2/CP3:
+The PostgreSQL technical substrate already exists through CP2/CP3 and has now been re-proved on the current maintenance patch:
 
 ```text
-LOCAL PostgreSQL 18.4
-selected extension envelope
+PostgreSQL architecture             major 18
+Physical exact patch                18.4 / phase-time
+CP2/CP3 original LOCAL envelope     18.4 / historical direct PASS
+current LOCAL/CI envelope           18.6 / direct remote regression PASS
+selected extension envelope         PostGIS 3.6.4 + pgvector 0.8.6 + native capabilities
 SQLAlchemy 2 async
 psycopg 3
 Alembic
@@ -256,9 +286,30 @@ explicit transaction ownership
 
 CP6 therefore does **not** need to reselect the database or rebuild technical persistence infrastructure. It must turn the closed semantic/Physical contracts into reusable concrete relational rules, then exactly design the first vertical.
 
-CP6-01 has completed the whole-model persistence coverage and staging map. CP6-02 is now the active next checkpoint and must close the reusable PostgreSQL constitution without leaking into business DDL.
+CP6-01 completed the whole-model persistence coverage and staging map. CP6-02 now contains the candidate reusable PostgreSQL Constitution and has directly re-proved the 18.6 technical foundation. What remains before Gate 02 is the final independent whole-Constitution review and a separate closure write.
 
 CP6 does not mechanically translate 57 Logical concepts into 57 tables/modules/services.
+
+## PostgreSQL 18.6 maintenance evidence
+
+CP6 updated only the PostgreSQL patch-level technical envelope from 18.4 to 18.6; it did not change the selected major family or business schema.
+
+```text
+run                                  32568664940
+HEAD                                 ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+PostgreSQL image build               PASS
+PostgreSQL 18.6 exact harness        PASS
+PostGIS 3.6.4                        PASS
+pgvector 0.8.6                       PASS
+Backend Quality                      SUCCESS
+fast tests                           32/32 PASS
+Backend PostgreSQL                   SUCCESS
+PostgreSQL tests                     18/18 PASS
+Backend CI Gate                      SUCCESS
+complete test corpus                 50/50 across the two mandatory lanes
+```
+
+Release-note impact review: **PASS / NO CURRENT POST-UPGRADE ACTION**. Current DANTE has no custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring 18.6-specific cleanup. Future PowerSync/logical-replication activation must review `output_plugin_libraries` and then-current PostgreSQL maintenance notes.
 
 ## Post-CP6 product vertical implementation
 
@@ -291,6 +342,7 @@ Activate specialist components only at real requirements:
 ```text
 PowerSync + encrypted SQLite
 → real offline/multi-device implementation
+→ at activation, re-check PostgreSQL logical-replication/output_plugin_libraries requirements
 
 PostgreSQL transactional outbox
 → real Class-A async requirement
@@ -336,6 +388,8 @@ Backend hosting/compute, IaC and remote sizing remain deliberate decisions at th
 SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
 DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
 CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
+POSTGRESQL PATCH REFRESH != PHYSICAL ARCHITECTURE REOPEN
+HISTORICAL 18.4 EVIDENCE != CURRENT 18.6 RUNTIME CLAIM
 CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
 WORKFLOW EXISTS != TRUSTED CHECK
