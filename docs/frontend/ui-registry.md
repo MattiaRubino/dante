@@ -21,21 +21,21 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `home.topbar.brand` | DANTE/LifeOS historical lockup | WORKING | Product identity anchor. Final logo/skin treatment is the next B2 visual pass. |
+| `home.topbar.brand` | DANTE | ACTIVE | Product identity anchor. B2 v23 uses the approved DANTE symbol geometry with approved charcoal/orange fills plus approved wordmark geometry rendered white for the current dark surface. No extra backing panel; the white wordmark is a frontend dark-surface derivative, not a new brand master. |
 | `home.topbar.create` | Crea | PROTOTYPE_ONLY | Opens the current quick-create popover. No durable write/backend behavior is implied. Semantic overlap with Capture must be reviewed later. |
 | `home.topbar.nav.home` | Home | ACTIVE | Current Home navigation anchor. |
 | `home.topbar.nav.worlds` | Mondi | WORKING | Current nav prototype; click currently changes active visual state only, not a production route. |
 | `home.topbar.nav.today` | Oggi | WORKING | Current nav prototype; temporal vocabulary must not create a second competing Home identity. |
 | `home.topbar.search` | Cerca | PROTOTYPE_ONLY | Opens mock search popover; `Ctrl/Cmd+K` also opens it; `Esc`/outside click closes it. |
 | `home.topbar.reviewLegacy` | Review Queue / Da rivedere | DEPRECATED | Legacy topbar review popover still exists. It overlaps the accepted `home.contextRail.resolution` role and must be reconciled/removed in a later bounded scope. |
-| `home.topbar.launcher` | Tutto LifeOS | WORKING | Opens a placeholder secondary-function launcher; content explicitly remains undefined. Product naming will be aligned in the branding pass. |
+| `home.topbar.launcher` | Tutto LifeOS | WORKING | Placeholder secondary-function launcher. B2 v23 did not perform a blind global rename; this historical string remains a later explicit cleanup item. |
 | `home.topbar.account` | Profilo | PROTOTYPE_ONLY | Opens account/settings menu mock. |
 
 ## Home — conversational / AI surface
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
-| `home.aiSurface` | conversational card | ACTIVE | Global conversational interaction surface over the same semantic product reality; prototype interaction only. |
+| `home.aiSurface` | conversational card | ACTIVE | Global conversational interaction surface over the same semantic product reality; prototype interaction only. B2 v23 identity treatment is the approved DANTE symbol only, with no visible `LifeOS`/`DANTE` text label beside it. |
 | `home.aiSurface.handoff` | Continua su | WORKING | Provider handoff menu exposes external-provider options currently represented by ChatGPT / Claude. |
 | `home.aiSurface.expand` | — | ACTIVE | Expands/collapses the conversational surface using the existing composition. |
 | `home.aiSurface.attach` | — | PROTOTYPE_ONLY | Attachment affordance. |
@@ -54,7 +54,7 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 ## Home — central stage
 
-Current working oracle: **B2 v22 no persistent add**. B2 remains open for DANTE product identity/skin and final QA.
+Current working oracle: **B2 v23 branding layer over B2 v22 no persistent add**. B2 remains open for background/atmosphere, palette review and final QA.
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
@@ -141,7 +141,7 @@ The accepted rail must **not** become:
 | `home.overlay.search` | search popover | PROTOTYPE_ONLY | Topbar search mock. |
 | `home.overlay.create` | create popover | PROTOTYPE_ONLY | Topbar create mock. |
 | `home.overlay.reviewLegacy` | review popover | DEPRECATED | Legacy duplicate to reconcile with Context Rail. |
-| `home.overlay.launcher` | Tutto LifeOS | WORKING | Placeholder; branding pass will align product naming. |
+| `home.overlay.launcher` | Tutto LifeOS | WORKING | Historical placeholder; B2 v23 identity-anchor pass intentionally does not perform a global blind rename. |
 | `home.overlay.account` | account menu | PROTOTYPE_ONLY | Settings/profile mock. |
 | `home.overlay.calendar` | calendar popover | ACTIVE | Date navigation. |
 | `home.overlay.timelineOptions` | Vista e legenda | ACTIVE | Timeline view controls. |
