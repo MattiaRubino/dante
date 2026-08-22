@@ -1,7 +1,7 @@
 # Documentation and Handoff Protocol
 
 - Status: Accepted project workflow
-- Last updated: 2026-08-18
+- Last updated: 2026-08-22
 
 ## Goal
 
@@ -61,6 +61,7 @@ Use the right document type:
 - `product/*.md` — current durable product meaning/behavior where marked current;
 - `architecture/*.md` — current durable system/technical model where marked current;
 - `decisions/ADR-*.md` — decision rationale plus explicit current status/supersession;
+- `database/*` — current database architecture/reference/dictionary/generated-documentation system of record;
 - checkpoints/validation/research — historical or current evidence as explicitly labelled;
 - code/tests/migrations — executable implementation truth;
 - Git/PR history — recoverable detailed history.
@@ -139,6 +140,7 @@ To reduce conflicts:
 - global state/sequence changes → update `PROJECT-STATUS.md` / `ROADMAP.md` as appropriate;
 - current architecture/product meaning changes → update the current durable source;
 - significant architectural decision/rationale changes → update/create ADR;
+- structural database changes → update the applicable `docs/database/` system-of-record artifacts in the same reviewed change;
 - repository protection/runtime policy changes → update `repository-engineering-safety.md` and effective remote settings as applicable;
 - before merging shared/global files, compare against current `main` and preserve newest current truth.
 
@@ -164,10 +166,32 @@ Update as applicable:
 - tests;
 - migrations;
 - current product/architecture docs;
+- database reference/dictionary/generated artifacts for structural DB changes;
 - workstream handoff;
 - global status/roadmap when meaningful;
 - ADR;
 - significant milestone/change record where useful.
+
+### Database same-change rule
+
+`docs/database/README.md` defines the DANTE Database System of Record.
+
+A structural DANTE database change is incomplete when the executable schema changes but the affected current database documentation does not change with it.
+
+As applicable, one reviewed database change keeps aligned:
+
+```text
+Alembic migration
+SQLAlchemy metadata / mapping
+Database Dictionary
+human-readable Database Architecture & Reference
+generated schema reference / diagrams
+direct database tests
+```
+
+A new table without its required dictionary entry is incomplete. A structural change that leaves current database reference material describing the old schema is incomplete.
+
+Prefer generation for facts that can be derived reliably from SQLAlchemy/PostgreSQL; preserve human-authored semantic purpose/invariant/rationale where DDL cannot explain meaning.
 
 ## AI-agent protocol
 
@@ -182,6 +206,7 @@ AI agents must:
 - keep current specifications current rather than append-only;
 - run knowledge coverage before replacing/deleting stale current docs;
 - record durable decisions/continuation in repo;
+- keep structural database changes synchronized with the Database System of Record;
 - distinguish documented repository policy from remotely effective repository settings;
 - avoid secrets, production personal data and credentials in prompts/logs/docs.
 
@@ -263,6 +288,7 @@ Before handoff or merge:
 - [ ] any replaced/deleted stale current doc passed knowledge coverage;
 - [ ] global status changed only when globally meaningful;
 - [ ] significant durable decisions have ADR treatment;
+- [ ] structural database changes keep Database System-of-Record artifacts aligned;
 - [ ] repository settings relied on as evidence were remotely verified where the connector permits;
 - [ ] no knowledge was lost because of tool/context limits;
 - [ ] any size/tool-limit split preserves the complete logical payload losslessly rather than summarizing it.
