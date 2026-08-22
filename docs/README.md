@@ -38,7 +38,8 @@ Backend CP5                        CLOSED / DIRECT INTEGRATED QA PASS
 Backend integration PR #24         MERGED / POST-MERGE BACKEND CI PASS
 Backend CP6                        ACTIVE ON feature/logical-postgresql / DESIGN-FIRST
 Backend CP6-01                     CLOSED / GATE 01 PASS
-Backend CP6-02                     ACTIVE / CANDIDATE / PRE-CLOSURE / GATE 02 NOT PASSED
+Backend CP6-02                     CLOSED / GATE 02 PASS
+Backend CP6-03                     NEXT / NOT STARTED
 Current PostgreSQL patch           18.6
 PostgreSQL 18.6 regression         DIRECT REMOTE QA PASS / run 32568664940
 Vertical #1 implementation         POST-CP6 / NOT STARTED
@@ -61,9 +62,10 @@ Patch-level maintenance inside PostgreSQL 18 does not rewrite Physical/CP2/CP3 h
 - `development/backend-cp6-01-concrete-persistence-coverage.md` — exact 57/57 owner/role ledger
 - `development/backend-cp6-01-concrete-persistence-coverage-part-2.md` — cross-cutting LR/WL-H/PG-R/DEFER-WL/HG/SC/PSV ledger
 - `development/backend-cp6-01-concrete-persistence-coverage-closure.md` — Gate 01 closure
-- `development/backend-cp6-02-postgresql-persistence-constitution.md` — active CP6-02 candidate Constitution; Gate 02 not yet closed
+- `development/backend-cp6-02-postgresql-persistence-constitution.md` — closed/accepted PostgreSQL Persistence Constitution
+- `development/backend-cp6-02-postgresql-persistence-constitution-closure.md` — formal Gate 02 closure evidence
 
-Current CP6-02 technical evidence:
+CP6-02 technical evidence retained by the closed Constitution:
 
 ```text
 PostgreSQL patch target                18.6
@@ -79,7 +81,7 @@ current test corpus                    50 / 50 covered across mandatory CI lanes
 18.6 release-note impact               PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
-The next backend act is the final independent whole-Constitution review. Only a clean review may lead to a separately-gated Gate 02 closure. CP6-03 does not begin before Gate 02 PASS.
+The next backend checkpoint is **CP6-03 — Concrete Relational Topology + Implementation Dependency DAG + Vertical Decomposition**. It begins read/research/design-first; Gate 02 does not authorize business DDL or Vertical #1 implementation.
 
 ### Development governance
 
@@ -236,13 +238,12 @@ BACKEND
 1. Treat CP1–CP5 and backend scaffold integration as CLOSED / DIRECT QA PASS.
 2. Preserve their exact PostgreSQL 18.4 historical evidence.
 3. Treat CP6-01 as CLOSED / GATE 01 PASS.
-4. Treat CP6-02 as ACTIVE / CANDIDATE / PRE-CLOSURE.
-5. Treat the PostgreSQL 18.6 refresh and technical remote regression as PASS at run 32568664940 / HEAD ec3dc795....
-6. Perform the final independent whole-Constitution review.
-7. Only if clean, perform a separate Gate 02 closure write.
-8. Start CP6-03 only after Gate 02 PASS.
-9. Do not implement Vertical #1 anywhere inside CP6.
-10. CodeQL remains a separate activation boundary and is not implicitly authorized.
+4. Treat CP6-02 as CLOSED / GATE 02 PASS.
+5. Preserve PostgreSQL 18.6 direct technical evidence at run 32568664940 / HEAD ec3dc795....
+6. Start CP6-03 read/research/design-first from the closed Constitution and full CP6-01 coverage ledger.
+7. Do not create business DDL merely to materialize topology or obtain proof.
+8. Do not implement Vertical #1 anywhere inside CP6.
+9. CodeQL remains a separate activation boundary and is not implicitly authorized.
 
 FRONTEND
 1. Continue feature/frontend-materialization independently.
