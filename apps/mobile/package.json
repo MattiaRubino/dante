@@ -13,6 +13,7 @@
   "dependencies": {
     "@dante/design-tokens": "workspace:*",
     "@dante/i18n": "workspace:*",
+    "@dante/time": "workspace:*",
     "expo": "~57.0.9",
     "expo-constants": "~57.0.8",
     "expo-linking": "~57.0.4",

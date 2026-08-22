@@ -35,6 +35,9 @@ importers:
       '@dante/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@dante/time':
+        specifier: workspace:*
+        version: link:../../packages/time
       expo:
         specifier: ~57.0.9
         version: 57.0.15(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.12)(expo-router@57.0.15)(react-dom@19.2.8(react@19.2.3))(react-native-worklets@0.10.1(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(react-native@0.86.2(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1))(react-native@0.86.2(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.86.2(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@6.0.3)
@@ -90,6 +93,9 @@ importers:
       '@dante/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@dante/time':
+        specifier: workspace:*
+        version: link:../../packages/time
       '@tanstack/react-router':
         specifier: 1.170.31
         version: 1.170.31(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -142,6 +148,12 @@ importers:
       i18next:
         specifier: 26.3.6
         version: 26.3.6(typescript@6.0.3)
+
+  packages/time:
+    dependencies:
+      temporal-polyfill:
+        specifier: 1.0.4
+        version: 1.0.4
 
 packages:
 
@@ -3271,6 +3283,15 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  temporal-polyfill@1.0.4:
+    resolution: {integrity: sha512-MLEU0qOD2uXlz24oINNtdLZQl8RgmMxSnRtKEGZGGetTJjlRwQJjk+VsJ4EREaUoiaTb8NJOcUiKtoAiWn9EBg==}
+
+  temporal-spec@1.0.1:
+    resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
+
+  temporal-utils@1.0.2:
+    resolution: {integrity: sha512-1B8Dl4KzrOvsNUlpoWGno2VLQlxroLjDgc5NBjVC9ax9ymdo+ezfyvhyjEMx+IVfhINr6CIG2gcnlP95iRrybQ==}
 
   terminal-link@2.1.1:
     resolution: {integrity: sha512-un0FmiRUQNr5PJqy9kP7c40F5BOfpGlYTrxonDChEZB7pzZxRNp/bt+ymiy9/npwXya9KH99nJ/GXFIiUkYGFQ==}
@@ -7363,6 +7384,15 @@ snapshots:
       supports-color: 7.2.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  temporal-polyfill@1.0.4:
+    dependencies:
+      temporal-spec: 1.0.1
+      temporal-utils: 1.0.2
+
+  temporal-spec@1.0.1: {}
+
+  temporal-utils@1.0.2: {}
 
   terminal-link@2.1.1:
     dependencies:

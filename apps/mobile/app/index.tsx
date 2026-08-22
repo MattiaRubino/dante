@@ -1,4 +1,5 @@
 import { radii } from '@dante/design-tokens/native';
+import { instantToZonedDateTime, parseInstant } from '@dante/time';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -12,6 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MobileRuntimeReady() {
   const { t } = useTranslation('common');
+  const temporalProbe = instantToZonedDateTime(
+    parseInstant('2026-08-22T18:00:00Z'),
+    'Europe/Rome',
+  ).toString();
   const pressed = useSharedValue(0);
 
   const tapGesture = Gesture.Tap()
@@ -56,6 +61,7 @@ export default function MobileRuntimeReady() {
               <Text style={styles.statusValue}>
                 {t(($) => $.common.runtime.mobile.purpose)}
               </Text>
+              <Text style={styles.statusValue}>{temporalProbe}</Text>
             </View>
           </View>
 
