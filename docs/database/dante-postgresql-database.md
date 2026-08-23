@@ -4983,3 +4983,345 @@ NOT YET EARNED
 ```
 
 The next CP6-03 work should be a **consolidation/final-closure pass**, not another free-form semantic redesign: consume the remaining exact local blockers and open global DB-U items against their already-accepted upstream authority, close every determinable physical fact, classify genuinely deferred items truthfully, freeze final names/ACL/migration/mapping/test/dictionary contracts, and only then run the final whole-blueprint Gate-03 audit before CP6-04 materialization.
+
+---
+
+## 28. Consolidation checkpoint A — MaterialState acceptance/current discipline + lifecycle/privilege baseline
+
+This checkpoint is deliberately bounded. It records only the cross-cutting MaterialState/currentness hardening plus the lifecycle and provisioning/default-ACL conclusions that survived the accumulated audit. It does **not** absorb the later read-only findings for Actual, Milestone, Recurrence or any other semantic family; those remain separate blocks and require their own audit/write cycle.
+
+Where this section is more specific than earlier provisional DB-U14/DB-U21 language, this later checkpoint supersedes that provisional language without reopening the already-closed NativeRef / ScopedRecordRef / MaterialStateRef / current-binding topology.
+
+### 28.1 MaterialState existence != acceptance/current applicability — CLOSED
+
+Version / Material-State permits material states that are historically real without requiring every state to become the singular accepted current truth. Concurrent/divergent states may coexist while reconciliation, Authority, Decision or another owner-specific contract determines applicability/currentness.
+
+Therefore the physical discipline is:
+
+```text
+MaterialStateRef existence
+!= owner/facet acceptance/applicability chronology
+!= current accepted-state binding
+```
+
+Consequences:
+
+```text
+material state row exists
+→ proves that one material semantic state exists and remains addressable
+→ does NOT prove that the state was ever current
+→ does NOT prove that the state is currently accepted
+
+native_current_material_state / scoped_current_material_state row exists
+→ selects the singular current accepted MaterialStateRef for that exact owner/facet
+→ remains the explicit current pointer
+→ current is never derived from timestamp, UUID order, insertion order or provider revision
+```
+
+The database MUST continue to permit historically real divergent material states that are not the current binding. A reconciliation or later accepted selection may point current truth to one state without deleting the competing state merely because it did not win currentness.
+
+#### Acceptance / cessation chronology remains owner/facet-specific
+
+DANTE does **not** introduce a universal semantic table such as:
+
+```text
+material_state_acceptance
+material_state_status
+state_is_accepted
+state_is_current
+```
+
+merely to make every material state follow one workflow.
+
+If a concrete owner/facet requires historical facts such as:
+
+```text
+accepted at T1
+ceased at T2
+selected again at T3
+withdrawn / superseded / no-longer-applicable under that owner's exact semantics
+```
+
+that chronology is represented by the exact owner/facet-specific typed state/relation/history contract that gives those facts meaning. Current selection remains the shared bounded current-binding control pointer; historical acceptance/applicability semantics remain owned by the concrete semantic family.
+
+A concrete family MAY permit the same previously existing MaterialStateRef to become current again when the owning semantics say the same material state is once more applicable. Such reselection MUST NOT manufacture a new MaterialStateRef merely to record a new selection episode; any materially different semantic payload still requires a new MaterialStateRef.
+
+Direct proof must include:
+
+```text
+non-current divergent MaterialStateRef remains addressable          PASS
+current state is not chosen by MAX(timestamp/UUID/order)            PASS
+current binding points to same owner/facet                          PASS
+replacing/removing current binding does not delete old state        PASS
+same material payload reselected when owner contract permits        PASS
+materially changed payload requires a different MaterialStateRef     PASS
+universal material-state status/acceptance root                     absent by schema
+```
+
+### 28.2 DB-U14 — baseline lifecycle / destructive-continuity disposition CLOSED
+
+The accepted lifecycle baseline is intentionally non-destructive.
+
+```text
+foreign-key lifecycle default            ON DELETE NO ACTION
+ordinary runtime semantic owner DELETE   NOT AUTHORIZED
+ordinary runtime material-history DELETE NOT AUTHORIZED
+NativeRef reuse                           FORBIDDEN
+universal soft-delete columns             FORBIDDEN
+universal tombstone semantic root         FORBIDDEN
+```
+
+DANTE therefore does not add by convention:
+
+```text
+deleted_at
+is_deleted
+is_tombstone
+redaction_status
+retired_at
+```
+
+to native owners, scoped owners, material-state control rows or material-state payloads.
+
+#### Current cessation is not semantic deletion
+
+A concrete facet may truthfully allow:
+
+```text
+historical material states exist
++
+no current accepted binding exists
+```
+
+Removing the current-binding row under that exact owner/facet contract means only that the facet currently has no selected accepted MaterialStateRef. It does not delete the semantic owner, historical MaterialStateRefs or their payloads; it does not manufacture a universal `cancelled`, `retired`, `unscheduled` or `deleted` state.
+
+Whether a specific facet permits a no-current condition remains part of that facet's contract. This checkpoint does not grant blanket DELETE on the shared current-binding tables.
+
+#### Redaction / tombstone / physical removal are trigger-bound evolution
+
+Current closed authority does not provide one universal retention/privacy policy that would determine an owner-specific redacted payload for every DANTE family. CP6 therefore MUST NOT invent those payloads merely to claim lifecycle completeness.
+
+The baseline closure is instead:
+
+```text
+no destructive owner/history runtime path is present
+→ owner/address/history continuity remains preserved by NO ACTION + denied destructive DML
+
+first real owner-specific retention/redaction/erasure requirement
+→ reviewed schema/lifecycle evolution
+→ exact fields that may be removed or rendered unavailable are defined by that owner/policy
+→ minimal surviving owner/state representation is defined where continuity is permitted/required
+→ MaterialStateRef totality remains true for every surviving live MaterialStateRef
+→ NativeRef never changes referent
+→ surviving references/history cannot be left dangling
+```
+
+If a future policy permits complete physical removal of an address/owner/state, the governed operation must prove that no surviving canonical reference/history contract requires that address and must perform every permitted continuity change atomically. `CASCADE` remains exceptional and is never introduced as the lifecycle default.
+
+This is a final negative baseline decision, not an unresolved placeholder. A future concrete privacy/retention contract adds a new owner-specific lifecycle path through reviewed schema evolution; it does not justify a speculative generic tombstone model today.
+
+`DB-U14` is therefore **CLOSED** for the CP6 baseline.
+
+### 28.3 DB-U21 — provisioning/default-ACL direction CLOSED; final object matrix remains OPEN
+
+The real CP3 code still contains two broad runtime privilege mechanisms:
+
+```text
+ALTER DEFAULT PRIVILEGES ...
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dante_runtime
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA dante TO dante_runtime
+```
+
+plus broad sequence/type defaults/reconciliation. That posture must not survive business/control-object materialization.
+
+The accepted CP6 provisioning boundary is now frozen:
+
+```text
+PROVISIONING OWNS
+role creation / role attributes / credentials
+database CONNECT/TEMP hardening
+schema ownership + runtime schema USAGE
+safe PUBLIC default-privilege hardening
+
+PROVISIONING DOES NOT OWN
+blanket business-table DML grants
+ALL TABLES business ACL reconciliation
+ALL SEQUENCES business ACL reconciliation
+future business type/domain/routine runtime grants
+post-migration broadening of object ACLs
+```
+
+For future objects owned by `dante_owner`, default privileges must be deny-by-default for runtime business capability. Existing CP3 default runtime CRUD/sequence/type grants are removed rather than merely overridden object by object after creation.
+
+PUBLIC hardening remains explicit for object classes whose PostgreSQL defaults would otherwise grant capability, including routine EXECUTE and type/domain USAGE where DANTE-owned future objects require that hardening. A concrete runtime-accessible type/domain or callable routine receives an explicit reviewed grant only when its exact object contract requires it.
+
+#### Migration-owned object ACLs
+
+Every Alembic migration that creates or changes a DANTE object owns the exact ACL transition for that object in the same reviewed schema change.
+
+```text
+table / view / sequence / type / domain / routine created
+→ exact dante_runtime privileges explicitly granted or left absent
+→ immutable/control objects do not inherit broad runtime mutation
+→ Database Dictionary records the exact privilege surface
+```
+
+No business/control object receives runtime authority merely because it exists in schema `dante`.
+
+The final per-object matrix cannot close until the final CP6 object inventory is frozen. `DB-U21` therefore remains OPEN **only** for that exact matrix and its final proof list; its provisioning/default-privilege ownership direction is no longer open.
+
+### 28.4 Real CP3 test migration impact — CLOSED AS IMPLEMENTATION PLAN
+
+The existing PostgreSQL tests intentionally encode the CP3 broad-default posture and therefore must change in the same CP6-04 implementation batch that narrows provisioning.
+
+#### Privilege probe
+
+The current privilege test creates a fresh owner-owned table/type/function and expects `dante_runtime` to receive table CRUD automatically. Under the accepted CP6 posture the opposite becomes the required proof:
+
+```text
+fresh owner-owned probe object
++
+no migration-owned explicit grant
+→ dante_runtime table DML denied
+→ sequence/type/routine capability denied unless explicitly granted
+```
+
+The test continues to prove DDL/owner/migration-history denial and now also proves that provisioning reruns do not broaden object ACLs.
+
+#### Transaction probe
+
+Transaction tests still need a writable table to prove commit/rollback/flush/savepoint semantics. Their fixture therefore grants `dante_runtime` only the explicit DML required on the dedicated disposable transaction probe table after creating it.
+
+```text
+fixture-local explicit probe grant
+!= production default privilege
+```
+
+This preserves the existing CP3 transaction evidence while removing its accidental dependency on blanket production runtime grants.
+
+No runtime.py transaction semantics change is implied by this ACL hardening.
+
+### 28.5 Accumulated A/B/C audit for checkpoint A — PASS AFTER HARDENING
+
+The checkpoint candidate was replayed against Domain Version/Material-State, Whole-Logical reference/current/history rules, the PostgreSQL Physical mapping, CP6-01, CP6-02 Constitution and the real CP3 provisioning/tests.
+
+```text
+A — SOUND / RETAIN
+NativeRef / ScopedRecordRef / MaterialStateRef separation
+MaterialState live address↔payload totality
+explicit current-binding topology
+concurrent/divergent material states
+owner/facet-specific materiality and chronology
+NO ACTION default lifecycle
+NativeRef non-reuse
+role/schema/migrator/runtime separation
+migration-owned exact business ACL direction
+outer transaction / READ COMMITTED foundation
+
+B — HARDENED / REPAIRED
+MaterialState existence implicitly treated as current/accepted
+→ REJECTED; existence, applicability chronology and current binding separated
+
+universal material-state acceptance/status root
+→ REJECTED; owner/facet-specific semantics retained
+
+current cessation conflated with semantic deletion
+→ REJECTED; binding absence does not delete owner/history
+
+DB-U14 kept open merely because no speculative generic tombstone model existed
+→ REPAIRED; non-destructive baseline is the closed CP6 decision;
+  future owner-specific erasure/redaction is trigger-bound evolution
+
+provisioning owns future business CRUD through default privileges
+→ REJECTED
+
+provisioning reconciles ALL TABLES / ALL SEQUENCES into runtime authority
+→ REJECTED
+
+CP3 transaction tests implicitly depend on production-wide default CRUD
+→ REPAIRED by fixture-local explicit probe grant plan
+
+C — STRUCTURAL DEFECT AFTER REPAIR
+0
+```
+
+Post-repair regression result:
+
+```text
+57 / 57 Domain coverage                              PASS
+15 / 15 native-owner census                          PASS
+reference-address separation                         PASS
+MaterialState totality                               PASS
+MaterialState existence != current                   PASS
+current binding                                      PASS
+concurrent/divergent state preservation              PASS
+unknown/absence semantics                            PASS
+DB-U14 baseline lifecycle                            CLOSED
+DB-U21 provisioning/default-ACL direction             CLOSED AT DIRECTION LEVEL
+DB-U21 final object privilege matrix                  CORRECTLY OPEN
+CP3 role topology                                     PRESERVED
+CP3 transaction semantics                            PRESERVED BY TEST-PLAN CHANGE
+new generic semantic root                            0
+speculative lifecycle/status schema                  0
+new unclassified material item                       0
+```
+
+No Domain, Logical, Physical, CP6-01 or CP6-02 reopening is required.
+
+### 28.6 Register consequence and current status
+
+`DB-U14` leaves the unresolved global set. `DB-U21` remains because its exact object-by-object matrix depends on the final object inventory.
+
+The unresolved global set is now:
+
+```text
+DB-U08
+DB-U09
+DB-U10
+DB-U12
+DB-U15
+DB-U17
+DB-U18
+DB-U19
+DB-U20
+DB-U21
+
+COUNT = 10
+```
+
+The exact local unresolved set is unchanged by this bounded checkpoint:
+
+```text
+SCH-U01
+SCH-U02
+ACT-U01
+OUT-U01
+MIL-U01
+AGR-U01
+CRT-U01
+EVL-U01
+TC-U01
+
+COUNT = 9
+```
+
+Current CP6-03 status:
+
+```text
+CONSOLIDATION CHECKPOINT A
+MaterialState current/acceptance discipline       PASS
+DB-U14 baseline lifecycle                         CLOSED
+DB-U21 provisioning/default-ACL direction         PASS / MATRIX STILL OPEN
+CP3 test-impact plan                               CLOSED
+WHOLE ACCUMULATED BLUEPRINT REGRESSION             PASS AFTER HARDENING
+
+GLOBAL UNRESOLVED DB-U ITEMS                       10
+LOCAL EXACT UNRESOLVED ITEMS                       9
+UNCLASSIFIED NEW ITEMS                             0
+CP6 BUSINESS DDL AUTHORIZED                        NO
+GATE 03                                            NOT YET EARNED
+```
+
+The next block must be derived, audited, written and remotely verified separately; this checkpoint intentionally does not pre-write the later Actual/Milestone/Recurrence consolidation findings.
