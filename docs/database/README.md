@@ -679,3 +679,73 @@ After Checkpoint H the local exact CP6-03 blocker register remains zero and the 
 All Database Dictionary reconciliation, final object-inventory work, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3, 4, 5 and 6 together.
 
 Any transition from CP6-03 design/blueprint work into CP6-04 real database materialization remains a separate explicit boundary and requires its own approved write gate.
+
+## 21. Part 7 canonical continuation
+
+Part 7 is now an active continuation created before extending Part 6 further, preserving bounded write safety and leaving Parts 1–6 byte/content-authoritative.
+
+Current active human-readable reference shape:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ sections 1–30
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ section 31
+
++
+
+dante-postgresql-database-part-3.md
+→ PART 3
+→ section 32
+
++
+
+dante-postgresql-database-part-4.md
+→ PART 4
+→ section 33
+
++
+
+dante-postgresql-database-part-5.md
+→ PART 5
+→ section 34
+
++
+
+dante-postgresql-database-part-6.md
+→ PART 6
+→ section 35
+
++
+
+dante-postgresql-database-part-7.md
+→ PART 7
+→ section 36 onward
+
+=
+
+ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
+```
+
+Part 7 starts from repository continuity anchor `168c0adad72b9afd8d99f020f947b437080f59bb` and begins with section 36, Consolidation Checkpoint I — Provider / Idempotency / Outbox / Derived baseline disposition.
+
+Parts 1–6 remain canonical and must continue to be consumed in full. Part 7 does not summarize, replace or reduce their authority. Section 36 closes only the explicitly audited capability-triggered baseline dispositions and preserves all previously accepted concrete baseline objects and deterministic ordinary/current-state views.
+
+After Checkpoint I the local exact CP6-03 blocker register remains zero and the global DB-U open set is reduced from seven to three:
+
+```text
+DB-U08  final PostgreSQL object naming
+DB-U15  final structural/query index matrix
+DB-U21  exact object-level privilege matrix
+```
+
+These three items are coupled to the final actual object inventory. The next CP6-03 stage freezes what CP6-04 must create, under what names, with what indexes and with what privileges. This remains blueprint/design work; it does not execute business DDL.
+
+All final object-inventory work, Database Dictionary reconciliation, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3, 4, 5, 6 and 7 together.
+
+The transition from final CP6-03 freeze/Gate-03 closure into CP6-04 real database materialization remains a separate explicit boundary. Real Alembic business migrations, SQLAlchemy business mappings and PostgreSQL object creation require their own user-approved materialization gate.
