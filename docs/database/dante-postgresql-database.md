@@ -3703,3 +3703,555 @@ GATE 03                                                        NOT YET EARNED
 ```
 
 The next semantic pass should therefore consume the specific LR-03 relation/governance families and the Criterion/Evaluation/Temporal Constraint pressures needed to close the remaining dependencies, rather than inventing placeholder payloads for the six local open items.
+
+---
+
+## 26. Object-level closure pass III-A — LR-03 relation / governance composition contract
+
+This pass consumes the accepted Relationship / Multi-Actor / Governance Logical contract together with the current Domain continuations for Representation, Authority, Responsibility, Coordination Stewardship, Participation and Agreement. It was designed read-only first and then regressed against the complete accumulated PostgreSQL blueprint, CP6-01/02, the accepted PostgreSQL Physical mapping and the real CP3 database foundation before this section was written.
+
+The pass closes **how these LR-03/governance semantics compose physically** without inventing one universal relation root, one universal permission table, one `ActorRef`, one generic status enum or five ceremonial standalone relation tables merely for storage uniformity.
+
+### 26.1 Direct typed relation versus qualified material relation — CLOSED
+
+The physical baseline remains consumer-specific:
+
+```text
+specific semantic relation family
+        ↓
+DIRECT TYPED RELATION
+when the accepted semantic fact is complete in its exact endpoints/key fields
+
+OR
+
+QUALIFIED MATERIAL RELATION
+when scope/history/governance/provenance/transfer/dispute/
+independent addressability materially changes the meaning
+        ↓
+ScopedRecordRef only when justified
+MaterialStateRef only when the materiality threshold is met
+```
+
+Consequences:
+
+```text
+relation semantics exist
+!= one standalone relation root is mandatory
+
+same technical FK shape
+!= same semantic relation family
+
+qualified relation
+!= native identity
+```
+
+For one concrete consumer/reference contract, direct and qualified forms MUST NOT survive simultaneously as competing canonical truth. The consumer contract chooses the canonical form. Escalation from direct to qualified representation is an explicit semantic/schema migration that preserves prior meaning/history; it is not duplication for convenience.
+
+No universal `dante.relationship`, `dante.relation`, `RelationRef`, generic edge table or semantic `type + payload` fallback is accepted.
+
+### 26.2 DB-U22 — cross-ReferenceAddress-family consumer topology CLOSED
+
+The accumulated audit found one missing physical contract: the Logical `ReferenceAddress` family permits a semantic role to accept more than one **reference family** while still preserving:
+
+```text
+NativeRef != ScopedRecordRef != MaterialStateRef != ExternalRef
+```
+
+This is distinct from a heterogeneous `NativeRef` slot. The latter still MUST use `dante.native_address` and its consumer-specific owner-family eligibility rules under DB-U01/REF-02; one-of-N native-owner FKs remain forbidden as an alternate encoding of one heterogeneous NativeRef.
+
+#### Singular cross-family semantic role
+
+When one exact singular semantic role legitimately accepts more than one already-distinct DANTE address family, the preferred physical encoding is a **consumer-local tagged union made from real FK columns**, not a generic `kind + uuid` pair and not cross-table variant rows.
+
+Example shape, with only the variants actually admitted by that consumer:
+
+```text
+<role>_native_ref          uuid NULL
+<role>_scoped_ref          uuid NULL
+<role>_material_state_ref  uuid NULL
+```
+
+Reference paths:
+
+```text
+<role>_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ exact NativeRef owner-family eligibility enforced by that consumer
+
+<role>_scoped_ref
+→ FK dante.scoped_address(scoped_ref)
+→ ON DELETE NO ACTION
+→ exact ScopedRecordRef scoped-family eligibility enforced by that consumer
+
+<role>_material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+→ exact owner/facet eligibility enforced by that consumer
+```
+
+For an exactly-one mandatory role:
+
+```sql
+CHECK (num_nonnulls(<admitted reference-family columns>) = 1)
+```
+
+For an optional zero-or-one role, the same consumer uses `<= 1`; requiredness remains explicit in the concrete semantic contract.
+
+The row-local `num_nonnulls` invariant is preferred for the singular cross-family role because it is declarative, race-safe under the ordinary PostgreSQL transaction model and keeps each reference family on a real FK path. A design that placed mutually-exclusive alternatives into separate variant tables would need extra cross-table transaction/locking enforcement merely to prove singularity.
+
+This pattern MUST NOT be used to bypass the existing anchor topology:
+
+```text
+Person | Collective | Activity as alternatives inside one NativeRef
+→ still one native_ref FK to native_address
+→ NOT three nullable owner FKs
+
+Schedule | Agreement | Actual as alternatives inside one ScopedRecordRef
+→ still one scoped_ref FK to scoped_address
+→ NOT three nullable scoped-owner FKs
+```
+
+`material_state_address(native_owner_ref | scoped_owner_ref)` remains its already-closed technical two-address-space case; DB-U22 generalizes only the **consumer contract for distinct ReferenceAddress families**, not a generic nullable-FK style.
+
+#### Set-valued cross-family role
+
+When the semantic role is truly set-valued (`0..N` / `1..N`) and admits multiple reference families, DANTE uses consumer-specific typed association structures per admitted reference family rather than one wide sparse row or a universal reference table.
+
+Conceptually:
+
+```text
+<consumer>_<role>_native
+<consumer>_<role>_scoped
+<consumer>_<role>_material_state
+```
+
+Only the families actually accepted by that role exist. Each structure owns its real FK and natural/composite uniqueness. Any minimum-total-cardinality requirement across variants is enforced only when the concrete consumer actually has that semantic invariant.
+
+ExternalRef remains issuer/provider-scoped and is added to a concrete tagged/association contract only when a real provider/integration shape has closed under DB-U17; DB-U22 does not invent a generic ExternalRef table.
+
+#### SQLAlchemy consequence
+
+Python application types continue to expose discriminated `NativeRef`, `ScopedRecordRef`, `MaterialStateRef` and later concrete `ExternalRef` values. A mapped row may expose a small consumer-specific value object/helper around the admitted columns, but no polymorphic `ReferenceAddress` mapped superclass/table is introduced.
+
+This closes **DB-U22**. It was discovered and closed in the same pass, so the count of globally unresolved DB-U items remains unchanged.
+
+### 26.3 Representation / on-behalf-of — physical disposition CLOSED at composition level
+
+Representation remains action-scoped attribution:
+
+```text
+actual Actor
+!= represented party
+```
+
+and:
+
+```text
+Representation != Authority
+Representation != Responsibility
+Representation != Subject / beneficiary
+Representation != Principal / Account
+Representation != represented-party personal will
+```
+
+Physical rule:
+
+```text
+NO universal dante.representation row merely because Representation semantics exist
+```
+
+The concrete action/effect/assent/response consumer owns the Representation relation directly when the accepted relation is complete without independent lifecycle/addressability. A consequential Representation becomes a qualified contextual relation only when the concrete workflow requires material scope/history/dispute/provenance/reconciliation or cross-record addressability.
+
+A qualified Representation may therefore receive `ScopedRecordRef` and MaterialState history only at the already-accepted LR-02/LR-07 threshold; this is not automatic identity inflation.
+
+The represented party uses the exact reference contract of the represented semantic party. The actual Actor uses the narrowest accepted Actor Reference Contract available to that concrete action.
+
+Critically:
+
+```text
+Actor
+!= universally NativeRef{Person,Collective}
+```
+
+The Logical authority also permits system/AI/automation agency where materially real, while their eventual security/technical/native addressing contract is not yet closed. CP6 therefore MUST NOT invent `ActorRef`, fabricate a Person/Collective, or freeze a universal `actor_native_ref NOT NULL` merely to complete Representation storage. Consumer contracts that are already bounded to Person/Collective may use their exact NativeRef contract; broader Actor consumers remain pending the independently owned identity/security contract.
+
+Representation history preserves action-time attribution. Later expiry/revocation of its Authority/policy basis cannot rewrite who actually acted or for whom.
+
+### 26.4 Authority — explicit/material state, effective projection and technical AuthZ remain separate
+
+Authority is not implemented as a universal permission/ACL table.
+
+Physical disposition:
+
+```text
+explicit canonical Authority fact
+→ specific LR-03 direct relation when endpoints/scope fully carry the meaning
+→ qualified LR-02/material relation when scope/basis/history/revocation/dispute is consequential
+
+governing Authority policy/specification
+→ LR-05 where applicable
+
+Effective Authority
+→ LR-08 derived/effective projection when useful
+
+technical runtime authorization
+→ Principal + Action + Resource + Context
+→ replaceable security enforcement result
+→ NOT canonical Authority
+```
+
+No universal materialization of all currently effective permissions is required. An explicit material Authority state must retain enough target/effect/scope/basis/applicability history to reconstruct whether the Authority applied at the consequential action/effect time.
+
+Authority does not grant Visibility, Responsibility, Participation or ownership by physical shortcut, and a database/runtime privilege does not establish Domain Authority.
+
+### 26.5 Responsibility — unknown holder versus explicitly open is a physical non-collapse invariant
+
+Responsibility owns bounded accountability and remains separate from requester, performer, Coordination Stewardship, Authority and Visibility.
+
+A simple direct Responsibility relation is valid only where the complete semantic fact is expressible by the consumer-specific endpoints/key and no material independent relation state is required.
+
+The database MUST preserve:
+
+```text
+holder unknown / not established
+!=
+explicitly open / unassigned responsibility
+```
+
+Therefore:
+
+```text
+responsible_ref IS NULL
+```
+
+MUST NOT receive a universal meaning of "open responsibility". If a consumer must represent explicit openness/unassignment, transfer, hand-off, material scope/history, dispute or governance, the relation escalates to an exact qualified Responsibility context/state whose typed fields/relations own those semantics.
+
+DANTE does not introduce one global `responsibility_status` enum as a shortcut. Joint/multiple responsibility cardinality remains owned by the concrete Responsibility consumer rather than a universal kernel assumption.
+
+### 26.6 Coordination Stewardship — independent relation and transfer/history axis
+
+Coordination Stewardship remains a separate semantic relation family from Responsibility.
+
+```text
+Responsibility holder
+!= Coordination Steward
+!= performer
+!= participant
+!= Authority holder
+```
+
+A simple direct stewardship relation may be used when complete. A materially transferable/history-bearing/scope-bearing stewardship relation escalates independently to its own qualified relation state.
+
+A Responsibility hand-off does not transfer Coordination Stewardship automatically, and a Stewardship transfer does not transfer Responsibility. Several stewards do not manufacture a Collective. Reminder/escalation behavior may provide Evidence/Provenance but does not silently create or transfer stewardship.
+
+No shared `role_code` relation table is introduced to combine Responsibility and Stewardship.
+
+### 26.7 Participation — intended/response and Actual participation are independent axes
+
+Participation remains one specific LR-03 family, but the physical contract MUST preserve at least the semantic independence of:
+
+```text
+intended / invited / response participation
+!=
+Actual participation
+```
+
+Valid combinations include:
+
+```text
+accepted + did not actually participate
+
+declined + later actually participated
+
+no response + actual participation
+
+not previously invited + actual participation
+```
+
+Therefore a universal single `participation.status` vocabulary mixing `invited`, `accepted`, `declined`, `attended`, `absent` and similar meanings is rejected.
+
+Where a concrete consumer remains direct and simple, only the exact semantic axis it owns is persisted. Where intended/response history and Actual participation both become material for the same contextual relation, a qualified Participation context may own **separate typed facets/relations/states** for those axes while preserving one contextual relation identity only if that identity is independently justified.
+
+Shared Event/Actual truth does not duplicate per participant. Participant-specific participation truth remains actor/party scoped. Exact participant role taxonomy, recurrence-series inheritance/override and any material Actual-participation interval remain consumer-specific and are not invented by this pass.
+
+### 26.8 Agreement stress-test — party identity and on-behalf-of attribution remain separate
+
+The existing Agreement topology is retained:
+
+```text
+agreement_party_assent.party_native_ref
+= the Agreement party whose assent counts
+```
+
+It does **not** become the actual clicking/acting Actor.
+
+For a consequential represented assent:
+
+```text
+Agreement party           = represented party
+actual assent Actor        = separately preserved
+Representation             = bounded on-behalf-of relation for that assent action
+Authority / delegation / policy / Consent basis
+                           = separately preserved where effect/legitimacy requires it
+Principal/security context = separate technical evidence where available/required
+```
+
+Therefore:
+
+```text
+representative Luca acts for party Anna
+!= party becomes Luca
+!= Anna is recorded as actual Actor
+!= Representation proves Authority
+```
+
+This pass narrows `AGR-U01`: the on-behalf-of composition direction is now physically classified and must not collapse party/Actor/basis. `AGR-U01` nevertheless remains OPEN because the exact eligible `terms_material_state_ref` owner/facet set, exact material-equivalence applicability rule and exact consequential assent provenance/Actor-reference shape are not yet fully deterministic from current closed authority.
+
+No generic `actor_native_ref NOT NULL` is added to Agreement merely to make that open item disappear.
+
+### 26.9 Migration, mapping and ACL consequences of pass III-A
+
+No CP6-04 DDL is authorized by this pass. It constrains later implementation:
+
+```text
+consumer-specific direct relation
+→ concrete table/association only when that relation is actually canonical
+→ exact homogeneous FK or accepted address-control FK
+→ composite/natural key preferred when endpoints fully identify the simple relation
+
+qualified material relation
+→ concrete contextual owner row only when qualification is justified
+→ ScopedRecordRef only when addressability/history/reconciliation requires it
+→ MaterialStateRef only when the materiality threshold requires it
+→ owner/facet-specific immutable state/history when material
+
+singular cross-ReferenceAddress-family role
+→ consumer-local real FK columns for admitted address families
+→ row-local exactly-one / zero-or-one CHECK
+→ no generic kind+uuid
+
+set-valued cross-ReferenceAddress-family role
+→ consumer-specific typed association families
+→ no universal reference table
+```
+
+SQLAlchemy follows the concrete rows. There is no `Relationship`, `GovernanceRelation`, `Authority`, `Participation`, `Responsibility`, `Representation` mapped superclass merely to share implementation. Technical helper functions/types may reduce repetition without changing semantic ownership.
+
+Privilege pressure under DB-U21 becomes stronger, not broader:
+
+```text
+direct relation component whose identity is its endpoint key
+→ exact SELECT/INSERT and only the lifecycle DML the concrete contract proves
+
+qualified immutable material relation state
+→ SELECT + INSERT as required
+→ ordinary UPDATE denied
+→ ordinary DELETE denied until DB-U14 proves a lifecycle/redaction path
+
+current binding for a material governance/relation facet
+→ only exact INSERT/UPDATE/DELETE operations proven by that facet
+
+integrity trigger routines
+→ no direct runtime EXECUTE by default
+```
+
+The real CP3 blanket table/sequence/type grants remain a known DB-U21 blocker and are not legitimized by these relations.
+
+### 26.10 Direct PostgreSQL proof additions
+
+Future CP6-04/05 direct tests must add at least:
+
+```text
+CROSS-REFERENCE-FAMILY
+singular role with exactly one admitted reference family value       PASS
+singular role with zero values when mandatory                       REJECT
+singular role with two reference-family values                       REJECT
+native variant dangling address                                      REJECT by FK
+scoped variant dangling address                                      REJECT by FK
+material variant dangling state                                      REJECT by FK
+native variant wrong owner family                                    REJECT
+scoped variant wrong scoped family                                   REJECT
+material variant wrong owner/facet                                   REJECT
+the same semantic role encoded simultaneously direct+qualified        REJECT by concrete contract/migration shape
+one-of-N concrete native owner FKs used instead of native_address     absent by schema
+
+authority/representation
+Representation preserves actual Actor separately from represented party
+Representation does not establish Authority by row existence
+historical represented action remains attributable after basis expiry/revocation
+technical AuthZ/DB privilege cannot satisfy Domain Authority relation
+
+Responsibility
+unknown/no established holder remains distinct from explicit open/unassigned
+qualified transfer/history does not mutate prior material relation state
+Responsibility does not imply Stewardship or performer
+
+Coordination Stewardship
+stewardship transfer does not transfer Responsibility
+multiple stewards do not create Collective identity
+
+Participation
+accepted/intended does not establish Actual participation
+Actual participation does not rewrite prior response history
+single mixed response+attendance status vocabulary absent by schema
+
+Agreement
+party_native_ref remains the represented Agreement party under on-behalf-of assent
+actual representative Actor is not substituted into party_native_ref
+represented assent does not silently inherit Authority
+```
+
+Proof of Actor variants beyond already-closed concrete NativeRef consumers remains staged until the relevant Actor/security identity contract exists; no test creates a fake system/AI Person merely to satisfy this matrix.
+
+### 26.11 DB-U22 and register consequence
+
+This later pass extends the closed global list in section 22 with:
+
+```text
+DB-U22 cross-ReferenceAddress-family consumer topology   CLOSED
+```
+
+DB-U22 was discovered and closed during the same read-only design/audit cycle. It therefore does **not** increase the global unresolved count.
+
+The unresolved global DB-U set remains exactly:
+
+```text
+DB-U08
+DB-U09
+DB-U10
+DB-U12
+DB-U14
+DB-U15
+DB-U17
+DB-U18
+DB-U19
+DB-U20
+DB-U21
+
+COUNT = 11
+```
+
+The Pass-II local open set remains exactly:
+
+```text
+SCH-U01
+SCH-U02
+ACT-U01
+OUT-U01
+MIL-U01
+AGR-U01
+
+COUNT = 6
+```
+
+No new unclassified persistence item is introduced.
+
+### 26.12 Accumulated A/B/C audit — PASS AFTER HARDENING
+
+The complete candidate blueprint, not only the new relation block, was replayed against Domain + Whole-Logical + accepted PostgreSQL Physical mapping + CP6-01 + CP6-02 + real CP3 foundation.
+
+Classification:
+
+```text
+A — SOUND / RETAIN
+15 LR-01 owner census
+NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef separation
+native_address / scoped_address topology
+MaterialState bidirectional totality
+current-state binding
+owner/facet-specific typed lineage
+Schedule / Actual / Milestone / Agreement Pass-II envelopes
+no generic Entity / Relationship / Fact / Rule root
+outer-transaction + READ COMMITTED baseline
+migration-owned business ACL direction
+
+B — CLOSED TOO EARLY / REPAIRED BEFORE WRITE
+five ceremonial universal relation roots for Authority/Responsibility/
+Stewardship/Participation/Representation
+→ REJECTED; consumer-specific direct/qualified model retained
+
+Actor universally restricted to NativeRef{Person,Collective}
+→ REJECTED; consumer-specific Actor Reference Contract retained
+
+cross-ReferenceAddress-family role left without exact physical topology
+→ REPAIRED; DB-U22 CLOSED
+
+separate variant tables as default singular cross-family role
+→ REJECTED after concurrency/constraint pressure;
+  consumer-local real-FK tagged union selected
+
+NULL responsibility holder interpreted as explicit open/unassigned
+→ REJECTED; missing/unknown and explicit openness remain distinct
+
+one mixed Participation response/attendance status
+→ REJECTED; intended/response and Actual axes remain independent
+
+Agreement party overwritten by actual representative Actor
+→ REJECTED; represented party, Actor and basis remain separate
+
+C — STRUCTURAL DEFECT AFTER REPAIR
+0
+```
+
+Post-repair regression result:
+
+```text
+57 / 57 Domain concepts                              PASS
+15 / 15 LR-01 native owners                         PASS
+new Domain owner                                    0
+Native/Scoped/Material/External reference spaces    PASS
+MaterialState totality                              PASS
+current binding                                     PASS
+typed lineage                                       PASS
+no RelationRef                                      PASS
+no ActorRef                                         PASS
+no universal Relationship                           PASS
+no universal permission/Authority root              PASS
+Responsibility missingness                          PASS
+Responsibility != Stewardship                       PASS
+Participation response != Actual participation      PASS
+Representation Actor != represented party           PASS
+Agreement party identity                            PASS
+Authority != technical AuthZ                        PASS
+Schedule/Actual/Outcome/Milestone/Agreement          PASS / existing local opens preserved
+Recurrence DB-U12                                   UNAFFECTED / remains exactly open as classified
+Lifecycle DB-U14                                    UNAFFECTED / correctly open
+Indexes DB-U15                                      UNAFFECTED / correctly open
+ACL DB-U21                                          COMPATIBLE / correctly open
+new generic fallback                                0
+new unclassified material item                      0
+```
+
+No upstream Domain, Logical, Physical, CP6-01 or CP6-02 reopening is required.
+
+### 26.13 Current CP6-03 status after pass III-A
+
+```text
+CP6-03
+ACTIVE
+
+PASS III-A
+LR-03 / GOVERNANCE COMPOSITION CONTRACT
+PASS WITH HARDENING
+
+DB-U22
+CLOSED
+
+GLOBAL UNRESOLVED DB-U ITEMS
+11
+
+PASS-II LOCAL UNRESOLVED ITEMS
+6
+
+UNCLASSIFIED NEW ITEMS
+0
+
+CP6 BUSINESS DDL AUTHORIZED
+NO
+
+GATE 03
+NOT YET EARNED
+```
+
+The next semantic block should consume **Criterion / Evaluation / Evidence together with Temporal Constraint pressure**, because those authorities are now the highest-value route into `MIL-U01`, `SCH-U01` and the remaining evaluative/temporal dependencies without inventing placeholder result/status/policy vocabularies.
