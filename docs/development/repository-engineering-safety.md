@@ -1,6 +1,6 @@
 # Repository Engineering Safety
 
-- Status: **CURRENT — BACKEND REQUIRED CHECKS ACTIVE / FRONTEND GATE CALIBRATION ACTIVE**
+- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / PROMOTION DOCUMENTED / GITHUB APPLY PENDING**
 - Repository: `MattiaRubino/dante`
 - Default branch: `main`
 - Main ruleset: `lifeos-main-safety`
@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Make repository enforcement match documented DANTE engineering policy without fake review ceremony, guessed check names or unproven security gates.
+Repository enforcement must match DANTE engineering policy without fake review ceremony, guessed check names or unproven gates.
 
 ```text
 DOCUMENTED POLICY != GITHUB CONTROL ACTUALLY APPLIED
@@ -19,7 +19,7 @@ WORKFLOW EXISTS != TRUSTED CHECK
 TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 ```
 
-A repository-side control is recorded as effective only after direct evidence exists. Connector limitations are stated instead of converted into false PASS.
+A repository-side control is called effective only after direct evidence exists and the GitHub setting itself has been applied. Connector limitations are recorded rather than converted into false PASS.
 
 ## Persistent operating rules
 
@@ -33,9 +33,9 @@ remote evidence required before PASS / CLOSED
 branches != environments
 ```
 
-## Current protected-main posture
+## Current protected-main posture — effective GitHub state before this UI promotion
 
-The `lifeos-main-safety` ruleset currently enforces:
+The effective `lifeos-main-safety` ruleset currently requires:
 
 ```text
 main deletion                         blocked
@@ -53,6 +53,8 @@ merge queue                          not enabled
 
 Zero approvals remains intentional while one regular maintainer exists. Add real human-review enforcement only when independent ownership/review responsibility exists.
 
+The branch-local canonical ruleset definition now stages the already-calibrated `Frontend CI Gate` as the third required context. That JSON is desired repository state; until the owner applies the one-time GitHub ruleset UI change and it is verified, this document does **not** claim the third check is effective on protected `main`.
+
 ## Backend CI calibration — established precedent
 
 Backend CP4 directly proved on PR #24:
@@ -66,7 +68,7 @@ Dependency Review     SUCCESS
 
 DELIBERATE RED
 Backend Quality       FAILURE — intentional
-Backend PostgreSQL    SUCCESS — independent diagnostic preserved
+Backend PostgreSQL    SUCCESS — independent path preserved
 Backend CI Gate       FAILURE — mandatory failure propagated
 Dependency Review     FAILURE — intentional dependency policy denial
 
@@ -77,7 +79,7 @@ Backend CI Gate       SUCCESS
 Dependency Review     SUCCESS
 ```
 
-Only after that sequence were `Backend CI Gate` and `Dependency Review` promoted to required checks.
+Only after that sequence were `Backend CI Gate` and `Dependency Review` promoted.
 
 ## Required-check promotion protocol
 
@@ -97,11 +99,9 @@ real workflow/job exists
 
 Never promote a guessed or documentation-only check name.
 
-## Frontend CI current state
+## Frontend CI Gate calibration — COMPLETE
 
-Frontend materialization directly proved the hosted workflow before integration. PR #28 now exercises the combined repository candidate.
-
-Current frontend workflow structure:
+Frontend workflow structure:
 
 ```text
 Frontend CI
@@ -111,26 +111,71 @@ Frontend CI
 └── Frontend CI Gate
 ```
 
-Current hardening includes:
+Hardening includes:
 
 - workflow default `permissions: {}`;
 - `contents: read` only on checkout jobs;
 - `persist-credentials: false`;
-- full immutable Action SHA pins;
+- immutable full-SHA Action pins;
 - exact Node 24.19.0 / pnpm 11.22.0 bootstrap;
-- `pnpm install --frozen-lockfile`;
+- frozen install;
 - format/lint/strict TS/architecture/generated/unit/build;
 - Web Chromium E2E;
-- Expo `install --check` compatibility;
+- Expo compatibility check;
 - Android Hermes bundle smoke;
-- tracked **and untracked** repository-mutation detection;
-- aggregate `Frontend CI Gate` depending on all mandatory frontend jobs.
+- tracked and untracked repository-mutation detection;
+- aggregate gate over all mandatory frontend jobs.
 
-Real PR #28 candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06` observed:
+### Real green
+
+PR #28 current-truth candidate `79b55b3a1986cc910af0ce84df411314e8453e80` observed:
+
+```text
+Dependency Review   PASS
+Backend CI Gate     PASS
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
+```
+
+### Deliberate red
+
+Commit `6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8` added one temporary workflow-only `exit 1` in Quality.
+
+Observed remotely:
+
+```text
+Quality             FAILURE — intentional
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    FAILURE — mandatory failure propagated
+Backend CI          PASS
+Dependency Review   PASS
+```
+
+No product source, dependency or security policy was weakened.
+
+### Exact restore and recovery green
+
+Recovery commit:
+
+```text
+02ee9034f37000819afb2c27b0bd826b128f69b5
+```
+
+The workflow was restored to the exact previously-green blob:
+
+```text
+14626e696d91d3f184b58dac111cd88102832e91
+```
+
+Hosted recovery result:
 
 ```text
 Dependency Review   PASS
 Backend CI          PASS
+Backend CI Gate     PASS
 Frontend CI         PASS
 Quality             PASS
 Web E2E             PASS
@@ -138,21 +183,47 @@ Mobile Bundle       PASS
 Frontend CI Gate    PASS
 ```
 
-`Frontend CI Gate` is therefore a real emitted green context, but **NOT REQUIRED** on `main` yet.
-
-Still pending:
+Therefore:
 
 ```text
-controlled deliberate red
--> prove mandatory upstream frontend failure propagates to Frontend CI Gate
--> restore intended workflow
--> recovery green
--> separate ruleset-promotion decision
+Frontend CI Gate context emitted       PASS
+real green                              PASS
+deliberate-red failure propagation     PASS
+exact restoration                      PASS
+recovery green                         PASS
+eligible for required-check promotion  YES
+required on GitHub main                PENDING OWNER UI APPLICATION
 ```
+
+## Frontend required-check promotion decision
+
+Promotion is approved for exactly:
+
+```text
+Frontend CI Gate
+source / integration: GitHub Actions
+integration_id: 15368
+```
+
+Retain exactly:
+
+```text
+Backend CI Gate
+Dependency Review
+strict branch-up-to-date policy
+PR-before-merge
+0 required approvals
+review-thread resolution
+merge commits only
+main deletion protection
+non-fast-forward / force-push protection
+```
+
+The branch-local `docs/development/github-main-ruleset.json` now contains the desired three-check definition. The GitHub ruleset UI must be updated once; afterward repository truth must be reread before this control is called APPLIED.
 
 ## Dependency Review posture
 
-Dependency Review is repository-wide and remains fail-closed at:
+Dependency Review remains fail-closed:
 
 ```text
 fail-on-severity   moderate
@@ -160,9 +231,7 @@ fail-on-scopes     runtime, development, unknown
 comment writing    disabled
 ```
 
-PR #28 introduced the real pnpm dependency graph and surfaced three transitive tooling advisories that cannot currently be repaired safely within the qualified Expo graph without unsupported overrides.
-
-Only these exact advisory IDs are temporarily allowed:
+Only these exact temporary transitive-tooling advisories are allowed:
 
 ```text
 GHSA-5p2g-fcmc-qvqq
@@ -170,30 +239,15 @@ GHSA-w3rx-r6r6-pgpr
 GHSA-w5hq-g745-h8pq
 ```
 
-Accepted-risk review deadline:
+Accepted-risk review deadline: **2026-09-23**.
 
-```text
-2026-09-23
-```
+The first two are `image-size` through Metro build/development asset processing. The third is `uuid@7.0.3` through Expo/Xcode configuration tooling. Full paths, exposure classification and removal triggers live in `../workstreams/frontend-materialization-integration.md`.
 
-The first two belong to `image-size` reached through Metro build/development asset processing. The third belongs to `uuid@7.0.3` reached through Expo/Xcode configuration tooling. Detailed dependency paths, exposure analysis and removal triggers are authoritative in `../workstreams/frontend-materialization-integration.md`.
-
-This is deliberately **not**:
-
-```text
-warn-only
-severity reduction
-scope reduction
-global vulnerability suppression
-forced Metro/Expo override
-forced uuid multi-major override
-```
-
-Remove/requalify an exception as soon as the qualified dependency graph no longer needs it, a safe patched path becomes available, or a newly activated DANTE path changes exposure.
+This is not warn-only, severity reduction, scope reduction, global suppression or an unsupported Expo/Metro/uuid override.
 
 ## Dependabot
 
-Current intended ecosystems after frontend integration hardening:
+Intended ecosystems after frontend integration:
 
 ```text
 uv /apps/backend
@@ -201,46 +255,34 @@ npm/pnpm workspace /
 GitHub Actions /
 ```
 
-Dependabot proposes updates; Dependency Review evaluates dependency changes in PRs. Native/framework dependency updates are never auto-accepted merely because Dependabot produced them.
+Dependabot proposes updates; Dependency Review evaluates them. Native/framework updates are never auto-accepted merely because Dependabot produced them.
 
 ## GitHub Actions full-SHA policy
 
-Repository owner previously enabled the Actions setting requiring full-length commit SHA pins.
-
-Evidence classification remains:
-
-```text
-owner/admin application         confirmed by owner
-connector direct readback       unavailable
-workflow compatibility          PASS — current workflows use full SHAs
-negative non-SHA rejection      not directly re-proved
-```
-
-Do not call this connector-verified when it is not.
+Repository owner previously enabled full-length Action SHA enforcement. Connector direct readback remains unavailable; current workflows are compatible and pinned to full immutable SHAs.
 
 ## CodeQL
 
-CodeQL is not currently active.
-
-Accepted next security boundary after TypeScript + Python integration reaches protected `main`:
+CodeQL is not active yet. Accepted post-integration boundary:
 
 ```text
-verify current default-setup support
+TypeScript + Python integrated on main
+-> verify current GitHub default setup
 -> activate CodeQL default setup
--> observe real emitted contexts/results
--> fix/classify real findings
--> consider required-check promotion separately
+-> observe real findings/contexts
+-> classify/fix findings
+-> consider required promotion separately
 ```
 
-Do not create a custom CodeQL workflow merely to duplicate default setup.
+Do not create a custom CodeQL workflow merely to duplicate supported default setup.
 
 ## CODEOWNERS / reviews
 
-`CODEOWNERS` remains intentionally absent while one regular maintainer exists. Introduce it only when distributed ownership/reviewer responsibility becomes real.
+`CODEOWNERS` remains intentionally absent while one regular maintainer exists. Revisit only when distributed ownership or independent review becomes real.
 
 ## SECURITY.md
 
-Public vulnerability intake remains deferred until public production/release makes the process operationally meaningful. The activation register requires revisiting it before production maturity.
+Public vulnerability intake remains deferred until public production/release makes the process operationally meaningful; it is explicitly carried in the future activation register.
 
 ## Branch hygiene
 
@@ -252,26 +294,22 @@ active work owned by branch           0
 required evidence preserved           PASS
 ```
 
-Relevant branch truth:
+Relevant truth:
 
 ```text
 feature/backend-scaffold
-closed historical evidence / integrated via PR #24
+closed / integrated via PR #24
 
 feature/frontend-materialization
-closed frontend evidence source / FM-00..FM-07 PASS
+closed evidence / FM-00..FM-07 PASS
 
 chore/frontend-materialization-integration
 active PR #28 integration branch
 ```
 
-The closed frontend evidence branch must not be repurposed for integration cleanup.
-
 ## Merge/history posture
 
-DANTE preserves useful checkpoint/evidence history and permits merge commits. The frontend integration branch itself preserves the closed materialization history through a real two-parent merge rather than rewriting/squashing it away before review.
-
-A future linear-history/squash-only policy requires explicit evaluation of evidence consequences.
+DANTE preserves useful checkpoint/evidence history and permits merge commits. The integration branch preserves the closed frontend history through a real two-parent merge.
 
 ## Current verification classification
 
@@ -281,16 +319,17 @@ main force-push protection                PASS / preserved
 PR-before-merge                           PASS / preserved
 review-thread resolution                  PASS / preserved
 required approvals                        0 / intentional
-Backend CI Gate calibration               PASS
 Backend CI Gate required                  APPLIED
-Dependency Review calibration             PASS
 Dependency Review required                APPLIED
 branch-up-to-date requirement             APPLIED
-Frontend CI real PR green                  PASS
-Frontend CI Gate emitted green             PASS
-Frontend CI Gate deliberate red            PENDING
-Frontend CI Gate recovery green             PENDING
-Frontend CI Gate required                  NOT APPLIED
+Frontend CI Gate real green               PASS
+Frontend CI Gate deliberate red           PASS
+Frontend CI Gate failure propagation      PASS
+Frontend CI Gate exact restore            PASS
+Frontend CI Gate recovery green           PASS
+Frontend CI Gate promotion decision       APPROVED
+Frontend CI Gate desired ruleset JSON     STAGED
+Frontend CI Gate GitHub ruleset setting   PENDING OWNER UI APPLICATION
 CodeQL                                    NOT ACTIVE
 ```
 
@@ -298,17 +337,14 @@ CodeQL                                    NOT ACTIVE
 
 Repository safety does not imply complete security assurance, independent human review, production deployment safety, restore/PITR rehearsal, CodeQL PASS, iOS release validation or blanket Physical/PSV PASS.
 
-Each future control is activated only when its real boundary exists and direct evidence supports it.
-
-## Current next repository-safety step
+## Exact next repository-safety step
 
 ```text
-PR #28 docs/current-truth reconciliation
--> combined PR green
--> Frontend CI Gate deliberate red
--> restore / recovery green
--> separate explicit ruleset gate if promotion is still justified
--> final protected-main merge review
+apply Frontend CI Gate to GitHub ruleset UI
+-> verify effective protected-main context
+-> ensure PR #28 remains green/current
+-> final PR diff/current-docs/accepted-risk review
+-> separate protected-main merge authorization
 ```
 
-Any ruleset mutation, merge, CodeQL activation or branch deletion requires its own authorization.
+Any merge, CodeQL activation or branch deletion remains separately authorized.

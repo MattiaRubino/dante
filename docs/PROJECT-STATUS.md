@@ -2,65 +2,36 @@
 
 - Status: **CURRENT TRUTH**
 - Product: **DANTE**
-- Protected-main backend integration: PR `#24` — **MERGED / VERIFIED**
 - Frontend Foundation integration: PR `#22` — **MERGED / VERIFIED**
+- Backend scaffold integration: PR `#24` — **MERGED / VERIFIED**
 - Frontend materialization: `feature/frontend-materialization` — **CLOSED / PASS**
 - Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / DRAFT**
 
 ## 1. Executive state
 
 ```text
-PRODUCT / NORTH STAR
-CURRENT
-
-DOMAIN MODEL
-CLOSED
-
-LOGICAL MODEL
-CLOSED
-WL-H01..WL-H12 ACTIVE
-
-PRE-PHYSICAL COHERENCE
-CLOSED / FINAL QA PASS
-
-PHYSICAL TARGET
-CLOSED / SELECTED / ACCEPTED
-
-ENGINEERING FOUNDATION v0
-CLOSED / ACCEPTED
-
-FRONTEND ENGINEERING FOUNDATION
-CLOSED / ACCEPTED / FINAL REVIEW PASS
-INTEGRATED VIA PR #22
-
-PRODUCTION BACKEND SCAFFOLD
-CLOSED / DIRECT QA PASS
-INTEGRATED VIA PR #24
-CP1..CP5 CLOSED AT THEIR STATED SCOPES
-
-FRONTEND MATERIALIZATION
-CLOSED / PASS
-FM-00..FM-07 COMPLETE AT THEIR STATED SCOPES
-
-FRONTEND INTEGRATION HARDENING
-ACTIVE / PR #28
-CURRENT candidate CI GREEN before this documentation-reconciliation commit
-
-CONCRETE LOGICAL -> POSTGRESQL
-NOT STARTED
-
-PRODUCT VERTICAL IMPLEMENTATION
-NOT STARTED
-
-PRODUCTION DEPLOYMENT
-NOT STARTED
+PRODUCT / NORTH STAR                  CURRENT
+DOMAIN MODEL                          CLOSED
+LOGICAL MODEL                         CLOSED / WL-H01..WL-H12 ACTIVE
+PRE-PHYSICAL COHERENCE                CLOSED / FINAL QA PASS
+PHYSICAL TARGET                       CLOSED / SELECTED / ACCEPTED
+ENGINEERING FOUNDATION v0             CLOSED / ACCEPTED
+FRONTEND ENGINEERING FOUNDATION       CLOSED / ACCEPTED / INTEGRATED VIA PR #22
+PRODUCTION BACKEND SCAFFOLD           CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
+FRONTEND MATERIALIZATION              CLOSED / PASS — FM-00..FM-07
+FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28
+FRONTEND CI GATE CALIBRATION          COMPLETE
+FRONTEND CI GATE PROMOTION            DOCUMENTED / GITHUB UI APPLICATION PENDING
+CONCRETE LOGICAL -> POSTGRESQL         NOT STARTED
+PRODUCT VERTICAL IMPLEMENTATION       NOT STARTED
+PRODUCTION DEPLOYMENT                 NOT STARTED
 ```
 
 Architecture/design closure does not imply implementation PASS. Direct evidence is scoped to the artifact/scenario that actually ran.
 
 ## 2. Product and semantic invariants
 
-DANTE is a personal operating system designed to help people understand, organize and improve their real life by turning intentions, needs and possibilities into outcomes they can realistically pursue.
+DANTE is a personal operating system designed to help people understand, organize and improve real life by turning intentions, needs and possibilities into outcomes they can realistically pursue.
 
 Compass: **Understand life. Shape what comes next.**
 
@@ -84,7 +55,7 @@ Persistent invariants include:
 - idempotency != semantic identity;
 - client local state != canonical accepted effect.
 
-WL-H01..WL-H12 remain active and constrain implementation.
+WL-H01..WL-H12 remain active.
 
 ## 3. Canonical architecture truth
 
@@ -112,15 +83,13 @@ prototypes
 .github
 ```
 
-One product monorepo remains authoritative. Paths exist only for real content. Production code does not import from `prototypes/`.
-
-Backend remains a capability-first modular monolith. Web and Mobile are sibling platform-specific clients with selective semantic sharing.
+One product monorepo remains authoritative. Backend is a capability-first modular monolith. Web and Mobile are sibling platform-specific clients with selective semantic sharing. Production code never imports from `prototypes/`.
 
 ## 5. Backend scaffold — CLOSED / integrated
 
 Detailed authority: `docs/workstreams/backend-scaffold.md`.
 
-Integrated evidence includes:
+Direct integrated evidence includes:
 
 ```text
 Python 3.14.7 / uv 0.12.5                 PASS
@@ -139,15 +108,13 @@ protected-main merge PR #24               PASS
 post-merge Backend CI                     PASS
 ```
 
-Current protected-main required checks remain `Backend CI Gate` and `Dependency Review` with branch-up-to-date required.
-
 Concrete business schema remains NOT STARTED.
 
 ## 6. Frontend materialization — CLOSED / PASS
 
 Detailed authority: `docs/workstreams/frontend-materialization.md`.
 
-Directly qualified implemented baseline:
+Qualified baseline:
 
 ```text
 Node                     24.19.0
@@ -171,7 +138,7 @@ Direct evidence includes:
 
 ```text
 fresh frozen install                          PASS
-strict TS                                    PASS
+strict TypeScript                            PASS
 architecture graph 36 modules / 45 deps      0 violations
 generated-source drift                       PASS
 @dante/time                                  5 PASS
@@ -186,20 +153,9 @@ tracked/untracked residue                    0
 GitHub-hosted Frontend CI                    PASS
 ```
 
-Known peer diagnostic:
-
-```text
-Web react-dom@19.2.8 wants React ^19.2.8
-workspace also contains Mobile React 19.2.3
-Expo compatibility for Mobile React 19.2.3 PASS
-classification: known / reproducible / non-blocking
-```
-
-No React version change, peer suppression, packageExtensions, hoisting or nodeLinker change is authorized merely to silence this diagnostic.
+Known workspace peer diagnostic remains reproducible/non-blocking: Web `react-dom@19.2.8` observes workspace Mobile React `19.2.3`, while Expo compatibility directly passes for Mobile React 19.2.3. No React forcing, peer suppression, packageExtensions, hoisting or nodeLinker workaround is authorized merely to silence it.
 
 ## 7. Materialization qualification of design-time selections
-
-The Frontend Foundation remains the architecture/design authority. Later direct materialization evidence qualifies version-specific implementation details.
 
 Current reconciled implementation authority:
 
@@ -211,7 +167,7 @@ Mobile React                 19.2.3 under Expo SDK 57
 Web React / React DOM        19.2.8 / 19.2.8
 ```
 
-This is a qualification of implementation evidence, not a reopening of the entire frontend architecture.
+This qualifies version-specific implementation evidence without reopening the full frontend architecture.
 
 ## 8. PR #28 integration-hardening state
 
@@ -221,24 +177,57 @@ Integration branch:
 chore/frontend-materialization-integration
 ```
 
-The branch was created from current `main` and preserves the closed frontend materialization history through a real two-parent merge commit.
+The branch starts from current `main` and preserves closed frontend history through a real two-parent merge.
 
-Hardening already materialized:
+Hardening materialized:
 
 - Mobile TypeScript explicitly includes `src/**/*.ts(x)`;
-- reusable `mobile:compat:check` / Expo compatibility gate;
-- tracked + untracked CI repository-mutation check;
-- stable aggregate `Frontend CI Gate`;
-- workflow-level least privilege;
+- reusable Expo compatibility CI gate;
+- tracked + untracked repository-mutation check;
+- aggregate `Frontend CI Gate`;
+- workflow least privilege;
 - pnpm `minimumReleaseAge = 1440` minutes;
 - npm/pnpm Dependabot scope;
-- narrow documented Dependency Review accepted-risk exceptions.
+- exact/time-bounded Dependency Review exceptions;
+- CURRENT documentation reconciliation;
+- version-specific Foundation/materialization reconciliation.
 
-Real PR evidence on candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`:
+## 9. Frontend CI Gate calibration — COMPLETE
+
+### Real green
+
+Commit `79b55b3a1986cc910af0ce84df411314e8453e80`:
+
+```text
+Dependency Review   PASS
+Backend CI Gate     PASS
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
+```
+
+### Deliberate red
+
+Commit `6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8`:
+
+```text
+Quality             FAILURE — intentional
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    FAILURE — mandatory failure propagated
+Backend CI          PASS
+Dependency Review   PASS
+```
+
+### Recovery green
+
+Commit `02ee9034f37000819afb2c27b0bd826b128f69b5` restored exact workflow blob `14626e696d91d3f184b58dac111cd88102832e91` and observed:
 
 ```text
 Dependency Review   PASS
 Backend CI          PASS
+Backend CI Gate     PASS
 Frontend CI         PASS
 Quality             PASS
 Web E2E             PASS
@@ -246,16 +235,32 @@ Mobile Bundle       PASS
 Frontend CI Gate    PASS
 ```
 
-The documentation-reconciliation commit containing this file must earn its own PR CI before being treated as the final combined candidate.
+Therefore `Frontend CI Gate` is directly calibrated and eligible for required-check promotion.
 
-## 9. Dependency Review accepted-risk register
+## 10. Protected-main ruleset promotion state
 
-Dependency Review remains fail-closed at:
+Effective GitHub ruleset before owner UI application still requires:
 
 ```text
-fail-on-severity: moderate
-fail-on-scopes: runtime, development, unknown
+Backend CI Gate
+Dependency Review
 ```
+
+The branch-local canonical desired definition now adds:
+
+```text
+Frontend CI Gate
+source: GitHub Actions
+integration_id: 15368
+```
+
+and preserves branch-up-to-date enforcement, PR-before-merge, zero required approvals, review-thread resolution, merge-commit policy, deletion protection and force-push protection.
+
+Do **not** claim `Frontend CI Gate` is actually required on protected `main` until the GitHub ruleset UI mutation is applied and verified.
+
+## 11. Dependency Review accepted-risk register
+
+Dependency Review remains fail-closed at `moderate+` for runtime/development/unknown scopes.
 
 Only these exact transitive tooling advisories are temporarily allowed:
 
@@ -267,43 +272,41 @@ GHSA-w5hq-g745-h8pq
 
 Review deadline: **2026-09-23**.
 
-Detailed dependency paths, exposure classification and removal triggers live in `docs/workstreams/frontend-materialization-integration.md`. No global vulnerability suppression or severity reduction is authorized.
+Detailed paths, exposure and removal triggers: `docs/workstreams/frontend-materialization-integration.md`.
 
-## 10. Current non-claims
+## 12. Current non-claims
 
 ```text
-Frontend CI Gate required on main        NO
-CodeQL active                             NO
-PowerSync runtime integrated              NO
-Orval API client materialized             NO
-TanStack Query product usage              NO
-TanStack Form product usage               NO
-Sentry active                              NO
-Cloudflare Web deployment active          NO
-EAS release pipeline active               NO
-iOS direct build/device validation        NO
-Concrete business DB schema               NO
-Access/Home production vertical           NO
-PROD deployment                            NO
+Frontend CI Gate required on GitHub main      PENDING UI APPLICATION
+CodeQL active                                  NO
+PowerSync runtime integrated                   NO
+Orval API client materialized                  NO
+TanStack Query product usage                   NO
+TanStack Form product usage                    NO
+Sentry active                                  NO
+Cloudflare Web deployment active               NO
+EAS release pipeline active                    NO
+iOS direct build/device validation             NO
+Concrete business DB schema                    NO
+Access/Home production vertical                NO
+PROD deployment                                NO
 ```
 
-## 11. Future activation register
+## 13. Future activation register
 
-The trigger-based future capability register is maintained in `docs/workstreams/frontend-materialization-integration.md`. It must be consulted at the first real product vertical, UI/design-system surface, form, remote API, offline operation, shared deployment, Mobile release, post-integration security step, pre-PROD maturity step and scale-triggered infrastructure decision.
+The trigger-based future capability register is maintained in `docs/workstreams/frontend-materialization-integration.md`. Consult it at the first real product vertical, UI/design-system surface, form, remote API, offline operation, shared deployment, Mobile release, post-integration security step, pre-PROD maturity step and scale-triggered infrastructure decision.
 
-Do not install placeholder infrastructure simply because large applications often use it later.
+Do not install placeholder infrastructure merely because larger applications often use it later.
 
-## 12. Active workstreams / exact next actions
+## 14. Exact next actions
 
 ```text
-CURRENT FRONTEND INTEGRATION
-PR #28
--> current-truth reconciliation
--> PR CI green on reconciled candidate
--> deliberate-red Frontend CI Gate calibration
--> recovery green
--> separate required-check promotion decision
--> final review / merge authorization
+FRONTEND INTEGRATION
+1. apply Frontend CI Gate to GitHub ruleset UI
+2. verify effective required contexts
+3. confirm PR #28 remains current + green
+4. perform final PR diff/current-doc/accepted-risk review
+5. obtain separate merge authorization
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL
@@ -311,7 +314,7 @@ Concrete Logical -> PostgreSQL
 
 PRODUCT NEXT AFTER FOUNDATIONAL INTEGRATION
 first real vertical slice
--> activate only the capability/testing/lint boundaries actually consumed
+-> activate only capability/testing/lint boundaries actually consumed
 ```
 
 Do not reopen closed Product/Domain/Logical/Physical/Engineering/Foundation or CP1-CP5 decisions without concrete contradictory evidence.
