@@ -414,3 +414,86 @@ identify what is intentionally deferred and why
 ```
 
 The goal is not documentation volume. The goal is a database that is understandable, inspectable, reviewable and maintainable at large-system engineering standards.
+
+## 16. Active multi-part Database Architecture & Reference layout
+
+As of the CP6-03 structural split anchored at repository commit `efb80da23db60b82f641b6e9329500af00cbbf46`, the human-readable Database Architecture & Reference is one canonical logical authority physically continued across multiple files.
+
+This section is the current physical-layout authority and extends the earlier single-file expected-shape example in section 3 without changing any database semantics.
+
+Current active shape:
+
+```text
+docs/database/
+├── README.md
+├── dante-postgresql-database.md
+├── dante-postgresql-database-part-2.md
+├── dictionary/   only when real dictionary content exists
+├── generated/    only when real generated content exists
+├── diagrams/     only when real diagram content exists
+└── evolution/    only when a complex evolution requires durable content
+```
+
+Human-readable reference partition:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ canonical sections 1–30
+→ retained intact at the structural split
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ canonical continuation
+→ future substantive numbering begins at section 31
+
+=
+
+DATABASE ARCHITECTURE & REFERENCE
+one logical canonical authority
+```
+
+Readers, reviewers, migrations, implementation work, Database Dictionary reconciliation, generated-documentation checks and whole-database audits MUST consume **all active parts**. The newest part alone must never be interpreted as the complete database specification.
+
+The multi-part layout is an operational write-safety and maintainability mechanism only. It does not create separate semantic authorities and does not alter the authority chain:
+
+```text
+Domain / Logical / Physical
+→ CP6-01
+→ CP6-02 Constitution / ADR-010
+→ complete multi-part Database Architecture & Reference
+→ Alembic / SQLAlchemy / real PostgreSQL / direct tests
+```
+
+### 16.1 Preservation rule
+
+Existing canonical parts are not shortened merely because the reference grows.
+
+Future structural splits MUST preserve:
+
+```text
+all approved semantic derivation
+all concrete table/column/constraint detail
+all negative dispositions
+all migration/mapping/ACL/test obligations
+all cumulative A/B/C audit records
+all explicit supersession history necessary to interpret the blueprint
+```
+
+A later part may supersede a specific earlier provisional statement only through an explicit numbered section and the normal whole-database cumulative audit/write process. File order alone does not silently supersede prior authority.
+
+No semantic content may be deleted, condensed into a summary or moved merely to simplify a Git write.
+
+### 16.2 Additional parts
+
+A `part-3` or later continuation may be introduced only when file size, write safety or maintainability creates a real operational need. The new part must continue the global section numbering and must be introduced through a dedicated bounded documentation gate.
+
+The existence of another part does not allow older active parts to be ignored.
+
+### 16.3 Future re-fusion
+
+A future decision to return the reference to one physical file is a dedicated structural documentation migration.
+
+It requires full content-equivalence QA proving that all active-part content, authority, detail and numbering/supersession meaning are preserved. Re-fusion is never implemented by replacing the active parts with a shorter summary.
