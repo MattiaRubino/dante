@@ -1,7 +1,7 @@
 # DANTE — Home Contract
 
 **Status:** current pre-production behavior contract  
-**Current working B2 baseline:** B2 Central Stage v22 no persistent add  
+**Current working B2 baseline:** B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22  
 **Last formally closed Home milestone:** B1 Context Rail v1  
 **Branch:** `prototype/frontend`
 
@@ -37,9 +37,29 @@ The registry at `docs/frontend/ui-registry.md` enumerates controls and statuses.
 
 ## 3. Topbar
 
-Current prototype contains:
+B2 v25 treats the topbar as a real application bar rather than a floating card.
 
-- Create;
+Current accepted arrangement:
+
+```text
+LEFT                         CENTER                    RIGHT
+DANTE + Cerca                Home / Mondi / Oggi       Crea / Review / launcher / account
+```
+
+Shell rules:
+
+- sticky at the top of the viewport;
+- edge-to-edge at shell level with 24 px internal horizontal inset;
+- Search lives immediately after DANTE on the left;
+- primary Home / Mondi / Oggi navigation remains centered;
+- `Crea` is the first control in the right utility group;
+- Review, launcher and account follow it;
+- existing Search/Create controls are moved/reused rather than duplicated;
+- the working reviewed shell suppresses the outer Home-stage vertical side frame that previously strengthened a nested-panel reading.
+
+Current prototype controls remain:
+
+- Crea;
 - Home / Mondi / Oggi nav controls;
 - Search;
 - legacy Review Queue;
@@ -48,15 +68,17 @@ Current prototype contains:
 
 Important: several topbar controls are mock/prototype interactions. Their presence does not imply production routing, persistence or backend services.
 
-The legacy topbar Review Queue is currently **deprecated** because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible only until a separate cleanup scope decides the final global access pattern.
+The legacy topbar Review Queue is **deprecated** because B1 establishes Resolution as the preferred unresolved-matter concept. It remains visible only until a separate cleanup scope decides the final global access pattern.
 
-Visible LifeOS-era product strings/lockup are transitional historical UI and are scheduled for the dedicated DANTE branding pass; their presence does not change current product identity.
+The DANTE identity-anchor treatment is governed by B2 branding v23. Historical `LifeOS` strings may still exist inside untouched prototype-only/deprecated controls; v23-v25 do not authorize a blind global rename.
 
 ## 4. Conversational surface
 
 Natural language is a global interaction layer over the same DANTE reality, not a separate semantic product.
 
 Current Home keeps a first-class structured GUI. AI availability must not be required to understand the operational core.
+
+B2 branding v23 uses the approved DANTE symbol-only identity on the AI surface; later v24/v25 work does not reopen that identity decision.
 
 ## 5. Orientation
 
@@ -74,9 +96,9 @@ Per te
 
 Do not collapse all three into generic recommendations.
 
-## 6. Central stage — current B2 v22 working contract
+## 6. Central stage — retained B2 v22 working contract
 
-The current user-reviewed B2 working oracle is v22 no persistent add. B2 is still open for product identity/skin and final QA; v22 closes the Home-stage add/configuration model.
+The current central-stage behavior oracle remains v22 no persistent add. Later v23 identity, v24 visual skin and v25 shell/timeline work do not reopen the Home-stage add/configuration model.
 
 ### 6.1 Shared workspace
 
@@ -126,6 +148,8 @@ CTA does not create directly inside Home
 
 This is a product and architecture rule, not merely a visual preference.
 
+The B2 v25 timeline `+` does **not** violate this rule: it belongs to the temporal projection, not to Mondi/Segnali capacity or configuration.
+
 ### 6.3 Mondi / continuity
 
 Technical ID: `home.stage.continuity`  
@@ -166,7 +190,7 @@ Rules:
 - current desktop composition renders at most three complete visible Signal items;
 - Signal navigation/selection/drag uses the same interaction grammar as continuity;
 - Signal track remains an inner-stage concern and must not redefine stage outer geometry;
-- no persistent add/configure affordance is part of Home;
+- no persistent add/configure affordance is part of Home central stage;
 - Signal selection/configuration/order/removal belongs to the dedicated Signals management surface;
 - Home may expose an empty-state management entry only when no real Signals are available.
 
@@ -199,7 +223,7 @@ Current direction:
 - projection-specific outer-geometry patches are forbidden;
 - no persistent add control participates in stage geometry.
 
-The current user-reviewed v22 previews are the working visual/behavior oracle. A fresh automated browser PASS for all 24 B2.5 matrix combinations is **not** claimed by this documentation scope; the machine-readable matrix remains the target for final automated verification.
+The v25 shell changes must still pass the same final responsive matrix before B2 closure. A fresh automated browser PASS for all 24 B2.5 matrix combinations is **not** claimed by this checkpoint.
 
 ### 6.7 Machine-readable authority
 
@@ -214,7 +238,7 @@ These are frontend view contracts, **not** Domain/DTO/database contracts. They d
 
 ## 7. Timeline
 
-The current timeline preserves the mature temporal behavior lineage:
+The timeline preserves the mature temporal behavior lineage:
 
 - continuous 24h day;
 - contextual initial positioning;
@@ -231,7 +255,42 @@ The current timeline preserves the mature temporal behavior lineage:
 - return-to-now;
 - environmental/day route.
 
-B2/B2.5 do not alter or authorize changes to these semantics.
+### 7.1 B2 v25 temporal-header quick add
+
+B2 v25 extends the temporal-header grid from:
+
+```text
+month / now / week / actions
+```
+
+to:
+
+```text
+add / month / now / week / actions
+```
+
+Technical ID: `home.timeline.quickAdd`  
+Visible label: `+`
+
+Current prototype contract:
+
+- the control is a real button in the timeline component markup;
+- it owns a dedicated first grid column;
+- month/year and `Ora` move right as part of the same grid rather than via independent floating offsets;
+- it visually uses the accepted v24 charcoal/orange language;
+- its current prototype click bridges to the existing global `Crea` popover.
+
+The click bridge is **not** a final product/backend contract. Still open:
+
+- whether the final quick-add flow creates an event, task/commitment or another temporal object;
+- how viewed day/current time are prefilled;
+- whether a specific timeline coordinate preselects an exact time;
+- final route/sheet/popover ownership;
+- command, validation, persistence, authorization and backend endpoint semantics.
+
+Until that later contract exists, `home.timeline.quickAdd` is `PROTOTYPE_ONLY` and must not invent writes.
+
+The v25 quick-add does not change event drag, time edit, calendar navigation, zoom, grouping or other mature timeline semantics.
 
 ## 8. Context Rail — B1 accepted contract
 
@@ -351,7 +410,7 @@ Current desktop rail is part of the web prototype. Existing narrower breakpoint 
 
 For Home central-stage desktop work, the engineering guard matrix is defined in `prototypes/frontend/shared/contracts/home-responsive.matrix.json` across widths 1856/1600/1366/1200/1024/901, AI expanded/collapsed and both stage modes.
 
-v22 inherits the v21 user-reviewed responsive baseline and adds the no-persistent-add/partial-real-items contract. Final automated matrix execution remains a separate evidence requirement before full closure.
+v22 inherits the v21 user-reviewed responsive baseline; v23-v25 add identity, visual-skin and shell/header deltas over it. Final automated matrix execution remains a separate evidence requirement before full closure.
 
 Responsive rules must be owned by the correct layout/container boundary. Projection-specific patches must not silently redefine Home-shell or stage outer geometry.
 
@@ -369,6 +428,8 @@ Prototype fixtures are synthetic. Components must not invent endpoint paths, con
 Real backend integration will use explicit feature/data-source adapters, runtime validation at untrusted boundaries, stable identities, explicit stale/error/concurrency behavior and backend-authoritative AuthZ.
 
 For central-stage management specifically, the empty-state `OPEN_MANAGEMENT` intent transfers the user to the appropriate management feature. Creation/configuration commands belong there; Home stage itself does not issue a direct create mutation.
+
+For timeline quick-add specifically, v25 defines only the accepted contextual UI affordance. It does not define a production command or backend write.
 
 See `docs/frontend/production-readiness/backend-integration-contract.md`.
 
@@ -390,14 +451,15 @@ For touched durable Home behavior, apply the applicable quality layers from `doc
 
 ## 12. Current B2 open decisions
 
-The add/configuration model is decided by v22.
+The central-stage add/configuration model is decided by v22. DANTE identity is aligned by v23. Working palette/background are accepted by v24. The global shell placement and contextual timeline `+` placement are accepted by v25.
 
 Before B2 closure:
 
-1. align logo/visible product naming to DANTE;
-2. review overall palette/skin;
-3. review Home background/atmosphere;
-4. rerun applicable final QA after those changes.
+1. define the final production semantics/destination/context prefill for timeline quick-add;
+2. reconcile legacy Review and historical launcher only in an explicit bounded scope;
+3. productionize the accepted visual token layer when implementation reaches shared theme code;
+4. finish remaining small shell/detail refinements;
+5. rerun applicable responsive / visual / accessibility QA.
 
 ## 13. Documentation rule
 
