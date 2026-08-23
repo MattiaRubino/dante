@@ -6,6 +6,7 @@
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
 - Integration merge commit: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
 - Integration hardening commit: `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`
+- First accepted-risk commit: `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`
 - Pull request: `#28` (draft)
 - Frontend materialization source status: **CLOSED / PASS**
 
@@ -102,13 +103,32 @@ Frontend CI Gate    PASS
 Dependency Review   FAIL
 ```
 
-The Dependency Review failure is not classified as a frontend runtime/test regression. It identified two high-severity advisories on the transitive build/development dependency `image-size@1.2.1` introduced by the selected Expo/Metro toolchain.
+The first Dependency Review failure identified two high-severity advisories on the transitive Metro build/development dependency `image-size@1.2.1`.
 
-## 6. Dependency Review accepted-risk exception
+After the first narrow accepted-risk exception at `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`, the next PR #28 Dependency Review run no longer reported those `image-size` advisories. It instead surfaced one additional moderate advisory:
 
-### 6.1 Proven dependency path
+```text
+uuid@7.0.3
+GHSA-w5hq-g745-h8pq
+Missing buffer bounds check in v3/v5/v6 when a caller-provided buffer is used
+```
 
-PR #28 Dependency Review and lockfile readback prove the relevant chain:
+Backend CI and Frontend CI remained green on that same commit. The new finding is therefore handled as a separate supply-chain classification, not hidden inside the prior exception.
+
+## 6. Dependency Review accepted-risk exceptions
+
+Dependency Review remains fail-closed at the repository policy:
+
+```text
+fail-on-severity: moderate
+fail-on-scopes: runtime, development, unknown
+```
+
+No `warn-only`, severity reduction, scope reduction or global vulnerability bypass is authorized.
+
+### 6.1 Metro `image-size` advisories
+
+Proven dependency path:
 
 ```text
 Expo SDK 57
@@ -117,7 +137,7 @@ Expo SDK 57
 -> image-size 1.2.1
 ```
 
-The failing advisories are:
+Temporarily allowed advisories:
 
 ```text
 GHSA-5p2g-fcmc-qvqq
@@ -129,39 +149,53 @@ ICNS parser denial of service through an infinite loop
 
 At the 2026-08-23 review boundary, no installable patched `image-size` release was available for these advisories. Forcing an unqualified Metro/Expo graph override would therefore trade a known bounded tooling risk for an unvalidated framework/runtime compatibility change.
 
-### 6.2 Exposure classification
+Exposure is bounded to Metro build/development asset processing; it is not a DANTE production server request-processing dependency or a deployed generic image-parsing endpoint.
 
-The vulnerable package is reached by Metro build/development asset processing. It is not a DANTE production server request-processing dependency and is not a deployed application runtime dependency exposed as a generic image-parsing endpoint.
+### 6.2 Expo/xcode `uuid` advisory
 
-Current bounded exposure/mitigation:
-
-```text
-input boundary              repository / PR-controlled frontend assets
-GitHub token                contents: read only
-PROD/deployment secrets     absent
-Mobile CI                   timeout-minutes: 20
-selected Expo/Metro graph   retained / directly validated
-```
-
-This does not make the advisories harmless; it makes the accepted exposure materially narrower than changing the framework dependency graph without qualification.
-
-### 6.3 Exception policy
-
-Dependency Review remains fail-closed at the existing repository policy:
+PR #28 Dependency Review and lockfile readback prove the relevant transitive path:
 
 ```text
-fail-on-severity: moderate
-fail-on-scopes: runtime, development, unknown
+Expo SDK 57 tooling
+-> @expo/config-plugins
+-> xcode 3.0.1
+-> uuid 7.0.3
 ```
 
-Only these exact advisories are temporarily allowed:
+Temporarily allowed advisory:
+
+```text
+GHSA-w5hq-g745-h8pq
+uuid v3/v5/v6 missing buffer bounds check when a caller-provided buffer is supplied
+```
+
+The advisory does not affect UUID v1, v4 or v7 behavior. DANTE does not directly call the affected `uuid` API. The package is reached through Expo/Xcode configuration/prebuild tooling, while direct iOS build/release validation is not activated in the current scope.
+
+At the 2026-08-23 review boundary, forcing a `uuid` 11.x override underneath `xcode@3.0.1` would cross multiple declared major versions without qualification. Upstream `cordova-node-xcode` has already removed its `uuid` dependency on its development branch in favor of `crypto.randomUUID()`, but the consumed npm release remains `xcode@3.0.1`.
+
+### 6.3 Current bounded exposure and mitigation
+
+```text
+frontend dependency inputs   repository / PR-controlled manifests and assets
+GitHub token                 contents: read only
+PROD/deployment secrets      absent
+Mobile CI                    timeout-minutes: 20
+selected Expo/Metro graph    retained / directly validated
+DANTE direct uuid API use    none
+current iOS release scope    not activated
+```
+
+These facts do not make the advisories harmless. They establish why the accepted exposure is currently narrower and safer than injecting unqualified framework/transitive major-version overrides merely to make Dependency Review green.
+
+### 6.4 Exception lifecycle
+
+Only these exact advisory IDs are temporarily allowed:
 
 ```text
 GHSA-5p2g-fcmc-qvqq
 GHSA-w3rx-r6r6-pgpr
+GHSA-w5hq-g745-h8pq
 ```
-
-No `warn-only`, severity reduction, scope reduction or global vulnerability bypass is authorized.
 
 Accepted-risk review deadline:
 
@@ -169,15 +203,21 @@ Accepted-risk review deadline:
 2026-09-23
 ```
 
-Remove the exception earlier when either condition becomes true:
+Remove or requalify the relevant exception earlier when any applicable condition becomes true:
 
 ```text
 Expo/Metro no longer resolves a vulnerable image-size version
 OR
-a patched/replacement upstream path becomes available and passes DANTE qualification
+a patched/replacement image-size path becomes available and passes DANTE qualification
+OR
+Expo/xcode no longer resolves vulnerable uuid 7.0.3
+OR
+xcode publishes/consumes the upstream uuid removal
+OR
+an affected DANTE/iOS path becomes active and changes the exposure classification
 ```
 
-The dependency-update/security review path must re-check these advisory IDs rather than carrying the exception indefinitely.
+The dependency-update/security review path must explicitly re-check these advisory IDs rather than carrying the exception indefinitely.
 
 ## 7. Frontend CI Gate calibration
 
@@ -286,7 +326,8 @@ Do not introduce these before measured organizational/runtime need:
 - React version changes or peer-warning suppression;
 - pnpm hoisting/nodeLinker changes;
 - speculative shared packages or empty architecture directories;
-- global vulnerability suppression or weakening Dependency Review policy.
+- global vulnerability suppression or weakening Dependency Review policy;
+- pnpm override of `uuid` across unqualified major versions.
 
 ## 10. Exit condition
 
