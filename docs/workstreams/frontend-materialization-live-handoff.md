@@ -16,7 +16,7 @@ Read this file completely, then read:
 4. `docs/decisions/ADR-009-frontend-architecture-boundaries.md`
 5. referenced Frontend Engineering Foundation docs.
 
-Before any write:
+Before any repository write:
 
 ```bash
 git fetch origin feature/frontend-materialization
@@ -25,7 +25,9 @@ git rev-parse origin/feature/frontend-materialization
 git status --short
 ```
 
-The documentation-closure commit containing this file is self-referential and cannot embed its own SHA without another commit. Resolve the current documentation HEAD from `origin/feature/frontend-materialization`. The last directly validated implementation SHA is recorded below.
+Require remote HEAD to equal the approved PRE-SCOPE. No silent scope expansion.
+
+The documentation-closure commit containing this file is self-referential and therefore cannot embed its own SHA without another commit. Resolve the current documentation closure SHA from `origin/feature/frontend-materialization`. The last directly validated implementation/CI SHA is recorded below.
 
 ## 1. Repository / branch / workstation
 
@@ -59,11 +61,11 @@ Do not merge/rebase `main` into this branch unless separately scoped.
 
 ## 2. Current checkpoint
 
-Last directly validated implementation:
+Last directly validated implementation/CI commit:
 
 ```text
-d6138f5f5049e8fc11f877b774ff0191af44069f
-test: establish frontend runtime smoke baseline
+31deffddd35f69d48bee82465e0385e508c42876
+ci: materialize frontend validation workflow
 ```
 
 Current state:
@@ -73,12 +75,12 @@ FM-06A dependency architecture enforcement     PASS
 FM-06B generated-source drift enforcement      PASS
 FM-06C real unit-test baseline                  PASS
 FM-06D Web E2E + Mobile bundle smoke            PASS
-FM-06E CI orchestration                         MATERIALIZED / REMOTE RUN PENDING
-FM-06                                             IN PROGRESS
-NEXT = VALIDATE REAL FM-06E GITHUB-HOSTED RUN
+FM-06E GitHub-hosted CI orchestration           PASS
+FM-06                                             COMPLETE
+NEXT = FM-07 CLEAN MATERIALIZATION BASELINE
 ```
 
-The documentation closure containing this handoff should be resolved from the current remote branch HEAD after the closure commit lands.
+FM-06E was promoted to PASS only after a real GitHub-hosted run, not merely from workflow syntax or local parity.
 
 ## 3. Completed materialization checkpoints
 
@@ -94,7 +96,21 @@ FM-06A 38dbbd3efb764a8419f4498d27a2e29a3602fc5d
 FM-06B 362b95a415ac7845260daf19cc99547501151eaa
 FM-06C 610e33a7a31987d97564b1d6004a7b9896acaedc
 FM-06D d6138f5f5049e8fc11f877b774ff0191af44069f
+FM-06E 31deffddd35f69d48bee82465e0385e508c42876
 ```
+
+Known durable closure SHAs before FM-06D:
+
+```text
+FM-05A closure  d4d99b157bab9e00c4f0285bf82745e73a9c944d
+FM-05B closure  098be4c815eb724c32f49c277b058e85df81e03a
+FM-05C closure  61d19795867e13818a2d43252906b565d23e96e5
+FM-06A closure  b57709b4ce073ec179b4e55dc6dda72f509641a4
+FM-06B closure  ae0ff9e9849ff3aedcd095a645750993297c4384
+FM-06D closure  a481e24936c745c3573077a464a2af8a24794d1b
+```
+
+Resolve the FM-06E/FM-06 documentation closure from current branch HEAD after this docs commit lands.
 
 ## 4. Accepted toolchain
 
@@ -146,9 +162,7 @@ click/workflow behavior
 -> owning feature logic
 ```
 
-Do not create a universal dictionary mixing unrelated concerns.
-
-Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
+Do not create a universal dictionary mixing unrelated concerns. Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
 
 ## 6. FM-06A — dependency architecture — PASS
 
@@ -164,7 +178,7 @@ Command:
 pnpm architecture:check
 ```
 
-Rules currently reject:
+Rules reject:
 
 ```text
 unresolvable production imports
@@ -176,7 +190,7 @@ production -> prototypes
 shared core -> React / React DOM / React Native / react-i18next / Expo / Vite
 ```
 
-Current observed graph after FM-06C/FM-06D:
+Current observed graph:
 
 ```text
 36 modules
@@ -213,9 +227,7 @@ packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
 ```
 
-Checker snapshots bytes, runs real generators, compares exact bytes and restores pre-check state. Token and route-tree deliberate drift probes were rejected.
-
-Do not add an alternate TanStack Router CLI while the real Vite plugin owns route generation.
+Checker snapshots bytes, runs real generators, compares exact bytes and restores pre-check state. Deliberate token and route-tree drift probes were rejected.
 
 ## 8. FM-06C — real unit-test baseline — PASS
 
@@ -253,7 +265,7 @@ IT/EN resource-shape parity
 strict explicit common namespace selectors
 ```
 
-FM-06C diagnostics retained:
+Diagnostics retained:
 
 ```text
 root-output parser failure on colored/prefixed output
@@ -279,54 +291,18 @@ d6138f5f5049e8fc11f877b774ff0191af44069f
 test: establish frontend runtime smoke baseline
 ```
 
-Exact implementation scope:
-
-```text
-CREATE
-apps/web/playwright.config.ts
-apps/web/e2e/runtime.spec.ts
-tooling/check-mobile-bundle.mjs
-
-UPDATE
-.gitignore
-package.json
-pnpm-lock.yaml
-apps/web/package.json
-apps/web/tsconfig.json
-docs/workstreams/frontend-materialization-live-handoff.md
-
-DELETE
-none
-
-9 authorized paths
-0 unexpected
-```
-
-### Web E2E
+Web E2E:
 
 ```text
 @playwright/test 1.62.1 exact app-local devDependency
-Chromium only
-headless
-1 worker
-0 retries
+Chromium only / headless
+1 worker / 0 retries
 Vite production build + preview
 127.0.0.1:4173
-reuseExistingServer = false
+1 real browser E2E PASS
 ```
 
-Direct PASS:
-
-```text
-Playwright Chromium browser install
-Playwright Chromium Linux system dependencies
-Chromium process launch
-Vite production build
-Vite preview
-1 real browser E2E
-```
-
-Asserted real runtime semantics:
+Asserted real semantics:
 
 ```text
 /
@@ -337,21 +313,14 @@ Scopo / Scaffold diagnostico FM-03
 2026-08-22T20:00:00+02:00[Europe/Rome]
 ```
 
-### Mobile bundle smoke
+Mobile bundle smoke:
 
 ```text
 pnpm mobile:bundle:check
 Expo SDK 57
 expo export --platform android
 Hermes bytecode enabled
-output in OS temporary directory
-```
-
-Direct PASS:
-
-```text
-Android export
-1 Android Hermes .hbc
+1 Android .hbc
 4,077,727 bytes
 non-empty
 cleanup PASS
@@ -365,66 +334,160 @@ bundle smoke != device runtime
 FM-04 Android emulator/Hermes runtime remains stronger direct runtime evidence
 ```
 
-### FM-06D final regression
+Diagnostics retained:
 
 ```text
-pnpm test                                  PASS
-5-package typecheck                        PASS
-architecture 36 modules / 45 deps / 0     PASS
-generated:check                            PASS
-lint                                       PASS
-format                                     PASS
-Web build                                  PASS
-frozen install                             PASS
-git diff --check                           PASS
-commit/push/remote readback                PASS
+attempt 1
+Chromium failed before page creation on missing libnspr4.so
+-> WSL/Linux browser host dependency
+-> official playwright install-deps chromium repair
+
+attempt 2
+exact purpose locator failed because purpose + Temporal share one <dd>
+-> application correct
+-> semantic Scopo definition-row locator repair
 ```
 
-### FM-06D diagnostic A — Chromium host dependency
+## 10. FM-06E — GitHub-hosted CI — PASS
 
-Attempt 1 reached Playwright install + Vite build/preview, then Chromium failed before page creation:
+Implementation:
 
 ```text
-libnspr4.so: cannot open shared object file
+31deffddd35f69d48bee82465e0385e508c42876
+ci: materialize frontend validation workflow
 ```
 
-Owning layer:
+Exact implementation scope:
 
 ```text
-WSL/Linux browser system dependencies
-NOT DANTE Web
-NOT test assertion
+CREATE
+.github/workflows/frontend-ci.yml
+
+UPDATE
+docs/workstreams/frontend-materialization-live-handoff.md
+
+2 authorized paths
+0 unexpected
 ```
 
-Accepted repair:
-
-```bash
-pnpm --filter @dante/web exec playwright install-deps chromium
-```
-
-This installed the required Ubuntu browser host packages, including `libnspr4`. The older FM-04 RN DevTools warning remains distinct: that helper was optional, while FM-06D Chromium is now a real required test process.
-
-### FM-06D diagnostic B — semantic locator
-
-After Chromium launched, the E2E failed only on an exact text search for:
+Workflow authority:
 
 ```text
-Scaffold diagnostico FM-03
+name: Frontend CI
+runner: ubuntu-24.04
+permissions: contents: read
+concurrency: cancel stale runs for same workflow/ref
 ```
 
-The real DOM places purpose + Temporal value in the same `<dd>`, so exact full-element text did not equal the substring.
-
-Accepted repair:
+Triggers:
 
 ```text
-anchor to visible `Scopo` definition row
-assert contained purpose
-assert exact Temporal value inside the row
+pull_request -> main
+push -> main
+push -> feature/frontend-materialization  TEMPORARY FM-06E BOOTSTRAP
 ```
 
-Application code remained unchanged.
+The feature-branch push trigger exists only to obtain real hosted evidence before integration. Remove it in a separately scoped final integration/closure step.
 
-## 10. Normal local commands
+Action full-SHA pins:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+Bootstrap/cache policy:
+
+```text
+Node 24.19.0 exact
+pnpm 11.22.0 exact
+pnpm store cache only
+automatic install false
+explicit pnpm install --frozen-lockfile
+NO node_modules cache
+NO Playwright browser cache
+NO Turbo remote cache
+```
+
+Jobs / real emitted context names:
+
+```text
+Quality
+Web E2E
+Mobile Bundle
+```
+
+Quality replays:
+
+```text
+format:check
+lint
+typecheck
+architecture:check
+generated:check
+pnpm test
+pnpm build
+git diff --check
+git diff --exit-code
+```
+
+Web E2E replays:
+
+```text
+frozen install
+playwright install --with-deps --only-shell chromium
+pnpm test:e2e:web
+failure-only apps/web/test-results artifact
+```
+
+Mobile Bundle replays:
+
+```text
+frozen install
+pnpm mobile:bundle:check
+```
+
+Authoritative hosted evidence:
+
+```text
+Frontend CI #3
+commit       31deffddd35f69d48bee82465e0385e508c42876
+event        push
+overall      SUCCESS
+duration     1m 14s
+
+Quality        PASS / 47s
+Web E2E        PASS / 47s
+Mobile Bundle  PASS / 53s
+
+Quality summary
+@dante/time    5 tests PASS
+@dante/i18n    5 tests PASS
+```
+
+The intermediate run #2 was superseded/cancelled under the configured concurrency policy. The latest authoritative run #3 is green.
+
+Required checks remain:
+
+```text
+OBSERVED CONTEXT NAMES
+Quality
+Web E2E
+Mobile Bundle
+
+CONFIGURATION
+NOT RUN / NOT AUTHORIZED IN FM-06E
+```
+
+Do not mutate branch protection merely because the names are now known.
+
+## 11. Normal local commands
 
 ```bash
 pnpm install --frozen-lockfile
@@ -439,7 +502,7 @@ pnpm mobile:bundle:check
 pnpm build
 ```
 
-Playwright machine setup on a fresh WSL host:
+Playwright setup on a fresh WSL host:
 
 ```bash
 pnpm --filter @dante/web exec playwright install chromium
@@ -463,10 +526,10 @@ pnpm exec expo start --localhost
 Then Windows ADB reverse:
 
 ```bash
-powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\\Android\\Sdk\\platform-tools\\adb.exe" reverse tcp:8081 tcp:8081'
+powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081'
 ```
 
-## 11. Write / QA governance
+## 12. Write / QA governance
 
 Before repository writes:
 
@@ -487,7 +550,7 @@ EXPLICITLY OUT OF SCOPE
 ...
 ```
 
-Immediately before first branch-visible write, re-read remote HEAD and require it to equal PRE-SCOPE. No silent scope expansion.
+Immediately before first branch-visible write, re-read remote HEAD and require it to equal PRE-SCOPE. No silent expansion.
 
 After writes:
 
@@ -500,171 +563,42 @@ remote readback
 
 No direct `main` work. No casual force push. No unscoped main merge/rebase.
 
-## 12. CURRENT SLICE — FM-06E
+## 13. CURRENT SLICE — FM-07
 
 Status:
 
 ```text
-APPROVED / CI MATERIALIZED
-REAL GITHUB-HOSTED RUN PENDING VALIDATION
-REQUIRED CHECKS NOT CONFIGURED
+NEXT / READ-ONLY DISCOVERY REQUIRED BEFORE WRITE GATE
 ```
 
 Objective:
 
 ```text
-materialize CI orchestration for already-real local frontend gates
-without creating a second validation architecture
+prove clean frontend materialization from a fresh checkout/worktree
+without relying on accumulated workstation repository state
 ```
 
-Approved FM-06E gate:
+Discovery must determine the exact clean-checkout procedure and evidence boundary before any write. Expected validation surface:
 
 ```text
-BRANCH
-feature/frontend-materialization
-
-PRE-SCOPE
-a481e24936c745c3573077a464a2af8a24794d1b
-
-CREATE
-.github/workflows/frontend-ci.yml
-
-UPDATE
-docs/workstreams/frontend-materialization-live-handoff.md
-
-DELETE
-none
-```
-
-Read-only discovery before materialization proved:
-
-```text
-.github contained only pull_request_template.md
-no existing GitHub Actions workflow
-no open PR from feature/frontend-materialization
-repository is public and linked account has admin/push access
-```
-
-Workflow authority:
-
-```text
-name: Frontend CI
-runner: ubuntu-24.04
-permissions: contents: read
-concurrency: cancel stale runs for same workflow/ref
-```
-
-Triggers:
-
-```text
-pull_request -> main
-push -> main
-push -> feature/frontend-materialization  TEMPORARY FM-06E BOOTSTRAP
-```
-
-The feature-branch push trigger exists only to obtain real GitHub-hosted evidence before integration. Remove it before final integration/closure when separately scoped.
-
-Action supply-chain pins:
-
-```text
-actions/checkout v7.0.1
-3d3c42e5aac5ba805825da76410c181273ba90b1
-
-pnpm/setup v2.0.0
-c9883cc79df532ad1a7b81bf9ab944ceb090d65c
-
-actions/upload-artifact v7.0.1
-043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-```
-
-`pnpm/setup` is configured with:
-
-```text
-pnpm 11.22.0 exact
-Node 24.19.0 exact
-pnpm store cache = true
-automatic install = false
-explicit pnpm install --frozen-lockfile in each job
-```
-
-No `node_modules`, Playwright browser, or Turbo remote cache is introduced.
-
-Jobs and intended emitted names:
-
-```text
-quality       -> Quality
-web-e2e       -> Web E2E
-mobile-bundle -> Mobile Bundle
-```
-
-`quality` replays existing local authorities:
-
-```text
-format:check
-lint
-typecheck
+fresh checkout/worktree at exact remote HEAD
+Node 24.19.0 selection
+pnpm 11.22.0 activation
+pnpm install --frozen-lockfile
+Playwright Chromium + Linux dependency bootstrap
+format/lint/typecheck
 architecture:check
 generated:check
-pnpm test
-pnpm build
-git diff --check
-git diff --exit-code
+unit tests
+Web E2E
+Mobile Android Hermes bundle smoke
+production build
+repository mutation/diff checks
 ```
 
-`web-e2e`:
+FM-07 must separately re-evaluate the known pre-existing React/react-dom workspace peer warning using clean-install evidence and current Expo/RN compatibility. Do not “repair” it with React version changes, pnpm peer suppression, packageExtensions, nodeLinker changes or hoisting without causal evidence.
 
-```text
-frozen install
-playwright install --with-deps --only-shell chromium
-pnpm test:e2e:web
-upload apps/web/test-results only on failure
-```
-
-`mobile-bundle`:
-
-```text
-frozen install
-pnpm mobile:bundle:check
-```
-
-Next required evidence before FM-06E can become PASS:
-
-```text
-GitHub accepts workflow
-push-triggered Frontend CI run exists for the FM-06E commit
-Quality PASS
-Web E2E PASS
-Mobile Bundle PASS
-inspect exact emitted workflow/job/check names
-inspect logs on any failure
-no unexpected repository delta
-```
-
-Do NOT configure required branch checks until the actual emitted contexts are observed from a real successful run.
-
-FM-06E explicitly does NOT include:
-
-```text
-branch protection mutation
-required checks
-deployment / Cloudflare
-EAS
-coverage thresholds
-Firefox/WebKit automated E2E
-product Access/Home UI
-backend contracts
-PowerSync
-main synchronization
-```
-
-## 13. Future queued work
-
-```text
-FM-06E CI orchestration                     CURRENT / REMOTE RUN PENDING
-FM-07 clean materialization baseline        NOT RUN
-```
-
-After FM-06E local/remote CI evidence is real, FM-07 performs clean-checkout/materialization closure.
+No FM-07 write gate exists yet. Start READ-ONLY.
 
 ## 14. Still NOT RUN / deferred
 
@@ -688,7 +622,7 @@ iOS runtime/release                            NOT RUN
 EAS release path                              NOT RUN
 coverage thresholds                           NOT RUN
 main synchronization                          NOT RUN
-FM-07 clean baseline                          NOT RUN
+FM-07 clean baseline                          NOT RUN — NEXT
 ```
 
 Preserve these as NOT RUN until their real scope activates.

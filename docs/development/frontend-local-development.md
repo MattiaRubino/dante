@@ -3,7 +3,7 @@
 - Status: **CURRENT FOR `feature/frontend-materialization`**
 - Purpose: reproducible frontend workstation setup, installation, validation and LOCAL runtime topology
 - Foundation authority: Frontend Engineering Foundation integrated via PR #22
-- Current execution state: **FM-06D WEB E2E + MOBILE BUNDLE SMOKE PASS / FM-06 IN PROGRESS**
+- Current execution state: **FM-06 COMPLETE / FM-07 CLEAN MATERIALIZATION BASELINE NEXT**
 
 ## 1. Core posture
 
@@ -19,7 +19,7 @@ Windows 11
 WSL2 / Linux
 ├── linked DANTE worktree(s)
 ├── Git / Node / pnpm / Turbo
-├── Vite
+├── Vite / Playwright
 ├── Metro / Expo CLI
 └── Docker CLI
 ```
@@ -109,7 +109,7 @@ Mobile
 Expo                          57.0.9
 React Native                  0.86.2
 React                         19.2.3
-Expo Router                  57.0.9
+Expo Router                   57.0.9
 Gesture Handler               2.32.0
 Reanimated                    4.5.1
 Safe Area Context             5.7.0
@@ -133,7 +133,7 @@ Do not run broad blind upgrades such as `pnpm update --latest` without an explic
 
 ## 4. Current repository authorities
 
-Root:
+Root/tooling:
 
 ```text
 .node-version
@@ -148,6 +148,7 @@ prettier.config.mjs
 dependency-cruiser.config.mjs
 tooling/check-generated.mjs
 tooling/check-mobile-bundle.mjs
+.github/workflows/frontend-ci.yml
 ```
 
 Web:
@@ -275,7 +276,7 @@ Establish reverse mapping:
 powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081'
 ```
 
-Verify:
+Verify mapping:
 
 ```bash
 powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse --list'
@@ -300,7 +301,7 @@ ADB device
 
 Do not introduce tunnels, Metro overrides, hoisting, Windows Node, a second clone or project `updates.url` without contradictory evidence.
 
-## 8. Playwright Web E2E setup — FM-06D PASS
+## 8. Playwright Web E2E — FM-06D PASS
 
 Repository dependency:
 
@@ -309,9 +310,9 @@ Repository dependency:
 apps/web devDependency
 ```
 
-The browser binary and its Linux shared-library dependencies are machine-owned and are **not** committed to Git or represented as pnpm dependencies.
+The browser binary and Linux shared-library dependencies are machine-owned and are not committed to Git or represented as pnpm dependencies.
 
-On a new Ubuntu/WSL developer machine, after `pnpm install --frozen-lockfile`:
+On a fresh Ubuntu/WSL developer machine, after `pnpm install --frozen-lockfile`:
 
 ```bash
 cd ~/projects/dante-frontend
@@ -319,16 +320,16 @@ pnpm --filter @dante/web exec playwright install chromium
 pnpm --filter @dante/web exec playwright install-deps chromium
 ```
 
-`install-deps chromium` may invoke `sudo`/APT. On the directly validated Ubuntu 24.04 WSL host it installed the Linux packages needed by Chromium, including `libnspr4`, `libnss3`, fonts and related X/graphics/audio runtime libraries.
+`install-deps chromium` may invoke `sudo`/APT. On the directly validated Ubuntu 24.04 WSL host it installed the Linux packages needed by Chromium, including `libnspr4`.
 
-The initial Chromium launch failed with:
+The initial Chromium launch failure:
 
 ```text
 chrome-headless-shell: error while loading shared libraries:
 libnspr4.so: cannot open shared object file
 ```
 
-This was a workstation/browser ELF dependency failure, not a DANTE Web or Playwright assertion failure. The accepted repair is the official Playwright dependency installer above, not adding Linux libraries to `package.json` and not changing the Web application.
+was a workstation/browser ELF dependency failure, not a DANTE Web or assertion failure. The accepted repair is the official Playwright dependency installer, not project dependency/config changes.
 
 Run E2E:
 
@@ -359,9 +360,9 @@ Scopo / Scaffold diagnostico FM-03
 2026-08-22T20:00:00+02:00[Europe/Rome]
 ```
 
-Locator lesson retained: `Scaffold diagnostico FM-03` and the Temporal value share one semantic `<dd>`. Do not use an `exact: true` locator expecting the purpose substring to be the element's entire text. The accepted test anchors to the visible `Scopo` definition-list row and asserts contained purpose + exact Temporal value.
+Locator lesson retained: purpose and Temporal value share one semantic `<dd>`. The accepted test anchors to the visible `Scopo` definition-list row and asserts contained purpose + exact Temporal value.
 
-Playwright local output directories are ignored:
+Local Playwright output directories are ignored:
 
 ```text
 playwright-report/
@@ -376,7 +377,7 @@ Run:
 pnpm mobile:bundle:check
 ```
 
-The checker executes the real Expo SDK 57 path:
+The checker executes:
 
 ```text
 apps/mobile
@@ -397,7 +398,7 @@ observed bundle size                           4,077,727 bytes
 temporary output cleanup                       PASS
 ```
 
-This is a deterministic bundle smoke, not an APK/AAB release build and not device execution. The earlier FM-04 Android emulator/Hermes runtime remains stronger direct runtime evidence.
+This is a deterministic bundle smoke, not an APK/AAB release build and not device execution. FM-04 Android emulator/Hermes runtime remains stronger direct runtime evidence.
 
 ## 10. Unit-test baseline — FM-06C PASS
 
@@ -430,7 +431,7 @@ IT/EN resource leaf-shape parity
 strict namespace selectors
 ```
 
-Accepted strict selector form:
+Accepted selector form:
 
 ```text
 $.common.runtime...
@@ -445,15 +446,15 @@ Run:
 pnpm architecture:check
 ```
 
-Current graph after FM-06C/FM-06D source additions:
+Current graph:
 
 ```text
-36 DANTE-owned modules in the enforced graph
+36 DANTE-owned modules
 45 dependencies cruised
 0 violations
 ```
 
-Current rules reject unresolved imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform dependencies from shared cores.
+Rules reject unresolved imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform dependencies from shared cores.
 
 `doNotFollow.path = node_modules` deliberately prevents third-party internals from becoming architecture roots while preserving external dependency edges.
 
@@ -473,9 +474,7 @@ packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
 ```
 
-The checker uses the actual Terrazzo and TanStack Router Vite generation paths, compares byte-for-byte and restores the pre-check bytes in all cases.
-
-Do not hand-edit generated output to make this gate green.
+The checker uses actual Terrazzo and TanStack Router Vite generation paths, compares byte-for-byte and restores pre-check bytes in all cases. Do not hand-edit generated output to make this gate green.
 
 ## 13. Shared package rules
 
@@ -499,7 +498,7 @@ Core is framework-free. React integration stays app-owned. Source-first package 
 
 ### Time
 
-Use the explicit Temporal semantic vocabulary:
+Use the explicit Temporal vocabulary:
 
 ```text
 Instant / PlainDate / PlainTime / PlainDateTime / ZonedDateTime / Duration
@@ -507,7 +506,79 @@ Instant / PlainDate / PlainTime / PlainDateTime / ZonedDateTime / Duration
 
 Do not use JavaScript `Date` as a universal semantic and do not infer timezone from locale.
 
-## 14. Known dependency diagnostic
+## 14. GitHub-hosted frontend CI — FM-06E PASS
+
+Repository authority:
+
+```text
+.github/workflows/frontend-ci.yml
+name: Frontend CI
+runner: ubuntu-24.04
+permissions: contents: read
+```
+
+Triggers currently materialized:
+
+```text
+pull_request -> main
+push -> main
+push -> feature/frontend-materialization  TEMPORARY BOOTSTRAP
+```
+
+The feature-branch push trigger exists to obtain real CI evidence before integration; remove it only in a separately authorized final integration/closure scope.
+
+CI setup:
+
+```text
+Node 24.19.0 exact
+pnpm 11.22.0 exact
+pnpm store cache only
+explicit pnpm install --frozen-lockfile
+no node_modules cache
+no Playwright browser cache
+no Turbo remote cache
+```
+
+External actions are pinned to full immutable commit SHAs:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+Jobs:
+
+```text
+Quality
+Web E2E
+Mobile Bundle
+```
+
+Real GitHub-hosted evidence:
+
+```text
+Frontend CI #3
+commit       31deffddd35f69d48bee82465e0385e508c42876
+event        push
+overall      SUCCESS
+duration     1m 14s
+
+Quality        PASS / 47s
+Web E2E        PASS / 47s
+Mobile Bundle  PASS / 53s
+```
+
+The Quality summary also showed both real Vitest suites with 5/5 passing tests each. An intermediate superseded run was cancelled under `concurrency.cancel-in-progress: true`; the latest authoritative run is green.
+
+Required checks are **not configured**. The real emitted context names are now known (`Quality`, `Web E2E`, `Mobile Bundle`), but branch protection remains a separate governance mutation.
+
+## 15. Known dependency diagnostic
 
 A workspace-wide peer diagnostic reports:
 
@@ -527,16 +598,16 @@ NOT introduced by Vitest or Playwright
 
 Do not move Mobile React away from its directly validated Expo/RN baseline merely to silence it. Re-evaluate during FM-07 clean materialization closure if still observable.
 
-## 15. Clean-machine target
+## 16. Clean-machine target — FM-07 NEXT
 
-A future developer should be able to execute:
+A clean materialization must prove this sequence without relying on accumulated workstation repository state:
 
 ```text
-clone/create WSL worktree
+fresh clean checkout/worktree
 -> select Node 24.19.0
 -> activate pnpm 11.22.0
 -> pnpm install --frozen-lockfile
--> install Playwright Chromium + chromium Linux deps
+-> install Playwright Chromium + Linux deps
 -> pnpm lint
 -> pnpm format:check
 -> pnpm typecheck
@@ -546,12 +617,12 @@ clone/create WSL worktree
 -> pnpm test:e2e:web
 -> pnpm mobile:bundle:check
 -> pnpm build
--> start manual Web/Mobile runtimes when required
+-> git diff --check / mutation check
 ```
 
-FM-07 will directly validate this clean materialization path. It is not yet whole-baseline PASS.
+FM-07 must also re-evaluate the pre-existing React/react-dom peer warning under clean install and current Expo compatibility evidence. It is not yet whole-clean-baseline PASS.
 
-## 16. Troubleshooting discipline
+## 17. Troubleshooting discipline
 
 For any failure:
 
@@ -577,22 +648,22 @@ Chromium missing .so           WSL/Linux browser host dependency
 Vite build/preview             Web toolchain
 Metro/Expo export              Mobile bundling toolchain
 ADB/emulator                   WSL<->Windows mobile adapter
+GitHub Actions runner          hosted CI execution boundary
 PowerSync/SQLite               future sync platform boundary
 ```
 
 Do not respond to failures with random global installs, blanket cache deletion, force flags or broad version changes.
 
-## 17. Current next action
+## 18. Current next action
 
-Proceed to **FM-06E CI orchestration** with read-only discovery first.
+Proceed to **FM-07 clean materialization baseline — READ-ONLY DISCOVERY FIRST**.
 
-Do not add required branch checks until the real emitted workflow/job context names are observed. CI must orchestrate already-real local gates rather than introduce a second independent validation architecture.
+FM-06 is complete. Do not add required branch checks, product UI, backend integration, deployment or main synchronization as part of FM-07 unless separately authorized.
 
-Still outside the closed FM-06D scope:
+Still NOT RUN / deferred:
 
 ```text
-GitHub Actions frontend CI
-required branch checks
+required branch checks / branch protection mutation
 Firefox/WebKit automated E2E
 product Access/Home E2E
 APK/AAB/iOS release validation
@@ -601,4 +672,5 @@ coverage thresholds
 PowerSync
 backend integration
 main synchronization
+FM-07 clean baseline
 ```

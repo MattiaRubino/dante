@@ -1,9 +1,9 @@
 # Workstream — Frontend Materialization
 
-- Status: **ACTIVE — FM-06D WEB E2E + MOBILE BUNDLE SMOKE PASS / FM-06 IN PROGRESS**
+- Status: **ACTIVE — FM-06 COMPLETE / FM-07 CLEAN MATERIALIZATION BASELINE NEXT**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current validated implementation commit: `d6138f5f5049e8fc11f877b774ff0191af44069f`
+- Current validated frontend implementation/CI commit: `31deffddd35f69d48bee82465e0385e508c42876`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
 - Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
 
@@ -11,7 +11,7 @@
 
 Materialize the accepted DANTE frontend engineering foundation into a real, reproducible Web/Mobile workspace and directly validate each platform/tooling boundary before product features depend on it.
 
-Evidence discipline remains:
+Evidence discipline:
 
 ```text
 selected != installed
@@ -34,7 +34,7 @@ Windows 11
 WSL2 / Linux
 ├── authoritative frontend Git worktree
 ├── Git / Node / pnpm / Turbo
-├── Vite
+├── Vite / Playwright
 ├── Metro / Expo CLI
 └── Docker CLI
 ```
@@ -88,7 +88,7 @@ typescript-eslint   8.67.0
 Prettier            3.9.0
 ```
 
-Selected checkpoints:
+Checkpoints:
 
 ```text
 FM-02A c3f7945da7137b2bdd9e9f8922af452f1a79770f
@@ -163,9 +163,7 @@ Terrazzo        2.7.1
 DTCG            2025.10
 ```
 
-Initial real shared semantics are deliberately narrow: duplicated card/panel radii only. Generated Web CSS and Native TypeScript are committed deterministic output.
-
-Metro package-resolution diagnosis retained: bare subpath initially failed despite valid workspace visibility; a temporary relative-import probe proved external TS execution; durable repair was the root `"."` package export. No Metro override, hoisting or Windows Node runtime was introduced.
+Initial shared semantics are deliberately narrow: duplicated card/panel radii only. Generated Web CSS and Native TypeScript are committed deterministic output. The durable Metro repair was a valid root package export; no hoisting, custom Metro resolver or Windows Node path was introduced.
 
 ### FM-05B — `@dante/i18n` — PASS
 
@@ -181,9 +179,7 @@ Italian  (it) PRIMARY / DEFAULT / FALLBACK
 English  (en) SUPPORTED SECONDARY
 ```
 
-Shared core owns locale/resources/fallback/types; app bootstraps own React integration. Strict selectors are enabled. Direct Web + Android Italian runtime PASS; English runtime switch PASS.
-
-Source-first diagnosis retained: explicit `.ts` internal imports caused TS5097; extensionless internal imports are the accepted repair. Native Node strip-types is not the Vite/Metro consumer contract.
+Shared core owns locale/resources/fallback/types; app bootstraps own React integration. Strict selectors are enabled. Direct Web + Android Italian runtime PASS; English runtime switch PASS. Source-first package internals use extensionless imports.
 
 ### FM-05C — `@dante/time` — PASS
 
@@ -206,21 +202,20 @@ Duration
 
 Do not use JavaScript `Date` as a universal DANTE time semantic. Locale and timezone remain separate concerns. Web + Android/Hermes runtime and Europe/Rome DST behavior were directly validated.
 
-## 5. FM-06 — enforcement/test/runtime-smoke materialization — IN PROGRESS
+## 5. FM-06 — enforcement, tests, runtime smoke and CI — COMPLETE
 
 ### FM-06A — dependency architecture + cycle enforcement — PASS
 
 ```text
-38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-build: enforce frontend dependency architecture
-
+implementation  38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+closure         b57709b4ce073ec179b4e55dc6dda72f509641a4
 dependency-cruiser 18.2.0
 pnpm architecture:check
 ```
 
-Rules currently reject unresolved production imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform imports from shared cores.
+Rules reject unresolved production imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform imports from shared cores.
 
-Negative probes directly proved intended rejection. Diagnostic history retained:
+Historical diagnostics retained:
 
 ```text
 unsafe combined regex -> atomic safe path regexes
@@ -230,9 +225,8 @@ package-local node_modules gathered as roots -> doNotFollow.path = node_modules
 ### FM-06B — generated-source drift enforcement — PASS
 
 ```text
-362b95a415ac7845260daf19cc99547501151eaa
-build: enforce generated-source drift
-
+implementation  362b95a415ac7845260daf19cc99547501151eaa
+closure         ae0ff9e9849ff3aedcd095a645750993297c4384
 pnpm generated:check
 ```
 
@@ -248,18 +242,10 @@ The checker snapshots current bytes, runs the real generators, compares byte-for
 
 ### FM-06C — real unit-test baseline — PASS
 
-Implementation:
-
 ```text
-610e33a7a31987d97564b1d6004a7b9896acaedc
-test: establish shared frontend unit baseline
-```
-
-Runner:
-
-```text
-Vitest 4.1.11
-pnpm test -> turbo run test
+implementation  610e33a7a31987d97564b1d6004a7b9896acaedc
+Vitest          4.1.11 exact root devDependency
+pnpm test       turbo run test
 ```
 
 Real baseline:
@@ -272,7 +258,7 @@ Turbo root     2 successful / 2 total
 
 Coverage includes Temporal parsing/DST/round-trip/duration semantics and i18n locale/default/fallback/runtime/resource-shape/strict-selector semantics.
 
-Final FM-06C regression:
+Final regression:
 
 ```text
 5-package strict TypeScript graph             PASS
@@ -284,7 +270,7 @@ Web build                                     PASS
 frozen install                                PASS
 ```
 
-Known diagnostics retained: output-parser ANSI issue, pre-existing React/react-dom workspace peer warning, and strict i18next selector repair to explicit `common` namespace. The peer warning was proven pre-existing and is deferred to FM-07 clean closure for re-evaluation.
+Known diagnostics retained: root-output ANSI parser false negative, strict i18next selector repair to explicit `common` namespace, and a React/react-dom workspace peer warning proven to pre-exist FM-06C. The peer warning is intentionally re-evaluated in FM-07 rather than silenced through arbitrary React/pnpm configuration changes.
 
 ### FM-06D — Web E2E + Mobile bundle smoke — PASS
 
@@ -295,101 +281,164 @@ d6138f5f5049e8fc11f877b774ff0191af44069f
 test: establish frontend runtime smoke baseline
 ```
 
-Materialized Web E2E:
+Web E2E:
 
 ```text
 @playwright/test 1.62.1 exact app-local devDependency
-Chromium only
+Chromium headless
+1 worker / 0 retries
 pnpm test:e2e:web
 Vite production build + preview
 127.0.0.1:4173
 reuseExistingServer = false
-```
-
-Direct browser evidence:
-
-```text
-Playwright Chromium browser installation PASS
-Playwright Chromium Linux system dependencies PASS
-Chromium headless process launch PASS
-Vite production build PASS
-Vite preview PASS
 1 real browser E2E PASS
 ```
 
-The real E2E asserts current diagnostic runtime semantics:
+Asserted runtime semantics:
 
 ```text
 route /
-heading Frontend pronto
-eyebrow DANTE Web
+Frontend pronto
+DANTE Web
 Percorso /
 Scopo / Scaffold diagnostico FM-03
 2026-08-22T20:00:00+02:00[Europe/Rome]
 ```
 
-Materialized Mobile smoke:
+Mobile bundle smoke:
 
 ```text
 pnpm mobile:bundle:check
 Expo SDK 57
 expo export --platform android
 Hermes bytecode enabled
-temporary output outside repository
+1 non-empty Android .hbc
+observed size 4,077,727 bytes
+temporary output cleanup PASS
 ```
 
-Direct Mobile evidence:
-
-```text
-Android export PASS
-1 Hermes .hbc PASS
-bundle size 4,077,727 bytes
-non-empty bundle PASS
-temporary export cleanup PASS
-```
-
-Classification:
-
-```text
-Mobile bundle smoke != APK/AAB release build
-Mobile bundle smoke != device runtime
-FM-04 Android emulator/Hermes execution remains stronger direct runtime evidence
-```
-
-Final FM-06D regression:
-
-```text
-pnpm test                                   PASS
-5-package typecheck                         PASS
-architecture 36 modules / 45 deps / 0      PASS
-generated:check                             PASS
-lint                                        PASS
-format                                      PASS
-Web build                                   PASS
-pnpm install --frozen-lockfile              PASS
-git diff --check                            PASS
-9 authorized implementation paths           PASS
-0 unexpected paths                          PASS
-remote readback                              PASS
-```
+Classification remains explicit: bundle smoke is not APK/AAB build and is not device execution; FM-04 Android emulator/Hermes execution remains stronger runtime evidence.
 
 FM-06D diagnostics retained:
 
 ```text
-attempt 1
-Chromium failed before page creation on missing libnspr4.so
--> owning layer = WSL/Linux browser system dependencies
--> repaired through official `playwright install-deps chromium`
--> no repository dependency/config workaround
+Chromium initial launch -> missing libnspr4.so
+owning layer = WSL/Linux browser system dependencies
+repair = official playwright install-deps chromium
 
-attempt 2
-exact text locator for `Scaffold diagnostico FM-03` failed
-because purpose + Temporal value share one semantic <dd>
--> application was correct
--> E2E anchored to `Scopo` definition row and asserted contained purpose + exact Temporal value
+initial exact text locator -> purpose + Temporal value share one <dd>
+application unchanged
+repair = semantic Scopo definition-row locator
 ```
 
-The older FM-04 `libnspr4.so` observation remains correctly classified: optional RN DevTools did not justify installing it then; FM-06D introduced a real Chromium process that did require the Linux library, making machine-level installation justified now.
+### FM-06E — GitHub-hosted CI orchestration — PASS
+
+Implementation:
+
+```text
+31deffddd35f69d48bee82465e0385e508c42876
+ci: materialize frontend validation workflow
+```
+
+Repository authority:
+
+```text
+.github/workflows/frontend-ci.yml
+name: Frontend CI
+runner: ubuntu-24.04
+permissions: contents: read
+concurrency: cancel stale runs for same workflow/ref
+```
+
+External Actions are pinned to immutable full commit SHAs:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+CI runtime/bootstrap:
+
+```text
+Node 24.19.0 exact
+pnpm 11.22.0 exact
+pnpm store cache only
+explicit pnpm install --frozen-lockfile
+NO node_modules cache
+NO Playwright browser cache
+NO Turbo remote cache
+```
+
+Jobs replay existing local authorities rather than creating a second validation architecture:
+
+```text
+Quality
+  format:check
+  lint
+  typecheck
+  architecture:check
+  generated:check
+  pnpm test
+  pnpm build
+  git diff --check
+  git diff --exit-code
+
+Web E2E
+  frozen install
+  Playwright Chromium headless shell + Linux deps
+  pnpm test:e2e:web
+  upload test-results only on failure
+
+Mobile Bundle
+  frozen install
+  pnpm mobile:bundle:check
+```
+
+Real GitHub-hosted evidence from the authoritative push run:
+
+```text
+Frontend CI #3
+commit       31deffddd35f69d48bee82465e0385e508c42876
+event        push
+overall      SUCCESS
+duration     1m 14s
+
+Quality        PASS / 47s
+Web E2E        PASS / 47s
+Mobile Bundle  PASS / 53s
+
+Quality summary
+@dante/time    5 tests PASS
+@dante/i18n    5 tests PASS
+```
+
+The intermediate run #2 was superseded/cancelled under the configured concurrency policy; the latest authoritative run #3 is green.
+
+Observed real check/job names are therefore:
+
+```text
+Quality
+Web E2E
+Mobile Bundle
+```
+
+Required branch checks are **NOT CONFIGURED** in FM-06E. They require a separate governance scope after the real emitted context names have been observed, which is now satisfied as evidence but not authorization to mutate branch protection.
+
+Trigger posture during this workstream:
+
+```text
+pull_request -> main
+push -> main
+push -> feature/frontend-materialization  TEMPORARY FM-06E BOOTSTRAP
+```
+
+The feature-branch push trigger exists only to obtain real GitHub-hosted evidence before integration and must be removed when the final integration/closure scope authorizes it.
 
 ## 6. Current validation register
 
@@ -419,6 +468,7 @@ FM-V22 versioned Web runtime config — NOT RUN
 FM-V23 Cloudflare deployment — NOT RUN
 FM-V24 Sentry — NOT RUN
 FM-V25 EAS build/update/release — NOT RUN
+FM-V26 GitHub-hosted frontend CI orchestration — PASS
 ```
 
 ## 7. Product-feature boundary
@@ -446,24 +496,33 @@ No direct `main` writes, casual force push or unscoped merge/rebase of `main` in
 ## 9. Exact next action
 
 ```text
-FM-06E CI orchestration — READ-ONLY DISCOVERY FIRST
+FM-07 clean materialization baseline — READ-ONLY DISCOVERY FIRST
 ```
 
-FM-06A/B/C/D are directly validated and closed at their stated scopes. FM-06E must now design and materialize CI orchestration only after inspecting the current repository tasks and GitHub Actions behavior. Required branch checks are not declared until the emitted check/job context names are directly observed.
+FM-06A/B/C/D/E are now directly validated at their stated scopes and FM-06 is complete.
 
-Explicitly outside the FM-06D closure and not yet PASS:
+FM-07 must prove the accepted frontend can be materialized from a clean checkout/worktree without hidden state from the accumulated workstation. It must also re-evaluate the known pre-existing workspace React/react-dom peer warning under the clean install and current Expo compatibility evidence.
+
+Still NOT RUN / outside the completed FM-06 scope:
 
 ```text
-GitHub Actions frontend CI
-required branch checks
+required branch checks / branch protection mutation
 Firefox/WebKit automated E2E
 product Access/Home E2E
+TanStack Form + Zod real form
+TanStack Query first remote path
+OpenAPI -> Orval
+PowerSync / OP-SQLite / SQLCipher
+offline reconciliation
+identity-scoped local DB lifecycle
+versioned Web runtime config
+Cloudflare deployment
+Sentry
 APK/AAB release build
-iOS bundle/runtime
-EAS
+iOS runtime/release
+EAS release path
 coverage thresholds
-PowerSync
 backend integration
 main synchronization
-FM-07 clean materialization baseline closure
+FM-07 clean baseline
 ```
