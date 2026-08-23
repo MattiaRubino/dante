@@ -1,6 +1,6 @@
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — PR #28 / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION DOCUMENTED / GITHUB APPLY PENDING**
+- Status: **ACTIVE — PR #28 / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL PRE-MERGE CHECK**
 - Branch: `chore/frontend-materialization-integration`
 - Main base at branch creation: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
@@ -11,8 +11,9 @@
 - Current-truth reconciliation commit: `79b55b3a1986cc910af0ce84df411314e8453e80`
 - Deliberate-red calibration commit: `6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8`
 - Recovery-green commit: `02ee9034f37000819afb2c27b0bd826b128f69b5`
-- This promotion-documentation commit SHA: resolve from current branch HEAD; a commit cannot contain its own SHA.
-- Pull request: `#28` (draft)
+- Promotion-documentation commit: `c551185708936c052248b3bd9c2eebfc41a7d098`
+- This final-pre-merge documentation commit SHA: resolve from current branch HEAD; a commit cannot contain its own SHA.
+- Pull request: `#28` (draft until this commit earns green hosted CI)
 - Frontend materialization source status: **CLOSED / PASS**
 
 ## 1. Purpose
@@ -124,6 +125,18 @@ Web E2E             PASS
 Mobile Bundle       PASS
 Frontend CI Gate    PASS
 ```
+
+### Promotion-documentation checkpoint
+
+Before this final-pre-merge documentation commit, branch HEAD `c551185708936c052248b3bd9c2eebfc41a7d098` remained current against `main`, mergeable, review-thread clean and green at the workflow level:
+
+```text
+Dependency Review   PASS
+Backend CI          PASS
+Frontend CI         PASS
+```
+
+The new documentation head must earn its own hosted CI before PR #28 is marked ready.
 
 ## 7. Dependency Review accepted-risk register
 
@@ -248,7 +261,7 @@ integration_id: 15368
 source: GitHub Actions
 ```
 
-The branch-local canonical ruleset JSON now stages:
+The branch-local canonical ruleset JSON contains:
 
 ```text
 Backend CI Gate
@@ -258,14 +271,15 @@ Frontend CI Gate
 
 with strict branch-up-to-date policy preserved.
 
-Important evidence boundary:
+Administrative evidence boundary:
 
 ```text
 desired ruleset definition in branch   UPDATED
-actual GitHub ruleset UI setting        PENDING OWNER APPLICATION
+GitHub ruleset UI application          OWNER-CONFIRMED APPLIED
+connector direct ruleset readback       UNAVAILABLE
 ```
 
-Do not call `Frontend CI Gate` required on protected `main` until the GitHub UI change is applied and verified.
+The repository owner confirmed applying the `Frontend CI Gate` ruleset promotion. Because the available GitHub connector does not expose direct ruleset readback, the setting is recorded as owner-confirmed rather than independently API-verified. This limitation does not erase the directly calibrated green/red/recovery evidence of the emitted check itself.
 
 ## 10. Current truth
 
@@ -273,9 +287,9 @@ Do not call `Frontend CI Gate` required on protected `main` until the GitHub UI 
 Backend CP1..CP5                  CLOSED / integrated via PR #24
 Frontend Foundation              CLOSED / integrated via PR #22
 Frontend Materialization         CLOSED / PASS
-PR #28 Integration Hardening     ACTIVE
+PR #28 Integration Hardening     ACTIVE / final pre-merge check
 Frontend CI Gate calibration     COMPLETE
-Frontend CI Gate promotion       DOCUMENTED / GITHUB APPLY PENDING
+Frontend CI Gate promotion       OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Dependency Review                GREEN with 3 exact temporary accepted-risk exceptions
 Concrete business schema         NOT STARTED
 Product verticals                NOT STARTED
@@ -374,10 +388,10 @@ Do not introduce before measured need:
 ## 13. Exact next sequence
 
 ```text
-1. apply Frontend CI Gate in GitHub ruleset UI
-2. verify effective protected-main required contexts
-3. ensure PR #28 remains current and green
-4. perform final PR diff/current-doc/accepted-risk review
+1. commit final current-truth documentation on PR #28
+2. observe required hosted CI on that exact new head
+3. confirm branch remains current / mergeable / review-thread clean
+4. update PR #28 body to final truth and mark ready only after green evidence
 5. obtain separate protected-main merge authorization
 ```
 

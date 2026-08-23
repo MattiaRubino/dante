@@ -1,6 +1,6 @@
 # Repository Engineering Safety
 
-- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / PROMOTION DOCUMENTED / GITHUB APPLY PENDING**
+- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL PR CHECK PENDING**
 - Repository: `MattiaRubino/dante`
 - Default branch: `main`
 - Main ruleset: `lifeos-main-safety`
@@ -19,7 +19,7 @@ WORKFLOW EXISTS != TRUSTED CHECK
 TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 ```
 
-A repository-side control is called effective only after direct evidence exists and the GitHub setting itself has been applied. Connector limitations are recorded rather than converted into false PASS.
+A repository-side control is called effective only after direct evidence exists and the GitHub setting itself has been applied. Where the connector cannot directly read an administrative setting, owner/admin application is recorded explicitly as owner-confirmed rather than misrepresented as API-verified.
 
 ## Persistent operating rules
 
@@ -33,9 +33,11 @@ remote evidence required before PASS / CLOSED
 branches != environments
 ```
 
-## Current protected-main posture — effective GitHub state before this UI promotion
+## Current protected-main posture — owner-confirmed GitHub state
 
-The effective `lifeos-main-safety` ruleset currently requires:
+The repository owner has confirmed applying the staged `Frontend CI Gate` promotion in the `lifeos-main-safety` ruleset. The GitHub connector available to this workstream does not expose direct ruleset readback, so the administrative application is classified **OWNER-CONFIRMED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
+
+The protected-main policy is therefore recorded as:
 
 ```text
 main deletion                         blocked
@@ -46,6 +48,7 @@ review-thread resolution             required
 allowed merge method                 merge
 required checks                      Backend CI Gate
                                      Dependency Review
+                                     Frontend CI Gate
 required-check source                GitHub Actions
 branch up to date                    required
 merge queue                          not enabled
@@ -53,7 +56,7 @@ merge queue                          not enabled
 
 Zero approvals remains intentional while one regular maintainer exists. Add real human-review enforcement only when independent ownership/review responsibility exists.
 
-The branch-local canonical ruleset definition now stages the already-calibrated `Frontend CI Gate` as the third required context. That JSON is desired repository state; until the owner applies the one-time GitHub ruleset UI change and it is verified, this document does **not** claim the third check is effective on protected `main`.
+The branch-local canonical ruleset definition in `docs/development/github-main-ruleset.json` matches this intended three-check state. Administrative application was confirmed by the repository owner after the calibrated promotion decision; connector limitations remain an evidence boundary, not a reason to invent direct verification.
 
 ## Backend CI calibration — established precedent
 
@@ -192,7 +195,7 @@ deliberate-red failure propagation     PASS
 exact restoration                      PASS
 recovery green                         PASS
 eligible for required-check promotion  YES
-required on GitHub main                PENDING OWNER UI APPLICATION
+required on GitHub main                OWNER-CONFIRMED / DIRECT API READBACK UNAVAILABLE
 ```
 
 ## Frontend required-check promotion decision
@@ -219,7 +222,7 @@ main deletion protection
 non-fast-forward / force-push protection
 ```
 
-The branch-local `docs/development/github-main-ruleset.json` now contains the desired three-check definition. The GitHub ruleset UI must be updated once; afterward repository truth must be reread before this control is called APPLIED.
+The branch-local `docs/development/github-main-ruleset.json` contains the desired three-check definition. The repository owner confirmed applying the corresponding GitHub ruleset UI change. Because the connector cannot directly read rulesets, this administrative fact remains classified owner-confirmed rather than independently API-verified.
 
 ## Dependency Review posture
 
@@ -328,8 +331,9 @@ Frontend CI Gate failure propagation      PASS
 Frontend CI Gate exact restore            PASS
 Frontend CI Gate recovery green           PASS
 Frontend CI Gate promotion decision       APPROVED
-Frontend CI Gate desired ruleset JSON     STAGED
-Frontend CI Gate GitHub ruleset setting   PENDING OWNER UI APPLICATION
+Frontend CI Gate desired ruleset JSON     UPDATED
+Frontend CI Gate GitHub ruleset setting   OWNER-CONFIRMED APPLIED
+Frontend CI Gate direct ruleset readback  UNAVAILABLE IN CONNECTOR
 CodeQL                                    NOT ACTIVE
 ```
 
@@ -340,10 +344,10 @@ Repository safety does not imply complete security assurance, independent human 
 ## Exact next repository-safety step
 
 ```text
-apply Frontend CI Gate to GitHub ruleset UI
--> verify effective protected-main context
--> ensure PR #28 remains green/current
--> final PR diff/current-docs/accepted-risk review
+finalize current PR #28 documentation truth
+-> observe all required CI on the new PR head
+-> ensure PR #28 remains current / mergeable / review-thread clean
+-> mark PR #28 ready for review only after green evidence
 -> separate protected-main merge authorization
 ```
 

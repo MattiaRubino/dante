@@ -5,7 +5,7 @@
 - Frontend Foundation integration: PR `#22` — **MERGED / VERIFIED**
 - Backend scaffold integration: PR `#24` — **MERGED / VERIFIED**
 - Frontend materialization: `feature/frontend-materialization` — **CLOSED / PASS**
-- Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / DRAFT**
+- Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / DRAFT — FINAL PRE-MERGE CHECK**
 
 ## 1. Executive state
 
@@ -19,9 +19,9 @@ ENGINEERING FOUNDATION v0             CLOSED / ACCEPTED
 FRONTEND ENGINEERING FOUNDATION       CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 PRODUCTION BACKEND SCAFFOLD           CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 FRONTEND MATERIALIZATION              CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28
+FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28 / FINAL PRE-MERGE CHECK
 FRONTEND CI GATE CALIBRATION          COMPLETE
-FRONTEND CI GATE PROMOTION            DOCUMENTED / GITHUB UI APPLICATION PENDING
+FRONTEND CI GATE PROMOTION            OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 CONCRETE LOGICAL -> POSTGRESQL         NOT STARTED
 PRODUCT VERTICAL IMPLEMENTATION       NOT STARTED
 PRODUCTION DEPLOYMENT                 NOT STARTED
@@ -239,24 +239,26 @@ Therefore `Frontend CI Gate` is directly calibrated and eligible for required-ch
 
 ## 10. Protected-main ruleset promotion state
 
-Effective GitHub ruleset before owner UI application still requires:
+The branch-local canonical ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
-```
-
-The branch-local canonical desired definition now adds:
-
-```text
 Frontend CI Gate
 source: GitHub Actions
-integration_id: 15368
+Frontend CI Gate integration_id: 15368
 ```
 
-and preserves branch-up-to-date enforcement, PR-before-merge, zero required approvals, review-thread resolution, merge-commit policy, deletion protection and force-push protection.
+It preserves branch-up-to-date enforcement, PR-before-merge, zero required approvals, review-thread resolution, merge-commit policy, deletion protection and force-push protection.
 
-Do **not** claim `Frontend CI Gate` is actually required on protected `main` until the GitHub ruleset UI mutation is applied and verified.
+The repository owner confirmed applying the `Frontend CI Gate` promotion in the GitHub ruleset UI. The GitHub connector available to this workstream does not expose direct ruleset readback, therefore the setting is classified:
+
+```text
+Frontend CI Gate GitHub ruleset setting   OWNER-CONFIRMED APPLIED
+Direct ruleset API readback               UNAVAILABLE
+```
+
+This administrative evidence boundary is kept explicit; it does not replace or weaken the direct green/red/recovery calibration evidence of the emitted check.
 
 ## 11. Dependency Review accepted-risk register
 
@@ -277,7 +279,6 @@ Detailed paths, exposure and removal triggers: `docs/workstreams/frontend-materi
 ## 12. Current non-claims
 
 ```text
-Frontend CI Gate required on GitHub main      PENDING UI APPLICATION
 CodeQL active                                  NO
 PowerSync runtime integrated                   NO
 Orval API client materialized                  NO
@@ -302,11 +303,11 @@ Do not install placeholder infrastructure merely because larger applications oft
 
 ```text
 FRONTEND INTEGRATION
-1. apply Frontend CI Gate to GitHub ruleset UI
-2. verify effective required contexts
-3. confirm PR #28 remains current + green
-4. perform final PR diff/current-doc/accepted-risk review
-5. obtain separate merge authorization
+1. finalize this current-truth documentation commit on PR #28
+2. observe required hosted CI on that exact new head
+3. confirm branch remains current / mergeable / review-thread clean
+4. update PR #28 body and mark ready only after green evidence
+5. obtain separate protected-main merge authorization
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL
