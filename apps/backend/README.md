@@ -19,7 +19,10 @@ PR #24 MERGED / POST-MERGE BACKEND CI PASS
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 NEXT / NOT STARTED — WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 ACTIVE — CHECKPOINT J / DB-U23 CLOSED
+NEXT DESIGN BLOCK — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+DB-U08 / DB-U15 / DB-U21 OPEN
+GATE 03 NOT YET EARNED
 POSTGRESQL 18.6 FOUNDATION REGRESSION DIRECT REMOTE QA PASS
 ```
 
@@ -28,6 +31,8 @@ Current CP6 execution boundary:
 ```text
 CP6-03
 whole DANTE database blueprint
+current: Checkpoint J complete
+next: final actual PostgreSQL object inventory
         ↓
 CP6-04
 real database materialization
@@ -325,4 +330,4 @@ CP6 still does **not** automatically authorize:
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
 - production deployment or blanket Physical HG/PSV PASS.
 
-Current next backend action is **CP6-03 — Whole DANTE Database Blueprint**. It derives the full concrete relational schema and implementation/migration DAG from the closed 57/57 model and Constitution. Only after Gate 03 does CP6-04 begin real database materialization. First product vertical application work begins only after CP6 closes.
+Current next backend action is **CP6-03 — Final Actual PostgreSQL Object Inventory**, the next bounded design block inside the active Whole DANTE Database Blueprint. Checkpoint J / DB-U23 is closed; DB-U08, DB-U15 and DB-U21 remain open until the final inventory is frozen. Only after the remaining CP6-03 blueprint work, the mandatory second full tombstone audit and Gate 03 does CP6-04 begin real database materialization. First product vertical application work begins only after CP6 closes.
