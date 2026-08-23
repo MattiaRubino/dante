@@ -1,18 +1,19 @@
 # Workstream — Frontend Materialization
 
-- Status: **TECHNICALLY COMPLETE — FM-07 PASS / FINAL HOSTED-CI PROOF + TEMPORARY CLEANUP PENDING**
+- Status: **CLOSED / PASS — FM-00 THROUGH FM-07 COMPLETE AT THEIR STATED SCOPES**
 - Branch: `feature/frontend-materialization`
 - Opening base: `ff46eb16b971b1fde96eef9047b09faa02e1a5db`
-- Current clean-materialization source commit: `e79beadbddcf401d1d20c483c2d15d0b3cce96ad`
+- Clean-materialization source/repair commit: `e79beadbddcf401d1d20c483c2d15d0b3cce96ad`
+- FM-07 documentation closure + final hosted-CI proof commit: `c1a77f249c716e0cb35159ecf2ad2c63b0bf4007`
 - Last implementation/CI commit before FM-07 repair: `31deffddd35f69d48bee82465e0385e508c42876`
 - Frontend Engineering Foundation: **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**
-- Product-surface implementation: **NOT AUTHORIZED BY THIS CHECKPOINT**
+- Product-surface implementation: **NOT AUTHORIZED BY THIS WORKSTREAM**
 
-## 1. Purpose
+## 1. Purpose and evidence discipline
 
-Materialize the accepted DANTE frontend engineering foundation into a real, reproducible Web/Mobile workspace and directly validate each platform/tooling boundary before product features depend on it.
+This workstream materialized the accepted DANTE frontend engineering foundation into a real, reproducible Web/Mobile workspace and directly validated each platform/tooling boundary before product features depend on it.
 
-Evidence discipline:
+Evidence discipline remains:
 
 ```text
 selected != installed
@@ -20,6 +21,8 @@ installed != configured
 configured != directly validated
 scenario PASS != whole-system PASS
 ```
+
+`NOT RUN` is not promoted to `PASS` without direct evidence.
 
 ## 2. Developer topology
 
@@ -47,7 +50,7 @@ NO divergent Windows + WSL clones
 NO cross-OS shared node_modules
 ```
 
-Observed worktree:
+Observed frontend worktree during materialization:
 
 ```text
 /home/mattia/projects/dante-frontend
@@ -74,6 +77,8 @@ npm   11.17.0
 pnpm  11.22.0
 ```
 
+Repository authorities include `.node-version`, `package.json`, `pnpm-workspace.yaml` and `pnpm-lock.yaml`.
+
 ### FM-02 — root workspace/tooling — PASS
 
 ```text
@@ -84,6 +89,8 @@ ESLint              10.8.1
 typescript-eslint   8.67.0
 Prettier            3.9.0
 ```
+
+Checkpoints:
 
 ```text
 FM-02A c3f7945da7137b2bdd9e9f8922af452f1a79770f
@@ -108,11 +115,11 @@ Direct Windows Firefox <- WSL Vite runtime PASS.
 
 ```text
 Expo specifier              57.0.9
-Expo resolved in FM-07      57.0.15
+Expo clean-install resolve  57.0.15
 React Native                0.86.2
 React                       19.2.3
 Expo Router specifier       57.0.9
-Expo Router resolved        57.0.15
+Expo Router resolution      57.0.15
 Gesture Handler             2.32.0
 Reanimated                  4.5.1
 Safe Area Context           5.7.0
@@ -135,6 +142,8 @@ Gesture Handler/Reanimated probe            PASS
 expo-doctor                                 21/21 PASS
 ```
 
+Bundle-smoke evidence elsewhere in this workstream does not replace this direct device-runtime evidence.
+
 ## 4. FM-05 — genuine shared packages — COMPLETE
 
 ### FM-05A — `@dante/design-tokens` — PASS
@@ -146,7 +155,7 @@ Terrazzo        2.7.1
 DTCG            2025.10
 ```
 
-Initial shared semantics remain deliberately narrow: real duplicated radii only. Generated Web CSS and Native TypeScript are committed deterministic output.
+The package canonizes only real duplicated visual semantics. Initial shared semantics are deliberately narrow: duplicated radii. Generated Web CSS and Native TypeScript are committed deterministic output.
 
 ### FM-05B — `@dante/i18n` — PASS
 
@@ -159,7 +168,7 @@ Italian         PRIMARY / DEFAULT / FALLBACK
 English         SUPPORTED SECONDARY
 ```
 
-Shared core owns locale/resources/fallback/types; app bootstraps own React integration. Strict selectors are enabled.
+Shared core owns locales/resources/fallback/types; app bootstraps own React integration. Strict selectors are enabled. Source-first package internals use extensionless imports.
 
 ### FM-05C — `@dante/time` — PASS
 
@@ -187,28 +196,21 @@ Do not use JavaScript `Date` as a universal DANTE time semantic. Locale and time
 ### FM-06A — dependency architecture + cycle enforcement — PASS
 
 ```text
-implementation  38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-closure         b57709b4ce073ec179b4e55dc6dda72f509641a4
-dependency-cruiser 18.2.0
-pnpm architecture:check
+implementation       38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+closure              b57709b4ce073ec179b4e55dc6dda72f509641a4
+dependency-cruiser   18.2.0
+command              pnpm architecture:check
+observed graph        36 modules / 45 dependencies / 0 violations
 ```
 
-Current directly observed graph:
-
-```text
-36 DANTE-owned modules
-45 dependencies cruised
-0 violations
-```
-
-Rules reject unresolved production imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform imports from shared cores.
+Rules reject unresolved production imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform imports from shared cores. `node_modules` is deliberately excluded from graph traversal while external dependency edges remain visible.
 
 ### FM-06B — generated-source drift enforcement — PASS
 
 ```text
 implementation  362b95a415ac7845260daf19cc99547501151eaa
 closure         ae0ff9e9849ff3aedcd095a645750993297c4384
-pnpm generated:check
+command         pnpm generated:check
 ```
 
 Checked committed authorities:
@@ -218,6 +220,8 @@ packages/design-tokens/generated/web.css
 packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
 ```
+
+The checker runs the real generation paths, compares byte-for-byte and restores pre-check bytes.
 
 ### FM-06C — real unit-test baseline — PASS
 
@@ -231,28 +235,90 @@ Turbo root      2 successful / 2 total
 
 Coverage includes Temporal parsing/DST/round-trip/duration semantics and i18n locale/default/fallback/runtime/resource-shape/strict-selector semantics.
 
+Retained diagnostics:
+
+```text
+Turbo/Vitest evidence parser false negative
+-> normalize ANSI/prefixed output; test execution itself was PASS
+
+strict i18next selector typecheck
+-> $.runtime / $.gesture rejected
+-> accepted form uses $.common.runtime / $.common.gesture
+```
+
 ### FM-06D — Web E2E + Mobile bundle smoke — PASS
 
 ```text
 implementation  d6138f5f5049e8fc11f877b774ff0191af44069f
 Playwright      1.62.1
 browser         Chromium headless
+workers         1
+retries         0
 Web E2E         1 real production-preview test PASS
 Mobile smoke    Expo Android production export / Hermes .hbc PASS
 FM-06D .hbc     4,077,727 bytes
 ```
 
-Bundle smoke is not APK/AAB build and is not device execution; FM-04 Android emulator/Hermes execution remains stronger device-runtime evidence.
+The Web E2E validates the real `/` route, `Frontend pronto`, `DANTE Web`, `Percorso /`, `Scopo / Scaffold diagnostico FM-03` and `2026-08-22T20:00:00+02:00[Europe/Rome]` using Vite production preview on `127.0.0.1:4173`.
+
+Retained diagnostics:
+
+```text
+Chromium initial launch -> missing libnspr4.so
+owning layer = WSL/Linux browser system dependencies
+repair = official Playwright install-deps chromium
+
+initial exact text locator -> purpose + Temporal value share one <dd>
+application unchanged
+repair = semantic Scopo definition-row locator
+```
+
+Bundle smoke is not APK/AAB build and is not device execution; FM-04 remains stronger direct Android runtime evidence.
 
 ### FM-06E — GitHub-hosted CI orchestration — PASS
 
 ```text
 implementation 31deffddd35f69d48bee82465e0385e508c42876
-workflow       Frontend CI
+workflow       .github/workflows/frontend-ci.yml
+name           Frontend CI
 runner         ubuntu-24.04
+permissions    contents: read
 ```
 
-Real hosted evidence:
+External Actions are pinned to full immutable commit SHAs:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+CI bootstrap:
+
+```text
+Node 24.19.0 exact
+pnpm 11.22.0 exact
+pnpm store cache only
+explicit pnpm install --frozen-lockfile
+NO node_modules cache
+NO Playwright browser cache
+NO Turbo remote cache
+```
+
+Real emitted job/check names:
+
+```text
+Quality
+Web E2E
+Mobile Bundle
+```
+
+Initial authoritative hosted evidence:
 
 ```text
 Frontend CI #3
@@ -265,21 +331,18 @@ Web E2E       PASS / 47s
 Mobile Bundle PASS / 53s
 ```
 
-Observed real check context names:
-
-```text
-Quality
-Web E2E
-Mobile Bundle
-```
-
 Required branch checks remain NOT CONFIGURED; branch protection is a separate governance scope.
 
-The temporary `push -> feature/frontend-materialization` trigger is retained only until the FM-07 closure commit receives one final hosted-CI proof.
+The temporary feature-branch push trigger used only to bootstrap and prove the workflow has been removed in the final materialization cleanup. The durable workflow trigger posture after closure is:
+
+```text
+pull_request -> main
+push -> main
+```
 
 ## 6. FM-07 — clean materialization baseline — PASS
 
-### 6.1 Attempt 1
+### 6.1 Attempt 1 — repository hygiene failure only
 
 Source:
 
@@ -384,7 +447,24 @@ non-blocking for the directly validated Expo/RN baseline
 NOT justification for React version changes
 ```
 
-Do not add pnpm peer suppression, `packageExtensions`, `nodeLinker`/hoisting changes or arbitrary React version changes merely to make `pnpm peers check` green.
+Do not add peer suppression, `packageExtensions`, `nodeLinker`/hoisting changes or arbitrary React version changes merely to make `pnpm peers check` green.
+
+### 6.4 FM-07 documentation closure hosted proof — PASS
+
+The documentation closure itself was also executed by the real GitHub-hosted workflow before temporary cleanup:
+
+```text
+commit        c1a77f249c716e0cb35159ecf2ad2c63b0bf4007
+event         push
+overall       SUCCESS
+total         53s
+Quality       PASS / 49s
+Web E2E       PASS / 46s
+Mobile Bundle PASS / 40s
+Vitest        @dante/time 5 PASS + @dante/i18n 5 PASS
+```
+
+This is the final hosted-CI proof for the materialized baseline before removal of the temporary feature-branch trigger.
 
 ## 7. Current validation register
 
@@ -406,11 +486,29 @@ FM-V14 shared i18n consumption + unit baseline — PASS
 FM-V15 shared time consumption + unit baseline — PASS
 FM-V26 GitHub-hosted frontend CI orchestration — PASS
 FM-V27 fresh clean materialization baseline — PASS
+FM-V28 final hosted-CI proof on FM-07 closure — PASS
 ```
 
-Still NOT RUN because they belong to later product/integration/release scopes:
+## 8. Durable authority model
 
 ```text
+visible copy / labels / messages / a11y -> @dante/i18n
+visual semantic values                  -> @dante/design-tokens
+platform control presentation           -> Web/Mobile design-system layers when real UI requires them
+assets                                  -> versioned asset authority
+click/workflow behavior                 -> owning feature logic
+```
+
+Do not create a universal dictionary mixing unrelated concerns. Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
+
+## 9. Still NOT RUN / later scopes
+
+These remain outside the materialization workstream and must not be interpreted as failures:
+
+```text
+required branch checks / branch protection mutation
+Firefox/WebKit automated E2E
+product Access/Home E2E
 TanStack Form + Zod real product form
 TanStack Query first remote path
 OpenAPI -> Orval
@@ -424,38 +522,36 @@ APK/AAB release build
 iOS runtime/release
 EAS release path
 coverage thresholds
-required branch checks / branch protection mutation
 backend integration
-main synchronization
+main synchronization / merge
 ```
 
-## 8. Product-feature boundary
+## 10. Product-feature boundary
 
 Materialization does not authorize invented AuthN/AuthZ transport, invented backend endpoints, product UI copied blindly from prototypes, frontend canonical domain state or speculative shared packages.
 
-Access remains the intended first production frontend vertical slice after final materialization cleanup/integration governance. Home prototype/design work can continue separately.
+Access remains the intended first production frontend vertical slice after integration governance. Home prototype/design work can continue separately.
 
-## 9. Exact next action
+## 11. Closure state and next scope
 
-The frontend materialization baseline is technically complete. This documentation closure intentionally retains two temporary workstream mechanisms for one final proof:
+Frontend materialization is **CLOSED / PASS**.
 
-```text
-.github/workflows/frontend-ci.yml
-  push -> feature/frontend-materialization  TEMPORARY
-
-docs/workstreams/frontend-materialization-live-handoff.md
-  TEMPORARY / DISPOSABLE SAVE-GAME
-```
-
-Next:
+Temporary mechanisms used only to make this workstream resumable and directly verifiable have been removed:
 
 ```text
-1. observe the real GitHub-hosted Frontend CI triggered by this FM-07 closure commit
-2. require Quality / Web E2E / Mobile Bundle PASS
-3. then separately authorize final cleanup:
-   - remove temporary feature-branch push trigger
-   - delete temporary LIVE HANDOFF
-4. prepare integration/PR to main as a separate governed scope
+feature/frontend-materialization push trigger -> REMOVED
+frontend-materialization-live-handoff.md      -> DELETED
 ```
 
-No direct `main` write, required-check mutation, deployment, product UI, PowerSync or backend integration is authorized by this closure.
+The durable documentation now carries the required materialization history and runbook knowledge.
+
+Next work is a separate governed scope:
+
+```text
+prepare/review integration PR to main
+observe PR-triggered Frontend CI
+merge only under separate authorization
+do not mutate required checks / branch protection unless separately scoped
+```
+
+No direct `main` write, deployment, product UI, PowerSync or backend integration is authorized by this closure.

@@ -1,9 +1,10 @@
 # Frontend Local Development and Workstation Runbook
 
-- Status: **CURRENT FOR `feature/frontend-materialization`**
+- Status: **CURRENT / FRONTEND MATERIALIZATION CLOSED / PASS**
 - Purpose: reproducible frontend workstation setup, installation, validation and LOCAL runtime topology
 - Foundation authority: Frontend Engineering Foundation integrated via PR #22
-- Current execution state: **FM-07 CLEAN MATERIALIZATION BASELINE PASS / FINAL HOSTED-CI PROOF + TEMPORARY CLEANUP PENDING**
+- Final clean-materialization source commit: `e79beadbddcf401d1d20c483c2d15d0b3cce96ad`
+- FM-07 documentation closure + final hosted-CI proof commit: `c1a77f249c716e0cb35159ecf2ad2c63b0bf4007`
 
 ## 1. Core posture
 
@@ -48,7 +49,7 @@ no cross-OS shared node_modules
 no manual source copying between Windows and WSL trees
 ```
 
-Observed frontend worktree:
+Observed materialization worktree:
 
 ```text
 /home/mattia/projects/dante-frontend
@@ -131,9 +132,9 @@ Time
 temporal-polyfill             1.0.4
 ```
 
-## 4. Repository authorities
+## 4. Repository authorities and generated/local state
 
-Root/tooling:
+Root/tooling authorities:
 
 ```text
 .node-version
@@ -197,7 +198,42 @@ test-results/
 
 `.turbo/` is deliberately ignored because normal Turborepo validation creates machine-local cache files there.
 
-## 5. Normal root commands
+## 5. Fresh-machine materialization sequence
+
+The current baseline was directly proven from a new HTTPS clone with no `node_modules`, a new isolated pnpm store and a new isolated Playwright browser path.
+
+Recommended sequence:
+
+```bash
+pnpm install --frozen-lockfile
+
+cd apps/mobile
+CI=1 EXPO_NO_TELEMETRY=1 pnpm exec expo install --check
+cd ../..
+
+pnpm --filter @dante/web exec playwright install chromium
+pnpm --filter @dante/web exec playwright install-deps chromium
+
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm architecture:check
+pnpm generated:check
+pnpm test
+pnpm test:e2e:web
+pnpm mobile:bundle:check
+pnpm build
+
+git diff --check
+git diff --exit-code
+git status --porcelain --untracked-files=all
+```
+
+Acceptance for the final Git status command is empty output.
+
+The clean FM-07 proof additionally used an isolated temporary pnpm store and isolated Playwright browser directory to prove the baseline did not rely on previously downloaded repository/package/browser state.
+
+## 6. Normal root commands
 
 ```bash
 pnpm install
@@ -234,7 +270,7 @@ pnpm mobile:bundle:check
 -> remove temporary export
 ```
 
-## 6. Web LOCAL manual runtime
+## 7. Web LOCAL manual runtime
 
 From WSL:
 
@@ -258,7 +294,7 @@ WSL Vite
 -> DANTE route /
 ```
 
-## 7. Mobile LOCAL interactive runtime
+## 8. Mobile LOCAL interactive runtime
 
 Start Windows Android emulator first, then from WSL:
 
@@ -294,7 +330,7 @@ ADB device
 
 Do not introduce tunnels, Metro overrides, hoisting, Windows Node, a second clone or project `updates.url` without contradictory evidence.
 
-## 8. Playwright Web E2E
+## 9. Playwright Web E2E
 
 Repository dependency:
 
@@ -308,12 +344,11 @@ The browser binary and Linux shared-library dependencies are machine-owned and a
 Fresh Ubuntu/WSL setup after `pnpm install --frozen-lockfile`:
 
 ```bash
-cd ~/projects/dante-frontend
 pnpm --filter @dante/web exec playwright install chromium
 pnpm --filter @dante/web exec playwright install-deps chromium
 ```
 
-`install-deps chromium` may invoke `sudo`/APT. The directly validated host required `libnspr4` and related Chromium runtime libraries.
+`install-deps chromium` may invoke `sudo`/APT. The directly validated host required `libnspr4` and related Chromium runtime libraries. A missing `libnspr4.so` is a workstation/browser dependency failure, not evidence to modify the Web application or package graph.
 
 Run:
 
@@ -321,7 +356,7 @@ Run:
 pnpm test:e2e:web
 ```
 
-Current configuration:
+Configuration:
 
 ```text
 browser                  Chromium
@@ -333,7 +368,7 @@ server                   Vite production preview
 reuseExistingServer      false
 ```
 
-Current real test validates:
+The real smoke validates:
 
 ```text
 route /
@@ -344,7 +379,9 @@ Scopo / Scaffold diagnostico FM-03
 2026-08-22T20:00:00+02:00[Europe/Rome]
 ```
 
-## 9. Mobile headless production-bundle smoke
+Purpose and Temporal value share one semantic `<dd>`; the accepted locator anchors to the visible `Scopo` definition row instead of assuming the purpose is the element's entire exact text.
+
+## 10. Mobile headless production-bundle smoke
 
 Run:
 
@@ -374,7 +411,7 @@ cleanup                 PASS
 
 This is not an APK/AAB release build and not device execution. FM-04 Android emulator/Hermes runtime remains stronger direct runtime evidence.
 
-## 10. Unit-test baseline
+## 11. Unit-test baseline
 
 ```text
 Vitest 4.1.11
@@ -405,22 +442,23 @@ IT/EN resource leaf-shape parity
 strict namespace selectors
 ```
 
-Accepted selector form:
+Accepted strict selector form:
 
 ```text
 $.common.runtime...
 $.common.gesture...
 ```
 
-## 11. Architecture enforcement
+## 12. Architecture and generated-source enforcement
 
 Run:
 
 ```bash
 pnpm architecture:check
+pnpm generated:check
 ```
 
-Current observed graph:
+Current observed dependency graph:
 
 ```text
 36 DANTE-owned modules
@@ -428,17 +466,9 @@ Current observed graph:
 0 violations
 ```
 
-Rules reject unresolved imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform dependencies from shared cores.
+Architecture rules reject unresolved imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform dependencies from shared cores.
 
-## 12. Generated-source drift
-
-Run:
-
-```bash
-pnpm generated:check
-```
-
-Checked outputs:
+Generated outputs checked byte-for-byte:
 
 ```text
 packages/design-tokens/generated/web.css
@@ -446,9 +476,23 @@ packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
 ```
 
-The checker uses real Terrazzo and TanStack Router generation paths, compares byte-for-byte and restores pre-check bytes in all cases.
+The checker uses real Terrazzo and TanStack Router generation paths and restores pre-check bytes in all cases.
 
-## 13. GitHub-hosted frontend CI
+## 13. Shared authority model
+
+```text
+visible copy / labels / messages / a11y -> @dante/i18n
+visual semantic values                  -> @dante/design-tokens
+platform control presentation           -> Web/Mobile design-system layers when real UI requires them
+assets                                  -> versioned asset authority
+click/workflow behavior                 -> owning feature logic
+```
+
+Italian is the primary/default/fallback locale; English is the supported secondary locale. React integration remains app-owned. Time semantics use explicit Temporal types rather than JavaScript `Date` as a universal semantic.
+
+Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
+
+## 14. GitHub-hosted frontend CI
 
 Repository authority:
 
@@ -459,15 +503,14 @@ runner: ubuntu-24.04
 permissions: contents: read
 ```
 
-Current triggers:
+Durable triggers after final materialization cleanup:
 
 ```text
 pull_request -> main
 push -> main
-push -> feature/frontend-materialization  TEMPORARY BOOTSTRAP
 ```
 
-The feature-branch push trigger remains only until the FM-07 documentation closure receives a final hosted-CI proof. It must then be removed in a separately authorized final cleanup scope.
+The temporary `push -> feature/frontend-materialization` bootstrap trigger was removed after a final successful hosted run on the FM-07 documentation closure.
 
 CI bootstrap:
 
@@ -481,7 +524,20 @@ no Playwright browser cache
 no Turbo remote cache
 ```
 
-Jobs / observed real context names:
+External actions remain pinned to immutable full SHAs:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+Jobs / real context names:
 
 ```text
 Quality
@@ -489,20 +545,32 @@ Web E2E
 Mobile Bundle
 ```
 
-Authoritative prior hosted proof:
+Initial workflow proof:
 
 ```text
 Frontend CI #3
-commit       31deffddd35f69d48bee82465e0385e508c42876
-overall      SUCCESS
-Quality      PASS
-Web E2E      PASS
-Mobile Bundle PASS
+commit        31deffddd35f69d48bee82465e0385e508c42876
+overall       SUCCESS
+Quality       PASS / 47s
+Web E2E       PASS / 47s
+Mobile Bundle PASS / 53s
 ```
 
-Required branch checks are not configured.
+Final FM-07 closure proof before temporary-trigger removal:
 
-## 14. Known workspace peer diagnostic
+```text
+commit        c1a77f249c716e0cb35159ecf2ad2c63b0bf4007
+overall       SUCCESS
+total         53s
+Quality       PASS / 49s
+Web E2E       PASS / 46s
+Mobile Bundle PASS / 40s
+Vitest        @dante/time 5 PASS + @dante/i18n 5 PASS
+```
+
+Required branch checks are not configured. Branch protection remains a separate governance mutation.
+
+## 15. Known workspace peer diagnostic
 
 A fresh FM-07 clean install reproduced exactly:
 
@@ -534,30 +602,29 @@ non-blocking for validated Expo/RN baseline
 
 Do not move Mobile React merely to silence it. Do not add peer suppression, `packageExtensions`, hoisting or `nodeLinker` changes without new causal evidence.
 
-## 15. Clean-machine materialization — FM-07 PASS
+## 16. Clean-machine materialization evidence — FM-07 PASS
 
-The final clean baseline was proved from a new HTTPS clone at:
+Final clean source:
 
 ```text
 e79beadbddcf401d1d20c483c2d15d0b3cce96ad
 ```
 
-Procedure/evidence:
+Proved from a new HTTPS clone:
 
 ```text
-fresh clone at exact remote HEAD
 no node_modules
-clean Git state
+clean initial Git state
 .turbo ignored
 Node 24.19.0
 pnpm 11.22.0
 new isolated pnpm store
-pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile PASS
 lockfile unchanged
 expo install --check PASS
 known peer diagnostic reproduced exactly
 new isolated Playwright Chromium headless-shell
-Playwright Linux dependency bootstrap
+Playwright Linux dependency bootstrap PASS
 format:check PASS
 lint PASS
 typecheck 5/5 PASS
@@ -577,7 +644,7 @@ untracked residue 0
 
 This is the accepted clean-machine target for the current frontend engineering baseline.
 
-## 16. Troubleshooting discipline
+## 17. Troubleshooting discipline
 
 For any failure:
 
@@ -609,19 +676,16 @@ PowerSync/SQLite               future sync platform boundary
 
 Do not respond to failures with random global installs, blanket cache deletion, force flags or broad version changes.
 
-## 17. Current next action
+## 18. Materialization closure and next work
 
-FM-07 is PASS and the frontend materialization baseline is technically complete.
+Frontend materialization is **CLOSED / PASS**. The temporary live handoff has been deleted and the temporary feature-branch CI trigger has been removed; durable knowledge now lives in this runbook and `docs/workstreams/frontend-materialization.md`.
 
-Next:
+Next work must be separately governed:
 
 ```text
-1. observe the GitHub-hosted Frontend CI triggered by the FM-07 documentation closure commit
-2. require Quality / Web E2E / Mobile Bundle PASS
-3. separately authorize final cleanup:
-   - remove temporary feature-branch push trigger
-   - delete docs/workstreams/frontend-materialization-live-handoff.md
-4. prepare integration/PR to main as separate scope
+prepare/review integration PR to main
+observe PR-triggered Frontend CI
+merge only under separate authorization
 ```
 
 Still outside this closure:
@@ -632,5 +696,5 @@ product Access/Home implementation
 PowerSync
 backend integration
 deployment
-main synchronization
+main synchronization / merge
 ```
