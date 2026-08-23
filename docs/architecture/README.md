@@ -19,7 +19,9 @@ Production backend scaffold   CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA 
 Backend CP6                   ACTIVE ON feature/logical-postgresql
 Backend CP6-01                CLOSED / GATE 01 PASS
 Backend CP6-02                CLOSED / GATE 02 PASS
-Backend CP6-03                NEXT / WHOLE DANTE DATABASE BLUEPRINT
+Backend CP6-03                ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+Gate 03                       NOT YET EARNED
+DB-U08 / DB-U15 / DB-U21      OPEN
 PostgreSQL architecture       18 major family / sole canonical persistence + material-history authority
 Physical exact patch          18.4 / HISTORICAL PHASE-TIME SELECTION
 Current PostgreSQL patch      18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
@@ -42,7 +44,9 @@ Direct business HG / PSV      ONLY AS EXACTLY EARNED
 - `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
 - `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR
 - `../decisions/ADR-010-postgresql-persistence-constitution.md` — accepted reusable PostgreSQL persistence doctrine ADR
-- `../workstreams/logical-postgresql.md` — active CP6 database blueprint/materialization handoff
+- `../workstreams/logical-postgresql.md` — active CP6 database blueprint/materialization handoff and durable exact resume point
+- `../database/README.md` — database System-of-Record/documentation contract
+- `../database/dante-postgresql-database.md` + Parts 2–8 — one canonical multi-part Database Architecture & Reference
 - `../workstreams/frontend-foundation.md` — frontend closure/integration handoff
 - `../workstreams/engineering-foundation.md` — closed Engineering Foundation handoff
 - `../development/engineering-foundation-v0.md` — backend engineering contract
@@ -54,7 +58,7 @@ One DANTE product monorepo with `apps/backend`, `apps/web`, `apps/mobile` and ac
 
 Backend is a capability-first modular monolith. PostgreSQL **18 major family** is the sole canonical persistence/material-history authority. PostgreSQL **18.4** remains exact historical Physical/CP2/CP3 evidence; PostgreSQL **18.6** is the current repository-controlled maintenance patch and has a direct remote technical-foundation regression PASS.
 
-CP6 now converts the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database: CP6-03 blueprint, CP6-04 materialization, CP6-05 direct database QA/closure. The first product vertical is post-CP6.
+CP6 now converts the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database: CP6-03 blueprint, CP6-04 materialization, CP6-05 direct database QA/closure. CP6-03 has completed Checkpoint J / `DB-U23`; the next design block is the **Final Actual PostgreSQL Object Inventory**, while `DB-U08`, `DB-U15` and `DB-U21` remain open. Gate 03 is not yet earned. The first product vertical is post-CP6.
 
 Frontend is platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Data paths preserve backend canonical authority and operation-specific offline governance. Frontend materialization is already active on its dedicated bounded branch.
 
@@ -107,11 +111,15 @@ Implementation evidence first reopens the affected technology/adapter/boundary r
 
 ```text
 BACKEND
-CP6-03 WHOLE DANTE DATABASE BLUEPRINT
-→ account for 57/57 plus CP6-01 Part-2 cross-cutting/non-owner persistence pressure
-→ derive maximum non-speculative relational design from closed authorities
-→ Gate 03
-→ CP6-04 real database materialization
+CP6-03 ACTIVE / WHOLE DANTE DATABASE BLUEPRINT
+→ Checkpoint J / DB-U23 CLOSED
+→ consume Database Reference Parts 1–8 together
+→ FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+→ keep DB-U08 / DB-U15 / DB-U21 open until inventory freeze
+→ close naming/index/ACL + DAG/mapping/Dictionary/direct-proof plan
+→ mandatory SECOND FULL TOMBSTONE AUDIT FROM ZERO
+→ Gate 03 only after clean audit
+→ CP6-04 real database materialization only after separate explicit authorization
 → CP6-05 direct database QA / CP6 closure
 
 FRONTEND
