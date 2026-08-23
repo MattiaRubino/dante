@@ -7,7 +7,7 @@
 - Physical phase-time PostgreSQL patch: **18.4 / HISTORICAL EXACT SELECTION EVIDENCE**
 - PostgreSQL architecture family: **18 / SOLE CANONICAL PERSISTENCE + MATERIAL-HISTORY AUTHORITY**
 - Current downstream PostgreSQL patch: **18.6 / CP6 DIRECT REMOTE FOUNDATION REGRESSION PASS**
-- Current backend progression: **CP1–CP5 CLOSED; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT — WHOLE DANTE DATABASE BLUEPRINT**
+- Current backend progression: **CP1–CP5 CLOSED; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT**
 - Physical semantic benchmark/direct HG corpus: **DIRECT HG PASS 0 unless an exact qualifying scenario was executed elsewhere**
 
 ## 1. Purpose and historical boundary
@@ -100,7 +100,11 @@ Current CP6 consumes, additionally:
 ../development/backend-cp6-01-concrete-persistence-coverage-part-2.md
 ../development/backend-cp6-02-postgresql-persistence-constitution.md
 ../workstreams/logical-postgresql.md
+../database/README.md
+../database/dante-postgresql-database.md + Parts 2–8
 ```
+
+The active Database Architecture & Reference must be consumed as one multi-part authority. Checkpoint J / `DB-U23` is closed; the Final Actual PostgreSQL Object Inventory is the next CP6-03 design block.
 
 ## 5. Non-negotiable barriers
 
@@ -298,6 +302,13 @@ CP6 is allowed — and expected — to turn the closed model into the concrete D
 ```text
 CP6-03
 WHOLE DANTE DATABASE BLUEPRINT
+CURRENT: CHECKPOINT J / DB-U23 CLOSED
+NEXT: FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+DB-U08 / DB-U15 / DB-U21 OPEN
+SECOND FULL TOMBSTONE AUDIT REQUIRED BEFORE GATE 03
+        ↓
+GATE 03
+NOT YET EARNED
         ↓
 CP6-04
 WHOLE DANTE DATABASE MATERIALIZATION
@@ -367,7 +378,10 @@ CP6
 ACTIVE ON feature/logical-postgresql
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 NEXT / WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED
+FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+DB-U08 / DB-U15 / DB-U21 OPEN
+GATE 03 NOT YET EARNED
 
 DANTE BUSINESS DATABASE
 NOT YET MATERIALIZED
