@@ -25,6 +25,7 @@ build/
 .expo-shared/
 web-build/
 coverage/
+.turbo/
 
 # Expo generated TypeScript environment
 apps/mobile/expo-env.d.ts
