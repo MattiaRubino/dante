@@ -2,7 +2,7 @@
 
 **Branch:** `prototype/frontend`  
 **Status:** **APPROVED WORKING VISUAL/BEHAVIOR CHECKPOINT**  
-**Current working B2 baseline:** **B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
+**Current working B2 baseline:** **B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
 **Last formally closed Home milestone:** **B1 Context Rail v1**  
 **Nature:** standalone HTML/CSS/JavaScript coded UX prototype with production-shaped contracts; not production application code.
 
@@ -28,7 +28,7 @@ The immutable A2 oracle above is not overwritten by later B2 checkpoints.
 
 ## Structural/behavioral base — B2 v22
 
-v23 branding and v24 visual skin do not change the v22 Home-stage behavior contract.
+Later identity/skin/shell checkpoints do not reopen the v22 Home-stage behavior contract.
 
 ```text
 FULL v22
@@ -41,45 +41,41 @@ SHA-256    f6ee524db98a799c81fa2c704e751e34af3d1e02482f72eb006b20630ef1ada3
 ```
 
 v22 authority:
-- `docs/frontend/home/checkpoints/b2-central-stage-v22-no-persistent-add.md`
-- `prototypes/frontend/home/archive/b2-central-stage-v22/`
+- `docs/frontend/home/checkpoints/b2-central-stage-v22-no-persistent-add.md`;
+- `prototypes/frontend/home/archive/b2-central-stage-v22/`.
 
 Retained v22 rules include:
 - `Mondi` / `Segnali`;
-- no persistent `+`;
-- partial Mondi renders only real items;
+- no persistent `+` in the Home central stage;
+- no ghost add slots or placeholder World/Signal items;
 - Home stage is read/navigate/open, not configuration CRUD;
 - management/creation lives in dedicated management surfaces;
 - contract version remains `0.2.0`.
 
+The v25 timeline quick-add is a temporal-surface affordance and does **not** relax the v22 central-stage rule.
+
 ## Identity layer — B2 branding v23
 
-Durable checkpoint:
+Authority:
 
-`docs/frontend/home/checkpoints/b2-branding-v23.md`
+- `docs/frontend/home/checkpoints/b2-branding-v23.md`;
+- `prototypes/frontend/home/archive/b2-branding-v23/`.
 
-Deterministic archive:
-
-`prototypes/frontend/home/archive/b2-branding-v23/`
-
-Accepted visual identity remains:
+Accepted identity remains:
 - topbar = official DANTE symbol in approved charcoal/orange + official wordmark geometry rendered white for the dark surface;
 - no extra white panel/container;
 - AI card identity = official DANTE symbol only;
 - no visible `LifeOS` or `DANTE` text beside the AI symbol;
-- the dark-surface wordmark treatment is a frontend derivative, not a new brand master.
+- dark-surface wordmark treatment is a frontend derivative, not a new brand master.
 
-Brand source is pinned to integrated main commit `db02da603f3779d8c7fcb1d7601f6f66f8a23241`.
+Brand source remains pinned to integrated main commit `db02da603f3779d8c7fcb1d7601f6f66f8a23241`.
 
-## Current visual layer — B2 visual skin v24
+## Visual layer — B2 visual skin v24
 
-Durable checkpoint:
+Authority:
 
-`docs/frontend/home/checkpoints/b2-visual-skin-v24.md`
-
-Deterministic archive:
-
-`prototypes/frontend/home/archive/b2-visual-skin-v24/`
+- `docs/frontend/home/checkpoints/b2-visual-skin-v24.md`;
+- `prototypes/frontend/home/archive/b2-visual-skin-v24/`.
 
 Shared v23 -> v24 CSS layer:
 
@@ -89,7 +85,7 @@ size       2949 bytes
 SHA-256    a3bfd6e6a09d627055b9b92c0c90f3ac25f832086beaf3a54229d59b4548fb5c
 ```
 
-Accepted background asset is archived deterministically as ordered Base64 parts plus `restore-v24-background.py`. The restore gate reproduces:
+Accepted background reconstruction:
 
 ```text
 dante-home-cosmos-mirrored-v1.webp
@@ -98,69 +94,110 @@ SHA-256    8ce54b557e7e1cd436ecd6ac672491e619bc61111788b9b0551eeef257f74002
 geometry   1920 x 1080
 ```
 
-Accepted v24 visual direction:
-- charcoal surfaces replace the previous generic navy/purple emphasis;
-- DANTE orange `#EA5C12` becomes the restrained global emphasis color in the working skin;
-- cosmos/neural artwork becomes the Home atmosphere behind the shell;
-- the stage remains translucent enough for the background to read without changing layout;
-- only the obsolete `#netCanvas` network layer is hidden;
-- `#fxCanvas` and `.magnet-line` remain untouched so existing Mondi sphere effects/animation are preserved.
+Retained v24 visual direction:
+- charcoal surfaces with restrained DANTE orange emphasis;
+- accepted cosmos/neural Home atmosphere;
+- stage remains translucent enough for the background to read;
+- only obsolete `#netCanvas` is hidden;
+- `#fxCanvas` and `.magnet-line` remain untouched so Mondi effects/animation are preserved.
 
-The final user-reviewed local wrapper was:
+Rejected regression remains rejected: hiding `#fxCanvas` / `.magnet-line` together with `#netCanvas` visibly degraded Mondi.
+
+## Current shell/timeline layer — B2 v25
+
+Authority:
+
+- `docs/frontend/home/checkpoints/b2-shell-timeline-v25.md`;
+- `prototypes/frontend/home/archive/b2-shell-timeline-v25/`.
+
+Deterministic v24 -> v25 transform:
 
 ```text
-DANTE_Home_ONE_BACKGROUND_MIRRORED_no_net_only.html
-size       64678 bytes
-SHA-256    2fde54ec03d4540bb7799342e7e5df2b99fa843dbebc395ae93eeb56df4b5e05
+shell-v24-to-v25.js
+size       8391 bytes
+SHA-256    6e9d3e25270f8d73482aa6a2f48f709e1ffc2324007dde2fa6d40cdea90d1d69
 ```
 
-The broad cleanup variant that also hid `#fxCanvas` / `.magnet-line` caused a visible Mondi regression and is rejected.
+Accepted app-bar arrangement:
 
-## Token / Create qualification
+```text
+LEFT                         CENTER                    RIGHT
+DANTE + Cerca                Home / Mondi / Oggi       Crea / Review / launcher / account
+```
 
-v24 approves the **working prototype appearance**, not final production token naming. The existing shared semantic-token authority remains `docs/frontend/design-tokens.md`; promotion/migration from preview `--f-*` values into production/shared semantic tokens is still a later bounded implementation step.
+Accepted shell rules:
+- true sticky application bar at the top of the viewport;
+- edge-to-edge shell treatment with **24 px internal horizontal inset**;
+- Search follows DANTE on the left;
+- Home/Mondi/Oggi stays centered;
+- `Crea` is the first control of the right utility group, before legacy Review;
+- existing Search/Create nodes are reused, not duplicated;
+- the reviewed outer Home-shell side-frame cleanup is retained.
 
-The current skin visually renders the existing `Crea` control with orange fill. This does not close or change Create-vs-Capture semantics, placement, routing or backend behavior.
+Accepted timeline-header arrangement:
+
+```text
+add / month / now / week / actions
+```
+
+The real timeline `+` sits before month/year in the same grid, so month and `Ora` move right as one aligned temporal-header composition. Its current click bridge reuses the existing global `Crea` popover and remains prototype-only; final date/time prefill, destination, command and persistence semantics are still open.
+
+User-reviewed local evidence:
+
+```text
+DANTE_Home_v24_v13_PLUS_REFINED_MONTH_RIGHT.html
+size       80922 bytes
+SHA-256    0b9491525a99643837dc42e4150113db50d00bf7ff73549ea4fd3f9994adcdf9
+```
+
+## Token / production qualification
+
+v24/v25 approve the **working prototype appearance and shell placement**, not final production token naming or framework implementation.
+
+The shared semantic-token authority remains `docs/frontend/design-tokens.md`. Promotion/migration from preview values into production/shared semantic tokens remains a later bounded implementation step.
+
+`Crea`, Search, timeline quick-add and other current popovers remain prototype interactions unless separately promoted by a production contract.
 
 ## QA evidence
 
 ```text
-B2 v24 final user visual review             PASS
-Mondi regression from broad cleanup          DETECTED / REJECTED
-final cleanup                                #netCanvas ONLY
-#fxCanvas / .magnet-line v24 overrides       NONE
+B2 v25 final user visual review              PASS
+v25 transform JavaScript syntax              PASS (node --check)
+v25 transform mock-structure execution       PASS
+reviewed v13 wrapper inline-JS syntax        PASS
+v24 Mondi regression fix                     PRESERVED
 v22 behavioral semantics                     PRESERVED
 v23 DANTE identity                           PRESERVED
-outer local review-wrapper JS syntax         PASS
 responsive target cases                      24
 fresh automated 24-case browser PASS         NOT CLAIMED
-fresh full accessibility rerun                NOT CLAIMED
+fresh full accessibility rerun               NOT CLAIMED
 fresh PARTIAL browser visual PASS             NOT CLAIMED
 ```
 
 ## Open before B2 closure
 
-1. review remaining shell/details only through explicit bounded scopes, including any later `Crea` placement/semantic decision;
-2. decide/perform production semantic-token migration when implementation scope reaches the shared theme layer;
-3. run final applicable responsive / visual / accessibility QA;
-4. reconcile remaining historical/deprecated prototype-only shell items such as `Tutto LifeOS` / legacy Review only when explicitly scoped.
+1. define final production semantics for timeline quick-add, especially contextual date/time prefill and destination;
+2. reconcile legacy Review and the historical launcher only through an explicit bounded scope;
+3. decide/perform production semantic-token migration when implementation reaches the shared theme layer;
+4. finish remaining small shell/detail refinements;
+5. run final applicable responsive / visual / accessibility QA.
 
-Historical `LifeOS` strings may still exist in untouched prototype-only or deprecated controls. v23/v24 do not authorize a blind global rename.
+Historical `LifeOS` strings may still exist in untouched prototype-only/deprecated controls. v23-v25 do not authorize a blind global rename.
 
 ## Non-regression
 
-v24 does not authorize changes to timeline semantics, calendar/day ribbon semantics, Context Rail B1 meaning, Mondi/Segnali data/interaction contract, no-persistent-add semantics, Create/Capture semantics, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
+v25 does not authorize changes to Mondi/Segnali semantics/data, central-stage no-persistent-add semantics, calendar/date-navigation meaning, Context Rail Capture/Resolution meaning, event drag/zoom/grouping/time-edit behavior, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
 
 ## Current authorities
 
 Read before Home work:
-- `docs/workstreams/frontend.md`
-- `docs/frontend/README.md`
-- `docs/frontend/ui-registry.md`
-- `docs/frontend/home/contract.md`
-- `docs/frontend/terminology.md`
-- `docs/frontend/localization.md`
-- `docs/frontend/design-tokens.md`
-- `docs/frontend/production-readiness/README.md`
-- this checkpoint
+- `docs/workstreams/frontend.md`;
+- `docs/frontend/README.md`;
+- `docs/frontend/ui-registry.md`;
+- `docs/frontend/home/contract.md`;
+- `docs/frontend/terminology.md`;
+- `docs/frontend/localization.md`;
+- `docs/frontend/design-tokens.md`;
+- `docs/frontend/production-readiness/README.md`;
+- this checkpoint;
 - `docs/frontend/research-index.md` when semantic research is needed.
