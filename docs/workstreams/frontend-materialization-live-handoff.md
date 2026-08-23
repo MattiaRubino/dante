@@ -833,6 +833,173 @@ After every substantive slice or meaningful failure:
 
 For a documentation commit that updates this file, do not attempt to embed that commit's own SHA in the same commit. Record the implementation SHA and resolve the documentation HEAD from the branch.
 
+## 12A. CURRENT SLICE — FM-06B
+
+Status:
+
+```text
+STATIC / NEGATIVE-PROBE QA PASS
+COMMIT + PUSH ABOUT TO RUN
+```
+
+Approved gate:
+
+```text
+BRANCH
+feature/frontend-materialization
+
+PRE-SCOPE
+b57709b4ce073ec179b4e55dc6dda72f509641a4
+
+CREATE
+tooling/check-generated.mjs
+
+UPDATE
+package.json
+docs/workstreams/frontend-materialization-live-handoff.md
+
+DELETE
+none
+```
+
+Purpose:
+
+```text
+side-effect-free deterministic generated-source drift enforcement
+using only the real generators already present in the repository
+```
+
+Checked committed generated authorities:
+
+```text
+packages/design-tokens/generated/web.css
+packages/design-tokens/generated/native.ts
+apps/web/src/routeTree.gen.ts
+```
+
+Generation ownership:
+
+```text
+DTCG token source -> Terrazzo 2.7.1 -> Web CSS + Native TypeScript
+Web route source -> TanStack Router Vite plugin -> routeTree.gen.ts
+```
+
+No new dependency or alternate generator is authorized. In particular,
+`@tanstack/router-cli` is not added because Vite already owns the active Router
+generation path.
+
+Direct acceptance requires:
+
+```text
+clean generated:check PASS
+deliberate token generated drift rejected
+deliberate route-tree generated drift rejected
+checker restores the pre-check bytes
+second clean generated:check PASS
+architecture:check PASS
+5-package typecheck PASS
+lint PASS
+format PASS
+Web production build PASS
+frozen install PASS
+git diff --check PASS
+exact 3 implementation paths / 0 unexpected
+remote readback PASS
+```
+
+Final local FM-06B evidence:
+
+```text
+clean generated:check PASS
+token generated drift deliberate probe REJECTED / PASS
+routeTree generated drift deliberate probe REJECTED / PASS
+pre-check byte restoration PASS
+second clean generated:check PASS
+architecture:check PASS
+5-package typecheck PASS
+lint PASS
+format PASS
+Web build PASS
+frozen install PASS
+git diff --check PASS
+```
+
+Attempt-1 regression failure was repaired without changing ESLint policy.
+A subsequent textual repair attempt was discarded because it did not remove
+every implicit `console.*` occurrence. The still-uncommitted checker was then
+rewritten deterministically with explicit `node:process` stdout/stderr APIs.
+
+After FM-06B implementation PASS:
+
+```text
+documentation closure
+then FM-06C unit-test baseline
+```
+
+## 12B. FM-06B attempt-1 diagnostic record
+
+FM-06B functional generated-source checks all passed before regression lint:
+
+```text
+clean generated:check PASS
+token generated drift rejected PASS
+routeTree generated drift rejected PASS
+pre-check byte restoration PASS
+second clean generated:check PASS
+architecture:check PASS
+5-package typecheck PASS
+```
+
+Regression then stopped at ESLint on the new Node `.mjs` checker:
+
+```text
+process is not defined
+console is not defined
+```
+
+Cause:
+
+```text
+the repository JavaScript ESLint block extends `@eslint/js` recommended
+without Node globals; the new checker used implicit Node/global bindings
+```
+
+This is a lint-context failure in the new tooling file, not generated-source
+drift and not a reason to widen repository lint globals for every JavaScript
+file.
+
+Accepted bounded repair:
+
+```text
+import `process` explicitly from `node:process`
+replace implicit `console` calls with explicit `process.stdout/stderr.write`
+```
+
+No ESLint config change, global-environment exception or new dependency is
+introduced.
+
+## 12C. FM-06B repair-attempt diagnostic
+
+The first bounded repair script stopped before lint because its textual patch
+did not eliminate every existing `console.*` occurrence from the new checker.
+
+Interpretation:
+
+```text
+repair-script text matching failure
+NOT a generated-source failure
+NOT an ESLint-policy failure beyond the already diagnosed Node-global issue
+```
+
+Accepted repair:
+
+```text
+rewrite the still-uncommitted new checker deterministically as one complete file
+using explicit `node:process` stdout/stderr APIs and zero implicit console usage
+```
+
+The approved repository scope remains exactly the same three paths.
+
 ## 13. Future queued work after FM-06
 
 ```text
