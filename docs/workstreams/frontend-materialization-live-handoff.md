@@ -27,7 +27,7 @@ git rev-parse origin/feature/frontend-materialization
 git status --short
 ```
 
-The documentation-closure commit containing this file is self-referential and therefore cannot embed its own Git SHA without requiring another commit. Resolve the exact current documentation HEAD from the branch. The last validated implementation SHA is recorded explicitly below.
+The documentation-closure commit containing this file is self-referential and therefore cannot embed its own Git SHA without requiring another commit. Resolve the exact current documentation HEAD from `origin/feature/frontend-materialization`. The last directly validated implementation SHA is recorded below.
 
 ## 1. Repository / branch / workstation
 
@@ -47,6 +47,12 @@ Active branch:
 
 ```text
 feature/frontend-materialization
+```
+
+Opening base:
+
+```text
+ff46eb16b971b1fde96eef9047b09faa02e1a5db
 ```
 
 Authoritative execution split:
@@ -77,24 +83,27 @@ NO independent divergent Windows clone
 NO cross-OS shared node_modules
 ```
 
+Do not merge/rebase `main` into this branch unless separately scoped.
+
 ## 2. Current checkpoint
 
 Last directly validated implementation commit:
 
 ```text
-38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-build: enforce frontend dependency architecture
+362b95a415ac7845260daf19cc99547501151eaa
+build: enforce generated-source drift
 ```
 
 State represented by this handoff:
 
 ```text
 FM-06A DEPENDENCY ARCHITECTURE ENFORCEMENT — PASS
+FM-06B GENERATED-SOURCE DRIFT ENFORCEMENT — PASS
 FM-06 IN PROGRESS
-NEXT = FM-06B GENERATED-SOURCE DRIFT ENFORCEMENT
+NEXT = FM-06C UNIT-TEST BASELINE
 ```
 
-The exact documentation-closure SHA is the branch HEAD containing this updated file. A new chat must resolve it from `origin/feature/frontend-materialization` rather than trusting an older pasted SHA.
+The exact documentation-closure SHA is the current branch HEAD containing this file. Resolve it from the branch instead of trusting a pasted SHA.
 
 ## 3. Completed frontend materialization
 
@@ -119,8 +128,6 @@ pnpm  11.22.0
 ```
 
 ### FM-02A root workspace — PASS
-
-Commit:
 
 ```text
 c3f7945da7137b2bdd9e9f8922af452f1a79770f
@@ -167,7 +174,7 @@ Generated Web closure:
 build: lock minimal web runtime
 ```
 
-Windows Firefox ↔ WSL Vite runtime is directly validated.
+Windows Firefox ↔ WSL Vite runtime directly validated.
 
 ### FM-04 minimal Mobile — PASS
 
@@ -224,7 +231,7 @@ d4d99b157bab9e00c4f0285bf82745e73a9c944d
 docs: close FM-05A design-token materialization
 ```
 
-Package:
+Package/tooling:
 
 ```text
 @dante/design-tokens
@@ -232,7 +239,7 @@ Terrazzo 2.7.1
 DTCG 2025.10
 ```
 
-Initial real shared semantics only:
+Initial real shared semantics:
 
 ```text
 semantic.radius.card  = 20
@@ -249,6 +256,7 @@ packages/design-tokens/generated/native.ts
 Direct Web + Android runtime PASS.
 
 Important Metro diagnosis:
+
 - bare `@dante/design-tokens/native` initially failed;
 - workspace symlink, TS support and Metro visibility were already correct;
 - `--clear` did NOT fix it;
@@ -290,13 +298,14 @@ other locales NOT YET SUPPORTED
 
 Core is framework-free; React integration is app-owned.
 
-Strict selector typing/runtime is enabled.
+Strict selector typing/runtime enabled.
 
 Direct Web Italian render PASS.
 Direct Android Italian render PASS.
 English `changeLanguage('en')` runtime PASS.
 
 Important source-first diagnosis:
+
 - explicit `.ts` internal imports caused TS5097 in consuming workspaces;
 - accepted repair is extensionless package-internal imports;
 - plain Node ESM `--experimental-strip-types` was rejected as non-representative for Vite/Metro Bundler resolution;
@@ -338,7 +347,7 @@ Duration
 
 Do NOT use JavaScript `Date` as a universal DANTE time semantic.
 
-Locale and timezone are different concerns:
+Locale and timezone are separate concerns:
 
 ```text
 it / en                     -> i18n
@@ -346,6 +355,7 @@ Europe/Rome / America/...   -> time/platform/user preference
 ```
 
 Directly validated:
+
 - Instant parse;
 - PlainDate preservation;
 - PlainTime parse;
@@ -363,7 +373,7 @@ Observed Temporal Web route footprint:
 21.49 kB gzip
 ```
 
-This is observed evidence, not yet a permanent performance budget.
+This is observed evidence, not a permanent performance budget.
 
 FM-05 is COMPLETE.
 
@@ -404,7 +414,7 @@ production frontend -> prototypes forbidden
 shared core -> React / React DOM / React Native / react-i18next / Expo / Vite forbidden
 ```
 
-Negative probes all passed by being rejected by the intended rule:
+Negative probes rejected by the intended rules:
 
 ```text
 Web -> Mobile
@@ -438,6 +448,88 @@ remote readback PASS
 ```
 
 FM-06A explicitly does NOT yet claim feature-to-feature, route-to-feature, `ui/` or `platform/` enforcement because those real structures do not yet exist.
+
+### FM-06B generated-source drift enforcement — PASS
+
+Implementation:
+
+```text
+362b95a415ac7845260daf19cc99547501151eaa
+build: enforce generated-source drift
+```
+
+Root command and implementation:
+
+```text
+pnpm generated:check
+tooling/check-generated.mjs
+```
+
+Checked committed generated authorities:
+
+```text
+packages/design-tokens/generated/web.css
+packages/design-tokens/generated/native.ts
+apps/web/src/routeTree.gen.ts
+```
+
+Generation ownership:
+
+```text
+DTCG token source -> Terrazzo 2.7.1 -> Web CSS + Native TypeScript
+Web route source -> TanStack Router Vite plugin -> routeTree.gen.ts
+```
+
+No new package dependency and no alternate TanStack CLI were added.
+
+Checker behavior:
+
+```text
+snapshot current generated bytes
+run real generators
+compare regenerated bytes
+report exact drifted paths
+restore pre-check bytes in all cases
+clean/current -> exit 0
+drift -> non-zero
+```
+
+Direct evidence:
+
+```text
+clean generated:check PASS
+deliberate token generated drift REJECTED / PASS
+deliberate routeTree generated drift REJECTED / PASS
+pre-check byte restoration PASS
+second clean generated:check PASS
+architecture:check PASS
+33 modules / 40 dependencies / 0 violations
+5-package typecheck PASS
+lint PASS
+format PASS
+Web production build PASS
+frozen install PASS
+git diff --check PASS
+3 implementation paths / 0 unexpected
+remote readback PASS
+```
+
+FM-06B diagnostics retained:
+
+```text
+attempt 1
+functional generated checks PASS
+root lint then rejected implicit process/console globals in the new .mjs checker
+-> bounded repair: explicit import from node:process + stdout/stderr writes
+-> no repository-wide Node globals added to ESLint
+
+repair attempt
+text replacement failed to eliminate every console.* occurrence
+-> script stopped before commit
+-> still-uncommitted checker rewritten deterministically as a complete file
+```
+
+No browser, Android emulator, Metro or Expo Go runtime validation was required for FM-06B because application runtime code did not change. The Web generation path was exercised headlessly through the real Vite build.
 
 ## 4. UI / content authority model
 
@@ -528,6 +620,7 @@ EXPLICITLY OUT OF SCOPE
 ```
 
 Immediately before first write:
+
 - fetch remote;
 - local HEAD must equal PRE-SCOPE;
 - remote branch HEAD must equal PRE-SCOPE;
@@ -536,6 +629,7 @@ Immediately before first write:
 No silent scope expansion.
 
 After writes:
+
 - validate exact changed paths;
 - zero unexpected paths;
 - run applicable real QA;
@@ -598,8 +692,8 @@ FM-06 is intentionally split:
 
 ```text
 FM-06A dependency architecture + cycle enforcement    PASS
-FM-06B generated-source drift enforcement             NEXT
-FM-06C unit-test baseline                              NOT RUN
+FM-06B generated-source drift enforcement             PASS
+FM-06C unit-test baseline                              NEXT
 FM-06D Web E2E + Mobile bundle smoke                   NOT RUN
 FM-06E CI orchestration after local checks are real    NOT RUN
 ```
@@ -608,7 +702,7 @@ Do not create a giant enforcement commit.
 
 Do not enforce feature/ui/platform rules before those real structures exist.
 
-## 9. LAST CLOSED SLICE — FM-06A
+## 9. LAST CLOSED SLICE — FM-06B
 
 Final state:
 
@@ -622,227 +716,11 @@ REMOTE READBACK PASS
 Implementation commit:
 
 ```text
-38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-build: enforce frontend dependency architecture
+362b95a415ac7845260daf19cc99547501151eaa
+build: enforce generated-source drift
 ```
 
-Accepted dependency after materialization-time revalidation:
-
-```text
-dependency-cruiser 18.2.0
-```
-
-Compatibility verified against current package metadata:
-
-```text
-Node:       ^22 || ^24 || >=26
-TypeScript: >=2 <7
-```
-
-This covers DANTE Node 24.19.0 + TypeScript 6.0.3.
-
-FM-06A enforces only currently real boundaries:
-
-```text
-source dependency cycles       FORBIDDEN
-Web -> Mobile                  FORBIDDEN
-Mobile -> Web                  FORBIDDEN
-shared packages -> apps        FORBIDDEN
-production frontend -> prototypes FORBIDDEN
-framework/platform imports from shared cores FORBIDDEN
-unresolvable source imports    FORBIDDEN
-```
-
-Public package surfaces remain usable:
-
-```text
-@dante/design-tokens/native
-@dante/design-tokens/web.css
-@dante/i18n
-@dante/time
-```
-
-Representative forbidden deep imports are directly rejected under:
-
-```text
-@dante/time/src/...
-@dante/i18n/src/...
-@dante/design-tokens/generated/...
-```
-
-Do NOT claim yet:
-
-```text
-feature -> feature public API enforcement
-routes -> feature public API enforcement
-ui/platform -> feature prohibition
-feature cycle semantics
-```
-
-because those real directories/consumers do not yet exist.
-
-## 10. FM-06A implementation gate — HISTORICAL RECORD
-
-```text
-BRANCH
-feature/frontend-materialization
-
-PRE-SCOPE
-61d19795867e13818a2d43252906b565d23e96e5
-
-CREATE
-dependency-cruiser.config.mjs
-docs/workstreams/frontend-materialization-live-handoff.md
-
-UPDATE
-package.json
-pnpm-lock.yaml
-
-DELETE
-none
-```
-
-Result:
-
-```text
-4 authorized paths
-0 unexpected paths
-commit 38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-```
-
-## 10A. FM-06A attempt-1 diagnostic record
-
-The first FM-06A execution stopped before any architecture graph verdict.
-
-Observed failure:
-
-```text
-dependency-cruiser rejected the `shared-core-no-framework` rule itself
-because one combined path regular expression was classified as unsafe.
-```
-
-Interpretation:
-
-```text
-configuration-safety failure
-NOT a DANTE architecture violation
-NOT a dependency graph failure
-NOT a reason to weaken the architecture rule
-```
-
-Accepted repair:
-
-```text
-replace the single complex framework/node_modules regex
-with an array of small independently safe path regexes
-covering package specifiers and resolved node_modules paths
-```
-
-No hoisting, resolver override, package-layout change or architecture exception was introduced.
-
-## 10B. FM-06A attempt-2 diagnostic record
-
-The second FM-06A execution passed configuration safety, then the current-graph check reported 151 violations.
-
-The reported paths showed the cause directly:
-
-```text
-packages/design-tokens/node_modules/@terrazzo/...
-packages/time/node_modules/temporal-polyfill/...
-packages/i18n/node_modules/i18next/...
-```
-
-The two apparent framework-boundary errors were also inside Terrazzo's own `node_modules` subtree, not in DANTE shared-package source.
-
-Interpretation:
-
-```text
-dependency-cruiser was recursively gathering package-local node_modules because
-the package directories themselves were command-line roots
-NOT 151 DANTE architecture violations
-```
-
-Accepted repair follows dependency-cruiser's documented filter semantics:
-
-```text
-doNotFollow.path = 'node_modules'
-```
-
-This excludes `node_modules` from the initial root-file gather while still allowing an external dependency reached from DANTE source to appear as a dependency boundary node; dependency-cruiser then stops traversal there.
-
-The architecture rules remained unchanged. No dependency was installed, hoisted, ignored by package name, or granted an exception.
-
-## 11. CURRENT SLICE — FM-06B GENERATED-SOURCE DRIFT ENFORCEMENT
-
-Status:
-
-```text
-NEXT / READ-ONLY DESIGN REQUIRED BEFORE WRITE GATE
-```
-
-FM-06B should focus only on generated sources that are already real and committed:
-
-```text
-Design tokens
-DTCG semantic/primitives source
--> Terrazzo generation
--> packages/design-tokens/generated/web.css
--> packages/design-tokens/generated/native.ts
-
-Web routing
-apps/web/src/routes/*
--> TanStack Router plugin/codegen
--> apps/web/src/routeTree.gen.ts
-```
-
-Required professional behavior:
-
-```text
-clean generated state must PASS
-deliberately drifted generated token output must FAIL
-deliberately drifted routeTree.gen.ts must FAIL
-check must be deterministic and non-destructive on success
-repair/regenerate command must remain explicit
-```
-
-Do not mix these into FM-06B:
-
-```text
-Vitest
-Playwright
-Mobile bundle smoke
-GitHub Actions
-product UI
-Access/Home
-PowerSync
-backend contracts
-```
-
-Before FM-06B writes, inspect the actual current TanStack Router generation command/path and the exact Terrazzo generation behavior. Do not invent a generator command from memory.
-
-## 12. Live handoff maintenance rule
-
-After every substantive slice or meaningful failure:
-
-1. update the exact validated implementation SHA;
-2. record PASS / FAIL / NOT RUN accurately;
-3. record diagnostic failures and accepted repair when they are reusable knowledge;
-4. record the exact next slice and its boundaries;
-5. keep prior durable decisions intact;
-6. never rely on chat history alone.
-
-For a documentation commit that updates this file, do not attempt to embed that commit's own SHA in the same commit. Record the implementation SHA and resolve the documentation HEAD from the branch.
-
-## 12A. CURRENT SLICE — FM-06B
-
-Status:
-
-```text
-STATIC / NEGATIVE-PROBE QA PASS
-COMMIT + PUSH ABOUT TO RUN
-```
-
-Approved gate:
+Exact implementation gate:
 
 ```text
 BRANCH
@@ -862,147 +740,143 @@ DELETE
 none
 ```
 
-Purpose:
+Result:
 
 ```text
-side-effect-free deterministic generated-source drift enforcement
-using only the real generators already present in the repository
+3 authorized paths
+0 unexpected paths
+commit 362b95a415ac7845260daf19cc99547501151eaa
 ```
 
-Checked committed generated authorities:
+FM-06B verifies only the generated authorities that exist today. It does not invent future generators.
+
+## 10. Historical FM-06A diagnostics
+
+Attempt 1:
 
 ```text
-packages/design-tokens/generated/web.css
-packages/design-tokens/generated/native.ts
-apps/web/src/routeTree.gen.ts
+dependency-cruiser rejected the combined shared-core framework regex as unsafe
+-> replaced by atomic safe path regexes
 ```
 
-Generation ownership:
+This was configuration safety failure before graph analysis, not a DANTE architecture violation.
+
+Attempt 2:
 
 ```text
-DTCG token source -> Terrazzo 2.7.1 -> Web CSS + Native TypeScript
-Web route source -> TanStack Router Vite plugin -> routeTree.gen.ts
+package directories were command-line roots
+-> package-local node_modules were gathered
+-> 151 third-party/internal violations appeared
+-> doNotFollow.path = node_modules
 ```
 
-No new dependency or alternate generator is authorized. In particular,
-`@tanstack/router-cli` is not added because Vite already owns the active Router
-generation path.
+The repair preserves the external dependency boundary while stopping traversal into dependency internals. No hoisting, resolver weakening or package exception was introduced.
 
-Direct acceptance requires:
+## 11. Historical FM-06B diagnostics
 
-```text
-clean generated:check PASS
-deliberate token generated drift rejected
-deliberate route-tree generated drift rejected
-checker restores the pre-check bytes
-second clean generated:check PASS
-architecture:check PASS
-5-package typecheck PASS
-lint PASS
-format PASS
-Web production build PASS
-frozen install PASS
-git diff --check PASS
-exact 3 implementation paths / 0 unexpected
-remote readback PASS
-```
-
-Final local FM-06B evidence:
+Attempt 1:
 
 ```text
-clean generated:check PASS
-token generated drift deliberate probe REJECTED / PASS
-routeTree generated drift deliberate probe REJECTED / PASS
-pre-check byte restoration PASS
-second clean generated:check PASS
-architecture:check PASS
-5-package typecheck PASS
-lint PASS
-format PASS
-Web build PASS
-frozen install PASS
-git diff --check PASS
-```
-
-Attempt-1 regression failure was repaired without changing ESLint policy.
-A subsequent textual repair attempt was discarded because it did not remove
-every implicit `console.*` occurrence. The still-uncommitted checker was then
-rewritten deterministically with explicit `node:process` stdout/stderr APIs.
-
-After FM-06B implementation PASS:
-
-```text
-documentation closure
-then FM-06C unit-test baseline
-```
-
-## 12B. FM-06B attempt-1 diagnostic record
-
-FM-06B functional generated-source checks all passed before regression lint:
-
-```text
-clean generated:check PASS
-token generated drift rejected PASS
-routeTree generated drift rejected PASS
-pre-check byte restoration PASS
-second clean generated:check PASS
-architecture:check PASS
-5-package typecheck PASS
-```
-
-Regression then stopped at ESLint on the new Node `.mjs` checker:
-
-```text
-process is not defined
-console is not defined
+clean generated check PASS
+token drift probe PASS
+routeTree drift probe PASS
+architecture/typecheck PASS
+lint FAIL on process/console no-undef in tooling/check-generated.mjs
 ```
 
 Cause:
 
 ```text
-the repository JavaScript ESLint block extends `@eslint/js` recommended
-without Node globals; the new checker used implicit Node/global bindings
-```
-
-This is a lint-context failure in the new tooling file, not generated-source
-drift and not a reason to widen repository lint globals for every JavaScript
-file.
-
-Accepted bounded repair:
-
-```text
-import `process` explicitly from `node:process`
-replace implicit `console` calls with explicit `process.stdout/stderr.write`
-```
-
-No ESLint config change, global-environment exception or new dependency is
-introduced.
-
-## 12C. FM-06B repair-attempt diagnostic
-
-The first bounded repair script stopped before lint because its textual patch
-did not eliminate every existing `console.*` occurrence from the new checker.
-
-Interpretation:
-
-```text
-repair-script text matching failure
-NOT a generated-source failure
-NOT an ESLint-policy failure beyond the already diagnosed Node-global issue
+new Node checker used implicit Node/global bindings
+while repository JS lint intentionally had no broad Node-global declaration
 ```
 
 Accepted repair:
 
 ```text
-rewrite the still-uncommitted new checker deterministically as one complete file
-using explicit `node:process` stdout/stderr APIs and zero implicit console usage
+import process from node:process
+use process.stdout/process.stderr
+no ESLint config expansion
 ```
 
-The approved repository scope remains exactly the same three paths.
-
-## 13. Future queued work after FM-06
+Repair-attempt stop:
 
 ```text
+textual patch did not remove every console.* occurrence
+-> no commit occurred
+-> checker rewritten completely and deterministically
+```
+
+Final run passed all gates and remote readback.
+
+## 12. Live handoff maintenance rule
+
+After every substantive slice or meaningful failure:
+
+1. update the exact validated implementation SHA;
+2. record PASS / FAIL / NOT RUN accurately;
+3. record diagnostic failures and accepted repair when they are reusable knowledge;
+4. record the exact next slice and its boundaries;
+5. keep prior durable decisions intact;
+6. never rely on chat history alone.
+
+For a documentation commit that updates this file, do not attempt to embed that commit's own SHA in the same commit. Record the implementation SHA and resolve the documentation HEAD from the branch.
+
+## 13. CURRENT SLICE — FM-06C UNIT-TEST BASELINE
+
+Status:
+
+```text
+NEXT / READ-ONLY TECHNOLOGY + TEST-SCOPE DESIGN REQUIRED BEFORE WRITE GATE
+```
+
+Objective:
+
+```text
+make root `pnpm test` meaningful with real assertions against actual DANTE semantics
+```
+
+Strong first real candidates:
+
+```text
+@dante/time
+- Instant / ZonedDateTime conversion
+- Europe/Rome DST behavior
+- round-trip semantics
+- duration arithmetic
+
+@dante/i18n
+- supported locale contract
+- Italian default/fallback semantics
+- IT/EN resource shape/runtime behavior
+```
+
+Do NOT create dummy tests merely so Turbo reports green.
+
+FM-06C should prefer framework-free unit coverage first. Do not pull DOM/component libraries into the repository until real component tests justify them.
+
+Version-sensitive test tooling must be reverified at materialization time. Vitest is a strong candidate from earlier discovery, but its exact current stable version is NOT fixed by this handoff and must be checked again immediately before the FM-06C write gate.
+
+Do not mix into FM-06C:
+
+```text
+Playwright / Web E2E
+Mobile bundle smoke
+GitHub Actions
+product UI
+Access/Home
+PowerSync
+backend contracts
+main synchronization
+```
+
+## 14. Future queued work
+
+After FM-06C:
+
+```text
+FM-06D Web E2E + Mobile bundle smoke
+FM-06E CI orchestration after local checks are real
 FM-07 clean materialization baseline closure
 ```
 
@@ -1010,13 +884,15 @@ Only after FM-06/FM-07 provide the accepted infrastructure baseline should produ
 
 Home design/prototype may continue separately but must not silently become production code.
 
-## 14. Things explicitly still NOT RUN / deferred
-
-Among the carried validation register:
+## 15. Things explicitly still NOT RUN / deferred
 
 ```text
 hoisted pnpm fallback                         NOT RUN / not needed
 feature-specific architecture rules           NOT RUN
+unit-test baseline                            NOT RUN — NEXT FM-06C
+Web E2E                                       NOT RUN
+Mobile bundle smoke                           NOT RUN
+GitHub Actions frontend CI                    NOT RUN
 TanStack Form + Zod real form                 NOT RUN
 TanStack Query first remote path              NOT RUN
 OpenAPI -> Orval                              NOT RUN
