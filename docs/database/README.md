@@ -531,3 +531,45 @@ Part 3 starts from repository continuity anchor `6a8605130bc9ec46c3751f03296b3bc
 Part 1 and Part 2 remain canonical and must remain fully consumed. Part 3 does not summarize, replace or reduce their authority. Later sections may supersede only explicitly identified narrower earlier statements through the existing cumulative-audit and bounded-write process.
 
 All Database Dictionary reconciliation, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2 and 3 together.
+
+## 18. Part 4 canonical continuation
+
+Part 4 is now an active continuation created before extending Part 3 further, because bounded write-safety and preservation of already-approved detailed material take precedence over repeatedly rewriting a growing active part.
+
+Current active human-readable reference shape:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ sections 1–30
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ section 31
+
++
+
+dante-postgresql-database-part-3.md
+→ PART 3
+→ section 32
+
++
+
+dante-postgresql-database-part-4.md
+→ PART 4
+→ section 33 onward
+
+=
+
+ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
+```
+
+Part 4 starts from repository continuity anchor `8a3f0e4c978139cfcd20e589114c570cf502383f` and begins with section 33, Consolidation Checkpoint F — Temporal Constraint baseline disposition.
+
+Parts 1, 2 and 3 remain byte/content-authoritative and must continue to be fully consumed. Part 4 does not summarize, replace or reduce their authority. Narrow supersession is valid only when a numbered later section identifies exactly which provisional earlier statement is superseded and why.
+
+All Database Dictionary reconciliation, final object-inventory work, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3 and 4 together.
+
+Future additional parts remain subject to section 16.2: they may be introduced only for real write-safety/maintainability need, may not delete or compress prior semantic content, and must continue global section numbering.
