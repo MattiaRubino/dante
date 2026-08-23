@@ -1,9 +1,9 @@
 # Frontend Local Development and Workstation Runbook
 
 - Status: **CURRENT FOR `feature/frontend-materialization`**
-- Purpose: reproducible frontend workstation setup, installation guidance and LOCAL topology
+- Purpose: reproducible frontend workstation setup, installation guidance, validation commands and LOCAL topology
 - Foundation authority: Frontend Engineering Foundation integrated via PR #22
-- Current execution state: **FM-06B GENERATED-SOURCE DRIFT PASS / FM-06 IN PROGRESS**
+- Current execution state: **FM-06C REAL UNIT-TEST BASELINE PASS / FM-06 IN PROGRESS**
 
 ## 1. Core posture
 
@@ -25,7 +25,7 @@ WSL2 / Linux
 └── Docker CLI
 ```
 
-Docker is used for real stateful/local infrastructure, not as a blanket wrapper around every development process.
+Docker is for real stateful/local infrastructure, not a blanket wrapper around frontend development processes.
 
 Normal LOCAL ownership:
 
@@ -43,14 +43,14 @@ PostgreSQL               Docker when backend LOCAL infra is active
 
 ## 2. Filesystem and worktree invariant
 
-Preferred paths live inside the Linux filesystem, for example:
+Preferred paths:
 
 ```text
 /home/<user>/projects/dante
 /home/<user>/projects/dante-frontend
 ```
 
-Observed current topology:
+Observed topology:
 
 ```text
 /home/mattia/projects/dante
@@ -60,17 +60,17 @@ feature/backend-scaffold
 feature/frontend-materialization
 ```
 
-Avoid a Windows-backed authoritative path such as `/mnt/c/...` unless concrete evidence forces a different choice.
-
 Hard rules:
 
 ```text
 one authoritative Git repository/history
-linked purpose-specific worktrees inside WSL are allowed
-no divergent independent Windows + WSL clones for active development
+linked purpose-specific WSL worktrees allowed
+no divergent Windows + WSL clones for active development
 no shared cross-OS node_modules
-no manual file copying between Windows and WSL source trees
+no manual source copying between Windows and WSL trees
 ```
+
+Avoid `/mnt/c/...` as the authoritative source/worktree unless concrete evidence requires it.
 
 ## 3. Python analogy for frontend dependency management
 
@@ -83,29 +83,19 @@ no manual file copying between Windows and WSL source trees
 | `.venv` | project dependency graph exposed through `node_modules` |
 | `uv sync` | `pnpm install` |
 
-The analogy is useful but not exact. A Python virtual environment carries an isolated interpreter environment. Frontend `node_modules` governs project dependencies while Node itself is a WSL runtime whose required version is declared by the repository.
-
-The repository governs both:
-
-```text
-runtime expectation
-Node exact accepted patch
-
-project dependency graph
-package.json + pnpm-lock.yaml
-```
+The analogy is useful but not exact. Node is a machine/WSL runtime selected by repository policy; project dependencies live in the pnpm-managed workspace graph.
 
 ## 4. Machine-level versus repository-managed tooling
 
 Machine/WSL level:
 
 - Git;
-- Node runtime/version manager;
+- fnm or equivalent accepted Node version manager;
 - pnpm activation mechanism;
 - Docker CLI integration;
 - Android platform tooling on Windows.
 
-Repository-managed dependencies now include:
+Current repository-managed exact pins:
 
 ```text
 Root engineering
@@ -118,6 +108,9 @@ Prettier                      3.9.0
 
 Architecture enforcement
 dependency-cruiser            18.2.0
+
+Unit testing
+Vitest                        4.1.11
 
 Minimal Web
 React                         19.2.8
@@ -154,19 +147,13 @@ Shared time
 temporal-polyfill             1.0.4
 ```
 
-FM-06B adds no repository dependency: generated-source drift enforcement uses the existing Terrazzo and TanStack Router Vite generation paths through `tooling/check-generated.mjs`.
+FM-06B adds no package dependency: generated-source drift uses the existing Terrazzo and TanStack Router Vite generation paths through `tooling/check-generated.mjs`.
 
-Future repository-managed dependencies include, when materialized:
+FM-06C adds only the real unit-test runner at root. No DOM environment, React Testing Library, React Native test renderer or coverage package is installed yet.
 
-- additional TanStack libraries;
-- Zod;
-- test tooling;
-- generation tooling only when a new real generator requires it;
-- PowerSync/native SQLite integrations when their scope activates.
+Future dependencies activate only when real consumers require them, including additional TanStack libraries, Zod, Playwright/E2E tooling, PowerSync/native SQLite integrations and release tooling.
 
-Project libraries are not installed globally for convenience.
-
-Avoid:
+Do not install project libraries globally for convenience:
 
 ```text
 npm install -g vite
@@ -177,47 +164,9 @@ sudo npm ...
 
 unless a future tool explicitly requires a documented global exception.
 
-## 5. Current version governance
+## 5. Current repository authorities
 
-Current materialized pins:
-
-```text
-Node                        24.19.0
-pnpm                        11.22.0
-TypeScript                  6.0.3
-Turborepo                   2.10.11
-ESLint                      10.8.1
-@eslint/js                  10.0.1
-typescript-eslint           8.67.0
-Prettier                    3.9.0
-dependency-cruiser          18.2.0
-React                       19.2.8
-React DOM                   19.2.8
-Vite                        8.2.1
-@vitejs/plugin-react        6.1.0
-@tanstack/react-router      1.170.31
-@tanstack/router-plugin     1.168.34
-@types/node                 24.13.3
-@types/react                19.2.18
-@types/react-dom            19.2.4
-Expo                        57.0.9
-React Native                0.86.2
-Mobile React                19.2.3
-Expo Router                 57.0.9
-Gesture Handler             2.32.0
-Reanimated                  4.5.1
-Safe Area Context           5.7.0
-Screens                     4.26.2
-Worklets                    0.10.1
-@terrazzo/cli               2.7.1
-@terrazzo/parser            2.7.1
-@terrazzo/plugin-css        2.7.1
-i18next                     26.3.6
-react-i18next               17.0.11
-temporal-polyfill           1.0.4
-```
-
-Current root authorities:
+Root:
 
 ```text
 .node-version
@@ -233,7 +182,7 @@ dependency-cruiser.config.mjs
 tooling/check-generated.mjs
 ```
 
-Current Web authorities:
+Web:
 
 ```text
 apps/web/package.json
@@ -248,7 +197,7 @@ apps/web/src/routeTree.gen.ts
 apps/web/src/bootstrap/i18n.ts
 ```
 
-Current Mobile authorities:
+Mobile:
 
 ```text
 apps/mobile/package.json
@@ -260,7 +209,7 @@ apps/mobile/.gitignore
 apps/mobile/src/bootstrap/i18n.ts
 ```
 
-Current shared design-token authorities:
+Design tokens:
 
 ```text
 packages/design-tokens/package.json
@@ -273,39 +222,33 @@ packages/design-tokens/generated/web.css
 packages/design-tokens/generated/native.ts
 ```
 
-`tokens/*.json` is semantic source authority. `generated/*` is deterministic committed output and must not be hand edited.
+`tokens/*.json` is semantic authority. `generated/*` is committed deterministic output and must not be hand-edited.
 
-Current shared i18n authorities:
+Shared i18n:
 
 ```text
 packages/i18n/package.json
 packages/i18n/tsconfig.json
 packages/i18n/src/index.ts
+packages/i18n/src/index.test.ts
 packages/i18n/src/resources/it/common.ts
 packages/i18n/src/resources/en/common.ts
 ```
 
-The shared i18n package owns locale support/fallback semantics and bundled resource contracts. React integration remains app-owned in the Web/Mobile bootstrap files.
-
-Current shared time authorities:
+Shared time:
 
 ```text
 packages/time/package.json
 packages/time/tsconfig.json
 packages/time/src/index.ts
+packages/time/src/index.test.ts
 ```
 
-The shared time package owns only platform-neutral Temporal semantics and narrow conversion/parsing primitives. It does not own device/user timezone detection, timezone persistence, presentation formatting, reminders or product scheduling policy.
-
-`package.json` declares Node `24.19.0`, pnpm `11.22.0`, exact root engineering devDependency pins, the dependency-cruiser architecture command, the generated-source drift command, and the standard root scripts. `.node-version` declares Node `24.19.0`. `apps/web/package.json` and `apps/mobile/package.json` declare their exact application dependency baselines. `packages/design-tokens/package.json` declares the shared token compiler toolchain. `packages/i18n/package.json` declares the framework-free shared i18n core. `packages/time/package.json` declares the framework-free shared Temporal core and `temporal-polyfill 1.0.4`. The shared lockfile is committed and was generated by pnpm from the real WSL installation.
-
-Do not perform broad blind upgrades such as `pnpm update --latest` on the production workspace without an explicit dependency-upgrade scope and validation.
-
-Native-sensitive upgrades such as Expo, React Native, PowerSync or OP-SQLite require compatibility-aware validation.
+The shared time core is platform-neutral and does not own device/user timezone detection, timezone persistence, presentation formatting, reminders or product scheduling policy.
 
 ## 6. Docker boundary
 
-Use Docker where it provides reproducible service/infrastructure semantics.
+Use Docker where it gives reproducible stateful service semantics.
 
 Expected examples when activated:
 
@@ -315,20 +258,20 @@ PowerSync service
 other real stateful LOCAL dependencies
 ```
 
-Normal frontend dev servers stay direct in WSL:
+Normal frontend servers stay direct in WSL:
 
 ```text
 Vite
 Metro / Expo CLI
 ```
 
-Docker container lifecycle and persistent data lifecycle are separate. Stateful services use explicit persistent volumes/storage where required.
+Container lifecycle and persistent data lifecycle are separate. Stateful services use explicit persistent storage/volumes when required.
 
 ## 7. Browser and Mobile networking
 
 ### Web — directly validated
 
-Observed LOCAL path:
+Observed path:
 
 ```text
 Vite 8.2.1 in WSL
@@ -341,32 +284,24 @@ Firefox on Windows
 DANTE Web diagnostic route /
 ```
 
-This path is **PASS** on the observed Windows 11 + WSL2 workstation.
-
-The accepted normal command is:
+Start:
 
 ```bash
+cd ~/projects/dante-frontend
 pnpm --filter @dante/web dev
 ```
 
-Observed Vite output:
-
-```text
-VITE v8.2.1
-Local: http://localhost:5173/
-```
-
-No `--host` flag, manual proxy, Windows Node process, alternate clone, or custom network bridge was required for the observed workstation. Do not add one pre-emptively; troubleshoot only if a future environment produces contrary evidence.
+No `--host`, manual proxy, Windows Node process, alternate clone or custom bridge was required on the observed workstation. Do not add one pre-emptively.
 
 ### Mobile — directly validated
 
-Observed LOCAL Android path:
+Observed path:
 
 ```text
 Metro / Expo CLI in WSL
 exp://127.0.0.1:8081
 ↓
-Windows ADB platform-tools invoked through WSL interoperability
+Windows ADB platform-tools via WSL interoperability
 adb reverse tcp:8081 tcp:8081
 ↓
 Windows Android emulator
@@ -375,80 +310,68 @@ Expo Go 57.0.9
 DANTE Mobile diagnostic route /
 ```
 
-This path is **PASS** on the observed Windows 11 + WSL2 workstation.
-
-Start Metro from WSL:
+Start Metro:
 
 ```bash
 cd ~/projects/dante-frontend/apps/mobile
 pnpm exec expo start --localhost
 ```
 
-With the Windows emulator running, establish the bounded ADB reverse adapter from WSL:
+Verify device:
+
+```bash
+powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices'
+```
+
+Establish reverse mapping:
 
 ```bash
 powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081'
 ```
 
-Useful verification:
+Verify reverse mapping:
 
 ```bash
 powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse --list'
 ```
 
-Then launch the local Expo URL when needed:
+Launch local Expo URL when needed:
 
 ```bash
 powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081"'
 ```
 
-Do not introduce `--host` changes, tunnels, Metro overrides, hoisting, Windows Node, a second clone or project `updates.url` merely because the emulator cannot initially render. Diagnose the chain in order: ADB device → reverse mapping → Metro → manifest → bundle → Expo Go/client runtime.
+Diagnose failures in order:
 
-For the directly observed FM-04 run, the Android manifest returned HTTP 200, the Hermes bundle returned HTTP 200 with 9,162,793 bytes, Expo Go reported Metro reachable and loaded the JS bundle, and DANTE rendered successfully.
+```text
+ADB device
+-> reverse mapping
+-> Metro
+-> manifest
+-> bundle
+-> Expo Go/client runtime
+```
+
+Do not introduce tunnels, Metro overrides, hoisting, Windows Node, a second clone or project `updates.url` merely because the emulator cannot initially render.
+
+Direct FM-04 evidence included manifest HTTP 200, Hermes bundle HTTP 200 / 9,162,793 bytes, Expo Go reaching Metro, JS execution and visible DANTE render.
 
 ### FM-05A Metro workspace-package resolution
 
-The first real shared-package Mobile import exposed one bounded resolution failure:
-
-```text
-@dante/design-tokens/native could not be found within the project
-```
-
-Before changing configuration, verify the chain:
-
-```bash
-cd ~/projects/dante-frontend/apps/mobile
-
-ls -l node_modules/@dante/design-tokens
-
-node --input-type=module -e "console.log(import.meta.resolve('@dante/design-tokens/native'))"
-
-cat node_modules/@dante/design-tokens/package.json
-```
-
-The accepted FM-05A evidence was:
+The first `@dante/design-tokens/native` bare import failed even though:
 
 ```text
 workspace symlink exists
-Node resolves @dante/design-tokens/native
-resolved file = packages/design-tokens/generated/native.ts
+Node resolves the package subpath
+Metro watchFolders already include the workspace package
+app/root node_modules paths are present
+package exports support is enabled
+TypeScript source extension is enabled
 ```
 
-Expo/Metro default-config inspection also proved that the observed SDK 57 configuration already included the workspace package in `watchFolders`, included app/root `node_modules`, enabled package exports and included TypeScript source extensions.
+A `--clear` restart did not repair the issue. A temporary relative import into the generated TS file rendered successfully, proving external workspace TS visibility/execution.
 
-Do **not** respond to this symptom by immediately adding a custom `metro.config.js`, hoisting pnpm dependencies, changing `nodeLinker`, installing unrelated Metro packages or switching runtime ownership.
-
-A `--clear` Metro restart did not repair the observed failure.
-
-The decisive diagnostic probe temporarily replaced the bare import with:
-
-```text
-../../../packages/design-tokens/generated/native
-```
-
-That relative path rendered DANTE Mobile, proving Metro could see and execute the external generated TypeScript file. The temporary probe must then be restored; it is diagnostic evidence, not an accepted production import.
-
-The durable package public surface is:
+Durable public surface:
 
 ```json
 {
@@ -461,62 +384,84 @@ The durable package public surface is:
 }
 ```
 
-After restoring:
+After restoring the real bare import, Android rendered successfully. No custom `metro.config.js`, pnpm hoist/linker change or Windows Node path is accepted as part of the baseline.
 
-```ts
-import { radii } from '@dante/design-tokens/native';
-```
+## 8. Normal command policy
 
-the Android runtime rendered successfully. No Metro override or pnpm linker fallback is part of the accepted configuration.
-
-After a workstation reboot, the proven LOCAL sequence remains:
-
-```text
-1. start Windows Android emulator
-2. WSL: cd ~/projects/dante-frontend/apps/mobile
-3. WSL: pnpm exec expo start --localhost
-4. second WSL terminal: verify adb device
-5. second WSL terminal: adb reverse tcp:8081 tcp:8081
-6. open exp://127.0.0.1:8081 in Expo Go
-```
-
-Windows ADB commands from WSL:
-
-```bash
-powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices'
-
-powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081'
-
-powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081"'
-```
-
-During the successful FM-05A run, Expo Go briefly displayed `Cannot connect to Expo CLI` after the bundle had already loaded. Dismissing the warning exposed the successfully rendered DANTE Mobile application. Treat such a warning as client/dev-tooling noise only when the application runtime is independently proven; do not use it to justify product configuration changes.
-
-## 8. Command policy
-
-Repository scripts are the normal root entry point for materialized tooling:
+Root repository commands:
 
 ```text
 pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 pnpm lint
 pnpm lint:fix
 pnpm format
 pnpm format:check
 pnpm typecheck
-pnpm test
-pnpm build
 pnpm architecture:check
 pnpm generated:check
+pnpm test
+pnpm build
 ```
 
-The workspace now contains real Web, Mobile, shared design-token, shared i18n and shared time consumers. Root Turbo `typecheck` directly executes `@dante/design-tokens`, `@dante/i18n`, `@dante/time`, `@dante/web` and `@dante/mobile`; root Turbo `build` directly executes token generation before the Web production build. This is a directly proven five-package TypeScript graph.
+Current real root graph:
 
-`pnpm architecture:check` is a real local gate backed by `dependency-cruiser.config.mjs`. It checks the current DANTE-owned Web/Mobile/shared-package graph rather than recursively validating third-party package internals.
+```text
+typecheck
+@dante/design-tokens
+@dante/i18n
+@dante/time
+@dante/web
+@dante/mobile
 
-`pnpm generated:check` is a real side-effect-free local drift gate backed by `tooling/check-generated.mjs`. It snapshots the three committed generated outputs, invokes the actual Terrazzo and TanStack Router Vite generation paths, compares the regenerated bytes, and restores the pre-check bytes in every case. It must PASS when committed generated source is current and FAIL with the exact drifted path when generated output is stale or manually altered.
+build
+@dante/design-tokens -> @dante/web
 
-Current generated files under this gate:
+test
+@dante/i18n
+@dante/time
+```
+
+Use project-local execution through pnpm rather than unrelated global binaries.
+
+## 9. Architecture enforcement
+
+`pnpm architecture:check` is backed by `dependency-cruiser.config.mjs` and validates DANTE-owned source rather than recursively validating third-party package internals.
+
+Currently enforced real rules:
+
+```text
+unresolvable production source imports forbidden
+source cycles forbidden
+Web -> Mobile forbidden
+Mobile -> Web forbidden
+shared packages -> apps forbidden
+production frontend -> prototypes forbidden
+shared cores -> React / React DOM / React Native / react-i18next / Expo / Vite forbidden
+```
+
+After FM-06C test files were added, the current graph directly passed:
+
+```text
+36 modules
+45 dependencies cruised
+0 enforced violations
+```
+
+Dependency-cruiser troubleshooting:
+
+- if a rule itself is rejected as unsafe, fix the rule; do not interpret it as an application architecture violation;
+- `doNotFollow.path = 'node_modules'` prevents package-local third-party trees from becoming initial roots while retaining external dependency boundary edges;
+- do not add package-name exceptions, hoisting or resolver weakening merely to get green output.
+
+Feature-to-feature, route-to-feature and future `ui/`/`platform/` rules remain NOT RUN until those structures exist.
+
+## 10. Generated-source drift enforcement
+
+`pnpm generated:check` is backed by `tooling/check-generated.mjs`.
+
+Checked authorities:
 
 ```text
 packages/design-tokens/generated/web.css
@@ -524,562 +469,188 @@ packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
 ```
 
-Useful direct app commands when isolating a runtime:
+Behavior:
+
+```text
+snapshot current generated bytes
+run real generators
+compare byte-for-byte
+report exact drifted paths
+restore pre-check bytes in all cases
+clean/current -> exit 0
+drift -> non-zero
+```
+
+Generation owners:
+
+```text
+DTCG token source -> Terrazzo 2.7.1 -> Web CSS / Native TS
+Web route source -> TanStack Router Vite plugin -> routeTree.gen.ts
+```
+
+Do not hand-edit generated output to make the gate green. Change owning source, regenerate through the real generator, review output and rerun the gate.
+
+Do not add `@tanstack/router-cli`: the supported Vite plugin already owns route generation in this repository.
+
+## 11. Real unit-test baseline — FM-06C PASS
+
+Implementation:
+
+```text
+610e33a7a31987d97564b1d6004a7b9896acaedc
+test: establish shared frontend unit baseline
+```
+
+Runner:
+
+```text
+Vitest 4.1.11
+root exact devDependency
+```
+
+Package scripts:
+
+```text
+@dante/i18n  vitest run
+@dante/time  vitest run
+```
+
+Root authority:
 
 ```bash
-pnpm --filter @dante/web dev
-cd apps/mobile && pnpm exec expo start --localhost
+pnpm test
 ```
 
-Prefer project-local execution through pnpm rather than unrelated global binaries.
+which executes `turbo run test` and currently runs the two real package suites.
 
-## 9. FM-00 observed preflight — PASS
-
-Observed on 2026-08-21:
+Direct evidence:
 
 ```text
-frontend worktree
-/home/mattia/projects/dante-frontend
-feature/frontend-materialization
-
-WSL
-Ubuntu 24.04.4 LTS
-Linux / WSL2
-
-Git
-2.43.0
-/usr/bin/git
-
-Docker
-29.7.2
-/usr/bin/docker
-Docker Compose 5.4.0
+@dante/time                      5 tests PASS
+@dante/i18n                      5 tests PASS
+root Turbo                       2 successful / 2 total
+non-zero real test count         PASS
+5-package strict typecheck       PASS
+architecture                     36 modules / 45 deps / 0 violations
+pnpm generated:check             PASS
+lint / format                    PASS
+Web production build             PASS
+frozen install                   PASS
+git diff --check                 PASS
+7 implementation paths           PASS
+0 unexpected paths               PASS
+remote readback                  PASS
 ```
 
-The preflight found no Linux Node/npm/pnpm/Corepack installation. Windows paths are present in WSL interoperability PATH, so every frontend runtime executable must be checked to resolve Linux-side.
+### Time test semantics
 
-## 10. FM-01 installation path — PASS
-
-### Machine prerequisites observed
-
-For the chosen installation path:
-
-```bash
-sudo apt-get install -y unzip libatomic1
-```
-
-`unzip` is required by the fnm installation path used here.
-
-`libatomic1` was required by the pnpm standalone Linux executable on this Ubuntu 24.04 WSL installation. The missing library manifested as:
+The initial suite asserts real shared-core behavior:
 
 ```text
-error while loading shared libraries: libatomic.so.1
+Temporal primitive parsing
+Europe/Rome DST spring transition
+Instant <-> ZonedDateTime round trip
+PlainDateTime + Duration arithmetic
+ZonedDateTime instant preservation
 ```
 
-The repair is to install `libatomic1`, verify it through `ldconfig`, then rerun the pinned pnpm installer. Do not switch package-manager strategy merely because this prerequisite is missing.
+### i18n test semantics
 
-### Node version manager
-
-Observed:
+The initial suite asserts:
 
 ```text
-fnm 1.39.0
+supported locales = it/en
+default locale = it
+fallback locale = it
+default namespace = common
+Italian runtime
+English runtime
+unsupported locale -> Italian fallback
+IT/EN resource leaf-shape parity
+strict selector namespace contract
 ```
 
-Bash integration:
-
-```bash
-FNM_PATH="$HOME/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env --use-on-cd --shell bash)"
-fi
-```
-
-The repository `.node-version` is authoritative for the current Node patch:
+With `enableSelector: 'strict'`, the accepted test selector shape includes the explicit namespace:
 
 ```text
-24.19.0
+$.common.runtime...
+$.common.gesture...
 ```
 
-### pnpm
+Do not weaken the production i18n contract or TypeScript config to accommodate a test that omits the required namespace.
 
-Observed standalone installation:
+### FM-06C diagnostics
+
+Root-test output parser:
 
 ```text
-PNPM_HOME=/home/mattia/.local/share/pnpm
-pnpm 11.22.0
+package tests PASS
+Turbo 2/2 PASS
+post-run parser initially failed on colored/prefixed output
 ```
 
-Observed shell setup:
+Repair: disable/strip ANSI and assert both package task labels, Turbo 2/2 and non-zero test counts.
 
-```bash
-export PNPM_HOME="/home/mattia/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-```
-
-## 11. Runtime direct checks — PASS
-
-Observed normal shell:
+Pre-existing peer warning:
 
 ```text
-fnm        1.39.0
-Node       24.19.0
-npm        11.17.0
-pnpm       11.22.0
+pnpm peers check
+react-dom@19.2.8 wants react ^19.2.8
+Mobile direct React = 19.2.3
 ```
 
-Observed executable ownership:
+Read-only comparison proved this association already existed at FM-06C PRE-SCOPE, and FM-06C did not change the Web/Mobile lockfile importer blocks.
+
+Classification:
 
 ```text
-node       Linux-side fnm multishell path
-npm        Linux-side fnm multishell path
-pnpm       /home/mattia/.local/share/pnpm/bin/pnpm
+KNOWN PRE-EXISTING WORKSPACE PEER WARNING
+NOT introduced by Vitest
+NOT a failing unit assertion
 ```
 
-An isolated login-shell test with a minimal inherited environment directly proved:
+Do not move Mobile React away from the directly runtime-validated Expo/RN baseline or downgrade the correctly paired Web React/ReactDOM baseline merely to silence the workspace-wide peer diagnostic. Re-evaluate it during FM-07 clean materialization closure if still observable.
+
+Strict-selector repair:
 
 ```text
-node=v24.19.0
-npm=11.17.0
-pnpm=11.22.0
-fnm=fnm 1.39.0
-fnm-current=v24.19.0
+runtime tests initially PASS
+TypeScript rejected $.runtime / $.gesture
+repair -> $.common.runtime / $.common.gesture
 ```
 
-No `/mnt/c/...` runtime executable leakage was observed.
+This strengthened the test; no production resource/fallback policy was changed.
 
-## 12. FM-02A root workspace — PASS
-
-Current root workspace files:
+## 12. Selected historical checkpoints
 
 ```text
-.node-version
-package.json
-pnpm-workspace.yaml
-pnpm-lock.yaml
+FM-02A c3f7945da7137b2bdd9e9f8922af452f1a79770f
+FM-02B 7ad88e2fbba1e8140149be05f9a3fe3005ad0488
+FM-03  1568d90091064162da9a438f3555675f1921c226
+FM-04  3c150c4806191f0347b64c645d53168123ce0ede
+FM-05A acd846a06614270fda9d66542a3fdc87fca7202e
+FM-05B 5e5fae5d696a5da6b457e3198b70f642245ec323
+FM-05C aeb43e9e5ed7add42464e61f5c02acd6a53fed85
+FM-06A 38dbbd3efb764a8419f4498d27a2e29a3602fc5d
+FM-06B 362b95a415ac7845260daf19cc99547501151eaa
+FM-06C 610e33a7a31987d97564b1d6004a7b9896acaedc
 ```
 
-Workspace reservation:
+## 13. Shared design-token workflow
 
-```yaml
-packages:
-  - 'apps/*'
-  - 'packages/*'
-```
-
-No empty `apps/` or `packages/` directory is created merely to match the architecture diagram.
-
-Direct checks at FM-02A:
-
-```text
-pnpm install                       PASS
-pnpm install --frozen-lockfile     PASS
-lockfile generation                PASS
-unexpected apps/                   0
-unexpected packages/               0
-unexpected node_modules/           0 in empty-workspace baseline
-```
-
-Remote baseline commit:
-
-```text
-c3f7945da7137b2bdd9e9f8922af452f1a79770f
-build: establish frontend workspace runtime baseline
-```
-
-## 13. FM-02B root engineering tooling — PASS
-
-Materialized root files:
-
-```text
-turbo.json
-tsconfig.base.json
-eslint.config.mjs
-prettier.config.mjs
-.prettierignore
-```
-
-Exact installed versions:
-
-```text
-TypeScript          6.0.3
-Turborepo           2.10.11
-ESLint              10.8.1
-@eslint/js           10.0.1
-typescript-eslint   8.67.0
-Prettier            3.9.0
-```
-
-Direct WSL validation:
-
-```text
-pnpm install                                  PASS
-pnpm exec tsc --version                       6.0.3
-pnpm exec turbo --version                     2.10.11
-pnpm exec eslint --version                    10.8.1
-pnpm exec prettier --version                  3.9.0
-pnpm lint                                     PASS
-pnpm format:check                             PASS
-TypeScript base-config temporary probe        PASS
-Turbo configuration dry-run                   PASS
-pnpm install --frozen-lockfile                PASS
-```
-
-### TypeScript base-config validation
-
-`tsconfig.base.json` intentionally has no repository source inputs. Do not treat a direct root invocation that reports no inputs as a broken configuration.
-
-The accepted direct probe is a temporary project that extends the repository base config and includes a trivial `.ts` source. The observed probe compiled successfully and was removed afterwards. No test artifact is committed.
-
-Cross-workspace strict typechecking is now directly proven by FM-05A/FM-05B/FM-05C with real Web, Mobile and shared-package consumers.
-
-### ESLint and architecture-enforcement scope
-
-The root flat ESLint config is installed and `pnpm lint` directly passes on the repository. Typed TypeScript configuration is active for real `.ts/.tsx` consumers.
-
-FM-06A separately materialized executable dependency architecture enforcement through `dependency-cruiser 18.2.0`. Current real application/package/cycle boundaries are directly proven. This still does **not** claim future feature-to-feature, `ui/`, `platform/` or route-to-feature rules before those real structures exist.
-
-### Prettier scope
-
-The first FM-02B `pnpm format:check` identified quote-style drift in `pnpm-workspace.yaml`. The file was repaired to repository style and a subsequent `pnpm format:check` passed.
-
-Do not hide format failures through blanket ignores merely to obtain a green check.
-
-### Lockfile authority
-
-The root engineering dependency graph was generated by pnpm `11.22.0` on the WSL environment and committed at:
-
-```text
-7ad88e2fbba1e8140149be05f9a3fe3005ad0488
-build: lock frontend engineering toolchain
-```
-
-## 14. FM-03 minimal Web application — PASS
-
-### Materialized Web scaffold
-
-```text
-apps/web/package.json
-apps/web/index.html
-apps/web/tsconfig.json
-apps/web/vite.config.ts
-apps/web/src/main.tsx
-apps/web/src/routes/__root.tsx
-apps/web/src/routes/index.tsx
-apps/web/src/styles.css
-apps/web/src/routeTree.gen.ts
-```
-
-This is a diagnostic production scaffold only. It intentionally does not implement Access, Home, application state, network APIs or authentication contracts.
-
-Exact Web versions:
-
-```text
-React                     19.2.8
-React DOM                 19.2.8
-Vite                      8.2.1
-@vitejs/plugin-react      6.1.0
-@tanstack/react-router    1.170.31
-@tanstack/router-plugin   1.168.34
-@types/node               24.13.3
-@types/react              19.2.18
-@types/react-dom          19.2.4
-```
-
-### Generated route tree
-
-TanStack Router generates:
-
-```text
-apps/web/src/routeTree.gen.ts
-```
-
-Policy:
-
-```text
-generated by the real TanStack Router toolchain
-committed as deterministic runtime source
-never hand-edit
-excluded from normal ESLint/Prettier ownership
-regenerate from route source when routes change
-```
-
-The current generated tree contains only the expected `/` route under `__root__`.
-
-### Direct Web validation
-
-Observed WSL checks:
-
-```text
-pnpm install                                  PASS
-pnpm build                                    PASS
-pnpm typecheck                                PASS
-pnpm lint                                     PASS
-pnpm format:check                             PASS
-pnpm install --frozen-lockfile                PASS
-routeTree.gen.ts generation                   PASS
-```
-
-Observed build:
-
-```text
-Turbo                  2.10.11
-workspace              @dante/web
-Vite                   8.2.1
-modules transformed    106
-production build       PASS
-```
-
-Observed TypeScript task:
-
-```text
-@dante/web:typecheck
-tsc --noEmit -p tsconfig.json
-PASS
-```
-
-The Web app therefore proves a real Vite production build and Web TypeScript baseline. It does not yet prove a future multi-package TypeScript graph.
-
-### Formatting repair evidence
-
-The initial Web `pnpm format:check` exposed a formatting mismatch in `apps/web/src/styles.css`. It was not suppressed or ignored.
-
-After multiple bounded correction attempts, the exact output from the installed Prettier `3.9.0` binary was inspected read-only on WSL and applied. The final command returned:
-
-```text
-All matched files use Prettier code style!
-```
-
-The durable rule is simple: when formatter output is uncertain, use the repository-pinned formatter as authority rather than manually guessing its canonical output.
-
-### Browser reachability — FM-V09 PASS
-
-Normal development command:
-
-```bash
-pnpm --filter @dante/web dev
-```
-
-Observed:
-
-```text
-VITE v8.2.1
-Local: http://localhost:5173/
-```
-
-A Windows Firefox browser opened `http://localhost:5173/` successfully while Vite ran in WSL and rendered:
-
-```text
-DANTE Web
-Frontend runtime ready
-Route: /
-Purpose: FM-03 diagnostic scaffold
-```
-
-No special network flag or workaround was required.
-
-### FM-03 generated closure
-
-The Web lockfile delta and generated route tree were committed from the real WSL environment at:
-
-```text
-1568d90091064162da9a438f3555675f1921c226
-build: lock minimal web runtime
-```
-
-Exact commit scope:
-
-```text
-CREATE
-apps/web/src/routeTree.gen.ts
-
-UPDATE
-pnpm-lock.yaml
-
-DELETE       0
-UNEXPECTED   0
-```
-
-Remote lockfile readback confirms all exact Web specifiers and resolutions.
-
-## 15. FM-04 minimal Mobile application — PASS
-
-The minimal Mobile scaffold is directly validated on the current workstation.
-
-Exact compatibility baseline:
-
-```text
-Expo                         57.0.9
-React Native                 0.86.2
-React                        19.2.3
-Expo Router                  57.0.9
-React Native Gesture Handler 2.32.0
-React Native Reanimated      4.5.1
-React Native Safe Area       5.7.0
-React Native Screens         4.26.2
-React Native Worklets        0.10.1
-```
-
-Direct validation:
-
-```text
-pnpm install --frozen-lockfile     PASS
-expo install --check               PASS
-expo-doctor                        21/21 PASS
-mobile typecheck                   PASS
-mobile lint                        PASS
-Web typecheck/build regression     PASS
-root lint/format                   PASS
-Android emulator + ADB reverse     PASS
-Metro manifest                     HTTP 200
-Android Hermes bundle              HTTP 200 / 9,162,793 bytes
-Expo Go 57.0.9                     PASS
-DANTE route / render               PASS
-Gesture Handler/Reanimated probe   PASS
-```
-
-Validated implementation commit:
-
-```text
-3c150c4806191f0347b64c645d53168123ce0ede
-build: lock minimal mobile runtime
-```
-
-Two diagnostic observations are intentionally retained:
-
-- Expo Go emitted internal `expo-updates` / app-loader warnings during bootstrap, but continued through `isMetroRunning() = true`, JS bundle loading, `Running "main"` for DANTE and successful render. Do not mutate DANTE update configuration solely to silence those client logs.
-- The optional React Native DevTools helper in WSL reported missing `libnspr4.so`, while Metro and the application runtime continued successfully. Treat that as a DevTools/workstation concern only if DevTools functionality is actually required.
-
-Expo Go is a diagnostic convenience for this scope, not the future production delivery/runtime contract.
-
-## 16. FM-05A shared design tokens — PASS
-
-`@dante/design-tokens` is the first real shared package consumed by both frontend applications.
-
-Repository shape:
-
-```text
-packages/design-tokens/
-├── package.json
-├── tsconfig.json
-├── terrazzo.config.ts
-├── tokens/
-│   ├── primitives.json
-│   └── semantic.json
-├── tooling/
-│   └── native-plugin.ts
-└── generated/
-    ├── web.css
-    └── native.ts
-```
-
-Toolchain:
-
-```text
-DTCG source model            2025.10
-@terrazzo/cli                2.7.1
-@terrazzo/parser             2.7.1
-@terrazzo/plugin-css         2.7.1
-```
-
-Normal validation/regeneration commands:
+Normal commands:
 
 ```bash
 pnpm --filter @dante/design-tokens tokens:lint
 pnpm --filter @dante/design-tokens generate
-pnpm typecheck
-pnpm lint
-pnpm format:check
-pnpm build
 pnpm generated:check
 ```
 
-Generated-source rule:
+Current generated outputs are committed and consumed by Web/Mobile. The initial shared semantics intentionally cover only already-real duplicated radii; diagnostic colors/typography are not promoted into canonical brand semantics without a real design authority decision.
 
-```text
-tokens/*.json
-    ↓ semantic authority
-Terrazzo
-    ↓ deterministic generation
-generated/web.css
-generated/native.ts
-    ↓ committed runtime source
-Web + Mobile
-```
+## 14. Shared i18n workflow
 
-The initial package deliberately shares only already-real duplicated radii. It does not declare the diagnostic colors or typography to be canonical DANTE brand/design semantics.
-
-Direct consumers:
-
-```text
-Web
-@dante/design-tokens/web.css
-→ CSS custom properties
-→ diagnostic Web render PASS
-
-Mobile
-@dante/design-tokens/native
-→ generated radii
-→ Android diagnostic render PASS
-```
-
-Static closure:
-
-```text
-frozen install                         PASS
-Terrazzo lint                          PASS
-deterministic regeneration             PASS
-package exports                        PASS
-workspace:* Web dependency             PASS
-workspace:* Mobile dependency          PASS
-3-package strict typecheck             PASS
-root lint / format                     PASS
-Turbo multi-workspace graph            PASS
-Web production build                   PASS
-authorized implementation paths        15
-unexpected implementation paths        0
-```
-
-Runtime closure:
-
-```text
-Windows Firefox ← WSL Vite             PASS
-Windows Android ← WSL Metro            PASS
-generated Web CSS runtime              PASS
-generated Native TypeScript runtime    PASS
-```
-
-The Metro package-resolution diagnosis and accepted repair are documented in section 7 above. Preserve that evidence: do not replace the public package import with a permanent relative deep path, and do not add Metro/hoisting overrides without new contrary evidence.
-
-Validated implementation commit:
-
-```text
-acd846a06614270fda9d66542a3fdc87fca7202e
-feat: materialize shared design tokens
-```
-
-## 17. FM-05B shared i18n — PASS
-
-`@dante/i18n` is the second genuine shared package consumed by both frontend applications.
-
-Repository shape:
-
-```text
-packages/i18n/
-├── package.json
-├── tsconfig.json
-└── src/
-    ├── index.ts
-    └── resources/
-        ├── it/common.ts
-        └── en/common.ts
-```
-
-Locale authority:
+Current locale policy:
 
 ```text
 Italian  (it)  PRIMARY / DEFAULT / FALLBACK
@@ -1087,146 +658,13 @@ English  (en)  SUPPORTED SECONDARY
 other locales  NOT YET SUPPORTED
 ```
 
-Exact i18n line:
+Core is framework-free. React integration stays in app bootstraps. Core catalogs are bundled locally. New namespaces appear only with real feature consumers; do not add empty placeholder catalogs.
 
-```text
-i18next        26.3.6
-react-i18next  17.0.11
-```
+Source-first package internals use extensionless imports. Do not broaden consumer `tsconfig` or add a duplicate package build merely to satisfy an unrelated native-Node-only resolution probe.
 
-Framework boundary:
+## 15. Shared time workflow
 
-```text
-@dante/i18n
-→ locale policy, fallback, resources, types, shared i18next options
-
-apps/web/src/bootstrap/i18n.ts
-apps/mobile/src/bootstrap/i18n.ts
-→ React integration only
-```
-
-Core resources are bundled locally. FM-05B does not require translation CDN/network access. The initial namespace is `common`; new feature namespaces appear only with real consumers.
-
-The Italian catalog defines the structural resource shape and the English catalog must satisfy it. The runtime also enables strict selectors and strict key checking.
-
-Direct validation:
-
-```text
-pnpm install --frozen-lockfile                 PASS
-expo install --check                           PASS
-@dante/i18n typecheck                          PASS
-4-package strict cross-workspace typecheck     PASS
-root lint                                      PASS
-root format check                              PASS
-root Turbo build                               PASS
-Vite source-first package resolution           PASS
-strict selector Italian runtime                PASS
-changeLanguage('en')                           PASS
-strict selector English runtime                PASS
-authorized implementation paths                14
-unexpected implementation paths                0
-```
-
-Direct browser evidence:
-
-```text
-Windows Firefox ← WSL Vite
-@dante/i18n + react-i18next
-Italian default render
-PASS
-```
-
-Visible copy included `Frontend pronto`, `Percorso`, `Scopo` and `Scaffold diagnostico FM-03`.
-
-Direct Android evidence:
-
-```text
-Windows Android emulator ← ADB reverse ← WSL Metro
-@dante/i18n + react-i18next
-Italian default render
-PASS
-```
-
-Visible copy included `Runtime nativo pronto`, `Percorso`, `Scopo`, `Scaffold diagnostico FM-04`, `Test gesto` and the Italian gesture instruction.
-
-English is directly validated through `changeLanguage('en')` in the real i18next runtime path. Language selector UI, browser/native locale detection and persistence remain intentionally outside this slice.
-
-### FM-05B source-first TypeScript troubleshooting
-
-The first package draft used explicit `.ts` extensions for its internal source imports. Package-local typecheck passed because its local configuration allowed those extensions, but Web cross-workspace typecheck failed with:
-
-```text
-TS5097: An import path can only end with a '.ts' extension when
-'allowImportingTsExtensions' is enabled.
-```
-
-The accepted repair is extensionless internal imports:
-
-```text
-./resources/it/common
-./resources/en/common
-../it/common
-```
-
-Do **not** repair this by broadening every consumer `tsconfig`, adding a duplicate compiled package or introducing an unnecessary build pipeline.
-
-A subsequent diagnostic used plain Node ESM with `--experimental-strip-types`. Native Node then failed to resolve the extensionless `.ts` source path. That probe is deliberately recorded as **invalid for this boundary**: native Node ESM does not implement the Vite/Metro bundler resolution contract of this source-first frontend package.
-
-The replacement probe uses Vite SSR to load the real Web bootstrap and directly proved package resolution plus strict-selector IT/EN runtime. Do not regress the package to satisfy a native-Node-only probe unless Node becomes a real consumer under a separately designed contract.
-
-Validated implementation commit:
-
-```text
-5e5fae5d696a5da6b457e3198b70f642245ec323
-feat: materialize shared i18n
-```
-
-### UI/content authority model
-
-The professional DANTE frontend keeps changeable product concerns under explicit authorities instead of scattering literals through features:
-
-```text
-user-visible copy / labels / messages / a11y text
-→ @dante/i18n
-
-colors / radii / spacing / typography / shadows / theme semantics
-→ @dante/design-tokens
-
-Button / Card / control visual states and composition
-→ Web/Mobile design-system implementation
-
-logos / images / illustrations / background artwork
-→ versioned assets
-
-click behavior / client workflow / feature decisions
-→ owning feature logic
-```
-
-This separation is the default for future product work. It lets copy, palette/theme decisions, shared component appearance, assets and behavior evolve independently and gives FM-06 concrete boundaries to enforce where technically appropriate.
-
-## 18. FM-05C shared time semantics — PASS
-
-`@dante/time` is the third genuine shared package consumed by both frontend applications and completes FM-05.
-
-Repository shape:
-
-```text
-packages/time/
-├── package.json
-├── tsconfig.json
-└── src/
-    └── index.ts
-```
-
-Exact implementation line:
-
-```text
-temporal-polyfill  1.0.4
-```
-
-Materialization-time revalidation kept Temporal as the accepted model but refined the implementation candidate from `@js-temporal/polyfill` to `temporal-polyfill`. This is an implementation refinement only; the DANTE time semantics did not change.
-
-Semantic vocabulary:
+Accepted semantic vocabulary:
 
 ```text
 Instant
@@ -1237,275 +675,41 @@ ZonedDateTime
 Duration
 ```
 
-Use these distinctions deliberately:
+Do not use JavaScript `Date` as a universal DANTE semantic. Locale is not timezone.
 
-```text
-Instant       absolute timeline point
-PlainDate     date without time/timezone
-PlainTime     time without date/timezone
-PlainDateTime local date+time without timezone
-ZonedDateTime civil time + IANA timezone
-Duration      amount of time
-```
+Current public primitives include Temporal, parse helpers and Instant/ZonedDateTime conversion helpers. Product scheduling, reminders, timezone selection/persistence and presentation formatting remain outside this shared core.
 
-Do not fall back to JavaScript `Date` as a universal DANTE time semantic. Do not derive timezone policy from locale: `it`/`en` and `Europe/Rome`/`America/New_York` are separate concerns.
+## 16. Clean-machine/onboarding acceptance target
 
-Current public surface:
-
-```text
-Temporal
-parseInstant
-parsePlainDate
-parsePlainTime
-parsePlainDateTime
-parseZonedDateTime
-parseDuration
-instantToZonedDateTime
-zonedDateTimeToInstant
-```
-
-Direct semantic/static validation:
-
-```text
-temporal-polyfill 1.0.4 reverified             PASS
-Instant parse                                  PASS
-PlainDate preservation                         PASS
-PlainTime parse                                PASS
-PlainDateTime + Duration arithmetic            PASS
-ZonedDateTime parse                            PASS
-Instant ↔ ZonedDateTime round-trip             PASS
-Europe/Rome DST-sensitive conversion           PASS
-expo install --check                           PASS
-5-package strict cross-workspace typecheck     PASS
-root lint / format                             PASS
-root Turbo build                               PASS
-pnpm install --frozen-lockfile                 PASS
-authorized implementation paths                8
-unexpected implementation paths                0
-```
-
-DST acceptance crosses the 2026-03-29 Europe/Rome spring transition:
-
-```text
-2026-03-29T00:30:00Z → 01:30 +01:00 Europe/Rome
-2026-03-29T01:30:00Z → 03:30 +02:00 Europe/Rome
-```
-
-Direct browser evidence:
-
-```text
-Windows Firefox ← WSL Vite
-@dante/time
-2026-08-22T18:00:00Z
-→ 2026-08-22T20:00:00+02:00[Europe/Rome]
-PASS
-```
-
-Direct Android/Hermes evidence:
-
-```text
-Windows Android emulator ← ADB reverse ← WSL Metro
-Expo Go 57.0.9 / Hermes
-@dante/time
-2026-08-22T20:00:00+02:00[Europe/Rome]
-PASS
-```
-
-Observed Web production build after the Temporal consumer was activated:
-
-```text
-Vite                         8.2.1
-modules transformed          146
-Temporal-consuming route     61.27 kB raw
-Temporal-consuming route     21.49 kB gzip
-build result                 PASS
-```
-
-Treat this as an observed footprint, not a failure and not a permanent bundle budget. Establish performance budgets only under a real product-surface/performance gate.
-
-Validated implementation commit:
-
-```text
-aeb43e9e5ed7add42464e61f5c02acd6a53fed85
-feat: materialize shared time semantics
-```
-
-FM-05C does not authorize product scheduling logic, calendar UI, user/device timezone detection, timezone persistence, locale-formatting policy, relative-time copy, reminders, backend time serialization contracts or PowerSync.
-
-## 19. FM-06A dependency architecture enforcement — PASS
-
-FM-06A materialized the first executable frontend dependency-architecture gate.
-
-Implementation:
-
-```text
-38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-build: enforce frontend dependency architecture
-```
-
-Tooling and root command:
-
-```text
-dependency-cruiser              18.2.0
-dependency-cruiser.config.mjs
-pnpm architecture:check
-```
-
-The current real repository graph directly passed:
-
-```text
-33 modules
-40 dependencies cruised
-0 enforced violations
-```
-
-Currently enforced real rules:
-
-```text
-unresolvable production frontend source imports     forbidden
-source dependency cycles                             forbidden
-Web -> Mobile                                        forbidden
-Mobile -> Web                                        forbidden
-shared packages -> apps                              forbidden
-production frontend -> prototypes                    forbidden
-shared cores -> React/React DOM/RN/react-i18next/Expo/Vite forbidden
-```
-
-Direct negative probes intentionally created and removed temporary invalid source to prove that enforcement rejects the intended violation rather than merely passing a clean graph:
-
-```text
-Web -> Mobile                    rejected by web-not-to-mobile
-Mobile -> Web                    rejected by mobile-not-to-web
-shared package -> app            rejected by shared-not-to-apps
-source cycle                     rejected by no-circular-source
-shared core -> React             rejected by shared-core-no-framework
-```
-
-Public/deep-import package-surface probes:
-
-```text
-@dante/design-tokens/native       public resolve PASS
-@dante/design-tokens/web.css      public resolve PASS
-@dante/i18n                       public resolve PASS
-@dante/time                       public resolve PASS
-representative forbidden deep imports rejected PASS
-```
-
-Regression QA after the probes:
-
-```text
-5-package typecheck                PASS
-lint                               PASS
-format                             PASS
-Web build                          PASS
-frozen install                     PASS
-git diff --check                   PASS
-4 authorized implementation paths PASS
-0 unexpected paths                 PASS
-remote readback                    PASS
-```
-
-### FM-06A diagnostic repair 1 — safe regex
-
-The first run never reached graph analysis because dependency-cruiser rejected one combined `shared-core-no-framework` regular expression as unsafe. The repair split it into small atomic safe path patterns. No architecture rule was weakened.
-
-### FM-06A diagnostic repair 2 — third-party traversal boundary
-
-The second run reported 151 violations because package directories supplied as cruise roots also caused their package-local `node_modules` trees to be gathered. Examples included Terrazzo internals, `temporal-polyfill` internals and i18next tooling. Those were third-party graphs, not DANTE violations.
-
-Accepted configuration:
-
-```text
-doNotFollow.path = node_modules
-```
-
-This prevents dependency internals from becoming initial cruise roots while preserving the boundary dependency reached from DANTE source. No hoisting, package-name exception, resolver weakening or framework exception was added.
-
-FM-06A only claims currently real application/package/cycle/public-surface boundaries. Feature-to-feature public APIs, `ui/`/`platform/` isolation and route-to-feature rules remain NOT RUN until those real structures exist.
-
-## 19A. FM-06B generated-source drift enforcement — PASS
-
-Implementation:
-
-```text
-362b95a415ac7845260daf19cc99547501151eaa
-build: enforce generated-source drift
-```
-
-Root command:
-
-```bash
-pnpm generated:check
-```
-
-The checker validates exactly the generated authorities that currently exist:
-
-```text
-packages/design-tokens/generated/web.css
-packages/design-tokens/generated/native.ts
-apps/web/src/routeTree.gen.ts
-```
-
-Generation is performed through the real existing owners:
-
-```text
-DTCG token source -> Terrazzo 2.7.1 -> generated Web CSS + Native TypeScript
-Web route source -> TanStack Router Vite plugin -> routeTree.gen.ts
-```
-
-The checker snapshots current generated bytes, invokes the real generators, compares regenerated bytes, reports drifted paths and restores the pre-check bytes in all cases. This means the check does not permanently mutate a developer's current generated files merely by verifying them.
-
-Direct evidence:
-
-```text
-clean generated:check                         PASS
-deliberate generated/native.ts drift          REJECTED / PASS
-deliberate routeTree.gen.ts drift             REJECTED / PASS
-pre-check byte restoration                     PASS
-second clean generated:check                   PASS
-architecture:check regression                  PASS
-5-package typecheck                            PASS
-lint / format                                  PASS
-Web production build                           PASS
-frozen install                                 PASS
-git diff --check                               PASS
-3 authorized implementation paths              PASS
-0 unexpected paths                             PASS
-remote readback                                PASS
-```
-
-FM-06B attempt 1 reached functional generated-source PASS, then root ESLint rejected implicit `process` and `console` globals in the new Node `.mjs` checker. The bounded fix imports `process` explicitly from `node:process` and writes through `process.stdout`/`process.stderr`; no repository-wide Node-global ESLint exception was introduced. A first textual repair attempt stopped because it did not remove every `console.*` occurrence, so the still-uncommitted checker was rewritten deterministically as one complete file before the final PASS.
-
-FM-06B does not require opening Firefox, Android emulator, Metro or Expo Go because it changes tooling/generation checks rather than application runtime code. The Web generator path is exercised headlessly through the real Vite build.
-
-## 20. Clean-machine/onboarding acceptance target
-
-A future developer should be able to start from repository documentation and reach a working frontend without chat context:
+A future developer should be able to reach the accepted base without chat context:
 
 ```text
 clone or create linked WSL worktree
-→ install documented machine prerequisites
-→ install/activate fnm
-→ select governed Node runtime
-→ activate governed pnpm
-→ pnpm install --frozen-lockfile
-→ pnpm lint
-→ pnpm format:check
-→ pnpm typecheck
-→ pnpm architecture:check
-→ pnpm generated:check
-→ pnpm build
-→ start Web
-→ open Web from Windows browser
-→ start Mobile in WSL → establish ADB reverse → launch on Windows Android emulator
-→ diagnose failures from documented ownership boundaries
+-> install documented machine prerequisites
+-> install/activate fnm
+-> select governed Node runtime
+-> activate governed pnpm
+-> pnpm install --frozen-lockfile
+-> pnpm lint
+-> pnpm format:check
+-> pnpm typecheck
+-> pnpm architecture:check
+-> pnpm generated:check
+-> pnpm test
+-> pnpm build
+-> start Web
+-> open Web from Windows browser
+-> start Mobile in WSL
+-> establish ADB reverse
+-> launch on Windows Android emulator
+-> diagnose failures from documented ownership boundaries
 ```
 
-The runtime/root-tooling/Web/minimal-Mobile/shared-design-token/shared-i18n/shared-time, current dependency-architecture and generated-source drift portions are directly proven. FM-05 shared-package materialization is complete; the full materialization target is not PASS until FM-06C/FM-06D/FM-06E and FM-07 clean-baseline obligations are directly exercised.
+The runtime/root-tooling/Web/minimal-Mobile/shared packages, current dependency architecture, generated-source drift and real unit-test baseline are directly proven. The full materialization target is not PASS until FM-06D/FM-06E and FM-07 obligations are directly exercised.
 
-## 21. Troubleshooting discipline
+## 17. Troubleshooting discipline
 
-When a command fails:
+For any failure:
 
 ```text
 capture exact command
@@ -1513,39 +717,47 @@ capture full output
 identify owning layer
 change one variable
 rerun the smallest relevant validation
-record durable fix if it is project-specific
+record durable fix if project-specific
 ```
 
-Do not respond to dependency/tooling failures with random global installs, blanket cache deletion, force flags or broad version changes unless evidence justifies them.
+Do not respond to failures with random global installs, blanket cache deletion, force flags or broad version changes.
 
-Examples:
+Ownership examples:
 
 ```text
 Node executable/version        workstation runtime
 pnpm resolution/lockfile       workspace/package layer
-TypeScript base config         root engineering tooling
+TypeScript                     package/root type contract
 ESLint / Prettier              root engineering tooling
-dependency-cruiser             frontend dependency architecture
-tooling/check-generated.mjs    generated-source drift enforcement
-Turbo task graph               workspace orchestration
-Vite build                     Web app/toolchain
-Vite localhost reachability    WSL↔Windows Web developer adapter
-Vite source-first resolution   Web shared-package runtime contract
-Temporal semantic mismatch     @dante/time semantic/package boundary
-Metro resolution               Mobile/toolchain
-ADB/emulator communication     WSL↔Windows Mobile developer adapter
+dependency-cruiser             dependency architecture
+tooling/check-generated.mjs    generated-source drift
+Vitest                         unit-test runner
+Turbo test                     workspace test orchestration
+i18next strict selector        @dante/i18n type contract
+Vite build                     Web toolchain
+Vite localhost                 WSL <-> Windows Web adapter
+Metro resolution               Mobile toolchain
+ADB/emulator                   WSL <-> Windows Mobile adapter
 PowerSync/SQLite               Mobile sync platform boundary
 PostgreSQL                     Docker/backend LOCAL infra
 ```
 
-For dependency-cruiser, first distinguish DANTE-owned source from third-party traversal. `node_modules` internals are not an architecture surface to validate. Preserve the edge from DANTE source to the external dependency, then stop following dependency internals.
+## 18. Current next action
 
-For generated-source drift, do not hand-edit the generated output to make the check green. Change the owning semantic/route source, regenerate through the real owner, then rerun `pnpm generated:check`. If the checker itself fails lint, distinguish its Node execution context from global repository ESLint policy; do not widen globals for unrelated JavaScript files without evidence.
+Proceed to **FM-06D Web E2E + Mobile bundle smoke** with read-only discovery first.
 
-## 22. Current next action
+FM-06A, FM-06B and FM-06C are directly validated and closed at their stated scopes. FM-06D should:
 
-Proceed to **FM-06C unit-test baseline**.
+```text
+Web
+reverify current supported Playwright line
+select a smallest meaningful browser E2E assertion against the existing diagnostic route
+establish local browser installation/cache ownership suitable for future CI
 
-FM-06A and FM-06B are directly validated and closed at their stated scopes. FM-06C should now establish a meaningful unit-test baseline against real semantics rather than dummy tests. Test-tool selection and exact versions must be reverified at materialization time. Do not mix Playwright/Web E2E, Mobile bundle smoke or GitHub Actions into FM-06C.
+Mobile
+inspect the actual Expo SDK 57 supported deterministic headless bundle/export path
+materialize a bundle smoke without requiring interactive emulator UI for every run
+retain the already-proven Android emulator runtime as stronger direct runtime evidence
+```
 
-This does not authorize Access/Home production UI, PowerSync integration, EAS release infrastructure or invented backend contracts.
+Do not mix GitHub Actions, product Access/Home UI, PowerSync, coverage thresholds or backend contracts into FM-06D.
