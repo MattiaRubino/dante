@@ -2,7 +2,7 @@
 
 **Branch:** `prototype/frontend`  
 **Status:** **APPROVED WORKING VISUAL/BEHAVIOR CHECKPOINT**  
-**Current working B2 baseline:** **B2 Home Edge Attachment v26 over B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
+**Current working B2 baseline:** **B2 Home Infrastructure Color v27 over B2 Home Edge Attachment v26 over B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
 **Last formally closed Home milestone:** **B1 Context Rail v1**  
 **Nature:** standalone HTML/CSS/JavaScript coded UX prototype with production-shaped contracts; not production application code.
 
@@ -28,7 +28,7 @@ The immutable A2 oracle above is not overwritten by later B2 checkpoints.
 
 ## Structural/behavioral base — B2 v22
 
-Later identity/skin/shell/edge checkpoints do not reopen the v22 Home-stage behavior contract.
+Later identity/skin/shell/edge/color checkpoints do not reopen the v22 Home-stage behavior contract.
 
 ```text
 FULL v22
@@ -130,7 +130,7 @@ Accepted shell/timeline rules:
 - timeline temporal header is `add / month / now / week / actions`;
 - the timeline `+` is a real contextual control and its current bridge to global `Crea` remains prototype-only.
 
-## Current edge-attachment layer — B2 v26
+## Edge-attachment layer — B2 v26
 
 Authority:
 - `docs/frontend/home/checkpoints/b2-edge-attachment-v26.md`;
@@ -169,8 +169,6 @@ Exact implementation targets:
 - `lifeos-today`;
 - `lifeos-today.shadowRoot .today`.
 
-v26 is deliberately visual/structural only. It does **not** alter the central stage, Mondi/Segnali behavior, the orientation strip, AI content semantics, timeline behavior, quick-add meaning, backend contracts or persistence.
-
 User-reviewed local evidence:
 
 ```text
@@ -179,9 +177,50 @@ size       83055 bytes
 SHA-256    07fab6068427a972f5201454e780d2b7a66db0e10ef9e0f5e80be7be7c5d9f22
 ```
 
+## Current infrastructure-color layer — B2 v27
+
+Authority:
+- `docs/frontend/home/checkpoints/b2-infrastructure-color-v27.md`;
+- `prototypes/frontend/home/archive/b2-infrastructure-color-v27/`.
+
+Deterministic v26 -> v27 transform:
+
+```text
+chrome-v26-to-v27.js
+size       5332 bytes
+SHA-256    73aa897923aae6523d52d770c4dc1453d61118387198f96b7a01445edcd3b0e1
+```
+
+Accepted color contract:
+
+```text
+primary / active / selected interaction = DANTE orange
+inactive generic controls               = neutral blue-grey / charcoal
+semantic content identity               = preserve category/world color
+```
+
+Accepted generic Today chrome normalized away from legacy purple:
+- `Ora`;
+- selected/current week day;
+- current-time line/marker;
+- Cattura add/send controls and `Registrato` status dots;
+- `Da risolvere` icon/count chrome and `Conferma` action.
+
+Semantic colors remain authoritative for Mondi/worlds, timeline groups, event/category identity and real state semantics.
+
+User-reviewed local evidence:
+
+```text
+DANTE_Home_v43_VERIFIED_INJECTION_COLOR_FIX.html
+size       87386 bytes
+SHA-256    e82058e4e980208feb3f0c055dab3eec81812be1fa47e5f036e8d5d0e1fe859d
+```
+
+v27 is color-only by contract. It does **not** alter v26 edge geometry, central-stage layout, Mondi/Segnali behavior, orientation, timeline layout/behavior, quick-add meaning, backend contracts or persistence.
+
 ## Token / production qualification
 
-v24-v26 approve the **working prototype appearance, shell placement and edge geometry**, not final production token naming or framework implementation.
+v24-v27 approve the **working prototype appearance, shell placement, edge geometry and generic infrastructure-color direction**, not final production token naming or framework implementation.
 
 The shared semantic-token authority remains `docs/frontend/design-tokens.md`. Promotion/migration from preview values into production/shared semantic tokens remains a later bounded implementation step.
 
@@ -190,17 +229,15 @@ The shared semantic-token authority remains `docs/frontend/design-tokens.md`. Pr
 ## QA evidence
 
 ```text
-B2 v26 final user visual review                   PASS
-v26 transform JavaScript syntax                   PASS (node --check)
-v26 transform mock-structure execution            PASS
-component geometry Chromium 1100 px               PASS
-component geometry Chromium 1366 px               PASS
-component geometry Chromium 1600 px               PASS
-component geometry Chromium 1920 px               PASS
+B2 v27 final user visual review                   PASS
+v27 transform JavaScript syntax                   PASS (node --check)
+v27 transform mock-structure execution            PASS
+v26 edge geometry                                 PRESERVED
 v25 shell/timeline semantics                      PRESERVED
 v24 palette/background                            PRESERVED
 v23 DANTE identity                                PRESERVED
 v22 behavioral semantics                          PRESERVED
+semantic World/group/event colors                 PRESERVED BY CONTRACT
 Mondi/stage/orientation geometry mutations        NONE
 fresh full reconstructed-Home browser matrix      NOT CLAIMED
 fresh full accessibility rerun                    NOT CLAIMED
@@ -215,11 +252,11 @@ fresh PARTIAL browser visual PASS                 NOT CLAIMED
 4. finish remaining small shell/detail refinements;
 5. run final applicable responsive / visual / accessibility QA.
 
-Historical `LifeOS` strings may still exist in untouched prototype-only/deprecated controls. v23-v26 do not authorize a blind global rename.
+Historical `LifeOS` strings may still exist in untouched prototype-only/deprecated controls. v23-v27 do not authorize a blind global rename.
 
 ## Non-regression
 
-v26 does not authorize changes to Mondi/Segnali semantics/data, central-stage no-persistent-add semantics, calendar/date-navigation meaning, Context Rail Capture/Resolution meaning, event drag/zoom/grouping/time-edit behavior, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
+v27 does not authorize changes to Mondi/Segnali semantics/data, central-stage no-persistent-add semantics, calendar/date-navigation meaning, Context Rail Capture/Resolution meaning, event drag/zoom/grouping/time-edit behavior, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
 
 ## Current authorities
 
