@@ -573,3 +573,53 @@ Parts 1, 2 and 3 remain byte/content-authoritative and must continue to be fully
 All Database Dictionary reconciliation, final object-inventory work, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3 and 4 together.
 
 Future additional parts remain subject to section 16.2: they may be introduced only for real write-safety/maintainability need, may not delete or compress prior semantic content, and must continue global section numbering.
+
+## 19. Part 5 canonical continuation
+
+Part 5 is now an active continuation created before extending Part 4 further, preserving the bounded-write rule and leaving Parts 1–4 byte/content-authoritative.
+
+Current active human-readable reference shape:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ sections 1–30
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ section 31
+
++
+
+dante-postgresql-database-part-3.md
+→ PART 3
+→ section 32
+
++
+
+dante-postgresql-database-part-4.md
+→ PART 4
+→ section 33
+
++
+
+dante-postgresql-database-part-5.md
+→ PART 5
+→ section 34 onward
+
+=
+
+ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
+```
+
+Part 5 starts from repository continuity anchor `bf19c1aed6ff45dba294815bcc75754d58d5dadb` and begins with section 34, Consolidation Checkpoint G — Agreement baseline disposition.
+
+Parts 1–4 remain canonical and must continue to be consumed in full. Part 5 does not summarize, replace or reduce their authority. Section 34 may supersede only explicitly identified provisional baseline-materialization statements while retaining the valid future semantic/physical contract derived earlier.
+
+After Checkpoint G the local exact CP6-03 blocker register is expected to be zero, but this does not earn Gate 03 by itself. The remaining global DB-U closure, final object inventory, naming, indexes, ACL matrix, migration DAG, SQLAlchemy plan, Database Dictionary and final PostgreSQL proof plan remain mandatory before Gate 03.
+
+All Database Dictionary reconciliation, final object-inventory work, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3, 4 and 5 together.
+
+Any transition from CP6-03 design/blueprint work into CP6-04 real database materialization remains a separate explicit boundary and requires its own approved write gate.
