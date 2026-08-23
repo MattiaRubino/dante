@@ -749,3 +749,81 @@ These three items are coupled to the final actual object inventory. The next CP6
 All final object-inventory work, Database Dictionary reconciliation, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3, 4, 5, 6 and 7 together.
 
 The transition from final CP6-03 freeze/Gate-03 closure into CP6-04 real database materialization remains a separate explicit boundary. Real Alembic business migrations, SQLAlchemy business mappings and PostgreSQL object creation require their own user-approved materialization gate.
+
+## 22. Part 8 canonical continuation
+
+Part 8 is now the active continuation created after the first total pre-freeze audit discovered and repaired the residual 57-concept final-materialization-disposition gap.
+
+Current active human-readable reference shape:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ sections 1–30
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ section 31
+
++
+
+dante-postgresql-database-part-3.md
+→ PART 3
+→ section 32
+
++
+
+dante-postgresql-database-part-4.md
+→ PART 4
+→ section 33
+
++
+
+dante-postgresql-database-part-5.md
+→ PART 5
+→ section 34
+
++
+
+dante-postgresql-database-part-6.md
+→ PART 6
+→ section 35
+
++
+
+dante-postgresql-database-part-7.md
+→ PART 7
+→ section 36
+
++
+
+dante-postgresql-database-part-8.md
+→ PART 8
+→ section 37 onward
+
+=
+
+ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
+```
+
+Part 8 starts from repository continuity anchor `443003d06bd2bae56108fb07287ab5446a158f1c` and begins with section 37, Consolidation Checkpoint J — total 57-concept materialization-disposition repair.
+
+Parts 1–7 remain canonical and must continue to be consumed in full. Part 8 does not summarize, replace or reduce their authority. Its negative dispositions supersede only earlier provisional baseline-materialization candidates where section 37 explicitly identifies the narrower replacement.
+
+Checkpoint J closes `DB-U23`, the residual completeness item discovered by the first total pre-freeze audit. It does not freeze the final actual PostgreSQL object inventory itself. After section 37 the remaining global DB-U set is:
+
+```text
+DB-U08  final PostgreSQL object naming
+DB-U15  final structural/query index matrix
+DB-U21  exact object-level privilege matrix
+```
+
+The next CP6-03 block must derive the final actual object inventory from all eight active parts. Only after that inventory is frozen may final names, indexes and ACLs be closed truthfully.
+
+A second complete tombstone audit from Domain through Dictionary/proof plan remains mandatory after all final-inventory/naming/index/ACL/DAG/mapping/dictionary/proof work is repaired and frozen. Checkpoint J is the first-audit repair, not the final independent Gate-03 audit.
+
+All final object-inventory work, Database Dictionary reconciliation, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2, 3, 4, 5, 6, 7 and 8 together.
+
+The transition into CP6-04 remains closed. Real Alembic business migrations, SQLAlchemy business mappings and PostgreSQL object creation require Gate 03 plus a separate explicit user-approved materialization gate.
