@@ -2,19 +2,16 @@
 
 > TEMPORARY / DISPOSABLE SAVE-GAME.
 >
-> Purpose: make the frontend workstream resumable if the current chat dies.
-> Keep this file updated after every substantive slice/gate.
-> Delete it only when frontend materialization is fully closed and durable docs contain everything needed.
+> Keep this file only until the frontend-materialization workstream receives the final hosted-CI proof and the durable docs contain the finished state. Delete it in the separately authorized final cleanup.
 
 ## 0. Resume protocol
 
-Read this file completely, then read:
+Read completely, then read:
 
 1. `docs/workstreams/frontend-materialization.md`
 2. `docs/development/frontend-local-development.md`
 3. `docs/decisions/ADR-008-frontend-engineering-stack.md`
 4. `docs/decisions/ADR-009-frontend-architecture-boundaries.md`
-5. referenced Frontend Engineering Foundation docs.
 
 Before any repository write:
 
@@ -27,9 +24,9 @@ git status --short
 
 Require remote HEAD to equal the approved PRE-SCOPE. No silent scope expansion.
 
-The documentation-closure commit containing this file is self-referential and therefore cannot embed its own SHA without another commit. Resolve the current documentation closure SHA from `origin/feature/frontend-materialization`. The last directly validated implementation/CI SHA is recorded below.
+The commit containing this file cannot embed its own SHA. Resolve the current documentation closure SHA from `origin/feature/frontend-materialization` after the commit lands.
 
-## 1. Repository / branch / workstation
+## 1. Repository / branch
 
 ```text
 repository  MattiaRubino/dante
@@ -38,41 +35,31 @@ branch      feature/frontend-materialization
 opening     ff46eb16b971b1fde96eef9047b09faa02e1a5db
 ```
 
-Execution ownership:
-
-```text
-WSL2/Linux
-Git / Node / pnpm / Turbo / Vite / Metro / Expo CLI / Playwright
-
-Windows
-Firefox/browser / Android Studio / Android emulator / ADB / JetBrains UI
-```
-
-Hard invariant:
+Hard invariants:
 
 ```text
 ONE authoritative Git history
 WSL-backed source/worktrees
 NO divergent Windows clone
 NO cross-OS shared node_modules
+NO direct main work
+NO unscoped merge/rebase main into this branch
 ```
-
-Do not merge/rebase `main` into this branch unless separately scoped.
 
 ## 2. Current checkpoint
 
-Last directly validated implementation/CI commit:
+Last implementation/CI commit before FM-07 repair:
 
 ```text
 31deffddd35f69d48bee82465e0385e508c42876
 ci: materialize frontend validation workflow
 ```
 
-Current durable documentation closure before the active FM-07 repair:
+FM-07 clean-materialization source/repair commit:
 
 ```text
-8ec088f0fce1db1e6116fa15acc2302981616ac5
-docs: close FM-06E frontend CI
+e79beadbddcf401d1d20c483c2d15d0b3cce96ad
+chore: ignore Turborepo local cache
 ```
 
 Current state:
@@ -84,10 +71,13 @@ FM-06C real unit-test baseline                  PASS
 FM-06D Web E2E + Mobile bundle smoke            PASS
 FM-06E GitHub-hosted CI orchestration           PASS
 FM-06                                             COMPLETE
-FM-07 clean materialization baseline            REPAIR MATERIALIZED / CLEAN RETEST REQUIRED
+FM-07 clean materialization baseline            PASS
+FRONTEND MATERIALIZATION                         TECHNICALLY COMPLETE
+FINAL HOSTED-CI PROOF                            PENDING FOR THIS DOC CLOSURE
+FINAL TEMPORARY CLEANUP                          NOT YET RUN
 ```
 
-## 3. Completed materialization checkpoints
+## 3. Completed implementation checkpoints
 
 ```text
 FM-02A c3f7945da7137b2bdd9e9f8922af452f1a79770f
@@ -102,19 +92,22 @@ FM-06B 362b95a415ac7845260daf19cc99547501151eaa
 FM-06C 610e33a7a31987d97564b1d6004a7b9896acaedc
 FM-06D d6138f5f5049e8fc11f877b774ff0191af44069f
 FM-06E 31deffddd35f69d48bee82465e0385e508c42876
+FM-07 repair/source e79beadbddcf401d1d20c483c2d15d0b3cce96ad
 ```
 
 Known durable closures:
 
 ```text
-FM-05A closure  d4d99b157bab9e00c4f0285bf82745e73a9c944d
-FM-05B closure  098be4c815eb724c32f49c277b058e85df81e03a
-FM-05C closure  61d19795867e13818a2d43252906b565d23e96e5
-FM-06A closure  b57709b4ce073ec179b4e55dc6dda72f509641a4
-FM-06B closure  ae0ff9e9849ff3aedcd095a645750993297c4384
-FM-06D closure  a481e24936c745c3573077a464a2af8a24794d1b
+FM-05A closure       d4d99b157bab9e00c4f0285bf82745e73a9c944d
+FM-05B closure       098be4c815eb724c32f49c277b058e85df81e03a
+FM-05C closure       61d19795867e13818a2d43252906b565d23e96e5
+FM-06A closure       b57709b4ce073ec179b4e55dc6dda72f509641a4
+FM-06B closure       ae0ff9e9849ff3aedcd095a645750993297c4384
+FM-06D closure       a481e24936c745c3573077a464a2af8a24794d1b
 FM-06E/FM-06 closure 8ec088f0fce1db1e6116fa15acc2302981616ac5
 ```
+
+Resolve FM-07 documentation closure from the current branch HEAD after this commit lands.
 
 ## 4. Accepted toolchain
 
@@ -135,10 +128,10 @@ Vite                        8.2.1
 TanStack Router             1.170.31
 
 Mobile
-Expo                        57.0.9 specifier / 57.0.15 lock resolution observed
+Expo                        57.0.9 specifier / 57.0.15 clean resolution
 React Native                0.86.2
 React                       19.2.3
-Expo Router                 57.0.9 specifier / 57.0.15 lock resolution observed
+Expo Router                 57.0.9 specifier / 57.0.15 clean resolution
 
 Shared
 i18next                     26.3.6
@@ -157,81 +150,40 @@ assets                                  -> versioned asset authority
 click/workflow behavior                 -> owning feature logic
 ```
 
-Do not create a universal dictionary mixing unrelated concerns. Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
+Do not create `@dante/api-client` until real FastAPI OpenAPI exists.
 
-## 6. FM-06 enforcement baseline — COMPLETE
-
-### FM-06A dependency architecture — PASS
+## 6. FM-06 enforcement baseline
 
 ```text
-implementation 38dbbd3efb764a8419f4498d27a2e29a3602fc5d
-command        pnpm architecture:check
-observed       36 modules / 45 dependencies / 0 violations
-```
+FM-06A architecture
+pnpm architecture:check
+36 modules / 45 dependencies / 0 violations
 
-Rules reject unresolved production imports, source cycles, Web->Mobile, Mobile->Web, shared->apps, production->prototypes and framework/platform dependencies from shared cores.
-
-### FM-06B generated-source drift — PASS
-
-```text
-implementation 362b95a415ac7845260daf19cc99547501151eaa
-command        pnpm generated:check
-```
-
-Checked committed outputs:
-
-```text
+FM-06B generated drift
+pnpm generated:check
 packages/design-tokens/generated/web.css
 packages/design-tokens/generated/native.ts
 apps/web/src/routeTree.gen.ts
+
+FM-06C units
+Vitest 4.1.11
+@dante/time 5 PASS
+@dante/i18n 5 PASS
+Turbo 2/2 PASS
+
+FM-06D runtime smoke
+Playwright Chromium production-preview E2E 1 PASS
+Expo Android Hermes bundle smoke PASS
+FM-06D .hbc 4,077,727 bytes
+
+FM-06E hosted CI
+Frontend CI #3 SUCCESS
+Quality PASS
+Web E2E PASS
+Mobile Bundle PASS
 ```
 
-### FM-06C unit baseline — PASS
-
-```text
-implementation 610e33a7a31987d97564b1d6004a7b9896acaedc
-Vitest         4.1.11
-@dante/time    5 PASS
-@dante/i18n    5 PASS
-Turbo          2 successful / 2 total
-```
-
-Time coverage includes Temporal parsing, Europe/Rome DST, Instant/ZonedDateTime round trip and duration arithmetic. i18n coverage includes locale/default/fallback, Italian/English runtime, resource-shape parity and strict explicit `common` namespace selectors.
-
-### FM-06D Web E2E + Mobile bundle smoke — PASS
-
-```text
-implementation d6138f5f5049e8fc11f877b774ff0191af44069f
-Playwright     Chromium / headless / 1 worker / Vite production preview
-Web E2E        1 real test PASS
-Mobile         Expo Android production export / Hermes .hbc PASS
-observed .hbc  4,077,727 bytes in FM-06D
-```
-
-Direct Android emulator/Hermes runtime from FM-04 remains stronger device-runtime evidence than bundle smoke.
-
-### FM-06E GitHub-hosted CI — PASS
-
-```text
-implementation 31deffddd35f69d48bee82465e0385e508c42876
-workflow       Frontend CI
-runner         ubuntu-24.04
-```
-
-Real hosted evidence:
-
-```text
-Frontend CI #3
-commit        31deffddd35f69d48bee82465e0385e508c42876
-event         push
-overall       SUCCESS
-duration      1m 14s
-Quality       PASS / 47s
-Web E2E       PASS / 47s
-Mobile Bundle PASS / 53s
-```
-
-Observed real check context names:
+Real emitted check names:
 
 ```text
 Quality
@@ -239,295 +191,178 @@ Web E2E
 Mobile Bundle
 ```
 
-Required checks are NOT configured. Branch protection remains separate governance scope.
+Required checks remain NOT CONFIGURED.
 
-## 7. Normal local commands
+## 7. FM-07 clean materialization — PASS
 
-```bash
-pnpm install --frozen-lockfile
-pnpm lint
-pnpm format:check
-pnpm typecheck
-pnpm architecture:check
-pnpm generated:check
-pnpm test
-pnpm test:e2e:web
-pnpm mobile:bundle:check
-pnpm build
-```
+### Attempt 1
 
-Fresh WSL Playwright setup:
-
-```bash
-pnpm --filter @dante/web exec playwright install chromium
-pnpm --filter @dante/web exec playwright install-deps chromium
-```
-
-## 8. Known diagnostics retained
+Source:
 
 ```text
-FM-06C root-output parser
--> colored/prefixed Turbo output caused a false-negative evidence parser
--> normalize ANSI/prefixes; test execution itself was PASS
-
-FM-06C workspace React/react-dom peer warning
--> pre-existing before Vitest
--> Web direct React/ReactDOM = 19.2.8/19.2.8
--> Mobile direct React = 19.2.3, no direct react-dom
-
-FM-06C strict i18next selector typecheck
--> $.runtime / $.gesture rejected
--> repaired to $.common.runtime / $.common.gesture
-
-FM-06D Chromium host dependency
--> libnspr4.so missing before browser page creation
--> official Playwright Linux dependency installer repair
-
-FM-06D semantic E2E locator
--> purpose + Temporal shared one <dd>
--> anchor to visible Scopo row; application unchanged
-```
-
-## 9. FM-07 clean materialization — ATTEMPT 1
-
-Purpose:
-
-```text
-prove clean frontend materialization from a fresh remote clone without relying
-on accumulated repository state, local pnpm store, or cached browser binaries
-```
-
-Attempt-1 source:
-
-```text
-remote HEAD
 8ec088f0fce1db1e6116fa15acc2302981616ac5
-
 fresh HTTPS clone
+isolated pnpm store
+isolated Playwright browser path
+```
+
+All functional/build/test gates passed, but final immutability failed because normal Turbo execution created untracked `.turbo/cache/**` files.
+
+Root cause:
+
+```text
+expected machine-local Turborepo cache
+.gitignore lacked .turbo/
+```
+
+Repair:
+
+```text
+e79beadbddcf401d1d20c483c2d15d0b3cce96ad
+chore: ignore Turborepo local cache
+.gitignore -> .turbo/
+```
+
+### Clean retest after repair — PASS
+
+Source:
+
+```text
+e79beadbddcf401d1d20c483c2d15d0b3cce96ad
+NEW fresh HTTPS clone
 no node_modules
 clean Git state
-isolated temporary pnpm store
-isolated temporary Playwright browser path
+.turbo ignored
+NEW isolated pnpm store
+NEW isolated Chromium headless-shell path
 ```
 
-Direct PASS before the final immutability check:
+Evidence:
 
 ```text
-Node 24.19.0
-pnpm 11.22.0
-pnpm install --frozen-lockfile from isolated store
-lockfile unchanged
-Expo `expo install --check`: Dependencies are up to date
-Playwright Chromium headless-shell fresh download
-Playwright Linux dependency bootstrap
-format:check
-lint
-5-package typecheck
-architecture:check = 36 modules / 45 dependencies / 0 violations
-generated:check
-@dante/time 5 tests PASS
-@dante/i18n 5 tests PASS
-Turbo unit tasks 2/2 PASS
-Web production Playwright E2E 1 PASS
-Mobile Expo Android Hermes bundle smoke PASS
-production build PASS
+Node 24.19.0                                      PASS
+pnpm 11.22.0                                      PASS
+pnpm install --frozen-lockfile                    PASS
+lockfile unchanged                                PASS
+Expo `expo install --check`                       PASS / Dependencies are up to date
+Playwright Linux dependency bootstrap             PASS
+format:check                                      PASS
+lint                                              PASS
+5-package typecheck                               PASS
+architecture:check                                PASS / 36 modules / 45 deps / 0 violations
+generated:check                                   PASS
+@dante/time                                       5 PASS
+@dante/i18n                                       5 PASS
+Turbo test tasks                                  2/2 PASS
+Web Playwright E2E                                1 PASS
+Mobile Android Hermes bundle                      PASS
+FM-07 .hbc                                        4,077,727 bytes
+production build                                  PASS
+git diff --check                                  PASS
+git diff --exit-code                              PASS
+tracked residue                                   0
+untracked residue                                 0
 ```
 
-Attempt-1 Mobile bundle evidence:
+This is the decisive proof that the current frontend foundation materializes from a clean remote checkout without accumulated repository state.
 
-```text
-Expo Router resolved 57.0.15
-Android Hermes .hbc
-4,077,728 bytes
-non-empty
-cleanup PASS
-```
+## 8. Peer diagnostic — final FM-07 classification
 
-### FM-07 peer-warning re-evaluation
-
-Fresh clean install reproduced exactly:
+Fresh clean install reproduced exactly one warning:
 
 ```text
 pnpm peers check exit 1
 unmet peer react
 Installed: 19.2.3
 Wanted: ^19.2.8
-owner shown: react-dom@19.2.8
+owner: react-dom@19.2.8
 ```
 
-At the same fresh checkout, Expo SDK compatibility authority reported:
+Same clean checkout:
 
 ```text
-Dependencies are up to date
-Mobile React 19.2.3
-React Native 0.86.2
-Expo resolved 57.0.15
+Expo `expo install --check` -> Dependencies are up to date
+Mobile React               -> 19.2.3
+React Native               -> 0.86.2
+Expo resolved              -> 57.0.15
+Web React/ReactDOM          -> 19.2.8 / 19.2.8
 ```
 
-Classification remains:
+Classification:
 
 ```text
 KNOWN WORKSPACE PEER DIAGNOSTIC
-reproducible on a fresh install
-NOT evidence that Mobile's directly validated Expo/RN baseline is incompatible
-NOT justification for React version changes
+exactly reproducible
+NON-BLOCKING for validated Expo/RN baseline
+NO React version change justified
 ```
 
-Do not add pnpm peer suppression, packageExtensions, nodeLinker/hoisting changes or arbitrary React version changes merely to make `pnpm peers check` green.
+Do not add peer suppression, `packageExtensions`, `nodeLinker`, hoisting or arbitrary React changes merely to make `pnpm peers check` green.
 
-### FM-07 attempt-1 first real failure
+## 9. Current temporary CI posture
 
-Every functional/build/test gate above passed. The final repository immutability check failed only because normal Turbo execution produced untracked local cache files:
+`.github/workflows/frontend-ci.yml` still contains:
 
 ```text
-.turbo/cache/*-manifest.json
-.turbo/cache/*-meta.json
-.turbo/cache/*.tar.zst
+pull_request -> main
+push -> main
+push -> feature/frontend-materialization  TEMPORARY
 ```
 
-Root cause:
+The temporary feature push trigger is retained deliberately so this FM-07 documentation closure itself receives a final real hosted-CI run.
+
+The LIVE HANDOFF is also retained deliberately until that run is verified.
+
+## 10. NEXT — exact resume point
+
+After this documentation closure commit lands:
 
 ```text
-Turborepo local cache is expected machine-generated state
-.gitignore did not contain .turbo/
-therefore normal validation left repository-visible untracked residue
+1. observe the new Frontend CI run on feature/frontend-materialization
+2. require overall SUCCESS
+3. require jobs:
+   Quality PASS
+   Web E2E PASS
+   Mobile Bundle PASS
+4. if failure: inspect first red job/step only; do not perform random repairs
+5. if green: open a separately scoped final cleanup gate
 ```
 
-This is repository hygiene, not a build/test/runtime failure.
-
-Approved repair gate:
+Expected final cleanup scope after green CI:
 
 ```text
-BRANCH
-feature/frontend-materialization
-
-PRE-SCOPE
-8ec088f0fce1db1e6116fa15acc2302981616ac5
-
-CREATE
-none
-
 UPDATE
-.gitignore
-docs/workstreams/frontend-materialization-live-handoff.md
+.github/workflows/frontend-ci.yml
+  remove temporary push -> feature/frontend-materialization
 
 DELETE
-none
+docs/workstreams/frontend-materialization-live-handoff.md
 
-PURPOSE
-Ignore Turborepo's machine-generated local cache and record the exact FM-07
-clean-materialization evidence/failure without widening architecture.
+UPDATE
+final durable workstream/runbook wording if needed
+```
 
-CHANGE
-add `.turbo/` to repository ignore authority
+Then prepare integration/PR to `main` as a separate governed scope.
 
-EXPLICITLY OUT OF SCOPE
-React version changes
-pnpm peer suppression
-packageExtensions
-nodeLinker/hoisting changes
-Turbo remote cache
-CI changes
-product UI
+## 11. Still deferred / NOT RUN
+
+```text
+required branch checks / branch protection mutation
+Firefox/WebKit automated E2E
+product Access/Home implementation
+TanStack Form + Zod real product form
+TanStack Query first remote path
+OpenAPI -> Orval
+PowerSync / OP-SQLite / SQLCipher
+offline reconciliation
+identity-scoped local DB lifecycle
+versioned Web runtime config
+Cloudflare deployment
+Sentry
+APK/AAB release build
+iOS runtime/release
+EAS release path
+coverage thresholds
 backend integration
 main synchronization
 ```
-
-## 10. Current FM-07 gate after repair
-
-Status:
-
-```text
-REPAIR MATERIALIZED
-CLEAN RETEST REQUIRED BEFORE FM-07 PASS
-```
-
-Next evidence must come from a NEW fresh checkout at the repaired remote HEAD, not from deleting `.turbo` inside the failed attempt clone.
-
-Required retest:
-
-```text
-fresh exact remote clone
-Node 24.19.0
-pnpm 11.22.0
-isolated fresh pnpm store
-pnpm install --frozen-lockfile
-Expo dependency compatibility check
-pnpm peers check diagnostic/classification
-isolated fresh Playwright Chromium headless shell
-format:check
-lint
-typecheck
-architecture:check
-generated:check
-unit tests
-Web E2E
-Mobile Android Hermes bundle smoke
-production build
-git diff --check
-git diff --exit-code
-git status --porcelain --untracked-files=all MUST be empty
-```
-
-FM-07 is not PASS until the complete retest succeeds from the repaired HEAD.
-
-## 11. Write / QA governance
-
-Before repository writes:
-
-```text
-BRANCH
-<exact branch>
-PRE-SCOPE
-<exact SHA>
-CREATE
-<exact paths>
-UPDATE
-<exact paths>
-DELETE
-<exact paths>
-PURPOSE
-...
-EXPLICITLY OUT OF SCOPE
-...
-```
-
-Immediately before first branch-visible write, re-read remote HEAD and require it to equal PRE-SCOPE. No silent expansion.
-
-After writes:
-
-```text
-validate exact changed paths
-zero unexpected paths
-run applicable real QA
-remote readback
-```
-
-No direct `main` work. No casual force push. No unscoped main merge/rebase.
-
-## 12. Still NOT RUN / deferred
-
-```text
-hoisted pnpm fallback                         NOT RUN / not needed
-feature-specific architecture rules           NOT RUN
-required branch checks                        NOT RUN
-Firefox/WebKit automated E2E                  NOT RUN
-product Access/Home E2E                       NOT RUN
-TanStack Form + Zod real form                 NOT RUN
-TanStack Query first remote path              NOT RUN
-OpenAPI -> Orval                              NOT RUN
-PowerSync / OP-SQLite / SQLCipher             NOT RUN
-offline reconciliation                        NOT RUN
-identity-scoped local DB lifecycle             NOT RUN
-versioned Web runtime config                   NOT RUN
-Cloudflare deployment                         NOT RUN
-Sentry                                         NOT RUN
-APK/AAB release build                         NOT RUN
-iOS runtime/release                            NOT RUN
-EAS release path                              NOT RUN
-coverage thresholds                           NOT RUN
-main synchronization                          NOT RUN
-FM-07 clean baseline                          IN PROGRESS
-```
-
-Preserve these as NOT RUN until their real scope activates.
