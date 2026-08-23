@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "test:e2e:web": "pnpm --filter @dante/web test:e2e",
+    "mobile:compat:check": "pnpm --filter @dante/mobile exec expo install --check",
     "mobile:bundle:check": "node tooling/check-mobile-bundle.mjs"
   },
   "engines": {

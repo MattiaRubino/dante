@@ -8,8 +8,7 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
@@ -20,6 +19,8 @@ jobs:
     name: Quality
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,12 +63,17 @@ jobs:
         run: git diff --check
 
       - name: Repository mutation check
-        run: git diff --exit-code
+        shell: bash
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
 
   web-e2e:
     name: Web E2E
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -104,6 +110,8 @@ jobs:
     name: Mobile Bundle
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -121,5 +129,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Expo dependency compatibility
+        run: pnpm mobile:compat:check
+
       - name: Android Hermes bundle smoke
         run: pnpm mobile:bundle:check
+
+  frontend-ci-gate:
+    name: Frontend CI Gate
+    if: ${{ always() }}
+    needs:
+      - quality
+      - web-e2e
+      - mobile-bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require all frontend validation jobs
+        shell: bash
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          WEB_E2E_RESULT: ${{ needs.web-e2e.result }}
+          MOBILE_BUNDLE_RESULT: ${{ needs.mobile-bundle.result }}
+        run: |
+          test "$QUALITY_RESULT" = "success"
+          test "$WEB_E2E_RESULT" = "success"
+          test "$MOBILE_BUNDLE_RESULT" = "success"
