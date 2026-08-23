@@ -27,6 +27,10 @@ build/
 .expo-shared/
 web-build/
 coverage/
+.turbo/
+
+# Expo generated TypeScript environment
+apps/mobile/expo-env.d.ts
 
 # Mobile signing / generated native artifacts
 *.jks
@@ -51,3 +55,7 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Playwright local artifacts
+playwright-report/
+test-results/
