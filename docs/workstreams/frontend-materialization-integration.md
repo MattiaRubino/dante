@@ -1,20 +1,22 @@
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — PR #28 / CURRENT-TRUTH RECONCILIATION COMPLETE IN THIS CANDIDATE**
+- Status: **ACTIVE — PR #28 / RECOVERY GREEN RUN PENDING**
 - Branch: `chore/frontend-materialization-integration`
 - Main base at branch creation: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
 - Integration merge commit: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
 - Integration hardening commit: `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`
 - First accepted-risk commit: `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`
-- Second accepted-risk / last pre-doc green candidate: `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`
+- Second accepted-risk / first fully-green combined candidate: `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`
+- Current-truth reconciliation commit: `79b55b3a1986cc910af0ce84df411314e8453e80`
+- Deliberate-red calibration commit: `6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8`
+- Recovery commit SHA: resolve from current branch HEAD after this commit; a commit cannot contain its own SHA.
 - Pull request: `#28` (draft)
 - Frontend materialization source status: **CLOSED / PASS**
-- This documentation-reconciliation commit SHA: resolve from current branch HEAD; a commit cannot contain its own SHA.
 
 ## 1. Purpose
 
-Integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history, then perform only the bounded hardening required before protected-main merge.
+Integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history, apply bounded integration hardening, calibrate the aggregate frontend CI gate, and reach a merge-ready combined candidate.
 
 ```text
 closed frontend evidence
@@ -23,8 +25,6 @@ integration reconciliation
 !=
 protected-main merge
 ```
-
-The integration branch was created from current `main`; the closed frontend history is carried through a real merge parent instead of rebase/squash rewriting.
 
 ## 2. Integration invariants
 
@@ -40,7 +40,7 @@ The integration branch was created from current `main`; the closed frontend hist
 
 ## 3. Integration hardening completed
 
-The final review identified and this branch materialized these bounded repairs:
+This branch has materialized the bounded repairs found by the post-materialization review:
 
 1. `apps/mobile/tsconfig.json` explicitly includes `src/**/*.ts` and `src/**/*.tsx`;
 2. Expo dependency compatibility is a reusable root command and Mobile CI gate;
@@ -53,11 +53,11 @@ The final review identified and this branch materialized these bounded repairs:
 9. CURRENT documentation is reconciled against integrated backend + closed frontend materialization truth;
 10. version-specific Frontend Foundation drift is qualified by later direct materialization evidence.
 
-## 4. Closed frontend evidence that remains authoritative
+## 4. Closed frontend evidence authority
 
-`docs/workstreams/frontend-materialization.md` remains the detailed evidence authority.
+`docs/workstreams/frontend-materialization.md` remains the detailed FM evidence authority.
 
-Directly proved at the stated FM scopes:
+Directly proved at the stated scopes:
 
 ```text
 Node 24.19.0 / pnpm 11.22.0 / TypeScript 6.0.3 strict
@@ -69,26 +69,24 @@ Gesture Handler 2.32.0 / Reanimated 4.5.1
 @dante/design-tokens / @dante/i18n / @dante/time
 Vitest 4.1.11 / Playwright 1.62.1
 fresh frozen pnpm install
-strict TS
+strict TypeScript
 architecture graph 36 modules / 45 deps / 0 violations
 generated-source drift
 10 unit tests
 Web production build + Chromium E2E
 Android Hermes bundle smoke
-Android emulator/Metro/Hermes runtime
+Android emulator / Metro / Hermes runtime
 Expo dependency compatibility
 fresh Playwright bootstrap
 zero tracked/untracked repository residue
 GitHub-hosted Frontend CI
 ```
 
-Integration hardening does not retroactively turn future capabilities into PASS.
+Integration hardening does not turn future capabilities into PASS.
 
-## 5. Materialization qualification of design-time Frontend Foundation
+## 5. Materialization qualification of design-time Foundation
 
-The Frontend Foundation remains architecture/design authority. Later direct evidence qualifies version-specific implementation details.
-
-Current implementation authority:
+Later direct evidence qualifies version-specific design-time wording:
 
 ```text
 Temporal implementation    temporal-polyfill 1.0.4
@@ -98,9 +96,7 @@ Mobile React               19.2.3 / Expo compatibility PASS
 Web React / React DOM      19.2.8 / 19.2.8
 ```
 
-Therefore older design-time examples such as `@js-temporal/polyfill`, Gesture Handler “3 line” or `apps/web/tests/e2e/` must not override later directly validated materialization.
-
-This is a bounded implementation qualification, not a wholesale stack/architecture reopening.
+Therefore older design-time examples such as `@js-temporal/polyfill`, Gesture Handler “3 line” or `apps/web/tests/e2e/` do not override the directly validated implementation. This is a bounded qualification, not a wholesale architecture reopening.
 
 ## 6. Combined-candidate validation target
 
@@ -126,25 +122,9 @@ Frontend CI Gate
 branch current with main
 ```
 
-### 6.1 First real PR run
+### 6.1 First fully-green combined candidate
 
-On integration-hardening commit `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`:
-
-```text
-Backend CI          PASS
-Frontend CI         PASS
-Quality             PASS
-Web E2E             PASS
-Mobile Bundle       PASS
-Frontend CI Gate    PASS
-Dependency Review   FAIL
-```
-
-Dependency Review surfaced real supply-chain findings rather than an application/runtime regression.
-
-### 6.2 Pre-documentation green candidate
-
-After the narrow accepted-risk classifications, candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06` observed:
+Candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06` observed:
 
 ```text
 Dependency Review   PASS
@@ -156,7 +136,20 @@ Mobile Bundle       PASS
 Frontend CI Gate    PASS
 ```
 
-This documentation-reconciliation commit must earn its own equivalent PR green evidence before becoming the final combined candidate.
+### 6.2 Current-truth reconciliation candidate
+
+Commit `79b55b3a1986cc910af0ce84df411314e8453e80` reconciled stale CURRENT documentation and then earned the same full hosted green result:
+
+```text
+Dependency Review   PASS
+Backend CI          PASS
+Backend CI Gate     PASS
+Frontend CI         PASS
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
+```
 
 ## 7. Dependency Review accepted-risk register
 
@@ -167,70 +160,31 @@ fail-on-severity: moderate
 fail-on-scopes: runtime, development, unknown
 ```
 
-No `warn-only`, severity reduction, scope reduction or global vulnerability bypass is authorized.
+No warn-only mode, severity reduction, scope reduction or global vulnerability bypass is authorized.
 
-### 7.1 Metro `image-size` advisories
+Temporarily allowed exact advisory IDs:
 
-Proven path:
+```text
+GHSA-5p2g-fcmc-qvqq
+GHSA-w3rx-r6r6-pgpr
+GHSA-w5hq-g745-h8pq
+```
+
+Proven paths:
 
 ```text
 Expo SDK 57
 -> @expo/metro 56.0.0
 -> metro 0.84.4
 -> image-size 1.2.1
-```
 
-Temporarily allowed:
-
-```text
-GHSA-5p2g-fcmc-qvqq
-GHSA-w3rx-r6r6-pgpr
-```
-
-Exposure is Metro build/development asset processing, not a DANTE production server/runtime image-parsing endpoint. No installable patched path was available at the review boundary without unqualified Expo/Metro graph changes.
-
-### 7.2 Expo/Xcode `uuid` advisory
-
-Proven path:
-
-```text
 Expo SDK 57 tooling
 -> @expo/config-plugins
 -> xcode 3.0.1
 -> uuid 7.0.3
 ```
 
-Temporarily allowed:
-
-```text
-GHSA-w5hq-g745-h8pq
-```
-
-The advisory concerns v3/v5/v6 with caller-provided buffers. DANTE does not directly call that API; the package is reached through Expo/Xcode configuration/prebuild tooling. Direct iOS release validation is not currently activated. Forcing `uuid` 11.x below `xcode@3.0.1` would cross multiple declared majors without qualification.
-
-### 7.3 Current bounded exposure / mitigation
-
-```text
-frontend dependency inputs   repository/PR-controlled manifests and assets
-GitHub token                 contents: read only
-PROD/deployment secrets      absent
-Mobile CI                    timeout-minutes: 20
-selected Expo graph          retained / directly validated
-DANTE direct affected uuid   none
-current iOS release scope    not activated
-```
-
-These facts do not make the advisories harmless. They explain why bounded accepted exposure is safer than unsupported framework/transitive overrides merely to make the check green.
-
-### 7.4 Lifecycle
-
-Only these exact IDs are allowed:
-
-```text
-GHSA-5p2g-fcmc-qvqq
-GHSA-w3rx-r6r6-pgpr
-GHSA-w5hq-g745-h8pq
-```
+Current exposure is bounded to frontend build/configuration tooling and repository/PR-controlled inputs; it is not a DANTE production server request-processing surface. DANTE does not directly call the affected uuid API. Direct iOS release validation is not currently activated.
 
 Review deadline:
 
@@ -238,74 +192,97 @@ Review deadline:
 2026-09-23
 ```
 
-Remove/requalify earlier when:
-
-```text
-Expo/Metro no longer resolves vulnerable image-size
-OR a patched/replacement image-size path passes DANTE qualification
-OR Expo/xcode no longer resolves vulnerable uuid 7.0.3
-OR xcode publishes/consumes its upstream uuid removal
-OR an affected DANTE/iOS path activates and changes exposure
-```
-
-Dependency/security update work must explicitly re-check these IDs rather than carrying exceptions indefinitely.
+Remove or requalify earlier when the Expo/Metro/xcode dependency path no longer resolves the vulnerable package, a patched/replacement path passes DANTE qualification, or an affected DANTE/iOS boundary activates and changes the exposure classification.
 
 ## 8. Frontend CI Gate calibration
 
 `Frontend CI Gate` is the stable aggregate context above all mandatory frontend jobs.
 
-Current state:
+### 8.1 Real green — PASS
+
+Observed on real PR #28 before deliberate-red calibration:
+
+```text
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
+```
+
+### 8.2 Controlled deliberate red — PASS
+
+Calibration commit:
+
+```text
+6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8
+```
+
+Temporary workflow-only step:
+
+```text
+Controlled Frontend CI Gate calibration failure
+run: exit 1
+```
+
+Observed remote result:
+
+```text
+Quality             FAILURE — intentional calibration step
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    FAILURE — mandatory upstream failure propagated
+Backend CI          PASS
+Dependency Review   PASS
+```
+
+This directly proves the aggregate gate fails when one mandatory frontend upstream fails while independent frontend and backend/security paths remain healthy.
+
+No application code, dependency, security-policy weakening or production behavior was changed for the deliberate red.
+
+### 8.3 Workflow restoration
+
+The production workflow in this recovery commit restores the exact previously-green workflow blob:
+
+```text
+14626e696d91d3f184b58dac111cd88102832e91
+```
+
+The temporary deliberate-red step is removed and no other workflow behavior is changed.
+
+Current calibration state after this commit is created:
 
 ```text
 real context emitted       PASS
 real PR green              PASS
-controlled deliberate red PENDING
-recovery green             PENDING
+deliberate red             PASS
+exact workflow restoration DONE
+recovery green             PENDING REMOTE RUN
 required on main           NO
 ```
 
-Promotion protocol:
+Required-check promotion remains a separate explicit repository-ruleset mutation after recovery green.
 
-```text
-real green
--> controlled deliberate red proving mandatory failure propagation
--> exact intended workflow restoration
--> recovery green
--> separate explicit ruleset mutation
-```
+## 9. Current-truth reconciliation
 
-The deliberate-red operation must not add a genuinely vulnerable dependency, weaken security policy or create unrelated product changes.
-
-## 9. Current-truth reconciliation completed by this candidate
-
-This candidate removes stale CURRENT claims such as:
-
-```text
-backend scaffold not started
-frontend scaffold not started
-frontend materialization active
-direct frontend validation not earned
-backend CP5 next
-```
-
-Reconciled truth:
+Current durable truth now records:
 
 ```text
 Backend CP1..CP5                  CLOSED / integrated via PR #24
 Frontend Foundation              CLOSED / integrated via PR #22
 Frontend Materialization         CLOSED / PASS
 PR #28 Integration Hardening     ACTIVE
-Frontend CI Gate                 emitted + green / not required
-Dependency Review                green with 3 exact temporary exceptions
+Frontend CI Gate                 emitted / green-before-calibration / deliberate-red proven / not required
+Dependency Review                green with 3 exact temporary accepted-risk exceptions
 Concrete business schema         NOT STARTED
 Product verticals                NOT STARTED
+Production deployment            NOT STARTED
 ```
 
-The closed Foundation documents remain design-time evidence. Current decision/ADR docs now explicitly state how later materialization qualifies version-specific implementation details, avoiding destructive rewrites of historical selection evidence.
+Historical Foundation documents remain design-time evidence; current ADR/current-decision docs state how later materialization qualifies version-specific implementation details.
 
 ## 10. Future activation register
 
-The following capabilities are deliberately not materialized merely for completeness. When a trigger first becomes real, the owning workstream must reopen this register and either materialize the capability or record a new evidence-based decision.
+These capabilities are deliberately dormant until their trigger becomes real. The owning workstream must reopen this register at activation time.
 
 ### First real product vertical
 
@@ -317,7 +294,7 @@ The following capabilities are deliberately not materialized merely for complete
 ### First real product UI / design-system surface
 
 - adopt WCAG 2.2 AA as the Web accessibility target;
-- add representative automated accessibility checks (for example axe);
+- add representative automated accessibility checks such as axe;
 - activate Storybook only when reusable DANTE UI components justify an isolated catalog;
 - activate visual regression only after stable visual surfaces exist.
 
@@ -389,7 +366,7 @@ Do not introduce before measured organizational/runtime need:
 - Orval generation now;
 - Sentry/Cloudflare/EAS activation now;
 - CodeQL activation now;
-- main ruleset mutation now;
+- main ruleset mutation in this recovery commit;
 - merge into `main` without separate final authorization;
 - React version changes or peer-warning suppression;
 - pnpm hoisting/nodeLinker changes;
@@ -399,17 +376,14 @@ Do not introduce before measured organizational/runtime need:
 
 ## 12. Exit condition / exact next sequence
 
-This workstream can close only after:
+After this recovery commit:
 
 ```text
-1. this reconciliation commit is green on PR #28
-2. branch is current with main
-3. Frontend CI Gate deliberate-red propagation is proven
-4. intended workflow is restored
-5. recovery green is proven
-6. optional required-check promotion is handled in a separate explicit gate
-7. final PR diff/current docs/accepted-risk lifecycle are reviewed
-8. protected-main merge receives separate authorization
+1. prove Recovery Green on PR #28
+2. verify branch is current with main
+3. if desired, open a separate explicit gate to promote Frontend CI Gate to required on main
+4. perform final PR diff/current-docs/accepted-risk review
+5. obtain separate protected-main merge authorization
 ```
 
-After protected-main integration, CodeQL default setup is the next repository-security activation candidate. Product work may then begin through vertical slices, consulting the trigger register rather than pre-installing every future large-app capability.
+After protected-main integration, CodeQL default setup is the next repository-security activation candidate. Product work may then begin through vertical slices, consulting the activation register rather than pre-installing every future large-app capability.

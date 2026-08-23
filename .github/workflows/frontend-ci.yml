@@ -38,9 +38,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Controlled Frontend CI Gate calibration failure
-        run: exit 1
-
       - name: Format check
         run: pnpm format:check
 
