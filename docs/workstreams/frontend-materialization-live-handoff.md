@@ -827,7 +827,8 @@ For a documentation commit that updates this file, do not attempt to embed that 
 Status:
 
 ```text
-NEXT / READ-ONLY TECHNOLOGY + TEST-SCOPE DESIGN REQUIRED BEFORE WRITE GATE
+UNIT-TEST + REGRESSION QA PASS
+COMMIT + PUSH ABOUT TO RUN
 ```
 
 Objective:
@@ -835,6 +836,41 @@ Objective:
 ```text
 make root `pnpm test` meaningful with real assertions against actual DANTE semantics
 ```
+
+Approved FM-06C gate:
+
+```text
+BRANCH
+feature/frontend-materialization
+
+PRE-SCOPE
+ae0ff9e9849ff3aedcd095a645750993297c4384
+
+CREATE
+packages/time/src/index.test.ts
+packages/i18n/src/index.test.ts
+
+UPDATE
+package.json
+pnpm-lock.yaml
+packages/time/package.json
+packages/i18n/package.json
+docs/workstreams/frontend-materialization-live-handoff.md
+
+DELETE
+none
+```
+
+Materialization-time runner revalidation:
+
+```text
+Vitest 4.1.11
+exact root devDependency pin
+current registry stable at FM-06C start
+```
+
+No DOM, component, browser, React Native or coverage tooling is part of this slice.
+
 
 Strong first real candidates:
 
@@ -853,6 +889,55 @@ Strong first real candidates:
 
 Do NOT create dummy tests merely so Turbo reports green.
 
+Direct FM-06C evidence:
+
+```text
+Vitest 4.1.11 registry revalidation PASS
+@dante/time 5 real tests PASS
+@dante/i18n 5 real tests PASS
+i18next strict namespace-selector typecheck PASS
+root pnpm test executes both packages PASS
+Turbo test tasks 2 successful / 2 total PASS
+non-zero real test count PASS
+tests included in strict TypeScript graph PASS
+architecture:check PASS
+generated:check PASS
+lint PASS
+format PASS
+Web build PASS
+frozen install PASS
+git diff --check PASS
+```
+
+The test baseline covers real existing semantics:
+
+```text
+@dante/time
+Temporal primitive parsing
+Europe/Rome DST spring transition
+Instant <-> ZonedDateTime round trip
+PlainDateTime + Duration arithmetic
+ZonedDateTime instant preservation
+
+@dante/i18n
+supported locale/default/fallback contract
+Italian runtime
+English runtime
+unsupported locale -> Italian fallback
+IT/EN resource leaf-shape parity
+strict selectors with explicit `common` namespace
+```
+
+Peer diagnostic:
+
+```text
+workspace-wide react/react-dom peer warning observed
+proved PRE-EXISTING at FM-06C PRE-SCOPE
+Web/Mobile importer graphs unchanged by FM-06C
+NOT classified as FM-06C failure
+```
+
+
 FM-06C should prefer framework-free unit coverage first. Do not pull DOM/component libraries into the repository until real component tests justify them.
 
 Version-sensitive test tooling must be reverified at materialization time. Vitest is a strong candidate from earlier discovery, but its exact current stable version is NOT fixed by this handoff and must be checked again immediately before the FM-06C write gate.
@@ -869,6 +954,124 @@ PowerSync
 backend contracts
 main synchronization
 ```
+
+## 13A. FM-06C attempt-1 diagnostic record
+
+The first FM-06C execution reached and passed the real package tests:
+
+```text
+@dante/time     5 tests PASS
+@dante/i18n     5 tests PASS
+```
+
+Root Turbo also executed both package test tasks successfully:
+
+```text
+@dante/time:test     PASS
+@dante/i18n:test     PASS
+Tasks: 2 successful, 2 total
+```
+
+The script then stopped only because its post-run evidence parser searched the
+captured colored Vitest/Turbo output with a plain regex and did not recognize
+the already-visible non-zero `Tests 5 passed` lines.
+
+Interpretation:
+
+```text
+test execution PASS
+root Turbo orchestration PASS
+evidence-parser FAIL
+NOT a unit-test failure
+```
+
+Accepted repair:
+
+```text
+rerun root tests with NO_COLOR/FORCE_COLOR disabled
+strip any residual ANSI control sequences before evidence matching
+prove both package task labels + Turbo 2/2 + non-zero passed-test lines
+```
+
+No test assertion, product code, dependency version or test scope is weakened.
+
+## 13B. FM-06C pre-existing peer-warning diagnostic
+
+A follow-up `pnpm peers check` exposed:
+
+```text
+unmet peer react
+Installed: 19.2.3
+Wanted: ^19.2.8
+react-dom@19.2.8
+```
+
+Read-only comparison against the approved FM-06C PRE-SCOPE proved this
+association already existed before Vitest/test materialization:
+
+```text
+Web direct graph:
+react     19.2.8
+react-dom 19.2.8
+
+Mobile direct graph:
+react     19.2.3
+react-dom not a direct dependency
+
+PRE-SCOPE lockfile already contained:
+react-dom@19.2.8(react@19.2.3)
+```
+
+FM-06C also proved that its lockfile update does not change the
+`apps/web` or `apps/mobile` importer blocks.
+
+Classification:
+
+```text
+KNOWN PRE-EXISTING WORKSPACE PEER WARNING
+NOT introduced by Vitest
+NOT a failing FM-06C unit-test assertion
+NOT repaired by changing React versions inside this slice
+```
+
+Do not move Mobile React from its already runtime-validated Expo/RN baseline,
+and do not downgrade the correctly paired Web React/ReactDOM baseline merely
+to silence this workspace-wide peer diagnostic.
+
+Re-evaluate dependency-peer hygiene separately during the clean FM-07
+materialization closure if it remains observable; keep direct Expo/runtime
+evidence authoritative for Mobile compatibility.
+
+## 13C. FM-06C strict-selector typecheck diagnostic
+
+After package-level Vitest and root Turbo tests passed, the strict TypeScript
+regression gate rejected six selectors in `packages/i18n/src/index.test.ts`.
+
+Observed shape:
+
+```text
+Property 'runtime' does not exist on type '{ common: ... }'
+Property 'gesture' does not exist on type '{ common: ... }'
+```
+
+Cause:
+
+```text
+@dante/i18n configures i18next `enableSelector: 'strict'`
+strict selector paths must include the explicit namespace segment
+the test used runtime-valid flat selectors such as $.runtime.web.title
+```
+
+Accepted repair:
+
+```text
+$.runtime...  -> $.common.runtime...
+$.gesture...  -> $.common.gesture...
+```
+
+This strengthens the test to exercise the already-accepted strict selector
+contract. No production resource shape, fallback policy, package API or
+TypeScript configuration is weakened.
 
 ## 14. Future queued work
 
