@@ -73,8 +73,9 @@ FM-06A dependency architecture enforcement     PASS
 FM-06B generated-source drift enforcement      PASS
 FM-06C real unit-test baseline                  PASS
 FM-06D Web E2E + Mobile bundle smoke            PASS
+FM-06E CI orchestration                         MATERIALIZED / REMOTE RUN PENDING
 FM-06                                             IN PROGRESS
-NEXT = FM-06E CI ORCHESTRATION
+NEXT = VALIDATE REAL FM-06E GITHUB-HOSTED RUN
 ```
 
 The documentation closure containing this handoff should be resolved from the current remote branch HEAD after the closure commit lands.
@@ -462,7 +463,7 @@ pnpm exec expo start --localhost
 Then Windows ADB reverse:
 
 ```bash
-powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081'
+powershell.exe -NoProfile -Command '& "$env:LOCALAPPDATA\\Android\\Sdk\\platform-tools\\adb.exe" reverse tcp:8081 tcp:8081'
 ```
 
 ## 11. Write / QA governance
@@ -504,7 +505,9 @@ No direct `main` work. No casual force push. No unscoped main merge/rebase.
 Status:
 
 ```text
-NEXT / READ-ONLY DISCOVERY REQUIRED BEFORE WRITE GATE
+APPROVED / CI MATERIALIZED
+REAL GITHUB-HOSTED RUN PENDING VALIDATION
+REQUIRED CHECKS NOT CONFIGURED
 ```
 
 Objective:
@@ -514,28 +517,150 @@ materialize CI orchestration for already-real local frontend gates
 without creating a second validation architecture
 ```
 
-Discovery must inspect:
+Approved FM-06E gate:
 
 ```text
-current GitHub workflow directory/state
-current branch/PR event policy
-Node + pnpm setup actions and supported versions
-Playwright Chromium install/dependency path in GitHub-hosted Ubuntu
-which local gates belong in CI and whether any should be split by job
-actual emitted job/check names before configuring required branch checks
-cache policy for pnpm/Turbo/Playwright browser binaries
-failure-artifact policy for Playwright traces/reports
-Mobile bundle-smoke requirements in headless CI
+BRANCH
+feature/frontend-materialization
+
+PRE-SCOPE
+a481e24936c745c3573077a464a2af8a24794d1b
+
+CREATE
+.github/workflows/frontend-ci.yml
+
+UPDATE
+docs/workstreams/frontend-materialization-live-handoff.md
+
+DELETE
+none
 ```
 
-Do not create required branch checks until real emitted contexts have been observed.
+Read-only discovery before materialization proved:
 
-FM-06E does not authorize product UI, backend contracts, PowerSync, EAS, coverage thresholds or main synchronization.
+```text
+.github contained only pull_request_template.md
+no existing GitHub Actions workflow
+no open PR from feature/frontend-materialization
+repository is public and linked account has admin/push access
+```
+
+Workflow authority:
+
+```text
+name: Frontend CI
+runner: ubuntu-24.04
+permissions: contents: read
+concurrency: cancel stale runs for same workflow/ref
+```
+
+Triggers:
+
+```text
+pull_request -> main
+push -> main
+push -> feature/frontend-materialization  TEMPORARY FM-06E BOOTSTRAP
+```
+
+The feature-branch push trigger exists only to obtain real GitHub-hosted evidence before integration. Remove it before final integration/closure when separately scoped.
+
+Action supply-chain pins:
+
+```text
+actions/checkout v7.0.1
+3d3c42e5aac5ba805825da76410c181273ba90b1
+
+pnpm/setup v2.0.0
+c9883cc79df532ad1a7b81bf9ab944ceb090d65c
+
+actions/upload-artifact v7.0.1
+043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+```
+
+`pnpm/setup` is configured with:
+
+```text
+pnpm 11.22.0 exact
+Node 24.19.0 exact
+pnpm store cache = true
+automatic install = false
+explicit pnpm install --frozen-lockfile in each job
+```
+
+No `node_modules`, Playwright browser, or Turbo remote cache is introduced.
+
+Jobs and intended emitted names:
+
+```text
+quality       -> Quality
+web-e2e       -> Web E2E
+mobile-bundle -> Mobile Bundle
+```
+
+`quality` replays existing local authorities:
+
+```text
+format:check
+lint
+typecheck
+architecture:check
+generated:check
+pnpm test
+pnpm build
+git diff --check
+git diff --exit-code
+```
+
+`web-e2e`:
+
+```text
+frozen install
+playwright install --with-deps --only-shell chromium
+pnpm test:e2e:web
+upload apps/web/test-results only on failure
+```
+
+`mobile-bundle`:
+
+```text
+frozen install
+pnpm mobile:bundle:check
+```
+
+Next required evidence before FM-06E can become PASS:
+
+```text
+GitHub accepts workflow
+push-triggered Frontend CI run exists for the FM-06E commit
+Quality PASS
+Web E2E PASS
+Mobile Bundle PASS
+inspect exact emitted workflow/job/check names
+inspect logs on any failure
+no unexpected repository delta
+```
+
+Do NOT configure required branch checks until the actual emitted contexts are observed from a real successful run.
+
+FM-06E explicitly does NOT include:
+
+```text
+branch protection mutation
+required checks
+deployment / Cloudflare
+EAS
+coverage thresholds
+Firefox/WebKit automated E2E
+product Access/Home UI
+backend contracts
+PowerSync
+main synchronization
+```
 
 ## 13. Future queued work
 
 ```text
-FM-06E CI orchestration                     NEXT
+FM-06E CI orchestration                     CURRENT / REMOTE RUN PENDING
 FM-07 clean materialization baseline        NOT RUN
 ```
 
@@ -546,7 +671,6 @@ After FM-06E local/remote CI evidence is real, FM-07 performs clean-checkout/mat
 ```text
 hoisted pnpm fallback                         NOT RUN / not needed
 feature-specific architecture rules           NOT RUN
-GitHub Actions frontend CI                    NOT RUN — NEXT FM-06E
 required branch checks                        NOT RUN
 Firefox/WebKit automated E2E                  NOT RUN
 product Access/Home E2E                       NOT RUN
