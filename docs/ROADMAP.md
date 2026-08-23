@@ -103,7 +103,31 @@ Earlier planning that treated CP6-04 as Vertical #1 Selection, CP6-05 as Vertica
 
 Their useful requirements are absorbed into CP6-03..05; no closed technical decision is discarded.
 
-## CP6-03 — Whole DANTE Database Blueprint — NEXT
+## CP6-03 — Whole DANTE Database Blueprint — ACTIVE
+
+Current exact state:
+
+```text
+CHECKPOINT J / DB-U23
+CLOSED
+
+57 / 57 FINAL MATERIALIZATION DISPOSITION
+PASS AFTER HARDENING
+
+GLOBAL DB-U OPEN
+DB-U08  final PostgreSQL object naming
+DB-U15  final structural/query index matrix
+DB-U21  exact object-level PostgreSQL privilege matrix
+
+NEXT DESIGN BLOCK
+FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+
+SECOND FULL TOMBSTONE AUDIT FROM ZERO
+MANDATORY BEFORE GATE 03
+
+GATE 03
+NOT YET EARNED
+```
 
 Purpose: derive the complete relational database that follows from the already-closed model.
 
@@ -137,6 +161,23 @@ real PostgreSQL direct-test plan
 implementation/migration dependency DAG
 ```
 
+The active Database Architecture & Reference is one canonical multi-part authority across `docs/database/dante-postgresql-database.md` and Parts 2–8. Checkpoint J repaired the first total pre-freeze audit's residual 57-concept materialization-disposition gap; it did **not** freeze the final actual PostgreSQL object inventory.
+
+The exact remaining CP6-03 order is:
+
+```text
+Final Actual PostgreSQL Object Inventory
+→ DB-U08 exact names
+→ DB-U15 exact structural/query index matrix
+→ DB-U21 exact object-level privilege matrix
+→ migration/materialization DAG
+→ SQLAlchemy mapping plan
+→ Database Dictionary readiness
+→ direct PostgreSQL proof/test plan
+→ SECOND FULL TOMBSTONE AUDIT FROM ZERO
+→ Gate 03
+```
+
 CP6-03 must not defer an already-determinable database structure by merely calling it “vertical-specific”.
 
 It also must not invent product semantics that were never closed upstream.
@@ -145,7 +186,7 @@ Gate 03 requires a blueprint complete enough that CP6-04 can implement the DANTE
 
 ## CP6-04 — Whole DANTE Database Materialization
 
-After Gate 03, CP6 materially implements the approved blueprint.
+After Gate 03 **and a separate explicit user-approved materialization gate**, CP6 materially implements the approved blueprint.
 
 Authorized under exact write gates:
 
@@ -304,14 +345,14 @@ DATABASE MATERIALIZATION != FIRST PRODUCT VERTICAL APPLICATION IMPLEMENTATION
 ## Immediate next action
 
 ```text
-CP6-03 — WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
 
-57/57 + CP6-01 + closed CP6-02 Constitution
-→ concrete DB families/tables/columns/types
-→ reference/material-state/history/relation topology
-→ constraints/indexes/privileges
-→ implementation + migration dependency DAG
-→ SQLAlchemy mapping plan
-→ direct PostgreSQL test plan
-→ Gate 03
+consume Database Reference Parts 1–8 together
+→ enumerate every surviving actual PostgreSQL object
+→ exclude all explicitly superseded/no-DDL candidates
+→ reconcile scoped-family + MaterialState-facet survivors
+→ prove each table/column/key/constraint is non-speculative
+→ keep DB-U08 / DB-U15 / DB-U21 open during derivation
+→ cumulative whole-database audit
+→ exact write gate before inventory freeze
 ```
