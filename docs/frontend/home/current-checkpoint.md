@@ -2,7 +2,7 @@
 
 **Branch:** `prototype/frontend`  
 **Status:** **APPROVED WORKING VISUAL/BEHAVIOR CHECKPOINT**  
-**Current working B2 baseline:** **B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
+**Current working B2 baseline:** **B2 Home Edge Attachment v26 over B2 Home Shell + Timeline Quick Add v25 over B2 Home Visual Skin v24 over B2 Home Branding v23 over B2 Central Stage v22**  
 **Last formally closed Home milestone:** **B1 Context Rail v1**  
 **Nature:** standalone HTML/CSS/JavaScript coded UX prototype with production-shaped contracts; not production application code.
 
@@ -28,7 +28,7 @@ The immutable A2 oracle above is not overwritten by later B2 checkpoints.
 
 ## Structural/behavioral base — B2 v22
 
-Later identity/skin/shell checkpoints do not reopen the v22 Home-stage behavior contract.
+Later identity/skin/shell/edge checkpoints do not reopen the v22 Home-stage behavior contract.
 
 ```text
 FULL v22
@@ -40,11 +40,11 @@ size       760579 bytes
 SHA-256    f6ee524db98a799c81fa2c704e751e34af3d1e02482f72eb006b20630ef1ada3
 ```
 
-v22 authority:
+Authority:
 - `docs/frontend/home/checkpoints/b2-central-stage-v22-no-persistent-add.md`;
 - `prototypes/frontend/home/archive/b2-central-stage-v22/`.
 
-Retained v22 rules include:
+Retained rules:
 - `Mondi` / `Segnali`;
 - no persistent `+` in the Home central stage;
 - no ghost add slots or placeholder World/Signal items;
@@ -57,7 +57,6 @@ The v25 timeline quick-add is a temporal-surface affordance and does **not** rel
 ## Identity layer — B2 branding v23
 
 Authority:
-
 - `docs/frontend/home/checkpoints/b2-branding-v23.md`;
 - `prototypes/frontend/home/archive/b2-branding-v23/`.
 
@@ -73,7 +72,6 @@ Brand source remains pinned to integrated main commit `db02da603f3779d8c7fcb1d76
 ## Visual layer — B2 visual skin v24
 
 Authority:
-
 - `docs/frontend/home/checkpoints/b2-visual-skin-v24.md`;
 - `prototypes/frontend/home/archive/b2-visual-skin-v24/`.
 
@@ -94,19 +92,16 @@ SHA-256    8ce54b557e7e1cd436ecd6ac672491e619bc61111788b9b0551eeef257f74002
 geometry   1920 x 1080
 ```
 
-Retained v24 visual direction:
+Retained visual direction:
 - charcoal surfaces with restrained DANTE orange emphasis;
 - accepted cosmos/neural Home atmosphere;
 - stage remains translucent enough for the background to read;
 - only obsolete `#netCanvas` is hidden;
 - `#fxCanvas` and `.magnet-line` remain untouched so Mondi effects/animation are preserved.
 
-Rejected regression remains rejected: hiding `#fxCanvas` / `.magnet-line` together with `#netCanvas` visibly degraded Mondi.
-
-## Current shell/timeline layer — B2 v25
+## Shell/timeline layer — B2 v25
 
 Authority:
-
 - `docs/frontend/home/checkpoints/b2-shell-timeline-v25.md`;
 - `prototypes/frontend/home/archive/b2-shell-timeline-v25/`.
 
@@ -125,34 +120,68 @@ LEFT                         CENTER                    RIGHT
 DANTE + Cerca                Home / Mondi / Oggi       Crea / Review / launcher / account
 ```
 
-Accepted shell rules:
+Accepted shell/timeline rules:
 - true sticky application bar at the top of the viewport;
-- edge-to-edge shell treatment with **24 px internal horizontal inset**;
+- shell-level edge-to-edge treatment with 24 px app-bar internal inset;
 - Search follows DANTE on the left;
 - Home/Mondi/Oggi stays centered;
-- `Crea` is the first control of the right utility group, before legacy Review;
+- `Crea` is first in the right utility group;
 - existing Search/Create nodes are reused, not duplicated;
-- the reviewed outer Home-shell side-frame cleanup is retained.
+- timeline temporal header is `add / month / now / week / actions`;
+- the timeline `+` is a real contextual control and its current bridge to global `Crea` remains prototype-only.
 
-Accepted timeline-header arrangement:
+## Current edge-attachment layer — B2 v26
+
+Authority:
+- `docs/frontend/home/checkpoints/b2-edge-attachment-v26.md`;
+- `prototypes/frontend/home/archive/b2-edge-attachment-v26/`.
+
+Deterministic v25 -> v26 transform:
 
 ```text
-add / month / now / week / actions
+edge-v25-to-v26.js
+size       2827 bytes
+SHA-256    55b1ef7bdf3215a61e9d8aa4215ed6f93f81d98ee458d4ec7a852a37d99d6812
 ```
 
-The real timeline `+` sits before month/year in the same grid, so month and `Ora` move right as one aligned temporal-header composition. Its current click bridge reuses the existing global `Crea` popover and remains prototype-only; final date/time prefill, destination, command and persistence semantics are still open.
+Accepted visual edge contract:
+
+```text
+EXPANDED AI
+left edge = 0
+left corner radius = 0
+right geometry = preserved
+
+COLLAPSED AI RAIL
+left = 0
+border-radius = 0 18px 18px 0
+
+TIMELINE
+host margin-left = 0
+right margin = preserved
+Shadow DOM .today left radii = 0
+right-side rounding = preserved
+```
+
+Exact implementation targets:
+- `.ai-card.ai-chat-pro`;
+- `.home-ai-rail`;
+- `lifeos-today`;
+- `lifeos-today.shadowRoot .today`.
+
+v26 is deliberately visual/structural only. It does **not** alter the central stage, Mondi/Segnali behavior, the orientation strip, AI content semantics, timeline behavior, quick-add meaning, backend contracts or persistence.
 
 User-reviewed local evidence:
 
 ```text
-DANTE_Home_v24_v13_PLUS_REFINED_MONTH_RIGHT.html
-size       80922 bytes
-SHA-256    0b9491525a99643837dc42e4150113db50d00bf7ff73549ea4fd3f9994adcdf9
+DANTE_Home_v38_VERIFIED_OPEN_COLLAPSED_TIMELINE.html
+size       83055 bytes
+SHA-256    07fab6068427a972f5201454e780d2b7a66db0e10ef9e0f5e80be7be7c5d9f22
 ```
 
 ## Token / production qualification
 
-v24/v25 approve the **working prototype appearance and shell placement**, not final production token naming or framework implementation.
+v24-v26 approve the **working prototype appearance, shell placement and edge geometry**, not final production token naming or framework implementation.
 
 The shared semantic-token authority remains `docs/frontend/design-tokens.md`. Promotion/migration from preview values into production/shared semantic tokens remains a later bounded implementation step.
 
@@ -161,17 +190,21 @@ The shared semantic-token authority remains `docs/frontend/design-tokens.md`. Pr
 ## QA evidence
 
 ```text
-B2 v25 final user visual review              PASS
-v25 transform JavaScript syntax              PASS (node --check)
-v25 transform mock-structure execution       PASS
-reviewed v13 wrapper inline-JS syntax        PASS
-v24 Mondi regression fix                     PRESERVED
-v22 behavioral semantics                     PRESERVED
-v23 DANTE identity                           PRESERVED
-responsive target cases                      24
-fresh automated 24-case browser PASS         NOT CLAIMED
-fresh full accessibility rerun               NOT CLAIMED
-fresh PARTIAL browser visual PASS             NOT CLAIMED
+B2 v26 final user visual review                   PASS
+v26 transform JavaScript syntax                   PASS (node --check)
+v26 transform mock-structure execution            PASS
+component geometry Chromium 1100 px               PASS
+component geometry Chromium 1366 px               PASS
+component geometry Chromium 1600 px               PASS
+component geometry Chromium 1920 px               PASS
+v25 shell/timeline semantics                      PRESERVED
+v24 palette/background                            PRESERVED
+v23 DANTE identity                                PRESERVED
+v22 behavioral semantics                          PRESERVED
+Mondi/stage/orientation geometry mutations        NONE
+fresh full reconstructed-Home browser matrix      NOT CLAIMED
+fresh full accessibility rerun                    NOT CLAIMED
+fresh PARTIAL browser visual PASS                 NOT CLAIMED
 ```
 
 ## Open before B2 closure
@@ -182,11 +215,11 @@ fresh PARTIAL browser visual PASS             NOT CLAIMED
 4. finish remaining small shell/detail refinements;
 5. run final applicable responsive / visual / accessibility QA.
 
-Historical `LifeOS` strings may still exist in untouched prototype-only/deprecated controls. v23-v25 do not authorize a blind global rename.
+Historical `LifeOS` strings may still exist in untouched prototype-only/deprecated controls. v23-v26 do not authorize a blind global rename.
 
 ## Non-regression
 
-v25 does not authorize changes to Mondi/Segnali semantics/data, central-stage no-persistent-add semantics, calendar/date-navigation meaning, Context Rail Capture/Resolution meaning, event drag/zoom/grouping/time-edit behavior, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
+v26 does not authorize changes to Mondi/Segnali semantics/data, central-stage no-persistent-add semantics, calendar/date-navigation meaning, Context Rail Capture/Resolution meaning, event drag/zoom/grouping/time-edit behavior, backend/domain/logical/physical semantics, production framework/runtime selection, or real backend endpoints/persistence contracts.
 
 ## Current authorities
 
