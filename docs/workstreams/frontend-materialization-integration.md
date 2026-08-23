@@ -1,9 +1,12 @@
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — INTEGRATION HARDENING / PRE-PR**
+- Status: **ACTIVE — PR #28 / DEPENDENCY-REVIEW ACCEPTED-RISK REPAIR**
 - Branch: `chore/frontend-materialization-integration`
 - Main base: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
+- Integration merge commit: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
+- Integration hardening commit: `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`
+- Pull request: `#28` (draft)
 - Frontend materialization source status: **CLOSED / PASS**
 
 ## 1. Purpose
@@ -62,7 +65,7 @@ The closed frontend source already proved, at its stated scopes:
 
 Integration hardening does not retroactively turn untested future capabilities into PASS.
 
-## 5. Pre-PR validation target
+## 5. Combined-candidate validation target
 
 Before protected-main merge authorization, the combined candidate must prove:
 
@@ -87,7 +90,96 @@ Frontend CI Gate
 
 The PR must be current with `main` and must preserve the repository ruleset semantics.
 
-## 6. Frontend CI Gate calibration
+The first real PR #28 combined run on integration-hardening commit `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3` observed:
+
+```text
+Backend CI          PASS
+Frontend CI         PASS
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
+Dependency Review   FAIL
+```
+
+The Dependency Review failure is not classified as a frontend runtime/test regression. It identified two high-severity advisories on the transitive build/development dependency `image-size@1.2.1` introduced by the selected Expo/Metro toolchain.
+
+## 6. Dependency Review accepted-risk exception
+
+### 6.1 Proven dependency path
+
+PR #28 Dependency Review and lockfile readback prove the relevant chain:
+
+```text
+Expo SDK 57
+-> @expo/metro 56.0.0
+-> metro 0.84.4
+-> image-size 1.2.1
+```
+
+The failing advisories are:
+
+```text
+GHSA-5p2g-fcmc-qvqq
+JXL / HEIF parser denial of service through infinite loops
+
+GHSA-w3rx-r6r6-pgpr
+ICNS parser denial of service through an infinite loop
+```
+
+At the 2026-08-23 review boundary, no installable patched `image-size` release was available for these advisories. Forcing an unqualified Metro/Expo graph override would therefore trade a known bounded tooling risk for an unvalidated framework/runtime compatibility change.
+
+### 6.2 Exposure classification
+
+The vulnerable package is reached by Metro build/development asset processing. It is not a DANTE production server request-processing dependency and is not a deployed application runtime dependency exposed as a generic image-parsing endpoint.
+
+Current bounded exposure/mitigation:
+
+```text
+input boundary              repository / PR-controlled frontend assets
+GitHub token                contents: read only
+PROD/deployment secrets     absent
+Mobile CI                   timeout-minutes: 20
+selected Expo/Metro graph   retained / directly validated
+```
+
+This does not make the advisories harmless; it makes the accepted exposure materially narrower than changing the framework dependency graph without qualification.
+
+### 6.3 Exception policy
+
+Dependency Review remains fail-closed at the existing repository policy:
+
+```text
+fail-on-severity: moderate
+fail-on-scopes: runtime, development, unknown
+```
+
+Only these exact advisories are temporarily allowed:
+
+```text
+GHSA-5p2g-fcmc-qvqq
+GHSA-w3rx-r6r6-pgpr
+```
+
+No `warn-only`, severity reduction, scope reduction or global vulnerability bypass is authorized.
+
+Accepted-risk review deadline:
+
+```text
+2026-09-23
+```
+
+Remove the exception earlier when either condition becomes true:
+
+```text
+Expo/Metro no longer resolves a vulnerable image-size version
+OR
+a patched/replacement upstream path becomes available and passes DANTE qualification
+```
+
+The dependency-update/security review path must re-check these advisory IDs rather than carrying the exception indefinitely.
+
+## 7. Frontend CI Gate calibration
 
 `Frontend CI Gate` is introduced as the stable aggregate context but is **not** promoted to a required main check merely because the YAML exists.
 
@@ -101,7 +193,9 @@ real PR context observed
 -> only then ruleset promotion in a separate explicit mutation
 ```
 
-## 7. Future activation register
+The first real green `Frontend CI Gate` context has now been observed on PR #28. Deliberate-red and recovery-green calibration remain pending.
+
+## 8. Future activation register
 
 The following capabilities are deliberately **not** materialized merely for completeness. Each has an activation trigger. When the trigger first becomes real, the owning workstream must reopen this register and either materialize the capability or record evidence for a different decision.
 
@@ -178,7 +272,7 @@ Do not introduce these before measured organizational/runtime need:
 - generic feature-flag infrastructure;
 - large browser/device farms.
 
-## 8. Explicitly out of scope
+## 9. Explicitly out of scope
 
 - Access/Home product implementation;
 - backend business-schema implementation;
@@ -191,8 +285,9 @@ Do not introduce these before measured organizational/runtime need:
 - merge into `main` without separate final authorization;
 - React version changes or peer-warning suppression;
 - pnpm hoisting/nodeLinker changes;
-- speculative shared packages or empty architecture directories.
+- speculative shared packages or empty architecture directories;
+- global vulnerability suppression or weakening Dependency Review policy.
 
-## 9. Exit condition
+## 10. Exit condition
 
 This workstream can close only when the combined branch is semantically reconciled, the applicable combined candidate validation is green, the real PR contexts have been observed, the deliberate-red/recovery calibration for `Frontend CI Gate` is complete, and durable CURRENT documentation is coherent with the integrated backend + frontend state.
