@@ -21,14 +21,15 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
+| `home.topbar.shell` | — | ACTIVE | B2 v25 application shell: real sticky top app bar, edge-to-edge at shell level with 24 px internal horizontal inset. DANTE + Search live left, Home/Mondi/Oggi remain centered, utility actions live right. Existing controls are moved/reused rather than duplicated. |
 | `home.topbar.brand` | DANTE | ACTIVE | Product identity anchor. B2 v23 uses the approved DANTE symbol geometry with approved charcoal/orange fills plus approved wordmark geometry rendered white for the current dark surface. No extra backing panel; the white wordmark is a frontend dark-surface derivative, not a new brand master. |
-| `home.topbar.create` | Crea | PROTOTYPE_ONLY | Opens the current quick-create popover. No durable write/backend behavior is implied. Semantic overlap with Capture must be reviewed later. |
+| `home.topbar.create` | Crea | PROTOTYPE_ONLY | Opens the current quick-create popover. B2 v25 places it as the first control in the right utility group, before legacy Review. No durable write/backend behavior is implied; final Create-vs-Capture and timeline-context semantics remain separate decisions. |
 | `home.topbar.nav.home` | Home | ACTIVE | Current Home navigation anchor. |
 | `home.topbar.nav.worlds` | Mondi | WORKING | Current nav prototype; click currently changes active visual state only, not a production route. |
 | `home.topbar.nav.today` | Oggi | WORKING | Current nav prototype; temporal vocabulary must not create a second competing Home identity. |
-| `home.topbar.search` | Cerca | PROTOTYPE_ONLY | Opens mock search popover; `Ctrl/Cmd+K` also opens it; `Esc`/outside click closes it. |
+| `home.topbar.search` | Cerca | PROTOTYPE_ONLY | B2 v25 places Search immediately after DANTE on the left. Opens mock search popover; `Ctrl/Cmd+K` also opens it; `Esc`/outside click closes it. |
 | `home.topbar.reviewLegacy` | Review Queue / Da rivedere | DEPRECATED | Legacy topbar review popover still exists. It overlaps the accepted `home.contextRail.resolution` role and must be reconciled/removed in a later bounded scope. |
-| `home.topbar.launcher` | Tutto LifeOS | WORKING | Placeholder secondary-function launcher. B2 v23 did not perform a blind global rename; this historical string remains a later explicit cleanup item. |
+| `home.topbar.launcher` | Tutto LifeOS | WORKING | Placeholder secondary-function launcher. B2 v23-v25 do not perform a blind global rename; this historical string remains a later explicit cleanup item. |
 | `home.topbar.account` | Profilo | PROTOTYPE_ONLY | Opens account/settings menu mock. |
 
 ## Home — conversational / AI surface
@@ -54,7 +55,7 @@ Every durable entry records: technical ID, current visible label (if any), statu
 
 ## Home — central stage
 
-Current working oracle: **B2 v24 visual skin over B2 v23 branding over B2 v22 no persistent add**. B2 remains open for remaining shell/details and final responsive/visual/accessibility QA.
+Current working oracle: **B2 v25 shell/timeline over B2 v24 visual skin over B2 v23 branding over B2 v22 no persistent add**. B2 remains open for remaining details and final responsive/visual/accessibility QA.
 
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
@@ -80,6 +81,8 @@ Stage management rule:
 - that CTA is a navigation/management-entry intent, not a direct Home mutation;
 - Mondi and Segnali management surfaces own creation/configuration/order/removal.
 
+The B2 v25 timeline `+` is outside this central-stage rule: it belongs to the temporal surface and does not create a Mondi/Segnali capacity/add slot.
+
 Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is deprecated by the B2 projection IDs above; historical files/checkpoints remain evidence.
 
 ## Home — time / timeline
@@ -87,8 +90,9 @@ Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
 | `home.timeline` | — | ACTIVE | Primary temporal projection; 24h continuous timeline with scrolling and nonlinear density. |
-| `home.timeline.calendar` | mese/anno | ACTIVE | Opens calendar/date navigation; viewed day is distinct from immutable prototype “today”. |
-| `home.timeline.now` | Ora | ACTIVE | Returns temporal viewport to the current prototype instant/day context. |
+| `home.timeline.calendar` | mese/anno | ACTIVE | Opens calendar/date navigation; viewed day is distinct from immutable prototype “today”. B2 v25 places it after the contextual add column in the temporal-header grid. |
+| `home.timeline.now` | Ora | ACTIVE | Returns temporal viewport to the current prototype instant/day context. B2 v25 keeps it in the same temporal-header grid immediately after month/year. |
+| `home.timeline.quickAdd` | + | PROTOTYPE_ONLY | B2 v25 real contextual timeline button. It is the first item in the temporal-header grid (`add / month / now / week / actions`) and currently bridges to the existing global `Crea` popover. Final production date/time prefill, destination, command and persistence semantics are explicitly not defined yet. |
 | `home.timeline.viewOptions` | Vista e legenda | ACTIVE | Opens view-options popover. |
 | `home.timeline.splitGroups` | — | ACTIVE | Separates/rejoins timeline by groups while preserving temporal semantics. |
 | `home.timeline.resetView` | — | ACTIVE | Restores group/focus view state. |
@@ -139,9 +143,9 @@ The accepted rail must **not** become:
 | Technical ID | Current label | Status | Current behavior / contract |
 |---|---|---|---|
 | `home.overlay.search` | search popover | PROTOTYPE_ONLY | Topbar search mock. |
-| `home.overlay.create` | create popover | PROTOTYPE_ONLY | Topbar create mock. |
+| `home.overlay.create` | create popover | PROTOTYPE_ONLY | Topbar create mock; also reused by the v25 timeline quick-add as a temporary prototype bridge. |
 | `home.overlay.reviewLegacy` | review popover | DEPRECATED | Legacy duplicate to reconcile with Context Rail. |
-| `home.overlay.launcher` | Tutto LifeOS | WORKING | Historical placeholder; B2 v23 identity-anchor pass intentionally does not perform a global blind rename. |
+| `home.overlay.launcher` | Tutto LifeOS | WORKING | Historical placeholder; B2 v23-v25 intentionally do not perform a global blind rename. |
 | `home.overlay.account` | account menu | PROTOTYPE_ONLY | Settings/profile mock. |
 | `home.overlay.calendar` | calendar popover | ACTIVE | Date navigation. |
 | `home.overlay.timelineOptions` | Vista e legenda | ACTIVE | Timeline view controls. |
@@ -158,8 +162,8 @@ The accepted rail must **not** become:
 | `home.contextRail.focusExpand` | REJECTED | Focus/expand chevrons were ambiguous and created unnecessary state. Accepted rail keeps both functions visible. |
 | short rail ending mid-column | REJECTED | Accepted rail stretches with the timeline column to avoid arbitrary empty lower space. |
 | generic `Stats` stage framing | DEPRECATED | Replaced by the more meaningful `home.stage.signals` / Segnali projection. |
-| `home.stage.continuity.emptySlot` / ghost `+` | REMOVED | v22 removes capacity/add slots from Home. Partial state renders only real items; creation/configuration belongs to dedicated management surfaces. |
+| `home.stage.continuity.emptySlot` / ghost `+` | REMOVED | v22 removes capacity/add slots from Home central stage. Partial state renders only real items; creation/configuration belongs to dedicated management surfaces. |
 
 ## Maintenance rule
 
-When any row changes, update this registry and the linked surface contract/changelog in the same write. Never leave a stale row because the prototype “still looks right.”
+When any row changes, update this registry and the linked surface contract/changelog in the same checkpoint write. Never leave a stale row because the prototype “still looks right.”
