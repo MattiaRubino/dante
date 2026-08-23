@@ -13,12 +13,90 @@
 - CP6-00: **COMPLETE**
 - CP6-01: **CLOSED / GATE 01 PASS**
 - CP6-02: **CLOSED / GATE 02 PASS**
-- CP6-03: **ACTIVE / WHOLE DATABASE BLUEPRINT OPEN / GATE 03 NOT YET EARNED**
-- CP6-03 blueprint/reference: **`docs/database/dante-postgresql-database.md`**
+- CP6-03: **ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT / GATE 03 NOT YET EARNED**
+- CP6-03 blueprint/reference: **`docs/database/dante-postgresql-database.md` + Parts 2–8 as one canonical authority**
+- Current global DB-U open set: **DB-U08 / DB-U15 / DB-U21**
+- Final independent second tombstone audit: **NOT YET RUN / MANDATORY BEFORE GATE 03**
 - Current PostgreSQL technical patch: **18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS**
 - PostgreSQL 18.6 evidence: **Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
 - Current DANTE business database: **NOT YET MATERIALIZED**
 - First product vertical: **POST-CP6 / NOT PART OF THIS WORKSTREAM**
+
+## 0. Current durable resume and routing reconciliation — 2026-08-23
+
+This section is the durable current resume state for CP6 and supersedes older **process/routing/resume prose only** wherever that older prose still points to Vertical #1 inside CP6, to `CP6-06`/`CP6-07`, or to a pre-Checkpoint-J CP6-03 position. It does **not** rewrite the historical truth or technical decisions of closed CP6-01/02 artifacts.
+
+Current exact state:
+
+```text
+CP6-03
+ACTIVE
+
+DATABASE REFERENCE
+Parts 1–8 active together
+
+CHECKPOINT J / DB-U23
+CLOSED
+
+57 / 57 FINAL MATERIALIZATION DISPOSITION
+PASS AFTER HARDENING
+
+LOCAL EXACT OPEN
+0
+
+GLOBAL DB-U OPEN
+DB-U08  final PostgreSQL object naming
+DB-U15  final structural/query index matrix
+DB-U21  exact object-level PostgreSQL privilege matrix
+
+NEXT DESIGN BLOCK
+FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+
+SECOND FULL TOMBSTONE AUDIT FROM ZERO
+NOT YET RUN
+MANDATORY BEFORE GATE 03
+
+GATE 03
+NOT YET EARNED
+
+CP6-04 REAL DATABASE MATERIALIZATION
+NOT STARTED / NOT AUTHORIZED
+```
+
+Current routing map for any older CP6-01/02 proof/staging prose:
+
+```text
+old “CP6-05 designs Vertical #1”
+→ SUPERSEDED
+→ CP6-05 = WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+
+old CP6-06 / CP6-07 proof or clean-room route
+→ SUPERSEDED AS CHECKPOINT NAMES
+→ applicable database proof/clean-room work is absorbed into CP6-03..05
+→ application-only proof remains POST-CP6 with the first qualifying vertical
+
+old “CP6 foundation + Vertical #1 exact design”
+→ SUPERSEDED AS PROCESS ROUTING
+→ CP6 = database blueprint + materialization + direct DB QA
+→ first product vertical = separate POST-CP6 phase
+```
+
+The current exact remaining CP6-03 order is:
+
+```text
+1. Final Actual PostgreSQL Object Inventory
+2. DB-U08 exact object naming
+3. DB-U15 exact structural/query index matrix
+4. DB-U21 exact object-level privilege matrix
+5. migration/materialization DAG
+6. SQLAlchemy mapping plan
+7. Database Dictionary readiness
+8. direct PostgreSQL proof/test plan
+9. SECOND FULL TOMBSTONE AUDIT FROM ZERO
+10. Gate 03 only if the whole blueprint remains clean
+```
+
+At Gate 03, STOP. Entering CP6-04 creates the real DANTE business database and therefore requires a separate explicit user-approved materialization gate.
 
 ## 1. Purpose — corrected execution boundary
 
@@ -158,7 +236,7 @@ For CP6, use this order:
 6. current project-status / roadmap entry points;
 7. historical evidence / closed branches / conversation memory.
 
-Where older CP6-02 process prose conflicts with section 1–2 of this workstream, section 1–2 is the current execution-boundary authority. CP6-02 technical doctrine remains closed and fully authoritative.
+Where older CP6-02 process prose conflicts with section 0–2 of this workstream, section 0–2 is the current execution-boundary/routing authority. CP6-02 technical doctrine remains closed and fully authoritative.
 
 ## 4. Mandatory continuation bootstrap
 
@@ -178,6 +256,13 @@ docs/development/repository-engineering-safety.md
 
 docs/database/README.md
 docs/database/dante-postgresql-database.md
+docs/database/dante-postgresql-database-part-2.md
+docs/database/dante-postgresql-database-part-3.md
+docs/database/dante-postgresql-database-part-4.md
+docs/database/dante-postgresql-database-part-5.md
+docs/database/dante-postgresql-database-part-6.md
+docs/database/dante-postgresql-database-part-7.md
+docs/database/dante-postgresql-database-part-8.md
 
 this workstream handoff
 ```
@@ -541,14 +626,24 @@ No information is lost: their useful topology, dependency, direct-proof and clea
 ### Status
 
 ```text
-ACTIVE / CANDIDATE BLUEPRINT OPEN / GATE 03 NOT YET EARNED
+ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT / GATE 03 NOT YET EARNED
 ```
 
 Current blueprint/reference:
 
 ```text
 docs/database/dante-postgresql-database.md
++ docs/database/dante-postgresql-database-part-2.md
++ docs/database/dante-postgresql-database-part-3.md
++ docs/database/dante-postgresql-database-part-4.md
++ docs/database/dante-postgresql-database-part-5.md
++ docs/database/dante-postgresql-database-part-6.md
++ docs/database/dante-postgresql-database-part-7.md
++ docs/database/dante-postgresql-database-part-8.md
+= ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
 ```
+
+Checkpoint J closed the residual `DB-U23` materialization-disposition gap found by the first total pre-freeze audit. It did not freeze the final actual object inventory. The current global open set is exactly `DB-U08`, `DB-U15`, `DB-U21`.
 
 ### Purpose
 
@@ -698,15 +793,17 @@ all determinable structural indexes justified                 PASS
 migration/materialization DAG complete                         PASS
 SQLAlchemy mapping plan complete                               PASS
 direct-test plan complete                                     PASS
+second full tombstone audit from zero                          PASS
 unclassified cross-cutting persistence construct              0
 unclassified database family                                  0
+unresolved DB-U                                                0
 accidental new Domain owner                                    0
 generic Entity/Relationship/EAV shortcut                       0
 speculative placeholder schema                                 0
 application Vertical #1 implementation                         0
 ```
 
-Only after Gate 03 is clean does real DANTE database materialization begin.
+Only after Gate 03 is clean does real DANTE database materialization become eligible for a separate explicit authorization gate.
 
 ## 13. CP6-04 — Whole DANTE Database Materialization
 
@@ -718,7 +815,7 @@ This is where CP6 stops being mainly documentation and starts producing the real
 
 ### Authorized implementation classes
 
-After their exact write gates, CP6-04 may create/update:
+After Gate 03 **and a separate explicit user-approved materialization gate**, CP6-04 may create/update:
 
 ```text
 Alembic business-schema revisions
@@ -1036,31 +1133,46 @@ A fresh session must establish:
 7. current technical patch = 18.6 / DIRECT REMOTE QA PASS;
 8. this workstream supersedes earlier CP6 process prose that prohibited all business DB materialization;
 9. ADR-010 records the accepted PostgreSQL Persistence Constitution without duplicating it;
-10. CP6-03 is ACTIVE and its canonical blueprint/reference is docs/database/dante-postgresql-database.md;
-11. Gate 03 requires 57/57 PLUS 100% CP6-01 Part-2 cross-cutting/non-owner accounting;
-12. whole database = maximum non-speculative persistence derivable from closed authority, not speculative future schema;
-13. CP6-04 will materially implement the approved whole-database blueprint;
-14. CP6-05 will run whole-database direct QA and close CP6;
-15. first product vertical begins only after CP6 is closed.
+10. CP6-03 is ACTIVE; Database Reference Parts 1–8 are one canonical authority;
+11. Checkpoint J / DB-U23 is CLOSED;
+12. final 57/57 materialization disposition is PASS AFTER HARDENING;
+13. current local exact open = 0;
+14. current global DB-U open = DB-U08 / DB-U15 / DB-U21 only;
+15. exact next design block = FINAL ACTUAL POSTGRESQL OBJECT INVENTORY;
+16. the second full tombstone audit from zero has NOT run and is mandatory before Gate 03;
+17. Gate 03 is NOT YET EARNED;
+18. CP6-04 business database materialization is NOT STARTED / NOT AUTHORIZED;
+19. CP6-05 is whole-database direct QA + CP6 closure;
+20. first product vertical begins only after CP6 is closed.
 ```
 
 Immediate next action:
 
 ```text
-CP6-03 — CONTINUE WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
 
-continue docs/database/dante-postgresql-database.md
-→ execute object-level derivation from complete Domain concept specs
-→ close exact tables/columns/types
-→ close PK/FK/reference topology
-→ close material-state/history/current-binding topology
-→ close relation/provenance/provider/derived topology
-→ close constraints/indexes/privileges
-→ close implementation dependency + migration DAG
-→ close SQLAlchemy mapping plan
-→ instantiate Database Dictionary entries for stable objects
-→ close real PostgreSQL test plan
-→ eliminate every DB-U / unclassified cross-cutting item
+consume Parts 1–8 together
+→ enumerate every surviving baseline PostgreSQL object exactly
+→ include tables, views, types/domains, routines, triggers, constraints and dispatch/control structures actually required
+→ exclude every object removed by later explicit no-DDL disposition
+→ reconcile every scoped family and MaterialState facet against the final survivor audit
+→ verify every table/column/key/constraint is implementable without semantic invention
+→ keep DB-U08 / DB-U15 / DB-U21 OPEN during derivation
+→ run cumulative whole-database audit over the inventory
+→ show an exact write gate before saving the inventory freeze
+```
+
+After inventory freeze:
+
+```text
+DB-U08 exact naming
+→ DB-U15 exact index matrix
+→ DB-U21 exact privilege matrix
+→ migration/materialization DAG
+→ SQLAlchemy mapping plan
+→ Database Dictionary readiness
+→ direct PostgreSQL proof plan
+→ SECOND FULL TOMBSTONE AUDIT FROM ZERO
 → Gate 03
 ```
 
