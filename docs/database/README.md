@@ -497,3 +497,37 @@ The existence of another part does not allow older active parts to be ignored.
 A future decision to return the reference to one physical file is a dedicated structural documentation migration.
 
 It requires full content-equivalence QA proving that all active-part content, authority, detail and numbering/supersession meaning are preserved. Re-fusion is never implemented by replacing the active parts with a shorter summary.
+
+## 17. Part 3 canonical continuation
+
+Part 3 is now an active continuation created because Part 2 reached the practical write-safety threshold defined by section 16.2.
+
+Current active human-readable reference shape:
+
+```text
+dante-postgresql-database.md
+→ PART 1
+→ sections 1–30
+
++
+
+dante-postgresql-database-part-2.md
+→ PART 2
+→ section 31
+
++
+
+dante-postgresql-database-part-3.md
+→ PART 3
+→ section 32 onward
+
+=
+
+ONE CANONICAL DATABASE ARCHITECTURE & REFERENCE
+```
+
+Part 3 starts from repository continuity anchor `6a8605130bc9ec46c3751f03296b3bc34c484131` and begins with section 32, Consolidation Checkpoint E — Criterion / Evaluation baseline disposition.
+
+Part 1 and Part 2 remain canonical and must remain fully consumed. Part 3 does not summarize, replace or reduce their authority. Later sections may supersede only explicitly identified narrower earlier statements through the existing cumulative-audit and bounded-write process.
+
+All Database Dictionary reconciliation, migration planning, SQLAlchemy mapping review, generated-reference checks, direct PostgreSQL proof planning and Gate-03 review MUST consume Parts 1, 2 and 3 together.
