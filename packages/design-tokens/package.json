@@ -1,0 +1,26 @@
+{
+  "name": "@dante/design-tokens",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "react-native": "./generated/native.ts",
+      "default": "./generated/native.ts"
+    },
+    "./native": "./generated/native.ts",
+    "./web.css": "./generated/web.css"
+  },
+  "scripts": {
+    "build": "tz build",
+    "generate": "tz build",
+    "lint": "eslint .",
+    "tokens:lint": "tz lint",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@terrazzo/cli": "2.7.1",
+    "@terrazzo/parser": "2.7.1",
+    "@terrazzo/plugin-css": "2.7.1"
+  }
+}

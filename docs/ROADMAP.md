@@ -2,257 +2,248 @@
 
 - Status: **CURRENT**
 
-## Completed architecture / design sequence
+## Completed foundations
 
 ```text
-Product / North Star
-        CURRENT
-          ↓
-Domain Model
-        CLOSED
-          ↓
-Logical Model
-        CLOSED
-          ↓
-Pre-Physical Repository & Architecture Coherence
-        CLOSED
-          ↓
-Physical Model / Target Selection
-        CLOSED / ACCEPTED
-          ↓
-Engineering Foundation v0
-        CLOSED / ACCEPTED
-          ↓
-Frontend Engineering Foundation
-        CLOSED / ACCEPTED / FINAL REVIEW PASS
-        INTEGRATED VIA PR #22
+Product / North Star                         CURRENT
+Domain Model                                 CLOSED
+Logical Model                                CLOSED
+Pre-Physical coherence                       CLOSED
+Physical target                              CLOSED / ACCEPTED
+Engineering Foundation v0                    CLOSED / ACCEPTED
+Frontend Engineering Foundation              CLOSED / ACCEPTED / integrated via PR #22
+Production backend scaffold CP1..CP5          CLOSED / integrated via PR #24
+Frontend materialization FM-00..FM-07         CLOSED / PASS
+Frontend CI Gate calibration                  COMPLETE
+Frontend CI Gate promotion                    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 ```
 
 Architecture closure remains distinct from implementation/direct validation.
 
-## Active implementation workstreams
+## Active integration workstream
 
-### Frontend production materialization — ACTIVE
+### Frontend materialization integration hardening — ACTIVE / FINAL MERGE GATE
 
 Branch:
 
-`feature/frontend-materialization`
+`chore/frontend-materialization-integration`
 
-The closed Frontend Foundation is being materialized under its own bounded workstream. Direct frontend PASS is earned only by the real carried validations; active branch status is not evidence by itself.
+PR:
 
-Frontend and backend may progress in parallel through separate worktrees. Shared repository/global documentation must be reconciled semantically when either workstream integrates.
+`#28` — READY
 
-### Backend production scaffold — CLOSED / INTEGRATED
+Purpose:
 
-Historical implementation branch:
+- integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history;
+- reconcile shared/current documentation semantically;
+- close bounded hardening found during final review;
+- preserve calibrated frontend CI and accepted-risk governance through protected-main integration.
 
-`feature/backend-scaffold`
-
-Current checkpoint truth:
+Materialized in the integration branch:
 
 ```text
-CP1 Python/process/config
-CLOSED / DIRECT QA PASS
-
-CP2 reproducible LOCAL PostgreSQL
-CLOSED / DIRECT QA PASS
-
-CP3 persistence/migrations/privileges/real PostgreSQL
-CLOSED / DIRECT QA PASS
-
-CP4 quality / CI enforcement
-CLOSED / DIRECT REMOTE QA PASS
-
-CP5 full scaffold QA / closure
-CLOSED / DIRECT INTEGRATED QA PASS
-
-PR #24
-MERGED INTO PROTECTED main
-POST-MERGE BACKEND CI PASS
+Mobile src/** explicit TypeScript scope
+Expo dependency compatibility CI gate
+tracked + untracked repository-mutation CI gate
+Frontend CI Gate aggregate context
+least-privilege Frontend CI permissions
+pnpm minimumReleaseAge 24h
+npm/pnpm Dependabot scope
+narrow Dependency Review accepted-risk exceptions
+CURRENT documentation reconciliation
+Frontend CI Gate green/red/recovery calibration
+branch-local three-check protected-main ruleset definition
 ```
 
-## CP4 closure evidence
-
-Materialized:
+The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for:
 
 ```text
-Backend CI
-├── Backend Quality
-├── Backend PostgreSQL
-└── Backend CI Gate
-
 Dependency Review
-└── separate repository-wide workflow
-
-Dependabot
-├── uv
-└── GitHub Actions
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
+Frontend Quality
+Web E2E
+Mobile Bundle
+Frontend CI Gate
 ```
 
-Real PR #24 calibration:
+Any later documentation-only PR head must independently earn the same applicable hosted-CI/currentness/mergeability/thread-clean evidence before merge authorization.
+
+## Immediate sequence
+
+### 1. Frontend integration hardening — COMPLETE AT IMPLEMENTED SCOPE
+
+The integration branch has already reconciled backend + closed frontend truth, qualified version-specific Foundation wording against direct materialization, applied bounded CI/dependency hardening, and preserved the closed FM evidence history through a real merge parent.
+
+### 2. Frontend CI Gate calibration — COMPLETE
+
+Directly proved:
 
 ```text
-M5 GREEN
-Backend Quality       SUCCESS
-Backend PostgreSQL    SUCCESS
-Backend CI Gate       SUCCESS
-Dependency Review     SUCCESS
-
-M6 DELIBERATE RED
-Backend Quality       FAILURE
-Backend PostgreSQL    SUCCESS
-Backend CI Gate       FAILURE
-Dependency Review     FAILURE
-
-M7 RECOVERY GREEN
-Backend Quality       SUCCESS
-Backend PostgreSQL    SUCCESS
-Backend CI Gate       SUCCESS
-Dependency Review     SUCCESS
+real green
+controlled deliberate red
+mandatory upstream failure propagation
+exact workflow restore
+recovery green
 ```
 
-M6 proved that the aggregate gate fails when a mandatory upstream job fails while PostgreSQL remains independently diagnostic. Dependency Review failed for an intentional deny rule against a real dependency already visible from `apps/backend/uv.lock`; no vulnerable package was introduced.
+The deliberate-red change was bounded and reversible and did not introduce a vulnerable dependency or weaken unrelated policy.
 
-Protected `main` requires:
+### 3. Required-check promotion — OWNER-CONFIRMED APPLIED
+
+The branch-local canonical ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
+Frontend CI Gate
 ```
 
-The ruleset also requires the PR branch to be up to date with protected `main` before merge. Both checks are selected from source GitHub Actions.
+with strict branch-up-to-date policy preserved.
 
-Repository owner enabled the Actions full-length-SHA requirement. The current connector cannot directly read that setting; it remains explicitly classified as owner-applied / connector-unverifiable.
+The repository owner confirmed applying the `Frontend CI Gate` promotion in GitHub. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
 
-## CP5 closure evidence
+### 4. Final PR review / protected-main merge — CURRENT GATE
 
-CP5 re-proved the integrated scaffold without adding business schema or changing backend source:
+Before merge:
+
+- exact current PR head has applicable hosted CI green;
+- PR #28 remains current with `main`;
+- exact changed paths reviewed;
+- accepted-risk register still valid;
+- no stale CURRENT docs;
+- no unresolved review threads;
+- PR remains mergeable;
+- expected head verified.
+
+Merge authorization remains separate from this roadmap and from documentation reconciliation.
+
+## Backend next boundary
+
+### Concrete Logical -> PostgreSQL
+
+Backend scaffold is already closed and integrated. The next backend implementation boundary is a fresh bounded workstream that consumes the closed Logical owner/ref/invariant contracts plus accepted PostgreSQL posture.
 
 ```text
-exact branch / current-main relation       PASS
-uv 0.12.5                                  PASS
-Python 3.14.7                               PASS
-locked dependency bootstrap                PASS
-Ruff format/lint                           PASS
-mypy strict                                PASS
-fast pytest                                32/32 PASS
-package build                              PASS
-canonical PostgreSQL image rebuild         PASS
-PostgreSQL acceptance                      18/18 PASS
-full backend pytest                        50/50 PASS
-full-run coverage                          97.42% evidence only
-LOCAL PostgreSQL healthy                   PASS
-explicit database provisioning             PASS
-real Uvicorn factory startup               PASS
-/health/live                               200 PASS
-/health/ready                              200 PASS
-CP4 required remote workflows              SUCCESS on CP5 PRE-SCOPE
+consume Logical authorities
+-> propose concrete table/constraint/index/history mapping
+-> review
+-> Alembic migrations
+-> real PostgreSQL tests
+-> persistence/application vertical slice
 ```
 
-One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL `/forwards/expose` HTTP 500 during disposable-container port forwarding. The created diagnostic container was removed and the next clean full suite passed 50/50, so no backend/test-harness change was justified.
+Do not mechanically translate 57 Logical owners into 57 tables/services.
 
-## Backend scaffold integration evidence
+## Product vertical slices
 
-```text
-pre-merge main                          ff46eb16b971b1fde96eef9047b09faa02e1a5db
-feature/backend-scaffold final HEAD     46b775bfbfc4747daff341d973df133646dbd0c8
-PR #24                                  MERGED
-merge commit / protected main           41680497c94b0c2f4830679b93f8eb6f1d543f8d
-Backend CI push-main run                32502330955 SUCCESS
-```
-
-The merge commit has the expected prior-main and final-feature parents. Post-merge readback proved protected `main` contains the scaffold. No CodeQL activation, ruleset mutation, frontend mutation or concrete business schema was included in the merge operation.
-
-## Immediate backend sequence
-
-### 1. Concrete Logical → PostgreSQL implementation
-
-The production backend scaffold is now closed and verified on protected `main`. The next backend boundary is concrete Logical → PostgreSQL mapping through a fresh bounded workstream/gate.
-
-The first step is **not** to create all tables mechanically. It is to consume the closed Logical owner/ref/invariant contracts plus the accepted Physical PostgreSQL posture and propose a coherent concrete mapping.
-
-```text
-consume closed Logical owner/ref/invariant contracts
-        ↓
-consume accepted Physical PostgreSQL constraints
-        ↓
-propose concrete physical mapping
-        ↓
-review schema/constraints/indexes/history semantics
-        ↓
-Alembic migration(s)
-        ↓
-real PostgreSQL tests
-        ↓
-persistence/application vertical slice
-```
-
-Do not mechanically translate 57 Logical owners into 57 tables/modules/services.
-
-### 2. Product vertical slices
-
-Once the first concrete persistence mapping exists, product work proceeds vertically rather than by completing every layer in isolation:
+After foundational integration, product work proceeds vertically rather than by completing every possible infrastructure layer first:
 
 ```text
 user capability
-→ required canonical data
-→ domain/application behavior
-→ PostgreSQL mapping + migration
-→ persistence adapter
-→ API boundary
-→ frontend consumption
-→ end-to-end acceptance
+-> required canonical data
+-> domain/application behavior
+-> persistence/migration if needed
+-> API boundary if needed
+-> Web/Mobile feature boundary
+-> direct acceptance evidence
 ```
 
-Frontend materialization may continue in parallel on its separate worktree.
+Each vertical activates only the selected capabilities it actually consumes.
+
+## Future activation triggers
+
+The durable activation register lives in `docs/workstreams/frontend-materialization-integration.md`.
+
+Key triggers:
+
+```text
+first real product vertical
+-> Expo/React Hooks lint qualification
+-> executable feature/ui/platform boundaries
+-> Web component tests / Mobile RNTL as applicable
+
+first real UI/design-system surface
+-> WCAG 2.2 AA target
+-> a11y automation
+-> Storybook / visual regression only when justified
+
+first form
+-> TanStack Form + Zod
+
+first remote product API
+-> FastAPI OpenAPI -> Orval
+-> @dante/api-client
+-> TanStack Query
+
+first Mobile offline operation
+-> PowerSync + OP-SQLite/SQLCipher
+-> identity-scoped local DB lifecycle
+-> accept/reject/conflict reconciliation tests
+
+first shared DEV/Web deployment
+-> versioned runtime config
+-> Cloudflare delivery
+-> Sentry/source-map qualification
+
+first Mobile release candidate
+-> EAS Build/Submit/Update
+-> Maestro where useful
+-> signed-device validation
+-> iOS direct validation when activated
+
+post frontend integration on main
+-> CodeQL default setup evaluation
+
+pre-PROD
+-> broader browser matrix
+-> representative performance budgets
+-> SBOM/provenance where required
+-> license policy
+-> SECURITY.md/vulnerability intake
+-> explicit privacy/security threat review
+
+scale-triggered only
+-> Turbo remote cache
+-> merge queue
+-> CODEOWNERS / real independent reviewers
+-> generic feature flags
+-> large browser/device farms
+```
 
 ## Capability-triggered Physical implementation
 
-Activate specialist components only at real requirements:
+Other selected specialist components remain dormant until real requirements:
 
 ```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed planning capability
-
-Restate
-→ first real Class-B durable workflow
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
+R2                  -> ContentArtifact byte flow
+OR-Tools            -> solver-backed planning
+Restate             -> Class-B durable workflow
+pgBackRest + S3     -> recovery boundary/rehearsal
+PowerSync           -> real offline/multi-device operation
 ```
 
-## CodeQL boundary
-
-CodeQL remains a separate post-backend-main activation boundary. Backend scaffold integration does not authorize a custom CodeQL workflow or required CodeQL check.
-
-## Remote environments
+## Environment progression
 
 ```text
 LOCAL
-→ current implementation boundary
+-> current implementation boundary
 
 DEV
-→ activate when shared remote integration provides real value
+-> activate when shared remote integration provides real value
 
 UAT
-→ activate for real release candidates
+-> activate for real release candidates
 
 PROD
-→ activate only at production readiness
+-> activate only at production readiness
 ```
-
-Backend hosting/compute, IaC and remote sizing remain deliberate decisions at the first real remote-infrastructure boundary.
 
 ## Persistent rules
 
 ```text
-SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
+SELECTED != IMPLEMENTED
 DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
 CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
 ENVIRONMENT != GIT BRANCH
@@ -261,6 +252,4 @@ TRUSTED CHECK != REQUIRED CHECK UNTIL CALIBRATED
 CLOSED FEATURE BRANCH != INTEGRATED MAIN UNTIL VERIFIED MERGE
 ```
 
-Backend scaffold now satisfies the final rule: its protected-main merge and post-merge CI were directly verified.
-
-Continue from durable contracts/handoffs rather than redesigning closed decisions from conversation memory.
+Continue from durable contracts/handoffs instead of redesigning closed decisions from conversation memory.

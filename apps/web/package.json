@@ -1,0 +1,32 @@
+{
+  "name": "@dante/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@dante/design-tokens": "workspace:*",
+    "@dante/i18n": "workspace:*",
+    "@dante/time": "workspace:*",
+    "@tanstack/react-router": "1.170.31",
+    "i18next": "26.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-i18next": "17.0.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@tanstack/router-plugin": "1.168.34",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.1.0",
+    "vite": "8.2.1"
+  }
+}

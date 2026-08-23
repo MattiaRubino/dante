@@ -1,0 +1,17 @@
+node_modules/
+.turbo/
+coverage/
+**/dist/
+**/build/
+**/.expo/
+**/routeTree.gen.ts
+docs/
+prototypes/
+apps/backend/
+infra/
+tests/system/
+.github/
+pnpm-lock.yaml
+README.md
+CHANGELOG.md
+CONTRIBUTING.md

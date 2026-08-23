@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Supply-chain delay is explicit repository policy. pnpm 11 defaults to one day,
+# but DANTE records it here so the invariant survives tool/default changes.
+minimumReleaseAge: 1440
