@@ -115,3 +115,20 @@ Append-only operational history. This is not a Git substitute; it records produc
 - `QA` final combined preview accepted by user after the Mondi regression fix; outer review-wrapper JavaScript passes `node --check`.
 - `QA_LIMIT` fresh 24-case browser matrix, accessibility rerun, separate PARTIAL browser review and production semantic-token migration are not claimed.
 - `OPEN` remaining shell/detail decisions, semantic-token productionization and final responsive/visual/accessibility QA.
+
+## 2026-08-23 — B2 Home Shell + Timeline Quick Add v25
+
+- `ADDED` user-reviewed B2 v25 shell/timeline checkpoint over the accepted v24 visual skin.
+- `CHANGED` the global topbar from a floating-card treatment to a real sticky application bar, edge-to-edge at shell level with 24 px internal horizontal inset.
+- `CHANGED` shell arrangement to DANTE + Search on the left, Home/Mondi/Oggi centered, and utility actions on the right.
+- `CHANGED` `Crea` placement to the first control in the right utility group, before legacy Review; the existing control/popover is reused rather than duplicated.
+- `CHANGED` the reviewed outer Home-shell side-frame treatment to reduce the nested-panel reading without changing inner Home content semantics.
+- `ADDED` `home.timeline.quickAdd` as a real `+` button in the timeline temporal-header markup.
+- `CHANGED` the temporal-header grid from `month / now / week / actions` to `add / month / now / week / actions`, shifting month/year and `Ora` together through layout rather than independent pixel offsets.
+- `PROTOTYPE_ONLY` timeline quick-add currently bridges to the existing global `Crea` popover; final date/time prefill, destination, command, persistence and backend behavior remain undefined.
+- `NO_CHANGE` v22 central-stage no-persistent-add semantics: the new `+` belongs to the timeline, not to Mondi/Segnali capacity/configuration.
+- `NO_CHANGE` v24 atmosphere/palette, v23 DANTE identity, Mondi effects, Context Rail semantics, event drag/zoom/grouping/time-edit behavior, backend/API/Domain/logical/physical semantics.
+- `QA` final user-reviewed local wrapper `DANTE_Home_v24_v13_PLUS_REFINED_MONTH_RIGHT.html` is recorded at 80922 bytes / SHA-256 `0b9491525a99643837dc42e4150113db50d00bf7ff73549ea4fd3f9994adcdf9`.
+- `QA` deterministic v24 -> v25 transform passes `node --check` and a mock-structure execution gate.
+- `QA_LIMIT` fresh 24-case browser matrix, accessibility rerun and separate PARTIAL visual review are not claimed.
+- `OPEN` final production semantics for timeline quick-add, legacy Review/launcher reconciliation, remaining small shell details, semantic-token productionization and final QA.
