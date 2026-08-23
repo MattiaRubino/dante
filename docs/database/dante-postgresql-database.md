@@ -5325,3 +5325,1337 @@ GATE 03                                            NOT YET EARNED
 ```
 
 The next block must be derived, audited, written and remotely verified separately; this checkpoint intentionally does not pre-write the later Actual/Milestone/Recurrence consolidation findings.
+
+---
+
+## 29. Consolidation checkpoint B — Schedule / Actual / Session physical closure
+
+This checkpoint is the independently audited Schedule / Actual / Session block. It supersedes the corresponding provisional/open statements in sections 21, 25, 27 and 28 only where this section is more specific. Recurrence, Occurrence generation, Outcome, Milestone, Agreement, Criterion, Evaluation and Temporal Constraint remain outside this checkpoint and retain their own open/closed status.
+
+The block preserves the accepted semantic chain:
+
+```text
+accepted temporal assignment
+Schedule
+!=
+actual execution episode
+Session
+!=
+contextual realization of an expectation
+Actual
+```
+
+No universal temporal record, lifecycle enum, generic result payload or semantic JSON fallback is introduced.
+
+### 29.1 Schedule contextual owner and cardinality — RETAINED / HARDENED
+
+The existing Schedule envelope remains:
+
+```text
+dante.schedule
+  schedule_ref         uuid PRIMARY KEY
+  subject_native_ref   uuid NOT NULL
+```
+
+with the already-closed contract:
+
+```text
+schedule_ref
+→ UUIDv7 ScopedRecordRef
+→ dante.scoped_address(scoped_ref)
+→ scoped_family = 'schedule'
+
+subject_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ owner_family IN ('activity','event','occurrence')
+
+subject binding
+→ immutable under ordinary runtime authority
+```
+
+No global `UNIQUE(subject_native_ref)` is added.
+
+Closed authority explicitly permits one divisible Activity to carry more than one accepted planned placement. The same authority does not provide a universal database invariant proving that Event or Occurrence must have exactly one Schedule contextual row for all future cases. CP6 therefore does not turn a common/default shape into a semantic prohibition.
+
+```text
+one subject
+→ MAY have multiple Schedule rows where the accepted subject semantics require independently revisionable placements
+
+multiple Schedule rows
+→ do NOT imply recurring semantics
+→ do NOT imply Capacity reservation
+```
+
+The concrete Schedule identity remains one independently revisionable accepted placement context.
+
+### 29.2 Schedule typed placement state — CLOSED FOR DETERMINABLE BASELINE VARIANTS
+
+The material facet remains:
+
+```text
+facet_code = 'schedule.placement'
+```
+
+State envelope:
+
+```text
+dante.schedule_placement_state
+  material_state_ref   uuid PRIMARY KEY
+  schedule_ref         uuid NOT NULL
+  temporal_form_code   text NOT NULL
+```
+
+with:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ exact scoped owner = schedule_ref
+→ exact facet = schedule.placement
+→ ON DELETE NO ACTION
+
+schedule_ref
+→ FK dante.schedule(schedule_ref)
+→ ON DELETE NO ACTION
+
+temporal_form_code IN (
+  'date_span',
+  'floating_local',
+  'named_zone_local',
+  'absolute'
+)
+```
+
+Exactly one matching typed payload row must exist for every live `schedule.placement` state by COMMIT. A family discriminator/payload mismatch rejects.
+
+#### Date-span placement
+
+```text
+dante.schedule_placement_date_state
+  material_state_ref   uuid PRIMARY KEY
+  date_span            daterange NOT NULL
+```
+
+Rules:
+
+```text
+date_span is non-empty
+bounds are finite
+canonical engineering bounds = [start_date, end_date_exclusive)
+```
+
+A one-day date-based/all-day placement is represented as one civil-date span. It is **not** interpreted as a midnight-to-midnight absolute busy block and does not reserve Capacity by existence.
+
+#### Floating-local placement
+
+```text
+dante.schedule_placement_floating_local_state
+  material_state_ref   uuid PRIMARY KEY
+  extent_code          text NOT NULL
+  starts_local_at      timestamp without time zone NOT NULL
+  ends_local_at        timestamp without time zone NULL
+```
+
+with:
+
+```text
+extent_code IN ('point','start_only','interval')
+
+point
+→ ends_local_at IS NULL
+
+start_only
+→ ends_local_at IS NULL
+→ semantic meaning is an accepted known start with no accepted end
+
+interval
+→ ends_local_at IS NOT NULL
+→ ends_local_at > starts_local_at
+```
+
+`point` and `start_only` remain distinct semantic extent codes even though both have one stored boundary.
+
+No device/current-location zone is inferred or persisted as part of floating-local truth.
+
+#### Named-zone local placement
+
+```text
+dante.schedule_placement_named_zone_state
+  material_state_ref   uuid PRIMARY KEY
+  extent_code          text NOT NULL
+  starts_local_at      timestamp without time zone NOT NULL
+  ends_local_at        timestamp without time zone NULL
+  zone_id              text NOT NULL
+  resolved_start_at    timestamptz NULL
+  resolved_end_at      timestamptz NULL
+```
+
+Rules:
+
+```text
+extent_code IN ('point','start_only','interval')
+zone_id = accepted IANA zone identifier
+originating local values remain canonical temporal meaning
+
+interval
+→ ends_local_at required and > starts_local_at
+
+point / start_only
+→ ends_local_at absent
+
+resolved_end_at present
+→ resolved_start_at present
+→ extent_code = 'interval'
+
+resolved_start_at/resolved_end_at
+→ retained only when the accepted historical resolution itself is materially consequential
+→ later tzdb/rule changes cannot rewrite the previously accepted resolved instant
+```
+
+A bounded validation path must reject an invalid `zone_id` under the runtime's accepted IANA vocabulary. The zone is not a provider identity or a mutable FK taxonomy.
+
+#### Absolute placement
+
+```text
+dante.schedule_placement_absolute_state
+  material_state_ref   uuid PRIMARY KEY
+  extent_code          text NOT NULL
+  starts_at            timestamptz NOT NULL
+  ends_at              timestamptz NULL
+```
+
+with:
+
+```text
+extent_code IN ('point','start_only','interval')
+
+point / start_only
+→ ends_at absent
+
+interval
+→ ends_at required
+→ ends_at > starts_at
+```
+
+No Schedule payload duplicates these values onto Activity, Event or Occurrence.
+
+### 29.3 SCH-U01 — CLOSED AS EXPLICIT NEGATIVE BASELINE DISPOSITION
+
+The accepted Schedule authority requires truthful coarse temporal commitment, including examples such as:
+
+```text
+Tuesday afternoon
+```
+
+but current closed authority does not define a canonical day-part vocabulary or the clock boundaries of `morning`, `afternoon`, `evening`, `night` or equivalent terms.
+
+Therefore the CP6 baseline deliberately does **not** materialize a qualitative day-part variant.
+
+```text
+SCH-U01
+CLOSED
+
+accepted coarse/day-part semantics
+→ remain semantically valid upstream
+→ no CP6 baseline SQL representation until a bounded accepted vocabulary exists
+
+future trigger
+→ accepted canonical day-part/qualitative-period vocabulary and interpretation contract
+→ reviewed additive schema evolution
+```
+
+Forbidden substitutes:
+
+```text
+afternoon = 12:00..18:00 by engineering convention
+free-text precision_code
+free-text day_part
+JSON temporal payload
+placeholder enum whose values have no closed semantics
+```
+
+The exact typed variants in section 29.2 remain implementation-authorized because their temporal meaning is already deterministic under DB-U07. SCH-U01 is not permission to fabricate precision the user/domain did not provide.
+
+### 29.4 Schedule current-applicability history — CLOSED
+
+MaterialState existence, historical currentness and present current binding are separate.
+
+Schedule requires historical reconstruction of which accepted placement was current at a material time. The owner-specific history object is therefore:
+
+```text
+dante.schedule_placement_current_history
+  schedule_ref          uuid        NOT NULL
+  material_state_ref    uuid        NOT NULL
+  current_from_at       timestamptz NOT NULL
+  current_until_at      timestamptz NULL
+
+  PRIMARY KEY(schedule_ref, current_from_at)
+```
+
+FK/eligibility contract:
+
+```text
+schedule_ref
+→ FK dante.schedule(schedule_ref)
+→ ON DELETE NO ACTION
+
+material_state_ref
+→ FK dante.schedule_placement_state(material_state_ref)
+→ ON DELETE NO ACTION
+→ exact Schedule owner must equal schedule_ref
+
+current_until_at
+→ NULL OR current_until_at > current_from_at
+```
+
+Rules:
+
+```text
+one history row
+→ one episode during which one exact Schedule placement state was the accepted current state
+
+current_until_at IS NULL
+→ currently open currentness episode
+
+same MaterialStateRef may appear in more than one episode
+→ reselecting an unchanged prior state does not manufacture a new MaterialStateRef
+
+materially changed placement
+→ requires a new MaterialStateRef
+```
+
+A partial unique index on `schedule_ref WHERE current_until_at IS NULL` enforces at most one open episode for one Schedule.
+
+A narrow bounded constraint trigger uses deterministic locking of the concrete Schedule owner to reject overlapping currentness episodes for the same `schedule_ref`. The same bounded integrity path verifies by COMMIT:
+
+```text
+open schedule current-history episode
+⇔
+matching dante.scoped_current_material_state row
+   for scoped_owner_ref = schedule_ref
+   and facet_code = 'schedule.placement'
+   and the same material_state_ref
+```
+
+Closed history rows are immutable. For an open row, ordinary semantic mutation is limited to the single transition:
+
+```text
+current_until_at: NULL → exact cessation instant
+```
+
+After closure, the row is append-retained/immutable-by-policy.
+
+No universal `material_state_acceptance` or cross-domain current-history root is created.
+
+This checkpoint does not activate `btree_gist`. PostgreSQL range/GiST capability remains available, but adding another extension solely to replace this bounded owner-locked integrity check is not justified while the cross-table current-binding equivalence still needs a narrow constraint trigger.
+
+### 29.5 Schedule creation, revision and unscheduling invariants
+
+Because Schedule means accepted placement rather than proposal, a newly created Schedule row must not survive COMMIT as a ceremonial contextual shell that has never represented an accepted placement.
+
+Deferred completeness rule:
+
+```text
+new dante.schedule row
+→ matching scoped_address
+→ at least one schedule.placement MaterialStateRef
+→ at least one schedule_placement_current_history episode
+→ matching current schedule.placement binding
+by COMMIT
+```
+
+Later history may legitimately contain:
+
+```text
+Schedule row/history exists
++
+no current Schedule binding
+```
+
+when the accepted placement is withdrawn without a replacement.
+
+Normal material revision:
+
+```text
+lock Schedule
+→ verify expected current MaterialStateRef when stale-write sensitivity applies
+→ create new schedule.placement state
+→ close old current-history episode at T
+→ open new episode for new state at the same accepted-change T
+→ replace current binding atomically
+→ COMMIT
+```
+
+Unscheduled/temporarily unresolved:
+
+```text
+lock Schedule
+→ close open current-history episode at T
+→ remove only the current schedule.placement binding
+→ preserve Schedule owner + all historical MaterialStateRefs/history
+→ COMMIT
+```
+
+This operation does not imply cancellation, Event disposition, Occurrence deletion, Activity completion or Capacity change.
+
+### 29.6 SCH-U02 — CLOSED THROUGH FACET-SPECIFIC CURRENT SURFACE
+
+The shared `dante.scoped_current_material_state` table is a technical control structure and must not receive blanket runtime DELETE merely because Schedule permits current-binding cessation.
+
+DANTE therefore defines the explicit future mutation/read surface:
+
+```text
+dante.schedule_current_placement
+```
+
+as a simple filtered PostgreSQL view over `dante.scoped_current_material_state`:
+
+```text
+WHERE facet_code = 'schedule.placement'
+WITH LOCAL CHECK OPTION
+```
+
+The view exposes only the Schedule-current contract. The exact migration may retain/expose the fixed `facet_code` column with a view-local default of `schedule.placement`; `WITH CHECK OPTION` must prevent INSERT/UPDATE from creating or moving a row outside that facet.
+
+PostgreSQL automatically-updatable-view semantics are used only as a bounded database surface. The base current-binding table remains unavailable for blanket runtime mutation.
+
+Future DB-U21 privilege matrix implication:
+
+```text
+schedule_current_placement
+→ candidate exact runtime SELECT/INSERT/UPDATE/DELETE surface for accepted Schedule operations
+→ no privilege is granted merely by this design section
+
+scoped_current_material_state
+→ direct runtime mutation remains denied unless a separate exact control contract proves otherwise
+```
+
+Unscheduling uses DELETE on this facet-specific view together with the owner-specific current-history closure in one outer transaction.
+
+```text
+SCH-U02
+CLOSED
+```
+
+### 29.7 Actual contextual owner cardinality — ACT-U01 HARDENED
+
+The existing Actual envelope remains:
+
+```text
+dante.actual
+  actual_ref           uuid PRIMARY KEY
+  subject_native_ref   uuid NOT NULL
+```
+
+with:
+
+```text
+actual_ref
+→ UUIDv7 ScopedRecordRef
+→ scoped_address family = 'actual'
+
+subject_native_ref
+→ FK dante.native_address(native_ref)
+→ owner_family IN ('activity','event','occurrence')
+→ ON DELETE NO ACTION
+
+subject binding
+→ immutable under ordinary runtime authority
+```
+
+The Domain establishes a semantic default of one broader contextual Actual for one expectation and explicitly forbids multiplying Actual merely because realization has multiple Sessions, Observations, participants, assertions or other facets. The same authority also deliberately permits splitting only when a genuinely distinct realization identity/lifecycle is established.
+
+Therefore CP6 freezes the following physical rule:
+
+```text
+NO global UNIQUE(actual.subject_native_ref)
+```
+
+A blanket UNIQUE would convert the semantic default into a stronger prohibition that upstream does not authorize.
+
+Conversely, repeated Actual rows for one subject are not a generic modeling device. They are admissible only when the operation's concrete semantics establish distinct realization identity/lifecycle. DANTE does not invent a `realization_kind`, sequence number or generic discriminator merely to police a distinction that does not yet have one universal vocabulary.
+
+### 29.8 Actual realization state and optional direct timing — CLOSED
+
+The existing facet remains:
+
+```text
+facet_code = 'actual.realization'
+```
+
+State envelope:
+
+```text
+dante.actual_realization_state
+  material_state_ref      uuid PRIMARY KEY
+  actual_ref              uuid NOT NULL
+  realization_occurred    boolean NOT NULL
+```
+
+Meaning remains:
+
+```text
+no established Actual/current realization
+→ UNKNOWN / not established
+
+realization_occurred = false
+→ known non-realization
+
+realization_occurred = true
+→ some realization established
+→ NOT universal completion/success/pass
+```
+
+When the Actual itself owns exact realized chronology rather than merely using Session/Observation evidence, the optional typed child is:
+
+```text
+dante.actual_realization_timing
+  material_state_ref   uuid PRIMARY KEY
+  extent_code          text NOT NULL
+  started_at           timestamptz NOT NULL
+  ended_at             timestamptz NULL
+```
+
+with:
+
+```text
+material_state_ref
+→ FK dante.actual_realization_state(material_state_ref)
+→ ON DELETE NO ACTION
+
+extent_code IN ('instant','start_only','interval')
+
+instant / start_only
+→ ended_at IS NULL
+
+interval
+→ ended_at IS NOT NULL
+→ ended_at > started_at
+
+actual_realization_state.realization_occurred
+→ MUST be true when direct timing exists
+```
+
+Direct timing is optional. A valid realized Actual may exist without exact timing, and known non-realization has no fake execution timestamp.
+
+Approximate/coarse source chronology is not coerced into exact `timestamptz` merely to fill this child. Such source information remains in its truthful source/provenance representation until a concrete typed Actual timing profile legitimately establishes it.
+
+### 29.9 Actual ↔ Session basis — exact Session state binding CLOSED
+
+The earlier provisional `actual_realization_session(material_state_ref, session_ref)` was too weak for historical reconstruction because a Session's accepted timing may later be corrected while Session identity remains stable.
+
+It is superseded by:
+
+```text
+dante.actual_realization_session_basis
+  actual_material_state_ref          uuid NOT NULL
+  session_ref                        uuid NOT NULL
+  session_timing_material_state_ref  uuid NOT NULL
+
+  PRIMARY KEY(actual_material_state_ref, session_ref)
+```
+
+Contract:
+
+```text
+actual_material_state_ref
+→ FK dante.actual_realization_state(material_state_ref)
+→ ON DELETE NO ACTION
+→ realization_occurred MUST be true
+
+session_ref
+→ FK dante.session(session_ref)
+→ ON DELETE NO ACTION
+
+session_timing_material_state_ref
+→ FK dante.session_timing_state(material_state_ref)
+→ ON DELETE NO ACTION
+→ exact Session owner MUST equal session_ref
+→ exact facet = session.timing
+```
+
+Thus a historical Actual state can state truthfully:
+
+```text
+this realization used Session S
+under the exact accepted Session timing state ST
+```
+
+without later Session correction silently rewriting the old Actual basis.
+
+No UNIQUE is placed on `session_ref` across Actual states. One real Session may legitimately contribute to several contextual interpretations/intentions where the accepted relation semantics permit it.
+
+### 29.10 Actual current-history and establishment barrier — CLOSED
+
+Owner-specific history:
+
+```text
+dante.actual_realization_current_history
+  actual_ref           uuid        NOT NULL
+  material_state_ref   uuid        NOT NULL
+  current_from_at      timestamptz NOT NULL
+  current_until_at     timestamptz NULL
+
+  PRIMARY KEY(actual_ref, current_from_at)
+```
+
+It follows the same exact owner/facet/current-binding discipline as Schedule:
+
+```text
+material_state_ref
+→ exact actual.realization state for actual_ref
+
+current_until_at
+→ NULL OR > current_from_at
+
+partial unique open-row invariant
+→ at most one current_until_at IS NULL per actual_ref
+
+bounded owner-row lock + constraint trigger
+→ reject overlapping currentness episodes
+→ enforce open episode ⇔ matching scoped current binding by COMMIT
+```
+
+Because an Actual is established contextual realization rather than a placeholder for uncertainty, a new Actual row may not survive COMMIT without a genuinely established current realization state/history episode.
+
+```text
+never established realization
+→ no Actual row
+
+known non-realization
+→ Actual + current realization_occurred=false state
+
+established realization
+→ Actual + current realization_occurred=true state
+```
+
+If a later correction/reconciliation retracts an earlier accepted Actual and current reality becomes unresolved, the Actual owner and historical states remain for truthful reconstruction while its current binding may become absent under the governed reconciliation path. That historical situation remains distinct from “no Actual was ever established”.
+
+Future safe current surface:
+
+```text
+dante.actual_current_realization
+```
+
+is a filtered automatically-updatable view of `scoped_current_material_state` with:
+
+```text
+facet_code = 'actual.realization'
+WITH LOCAL CHECK OPTION
+```
+
+Its eventual DML privileges remain an explicit DB-U21 matrix decision.
+
+### 29.11 ACT-U01 — CLOSED
+
+The exact disposition is now:
+
+```text
+subject SQL uniqueness
+→ no speculative blanket UNIQUE(subject_native_ref)
+
+multiple Actual identities for one subject
+→ only when distinct realization identity/lifecycle is semantically real
+→ not generated for multiple Sessions/sources/participants/facets
+
+progressive establishment / ordinary correction
+→ same Actual identity
+→ new actual.realization MaterialStateRef
+→ current-history/current-binding transition
+
+Actual-owned exact chronology
+→ optional typed actual_realization_timing
+
+Session composition
+→ exact Session identity + exact session.timing MaterialStateRef basis
+
+replacement/substitution
+→ no generic baseline relation
+→ first accepted concrete replacement semantics create a specific typed LR-03 relation
+
+universal result/status payload
+→ absent
+```
+
+```text
+ACT-U01
+CLOSED
+```
+
+### 29.12 Session mandatory timing facet — CLOSED FOR BASELINE
+
+Session is an LR-01 owner whose native identity remains:
+
+```text
+dante.session
+  session_ref uuid PRIMARY KEY
+```
+
+The identity row still carries no start/end/status/context columns by convention. However a canonical Session represents an actual execution episode, so the baseline requires one materially accepted timing interpretation.
+
+Material facet:
+
+```text
+facet_code = 'session.timing'
+```
+
+State envelope:
+
+```text
+dante.session_timing_state
+  material_state_ref   uuid PRIMARY KEY
+  session_ref          uuid NOT NULL
+  timing_form_code     text NOT NULL
+```
+
+Contract:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ exact native owner = session_ref
+→ exact facet = session.timing
+→ ON DELETE NO ACTION
+
+session_ref
+→ FK dante.session(session_ref)
+→ ON DELETE NO ACTION
+
+timing_form_code IN ('absolute','elapsed_only')
+```
+
+Exactly one matching timing payload must exist by COMMIT.
+
+A canonical Session must have exactly one current `session.timing` MaterialStateRef after creation. Here “current” means the currently accepted interpretation of that historical execution episode, **not** that the Session is currently running.
+
+### 29.13 Session absolute timing — exact / approximate / rounded precision
+
+Absolute/real-world boundary state:
+
+```text
+dante.session_timing_absolute
+  material_state_ref      uuid PRIMARY KEY
+  started_at              timestamptz NOT NULL
+  start_precision_code    text NOT NULL
+  ended_at                timestamptz NULL
+  end_precision_code      text NULL
+```
+
+The bounded Session-local precision vocabulary is derived from the accepted Session authority's explicit capture qualities:
+
+```text
+start_precision_code IN ('exact','approximate','rounded')
+end_precision_code   IN ('exact','approximate','rounded') when present
+```
+
+Rules:
+
+```text
+ended_at IS NULL
+→ end_precision_code IS NULL
+→ Session timing remains open-ended in the current accepted representation
+
+ended_at IS NOT NULL
+→ ended_at > started_at
+→ end_precision_code IS NOT NULL
+```
+
+The precision code describes epistemic/capture precision of that Session boundary; it is not a universal temporal precision taxonomy and does not redefine PostgreSQL timestamp storage precision.
+
+Capture source remains Provenance. `manual`, `tracker`, `provider` or `AI-assisted` do not become Session semantic types.
+
+### 29.14 Session elapsed-only timing — CLOSED
+
+For truthful retrospective/imported execution where elapsed duration is known but exact wall-clock boundaries are not sufficiently established:
+
+```text
+dante.session_timing_elapsed
+  material_state_ref       uuid PRIMARY KEY
+  elapsed_seconds          numeric NOT NULL
+  elapsed_precision_code   text NOT NULL
+```
+
+Rules:
+
+```text
+elapsed_seconds is finite
+elapsed_seconds > 0
+elapsed_precision_code IN ('exact','approximate','rounded')
+```
+
+No fake start/end timestamp is created.
+
+`elapsed_only` is mutually exclusive with the absolute timing payload for one MaterialStateRef.
+
+When accepted exact/representative boundaries later become established, that is a material timing correction producing a new `session.timing` MaterialStateRef rather than updating the elapsed-only historical state in place.
+
+### 29.15 Session pause/resume snapshot — CLOSED
+
+Pause/resume belongs to the exact complete `session.timing` material snapshot rather than a universal execution event log.
+
+```text
+dante.session_timing_pause
+  material_state_ref      uuid        NOT NULL
+  paused_at               timestamptz NOT NULL
+  pause_precision_code    text        NOT NULL
+  resumed_at              timestamptz NULL
+  resume_precision_code   text        NULL
+
+  PRIMARY KEY(material_state_ref, paused_at)
+```
+
+Contract:
+
+```text
+material_state_ref
+→ FK dante.session_timing_absolute(material_state_ref)
+→ ON DELETE NO ACTION
+
+pause_precision_code IN ('exact','approximate','rounded')
+resume_precision_code IN ('exact','approximate','rounded') when present
+
+resumed_at IS NULL
+→ resume_precision_code IS NULL
+
+resumed_at IS NOT NULL
+→ resumed_at > paused_at
+→ resume_precision_code IS NOT NULL
+```
+
+For one accepted timing state:
+
+```text
+pause representative boundaries must lie within the Session representative boundaries
+pause intervals must not overlap each other
+an ended Session timing state may not contain an open pause
+at most one open pause may exist in one timing state
+```
+
+These are owner/state-local constraints. No database exclusion rule forbids two **different Sessions** from overlapping in wall-clock time because accepted Session semantics explicitly permit valid contextual overlap.
+
+A `session.timing` MaterialState is a complete accepted snapshot. Pause/resume correction therefore does not mutate old pause child rows after acceptance; a new timing state repeats/preserves the applicable complete pause-set representation and becomes current.
+
+Derived quantities such as:
+
+```text
+elapsed duration
+paused duration
+active duration
+```
+
+are calculated from accepted timing/pause state when boundaries are known. DANTE does not store an independently mutable `active_duration` that can disagree with those source facts.
+
+### 29.16 Session current-history, running semantics and material-change boundary — CLOSED
+
+Owner-specific current interpretation history:
+
+```text
+dante.session_timing_current_history
+  session_ref          uuid        NOT NULL
+  material_state_ref   uuid        NOT NULL
+  current_from_at      timestamptz NOT NULL
+  current_until_at     timestamptz NULL
+
+  PRIMARY KEY(session_ref, current_from_at)
+```
+
+with:
+
+```text
+material_state_ref
+→ exact session.timing state for session_ref
+
+partial unique open-row invariant
+→ at most one current_until_at IS NULL per session_ref
+
+bounded owner-row lock + constraint trigger
+→ no overlapping currentness episodes
+→ open episode ⇔ native_current_material_state(session_ref,'session.timing') by COMMIT
+```
+
+A live baseline Session always has one current accepted timing state. An ended Session therefore continues to have a current timing state — the currently accepted historical interpretation of its completed execution.
+
+Future safe current surface:
+
+```text
+dante.session_current_timing
+```
+
+is a filtered automatically-updatable view over `native_current_material_state` with:
+
+```text
+facet_code = 'session.timing'
+WITH LOCAL CHECK OPTION
+```
+
+Its future runtime privileges are not granted by this checkpoint; DB-U21 must decide the exact surface.
+
+Material revision boundary:
+
+```text
+timer display/tick
+→ NOT a MaterialState change
+
+Session start
+material pause
+resume
+end
+material timing correction
+→ material semantic timing change
+→ new session.timing MaterialStateRef
+```
+
+Thus a one-hour Session does not create thousands of versions merely because a stopwatch display advanced.
+
+No universal Session lifecycle enum is introduced:
+
+```text
+running / paused / ended
+```
+
+can be determined for the accepted timing snapshot from open/closed end and pause geometry where that question is meaningful. Ending a Session never establishes Activity/Occurrence completion or an Outcome.
+
+### 29.17 Session context and split/merge — FINAL BASELINE DISPOSITION
+
+Current accepted authority permits Session to relate to Activity, Occurrence, Event-specific execution, Plan/specialist context or spontaneous execution and explicitly rejects one universal mandatory parent tree. The exact primary/secondary context relation cardinality is not closed enough to justify a generic Session context table in CP6 baseline.
+
+Therefore this checkpoint adds no:
+
+```text
+session.activity_ref mandatory parent
+session.parent_kind + parent_id
+session.context JSONB
+universal SessionContext relation
+```
+
+The first concrete execution-context relation must use the already-closed LR-03/DB-U22 consumer-specific relation rules.
+
+Likewise split/merge remains a correction/reconciliation capability rather than a baseline generic lifecycle table:
+
+```text
+NO generic session_split/session_merge/status table in CP6 baseline
+
+future trigger
+→ first concrete accepted split/merge operation contract
+→ typed source Session + exact material-state basis
+→ typed resulting Session identities
+→ exact correction/reconciliation lineage
+→ no destructive rewrite of original capture
+```
+
+This is a classified final baseline disposition, not permission to lose split/merge history when that capability is implemented.
+
+### 29.18 Owner-specific current-history mechanism — shared engineering pattern, separate semantic families
+
+The three current-history tables are:
+
+```text
+schedule_placement_current_history
+actual_realization_current_history
+session_timing_current_history
+```
+
+They deliberately do not collapse into:
+
+```text
+material_state_current_history(owner_kind, owner_id, facet, ...)
+universal acceptance episode table
+```
+
+Common engineering rules may be implemented by reusable migration/SQLAlchemy helper code, but each table owns its exact semantic owner/facet contract.
+
+Common row rules:
+
+```text
+owner ref + material_state_ref + current_from_at
+→ immutable after insertion
+
+current_until_at
+→ initially NULL for an open episode
+→ may change once from NULL to a valid later timestamp
+→ immutable thereafter
+
+same MaterialStateRef
+→ may be selected in multiple non-overlapping episodes
+
+current state
+→ never inferred by MAX(current_from_at), insertion order or UUID order
+→ authoritative pointer remains native/scoped_current_material_state
+```
+
+For replacement operations, the same accepted-change instant should close the prior episode and open the successor episode so history has no invented overlap. Schedule/Actual cessation may create an intentional no-current gap. Baseline Session timing does not intentionally create a no-current gap after Session establishment.
+
+No `btree_gist` extension is added by this checkpoint. The existing PostgreSQL extension set remains unchanged.
+
+### 29.19 SQLAlchemy and migration consequences
+
+Future CP6-04 mappings are now constrained to explicit row classes for actually materialized objects:
+
+```text
+Schedule
+SchedulePlacementState
+SchedulePlacementDateState
+SchedulePlacementFloatingLocalState
+SchedulePlacementNamedZoneState
+SchedulePlacementAbsoluteState
+SchedulePlacementCurrentHistory
+
+Actual
+ActualRealizationState
+ActualRealizationTiming
+ActualRealizationSessionBasis
+ActualRealizationCurrentHistory
+
+Session
+SessionTimingState
+SessionTimingAbsolute
+SessionTimingElapsed
+SessionTimingPause
+SessionTimingCurrentHistory
+```
+
+The three filtered current views need no ORM mapping merely for symmetry. If an application write/read path benefits from a mapped view, that mapping remains read/write-surface-specific and does not become semantic inheritance.
+
+No mapped superclass such as `TemporalEntity`, `ExecutionRecord`, `CurrentStateHistory` or `RealizationBase` is introduced.
+
+Migration dependency pressure:
+
+```text
+native Session owner + native_address support
+scoped Schedule/Actual owners + scoped_address support
+→ material_state_address/current binding controls
+→ schedule/actual/session exact state envelopes + typed payload tables
+→ owner-specific current-history tables + bounded constraint functions/triggers
+→ facet-specific current views
+→ DB-U21 exact ACL entries
+→ direct PostgreSQL tests
+```
+
+No business DDL is authorized until Gate 03; this section freezes the design that CP6-04 must later materialize.
+
+### 29.20 DB-U21 privilege implications carried forward
+
+The three current views become explicit objects in the eventual DB-U21 matrix:
+
+```text
+dante.schedule_current_placement
+dante.actual_current_realization
+dante.session_current_timing
+```
+
+They are bounded future capability surfaces, not automatic grants.
+
+Material payload/current-history direction remains:
+
+```text
+owner rows
+→ exact DML only for accepted operations
+→ identity/subject binding UPDATE denied
+→ DELETE denied under DB-U14 baseline
+
+material state payload + immutable child rows
+→ SELECT + INSERT when a real runtime path requires it
+→ ordinary UPDATE/DELETE denied
+
+current-history rows
+→ SELECT + INSERT as required
+→ only bounded one-time current_until_at closure UPDATE
+→ ordinary DELETE denied
+
+filtered current views
+→ exact DML only where the corresponding semantic operation exists
+
+shared native/scoped_current_material_state
+→ no blanket runtime mutation privilege by symmetry
+
+constraint/integrity routines
+→ no direct runtime EXECUTE by default
+```
+
+The exact grants remain open under DB-U21 until the final complete object inventory is frozen.
+
+### 29.21 Direct PostgreSQL proof additions
+
+Future real PostgreSQL tests must include at least:
+
+```text
+SCHEDULE
+valid date-span state                                    PASS
+empty/infinite date-span where baseline forbids it       REJECT
+floating local point                                     PASS
+floating local start-only                                PASS
+floating local interval                                  PASS
+named-zone local valid IANA zone                         PASS
+invalid zone                                             REJECT
+named-zone interval invalid end                          REJECT
+absolute interval invalid end                            REJECT
+typed discriminator/payload mismatch                     REJECT
+multiple Schedule rows for one Activity                  PASS
+blank/new Schedule with no accepted placement by COMMIT  REJECT
+material reschedule preserves prior state/history        PASS
+same old state may be reselected in later episode        PASS
+current-history overlap for one Schedule                  REJECT
+open history != current binding                           REJECT by COMMIT
+unschedule closes history + removes current binding       PASS
+unschedule deletes historical state                      REJECT / absent by operation
+qualitative day-part placeholder                         absent by schema
+Schedule implies Capacity                                absent by schema
+
+ACTUAL
+no Actual row                                            remains unknown
+blank Actual owner with no established state by COMMIT   REJECT
+realization_occurred=false                               known non-realization
+realization_occurred=true                                established realization
+false state with direct realized timing                  REJECT
+valid exact Actual interval                              PASS
+invalid Actual interval end                              REJECT
+multiple Actual rows for one subject                     structurally admissible; operation must establish distinct realization identity
+multiple Sessions do not force multiple Actuals          PASS by model
+Actual Session basis wrong Session state owner            REJECT
+Actual Session basis wrong facet                          REJECT
+later Session timing correction leaves old Actual basis  unchanged
+Actual current-history overlap                            REJECT
+open Actual history != current binding                    REJECT by COMMIT
+retraction to no-current preserves prior Actual history  PASS where governed reconciliation permits
+replacement generic status/relation                      absent by schema
+
+SESSION
+Session creation without current session.timing          REJECT by COMMIT
+absolute open-ended Session                              PASS
+absolute ended Session                                   PASS
+ended_at <= started_at                                   REJECT
+unknown end with end precision                           REJECT
+exact / approximate / rounded boundary precision         PASS
+unknown precision code                                   REJECT
+elapsed-only positive finite duration                    PASS
+elapsed-only zero/negative/non-finite                    REJECT
+absolute + elapsed payload simultaneously                REJECT
+valid closed pause                                       PASS
+valid open pause on open Session                         PASS
+open pause on ended Session                              REJECT
+overlapping pauses within one timing state               REJECT
+pause outside Session bounds                             REJECT
+two separate overlapping Sessions                       PASS
+pause/resume/end creates new material state              PASS
+timer tick creates semantic material state               absent by design
+Session current-history overlap                          REJECT
+open Session history != current binding                  REJECT by COMMIT
+ended Session retains one current timing interpretation  PASS
+generic Session status enum                              absent by schema
+universal Session parent/context JSON                    absent by schema
+```
+
+Current-history concurrency tests must execute concurrent writers against the same owner and prove that owner-row locking plus the bounded integrity checks prevent overlapping open/current episodes and stale silent replacement under the accepted expected-state contract.
+
+### 29.22 Accumulated A/B/C audit — PASS AFTER REPAIR
+
+The complete accumulated blueprint through this checkpoint was replayed against the accepted Domain Schedule/Actual/Session specifications and continuations, Logical Slice B/C/D hardenings, PostgreSQL Physical mapping, CP6-01 ledger, CP6-02 Constitution, sections 21/25/27/28 and the real PostgreSQL 18 foundation.
+
+Classification:
+
+```text
+A — SOUND / RETAIN
+57 / 57 Domain coverage
+15 native-owner census
+NativeRef / ScopedRecordRef / MaterialStateRef separation
+MaterialState totality
+explicit current binding
+MaterialState existence != current
+DB-U07 temporal type doctrine
+DB-U14 non-destructive lifecycle
+DB-U21 migration-owned least-privilege direction
+Schedule != Session != Actual
+Schedule multi-placement pressure
+Actual unknown vs known non-realization
+Session stable identity across timing correction
+Session overlap not globally forbidden
+no universal status/result/event root
+
+B/C — HARDENED / REPAIRED BEFORE WRITE
+Schedule state without reconstructible current-at-time chronology
+→ REPAIRED with schedule_placement_current_history
+
+Actual state without reconstructible current-at-time chronology
+→ REPAIRED with actual_realization_current_history
+
+Session correction without reconstructible current interpretation chronology
+→ REPAIRED with session_timing_current_history
+
+universal material acceptance/current-history root
+→ REJECTED; owner/facet-specific history retained
+
+global UNIQUE(schedule.subject_native_ref)
+→ REJECTED; contradicts explicit multi-placement Activity pressure
+
+invented Event/Occurrence max-one Schedule SQL rule
+→ REJECTED; not established as universal upstream invariant
+
+global UNIQUE(actual.subject_native_ref)
+→ REJECTED; stronger than accepted Actual cardinality authority
+
+Actual owner used as placeholder for never-established unknown reality
+→ REJECTED
+
+Schedule owner created without any accepted placement history
+→ REJECTED
+
+Actual→Session binding to Session identity only
+→ REJECTED; exact session.timing MaterialStateRef basis required
+
+Session native row left as a semantically empty UUID shell
+→ REPAIRED; session.timing required by COMMIT
+
+universal Session running/paused/done enum
+→ REJECTED
+
+every timer tick treated as material Version
+→ REJECTED
+
+global non-overlap invariant across independent Sessions
+→ REJECTED
+
+manual/imported approximate timing coerced into false exactness
+→ REPAIRED with Session-local exact/approximate/rounded precision + elapsed-only form
+
+Tuesday-afternoon clock boundaries invented to close SCH-U01
+→ REJECTED; qualitative day-part variant left out of baseline DDL under a closed negative disposition
+
+blanket DELETE on shared current-binding control table
+→ REJECTED; facet-specific updatable view selected for Schedule cessation
+
+activate btree_gist only to make bounded current-history overlap checks look more declarative
+→ REJECTED; current stack unchanged and owner-locked bounded constraint checks retained
+
+C — STRUCTURAL DEFECT AFTER REPAIR
+0
+```
+
+Post-repair regression:
+
+```text
+57 / 57 Domain concepts                              PASS
+15 / 15 native owners                               PASS
+new Domain owner                                    0
+Native / Scoped / Material / External separation    PASS
+MaterialState totality                              PASS
+MaterialState existence != current                  PASS
+owner-specific current chronology                   PASS
+DB-U14                                               PASS / CLOSED baseline
+
+Schedule typed exact variants                       PASS
+Schedule coarse day-part                            CLOSED AS NO-BASELINE-DDL UNTIL VOCABULARY TRIGGER
+Schedule current cessation                          PASS
+SCH-U01                                              CLOSED
+SCH-U02                                              CLOSED
+
+Actual realization axis                             PASS
+Actual cardinality not overconstrained               PASS
+Actual direct timing                                PASS
+Actual exact Session-state basis                    PASS
+ACT-U01                                              CLOSED
+
+Session mandatory timing                            PASS
+Session open/ended timing                           PASS
+Session approximate/rounded precision               PASS
+Session elapsed-only                                PASS
+Session pause/resume snapshot                       PASS
+Session overlap semantics                           PASS
+
+Schedule != Actual                                  PASS
+Schedule != Session                                 PASS
+Session != Actual / Outcome                         PASS
+Session != Event attendance                         PASS
+Actual != Outcome                                   PASS
+Actual != Observation                               PASS
+Actual != Participation / Contribution              PASS
+absence Actual != false Actual                      PASS
+Schedule absence != cancellation                    PASS
+
+new generic semantic root                           0
+new generic lifecycle/status                        0
+semantic JSON fallback                              0
+new unclassified item                               0
+```
+
+No Domain, Logical, Physical, CP6-01 or CP6-02 reopening is required.
+
+### 29.23 Register consequence and current status
+
+This checkpoint closes three existing local blockers:
+
+```text
+SCH-U01  CLOSED
+SCH-U02  CLOSED
+ACT-U01  CLOSED
+```
+
+The exact local unresolved set is now:
+
+```text
+OUT-U01
+MIL-U01
+AGR-U01
+CRT-U01
+EVL-U01
+TC-U01
+
+COUNT = 6
+```
+
+The globally unresolved DB-U set remains the checkpoint-A set:
+
+```text
+DB-U08
+DB-U09
+DB-U10
+DB-U12
+DB-U15
+DB-U17
+DB-U18
+DB-U19
+DB-U20
+DB-U21
+
+COUNT = 10
+```
+
+Current status:
+
+```text
+CONSOLIDATION CHECKPOINT B
+SCHEDULE / ACTUAL / SESSION
+PASS WITH HARDENING
+
+SCH-U01
+CLOSED
+
+SCH-U02
+CLOSED
+
+ACT-U01
+CLOSED
+
+SESSION CORE PHYSICAL TIMING CONTRACT
+PASS WITH HARDENING
+
+WHOLE ACCUMULATED DATABASE AUDIT
+PASS AFTER REPAIR
+
+GLOBAL UNRESOLVED DB-U ITEMS
+10
+
+LOCAL EXACT UNRESOLVED ITEMS
+6
+
+UNCLASSIFIED NEW ITEMS
+0
+
+CP6 BUSINESS DDL AUTHORIZED
+NO
+
+GATE 03
+NOT YET EARNED
+```
+
+Recurrence / DB-U12 remains the next separate high-value block; it is not implicitly modified or closed by this checkpoint.
