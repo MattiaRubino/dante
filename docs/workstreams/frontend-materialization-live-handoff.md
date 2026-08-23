@@ -455,7 +455,8 @@ Never convert NOT RUN to PASS without direct evidence. No direct work on `main`.
 Status:
 
 ```text
-NEXT / READ-ONLY DISCOVERY REQUIRED BEFORE WRITE GATE
+WEB E2E + MOBILE BUNDLE-SMOKE QA PASS
+COMMIT + PUSH ABOUT TO RUN
 ```
 
 Objective:
@@ -464,6 +465,51 @@ Objective:
 establish a real Web E2E baseline and a deterministic Mobile bundle smoke
 without mixing CI orchestration or product UI into the slice
 ```
+
+Approved FM-06D gate:
+
+```text
+BRANCH
+feature/frontend-materialization
+
+PRE-SCOPE
+15a0fabfe7c0583a2350e4f213559723beddc967
+
+CREATE
+apps/web/playwright.config.ts
+apps/web/e2e/runtime.spec.ts
+tooling/check-mobile-bundle.mjs
+
+UPDATE
+.gitignore
+package.json
+pnpm-lock.yaml
+apps/web/package.json
+apps/web/tsconfig.json
+docs/workstreams/frontend-materialization-live-handoff.md
+
+DELETE
+none
+```
+
+Materialization-time technology revalidation:
+
+```text
+@playwright/test 1.62.1 exact app-local devDependency
+Chromium only for the first automated browser baseline
+Expo SDK 57 `expo export --platform android`
+Hermes bytecode left enabled
+```
+
+Root commands:
+
+```text
+pnpm test:e2e:web
+pnpm mobile:bundle:check
+```
+
+No interactive Firefox or Android emulator rerun is required by this slice.
+
 
 Expected discovery questions:
 
@@ -481,6 +527,48 @@ Mobile
 
 Do not select commands from memory; inspect the current Expo/Metro and Playwright primary documentation and actual repository scripts first.
 
+Direct FM-06D evidence:
+
+```text
+@playwright/test 1.62.1 registry revalidation PASS
+Playwright Chromium browser installation PASS
+Playwright Chromium Linux system dependencies PASS
+Chromium headless process launch PASS
+Web production Vite build launched by Playwright webServer PASS
+Vite preview 127.0.0.1:4173 PASS
+Chromium route / E2E PASS
+1 real Web E2E test PASS
+Italian runtime heading + eyebrow PASS
+route/purpose definition-list semantics PASS
+Temporal Europe/Rome runtime value PASS
+
+Expo SDK 57 Android production export PASS
+Hermes .hbc bundle present PASS
+Hermes .hbc non-empty PASS
+temporary export outside repository PASS
+temporary export cleanup PASS
+
+root pnpm test PASS
+5-package typecheck PASS
+architecture:check PASS
+generated:check PASS
+lint PASS
+format PASS
+Web build PASS
+frozen install PASS
+git diff --check PASS
+```
+
+Evidence classification:
+
+```text
+Web E2E = real automated Chromium execution against Vite production preview
+Mobile bundle smoke = deterministic headless Metro/Expo production bundling proof
+Mobile bundle smoke != APK/AAB build
+Mobile bundle smoke != device runtime
+previous Android emulator/Hermes runtime PASS remains stronger direct runtime evidence
+```
+
 FM-06D explicitly does NOT include:
 
 ```text
@@ -491,6 +579,99 @@ backend contracts
 coverage thresholds
 main synchronization
 ```
+
+## 11A. FM-06D attempt-1 Playwright host dependency diagnostic
+
+The first FM-06D Web E2E run reached:
+
+```text
+Playwright 1.62.1 installed
+Chromium browser binaries installed
+Vite production build PASS
+Vite preview reachable at 127.0.0.1:4173
+```
+
+Chromium itself then failed before a browser page could start:
+
+```text
+chrome-headless-shell: error while loading shared libraries:
+libnspr4.so: cannot open shared object file
+```
+
+Classification:
+
+```text
+DANTE Web build PASS
+Playwright browser download PASS
+browser process launch FAIL
+owning layer = WSL/Linux browser system dependencies
+NOT a Web application failure
+NOT a Playwright test assertion failure
+```
+
+This differs from the historical optional React Native DevTools `libnspr4.so`
+warning: FM-04 application runtime did not require that helper, so installing
+host packages was not justified there. FM-06D now has a real Chromium process
+whose execution directly requires the missing Linux browser dependency.
+
+Accepted repair uses Playwright's supported dependency installer for the
+single selected browser:
+
+```text
+playwright install-deps chromium
+```
+
+Do not add browser shared libraries to the repository dependency graph and do
+not change the Web application to work around a workstation-level ELF
+dependency.
+
+## 11B. FM-06D attempt-2 Web E2E assertion diagnostic
+
+After Playwright's Chromium Linux dependencies were installed:
+
+```text
+libnspr4.so visible PASS
+Chromium process launch PASS
+Vite production build PASS
+Vite preview PASS
+browser reached the real DANTE route
+heading `Frontend pronto` PASS
+eyebrow `DANTE Web` PASS
+```
+
+The E2E then failed only on:
+
+```text
+getByText('Scaffold diagnostico FM-03', { exact: true })
+```
+
+The real DOM renders the purpose and Temporal probe in the same semantic
+`<dd>`:
+
+```text
+Scaffold diagnostico FM-03
+2026-08-22T20:00:00+02:00[Europe/Rome]
+```
+
+With Playwright `exact: true`, the containing element's normalized full text
+is not exactly the purpose substring. This is a test-locator mismatch, not
+missing application copy.
+
+Accepted repair:
+
+```text
+anchor the assertion to the visible `Scopo` definition-list row
+assert that row contains the expected FM-03 purpose
+assert that row contains the exact Temporal code value
+```
+
+This preserves the real user-visible contract and is stronger than weakening
+the application or replacing the assertion with an unrelated implementation
+selector.
+
+The `NO_COLOR`/`FORCE_COLOR` warning seen in the failed run is non-blocking
+runner output noise. The resume does not set `NO_COLOR`; output validation
+already strips ANSI sequences when needed.
 
 ## 12. Future queued work
 
