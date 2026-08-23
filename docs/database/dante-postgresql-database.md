@@ -4255,3 +4255,731 @@ NOT YET EARNED
 ```
 
 The next semantic block should consume **Criterion / Evaluation / Evidence together with Temporal Constraint pressure**, because those authorities are now the highest-value route into `MIL-U01`, `SCH-U01` and the remaining evaluative/temporal dependencies without inventing placeholder result/status/policy vocabularies.
+
+---
+
+## 27. Object-level closure pass III-B — Criterion / Evaluation / Evidence / Temporal Constraint
+
+This pass consumes the complete accepted Domain + Logical authority for Criterion/Evaluation, Evidence and Temporal Constraint, together with the already-closed MaterialState/current-binding/reference topology, Pass-II Schedule/Actual/Outcome/Milestone/Agreement envelopes, Pass-III-A relation/governance composition contract, CP6-01/02, accepted PostgreSQL Physical mapping and the real CP3 foundation.
+
+The pass is a **physical derivation**, not a semantic redesign. It does not invent a universal Criterion language, Evidence graph, Evaluation workflow or temporal-rule DSL. Every accepted persistence shape below is constrained by upstream classification and every unresolved physical vocabulary remains explicitly blocked rather than represented by free text/JSON placeholders.
+
+The governing non-collapse chain is:
+
+```text
+Criterion / evaluative specification
+!= Evaluation
+!= Evidence
+!= Actual / Outcome / Milestone / effective target state
+
+Temporal Constraint
+!= Schedule
+!= Actual
+!= Recurrence
+!= Dependency
+!= Goal/Milestone target expectation by default
+```
+
+### 27.1 Criterion materialization discipline — CLOSED AT OWNERSHIP/STATE-COMPOSITION LEVEL
+
+Criterion is LR-05 contextual evaluative specification/capability. It does **not** become one universal semantic root such as:
+
+```text
+dante.criterion(kind, operator, value, payload)
+universal criterion enum
+universal expression AST/DSL
+universal Rule(type,payload)
+JSONB criterion semantics
+```
+
+The physical rule is:
+
+```text
+OWNER-BOUND / CONSUMER-BOUND CRITERION
+→ typed state/children owned by the concrete target/policy context
+→ no independent Criterion identity merely for storage uniformity
+
+INDEPENDENTLY SCOPED CRITERION
+→ only when a concrete contract proves independent addressability,
+  reuse, cross-record reference, independent reconciliation or
+  lifecycle/history distinct from its containing target/policy
+→ ScopedRecordRef only at that threshold
+```
+
+A material Criterion that matters historically binds through MaterialStateRef. A later rule change receives a new material state; historical Evaluation does not silently float to the new Criterion state.
+
+#### Multi-Criterion current-state hardening
+
+The accumulated audit found a direct collision with the already-closed current-binding topology if several simultaneously applicable Criteria were naively represented as separate current MaterialStateRefs under the same owner/facet:
+
+```text
+PRIMARY KEY(owner_ref, facet_code)
+→ at most one current MaterialStateRef per owner/facet
+```
+
+Therefore the accepted physical composition is:
+
+```text
+one semantic owner/facet represents one complete current Criterion set/policy state
+→ one current MaterialStateRef for that owner/facet
+→ N typed criterion child rows/typed component relations inside that exact state
+
+OR
+
+one particular Criterion has materially independent lifecycle/history/addressability
+→ that Criterion escalates to an independently scoped contextual record
+→ its own current material definition may then be singular under its own owner/facet
+```
+
+DANTE MUST NOT create several competing “current criterion” rows for one owner/facet merely because multiple criteria exist, and MUST NOT solve that problem with a generic `criterion_id` identity inflation layer unless independent criterion identity is semantically real.
+
+#### CRT-U01 — first concrete Criterion payload/composition contract
+
+Ownership/composition is closed, but current upstream authority intentionally does not pre-approve one universal physical representation for all of:
+
+```text
+boolean condition
+threshold/range
+target value
+accumulation
+frequency/duration in period
+Milestone/checkpoint attainment
+trend/directional change
+external result
+manual/qualitative assessment
+composite Criterion
+```
+
+`CRT-U01` therefore remains an exact local blocker for the first concrete typed Criterion payload/composition family. It must close the exact typed fields, comparison/value semantics, composition/cardinality and result-profile contract from the applicable owner/context authority. No placeholder `operator_code`, expression text or JSON DSL is implementation-authorized merely to make Criterion generic.
+
+### 27.2 Evaluation — DERIVED BY DEFAULT / CONSEQUENTIAL SNAPSHOT ONLY WHEN MATERIAL
+
+Evaluation is LR-08 contextual reasoning/process-result semantics by default. The database does not persist one row for every query, rolling calculation, planner pass, screen refresh or “2 of 3” progress projection.
+
+```text
+ordinary reproducible/transient Evaluation
+→ derive on demand / projection/cache only when justified
+→ no canonical Evaluation row required
+
+consequential historical Evaluation
+→ material snapshot only when consequence/reproducibility/history requires it
+```
+
+A consequential Evaluation snapshot MUST preserve or reconstruct the materially applicable basis:
+
+```text
+exact bounded target or exact target MaterialStateRef where target state matters
++
+exact Criterion MaterialStateRef / exact reconstructible Criterion state
++
+exact Evidence/source basis or deterministic reconstructible selection basis
++
+applicable evaluation period/window/context
++
+profile-specific assessment/result semantics
++
+evaluator / represented party / Authority/policy basis where material
+```
+
+Later target, Criterion or source correction may support a later re-evaluation without rewriting the earlier Evaluation basis.
+
+Evaluation does not automatically make another domain state current/effective:
+
+```text
+Evaluation result
+!= Goal current state
+!= Milestone attainment truth by row existence
+!= Outcome
+!= Decision
+!= Authority
+```
+
+The owning domain concept plus applicable policy/Authority/Decision contract owns any consequential effect.
+
+#### Material snapshot identity
+
+A material Evaluation does not receive a universal identity root merely because it is persisted. The preferred physical form is consumer/profile specific:
+
+```text
+owner/target-owned material evaluation facet/state
+→ when the snapshot is meaningful only inside that owner/context
+
+independently scoped concrete Evaluation family
+→ only when independent addressability, reconciliation, lifecycle/history
+  or cross-record reference is actually required
+```
+
+No universal `dante.evaluation(status)` / generic assessment enum is accepted.
+
+#### EVL-U01 — first consequential material Evaluation profile
+
+`EVL-U01` must close, from a concrete accepted evaluation context:
+
+```text
+exact target Reference Contract / target-state eligibility
+exact Criterion-state eligibility
+exact assessment/result payload and unknown/indeterminate semantics
+exact evaluation chronology/window/period representation
+Evidence-basis totality/reconstructibility requirement
+correction / reevaluation / reconciliation behavior
+material identity/currentness if any
+exact SQL constraints/indexes/privileges/direct tests
+```
+
+Until a concrete profile closes these facts, no generic Evaluation status/result payload is materialized.
+
+### 27.3 Evidence — SOURCE-PRESERVING EVALUATIVE USE / BASIS, NO UNIVERSAL EVIDENCE ROOT
+
+Evidence remains LR-03 evaluative use/relationship semantics:
+
+```text
+source information
+→ used as Evidence
+→ for one exact evaluation/criterion/checkpoint/decision context
+```
+
+The source remains the source. DANTE does not duplicate Observation/Actual/Outcome/Confirmation/MaterialState/provider payload into an `evidence_data` row merely because that information participates in an Evaluation.
+
+Physical rule:
+
+```text
+Evidence use is derived when deterministic/reconstructible and no independent material history is required
+
+material Evidence use / consequential Evaluation basis
+→ exact typed relation(s) from the concrete evaluation/profile state to the source reference/state
+→ source payload is not copied
+```
+
+Where the source's exact material version matters, the basis MUST bind `MaterialStateRef` rather than “whatever source state is current later”. A native/scoped source identity may be sufficient only where source material-state distinction is not part of the evaluative claim.
+
+For a set-valued material basis that legitimately accepts multiple ReferenceAddress families, DB-U22 applies directly:
+
+```text
+<evaluation-profile>_evidence_native
+<evaluation-profile>_evidence_scoped
+<evaluation-profile>_evidence_material_state
+```
+
+Only the actually admitted families exist; each owns a real FK and its concrete owner/facet eligibility. This does not create a universal Evidence graph or generic ReferenceAddress table.
+
+Mandatory epistemic invariants remain:
+
+```text
+no Evidence
+!= Evidence against
+!= Criterion failed
+
+no LifeOS record
+!= non-occurrence
+
+Evidence existence
+!= target truth
+
+conflicting Evidence
+!= automatic reconciliation/result
+```
+
+Any support/contradict/qualify/weight/certainty vocabulary is owned by the concrete evaluation/criterion/specialist profile that actually defines it. No universal `evidence_strength` or `confidence` scalar is introduced.
+
+Private Evidence may support an authorized result without creating Visibility permission to disclose that Evidence. Pass-III-A Authority/Representation/Visibility boundaries therefore remain intact.
+
+### 27.4 Temporal Constraint — OWNER-BOUND BY DEFAULT / QUALIFIED SCOPED WHEN INDEPENDENTLY MATERIAL
+
+Temporal Constraint is LR-05 structured temporal rule/specification. Its semantic geometry may resemble Schedule, Availability, target timing or Recurrence, but the meaning remains distinct.
+
+The physical ownership rule mirrors the accepted anti-inflation pattern:
+
+```text
+OWNER-BOUND TEMPORAL CONSTRAINT
+→ typed component of the concrete source/policy material state
+→ no independent identity merely because a temporal rule exists
+
+INDEPENDENTLY SCOPED TEMPORAL CONSTRAINT
+→ only when the rule itself has independent revision, addressability,
+  reuse/cross-reference, reconciliation, override/exception history or
+  lifecycle distinct from the containing source
+→ receives ScopedRecordRef + material definition state when justified
+```
+
+For the independently scoped form, the current bounded envelope is:
+
+```text
+dante.temporal_constraint
+  temporal_constraint_ref   uuid PRIMARY KEY
+  subject_native_ref        uuid NULL
+  subject_scoped_ref        uuid NULL
+
+CHECK (num_nonnulls(subject_native_ref, subject_scoped_ref) = 1)
+```
+
+`temporal_constraint_ref` is UUIDv7 ScopedRecordRef with matching `scoped_address` family `temporal_constraint`.
+
+The currently closed subject Reference Contract is:
+
+```text
+subject_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ owner_family IN ('activity','event','occurrence','plan','routine')
+
+subject_scoped_ref
+→ FK dante.scoped_address(scoped_ref)
+→ ON DELETE NO ACTION
+→ scoped_family = 'milestone'
+```
+
+This is a DB-U22 cross-reference-family role, not a one-of-N NativeRef owner-FK workaround. A future newly accepted Temporal Constraint subject family changes this bounded Reference Contract through reviewed schema evolution; the envelope is not a generic arbitrary target slot.
+
+The subject binding is immutable under ordinary runtime authority.
+
+#### Material definition state
+
+Where the independently scoped rule is materially revisionable:
+
+```text
+facet_code = 'temporal_constraint.definition'
+
+dante.temporal_constraint_definition_state
+  material_state_ref       uuid PRIMARY KEY
+  temporal_constraint_ref  uuid NOT NULL
+  strength_code            text NOT NULL
+```
+
+with:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ exact scoped owner temporal_constraint_ref
+→ exact facet temporal_constraint.definition
+
+temporal_constraint_ref
+→ FK dante.temporal_constraint(temporal_constraint_ref)
+→ ON DELETE NO ACTION
+
+strength_code IN ('hard','soft')
+```
+
+`hard` and `soft` are accepted Domain semantics: hard defines planning admissibility under current rules, while soft shapes optimization/ranking. Strength does not encode who may revise/override the rule; Authority/mutability remains separate.
+
+A material rule revision creates a new MaterialStateRef and explicit current binding moves to the new definition state. Actual reality that violated a hard Temporal Constraint remains recordable and is not rejected merely because planning validity was violated.
+
+### 27.5 TC-U01 — exact typed Temporal Constraint payload remains open; placeholders forbidden
+
+The Domain authority establishes multiple semantic families, including:
+
+```text
+absolute/relative boundary
+hard/preferred window
+duration rule
+spacing/recovery rule
+forbidden/exclusion interval
+relative temporal relationship
+```
+
+but it intentionally does not close one universal physical vocabulary for every constrained temporal feature/relation, such as:
+
+```text
+start
+completion
+delivery
+arrival
+whole execution
+each Session
+total Activity duration
+other owner-specific temporal fact
+```
+
+Therefore `TC-U01` must close the exact typed physical contract for currently admitted Temporal Constraint forms before implementation, including:
+
+```text
+constrained temporal feature/relation vocabulary
+boundary role + inclusive/exclusive semantics
+window relationship: start-inside / completion-inside / containment / overlap / exclusion as admitted
+typed DB-U07 boundary/range representation
+duration scope: placement / Session / total / other admitted scope
+spacing/relative anchor Reference Contract
+broader-scope applicability/inheritance resolution
+Occurrence-specific exception/override precedence
+recurring-constraint binding where Recurrence is reused
+typed child payload totality/exclusivity
+SQLAlchemy mapping
+migration ordering / ACL / direct tests
+```
+
+Forbidden while TC-U01 remains open:
+
+```text
+free-text temporal_feature_code
+rule_expression text
+generic constraint JSONB
+placeholder policy_code
+implicit database/operator inclusivity
+invented universal start/end semantics
+```
+
+A deadline remains a specialized latest-bound Temporal Constraint, but DANTE does not assume `deadline = subject.end_at`; the exact constrained temporal fact is part of the concrete rule contract.
+
+### 27.6 Schedule pressure — SCH-U01 remains correctly open
+
+Temporal Constraint does **not** solve coarse Schedule placement by inventing clock boundaries.
+
+The accepted authority deliberately permits coarse temporal meaning such as:
+
+```text
+Tuesday afternoon
+```
+
+while also requiring that identical temporal geometry can mean different things:
+
+```text
+Temporal Constraint
+Tuesday afternoon is allowed
+
+Schedule
+Tuesday afternoon is the accepted placement
+```
+
+Current closed authority still does not define a canonical day-part vocabulary or exact `afternoon` clock boundaries. Therefore:
+
+```text
+SCH-U01
+REMAINS OPEN
+```
+
+DANTE MUST NOT manufacture `afternoon = 12:00..18:00`, a free-form `precision_code='afternoon'`, or another false-precision convention merely to close Schedule physically.
+
+### 27.7 Milestone hardening — target expectation and attainment basis separated
+
+The existing `milestone.context` topology remains valid.
+
+This pass narrows the remaining physical split:
+
+```text
+Milestone target expectation
+!= Schedule
+!= Temporal Constraint by default
+
+Milestone attainment
+= Criterion/Evaluation/Evidence-backed checkpoint assessment
+!= independent source of Actual/Outcome/Observation truth
+```
+
+A target date/window is a desired temporal expectation unless an explicit separate Temporal Constraint gives it planning-admissibility semantics.
+
+No universal Milestone columns are authorized for:
+
+```text
+reached boolean
+status
+completed_at
+progress_percent
+```
+
+where those values would become an independent competing truth source.
+
+When attainment is consequentially materialized, it must remain reconstructible against the applicable Milestone material state, Criterion state, Evidence/source basis and evaluation context. A material reached/effective time may be persisted only as part of that evaluation-backed profile/history rather than as an unexplained second truth.
+
+`MIL-U01` is therefore **narrowed but remains OPEN**. Its remaining exact closure depends on:
+
+```text
+first concrete Milestone Criterion payload under CRT-U01
+first concrete attainment Evaluation profile under EVL-U01
+exact target temporal variant set
+attainment correction/retraction/lifecycle interaction with DB-U14
+```
+
+### 27.8 Recurrence interaction — DB-U12 remains open but generic qualifying predicates are forbidden
+
+The existing Recurrence family contract already requires qualifying-anchor semantics not to become generic Trigger/Conditional Policy text.
+
+This pass tightens the physical integration direction:
+
+```text
+simple bounded qualifying-anchor vocabulary
+→ remains Recurrence-specific where fully determined
+
+qualifying rule that materially exceeds the bounded anchor contract
+→ may bind an exact typed Criterion MaterialStateRef / accepted policy state
+→ never free-form SQL/text/JSON predicate
+```
+
+This does **not** close DB-U12. Its frame/zone/DST/phase/selector/anchor physical questions remain exactly as classified. Criterion only provides a typed downstream owner for real evaluative/filter semantics when such semantics are independently established.
+
+### 27.9 Migration / SQLAlchemy / ACL consequences of pass III-B
+
+No CP6-04 business DDL is authorized by this pass.
+
+Future migration order is additionally constrained by:
+
+```text
+owner/context identity + address control
+→ material-state control
+→ concrete Criterion owner-bound set-state or independently scoped Criterion only when CRT-U01 closes
+→ concrete material Evaluation profile only when EVL-U01 closes
+→ typed Evidence-basis association rows for that exact profile
+→ qualified temporal_constraint + definition state only where the independent-addressability threshold is met and TC-U01 closes required payloads
+```
+
+SQLAlchemy follows actual persistence rows and must not introduce:
+
+```text
+Criterion mapped superclass/root
+Evaluation polymorphic root
+Evidence graph root
+TemporalRule generic mapped root
+```
+
+Reusable Python helpers may represent bounded typed criterion/temporal value structures without creating semantic inheritance or generic table identity.
+
+Privilege direction under DB-U21:
+
+```text
+immutable Criterion / Temporal Constraint / Evaluation material-state payloads
+→ runtime SELECT + INSERT only where an accepted write path exists
+→ ordinary UPDATE denied
+→ ordinary DELETE denied until DB-U14 proves a narrower lifecycle path
+
+Evidence-basis child/association rows that are components of one accepted material snapshot
+→ immutable after acceptance under ordinary runtime authority
+
+independently scoped Criterion/Temporal Constraint/Evaluation owner rows
+→ exact creation/lifecycle DML only; PK/subject binding mutation denied
+
+integrity routines
+→ no direct runtime EXECUTE by default
+```
+
+The real CP3 provisioning remains incompatible with this final posture until DB-U21 removes broad business-object default grants/reconciliation.
+
+### 27.10 Direct PostgreSQL proof additions
+
+Future CP6-04/05 direct tests must include, for each actually materialized concrete profile:
+
+```text
+CRITERION
+multiple criteria in one owner/facet current rule set          PASS
+second competing current MaterialStateRef for same owner/facet REJECT by existing current-binding PK
+independently scoped Criterion created without justification    absent by schema/use contract
+Criterion revision preserves historical state                  PASS
+universal operator/JSON/DSL fallback                            absent by schema
+
+EVALUATION
+transient evaluation requires no canonical row                 PASS by design
+consequential snapshot wrong target state                       REJECT
+consequential snapshot wrong Criterion state                    REJECT
+later Criterion/source revision does not mutate historical basis PASS
+unknown/insufficient Evidence is representable where profile permits
+Evaluation row existence does not make target state current/effective
+universal evaluation status/result enum                         absent by schema
+
+EVIDENCE
+valid admitted source reference/state                           PASS
+wrong native/scoped/material source family                      REJECT
+material source state dangling                                  REJECT by FK
+source payload duplicated into Evidence basis                   absent by schema
+missing Evidence not converted to negative Evidence automatically
+private source use does not grant disclosure by persistence shape
+
+TEMPORAL CONSTRAINT
+valid Activity/Event/Occurrence/Plan/Routine native subject     PASS
+valid Milestone scoped subject                                  PASS
+zero subject variants                                           REJECT
+both native + scoped subject variants                            REJECT
+wrong native owner family                                       REJECT
+wrong scoped family                                             REJECT
+hard/soft accepted values                                       PASS
+unknown strength                                                REJECT
+material definition wrong owner/facet                           REJECT
+rule revision preserves old MaterialStateRef                    PASS
+hard constraint violation does not prevent storing truthful Actual
+unclosed generic temporal-feature/free-text/JSON payload         absent by schema
+
+MILESTONE
+attainment cannot be established by unexplained reached boolean absent by schema
+material attainment binds exact Criterion/Evidence basis once concrete profile exists
+target expectation does not silently become Schedule/Temporal Constraint
+```
+
+### 27.11 Local unresolved register after pass III-B
+
+The existing Pass-II local blockers remain:
+
+```text
+SCH-U01
+SCH-U02
+ACT-U01
+OUT-U01
+MIL-U01
+AGR-U01
+```
+
+Pass III-B adds three exact classified physical closure items:
+
+| ID | Exact remaining parameter | Why it remains open | Closure trigger |
+|---|---|---|---|
+| CRT-U01 | first concrete Criterion payload/composition contract | Domain requires broad evaluative expressiveness but rejects one universal enum/AST/DSL; no concrete payload may be guessed | derive exact typed Criterion family from the first accepted owner/evaluation context that actually requires persistence |
+| EVL-U01 | first consequential material Evaluation profile | material snapshot topology is known, but target/result/window/Evidence-totality semantics are profile-specific | close one concrete consequential evaluation context with exact typed result and basis contract |
+| TC-U01 | Temporal Constraint exact typed payload / feature / inheritance contract | semantic families are accepted, but the universal constrained-feature vocabulary and inheritance/exception mechanics are intentionally not closed upstream | derive exact currently admitted typed temporal forms without free text/JSON or invented start/end semantics |
+
+```text
+PASS-II LOCAL UNRESOLVED ITEMS
+6
+
+PASS-III-B NEW LOCAL UNRESOLVED ITEMS
+3
+
+TOTAL EXACT LOCAL UNRESOLVED ITEMS
+9
+
+GLOBAL UNRESOLVED DB-U ITEMS
+11
+
+UNCLASSIFIED NEW ITEMS
+0
+```
+
+No new global DB-U item is required by this pass. The three new locals classify previously broad Criterion/Evaluation/Temporal Constraint derivation pressure into exact physical blockers; they do not create three new semantic concepts.
+
+### 27.12 Accumulated A/B/C whole-database audit — PASS AFTER REPAIR
+
+The complete accumulated database, including Pass III-A and the new III-B candidate design, was replayed against Domain + Whole-Logical + accepted PostgreSQL Physical mapping + CP6-01 + CP6-02 + real CP3 foundation.
+
+Classification:
+
+```text
+A — SOUND / RETAIN
+57/57 Domain coverage
+15 LR-01 owner census
+NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef separation
+MaterialState bidirectional totality
+current-state binding topology
+DB-U22 cross-reference-family contract
+Schedule / Actual / Milestone / Agreement envelopes
+Pass-III-A governance composition boundaries
+Recurrence owner-bound/scoped split
+migration-owned business ACL direction
+
+B/C — CLOSED TOO EARLY OR STRUCTURALLY UNSOUND / REPAIRED BEFORE WRITE
+universal Criterion(kind/operator/payload) root
+→ REJECTED
+
+pre-approved generic Criterion AST/DSL/expression language
+→ REJECTED
+
+multiple independent current Criterion MaterialStateRefs on the same owner/facet
+→ REJECTED; complete rule-set state or independent scoped escalation selected
+
+one persisted Evaluation row per query/tick
+→ REJECTED
+
+universal evaluation status/result
+→ REJECTED
+
+consequential Evaluation without exact Criterion/target/source-state basis
+→ REJECTED
+
+Evidence payload copies / universal Evidence graph
+→ REJECTED
+
+historical Evidence binding only to mutable current source identity where exact source state matters
+→ REJECTED; MaterialStateRef required when material
+
+universal evidence-strength/confidence scalar
+→ REJECTED
+
+Temporal Constraint collapsed into Schedule / Recurrence / Dependency / target timing
+→ REJECTED
+
+generic temporal JSON/text rule or unconstrained temporal-feature placeholder
+→ REJECTED
+
+invented day-part boundaries to close SCH-U01
+→ REJECTED
+
+independent Milestone reached/status truth detached from Evaluation/Evidence basis
+→ REJECTED
+
+Evaluation treated as Outcome/effective target state
+→ REJECTED
+
+C — STRUCTURAL DEFECT AFTER REPAIR
+0
+```
+
+Post-repair regression result:
+
+```text
+57 / 57 Domain concepts                              PASS
+15 / 15 LR-01 native owners                         PASS
+new Domain owner                                    0
+Native/Scoped/Material/External reference spaces    PASS
+MaterialState totality                              PASS
+current binding                                     PASS
+typed lineage                                       PASS
+DB-U22                                              PASS
+multiple Criterion / Constraint composition         PASS AFTER HARDENING
+Criterion != Temporal Constraint                    PASS
+Criterion != Evidence                               PASS
+Evaluation != Evidence                              PASS
+Evaluation != Actual                                PASS
+Evaluation != Outcome                               PASS
+Evaluation != effective target state                PASS
+no Evidence != negative Evidence                    PASS
+Temporal Constraint != Schedule                     PASS
+Temporal Constraint != Actual                       PASS
+Temporal Constraint != Recurrence                   PASS
+Temporal Constraint != Dependency                   PASS
+target expectation != Temporal Constraint by default PASS
+Milestone attainment basis topology                 PASS / MIL-U01 narrowed
+SCH-U01                                             CORRECTLY OPEN
+MIL-U01                                             NARROWED / CORRECTLY OPEN
+DB-U12                                              CORRECTLY OPEN
+DB-U14                                              CORRECTLY OPEN
+DB-U15                                              CORRECTLY OPEN
+DB-U21                                              CORRECTLY OPEN / real-code blocker
+universal Rule/Criterion root                       0
+universal Evidence root                             0
+universal Evaluation root                           0
+semantic JSON fallback                              0
+new unclassified material item                      0
+```
+
+No upstream Domain, Logical, Physical, CP6-01 or CP6-02 reopening is required.
+
+### 27.13 Current CP6-03 status after pass III-B
+
+```text
+CP6-03
+ACTIVE
+
+PASS III-B
+CRITERION / EVALUATION / EVIDENCE / TEMPORAL CONSTRAINT COMPOSITION
+PASS WITH HARDENING
+
+WHOLE ACCUMULATED DATABASE AUDIT
+PASS AFTER REPAIR
+
+GLOBAL UNRESOLVED DB-U ITEMS
+11
+
+PASS-II LOCAL UNRESOLVED ITEMS
+6
+
+PASS-III-B LOCAL UNRESOLVED ITEMS
+3
+
+TOTAL EXACT LOCAL UNRESOLVED ITEMS
+9
+
+UNCLASSIFIED NEW ITEMS
+0
+
+CP6 BUSINESS DDL AUTHORIZED
+NO
+
+GATE 03
+NOT YET EARNED
+```
+
+The next CP6-03 work should be a **consolidation/final-closure pass**, not another free-form semantic redesign: consume the remaining exact local blockers and open global DB-U items against their already-accepted upstream authority, close every determinable physical fact, classify genuinely deferred items truthfully, freeze final names/ACL/migration/mapping/test/dictionary contracts, and only then run the final whole-blueprint Gate-03 audit before CP6-04 materialization.
