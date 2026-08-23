@@ -54,7 +54,10 @@ ACTIVE ON feature/logical-postgresql
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 NEXT / NOT STARTED — WHOLE DANTE DATABASE BLUEPRINT
+CP6-03 ACTIVE — CHECKPOINT J / DB-U23 CLOSED
+NEXT DESIGN BLOCK — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+DB-U08 / DB-U15 / DB-U21 OPEN
+GATE 03 NOT YET EARNED
 
 CURRENT POSTGRESQL TECHNICAL PATCH
 18.6
@@ -83,10 +86,16 @@ Current remaining sequence:
 ```text
 CP6-03
 WHOLE DANTE DATABASE BLUEPRINT
-concrete tables/families/columns/types/relations/history/constraints/indexes
-+ implementation/migration dependency DAG
+CURRENT: Checkpoint J / DB-U23 closed
+NEXT: Final Actual PostgreSQL Object Inventory
+then DB-U08 / DB-U15 / DB-U21 closure
+then implementation/migration dependency DAG
 + SQLAlchemy mapping plan
-+ direct-test plan
++ Database Dictionary readiness
++ direct PostgreSQL proof plan
++ mandatory second full tombstone audit from zero
+        ↓
+GATE 03
         ↓
 CP6-04
 WHOLE DANTE DATABASE MATERIALIZATION
@@ -198,6 +207,16 @@ Gate 02 closed global PostgreSQL doctrine and correctly created no business sche
 Current CP6 execution authority:
 
 `docs/workstreams/logical-postgresql.md`
+
+Current CP6-03 database-reference authority:
+
+```text
+docs/database/dante-postgresql-database.md
++ Parts 2 through 8
+= one canonical multi-part Database Architecture & Reference
+```
+
+Checkpoint J closed `DB-U23` after the first total pre-freeze audit. The final independent second audit has **not** yet run and remains mandatory before Gate 03.
 
 ## 4. Logical / Physical invariants that remain binding
 
@@ -357,7 +376,10 @@ feature/logical-postgresql
 → CP6-00 COMPLETE
 → CP6-01 CLOSED / GATE 01 PASS
 → CP6-02 CLOSED / GATE 02 PASS
-→ CP6-03 NEXT / WHOLE DANTE DATABASE BLUEPRINT
+→ CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED
+→ FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+→ DB-U08 / DB-U15 / DB-U21 OPEN
+→ GATE 03 NOT YET EARNED
 
 feature/frontend-materialization
 → independent frontend materialization workstream
@@ -370,15 +392,17 @@ Frontend/backend may progress independently. Shared current docs must preserve t
 ```text
 1. Treat Product/Domain/Logical/Physical and CP1–CP5 as closed accepted authority.
 2. Treat CP6-01 and CP6-02 as CLOSED; do not redo their discovery/design work.
-3. Read the full 57/57 coverage and closed PostgreSQL Constitution.
-4. Start CP6-03 as WHOLE DANTE DATABASE BLUEPRINT.
-5. Derive every database structure already determinable from closed authority.
-6. Do not hide determinable schema behind a generic “vertical-specific” label.
-7. Do not invent unresolved product semantics merely to fill a table.
-8. Produce the implementation/migration DAG and mapping/test plan.
-9. After Gate 03, CP6-04 materially implements the approved DANTE database.
-10. CP6-05 directly validates the materialized database and closes CP6.
-11. Only after CP6 closure does the first product vertical application phase begin.
+3. Consume all active Database Reference Parts 1–8 together.
+4. Treat Checkpoint J / DB-U23 as CLOSED.
+5. Resume CP6-03 from FINAL ACTUAL POSTGRESQL OBJECT INVENTORY.
+6. Enumerate only the surviving baseline PostgreSQL objects; exclude every later no-DDL disposition.
+7. Reconcile scoped families and MaterialState facets against the final survivor set.
+8. Keep DB-U08 / DB-U15 / DB-U21 OPEN while deriving the inventory.
+9. After inventory freeze, close names/indexes/ACLs, then freeze migration DAG, SQLAlchemy plan, Dictionary and direct PostgreSQL proof plan.
+10. Run the mandatory SECOND FULL TOMBSTONE AUDIT FROM ZERO.
+11. Earn Gate 03 only if the complete blueprint remains clean.
+12. Do not create CP6-04 business migrations/mappings/objects before the separate explicit materialization gate.
+13. Only after CP6 closure does the first product vertical application phase begin.
 ```
 
 ## 11. Durable pointers
@@ -390,6 +414,8 @@ README.md
 docs/README.md
 docs/ROADMAP.md
 docs/workstreams/logical-postgresql.md
+docs/database/README.md
+docs/database/dante-postgresql-database.md + Parts 2–8
 ```
 
 Closed upstream workstreams:
