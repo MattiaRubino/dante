@@ -1,20 +1,20 @@
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — PR #28 / DEPENDENCY-REVIEW ACCEPTED-RISK REPAIR**
+- Status: **ACTIVE — PR #28 / CURRENT-TRUTH RECONCILIATION COMPLETE IN THIS CANDIDATE**
 - Branch: `chore/frontend-materialization-integration`
-- Main base: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
+- Main base at branch creation: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
 - Integration merge commit: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
 - Integration hardening commit: `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`
 - First accepted-risk commit: `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`
+- Second accepted-risk / last pre-doc green candidate: `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`
 - Pull request: `#28` (draft)
 - Frontend materialization source status: **CLOSED / PASS**
+- This documentation-reconciliation commit SHA: resolve from current branch HEAD; a commit cannot contain its own SHA.
 
 ## 1. Purpose
 
-This workstream integrates the already-closed frontend materialization into current `main` without rewriting its evidence history, then performs only the bounded hardening required before the protected-main PR.
-
-The integration branch is created from current `main`. The closed frontend materialization commit remains immutable evidence and is carried as a real merge parent rather than rebased or squashed away.
+Integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history, then perform only the bounded hardening required before protected-main merge.
 
 ```text
 closed frontend evidence
@@ -24,51 +24,87 @@ integration reconciliation
 protected-main merge
 ```
 
+The integration branch was created from current `main`; the closed frontend history is carried through a real merge parent instead of rebase/squash rewriting.
+
 ## 2. Integration invariants
 
-- current `main` is the starting truth for backend, repository governance and CURRENT documentation;
-- `feature/frontend-materialization` is the implementation/evidence source for the closed frontend workstream;
-- overlapping files are reconciled semantically; no side wins merely because Git can choose it mechanically;
-- backend CP1..CP5 and protected-main backend controls must not regress;
+- current `main` is the starting authority for backend, repository governance and integrated CURRENT truth;
+- `feature/frontend-materialization` remains immutable closed evidence for FM-00..FM-07;
+- overlapping files are reconciled semantically rather than mechanically choosing one side;
+- backend CP1..CP5 and protected-main controls must not regress;
 - frontend FM-00..FM-07 evidence must not be weakened or relabelled;
-- the React/ReactDOM workspace peer diagnostic remains known/non-blocking unless new evidence changes its cause;
-- no `nodeLinker`, hoisting or peer-suppression workaround is introduced in this scope;
+- selected != installed != configured != directly validated;
+- the known React/react-dom workspace peer diagnostic remains non-blocking unless new evidence changes its cause;
+- no `nodeLinker`, hoisting, packageExtensions or peer-suppression workaround is introduced merely to silence diagnostics;
 - no product vertical is implemented in this scope.
 
-## 3. Integration hardening findings
+## 3. Integration hardening completed
 
-The post-materialization review identified these bounded repairs before PR:
+The final review identified and this branch materialized these bounded repairs:
 
-1. include `apps/mobile/src/**/*.ts(x)` explicitly in the Mobile TypeScript project;
-2. make Expo dependency compatibility (`expo install --check`) a reusable root command and CI gate;
-3. make CI repository-immutability checking include untracked residue, not only tracked diffs;
-4. add a stable aggregate `Frontend CI Gate` above `Quality`, `Web E2E` and `Mobile Bundle`;
-5. use workflow-level `permissions: {}` and grant only `contents: read` to checkout jobs;
-6. make the pnpm 24-hour minimum release age explicit repository policy;
-7. add the real npm/pnpm workspace to Dependabot alongside uv and GitHub Actions;
-8. reconcile specification drift discovered through direct materialization evidence;
-9. reconcile stale CURRENT documentation against both the integrated backend state and the closed frontend materialization state.
+1. `apps/mobile/tsconfig.json` explicitly includes `src/**/*.ts` and `src/**/*.tsx`;
+2. Expo dependency compatibility is a reusable root command and Mobile CI gate;
+3. CI repository immutability rejects tracked **and untracked** residue;
+4. stable aggregate `Frontend CI Gate` exists above `Quality`, `Web E2E`, `Mobile Bundle`;
+5. Frontend CI uses workflow-level `permissions: {}` and grants only `contents: read` to checkout jobs;
+6. pnpm 24-hour `minimumReleaseAge` is explicit repository policy;
+7. Dependabot covers the npm/pnpm workspace alongside uv and GitHub Actions;
+8. narrow Dependency Review accepted-risk exceptions are documented and time-bounded;
+9. CURRENT documentation is reconciled against integrated backend + closed frontend materialization truth;
+10. version-specific Frontend Foundation drift is qualified by later direct materialization evidence.
 
-## 4. Direct materialization evidence that remains authoritative
+## 4. Closed frontend evidence that remains authoritative
 
-The closed frontend source already proved, at its stated scopes:
+`docs/workstreams/frontend-materialization.md` remains the detailed evidence authority.
 
-- Node 24.19.0 / pnpm 11.22.0 / TypeScript 6.0.3 strict workspace;
-- Web React/Vite/TanStack Router production build and Chromium production-preview E2E;
-- Expo SDK 57 / React Native 0.86 Android Hermes bundle smoke;
-- stronger prior direct Android emulator/Metro/Hermes runtime evidence;
-- deterministic generated-source checks;
-- dependency/cycle architecture checks;
-- shared `@dante/design-tokens`, `@dante/i18n`, `@dante/time` packages;
-- Vitest unit baseline;
-- GitHub-hosted Frontend CI;
-- fresh-clone/fresh-store/fresh-browser FM-07 clean materialization with zero repository residue after `.turbo/` hygiene repair.
+Directly proved at the stated FM scopes:
 
-Integration hardening does not retroactively turn untested future capabilities into PASS.
+```text
+Node 24.19.0 / pnpm 11.22.0 / TypeScript 6.0.3 strict
+Web React 19.2.8 / React DOM 19.2.8 / Vite 8.2.1
+TanStack Router 1.170.31
+Expo SDK 57.x / clean resolve 57.0.15
+React Native 0.86.2 / Mobile React 19.2.3
+Gesture Handler 2.32.0 / Reanimated 4.5.1
+@dante/design-tokens / @dante/i18n / @dante/time
+Vitest 4.1.11 / Playwright 1.62.1
+fresh frozen pnpm install
+strict TS
+architecture graph 36 modules / 45 deps / 0 violations
+generated-source drift
+10 unit tests
+Web production build + Chromium E2E
+Android Hermes bundle smoke
+Android emulator/Metro/Hermes runtime
+Expo dependency compatibility
+fresh Playwright bootstrap
+zero tracked/untracked repository residue
+GitHub-hosted Frontend CI
+```
 
-## 5. Combined-candidate validation target
+Integration hardening does not retroactively turn future capabilities into PASS.
 
-Before protected-main merge authorization, the combined candidate must prove:
+## 5. Materialization qualification of design-time Frontend Foundation
+
+The Frontend Foundation remains architecture/design authority. Later direct evidence qualifies version-specific implementation details.
+
+Current implementation authority:
+
+```text
+Temporal implementation    temporal-polyfill 1.0.4
+Gesture Handler            2.32.0 under Expo SDK 57
+Web E2E directory          apps/web/e2e/
+Mobile React               19.2.3 / Expo compatibility PASS
+Web React / React DOM      19.2.8 / 19.2.8
+```
+
+Therefore older design-time examples such as `@js-temporal/polyfill`, Gesture Handler “3 line” or `apps/web/tests/e2e/` must not override later directly validated materialization.
+
+This is a bounded implementation qualification, not a wholesale stack/architecture reopening.
+
+## 6. Combined-candidate validation target
+
+Before protected-main merge authorization the combined candidate must prove:
 
 ```text
 frozen frontend install
@@ -87,11 +123,12 @@ Backend CI
 Dependency Review
 Frontend CI
 Frontend CI Gate
+branch current with main
 ```
 
-The PR must be current with `main` and must preserve the repository ruleset semantics.
+### 6.1 First real PR run
 
-The first real PR #28 combined run on integration-hardening commit `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3` observed:
+On integration-hardening commit `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`:
 
 ```text
 Backend CI          PASS
@@ -103,21 +140,27 @@ Frontend CI Gate    PASS
 Dependency Review   FAIL
 ```
 
-The first Dependency Review failure identified two high-severity advisories on the transitive Metro build/development dependency `image-size@1.2.1`.
+Dependency Review surfaced real supply-chain findings rather than an application/runtime regression.
 
-After the first narrow accepted-risk exception at `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`, the next PR #28 Dependency Review run no longer reported those `image-size` advisories. It instead surfaced one additional moderate advisory:
+### 6.2 Pre-documentation green candidate
+
+After the narrow accepted-risk classifications, candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06` observed:
 
 ```text
-uuid@7.0.3
-GHSA-w5hq-g745-h8pq
-Missing buffer bounds check in v3/v5/v6 when a caller-provided buffer is used
+Dependency Review   PASS
+Backend CI          PASS
+Frontend CI         PASS
+Quality             PASS
+Web E2E             PASS
+Mobile Bundle       PASS
+Frontend CI Gate    PASS
 ```
 
-Backend CI and Frontend CI remained green on that same commit. The new finding is therefore handled as a separate supply-chain classification, not hidden inside the prior exception.
+This documentation-reconciliation commit must earn its own equivalent PR green evidence before becoming the final combined candidate.
 
-## 6. Dependency Review accepted-risk exceptions
+## 7. Dependency Review accepted-risk register
 
-Dependency Review remains fail-closed at the repository policy:
+Dependency Review remains fail-closed:
 
 ```text
 fail-on-severity: moderate
@@ -126,9 +169,9 @@ fail-on-scopes: runtime, development, unknown
 
 No `warn-only`, severity reduction, scope reduction or global vulnerability bypass is authorized.
 
-### 6.1 Metro `image-size` advisories
+### 7.1 Metro `image-size` advisories
 
-Proven dependency path:
+Proven path:
 
 ```text
 Expo SDK 57
@@ -137,23 +180,18 @@ Expo SDK 57
 -> image-size 1.2.1
 ```
 
-Temporarily allowed advisories:
+Temporarily allowed:
 
 ```text
 GHSA-5p2g-fcmc-qvqq
-JXL / HEIF parser denial of service through infinite loops
-
 GHSA-w3rx-r6r6-pgpr
-ICNS parser denial of service through an infinite loop
 ```
 
-At the 2026-08-23 review boundary, no installable patched `image-size` release was available for these advisories. Forcing an unqualified Metro/Expo graph override would therefore trade a known bounded tooling risk for an unvalidated framework/runtime compatibility change.
+Exposure is Metro build/development asset processing, not a DANTE production server/runtime image-parsing endpoint. No installable patched path was available at the review boundary without unqualified Expo/Metro graph changes.
 
-Exposure is bounded to Metro build/development asset processing; it is not a DANTE production server request-processing dependency or a deployed generic image-parsing endpoint.
+### 7.2 Expo/Xcode `uuid` advisory
 
-### 6.2 Expo/xcode `uuid` advisory
-
-PR #28 Dependency Review and lockfile readback prove the relevant transitive path:
+Proven path:
 
 ```text
 Expo SDK 57 tooling
@@ -162,34 +200,31 @@ Expo SDK 57 tooling
 -> uuid 7.0.3
 ```
 
-Temporarily allowed advisory:
+Temporarily allowed:
 
 ```text
 GHSA-w5hq-g745-h8pq
-uuid v3/v5/v6 missing buffer bounds check when a caller-provided buffer is supplied
 ```
 
-The advisory does not affect UUID v1, v4 or v7 behavior. DANTE does not directly call the affected `uuid` API. The package is reached through Expo/Xcode configuration/prebuild tooling, while direct iOS build/release validation is not activated in the current scope.
+The advisory concerns v3/v5/v6 with caller-provided buffers. DANTE does not directly call that API; the package is reached through Expo/Xcode configuration/prebuild tooling. Direct iOS release validation is not currently activated. Forcing `uuid` 11.x below `xcode@3.0.1` would cross multiple declared majors without qualification.
 
-At the 2026-08-23 review boundary, forcing a `uuid` 11.x override underneath `xcode@3.0.1` would cross multiple declared major versions without qualification. Upstream `cordova-node-xcode` has already removed its `uuid` dependency on its development branch in favor of `crypto.randomUUID()`, but the consumed npm release remains `xcode@3.0.1`.
-
-### 6.3 Current bounded exposure and mitigation
+### 7.3 Current bounded exposure / mitigation
 
 ```text
-frontend dependency inputs   repository / PR-controlled manifests and assets
+frontend dependency inputs   repository/PR-controlled manifests and assets
 GitHub token                 contents: read only
 PROD/deployment secrets      absent
 Mobile CI                    timeout-minutes: 20
-selected Expo/Metro graph    retained / directly validated
-DANTE direct uuid API use    none
+selected Expo graph          retained / directly validated
+DANTE direct affected uuid   none
 current iOS release scope    not activated
 ```
 
-These facts do not make the advisories harmless. They establish why the accepted exposure is currently narrower and safer than injecting unqualified framework/transitive major-version overrides merely to make Dependency Review green.
+These facts do not make the advisories harmless. They explain why bounded accepted exposure is safer than unsupported framework/transitive overrides merely to make the check green.
 
-### 6.4 Exception lifecycle
+### 7.4 Lifecycle
 
-Only these exact advisory IDs are temporarily allowed:
+Only these exact IDs are allowed:
 
 ```text
 GHSA-5p2g-fcmc-qvqq
@@ -197,114 +232,147 @@ GHSA-w3rx-r6r6-pgpr
 GHSA-w5hq-g745-h8pq
 ```
 
-Accepted-risk review deadline:
+Review deadline:
 
 ```text
 2026-09-23
 ```
 
-Remove or requalify the relevant exception earlier when any applicable condition becomes true:
+Remove/requalify earlier when:
 
 ```text
-Expo/Metro no longer resolves a vulnerable image-size version
-OR
-a patched/replacement image-size path becomes available and passes DANTE qualification
-OR
-Expo/xcode no longer resolves vulnerable uuid 7.0.3
-OR
-xcode publishes/consumes the upstream uuid removal
-OR
-an affected DANTE/iOS path becomes active and changes the exposure classification
+Expo/Metro no longer resolves vulnerable image-size
+OR a patched/replacement image-size path passes DANTE qualification
+OR Expo/xcode no longer resolves vulnerable uuid 7.0.3
+OR xcode publishes/consumes its upstream uuid removal
+OR an affected DANTE/iOS path activates and changes exposure
 ```
 
-The dependency-update/security review path must explicitly re-check these advisory IDs rather than carrying the exception indefinitely.
+Dependency/security update work must explicitly re-check these IDs rather than carrying exceptions indefinitely.
 
-## 7. Frontend CI Gate calibration
+## 8. Frontend CI Gate calibration
 
-`Frontend CI Gate` is introduced as the stable aggregate context but is **not** promoted to a required main check merely because the YAML exists.
+`Frontend CI Gate` is the stable aggregate context above all mandatory frontend jobs.
 
-Required-check promotion protocol:
+Current state:
 
 ```text
-real PR context observed
--> green
--> controlled deliberate red proving failure propagation
+real context emitted       PASS
+real PR green              PASS
+controlled deliberate red PENDING
+recovery green             PENDING
+required on main           NO
+```
+
+Promotion protocol:
+
+```text
+real green
+-> controlled deliberate red proving mandatory failure propagation
+-> exact intended workflow restoration
 -> recovery green
--> only then ruleset promotion in a separate explicit mutation
+-> separate explicit ruleset mutation
 ```
 
-The first real green `Frontend CI Gate` context has now been observed on PR #28. Deliberate-red and recovery-green calibration remain pending.
+The deliberate-red operation must not add a genuinely vulnerable dependency, weaken security policy or create unrelated product changes.
 
-## 8. Future activation register
+## 9. Current-truth reconciliation completed by this candidate
 
-The following capabilities are deliberately **not** materialized merely for completeness. Each has an activation trigger. When the trigger first becomes real, the owning workstream must reopen this register and either materialize the capability or record evidence for a different decision.
+This candidate removes stale CURRENT claims such as:
+
+```text
+backend scaffold not started
+frontend scaffold not started
+frontend materialization active
+direct frontend validation not earned
+backend CP5 next
+```
+
+Reconciled truth:
+
+```text
+Backend CP1..CP5                  CLOSED / integrated via PR #24
+Frontend Foundation              CLOSED / integrated via PR #22
+Frontend Materialization         CLOSED / PASS
+PR #28 Integration Hardening     ACTIVE
+Frontend CI Gate                 emitted + green / not required
+Dependency Review                green with 3 exact temporary exceptions
+Concrete business schema         NOT STARTED
+Product verticals                NOT STARTED
+```
+
+The closed Foundation documents remain design-time evidence. Current decision/ADR docs now explicitly state how later materialization qualifies version-specific implementation details, avoiding destructive rewrites of historical selection evidence.
+
+## 10. Future activation register
+
+The following capabilities are deliberately not materialized merely for completeness. When a trigger first becomes real, the owning workstream must reopen this register and either materialize the capability or record a new evidence-based decision.
 
 ### First real product vertical
 
-- qualify `eslint-config-expo` and current React Hooks lint rules;
-- extend executable architecture enforcement to feature public APIs and app-local `ui/` / `platform/` direction when those boundaries contain real code;
+- qualify `eslint-config-expo` and current React Hooks lint rules against the actual dependency graph;
+- extend executable architecture enforcement to feature public APIs and app-local `ui/` / `platform/` direction when real code exists;
 - establish Web component-test baseline for real components;
-- establish React Native Testing Library baseline when a real Mobile feature consumer exists.
+- establish React Native Testing Library baseline where a real Mobile feature consumer exists.
 
 ### First real product UI / design-system surface
 
-- adopt WCAG 2.2 AA as Web accessibility target;
-- add automated accessibility checks (for example axe) on representative UI;
+- adopt WCAG 2.2 AA as the Web accessibility target;
+- add representative automated accessibility checks (for example axe);
 - activate Storybook only when reusable DANTE UI components justify an isolated catalog;
 - activate visual regression only after stable visual surfaces exist.
 
 ### First real form
 
-- qualify TanStack Form + Zod against the actual form semantics and platform consumers.
+- qualify TanStack Form + Zod against real form semantics and platform consumers.
 
 ### First remote product API
 
 - materialize FastAPI OpenAPI -> Orval generation;
 - create `@dante/api-client` only with real generated transport consumers;
-- activate TanStack Query for remote-request state;
+- activate TanStack Query for request/response remote state;
 - add deterministic generated-transport drift checks;
-- keep authentication storage/session mechanics outside generated transport code.
+- keep Auth/session storage mechanics outside generated transport.
 
 ### First Mobile offline operation
 
 - activate PowerSync and the selected encrypted SQLite path;
-- qualify OP-SQLite/SQLCipher/runtime compatibility at the then-current supported versions;
+- qualify then-current OP-SQLite/SQLCipher/runtime compatibility;
 - implement identity-scoped local database/key lifecycle;
-- prove offline staging -> backend accept/reject -> reconciliation semantics;
+- prove offline staging -> backend accept/reject -> reconciliation;
 - add conflict/rejection/retry tests for the concrete operation.
 
 ### First shared DEV / Web deployment
 
 - materialize versioned Zod-validated public runtime config;
 - activate selected Cloudflare Web delivery boundary;
-- activate Sentry behind bounded app/platform observability adapters;
+- activate Sentry behind bounded observability adapters;
 - validate source maps and privacy-minimized telemetry.
 
 ### First Mobile release candidate
 
-- activate EAS Build / Submit / Update at the real release boundary;
+- activate EAS Build / Submit / Update;
 - add Maestro for critical Mobile flows where it provides meaningful device evidence;
 - perform signed-device validation;
-- perform iOS validation when iOS becomes an activated release target rather than inferring it from Android.
+- perform iOS direct validation when iOS becomes an activated release target.
 
 ### Post-integration security maturation
 
-- activate GitHub CodeQL default setup after the integrated TypeScript + Python source is on `main`;
-- observe real CodeQL contexts/results before considering required-check promotion;
-- apply OWASP ASVS/MASVS-derived checks at concrete Auth/session/storage/network/release boundaries rather than as a ceremonial checklist.
+- activate GitHub CodeQL default setup after integrated TypeScript + Python source is on `main`;
+- observe real CodeQL results/contexts before any required promotion;
+- apply OWASP ASVS/MASVS-derived controls at concrete Auth/session/storage/network/release boundaries.
 
 ### Pre-production maturity
 
 - broaden critical Web E2E to Firefox/WebKit when browser support becomes release-relevant;
-- define and measure Web performance/Core Web Vitals budgets on representative product pages;
-- add SBOM/provenance/attestation controls if the real release chain requires them;
-- define a dependency-license policy before commercial/public distribution requires enforcement;
-- add `SECURITY.md` and vulnerability-intake process before public production release;
+- define representative Web performance/Core Web Vitals budgets;
+- add SBOM/provenance/attestation controls if the release chain requires them;
+- define dependency-license policy before commercial/public distribution requires enforcement;
+- add `SECURITY.md` and vulnerability intake before public production release;
 - run explicit privacy/security threat review for activated Auth, local personal-data storage, sync and release surfaces.
 
 ### Scale-triggered only
 
-Do not introduce these before measured organizational/runtime need:
+Do not introduce before measured organizational/runtime need:
 
 - Turborepo remote cache;
 - merge queue;
@@ -312,7 +380,7 @@ Do not introduce these before measured organizational/runtime need:
 - generic feature-flag infrastructure;
 - large browser/device farms.
 
-## 9. Explicitly out of scope
+## 11. Explicitly out of scope
 
 - Access/Home product implementation;
 - backend business-schema implementation;
@@ -321,14 +389,27 @@ Do not introduce these before measured organizational/runtime need:
 - Orval generation now;
 - Sentry/Cloudflare/EAS activation now;
 - CodeQL activation now;
-- required-check ruleset mutation;
+- main ruleset mutation now;
 - merge into `main` without separate final authorization;
 - React version changes or peer-warning suppression;
 - pnpm hoisting/nodeLinker changes;
+- unsupported dependency overrides;
 - speculative shared packages or empty architecture directories;
-- global vulnerability suppression or weakening Dependency Review policy;
-- pnpm override of `uuid` across unqualified major versions.
+- global vulnerability suppression.
 
-## 10. Exit condition
+## 12. Exit condition / exact next sequence
 
-This workstream can close only when the combined branch is semantically reconciled, the applicable combined candidate validation is green, the real PR contexts have been observed, the deliberate-red/recovery calibration for `Frontend CI Gate` is complete, and durable CURRENT documentation is coherent with the integrated backend + frontend state.
+This workstream can close only after:
+
+```text
+1. this reconciliation commit is green on PR #28
+2. branch is current with main
+3. Frontend CI Gate deliberate-red propagation is proven
+4. intended workflow is restored
+5. recovery green is proven
+6. optional required-check promotion is handled in a separate explicit gate
+7. final PR diff/current docs/accepted-risk lifecycle are reviewed
+8. protected-main merge receives separate authorization
+```
+
+After protected-main integration, CodeQL default setup is the next repository-security activation candidate. Product work may then begin through vertical slices, consulting the trigger register rather than pre-installing every future large-app capability.
