@@ -1,6 +1,6 @@
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — PR #28 / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL PRE-MERGE CHECK**
+- Status: **ACTIVE — PR #28 / READY / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL MERGE GATE**
 - Branch: `chore/frontend-materialization-integration`
 - Main base at branch creation: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
@@ -12,8 +12,8 @@
 - Deliberate-red calibration commit: `6491b0dfdf4d6d005017b4a1f9a021976a0b9ff8`
 - Recovery-green commit: `02ee9034f37000819afb2c27b0bd826b128f69b5`
 - Promotion-documentation commit: `c551185708936c052248b3bd9c2eebfc41a7d098`
-- This final-pre-merge documentation commit SHA: resolve from current branch HEAD; a commit cannot contain its own SHA.
-- Pull request: `#28` (draft until this commit earns green hosted CI)
+- Pre-reconciliation final-doc head: `bdd6e08cbca4c19989502235855d52a620d29fb5`
+- Pull request: `#28` — **OPEN / READY**
 - Frontend materialization source status: **CLOSED / PASS**
 
 ## 1. Purpose
@@ -128,7 +128,7 @@ Frontend CI Gate    PASS
 
 ### Promotion-documentation checkpoint
 
-Before this final-pre-merge documentation commit, branch HEAD `c551185708936c052248b3bd9c2eebfc41a7d098` remained current against `main`, mergeable, review-thread clean and green at the workflow level:
+Branch HEAD `c551185708936c052248b3bd9c2eebfc41a7d098` remained current against `main`, mergeable, review-thread clean and green at the workflow level:
 
 ```text
 Dependency Review   PASS
@@ -136,7 +136,25 @@ Backend CI          PASS
 Frontend CI         PASS
 ```
 
-The new documentation head must earn its own hosted CI before PR #28 is marked ready.
+### Pre-reconciliation final-doc checkpoint
+
+Head `bdd6e08cbca4c19989502235855d52a620d29fb5` was directly observed:
+
+```text
+branch relation     47 ahead / 0 behind
+PR                   OPEN / READY / mergeable
+review threads       0
+Dependency Review    PASS
+Backend Quality      PASS
+Backend PostgreSQL   PASS
+Backend CI Gate      PASS
+Frontend Quality     PASS
+Web E2E              PASS
+Mobile Bundle        PASS
+Frontend CI Gate     PASS
+```
+
+Any later documentation-only head must independently satisfy the same applicable hosted-CI/currentness/mergeability/thread-clean gate before protected-main merge authorization. This wording deliberately avoids embedding a commit's own SHA into itself.
 
 ## 7. Dependency Review accepted-risk register
 
@@ -287,7 +305,7 @@ The repository owner confirmed applying the `Frontend CI Gate` ruleset promotion
 Backend CP1..CP5                  CLOSED / integrated via PR #24
 Frontend Foundation              CLOSED / integrated via PR #22
 Frontend Materialization         CLOSED / PASS
-PR #28 Integration Hardening     ACTIVE / final pre-merge check
+PR #28 Integration Hardening     ACTIVE / READY / final merge gate
 Frontend CI Gate calibration     COMPLETE
 Frontend CI Gate promotion       OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Dependency Review                GREEN with 3 exact temporary accepted-risk exceptions
@@ -388,10 +406,10 @@ Do not introduce before measured need:
 ## 13. Exact next sequence
 
 ```text
-1. commit final current-truth documentation on PR #28
-2. observe required hosted CI on that exact new head
-3. confirm branch remains current / mergeable / review-thread clean
-4. update PR #28 body to final truth and mark ready only after green evidence
+1. verify hosted CI green on the exact current PR #28 head
+2. confirm branch remains current with main
+3. confirm PR remains mergeable and review-thread clean
+4. confirm accepted-risk register remains valid
 5. obtain separate protected-main merge authorization
 ```
 

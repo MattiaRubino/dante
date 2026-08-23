@@ -13,7 +13,9 @@ Engineering Foundation v0     CLOSED / ACCEPTED
 Frontend Foundation           CLOSED / ACCEPTED / integrated via PR #22
 Backend scaffold              CLOSED / DIRECT QA PASS / integrated via PR #24
 Frontend materialization      CLOSED / PASS — FM-00..FM-07
-Frontend integration          ACTIVE — PR #28
+Frontend integration          ACTIVE — PR #28 / READY / FINAL MERGE GATE
+Frontend CI Gate calibration  COMPLETE
+Frontend CI Gate promotion    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Concrete business schema      NOT STARTED
 Product verticals             NOT STARTED
 ```
@@ -131,8 +133,10 @@ WEB CHROMIUM E2E                PASS
 ANDROID HERMES BUNDLE           PASS
 ANDROID EMULATOR RUNTIME        PASS
 FRONTEND HOSTED CI              PASS
-COMBINED PR #28 CI              PASS on candidate a91fbfc...
+PR #28 FRONTEND GATE CALIBRATION PASS green/red/recovery
 ```
+
+The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any later documentation-only head must independently satisfy the same applicable exact-head gates before merge authorization.
 
 Not yet proven/activated:
 
@@ -167,9 +171,10 @@ A material validation failure first reopens the affected technology/adapter/boun
 ## 10. Next architecture/engineering boundary
 
 ```text
-complete PR #28 integration hardening
--> calibrate Frontend CI Gate
--> protected-main integration
+PR #28 exact current head
+-> hosted CI green
+-> branch current / mergeable / review-thread clean
+-> separate protected-main merge authorization
 -> activate first product vertical boundaries only as consumed
 ```
 

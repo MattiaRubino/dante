@@ -543,6 +543,7 @@ Jobs / real context names:
 Quality
 Web E2E
 Mobile Bundle
+Frontend CI Gate
 ```
 
 Initial workflow proof:
@@ -568,7 +569,7 @@ Mobile Bundle PASS / 40s
 Vitest        @dante/time 5 PASS + @dante/i18n 5 PASS
 ```
 
-Required branch checks are not configured. Branch protection remains a separate governance mutation.
+`Frontend CI Gate` later completed controlled green/red/recovery calibration on PR #28. The branch-local canonical protected-main ruleset definition contains `Backend CI Gate`, `Dependency Review` and `Frontend CI Gate`. The repository owner confirmed applying the frontend promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
 
 ## 15. Known workspace peer diagnostic
 
@@ -676,25 +677,28 @@ PowerSync/SQLite               future sync platform boundary
 
 Do not respond to failures with random global installs, blanket cache deletion, force flags or broad version changes.
 
-## 18. Materialization closure and next work
+## 18. Materialization closure and current continuation
 
-Frontend materialization is **CLOSED / PASS**. The temporary live handoff has been deleted and the temporary feature-branch CI trigger has been removed; durable knowledge now lives in this runbook and `docs/workstreams/frontend-materialization.md`.
+Frontend materialization is **CLOSED / PASS**. The temporary live handoff has been deleted and the temporary feature-branch CI trigger has been removed; durable materialization knowledge now lives in this runbook and `docs/workstreams/frontend-materialization.md`.
 
-Next work must be separately governed:
+At materialization closure, integration, required-check governance and protected-main merge were deliberately outside FM-00..FM-07. Those later integration steps are governed by `docs/workstreams/frontend-materialization-integration.md` and repository-safety documentation rather than retroactively rewriting FM evidence.
+
+Current continuation:
 
 ```text
-prepare/review integration PR to main
-observe PR-triggered Frontend CI
-merge only under separate authorization
+PR #28 exact current head
+-> hosted CI green
+-> branch current with main
+-> mergeable / review-thread clean
+-> separate protected-main merge authorization
 ```
 
-Still outside this closure:
+Still outside this runbook's materialization scope:
 
 ```text
-required branch checks / branch protection mutation
 product Access/Home implementation
-PowerSync
-backend integration
-deployment
-main synchronization / merge
+PowerSync product integration
+concrete backend business schema
+remote deployment
+protected-main merge itself
 ```

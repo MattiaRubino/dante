@@ -14,13 +14,15 @@ Engineering Foundation v0                    CLOSED / ACCEPTED
 Frontend Engineering Foundation              CLOSED / ACCEPTED / integrated via PR #22
 Production backend scaffold CP1..CP5          CLOSED / integrated via PR #24
 Frontend materialization FM-00..FM-07         CLOSED / PASS
+Frontend CI Gate calibration                  COMPLETE
+Frontend CI Gate promotion                    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 ```
 
 Architecture closure remains distinct from implementation/direct validation.
 
 ## Active integration workstream
 
-### Frontend materialization integration hardening — ACTIVE
+### Frontend materialization integration hardening — ACTIVE / FINAL MERGE GATE
 
 Branch:
 
@@ -28,16 +30,16 @@ Branch:
 
 PR:
 
-`#28` — draft
+`#28` — READY
 
 Purpose:
 
 - integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history;
 - reconcile shared/current documentation semantically;
 - close bounded hardening found during final review;
-- calibrate the new aggregate `Frontend CI Gate` before any required-check promotion.
+- preserve calibrated frontend CI and accepted-risk governance through protected-main integration.
 
-Already materialized in the integration branch:
+Materialized in the integration branch:
 
 ```text
 Mobile src/** explicit TypeScript scope
@@ -48,82 +50,74 @@ least-privilege Frontend CI permissions
 pnpm minimumReleaseAge 24h
 npm/pnpm Dependabot scope
 narrow Dependency Review accepted-risk exceptions
+CURRENT documentation reconciliation
+Frontend CI Gate green/red/recovery calibration
+branch-local three-check protected-main ruleset definition
 ```
 
-Combined PR candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06` directly observed:
+The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for:
 
 ```text
-Dependency Review   PASS
-Backend CI          PASS
-Frontend CI         PASS
-Quality             PASS
-Web E2E             PASS
-Mobile Bundle       PASS
-Frontend CI Gate    PASS
+Dependency Review
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
+Frontend Quality
+Web E2E
+Mobile Bundle
+Frontend CI Gate
 ```
 
-The current documentation-reconciliation commit must earn its own PR CI before final-candidate classification.
+Any later documentation-only PR head must independently earn the same applicable hosted-CI/currentness/mergeability/thread-clean evidence before merge authorization.
 
 ## Immediate sequence
 
-### 1. Reconcile CURRENT truth — IN PROGRESS
+### 1. Frontend integration hardening — COMPLETE AT IMPLEMENTED SCOPE
 
-Remove stale claims such as frontend/backend scaffold “not started”, record the closed frontend materialization, preserve backend CP1-CP5 integrated truth and qualify version-specific Frontend Foundation design text against later direct materialization evidence.
+The integration branch has already reconciled backend + closed frontend truth, qualified version-specific Foundation wording against direct materialization, applied bounded CI/dependency hardening, and preserved the closed FM evidence history through a real merge parent.
 
-### 2. Re-prove combined candidate
+### 2. Frontend CI Gate calibration — COMPLETE
 
-Required before closure of integration hardening:
-
-```text
-Backend CI          GREEN
-Dependency Review   GREEN
-Frontend CI         GREEN
-Frontend CI Gate    GREEN
-branch current with main
-unexpected paths    0
-```
-
-### 3. Calibrate Frontend CI Gate
-
-The context has already emitted a real green on PR #28.
-
-Still required before promotion:
+Directly proved:
 
 ```text
+real green
 controlled deliberate red
--> prove mandatory upstream failure propagates to Frontend CI Gate
--> restore exact intended workflow
--> recovery green
+mandatory upstream failure propagation
+exact workflow restore
+recovery green
 ```
 
-The deliberate-red change must be bounded, reversible and must not introduce a real vulnerable dependency or weaken unrelated policy.
+The deliberate-red change was bounded and reversible and did not introduce a vulnerable dependency or weaken unrelated policy.
 
-### 4. Required-check promotion — separate governance mutation
+### 3. Required-check promotion — OWNER-CONFIRMED APPLIED
 
-Only after green -> deliberate red -> recovery green may `Frontend CI Gate` be considered for the protected-main ruleset.
-
-Current required checks remain:
+The branch-local canonical ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
+Frontend CI Gate
 ```
 
-Do not mutate the ruleset implicitly inside implementation/docs work.
+with strict branch-up-to-date policy preserved.
 
-### 5. Final PR review / protected-main merge
+The repository owner confirmed applying the `Frontend CI Gate` promotion in GitHub. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
+
+### 4. Final PR review / protected-main merge — CURRENT GATE
 
 Before merge:
 
-- PR #28 current with `main`;
+- exact current PR head has applicable hosted CI green;
+- PR #28 remains current with `main`;
 - exact changed paths reviewed;
 - accepted-risk register still valid;
-- applicable checks green;
 - no stale CURRENT docs;
 - no unresolved review threads;
+- PR remains mergeable;
 - expected head verified.
 
-Merge authorization remains separate from this roadmap.
+Merge authorization remains separate from this roadmap and from documentation reconciliation.
 
 ## Backend next boundary
 

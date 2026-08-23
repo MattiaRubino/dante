@@ -5,7 +5,7 @@
 - Frontend Foundation integration: PR `#22` — **MERGED / VERIFIED**
 - Backend scaffold integration: PR `#24` — **MERGED / VERIFIED**
 - Frontend materialization: `feature/frontend-materialization` — **CLOSED / PASS**
-- Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / DRAFT — FINAL PRE-MERGE CHECK**
+- Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / READY / FINAL MERGE GATE**
 
 ## 1. Executive state
 
@@ -19,7 +19,7 @@ ENGINEERING FOUNDATION v0             CLOSED / ACCEPTED
 FRONTEND ENGINEERING FOUNDATION       CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 PRODUCTION BACKEND SCAFFOLD           CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 FRONTEND MATERIALIZATION              CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28 / FINAL PRE-MERGE CHECK
+FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28 / READY / FINAL MERGE GATE
 FRONTEND CI GATE CALIBRATION          COMPLETE
 FRONTEND CI GATE PROMOTION            OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 CONCRETE LOGICAL -> POSTGRESQL         NOT STARTED
@@ -192,6 +192,8 @@ Hardening materialized:
 - CURRENT documentation reconciliation;
 - version-specific Foundation/materialization reconciliation.
 
+PR #28 is READY. The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any subsequent documentation-only head must independently satisfy the same exact-head gates before merge authorization.
+
 ## 9. Frontend CI Gate calibration — COMPLETE
 
 ### Real green
@@ -235,7 +237,7 @@ Mobile Bundle       PASS
 Frontend CI Gate    PASS
 ```
 
-Therefore `Frontend CI Gate` is directly calibrated and eligible for required-check promotion.
+Therefore `Frontend CI Gate` is directly calibrated.
 
 ## 10. Protected-main ruleset promotion state
 
@@ -303,10 +305,10 @@ Do not install placeholder infrastructure merely because larger applications oft
 
 ```text
 FRONTEND INTEGRATION
-1. finalize this current-truth documentation commit on PR #28
-2. observe required hosted CI on that exact new head
-3. confirm branch remains current / mergeable / review-thread clean
-4. update PR #28 body and mark ready only after green evidence
+1. require hosted CI green on the exact current PR #28 head
+2. require branch current with main
+3. require PR mergeable and review-thread clean
+4. confirm accepted-risk register remains valid
 5. obtain separate protected-main merge authorization
 
 BACKEND NEXT

@@ -15,7 +15,9 @@ ENGINEERING FOUNDATION v0            CLOSED / ACCEPTED
 FRONTEND ENGINEERING FOUNDATION      CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 PRODUCTION BACKEND SCAFFOLD          CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 FRONTEND MATERIALIZATION             CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING       ACTIVE — PR #28
+FRONTEND INTEGRATION HARDENING       ACTIVE — PR #28 / READY / FINAL MERGE GATE
+FRONTEND CI GATE CALIBRATION         COMPLETE
+FRONTEND CI GATE PROMOTION           OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 CONCRETE LOGICAL -> POSTGRESQL        NOT STARTED
 PRODUCT VERTICALS                    NOT STARTED
 PRODUCTION DEPLOYMENT                NOT STARTED
@@ -122,34 +124,39 @@ The detailed evidence authority is `docs/workstreams/frontend-materialization.md
 
 `chore/frontend-materialization-integration` was created from current `main` and preserves the closed frontend history through a real merge parent. The integration hardening adds Mobile `src/**` TypeScript coverage, Expo compatibility CI, untracked-residue CI checks, a stable `Frontend CI Gate`, least-privilege workflow permissions, pnpm minimum-release-age policy and npm/pnpm Dependabot coverage.
 
-On candidate `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`, the real PR observed:
+The directly observed final pre-document-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for:
 
 ```text
-Dependency Review    PASS
-Backend CI           PASS
-Frontend CI          PASS
-Quality              PASS
-Web E2E              PASS
-Mobile Bundle        PASS
-Frontend CI Gate     PASS
+Dependency Review
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
+Frontend Quality
+Web E2E
+Mobile Bundle
+Frontend CI Gate
 ```
+
+Any later documentation-only PR head must independently satisfy the same hosted-CI/current/mergeable/thread-clean gate before protected-main merge authorization.
 
 Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily accepted and documented with a review deadline of **2026-09-23**; this is not a global vulnerability suppression.
 
 ## Protected-main enforcement
 
-Current `main` protection requires:
+The branch-local canonical ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
+Frontend CI Gate
 branch up to date before merge
 PR-before-merge
 review-thread resolution
+merge commits only
 no force push / no deletion
 ```
 
-`Frontend CI Gate` now exists and has real green PR evidence, but is **not required on main yet**. Promotion requires deliberate-red failure-propagation proof and recovery-green proof first, followed by a separate explicit ruleset mutation.
+`Frontend CI Gate` has completed real-green, controlled deliberate-red, mandatory failure-propagation, exact-restore and recovery-green calibration. The repository owner confirmed applying its promotion to the protected-main ruleset. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
 
 ## Selected but not yet activated
 
@@ -171,18 +178,18 @@ Read in order:
 
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
-3. `docs/development/repository-engineering-safety.md`
-4. the active workstream handoff
-5. the applicable closed architecture/ADR/model authorities.
+3. `docs/development/agent-operating-manual.md`
+4. `docs/development/repository-engineering-safety.md`
+5. the active workstream handoff
+6. the applicable closed architecture/ADR/model authorities.
 
 Current integration boundary:
 
 ```text
-PR #28 integration hardening
--> reconcile CURRENT documentation
--> deliberate-red / recovery-green Frontend CI Gate calibration
--> optional separate required-check promotion
--> final PR review / protected-main merge authorization
+PR #28 READY / mergeable candidate
+-> require hosted CI green on the exact current PR head
+-> require branch current with main + review threads resolved
+-> separate protected-main merge authorization
 ```
 
 Backend next remains a separate bounded workstream for Concrete Logical -> PostgreSQL. Product vertical work begins only after its required data/API/UI boundaries are deliberately activated; do not reopen closed foundations by default.

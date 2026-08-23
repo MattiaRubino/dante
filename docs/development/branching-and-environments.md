@@ -152,14 +152,17 @@ real workflow/context
 -> separate explicit ruleset mutation
 ```
 
-Current protected-main required checks:
+For `Frontend CI Gate`, that protocol is complete: real green, controlled deliberate red, mandatory failure propagation, exact restore and recovery green were directly observed. The repository owner confirmed applying the promotion to protected `main`; direct ruleset API readback is unavailable through the current connector, so the administrative setting remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
+
+The branch-local canonical ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
+Frontend CI Gate
 ```
 
-`Frontend CI Gate` has emitted and passed on PR #28 but is not required yet. Its deliberate-red/recovery-green calibration is the next repository-safety proof before any promotion decision.
+with strict branch-up-to-date enforcement preserved.
 
 ## 11. One-developer posture
 
@@ -183,10 +186,10 @@ CLOSED / PASS — FM-00..FM-07
 immutable evidence source for integration
 
 chore/frontend-materialization-integration
-ACTIVE / PR #28
+ACTIVE / PR #28 / READY
 created from current main
 carries closed frontend history through a real merge parent
-current work = reconciliation + CI gate calibration + final integration review
+current work = exact-head final QA + separate protected-main merge authorization
 ```
 
 The closed frontend materialization branch is not reused as the operational integration branch.
@@ -198,12 +201,14 @@ Product/infrastructure capabilities are activated by real boundary, not branch n
 ## 14. Current next sequence
 
 ```text
-PR #28 reconciled candidate
--> CI green
--> Frontend CI Gate deliberate red
--> recovery green
--> optional separate required-check promotion
--> final protected-main merge authorization
+PR #28 exact current head
+-> hosted CI green
+-> branch current with main
+-> mergeable / review-thread clean
+-> accepted-risk register valid
+-> separate protected-main merge authorization
 ```
+
+The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied these technical gates. Any subsequent documentation-only head must independently satisfy them before merge authorization.
 
 Backend Concrete Logical -> PostgreSQL remains a separate bounded workstream; product vertical work does not inherit authorization from the integration branch.

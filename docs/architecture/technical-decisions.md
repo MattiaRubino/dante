@@ -220,7 +220,7 @@ Frontend CI
 Frontend CI Gate
 ```
 
-`Frontend CI Gate` is emitted/green on PR #28 but not required yet. Promotion requires deliberate-red -> recovery-green -> separate ruleset mutation.
+`Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure propagation, exact restore and recovery-green calibration. Its protected-main promotion is **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** because the available connector cannot directly read the repository ruleset.
 
 Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily allowed until review/removal conditions in the active integration handoff are satisfied.
 
@@ -228,20 +228,21 @@ Dependency Review remains fail-closed at `moderate+`. Three exact transitive too
 
 **CURRENT HANDOFF**
 
-Backend CP1-CP5 scaffold is integrated. Frontend FM-00..FM-07 is closed/pass. PR #28 is the active integration-hardening boundary.
+Backend CP1-CP5 scaffold is integrated. Frontend FM-00..FM-07 is closed/pass. PR #28 is READY and remains the active integration boundary until protected-main merge is verified.
 
 ```text
 CURRENT
-reconcile global documentation
--> PR CI on reconciled candidate
--> Frontend CI Gate deliberate red
--> recovery green
--> optional separate required-check promotion
--> final protected-main merge review
+exact current PR #28 head
+-> hosted CI green
+-> current with main
+-> mergeable / review-thread clean
+-> separate protected-main merge authorization
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL in a fresh bounded workstream
 ```
+
+The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied the current/mergeable/thread-clean and full hosted-CI gates. Any later documentation-only head must independently satisfy them before merge authorization.
 
 ## TD-26 — Materialization qualification precedence
 

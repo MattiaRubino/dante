@@ -1,13 +1,13 @@
 # Repository Engineering Safety
 
-- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL PR CHECK PENDING**
+- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / PR #28 READY / FINAL MERGE GATE**
 - Repository: `MattiaRubino/dante`
 - Default branch: `main`
 - Main ruleset: `lifeos-main-safety`
 - Backend CP4: **CLOSED / DIRECT REMOTE QA PASS**
 - Backend scaffold: **CLOSED / integrated via PR #24**
 - Frontend materialization: **CLOSED / PASS — FM-00..FM-07**
-- Frontend integration hardening: **ACTIVE — PR #28**
+- Frontend integration hardening: **ACTIVE — PR #28 / READY**
 
 ## Purpose
 
@@ -307,12 +307,14 @@ feature/frontend-materialization
 closed evidence / FM-00..FM-07 PASS
 
 chore/frontend-materialization-integration
-active PR #28 integration branch
+active PR #28 / READY / final merge gate
 ```
 
 ## Merge/history posture
 
 DANTE preserves useful checkpoint/evidence history and permits merge commits. The integration branch preserves the closed frontend history through a real two-parent merge.
+
+The directly observed pre-reconciliation PR #28 head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for Dependency Review, Backend CI and Frontend CI including both aggregate gates. Any later documentation-only head must independently satisfy the same applicable exact-head gates before merge authorization.
 
 ## Current verification classification
 
@@ -334,6 +336,7 @@ Frontend CI Gate promotion decision       APPROVED
 Frontend CI Gate desired ruleset JSON     UPDATED
 Frontend CI Gate GitHub ruleset setting   OWNER-CONFIRMED APPLIED
 Frontend CI Gate direct ruleset readback  UNAVAILABLE IN CONNECTOR
+PR #28 ready state                        READY
 CodeQL                                    NOT ACTIVE
 ```
 
@@ -344,10 +347,10 @@ Repository safety does not imply complete security assurance, independent human 
 ## Exact next repository-safety step
 
 ```text
-finalize current PR #28 documentation truth
--> observe all required CI on the new PR head
--> ensure PR #28 remains current / mergeable / review-thread clean
--> mark PR #28 ready for review only after green evidence
+verify hosted CI on the exact current PR #28 head
+-> ensure branch remains current with main
+-> ensure PR remains mergeable / review-thread clean
+-> confirm accepted-risk register remains valid
 -> separate protected-main merge authorization
 ```
 

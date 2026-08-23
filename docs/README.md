@@ -27,7 +27,9 @@ Engineering Foundation v0            CLOSED / ACCEPTED
 Frontend Engineering Foundation      CLOSED / ACCEPTED / integrated via PR #22
 Production backend scaffold          CLOSED / DIRECT QA PASS / integrated via PR #24
 Frontend materialization             CLOSED / PASS — FM-00..FM-07
-Frontend integration hardening       ACTIVE — PR #28
+Frontend integration hardening       ACTIVE — PR #28 / READY / FINAL MERGE GATE
+Frontend CI Gate calibration         COMPLETE
+Frontend CI Gate promotion           OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Concrete PostgreSQL business map     NOT STARTED
 Product vertical implementation      NOT STARTED
 Production deployment                NOT STARTED
@@ -92,7 +94,7 @@ Backend scaffold truth is already integrated into protected `main` and includes 
 
 Frontend materialization is separately CLOSED / PASS and directly proved the Node/pnpm/Turbo/TypeScript workspace, Web React/Vite/TanStack Router application, Expo/React Native Android path, shared design-token/i18n/time packages, architecture enforcement, deterministic generated sources, unit tests, Web E2E, Android Hermes bundle smoke, Android emulator runtime and GitHub-hosted Frontend CI.
 
-The integration branch `chore/frontend-materialization-integration` is the current pending-main candidate. It was created from current `main`, carries the closed frontend history as a real merge parent and is under draft PR #28.
+The integration branch `chore/frontend-materialization-integration` is the current pending-main candidate. It was created from current `main`, carries the closed frontend history as a real merge parent and is under READY PR #28. The remaining integration boundary is exact-head hosted CI/currentness/mergeability/thread cleanliness followed by separate protected-main merge authorization.
 
 ## Materialization qualification rule
 
@@ -112,35 +114,19 @@ Older version-specific design wording does not override later directly validated
 
 ## CI / repository safety truth
 
-Current protected-main required checks remain:
+The branch-local protected-main ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
-```
-
-The branch must be up to date before merge. Required checks are governed by the `lifeos-main-safety` repository ruleset and selected from source GitHub Actions.
-
-PR #28 has emitted and passed:
-
-```text
-Backend CI
-Dependency Review
-Frontend CI
-Quality
-Web E2E
-Mobile Bundle
 Frontend CI Gate
 ```
 
-`Frontend CI Gate` is not required yet. Its promotion protocol is:
+with strict branch-up-to-date policy, PR-before-merge, review-thread resolution, merge-commit-only policy, and deletion/non-fast-forward protection.
 
-```text
-real green
--> controlled deliberate red
--> recovery green
--> separate explicit ruleset mutation
-```
+`Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure propagation, exact restore and recovery-green calibration. The repository owner confirmed applying its protected-main promotion. Direct ruleset API readback is unavailable in the connector, therefore the administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+
+The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was green for Backend CI, Dependency Review and Frontend CI, including both aggregate gates. Any subsequent documentation-only head must independently satisfy those same checks before merge authorization.
 
 Dependency Review remains `moderate+` fail-closed. The exact temporary GHSA exceptions and review deadline are documented in the active integration handoff; no global suppression is authorized.
 
@@ -162,12 +148,10 @@ Do not install infrastructure merely because a large application might eventuall
 ## Exact next handoff
 
 ```text
-PR #28
-1. CURRENT truth reconciliation
-2. combined candidate CI remains green
-3. deliberate-red/recovery-green Frontend CI Gate calibration
-4. optional separate required-check promotion
-5. final review and protected-main merge authorization
+PR #28 READY
+-> verify hosted CI green on the exact current head
+-> verify branch current with main / mergeable / review-thread clean
+-> separate protected-main merge authorization
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL through a fresh bounded workstream/gate

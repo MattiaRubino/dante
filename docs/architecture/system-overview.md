@@ -8,7 +8,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes the closed Product, Domain, Logical and Physical models, the closed Engineering Foundation and the closed Frontend Engineering Foundation. Backend scaffold CP1-CP5 is integrated in protected `main`; frontend materialization FM-00..FM-07 is closed/directly validated and is currently being integrated through PR #28.
+Implementation consumes the closed Product, Domain, Logical and Physical models, the closed Engineering Foundation and the closed Frontend Engineering Foundation. Backend scaffold CP1-CP5 is integrated in protected `main`; frontend materialization FM-00..FM-07 is closed/directly validated and is being integrated through READY PR #28.
 
 Core invariants include:
 
@@ -105,7 +105,7 @@ Structural rules:
 
 - feature-first;
 - routes/navigation are thin adapters;
-- public-API-only cross-boundary imports;
+- public-API-only cross-boundary use;
 - feature dependency cycles forbidden;
 - Web/Mobile do not import each other's private implementation;
 - UI/platform layers do not depend upward on feature internals;
@@ -251,26 +251,30 @@ Observability is privacy-minimized operational telemetry, never canonical histor
 
 GitHub Actions is repository-wide primary CI/CD authority.
 
-Current protected-main required checks:
+The branch-local protected-main ruleset definition contains:
 
 ```text
 Backend CI Gate
 Dependency Review
+Frontend CI Gate
 ```
 
-PR #28 has directly emitted and passed:
+`Frontend CI Gate` has directly proved real green, controlled deliberate red, mandatory failure propagation, exact workflow restoration and recovery green. The repository owner confirmed applying its required-check promotion. The available connector does not expose direct ruleset readback, so the administrative setting is classified **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+
+The directly observed pre-reconciliation PR #28 head `bdd6e08cbca4c19989502235855d52a620d29fb5` passed:
 
 ```text
-Backend CI
+Backend Quality
+Backend PostgreSQL
+Backend CI Gate
 Dependency Review
-Frontend CI
 Quality
 Web E2E
 Mobile Bundle
 Frontend CI Gate
 ```
 
-`Frontend CI Gate` is not required yet. It must prove controlled deliberate-red failure propagation and recovery green before a separate ruleset-promotion decision.
+Any later documentation-only head must independently satisfy the applicable hosted-CI/currentness/mergeability/thread-clean gate before merge authorization.
 
 Dependency Review remains fail-closed at moderate severity. Three exact transitive tooling GHSA exceptions are temporarily accepted until review/removal conditions are met; details live in the integration handoff.
 
@@ -288,7 +292,8 @@ FRONTEND MATERIALIZATION     DIRECT QA PASS AT FM SCOPES
 WEB CHROMIUM E2E             PASS
 ANDROID EMULATOR RUNTIME     PASS
 ANDROID HERMES BUNDLE        PASS
-COMBINED PR #28 CI           PASS on pre-doc candidate a91fbfc...
+FRONTEND CI GATE CALIBRATION PASS green/red/recovery
+PR #28 PRE-RECONCILIATION    GREEN / CURRENT / MERGEABLE / THREAD-CLEAN at bdd6e08...
 
 CONCRETE BUSINESS SCHEMA     NOT STARTED
 POWERSYNC PRODUCT FLOW       NOT RUN
@@ -301,12 +306,11 @@ PRODUCTION DEPLOYMENT        NOT STARTED
 ## 17. Current next step
 
 ```text
-PR #28 current-truth reconciliation
--> PR CI on reconciled candidate
--> Frontend CI Gate deliberate red
--> recovery green
--> optional separate required-check promotion
--> final protected-main merge review
+PR #28 exact current head
+-> hosted CI green
+-> current with main
+-> mergeable / review-thread clean
+-> separate protected-main merge authorization
 ```
 
 Backend Concrete Logical -> PostgreSQL remains a separate bounded next workstream. Future product capabilities activate according to the trigger register in `docs/workstreams/frontend-materialization-integration.md`.

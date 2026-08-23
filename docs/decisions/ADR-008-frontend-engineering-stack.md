@@ -168,6 +168,10 @@ The known workspace peer diagnostic (`react-dom@19.2.8` versus the workspace Mob
 
 ## Current integration state
 
-The closed materialization is being integrated through draft PR #28 on `chore/frontend-materialization-integration`. `Frontend CI Gate` has emitted and passed but is not a required `main` check until deliberate-red/recovery-green calibration and a separate ruleset decision.
+The closed materialization is being integrated through READY PR #28 on `chore/frontend-materialization-integration`.
+
+`Frontend CI Gate` has completed real-green, controlled deliberate-red, mandatory failure propagation, exact workflow restoration and recovery-green calibration. The repository owner confirmed applying its protected-main promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+
+The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any later documentation-only head must independently satisfy the same exact-head gates before separate protected-main merge authorization.
 
 A failed future material validation reopens the affected technology decision first; the complete frontend stack reopens only if evidence proves a wider contradiction.

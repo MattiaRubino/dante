@@ -4,7 +4,7 @@ Each active or pending-integration workstream has one operational handoff. It is
 
 ## Current / pending-integration workstreams
 
-- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **ACTIVE / PR #28**; integrates the already-closed frontend materialization into current `main`, owns integration hardening, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration and the durable future-activation register.
+- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **ACTIVE / PR #28 / READY / FINAL MERGE GATE**; integrates the already-closed frontend materialization into current `main`, owns integration hardening, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration/promotion evidence and the durable future-activation register.
 - [`today-home.md`](today-home.md) — separate Phase-4 Home/Today UX/product-structure workstream; prototype/UX authority only, not production engineering authority.
 
 ## Completed / integrated or closed evidence workstreams
@@ -30,7 +30,9 @@ ENGINEERING FOUNDATION v0    CLOSED / ACCEPTED
 FRONTEND FOUNDATION          CLOSED / ACCEPTED / integrated
 BACKEND SCAFFOLD             CLOSED / DIRECT QA PASS / integrated
 FRONTEND MATERIALIZATION     CLOSED / PASS
-FRONTEND PR #28              ACTIVE integration hardening
+FRONTEND PR #28              ACTIVE / READY / FINAL MERGE GATE
+FRONTEND CI GATE CALIBRATION COMPLETE
+FRONTEND CI GATE PROMOTION   OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 SELECTED != IMPLEMENTED
 SELECTED != DIRECT PASS
 ```
@@ -65,13 +67,15 @@ Do not reopen general stack/architecture selection by default.
 Current sequence:
 
 ```text
-PR #28 current-truth reconciliation
--> PR CI green
--> Frontend CI Gate deliberate-red calibration
--> recovery green
--> optional separate required-check promotion
--> final protected-main merge review
+PR #28 exact current head
+-> hosted CI green
+-> branch current with main
+-> mergeable / review-thread clean
+-> accepted-risk register valid
+-> separate protected-main merge authorization
 ```
+
+The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied the technical gates above. Any subsequent documentation-only head must independently satisfy them before merge authorization.
 
 The future-activation register in `frontend-materialization-integration.md` must be consulted when the first real vertical/UI/form/API/offline/deployment/release/security/pre-PROD/scale trigger occurs.
 
