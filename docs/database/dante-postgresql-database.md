@@ -6659,3 +6659,1520 @@ NOT YET EARNED
 ```
 
 Recurrence / DB-U12 remains the next separate high-value block; it is not implicitly modified or closed by this checkpoint.
+
+---
+
+## 30. Consolidation checkpoint C — Recurrence / Occurrence-generation physical closure
+
+This checkpoint closes the Recurrence / Occurrence-generation block after a read-only derivation and a whole-accumulated-database regression against the accepted Domain Recurrence/Occurrence/Routine authorities, Logical Time/Reality and Version/Material-State contracts, accepted PostgreSQL Physical mapping, CP6-01, CP6-02, the existing sections 21/27/28/29, and the real PostgreSQL 18 foundation.
+
+Where this section is more specific, it supersedes provisional recurrence statements in sections 17.3, 18, 19.5, 21.2, 21.6, 22, 24 and 29. It does not reopen any upstream semantic decision and does not authorize CP6 business DDL.
+
+The governing separation remains:
+
+```text
+Routine / recurring Event source semantics
+!= Recurrence
+!= Occurrence
+!= Schedule
+!= Session
+!= Actual
+!= Temporal Constraint
+!= Trigger / generic automation
+```
+
+The central closure is intentionally maximum-non-speculative:
+
+```text
+six accepted semantic Recurrence families remain authoritative
++
+four deterministic families receive CP6 baseline physical authorization
++
+two families receive explicit NO-BASELINE-DDL dispositions until their exact qualifying-anchor contracts exist
+```
+
+No unsupported semantic policy is converted into a placeholder column, enum, JSON object or free-form expression merely to make every upstream family executable on day one.
+
+### 30.1 Recurrence ownership — owner-bound baseline CLOSED / independent scoped owner NO BASELINE DDL
+
+The earlier concern that every persisted Recurrence might require its own `dante.recurrence` row is resolved negatively for the CP6 baseline.
+
+Current accepted Occurrence-generating source families are:
+
+```text
+Routine
+recurring Event
+```
+
+Their Recurrence state is owner-bound:
+
+```text
+Routine
+→ native owner
+→ facet_code = 'routine.recurrence'
+→ exact owner-specific material recurrence state
+
+Event
+→ native owner
+→ optional facet_code = 'event.recurrence'
+→ exact owner-specific material recurrence state when the Event is recurring
+```
+
+Therefore the baseline contains no independently scoped `dante.recurrence` owner and no Recurrence `ScopedRecordRef` merely for storage uniformity.
+
+```text
+ordinary material Recurrence
+→ MaterialStateRef owned by the concrete Routine/Event NativeRef
+→ no second semantic identity
+```
+
+An independently scoped Recurrence becomes valid only when a later concrete contract proves one or more of:
+
+```text
+independent addressability
+real semantic reuse across owning contexts
+cross-record reference to the rule itself
+independent reconciliation
+independent lifecycle/history distinct from its source
+```
+
+That future trigger requires reviewed additive schema evolution. It does not leave a hidden CP6 placeholder.
+
+Repeated Temporal Constraint applicability remains semantically capable of reusing recurrence machinery, but no Temporal Constraint recurrence owner/state is frozen here while `TC-U01` remains open.
+
+### 30.2 Exact owner-specific recurrence state envelopes — CLOSED
+
+The two baseline state envelopes are:
+
+```text
+dante.routine_recurrence_state
+  material_state_ref          uuid PRIMARY KEY
+  routine_ref                 uuid NOT NULL
+  family_code                 text NOT NULL
+  range_kind                  text NOT NULL
+  expected_occurrence_count   integer NULL
+
+dante.event_recurrence_state
+  material_state_ref          uuid PRIMARY KEY
+  event_ref                   uuid NOT NULL
+  family_code                 text NOT NULL
+  range_kind                  text NOT NULL
+  expected_occurrence_count   integer NULL
+```
+
+For Routine:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ exact native owner = routine_ref
+→ exact facet = routine.recurrence
+→ ON DELETE NO ACTION
+
+routine_ref
+→ FK dante.routine(routine_ref)
+→ ON DELETE NO ACTION
+```
+
+For Event the equivalent contract uses `event_ref`, owner family `event` and facet `event.recurrence`.
+
+The six semantic family names remain authoritative upstream:
+
+```text
+calendar_wall_clock
+elapsed_interval
+quota_per_period
+completion_relative
+anchor_stream_relative
+cyclic_positional
+```
+
+The **CP6 baseline physical discriminator** is deliberately narrower:
+
+```text
+family_code IN (
+  'calendar_wall_clock',
+  'elapsed_interval',
+  'quota_per_period',
+  'cyclic_positional'
+)
+```
+
+because the baseline contains deterministic payloads only for those four. A live material state may not carry `completion_relative` or `anchor_stream_relative` while no exact payload/qualifying-anchor contract exists; doing so would violate MaterialState totality. When either trigger-bound family becomes implementation-authorized, its payload objects and expanded `family_code` constraint are introduced atomically in the same reviewed migration.
+
+Exactly one matching family payload must exist for every live recurrence state by COMMIT. Wrong family/payload, wrong native owner, wrong facet or missing payload rejects.
+
+No state payload is mutable in place after acceptance. A material structural Recurrence revision creates another MaterialStateRef.
+
+### 30.3 Current recurrence definition and historical currentness — CLOSED
+
+Routine is by definition a persistent repeated policy. A newly established canonical Routine therefore may not survive COMMIT as an identity shell with no accepted recurrence definition.
+
+Creation barrier:
+
+```text
+new dante.routine
+→ matching native_address when material addressing is required
+→ at least one routine.recurrence MaterialStateRef
+→ one open routine recurrence current-history episode
+→ matching native_current_material_state(routine_ref,'routine.recurrence')
+by COMMIT
+```
+
+A one-off Event remains valid with no `event.recurrence` facet. When an Event is established as recurring, the recurrence-bearing operation must establish the same complete material/current contract for `event.recurrence` by COMMIT.
+
+The owner-specific current-history tables are:
+
+```text
+dante.routine_recurrence_current_history
+  routine_ref         uuid        NOT NULL
+  material_state_ref  uuid        NOT NULL
+  current_from_at     timestamptz NOT NULL
+  current_until_at    timestamptz NULL
+  PRIMARY KEY(routine_ref, current_from_at)
+
+dante.event_recurrence_current_history
+  event_ref           uuid        NOT NULL
+  material_state_ref  uuid        NOT NULL
+  current_from_at     timestamptz NOT NULL
+  current_until_at    timestamptz NULL
+  PRIMARY KEY(event_ref, current_from_at)
+```
+
+Each state FK must resolve to the exact recurrence-state table and exact same owner. `current_until_at` is NULL for an open currentness episode or strictly later than `current_from_at` when closed.
+
+For each owner:
+
+```text
+partial unique open-row invariant
+→ at most one current_until_at IS NULL
+
+bounded owner-row locking + deferred integrity
+→ no overlapping currentness episodes
+→ open episode ⇔ exact native_current_material_state row by COMMIT
+```
+
+A prior unchanged MaterialStateRef may become current again in a later non-overlapping episode when the owning semantics reselect that exact material state. Reselection does not manufacture a new MaterialStateRef. A materially different recurrence definition always does.
+
+Historical divergent/non-current recurrence MaterialStates remain addressable even when they never become current or cease being current. Current truth is never inferred from timestamp, UUIDv7 order or insertion order.
+
+Source pause/end remains separate lifecycle semantics. This checkpoint does not create a generic recurrence-active/status field and does not delete recurrence history when a source later pauses or ends.
+
+### 30.4 Facet-specific current read/mutation surfaces — DESIGN NAME FROZEN / ACL STILL DB-U21
+
+The future bounded current surfaces are registered as:
+
+```text
+dante.routine_current_recurrence
+dante.event_current_recurrence
+```
+
+Each is a filtered view over `dante.native_current_material_state` for its exact facet, with `WITH LOCAL CHECK OPTION` when exposed as an updatable operation surface.
+
+```text
+routine_current_recurrence
+→ facet_code = 'routine.recurrence'
+
+event_current_recurrence
+→ facet_code = 'event.recurrence'
+```
+
+These names enter the final object inventory now; no runtime privilege is granted by this checkpoint. The exact SELECT/INSERT/UPDATE/DELETE surface remains part of the final `DB-U21` object matrix.
+
+Direct blanket runtime mutation of `native_current_material_state` remains rejected by symmetry.
+
+### 30.5 Effective range and temporal boundaries — CLOSED
+
+`range_kind` has the exact baseline vocabulary:
+
+```text
+open
+until_boundary
+expected_count
+```
+
+Rules:
+
+```text
+open
+→ expected_occurrence_count IS NULL
+→ no effective_until boundary
+
+until_boundary
+→ expected_occurrence_count IS NULL
+→ exactly one effective_until boundary
+
+expected_count
+→ expected_occurrence_count > 0
+→ no effective_until boundary
+```
+
+Recurrence count always counts expected Occurrences. It does not mean successful completions and does not replace Goal/Evaluation semantics.
+
+Pattern phase/anchor and effective range remain distinct:
+
+```text
+pattern_anchor
+!= effective_from
+!= effective_until
+```
+
+The owner-specific boundary tables are:
+
+```text
+dante.routine_recurrence_boundary_state
+dante.event_recurrence_boundary_state
+```
+
+Each has the shape:
+
+```text
+material_state_ref   uuid NOT NULL
+boundary_role        text NOT NULL
+boundary_kind        text NOT NULL
+inclusive            boolean NULL
+date_value           date NULL
+local_value          timestamp without time zone NULL
+zone_id               text NULL
+instant_value        timestamptz NULL
+resolved_at           timestamptz NULL
+
+PRIMARY KEY(material_state_ref, boundary_role)
+```
+
+`material_state_ref` references its exact owner-specific recurrence-state table.
+
+Accepted roles:
+
+```text
+pattern_anchor
+effective_from
+effective_until
+```
+
+Accepted boundary kinds:
+
+```text
+date
+floating_local
+named_zone_local
+absolute_instant
+```
+
+Exact row combinations:
+
+```text
+date
+→ date_value only
+
+floating_local
+→ local_value only
+
+named_zone_local
+→ local_value + zone_id
+→ resolved_at optional only when an accepted consequential resolution exists
+
+absolute_instant
+→ instant_value only
+```
+
+For `effective_from` and `effective_until`, `inclusive` is required and its meaning is explicit. For `pattern_anchor`, `inclusive` is NULL because an anchor establishes phase/basis rather than a range-membership operator.
+
+No database operator default is allowed to invent inclusivity.
+
+A hidden source `created_at`, current server date/time, current device zone or UUID timestamp is never a Recurrence pattern anchor.
+
+### 30.6 Calendar / wall-clock family — DETERMINISTIC BASELINE CLOSED
+
+The owner-specific payload tables are:
+
+```text
+dante.routine_recurrence_calendar_state
+dante.event_recurrence_calendar_state
+```
+
+Shape:
+
+```text
+material_state_ref   uuid PRIMARY KEY
+pattern_code         text NOT NULL
+interval_count       integer NOT NULL
+clock_basis_code     text NOT NULL
+zone_id              text NULL
+step_unit_code       text NULL
+```
+
+Constraints:
+
+```text
+interval_count > 0
+
+pattern_code IN (
+  'daily',
+  'weekly_weekdays',
+  'monthly_month_days',
+  'monthly_ordinal_weekdays',
+  'yearly_month_days',
+  'anchor_step'
+)
+
+clock_basis_code IN (
+  'floating_local',
+  'named_zone',
+  'absolute_utc'
+)
+
+named_zone
+→ zone_id required
+
+floating_local / absolute_utc
+→ zone_id absent
+
+anchor_step
+→ step_unit_code IN ('day','week','month','year')
+
+all other pattern_code values
+→ step_unit_code IS NULL
+```
+
+`material_state_ref` references the exact owner-specific recurrence-state envelope and requires `family_code='calendar_wall_clock'`.
+
+#### Multiple wall-clock times
+
+One calendar rule may own zero or more explicit wall-clock times. The accepted Routine cases already include patterns such as `08:00/20:00 local`, so a single nullable `wall_time` column is too narrow.
+
+Owner-specific children:
+
+```text
+dante.routine_recurrence_calendar_wall_time
+dante.event_recurrence_calendar_wall_time
+
+material_state_ref   uuid NOT NULL
+wall_time            time without time zone NOT NULL
+PRIMARY KEY(material_state_ref, wall_time)
+```
+
+Zero wall-time rows are valid when the recurrence is date/period positioned without an accepted clock time. N rows represent N explicit clock positions under the same recurrence definition; they do not create N Recurrence identities.
+
+#### Weekly weekday selectors
+
+```text
+dante.routine_recurrence_calendar_weekday
+dante.event_recurrence_calendar_weekday
+
+material_state_ref   uuid NOT NULL
+weekday_number       smallint NOT NULL CHECK 1..7
+PRIMARY KEY(material_state_ref, weekday_number)
+```
+
+`weekly_weekdays` requires at least one row and rejects every other selector family.
+
+#### Monthly exact/positional month-day selectors
+
+```text
+dante.routine_recurrence_calendar_month_day
+dante.event_recurrence_calendar_month_day
+
+material_state_ref   uuid NOT NULL
+month_day            smallint NOT NULL
+PRIMARY KEY(material_state_ref, month_day)
+CHECK (month_day BETWEEN 1 AND 31 OR month_day BETWEEN -31 AND -1)
+```
+
+Meaning is exact and non-fallback:
+
+```text
+positive 1..31
+→ exact ordinal day when that calendar position exists
+
+negative -1..-31
+→ positional day counted backward from the month's final valid day
+→ -1 = last valid day
+```
+
+Thus:
+
+```text
+31st day
+!= last day
+```
+
+If a month has no 31st, an exact positive `31` position produces no candidate for that month. It does not clamp to the 30th/28th/29th and does not move to another day.
+
+`monthly_month_days` requires at least one month-day child and no weekday/year-month-day children.
+
+#### Monthly ordinal weekday selectors
+
+```text
+dante.routine_recurrence_calendar_ordinal_weekday
+dante.event_recurrence_calendar_ordinal_weekday
+
+material_state_ref   uuid NOT NULL
+weekday_number       smallint NOT NULL CHECK 1..7
+ordinal              smallint NOT NULL
+CHECK (ordinal BETWEEN -5 AND 5 AND ordinal <> 0)
+PRIMARY KEY(material_state_ref, weekday_number, ordinal)
+```
+
+This represents patterns such as second Tuesday or last Friday without a free-form expression.
+
+#### Yearly month/day selectors
+
+A pair table is used so independent month/day sets cannot accidentally manufacture a Cartesian-product meaning.
+
+```text
+dante.routine_recurrence_calendar_year_month_day
+dante.event_recurrence_calendar_year_month_day
+
+material_state_ref   uuid NOT NULL
+month_number         smallint NOT NULL CHECK 1..12
+month_day            smallint NOT NULL
+CHECK (month_day BETWEEN 1 AND 31 OR month_day BETWEEN -31 AND -1)
+PRIMARY KEY(material_state_ref, month_number, month_day)
+```
+
+`yearly_month_days` requires at least one pair row.
+
+For example:
+
+```text
+month=2, month_day=29
+→ 29 February when it exists
+→ no candidate in a non-leap year
+```
+
+No silent February-28 fallback exists.
+
+#### Daily / anchor-step selector rules
+
+```text
+daily
+→ no weekday/month-day/ordinal/year-month-day selector rows
+
+anchor_step
+→ no selector rows
+→ exact pattern_anchor required
+```
+
+For `interval_count > 1` in a selector-based pattern, an explicit `pattern_anchor` is required whenever phase cannot otherwise be determined. The same rule applies to any future selector combination whose parity/phase would otherwise depend on a hidden implementation default.
+
+#### Invalid-date and business-calendar behavior
+
+There is **no** baseline column named or equivalent to:
+
+```text
+invalid_date_policy
+dst_gap_policy
+dst_overlap_policy
+business_calendar_policy
+fallback_rule
+```
+
+Exact invalid calendar positions simply do not produce a candidate unless the selected typed position itself expresses the intended fallback, such as `month_day=-1` for last day.
+
+Business-day/public-holiday semantics remain trigger-bound. `first working day after the 15th` is not encoded as an opaque calendar string or JSON rule.
+
+### 30.7 DST and local-time resolution — NO SILENT POLICY / MATERIALIZATION BARRIER CLOSED
+
+Calendar wall-clock semantics preserve the originating civil meaning.
+
+```text
+floating_local
+!= named_zone
+!= absolute_utc
+!= elapsed recurrence
+```
+
+For a named-zone candidate, zone resolution is evaluated against the accepted IANA rules in effect for the operation. If the local wall-clock candidate resolves uniquely, the candidate may proceed and a consequential materialized Occurrence can preserve the exact accepted resolved instant in its generation coordinate.
+
+If a local candidate is nonexistent in a DST gap or ambiguous in a DST overlap and no accepted domain/user resolution basis exists:
+
+```text
+NO hidden library default becomes canonical
+NO automatic shift-to-valid-time
+NO automatic skip policy beyond the already-defined exact calendar-position semantics
+NO automatic first/second-offset selection
+NO duplicate Occurrences merely because the wall-clock label maps to two instants
+```
+
+The candidate remains virtual/unresolved/noncanonical for the affected operational resolution until a future accepted policy or explicit resolution establishes one admissible basis.
+
+For floating-local semantics, the same rule applies once an applicable local-zone context is required for consequential resolution. DANTE does not freeze the user's current device zone into the recurrence definition merely to avoid the ambiguity.
+
+No `dst_gap_policy` or `dst_overlap_policy` placeholder field exists in the baseline schema.
+
+### 30.8 Elapsed-interval family — DETERMINISTIC BASELINE CLOSED
+
+Owner-specific payload tables:
+
+```text
+dante.routine_recurrence_elapsed_state
+dante.event_recurrence_elapsed_state
+```
+
+Shape:
+
+```text
+material_state_ref   uuid PRIMARY KEY
+elapsed_seconds      numeric NOT NULL
+anchor_mode_code     text NOT NULL
+anchor_at            timestamptz NOT NULL
+```
+
+Contract:
+
+```text
+material_state_ref
+→ exact owner-specific recurrence state
+→ family_code = 'elapsed_interval'
+
+elapsed_seconds
+→ finite
+→ > 0
+
+anchor_mode_code IN (
+  'fixed_anchor',
+  'previous_expected'
+)
+```
+
+`anchor_at` is always an explicit accepted seed instant.
+
+Meaning:
+
+```text
+fixed_anchor
+→ expected instance N derives from the fixed seed + N exact elapsed intervals
+
+previous_expected
+→ first expected instant derives from the accepted seed
+→ each later expected instant derives from the prior expected instant
+→ prior Actual completion is NOT substituted silently
+```
+
+This family is deliberately not completion-relative.
+
+```text
+24 elapsed hours
+!= one calendar day
+```
+
+Calendar months/days are not stored in this elapsed payload.
+
+### 30.9 Quota-per-period family — DETERMINISTIC BASELINE CLOSED
+
+Owner-specific payload tables:
+
+```text
+dante.routine_recurrence_quota_state
+dante.event_recurrence_quota_state
+```
+
+Shape:
+
+```text
+material_state_ref   uuid PRIMARY KEY
+quota_count          integer NOT NULL
+period_unit_code     text NOT NULL
+period_span          integer NOT NULL
+frame_code           text NOT NULL
+zone_id              text NULL
+week_start           smallint NULL
+```
+
+Constraints:
+
+```text
+quota_count > 0
+period_span > 0
+
+period_unit_code IN ('day','week','month','year')
+frame_code IN ('floating_local','named_zone','absolute_utc')
+
+named_zone
+→ zone_id required
+
+floating_local / absolute_utc
+→ zone_id absent
+
+period_unit_code='week'
+→ week_start required
+→ week_start BETWEEN 1 AND 7
+
+other period units
+→ week_start IS NULL
+```
+
+The exact period frame determines membership; device locale/server timezone/library defaults do not.
+
+When `period_span > 1` or another admitted parameterization needs an explicit phase, the recurrence state must contain an exact `pattern_anchor` boundary. For the current quota baseline that phase anchor is date-based; source `created_at` is never substituted.
+
+Quota recurrence establishes expected cardinality inside one exact period. It does **not** assign exact days/times and does not create arbitrary semantic order.
+
+```text
+3 times per week
+→ expected cardinality = 3
+→ no canonical slot_number
+→ no first/second/third meaning unless another accepted semantic relation establishes it
+```
+
+A quota may therefore exist operationally as a period + remaining/expected cardinality before any particular candidate is individually distinguished.
+
+### 30.10 Quota materialization concurrency — CLOSED WITHOUT ORDINAL IDENTITY
+
+When one quota expectation becomes persistently distinguishable and must be materialized as an Occurrence, the operation must not race into exceeding the accepted quota.
+
+Baseline transaction discipline:
+
+```text
+1. lock the concrete Routine/Event source row deterministically
+2. verify the expected/current governing recurrence MaterialStateRef when stale-state sensitivity applies
+3. identify the exact quota period under that recurrence state's frame
+4. count already materialized recurrence_generated Occurrences
+   for the same source + same governing recurrence state + same exact quota period
+5. require count < quota_count
+6. mint the new Occurrence UUIDv7
+7. insert occurrence_generation + exact quota generation coordinate
+8. commit
+```
+
+This lock/count is a materialization-cardinality safeguard; it does not pretend that virtual equivalent quota slots already had semantic ordinal identities.
+
+A skipped/cancelled materialized expected Occurrence remains part of the generated quota because recurrence count is expectation count, not success count.
+
+A future structural recurrence revision inside a period may require explicit materialized-future reconciliation. That exact future-effective operation remains trigger-bound in section 30.17 rather than being hidden inside this count rule.
+
+### 30.11 Cyclic positional family — DETERMINISTIC BASELINE CLOSED
+
+Owner-specific payload tables:
+
+```text
+dante.routine_recurrence_cyclic_state
+dante.event_recurrence_cyclic_state
+```
+
+Shape:
+
+```text
+material_state_ref   uuid PRIMARY KEY
+cycle_length         integer NOT NULL
+position_unit_code   text NOT NULL
+```
+
+Constraints:
+
+```text
+cycle_length > 0
+position_unit_code IN ('day','week')
+```
+
+An exact date-based `pattern_anchor` is mandatory for every cyclic state. There is no implicit phase from creation time.
+
+Ordered position children:
+
+```text
+dante.routine_recurrence_cycle_position
+dante.event_recurrence_cycle_position
+
+material_state_ref   uuid NOT NULL
+position_index       integer NOT NULL
+ generates_expected boolean NOT NULL
+
+PRIMARY KEY(material_state_ref, position_index)
+CHECK (position_index >= 0)
+```
+
+A bounded deferred completeness invariant requires exactly one row for every index:
+
+```text
+0 .. cycle_length - 1
+```
+
+and rejects any out-of-range or missing position by COMMIT.
+
+No generic/free-text `position_code` exists in the baseline. If a later source gives positions real bounded semantics such as named A/B/C rotation classes, that source-specific vocabulary is added through reviewed evolution rather than becoming generic recurrence metadata.
+
+The current baseline supports calendar-position cycles such as:
+
+```text
+2 days on / 2 days off
+4 days/nights on + 3 rest positions
+week-based repeating rotations
+```
+
+A sub-day elapsed cycle belongs to elapsed or a future separately accepted contract; it is not smuggled into `position_unit_code`.
+
+### 30.12 Completion-relative recurrence — SEMANTIC FAMILY RETAINED / NO CP6 BASELINE DDL
+
+Completion-relative Recurrence remains an accepted semantic family, including patterns such as:
+
+```text
+30 days after actual previous replacement
+```
+
+But the current closed model deliberately leaves open which exact established reality fact qualifies the next anchor in each concrete context:
+
+```text
+Actual completion
+Outcome
+Confirmation
+Observation
+other accepted material fact
+```
+
+Therefore CP6 does not materialize:
+
+```text
+dante.*_recurrence_completion_relative_state
+anchor_feature_code text
+qualifying_condition text
+Criterion JSON
+SQL predicate
+provider-specific completion status
+```
+
+and does not silently substitute Schedule end, Session end or time passage for established qualifying Actual/reality.
+
+Final baseline disposition:
+
+```text
+completion_relative
+SEMANTICALLY RETAINED
+NO BASELINE DDL
+
+future activation trigger
+→ first exact accepted qualifying-anchor Reference Contract
+→ exact source/material-state eligibility
+→ exact elapsed/calendar offset frame
+→ exact generation/reconciliation behavior
+→ reviewed additive migration + tests + ACLs
+```
+
+Until then a completion-relative feature is unavailable as canonical CP6 persistence rather than being stored lossy in a generic field.
+
+### 30.13 Anchor-stream-relative recurrence — SEMANTIC FAMILY RETAINED / NO CP6 BASELINE DDL
+
+Anchor-stream-relative Recurrence also remains accepted, for example:
+
+```text
+after each qualifying photography Session
+→ one backup expectation
+```
+
+The exact qualifying stream/filter semantics are not universally closed. Depending on the concrete feature they may require Session, Actual, Observation, another material state, or a typed Criterion/policy basis.
+
+Therefore CP6 does not materialize:
+
+```text
+dante.*_recurrence_anchor_stream_state
+anchor_family_code text placeholder
+anchor_feature_code text placeholder
+free-form filter/expression
+SQL predicate
+JSON condition
+```
+
+Final baseline disposition:
+
+```text
+anchor_stream_relative
+SEMANTICALLY RETAINED
+NO BASELINE DDL
+
+future activation trigger
+→ first exact typed qualifying-anchor stream contract
+→ exact admitted source/reference families
+→ exact optional Criterion/policy MaterialState basis when genuinely required
+→ exact offset/frame/generation semantics
+→ reviewed additive migration + tests + ACLs
+```
+
+This preserves:
+
+```text
+anchor-stream Recurrence
+!= generic Trigger
+!= Conditional Policy
+```
+
+### 30.14 Occurrence origin envelope — HARDENED / CLOSED
+
+The earlier provisional `occurrence_generation` row is superseded by:
+
+```text
+dante.occurrence_generation
+  occurrence_ref                   uuid PRIMARY KEY
+  source_native_ref                uuid NOT NULL
+  governing_recurrence_state_ref   uuid NULL
+  origin_code                      text NOT NULL
+```
+
+Contract:
+
+```text
+occurrence_ref
+→ FK dante.occurrence(occurrence_ref)
+→ ON DELETE NO ACTION
+
+source_native_ref
+→ FK dante.native_address(native_ref)
+→ ON DELETE NO ACTION
+→ owner_family IN ('routine','event')
+
+origin_code IN (
+  'recurrence_generated',
+  'explicit_extra'
+)
+```
+
+For `recurrence_generated`:
+
+```text
+governing_recurrence_state_ref IS NOT NULL
+→ FK dante.material_state_address(material_state_ref)
+→ exact native owner MUST equal source_native_ref
+→ exact facet MUST be:
+   routine.recurrence when source family = routine
+   event.recurrence when source family = event
+→ exact recurrence state must be one of the four CP6 materialized families
+```
+
+For `explicit_extra`:
+
+```text
+governing_recurrence_state_ref IS NULL
+```
+
+because the Occurrence is intentionally related to the source without pretending it was generated by the source's Recurrence rule.
+
+The old generic:
+
+```text
+governing_source_state_ref
+```
+
+is removed from the CP6 baseline. Current authority does not prove a universal second source-state basis in addition to the exact recurrence MaterialStateRef. A later concrete generation contract may add another exact source-state reference when it materially changes why the Occurrence existed.
+
+`explicit_extra` does not mutate the Recurrence and does not imply a future structural policy change.
+
+### 30.15 Exact family-specific generation coordinates — CLOSED FOR FOUR BASELINE FAMILIES
+
+Every `recurrence_generated` Occurrence has exactly one generation-coordinate payload matching the governing recurrence family. `explicit_extra` has no fake rule-generated coordinate.
+
+#### Calendar generation coordinate
+
+```text
+dante.occurrence_generation_calendar
+  occurrence_ref       uuid PRIMARY KEY
+  generated_date       date NOT NULL
+  generated_wall_time  time without time zone NULL
+  clock_basis_code     text NOT NULL
+  zone_id              text NULL
+  resolved_at          timestamptz NULL
+```
+
+Rules:
+
+```text
+clock_basis_code IN ('floating_local','named_zone','absolute_utc')
+
+named_zone
+→ zone_id required
+
+floating_local / absolute_utc
+→ zone_id absent
+
+resolved_at
+→ may be present only when an accepted consequential resolution exists
+→ named-zone resolution preserves the original generated civil coordinate
+```
+
+The coordinate represents the original generated expectation. Moving the Occurrence later belongs to Schedule and does not rewrite this row.
+
+A wall-time-free calendar expectation has `generated_wall_time IS NULL` rather than an invented midnight.
+
+#### Elapsed generation coordinate
+
+```text
+dante.occurrence_generation_elapsed
+  occurrence_ref   uuid PRIMARY KEY
+  expected_at      timestamptz NOT NULL
+```
+
+The exact instant is derived from the accepted elapsed seed/chain semantics of the governing state.
+
+#### Quota generation coordinate
+
+```text
+dante.occurrence_generation_quota
+  occurrence_ref                uuid PRIMARY KEY
+  period_start_date             date NOT NULL
+  period_end_date_exclusive     date NOT NULL
+  frame_code                    text NOT NULL
+  zone_id                       text NULL
+```
+
+Rules:
+
+```text
+period_end_date_exclusive > period_start_date
+frame_code IN ('floating_local','named_zone','absolute_utc')
+named_zone → zone_id required
+other frames → zone_id absent
+```
+
+There is deliberately no slot number. Identity becomes the minted `occurrence_ref` only when one expectation becomes individually materialized.
+
+#### Cyclic generation coordinate
+
+```text
+dante.occurrence_generation_cyclic
+  occurrence_ref    uuid PRIMARY KEY
+  generated_date    date NOT NULL
+  position_index    integer NOT NULL CHECK position_index >= 0
+```
+
+The bounded integrity path validates that `position_index` exists in the exact governing cyclic state, is inside the cycle length and has `generates_expected=true`.
+
+#### Family totality/exclusivity
+
+A deferred bounded check enforces:
+
+```text
+recurrence_generated + calendar family
+→ exactly one calendar coordinate
+
+recurrence_generated + elapsed family
+→ exactly one elapsed coordinate
+
+recurrence_generated + quota family
+→ exactly one quota coordinate
+
+recurrence_generated + cyclic family
+→ exactly one cyclic coordinate
+
+recurrence_generated
+→ zero coordinates from every non-matching family
+
+explicit_extra
+→ zero recurrence-generated coordinate rows
+```
+
+No generic coordinate JSON or universal ordinal is introduced.
+
+### 30.16 Lazy virtual Occurrence generation — PHYSICAL BOUNDARY CLOSED
+
+Semantic Occurrence identity does not require eager persistence of every future expectation.
+
+Baseline direction:
+
+```text
+accepted source + exact current recurrence MaterialStateRef
+→ derive bounded future candidate context operationally
+→ keep candidate virtual while no stable per-instance history/addressability is needed
+→ mint native Occurrence UUIDv7 only when one expectation becomes persistently distinguishable
+```
+
+Materialization triggers include established pressure such as:
+
+```text
+accepted Schedule
+occurrence-specific move/edit/exception
+skip/cancellation or other future exact occurrence disposition
+Actual / participation / confirmation / Evidence history
+provider-instance mapping
+another persistent relation or consequential notification history
+```
+
+This list is pressure, not a new universal lifecycle enum.
+
+For calendar/elapsed/cyclic families, a derivable candidate can be identified operationally by its exact family coordinate under the exact governing MaterialStateRef before a row exists.
+
+For quota recurrence, equivalent future slots do not receive hidden candidate UUIDs or ordinals. Before differentiation the truthful virtual state may be only:
+
+```text
+exact quota period
++
+expected cardinality
++
+number already persistently distinguished
+```
+
+When one expectation becomes persistently distinct, its new Occurrence UUID establishes stable identity and its quota-period coordinate preserves why it belonged to that expected set.
+
+No generic `VirtualRef` address space is introduced.
+
+### 30.17 Structural recurrence revision and future materialized Occurrences — BASELINE NEGATIVE DISPOSITION
+
+A structural material Recurrence revision always creates a new owner-specific MaterialStateRef. Historical Occurrences remain bound to the exact old recurrence state that governed their existence.
+
+```text
+source recurrence state R1
+→ Occurrence O1 materialized under R1
+→ source recurrence state R2 becomes current later
+→ O1.governing_recurrence_state_ref remains R1
+```
+
+Purely virtual future candidates may be regenerated from the new current state.
+
+The exact generic machinery for a future-effective cutover that intersects already materialized future Occurrences is **not** invented here. Current authority proves the requirements—no silent deletion, no retroactive rewrite, explicit reconciliation/history—but not one universal operation/status table for every source/family.
+
+Final baseline disposition:
+
+```text
+NO generic recurrence_cutover table
+NO future-occurrence reconciliation status enum
+NO automatic delete/recreate of materialized future Occurrences
+
+future trigger
+→ first exact accepted this-and-future/future-effective operation contract
+→ explicit boundary + expected base MaterialStateRef
+→ deterministic treatment of already-materialized future Occurrences
+→ typed reconciliation/correction lineage where required
+```
+
+The existing MaterialState/current-history/Occurrence lineage model preserves the necessary bases for that future operation.
+
+### 30.18 No generic recurrence composition algebra — FINAL BASELINE DISPOSITION
+
+No current accepted source case requires a generic canonical union/intersection/exclusion/boolean algebra over independent Recurrence definitions.
+
+Therefore CP6 adds no:
+
+```text
+recurrence_component
+recurrence_expression
+union/intersection operator enum
+generic AST/DSL
+JSON rule composition
+```
+
+The deterministic baseline represents one complete accepted typed recurrence definition per source/facet current MaterialState.
+
+Future trigger:
+
+```text
+first accepted source whose truthful recurring semantics cannot be represented by one typed definition
+→ derive that concrete composition contract from upstream semantics
+→ do not retrofit a generic algebra merely for theoretical completeness
+```
+
+### 30.19 SQLAlchemy and migration consequences — FROZEN DIRECTION
+
+No business DDL is authorized yet. CP6-04 mapping direction is nevertheless deterministic for this block.
+
+Owner-specific recurrence rows map independently:
+
+```text
+RoutineRecurrenceState
+EventRecurrenceState
+
+RoutineRecurrenceBoundaryState
+EventRecurrenceBoundaryState
+
+RoutineRecurrenceCalendarState
+EventRecurrenceCalendarState
+Routine/Event calendar selector children
+
+RoutineRecurrenceElapsedState
+EventRecurrenceElapsedState
+
+RoutineRecurrenceQuotaState
+EventRecurrenceQuotaState
+
+RoutineRecurrenceCyclicState
+EventRecurrenceCyclicState
+Routine/Event cycle-position children
+
+RoutineRecurrenceCurrentHistory
+EventRecurrenceCurrentHistory
+
+OccurrenceGeneration
+OccurrenceGenerationCalendar
+OccurrenceGenerationElapsed
+OccurrenceGenerationQuota
+OccurrenceGenerationCyclic
+```
+
+Reusable Python/migration helpers may reduce duplicated technical checks, but there is no semantic `Recurrence` mapped root, generic `Rule` mapped superclass or SQLAlchemy polymorphic recurrence ontology.
+
+Migration dependency order for this block:
+
+```text
+Routine/Event/Occurrence native owners
+→ native_address support
+→ material_state_address + native current controls
+→ owner-specific recurrence state envelopes
+→ boundary/family payload/selector tables
+→ owner-specific recurrence current-history + bounded integrity routines
+→ current recurrence views
+→ hardened occurrence_generation + family coordinates
+→ DB-U21 exact ACL entries
+→ direct PostgreSQL tests
+```
+
+`completion_relative`, `anchor_stream_relative`, independently scoped Recurrence and generic composition receive no baseline migration objects.
+
+### 30.20 DB-U21 / lifecycle implications carried forward
+
+This checkpoint adds concrete object classes to the final privilege matrix but does not grant them now.
+
+Direction:
+
+```text
+Routine/Event recurrence material-state envelopes
+family payloads
+boundary rows
+selector/position child rows
+Occurrence generation + coordinate rows
+→ immutable after accepted insertion under ordinary runtime authority
+→ candidate runtime SELECT + INSERT only where an accepted write path exists
+→ ordinary UPDATE/DELETE denied
+
+recurrence current-history
+→ SELECT + INSERT as required
+→ only bounded NULL→timestamp current_until_at closure UPDATE
+→ ordinary DELETE denied
+
+routine_current_recurrence / event_current_recurrence
+→ exact future operation privileges only
+
+shared native_current_material_state
+→ no blanket runtime mutation
+
+integrity functions/triggers
+→ no direct runtime EXECUTE by default
+```
+
+`DB-U14` non-destructive baseline remains unchanged: Recurrence history and Occurrence generation history are not deleted by ordinary runtime behavior, stable identities are not reused, and no generic tombstone field is added.
+
+`DB-U15` remains open for the final structural/query index review. This block does not add speculative indexes merely because recurrence data is temporal.
+
+### 30.21 Direct PostgreSQL proof obligations added by checkpoint C
+
+Future CP6-04/05 real PostgreSQL tests must include at least:
+
+```text
+OWNERSHIP / MATERIAL STATE
+Routine creation without current routine.recurrence by COMMIT          REJECT
+one-off Event with no event.recurrence                                 PASS
+recurring Event operation without complete current recurrence          REJECT
+wrong recurrence owner/facet                                           REJECT
+missing family payload by COMMIT                                       REJECT
+more than one family payload                                            REJECT
+non-current divergent recurrence state remains addressable             PASS
+same old state reselected in later non-overlapping episode              PASS
+current history overlap                                                  REJECT
+open history != native current binding                                  REJECT
+independent scoped Recurrence baseline object                            absent by schema
+
+CALENDAR
+calendar multi-wall-time 08:00 + 20:00                                 PASS
+weekly weekdays Mon/Wed/Fri                                             PASS
+monthly exact 31st                                                      PASS; invalid months produce no candidate
+monthly last-day -1                                                     PASS
+31st != last-day                                                        PASS
+second Tuesday                                                          PASS
+last Friday                                                             PASS
+yearly Feb-29                                                           PASS; non-leap year produces no candidate
+invalid-date fallback/clamp policy column                               absent by schema
+DST gap hidden shift                                                    absent / operation blocked without accepted basis
+DST overlap duplicate Occurrences                                       REJECT / absent
+DST overlap hidden first/second-offset choice                           absent
+invalid IANA zone                                                       REJECT
+anchor_step without pattern_anchor                                      REJECT
+phase-dependent interval pattern without required anchor                REJECT
+source created_at used as pattern anchor                                absent by design
+
+ELAPSED
+elapsed_seconds <= 0 or non-finite                                      REJECT
+fixed anchor accepted                                                   PASS
+previous_expected accepted                                              PASS
+missing explicit seed                                                   REJECT
+24 elapsed hours treated as calendar day                                absent by design
+Actual completion substituted into previous_expected                    absent by design
+
+QUOTA
+quota_count <= 0                                                        REJECT
+period_span <= 0                                                        REJECT
+weekly quota missing week_start                                         REJECT
+named-zone quota missing zone                                           REJECT
+multi-period quota missing required phase anchor                        REJECT
+quota rule has slot_number/semantic ordinal                             absent by schema
+3x/week may materialize first three differentiated Occurrences          PASS
+concurrent fourth materialization under same state/period               REJECT by locked cardinality operation
+skipped materialized Occurrence ceases counting as expectation          REJECT / remains generated expectation
+
+CYCLIC
+cycle without explicit pattern anchor                                  REJECT
+cycle position set missing index                                        REJECT by COMMIT
+cycle position outside 0..cycle_length-1                               REJECT
+2-on/2-off complete position set                                       PASS
+free-text position_code                                                 absent by schema
+non-generating position materializes recurrence-generated Occurrence    REJECT
+
+TRIGGER-BOUND FAMILIES
+completion-relative material state in CP6 baseline                      REJECT / no payload contract
+anchor-stream-relative material state in CP6 baseline                   REJECT / no payload contract
+anchor_feature_code placeholder                                         absent by schema
+qualifying predicate JSON/text/SQL                                      absent by schema
+
+OCCURRENCE
+recurrence-generated Occurrence missing governing recurrence state      REJECT
+recurrence governing state belongs to wrong source                      REJECT
+recurrence governing state has wrong source facet                       REJECT
+explicit-extra Occurrence with recurrence state                         REJECT
+explicit-extra Occurrence mutates source recurrence                     absent by design
+calendar governing family + wrong coordinate payload                    REJECT
+elapsed governing family + wrong coordinate payload                     REJECT
+quota governing family + wrong coordinate payload                       REJECT
+cyclic governing family + wrong coordinate payload                      REJECT
+recurrence-generated Occurrence with zero coordinates                   REJECT
+recurrence-generated Occurrence with multiple coordinate families       REJECT
+explicit-extra with generated coordinate                                REJECT
+quota coordinate contains slot ordinal                                  absent by schema
+materialized Occurrence remains bound to old rule after revision        PASS
+Schedule move leaves original generation coordinate unchanged            PASS
+pure virtual future candidate does not require Occurrence row            PASS by design
+```
+
+Quota concurrency proof must use genuinely concurrent transactions against the same source/period; a serial single-thread count test is not sufficient evidence.
+
+### 30.22 Accumulated A/B/C whole-database audit — PASS AFTER REPAIR
+
+The complete accumulated blueprint through Checkpoint C was replayed, not only the new tables. The review included all 57 concepts, the 15 native owners, ReferenceAddress families, MaterialState totality/currentness, Schedule/Actual/Session Checkpoint B, Criterion/Evaluation/Evidence/Temporal Constraint composition, Milestone/Agreement pressure, the accepted PostgreSQL Physical mapping, CP6-01/02 and the real technical foundation.
+
+Classification:
+
+```text
+A — SOUND / RETAIN
+57 / 57 Domain coverage
+15 LR-01 native owners
+NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef separation
+MaterialState bidirectional totality
+MaterialState existence != current
+explicit owner/facet current binding
+owner-specific current-history discipline
+DB-U14 non-destructive lifecycle baseline
+DB-U21 migration-owned least-privilege direction
+Schedule / Actual / Session checkpoint B
+Criterion/Evaluation/Evidence ownership thresholds
+Temporal Constraint separation
+six semantic Recurrence families
+lazy Occurrence identity/materialization
+Version rule-state binding
+no universal semantic root / status / JSON fallback
+
+B/C — HARDENED / REPAIRED BEFORE WRITE
+baseline independent dante.recurrence owner for every Recurrence
+→ REJECTED; Routine/Event owner-bound state selected
+
+six physical family codes allowed while only four payloads exist
+→ REJECTED; physical discriminator admits only four implemented baseline families
+  and the other two receive explicit trigger-bound no-DDL dispositions
+
+single wall_time on calendar recurrence
+→ REJECTED; accepted 08:00/20:00-style patterns require zero-or-more typed wall times
+
+generic month + day selector sets for yearly patterns
+→ REJECTED; exact month/day pair relation prevents accidental Cartesian semantics
+
+invalid_date_policy / DST policy placeholder fields
+→ REJECTED; no hidden fallback/default policy
+
+DST overlap automatically creates two Occurrences
+→ REJECTED
+
+quota slot_number / first-second-third identity
+→ REJECTED; stable Occurrence identity begins only on differentiation
+
+quota concurrent materialization without source-level serialization
+→ REPAIRED with deterministic source lock + exact-state/period count
+
+completion-relative anchor_feature_code placeholder
+→ REJECTED; family retained semantically but no baseline payload
+
+anchor-stream generic qualifying predicate
+→ REJECTED; family retained semantically but no baseline payload
+
+cyclic position_code free text
+→ REJECTED; only position index + generates_expected baseline
+
+cyclic phase inferred from source creation time
+→ REJECTED; explicit pattern anchor required
+
+Occurrence governing recurrence state allowed to float to current later
+→ REJECTED; exact generation-time MaterialStateRef is retained
+
+generic governing_source_state_ref retained without one universal semantic need
+→ REJECTED from CP6 baseline
+
+explicit extra Occurrence falsely treated as rule-generated
+→ REJECTED; origin_code + NULL governing state + no generated coordinate
+
+pre-materialized quota pseudo-Occurrences minted merely to represent cardinality
+→ REJECTED; virtual period cardinality precedes individual identity
+
+generic recurrence union/intersection DSL added for theoretical completeness
+→ REJECTED
+
+C — STRUCTURAL DEFECT AFTER REPAIR
+0
+```
+
+Post-repair whole-database regression:
+
+```text
+57 / 57 Domain concepts                                  PASS
+15 / 15 native owners                                   PASS
+new Domain owner                                        0
+Native / Scoped / Material / External separation        PASS
+MaterialState totality                                  PASS
+MaterialState existence != current                      PASS
+owner-specific current chronology                       PASS
+
+Recurrence != Routine/Event                             PASS
+Recurrence != Occurrence                                PASS
+Recurrence != Schedule                                  PASS
+Recurrence != Session/Actual                            PASS
+Recurrence != Temporal Constraint                       PASS
+Recurrence != Trigger                                   PASS
+
+six semantic recurrence families retained               PASS
+four deterministic baseline families                    PASS
+two trigger-bound families explicitly classified        PASS
+owner-bound baseline                                     PASS
+unjustified scoped Recurrence root                       0
+generic Rule root                                        0
+RRULE canonical truth                                    0
+semantic JSON fallback                                   0
+placeholder DST/invalid-date policy                      0
+quota semantic ordinal                                   0
+hidden created_at pattern anchor                         0
+
+Occurrence exact governing MaterialState                PASS
+virtual future support                                   PASS
+historical Occurrence reconstruction                     PASS
+explicit-extra != Recurrence mutation                   PASS
+
+Schedule / Actual / Session checkpoint B                UNAFFECTED / PASS
+DB-U14 lifecycle                                         UNAFFECTED / PASS
+DB-U21 direction                                         UNAFFECTED / PASS
+DB-U15                                                   CORRECTLY STILL OPEN
+
+C defects after repair                                   0
+unclassified new items                                   0
+```
+
+No Domain, Logical, Physical, CP6-01 or CP6-02 reopening is required.
+
+### 30.23 DB-U12 closure and register consequence
+
+`DB-U12` is now CLOSED for the CP6 baseline.
+
+Its closure does **not** claim that every semantic Recurrence family has baseline DDL. It means every current physical question from DB-U12 has a deterministic disposition:
+
+```text
+owner-bound baseline ownership                  CLOSED
+independent scoped Recurrence                    NO BASELINE DDL / EXPLICIT FUTURE TRIGGER
+material facet codes                             CLOSED: routine.recurrence / event.recurrence
+source cardinality/currentness                   CLOSED for current Routine/Event baseline
+pattern/effective boundary separation            CLOSED
+calendar supported forms/selectors               CLOSED
+invalid-date fallback policy                     NO BASELINE POLICY / exact positions only
+DST gap/overlap policy                           NO HIDDEN DEFAULT / resolution barrier
+named-zone resolution basis                      CLOSED where consequentially accepted
+elapsed family                                   CLOSED
+quota frame/phase/cardinality                    CLOSED
+completion-relative                              NO BASELINE DDL / qualifying-anchor trigger
+anchor-stream-relative                           NO BASELINE DDL / qualifying-stream trigger
+cyclic phase/positions                           CLOSED
+family payload totality                          CLOSED for four baseline physical families
+Occurrence governing-state eligibility           CLOSED
+virtual/materialized Occurrence boundary          CLOSED
+SQLAlchemy mapping direction                      CLOSED
+migration dependency direction                    CLOSED
+privilege direction                               CLOSED; exact object ACL matrix remains DB-U21
+direct proof list                                 CLOSED as CP6-04/05 obligation
+free-text/placeholder/JSON semantic fields        0
+```
+
+The globally unresolved DB-U set is reduced from 10 to 9:
+
+```text
+DB-U08
+DB-U09
+DB-U10
+DB-U15
+DB-U17
+DB-U18
+DB-U19
+DB-U20
+DB-U21
+
+COUNT = 9
+```
+
+The exact local unresolved set is unchanged from Checkpoint B:
+
+```text
+OUT-U01
+MIL-U01
+AGR-U01
+CRT-U01
+EVL-U01
+TC-U01
+
+COUNT = 6
+```
+
+No new global or local unresolved identifier is introduced by this checkpoint.
+
+### 30.24 Current CP6-03 status after checkpoint C
+
+```text
+CP6-03
+ACTIVE
+
+CONSOLIDATION CHECKPOINT C
+RECURRENCE / OCCURRENCE-GENERATION PHYSICAL CLOSURE
+PASS WITH HARDENING
+
+DB-U12
+CLOSED
+
+SIX SEMANTIC RECURRENCE FAMILIES
+RETAINED
+
+DETERMINISTIC CP6 BASELINE FAMILIES
+4
+calendar_wall_clock
+elapsed_interval
+quota_per_period
+cyclic_positional
+
+TRIGGER-BOUND / NO-BASELINE-DDL FAMILIES
+2
+completion_relative
+anchor_stream_relative
+
+WHOLE ACCUMULATED DATABASE AUDIT
+PASS AFTER REPAIR
+
+GLOBAL UNRESOLVED DB-U ITEMS
+9
+
+LOCAL EXACT UNRESOLVED ITEMS
+6
+
+UNCLASSIFIED NEW ITEMS
+0
+
+CP6 BUSINESS DDL AUTHORIZED
+NO
+
+GATE 03
+NOT YET EARNED
+```
+
+The next block must begin from this saved boundary. Outcome, Milestone, Agreement, Criterion, Evaluation and Temporal Constraint remain the six exact local closure items; none is implicitly solved by the Recurrence checkpoint.
