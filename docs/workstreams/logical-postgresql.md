@@ -90,7 +90,7 @@ LOCAL EXACT OPEN
 GLOBAL DB-U OPEN
 DB-U08  final PostgreSQL object naming
 DB-U15  final structural/query index matrix
-DB-U21  exact object-level privilege matrix
+DB-U21  exact object-level PostgreSQL privilege matrix
 
 NEXT DESIGN BLOCK
 FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
@@ -1198,8 +1198,8 @@ consume Parts 1–8 together
 → enumerate every surviving baseline PostgreSQL object exactly
 → include tables, views, types/domains, routines, triggers, constraints and dispatch/control structures actually required
 → exclude every object removed by later explicit no-DDL disposition
-→ reconcile every scoped_family and MaterialState facet against the final survivor audit
-→ verify every table/column/key/constraint can be implemented without semantic invention
+→ reconcile every scoped family and MaterialState facet against the final survivor audit
+→ verify every table/column/key/constraint is implementable without semantic invention
 → keep DB-U08 / DB-U15 / DB-U21 OPEN during derivation
 → run cumulative whole-database audit over the inventory
 → show an exact write gate before saving the inventory freeze
