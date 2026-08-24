@@ -559,7 +559,7 @@ executed HEAD                     ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 Backend Quality                   SUCCESS / 32 fast tests PASS
 Backend PostgreSQL                SUCCESS / 18 PostgreSQL tests PASS
 Backend CI Gate                   SUCCESS
-current corpus                    50 / 50 covered across mandatory lanes
+current corpus                    50 / 50 covered across mandatory CI lanes
 18.6 release-note impact          PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
@@ -607,18 +607,18 @@ TECH  technology lifecycle
 ID    physical identity
 REF   reference addressing
 MAT   material state/current truth
-HIST  history
-TIM   temporal
-MISS  missingness
-LIFE  lifecycle
+HIST  historical truth
+TIM   temporal truth
+MISS  missing/unknown/negative
+LIFE  lifecycle/retention/tombstone
 TYP   PostgreSQL types
-REL   relations
+REL   relation doctrine
 CON   constraints
 IDX   indexes
-TX    transactions/concurrency
+TX    transaction/concurrency
 IDEM  idempotency
 PROV  provenance
-CAP   capabilities
+CAP   PostgreSQL capability boundaries
 MIG   migration/evolution
 SEC   ownership/privileges
 QA    direct persistence acceptance
