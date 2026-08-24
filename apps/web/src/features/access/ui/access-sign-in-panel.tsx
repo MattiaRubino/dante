@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
 import { ProviderButton } from './provider-button';
 
 export function AccessSignInPanel() {
@@ -9,18 +8,13 @@ export function AccessSignInPanel() {
   return (
     <section className="access-panel" aria-labelledby="access-signin-title">
       <div className="access-panel-inner">
-        <img
-          className="access-panel-wordmark"
-          src={danteWordmarkUrl}
-          alt="DANTE"
-        />
-
         <p className="access-kicker">
           {t(($) => $.common.access.kicker.access)}
         </p>
-        <h2 id="access-signin-title">
+
+        <h1 id="access-signin-title">
           {t(($) => $.common.access.signin.title)}
-        </h2>
+        </h1>
         <p className="access-signin-copy">
           {t(($) => $.common.access.signin.body)}
         </p>
@@ -53,6 +47,7 @@ export function AccessSignInPanel() {
               type="email"
               autoComplete="email"
               inputMode="email"
+              placeholder="nome@esempio.com"
             />
           </div>
 
@@ -65,12 +60,31 @@ export function AccessSignInPanel() {
                 {t(($) => $.common.access.signin.forgot)}
               </button>
             </div>
-            <input
-              id="access-password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-            />
+            <div className="access-input-wrap">
+              <input
+                id="access-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+              />
+              <button
+                className="access-password-toggle"
+                type="button"
+                aria-label="Mostra password"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  focusable="false"
+                  aria-hidden="true"
+                >
+                  <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" />
+                  <circle cx="12" cy="12" r="2.7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
