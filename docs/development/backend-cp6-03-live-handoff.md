@@ -1,3 +1,9 @@
+> **LATEST LIVE RESUME — 2026-08-24 / FINAL OBJECT INVENTORY FROZEN**  
+> This is the latest operational overlay for this temporary handoff. Canonical authority now includes `docs/database/dante-postgresql-database-part-9.md`, section 38 **Final Actual PostgreSQL Object Inventory — FROZEN**. Parts 1–9 must be consumed together. The exact current next block is **DB-U08 — final PostgreSQL object naming**; DB-U15 and DB-U21 remain open afterward. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
+> Frozen inventory: **68 DANTE-owned tables; 5 current-facet views; scoped families schedule/actual; five surviving MaterialState facets; 78-index minimum structural floor; 14 bounded integrity-routine roles / 75 table-trigger attachments (18 immediate + 57 deferred); no custom DANTE enum/domain types, sequences, materialized views or RLS policies**. Technical `dante.alembic_version` and extension-owned objects are classified separately and are not folded into the 68 DANTE-owned count.  
+> Per explicit user direction, protected-`main` realignment is intentionally deferred to a later separate gate. This inventory freeze does not merge/rebase/reconcile `main`.  
+> This overlay supersedes earlier LIVE-only current-status/resume statements below, including sections that say DB-U23 is still open, inventory is blocked/next, or Parts 1–8 are the complete active set. Those sections remain deliberately preserved as historical audit evidence and are non-normative where this overlay or canonical Part 9 is more current.  
+
 # CP6-03 LIVE HANDOFF — TEMPORARY CROSS-CHAT CONTINUITY
 
 **Status:** LIVE / TEMPORARY / NON-NORMATIVE / DELETE LATER  
