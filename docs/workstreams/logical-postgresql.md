@@ -1,3 +1,8 @@
+> **CURRENT CP6-03 RESUME — 2026-08-24 / INVENTORY FREEZE**  
+> The authoritative current operational state is now: **Final Actual PostgreSQL Object Inventory FROZEN** in `docs/database/dante-postgresql-database-part-9.md`, section 38. Parts 1–9 are one canonical Database Architecture & Reference. Checkpoint J / DB-U23 remains CLOSED; the surviving global open set remains exactly `DB-U08 / DB-U15 / DB-U21`; the exact next design block is **DB-U08 — final PostgreSQL object naming**. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED. This overlay supersedes only older CURRENT/resume prose below that says Parts 1–8 or `FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT`; all historical derivation, evidence and process rationale below remain preserved.  
+> Inventory freeze: **68 DANTE-owned tables + 5 bounded current views; scoped families = schedule/actual; MaterialState facets = schedule.placement / actual.realization / session.timing / routine.recurrence / event.recurrence; minimum structural-index floor = 78; bounded integrity roles = 14 with 75 table-trigger attachments (18 immediate + 57 deferred)**. Exact SQL identifiers remain DB-U08; the complete final index matrix remains DB-U15; exact ACLs remain DB-U21.  
+> Per explicit user direction, protected-`main` realignment is intentionally deferred to a later separate gate and is NOT part of this inventory freeze. Do not reinterpret temporary branch divergence as permission to merge `main` during the current CP6 design sequence.  
+
 # Workstream — CP6 Concrete PostgreSQL Database
 
 - Status: **ACTIVE / DATABASE BLUEPRINT + MATERIALIZATION**
