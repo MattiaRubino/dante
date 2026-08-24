@@ -1,0 +1,22 @@
+{
+  "home.contextRail.capture.title": "Capture",
+  "home.contextRail.capture.subtitle": "Record something without classifying it first",
+  "home.contextRail.capture.input.placeholder": "Write something you want to remember or record…",
+  "home.contextRail.capture.voice.label": "Record voice",
+  "home.contextRail.capture.attach.label": "Add attachment",
+  "home.contextRail.capture.submit.label": "Record",
+  "home.contextRail.capture.history.label": "Full log",
+  "home.contextRail.capture.status.recorded": "Recorded",
+  "home.contextRail.resolution.title": "To resolve",
+  "home.contextRail.resolution.subtitle": "Matters that need your input",
+  "home.contextRail.resolution.workout.title": "Today’s workout",
+  "home.contextRail.resolution.workout.subtitle": "The outcome is not known yet.",
+  "home.stage.continuity.title": "Worlds",
+  "home.stage.signals.title": "Signals",
+  "home.actions.done": "Done",
+  "home.actions.partial": "Partial",
+  "home.actions.skipped": "Skipped",
+  "home.actions.confirm": "Confirm",
+  "home.actions.correct": "Correct",
+  "home.actions.details": "View details"
+}
