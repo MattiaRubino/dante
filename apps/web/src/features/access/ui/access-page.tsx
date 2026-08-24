@@ -5,6 +5,7 @@ import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dan
 import { AccessBrandStage } from './access-brand-stage';
 import { AccessSignInPanel } from './access-sign-in-panel';
 import '../access.css';
+import '../access-composition.css';
 
 export function AccessPage() {
   const { i18n } = useTranslation();
