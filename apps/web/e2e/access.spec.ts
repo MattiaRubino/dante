@@ -34,7 +34,9 @@ async function expectDesktopBrandStageOpen(page: Page) {
 test.describe('DANTE Access', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      window.localStorage.setItem('dante.locale', 'it');
+      if (!window.localStorage.getItem('dante.locale')) {
+        window.localStorage.setItem('dante.locale', 'it');
+      }
     });
   });
 
