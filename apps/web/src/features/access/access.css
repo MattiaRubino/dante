@@ -1,0 +1,403 @@
+.access-page {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(460px, 0.92fr);
+  background: #ffffff;
+  color: #222f37;
+}
+
+.access-brand-stage {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(40px, 5vw, 72px) clamp(44px, 6vw, 92px);
+  background:
+    radial-gradient(circle at 18% 18%, rgb(234 92 18 / 8%), transparent 34%),
+    linear-gradient(145deg, #f7f5f1 0%, #efeee9 100%);
+}
+
+.access-brand-wordmark {
+  position: relative;
+  z-index: 2;
+  width: clamp(148px, 13vw, 196px);
+  height: auto;
+}
+
+.access-brand-copy {
+  position: relative;
+  z-index: 2;
+  margin: auto 0;
+  max-width: 660px;
+  padding: 72px 0 100px;
+}
+
+.access-brand-copy h1 {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: clamp(3.5rem, 5.2vw, 5.7rem);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  line-height: 0.96;
+}
+
+.access-brand-copy h1 span:last-child {
+  color: #ea5c12;
+}
+
+.access-brand-copy p {
+  margin: 32px 0 0;
+  max-width: 56ch;
+  color: #53616a;
+  font-size: clamp(1rem, 1.2vw, 1.18rem);
+  line-height: 1.7;
+}
+
+.access-brand-foot {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  color: #6c777d;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+}
+
+.access-brand-orbits {
+  position: absolute;
+  z-index: 1;
+  width: 1080px;
+  height: 1080px;
+  left: -390px;
+  bottom: -340px;
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+.access-panel {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(40px, 5vw, 76px);
+  background: #ffffff;
+}
+
+.access-panel-inner {
+  width: min(100%, 470px);
+}
+
+.access-panel-wordmark {
+  display: none;
+  width: 148px;
+  height: auto;
+  margin-bottom: 48px;
+}
+
+.access-kicker {
+  margin: 0 0 14px;
+  color: #ea5c12;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.access-panel h2 {
+  margin: 0;
+  color: #222f37;
+  font-size: clamp(2.35rem, 3.4vw, 3.2rem);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.access-signin-copy {
+  margin: 18px 0 32px;
+  color: #69757c;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.access-provider-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.access-provider-button,
+.access-primary-button {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.access-provider-button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  border: 1px solid #d8dddf;
+  background: #ffffff;
+  color: #222f37;
+  padding: 0 18px;
+}
+
+.access-provider-button > span:last-child {
+  grid-column: 2;
+  text-align: center;
+}
+
+.access-provider-button:hover {
+  border-color: #aeb8bd;
+  background: #fbfbfa;
+}
+
+.access-provider-mark {
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #222f37;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.access-provider-mark-apple {
+  font-size: 0.78rem;
+}
+
+.access-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  margin: 26px 0;
+}
+
+.access-divider span {
+  height: 1px;
+  background: #e3e6e7;
+}
+
+.access-divider p {
+  margin: 0;
+  color: #899399;
+  font-size: 0.82rem;
+}
+
+.access-field-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.access-field {
+  display: grid;
+  gap: 8px;
+  color: #37434a;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.access-field-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.access-field input {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid #cfd6d9;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #222f37;
+  padding: 0 15px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 450;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.access-field input:hover {
+  border-color: #aeb8bd;
+}
+
+.access-field input:focus-visible {
+  border-color: #ea5c12;
+  box-shadow: 0 0 0 3px rgb(234 92 18 / 14%);
+}
+
+.access-inline-action,
+.access-legal button {
+  border: 0;
+  background: transparent;
+  color: #53616a;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.access-inline-action:hover,
+.access-legal button:hover {
+  color: #ea5c12;
+}
+
+.access-inline-action:focus-visible,
+.access-legal button:focus-visible,
+.access-provider-button:focus-visible,
+.access-primary-button:focus-visible {
+  outline: 3px solid rgb(234 92 18 / 24%);
+  outline-offset: 3px;
+}
+
+.access-field-heading .access-inline-action {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.access-primary-button {
+  margin-top: 24px;
+  border: 1px solid #222f37;
+  background: #222f37;
+  color: #ffffff;
+  padding: 0 22px;
+  box-shadow: 0 10px 24px rgb(34 47 55 / 12%);
+}
+
+.access-primary-button:hover {
+  border-color: #31424c;
+  background: #31424c;
+  transform: translateY(-1px);
+}
+
+.access-new-account {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 26px;
+  color: #727e84;
+  font-size: 0.9rem;
+}
+
+.access-create-account {
+  color: #222f37;
+  font-weight: 700;
+}
+
+.access-legal {
+  margin: 34px auto 0;
+  max-width: 44ch;
+  color: #98a1a6;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.access-legal button {
+  color: #747f85;
+  text-decoration: underline;
+  text-decoration-color: #c9ced0;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .access-page {
+    grid-template-columns: minmax(0, 1fr) minmax(430px, 1fr);
+  }
+
+  .access-brand-stage {
+    padding-inline: 52px;
+  }
+
+  .access-brand-orbits {
+    width: 940px;
+    height: 940px;
+    left: -360px;
+    bottom: -315px;
+    opacity: 0.18;
+  }
+
+  .access-brand-copy h1 {
+    font-size: clamp(3.25rem, 5.5vw, 4.5rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .access-page {
+    grid-template-columns: 1fr;
+  }
+
+  .access-brand-stage {
+    display: none;
+  }
+
+  .access-panel {
+    min-height: 100dvh;
+    align-items: center;
+    padding: 48px clamp(28px, 8vw, 72px);
+  }
+
+  .access-panel-inner {
+    width: min(100%, 500px);
+  }
+
+  .access-panel-wordmark {
+    display: block;
+  }
+}
+
+@media (max-width: 560px) {
+  .access-panel {
+    padding: 32px 20px;
+  }
+
+  .access-panel-wordmark {
+    width: 132px;
+    margin-bottom: 40px;
+  }
+
+  .access-panel h2 {
+    font-size: clamp(2.15rem, 11vw, 2.8rem);
+  }
+
+  .access-signin-copy {
+    margin-bottom: 28px;
+  }
+
+  .access-provider-button,
+  .access-primary-button {
+    min-height: 56px;
+  }
+
+  .access-field input {
+    min-height: 54px;
+  }
+
+  .access-new-account {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-provider-button,
+  .access-primary-button,
+  .access-field input {
+    transition: none;
+  }
+}
