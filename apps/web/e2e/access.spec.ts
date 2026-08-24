@@ -54,7 +54,7 @@ test.describe('DANTE Access', () => {
     await expect(
       page.getByRole('heading', {
         level: 2,
-        name: 'Comprendi la vita. Dai forma a ciò che viene dopo.',
+        name: 'Comprendi la vita. Dai forma al prossimo passo.',
       }),
     ).toBeVisible();
     await expect(
