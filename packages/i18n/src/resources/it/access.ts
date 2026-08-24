@@ -1,7 +1,7 @@
 export const access = {
   stage: {
-    titleFirst: 'Understand life.',
-    titleSecond: 'Shape what comes next.',
+    titleFirst: 'Comprendi la vita.',
+    titleSecond: 'Dai forma a ciò che viene dopo.',
     body: 'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
     foot: 'Una sola realtà. Più modi per comprenderla.',
   },
@@ -23,11 +23,18 @@ export const access = {
   },
   field: {
     email: 'Email',
+    emailPlaceholder: 'nome@esempio.com',
     password: 'Password',
   },
   action: {
     signin: 'Accedi',
     createAccount: 'Crea un account',
+    showPassword: 'Mostra password',
+    hidePassword: 'Nascondi password',
+  },
+  locale: {
+    control: 'Cambia lingua. Lingua attuale: {{language}}',
+    options: 'Lingue disponibili',
   },
   legal: {
     prefix: 'Continuando, accetti i',
