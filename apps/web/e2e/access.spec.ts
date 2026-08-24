@@ -96,7 +96,10 @@ test.describe('DANTE Access', () => {
         name: 'Cambia lingua. Lingua attuale: Italiano',
       })
       .click();
-    await page.getByRole('button', { name: /English/ }).click();
+    await page
+      .getByRole('group', { name: 'Lingue disponibili' })
+      .getByRole('button', { name: /English/ })
+      .click();
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(
@@ -193,7 +196,9 @@ test.describe('DANTE Access', () => {
     await expect(localeButton).toBeFocused();
 
     await page.keyboard.press('ArrowDown');
-    const selectedLocale = page.getByRole('button', { name: /Italiano/ });
+    const selectedLocale = page
+      .getByRole('group', { name: 'Lingue disponibili' })
+      .getByRole('button', { name: /Italiano/ });
     await expect(selectedLocale).toBeFocused();
 
     await page.keyboard.press('Escape');
