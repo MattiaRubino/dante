@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> PR #28 is merged into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`; frontend materialization is **CLOSED / PASS / INTEGRATED**. Any later roadmap text that still labels frontend materialization active or PR #28 pending is preserved pre-merge status and is superseded by this banner. Backend `feature/logical-postgresql` is current with `main`; CP6-03 remains ACTIVE with Checkpoint J / DB-U23 CLOSED, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next action = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, second full tombstone mandatory before Gate 03, CP6-04 not authorized.  
+
 # DANTE Roadmap
 
 - Status: **CURRENT**
