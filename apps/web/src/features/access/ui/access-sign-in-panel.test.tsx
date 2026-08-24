@@ -17,7 +17,7 @@ describe('AccessSignInPanel', () => {
     render(<AccessSignInPanel />);
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Accedi a DANTE' })
+      screen.getByRole('heading', { level: 1, name: 'Accedi a DANTE' })
         .textContent,
     ).toBe('Accedi a DANTE');
 
@@ -36,9 +36,13 @@ describe('AccessSignInPanel', () => {
 
     expect(emailInput.autocomplete).toBe('email');
     expect(emailInput.inputMode).toBe('email');
+    expect(emailInput.placeholder).toBe('nome@esempio.com');
     expect(passwordInput.autocomplete).toBe('current-password');
     expect(passwordInput.type).toBe('password');
 
+    expect(
+      screen.getByRole('button', { name: 'Mostra password' }),
+    ).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Password dimenticata?' }),
     ).toBeTruthy();
