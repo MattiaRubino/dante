@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
-import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
 
 export function AccessBrandStage() {
   const { t } = useTranslation('common');
@@ -11,19 +10,17 @@ export function AccessBrandStage() {
       className="access-brand-stage"
       aria-labelledby="access-brand-title"
     >
-      <img
-        className="access-brand-wordmark"
-        src={danteWordmarkUrl}
-        alt="DANTE"
-      />
+      <div className="access-brand-eyebrow">DANTE</div>
 
-      <div className="access-brand-copy">
-        <h1 id="access-brand-title">
-          <span>{t(($) => $.common.access.stage.titleFirst)}</span>
-          <span>{t(($) => $.common.access.stage.titleSecond)}</span>
-        </h1>
-        <p>{t(($) => $.common.access.stage.body)}</p>
-      </div>
+      <h2 id="access-brand-title">
+        <span>{t(($) => $.common.access.stage.titleFirst)}</span>
+        <br />
+        <span>{t(($) => $.common.access.stage.titleSecond)}</span>
+      </h2>
+
+      <p className="access-brand-body">
+        {t(($) => $.common.access.stage.body)}
+      </p>
 
       <p className="access-brand-foot">
         {t(($) => $.common.access.stage.foot)}
