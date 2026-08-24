@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> Frontend materialization is **CLOSED / PASS / INTEGRATED into protected `main` via PR #28**. Any later statement in this preserved body that still calls it active is pre-merge status. Backend CP6 remains on `feature/logical-postgresql`, current with `main`, with CP6-03 ACTIVE, Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized. This banner supersedes only contradictory status/routing wording below.  
+
 # DANTE Architecture Index
 
 - Status: **CURRENT**
