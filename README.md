@@ -15,7 +15,7 @@ ENGINEERING FOUNDATION v0            CLOSED / ACCEPTED
 FRONTEND ENGINEERING FOUNDATION      CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 PRODUCTION BACKEND SCAFFOLD          CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 FRONTEND MATERIALIZATION             CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING       ACTIVE — PR #28 / READY / FINAL MERGE GATE
+FRONTEND INTEGRATION HARDENING       CLOSED / INTEGRATED VIA PR #28
 FRONTEND CI GATE CALIBRATION         COMPLETE
 FRONTEND CI GATE PROMOTION           OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 CONCRETE LOGICAL -> POSTGRESQL        NOT STARTED
@@ -62,9 +62,9 @@ migrations             Alembic
 
 The integrated LOCAL PostgreSQL scaffold directly proved PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6, `pg_trgm`, `unaccent`, `pg_stat_statements`, least-privilege role provisioning, migrations, real readiness and real PostgreSQL acceptance. Detailed CP1-CP5 evidence lives in `docs/workstreams/backend-scaffold.md` and the backend development contracts.
 
-## Frontend engineering baseline — materialized
+## Frontend engineering baseline — materialized and integrated
 
-The closed frontend materialization directly qualified the following baseline at its stated scopes:
+The closed frontend materialization directly qualified the following baseline at its stated scopes and was integrated into protected `main` through PR #28:
 
 ```text
 Node                    24.19.0
@@ -120,30 +120,27 @@ GitHub-hosted Frontend CI                     PASS
 
 The detailed evidence authority is `docs/workstreams/frontend-materialization.md`.
 
-## Combined integration candidate — PR #28
+## Frontend integration — CLOSED / integrated via PR #28
 
-`chore/frontend-materialization-integration` was created from current `main` and preserves the closed frontend history through a real merge parent. The integration hardening adds Mobile `src/**` TypeScript coverage, Expo compatibility CI, untracked-residue CI checks, a stable `Frontend CI Gate`, least-privilege workflow permissions, pnpm minimum-release-age policy and npm/pnpm Dependabot coverage.
-
-The directly observed final pre-document-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for:
+PR #28 merged the closed frontend materialization plus bounded integration hardening into protected `main`.
 
 ```text
-Dependency Review
-Backend Quality
-Backend PostgreSQL
-Backend CI Gate
-Frontend Quality
-Web E2E
-Mobile Bundle
-Frontend CI Gate
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
+merge commit         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+merge parentage      PASS — exactly prior main + final PR head
+merged tree identity PASS — PR head -> main has 0 file delta
 ```
 
-Any later documentation-only PR head must independently satisfy the same hosted-CI/current/mergeable/thread-clean gate before protected-main merge authorization.
+The final PR head directly passed Dependency Review, Backend CI and Frontend CI, including `Backend CI Gate` and `Frontend CI Gate`, before merge. The available connector does not expose push-triggered workflow-run lookup for the merge SHA, therefore push-main CI is classified **DIRECT READBACK UNAVAILABLE**, not falsely called PASS.
 
 Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily accepted and documented with a review deadline of **2026-09-23**; this is not a global vulnerability suppression.
 
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
+
 ## Protected-main enforcement
 
-The branch-local canonical ruleset definition contains:
+The canonical repository ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -156,7 +153,7 @@ merge commits only
 no force push / no deletion
 ```
 
-`Frontend CI Gate` has completed real-green, controlled deliberate-red, mandatory failure-propagation, exact-restore and recovery-green calibration. The repository owner confirmed applying its promotion to the protected-main ruleset. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
+`Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure-propagation, exact-restore and recovery-green calibration. The repository owner confirmed applying its promotion to the protected-main ruleset. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
 
 ## Selected but not yet activated
 
@@ -180,16 +177,21 @@ Read in order:
 2. `docs/PROJECT-STATUS.md`
 3. `docs/development/agent-operating-manual.md`
 4. `docs/development/repository-engineering-safety.md`
-5. the active workstream handoff
+5. the applicable current or closed workstream handoff
 6. the applicable closed architecture/ADR/model authorities.
 
-Current integration boundary:
+Current continuation boundaries:
 
 ```text
-PR #28 READY / mergeable candidate
--> require hosted CI green on the exact current PR head
--> require branch current with main + review threads resolved
--> separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation under a fresh explicit gate
+
+BACKEND NEXT
+Concrete Logical -> PostgreSQL through a fresh bounded workstream/gate
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only capabilities actually consumed
 ```
 
 Backend next remains a separate bounded workstream for Concrete Logical -> PostgreSQL. Product vertical work begins only after its required data/API/UI boundaries are deliberately activated; do not reopen closed foundations by default.

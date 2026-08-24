@@ -27,7 +27,7 @@ Engineering Foundation v0            CLOSED / ACCEPTED
 Frontend Engineering Foundation      CLOSED / ACCEPTED / integrated via PR #22
 Production backend scaffold          CLOSED / DIRECT QA PASS / integrated via PR #24
 Frontend materialization             CLOSED / PASS — FM-00..FM-07
-Frontend integration hardening       ACTIVE — PR #28 / READY / FINAL MERGE GATE
+Frontend integration hardening       CLOSED / INTEGRATED VIA PR #28
 Frontend CI Gate calibration         COMPLETE
 Frontend CI Gate promotion           OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Concrete PostgreSQL business map     NOT STARTED
@@ -76,9 +76,9 @@ Production deployment                NOT STARTED
 - `workstreams/frontend-materialization.md` — FM-00..FM-07 detailed evidence authority
 - `development/frontend-local-development.md` — verified local development/runtime runbook
 
-### Frontend integration — active
+### Frontend integration — closed / integrated
 
-- `workstreams/frontend-materialization-integration.md` — PR #28 integration-hardening handoff, accepted-risk register and future activation register
+- `workstreams/frontend-materialization-integration.md` — closed PR #28 integration-hardening record, accepted-risk lifecycle and durable future-activation register
 
 ### Architecture
 
@@ -90,11 +90,13 @@ Production deployment                NOT STARTED
 
 The repository is one DANTE product monorepo. Real materialized roots currently include backend, Web, Mobile, shared packages, tooling, infrastructure definitions, tests, docs, prototypes and GitHub automation according to their accepted ownership boundaries.
 
-Backend scaffold truth is already integrated into protected `main` and includes Python 3.14.7, uv 0.12.5, Ruff, mypy strict, pytest, SQLAlchemy 2.0, psycopg 3, Alembic, DANTE-owned PostgreSQL 18.4 LOCAL image, least-privilege roles, real PostgreSQL acceptance and calibrated `Backend CI Gate`.
+Backend scaffold truth is integrated into protected `main` and includes Python 3.14.7, uv 0.12.5, Ruff, mypy strict, pytest, SQLAlchemy 2.0, psycopg 3, Alembic, DANTE-owned PostgreSQL 18.4 LOCAL image, least-privilege roles, real PostgreSQL acceptance and calibrated `Backend CI Gate`.
 
-Frontend materialization is separately CLOSED / PASS and directly proved the Node/pnpm/Turbo/TypeScript workspace, Web React/Vite/TanStack Router application, Expo/React Native Android path, shared design-token/i18n/time packages, architecture enforcement, deterministic generated sources, unit tests, Web E2E, Android Hermes bundle smoke, Android emulator runtime and GitHub-hosted Frontend CI.
+Frontend materialization is CLOSED / PASS and directly proved the Node/pnpm/Turbo/TypeScript workspace, Web React/Vite/TanStack Router application, Expo/React Native Android path, shared design-token/i18n/time packages, architecture enforcement, deterministic generated sources, unit tests, Web E2E, Android Hermes bundle smoke, Android emulator runtime and GitHub-hosted Frontend CI.
 
-The integration branch `chore/frontend-materialization-integration` is the current pending-main candidate. It was created from current `main`, carries the closed frontend history as a real merge parent and is under READY PR #28. The remaining integration boundary is exact-head hosted CI/currentness/mergeability/thread cleanliness followed by separate protected-main merge authorization.
+Frontend materialization integration is also CLOSED / integrated through PR #28. Final PR head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` merged to protected `main` as `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`; the merge commit has the expected two parents and the merged main tree has zero file delta from the final PR head.
+
+The final PR head passed Dependency Review, Backend CI and Frontend CI including both aggregate gates. The available connector does not expose push-triggered workflow-run lookup for the merge SHA, so push-main CI remains **DIRECT READBACK UNAVAILABLE** rather than inferred PASS.
 
 ## Materialization qualification rule
 
@@ -114,7 +116,7 @@ Older version-specific design wording does not override later directly validated
 
 ## CI / repository safety truth
 
-The branch-local protected-main ruleset definition contains:
+The canonical protected-main ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -126,9 +128,7 @@ with strict branch-up-to-date policy, PR-before-merge, review-thread resolution,
 
 `Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure propagation, exact restore and recovery-green calibration. The repository owner confirmed applying its protected-main promotion. Direct ruleset API readback is unavailable in the connector, therefore the administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
 
-The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was green for Backend CI, Dependency Review and Frontend CI, including both aggregate gates. Any subsequent documentation-only head must independently satisfy those same checks before merge authorization.
-
-Dependency Review remains `moderate+` fail-closed. The exact temporary GHSA exceptions and review deadline are documented in the active integration handoff; no global suppression is authorized.
+Dependency Review remains `moderate+` fail-closed. The exact temporary GHSA exceptions and review deadline are documented in the closed integration handoff; no global suppression is authorized.
 
 ## Future activation register
 
@@ -148,13 +148,15 @@ Do not install infrastructure merely because a large application might eventuall
 ## Exact next handoff
 
 ```text
-PR #28 READY
--> verify hosted CI green on the exact current head
--> verify branch current with main / mergeable / review-thread clean
--> separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation under a fresh explicit gate
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL through a fresh bounded workstream/gate
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only capabilities actually consumed
 ```
 
 No production/direct PASS is inferred merely from design closure, selected technology or workflow existence.

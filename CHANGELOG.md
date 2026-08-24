@@ -2,6 +2,22 @@
 
 This changelog records significant project-state and architecture milestones. It is not a replacement for Git history and is not intended to list every commit.
 
+## 2026-08-23
+
+### Frontend materialization and protected-main integration
+
+- Closed frontend materialization FM-00..FM-07 at their stated direct-evidence scopes.
+- Integrated the closed frontend materialization and bounded integration hardening into protected `main` through PR #28.
+- Final PR head: `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`.
+- Protected-main merge commit: `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`.
+- Verified the merge commit has exactly two parents: prior `main` `fd3bc8dd918cf6aadeff4572221af68612c3cb42` and PR head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`.
+- Verified the merged tree contains the exact accepted PR tree with no file delta between the PR head and merged `main` tree.
+- PR exact-head Dependency Review, Backend CI and Frontend CI completed successfully, including `Backend CI Gate` and `Frontend CI Gate`.
+- `Frontend CI Gate` calibration is complete. Its protected-main ruleset promotion remains classified **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** because direct ruleset readback is not exposed through the available connector.
+- Push-main CI for the merge SHA is not classified PASS because the available connector exposes PR-associated workflow-run lookup only; direct push-run readback remains unavailable through this interface.
+- The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
+- Frontend integration is now **CLOSED / INTEGRATED**. Future capabilities remain trigger-activated rather than placeholder-installed.
+
 ## 2026-08-18
 
 ### Product naming

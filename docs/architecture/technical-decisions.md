@@ -107,7 +107,7 @@ pnpm          11.22.0
 Turborepo     2.10.11
 ```
 
-pnpm isolated layout remains preferred; no hoisting/nodeLinker workaround is authorized without evidence. The integration branch adds `minimumReleaseAge = 1440` minutes.
+pnpm isolated layout remains preferred; no hoisting/nodeLinker workaround is authorized without evidence. The integrated repository policy includes `minimumReleaseAge = 1440` minutes.
 
 ## TD-13 — Frontend data/state authority
 
@@ -222,27 +222,35 @@ Frontend CI Gate
 
 `Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure propagation, exact restore and recovery-green calibration. Its protected-main promotion is **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** because the available connector cannot directly read the repository ruleset.
 
-Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily allowed until review/removal conditions in the active integration handoff are satisfied.
+Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily allowed until review/removal conditions in the closed integration handoff are satisfied.
+
+PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` directly passed the applicable Dependency Review, Backend CI and Frontend CI jobs before merge. Push-main CI on merge SHA `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` is **DIRECT READBACK UNAVAILABLE** through the current connector and is not inferred PASS.
 
 ## TD-25 — Current implementation/integration boundary
 
 **CURRENT HANDOFF**
 
-Backend CP1-CP5 scaffold is integrated. Frontend FM-00..FM-07 is closed/pass. PR #28 is READY and remains the active integration boundary until protected-main merge is verified.
+Backend CP1-CP5 scaffold is integrated. Frontend FM-00..FM-07 is closed/pass and its bounded integration hardening is **CLOSED / integrated via PR #28**.
 
 ```text
-CURRENT
-exact current PR #28 head
--> hosted CI green
--> current with main
--> mergeable / review-thread clean
--> separate protected-main merge authorization
+FRONTEND INTEGRATION
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+protected-main merge f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+merge parentage      PASS
+merged tree identity PASS
+
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation under a fresh explicit gate
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL in a fresh bounded workstream
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only capabilities actually consumed
 ```
 
-The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied the current/mergeable/thread-clean and full hosted-CI gates. Any later documentation-only head must independently satisfy them before merge authorization.
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
 
 ## TD-26 — Materialization qualification precedence
 
@@ -266,7 +274,7 @@ The known React/react-dom workspace peer diagnostic remains non-blocking because
 
 **ACCEPTED OPERATING RULE**
 
-Capabilities that large applications commonly use are not installed ceremonially. Their trigger register lives in `../workstreams/frontend-materialization-integration.md` and covers first product vertical, first UI/design-system surface, first form, first remote API, first offline operation, shared deployment, Mobile release, post-integration security, pre-PROD maturity and scale-triggered infrastructure.
+Capabilities that large applications commonly use are not installed ceremonially. Their trigger register lives in the closed integration authority `../workstreams/frontend-materialization-integration.md` and covers first product vertical, first UI/design-system surface, first form, first remote API, first offline operation, shared deployment, Mobile release, post-integration security, pre-PROD maturity and scale-triggered infrastructure.
 
 ## Selected technologies not to reintroduce casually
 
