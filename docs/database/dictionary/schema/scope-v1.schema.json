@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dante.local/schemas/database-dictionary/scope-v1.schema.json",
+  "title": "DANTE Database Dictionary Scope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "dictionary_version",
+    "status",
+    "postgresql",
+    "expected_baseline",
+    "technical_foundation",
+    "extension_owned",
+    "materialization_rules"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "dictionary_version": {
+      "const": 1
+    },
+    "status": {
+      "const": "readiness_only"
+    },
+    "postgresql": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "major",
+        "schema"
+      ],
+      "properties": {
+        "major": {
+          "const": 18
+        },
+        "schema": {
+          "const": "dante"
+        }
+      }
+    },
+    "expected_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "standalone_entries",
+        "embedded_objects"
+      ],
+      "properties": {
+        "standalone_entries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tables",
+            "views",
+            "routines",
+            "total"
+          ],
+          "properties": {
+            "tables": {
+              "const": 68
+            },
+            "views": {
+              "const": 5
+            },
+            "routines": {
+              "const": 14
+            },
+            "total": {
+              "const": 87
+            }
+          }
+        },
+        "embedded_objects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "triggers",
+            "physical_indexes"
+          ],
+          "properties": {
+            "triggers": {
+              "const": 75
+            },
+            "physical_indexes": {
+              "const": 95
+            }
+          }
+        }
+      }
+    },
+    "technical_foundation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "excluded_tables",
+        "roles"
+      ],
+      "properties": {
+        "excluded_tables": {
+          "const": [
+            "dante.alembic_version"
+          ]
+        },
+        "roles": {
+          "const": [
+            "dante_owner",
+            "dante_migrator",
+            "dante_runtime"
+          ]
+        }
+      }
+    },
+    "extension_owned": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version_policy"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "postgis",
+              "vector",
+              "pg_trgm",
+              "unaccent",
+              "pg_stat_statements"
+            ]
+          },
+          "version_policy": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "materialization_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_entries_only_with_real_objects",
+        "same_change_required",
+        "empty_object_directories_forbidden",
+        "semantic_fields_human_authored",
+        "structural_fields_mechanically_reconciled"
+      ],
+      "properties": {
+        "object_entries_only_with_real_objects": {
+          "const": true
+        },
+        "same_change_required": {
+          "const": true
+        },
+        "empty_object_directories_forbidden": {
+          "const": true
+        },
+        "semantic_fields_human_authored": {
+          "const": true
+        },
+        "structural_fields_mechanically_reconciled": {
+          "const": true
+        }
+      }
+    }
+  }
+}
