@@ -1,3 +1,7 @@
+> **CURRENT DATABASE REFERENCE LAYOUT — 2026-08-24 / SQLALCHEMY MAPPING PLAN FROZEN**  
+> The human-readable DANTE Database Architecture & Reference is now **Parts 1–14 as one canonical authority**. `dante-postgresql-database-part-14.md` freezes the **SQLAlchemy Mapping Plan**: 68 explicit `...Row` table mappings, five Core-only current-view handles, zero baseline ORM relationships/cascades, exact reference typing, 95-index metadata reconciliation, migration-owned trigger/function/view DDL, and deterministic transaction-scoped advisory-lock key derivation. **GLOBAL DB-U OPEN = 0**. The exact next CP6-03 block is **DATABASE DICTIONARY READINESS**.  
+> This overlay supersedes only older CURRENT/layout prose below that stops at Part 13 or says the SQLAlchemy mapping plan is still next/unfrozen. Historical layout/evidence remains deliberately retained. CP6-04 remains NOT STARTED / NOT AUTHORIZED, and protected-`main` realignment remains intentionally deferred to a later separate gate.  
+
 > **CURRENT DATABASE REFERENCE LAYOUT — 2026-08-24 / MIGRATION DAG FROZEN**  
 > The human-readable DANTE Database Architecture & Reference is now **Parts 1–13 as one canonical authority**. `dante-postgresql-database-part-13.md` freezes the **Migration / Materialization DAG**: P0 provisioning ACL hardening prerequisite followed by seven linear Alembic business nodes, exact allocation of 68 tables / 95 indexes / 14 routines / 75 triggers / 5 views, and runtime business DML activation only in the final ACL node. **GLOBAL DB-U OPEN = 0**. The exact next CP6-03 block is **SQLALCHEMY MAPPING PLAN**.  
 > This overlay supersedes only older CURRENT/layout prose below that stops at Part 12 or says the migration/materialization DAG is still next/unfrozen. Historical layout/evidence remains deliberately retained. CP6-04 remains NOT STARTED / NOT AUTHORIZED, and protected-`main` realignment remains intentionally deferred to a later separate gate.  
@@ -89,7 +93,7 @@ docs/database/
 │   └── other-object-types only when real objects exist
 ├── generated/
 ├── diagrams/
-└── evolution/ only when a complex evolution needs durable explanatory material
+└── evolution/ only when a complex evolution requires durable content
 ```
 
 Empty ceremonial directories are forbidden. A path is created only when real content exists.
