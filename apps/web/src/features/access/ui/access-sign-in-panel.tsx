@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ProviderButton } from './provider-button';
 
 export function AccessSignInPanel() {
   const { t } = useTranslation('common');
+  const [showPassword, setShowPassword] = useState(false);
+  const passwordControlLabel = showPassword
+    ? t(($) => $.common.access.action.hidePassword)
+    : t(($) => $.common.access.action.showPassword);
 
   return (
     <section className="access-panel" aria-labelledby="access-signin-title">
@@ -47,7 +52,7 @@ export function AccessSignInPanel() {
               type="email"
               autoComplete="email"
               inputMode="email"
-              placeholder="nome@esempio.com"
+              placeholder={t(($) => $.common.access.field.emailPlaceholder)}
             />
           </div>
 
@@ -64,13 +69,15 @@ export function AccessSignInPanel() {
               <input
                 id="access-password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
               />
               <button
                 className="access-password-toggle"
                 type="button"
-                aria-label="Mostra password"
+                aria-label={passwordControlLabel}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((value) => !value)}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -82,6 +89,7 @@ export function AccessSignInPanel() {
                 >
                   <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" />
                   <circle cx="12" cy="12" r="2.7" />
+                  {showPassword ? <path d="m4 4 16 16" /> : null}
                 </svg>
               </button>
             </div>
