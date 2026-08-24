@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> PR #28 is **MERGED** into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. `feature/frontend-materialization` remains CLOSED/PASS historical evidence; `chore/frontend-materialization-integration` is no longer an active/pending integration boundary. Any later section below that still says PR #28 READY or awaiting merge is preserved pre-merge history and is superseded on current branch status only. Backend `feature/logical-postgresql` has incorporated current `main` and remains the active CP6 branch.  
+
 # Branching and Environments
 
 - Status: **CURRENT**
