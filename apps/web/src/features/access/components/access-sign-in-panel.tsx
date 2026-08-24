@@ -14,34 +14,43 @@ export function AccessSignInPanel() {
           alt="DANTE"
         />
 
-        <p className="access-kicker">{t(($) => $.access.kicker.access)}</p>
-        <h2 id="access-signin-title">{t(($) => $.access.signin.title)}</h2>
-        <p className="access-signin-copy">{t(($) => $.access.signin.body)}</p>
+        <p className="access-kicker">
+          {t(($) => $.common.access.kicker.access)}
+        </p>
+        <h2 id="access-signin-title">
+          {t(($) => $.common.access.signin.title)}
+        </h2>
+        <p className="access-signin-copy">
+          {t(($) => $.common.access.signin.body)}
+        </p>
 
-        <div className="access-provider-stack" aria-label="Provider sign-in options">
+        <div className="access-provider-stack">
           <button className="access-provider-button" type="button">
             <span className="access-provider-mark" aria-hidden="true">
               G
             </span>
-            <span>{t(($) => $.access.provider.google)}</span>
+            <span>{t(($) => $.common.access.provider.google)}</span>
           </button>
           <button className="access-provider-button" type="button">
-            <span className="access-provider-mark access-provider-mark-apple" aria-hidden="true">
+            <span
+              className="access-provider-mark access-provider-mark-apple"
+              aria-hidden="true"
+            >
               ●
             </span>
-            <span>{t(($) => $.access.provider.apple)}</span>
+            <span>{t(($) => $.common.access.provider.apple)}</span>
           </button>
         </div>
 
         <div className="access-divider" aria-hidden="true">
           <span />
-          <p>{t(($) => $.access.common.or)}</p>
+          <p>{t(($) => $.common.access.common.or)}</p>
           <span />
         </div>
 
         <div className="access-field-stack">
           <label className="access-field">
-            <span>{t(($) => $.access.field.email)}</span>
+            <span>{t(($) => $.common.access.field.email)}</span>
             <input
               name="email"
               type="email"
@@ -52,9 +61,9 @@ export function AccessSignInPanel() {
 
           <label className="access-field">
             <span className="access-field-heading">
-              <span>{t(($) => $.access.field.password)}</span>
+              <span>{t(($) => $.common.access.field.password)}</span>
               <button className="access-inline-action" type="button">
-                {t(($) => $.access.signin.forgot)}
+                {t(($) => $.common.access.signin.forgot)}
               </button>
             </span>
             <input
@@ -66,21 +75,28 @@ export function AccessSignInPanel() {
         </div>
 
         <button className="access-primary-button" type="button">
-          {t(($) => $.access.action.signin)}
+          {t(($) => $.common.access.action.signin)}
         </button>
 
         <div className="access-new-account">
-          <span>{t(($) => $.access.signin.new)}</span>
-          <button className="access-inline-action access-create-account" type="button">
-            {t(($) => $.access.action.createAccount)}
+          <span>{t(($) => $.common.access.signin.new)}</span>
+          <button
+            className="access-inline-action access-create-account"
+            type="button"
+          >
+            {t(($) => $.common.access.action.createAccount)}
           </button>
         </div>
 
         <p className="access-legal">
-          {t(($) => $.access.legal.prefix)}{' '}
-          <button type="button">{t(($) => $.access.legal.terms)}</button>
+          {t(($) => $.common.access.legal.prefix)}{' '}
+          <button type="button">
+            {t(($) => $.common.access.legal.terms)}
+          </button>
           {' · '}
-          <button type="button">{t(($) => $.access.legal.privacy)}</button>
+          <button type="button">
+            {t(($) => $.common.access.legal.privacy)}
+          </button>
         </p>
       </div>
     </section>
