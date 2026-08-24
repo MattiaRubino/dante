@@ -1,7 +1,7 @@
 export const access = {
   stage: {
     titleFirst: 'Comprendi la vita.',
-    titleSecond: 'Dai forma a ciò che viene dopo.',
+    titleSecond: 'Dai forma al prossimo passo.',
     body: 'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
     foot: 'Una sola realtà. Più modi per comprenderla.',
   },
