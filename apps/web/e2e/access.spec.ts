@@ -32,14 +32,22 @@ async function expectDesktopBrandStageOpen(page: Page) {
 }
 
 test.describe('DANTE Access', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('dante.locale', 'it');
+    });
+  });
+
   test('renders the approved desktop A3.4 sign-in shell', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
     await expect(page.locator('.access-brand-lockup')).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Lingua: Italiano' }),
-    ).toBeVisible();
+      page.getByRole('button', {
+        name: 'Cambia lingua. Lingua attuale: Italiano',
+      }),
+    ).toHaveText('IT');
     await expect(
       page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
@@ -64,6 +72,38 @@ test.describe('DANTE Access', () => {
     );
     await expectDesktopBrandStageOpen(page);
     await expectNoHorizontalOverflow(page);
+  });
+
+  test('switches and persists the selected language', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await page
+      .getByRole('button', {
+        name: 'Cambia lingua. Lingua attuale: Italiano',
+      })
+      .click();
+    await page.getByRole('menuitemradio', { name: /English/ }).click();
+
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Sign in to DANTE' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', {
+        name: 'Change language. Current language: English',
+      }),
+    ).toHaveText('EN');
+
+    await page.reload();
+
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Sign in to DANTE' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', {
+        name: 'Change language. Current language: English',
+      }),
+    ).toHaveText('EN');
   });
 
   test('switches to the narrow single-column composition', async ({ page }) => {
@@ -98,7 +138,9 @@ test.describe('DANTE Access', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    const localeButton = page.getByRole('button', { name: 'Lingua: Italiano' });
+    const localeButton = page.getByRole('button', {
+      name: 'Cambia lingua. Lingua attuale: Italiano',
+    });
     const googleButton = page.getByRole('button', {
       name: 'Continua con Google',
     });
