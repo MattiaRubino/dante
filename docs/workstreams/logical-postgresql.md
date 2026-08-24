@@ -1,3 +1,8 @@
+> **CURRENT CP6-03 RESUME — 2026-08-24 / MIGRATION DAG FROZEN**  
+> The authoritative current operational state is now: **Final Actual PostgreSQL Object Inventory FROZEN + DB-U08 CLOSED + DB-U15 CLOSED + DB-U21 CLOSED + Migration / Materialization DAG FROZEN**. Canonical authority is `docs/database/dante-postgresql-database.md` + Parts 2–13. **GLOBAL DB-U OPEN = 0**. The exact next CP6-03 block is **SQLALCHEMY MAPPING PLAN**. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
+> The frozen DAG is: P0 provisioning ACL hardening prerequisite, then seven linear Alembic business nodes `cp6_native_identity_address → cp6_scoped_material_control → cp6_schedule_actual_session → cp6_recurrence → cp6_core_integrity_current_views → cp6_occurrence_generation → cp6_runtime_acl_activation`. Allocation reconciles exactly to **68 tables / 95 indexes / 14 routines / 75 triggers / 5 views**, with runtime business DML activated only in the final ACL node.  
+> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes only older CURRENT/resume prose below that says Parts 1–12 or that the migration/materialization DAG is still next/unfrozen; historical derivation/evidence remains preserved.  
+
 > **CURRENT CP6-03 RESUME — 2026-08-24 / DB-U21 CLOSED**  
 > The authoritative current operational state is now: **Final Actual PostgreSQL Object Inventory FROZEN + DB-U08 CLOSED + DB-U15 CLOSED + DB-U21 Exact Object-Level PostgreSQL Privilege Matrix CLOSED**. Canonical authority is `docs/database/dante-postgresql-database.md` + Parts 2–12. **GLOBAL DB-U OPEN = 0**. The exact next CP6-03 block is **MIGRATION / MATERIALIZATION DAG**. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > DB-U21 freezes the exact least-privilege baseline: 68/68 runtime SELECT, 54/68 INSERT, exact 14-table no-INSERT set, zero table-level runtime UPDATE, five `current_until_at` column updates, zero direct base-table DELETE, five bounded current-view ACLs with DELETE only for Schedule/Actual, 14 integrity routines with no direct runtime/PUBLIC EXECUTE, migration-owned business ACLs, and removal of CP3 blanket default/ALL-object grants during CP6-04. Earlier owner-row locking wording is hardened where PostgreSQL would require a fake UPDATE privilege: transaction-scoped advisory serialization is used when no truthful mutable row can provide the lock.  
@@ -554,7 +559,7 @@ executed HEAD                     ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 Backend Quality                   SUCCESS / 32 fast tests PASS
 Backend PostgreSQL                SUCCESS / 18 PostgreSQL tests PASS
 Backend CI Gate                   SUCCESS
-current corpus                    50 / 50 covered across mandatory CI lanes
+current corpus                    50 / 50 covered across mandatory lanes
 18.6 release-note impact          PASS / NO CURRENT POST-UPGRADE ACTION
 ```
 
@@ -602,18 +607,18 @@ TECH  technology lifecycle
 ID    physical identity
 REF   reference addressing
 MAT   material state/current truth
-HIST  historical truth
-TIM   temporal truth
-MISS  missing/unknown/negative
-LIFE  lifecycle/retention/tombstone
+HIST  history
+TIM   temporal
+MISS  missingness
+LIFE  lifecycle
 TYP   PostgreSQL types
-REL   relation doctrine
+REL   relations
 CON   constraints
 IDX   indexes
-TX    transaction/concurrency
+TX    transactions/concurrency
 IDEM  idempotency
 PROV  provenance
-CAP   PostgreSQL capability boundaries
+CAP   capabilities
 MIG   migration/evolution
 SEC   ownership/privileges
 QA    direct persistence acceptance
