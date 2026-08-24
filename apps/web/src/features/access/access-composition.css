@@ -97,10 +97,11 @@
     transparent
   );
   color: var(--dante-semantic-color-text-primary);
-  outline: 0;
+  outline: 2px solid var(--dante-semantic-color-focus-ring);
+  outline-offset: -2px;
 }
 
-.access-locale-option[aria-checked='true'] {
+.access-locale-option[aria-pressed='true'] {
   color: var(--dante-semantic-color-text-primary);
   font-weight: 700;
 }
