@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dante.local/contracts/home-stage.view-model.schema.json",
+  "title": "DANTE Home Stage View Model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "mode", "status", "continuity", "signals"],
+  "properties": {
+    "contractVersion": {"const": "0.2.0"},
+    "mode": {"enum": ["home.stage.continuity", "home.stage.signals"]},
+    "status": {"enum": ["loading", "ready", "empty", "partial", "full", "overflow", "error", "unavailable"]},
+    "continuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activeIndex", "items"],
+      "properties": {
+        "activeIndex": {"type": ["integer", "null"], "minimum": 0},
+        "items": {"type": "array", "items": {"$ref": "#/$defs/continuityItem"}}
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activeIndex", "items"],
+      "properties": {
+        "activeIndex": {"type": ["integer", "null"], "minimum": 0},
+        "items": {"type": "array", "items": {"$ref": "#/$defs/signalItem"}}
+      }
+    }
+  },
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceKind", "updatedAt"],
+      "properties": {
+        "sourceKind": {"enum": ["mock", "backend", "derived"]},
+        "updatedAt": {"type": ["string", "null"], "format": "date-time"},
+        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      }
+    },
+    "continuityItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "accentRole", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "accentRole": {"type": "string", "minLength": 1},
+        "iconKey": {"type": ["string", "null"]},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "signalItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "primaryValue", "visualization", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "primaryValue": {"type": "string", "minLength": 1},
+        "secondaryValue": {"type": ["string", "null"]},
+        "trend": {"enum": ["up", "down", "stable", "unknown"]},
+        "visualization": {"$ref": "#/$defs/visualization"},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "visualization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "points"],
+      "properties": {
+        "kind": {"enum": ["sparkline", "bars", "dots", "progress", "range", "number_delta"]},
+        "points": {"type": "array", "items": {"type": "number"}},
+        "target": {"type": ["number", "null"]},
+        "unit": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
