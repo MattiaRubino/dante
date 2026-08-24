@@ -1,3 +1,7 @@
+> **CURRENT CP6-03 RESUME — 2026-08-24 / SECOND TOMBSTONE REPAIR COMPLETE**  
+> Canonical authority is now `docs/database/dante-postgresql-database.md` + Parts 2–17, plus the hardened Dictionary v1 foundation. **DB-U25 is CLOSED** after repairing all five real B findings from the first post-hardening second-audit pass: Recurrence selector/phase/range determinism, non-quota generated-coordinate duplication, five NULL-unsafe CHECK expressions, exact governing-Recurrence membership, and one-way current-history lifecycle/column-scoped INSERT. Frozen counts remain `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`; **GLOBAL DB-U OPEN = 0**.  
+> The mandatory next operation is a **fresh SECOND FULL TOMBSTONE AUDIT FROM ZERO over the repaired Parts 1–17**. The pre-repair audit is not a PASS. Gate 03 is NOT yet earned; CP6-04 remains NOT STARTED / NOT AUTHORIZED; protected-`main` realignment remains deferred. This overlay supersedes only older CURRENT/resume prose below that stops at Part 16 or treats the prior audit pass as final; historical derivation/evidence remains preserved.  
+
 > **CURRENT CP6-03 RESUME — 2026-08-24 / PRE-GATE03 HARDENING COMPLETE**  
 > Canonical authority is now `docs/database/dante-postgresql-database.md` + Parts 2–16, plus the hardened Dictionary v1 foundation. **DB-U24 is CLOSED**, the **Direct PostgreSQL Proof / Test Plan is FROZEN**, and **GLOBAL DB-U OPEN = 0**. Frozen baseline remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs`, now with an exact **120-CHECK** manifest and fail-closed P0/M1 contract.  
 > The exact next CP6-03 operation is the mandatory **SECOND FULL TOMBSTONE AUDIT FROM ZERO**. Gate 03 is NOT yet earned; CP6-04 remains NOT STARTED / NOT AUTHORIZED. Protected-`main` realignment remains deferred to its later separate gate. This overlay supersedes only older CURRENT/resume prose below that stops at Part 15 or says the proof plan is still pending; historical derivation/evidence remains preserved.  
@@ -86,7 +90,7 @@ LOCAL EXACT OPEN
 GLOBAL DB-U OPEN
 DB-U08  final PostgreSQL object naming
 DB-U15  final structural/query index matrix
-DB-U21  exact object-level PostgreSQL privilege matrix
+DB-U21  exact object-level privilege matrix
 
 NEXT DESIGN BLOCK
 FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
@@ -1194,8 +1198,8 @@ consume Parts 1–8 together
 → enumerate every surviving baseline PostgreSQL object exactly
 → include tables, views, types/domains, routines, triggers, constraints and dispatch/control structures actually required
 → exclude every object removed by later explicit no-DDL disposition
-→ reconcile every scoped family and MaterialState facet against the final survivor audit
-→ verify every table/column/key/constraint is implementable without semantic invention
+→ reconcile every scoped_family and MaterialState facet against the final survivor audit
+→ verify every table/column/key/constraint can be implemented without semantic invention
 → keep DB-U08 / DB-U15 / DB-U21 OPEN during derivation
 → run cumulative whole-database audit over the inventory
 → show an exact write gate before saving the inventory freeze
