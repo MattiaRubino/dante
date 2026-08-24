@@ -93,7 +93,7 @@ docs/database/
 │   └── other-object-types only when real objects exist
 ├── generated/
 ├── diagrams/
-└── evolution/ only when a complex evolution requires durable content
+└── evolution/ only when a complex evolution needs durable explanatory material
 ```
 
 Empty ceremonial directories are forbidden. A path is created only when real content exists.
