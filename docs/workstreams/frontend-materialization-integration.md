@@ -1,3 +1,6 @@
+> **POST-MERGE CLOSURE — 2026-08-24**  
+> PR #28 is **MERGED** into protected `main` at merge commit `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. This workstream is therefore **CLOSED / INTEGRATED**. The body below is deliberately preserved as phase-time integration evidence: its `OPEN / READY / FINAL MERGE GATE` fields describe the pre-merge state and are not current status. The Dependency Review accepted-risk register, review deadline, Frontend CI Gate calibration/promotion evidence and future-activation register remain durable and applicable after merge; closure does not erase them.  
+
 # Frontend Materialization Integration Hardening
 
 - Status: **ACTIVE — PR #28 / READY / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL MERGE GATE**
