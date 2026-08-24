@@ -16,6 +16,27 @@
     "embedded_objects": {
       "triggers": 75,
       "physical_indexes": 95
+    },
+    "constraints": {
+      "foreign_keys": 68,
+      "check_constraints": 120
+    }
+  },
+  "current_materialization": {
+    "completed_stages": [],
+    "standalone_entries": {
+      "tables": 0,
+      "views": 0,
+      "routines": 0,
+      "total": 0
+    },
+    "embedded_objects": {
+      "triggers": 0,
+      "physical_indexes": 0
+    },
+    "constraints": {
+      "foreign_keys": 0,
+      "check_constraints": 0
     }
   },
   "technical_foundation": {
@@ -28,33 +49,29 @@
       "dante_runtime"
     ]
   },
-  "extension_owned": [
-    {
-      "name": "postgis",
+  "extension_owned": {
+    "postgis": {
       "version_policy": "foundation dependency; current repository baseline 3.6.4"
     },
-    {
-      "name": "vector",
+    "vector": {
       "version_policy": "foundation dependency; current repository baseline 0.8.6"
     },
-    {
-      "name": "pg_trgm",
+    "pg_trgm": {
       "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
     },
-    {
-      "name": "unaccent",
+    "unaccent": {
       "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
     },
-    {
-      "name": "pg_stat_statements",
+    "pg_stat_statements": {
       "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
     }
-  ],
+  },
   "materialization_rules": {
     "object_entries_only_with_real_objects": true,
     "same_change_required": true,
     "empty_object_directories_forbidden": true,
     "semantic_fields_human_authored": true,
-    "structural_fields_mechanically_reconciled": true
+    "structural_fields_mechanically_reconciled": true,
+    "semantic_cross_file_validation_required": true
   }
 }
