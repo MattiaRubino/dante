@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('AccessSignInPanel', () => {
-  it('exposes the approved sign-in controls with semantic labels', () => {
+  it('exposes localized sign-in controls and a working password visibility control', () => {
     render(<AccessSignInPanel />);
 
     expect(
@@ -40,9 +40,18 @@ describe('AccessSignInPanel', () => {
     expect(passwordInput.autocomplete).toBe('current-password');
     expect(passwordInput.type).toBe('password');
 
+    const showPasswordButton = screen.getByRole('button', {
+      name: 'Mostra password',
+    });
+    fireEvent.click(showPasswordButton);
+
+    expect(passwordInput.type).toBe('text');
     expect(
-      screen.getByRole('button', { name: 'Mostra password' }),
-    ).toBeTruthy();
+      screen.getByRole('button', { name: 'Nascondi password' }).getAttribute(
+        'aria-pressed',
+      ),
+    ).toBe('true');
+
     expect(
       screen.getByRole('button', { name: 'Password dimenticata?' }),
     ).toBeTruthy();
