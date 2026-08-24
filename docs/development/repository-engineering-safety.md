@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> PR #28 is **MERGED** into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`; frontend materialization/integration is therefore no longer an active merge gate. The Frontend CI Gate calibration evidence, exact restore/recovery evidence, owner-confirmed required-check promotion classification, Dependency Review exceptions and accepted-risk review deadline remain valid as recorded. Any later wording below that says PR #28 READY / ACTIVE / FINAL MERGE GATE is preserved pre-merge evidence and is superseded only for current status. Backend `feature/logical-postgresql` has incorporated current `main` and remains the active CP6 branch.  
+
 # Repository Engineering Safety
 
 - Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / PR #28 READY / FINAL MERGE GATE**
