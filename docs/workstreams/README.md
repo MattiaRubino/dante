@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> Frontend materialization integration is **CLOSED / INTEGRATED via merged PR #28** (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). `frontend-materialization.md` remains CLOSED/PASS evidence and `frontend-materialization-integration.md` remains durable integration/accepted-risk/future-activation evidence, but neither is a pending merge workstream now. The active backend continuation is `logical-postgresql.md`: branch current with `main`, CP6-03 ACTIVE, Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized. Any later PR #28 READY/ACTIVE wording is preserved pre-merge status.  
+
 # Workstream Handoffs
 
 Each active or pending-integration workstream has one operational handoff. It is the safest continuation entry point for that scope.
