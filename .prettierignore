@@ -15,3 +15,5 @@ pnpm-lock.yaml
 README.md
 CHANGELOG.md
 CONTRIBUTING.md
+
+packages/design-tokens/generated/**

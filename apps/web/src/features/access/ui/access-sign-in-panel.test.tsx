@@ -31,8 +31,8 @@ describe('AccessSignInPanel', () => {
     expect(googleButton.getAttribute('data-provider')).toBe('google');
     expect(appleButton.getAttribute('data-provider')).toBe('apple');
 
-    const emailInput = screen.getByLabelText('Email') as HTMLInputElement;
-    const passwordInput = screen.getByLabelText('Password') as HTMLInputElement;
+    const emailInput = screen.getByLabelText<HTMLInputElement>('Email');
+    const passwordInput = screen.getByLabelText<HTMLInputElement>('Password');
 
     expect(emailInput.autocomplete).toBe('email');
     expect(emailInput.inputMode).toBe('email');

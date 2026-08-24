@@ -253,11 +253,7 @@
 .access-field input:focus-visible {
   border-color: var(--dante-semantic-color-focus-ring);
   box-shadow: 0 0 0 3px
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-focus-ring) 18%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-focus-ring) 18%, transparent);
 }
 
 .access-inline-action,
@@ -296,11 +292,7 @@
   color: var(--dante-semantic-color-surface-base);
   padding: 0 22px;
   box-shadow: 0 10px 24px
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-brand-ink) 12%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 12%, transparent);
 }
 
 .access-primary-button:hover {

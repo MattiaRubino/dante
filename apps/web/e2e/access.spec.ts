@@ -5,7 +5,9 @@ const signInHeading = 'Accedi a DANTE';
 
 async function expectNoHorizontalOverflow(page: Page) {
   const hasOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth,
   );
 
   expect(hasOverflow).toBe(false);
