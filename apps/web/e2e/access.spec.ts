@@ -40,16 +40,23 @@ test.describe('DANTE Access', () => {
     });
   });
 
-  test('renders the approved desktop A3.4 sign-in shell', async ({ page }) => {
+  test('renders the hardened desktop sign-in shell', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
+    await expect(page.locator('html')).toHaveAttribute('lang', 'it');
     await expect(page.locator('.access-brand-lockup')).toBeVisible();
     await expect(
       page.getByRole('button', {
         name: 'Cambia lingua. Lingua attuale: Italiano',
       }),
     ).toHaveText('IT');
+    await expect(
+      page.getByRole('heading', {
+        level: 2,
+        name: 'Comprendi la vita. Dai forma a ciò che viene dopo.',
+      }),
+    ).toBeVisible();
     await expect(
       page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
@@ -62,6 +69,10 @@ test.describe('DANTE Access', () => {
     await expect(page.getByLabel('Email')).toHaveAttribute(
       'autocomplete',
       'email',
+    );
+    await expect(page.getByLabel('Email')).toHaveAttribute(
+      'placeholder',
+      'nome@esempio.com',
     );
     await expect(page.getByLabel('Password', { exact: true })).toHaveAttribute(
       'autocomplete',
@@ -85,11 +96,22 @@ test.describe('DANTE Access', () => {
         name: 'Cambia lingua. Lingua attuale: Italiano',
       })
       .click();
-    await page.getByRole('menuitemradio', { name: /English/ }).click();
+    await page.getByRole('button', { name: /English/ }).click();
 
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Sign in to DANTE' }),
     ).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 2,
+        name: 'Understand life. Shape what comes next.',
+      }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Email')).toHaveAttribute(
+      'placeholder',
+      'name@example.com',
+    );
     await expect(
       page.getByRole('button', {
         name: 'Change language. Current language: English',
@@ -98,6 +120,7 @@ test.describe('DANTE Access', () => {
 
     await page.reload();
 
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Sign in to DANTE' }),
     ).toBeVisible();
@@ -106,6 +129,25 @@ test.describe('DANTE Access', () => {
         name: 'Change language. Current language: English',
       }),
     ).toHaveText('EN');
+  });
+
+  test('toggles password visibility without changing the field value', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    const passwordInput = page.getByLabel('Password', { exact: true });
+    await passwordInput.fill('Dante-password-example');
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+
+    await page.getByRole('button', { name: 'Mostra password' }).click();
+    await expect(passwordInput).toHaveAttribute('type', 'text');
+    await expect(passwordInput).toHaveValue('Dante-password-example');
+
+    await page.getByRole('button', { name: 'Nascondi password' }).click();
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+    await expect(passwordInput).toHaveValue('Dante-password-example');
   });
 
   test('switches to the narrow single-column composition', async ({ page }) => {
@@ -136,7 +178,7 @@ test.describe('DANTE Access', () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test('exposes a keyboard-focusable sign-in path', async ({ page }) => {
+  test('exposes a keyboard-operable locale and sign-in path', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
@@ -149,6 +191,14 @@ test.describe('DANTE Access', () => {
 
     await page.keyboard.press('Tab');
     await expect(localeButton).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+    const selectedLocale = page.getByRole('button', { name: /Italiano/ });
+    await expect(selectedLocale).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(localeButton).toBeFocused();
+
     await page.keyboard.press('Tab');
     await expect(googleButton).toBeFocused();
   });
