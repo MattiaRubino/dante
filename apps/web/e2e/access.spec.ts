@@ -33,7 +33,7 @@ test.describe('DANTE Access', () => {
       'autocomplete',
       'email',
     );
-    await expect(page.getByLabel('Password')).toHaveAttribute(
+    await expect(page.getByLabel('Password', { exact: true })).toHaveAttribute(
       'autocomplete',
       'current-password',
     );
@@ -69,7 +69,7 @@ test.describe('DANTE Access', () => {
       page.getByRole('button', { name: 'Continua con Apple' }),
     ).toBeVisible();
     await expect(page.getByLabel('Email')).toBeVisible();
-    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
