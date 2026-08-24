@@ -29,11 +29,18 @@ export const access = {
   },
   field: {
     email: 'Email',
+    emailPlaceholder: 'name@example.com',
     password: 'Password',
   },
   action: {
     signin: 'Sign in',
     createAccount: 'Create account',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+  },
+  locale: {
+    control: 'Change language. Current language: {{language}}',
+    options: 'Available languages',
   },
   legal: {
     prefix: 'By continuing, you agree to the',
