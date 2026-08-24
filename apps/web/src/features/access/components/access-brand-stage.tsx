@@ -7,7 +7,10 @@ export function AccessBrandStage() {
   const { t } = useTranslation('common');
 
   return (
-    <section className="access-brand-stage" aria-labelledby="access-brand-title">
+    <section
+      className="access-brand-stage"
+      aria-labelledby="access-brand-title"
+    >
       <img
         className="access-brand-wordmark"
         src={danteWordmarkUrl}

@@ -90,9 +90,7 @@ export function AccessSignInPanel() {
 
         <p className="access-legal">
           {t(($) => $.common.access.legal.prefix)}{' '}
-          <button type="button">
-            {t(($) => $.common.access.legal.terms)}
-          </button>
+          <button type="button">{t(($) => $.common.access.legal.terms)}</button>
           {' · '}
           <button type="button">
             {t(($) => $.common.access.legal.privacy)}

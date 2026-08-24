@@ -2,8 +2,7 @@ export const access = {
   stage: {
     titleFirst: 'Understand life.',
     titleSecond: 'Shape what comes next.',
-    body:
-      'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
+    body: 'Uno spazio personale per capire cosa sta succedendo, mantenere continuità nel tempo e decidere cosa viene dopo.',
     foot: 'Una sola realtà. Più modi per comprenderla.',
   },
   kicker: {

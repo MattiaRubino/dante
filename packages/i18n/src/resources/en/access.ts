@@ -8,8 +8,7 @@ export const access = {
   stage: {
     titleFirst: 'Understand life.',
     titleSecond: 'Shape what comes next.',
-    body:
-      'A personal space to understand what is happening, preserve continuity over time, and decide what comes next.',
+    body: 'A personal space to understand what is happening, preserve continuity over time, and decide what comes next.',
     foot: 'One reality. More than one way to understand it.',
   },
   kicker: {
