@@ -1,9 +1,10 @@
 # DANTE Database Dictionary
 
-**Status:** CP6-03 READINESS FOUNDATION / OBJECT ENTRIES NOT YET MATERIALIZED  
+**Status:** CP6-03 READINESS FOUNDATION / HARDENED BY PART 16 / OBJECT ENTRIES NOT YET MATERIALIZED  
 **Schema version:** 1  
 **Serialization:** JSON  
-**Validation dialect:** JSON Schema Draft 2020-12  
+**Structural validation dialect:** JSON Schema Draft 2020-12  
+**Cross-file validation:** DANTE semantic Dictionary validator required before Gate-03 materialization is accepted  
 
 ## Purpose
 
@@ -44,7 +45,7 @@ routines/
 
 They are created in CP6-04 only when the first real object entries exist. Empty ceremonial object directories are forbidden.
 
-## Final baseline entry counts
+## Final baseline entry and embedded-object counts
 
 After complete CP6-04 materialization the expected DANTE-owned Dictionary contains:
 
@@ -54,6 +55,11 @@ After complete CP6-04 materialization the expected DANTE-owned Dictionary contai
 14 routine entries
 ------------------
 87 standalone entries
+
+75 trigger attachments
+95 physical indexes
+68 foreign keys
+120 CHECK constraints
 ```
 
 Object entry keys are stable and typed:
@@ -81,14 +87,7 @@ indexes
 trigger attachments
 ```
 
-Final baseline reconciliation target:
-
-```text
-95 physical indexes
-75 trigger attachments
-```
-
-The 14 integrity routines remain standalone entries because they are independently owned PostgreSQL objects with their own security/ACL properties and may have multiple trigger attachments.
+The 14 integrity routines remain standalone entries because they are independently owned PostgreSQL objects with their own signature/security/ACL properties and may have multiple trigger attachments.
 
 ## Ownership spaces
 
@@ -96,7 +95,7 @@ The 14 integrity routines remain standalone entries because they are independent
 
 ### DANTE-owned
 
-The business/control schema contract governed by Parts 1–15.
+The business/control schema contract governed by Parts 1–16.
 
 ### Technical foundation
 
@@ -113,7 +112,7 @@ dante_runtime
 
 ### Extension-owned
 
-Current foundation extensions:
+The current foundation extension registry is a strict keyed object with exactly:
 
 ```text
 postgis
@@ -124,6 +123,25 @@ pg_stat_statements
 ```
 
 Objects internally created/owned by those extensions are not promoted into DANTE object entries merely because PostgreSQL introspection exposes them.
+
+## Materialization lifecycle in scope.json
+
+`expected_baseline` is immutable target truth for this baseline. `current_materialization` records the actually materialized Dictionary/schema stage.
+
+Statuses:
+
+```text
+readiness_only
+→ no CP6 object entries/materialized counts yet
+
+materializing
+→ one accepted CP6-M01..M07 prefix is being materialized
+
+materialized
+→ exact CP6-M01..M07 completion and final 68/5/14/87 + 75/95 + 68/120 counts
+```
+
+`completed_stages` must be a valid ordered prefix of the frozen migration DAG. JSON Schema bounds values; the DANTE semantic validator proves prefix/order/count coherence.
 
 ## Object schema
 
@@ -150,22 +168,24 @@ view
 routine
 ```
 
-The schema is intentionally strict (`additionalProperties: false` throughout the governed shapes) so accidental new metadata fields require a reviewed dictionary-schema evolution rather than silently becoming convention.
+The schema is intentionally strict (`additionalProperties: false` throughout governed shapes) so accidental new metadata fields require reviewed Dictionary-schema evolution rather than silently becoming convention.
 
 ## Structural truth and semantic truth
 
 ### Mechanically reconcilable
 
-These facts SHOULD be verified automatically against SQLAlchemy/Alembic/PostgreSQL where applicable:
+These facts MUST be verified automatically against SQLAlchemy/Alembic/PostgreSQL where applicable:
 
 ```text
 object name/type
-columns/types/nullability
+columns/types/nullability/defaults
 PK/FK/UQ/CK
-indexes
-view structure
-routine properties
-trigger attachments
+constraint deferrability/enforcement/validation
+indexes and valid/ready/live state
+trigger physical properties
+view definition/security/default/CHECK OPTION
+routine signature/properties
+relation persistence/access method/RLS/partitioning/replica identity
 owner
 ACL
 Alembic revision
@@ -191,7 +211,7 @@ Generated DDL must not overwrite the human semantic fields.
 
 ## Table entries
 
-A table entry includes the exact column contract and embedded:
+A table entry includes exact columns, physical relation properties and embedded:
 
 ```text
 primary key
@@ -202,7 +222,21 @@ indexes
 trigger attachments
 ```
 
-Foreign-key metadata includes reference-family/cardinality/semantic reason in addition to the physical target.
+Baseline physical table properties are expected to reconcile as applicable to:
+
+```text
+persistence       permanent
+access_method     heap
+partitioned       false
+row_security      false
+force_row_security false
+replica_identity  default
+reloptions        [] unless a reviewed evolution says otherwise
+```
+
+Foreign-key metadata includes reference-family/cardinality/semantic reason plus MATCH / update-delete action / deferrability / enforcement / validation.
+
+CHECK metadata includes exact expression contract plus enforcement/validation/NO INHERIT state.
 
 Index metadata identifies whether the physical index originates from:
 
@@ -212,7 +246,7 @@ unique_constraint
 explicit_index
 ```
 
-This prevents duplicate documentation of PK/UQ backing indexes as if they were explicit SQLAlchemy `Index` objects.
+and records PostgreSQL valid/ready/live state. This prevents duplicate documentation of PK/UQ backing indexes as if they were explicit SQLAlchemy `Index` objects.
 
 ## View entries
 
@@ -220,14 +254,17 @@ The five baseline current views additionally describe:
 
 ```text
 base relations
-predicate contract
+exact predicate contract
 CHECK OPTION
 automatically-updatable posture
 runtime DML surface
 SQLAlchemy Core handle
+security_invoker
+security_barrier
+view-column defaults
 ```
 
-They are not ORM row entities.
+Part 16 freezes the exact facet-code default required for INSERT through each view. The views are not ORM row entities.
 
 ## Routine entries
 
@@ -236,13 +273,38 @@ The 14 baseline integrity routines additionally describe:
 ```text
 routine kind
 language
+argument types
+return type
 security mode
 volatility
 parallel safety
+leakproof posture
+function search_path
 direct runtime EXECUTE posture
 ```
 
-Trigger attachments refer to the exact routine by schema-qualified name.
+Baseline trigger functions are `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante` search path.
+
+## Trigger attachments
+
+Each table-owned trigger record includes:
+
+```text
+exact name
+routine reference
+events
+timing
+ROW/STATEMENT orientation
+constraint-trigger flag
+deferrability / initially-deferred
+enabled mode
+UPDATE OF column set
+WHEN condition
+arguments
+invariant role/reason
+```
+
+The baseline must reconcile to 75 exact enabled attachments: 18 ordinary/immediate and 57 deferred constraint triggers.
 
 ## Security
 
@@ -271,6 +333,36 @@ staged_evidence
 
 Do not store mutable outcome flags such as `tests_passed=true` inside current object metadata. Actual PASS/FAIL belongs to test/CI/evidence records.
 
+## Two-level validation contract
+
+JSON Schema is necessary but intentionally not treated as sufficient.
+
+### Level 1 — Draft 2020-12 structural validation
+
+Proves each JSON document has the governed shape, types, enums, required fields and type-specific object shape.
+
+### Level 2 — DANTE semantic/cross-file validation
+
+Must prove at least:
+
+```text
+unique object keys + exact filename/name agreement
+exact extension key set
+unique columns and embedded object identifiers in applicable scope
+all local columns referenced by keys/FKs/indexes/grants/triggers exist
+all FK targets and target columns resolve
+all trigger routine references resolve
+trigger/routine signatures are compatible
+object type ↔ SQLAlchemy mode is correct
+stage prefix/counts reconcile to CP6-M01..M07
+68 tables / 5 views / 14 routines / 87 standalone entries
+75 triggers / 95 physical indexes / 68 FKs / 120 CHECKs
+Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
+extension-owned objects do not become false DANTE drift
+```
+
+This validator is repository/test tooling, not a new semantic authority.
+
 ## Materialization rule
 
 A real structural database change is incomplete unless all affected Dictionary entries are created/updated in the same reviewed change.
@@ -294,35 +386,37 @@ no real DANTE object
 → no object-specific Dictionary entry pretending it exists
 ```
 
-Therefore CP6-03 creates only this readiness contract. The 87 standalone object entries are CP6-04 materialization outputs.
+Therefore CP6-03 still contains no `tables/`, `views/` or `routines/` entries. The 87 standalone object entries are CP6-04 materialization outputs.
 
 ## Schema evolution
 
 `object-v1.schema.json` and `scope-v1.schema.json` are versioned contracts.
 
-Changing their meaning is a reviewed Dictionary schema evolution. Existing object files must not be silently reinterpreted under incompatible semantics.
+This Part-16 edit is a **pre-first-entry hardening of v1**: no object-specific v1 record existed yet, so no historical object entry is being reinterpreted or migrated.
 
-A later schema version should be introduced explicitly and migrated/reconciled rather than modifying historical meaning by convention.
+After first materialization, incompatible meaning changes require an explicit later Dictionary schema version/migration rather than silent reinterpretation.
 
 ## Validation target
 
-CP6-04/05 tooling must be able to detect at minimum:
+CP6-04/05 tooling must detect at minimum:
 
 ```text
 invalid JSON/schema
+semantic/cross-file Dictionary inconsistency
 missing real object entry
 stale object entry
-column/type/nullability drift
-PK/FK/UQ/CK drift
-index drift
-trigger drift
-view drift
-routine drift
+column/type/nullability/default drift
+PK/FK/UQ/CK drift or non-enforced/unvalidated state
+index drift or invalid/not-ready/not-live state
+trigger attachment/property drift
+view definition/security/default drift
+routine signature/property drift
+physical table persistence/RLS/partitioning drift
 owner/ACL drift
 SQLAlchemy mapping drift
 Alembic/head traceability drift
-scope-count mismatch
+scope-count/stage mismatch
 extension-owned false positives
 ```
 
-The exact Python validator dependency/implementation is not selected by this readiness checkpoint.
+The exact validator implementation is selected in CP6-04/05 as test/repository tooling; the contract itself is now frozen by Part 16.
