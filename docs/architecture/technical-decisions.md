@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> Frontend materialization is now **CLOSED / PASS / INTEGRATED into protected `main` via PR #28**. Later decision text that still says frontend materialization is active is preserved pre-merge wording and is superseded only on status, not on the technical decisions themselves. Backend CP6 remains **CP6-03 ACTIVE** on `feature/logical-postgresql`, current with `main`, with Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized.  
+
 # DANTE Technical Decisions
 
 - Status: **CURRENT DECISION REGISTER**
