@@ -1,11 +1,108 @@
 {
   "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
   "primitive": {
+    "color": {
+      "$type": "color",
+      "brand-ink": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.133333, 0.184314, 0.215686],
+          "alpha": 1,
+          "hex": "#222f37"
+        }
+      },
+      "brand-accent": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.917647, 0.360784, 0.070588],
+          "alpha": 1,
+          "hex": "#ea5c12"
+        }
+      },
+      "brand-accent-text": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.784314, 0.290196, 0],
+          "alpha": 1,
+          "hex": "#c84a00"
+        }
+      },
+      "white": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [1, 1, 1],
+          "alpha": 1,
+          "hex": "#ffffff"
+        }
+      },
+      "warm-50": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.968627, 0.960784, 0.945098],
+          "alpha": 1,
+          "hex": "#f7f5f1"
+        }
+      },
+      "warm-100": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.937255, 0.933333, 0.913725],
+          "alpha": 1,
+          "hex": "#efeee9"
+        }
+      },
+      "text-secondary": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.32549, 0.380392, 0.415686],
+          "alpha": 1,
+          "hex": "#53616a"
+        }
+      },
+      "text-muted": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.411765, 0.458824, 0.486275],
+          "alpha": 1,
+          "hex": "#69757c"
+        }
+      },
+      "border-control": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.537255, 0.588235, 0.615686],
+          "alpha": 1,
+          "hex": "#89969d"
+        }
+      },
+      "border-hover": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.45098, 0.505882, 0.533333],
+          "alpha": 1,
+          "hex": "#738188"
+        }
+      },
+      "divider": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.890196, 0.901961, 0.905882],
+          "alpha": 1,
+          "hex": "#e3e6e7"
+        }
+      }
+    },
     "radius": {
       "$type": "dimension",
       "12": {
         "$value": {
           "value": 12,
+          "unit": "px"
+        }
+      },
+      "14": {
+        "$value": {
+          "value": 14,
           "unit": "px"
         }
       },

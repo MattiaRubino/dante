@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const signInHeading = 'Accedi a DANTE';
@@ -73,5 +74,18 @@ test.describe('DANTE Access', () => {
     });
     await page.keyboard.press('Tab');
     await expect(googleButton).toBeFocused();
+  });
+
+  test('has no automated WCAG A/AA violations on the sign-in surface', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      .analyze();
+
+    expect(results.violations).toEqual([]);
   });
 });

@@ -1,12 +1,70 @@
 {
   "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
   "semantic": {
+    "color": {
+      "$type": "color",
+      "brand": {
+        "ink": {
+          "$value": "{primitive.color.brand-ink}"
+        },
+        "accent": {
+          "$value": "{primitive.color.brand-accent}"
+        },
+        "accent-text": {
+          "$value": "{primitive.color.brand-accent-text}"
+        }
+      },
+      "surface": {
+        "base": {
+          "$value": "{primitive.color.white}"
+        },
+        "soft": {
+          "$value": "{primitive.color.warm-50}"
+        },
+        "muted": {
+          "$value": "{primitive.color.warm-100}"
+        }
+      },
+      "text": {
+        "primary": {
+          "$value": "{primitive.color.brand-ink}"
+        },
+        "secondary": {
+          "$value": "{primitive.color.text-secondary}"
+        },
+        "muted": {
+          "$value": "{primitive.color.text-muted}"
+        }
+      },
+      "border": {
+        "control": {
+          "$value": "{primitive.color.border-control}"
+        },
+        "hover": {
+          "$value": "{primitive.color.border-hover}"
+        },
+        "divider": {
+          "$value": "{primitive.color.divider}"
+        }
+      },
+      "focus": {
+        "ring": {
+          "$value": "{primitive.color.brand-accent}"
+        }
+      }
+    },
     "radius": {
       "$type": "dimension",
       "card": {
         "$value": "{primitive.radius.20}"
       },
       "panel": {
+        "$value": "{primitive.radius.12}"
+      },
+      "control": {
+        "$value": "{primitive.radius.14}"
+      },
+      "input": {
         "$value": "{primitive.radius.12}"
       }
     }

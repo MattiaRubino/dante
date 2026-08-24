@@ -7,8 +7,8 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #222f37;
-  background: #ffffff;
+  color: var(--dante-semantic-color-text-primary);
+  background: var(--dante-semantic-color-surface-base);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -24,7 +24,7 @@ body,
 }
 
 html {
-  background: #ffffff;
+  background: var(--dante-semantic-color-surface-base);
 }
 
 body {
@@ -43,5 +43,9 @@ button {
 }
 
 ::selection {
-  background: rgb(234 92 18 / 18%);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-accent) 18%,
+    transparent
+  );
 }

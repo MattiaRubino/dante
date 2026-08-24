@@ -43,29 +43,35 @@ export function AccessSignInPanel() {
         </div>
 
         <div className="access-field-stack">
-          <label className="access-field">
-            <span>{t(($) => $.common.access.field.email)}</span>
+          <div className="access-field">
+            <label htmlFor="access-email">
+              {t(($) => $.common.access.field.email)}
+            </label>
             <input
+              id="access-email"
               name="email"
               type="email"
               autoComplete="email"
               inputMode="email"
             />
-          </label>
+          </div>
 
-          <label className="access-field">
-            <span className="access-field-heading">
-              <span>{t(($) => $.common.access.field.password)}</span>
+          <div className="access-field">
+            <div className="access-field-heading">
+              <label htmlFor="access-password">
+                {t(($) => $.common.access.field.password)}
+              </label>
               <button className="access-inline-action" type="button">
                 {t(($) => $.common.access.signin.forgot)}
               </button>
-            </span>
+            </div>
             <input
+              id="access-password"
               name="password"
               type="password"
               autoComplete="current-password"
             />
-          </label>
+          </div>
         </div>
 
         <button className="access-primary-button" type="button">
