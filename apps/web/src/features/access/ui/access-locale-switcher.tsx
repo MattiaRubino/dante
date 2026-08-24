@@ -67,7 +67,6 @@ export function AccessLocaleSwitcher() {
         aria-label={controlLabel}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls="access-locale-menu"
         onClick={() => setOpen((value) => !value)}
       >
         <span>{meta.code}</span>
@@ -85,7 +84,7 @@ export function AccessLocaleSwitcher() {
       </button>
 
       {open ? (
-        <div className="access-locale-menu" id="access-locale-menu" role="menu">
+        <div className="access-locale-menu" role="menu">
           {(Object.keys(localeMeta) as SupportedLocale[]).map((option) => {
             const optionMeta = localeMeta[option];
             const selected = option === locale;
