@@ -14,12 +14,14 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 test.describe('DANTE Access', () => {
-  test('renders the approved desktop sign-in shell', async ({ page }) => {
+  test('renders the approved desktop A3.4 sign-in shell', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
+    await expect(page.locator('.access-brand-lockup')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Lingua: Italiano' })).toBeVisible();
     await expect(
-      page.getByRole('heading', { level: 2, name: signInHeading }),
+      page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Continua con Google' }),
@@ -36,7 +38,10 @@ test.describe('DANTE Access', () => {
       'current-password',
     );
     await expect(page.locator('.access-brand-stage')).toBeVisible();
-    await expect(page.locator('.access-panel-wordmark')).toBeHidden();
+    await expect(page.locator('.access-panel')).toHaveCSS(
+      'border-radius',
+      '26px',
+    );
     await expectNoHorizontalOverflow(page);
   });
 
@@ -45,9 +50,9 @@ test.describe('DANTE Access', () => {
     await page.goto('/');
 
     await expect(page.locator('.access-brand-stage')).toBeHidden();
-    await expect(page.locator('.access-panel-wordmark')).toBeVisible();
+    await expect(page.locator('.access-brand-lockup')).toBeVisible();
     await expect(
-      page.getByRole('heading', { level: 2, name: signInHeading }),
+      page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
@@ -56,6 +61,7 @@ test.describe('DANTE Access', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
 
+    await expect(page.locator('.access-brand-lockup')).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Continua con Google' }),
     ).toBeVisible();
@@ -71,9 +77,13 @@ test.describe('DANTE Access', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
+    const localeButton = page.getByRole('button', { name: 'Lingua: Italiano' });
     const googleButton = page.getByRole('button', {
       name: 'Continua con Google',
     });
+
+    await page.keyboard.press('Tab');
+    await expect(localeButton).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(googleButton).toBeFocused();
   });
