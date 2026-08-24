@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> This banner is the current integrated status authority for this file and supersedes only contradictory status/routing statements later in the preserved historical body. Protected `main` now includes frontend materialization via merged PR #28 (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). Frontend materialization is **CLOSED / PASS / INTEGRATED**, and `Frontend CI Gate` is calibrated with required-check promotion recorded as owner-confirmed where direct ruleset API readback is unavailable. Backend `feature/logical-postgresql` is current with `main` and remains **CP6-03 ACTIVE**: Checkpoint J / DB-U23 are CLOSED, Parts 1–8 are the active Database Reference, `DB-U08 / DB-U15 / DB-U21` remain OPEN, and the exact next block is **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**. Gate 03 is not earned; CP6-04 business-database materialization remains not started/not authorized.  
+
 # DANTE
 
 DANTE is a personal operating system designed to help people understand, organize and improve their real life by turning intentions, needs and possibilities into outcomes they can realistically pursue.
@@ -346,7 +349,7 @@ Environments are not Git branches. Activation remains progressive and provider-s
 
 The Physical target remains unchanged. Its exact phase-time PostgreSQL patch was 18.4; current patch maintenance within selected major line 18 is lifecycle-managed downstream.
 
-- PostgreSQL 18 major family — sole canonical persistence/material-history authority; Physical phase-time patch 18.4; current CP6 technical patch 18.6;
+- PostgreSQL 18 major family — sole canonical persistence/material-history authority; Physical phase-time exact patch 18.4; current CP6 technical patch 18.6;
 - PostGIS / pgvector / native FTS / pg_trgm / unaccent / pg_stat_statements;
 - PgBouncer 1.25.2 selected, not forced into every day-one path;
 - PowerSync + encrypted SQLite for bounded noncanonical local/offline state when activated;
