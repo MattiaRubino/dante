@@ -24,6 +24,18 @@ export default {
       },
     },
     {
+      name: 'web-routes-use-feature-public-api',
+      comment:
+        'Web routes may consume a feature only through its public index, never through feature internals.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/routes/',
+      },
+      to: {
+        path: '^apps/web/src/features/[^/]+/(?!index\\.(ts|tsx)$)',
+      },
+    },
+    {
       name: 'web-not-to-mobile',
       comment:
         'Web and Mobile are sibling deployables, never source dependencies.',

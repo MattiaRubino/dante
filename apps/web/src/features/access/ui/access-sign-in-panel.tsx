@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
+import { ProviderButton } from './provider-button';
 
 export function AccessSignInPanel() {
   const { t } = useTranslation('common');
@@ -25,21 +26,14 @@ export function AccessSignInPanel() {
         </p>
 
         <div className="access-provider-stack">
-          <button className="access-provider-button" type="button">
-            <span className="access-provider-mark" aria-hidden="true">
-              G
-            </span>
-            <span>{t(($) => $.common.access.provider.google)}</span>
-          </button>
-          <button className="access-provider-button" type="button">
-            <span
-              className="access-provider-mark access-provider-mark-apple"
-              aria-hidden="true"
-            >
-              ●
-            </span>
-            <span>{t(($) => $.common.access.provider.apple)}</span>
-          </button>
+          <ProviderButton
+            provider="google"
+            label={t(($) => $.common.access.provider.google)}
+          />
+          <ProviderButton
+            provider="apple"
+            label={t(($) => $.common.access.provider.apple)}
+          />
         </div>
 
         <div className="access-divider" aria-hidden="true">
