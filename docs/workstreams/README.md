@@ -1,16 +1,19 @@
 # Workstream Handoffs
 
-Each active/pending-integration workstream has one operational handoff. It is the safest continuation entry point.
+Each active or pending-integration workstream has one operational handoff. It is the safest continuation entry point for that scope.
 
 ## Current / pending-integration workstreams
 
+- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **ACTIVE / PR #28 / READY / FINAL MERGE GATE**; integrates the already-closed frontend materialization into current `main`, owns integration hardening, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration/promotion evidence and the durable future-activation register.
 - [`today-home.md`](today-home.md) — separate Phase-4 Home/Today UX/product-structure workstream; prototype/UX authority only, not production engineering authority.
 
-## Completed / integrated workstreams
+## Completed / integrated or closed evidence workstreams
 
-- [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**; former `feature/frontend-foundation` branch merged/auto-deleted; production frontend scaffold/direct validation remain NOT STARTED.
+- [`frontend-materialization.md`](frontend-materialization.md) — **CLOSED / PASS — FM-00..FM-07 COMPLETE AT THEIR STATED SCOPES**; direct Web/Mobile/tooling/shared-package/CI/fresh-materialization evidence. The closed branch is evidence source, not the current integration work branch.
+- [`backend-scaffold.md`](backend-scaffold.md) — **CLOSED / DIRECT QA PASS / integrated via PR #24**; CP1-CP5 backend scaffold evidence and protected-main integration record.
+- [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
 - [`engineering-foundation.md`](engineering-foundation.md) — **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #21**.
-- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated via PR #15**; direct selected-stack implementation validation remains carried forward/not started.
+- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated via PR #15**; specialist activation/direct validation remains capability-triggered.
 - [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated via PR #13 / post-merge aligned via PR #14**.
 - [`domain-model.md`](domain-model.md) and continuations — historical operational record for CLOSED Domain Model integrated via PR #10.
 - Logical Model workstream documents/continuations — historical operational record for CLOSED Logical Model integrated via PR #11.
@@ -19,27 +22,61 @@ Each active/pending-integration workstream has one operational handoff. It is th
 
 - [`backend-foundation.md`](backend-foundation.md) — historical pre-Engineering-Foundation planning; not current implementation authority.
 
-## Carry-forward rule
+## Current carry-forward rule
 
 ```text
 PHYSICAL TARGET              CLOSED / ACCEPTED
 ENGINEERING FOUNDATION v0    CLOSED / ACCEPTED
-FRONTEND FOUNDATION          DESIGN/ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
-FRONTEND MAIN INTEGRATION    COMPLETE VIA PR #22
-DIRECT HG PASS               0
-FRONTEND DIRECT VALIDATION   NOT RUN
-SELECTED != DEPLOYED
+FRONTEND FOUNDATION          CLOSED / ACCEPTED / integrated
+BACKEND SCAFFOLD             CLOSED / DIRECT QA PASS / integrated
+FRONTEND MATERIALIZATION     CLOSED / PASS
+FRONTEND PR #28              ACTIVE / READY / FINAL MERGE GATE
+FRONTEND CI GATE CALIBRATION COMPLETE
+FRONTEND CI GATE PROMOTION   OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
+SELECTED != IMPLEMENTED
 SELECTED != DIRECT PASS
 ```
 
-Version-sensitive claims require current primary-source verification when material. Implementation/reopen requires fresh exact scope.
+Version-sensitive claims require current evidence. Later direct materialization evidence qualifies older design-time version wording without reopening unrelated architecture.
+
+Current examples:
+
+```text
+Temporal implementation      temporal-polyfill 1.0.4
+Gesture Handler              2.32.0 under Expo SDK 57
+Web E2E path                 apps/web/e2e/
+```
 
 ## Operational rule
 
-The handoff is the workstream save-game. Current `main` remains integrated authority; newer unmerged branch truth is bounded to its active workstream until merge.
+`main` remains integrated authority. Newer unmerged branch truth is bounded to its active workstream until merge.
 
-Before continuation read development operating/safety rules, verify current Git relation, read complete applicable specs/ADRs and consume closed model/Engineering authorities.
+Before continuation:
 
-For frontend continuation, consume the integrated Frontend Foundation and open a fresh bounded materialization/scaffold/direct-validation workstream; do not restart general stack/architecture selection without concrete contradictory evidence.
+1. read development operating/safety rules;
+2. verify exact Git relation/PRE-SCOPE;
+3. read the complete active handoff;
+4. consume applicable closed model/Foundation/ADR authorities;
+5. distinguish selected/installed/configured/directly validated states;
+6. update the active handoff on every substantive slice.
 
-Durable architecture changes belong in appropriate current specs/ADRs, not only handoff text. Historical sources never override later current truth.
+## Frontend continuation
+
+Do not reopen general stack/architecture selection by default.
+
+Current sequence:
+
+```text
+PR #28 exact current head
+-> hosted CI green
+-> branch current with main
+-> mergeable / review-thread clean
+-> accepted-risk register valid
+-> separate protected-main merge authorization
+```
+
+The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied the technical gates above. Any subsequent documentation-only head must independently satisfy them before merge authorization.
+
+The future-activation register in `frontend-materialization-integration.md` must be consulted when the first real vertical/UI/form/API/offline/deployment/release/security/pre-PROD/scale trigger occurs.
+
+Durable architecture changes belong in current specs/ADRs, not only handoff text. Historical sources never override later current truth.

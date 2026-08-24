@@ -1,0 +1,14 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "semantic": {
+    "radius": {
+      "$type": "dimension",
+      "card": {
+        "$value": "{primitive.radius.20}"
+      },
+      "panel": {
+        "$value": "{primitive.radius.12}"
+      }
+    }
+  }
+}

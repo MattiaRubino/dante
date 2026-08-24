@@ -1,25 +1,27 @@
 # ADR-008: Frontend Engineering Stack
 
-- Status: **ACCEPTED / INTEGRATED VIA PR #22**
+- Status: **ACCEPTED / INTEGRATED VIA PR #22 / MATERIALIZED AT FM-00..FM-07 STATED SCOPES**
 - Date: 2026-08-20
+- Materialization qualification: 2026-08-23
 - Supersedes: [`ADR-001-client-platforms.md`](ADR-001-client-platforms.md)
-- Current specification: [`../architecture/frontend-engineering-foundation.md`](../architecture/frontend-engineering-foundation.md)
+- Design-time specification: [`../architecture/frontend-engineering-foundation.md`](../architecture/frontend-engineering-foundation.md)
+- Direct implementation evidence: [`../workstreams/frontend-materialization.md`](../workstreams/frontend-materialization.md)
 
 ## Context
 
-ADR-001 selected Next.js + React for Web and Expo + React Native for Mobile before the dedicated frontend-engineering workstream had evaluated the complete DANTE stack against the closed Physical Model, local/offline semantics, backend boundary, monorepo governance and current 2026 ecosystem.
+ADR-001 selected Next.js + React for Web and Expo + React Native for Mobile before the dedicated frontend-engineering workstream evaluated the complete DANTE stack against the closed Physical Model, local/offline semantics, backend boundary, monorepo governance and current ecosystem.
 
-The dedicated workstream established enough evidence to replace that provisional Web framework choice and to fix the broader frontend engineering baseline. The accepted decision was integrated into protected `main` through PR #22.
+The Frontend Foundation replaced that provisional Web choice and fixed the broader frontend engineering baseline. PR #22 integrated the architecture/design decision. The subsequent `feature/frontend-materialization` workstream then installed, configured and directly validated the real baseline through FM-00..FM-07.
 
-DANTE already has durable constraints that the frontend must consume:
+DANTE constraints that remain unchanged:
 
-- one product monorepo with `apps/backend`, `apps/web`, `apps/mobile`;
-- FastAPI/application services as backend boundary;
+- one product monorepo with sibling `apps/backend`, `apps/web`, `apps/mobile`;
+- FastAPI/application services as backend authority;
 - PostgreSQL as sole canonical state/material-history authority;
-- PowerSync + encrypted SQLite as bounded local/sync capability;
+- PowerSync + encrypted SQLite as bounded noncanonical local/sync capability when activated;
 - operation-specific offline eligibility and backend governance for consequential effects;
 - GitHub Actions as repository CI/CD authority;
-- Web and Mobile may share semantics/contracts without requiring one universal renderer.
+- shared semantics do not require one universal Web/Mobile renderer.
 
 ## Decision
 
@@ -48,86 +50,128 @@ Use explicit state/data ownership:
 
 ```text
 canonical state          backend + PostgreSQL
-synced local projection  PowerSync + encrypted SQLite
-remote request state     TanStack Query
-form state               TanStack Form
-runtime validation       Zod 4
+synced local projection  PowerSync + encrypted SQLite when activated
+remote request state     TanStack Query when activated
+form state               TanStack Form when activated
+runtime validation       Zod
 transient local UI       React
 cross-tree transient UI  Zustand only when justified
 ```
 
-Use FastAPI OpenAPI → Orval 8 for typed frontend transport generation.
+Use FastAPI OpenAPI -> Orval for typed frontend transport generation only when a real product API contract exists.
 
-Use platform-appropriate UI foundations rather than a universal renderer:
+Use platform-appropriate UI implementations over shared semantics/tokens rather than a universal renderer.
 
-```text
-Web     Radix Primitives + Tailwind CSS + CSS variables
-Mobile  React Native StyleSheet + typed DANTE tokens
-Shared  DTCG-compatible semantic token source compiled through Terrazzo
-```
-
-Use GitHub Actions as the primary orchestrator. EAS Build/Submit/Update are selected mobile services; EAS Workflows is optional/dormant.
-
-The complete selected/specialist/deferred technology matrix is authoritative in `docs/architecture/frontend-engineering-foundation.md`.
+GitHub Actions remains primary repository orchestration. EAS Build/Submit/Update remain selected Mobile release services but are not activated merely by this ADR.
 
 ## PowerSync write-path qualification
 
-A synchronized table/entity does **not** imply that every mutation is safe to perform as an offline local write.
+A synchronized table/entity does not imply every mutation is safe as an offline local write.
 
-Two governed write classes are required:
+Two governed write classes remain required:
 
-1. **online governed command** — UI → FastAPI → AuthZ/governance/expected-state → canonical commit → downstream sync;
-2. **offline-eligible operation** — local pending mutation → PowerSync upload → backend governance/conflict validation → canonical commit or reject/conflict → reconciliation.
+1. **online governed command** — UI -> FastAPI -> governance/expected-state -> canonical commit -> downstream sync;
+2. **offline-eligible operation** — local pending mutation -> upload -> backend governance/conflict validation -> canonical commit or reject/conflict -> reconciliation.
 
-Offline eligibility is operation-specific. Local arrival order is not semantic truth and universal consequential LWW remains forbidden.
+Local arrival order is not semantic truth and universal consequential LWW remains forbidden.
 
 ## Rationale
 
-### React DOM + Vite over Next.js for the application Web client
+### React DOM + Vite over Next.js
 
-DANTE already has a dedicated backend/application boundary and is a client-heavy browser application. React DOM preserves first-class browser/DOM capabilities without introducing a second application-server model that DANTE does not require.
+DANTE already has a dedicated backend/application boundary and a client-heavy browser application. Vite/React DOM avoids introducing an unnecessary second application-server model.
 
 ### Expo/React Native for Mobile
 
-It preserves a common TypeScript/React engineering ecosystem while keeping Mobile native and allowing native modules/Kotlin/Swift where measured need exists.
+It preserves a common TypeScript/React ecosystem while keeping Mobile native and allowing native modules/platform code where measured need exists.
 
 ### Turborepo over Nx
 
-Turbo remains a thin task orchestrator over pnpm/Vite/Expo rather than becoming another framework layer coupled to the release cadence of each application framework.
+Turbo remains a thin task orchestrator over pnpm/Vite/Expo rather than becoming another broad framework layer.
 
 ### Explicit state ownership
 
-PowerSync, TanStack Query and Zustand solve different state classes. Keeping those authorities separate prevents multiple competing copies of DANTE reality inside the frontend.
+PowerSync, TanStack Query, forms and UI state solve different state classes. Keeping them separate prevents competing copies of DANTE reality.
 
 ### Platform-specific UI, shared semantics
 
-DANTE optimizes sharing of contracts, validation, tokens, i18n, time semantics and pure logic rather than forcing identical Web/Mobile rendering.
+DANTE shares contracts, validation, tokens, i18n, time semantics and pure logic where valuable without forcing identical Web/Mobile rendering.
 
 ## Consequences
 
-- ADR-001 is superseded; Next.js is no longer the selected `apps/web` application framework.
-- `apps/web` and `apps/mobile` remain separate first-class clients.
-- the frontend does not become a second canonical state authority;
-- PowerSync write behavior must follow operation-specific backend governance;
-- Web baseline is online-first; PowerSync Web/PWA activation remains dormant unless explicitly required;
-- exact shared package boundaries are governed by ADR-009 / the Part-2 specification;
-- selected technologies are not claimed as installed/configured/directly validated yet;
-- high-coupling integrations carry explicit materialization validation obligations.
+- ADR-001 remains superseded; Next.js is not the selected authenticated-app Web framework;
+- Web and Mobile remain separate first-class clients;
+- frontend never becomes canonical DANTE state authority;
+- PowerSync writes remain operation-specific/backend-governed;
+- Web starts online-first;
+- shared package boundaries remain governed by ADR-009;
+- capabilities not consumed by a real feature remain dormant rather than placeholder-installed.
 
-## Validation status
+## Materialization qualification
+
+The Foundation used selection-time version wording. Later direct materialization establishes the implementation authority at the tested scopes:
 
 ```text
-TECHNOLOGY SELECTION
-DESIGN COMPLETE / INTEGRATED VIA PR #22
+Node                         24.19.0
+pnpm                         11.22.0
+TypeScript                   6.0.3 strict
+Turborepo                    2.10.11
 
-INSTALLATION
-NOT STARTED
+Web React / React DOM        19.2.8 / 19.2.8
+Vite                         8.2.1
+TanStack Router              1.170.31
 
-CONFIGURATION
-NOT STARTED
+Expo SDK                     57.x / clean resolve 57.0.15
+React Native                 0.86.2
+Mobile React                 19.2.3
+Expo Router                  57.x / clean resolve 57.0.15
+Gesture Handler              2.32.0
+Reanimated                   4.5.1
 
-DIRECT FRONTEND VALIDATION
-NOT STARTED
+Temporal implementation      temporal-polyfill 1.0.4
+Web E2E                      apps/web/e2e/
 ```
 
-A failed material validation may reopen the affected technology decision without automatically reopening the complete frontend stack.
+This directly qualifies two design-time details that must not be read as current implementation requirements:
+
+```text
+Foundation text: @js-temporal/polyfill
+Qualified implementation: temporal-polyfill 1.0.4
+
+Foundation text: Gesture Handler 3 line
+Expo-qualified implementation: Gesture Handler 2.32.0
+```
+
+These are bounded implementation qualifications, not a reopening of the architecture decision.
+
+## Direct validation status
+
+Closed materialization evidence includes:
+
+```text
+fresh frozen workspace install                  PASS
+strict TypeScript                               PASS
+Web production build                            PASS
+Web Chromium production-preview E2E             PASS
+Android Expo/Metro/Hermes emulator runtime      PASS
+Android Hermes production bundle smoke          PASS
+Expo dependency compatibility                   PASS
+architecture graph                              36 modules / 45 deps / 0 violations
+generated-source drift                          PASS
+unit tests                                      10 PASS
+GitHub-hosted Frontend CI                       PASS
+fresh-clone/store/browser materialization       PASS
+tracked + untracked repository residue          0
+```
+
+The known workspace peer diagnostic (`react-dom@19.2.8` versus the workspace Mobile React `19.2.3`) is reproducible but non-blocking because Expo `install --check` directly passes for the Mobile baseline. It does not authorize React version forcing, peer suppression, packageExtensions, hoisting or nodeLinker changes.
+
+## Current integration state
+
+The closed materialization is being integrated through READY PR #28 on `chore/frontend-materialization-integration`.
+
+`Frontend CI Gate` has completed real-green, controlled deliberate-red, mandatory failure propagation, exact workflow restoration and recovery-green calibration. The repository owner confirmed applying its protected-main promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+
+The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any later documentation-only head must independently satisfy the same exact-head gates before separate protected-main merge authorization.
+
+A failed future material validation reopens the affected technology decision first; the complete frontend stack reopens only if evidence proves a wider contradiction.
