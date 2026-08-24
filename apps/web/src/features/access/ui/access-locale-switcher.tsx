@@ -17,20 +17,24 @@ function currentLocale(language: string | undefined): SupportedLocale {
 }
 
 export function AccessLocaleSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('common');
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const selectedOptionRef = useRef<HTMLButtonElement>(null);
   const locale = currentLocale(i18n.resolvedLanguage);
   const meta = localeMeta[locale];
-  const controlLabel =
-    locale === 'it'
-      ? `Cambia lingua. Lingua attuale: ${meta.label}`
-      : `Change language. Current language: ${meta.label}`;
+  const controlLabel = t(($) => $.common.access.locale.control, {
+    language: meta.label,
+  });
+  const optionsLabel = t(($) => $.common.access.locale.options);
 
   useEffect(() => {
     if (!open) {
       return;
     }
+
+    selectedOptionRef.current?.focus();
 
     const closeOnOutsidePointer = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
@@ -41,6 +45,7 @@ export function AccessLocaleSwitcher() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false);
+        triggerRef.current?.focus();
       }
     };
 
@@ -57,17 +62,25 @@ export function AccessLocaleSwitcher() {
     persistPreferredLocale(nextLocale);
     void i18n.changeLanguage(nextLocale);
     setOpen(false);
+    triggerRef.current?.focus();
   };
 
   return (
     <div className="access-locale" ref={rootRef}>
       <button
         className="access-locale-button"
+        ref={triggerRef}
         type="button"
         aria-label={controlLabel}
-        aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls="access-locale-options"
         onClick={() => setOpen((value) => !value)}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
       >
         <span>{meta.code}</span>
         <svg
@@ -84,7 +97,12 @@ export function AccessLocaleSwitcher() {
       </button>
 
       {open ? (
-        <div className="access-locale-menu" role="menu">
+        <div
+          className="access-locale-menu"
+          id="access-locale-options"
+          role="group"
+          aria-label={optionsLabel}
+        >
           {(Object.keys(localeMeta) as SupportedLocale[]).map((option) => {
             const optionMeta = localeMeta[option];
             const selected = option === locale;
@@ -92,9 +110,9 @@ export function AccessLocaleSwitcher() {
             return (
               <button
                 className="access-locale-option"
+                ref={selected ? selectedOptionRef : undefined}
                 type="button"
-                role="menuitemradio"
-                aria-checked={selected}
+                aria-pressed={selected}
                 key={option}
                 onClick={() => selectLocale(option)}
               >
