@@ -9,7 +9,7 @@
 
 > **LATEST LIVE RESUME — 2026-08-24 / DATABASE DICTIONARY READY**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-15.md`, section 50 **Database Dictionary Readiness — FROZEN**, and the readiness foundation under `docs/database/dictionary/`. Parts 1–15 must be consumed together. Final object inventory, DB-U08 naming, DB-U15 indexes, DB-U21 ACLs, Migration DAG and SQLAlchemy Mapping Plan remain frozen/closed; **GLOBAL DB-U OPEN = 0**. The exact current next block is **DIRECT POSTGRESQL PROOF / TEST PLAN**.  
-> Dictionary target is 87 standalone DANTE-owned entries (`68 table + 5 view + 14 routine`), with 75 trigger attachments and 95 physical indexes embedded in owning table entries. Object-specific entries remain intentionally absent until CP6-04 materializes the corresponding real objects. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
+> Dictionary target is 87 standalone DANTE-owned entries (`68 table + 5 view + 14 routine`), with 75 trigger attachments and 95 physical indexes embedded in table entries. Object-specific entries remain intentionally absent until CP6-04 materializes their real objects. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > Protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–14 are complete or that Database Dictionary readiness is pending/next. Historical audit evidence remains preserved.  
 
 > **LATEST LIVE RESUME — 2026-08-24 / SQLALCHEMY MAPPING PLAN FROZEN**  
@@ -19,7 +19,7 @@
 
 > **LATEST LIVE RESUME — 2026-08-24 / MIGRATION DAG FROZEN**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-13.md`, section 46 **Migration / Materialization DAG — FROZEN**. Parts 1–13 must be consumed together. Final object inventory remains FROZEN; DB-U08 naming, DB-U15 indexes and DB-U21 ACLs remain CLOSED; **GLOBAL DB-U OPEN = 0**. The exact current next block is **SQLALCHEMY MAPPING PLAN**. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
-> Part 13 freezes P0 provisioning ACL hardening plus seven linear Alembic nodes, exact allocation of **68 tables / 95 indexes / 14 routines / 75 triggers / 5 views**, transactional first-materialization posture, late-bound author-date revision IDs, and runtime business DML activation only at the final ACL node. Exact trigger split is M5 `13 routines / 66 triggers` and M6 `1 routine / 9 triggers`.  
+> Part 13 freezes P0 provisioning ACL hardening plus seven linear Alembic nodes, exact allocation of **68 tables / 95 indexes / 14 routines / 75 triggers / 5 views**, transactional first-materialization posture, late-bound author-date revision IDs, and runtime business DML activation only in the final ACL node. Exact trigger split is M5 `13 routines / 66 triggers` and M6 `1 routine / 9 triggers`.  
 > Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–12 are the complete active set or that the migration/materialization DAG is still next/unfrozen. Historical audit evidence remains deliberately preserved.  
 
 > **LATEST LIVE RESUME — 2026-08-24 / DB-U21 CLOSED**  
@@ -30,17 +30,17 @@
 > **LATEST LIVE RESUME — 2026-08-24 / DB-U15 CLOSED**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-11.md`, section 42 **DB-U15 — Final Structural / Query Index Matrix — CLOSED**. Parts 1–11 must be consumed together. Final Actual PostgreSQL Object Inventory remains FROZEN; DB-U08 naming remains CLOSED; the exact current next block is **DB-U21 — exact object-level PostgreSQL privilege matrix**. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > DB-U15 frozen result: **95 DANTE-owned baseline indexes** = 78 retained structural-floor indexes + 16 justified referencing-side FK/structural indexes + 1 quota-period query/concurrency index. All 68 FK paths were reviewed; 52 are already adequately covered and 16 require added referencing-side support. No speculative GiST/GIN/BRIN/trigram/vector/INCLUDE index was added.  
-> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–10 are the complete active set, DB-U15 is open/next, or 78 is the final index count. Historical audit evidence remains deliberately preserved.  
+> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–10 are the complete active set, DB-U15 is open/next, or 78 is the final index count. Historical audit evidence remains preserved.  
 
 > **LATEST LIVE RESUME — 2026-08-24 / DB-U08 CLOSED**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-10.md`, section 40 **DB-U08 — Final PostgreSQL Object Naming — CLOSED**. Parts 1–10 must be consumed together. Final Actual PostgreSQL Object Inventory remains FROZEN; the exact current next block is **DB-U15 — final structural/query index matrix**; DB-U21 remains open afterward. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > DB-U08 frozen naming result: Part-9 table/column/view names unchanged; CP3 `pk/fk/uq/ix/ck` convention retained; `ux/trg/ctrg` conventions added; 68 PK names; 68 FK naming outcomes (17 direct convention + 51 explicit semantic overlength aliases); 78 current structural-index names; 14 integrity-routine names; 75 trigger names; max explicit trigger length 62 bytes; no quoted identifiers; no PostgreSQL silent-truncation dependency.  
-> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–9 are the complete active set or DB-U08 is open/next. Historical audit evidence remains deliberately preserved.  
+> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–9 are the complete active set or DB-U08 is open/next. Historical audit evidence remains preserved.  
 
 > **LATEST LIVE RESUME — 2026-08-24 / FINAL OBJECT INVENTORY FROZEN**  
 > This is the latest operational overlay for this temporary handoff. Canonical authority now includes `docs/database/dante-postgresql-database-part-9.md`, section 38 **Final Actual PostgreSQL Object Inventory — FROZEN**. Parts 1–9 must be consumed together. The exact current next block is **DB-U08 — final PostgreSQL object naming**; DB-U15 and DB-U21 remain open afterward. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > Frozen inventory: **68 DANTE-owned tables; 5 current-facet views; scoped families schedule/actual; five surviving MaterialState facets; 78-index minimum structural floor; 14 bounded integrity-routine roles / 75 table-trigger attachments (18 immediate + 57 deferred); no custom DANTE enum/domain types, sequences, materialized views or RLS policies**. Technical `dante.alembic_version` and extension-owned objects are classified separately and are not folded into the 68 DANTE-owned count.  
-> Per explicit user direction, protected-`main` realignment is intentionally deferred to a later separate gate. This inventory freeze does not merge/rebase/reconcile `main`.  
+> Per explicit user direction, protected-`main` realignment remains intentionally deferred to a later separate gate. This inventory freeze does not merge/rebase/reconcile `main`.  
 > This overlay supersedes earlier LIVE-only current-status/resume statements below, including sections that say DB-U23 is still open, inventory is blocked/next, or Parts 1–8 are the complete active set. Those sections remain deliberately preserved as historical audit evidence and are non-normative where this overlay or canonical Part 9 is more current.  
 
 # CP6-03 LIVE HANDOFF — TEMPORARY CROSS-CHAT CONTINUITY
@@ -167,7 +167,7 @@ Per coherent block:
 5. show the exact write gate to the user;
 6. obtain user approval;
 7. immediately before mutation re-check live branch HEAD;
-8. if HEAD differs, STOP and re-gate;
+8. if HEAD mismatches expected PRE-SCOPE, STOP and re-gate;
 9. construct candidate off-branch where possible;
 10. compare PRE-SCOPE → candidate exactly;
 11. require only authorized CREATE/UPDATE/DELETE paths;
