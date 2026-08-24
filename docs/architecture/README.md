@@ -13,14 +13,14 @@ Engineering Foundation v0     CLOSED / ACCEPTED
 Frontend Foundation           CLOSED / ACCEPTED / integrated via PR #22
 Backend scaffold              CLOSED / DIRECT QA PASS / integrated via PR #24
 Frontend materialization      CLOSED / PASS — FM-00..FM-07
-Frontend integration          ACTIVE — PR #28 / READY / FINAL MERGE GATE
+Frontend integration          CLOSED / INTEGRATED VIA PR #28
 Frontend CI Gate calibration  COMPLETE
 Frontend CI Gate promotion    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 Concrete business schema      NOT STARTED
 Product verticals             NOT STARTED
 ```
 
-`main` remains the integrated source authority. The active integration branch contains newer bounded frontend integration truth until PR #28 merges.
+`main` remains the integrated source authority. Frontend materialization and its bounded integration hardening are now part of protected `main` through PR #28.
 
 ## 2. Current architecture entry points
 
@@ -31,7 +31,7 @@ Product verticals             NOT STARTED
 - `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR + materialization qualification
 - `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR + materialization qualification
 - `../workstreams/frontend-materialization.md` — closed direct frontend evidence
-- `../workstreams/frontend-materialization-integration.md` — active integration/future-activation authority
+- `../workstreams/frontend-materialization-integration.md` — closed integration record, accepted-risk lifecycle and future-activation authority
 - `../workstreams/backend-scaffold.md` — closed backend CP1-CP5 evidence
 - `../development/repository-engineering-safety.md` — repository/CI/ruleset safety authority
 
@@ -126,17 +126,20 @@ Older design-time wording such as Gesture Handler “3 line” or `@js-temporal/
 Directly proven:
 
 ```text
-BACKEND SCAFFOLD                 PASS at CP1-CP5 stated scopes
-FRONTEND MATERIALIZATION        PASS at FM-00..FM-07 stated scopes
-WEB PRODUCTION BUILD            PASS
-WEB CHROMIUM E2E                PASS
-ANDROID HERMES BUNDLE           PASS
-ANDROID EMULATOR RUNTIME        PASS
-FRONTEND HOSTED CI              PASS
-PR #28 FRONTEND GATE CALIBRATION PASS green/red/recovery
+BACKEND SCAFFOLD                  PASS at CP1-CP5 stated scopes
+FRONTEND MATERIALIZATION         PASS at FM-00..FM-07 stated scopes
+WEB PRODUCTION BUILD             PASS
+WEB CHROMIUM E2E                 PASS
+ANDROID HERMES BUNDLE            PASS
+ANDROID EMULATOR RUNTIME         PASS
+FRONTEND HOSTED CI               PASS
+FRONTEND GATE CALIBRATION        PASS green/red/recovery
+PR #28 PROTECTED-MAIN INTEGRATION PASS
 ```
 
-The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any later documentation-only head must independently satisfy the same applicable exact-head gates before merge authorization.
+PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` passed the applicable hosted checks before merge. Protected-main merge `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` has exactly the prior-main and final-PR-head parents, and the merged main tree has zero file delta from that PR head.
+
+Push-main CI for the merge SHA remains **DIRECT READBACK UNAVAILABLE** through the current connector because its commit-workflow lookup exposes PR-associated runs only.
 
 Not yet proven/activated:
 
@@ -164,18 +167,22 @@ Activation triggers are recorded in `../workstreams/frontend-materialization-int
 
 ## 9. Architecture reopen discipline
 
-Closed Domain/Logical/Physical/Engineering/Frontend Foundation decisions are not casually reselected.
+Closed Domain/Logical/Physical/Engineering/Frontend Foundation/materialization/integration decisions are not casually reselected.
 
 A material validation failure first reopens the affected technology/adapter/boundary. A wider architecture reopening requires concrete evidence of a wider contradiction.
 
-## 10. Next architecture/engineering boundary
+## 10. Next architecture/engineering boundaries
 
 ```text
-PR #28 exact current head
--> hosted CI green
--> branch current / mergeable / review-thread clean
--> separate protected-main merge authorization
--> activate first product vertical boundaries only as consumed
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation under a fresh explicit gate
+
+BACKEND NEXT
+Concrete Logical -> PostgreSQL in a fresh bounded workstream
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only boundaries actually consumed
 ```
 
-Backend Concrete Logical -> PostgreSQL remains a separate fresh bounded workstream.
+The durable future-activation register remains in `../workstreams/frontend-materialization-integration.md`.

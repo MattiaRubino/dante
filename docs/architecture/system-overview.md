@@ -8,7 +8,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes the closed Product, Domain, Logical and Physical models, the closed Engineering Foundation and the closed Frontend Engineering Foundation. Backend scaffold CP1-CP5 is integrated in protected `main`; frontend materialization FM-00..FM-07 is closed/directly validated and is being integrated through READY PR #28.
+Implementation consumes the closed Product, Domain, Logical and Physical models, the closed Engineering Foundation and the closed Frontend Engineering Foundation. Backend scaffold CP1-CP5 is integrated in protected `main`; frontend materialization FM-00..FM-07 is closed/directly validated and its bounded integration hardening is integrated through PR #28.
 
 Core invariants include:
 
@@ -128,6 +128,8 @@ Shared packages currently materialized:
 ```
 
 Frontend materialization is **CLOSED / PASS** at FM-00..FM-07 stated scopes. It directly proved the Web build/E2E path, Android emulator runtime, Android Hermes bundle smoke, shared packages, strict TS, generated drift, unit tests, architecture enforcement, fresh-clone materialization and hosted CI.
+
+Frontend integration hardening is **CLOSED / integrated via PR #28**.
 
 ## 5. Qualified frontend implementation baseline
 
@@ -251,7 +253,7 @@ Observability is privacy-minimized operational telemetry, never canonical histor
 
 GitHub Actions is repository-wide primary CI/CD authority.
 
-The branch-local protected-main ruleset definition contains:
+The canonical protected-main ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -261,7 +263,7 @@ Frontend CI Gate
 
 `Frontend CI Gate` has directly proved real green, controlled deliberate red, mandatory failure propagation, exact workflow restoration and recovery green. The repository owner confirmed applying its required-check promotion. The available connector does not expose direct ruleset readback, so the administrative setting is classified **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
 
-The directly observed pre-reconciliation PR #28 head `bdd6e08cbca4c19989502235855d52a620d29fb5` passed:
+PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` passed:
 
 ```text
 Backend Quality
@@ -274,9 +276,11 @@ Mobile Bundle
 Frontend CI Gate
 ```
 
-Any later documentation-only head must independently satisfy the applicable hosted-CI/currentness/mergeability/thread-clean gate before merge authorization.
+Protected-main merge `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` has exactly two parents: prior main `fd3bc8dd918cf6aadeff4572221af68612c3cb42` and final PR head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`. The merged main tree has zero file delta from the final PR head.
 
-Dependency Review remains fail-closed at moderate severity. Three exact transitive tooling GHSA exceptions are temporarily accepted until review/removal conditions are met; details live in the integration handoff.
+The available connector's commit-workflow lookup exposes PR-associated runs only, so push-main CI for the merge SHA remains **DIRECT READBACK UNAVAILABLE**.
+
+Dependency Review remains fail-closed at moderate severity. Three exact transitive tooling GHSA exceptions are temporarily accepted until review/removal conditions are met; details live in the closed integration handoff.
 
 ## 15. Developer posture
 
@@ -288,12 +292,13 @@ No divergent Windows/WSL clones and no cross-OS shared `node_modules`.
 
 ```text
 BACKEND SCAFFOLD             DIRECT QA PASS / INTEGRATED
-FRONTEND MATERIALIZATION     DIRECT QA PASS AT FM SCOPES
+FRONTEND MATERIALIZATION     DIRECT QA PASS AT FM SCOPES / INTEGRATED
 WEB CHROMIUM E2E             PASS
 ANDROID EMULATOR RUNTIME     PASS
 ANDROID HERMES BUNDLE        PASS
 FRONTEND CI GATE CALIBRATION PASS green/red/recovery
-PR #28 PRE-RECONCILIATION    GREEN / CURRENT / MERGEABLE / THREAD-CLEAN at bdd6e08...
+PR #28 INTEGRATION           MERGED / TREE IDENTITY PASS
+PUSH-MAIN CI ON MERGE SHA    DIRECT READBACK UNAVAILABLE
 
 CONCRETE BUSINESS SCHEMA     NOT STARTED
 POWERSYNC PRODUCT FLOW       NOT RUN
@@ -303,14 +308,18 @@ CODEQL                       NOT ACTIVE
 PRODUCTION DEPLOYMENT        NOT STARTED
 ```
 
-## 17. Current next step
+## 17. Current next boundaries
 
 ```text
-PR #28 exact current head
--> hosted CI green
--> current with main
--> mergeable / review-thread clean
--> separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation under a fresh explicit gate
+
+BACKEND NEXT
+Concrete Logical -> PostgreSQL in a fresh bounded workstream
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only capabilities actually consumed
 ```
 
-Backend Concrete Logical -> PostgreSQL remains a separate bounded next workstream. Future product capabilities activate according to the trigger register in `docs/workstreams/frontend-materialization-integration.md`.
+Future product capabilities activate according to the trigger register in `docs/workstreams/frontend-materialization-integration.md`.

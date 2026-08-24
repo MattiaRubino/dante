@@ -71,7 +71,8 @@ After merge:
 
 - reread/compare `main`;
 - verify exact integration result and parentage;
-- verify push-main CI where applicable;
+- verify push-main CI where the available interface permits direct readback;
+- record readback limitations instead of inventing PASS;
 - verify branch lifecycle/autodelete only when intentionally part of closure.
 
 ## 5. Environment vocabulary
@@ -154,7 +155,7 @@ real workflow/context
 
 For `Frontend CI Gate`, that protocol is complete: real green, controlled deliberate red, mandatory failure propagation, exact restore and recovery green were directly observed. The repository owner confirmed applying the promotion to protected `main`; direct ruleset API readback is unavailable through the current connector, so the administrative setting remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
 
-The branch-local canonical ruleset definition contains:
+The canonical repository ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -183,16 +184,17 @@ historical evidence branch only
 
 feature/frontend-materialization
 CLOSED / PASS — FM-00..FM-07
-immutable evidence source for integration
+historical evidence source
 
 chore/frontend-materialization-integration
-ACTIVE / PR #28 / READY
-created from current main
-carries closed frontend history through a real merge parent
-current work = exact-head final QA + separate protected-main merge authorization
+CLOSED / integrated via PR #28
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+protected-main merge f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+branch observed absent after merge
+manual deletion performed during merge operation: NO
 ```
 
-The closed frontend materialization branch is not reused as the operational integration branch.
+The closed frontend materialization and integration branches are not reused for new product/security/backend work. New work starts from current `main` under a fresh bounded branch and gate.
 
 ## 13. Future capability activation
 
@@ -201,14 +203,17 @@ Product/infrastructure capabilities are activated by real boundary, not branch n
 ## 14. Current next sequence
 
 ```text
-PR #28 exact current head
--> hosted CI green
--> branch current with main
--> mergeable / review-thread clean
--> accepted-risk register valid
--> separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation
+-> fresh explicit branch/write gate
+
+BACKEND NEXT
+Concrete Logical -> PostgreSQL
+-> fresh bounded branch/workstream/gate
+
+PRODUCT NEXT
+first real vertical slice
+-> fresh bounded branch/workstream/gate
 ```
 
-The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied these technical gates. Any subsequent documentation-only head must independently satisfy them before merge authorization.
-
-Backend Concrete Logical -> PostgreSQL remains a separate bounded workstream; product vertical work does not inherit authorization from the integration branch.
+Frontend PR #28 final head passed its applicable hosted CI before merge. The protected-main merge has the expected parentage and zero file delta from that head. Push-main CI on the merge SHA remains **DIRECT READBACK UNAVAILABLE** through the current connector and is not inferred PASS.

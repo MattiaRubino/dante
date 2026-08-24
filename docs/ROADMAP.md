@@ -14,32 +14,18 @@ Engineering Foundation v0                    CLOSED / ACCEPTED
 Frontend Engineering Foundation              CLOSED / ACCEPTED / integrated via PR #22
 Production backend scaffold CP1..CP5          CLOSED / integrated via PR #24
 Frontend materialization FM-00..FM-07         CLOSED / PASS
+Frontend integration hardening                CLOSED / integrated via PR #28
 Frontend CI Gate calibration                  COMPLETE
 Frontend CI Gate promotion                    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 ```
 
 Architecture closure remains distinct from implementation/direct validation.
 
-## Active integration workstream
+## Frontend integration closure
 
-### Frontend materialization integration hardening — ACTIVE / FINAL MERGE GATE
+PR #28 integrated the already-closed frontend materialization into protected `main` while preserving evidence history and applying bounded integration hardening.
 
-Branch:
-
-`chore/frontend-materialization-integration`
-
-PR:
-
-`#28` — READY
-
-Purpose:
-
-- integrate the already-closed frontend materialization into current protected-main truth without rewriting its evidence history;
-- reconcile shared/current documentation semantically;
-- close bounded hardening found during final review;
-- preserve calibrated frontend CI and accepted-risk governance through protected-main integration.
-
-Materialized in the integration branch:
+Integrated scope:
 
 ```text
 Mobile src/** explicit TypeScript scope
@@ -52,31 +38,27 @@ npm/pnpm Dependabot scope
 narrow Dependency Review accepted-risk exceptions
 CURRENT documentation reconciliation
 Frontend CI Gate green/red/recovery calibration
-branch-local three-check protected-main ruleset definition
+canonical three-check protected-main ruleset definition
 ```
 
-The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for:
+Final integration evidence:
 
 ```text
-Dependency Review
-Backend Quality
-Backend PostgreSQL
-Backend CI Gate
-Frontend Quality
-Web E2E
-Mobile Bundle
-Frontend CI Gate
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
+merge commit         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+PR #28               MERGED
+merge parentage      PASS — exactly prior main + final PR head
+merged tree identity PASS — 0 file delta from PR head to merged main tree
 ```
 
-Any later documentation-only PR head must independently earn the same applicable hosted-CI/currentness/mergeability/thread-clean evidence before merge authorization.
+The final PR head directly passed Dependency Review, Backend Quality, Backend PostgreSQL, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate.
 
-## Immediate sequence
+The available connector does not expose push-triggered workflow-run lookup for the merge SHA, therefore push-main CI is recorded as **DIRECT READBACK UNAVAILABLE**, not inferred PASS.
 
-### 1. Frontend integration hardening — COMPLETE AT IMPLEMENTED SCOPE
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
 
-The integration branch has already reconciled backend + closed frontend truth, qualified version-specific Foundation wording against direct materialization, applied bounded CI/dependency hardening, and preserved the closed FM evidence history through a real merge parent.
-
-### 2. Frontend CI Gate calibration — COMPLETE
+## Frontend CI Gate calibration — COMPLETE
 
 Directly proved:
 
@@ -90,9 +72,9 @@ recovery green
 
 The deliberate-red change was bounded and reversible and did not introduce a vulnerable dependency or weaken unrelated policy.
 
-### 3. Required-check promotion — OWNER-CONFIRMED APPLIED
+## Required-check promotion — OWNER-CONFIRMED APPLIED
 
-The branch-local canonical ruleset definition contains:
+The canonical repository ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -103,21 +85,6 @@ Frontend CI Gate
 with strict branch-up-to-date policy preserved.
 
 The repository owner confirmed applying the `Frontend CI Gate` promotion in GitHub. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
-
-### 4. Final PR review / protected-main merge — CURRENT GATE
-
-Before merge:
-
-- exact current PR head has applicable hosted CI green;
-- PR #28 remains current with `main`;
-- exact changed paths reviewed;
-- accepted-risk register still valid;
-- no stale CURRENT docs;
-- no unresolved review threads;
-- PR remains mergeable;
-- expected head verified.
-
-Merge authorization remains separate from this roadmap and from documentation reconciliation.
 
 ## Backend next boundary
 
@@ -194,7 +161,7 @@ first Mobile release candidate
 -> iOS direct validation when activated
 
 post frontend integration on main
--> CodeQL default setup evaluation
+-> CodeQL default setup evaluation under a fresh explicit gate
 
 pre-PROD
 -> broader browser matrix

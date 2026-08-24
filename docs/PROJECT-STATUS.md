@@ -5,7 +5,7 @@
 - Frontend Foundation integration: PR `#22` — **MERGED / VERIFIED**
 - Backend scaffold integration: PR `#24` — **MERGED / VERIFIED**
 - Frontend materialization: `feature/frontend-materialization` — **CLOSED / PASS**
-- Current pending integration: `chore/frontend-materialization-integration` — PR `#28` **ACTIVE / READY / FINAL MERGE GATE**
+- Frontend materialization integration: PR `#28` — **MERGED / VERIFIED**
 
 ## 1. Executive state
 
@@ -19,7 +19,7 @@ ENGINEERING FOUNDATION v0             CLOSED / ACCEPTED
 FRONTEND ENGINEERING FOUNDATION       CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 PRODUCTION BACKEND SCAFFOLD           CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 FRONTEND MATERIALIZATION              CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING        ACTIVE — PR #28 / READY / FINAL MERGE GATE
+FRONTEND INTEGRATION HARDENING        CLOSED / INTEGRATED VIA PR #28
 FRONTEND CI GATE CALIBRATION          COMPLETE
 FRONTEND CI GATE PROMOTION            OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 CONCRETE LOGICAL -> POSTGRESQL         NOT STARTED
@@ -169,17 +169,22 @@ Web React / React DOM        19.2.8 / 19.2.8
 
 This qualifies version-specific implementation evidence without reopening the full frontend architecture.
 
-## 8. PR #28 integration-hardening state
+## 8. Frontend integration hardening — CLOSED / integrated via PR #28
 
-Integration branch:
+Integration record:
 
 ```text
-chore/frontend-materialization-integration
+closed frontend source       893edbbb5fd91377da71c0cc398ab9febdef06f3
+integration merge checkpoint a4a5fb6a4a65db3f69f25ca52e128f4494c1b623
+final PR head                a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior protected main         fd3bc8dd918cf6aadeff4572221af68612c3cb42
+protected-main merge         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+PR #28                       MERGED
+merge parentage              PASS — exactly prior main + final PR head
+merged tree identity         PASS — 0 file delta from final PR head to merged main tree
 ```
 
-The branch starts from current `main` and preserves closed frontend history through a real two-parent merge.
-
-Hardening materialized:
+Hardening integrated:
 
 - Mobile TypeScript explicitly includes `src/**/*.ts(x)`;
 - reusable Expo compatibility CI gate;
@@ -192,7 +197,11 @@ Hardening materialized:
 - CURRENT documentation reconciliation;
 - version-specific Foundation/materialization reconciliation.
 
-PR #28 is READY. The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any subsequent documentation-only head must independently satisfy the same exact-head gates before merge authorization.
+The final PR head directly passed Dependency Review, Backend Quality, Backend PostgreSQL, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate before merge.
+
+The available connector exposes PR-associated workflow-run lookup but not push-triggered workflow-run lookup for the merge SHA. Therefore push-main CI for `f1aacb...` is **DIRECT READBACK UNAVAILABLE**, not inferred as PASS.
+
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
 
 ## 9. Frontend CI Gate calibration — COMPLETE
 
@@ -241,7 +250,7 @@ Therefore `Frontend CI Gate` is directly calibrated.
 
 ## 10. Protected-main ruleset promotion state
 
-The branch-local canonical ruleset definition contains:
+The canonical repository ruleset definition contains:
 
 ```text
 Backend CI Gate
@@ -304,20 +313,18 @@ Do not install placeholder infrastructure merely because larger applications oft
 ## 14. Exact next actions
 
 ```text
-FRONTEND INTEGRATION
-1. require hosted CI green on the exact current PR #28 head
-2. require branch current with main
-3. require PR mergeable and review-thread clean
-4. confirm accepted-risk register remains valid
-5. obtain separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation
+-> fresh explicit gate
+-> observe real findings/contexts before any promotion decision
 
 BACKEND NEXT
 Concrete Logical -> PostgreSQL
 -> fresh bounded workstream/gate
 
-PRODUCT NEXT AFTER FOUNDATIONAL INTEGRATION
+PRODUCT NEXT
 first real vertical slice
 -> activate only capability/testing/lint boundaries actually consumed
 ```
 
-Do not reopen closed Product/Domain/Logical/Physical/Engineering/Foundation or CP1-CP5 decisions without concrete contradictory evidence.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Foundation, CP1-CP5 or frontend materialization/integration decisions without concrete contradictory evidence.
