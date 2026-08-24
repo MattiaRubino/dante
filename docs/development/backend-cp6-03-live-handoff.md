@@ -1,3 +1,7 @@
+> **LATEST LIVE RESUME — 2026-08-24 / SECOND TOMBSTONE REPAIR COMPLETE**  
+> Canonical authority now includes `docs/database/dante-postgresql-database-part-17.md`; Parts 1–17 must be consumed together. **DB-U25 is CLOSED** after repairing all five real B findings found by the first post-hardening second-audit pass: exact Recurrence selector/phase/range determinism, non-quota generated-coordinate duplication, five NULL-unsafe CHECK expressions, exact governing-Recurrence membership for materialized Occurrences, and one-way current-history lifecycle/column-scoped INSERT. Frozen counts remain **68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs**; GLOBAL DB-U OPEN remains 0.  
+> The previous second-audit pass found defects and is **not** a final PASS. The mandatory next action is a fresh **SECOND FULL TOMBSTONE AUDIT FROM ZERO over the repaired Parts 1–17**. Gate 03 remains NOT EARNED, CP6-04 remains NOT STARTED / NOT AUTHORIZED, and protected-`main` realignment remains deferred. This overlay supersedes only earlier LIVE-only current-status prose that stops at Part 16 or treats the pre-repair audit as final; historical evidence remains preserved.  
+
 > **LATEST LIVE RESUME — 2026-08-24 / IMPLEMENTATION-DETERMINISM HARDENING + DIRECT PROOF PLAN FROZEN**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-16.md`, which closes **DB-U24 — implementation-determinism hardening** and freezes the **Direct PostgreSQL Proof / Test Plan**. Parts 1–16 must be consumed together. Final object inventory, DB-U08 naming, DB-U15 indexes, DB-U21 ACLs, Migration DAG, SQLAlchemy Mapping Plan and Database Dictionary Readiness remain frozen/closed; **GLOBAL DB-U OPEN = 0**. The exact next CP6-03 action is the user-required **SECOND FULL TOMBSTONE AUDIT FROM ZERO**.  
 > Part 16 freezes the implementation-level constraint/routine/view/trigger properties that CP6-04 must not invent while coding: **120 named CHECK constraints, 68 FK physical properties, five exact current views, 14 exact integrity routines, 75 exact trigger attachments, fail-closed P0/M1 deployment behavior, and DBP-01..DBP-20 proof obligations**. Dictionary v1 was hardened in the same checkpoint so drift validation can compare those physical facts.  
@@ -591,7 +595,7 @@ BASELINE DDL WITH exact contract
 OR
 REPRESENTED BY another exact baseline structure
 OR
-NO independent root/value/role
+NO independent persistence by semantic classification
 OR
 FINAL NO BASELINE DDL + exact future trigger
 ```
