@@ -16,13 +16,15 @@ export function AccessBrandStage() {
 
       <div className="access-brand-copy">
         <h1 id="access-brand-title">
-          <span>{t(($) => $.access.stage.titleFirst)}</span>
-          <span>{t(($) => $.access.stage.titleSecond)}</span>
+          <span>{t(($) => $.common.access.stage.titleFirst)}</span>
+          <span>{t(($) => $.common.access.stage.titleSecond)}</span>
         </h1>
-        <p>{t(($) => $.access.stage.body)}</p>
+        <p>{t(($) => $.common.access.stage.body)}</p>
       </div>
 
-      <p className="access-brand-foot">{t(($) => $.access.stage.foot)}</p>
+      <p className="access-brand-foot">
+        {t(($) => $.common.access.stage.foot)}
+      </p>
 
       <img
         className="access-brand-orbits"
