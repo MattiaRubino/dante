@@ -1,3 +1,6 @@
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> Protected `main` now contains the closed frontend materialization through merged PR #28 (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). Treat frontend materialization as **CLOSED / PASS / INTEGRATED**, not active/pending. On `feature/logical-postgresql`, CP6 is **ACTIVE** and current with `main`: CP6-01 Gate 01 PASS, CP6-02 Gate 02 PASS, Checkpoint J / DB-U23 CLOSED, active Database Reference = Parts 1–8 together, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, final second tombstone not yet run, Gate 03 not earned, CP6-04 not authorized. This banner supersedes only contradictory lifecycle/status/routing statements later in the preserved body.  
+
 # DANTE Documentation Index
 
 This directory is the durable documentation authority for DANTE.
