@@ -1,3 +1,7 @@
+> **CURRENT DATABASE REFERENCE LAYOUT — 2026-08-24**  
+> The human-readable DANTE Database Architecture & Reference is now **Parts 1–9 as one canonical authority**. `dante-postgresql-database-part-9.md` contains section 38, **Final Actual PostgreSQL Object Inventory — FROZEN**, and section 39 continuation state. The inventory freezes 68 DANTE-owned tables, five bounded current views, scoped families `schedule`/`actual`, and MaterialState facets `schedule.placement`, `actual.realization`, `session.timing`, `routine.recurrence`, `event.recurrence`. The exact next CP6-03 block is **DB-U08 — final PostgreSQL object naming**; DB-U15 and DB-U21 remain open afterward. This overlay supersedes only older current-layout prose below that stops at Part 8 or says the final inventory is still next/not frozen. Historical layout/evidence sections below are deliberately retained.  
+> CP6-04 remains NOT STARTED / NOT AUTHORIZED; no business migration, SQLAlchemy business mapping or real DANTE PostgreSQL business object has been created by the Part 9 freeze.  
+
 # DANTE Database System of Record
 
 - **Status:** CURRENT / DATABASE DOCUMENTATION AUTHORITY
