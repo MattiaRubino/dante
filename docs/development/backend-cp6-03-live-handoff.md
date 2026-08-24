@@ -9,7 +9,7 @@
 
 > **LATEST LIVE RESUME — 2026-08-24 / DATABASE DICTIONARY READY**  
 > Canonical authority now includes `docs/database/dante-postgresql-database-part-15.md`, section 50 **Database Dictionary Readiness — FROZEN**, and the readiness foundation under `docs/database/dictionary/`. Parts 1–15 must be consumed together. Final object inventory, DB-U08 naming, DB-U15 indexes, DB-U21 ACLs, Migration DAG and SQLAlchemy Mapping Plan remain frozen/closed; **GLOBAL DB-U OPEN = 0**. The exact current next block is **DIRECT POSTGRESQL PROOF / TEST PLAN**.  
-> Dictionary target is 87 standalone DANTE-owned entries (`68 table + 5 view + 14 routine`), with 75 trigger attachments and 95 physical indexes embedded in table entries. Object-specific entries remain intentionally absent until CP6-04 materializes their real objects. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
+> Dictionary target is 87 standalone DANTE-owned entries (`68 table + 5 view + 14 routine`), with 75 trigger attachments and 95 physical indexes embedded in owning table entries. Object-specific entries remain intentionally absent until CP6-04 materializes the corresponding real objects. The second full tombstone audit has NOT yet run, Gate 03 is NOT earned, and CP6-04 remains NOT STARTED / NOT AUTHORIZED.  
 > Protected-`main` realignment remains intentionally deferred to a later separate gate. This overlay supersedes earlier LIVE-only current-status/resume statements below that say Parts 1–14 are complete or that Database Dictionary readiness is pending/next. Historical audit evidence remains preserved.  
 
 > **LATEST LIVE RESUME — 2026-08-24 / SQLALCHEMY MAPPING PLAN FROZEN**  
@@ -167,7 +167,7 @@ Per coherent block:
 5. show the exact write gate to the user;
 6. obtain user approval;
 7. immediately before mutation re-check live branch HEAD;
-8. if HEAD mismatches expected PRE-SCOPE, STOP and re-gate;
+8. if HEAD differs, STOP and re-gate;
 9. construct candidate off-branch where possible;
 10. compare PRE-SCOPE → candidate exactly;
 11. require only authorized CREATE/UPDATE/DELETE paths;
@@ -595,7 +595,7 @@ BASELINE DDL WITH exact contract
 OR
 REPRESENTED BY another exact baseline structure
 OR
-NO independent persistence by semantic classification
+NO independent root/value/role
 OR
 FINAL NO BASELINE DDL + exact future trigger
 ```
