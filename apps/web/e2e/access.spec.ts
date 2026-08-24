@@ -13,13 +13,33 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(hasOverflow).toBe(false);
 }
 
+async function expectDesktopBrandStageOpen(page: Page) {
+  const stageBox = await page.locator('.access-brand-stage').boundingBox();
+  const mainBox = await page.locator('.access-main').boundingBox();
+  const panelBox = await page.locator('.access-panel').boundingBox();
+
+  expect(stageBox).not.toBeNull();
+  expect(mainBox).not.toBeNull();
+  expect(panelBox).not.toBeNull();
+
+  if (!stageBox || !mainBox || !panelBox) {
+    throw new Error('Desktop Access geometry could not be measured.');
+  }
+
+  expect(stageBox.x).toBeLessThanOrEqual(1);
+  expect(stageBox.height).toBeGreaterThanOrEqual(mainBox.height - 1);
+  expect(panelBox.x).toBeGreaterThan(page.viewportSize()!.width / 2);
+}
+
 test.describe('DANTE Access', () => {
   test('renders the approved desktop A3.4 sign-in shell', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
     await expect(page.locator('.access-brand-lockup')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Lingua: Italiano' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Lingua: Italiano' }),
+    ).toBeVisible();
     await expect(
       page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
@@ -42,6 +62,7 @@ test.describe('DANTE Access', () => {
       'border-radius',
       '26px',
     );
+    await expectDesktopBrandStageOpen(page);
     await expectNoHorizontalOverflow(page);
   });
 
