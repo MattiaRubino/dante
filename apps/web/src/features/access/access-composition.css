@@ -151,6 +151,11 @@
     font-size: clamp(54px, 5.35vw, 82px);
   }
 
+  html[lang='it'] .access-brand-stage h2 {
+    font-size: clamp(50px, 4.75vw, 73px);
+    line-height: 0.96;
+  }
+
   .access-brand-body {
     max-width: 560px;
     margin-top: 28px;
