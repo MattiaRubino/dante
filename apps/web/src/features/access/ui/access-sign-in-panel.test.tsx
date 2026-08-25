@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
 import { AccessSignInPanel } from './access-sign-in-panel';
@@ -12,9 +12,27 @@ afterEach(() => {
   cleanup();
 });
 
+function renderPanel() {
+  const handlers = {
+    onCreateAccount: vi.fn(),
+    onForgotPassword: vi.fn(),
+    onCredentialSubmit: vi.fn(),
+    onProvider: vi.fn(),
+  };
+
+  render(
+    <AccessSignInPanel
+      condition={{ kind: 'idle' }}
+      {...handlers}
+    />,
+  );
+
+  return handlers;
+}
+
 describe('AccessSignInPanel', () => {
   it('exposes localized sign-in controls and a working password visibility control', () => {
-    render(<AccessSignInPanel />);
+    renderPanel();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Accedi a DANTE' })
@@ -40,23 +58,45 @@ describe('AccessSignInPanel', () => {
     expect(passwordInput.autocomplete).toBe('current-password');
     expect(passwordInput.type).toBe('password');
 
-    const showPasswordButton = screen.getByRole('button', {
-      name: 'Mostra password',
-    });
-    fireEvent.click(showPasswordButton);
+    fireEvent.change(passwordInput, { target: { value: 'secret-value' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra password' }));
 
     expect(passwordInput.type).toBe('text');
+    expect(passwordInput.value).toBe('secret-value');
     expect(
       screen
         .getByRole('button', { name: 'Nascondi password' })
         .getAttribute('aria-pressed'),
     ).toBe('true');
+  });
 
-    expect(
-      screen.getByRole('button', { name: 'Password dimenticata?' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('button', { name: 'Crea un account' }),
-    ).toBeTruthy();
+  it('wires safe local actions and validates before requesting backend sign-in', () => {
+    const handlers = renderPanel();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Password dimenticata?' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crea un account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua con Google' }));
+
+    expect(handlers.onForgotPassword).toHaveBeenCalledTimes(1);
+    expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
+    expect(handlers.onProvider).toHaveBeenCalledWith('google');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
+    expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText('Inserisci un indirizzo email valido.')).toBeTruthy();
+    expect(screen.getByText('Inserisci la password.')).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'person@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'correct horse battery staple' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
+
+    expect(handlers.onCredentialSubmit).toHaveBeenCalledWith(
+      'person@example.com',
+      'correct horse battery staple',
+    );
   });
 });
