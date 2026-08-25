@@ -83,6 +83,10 @@ _M2_EXPLICIT_INDEXES = {
         "ix_material_state_address_scoped_owner_ref_facet_code",
     ),
 }
+_M2_DECLARED_CONSTRAINT_KINDS = {"p", "c", "f", "u"}
+_M2_DECLARED_CONSTRAINT_COUNT = 24
+_M2_NOT_NULL_CONSTRAINT_COUNT = 14
+
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -224,7 +228,20 @@ def test_m2_materializes_exact_cumulative_topology(
     assert triggers == set()
 
     m2_constraints = [row for row in constraints if row[0] in _M2_TABLES]
-    assert len(m2_constraints) == 24
+    m2_declared_constraints = [
+        row for row in m2_constraints if row[1] in _M2_DECLARED_CONSTRAINT_KINDS
+    ]
+    m2_not_null_constraints = [row for row in m2_constraints if row[1] == "n"]
+
+    assert len(m2_declared_constraints) == _M2_DECLARED_CONSTRAINT_COUNT
+    assert len(m2_not_null_constraints) == _M2_NOT_NULL_CONSTRAINT_COUNT
+    assert len(m2_constraints) == (
+        _M2_DECLARED_CONSTRAINT_COUNT + _M2_NOT_NULL_CONSTRAINT_COUNT
+    )
+    assert {kind for _, kind, *_ in m2_constraints} == {
+        *_M2_DECLARED_CONSTRAINT_KINDS,
+        "n",
+    }
     assert all(
         not deferrable and not deferred and validated and enforced
         for _, _, _, deferrable, deferred, validated, enforced in m2_constraints

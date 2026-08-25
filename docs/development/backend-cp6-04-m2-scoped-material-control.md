@@ -1,10 +1,12 @@
 # Backend CP6-04 — M2 Scoped / MaterialState Control Materialization
 
-- **Status:** IMPLEMENTATION CANDIDATE / DIRECT POSTGRESQL EXECUTION PENDING
+- **Status:** REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
 - **Authorized PRE-SCOPE:** `daf8112f619281989dd8a3acb79ed1865d7d138b`
+- **Implementation candidate HEAD:** `69e6f75d6b883c07833e7a78881d741f15503dbd`
+- **Repair authorized PRE-SCOPE:** `69e6f75d6b883c07833e7a78881d741f15503dbd`
 - **Checkpoint:** CP6-04 — Whole DANTE Database Materialization
 - **Stage:** CP6-M02 — `cp6_scoped_material_control`
 - **Alembic revision:** `20260825_02`
@@ -72,7 +74,7 @@ subject_native_ref   uuid NOT NULL
 ```
 
 `subject_native_ref` references `dante.native_address(native_ref)`. The later
-NativeRef eligibility trigger will restrict the accepted concrete family to the
+NativeRef eligibility trigger restricts the accepted concrete family to the
 frozen `activity | event | occurrence` set; M2 does not anticipate that trigger.
 
 ### actual
@@ -146,7 +148,7 @@ actual.realization
 The two shared current tables remain direct-runtime deny surfaces. M5 later
 creates the five bounded current views and M7 activates their exact ACLs.
 
-## 3. Exact M2 declarative constraints
+## 3. Exact declarative constraint contract
 
 M2 adds eight CHECK constraints:
 
@@ -191,6 +193,32 @@ The two exact UNIQUE constraints are:
 uq_native_current_material_state_material_state_ref
 uq_scoped_current_material_state_material_state_ref
 ```
+
+The six M2 primary keys, eight CHECKs, eight FKs and two UNIQUE constraints are
+the exact 24 CP6 declarative constraints owned by the frozen M2 contract.
+
+### PostgreSQL 18 NOT NULL catalog representation
+
+The first direct PostgreSQL 18.6 run exposed an important catalog fact for proof
+code: PostgreSQL 18 represents table `NOT NULL` constraints as `pg_constraint`
+rows with `contype = 'n'`.
+
+For the six M2 tables, the physical catalog therefore contains:
+
+```text
+CP6 declarative p/c/f/u constraints   24
+PostgreSQL 18 NOT NULL constraints    14
+----------------------------------------
+pg_constraint M2 rows                 38
+```
+
+The 14 `n` rows do not change the CP6 frozen count of 24 named PK/CHECK/FK/UQ
+constraints for M2. They are PostgreSQL 18's physical representation of the
+already-declared column nullability contract.
+
+The repaired proof therefore checks the two sets separately and also verifies
+the complete 38-row physical M2 set is non-deferrable, non-deferred, validated
+and enforced.
 
 ## 4. Exact M2 index delta
 
@@ -292,7 +320,7 @@ native_current_material_state.json
 scoped_current_material_state.json
 ```
 
-`scope.json` becomes:
+`scope.json` records:
 
 ```text
 status                   materializing
@@ -311,14 +339,14 @@ No M3+ object-specific Dictionary entry is created.
 
 ## 8. Stage-proof maintenance
 
-The M1 acceptance tests are converted from “repository head equals M1” assumptions
-to explicit migration-to-`20260825_01` stage tests.
-
-This preserves M1 as a permanent historical materialization proof while allowing
-the repository head and Dictionary to advance.
+The M1 acceptance tests use explicit migration-to-`20260825_01` stage boundaries
+rather than assuming the repository head remains M1.
 
 M2 tests similarly target `20260825_02` explicitly so future M3+ growth does not
 erase the M2 database boundary.
+
+The PostgreSQL 18 `NOT NULL` catalog finding is handled in proof code only. No
+M2 migration, mapping or Dictionary repair is warranted by that finding.
 
 ## 9. Direct PostgreSQL acceptance contract
 
@@ -343,7 +371,12 @@ M2 exact cumulative topology:
 0 user triggers
 
 all DANTE tables owned by dante_owner
-all M2 constraints non-deferrable / valid / enforced
+
+M2 physical pg_constraint:
+24 p/c/f/u contract constraints
+14 PostgreSQL-18 NOT NULL ('n') constraints
+38 physical rows total
+all non-deferrable / non-deferred / valid / enforced
 
 UUIDv7 rejection on Schedule / Actual / MaterialState
 scoped-family vocabulary enforced
@@ -363,9 +396,86 @@ Dictionary ↔ PostgreSQL column reconciliation
 M2 Dictionary FK/CHECK/stage/revision reconciliation
 ```
 
-## 10. Execution honesty
+## 10. First real PostgreSQL 18.6 execution
 
-At candidate-write time:
+User-executed local command:
+
+```text
+uv run pytest -m postgres -vv
+```
+
+Observed result:
+
+```text
+collected   71
+deselected  37
+selected    34
+
+PASS        33
+FAIL         1
+
+elapsed     25.56s
+```
+
+The only failure was:
+
+```text
+test_cp6_m2.py::test_m2_materializes_exact_cumulative_topology
+```
+
+All of the following passed in that same run:
+
+```text
+M1 historical stage proof
+M2 live constraint/FK behavior
+M2 runtime deny posture
+M2 upgrade/downgrade boundary
+M2 SQLAlchemy mapping
+M2 Dictionary reconciliation
+fresh-head migration
+M2 base round-trip
+Alembic drift check
+migrator identity enforcement
+P0 security/privilege lane
+runtime lane
+transaction lane
+```
+
+The failed assertion expected 24 rows when selecting every `pg_constraint` row
+belonging to an M2 table. The live PostgreSQL 18.6 catalog returned 38 because
+it also exposed 14 `NOT NULL` constraints as `contype = 'n'`.
+
+This is a proof-code defect, not evidence of unexpected M2 business DDL.
+
+## 11. Repair decision
+
+Repair scope:
+
+```text
+apps/backend/tests/integration/database/test_cp6_m2.py
+docs/development/backend-cp6-04-m2-scoped-material-control.md
+```
+
+No migration, mapping, Dictionary or ACL file is changed.
+
+The repaired topology assertion now requires:
+
+```text
+M2 p/c/f/u rows    24
+M2 n rows          14
+M2 total rows      38
+
+constraint kinds exactly:
+p c f u n
+
+all 38:
+NOT DEFERRABLE
+NOT DEFERRED
+VALID
+ENFORCED
+```
+
+Status after repair write:
 
 ```text
 P0
@@ -374,25 +484,32 @@ CLOSED / DIRECT POSTGRESQL PASS
 M1
 CLOSED / DIRECT POSTGRESQL PASS
 
-M2 CODE / MIGRATION / MAPPINGS / DICTIONARY / TESTS
-WRITTEN AS IMPLEMENTATION CANDIDATE
+M2 DDL / MAPPINGS / DICTIONARY
+UNCHANGED
 
-STATIC PYTHON / JSON CONSTRUCTION REVIEW
-COMPLETE
+FIRST REAL POSTGRESQL 18.6 M2 RUN
+33 PASS / 1 FAIL
 
-REAL POSTGRESQL 18.6 M2 EXECUTION
-NOT YET RUN
+ROOT CAUSE
+POSTGRESQL 18 NOT NULL CATALOG REPRESENTATION IN PROOF CODE
+
+M2 TEST REPAIR
+WRITTEN
+
+M2 DIRECT POSTGRESQL RERUN
+PENDING
 
 M2 DIRECT PASS
 NOT YET EARNED
 
 M3
-NOT STARTED
+NOT STARTED / BLOCKED
 ```
 
-No P0/M1 result is reused as M2 proof.
+No first-run result is upgraded into a PASS. M2 closes only after a fresh direct
+rerun passes the complete selected PostgreSQL lane.
 
-## 11. Explicit exclusions
+## 12. Explicit exclusions
 
 M2 does not create or activate:
 
@@ -415,6 +532,6 @@ additional persistent databases
 protected-main merge/rebase/realignment
 ```
 
-The next mandatory operation is fresh direct execution against the disposable
+The next mandatory operation is a fresh direct rerun against the disposable
 PostgreSQL 18.6 acceptance boundary. M3 remains blocked until M2 earns a direct
 PASS.
