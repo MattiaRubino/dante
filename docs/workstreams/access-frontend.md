@@ -30,7 +30,7 @@ Completed foundation work includes:
 - Access UI behind `features/access/index.ts` and the feature-local `ui/` boundary;
 - routes consuming only the feature public API;
 - design-token, architecture and generated-output gates;
-- production provider marks while provider execution remains deliberately inactive;
+- production provider marks;
 - Testing Library component coverage;
 - Playwright production-preview coverage;
 - axe WCAG A/AA automation;
@@ -40,24 +40,84 @@ Completed foundation work includes:
 
 ### AF-01D — shell completion / professional polish — PASS
 
-AF-01D is accepted as the completed pre-auth Web shell after fresh local QA and visual review on 2026-08-25.
+AF-01D was accepted after fresh local QA and visual review on 2026-08-25.
 
 Accepted behavior includes:
 
 - production Italian hero copy `Comprendi la vita. / Dai forma al prossimo passo.`;
 - English hero copy `Understand life. / Shape what comes next.`;
-- locale-aware desktop headline sizing so Italian and English preserve a comparable visual hierarchy;
-- `document.documentElement.lang` following the active supported locale;
-- user-visible input/visibility-control strings owned by `@dante/i18n` rather than hardcoded in components;
-- password visibility as a real local UI behavior that preserves the entered value;
-- locale popover focus/Escape/keyboard behavior;
+- locale-aware desktop headline sizing;
+- `document.documentElement.lang` following the active locale;
+- localized field/visibility strings;
+- real local password show/hide behavior;
+- hardened locale popover keyboard/focus behavior;
 - browser locale fallback plus persisted IT/EN preference;
-- unit/E2E coverage for localization, language persistence, document language, password visibility and desktop hero geometry;
-- desktop/narrow/phone layout checks, horizontal-overflow guards and axe WCAG A/AA automation.
+- unit/E2E coverage and desktop/narrow/phone overflow/accessibility gates.
 
-The accepted desktop production composition keeps the A3.4 product direction while incorporating approved production adjustments: full warm canvas, open left brand stage, large muted Living Orbits, locked DANTE topbar, compact locale control and a separate Access card.
+The accepted production composition preserves the A3.4 direction: full warm canvas, open left brand stage, muted Living Orbits, locked DANTE topbar, compact locale control and separate Access card.
 
-AF-01D does **not** invent a credential submit result, fake provider success, fake session, recovery proof or account mutation.
+### AF-02A — complete pre-backend frontend state graph — IMPLEMENTED / QA PENDING
+
+The user explicitly chose to continue frontend work while backend Auth is still being built, but without a fake/mock authentication service.
+
+AF-02A therefore advances every safe frontend-owned part of Access while preserving backend authority.
+
+Implemented remotely:
+
+- feature-local `model/access-flow.ts` with the approved canonical Access states;
+- explicit orthogonal transport conditions: idle, backend-required, offline, server-unavailable and rate-limited;
+- local transitions for sign-in navigation, signup email/password, recovery entry and setup choices;
+- browser `online` / `offline` event integration;
+- production IT/EN copy for the complete approved Access screen inventory;
+- signup email screen;
+- signup password screen with the DANTE V1 12-character minimum, paste/password-manager-safe behavior and no composition rule;
+- forgot-password screen with neutral account-existence copy;
+- verify-email, recovery-sent, reset-password and reset-complete surfaces;
+- provider pending/error and account-link surfaces;
+- reauthentication surface;
+- setup name, locale/timezone and first-run choice surfaces;
+- first-action/import/demo/Home-handoff surfaces;
+- local validation and password visibility behavior;
+- E2E coverage for signup/recovery frontend navigation and backend-boundary stopping;
+- reducer tests that specifically prove local actions do **not** fabricate backend success.
+
+Critical rule:
+
+```text
+frontend-only transition
+→ may advance locally
+
+backend-authoritative transition
+→ stays on the current safe state
+→ condition = BACKEND_REQUIRED
+→ never fabricates VERIFY_EMAIL / AUTHENTICATED_RETURN / RECOVERY_SENT / LINK success
+```
+
+Examples:
+
+```text
+CREATE_ACCOUNT
+SIGN_IN → SIGN_UP_EMAIL                         local / real
+
+valid signup email
+SIGN_UP_EMAIL → SIGN_UP_PASSWORD                local / real
+
+submit signup password
+SIGN_UP_PASSWORD → BACKEND_REQUIRED(sign-up)    real boundary
+NOT → fake VERIFY_EMAIL
+
+forgot password + valid email
+FORGOT_PASSWORD → BACKEND_REQUIRED(recovery)    real boundary
+NOT → fake RECOVERY_SENT
+
+Google/Apple click
+SIGN_IN → BACKEND_REQUIRED(provider-*)          real boundary
+NOT → fake PROVIDER_PENDING
+```
+
+Server/provider events are already represented in the reducer so the later real integration can activate the downstream states without redesigning the UI state model.
+
+AF-02A is **not accepted yet** until local formatting/lint/type/architecture/test/build/E2E QA and visual review run against the remote implementation.
 
 ## Invariants
 
@@ -73,57 +133,71 @@ client integrity != person identity
 
 Google/Apple Access authenticates a DANTE account only. It does not grant Gmail, Calendar, iCloud or other provider-data permissions.
 
-## Deliberately not materialized yet
-
-- backend AuthN/AuthZ integration;
-- password/session/token physical design;
-- Google client ID or Apple Services ID;
-- OAuth/OIDC callback handling;
-- account-linking backend mutation;
-- recovery backend proofs;
-- OpenAPI/Orval API client for Access;
-- TanStack Query remote-auth integration;
-- TanStack Form/Zod real Access forms/state graph;
-- Home routing after successful authentication;
-- native Mobile Access implementation;
-- final Terms/Privacy destinations/content (do not create fake or broken legal routes merely to make the shell look complete).
-
 ## Backend-readiness gate — 2026-08-25
 
-The mandatory post-AF-01D backend inspection was performed against `feature/logical-postgresql`.
+The post-AF-01D backend inspection was performed against `feature/logical-postgresql`.
 
-Current backend evidence shows a FastAPI/bootstrap/PostgreSQL persistence foundation, but no implemented Access authentication surface yet. The application factory currently exposes process/database health endpoints; the backend tree does not yet contain the required Auth/session/OAuth/recovery/account-linking route/domain boundary needed for real frontend Access integration.
+Observed backend state:
+
+- FastAPI/bootstrap exists;
+- PostgreSQL runtime/config/provisioning and migration foundation exists;
+- persistence/database testing is active;
+- current app factory exposes `/health/live` and `/health/ready`;
+- no implemented Access Auth/session/OAuth/recovery/account-link route/domain surface yet;
+- no stable Access OpenAPI contract yet.
 
 Verdict:
 
 ```text
-AF-01D frontend shell                    PASS
-backend PostgreSQL/persistence foundation ADVANCED / ACTIVE
-real Access Auth API/OpenAPI              NOT READY
-frontend real-auth integration            BLOCKED BY BACKEND AUTH BOUNDARY
+frontend shell / visual authority            PASS
+AF-02A pre-backend frontend flow             IMPLEMENTED / QA PENDING
+backend PostgreSQL foundation                ADVANCED / ACTIVE
+real Access Auth API/OpenAPI                  NOT READY
+AF-03 real integration                       BLOCKED BY BACKEND AUTH BOUNDARY
 ```
 
-Therefore **do not start AF-03 real integration yet**.
+## Deliberately not materialized yet
 
-## Mandatory stop before AF-02/mock
+- backend AuthN/AuthZ implementation;
+- password/session/token physical design;
+- Google client ID / Apple Services ID;
+- OAuth/OIDC callback execution;
+- real provider transaction start;
+- backend account-linking mutation;
+- verification/recovery proof validation;
+- OpenAPI/Orval generated Access client;
+- TanStack Query remote-auth integration;
+- backend-authoritative session bootstrap;
+- canonical authenticated Home routing;
+- native Mobile Access implementation;
+- final Terms/Privacy destinations/content.
 
-Do **not** automatically create the temporary mock Access adapter now.
+Terms/Privacy are deliberately rendered as non-interactive legal placeholders until real destinations/content exist; do not create fake/broken routes.
 
-The user is continuing backend work in parallel. Keep `feature/access-frontend` parked at the accepted AF-01D checkpoint until the next explicit frontend continuation. At that point re-read backend repository truth first:
+## Form-library boundary
+
+AF-02A uses small controlled React forms and pure local validation only for frontend-owned preflight behavior. Password/OTP/recovery/provider secrets are not moved into global flow state or persisted.
+
+Do not prematurely lock server DTO/error semantics into a client schema before the real Auth OpenAPI exists. At the real integration boundary, evaluate/adopt TanStack Form + Zod against the actual DTO/error contract rather than building a second fake API model now.
+
+## Password/security contract
 
 ```text
-Backend Auth still not ready
-→ decide whether a thin deterministic temporary Access adapter is now useful
-
-Backend Auth ready enough
-→ skip the mock and design the generated/typed real API boundary
+minimum                    12 characters
+support                    >=64 characters
+mandatory composition      none
+paste/password manager     allowed
+show/hide                   allowed
+common/breached blocklist  required server-side
 ```
 
-No mock, API contract or provider behavior should be invented merely to keep frontend work moving.
+Never log/persist raw password, OTP, recovery proof, auth code, PKCE verifier, access/refresh/session secret or provider token/assertion.
+
+Production Access must ultimately cover credential stuffing/brute force, enumeration, recovery abuse, provider transaction attacks, replay, account-link takeover and session hijack. Backend remains authoritative for session state.
 
 ## QA gate
 
-The normal frontend release-quality gate remains:
+Normal frontend release-quality gate:
 
 ```bash
 pnpm format:check
@@ -136,6 +210,35 @@ pnpm --filter @dante/web build
 pnpm --filter @dante/web test:e2e
 git diff --check
 ```
+
+AF-02A additionally requires manual/browser review of at least:
+
+- SignIn desktop authority remains visually unchanged;
+- create-account → email → password;
+- backend-required notice after signup submit;
+- forgot-password frontend path;
+- IT/EN on non-SignIn screens;
+- 800px narrow composition;
+- 390px phone composition;
+- no horizontal overflow;
+- keyboard focus and axe on the reachable entry surfaces.
+
+## Next integration boundary
+
+Continue AF-02 frontend-owned polish only where it does not invent backend semantics.
+
+When backend Auth becomes ready:
+
+```text
+FastAPI Auth + stable OpenAPI
+→ generated typed API boundary
+→ real provider/session/recovery transactions
+→ remote-state/query integration where justified
+→ real form/schema binding
+→ full-stack E2E
+```
+
+Do not create a fake success adapter merely to make downstream states reachable. Server-owned events already exist in the reducer for the real integration.
 
 ## Merge discipline
 
