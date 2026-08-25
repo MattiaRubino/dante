@@ -27,16 +27,17 @@
       "CP6-M01",
       "CP6-M02",
       "CP6-M03",
-      "CP6-M04"
+      "CP6-M04",
+      "CP6-M05"
     ],
     "standalone_entries": {
       "tables": 63,
-      "views": 0,
-      "routines": 0,
-      "total": 63
+      "views": 5,
+      "routines": 13,
+      "total": 81
     },
     "embedded_objects": {
-      "triggers": 0,
+      "triggers": 66,
       "physical_indexes": 87
     },
     "constraints": {

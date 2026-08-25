@@ -178,7 +178,7 @@ class RoutineRecurrenceCalendarStateRow(Base):
             name='zone_basis',
         ),
         CheckConstraint(
-            "((pattern_code='anchor_step' AND step_unit_code IN ('day','week','month','year')) OR (pattern_code<>'anchor_step' AND step_unit_code IS NULL))",
+            "((pattern_code='anchor_step' AND step_unit_code IS NOT NULL AND step_unit_code IN ('day','week','month','year')) OR (pattern_code<>'anchor_step' AND step_unit_code IS NULL))",
             name='step_unit',
         ),
         ForeignKeyConstraint(
@@ -326,7 +326,7 @@ class RoutineRecurrenceElapsedStateRow(Base):
     __tablename__ = "routine_recurrence_elapsed_state"
     __table_args__ = (
         CheckConstraint(
-            "elapsed_seconds NOT IN ('NaN'::numeric,'Infinity'::numeric,'-Infinity'::numeric) AND elapsed_seconds > 0",
+            "elapsed_seconds NOT IN ('NaN'::numeric,'Infinity'::numeric,'-Infinity'::numeric) AND elapsed_seconds > 0 AND elapsed_seconds = trunc(elapsed_seconds, 6)",
             name='elapsed_positive',
         ),
         CheckConstraint(
@@ -379,7 +379,7 @@ class RoutineRecurrenceQuotaStateRow(Base):
             name='zone_basis',
         ),
         CheckConstraint(
-            "((period_unit_code='week' AND week_start BETWEEN 1 AND 7) OR (period_unit_code<>'week' AND week_start IS NULL))",
+            "((period_unit_code='week' AND week_start IS NOT NULL AND week_start BETWEEN 1 AND 7) OR (period_unit_code<>'week' AND week_start IS NULL))",
             name='week_start',
         ),
         ForeignKeyConstraint(
@@ -608,7 +608,7 @@ class EventRecurrenceCalendarStateRow(Base):
             name='zone_basis',
         ),
         CheckConstraint(
-            "((pattern_code='anchor_step' AND step_unit_code IN ('day','week','month','year')) OR (pattern_code<>'anchor_step' AND step_unit_code IS NULL))",
+            "((pattern_code='anchor_step' AND step_unit_code IS NOT NULL AND step_unit_code IN ('day','week','month','year')) OR (pattern_code<>'anchor_step' AND step_unit_code IS NULL))",
             name='step_unit',
         ),
         ForeignKeyConstraint(
@@ -756,7 +756,7 @@ class EventRecurrenceElapsedStateRow(Base):
     __tablename__ = "event_recurrence_elapsed_state"
     __table_args__ = (
         CheckConstraint(
-            "elapsed_seconds NOT IN ('NaN'::numeric,'Infinity'::numeric,'-Infinity'::numeric) AND elapsed_seconds > 0",
+            "elapsed_seconds NOT IN ('NaN'::numeric,'Infinity'::numeric,'-Infinity'::numeric) AND elapsed_seconds > 0 AND elapsed_seconds = trunc(elapsed_seconds, 6)",
             name='elapsed_positive',
         ),
         CheckConstraint(
@@ -809,7 +809,7 @@ class EventRecurrenceQuotaStateRow(Base):
             name='zone_basis',
         ),
         CheckConstraint(
-            "((period_unit_code='week' AND week_start BETWEEN 1 AND 7) OR (period_unit_code<>'week' AND week_start IS NULL))",
+            "((period_unit_code='week' AND week_start IS NOT NULL AND week_start BETWEEN 1 AND 7) OR (period_unit_code<>'week' AND week_start IS NULL))",
             name='week_start',
         ),
         ForeignKeyConstraint(

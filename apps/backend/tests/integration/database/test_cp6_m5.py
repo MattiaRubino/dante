@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 from uuid import uuid7
 
@@ -41,6 +43,8 @@ _VIEWS = {
     "routine_current_recurrence",
     "event_current_recurrence",
 }
+_REPO_ROOT = Path(__file__).resolve().parents[5]
+_DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
 
 def _admin_connection(database: Any) -> psycopg.Connection[Any]:
@@ -300,3 +304,93 @@ def test_m5_downgrade_returns_to_m4_surface(
     assert views == routines == triggers == []
     assert end_def is not None
     assert "end_precision_code IS NOT NULL" not in str(end_def[0])
+
+
+def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
+    table_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
+    }
+    view_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "views").glob("*.json")
+    }
+    routine_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "routines").glob("*.json")
+    }
+    scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
+
+    assert len(table_entries) == 63
+    assert set(view_entries) == _VIEWS
+    assert set(routine_entries) == _ROUTINES
+    assert scope["current_materialization"] == {
+        "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05"],
+        "standalone_entries": {"tables": 63, "views": 5, "routines": 13, "total": 81},
+        "embedded_objects": {"triggers": 66, "physical_indexes": 87},
+        "constraints": {"foreign_keys": 61, "check_constraints": 109},
+    }
+
+    trigger_entries = [
+        trigger
+        for entry in table_entries.values()
+        for trigger in entry["structure"]["triggers"]
+    ]
+    assert len(trigger_entries) == 66
+    assert len({trigger["name"] for trigger in trigger_entries}) == 66
+    assert sum(not trigger["constraint_trigger"] for trigger in trigger_entries) == 15
+    assert sum(trigger["constraint_trigger"] for trigger in trigger_entries) == 51
+    assert all(trigger["enabled_mode"] == "ORIGIN" for trigger in trigger_entries)
+    assert all(
+        (not trigger["constraint_trigger"])
+        or (trigger["deferrable"] and trigger["initially_deferred"])
+        for trigger in trigger_entries
+    )
+
+    for name, entry in view_entries.items():
+        assert entry["object"] == {
+            "key": f"view:dante.{name}",
+            "type": "view",
+            "schema": "dante",
+            "name": name,
+            "ownership_class": "dante_owned",
+        }
+        assert entry["implementation"]["introducing_stage"] == "CP6-M05"
+        assert entry["implementation"]["alembic_revision"] == _M5_REVISION
+        assert entry["implementation"]["sqlalchemy"]["mode"] == "core_view"
+        assert entry["structure"]["view"]["check_option"] == "LOCAL"
+        assert entry["structure"]["view"]["automatically_updatable"] is True
+
+    for name, entry in routine_entries.items():
+        routine = entry["structure"]["routine"]
+        assert entry["object"]["name"] == name
+        assert entry["implementation"]["introducing_stage"] == "CP6-M05"
+        assert entry["implementation"]["alembic_revision"] == _M5_REVISION
+        assert routine == {
+            "routine_kind": "function",
+            "language": "plpgsql",
+            "argument_types": [],
+            "return_type": "trigger",
+            "security": "INVOKER",
+            "volatility": "VOLATILE",
+            "parallel_safety": "UNSAFE",
+            "leakproof": False,
+            "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+            "direct_runtime_execute": False,
+        }
+
+    repaired = {
+        ("session_timing_absolute", "ck_session_timing_absolute_end_precision"): "end_precision_code IS NOT NULL",
+        ("routine_recurrence_calendar_state", "ck_routine_recurrence_calendar_state_step_unit"): "step_unit_code IS NOT NULL",
+        ("event_recurrence_calendar_state", "ck_event_recurrence_calendar_state_step_unit"): "step_unit_code IS NOT NULL",
+        ("routine_recurrence_quota_state", "ck_routine_recurrence_quota_state_week_start"): "week_start IS NOT NULL",
+        ("event_recurrence_quota_state", "ck_event_recurrence_quota_state_week_start"): "week_start IS NOT NULL",
+        ("routine_recurrence_elapsed_state", "ck_routine_recurrence_elapsed_state_elapsed_positive"): "trunc(elapsed_seconds, 6)",
+        ("event_recurrence_elapsed_state", "ck_event_recurrence_elapsed_state_elapsed_positive"): "trunc(elapsed_seconds, 6)",
+    }
+    for (table, constraint), fragment in repaired.items():
+        expressions = {
+            check["name"]: check["expression_contract"]
+            for check in table_entries[table]["structure"]["check_constraints"]
+        }
+        assert fragment in expressions[constraint]
