@@ -11,6 +11,7 @@ import { AccessFlowPanel } from './access-flow-panel';
 import { AccessLocaleSwitcher } from './access-locale-switcher';
 import '../access.css';
 import '../access-composition.css';
+import '../access-flow.css';
 
 export function AccessPage() {
   const [flow, dispatch] = useReducer(accessFlowReducer, initialAccessFlowState);
