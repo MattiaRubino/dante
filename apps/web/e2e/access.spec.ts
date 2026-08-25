@@ -333,7 +333,9 @@ test.describe('DANTE Access', () => {
   });
 
   for (const viewport of releaseViewports) {
-    test(`keeps release geometry stable at ${viewport.name}`, async ({ page }) => {
+    test(`keeps release geometry stable at ${viewport.name}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({
         width: viewport.width,
         height: viewport.height,
@@ -389,16 +391,24 @@ test.describe('DANTE Access', () => {
     const transitionDurations = await Promise.all([
       page
         .getByRole('button', { name: 'Continua con Google' })
-        .evaluate((element) => window.getComputedStyle(element).transitionDuration),
+        .evaluate(
+          (element) => window.getComputedStyle(element).transitionDuration,
+        ),
       page
         .getByRole('button', { name: 'Accedi', exact: true })
-        .evaluate((element) => window.getComputedStyle(element).transitionDuration),
+        .evaluate(
+          (element) => window.getComputedStyle(element).transitionDuration,
+        ),
       page
         .getByLabel('Email')
-        .evaluate((element) => window.getComputedStyle(element).transitionDuration),
+        .evaluate(
+          (element) => window.getComputedStyle(element).transitionDuration,
+        ),
       page
         .locator('.access-locale-chevron')
-        .evaluate((element) => window.getComputedStyle(element).transitionDuration),
+        .evaluate(
+          (element) => window.getComputedStyle(element).transitionDuration,
+        ),
     ]);
 
     for (const durationList of transitionDurations) {
