@@ -14,6 +14,9 @@ from sqlalchemy.ext.asyncio import (
 
 from dante.platform.config.database import DatabaseSettings
 
+_RUNTIME_IDENTITY = "dante_runtime"
+_TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
+
 
 @dataclass(frozen=True, slots=True)
 class DatabaseRuntime:
@@ -24,13 +27,25 @@ class DatabaseRuntime:
     readiness_timeout_seconds: float
 
     async def is_ready(self) -> bool:
-        """Check PostgreSQL reachability without leaking connection details."""
+        """Check reachability plus the fail-closed runtime DB identity contract."""
         try:
             async with timeout(self.readiness_timeout_seconds):
                 async with self.engine.connect() as connection:
-                    result = await connection.execute(text("SELECT 1"))
-                    return bool(result.scalar_one() == 1)
-        except OSError, SQLAlchemyError, TimeoutError:
+                    row = (
+                        await connection.execute(
+                            text(
+                                "SELECT session_user, current_user, "
+                                "current_setting('search_path')"
+                            )
+                        )
+                    ).one()
+                    normalized_search_path = str(row[2]).replace(" ", "")
+                    return bool(
+                        row[0] == _RUNTIME_IDENTITY
+                        and row[1] == _RUNTIME_IDENTITY
+                        and normalized_search_path == _TRUSTED_SEARCH_PATH
+                    )
+        except (OSError, SQLAlchemyError, TimeoutError):
             return False
 
     async def dispose(self) -> None:
@@ -45,7 +60,7 @@ def create_database_runtime(settings: DatabaseSettings) -> DatabaseRuntime:
         connect_args={
             "connect_timeout": settings.connect_timeout_seconds,
             "application_name": "dante-backend",
-            "options": "-c search_path=dante,public",
+            "options": "-c search_path=pg_catalog,dante,pg_temp",
         },
         pool_pre_ping=True,
         pool_size=settings.pool_size,
