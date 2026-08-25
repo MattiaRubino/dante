@@ -14,7 +14,10 @@ import '../access-composition.css';
 import '../access-flow.css';
 
 export function AccessPage() {
-  const [flow, dispatch] = useReducer(accessFlowReducer, initialAccessFlowState);
+  const [flow, dispatch] = useReducer(
+    accessFlowReducer,
+    initialAccessFlowState,
+  );
 
   useEffect(() => {
     const goOffline = () => dispatch({ type: 'NETWORK_OFFLINE' });

@@ -41,7 +41,8 @@ export const access = {
   password: {
     guideTitle: 'Minimum length',
     proposal: '12+ characters',
-    manager: 'You can paste or generate the password with your password manager.',
+    manager:
+      'You can paste or generate the password with your password manager.',
   },
   provider: {
     google: 'Continue with Google',
@@ -50,8 +51,10 @@ export const access = {
     appleName: 'Apple',
     body: 'DANTE opens the provider’s official flow. The consent screen belongs to the provider, not DANTE.',
     wait: 'Complete sign-in',
-    pendingBody: 'Complete sign-in in the provider window. You’ll return to DANTE automatically.',
-    scopeNote: 'Using Google or Apple to sign in does not authorize DANTE to read Calendar, Gmail, or iCloud.',
+    pendingBody:
+      'Complete sign-in in the provider window. You’ll return to DANTE automatically.',
+    scopeNote:
+      'Using Google or Apple to sign in does not authorize DANTE to read Calendar, Gmail, or iCloud.',
   },
   common: {
     or: 'or',
@@ -87,7 +90,8 @@ export const access = {
     offlineTitle: 'You’re offline.',
     offlineBody: 'Reconnect to continue.',
     rateLimitedTitle: 'Too many attempts.',
-    rateLimitedBody: 'Wait before trying again. The effective retry time will come from the server.',
+    rateLimitedBody:
+      'Wait before trying again. The effective retry time will come from the server.',
     serverUnavailableTitle: 'Service temporarily unavailable.',
     serverUnavailableBody: 'Try again when the Access service is reachable.',
   },
@@ -113,7 +117,8 @@ export const access = {
     title: 'Recover access',
     body: 'We’ll send a secure link to set a new password.',
     action: 'Send recovery link',
-    privacy: 'If the address is associated with a DANTE account, you’ll receive a link to reset the password.',
+    privacy:
+      'If the address is associated with a DANTE account, you’ll receive a link to reset the password.',
   },
   recovery: {
     title: 'Check your email',

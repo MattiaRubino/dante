@@ -35,7 +35,8 @@ export const access = {
   password: {
     guideTitle: 'Lunghezza minima',
     proposal: '12+ caratteri',
-    manager: 'Puoi incollare o generare la password con il tuo password manager.',
+    manager:
+      'Puoi incollare o generare la password con il tuo password manager.',
   },
   provider: {
     google: 'Continua con Google',
@@ -44,8 +45,10 @@ export const access = {
     appleName: 'Apple',
     body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non a DANTE.',
     wait: 'Completa l’accesso',
-    pendingBody: 'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
-    scopeNote: 'Usare Google o Apple per accedere non autorizza DANTE a leggere Calendar, Gmail o iCloud.',
+    pendingBody:
+      'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
+    scopeNote:
+      'Usare Google o Apple per accedere non autorizza DANTE a leggere Calendar, Gmail o iCloud.',
   },
   common: {
     or: 'oppure',
@@ -81,9 +84,11 @@ export const access = {
     offlineTitle: 'Sei offline.',
     offlineBody: 'Riconnettiti per continuare.',
     rateLimitedTitle: 'Troppi tentativi.',
-    rateLimitedBody: 'Attendi prima di riprovare. Il tempo effettivo sarà indicato dal server.',
+    rateLimitedBody:
+      'Attendi prima di riprovare. Il tempo effettivo sarà indicato dal server.',
     serverUnavailableTitle: 'Servizio temporaneamente non disponibile.',
-    serverUnavailableBody: 'Riprova quando il servizio di accesso torna raggiungibile.',
+    serverUnavailableBody:
+      'Riprova quando il servizio di accesso torna raggiungibile.',
   },
   locale: {
     control: 'Cambia lingua. Lingua attuale: {{language}}',
@@ -107,7 +112,8 @@ export const access = {
     title: 'Recupera l’accesso',
     body: 'Ti invieremo un link sicuro per impostare una nuova password.',
     action: 'Invia link di recupero',
-    privacy: 'Se l’indirizzo è associato a un account DANTE, riceverai un link per reimpostare la password.',
+    privacy:
+      'Se l’indirizzo è associato a un account DANTE, riceverai un link per reimpostare la password.',
   },
   recovery: {
     title: 'Controlla la tua email',
@@ -178,14 +184,16 @@ export const access = {
   importFlow: {
     title: 'Importa nel tuo spazio',
     body: 'L’import è separato dall’accesso: collegare Google per fare login non autorizza DANTE a leggere il calendario.',
-    google: 'L’import da Google richiederà un’autorizzazione separata e specifica.',
+    google:
+      'L’import da Google richiederà un’autorizzazione separata e specifica.',
     file: 'Potrai importare un calendario da file senza collegare un account.',
   },
   demo: {
     title: 'Una demo, senza sporcare i tuoi dati',
     body: 'L’elemento qui sotto è solo tutorial e non entra nella tua cronologia reale.',
     item: 'Passeggiata · 18:30',
-    itemBody: 'Puoi aprirla, spostarla, completarla o eliminarla durante il tour.',
+    itemBody:
+      'Puoi aprirla, spostarla, completarla o eliminarla durante il tour.',
     action: 'Avvia demo e apri Home',
   },
   home: {

@@ -88,7 +88,11 @@
   margin-top: 14px;
   padding: 11px 12px;
   border: 1px solid
-    color-mix(in srgb, var(--dante-semantic-color-brand-accent) 32%, transparent);
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-brand-accent) 32%,
+      transparent
+    );
   border-radius: 10px;
   background: color-mix(
     in srgb,
@@ -250,7 +254,11 @@
   height: 52px;
   margin: 20px auto 0;
   border: 1px solid
-    color-mix(in srgb, var(--dante-semantic-color-brand-accent) 34%, transparent);
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-brand-accent) 34%,
+      transparent
+    );
   border-radius: 50%;
   background: color-mix(
     in srgb,

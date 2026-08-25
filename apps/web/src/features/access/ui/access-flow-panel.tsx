@@ -10,10 +10,7 @@ import {
 } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
 import { AccessDownstreamPanel } from './access-downstream-panel';
-import {
-  AccessPanelFrame,
-  AccessPasswordToggle,
-} from './access-panel-frame';
+import { AccessPanelFrame, AccessPasswordToggle } from './access-panel-frame';
 import { AccessSignInPanel } from './access-sign-in-panel';
 import { ProviderButton } from './provider-button';
 
@@ -63,8 +60,13 @@ function SignupEmailScreen({ flow, dispatch }: FlowProps) {
         </div>
       }
     >
-      <div className="access-progress" aria-label={t(($) => $.common.access.signup.progress)}>
-        <span className="is-active">{t(($) => $.common.access.signup.stepEmail)}</span>
+      <div
+        className="access-progress"
+        aria-label={t(($) => $.common.access.signup.progress)}
+      >
+        <span className="is-active">
+          {t(($) => $.common.access.signup.stepEmail)}
+        </span>
         <span>{t(($) => $.common.access.signup.stepPassword)}</span>
         <span>{t(($) => $.common.access.signup.stepVerify)}</span>
       </div>
@@ -148,9 +150,14 @@ function SignupPasswordScreen({ flow, dispatch }: FlowProps) {
       body={t(($) => $.common.access.signupPassword.body)}
       onBack={() => dispatch({ type: 'CHANGE_SIGN_UP_EMAIL' })}
     >
-      <div className="access-progress" aria-label={t(($) => $.common.access.signup.progress)}>
+      <div
+        className="access-progress"
+        aria-label={t(($) => $.common.access.signup.progress)}
+      >
         <span>{t(($) => $.common.access.signup.stepEmail)}</span>
-        <span className="is-active">{t(($) => $.common.access.signup.stepPassword)}</span>
+        <span className="is-active">
+          {t(($) => $.common.access.signup.stepPassword)}
+        </span>
         <span>{t(($) => $.common.access.signup.stepVerify)}</span>
       </div>
 
@@ -253,14 +260,19 @@ function ForgotPasswordScreen({ flow, dispatch }: FlowProps) {
             value={email}
             placeholder={t(($) => $.common.access.field.emailPlaceholder)}
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? 'access-recovery-email-error' : 'access-recovery-note'}
+            aria-describedby={
+              error ? 'access-recovery-email-error' : 'access-recovery-note'
+            }
             onChange={(event) => {
               setEmail(event.target.value);
               setError(null);
             }}
           />
           {error ? (
-            <span id="access-recovery-email-error" className="access-field-error">
+            <span
+              id="access-recovery-email-error"
+              className="access-field-error"
+            >
               {error}
             </span>
           ) : null}

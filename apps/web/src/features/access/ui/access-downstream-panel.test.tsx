@@ -48,7 +48,9 @@ describe('AccessDownstreamPanel', () => {
     expect(input.value).toBe('123456');
 
     fireEvent.change(input, { target: { value: '123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica e continua' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Verifica e continua' }),
+    );
 
     expect(dispatch).not.toHaveBeenCalledWith({ type: 'REQUEST_VERIFY_EMAIL' });
     expect(screen.getByText('Inserisci il codice a 6 cifre.')).toBeTruthy();
@@ -57,7 +59,9 @@ describe('AccessDownstreamPanel', () => {
     );
 
     fireEvent.change(input, { target: { value: '654321' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica e continua' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Verifica e continua' }),
+    );
     expect(dispatch).toHaveBeenCalledWith({ type: 'REQUEST_VERIFY_EMAIL' });
 
     fireEvent.click(screen.getByRole('button', { name: 'Invia di nuovo' }));
@@ -70,7 +74,8 @@ describe('AccessDownstreamPanel', () => {
     const dispatch = renderScreen({ id: 'RESET_PASSWORD' });
 
     const password = screen.getByLabelText<HTMLInputElement>('Nuova password');
-    const confirm = screen.getByLabelText<HTMLInputElement>('Conferma password');
+    const confirm =
+      screen.getByLabelText<HTMLInputElement>('Conferma password');
 
     fireEvent.click(screen.getByRole('button', { name: 'Aggiorna password' }));
     expect(screen.getByText('Usa almeno 12 caratteri.')).toBeTruthy();

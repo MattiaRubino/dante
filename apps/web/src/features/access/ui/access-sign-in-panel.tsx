@@ -64,7 +64,9 @@ export function AccessSignInPanel({
       nextErrors.email = t(($) => $.common.access.validation.email);
     }
     if (!password) {
-      nextErrors.password = t(($) => $.common.access.validation.passwordRequired);
+      nextErrors.password = t(
+        ($) => $.common.access.validation.passwordRequired,
+      );
     }
 
     setErrors(nextErrors);

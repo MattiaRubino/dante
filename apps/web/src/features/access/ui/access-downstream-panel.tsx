@@ -8,10 +8,7 @@ import {
   type AccessProvider,
 } from '../model/access-flow';
 import { AccessConditionNotice } from './access-condition-notice';
-import {
-  AccessPanelFrame,
-  AccessPasswordToggle,
-} from './access-panel-frame';
+import { AccessPanelFrame, AccessPasswordToggle } from './access-panel-frame';
 
 type DownstreamProps = Readonly<{
   flow: AccessFlowState;
@@ -49,10 +46,15 @@ function VerifyEmailScreen({ flow, dispatch }: DownstreamProps) {
       title={t(($) => $.common.access.verify.title)}
       body={t(($) => $.common.access.verify.body)}
     >
-      <div className="access-progress" aria-label={t(($) => $.common.access.signup.progress)}>
+      <div
+        className="access-progress"
+        aria-label={t(($) => $.common.access.signup.progress)}
+      >
         <span>{t(($) => $.common.access.signup.stepEmail)}</span>
         <span>{t(($) => $.common.access.signup.stepPassword)}</span>
-        <span className="is-active">{t(($) => $.common.access.signup.stepVerify)}</span>
+        <span className="is-active">
+          {t(($) => $.common.access.signup.stepVerify)}
+        </span>
       </div>
 
       <p className="access-email-context">{email}</p>
@@ -73,7 +75,9 @@ function VerifyEmailScreen({ flow, dispatch }: DownstreamProps) {
             value={code}
             aria-invalid={Boolean(error)}
             aria-describedby={
-              error ? 'access-verification-code-error' : 'access-verification-code-help'
+              error
+                ? 'access-verification-code-error'
+                : 'access-verification-code-help'
             }
             onChange={(event) => {
               setCode(event.target.value.replace(/\D/g, '').slice(0, 6));
@@ -81,7 +85,10 @@ function VerifyEmailScreen({ flow, dispatch }: DownstreamProps) {
             }}
           />
           {error ? (
-            <span id="access-verification-code-error" className="access-field-error">
+            <span
+              id="access-verification-code-error"
+              className="access-field-error"
+            >
               {error}
             </span>
           ) : null}
@@ -155,9 +162,10 @@ function ResetPasswordScreen({ flow, dispatch }: DownstreamProps) {
     const minimumError = !isValidNewPassword(password)
       ? t(($) => $.common.access.validation.passwordMinimum)
       : null;
-    const mismatchError = !minimumError && password !== confirm
-      ? t(($) => $.common.access.validation.passwordMismatch)
-      : null;
+    const mismatchError =
+      !minimumError && password !== confirm
+        ? t(($) => $.common.access.validation.passwordMismatch)
+        : null;
 
     setPasswordError(minimumError);
     setConfirmError(mismatchError);
@@ -191,7 +199,9 @@ function ResetPasswordScreen({ flow, dispatch }: DownstreamProps) {
               value={password}
               aria-invalid={Boolean(passwordError)}
               aria-describedby={
-                passwordError ? 'access-reset-password-error' : 'access-reset-password-guide'
+                passwordError
+                  ? 'access-reset-password-error'
+                  : 'access-reset-password-guide'
               }
               onChange={(event) => {
                 setPassword(event.target.value);
@@ -207,7 +217,10 @@ function ResetPasswordScreen({ flow, dispatch }: DownstreamProps) {
             />
           </div>
           {passwordError ? (
-            <span id="access-reset-password-error" className="access-field-error">
+            <span
+              id="access-reset-password-error"
+              className="access-field-error"
+            >
               {passwordError}
             </span>
           ) : null}
@@ -229,7 +242,9 @@ function ResetPasswordScreen({ flow, dispatch }: DownstreamProps) {
               autoComplete="new-password"
               value={confirm}
               aria-invalid={Boolean(confirmError)}
-              aria-describedby={confirmError ? 'access-reset-confirm-error' : undefined}
+              aria-describedby={
+                confirmError ? 'access-reset-confirm-error' : undefined
+              }
               onChange={(event) => {
                 setConfirm(event.target.value);
                 setConfirmError(null);
@@ -243,7 +258,10 @@ function ResetPasswordScreen({ flow, dispatch }: DownstreamProps) {
             />
           </div>
           {confirmError ? (
-            <span id="access-reset-confirm-error" className="access-field-error">
+            <span
+              id="access-reset-confirm-error"
+              className="access-field-error"
+            >
               {confirmError}
             </span>
           ) : null}
@@ -298,7 +316,10 @@ function SetupNameScreen({ dispatch }: Pick<DownstreamProps, 'dispatch'>) {
             }}
           />
           {error ? (
-            <span id="access-preferred-name-error" className="access-field-error">
+            <span
+              id="access-preferred-name-error"
+              className="access-field-error"
+            >
               {error}
             </span>
           ) : null}
@@ -352,10 +373,26 @@ function SetupLocaleScreen({ dispatch }: Pick<DownstreamProps, 'dispatch'>) {
 function SetupStartScreen({ dispatch }: Pick<DownstreamProps, 'dispatch'>) {
   const { t } = useTranslation('common');
   const choices = [
-    ['real', t(($) => $.common.access.start.real), t(($) => $.common.access.start.realBody)],
-    ['import', t(($) => $.common.access.start.import), t(($) => $.common.access.start.importBody)],
-    ['demo', t(($) => $.common.access.start.demo), t(($) => $.common.access.start.demoBody)],
-    ['skip', t(($) => $.common.access.start.skip), t(($) => $.common.access.start.skipBody)],
+    [
+      'real',
+      t(($) => $.common.access.start.real),
+      t(($) => $.common.access.start.realBody),
+    ],
+    [
+      'import',
+      t(($) => $.common.access.start.import),
+      t(($) => $.common.access.start.importBody),
+    ],
+    [
+      'demo',
+      t(($) => $.common.access.start.demo),
+      t(($) => $.common.access.start.demoBody),
+    ],
+    [
+      'skip',
+      t(($) => $.common.access.start.skip),
+      t(($) => $.common.access.start.skipBody),
+    ],
   ] as const;
 
   return (
@@ -540,7 +577,9 @@ export function AccessDownstreamPanel({ flow, dispatch }: DownstreamProps) {
           body={t(($) => $.common.access.link.body)}
         >
           <p className="access-provider-label">{name}</p>
-          {screen.email ? <p className="access-email-context">{screen.email}</p> : null}
+          {screen.email ? (
+            <p className="access-email-context">{screen.email}</p>
+          ) : null}
           <button
             className="access-primary-button"
             type="button"
@@ -567,7 +606,9 @@ export function AccessDownstreamPanel({ flow, dispatch }: DownstreamProps) {
           title={t(($) => $.common.access.authenticated.title)}
           body={t(($) => $.common.access.authenticated.body)}
         >
-          <div className="access-completion-mark" aria-hidden="true">✓</div>
+          <div className="access-completion-mark" aria-hidden="true">
+            ✓
+          </div>
         </AccessPanelFrame>
       );
     case 'REAUTH':
@@ -634,7 +675,9 @@ export function AccessDownstreamPanel({ flow, dispatch }: DownstreamProps) {
           title={t(($) => $.common.access.home.title)}
           body={t(($) => $.common.access.home.body)}
         >
-          <div className="access-completion-mark" aria-hidden="true">✓</div>
+          <div className="access-completion-mark" aria-hidden="true">
+            ✓
+          </div>
         </AccessPanelFrame>
       );
     default:

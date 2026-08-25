@@ -20,12 +20,7 @@ function renderPanel() {
     onProvider: vi.fn(),
   };
 
-  render(
-    <AccessSignInPanel
-      condition={{ kind: 'idle' }}
-      {...handlers}
-    />,
-  );
+  render(<AccessSignInPanel condition={{ kind: 'idle' }} {...handlers} />);
 
   return handlers;
 }
@@ -73,9 +68,13 @@ describe('AccessSignInPanel', () => {
   it('wires safe local actions and validates before requesting backend sign-in', () => {
     const handlers = renderPanel();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Password dimenticata?' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Password dimenticata?' }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Crea un account' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continua con Google' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continua con Google' }),
+    );
 
     expect(handlers.onForgotPassword).toHaveBeenCalledTimes(1);
     expect(handlers.onCreateAccount).toHaveBeenCalledTimes(1);
@@ -83,7 +82,9 @@ describe('AccessSignInPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Accedi' }));
     expect(handlers.onCredentialSubmit).not.toHaveBeenCalled();
-    expect(screen.getByText('Inserisci un indirizzo email valido.')).toBeTruthy();
+    expect(
+      screen.getByText('Inserisci un indirizzo email valido.'),
+    ).toBeTruthy();
     expect(screen.getByText('Inserisci la password.')).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('Email'), {
