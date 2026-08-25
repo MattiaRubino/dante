@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
@@ -15,6 +15,23 @@ import '../access-flow.css';
 
 export function AccessPage() {
   const [flow, dispatch] = useReducer(accessFlowReducer, initialAccessFlowState);
+
+  useEffect(() => {
+    const goOffline = () => dispatch({ type: 'NETWORK_OFFLINE' });
+    const goOnline = () => dispatch({ type: 'NETWORK_ONLINE' });
+
+    if (!window.navigator.onLine) {
+      goOffline();
+    }
+
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
 
   return (
     <div className="access-shell">
