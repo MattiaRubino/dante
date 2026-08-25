@@ -11,6 +11,7 @@ from alembic.script import ScriptDirectory
 pytestmark = pytest.mark.postgres
 
 _EXPECTED_HEAD = "20260820_01"
+_TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
 def _current_revision(database: Any) -> str | None:
@@ -20,7 +21,21 @@ def _current_revision(database: Any) -> str | None:
             database.cluster.migrator_password,
         )
     ) as connection:
+        identity = connection.execute(
+            "SELECT session_user, current_user, current_setting('search_path')"
+        ).fetchone()
+        assert identity is not None
+        assert identity[0:2] == ("dante_migrator", "dante_migrator")
+        assert str(identity[2]).replace(" ", "") == _TRUSTED_SEARCH_PATH
+
         connection.execute("SET ROLE dante_owner")
+        elevated = connection.execute(
+            "SELECT session_user, current_user, current_setting('search_path')"
+        ).fetchone()
+        assert elevated is not None
+        assert elevated[0:2] == ("dante_migrator", "dante_owner")
+        assert str(elevated[2]).replace(" ", "") == _TRUSTED_SEARCH_PATH
+
         row = connection.execute("SELECT version_num FROM dante.alembic_version").fetchone()
         return None if row is None else str(row[0])
 
@@ -80,8 +95,25 @@ def test_alembic_check_reports_no_dante_schema_drift_with_extensions_present(
             str(row[0])
             for row in connection.execute(
                 "SELECT extname FROM pg_extension "
-                "WHERE extname IN ('postgis', 'vector', 'pg_trgm', 'unaccent', 'pg_stat_statements')"
+                "WHERE extname IN "
+                "('postgis', 'vector', 'pg_trgm', 'unaccent', 'pg_stat_statements')"
             )
         }
 
     assert extensions == {"postgis", "vector", "pg_trgm", "unaccent", "pg_stat_statements"}
+
+
+def test_alembic_rejects_injected_non_migrator_identity(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    alembic_config.attributes["database_url"] = provisioned_database.sqlalchemy_url(
+        provisioned_database.cluster.admin_user,
+        provisioned_database.cluster.admin_password,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="authenticate exactly as dante_migrator",
+    ):
+        command.upgrade(alembic_config, "head")
