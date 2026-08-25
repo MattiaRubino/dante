@@ -104,10 +104,22 @@ function withScreen(screen: AccessScreen): AccessFlowState {
   return { screen, condition: { kind: 'idle' } };
 }
 
+function hasBlockingTransportCondition(condition: AccessCondition): boolean {
+  return (
+    condition.kind === 'offline' ||
+    condition.kind === 'server-unavailable' ||
+    condition.kind === 'rate-limited'
+  );
+}
+
 function requireBackend(
   state: AccessFlowState,
   operation: AccessBackendOperation,
 ): AccessFlowState {
+  if (hasBlockingTransportCondition(state.condition)) {
+    return state;
+  }
+
   return {
     ...state,
     condition: { kind: 'backend-required', operation },
@@ -146,14 +158,16 @@ export function accessFlowReducer(
       return requireBackend(state, 'verify-email');
     case 'REQUEST_RESEND_VERIFICATION':
       return requireBackend(state, 'resend-verification');
-    case 'REQUEST_RECOVERY':
-      return {
+    case 'REQUEST_RECOVERY': {
+      const nextState: AccessFlowState = {
         screen:
           state.screen.id === 'FORGOT_PASSWORD'
             ? { ...state.screen, email: event.email }
             : state.screen,
-        condition: { kind: 'backend-required', operation: 'recovery' },
+        condition: state.condition,
       };
+      return requireBackend(nextState, 'recovery');
+    }
     case 'REQUEST_RESET_PASSWORD':
       return requireBackend(state, 'reset-password');
     case 'REQUEST_ACCOUNT_LINK':
