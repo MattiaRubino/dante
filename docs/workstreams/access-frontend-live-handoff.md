@@ -1,9 +1,10 @@
 # DANTE Access frontend — live handoff
 
-**Status:** AF-02A IMPLEMENTED REMOTELY / LOCAL QA PENDING  
+**Status:** AF-02A PASS / AF-02B NEXT  
 **Date:** 2026-08-25  
 **Branch:** `feature/access-frontend`  
 **AF-01D final synchronized checkpoint SHA:** `236d97931b56f1ebd13fb04fedf623138e895743`  
+**AF-02A accepted code checkpoint before docs closure:** `0ba0c5f7012c6b7bd312f5a1ff727a9b764b0d4f`  
 **Frontend worktree:** `/home/mattia/projects/dante-frontend`  
 **Backend/logical-PostgreSQL worktree:** `/home/mattia/projects/dante`  
 **WSL distro:** `Ubuntu-24.04`
@@ -80,6 +81,8 @@ Expected URL:
 http://localhost:5173/
 ```
 
+WebStorm is the preferred frontend IDE for this worktree. The user now has live Vite/browser feedback plus Git Log/diff visibility.
+
 ## 5. Product authority / invariants
 
 Access purpose:
@@ -134,11 +137,17 @@ Shape what comes next.
 
 Do not regress this shell while advancing the flow.
 
-## 7. AF-02A — current implementation
+## 7. AF-02A — accepted pre-backend flow checkpoint
+
+AF-02A is **PASS** after local QA, E2E and visual review on 2026-08-25.
+
+Accepted code checkpoint before documentation-only closure commits:
+
+```text
+0ba0c5f7012c6b7bd312f5a1ff727a9b764b0d4f
+```
 
 The user explicitly asked to continue to the most advanced useful frontend point while backend Auth is still being built, **without using a fake/mock authentication service**.
-
-Remote AF-02A implementation started from AF-01D checkpoint `236d9793...` and currently includes:
 
 ### State/model
 
@@ -179,9 +188,9 @@ server-unavailable
 rate-limited
 ```
 
-The reducer already exposes server-owned events for future real integration, but local UI cannot dispatch fake successful backend outcomes.
+The reducer exposes server-owned events for future real integration, but production UI cannot dispatch fake successful backend outcomes.
 
-### Key safety rule
+### Safety rule
 
 ```text
 frontend-owned transition
@@ -189,7 +198,7 @@ frontend-owned transition
 
 backend-authoritative transition
 → stay on current safe canonical state
-→ expose BACKEND_REQUIRED
+→ condition = BACKEND_REQUIRED
 → never fabricate success
 ```
 
@@ -203,63 +212,42 @@ FORGOT_PASSWORD submit → BACKEND_REQUIRED   not fake RECOVERY_SENT
 provider click → BACKEND_REQUIRED           not fake PROVIDER_PENDING
 ```
 
-### UI already materialized remotely
+### Accepted UI and behavior
 
-- SignIn with real local form validation and callbacks;
-- create-account email step;
-- create-account password step;
-- verify-email surface;
-- forgot-password surface;
-- recovery-sent surface;
-- reset-password / reset-complete;
-- provider pending / provider error;
-- account-link;
-- authenticated-return handoff surface;
-- reauth;
-- setup preferred name;
-- setup locale/timezone;
-- setup start choices;
-- first-action/import/demo/Home-handoff surfaces;
-- real browser online/offline event handling;
-- IT/EN production resources for these surfaces;
-- Terms/Privacy rendered as non-interactive placeholders until real legal destinations exist.
+- SignIn with local form validation and callbacks;
+- signup email/password;
+- forgot-password entry;
+- password manager/paste-safe password behavior;
+- browser online/offline transport condition;
+- IT/EN resources for the complete approved screen inventory;
+- desktop and phone signup visual acceptance;
+- recovery visual acceptance;
+- provider signup wording uses `Continue/Continua with` semantics rather than claiming account creation before backend authority;
+- neutral recovery copy does not leak account existence;
+- `backend-required` remains an internal state and is **not** rendered as technical text to the user;
+- Terms/Privacy remain non-interactive placeholders until real legal destinations exist.
 
-### Tests added/extended
+### AF-02A QA
 
-- reducer/state-graph unit tests;
-- local email/password validation tests;
-- sign-in callback/validation Testing Library tests;
-- E2E signup navigation;
-- E2E recovery navigation;
-- E2E proof that backend-required submit does not advance to a fake success state;
-- E2E browser offline transport condition.
-
-## 8. AF-02A acceptance status
-
-**NOT PASS YET.** Remote writes are complete for this batch, but local QA has not yet run against the new implementation.
-
-Next immediate operation must be:
+Passed before acceptance:
 
 ```text
-pull remote AF-02A
-→ Prettier allowed paths
-→ format
-→ lint
-→ typecheck
-→ architecture
-→ generated check
-→ unit tests
-→ Web build
-→ Playwright E2E
-→ diff check
-→ visual screenshots/review
+Prettier / format check
+ESLint
+TypeScript
+architecture check
+generated-output check
+unit tests
+Web build
+Playwright E2E
+git diff --check
+visual desktop review
+visual 390px phone review
 ```
 
-If any code/QA issue appears, assistant fixes the remote first and provides a new pull/QA `.sh`.
+Do not regress AF-02A while hardening downstream states.
 
-Do not manually patch source unless remote editing is unavailable.
-
-## 9. Current backend readiness
+## 8. Current backend readiness
 
 Backend readiness was inspected on `feature/logical-postgresql` after AF-01D.
 
@@ -283,6 +271,48 @@ AF-03 real frontend integration         WAIT
 
 The user is continuing backend work in parallel.
 
+## 9. AF-02B — next safe frontend batch
+
+Goal: harden every downstream Access surface that can be made production-ready without inventing backend outcomes.
+
+Target inventory:
+
+```text
+VERIFY_EMAIL
+RECOVERY_SENT
+RESET_PASSWORD
+RESET_COMPLETE
+PROVIDER_PENDING
+PROVIDER_ERROR
+ACCOUNT_LINK
+AUTHENTICATED_RETURN
+REAUTH
+SETUP_NAME
+SETUP_LOCALE
+SETUP_START
+FIRST_ACTION
+IMPORT
+DEMO
+HOME_HANDOFF
+```
+
+Required AF-02B work:
+
+- verify-email local validation/accessibility;
+- reset-password confirmation/visibility/local validation;
+- provider pending/error/link visual semantics;
+- reauth form behavior without fake session success;
+- setup name validation;
+- locale/timezone confirmation UI;
+- first-run choice accessibility and responsive polish;
+- first-action/import/demo/Home-handoff production copy/semantics;
+- IT/EN parity;
+- desktop/phone screenshots;
+- reducer/unit/E2E coverage where frontend-owned;
+- reducer/server-event fixtures may test downstream rendering, but no fake service or production fake-success control may be introduced.
+
+AF-02B must stop at backend-authoritative transitions exactly as AF-02A does.
+
 ## 10. Deliberately absent / never fake
 
 Still absent until the real backend exists:
@@ -304,7 +334,7 @@ Do not create fake routes, fake tokens, fake provider success or fake session st
 
 ## 11. Form/security boundary
 
-Current AF-02A forms use local controlled state and small pure validation only. Passwords/codes are component-local and are not stored in the global reducer or persisted.
+Current pre-backend forms use local controlled state and small pure validation only. Passwords/codes are component-local and are not stored in the global reducer or persisted.
 
 Password V1:
 
@@ -335,11 +365,9 @@ pnpm --filter @dante/web test:e2e
 git diff --check
 ```
 
-Visual QA must include the accepted SignIn desktop shell plus signup/recovery at desktop and phone width. Do not call AF-02A PASS merely because it compiles.
+Visual QA for AF-02B must include representative desktop and 390px phone downstream surfaces. Do not call a batch PASS merely because it compiles.
 
-## 13. Next after AF-02A passes
-
-Do not wait idly if there is safe frontend-owned polish left, but do not cross the backend authority line.
+## 13. Real integration boundary
 
 When backend Auth becomes sufficiently ready:
 
