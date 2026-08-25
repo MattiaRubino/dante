@@ -177,6 +177,12 @@ test.describe('DANTE Access', () => {
     await expect(
       page.getByRole('heading', { name: 'Crea il tuo account DANTE' }),
     ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Continua con Google' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Continua con Apple' }),
+    ).toBeVisible();
 
     const signupEmail = page.getByLabel('Email');
     await signupEmail.fill('person@example.com');
@@ -195,9 +201,7 @@ test.describe('DANTE Access', () => {
     await newPassword.fill('correct horse battery staple');
     await page.getByRole('button', { name: 'Crea un account' }).click();
 
-    await expect(
-      page.getByText('Frontend pronto, backend in attesa'),
-    ).toBeVisible();
+    await expect(page.locator('.access-condition-notice')).toHaveCount(0);
     await expect(
       page.getByRole('heading', { name: 'Proteggi il tuo account' }),
     ).toBeVisible();
@@ -217,15 +221,16 @@ test.describe('DANTE Access', () => {
       page.getByRole('heading', { name: 'Recupera l’accesso' }),
     ).toBeVisible();
 
+    await expect(
+      page.getByText(
+        'Se l’indirizzo è associato a un account DANTE, riceverai un link per reimpostare la password.',
+      ),
+    ).toBeVisible();
+
     await page.getByLabel('Email').fill('person@example.com');
     await page.getByRole('button', { name: 'Invia link di recupero' }).click();
 
-    await expect(
-      page.getByText('Frontend pronto, backend in attesa'),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/non confermiamo se un indirizzo è registrato/i),
-    ).toBeVisible();
+    await expect(page.locator('.access-condition-notice')).toHaveCount(0);
     await expect(
       page.getByRole('heading', { name: 'Recupera l’accesso' }),
     ).toBeVisible();
