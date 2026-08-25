@@ -166,6 +166,19 @@ def test_migrator_requires_exact_identity_and_explicit_set_role(
 def test_new_owner_objects_are_deny_by_default_for_runtime(migrated_database: Any) -> None:
     _create_privilege_probe(migrated_database)
 
+    with _admin_connection(migrated_database) as connection:
+        effective_public_defaults = connection.execute(
+            "SELECT "
+            "has_function_privilege("
+            "'dante_runtime', 'dante.cp3_probe_function()', 'EXECUTE'"
+            "), "
+            "has_type_privilege("
+            "'dante_runtime', 'dante.cp3_probe_kind', 'USAGE'"
+            ")"
+        ).fetchone()
+
+    assert effective_public_defaults == (False, False)
+
     denied_statements = (
         "SELECT * FROM dante.cp3_privilege_probe",
         "INSERT INTO dante.cp3_privilege_probe (kind, value) VALUES ('alpha', 'created')",
@@ -262,6 +275,44 @@ def test_provisioning_reconciles_unexpected_dante_membership_edges(
         assert _dante_memberships(connection) == {
             ("dante_owner", "dante_migrator", False, False, True),
         }
+
+
+def test_provisioning_fails_closed_on_external_role_membership_edges(
+    migrated_database: Any,
+) -> None:
+    with _admin_connection(migrated_database) as connection:
+        connection.execute("CREATE ROLE cp6_p0_external_granted NOLOGIN")
+        connection.execute("CREATE ROLE cp6_p0_external_member NOLOGIN")
+        connection.execute(
+            "GRANT cp6_p0_external_granted TO dante_runtime "
+            "WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
+        )
+        connection.execute(
+            "GRANT dante_runtime TO cp6_p0_external_member "
+            "WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
+        )
+
+    try:
+        with pytest.raises(RuntimeError, match="external-role edges"):
+            asyncio.run(provision_database(_provisioning_settings(migrated_database)))
+
+        with _admin_connection(migrated_database) as connection:
+            membership_names = {
+                (str(row[0]), str(row[1])) for row in _dante_memberships(connection)
+            }
+
+        assert ("cp6_p0_external_granted", "dante_runtime") in membership_names
+        assert ("dante_runtime", "cp6_p0_external_member") in membership_names
+    finally:
+        with _admin_connection(migrated_database) as connection:
+            connection.execute(
+                "REVOKE cp6_p0_external_granted FROM dante_runtime"
+            )
+            connection.execute(
+                "REVOKE dante_runtime FROM cp6_p0_external_member"
+            )
+            connection.execute("DROP ROLE cp6_p0_external_granted")
+            connection.execute("DROP ROLE cp6_p0_external_member")
 
 
 def test_provisioning_rerun_does_not_broaden_migration_owned_object_acl(
