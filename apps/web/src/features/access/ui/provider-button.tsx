@@ -3,6 +3,7 @@ type AccessProvider = 'google' | 'apple';
 type ProviderButtonProps = Readonly<{
   provider: AccessProvider;
   label: string;
+  onClick?: () => void;
 }>;
 
 function GoogleMark() {
@@ -51,7 +52,11 @@ function AppleMark() {
   );
 }
 
-export function ProviderButton({ provider, label }: ProviderButtonProps) {
+export function ProviderButton({
+  provider,
+  label,
+  onClick,
+}: ProviderButtonProps) {
   const iconClassName =
     provider === 'apple'
       ? 'access-provider-mark access-provider-mark-apple'
@@ -62,6 +67,7 @@ export function ProviderButton({ provider, label }: ProviderButtonProps) {
       className="access-provider-button"
       type="button"
       data-provider={provider}
+      onClick={onClick}
     >
       <span className={iconClassName} aria-hidden="true">
         {provider === 'google' ? <GoogleMark /> : <AppleMark />}
