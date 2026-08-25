@@ -8,7 +8,17 @@
 
 ## Purpose
 
-Materialize the approved DANTE Access experience inside the production React/Vite frontend without inventing backend authentication semantics before the real backend contract exists.
+Materialize the complete DANTE Access vertical inside the production frontend and carry it through real backend integration and release-quality validation without inventing authentication semantics, fake success, disposable mock architecture or low-quality UI shortcuts.
+
+This workstream stays on `feature/access-frontend` and in `/home/mattia/projects/dante-frontend` until Access is actually closed. A new chat/session is **not** a reason to create a new branch or worktree. Branch/worktree changes require an explicit user decision.
+
+## Quality target
+
+Access is treated as production software from the first implementation pass. The target is the quality bar of a mature consumer/productivity application, not a prototype that merely compiles.
+
+Every surface must feel intentionally designed as part of one system. Do not assemble screens as a collage/coupage of unrelated cards, copied patterns, arbitrary decorations or one-off CSS. Reuse the established DANTE visual grammar, hierarchy, spacing, typography, controls, semantic tokens and interaction language.
+
+A batch is not accepted because it "looks okay" or because CI is green. Acceptance requires technical QA **and** product/visual review at the relevant viewport/state combinations.
 
 ## Current production state
 
@@ -62,8 +72,6 @@ AF-02A was accepted after iterative local QA, E2E and visual review on 2026-08-2
 
 The user explicitly chose to continue frontend work while backend Auth is still being built, but without a fake/mock authentication service.
 
-AF-02A therefore advances every safe frontend-owned part of Access while preserving backend authority.
-
 Accepted implementation includes:
 
 - feature-local `model/access-flow.ts` with the approved canonical Access states;
@@ -71,8 +79,8 @@ Accepted implementation includes:
 - local transitions for sign-in navigation, signup email/password, recovery entry and setup choices;
 - browser `online` / `offline` event integration;
 - production IT/EN copy for the complete approved Access screen inventory;
-- signup email screen;
-- signup password screen with the DANTE V1 12-character minimum, paste/password-manager-safe behavior and no composition rule;
+- signup email and signup password screens;
+- DANTE V1 12-character password minimum, paste/password-manager-safe behavior and no composition rule;
 - forgot-password screen with neutral account-existence copy;
 - verify-email, recovery-sent, reset-password and reset-complete surfaces;
 - provider pending/error and account-link surfaces;
@@ -81,11 +89,9 @@ Accepted implementation includes:
 - first-action/import/demo/Home-handoff surfaces;
 - local validation and password visibility behavior;
 - E2E coverage for signup/recovery frontend navigation and backend-boundary stopping;
-- reducer tests that specifically prove local actions do **not** fabricate backend success;
+- reducer tests that prove local actions do **not** fabricate backend success;
 - backend-required conditions remaining internal/non-user-facing;
-- desktop visual review of SignIn, signup email/password and recovery;
-- phone visual review of signup at 390px;
-- product-copy polish for provider continuation and neutral recovery wording.
+- desktop and phone visual review.
 
 Critical rule:
 
@@ -99,31 +105,168 @@ backend-authoritative transition
 → never fabricates VERIFY_EMAIL / AUTHENTICATED_RETURN / RECOVERY_SENT / LINK success
 ```
 
-Examples:
+### AF-02B — downstream surface hardening — PASS
+
+AF-02B was accepted on 2026-08-25 after full repository QA, exhaustive downstream axe checks, desktop screenshot review and 390px mobile overflow/accessibility checks.
+
+**Accepted code/formatting checkpoint:** `c39d1a8312fb2d00bc322604bcd453d13fa2b510`.
+
+Accepted downstream coverage includes:
+
+- verify-email six-digit local validation, resend/change-email actions and accessible errors;
+- recovery-sent neutral account-existence messaging;
+- reset-password two-field validation, password-manager-safe behavior and working visibility controls;
+- reset-complete return-to-sign-in surface;
+- provider pending, provider error and account-link surfaces;
+- authenticated-return and reauthentication surfaces;
+- setup name validation;
+- locale/timezone confirmation surface;
+- first-run start choices;
+- first-action, import, demo and Home-handoff surfaces;
+- IT/EN resource parity;
+- downstream component tests via canonical state fixtures rather than a fake auth service;
+- provider/auth copy that does not imply external-data authorization;
+- password-guide contrast corrected to meet automated WCAG AA checks;
+- real browser offline E2E using Playwright BrowserContext state instead of a synthetic race-prone event.
+
+Final AF-02B QA evidence:
 
 ```text
-CREATE_ACCOUNT
-SIGN_IN → SIGN_UP_EMAIL                         local / real
-
-valid signup email
-SIGN_UP_EMAIL → SIGN_UP_PASSWORD                local / real
-
-submit signup password
-SIGN_UP_PASSWORD → BACKEND_REQUIRED(sign-up)    real boundary
-NOT → fake VERIFY_EMAIL
-
-forgot password + valid email
-FORGOT_PASSWORD → BACKEND_REQUIRED(recovery)    real boundary
-NOT → fake RECOVERY_SENT
-
-Google/Apple click
-SIGN_IN → BACKEND_REQUIRED(provider-*)          real boundary
-NOT → fake PROVIDER_PENDING
+Playwright reachable E2E             10 / 10 PASS
+Web unit/component tests             17 / 17 PASS
+workspace typecheck                   5 / 5 PASS
+architecture                         PASS
+Generated sources deterministic       PASS
+Web production build                  PASS
+axe desktop downstream inventory      PASS
+axe phone verify/reset/setup-start    PASS
+390px horizontal overflow checks      390 / 390 PASS
 ```
 
-Server/provider events are already represented in the reducer so the later real integration can activate the downstream states without redesigning the UI state model.
+The downstream QA harness is test-only and temporary. It must never become a production debug route or fake server control.
 
-AF-02A QA passed the normal frontend gate: formatting, lint, typecheck, architecture, generated-output check, unit tests, Web build, Playwright E2E and diff check. Visual review accepted the polished desktop and phone surfaces.
+## Access is NOT closed yet
+
+AF-02B closes the production-quality **frontend-owned/pre-backend surfaces**, not the Access vertical itself.
+
+Access remains open until the real backend-auth boundary and release gates are complete. Do not change branch/worktree merely because AF-02B is PASS.
+
+Remaining backend-authoritative work includes, as applicable to the final backend contract:
+
+- real account creation;
+- credential authentication;
+- email verification proof validation;
+- recovery proof validation and reset mutation;
+- Google/Apple transaction start/callback/validation;
+- secure account linking;
+- session establishment/bootstrap/expiry/revocation;
+- reauthentication for sensitive operations;
+- real server rate-limit/error mapping;
+- stable Auth OpenAPI;
+- generated typed client;
+- remote-state/query integration where justified;
+- final authenticated Home handoff;
+- full-stack E2E against an isolated test environment;
+- final legal Terms/Privacy destinations/content;
+- native Mobile Access when its implementation gate opens.
+
+## Production design / UX standard
+
+All future Access work must follow these rules.
+
+### One coherent product, not a collage
+
+- Every screen must look like DANTE, not like a collection of unrelated examples copied from other sites.
+- Do not bolt on random cards, chips, illustrations, gradients, icons or decorative effects just to fill space.
+- New patterns must reuse the design system or justify a reusable semantic component/token.
+- Desktop and mobile are designed compositions, not merely the same desktop DOM squeezed narrower.
+- Empty space may be intentional; do not fill it with decorative noise.
+- Do not ship developer/debug language to users.
+- Do not keep placeholder copy, fake routes, dead buttons or temporary visual affordances in a surface declared production-ready.
+
+### Hierarchy and interaction
+
+- One clear primary action per state unless the product contract genuinely requires otherwise.
+- Secondary/destructive/cancel actions must have visually and semantically appropriate priority.
+- Loading, disabled, success, error, offline, rate-limited and unavailable states must preserve layout stability and explain the next useful action.
+- Avoid surprise navigation and ambiguous CTAs.
+- Forms must support Enter/submit semantics, browser autofill, password managers and paste where appropriate.
+- Prevent accidental double-submit once real network mutations exist.
+- Focus must move intentionally after validation/navigation and remain keyboard-visible.
+
+### Responsive quality
+
+Before a surface is considered release-ready, validate representative widths rather than one desktop plus one phone only. At minimum cover the relevant breakpoints around:
+
+```text
+390–430px phone
+~768–820px tablet/narrow
+~1024–1280px compact desktop
+1440–1536px accepted desktop authority
+large desktop where composition could become too sparse/wide
+```
+
+No horizontal overflow, clipped controls, unreadable line lengths, accidental orphan headings or unreachable actions.
+
+### Internationalization
+
+- No production user-facing string hardcoded outside the owned localization resources unless the product contract explicitly marks it invariant.
+- IT and EN must remain semantically equivalent, not mechanically word-for-word when that harms natural language or layout.
+- `<html lang>` must track the active locale.
+- Text expansion must not break controls/layout.
+- Provider/legal text must respect official provider wording and real legal destinations.
+
+### Accessibility
+
+Release target is WCAG 2.2 AA-quality behavior for the Access flow.
+
+Required checks include:
+
+- semantic labels/names/roles;
+- full keyboard operation and visible focus;
+- logical focus order;
+- associated inline errors/help;
+- `aria-live`/status behavior where asynchronous feedback needs announcement;
+- sufficient color contrast in every state, including muted surfaces;
+- no information conveyed by color alone;
+- usable zoom/text scaling;
+- reduced-motion handling for nonessential animation;
+- adequate mobile/touch target usability;
+- axe automation plus manual keyboard/product review.
+
+Passing axe alone does not prove accessibility.
+
+### Security / privacy UX
+
+Never expose or persist raw password, OTP, recovery proof, auth code, PKCE verifier, provider assertion/token, access/refresh/session secret.
+
+Never leak account existence through recovery or signup/linking copy unless the backend contract explicitly allows it.
+
+Provider sign-in authenticates DANTE only. Gmail/Calendar/iCloud or other integration authorization is a distinct flow.
+
+Real integration must preserve transaction binding, exact redirect/callback validation, provider assertion validation, replay protection, account-link takeover defenses and backend-authoritative session state.
+
+### Provider quality
+
+Google/Apple production integration must use current official provider mechanisms/assets/requirements rather than handcrafted lookalikes where the provider SDK/official rendering is required.
+
+Do not assume provider success from client-side UI. The backend remains authoritative for account/session/link state.
+
+### Error-state quality
+
+Do not collapse distinct failures into "password wrong". Real integration must distinguish at least the product-relevant classes represented by the backend contract, such as:
+
+- invalid credentials;
+- verification required;
+- provider cancelled/failed;
+- account-link required/conflict;
+- offline/network timeout;
+- rate limited;
+- server unavailable;
+- session expired/revoked;
+- reauthentication required.
+
+Copy must be useful without disclosing sensitive security detail.
 
 ## Invariants
 
@@ -139,52 +282,39 @@ client integrity != person identity
 
 Google/Apple Access authenticates a DANTE account only. It does not grant Gmail, Calendar, iCloud or other provider-data permissions.
 
-## Backend-readiness gate — 2026-08-25
+## Backend-readiness gate
 
-The post-AF-01D backend inspection was performed against `feature/logical-postgresql`.
+The latest recorded backend inspection was performed against `feature/logical-postgresql` after AF-01D and found PostgreSQL/persistence advanced but no stable real Access Auth API/OpenAPI yet.
 
-Observed backend state:
+Do **not** rely indefinitely on that old inspection. Before starting real integration, fresh-read the backend branch and re-evaluate readiness from repository truth.
 
-- FastAPI/bootstrap exists;
-- PostgreSQL runtime/config/provisioning and migration foundation exists;
-- persistence/database testing is active;
-- current app factory exposes `/health/live` and `/health/ready`;
-- no implemented Access Auth/session/OAuth/recovery/account-link route/domain surface yet;
-- no stable Access OpenAPI contract yet.
-
-Verdict:
+Decision rule:
 
 ```text
-frontend shell / visual authority            PASS
-AF-02A pre-backend frontend flow             PASS
-backend PostgreSQL foundation                ADVANCED / ACTIVE
-real Access Auth API/OpenAPI                  NOT READY
-AF-03 real integration                       BLOCKED BY BACKEND AUTH BOUNDARY
+Auth backend + stable contract ready
+→ integrate real backend directly
+
+Auth backend still not ready
+→ continue only durable frontend work that will survive real integration
+→ do not create a fake-success auth service merely for reachability
 ```
 
-## Deliberately not materialized yet
+## Form-library / API boundary
 
-- backend AuthN/AuthZ implementation;
-- password/session/token physical design;
-- Google client ID / Apple Services ID;
-- OAuth/OIDC callback execution;
-- real provider transaction start;
-- backend account-linking mutation;
-- verification/recovery proof validation;
-- OpenAPI/Orval generated Access client;
-- TanStack Query remote-auth integration;
-- backend-authoritative session bootstrap;
-- canonical authenticated Home routing;
-- native Mobile Access implementation;
-- final Terms/Privacy destinations/content.
+Current pre-backend forms use local controlled React state and pure local validation for frontend-owned preflight behavior. Passwords/codes remain component-local and are not persisted/globalized.
 
-Terms/Privacy are deliberately rendered as non-interactive legal placeholders until real destinations/content exist; do not create fake/broken routes.
+When the real Auth OpenAPI is stable, bind forms/errors to the real contract and evaluate/adopt TanStack Form + Zod at that boundary. Do not invent a parallel fake server DTO/error model now.
 
-## Form-library boundary
+Real API flow should follow the architecture decision then current, expected direction:
 
-AF-02A uses small controlled React forms and pure local validation only for frontend-owned preflight behavior. Password/OTP/recovery/provider secrets are not moved into global flow state or persisted.
-
-Do not prematurely lock server DTO/error semantics into a client schema before the real Auth OpenAPI exists. At the real integration boundary, evaluate/adopt TanStack Form + Zod against the actual DTO/error contract rather than building a second fake API model now.
+```text
+FastAPI stable Auth OpenAPI
+→ generated typed client (`@dante/api-client` / Orval if still authoritative)
+→ remote-state/query boundary where justified
+→ existing Access state graph
+→ real provider/session/recovery flows
+→ full-stack E2E
+```
 
 ## Password/security contract
 
@@ -197,13 +327,11 @@ show/hide                   allowed
 common/breached blocklist  required server-side
 ```
 
-Never log/persist raw password, OTP, recovery proof, auth code, PKCE verifier, access/refresh/session secret or provider token/assertion.
+Never add arbitrary composition rules merely because another app uses them.
 
-Production Access must ultimately cover credential stuffing/brute force, enumeration, recovery abuse, provider transaction attacks, replay, account-link takeover and session hijack. Backend remains authoritative for session state.
+## Mandatory QA gate
 
-## QA gate
-
-Normal frontend release-quality gate:
+Normal repository gate:
 
 ```bash
 pnpm format:check
@@ -217,55 +345,73 @@ pnpm --filter @dante/web test:e2e
 git diff --check
 ```
 
-AF-02A manual/browser acceptance covered:
+Future batches must add targeted QA for the risk introduced, not merely rerun the generic gate. Examples:
 
-- SignIn desktop authority unchanged;
-- create-account → email → password;
-- backend-required state remaining non-user-facing after signup submit;
-- forgot-password frontend path with neutral copy;
-- provider continuation wording;
-- 390px phone signup composition;
-- no obvious visual regressions on accepted desktop composition.
+- visual screenshots for new/changed surfaces;
+- axe for new states;
+- keyboard/focus checks for menus/forms/dialog-like flows;
+- mobile overflow/viewport checks;
+- real network/error mapping tests when APIs exist;
+- provider callback/session/recovery full-stack tests when backend exists;
+- hosted CI before merge;
+- manual product review before claiming visual PASS.
 
-## AF-02B — downstream surface hardening
+A test harness must faithfully import the same relevant global styles/runtime assumptions as production. A harness failure must be diagnosed before changing production code.
 
-Next safe frontend-only batch:
+## Final Access closure criteria
 
-- verify-email surface behavior/validation/accessibility;
-- recovery-sent and reset-password/reset-complete;
-- provider pending/error and account-link;
-- reauthentication;
-- setup name;
-- setup locale/timezone;
-- setup start choices;
-- first-action/import/demo/Home-handoff;
-- IT/EN parity;
-- desktop/phone visual QA;
-- reducer/unit/E2E coverage where transitions are frontend-owned or can be tested with reducer/server-event fixtures without a fake service.
-
-AF-02B must **not** create a fake authentication adapter or pretend that backend-owned success happened in the production UI.
-
-## Next integration boundary
-
-Continue AF-02B frontend-owned hardening only where it does not invent backend semantics.
-
-When backend Auth becomes ready:
+Do **not** mark Access closed until all applicable items are true:
 
 ```text
-FastAPI Auth + stable OpenAPI
-→ generated typed API boundary
-→ real provider/session/recovery transactions
-→ remote-state/query integration where justified
-→ real form/schema binding
-→ full-stack E2E
+VISUAL / UX
+[ ] all canonical Access states visually reviewed
+[ ] desktop/tablet/phone responsive quality accepted
+[ ] no placeholder/debug/developer-facing UI
+[ ] provider/legal copy final
+
+I18N / A11Y
+[ ] IT/EN parity final
+[ ] keyboard/focus behavior complete
+[ ] WCAG AA automation + manual checks pass
+[ ] text expansion/zoom/reduced-motion risks handled
+
+AUTH / SECURITY
+[ ] real signup/signin/verification/recovery wired
+[ ] real Google/Apple transactions wired
+[ ] account linking secure
+[ ] session bootstrap/expiry/revocation handled
+[ ] reauth works for protected transitions
+[ ] no sensitive material logged/persisted client-side
+[ ] server errors/rate limits mapped correctly
+
+ARCHITECTURE
+[ ] stable OpenAPI/typed client boundary
+[ ] no temporary fake auth adapter remains
+[ ] routes import feature public API only
+[ ] no architecture violations
+
+QA
+[ ] unit/component tests pass
+[ ] browser E2E pass
+[ ] full-stack E2E against isolated backend/DB pass
+[ ] production build pass
+[ ] visual regression/product review accepted
+[ ] hosted CI gates green
+
+RELEASE
+[ ] Terms/Privacy destinations/content real
+[ ] authenticated Home handoff real
+[ ] migration/deployment/config requirements documented
 ```
 
-Do not create a fake success adapter merely to make downstream states reachable. Server-owned events already exist in the reducer for the real integration.
+Only after these are satisfied should a separate merge/closure gate be proposed.
 
 ## Merge discipline
 
-A merge to protected `main` remains a separate explicit gate after local and hosted QA. Never merge merely because GitHub reports the branch mergeable.
+No merge to protected `main` is implied by any AF checkpoint. Merge remains a separate explicit user gate after final QA/review.
+
+Never rebase/force-push/rewrite history without explicit authorization. Never merge merely because GitHub reports mergeable.
 
 ## Continuity
 
-Read `docs/workstreams/access-frontend-live-handoff.md` before continuing this workstream in a new chat/tool/session. Repository truth overrides chat memory.
+Read `docs/workstreams/access-frontend-live-handoff.md` first when a new chat/agent/session takes over. Repository truth and fresh branch HEAD override chat memory.
