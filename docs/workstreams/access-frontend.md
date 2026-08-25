@@ -38,17 +38,24 @@ Completed foundation work includes:
 - desktop open brand-stage geometry, narrow composition and phone-width overflow coverage;
 - professional IT/EN selector with browser-locale fallback and persisted preference.
 
-### AF-01D — shell completion / professional polish
+### AF-01D — shell completion / professional polish — PASS
 
-AF-01D closes all shell behavior that can be completed safely before choosing the real Auth integration boundary:
+AF-01D is accepted as the completed pre-auth Web shell after fresh local QA and visual review on 2026-08-25.
 
-- the production Italian hero copy is localized; the immutable A3.4 prototype remains historical evidence and is not rewritten;
-- `document.documentElement.lang` follows the active supported locale;
-- user-visible input/visibility-control strings are owned by `@dante/i18n` rather than hardcoded in components;
-- password visibility is a real local UI behavior and preserves the entered value;
-- locale popover semantics/focus/Escape/keyboard entry are hardened without pretending to be a WAI-ARIA menu implementation;
-- unit/E2E coverage is extended for localization, language persistence, document language and password visibility;
-- visual/accessibility/format/lint/type/architecture/build gates remain mandatory before AF-01D is accepted.
+Accepted behavior includes:
+
+- production Italian hero copy `Comprendi la vita. / Dai forma al prossimo passo.`;
+- English hero copy `Understand life. / Shape what comes next.`;
+- locale-aware desktop headline sizing so Italian and English preserve a comparable visual hierarchy;
+- `document.documentElement.lang` following the active supported locale;
+- user-visible input/visibility-control strings owned by `@dante/i18n` rather than hardcoded in components;
+- password visibility as a real local UI behavior that preserves the entered value;
+- locale popover focus/Escape/keyboard behavior;
+- browser locale fallback plus persisted IT/EN preference;
+- unit/E2E coverage for localization, language persistence, document language, password visibility and desktop hero geometry;
+- desktop/narrow/phone layout checks, horizontal-overflow guards and axe WCAG A/AA automation.
+
+The accepted desktop production composition keeps the A3.4 product direction while incorporating approved production adjustments: full warm canvas, open left brand stage, large muted Living Orbits, locked DANTE topbar, compact locale control and a separate Access card.
 
 AF-01D does **not** invent a credential submit result, fake provider success, fake session, recovery proof or account mutation.
 
@@ -81,23 +88,54 @@ Google/Apple Access authenticates a DANTE account only. It does not grant Gmail,
 - native Mobile Access implementation;
 - final Terms/Privacy destinations/content (do not create fake or broken legal routes merely to make the shell look complete).
 
-## Mandatory stop before AF-02/mock
+## Backend-readiness gate — 2026-08-25
 
-Do **not** automatically create the temporary mock Access adapter after AF-01D.
+The mandatory post-AF-01D backend inspection was performed against `feature/logical-postgresql`.
 
-At the AF-01D acceptance gate, first inspect the current backend workstream/repository truth. If real backend Auth + a stable API/OpenAPI contract is sufficiently ready, skip the mock and design the direct real integration boundary. Only create the thin temporary mock adapter if backend readiness still makes it useful.
+Current backend evidence shows a FastAPI/bootstrap/PostgreSQL persistence foundation, but no implemented Access authentication surface yet. The application factory currently exposes process/database health endpoints; the backend tree does not yet contain the required Auth/session/OAuth/recovery/account-linking route/domain boundary needed for real frontend Access integration.
 
-The intended alternatives are:
+Verdict:
 
 ```text
-Backend Auth not ready
-React Access → thin Access interface → deterministic temporary adapter
-
-Backend Auth ready
-React Access → generated/typed API boundary → real backend Auth
+AF-01D frontend shell                    PASS
+backend PostgreSQL/persistence foundation ADVANCED / ACTIVE
+real Access Auth API/OpenAPI              NOT READY
+frontend real-auth integration            BLOCKED BY BACKEND AUTH BOUNDARY
 ```
 
-The UI/state model must not be redesigned merely because one integration path is more convenient.
+Therefore **do not start AF-03 real integration yet**.
+
+## Mandatory stop before AF-02/mock
+
+Do **not** automatically create the temporary mock Access adapter now.
+
+The user is continuing backend work in parallel. Keep `feature/access-frontend` parked at the accepted AF-01D checkpoint until the next explicit frontend continuation. At that point re-read backend repository truth first:
+
+```text
+Backend Auth still not ready
+→ decide whether a thin deterministic temporary Access adapter is now useful
+
+Backend Auth ready enough
+→ skip the mock and design the generated/typed real API boundary
+```
+
+No mock, API contract or provider behavior should be invented merely to keep frontend work moving.
+
+## QA gate
+
+The normal frontend release-quality gate remains:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm architecture:check
+pnpm generated:check
+pnpm test
+pnpm --filter @dante/web build
+pnpm --filter @dante/web test:e2e
+git diff --check
+```
 
 ## Merge discipline
 
