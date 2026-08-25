@@ -80,6 +80,18 @@ describe('accessFlowReducer', () => {
     expect(sentState.screen.id).toBe('RECOVERY_SENT');
   });
 
+  it('preserves offline authority when a transport-dependent action is requested', () => {
+    const offlineState = accessFlowReducer(initialAccessFlowState, {
+      type: 'NETWORK_OFFLINE',
+    });
+    const signInRequest = accessFlowReducer(offlineState, {
+      type: 'REQUEST_SIGN_IN',
+    });
+
+    expect(signInRequest.screen.id).toBe('SIGN_IN');
+    expect(signInRequest.condition).toEqual({ kind: 'offline' });
+  });
+
   it('materializes the approved post-verification setup graph', () => {
     const setupName = accessFlowReducer(initialAccessFlowState, {
       type: 'SERVER_EMAIL_VERIFIED',
