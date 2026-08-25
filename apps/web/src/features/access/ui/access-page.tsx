@@ -1,12 +1,20 @@
+import { useReducer } from 'react';
+
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
+import {
+  accessFlowReducer,
+  initialAccessFlowState,
+} from '../model/access-flow';
 import { AccessBrandStage } from './access-brand-stage';
+import { AccessFlowPanel } from './access-flow-panel';
 import { AccessLocaleSwitcher } from './access-locale-switcher';
-import { AccessSignInPanel } from './access-sign-in-panel';
 import '../access.css';
 import '../access-composition.css';
 
 export function AccessPage() {
+  const [flow, dispatch] = useReducer(accessFlowReducer, initialAccessFlowState);
+
   return (
     <div className="access-shell">
       <header className="access-topbar">
@@ -30,7 +38,7 @@ export function AccessPage() {
       <main className="access-main">
         <div className="access-frame">
           <AccessBrandStage />
-          <AccessSignInPanel />
+          <AccessFlowPanel flow={flow} dispatch={dispatch} />
         </div>
       </main>
     </div>
