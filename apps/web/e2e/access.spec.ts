@@ -167,6 +167,85 @@ test.describe('DANTE Access', () => {
     await expect(passwordInput).toHaveValue('Dante-password-example');
   });
 
+  test('navigates signup locally and stops before fake account creation', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Crea il tuo account DANTE' }),
+    ).toBeVisible();
+
+    const signupEmail = page.getByLabel('Email');
+    await signupEmail.fill('person@example.com');
+    await page.getByRole('button', { name: 'Continua con email' }).click();
+
+    await expect(
+      page.getByRole('heading', { name: 'Proteggi il tuo account' }),
+    ).toBeVisible();
+    await expect(page.getByText('person@example.com')).toBeVisible();
+
+    const newPassword = page.getByLabel('Password', { exact: true });
+    await newPassword.fill('too-short');
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    await expect(page.getByText('Usa almeno 12 caratteri.')).toBeVisible();
+
+    await newPassword.fill('correct horse battery staple');
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+
+    await expect(
+      page.getByText('Frontend pronto, backend in attesa'),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Proteggi il tuo account' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Controlla la tua email' }),
+    ).toHaveCount(0);
+  });
+
+  test('navigates recovery locally without leaking account existence', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Password dimenticata?' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Recupera l’accesso' }),
+    ).toBeVisible();
+
+    await page.getByLabel('Email').fill('person@example.com');
+    await page.getByRole('button', { name: 'Invia link di recupero' }).click();
+
+    await expect(
+      page.getByText('Frontend pronto, backend in attesa'),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/non confermiamo se un indirizzo è registrato/i),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Recupera l’accesso' }),
+    ).toBeVisible();
+  });
+
+  test('surfaces browser offline as transport state rather than credential failure', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+
+    await expect(page.getByText('Sei offline.')).toBeVisible();
+    await expect(page.getByText('Riconnettiti per continuare.')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: signInHeading }),
+    ).toBeVisible();
+  });
+
   test('switches to the narrow single-column composition', async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 1000 });
     await page.goto('/');
