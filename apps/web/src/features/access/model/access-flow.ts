@@ -209,10 +209,13 @@ export function accessFlowReducer(
     case 'SERVER_RATE_LIMITED':
       return {
         ...state,
-        condition: {
-          kind: 'rate-limited',
-          retryAfterSeconds: event.retryAfterSeconds,
-        },
+        condition:
+          event.retryAfterSeconds === undefined
+            ? { kind: 'rate-limited' }
+            : {
+                kind: 'rate-limited',
+                retryAfterSeconds: event.retryAfterSeconds,
+              },
       };
     case 'SERVER_PROVIDER_STARTED':
       return withServerScreen({
@@ -225,11 +228,18 @@ export function accessFlowReducer(
         provider: event.provider,
       });
     case 'SERVER_ACCOUNT_LINK_REQUIRED':
-      return withServerScreen({
-        id: 'ACCOUNT_LINK',
-        provider: event.provider,
-        email: event.email,
-      });
+      return withServerScreen(
+        event.email === undefined
+          ? {
+              id: 'ACCOUNT_LINK',
+              provider: event.provider,
+            }
+          : {
+              id: 'ACCOUNT_LINK',
+              provider: event.provider,
+              email: event.email,
+            },
+      );
     case 'SERVER_AUTHENTICATED':
     case 'SERVER_REAUTH_SUCCEEDED':
       return withServerScreen({ id: 'AUTHENTICATED_RETURN' });
