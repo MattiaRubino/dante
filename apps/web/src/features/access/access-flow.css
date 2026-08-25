@@ -20,11 +20,10 @@
 }
 
 .access-flow-content {
-  min-width: 0;
-  min-height: 0;
   display: flex;
   flex: 1;
   flex-direction: column;
+  min-height: 0;
 }
 
 .access-flow-footer {
@@ -32,21 +31,9 @@
   padding-top: 18px;
 }
 
-.access-flow-form,
-.access-flow-form > *,
-.access-field,
-.access-input-wrap,
-.access-password-guide {
-  min-width: 0;
-}
-
 .access-flow-form {
   display: grid;
   gap: 16px;
-}
-
-.access-flow-form .access-field input {
-  min-width: 0;
 }
 
 .access-progress {
@@ -173,7 +160,7 @@
 
 .access-password-guide {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto;
   gap: 4px 10px;
   padding: 11px 12px;
   border-radius: 10px;
@@ -195,7 +182,6 @@
 .access-password-guide p {
   grid-column: 1 / -1;
   margin: 0;
-  overflow-wrap: anywhere;
 }
 
 .access-security-note,
