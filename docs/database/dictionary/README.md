@@ -1,10 +1,13 @@
 # DANTE Database Dictionary
 
-**Status:** CP6-03 READINESS FOUNDATION / HARDENED BY PART 16 / OBJECT ENTRIES NOT YET MATERIALIZED  
+**Status:** CP6-03 READINESS FOUNDATION / HARDENED THROUGH PART 18 / OBJECT ENTRIES NOT YET MATERIALIZED  
 **Schema version:** 1  
 **Serialization:** JSON  
 **Structural validation dialect:** JSON Schema Draft 2020-12  
 **Cross-file validation:** DANTE semantic Dictionary validator required before Gate-03 materialization is accepted  
+
+> **PART 18 SECURITY RECONCILIATION — 2026-08-25**  
+> DB-U26 changes no Dictionary object counts and creates no object-specific entries. It narrowly hardens the future 14 routine entries so `function_search_path` must materialize as `pg_catalog,dante,pg_temp`, with `pg_temp` explicitly last; routine security remains SECURITY INVOKER / owner `dante_owner` / no PUBLIC or direct runtime EXECUTE. Exact DANTE role-membership topology and SCRAM credential handling remain technical-foundation/P0 proof surfaces rather than fake business Dictionary objects. Object-specific directories remain intentionally absent until CP6-04 creates real PostgreSQL objects.
 
 ## Purpose
 
@@ -95,7 +98,7 @@ The 14 integrity routines remain standalone entries because they are independent
 
 ### DANTE-owned
 
-The business/control schema contract governed by Parts 1–16.
+The business/control schema contract governed by Parts 1–18.
 
 ### Technical foundation
 
@@ -283,7 +286,7 @@ function search_path
 direct runtime EXECUTE posture
 ```
 
-Baseline trigger functions are `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante` search path.
+Baseline trigger functions are `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante,pg_temp` search path. `pg_temp` is explicitly last by the Part-18 object-hijack hardening contract.
 
 ## Trigger attachments
 
@@ -321,6 +324,8 @@ grant_option
 
 This can represent DB-U21 column-level UPDATE and view-specific DML truth without broadening it into table-level CRUD.
 
+Part 18 additionally requires routine entries to reconcile exact execution-search-path security. Role-membership topology, owner password posture and credential/SCRAM provisioning remain technical-foundation proof rather than standalone business Dictionary entries.
+
 ## Proof metadata
 
 Object entries contain proof targets:
@@ -357,6 +362,7 @@ object type ↔ SQLAlchemy mode is correct
 stage prefix/counts reconcile to CP6-M01..M07
 68 tables / 5 views / 14 routines / 87 standalone entries
 75 triggers / 95 physical indexes / 68 FKs / 120 CHECKs
+routine security/search_path facts reconcile to Part 18
 Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
 extension-owned objects do not become false DANTE drift
 ```
@@ -392,7 +398,7 @@ Therefore CP6-03 still contains no `tables/`, `views/` or `routines/` entries. T
 
 `object-v1.schema.json` and `scope-v1.schema.json` are versioned contracts.
 
-This Part-16 edit is a **pre-first-entry hardening of v1**: no object-specific v1 record existed yet, so no historical object entry is being reinterpreted or migrated.
+The Part-16 edit was a **pre-first-entry hardening of v1**. Part 18 is another pre-first-entry security reconciliation: no object-specific v1 record exists yet, so no historical object entry is being reinterpreted or migrated.
 
 After first materialization, incompatible meaning changes require an explicit later Dictionary schema version/migration rather than silent reinterpretation.
 
@@ -410,7 +416,7 @@ PK/FK/UQ/CK drift or non-enforced/unvalidated state
 index drift or invalid/not-ready/not-live state
 trigger attachment/property drift
 view definition/security/default drift
-routine signature/property drift
+routine signature/property/search_path drift
 physical table persistence/RLS/partitioning drift
 owner/ACL drift
 SQLAlchemy mapping drift
@@ -419,4 +425,4 @@ scope-count/stage mismatch
 extension-owned false positives
 ```
 
-The exact validator implementation is selected in CP6-04/05 as test/repository tooling; the contract itself is now frozen by Part 16.
+The exact validator implementation is selected in CP6-04/05 as test/repository tooling; the contract itself is now frozen through Part 18.

@@ -1,5 +1,9 @@
 # CP6-03 CURRENT LIVE HANDOFF — 2026-08-25
 
+> **CURRENT SECURITY UPDATE — DB-U26 CLOSED / PART 18 FROZEN**  
+> At approved PRE-SCOPE `3a7d744028ef9263bb26d08001807b1a32403fb1`, a fresh read-only security audit independently verified the proposed DB-U26 against the real backend plus current PostgreSQL 18 / pinned psycopg 3.3.4 behavior. The audit found **0 C findings** and no Domain/Logical/Physical reopen. Part 18 closes DB-U26 as a blueprint/security-design item without changing the frozen `68 / 5 / 14 / 75 / 95 / 68 / 120` structural counts. It freezes: bound SQL values; bounded identifiers; zero baseline generic dynamic PL/pgSQL SQL; trusted `search_path = pg_catalog,dante,pg_temp` with `pg_temp` explicitly last; SCRAM-safe password handling without cleartext password-bearing SQL; `dante_owner` NOLOGIN + no password; exact runtime/migrator effective identity; exactly one DANTE role-membership edge (`dante_owner` granted to `dante_migrator` with INHERIT false / SET true / ADMIN false); and exact negative PostgreSQL security proof obligations.  
+> The next mandatory action is the **fresh independent Parts 1–18 tombstone + security replay from zero**. Gate 03 is still NOT earned. CP6-04 remains NOT STARTED / NOT AUTHORIZED. Protected-`main` realignment remains deferred. Sections below that describe DB-U26/Part18 as proposed/open are retained as pre-write continuity history and are superseded by this update plus canonical Part 18. The backend path typo in section 3.8 is corrected to the real `dante/platform/config/` paths.
+
 **Status:** CURRENT / TEMPORARY / CROSS-CHAT CONTINUITY / NON-NORMATIVE  
 **Repository:** `MattiaRubino/dante`  
 **Branch:** `feature/logical-postgresql`  
@@ -191,7 +195,8 @@ At minimum:
 apps/backend/src/dante/platform/database/metadata.py
 apps/backend/src/dante/platform/database/provisioning.py
 apps/backend/src/dante/platform/database/runtime.py
-apps/backend/src/dante/config/settings.py
+apps/backend/src/dante/platform/config/settings.py
+apps/backend/src/dante/platform/config/database.py
 apps/backend/migrations/env.py
 apps/backend/migrations/versions/20260820_01_cp3_persistence_baseline.py
 apps/backend/tests/integration/database/conftest.py
