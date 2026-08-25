@@ -1,0 +1,238 @@
+export type AccessProvider = 'google' | 'apple';
+
+export type AccessScreen =
+  | { id: 'SIGN_IN' }
+  | { id: 'SIGN_UP_EMAIL'; email: string }
+  | { id: 'SIGN_UP_PASSWORD'; email: string }
+  | { id: 'VERIFY_EMAIL'; email: string }
+  | { id: 'FORGOT_PASSWORD'; email: string }
+  | { id: 'RECOVERY_SENT'; email: string }
+  | { id: 'RESET_PASSWORD' }
+  | { id: 'RESET_COMPLETE' }
+  | { id: 'PROVIDER_PENDING'; provider: AccessProvider }
+  | { id: 'PROVIDER_ERROR'; provider: AccessProvider }
+  | { id: 'ACCOUNT_LINK'; provider: AccessProvider; email?: string }
+  | { id: 'AUTHENTICATED_RETURN' }
+  | { id: 'REAUTH' }
+  | { id: 'SETUP_NAME'; preferredName: string }
+  | { id: 'SETUP_LOCALE' }
+  | { id: 'SETUP_START' }
+  | { id: 'FIRST_ACTION' }
+  | { id: 'IMPORT' }
+  | { id: 'DEMO' }
+  | { id: 'HOME_HANDOFF' };
+
+export type AccessBackendOperation =
+  | 'sign-in'
+  | 'provider-google'
+  | 'provider-apple'
+  | 'sign-up'
+  | 'verify-email'
+  | 'resend-verification'
+  | 'recovery'
+  | 'reset-password'
+  | 'account-link'
+  | 'reauth'
+  | 'first-action'
+  | 'import';
+
+export type AccessCondition =
+  | { kind: 'idle' }
+  | { kind: 'backend-required'; operation: AccessBackendOperation }
+  | { kind: 'offline' }
+  | { kind: 'server-unavailable' }
+  | { kind: 'rate-limited'; retryAfterSeconds?: number };
+
+export type AccessFlowState = Readonly<{
+  screen: AccessScreen;
+  condition: AccessCondition;
+}>;
+
+export type AccessFlowEvent =
+  | { type: 'CREATE_ACCOUNT' }
+  | { type: 'FORGOT_PASSWORD' }
+  | { type: 'BACK_TO_SIGN_IN' }
+  | { type: 'SIGN_UP_EMAIL_ACCEPTED'; email: string }
+  | { type: 'CHANGE_SIGN_UP_EMAIL' }
+  | { type: 'REQUEST_SIGN_IN' }
+  | { type: 'REQUEST_PROVIDER'; provider: AccessProvider }
+  | { type: 'REQUEST_SIGN_UP' }
+  | { type: 'REQUEST_VERIFY_EMAIL' }
+  | { type: 'REQUEST_RESEND_VERIFICATION' }
+  | { type: 'REQUEST_RECOVERY'; email: string }
+  | { type: 'REQUEST_RESET_PASSWORD' }
+  | { type: 'REQUEST_ACCOUNT_LINK' }
+  | { type: 'REQUEST_REAUTH' }
+  | { type: 'REQUEST_FIRST_ACTION' }
+  | { type: 'REQUEST_IMPORT' }
+  | { type: 'CLEAR_CONDITION' }
+  | { type: 'NETWORK_OFFLINE' }
+  | { type: 'NETWORK_ONLINE' }
+  | { type: 'SERVER_UNAVAILABLE' }
+  | { type: 'SERVER_RATE_LIMITED'; retryAfterSeconds?: number }
+  | { type: 'SERVER_PROVIDER_STARTED'; provider: AccessProvider }
+  | { type: 'SERVER_PROVIDER_FAILED'; provider: AccessProvider }
+  | {
+      type: 'SERVER_ACCOUNT_LINK_REQUIRED';
+      provider: AccessProvider;
+      email?: string;
+    }
+  | { type: 'SERVER_AUTHENTICATED' }
+  | { type: 'SERVER_SIGN_UP_CREATED' }
+  | { type: 'SERVER_EMAIL_VERIFIED' }
+  | { type: 'SERVER_RECOVERY_SENT'; email: string }
+  | { type: 'SERVER_RECOVERY_PROOF_VALID' }
+  | { type: 'SERVER_RESET_SUCCEEDED' }
+  | { type: 'SERVER_REAUTH_REQUIRED' }
+  | { type: 'SERVER_REAUTH_SUCCEEDED' }
+  | { type: 'RECOVERY_SENT_CONTINUE' }
+  | { type: 'RESET_COMPLETE_CONTINUE' }
+  | { type: 'PROVIDER_RETRY' }
+  | { type: 'ACCOUNT_LINK_OTHER_ACCOUNT' }
+  | { type: 'REAUTH_CANCEL' }
+  | { type: 'SETUP_NAME_ACCEPTED'; preferredName: string }
+  | { type: 'SETUP_LOCALE_ACCEPTED' }
+  | { type: 'SETUP_START_CHOICE'; choice: 'real' | 'import' | 'demo' | 'skip' }
+  | { type: 'DEMO_COMPLETE' };
+
+export const initialAccessFlowState: AccessFlowState = {
+  screen: { id: 'SIGN_IN' },
+  condition: { kind: 'idle' },
+};
+
+function withScreen(screen: AccessScreen): AccessFlowState {
+  return { screen, condition: { kind: 'idle' } };
+}
+
+function requireBackend(
+  state: AccessFlowState,
+  operation: AccessBackendOperation,
+): AccessFlowState {
+  return {
+    ...state,
+    condition: { kind: 'backend-required', operation },
+  };
+}
+
+export function accessFlowReducer(
+  state: AccessFlowState,
+  event: AccessFlowEvent,
+): AccessFlowState {
+  switch (event.type) {
+    case 'CREATE_ACCOUNT':
+      return withScreen({ id: 'SIGN_UP_EMAIL', email: '' });
+    case 'FORGOT_PASSWORD':
+      return withScreen({ id: 'FORGOT_PASSWORD', email: '' });
+    case 'BACK_TO_SIGN_IN':
+    case 'RESET_COMPLETE_CONTINUE':
+    case 'RECOVERY_SENT_CONTINUE':
+    case 'PROVIDER_RETRY':
+    case 'ACCOUNT_LINK_OTHER_ACCOUNT':
+    case 'REAUTH_CANCEL':
+      return withScreen({ id: 'SIGN_IN' });
+    case 'SIGN_UP_EMAIL_ACCEPTED':
+      return withScreen({ id: 'SIGN_UP_PASSWORD', email: event.email });
+    case 'CHANGE_SIGN_UP_EMAIL':
+      return state.screen.id === 'SIGN_UP_PASSWORD'
+        ? withScreen({ id: 'SIGN_UP_EMAIL', email: state.screen.email })
+        : state;
+    case 'REQUEST_SIGN_IN':
+      return requireBackend(state, 'sign-in');
+    case 'REQUEST_PROVIDER':
+      return requireBackend(state, `provider-${event.provider}`);
+    case 'REQUEST_SIGN_UP':
+      return requireBackend(state, 'sign-up');
+    case 'REQUEST_VERIFY_EMAIL':
+      return requireBackend(state, 'verify-email');
+    case 'REQUEST_RESEND_VERIFICATION':
+      return requireBackend(state, 'resend-verification');
+    case 'REQUEST_RECOVERY':
+      return {
+        screen:
+          state.screen.id === 'FORGOT_PASSWORD'
+            ? { ...state.screen, email: event.email }
+            : state.screen,
+        condition: { kind: 'backend-required', operation: 'recovery' },
+      };
+    case 'REQUEST_RESET_PASSWORD':
+      return requireBackend(state, 'reset-password');
+    case 'REQUEST_ACCOUNT_LINK':
+      return requireBackend(state, 'account-link');
+    case 'REQUEST_REAUTH':
+      return requireBackend(state, 'reauth');
+    case 'REQUEST_FIRST_ACTION':
+      return requireBackend(state, 'first-action');
+    case 'REQUEST_IMPORT':
+      return requireBackend(state, 'import');
+    case 'CLEAR_CONDITION':
+    case 'NETWORK_ONLINE':
+      return { ...state, condition: { kind: 'idle' } };
+    case 'NETWORK_OFFLINE':
+      return { ...state, condition: { kind: 'offline' } };
+    case 'SERVER_UNAVAILABLE':
+      return { ...state, condition: { kind: 'server-unavailable' } };
+    case 'SERVER_RATE_LIMITED':
+      return {
+        ...state,
+        condition: {
+          kind: 'rate-limited',
+          retryAfterSeconds: event.retryAfterSeconds,
+        },
+      };
+    case 'SERVER_PROVIDER_STARTED':
+      return withScreen({ id: 'PROVIDER_PENDING', provider: event.provider });
+    case 'SERVER_PROVIDER_FAILED':
+      return withScreen({ id: 'PROVIDER_ERROR', provider: event.provider });
+    case 'SERVER_ACCOUNT_LINK_REQUIRED':
+      return withScreen({
+        id: 'ACCOUNT_LINK',
+        provider: event.provider,
+        email: event.email,
+      });
+    case 'SERVER_AUTHENTICATED':
+    case 'SERVER_REAUTH_SUCCEEDED':
+      return withScreen({ id: 'AUTHENTICATED_RETURN' });
+    case 'SERVER_SIGN_UP_CREATED':
+      return state.screen.id === 'SIGN_UP_PASSWORD'
+        ? withScreen({ id: 'VERIFY_EMAIL', email: state.screen.email })
+        : state;
+    case 'SERVER_EMAIL_VERIFIED':
+      return withScreen({ id: 'SETUP_NAME', preferredName: '' });
+    case 'SERVER_RECOVERY_SENT':
+      return withScreen({ id: 'RECOVERY_SENT', email: event.email });
+    case 'SERVER_RECOVERY_PROOF_VALID':
+      return withScreen({ id: 'RESET_PASSWORD' });
+    case 'SERVER_RESET_SUCCEEDED':
+      return withScreen({ id: 'RESET_COMPLETE' });
+    case 'SERVER_REAUTH_REQUIRED':
+      return withScreen({ id: 'REAUTH' });
+    case 'SETUP_NAME_ACCEPTED':
+      return withScreen({ id: 'SETUP_LOCALE' });
+    case 'SETUP_LOCALE_ACCEPTED':
+      return withScreen({ id: 'SETUP_START' });
+    case 'SETUP_START_CHOICE':
+      if (event.choice === 'real') {
+        return withScreen({ id: 'FIRST_ACTION' });
+      }
+      if (event.choice === 'import') {
+        return withScreen({ id: 'IMPORT' });
+      }
+      if (event.choice === 'demo') {
+        return withScreen({ id: 'DEMO' });
+      }
+      return withScreen({ id: 'HOME_HANDOFF' });
+    case 'DEMO_COMPLETE':
+      return withScreen({ id: 'HOME_HANDOFF' });
+    default:
+      return state;
+  }
+}
+
+export function isValidAccessEmail(value: string): boolean {
+  const email = value.trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+export function isValidNewPassword(value: string): boolean {
+  return value.length >= 12;
+}
