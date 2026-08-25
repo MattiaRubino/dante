@@ -1,6 +1,6 @@
 """Typed database configuration shared by runtime and migration boundaries."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, StringConstraints
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +13,7 @@ PoolSize = Annotated[int, Field(ge=1, le=100)]
 PoolOverflow = Annotated[int, Field(ge=0, le=100)]
 PoolTimeoutSeconds = Annotated[float, Field(gt=0, le=120)]
 ReadinessTimeoutSeconds = Annotated[float, Field(gt=0, le=30)]
+RuntimeDatabaseUser = Literal["dante_runtime"]
 
 
 class DatabaseSettings(BaseModel):
@@ -23,7 +24,7 @@ class DatabaseSettings(BaseModel):
     host: DatabaseText
     port: DatabasePort = 5432
     name: DatabaseText
-    user: DatabaseText
+    user: RuntimeDatabaseUser
     password: SecretStr
     connect_timeout_seconds: ConnectTimeoutSeconds = 5
     pool_size: PoolSize = 5
