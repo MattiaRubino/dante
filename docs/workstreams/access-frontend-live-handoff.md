@@ -1,8 +1,9 @@
 # DANTE Access frontend — live handoff
 
-**Status:** ACTIVE operational handoff  
-**Date:** 2026-08-24  
+**Status:** PARKED AT AF-01D PASS / BACKEND-AUTH GATE  
+**Date:** 2026-08-25  
 **Branch:** `feature/access-frontend`  
+**AF-01D accepted implementation SHA:** `d2a9017cd2c1c546a163fdaf87dd3a708cb64f59`  
 **Frontend worktree:** `/home/mattia/projects/dante-frontend`  
 **Backend/logical-PostgreSQL worktree:** `/home/mattia/projects/dante`  
 **WSL distro:** `Ubuntu-24.04`
@@ -90,7 +91,7 @@ Expected Vite URL:
 http://localhost:5173/
 ```
 
-User should be able to inspect Project tree, Git Log/diff, Problems, editor and terminal in WebStorm while Vite updates the browser live.
+The user should be able to inspect Project tree, Git Log/diff, Problems, editor and terminal in WebStorm while Vite updates the browser live. `.sh` scripts are QA/automation tools, not the user's only visibility into the frontend.
 
 ## 5. Access product authority
 
@@ -139,35 +140,63 @@ Current shared packages include:
 
 Do not create `@dante/api-client` before a real stable FastAPI OpenAPI contract exists. Do not create a generic `Repository<T>` abstraction. PowerSync only enters when the first real offline vertical is activated.
 
-## 7. Current Access implementation checkpoint
+## 7. Current Access implementation checkpoint — AF-01D PASS
 
-The branch has completed the AF-01A/AF-01C production shell/foundation work and is currently closing **AF-01D — shell completion / professional polish**.
+AF-01A/AF-01C/AF-01D Web shell/foundation work is complete and accepted.
 
-Current production UI includes:
+Accepted production UI includes:
 
-- full warm desktop canvas with open left brand stage;
+- full warm desktop canvas with open/full-area left brand stage;
 - locked DANTE symbol + wordmark topbar;
 - separate rounded/shadowed Access card;
+- large muted Living Orbits treatment;
 - responsive narrow/mobile Web composition;
+- compact professional IT/EN selector;
+- browser locale fallback and persisted preference;
+- `html lang` synchronized with active locale;
+- localized email placeholder and password-visibility labels;
+- working local show/hide-password control;
 - Google/Apple visual affordances only (real provider execution intentionally absent);
-- email/current-password controls;
-- professional IT/EN selector with browser fallback and persisted preference;
 - Testing Library, Playwright and axe coverage;
 - architecture/design-token/generated-output gates.
 
-AF-01D delta includes:
+Final hero copy:
 
-- production Italian hero headline localized (`Comprendi la vita. / Dai forma a ciò che viene dopo.`); immutable prototype evidence is not rewritten;
-- dynamic `<html lang>` following IT/EN;
-- localized email placeholder and show/hide password labels;
-- real local password visibility toggle;
-- hardened locale popover focus/Escape/keyboard semantics;
-- expanded unit/E2E coverage;
-- workstream/handoff documentation update.
+```text
+IT
+Comprendi la vita.
+Dai forma al prossimo passo.
 
-**AF-01D is not accepted until fresh local QA and visual review pass.**
+EN
+Understand life.
+Shape what comes next.
+```
 
-## 8. Deliberately inactive / not fake
+Italian desktop typography has an explicit locale-aware scale adjustment so the longer language preserves the intended visual hierarchy without changing the English composition.
+
+The user visually accepted the final IT composition on 2026-08-25. The final screenshot was produced only after the QA script reached its post-QA preview/screenshot stage.
+
+## 8. QA gates
+
+Normal frontend gate set:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm architecture:check
+pnpm generated:check
+pnpm test
+pnpm --filter @dante/web build
+pnpm --filter @dante/web test:e2e
+git diff --check
+```
+
+The AF-01D scripts ran these gates before generating the accepted final screenshots. Future continuation must rerun the relevant gates after any new change.
+
+Visual review includes desktop 1536×864 plus narrow and phone behavior. Do not declare visual PASS merely because the page renders.
+
+## 9. Deliberately inactive / not fake
 
 Do not pretend these exist before their actual boundary:
 
@@ -182,7 +211,7 @@ Do not pretend these exist before their actual boundary:
 
 The current Terms/Privacy controls must not be called production-complete until real legal destinations/content exist. Do not invent broken/fake routes simply to satisfy appearance.
 
-## 9. Password/security contract
+## 10. Password/security contract
 
 DANTE V1 password policy:
 
@@ -199,7 +228,7 @@ Never log/persist raw password, OTP, recovery proof, auth code, PKCE verifier, a
 
 Production Access must ultimately cover credential stuffing/brute force, enumeration, recovery abuse, provider transaction attacks, replay, account-link takeover and session hijack. Backend remains authoritative for session state.
 
-## 10. Approved semantic state graph
+## 11. Approved semantic state graph
 
 ```text
 SIGN_IN
@@ -234,48 +263,81 @@ SESSION_EXPIRED / SECURITY_REAUTH_REQUIRED
 
 Orthogonal conditions include OFFLINE/REACHABILITY_FAILURE, REQUEST_IN_FLIGHT, RATE_LIMITED and SERVER_UNAVAILABLE; they do not become fake credential states.
 
-## 11. QA gates
+## 12. Backend-readiness inspection — 2026-08-25
 
-Normal frontend gate set:
+The mandatory stop/check was performed against current repository truth on `feature/logical-postgresql`.
 
-```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm architecture:check
-pnpm generated:check
-pnpm test
-pnpm --filter @dante/web build
-pnpm --filter @dante/web test:e2e
-git diff --check
+Observed backend state:
+
+- FastAPI application/bootstrap exists;
+- PostgreSQL runtime/config/provisioning and migration foundation exists;
+- persistence/database testing is active;
+- current FastAPI application factory exposes `/health/live` and `/health/ready`;
+- no production Access Auth route/domain surface is present in the current backend tree;
+- no stable login/signup/verify/recovery/session/provider/account-link OpenAPI contract exists yet.
+
+Verdict:
+
+```text
+AF-01D frontend shell                     PASS
+backend persistence/PostgreSQL foundation ACTIVE / ADVANCED
+backend Access Auth API                    NOT READY
+stable Access OpenAPI                      NOT READY
+real frontend Auth integration             WAIT
 ```
 
-Visual review must include at least desktop 1536×864 plus narrow and phone behavior. Do not declare visual PASS merely because the page renders; compare composition against the accepted authority and current approved production adjustments.
+This is not a backend failure; Auth is simply outside the currently materialized backend boundary.
 
-## 12. Mandatory stop before mock/AF-02 integration
+## 13. Mandatory stop before mock / real integration
 
-**Do not automatically begin a mock Access adapter after AF-01D.**
+**STOP HERE. Do not automatically begin AF-02 mock work.**
 
-When AF-01D passes:
+The user is continuing backend work in parallel. On the next explicit frontend continuation:
 
-1. STOP;
-2. inspect current backend branches/workstreams/repository truth;
-3. determine whether real Auth + stable API/OpenAPI is now ready enough for frontend integration;
-4. if yes, skip the mock and design the real typed integration boundary;
-5. if no, only then consider the thin deterministic temporary adapter described by AF-02.
+1. fresh-read this handoff and `feature/access-frontend` HEAD;
+2. fresh-inspect backend branch/workstream truth;
+3. determine whether Auth/session/provider/recovery API + stable OpenAPI now exist;
+4. if yes, skip the temporary adapter and design the real typed integration boundary;
+5. if no, discuss whether a thin deterministic temporary adapter is still worth building before writing it.
 
-The user may be working on backend in parallel and expects this readiness check before any mock work.
+Expected alternatives:
 
-## 13. Next immediate action
+```text
+BACKEND AUTH READY
+FastAPI/OpenAPI
+→ Orval/generated @dante/api-client
+→ TanStack Query where remote state belongs
+→ TanStack Form + Zod for real forms
+→ Access state graph
+→ full-stack E2E
 
-At handoff creation, implementation writes have been made remotely for AF-01D but local QA has not yet been run against them.
+BACKEND AUTH STILL NOT READY AND MOCK IS USEFUL
+React Access
+→ thin temporary Access interface
+→ deterministic adapter scenarios
+→ no fake security semantics
+```
 
-Next session should:
+Never build the mock merely because it was once planned.
 
-1. fresh-read `feature/access-frontend` HEAD;
-2. compare the AF-01D delta from base `c63e2828cc69bd2eef8df2c4765e7b2ed328dae7`;
-3. give the user one safe pull/Prettier/full-QA/screenshot script that tolerates only expected local Prettier residue;
-4. inspect output and screenshot;
-5. if failures exist, assistant fixes remote first, then supplies a new pull/QA script;
-6. only after QA + visual acceptance, commit/push any local Prettier-only delta with a strict whitelist;
-7. STOP before mock and inspect backend readiness.
+## 14. Merge discipline
+
+No Access merge to protected `main` has been authorized by this checkpoint. Merge remains a separate explicit gate after local/hosted QA and review.
+
+Do not rebase/force-push/rewrite history. Do not merge merely because GitHub reports the branch mergeable.
+
+## 15. Next immediate action
+
+Frontend Access is intentionally parked.
+
+Before any new frontend feature work:
+
+```text
+1. sync/close any expected local Prettier residue from the AF-01D QA
+2. keep feature/access-frontend as the accepted checkpoint
+3. continue backend work independently
+4. when returning to Access, re-run backend readiness check
+5. choose real integration vs temporary adapter from current repository truth
+```
+
+A new chat/session should not reconstruct this state from memory; read this file first.
