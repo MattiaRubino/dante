@@ -57,7 +57,8 @@ class SessionTimingAbsoluteRow(Base):
         ),
         CheckConstraint(
             "(ended_at IS NULL AND end_precision_code IS NULL) OR "
-            "(ended_at IS NOT NULL AND isfinite(ended_at) "
+            "(ended_at IS NOT NULL AND end_precision_code IS NOT NULL "
+            "AND isfinite(ended_at) "
             "AND end_precision_code IN ('exact','approximate','rounded'))",
             name="end_precision",
         ),
