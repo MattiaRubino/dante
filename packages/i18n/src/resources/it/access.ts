@@ -40,9 +40,12 @@ export const access = {
   provider: {
     google: 'Continua con Google',
     apple: 'Continua con Apple',
+    googleName: 'Google',
+    appleName: 'Apple',
     body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non a DANTE.',
-    wait: 'Apertura del provider…',
-    scopeNote: 'L’accesso Google/Apple autentica l’account. Non concede automaticamente accesso a Calendar, Gmail o iCloud.',
+    wait: 'Completa l’accesso',
+    pendingBody: 'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
+    scopeNote: 'Usare Google o Apple per accedere non autorizza DANTE a leggere Calendar, Gmail o iCloud.',
   },
   common: {
     or: 'oppure',
@@ -71,6 +74,8 @@ export const access = {
     passwordMinimum: 'Usa almeno 12 caratteri.',
     passwordMismatch: 'Le password non coincidono.',
     verificationCode: 'Inserisci il codice a 6 cifre.',
+    preferredName: 'Inserisci il nome con cui vuoi essere chiamato.',
+    firstAction: 'Scrivi cosa vuoi aggiungere prima di continuare.',
   },
   network: {
     offlineTitle: 'Sei offline.',
@@ -83,6 +88,8 @@ export const access = {
   locale: {
     control: 'Cambia lingua. Lingua attuale: {{language}}',
     options: 'Lingue disponibili',
+    italian: 'Italiano',
+    english: 'English',
   },
   legal: {
     prefix: 'Continuando, accetti i',
@@ -117,9 +124,9 @@ export const access = {
   },
   providerError: {
     title: 'Accesso non completato',
-    body: 'Il provider non ha completato l’autenticazione. Nessuna modifica è stata applicata al tuo account.',
+    body: 'Non siamo riusciti a completare l’accesso con il provider.',
     safe: 'Il tuo account è al sicuro.',
-    retry: 'Puoi riprovare o scegliere un altro metodo.',
+    retry: 'Puoi riprovare o scegliere un altro metodo di accesso.',
   },
   link: {
     title: 'Conferma il collegamento',
@@ -129,11 +136,12 @@ export const access = {
   },
   authenticated: {
     title: 'Accesso confermato',
-    body: 'La sessione DANTE è stata stabilita. Il passaggio a Home verrà collegato al router autenticato reale.',
+    body: 'La tua identità è stata confermata. Stiamo preparando il tuo spazio DANTE.',
   },
   reauth: {
-    title: 'Sessione scaduta',
-    body: 'Accedi di nuovo per continuare. Il contesto corrente non viene ripristinato finché il backend non conferma la nuova autenticazione.',
+    title: 'Conferma di nuovo la tua identità',
+    body: 'Per proteggere il tuo account, conferma di nuovo la tua identità per continuare.',
+    action: 'Continua',
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',
@@ -143,7 +151,7 @@ export const access = {
   setupLocale: {
     title: 'Lingua e fuso orario',
     body: 'DANTE usa queste informazioni per mostrare orari e date correttamente. Abbiamo precompilato ciò che possiamo rilevare.',
-    note: 'Non stiamo deducendo preferenze: stai solo confermando impostazioni operative.',
+    note: 'Stai confermando solo impostazioni operative; potrai modificarle in seguito.',
     language: 'Lingua',
     timezone: 'Fuso orario',
   },
@@ -182,7 +190,7 @@ export const access = {
   },
   home: {
     title: 'Tutto pronto',
-    body: 'Il setup iniziale è completo. Da qui DANTE apre Home e la guida continua solo quando serve.',
-    pending: 'La schermata è pronta; il passaggio alla Home canonica resta volutamente in attesa della sessione e del router autenticato reali.',
+    body: 'Hai completato la configurazione iniziale. Ora puoi entrare nel tuo spazio DANTE.',
+    pending: 'Potrai modificare queste impostazioni in seguito.',
   },
 } as const;
