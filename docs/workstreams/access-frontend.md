@@ -56,13 +56,15 @@ Accepted behavior includes:
 
 The accepted production composition preserves the A3.4 direction: full warm canvas, open left brand stage, muted Living Orbits, locked DANTE topbar, compact locale control and separate Access card.
 
-### AF-02A — complete pre-backend frontend state graph — IMPLEMENTED / QA PENDING
+### AF-02A — complete pre-backend frontend state graph — PASS
+
+AF-02A was accepted after iterative local QA, E2E and visual review on 2026-08-25.
 
 The user explicitly chose to continue frontend work while backend Auth is still being built, but without a fake/mock authentication service.
 
 AF-02A therefore advances every safe frontend-owned part of Access while preserving backend authority.
 
-Implemented remotely:
+Accepted implementation includes:
 
 - feature-local `model/access-flow.ts` with the approved canonical Access states;
 - explicit orthogonal transport conditions: idle, backend-required, offline, server-unavailable and rate-limited;
@@ -79,7 +81,11 @@ Implemented remotely:
 - first-action/import/demo/Home-handoff surfaces;
 - local validation and password visibility behavior;
 - E2E coverage for signup/recovery frontend navigation and backend-boundary stopping;
-- reducer tests that specifically prove local actions do **not** fabricate backend success.
+- reducer tests that specifically prove local actions do **not** fabricate backend success;
+- backend-required conditions remaining internal/non-user-facing;
+- desktop visual review of SignIn, signup email/password and recovery;
+- phone visual review of signup at 390px;
+- product-copy polish for provider continuation and neutral recovery wording.
 
 Critical rule:
 
@@ -117,7 +123,7 @@ NOT → fake PROVIDER_PENDING
 
 Server/provider events are already represented in the reducer so the later real integration can activate the downstream states without redesigning the UI state model.
 
-AF-02A is **not accepted yet** until local formatting/lint/type/architecture/test/build/E2E QA and visual review run against the remote implementation.
+AF-02A QA passed the normal frontend gate: formatting, lint, typecheck, architecture, generated-output check, unit tests, Web build, Playwright E2E and diff check. Visual review accepted the polished desktop and phone surfaces.
 
 ## Invariants
 
@@ -150,7 +156,7 @@ Verdict:
 
 ```text
 frontend shell / visual authority            PASS
-AF-02A pre-backend frontend flow             IMPLEMENTED / QA PENDING
+AF-02A pre-backend frontend flow             PASS
 backend PostgreSQL foundation                ADVANCED / ACTIVE
 real Access Auth API/OpenAPI                  NOT READY
 AF-03 real integration                       BLOCKED BY BACKEND AUTH BOUNDARY
@@ -211,21 +217,37 @@ pnpm --filter @dante/web test:e2e
 git diff --check
 ```
 
-AF-02A additionally requires manual/browser review of at least:
+AF-02A manual/browser acceptance covered:
 
-- SignIn desktop authority remains visually unchanged;
+- SignIn desktop authority unchanged;
 - create-account → email → password;
-- backend-required notice after signup submit;
-- forgot-password frontend path;
-- IT/EN on non-SignIn screens;
-- 800px narrow composition;
-- 390px phone composition;
-- no horizontal overflow;
-- keyboard focus and axe on the reachable entry surfaces.
+- backend-required state remaining non-user-facing after signup submit;
+- forgot-password frontend path with neutral copy;
+- provider continuation wording;
+- 390px phone signup composition;
+- no obvious visual regressions on accepted desktop composition.
+
+## AF-02B — downstream surface hardening
+
+Next safe frontend-only batch:
+
+- verify-email surface behavior/validation/accessibility;
+- recovery-sent and reset-password/reset-complete;
+- provider pending/error and account-link;
+- reauthentication;
+- setup name;
+- setup locale/timezone;
+- setup start choices;
+- first-action/import/demo/Home-handoff;
+- IT/EN parity;
+- desktop/phone visual QA;
+- reducer/unit/E2E coverage where transitions are frontend-owned or can be tested with reducer/server-event fixtures without a fake service.
+
+AF-02B must **not** create a fake authentication adapter or pretend that backend-owned success happened in the production UI.
 
 ## Next integration boundary
 
-Continue AF-02 frontend-owned polish only where it does not invent backend semantics.
+Continue AF-02B frontend-owned hardening only where it does not invent backend semantics.
 
 When backend Auth becomes ready:
 
