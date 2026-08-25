@@ -30,9 +30,9 @@ export const access = {
     stepPassword: 'Password',
     stepVerify: 'Verify',
     continueEmail: 'Continue with email',
-    orProvider: 'or create your account with',
-    google: 'Create with Google',
-    apple: 'Create with Apple',
+    orProvider: 'or continue with',
+    google: 'Continue with Google',
+    apple: 'Continue with Apple',
   },
   signupPassword: {
     title: 'Protect your account',
@@ -78,10 +78,6 @@ export const access = {
     passwordMismatch: 'The passwords do not match.',
     verificationCode: 'Enter the 6-digit code.',
   },
-  integration: {
-    title: 'Frontend ready, backend pending',
-    body: 'This action is already wired into the Access flow. The real authentication service will complete it without simulating an outcome.',
-  },
   network: {
     offlineTitle: 'You’re offline.',
     offlineBody: 'Reconnect to continue.',
@@ -110,7 +106,7 @@ export const access = {
     title: 'Recover access',
     body: 'We’ll send a secure link to set a new password.',
     action: 'Send recovery link',
-    privacy: 'The response is intentionally neutral: we do not confirm whether an address is registered.',
+    privacy: 'If the address is associated with a DANTE account, you’ll receive a link to reset the password.',
   },
   recovery: {
     title: 'Check your email',
