@@ -1,12 +1,13 @@
 # Backend CP6-04 — M2 Scoped / MaterialState Control Materialization
 
-- **Status:** REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING
+- **Status:** CLOSED / DIRECT POSTGRESQL PASS
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
 - **Authorized PRE-SCOPE:** `daf8112f619281989dd8a3acb79ed1865d7d138b`
 - **Implementation candidate HEAD:** `69e6f75d6b883c07833e7a78881d741f15503dbd`
 - **Repair authorized PRE-SCOPE:** `69e6f75d6b883c07833e7a78881d741f15503dbd`
+- **Repair candidate HEAD:** `ab79458f8a17d390ff6298ff8ae535c0c89e0c20`
 - **Checkpoint:** CP6-04 — Whole DANTE Database Materialization
 - **Stage:** CP6-M02 — `cp6_scoped_material_control`
 - **Alembic revision:** `20260825_02`
@@ -346,11 +347,11 @@ M2 tests similarly target `20260825_02` explicitly so future M3+ growth does not
 erase the M2 database boundary.
 
 The PostgreSQL 18 `NOT NULL` catalog finding is handled in proof code only. No
-M2 migration, mapping or Dictionary repair is warranted by that finding.
+M2 migration, mapping or Dictionary repair was warranted by that finding.
 
 ## 9. Direct PostgreSQL acceptance contract
 
-The M2 lane must prove on real PostgreSQL 18.6:
+The M2 lane proves on real PostgreSQL 18.6:
 
 ```text
 single repository head = 20260825_02
@@ -445,7 +446,7 @@ The failed assertion expected 24 rows when selecting every `pg_constraint` row
 belonging to an M2 table. The live PostgreSQL 18.6 catalog returned 38 because
 it also exposed 14 `NOT NULL` constraints as `contype = 'n'`.
 
-This is a proof-code defect, not evidence of unexpected M2 business DDL.
+This was a proof-code defect, not evidence of unexpected M2 business DDL.
 
 ## 11. Repair decision
 
@@ -456,9 +457,9 @@ apps/backend/tests/integration/database/test_cp6_m2.py
 docs/development/backend-cp6-04-m2-scoped-material-control.md
 ```
 
-No migration, mapping, Dictionary or ACL file is changed.
+No migration, mapping, Dictionary or ACL file changed.
 
-The repaired topology assertion now requires:
+The repaired topology assertion requires:
 
 ```text
 M2 p/c/f/u rows    24
@@ -475,7 +476,32 @@ VALID
 ENFORCED
 ```
 
-Status after repair write:
+## 12. Direct PostgreSQL 18.6 rerun — PASS
+
+After the proof-code repair, the user executed the complete disposable PostgreSQL
+lane again with:
+
+```text
+uv run pytest -m postgres -vv
+```
+
+Observed result:
+
+```text
+collected   71
+deselected  37
+selected    34
+
+PASS        34
+FAIL         0
+
+elapsed     25.75s
+```
+
+The rerun passed every M1, M2, migration, privilege, runtime and transaction test,
+including the repaired PostgreSQL-18 physical constraint proof.
+
+Closure status:
 
 ```text
 P0
@@ -485,7 +511,7 @@ M1
 CLOSED / DIRECT POSTGRESQL PASS
 
 M2 DDL / MAPPINGS / DICTIONARY
-UNCHANGED
+UNCHANGED AFTER FIRST RUN
 
 FIRST REAL POSTGRESQL 18.6 M2 RUN
 33 PASS / 1 FAIL
@@ -494,24 +520,24 @@ ROOT CAUSE
 POSTGRESQL 18 NOT NULL CATALOG REPRESENTATION IN PROOF CODE
 
 M2 TEST REPAIR
-WRITTEN
+COMPLETE
 
-M2 DIRECT POSTGRESQL RERUN
-PENDING
+DIRECT POSTGRESQL 18.6 RERUN
+34 PASS / 0 FAIL
 
-M2 DIRECT PASS
-NOT YET EARNED
+M2
+CLOSED / DIRECT POSTGRESQL PASS
 
 M3
-NOT STARTED / BLOCKED
+READY TO OPEN / NOT STARTED
 ```
 
-No first-run result is upgraded into a PASS. M2 closes only after a fresh direct
-rerun passes the complete selected PostgreSQL lane.
+The first-run failure remains retained as historical evidence; it is not erased or
+relabelled. M2 earns closure only from the fresh complete rerun.
 
-## 12. Explicit exclusions
+## 13. Explicit exclusions
 
-M2 does not create or activate:
+M2 did not create or activate:
 
 ```text
 CP6-M03..CP6-M07 revisions
@@ -532,6 +558,6 @@ additional persistent databases
 protected-main merge/rebase/realignment
 ```
 
-The next mandatory operation is a fresh direct rerun against the disposable
-PostgreSQL 18.6 acceptance boundary. M3 remains blocked until M2 earns a direct
-PASS.
+The next materialization stage is CP6-M03 `cp6_schedule_actual_session`. It must
+remain a separate explicitly scoped repository change and earn its own direct
+PostgreSQL acceptance before M4 can begin.
