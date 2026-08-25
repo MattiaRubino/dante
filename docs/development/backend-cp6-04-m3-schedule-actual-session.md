@@ -1,6 +1,6 @@
 # Backend CP6-04 — M3 Schedule / Actual / Session Materialization
 
-- **Status:** REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING
+- **Status:** CLOSED / DIRECT POSTGRESQL PASS
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
@@ -269,15 +269,12 @@ Dictionary ↔ PostgreSQL reconciliation
 fresh-head / base-round-trip / Alembic drift
 ```
 
-## 11. Execution honesty
+## 11. Execution evidence
 
-Current evidence:
+The first direct PostgreSQL 18.6 run was intentionally retained as evidence of the
+Dictionary assembly finding:
 
 ```text
-P0  CLOSED / DIRECT POSTGRESQL PASS
-M1  CLOSED / DIRECT POSTGRESQL PASS
-M2  CLOSED / DIRECT POSTGRESQL PASS
-
 M3 FIRST DIRECT POSTGRESQL 18.6 RUN
 collected      77
 deselected     37
@@ -292,13 +289,27 @@ ONLY FAILURE
 DDL / constraints / FK / partial UNIQUE / ACL / upgrade-downgrade /
 SQLAlchemy mappings / Alembic head-drift proofs
 PASS
-
-M3 DIRECT PASS
-NOT YET EARNED
-
-M4
-NOT STARTED / BLOCKED
 ```
+
+After the Dictionary filename/content repair, the complete lane was rerun against
+remote commit `27d8a708a6ed33e2a630ce9cb4c86dd1cc4e77b9`:
+
+```text
+M3 FINAL DIRECT POSTGRESQL 18.6 RERUN
+collected      77
+deselected     37
+selected       40
+PASS           40
+FAIL            0
+elapsed        50.10s
+coverage       93.91%
+```
+
+The final rerun proves the complete M1/M2/M3 PostgreSQL lane, including exact M3
+topology, live constraints/FKs/partial UNIQUE indexes, runtime deny posture,
+M2→M3→M2 migration boundary, 37 relationship-free SQLAlchemy mappings, Dictionary
+reconciliation, fresh-head migration, base round-trip, Alembic drift detection,
+security/runtime and transaction semantics.
 
 This is local user-executed PostgreSQL evidence, not GitHub Actions CI evidence.
 No previous-stage PostgreSQL result is reused as M3 proof.
@@ -323,8 +334,8 @@ additional persistent databases
 protected-main merge/rebase/realignment
 ```
 
-The next mandatory operation is a fresh direct rerun against the disposable
-PostgreSQL 18.6 acceptance boundary after the Dictionary repair below.
+Those exclusions remain valid after closure. M4 is now unblocked but not started by
+this closure commit.
 
 ## 13. First-run finding and repair
 
@@ -343,7 +354,7 @@ test weakening                                  0
 scope-count changes                             0
 ```
 
-The repair reattaches each existing correct blob to its matching filename:
+The repair reattached each existing correct blob to its matching filename:
 
 ```text
 actual_realization_state
@@ -357,5 +368,39 @@ session_timing_pause
 session_timing_current_history
 ```
 
-M3 remains `REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING` until the complete
-`uv run pytest -m postgres -vv` lane passes with zero failures.
+The unchanged acceptance test then passed on the full rerun, confirming the repair
+without weakening the proof contract.
+
+## 14. Harness cleanup and closure
+
+After the final green rerun, the disposable harness was checked with:
+
+```text
+docker ps -a --filter "name=dante-cp3-pytest"
+```
+
+The result contained only the Docker column header and no rows:
+
+```text
+residual dante-cp3-pytest containers   0
+```
+
+No persistent LOCAL Compose database or `postgres-data` volume was started or
+materialized by M3 acceptance.
+
+Final stage disposition:
+
+```text
+CP6-M03
+CLOSED
+
+DIRECT POSTGRESQL 18.6
+40 / 40 PASS
+0 FAIL
+
+HARNESS CLEANUP
+0 RESIDUAL CONTAINERS
+
+M4
+UNBLOCKED / NOT STARTED
+```
