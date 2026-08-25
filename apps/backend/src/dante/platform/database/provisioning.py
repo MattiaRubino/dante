@@ -16,6 +16,7 @@ from dante.platform.config.database import (
 OWNER_ROLE = "dante_owner"
 MIGRATOR_ROLE = "dante_migrator"
 RUNTIME_ROLE = "dante_runtime"
+_DANTE_ROLES = frozenset((OWNER_ROLE, MIGRATOR_ROLE, RUNTIME_ROLE))
 
 
 class ProvisioningSettings(BaseSettings):
@@ -79,13 +80,24 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
            OR member.rolname IN ('dante_owner', 'dante_migrator', 'dante_runtime')
         """
     )
-    rows = await result.fetchall()
+    rows = [(str(row[0]), str(row[1])) for row in await result.fetchall()]
+
+    external_edges = [
+        (granted_role, member_role)
+        for granted_role, member_role in rows
+        if granted_role not in _DANTE_ROLES or member_role not in _DANTE_ROLES
+    ]
+    if external_edges:
+        raise RuntimeError(
+            "DANTE role membership graph contains external-role edges; "
+            "manual security review is required"
+        )
 
     for granted_role, member_role in rows:
         await connection.execute(
             sql.SQL("REVOKE {} FROM {}").format(
-                sql.Identifier(str(granted_role)),
-                sql.Identifier(str(member_role)),
+                sql.Identifier(granted_role),
+                sql.Identifier(member_role),
             )
         )
 
@@ -168,10 +180,8 @@ async def _configure_owner_defaults(connection: AsyncConnection[Any]) -> None:
             "REVOKE ALL ON TYPES FROM dante_runtime",
             "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
             "REVOKE ALL ON ROUTINES FROM dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE USAGE ON TYPES FROM PUBLIC",
+            "ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
+            "ALTER DEFAULT PRIVILEGES REVOKE USAGE ON TYPES FROM PUBLIC",
         )
         for statement in statements:
             await connection.execute(statement)
