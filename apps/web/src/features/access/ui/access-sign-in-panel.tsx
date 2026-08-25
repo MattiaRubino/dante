@@ -17,10 +17,20 @@ type AccessSignInPanelProps = Readonly<{
   onProvider: (provider: AccessProvider) => void;
 }>;
 
-type SignInErrors = Readonly<{
+type SignInErrors = {
   email?: string;
   password?: string;
-}>;
+};
+
+function withoutEmailError(current: SignInErrors): SignInErrors {
+  const { email: _email, ...rest } = current;
+  return rest;
+}
+
+function withoutPasswordError(current: SignInErrors): SignInErrors {
+  const { password: _password, ...rest } = current;
+  return rest;
+}
 
 export function AccessSignInPanel({
   condition,
@@ -110,7 +120,7 @@ export function AccessSignInPanel({
               onChange={(event) => {
                 setEmail(event.target.value);
                 if (errors.email) {
-                  setErrors((current) => ({ ...current, email: undefined }));
+                  setErrors(withoutEmailError);
                 }
               }}
             />
@@ -148,10 +158,7 @@ export function AccessSignInPanel({
                 onChange={(event) => {
                   setPassword(event.target.value);
                   if (errors.password) {
-                    setErrors((current) => ({
-                      ...current,
-                      password: undefined,
-                    }));
+                    setErrors(withoutPasswordError);
                   }
                 }}
               />
