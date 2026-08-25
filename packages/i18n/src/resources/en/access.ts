@@ -46,9 +46,12 @@ export const access = {
   provider: {
     google: 'Continue with Google',
     apple: 'Continue with Apple',
+    googleName: 'Google',
+    appleName: 'Apple',
     body: 'DANTE opens the provider’s official flow. The consent screen belongs to the provider, not DANTE.',
-    wait: 'Opening provider…',
-    scopeNote: 'Google/Apple sign-in authenticates your account. It does not automatically grant access to Calendar, Gmail, or iCloud.',
+    wait: 'Complete sign-in',
+    pendingBody: 'Complete sign-in in the provider window. You’ll return to DANTE automatically.',
+    scopeNote: 'Using Google or Apple to sign in does not authorize DANTE to read Calendar, Gmail, or iCloud.',
   },
   common: {
     or: 'or',
@@ -77,6 +80,8 @@ export const access = {
     passwordMinimum: 'Use at least 12 characters.',
     passwordMismatch: 'The passwords do not match.',
     verificationCode: 'Enter the 6-digit code.',
+    preferredName: 'Enter the name you want DANTE to use.',
+    firstAction: 'Enter what you want to add before continuing.',
   },
   network: {
     offlineTitle: 'You’re offline.',
@@ -89,6 +94,8 @@ export const access = {
   locale: {
     control: 'Change language. Current language: {{language}}',
     options: 'Available languages',
+    italian: 'Italiano',
+    english: 'English',
   },
   legal: {
     prefix: 'By continuing, you agree to the',
@@ -123,9 +130,9 @@ export const access = {
   },
   providerError: {
     title: 'Sign-in not completed',
-    body: 'The provider did not complete authentication. No changes were applied to your account.',
+    body: 'We could not complete sign-in with the provider.',
     safe: 'Your account is safe.',
-    retry: 'Try again or choose another method.',
+    retry: 'You can try again or choose another sign-in method.',
   },
   link: {
     title: 'Confirm account linking',
@@ -135,11 +142,12 @@ export const access = {
   },
   authenticated: {
     title: 'Access confirmed',
-    body: 'The DANTE session has been established. The handoff to Home will be connected to the real authenticated router.',
+    body: 'Your identity is confirmed. We’re preparing your DANTE space.',
   },
   reauth: {
-    title: 'Session expired',
-    body: 'Sign in again to continue. The current context is not restored until the backend confirms the new authentication.',
+    title: 'Confirm your identity again',
+    body: 'To protect your account, confirm your identity again before continuing.',
+    action: 'Continue',
   },
   setupName: {
     title: 'What should DANTE call you?',
@@ -149,7 +157,7 @@ export const access = {
   setupLocale: {
     title: 'Language and time zone',
     body: 'DANTE uses these to show dates and times correctly. We prefilled what we can reliably detect.',
-    note: 'We are not inferring preferences here; you are confirming operational settings.',
+    note: 'You’re only confirming operational settings; you can change them later.',
     language: 'Language',
     timezone: 'Time zone',
   },
@@ -188,7 +196,7 @@ export const access = {
   },
   home: {
     title: 'You’re ready',
-    body: 'Initial setup is complete. DANTE opens Home from here and guidance continues only when useful.',
-    pending: 'This screen is ready; the handoff to canonical Home intentionally waits for the real session and authenticated router.',
+    body: 'Initial setup is complete. You can now enter your DANTE space.',
+    pending: 'You can change these settings later.',
   },
 } as const satisfies AccessResource<typeof itAccess>;
