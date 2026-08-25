@@ -24,9 +24,9 @@ export const access = {
     stepPassword: 'Password',
     stepVerify: 'Verifica',
     continueEmail: 'Continua con email',
-    orProvider: 'oppure crea l’account con',
-    google: 'Crea con Google',
-    apple: 'Crea con Apple',
+    orProvider: 'oppure continua con',
+    google: 'Continua con Google',
+    apple: 'Continua con Apple',
   },
   signupPassword: {
     title: 'Proteggi il tuo account',
@@ -72,10 +72,6 @@ export const access = {
     passwordMismatch: 'Le password non coincidono.',
     verificationCode: 'Inserisci il codice a 6 cifre.',
   },
-  integration: {
-    title: 'Frontend pronto, backend in attesa',
-    body: 'Questa azione è già collegata al flusso Access. Verrà completata dal servizio di autenticazione reale senza simulare un esito.',
-  },
   network: {
     offlineTitle: 'Sei offline.',
     offlineBody: 'Riconnettiti per continuare.',
@@ -104,7 +100,7 @@ export const access = {
     title: 'Recupera l’accesso',
     body: 'Ti invieremo un link sicuro per impostare una nuova password.',
     action: 'Invia link di recupero',
-    privacy: 'La risposta è intenzionalmente neutra: non confermiamo se un indirizzo è registrato.',
+    privacy: 'Se l’indirizzo è associato a un account DANTE, riceverai un link per reimpostare la password.',
   },
   recovery: {
     title: 'Controlla la tua email',
