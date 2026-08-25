@@ -23,13 +23,19 @@ type SignInErrors = {
 };
 
 function withoutEmailError(current: SignInErrors): SignInErrors {
-  const { email: _email, ...rest } = current;
-  return rest;
+  const next: SignInErrors = {};
+  if (current.password !== undefined) {
+    next.password = current.password;
+  }
+  return next;
 }
 
 function withoutPasswordError(current: SignInErrors): SignInErrors {
-  const { password: _password, ...rest } = current;
-  return rest;
+  const next: SignInErrors = {};
+  if (current.email !== undefined) {
+    next.email = current.email;
+  }
+  return next;
 }
 
 export function AccessSignInPanel({
