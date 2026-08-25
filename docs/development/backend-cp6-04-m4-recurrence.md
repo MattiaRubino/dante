@@ -1,10 +1,11 @@
 # Backend CP6-04 — M4 Routine / Event Recurrence Materialization
 
-- **Status:** IMPLEMENTATION CANDIDATE / DIRECT POSTGRESQL RUN PENDING
+- **Status:** CLOSED / DIRECT POSTGRESQL PASS
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
 - **Authorized PRE-SCOPE:** `abd97f835f60d5a8a84e386e52151d00538b1f96`
+- **Implementation candidate:** `ad561872ddcf10b3e686c7624e16d18ed61c5202`
 - **Checkpoint:** CP6-04 — Whole DANTE Database Materialization
 - **Stage:** CP6-M04 — `cp6_recurrence`
 - **Alembic revision:** `20260825_04`
@@ -222,26 +223,56 @@ dante_migrator
 
 M7 is still the only runtime ACL activation stage.
 
-## 11. Execution honesty
+## 11. Direct PostgreSQL acceptance evidence
 
-Current evidence:
+The implementation candidate `ad561872ddcf10b3e686c7624e16d18ed61c5202` was
+executed directly by the user with:
+
+```bash
+cd ~/projects/dante/apps/backend
+uv run pytest -m postgres -vv
+```
+
+Observed result:
+
+```text
+platform          Linux
+Python            3.14.7
+pytest            9.1.1
+collected         83
+selected          46
+deselected        37
+passed            46
+failed             0
+duration          34.28s
+coverage          95.57%
+```
+
+The direct run passed all six M4 acceptance proofs plus the preserved M1/M2/M3
+stage proofs, fresh-database migration to the single repository head, M4
+head/base/head round-trip, Alembic no-drift, migrator identity rejection, P0
+privilege posture, runtime resilience and transaction semantics.
+
+This is direct local PostgreSQL 18.6 acceptance evidence supplied by the user. It
+is not GitHub Actions CI evidence. Post-run disposable-container cleanup was not
+separately asserted for this M4 run, so no zero-residual-container claim is made.
+
+## 12. Closure state
 
 ```text
 P0  CLOSED / DIRECT POSTGRESQL PASS
 M1  CLOSED / DIRECT POSTGRESQL PASS
 M2  CLOSED / DIRECT POSTGRESQL PASS
 M3  CLOSED / DIRECT POSTGRESQL PASS
-
-M4  IMPLEMENTATION CANDIDATE
-DIRECT POSTGRESQL RUN PENDING
-M5  NOT STARTED / BLOCKED
+M4  CLOSED / DIRECT POSTGRESQL PASS
+M5  READY TO OPEN / NOT STARTED
 ```
 
-No GitHub Actions CI evidence is claimed. The next admissible evidence is a direct
-user-executed `uv run pytest -m postgres -vv` run against the disposable
-PostgreSQL 18.6 acceptance harness after this candidate is published.
+M4 is ratified without DDL, SQLAlchemy, test or Dictionary repair after the direct
+PostgreSQL run. The implementation candidate is therefore the tested M4 materialized
+state; this documentation-only closure records the evidence and unlocks M5.
 
-## 12. Explicit exclusions
+## 13. Explicit exclusions
 
 M4 does not create or activate:
 
