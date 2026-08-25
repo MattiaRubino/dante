@@ -24,21 +24,22 @@
   },
   "current_materialization": {
     "completed_stages": [
-      "CP6-M01"
+      "CP6-M01",
+      "CP6-M02"
     ],
     "standalone_entries": {
-      "tables": 16,
+      "tables": 22,
       "views": 0,
       "routines": 0,
-      "total": 16
+      "total": 22
     },
     "embedded_objects": {
       "triggers": 0,
-      "physical_indexes": 16
+      "physical_indexes": 28
     },
     "constraints": {
-      "foreign_keys": 0,
-      "check_constraints": 16
+      "foreign_keys": 8,
+      "check_constraints": 24
     }
   },
   "technical_foundation": {

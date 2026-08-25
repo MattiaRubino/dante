@@ -77,8 +77,17 @@ def _role_connection(database: Any, user: str, password: str) -> psycopg.Connect
     )
 
 
-def test_m1_materializes_exact_stage_topology(migrated_database: Any) -> None:
-    with _admin_connection(migrated_database) as connection:
+def _upgrade_m1(database: Any, alembic_config: Config) -> Any:
+    command.upgrade(alembic_config, _EXPECTED_REVISION)
+    return database
+
+
+def test_m1_materializes_exact_stage_topology(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    database = _upgrade_m1(provisioned_database, alembic_config)
+    with _admin_connection(database) as connection:
         business_tables = {
             str(row[0])
             for row in connection.execute(
@@ -170,11 +179,15 @@ def test_m1_materializes_exact_stage_topology(migrated_database: Any) -> None:
     assert triggers == set()
 
 
-def test_m1_constraints_enforce_uuidv7_and_owner_family(migrated_database: Any) -> None:
+def test_m1_constraints_enforce_uuidv7_and_owner_family(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    database = _upgrade_m1(provisioned_database, alembic_config)
     with _role_connection(
-        migrated_database,
+        database,
         "dante_migrator",
-        migrated_database.cluster.migrator_password,
+        database.cluster.migrator_password,
     ) as connection:
         connection.execute("SET ROLE dante_owner")
 
@@ -203,7 +216,11 @@ def test_m1_constraints_enforce_uuidv7_and_owner_family(migrated_database: Any) 
             )
 
 
-def test_m1_runtime_business_dml_remains_denied(migrated_database: Any) -> None:
+def test_m1_runtime_business_dml_remains_denied(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    database = _upgrade_m1(provisioned_database, alembic_config)
     statements = (
         "SELECT * FROM dante.person",
         "INSERT INTO dante.person (person_ref) VALUES (%s)",
@@ -214,7 +231,7 @@ def test_m1_runtime_business_dml_remains_denied(migrated_database: Any) -> None:
         "VALUES (%s, 'person')",
     )
 
-    with _admin_connection(migrated_database) as connection:
+    with _admin_connection(database) as connection:
         privilege_matrix = {
             table_name: tuple(
                 connection.execute(
@@ -237,9 +254,9 @@ def test_m1_runtime_business_dml_remains_denied(migrated_database: Any) -> None:
     }
 
     with _role_connection(
-        migrated_database,
+        database,
         "dante_runtime",
-        migrated_database.cluster.runtime_password,
+        database.cluster.runtime_password,
     ) as connection:
         for statement in statements:
             parameters = (uuid7(),) if "%s" in statement else None
@@ -261,7 +278,7 @@ def test_m1_fails_before_business_ddl_when_p0_defaults_are_broadened(
         RuntimeError,
         match="CP6-M01 requires P0 provisioning/security hardening",
     ):
-        command.upgrade(alembic_config, "head")
+        command.upgrade(alembic_config, _EXPECTED_REVISION)
 
     with _admin_connection(provisioned_database) as connection:
         business_tables = {
@@ -285,47 +302,34 @@ def test_m1_fails_before_business_ddl_when_p0_defaults_are_broadened(
     assert revision_row != (_EXPECTED_REVISION,)
 
 
-def test_m1_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
-    mapped_names = {table.name for table in MAPPED_TABLES}
-
-    assert mapped_names == _EXPECTED_TABLES
-    assert set(Base.metadata.tables) == {
-        f"dante.{table_name}" for table_name in _EXPECTED_TABLES
-    }
-    assert len(tuple(Base.registry.mappers)) == 16
-    assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
-
-
-def test_m1_dictionary_matches_materialized_stage(migrated_database: Any) -> None:
-    table_directory = _DICTIONARY_ROOT / "tables"
-    entries = {
-        path.stem: json.loads(path.read_text(encoding="utf-8"))
-        for path in table_directory.glob("*.json")
-    }
-    scope = json.loads(
-        (_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8")
+def test_m1_sqlalchemy_mapping_remains_registered_and_relationship_free() -> None:
+    m1_tables = tuple(table for table in MAPPED_TABLES if table.name in _EXPECTED_TABLES)
+    m1_mappers = tuple(
+        mapper
+        for mapper in Base.registry.mappers
+        if mapper.local_table.name in _EXPECTED_TABLES
     )
 
-    assert set(entries) == _EXPECTED_TABLES
-    assert scope["current_materialization"] == {
-        "completed_stages": ["CP6-M01"],
-        "standalone_entries": {
-            "tables": 16,
-            "views": 0,
-            "routines": 0,
-            "total": 16,
-        },
-        "embedded_objects": {
-            "triggers": 0,
-            "physical_indexes": 16,
-        },
-        "constraints": {
-            "foreign_keys": 0,
-            "check_constraints": 16,
-        },
+    assert {table.name for table in m1_tables} == _EXPECTED_TABLES
+    assert {mapper.local_table.name for mapper in m1_mappers} == _EXPECTED_TABLES
+    assert len(m1_mappers) == 16
+    assert all(len(mapper.relationships) == 0 for mapper in m1_mappers)
+
+
+def test_m1_dictionary_entries_match_live_m1(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
+    database = _upgrade_m1(provisioned_database, alembic_config)
+    table_directory = _DICTIONARY_ROOT / "tables"
+    entries = {
+        table_name: json.loads(
+            (table_directory / f"{table_name}.json").read_text(encoding="utf-8")
+        )
+        for table_name in _EXPECTED_TABLES
     }
 
-    with _admin_connection(migrated_database) as connection:
+    with _admin_connection(database) as connection:
         database_columns = {
             (str(row[0]), str(row[1]), str(row[2]), str(row[3]))
             for row in connection.execute(

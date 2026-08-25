@@ -2,7 +2,7 @@
 
 from sqlalchemy import Table
 
-from . import addressing, identity
+from . import actual, addressing, identity, schedule
 
 MAPPED_TABLES: tuple[Table, ...] = (
     identity.PersonRow.__table__,
@@ -21,6 +21,12 @@ MAPPED_TABLES: tuple[Table, ...] = (
     identity.SessionRow.__table__,
     identity.ObservationRow.__table__,
     addressing.NativeAddressRow.__table__,
+    addressing.ScopedAddressRow.__table__,
+    addressing.MaterialStateAddressRow.__table__,
+    addressing.NativeCurrentMaterialStateRow.__table__,
+    addressing.ScopedCurrentMaterialStateRow.__table__,
+    schedule.ScheduleRow.__table__,
+    actual.ActualRow.__table__,
 )
 
 __all__ = ["MAPPED_TABLES"]
