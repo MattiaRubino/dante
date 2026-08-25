@@ -100,7 +100,7 @@ export const initialAccessFlowState: AccessFlowState = {
   condition: { kind: 'idle' },
 };
 
-function withScreen(screen: AccessScreen): AccessFlowState {
+function withServerScreen(screen: AccessScreen): AccessFlowState {
   return { screen, condition: { kind: 'idle' } };
 }
 
@@ -110,6 +110,18 @@ function hasBlockingTransportCondition(condition: AccessCondition): boolean {
     condition.kind === 'server-unavailable' ||
     condition.kind === 'rate-limited'
   );
+}
+
+function moveLocally(
+  state: AccessFlowState,
+  screen: AccessScreen,
+): AccessFlowState {
+  return {
+    screen,
+    condition: hasBlockingTransportCondition(state.condition)
+      ? state.condition
+      : { kind: 'idle' },
+  };
 }
 
 function requireBackend(
@@ -132,21 +144,27 @@ export function accessFlowReducer(
 ): AccessFlowState {
   switch (event.type) {
     case 'CREATE_ACCOUNT':
-      return withScreen({ id: 'SIGN_UP_EMAIL', email: '' });
+      return moveLocally(state, { id: 'SIGN_UP_EMAIL', email: '' });
     case 'FORGOT_PASSWORD':
-      return withScreen({ id: 'FORGOT_PASSWORD', email: '' });
+      return moveLocally(state, { id: 'FORGOT_PASSWORD', email: '' });
     case 'BACK_TO_SIGN_IN':
     case 'RESET_COMPLETE_CONTINUE':
     case 'RECOVERY_SENT_CONTINUE':
     case 'PROVIDER_RETRY':
     case 'ACCOUNT_LINK_OTHER_ACCOUNT':
     case 'REAUTH_CANCEL':
-      return withScreen({ id: 'SIGN_IN' });
+      return moveLocally(state, { id: 'SIGN_IN' });
     case 'SIGN_UP_EMAIL_ACCEPTED':
-      return withScreen({ id: 'SIGN_UP_PASSWORD', email: event.email });
+      return moveLocally(state, {
+        id: 'SIGN_UP_PASSWORD',
+        email: event.email,
+      });
     case 'CHANGE_SIGN_UP_EMAIL':
       return state.screen.id === 'SIGN_UP_PASSWORD'
-        ? withScreen({ id: 'SIGN_UP_EMAIL', email: state.screen.email })
+        ? moveLocally(state, {
+            id: 'SIGN_UP_EMAIL',
+            email: state.screen.email,
+          })
         : state;
     case 'REQUEST_SIGN_IN':
       return requireBackend(state, 'sign-in');
@@ -179,8 +197,11 @@ export function accessFlowReducer(
     case 'REQUEST_IMPORT':
       return requireBackend(state, 'import');
     case 'CLEAR_CONDITION':
-    case 'NETWORK_ONLINE':
       return { ...state, condition: { kind: 'idle' } };
+    case 'NETWORK_ONLINE':
+      return state.condition.kind === 'offline'
+        ? { ...state, condition: { kind: 'idle' } }
+        : state;
     case 'NETWORK_OFFLINE':
       return { ...state, condition: { kind: 'offline' } };
     case 'SERVER_UNAVAILABLE':
@@ -194,49 +215,55 @@ export function accessFlowReducer(
         },
       };
     case 'SERVER_PROVIDER_STARTED':
-      return withScreen({ id: 'PROVIDER_PENDING', provider: event.provider });
+      return withServerScreen({
+        id: 'PROVIDER_PENDING',
+        provider: event.provider,
+      });
     case 'SERVER_PROVIDER_FAILED':
-      return withScreen({ id: 'PROVIDER_ERROR', provider: event.provider });
+      return withServerScreen({
+        id: 'PROVIDER_ERROR',
+        provider: event.provider,
+      });
     case 'SERVER_ACCOUNT_LINK_REQUIRED':
-      return withScreen({
+      return withServerScreen({
         id: 'ACCOUNT_LINK',
         provider: event.provider,
         email: event.email,
       });
     case 'SERVER_AUTHENTICATED':
     case 'SERVER_REAUTH_SUCCEEDED':
-      return withScreen({ id: 'AUTHENTICATED_RETURN' });
+      return withServerScreen({ id: 'AUTHENTICATED_RETURN' });
     case 'SERVER_SIGN_UP_CREATED':
       return state.screen.id === 'SIGN_UP_PASSWORD'
-        ? withScreen({ id: 'VERIFY_EMAIL', email: state.screen.email })
+        ? withServerScreen({ id: 'VERIFY_EMAIL', email: state.screen.email })
         : state;
     case 'SERVER_EMAIL_VERIFIED':
-      return withScreen({ id: 'SETUP_NAME', preferredName: '' });
+      return withServerScreen({ id: 'SETUP_NAME', preferredName: '' });
     case 'SERVER_RECOVERY_SENT':
-      return withScreen({ id: 'RECOVERY_SENT', email: event.email });
+      return withServerScreen({ id: 'RECOVERY_SENT', email: event.email });
     case 'SERVER_RECOVERY_PROOF_VALID':
-      return withScreen({ id: 'RESET_PASSWORD' });
+      return withServerScreen({ id: 'RESET_PASSWORD' });
     case 'SERVER_RESET_SUCCEEDED':
-      return withScreen({ id: 'RESET_COMPLETE' });
+      return withServerScreen({ id: 'RESET_COMPLETE' });
     case 'SERVER_REAUTH_REQUIRED':
-      return withScreen({ id: 'REAUTH' });
+      return withServerScreen({ id: 'REAUTH' });
     case 'SETUP_NAME_ACCEPTED':
-      return withScreen({ id: 'SETUP_LOCALE' });
+      return moveLocally(state, { id: 'SETUP_LOCALE' });
     case 'SETUP_LOCALE_ACCEPTED':
-      return withScreen({ id: 'SETUP_START' });
+      return moveLocally(state, { id: 'SETUP_START' });
     case 'SETUP_START_CHOICE':
       if (event.choice === 'real') {
-        return withScreen({ id: 'FIRST_ACTION' });
+        return moveLocally(state, { id: 'FIRST_ACTION' });
       }
       if (event.choice === 'import') {
-        return withScreen({ id: 'IMPORT' });
+        return moveLocally(state, { id: 'IMPORT' });
       }
       if (event.choice === 'demo') {
-        return withScreen({ id: 'DEMO' });
+        return moveLocally(state, { id: 'DEMO' });
       }
-      return withScreen({ id: 'HOME_HANDOFF' });
+      return moveLocally(state, { id: 'HOME_HANDOFF' });
     case 'DEMO_COMPLETE':
-      return withScreen({ id: 'HOME_HANDOFF' });
+      return moveLocally(state, { id: 'HOME_HANDOFF' });
     default:
       return state;
   }
