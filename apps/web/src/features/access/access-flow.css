@@ -175,7 +175,7 @@
 }
 
 .access-password-guide > span {
-  color: var(--dante-semantic-color-brand-accent-text);
+  color: var(--dante-semantic-color-text-primary);
   font-weight: 750;
 }
 
