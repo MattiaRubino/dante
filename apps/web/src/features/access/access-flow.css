@@ -1,0 +1,354 @@
+.access-panel-heading-row {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.access-panel-heading-row .access-kicker {
+  min-height: 0;
+  margin: 0;
+}
+
+.access-back-action {
+  flex: none;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.access-flow-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.access-flow-footer {
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.access-flow-form {
+  display: grid;
+  gap: 16px;
+}
+
+.access-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 0 22px;
+}
+
+.access-progress span {
+  position: relative;
+  padding-top: 9px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.access-progress span::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--dante-semantic-color-border-divider);
+  content: '';
+}
+
+.access-progress span.is-active {
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-progress span.is-active::before {
+  background: var(--dante-semantic-color-brand-accent);
+}
+
+.access-field-error {
+  color: #a33a2c;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.access-field input[aria-invalid='true'] {
+  border-color: #b85b4c;
+}
+
+.access-condition-notice {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid
+    color-mix(in srgb, var(--dante-semantic-color-brand-accent) 32%, transparent);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-accent) 7%,
+    var(--dante-semantic-color-surface-base)
+  );
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.access-condition-notice strong {
+  color: var(--dante-semantic-color-text-primary);
+  font-size: 11.5px;
+}
+
+.access-legal-placeholder {
+  color: var(--dante-semantic-color-text-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--dante-semantic-color-border-control);
+  text-underline-offset: 2px;
+}
+
+.access-secondary-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 10px;
+  border: 1px solid var(--dante-semantic-color-border-control);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dante-semantic-color-text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.access-secondary-button:hover {
+  border-color: var(--dante-semantic-color-border-hover);
+  background: var(--dante-semantic-color-surface-muted);
+}
+
+.access-secondary-button:focus-visible,
+.access-choice-card:focus-visible {
+  outline: 3px solid var(--dante-semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.access-email-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--dante-semantic-color-border-divider);
+  border-radius: 10px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11.5px;
+}
+
+.access-email-summary strong {
+  overflow: hidden;
+  color: var(--dante-semantic-color-text-secondary);
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-password-guide {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: var(--dante-semantic-color-surface-muted);
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.access-password-guide strong {
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-password-guide > span {
+  color: var(--dante-semantic-color-brand-accent-text);
+  font-weight: 750;
+}
+
+.access-password-guide p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.access-security-note,
+.access-email-context {
+  margin: 14px 0 0;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.access-email-context {
+  overflow-wrap: anywhere;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--dante-semantic-color-surface-muted);
+  color: var(--dante-semantic-color-text-secondary);
+  font-weight: 650;
+}
+
+.access-secondary-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.access-code-input {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.38em;
+  text-align: center;
+}
+
+.access-settings-summary {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.access-settings-summary > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--dante-semantic-color-border-divider);
+  border-radius: 10px;
+}
+
+.access-settings-summary dt {
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.access-settings-summary dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.access-choice-list {
+  display: grid;
+  gap: 10px;
+}
+
+.access-choice-card {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 64px;
+  border: 1px solid var(--dante-semantic-color-border-control);
+  border-radius: 11px;
+  background: var(--dante-semantic-color-surface-base);
+  color: var(--dante-semantic-color-text-secondary);
+  padding: 12px 14px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.access-choice-card:hover {
+  border-color: var(--dante-semantic-color-border-hover);
+  background: var(--dante-semantic-color-surface-muted);
+}
+
+.access-choice-card strong {
+  color: var(--dante-semantic-color-text-primary);
+  font-size: 13px;
+}
+
+.access-choice-card span {
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.access-info-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.access-info-stack p,
+.access-demo-card {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--dante-semantic-color-border-divider);
+  border-radius: 10px;
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.access-demo-card {
+  display: grid;
+  gap: 4px;
+  background: var(--dante-semantic-color-surface-muted);
+}
+
+.access-demo-card strong {
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-wait-indicator {
+  width: 34px;
+  height: 34px;
+  margin: 12px auto;
+  border: 3px solid var(--dante-semantic-color-border-divider);
+  border-top-color: var(--dante-semantic-color-brand-accent);
+  border-radius: 50%;
+  animation: access-spin 900ms linear infinite;
+}
+
+@keyframes access-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .access-panel-heading-row {
+    margin-bottom: 18px;
+  }
+
+  .access-progress span {
+    font-size: 10px;
+  }
+
+  .access-settings-summary > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .access-email-summary {
+    grid-template-columns: 1fr auto;
+  }
+
+  .access-email-summary > span:first-child {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-wait-indicator {
+    animation: none;
+  }
+}
