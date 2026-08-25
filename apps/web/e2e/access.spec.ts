@@ -4,20 +4,69 @@ import { expect, test, type Page } from '@playwright/test';
 const signInHeading = 'Accedi a DANTE';
 
 const releaseViewports = [
-  { name: 'phone-390', width: 390, height: 844, brandStage: false },
-  { name: 'phone-430', width: 430, height: 932, brandStage: false },
+  {
+    name: 'phone-390',
+    width: 390,
+    height: 844,
+    brandStage: false,
+    verticalFit: true,
+  },
+  {
+    name: 'phone-430',
+    width: 430,
+    height: 932,
+    brandStage: false,
+    verticalFit: true,
+  },
   {
     name: 'effective-css-viewport-720x450',
     width: 720,
     height: 450,
     brandStage: false,
+    verticalFit: false,
   },
-  { name: 'tablet-768', width: 768, height: 1024, brandStage: false },
-  { name: 'tablet-820', width: 820, height: 1180, brandStage: false },
-  { name: 'desktop-1024', width: 1024, height: 768, brandStage: true },
-  { name: 'desktop-1280', width: 1280, height: 800, brandStage: true },
-  { name: 'desktop-1536', width: 1536, height: 960, brandStage: true },
-  { name: 'large-desktop-1920', width: 1920, height: 1080, brandStage: true },
+  {
+    name: 'tablet-768',
+    width: 768,
+    height: 1024,
+    brandStage: false,
+    verticalFit: true,
+  },
+  {
+    name: 'tablet-820',
+    width: 820,
+    height: 1180,
+    brandStage: false,
+    verticalFit: true,
+  },
+  {
+    name: 'desktop-1024',
+    width: 1024,
+    height: 768,
+    brandStage: true,
+    verticalFit: true,
+  },
+  {
+    name: 'desktop-1280',
+    width: 1280,
+    height: 800,
+    brandStage: true,
+    verticalFit: true,
+  },
+  {
+    name: 'desktop-1536',
+    width: 1536,
+    height: 960,
+    brandStage: true,
+    verticalFit: true,
+  },
+  {
+    name: 'large-desktop-1920',
+    width: 1920,
+    height: 1080,
+    brandStage: true,
+    verticalFit: true,
+  },
 ] as const;
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -25,6 +74,16 @@ async function expectNoHorizontalOverflow(page: Page) {
     () =>
       document.documentElement.scrollWidth >
       document.documentElement.clientWidth,
+  );
+
+  expect(hasOverflow).toBe(false);
+}
+
+async function expectNoVerticalOverflow(page: Page) {
+  const hasOverflow = await page.evaluate(
+    () =>
+      document.documentElement.scrollHeight >
+      document.documentElement.clientHeight,
   );
 
   expect(hasOverflow).toBe(false);
@@ -67,6 +126,7 @@ async function expectDesktopBrandStageOpen(page: Page) {
 async function expectResponsiveSignInShell(
   page: Page,
   brandStageExpected: boolean,
+  verticalFitExpected: boolean,
 ) {
   await expect(page.locator('.access-brand-lockup')).toBeVisible();
   await expect(
@@ -89,6 +149,10 @@ async function expectResponsiveSignInShell(
 
   await expectPanelWithinViewport(page);
   await expectNoHorizontalOverflow(page);
+
+  if (verticalFitExpected) {
+    await expectNoVerticalOverflow(page);
+  }
 }
 
 async function switchToEnglish(page: Page) {
@@ -342,7 +406,11 @@ test.describe('DANTE Access', () => {
       });
       await page.goto('/');
 
-      await expectResponsiveSignInShell(page, viewport.brandStage);
+      await expectResponsiveSignInShell(
+        page,
+        viewport.brandStage,
+        viewport.verticalFit,
+      );
     });
   }
 
