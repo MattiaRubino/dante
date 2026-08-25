@@ -92,6 +92,46 @@ describe('accessFlowReducer', () => {
     expect(signInRequest.condition).toEqual({ kind: 'offline' });
   });
 
+  it('preserves an orthogonal offline condition across local navigation until reconnect', () => {
+    const offlineState = accessFlowReducer(initialAccessFlowState, {
+      type: 'NETWORK_OFFLINE',
+    });
+    const emailState = accessFlowReducer(offlineState, {
+      type: 'CREATE_ACCOUNT',
+    });
+
+    expect(emailState.screen.id).toBe('SIGN_UP_EMAIL');
+    expect(emailState.condition).toEqual({ kind: 'offline' });
+
+    const passwordState = accessFlowReducer(emailState, {
+      type: 'SIGN_UP_EMAIL_ACCEPTED',
+      email: 'person@example.com',
+    });
+    expect(passwordState.screen.id).toBe('SIGN_UP_PASSWORD');
+    expect(passwordState.condition).toEqual({ kind: 'offline' });
+
+    const onlineState = accessFlowReducer(passwordState, {
+      type: 'NETWORK_ONLINE',
+    });
+    expect(onlineState.screen.id).toBe('SIGN_UP_PASSWORD');
+    expect(onlineState.condition).toEqual({ kind: 'idle' });
+  });
+
+  it('does not clear a server rate limit merely because the browser reports online', () => {
+    const limitedState = accessFlowReducer(initialAccessFlowState, {
+      type: 'SERVER_RATE_LIMITED',
+      retryAfterSeconds: 30,
+    });
+    const onlineState = accessFlowReducer(limitedState, {
+      type: 'NETWORK_ONLINE',
+    });
+
+    expect(onlineState.condition).toEqual({
+      kind: 'rate-limited',
+      retryAfterSeconds: 30,
+    });
+  });
+
   it('materializes the approved post-verification setup graph', () => {
     const setupName = accessFlowReducer(initialAccessFlowState, {
       type: 'SERVER_EMAIL_VERIFIED',
