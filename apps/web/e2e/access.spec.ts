@@ -51,12 +51,26 @@ test.describe('DANTE Access', () => {
         name: 'Cambia lingua. Lingua attuale: Italiano',
       }),
     ).toHaveText('IT');
-    await expect(
-      page.getByRole('heading', {
-        level: 2,
-        name: 'Comprendi la vita. Dai forma al prossimo passo.',
-      }),
-    ).toBeVisible();
+
+    const brandHeading = page.getByRole('heading', {
+      level: 2,
+      name: 'Comprendi la vita. Dai forma al prossimo passo.',
+    });
+    await expect(brandHeading).toBeVisible();
+
+    const brandHeadingMetrics = await brandHeading.evaluate((element) => {
+      const style = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      return {
+        fontSize: Number.parseFloat(style.fontSize),
+        height: rect.height,
+      };
+    });
+
+    expect(brandHeadingMetrics.fontSize).toBeLessThanOrEqual(70);
+    expect(brandHeadingMetrics.height).toBeLessThanOrEqual(300);
+
     await expect(
       page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
