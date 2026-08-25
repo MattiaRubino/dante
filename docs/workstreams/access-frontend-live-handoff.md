@@ -54,13 +54,47 @@ Before proposing or writing changes:
    - `docs/frontend/access/benchmark-2026-08-20.md`;
 4. fresh-read the current `feature/access-frontend` HEAD;
 5. inspect current local/remote divergence before asking the user to run anything;
-6. state the exact next batch and a bounded WRITE GATE;
-7. immediately before the first write, fresh-check HEAD again;
-8. write only allowed paths;
-9. read back/compare the exact delta;
-10. give the user one `.sh` for pull/format/QA/screenshot when local execution is needed;
-11. review QA output and screenshots before calling a batch PASS;
-12. never merge to `main` without a separate explicit merge gate.
+6. summarize what is PASS, what is still open and what the next bounded batch should be;
+7. **do not write yet**;
+8. state the exact WRITE GATE: purpose + exact allowed paths + explicit exclusions;
+9. obtain explicit user authorization for that batch unless the user already authorized that exact bounded batch in the same message;
+10. immediately before the first write, fresh-check HEAD again;
+11. if HEAD changed, STOP and re-gate;
+12. write only allowed paths;
+13. if scope needs to expand, STOP and declare a new gate before touching any new path;
+14. read back/compare the exact delta;
+15. give the user one `.sh` for pull/format/QA/screenshot when local execution is needed;
+16. review QA output and screenshots before calling a batch PASS;
+17. never merge to `main` without a separate explicit merge gate.
+
+### Write permission is mandatory
+
+A chat/agent must **not** infer write permission merely because it knows what should be changed.
+
+Forbidden behavior:
+
+```text
+"I know the next step, so I changed it"
+"while I was there I cleaned up..."
+"I also updated these adjacent files..."
+"this is harmless so I did not re-gate"
+```
+
+Required behavior:
+
+```text
+fresh HEAD
+→ bounded WRITE GATE
+→ explicit user approval for that batch
+→ fresh HEAD immediately before first write
+→ exact-path write only
+→ readback/compare
+→ QA
+```
+
+If a compiler/test reveals a new file must change, that is a **new scope decision**, not automatic permission to edit it.
+
+Documentation-only changes are still branch-visible writes and require the same discipline unless the user explicitly authorized that documentation batch.
 
 Never rebase, force-push, move refs backwards or rewrite history unless the user explicitly authorizes it.
 
@@ -91,15 +125,16 @@ After AF-02B formatting checkpoint `c39d1a8312fb2d00bc322604bcd453d13fa2b510`, a
 Preferred workflow:
 
 1. assistant fresh-checks branch HEAD and declares scope;
-2. assistant modifies GitHub remotely when safe/available;
-3. assistant readbacks/compares the remote delta;
-4. assistant gives one downloadable `.sh` for pull/format/QA/screenshot;
-5. user runs it from WSL, normally:
+2. user authorizes the bounded batch;
+3. assistant modifies GitHub remotely when safe/available;
+4. assistant readbacks/compares the remote delta;
+5. assistant gives one downloadable `.sh` for pull/format/QA/screenshot;
+6. user runs it from WSL, normally:
    `bash /mnt/c/Users/mtaru/Downloads/<script>.sh`;
-6. user reviews code/diffs in WebStorm and UI in browser;
-7. assistant reviews output/screenshots;
-8. only then create a formatting/checkpoint commit if needed;
-9. merge remains a separate user decision.
+7. user reviews code/diffs in WebStorm and UI in browser;
+8. assistant reviews output/screenshots;
+9. only then create a formatting/checkpoint commit if needed;
+10. merge remains a separate user decision.
 
 Do not make the user manually patch source files when the assistant can safely write them remotely.
 
@@ -316,7 +351,9 @@ The next chat must continue **on this same branch/worktree** until the remaining
 
 ## 8. Production Quality Bar — mandatory for every future Access change
 
-The user explicitly requires a mature, high-end application standard. Treat every screen as if it may ship to production.
+The user explicitly requires a mature, high-end application standard. Treat every screen as if it may ship to production immediately.
+
+The target is not “good enough for a prototype”. It is the quality bar expected from a mature large application: coherent, intentional, accessible, secure, maintainable and polished across states and viewports.
 
 ### 8.1 No collage/coupage UI
 
@@ -325,7 +362,7 @@ Never build screens by stitching together unrelated visual patterns from random 
 Rules:
 
 - one coherent DANTE visual language;
-- no random cards/gradients/chips/icons/illustrations just to make a page "look designed";
+- no random cards/gradients/chips/icons/illustrations just to make a page look designed;
 - no arbitrary per-screen CSS hacks when a reusable semantic rule/component is appropriate;
 - new UI patterns must visually belong to the existing Access system;
 - whitespace can be intentional — do not fill empty panels with decorative noise;
@@ -333,7 +370,93 @@ Rules:
 - visual hierarchy must be intentional at all viewports;
 - a screen must not look half-finished merely because its backend action is not yet available.
 
-### 8.2 Production copy only
+### 8.2 Design tokens, palette and color — mandatory
+
+`@dante/design-tokens` and the accepted Access visual authority are the default source of truth for production visual values.
+
+Rules:
+
+- prefer semantic design tokens over raw primitive values;
+- do not introduce random hex/rgb/hsl values because they look close;
+- do not invent a new palette for one screen;
+- do not change the established warm canvas / ink / muted-surface / DANTE accent relationship without an explicit design gate;
+- do not use the accent orange as a generic warning/error/success color merely because it is available;
+- color must carry product meaning consistently across the flow;
+- contrast must be checked on the **actual background surface**, including muted panels, disabled states and hover/focus states;
+- never rely on color alone to communicate state;
+- if a new semantic color role is genuinely needed, define/justify it at the token/design-system level instead of scattering raw values through feature CSS;
+- before adding a token, check whether an existing semantic token already expresses the intent.
+
+No “magic color values” in feature CSS unless there is a documented exceptional reason and the write gate explicitly includes that design decision.
+
+### 8.3 Typography — mandatory
+
+Typography is part of the product system, not per-screen decoration.
+
+Rules:
+
+- preserve the established DANTE/Access font family and hierarchy;
+- do not invent arbitrary heading sizes/weights/line-heights per screen;
+- use existing type scale/semantic styles where available;
+- line length and wrapping must be reviewed in both IT and EN;
+- headings must not become oversized merely to resemble another app;
+- compact helper/legal/error text must remain readable and accessible;
+- typography changes that materially alter hierarchy require visual review at desktop and mobile widths.
+
+### 8.4 Spacing, radius, borders and shadow — mandatory
+
+- reuse established spacing rhythm before inventing new gaps;
+- controls that are semantically equivalent should share height, radius, border behavior and focus treatment;
+- do not create a new radius/shadow language per screen;
+- Access card geometry should remain coherent with the accepted shell;
+- shadows must support depth/hierarchy, not decoration;
+- borders/dividers should be subtle and semantic, not random visual separators;
+- one-off values are allowed only when geometry genuinely requires them and the reason is clear.
+
+### 8.5 Assets and brand masters — mandatory
+
+Production assets must come from the authoritative repository asset set or from an explicitly approved new asset.
+
+Rules:
+
+- use the locked DANTE symbol/wordmark masters already in the repository;
+- do not redraw, approximate, trace or manually recreate the DANTE logo/wordmark when the master asset exists;
+- preserve aspect ratio and intended clear space;
+- prefer vector/master assets when available instead of unnecessary raster copies;
+- do not recolor/warp/distort brand assets outside the approved brand treatment;
+- the Living Orbits visual language is part of the accepted Access composition — do not replace it with unrelated decoration without an explicit design gate;
+- do not import stock/decorative imagery merely to fill whitespace;
+- new imagery/illustration must have a product purpose and a consistent DANTE art direction;
+- any new asset must have clear ownership/location/naming and must not be dumped into an arbitrary folder.
+
+### 8.6 Provider assets and marks — mandatory
+
+For Google/Apple production integration:
+
+- use current official provider mechanism/SDK/rendering requirements where required;
+- use official provider marks/assets;
+- do not redraw or approximate provider logos;
+- do not modify provider marks in a way forbidden by provider guidelines;
+- provider visual treatment must remain coherent with DANTE while respecting official requirements;
+- validate backend-side provider assertions;
+- bind provider transaction state correctly;
+- use exact approved redirects/callbacks;
+- use PKCE where applicable to the final client/platform flow;
+- provider authentication does not silently grant Gmail/Calendar/iCloud permissions.
+
+Do not handcraft a “looks like Google/Apple” production button when official rendering/mechanism requirements say otherwise.
+
+### 8.7 Iconography — mandatory
+
+- use the existing icon source/pattern when available;
+- keep stroke weight, optical size and alignment coherent;
+- do not mix unrelated icon families casually;
+- do not use emoji/random Unicode glyphs as production icons merely because they are convenient;
+- if a symbol is decorative, keep it out of the accessibility tree;
+- if an icon is interactive, it needs a proper accessible name and touch target;
+- icon-only actions must remain understandable and discoverable.
+
+### 8.8 Production copy only
 
 Never expose:
 
@@ -342,16 +465,30 @@ Never expose:
 - debug state names;
 - raw server errors;
 - developer instructions;
-- placeholder legal destinations;
+- placeholder legal destinations presented as real links;
 - fake provider/security claims.
 
 User copy must be natural, concise, secure and action-oriented.
 
-IT/EN are transcreated for natural language and equivalent meaning, not mechanically translated word-for-word.
+### 8.9 IT/EN internationalization quality — mandatory
 
-### 8.3 Interaction standard
+Italian and English are both production languages, not “primary + rough translation”.
 
-Every interactive state must consider:
+Rules:
+
+- no production user-facing string hardcoded outside the owning i18n resources unless explicitly invariant;
+- IT and EN resource shapes remain aligned;
+- copy is transcreated for natural language and equivalent meaning, not mechanically translated word-for-word;
+- `<html lang>` follows the active locale;
+- text expansion/wrapping must be checked in **both** languages;
+- provider/legal names and official wording remain semantically correct;
+- changing locale must not reset/corrupt safe local flow state;
+- error/loading/success/offline/rate-limit copy requires IT/EN parity too;
+- no newly added state is considered done until both languages are complete and visually checked where text length can alter composition.
+
+### 8.10 Interaction standard
+
+Every interactive state must consider, where semantically applicable:
 
 ```text
 default
@@ -366,10 +503,8 @@ server error
 offline
 rate limited
 server unavailable
-cancel/retry where applicable
+cancel/retry
 ```
-
-Do not add states that have no valid product meaning merely to appear complete.
 
 Forms must use semantic form behavior where appropriate:
 
@@ -382,7 +517,9 @@ Forms must use semantic form behavior where appropriate:
 - field errors are associated with the field;
 - asynchronous status/error announcements are accessible when needed.
 
-### 8.4 Responsive standard
+Do not add meaningless states merely to appear complete.
+
+### 8.11 Responsive standard
 
 Do not validate only 1536px + 390px and assume everything between them works.
 
@@ -404,9 +541,10 @@ Check:
 - readable line lengths;
 - CTA reachable without broken viewport behavior;
 - no desktop card merely shrunk into an unusable phone layout;
-- touch targets usable on mobile.
+- touch targets usable on mobile;
+- IT and EN text expansion at relevant widths.
 
-### 8.5 Accessibility standard
+### 8.12 Accessibility standard
 
 Target WCAG 2.2 AA-quality behavior.
 
@@ -427,18 +565,9 @@ Required when relevant:
 - screen-reader-friendly status semantics;
 - usable touch targets.
 
-Never say "accessible" solely because axe is green.
+Never say “accessible” solely because axe is green.
 
-### 8.6 Internationalization standard
-
-- no hardcoded production user-facing strings outside the owning i18n resources unless explicitly invariant;
-- IT and EN resource shapes remain aligned;
-- `<html lang>` follows active locale;
-- text expansion cannot break layout;
-- provider/legal text follows official semantics;
-- changing locale must not reset or corrupt safe local flow state.
-
-### 8.7 Security/privacy standard
+### 8.13 Security/privacy standard
 
 Never log, persist, expose in URL/state storage or analytics:
 
@@ -464,23 +593,9 @@ Real integration must defend against:
 
 Backend remains authoritative for session/account/link state.
 
-### 8.8 Provider standard
+### 8.14 Error-state standard
 
-For production Google/Apple integration:
-
-- use current official provider mechanism/SDK/rendering requirements where required;
-- use official provider marks/assets;
-- validate backend-side provider assertions;
-- bind provider transaction state correctly;
-- use exact approved redirects/callbacks;
-- use PKCE where applicable to the final client/platform flow;
-- provider authentication does not silently grant Gmail/Calendar/iCloud permissions.
-
-Do not handcraft a "looks like Google" production button if official provider rendering/mechanism requires otherwise.
-
-### 8.9 Error-state standard
-
-Do not convert every failure into "wrong password".
+Do not convert every failure into “wrong password”.
 
 Map real backend errors into user-relevant classes such as, where the contract supports them:
 
@@ -499,18 +614,19 @@ security reauthentication required
 
 Do not expose sensitive internal reason codes.
 
-### 8.10 Architecture standard
+### 8.15 Architecture standard
 
 - feature-first ownership remains;
 - routes consume the feature public API only;
 - no Web ↔ Mobile private imports;
-- no shared package dumping grounds;
+- no shared-package dumping grounds;
 - no generic `Repository<T>` abstractions;
 - no fake DTO/API layer created just for tests/screenshots;
 - stable server OpenAPI should drive the generated client boundary;
 - TanStack Query/Form/Zod are adopted at the real justified boundary, not inserted ceremonially;
 - generated outputs remain deterministic;
-- no debug/test harness code in production routes/bundles.
+- no debug/test harness code in production routes/bundles;
+- no dependency/version churn merely to silence nonblocking warnings.
 
 ---
 
@@ -550,18 +666,19 @@ When the backend contract is stable enough, expected direction is:
 FastAPI Auth
 → stable OpenAPI
 → generated typed client (Orval / @dante/api-client if still authoritative)
-→ real remote-state boundary
-→ existing Access reducer/state graph
-→ real signup/signin/verification/recovery/provider/session flows
+→ real form/error contract
+→ remote-state/query integration where justified
+→ existing Access state graph
+→ real provider/session/recovery/link flows
 → authenticated Home handoff
 → full-stack E2E
 ```
 
-Do not redesign the whole state graph just because the real API arrives. Map real server outcomes into the already approved canonical states unless the backend contract proves the state model itself must change.
+Do not redesign the state graph merely because the backend arrives. Wire real authoritative events into the existing canonical graph unless repository truth proves a contract change is required.
 
 ---
 
-## 11. Password contract
+## 11. Password/security contract
 
 ```text
 minimum                    12 characters
@@ -572,13 +689,13 @@ show/hide                   allowed
 common/breached blocklist  required server-side
 ```
 
-Do not add arbitrary uppercase/symbol/number composition rules.
+Do not add arbitrary composition rules just because another application uses them.
 
 ---
 
-## 12. Mandatory QA discipline
+## 12. Mandatory QA gate
 
-Baseline gate:
+Normal repository gate:
 
 ```bash
 pnpm format:check
@@ -592,92 +709,80 @@ pnpm --filter @dante/web test:e2e
 git diff --check
 ```
 
-But every batch needs **risk-specific QA**, not only the baseline.
+Generic QA is not enough. Every batch must add targeted checks for the risk introduced.
 
 Examples:
 
-- changed UI → representative screenshots + visual review;
-- new/changed state → unit/component state tests;
-- keyboard/menu/form behavior → keyboard/focus checks;
-- new responsive behavior → multiple viewport checks and overflow assertions;
-- accessibility-affecting change → axe + manual review;
-- new API → success/error/timeout/offline/rate-limit tests;
-- provider integration → callback/cancel/error/link collision tests;
-- session integration → bootstrap/expiry/revocation/reauth tests;
-- recovery → neutral enumeration behavior + proof expiry/single-use full-stack tests;
-- final integration → isolated backend/DB full-stack E2E.
+- visual screenshots for new/changed states;
+- IT + EN visual checks where copy changed;
+- axe for new/changed states;
+- keyboard/focus checks for menus/forms/dialog-like flows;
+- responsive checks beyond one desktop/one phone where layout changed;
+- mobile overflow and touch-target checks;
+- token/color contrast checks on the real surface;
+- asset/brand/provider mark review when visual assets change;
+- real network/error mapping tests when APIs exist;
+- provider callback/session/recovery full-stack tests when backend exists;
+- hosted CI before merge;
+- manual product review before claiming visual PASS.
 
-Never call a visual PASS before actually looking at the screenshots. A compile/test PASS is not a product PASS.
+A test harness must faithfully import the same relevant global styles/runtime assumptions as production. A harness failure must be diagnosed before changing production code.
 
 ---
 
-## 13. Final Access closure checklist
+## 13. Final Access closure criteria
 
-Access is not "done" until all applicable items below are satisfied.
-
-### Visual / UX
+Do **not** mark Access closed until all applicable items are true:
 
 ```text
-[ ] every canonical state has production-quality UI
-[ ] desktop/tablet/phone composition reviewed
-[ ] no collage/coupage or inconsistent component grammar
-[ ] no placeholder/debug/developer copy
-[ ] loading/error/offline/rate-limit states polished
-[ ] provider/legal surfaces final
-```
+VISUAL / DESIGN SYSTEM
+[ ] all canonical Access states visually reviewed
+[ ] desktop/tablet/phone responsive quality accepted
+[ ] IT/EN visual expansion reviewed
+[ ] no placeholder/debug/developer-facing UI
+[ ] no random raw colors/spacing/icon styles outside approved design rules
+[ ] DANTE brand masters/assets used correctly
+[ ] provider marks/mechanisms conform to official requirements
+[ ] typography/spacing/radius/shadow hierarchy coherent across the whole flow
 
-### I18N / accessibility
-
-```text
+I18N / A11Y
 [ ] IT/EN parity final
 [ ] keyboard/focus behavior complete
-[ ] WCAG AA automated checks pass
-[ ] manual accessibility checks pass
+[ ] WCAG 2.2 AA automation + manual checks pass
 [ ] text expansion/zoom/reduced-motion risks handled
-```
 
-### Real auth/security
+AUTH / SECURITY
+[ ] real signup/signin/verification/recovery wired
+[ ] real Google/Apple transactions wired
+[ ] account linking secure
+[ ] session bootstrap/expiry/revocation handled
+[ ] reauth works for protected transitions
+[ ] no sensitive material logged/persisted client-side
+[ ] server errors/rate limits mapped correctly
 
-```text
-[ ] real signup
-[ ] real sign-in
-[ ] real email verification
-[ ] real recovery/reset
-[ ] real Google/Apple provider flows
-[ ] secure account linking
-[ ] real session bootstrap
-[ ] session expiry/revocation handling
-[ ] real reauth for protected operations
-[ ] server errors/rate-limit mappings final
-[ ] no secrets/sensitive proofs logged or persisted client-side
-```
-
-### Architecture / integration
-
-```text
-[ ] stable Auth OpenAPI
-[ ] generated typed client boundary
+ARCHITECTURE
+[ ] stable OpenAPI/typed client boundary
 [ ] no temporary fake auth adapter remains
-[ ] state graph mapped to real backend outcomes
-[ ] routes/public API boundaries remain clean
-[ ] architecture/generated gates pass
-```
+[ ] routes import feature public API only
+[ ] no architecture violations
+[ ] no production debug/test harness remains
 
-### QA / release
-
-```text
+QA
 [ ] unit/component tests pass
 [ ] browser E2E pass
 [ ] full-stack E2E against isolated backend/DB pass
-[ ] production build passes
+[ ] production build pass
+[ ] targeted responsive/a11y/i18n/security tests pass
 [ ] visual/product review accepted
-[ ] hosted CI green
-[ ] real Terms/Privacy destinations/content
+[ ] hosted CI gates green
+
+RELEASE
+[ ] Terms/Privacy destinations/content real
 [ ] authenticated Home handoff real
-[ ] deployment/config requirements documented
+[ ] migration/deployment/config requirements documented
 ```
 
-Only after this should the assistant propose a separate Access closure + merge gate.
+Only after these are satisfied should a separate merge/closure gate be proposed.
 
 ---
 
@@ -685,36 +790,24 @@ Only after this should the assistant propose a separate Access closure + merge g
 
 No merge to protected `main` is authorized by this handoff.
 
-Never:
+Merge is a separate explicit user gate after final QA/review.
 
-- merge because GitHub says `mergeable`;
-- rebase/force-push to make history look cleaner;
-- change branch/worktree because the chat changed;
-- silently rewrite historical evidence;
-- include unrelated cleanup in an Access batch.
-
-Merge requires a new explicit user gate after final hosted/local QA and review.
+Never rebase/force-push/rewrite history. Never merge solely because GitHub says mergeable.
 
 ---
 
-## 15. What the next chat should do first
+## 15. What the next chat must report before asking to write
 
-The next chat should **not immediately code**.
+After reading this handoff and repository authorities, the next chat should report:
 
-First response/action sequence:
+1. the live `feature/access-frontend` HEAD it verified;
+2. whether local/remote divergence exists;
+3. AF-01D / AF-02A / AF-02B status;
+4. what remains to truly close Access;
+5. current backend Auth/OpenAPI readiness from a fresh repository read;
+6. the proposed next bounded batch;
+7. exact files it would need to touch;
+8. explicit exclusions;
+9. expected QA and visual evidence.
 
-```text
-1. read this handoff + workstream completely
-2. fresh-read feature/access-frontend HEAD
-3. verify local worktree/branch expectations
-4. inspect current backend Auth readiness
-5. identify the highest-value remaining Access slice
-6. state exact write gate
-7. only then modify files
-```
-
-If backend Auth is now mature enough, prioritize real integration rather than inventing more temporary frontend layers.
-
-If it is not ready, continue only durable frontend work that advances final production readiness.
-
-The current chat can remain available as a reviewer during handoff: if the next chat proposes branch churn, fake auth, low-quality UI shortcuts, unbounded writes, unjustified architecture changes or declares PASS without visual/security/QA evidence, stop and correct it before proceeding.
+Only after the user approves that bounded gate should it write.
