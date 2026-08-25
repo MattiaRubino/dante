@@ -16,9 +16,11 @@ from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
 
+_TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
+
 
 @pytest.mark.asyncio
-async def test_runtime_connects_as_dedicated_identity_with_expected_search_path(
+async def test_runtime_connects_as_exact_identity_with_trusted_search_path(
     migrated_database: Any,
 ) -> None:
     runtime = create_database_runtime(migrated_database.runtime_settings())
@@ -26,12 +28,16 @@ async def test_runtime_connects_as_dedicated_identity_with_expected_search_path(
         async with runtime.engine.connect() as connection:
             row = (
                 await connection.execute(
-                    text("SELECT current_user, current_setting('search_path')")
+                    text(
+                        "SELECT session_user, current_user, "
+                        "current_setting('search_path')"
+                    )
                 )
             ).one()
 
-        assert row[0] == "dante_runtime"
-        assert str(row[1]).replace(" ", "") == "dante,public"
+        assert row[0:2] == ("dante_runtime", "dante_runtime")
+        assert str(row[2]).replace(" ", "") == _TRUSTED_SEARCH_PATH
+        assert await runtime.is_ready() is True
     finally:
         await runtime.dispose()
 
