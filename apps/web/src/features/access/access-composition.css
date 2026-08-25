@@ -186,6 +186,17 @@
   }
 }
 
+@media (max-width: 1100px) and (min-width: 901px) and (max-height: 820px) {
+  .access-panel {
+    padding-top: 26px;
+    padding-bottom: 22px;
+  }
+
+  .access-kicker {
+    margin-bottom: 18px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .access-locale-chevron {
     transition: none;
