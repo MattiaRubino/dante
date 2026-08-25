@@ -1,31 +1,32 @@
 # Backend CP6-04 — P0 Provisioning / Database-Security Hardening
 
-- **Status:** REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING
+- **Status:** CLOSED / DIRECT POSTGRESQL PASS
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
 - **Initial authorized PRE-SCOPE:** `52398cf6eb91f565edaa24f28b9a14a02b93cc79`
 - **Initial implementation candidate HEAD:** `a691783a18794937f16c2574b8ca814936ecd45b`
 - **Repair authorized PRE-SCOPE:** `a691783a18794937f16c2574b8ca814936ecd45b`
+- **Closure authorized PRE-SCOPE:** `3bfee2dc74f360358a0c1ffa7369473e0c71e4c8`
 - **Checkpoint:** CP6-04 — Whole DANTE Database Materialization
 - **Stage:** P0 — `cp6_provisioning_acl_hardening`
 - **Alembic revision:** none; P0 is a non-Alembic prerequisite
 - **Business DDL created by P0:** 0
-- **M1 status:** NOT STARTED / BLOCKED UNTIL DIRECT P0 POSTGRESQL PASS
+- **M1 status:** NOT STARTED / READY TO OPEN AS A SEPARATE GATE
 
 ## 1. Purpose
 
 P0 implements the database-security and provisioning prerequisite frozen by CP6-03
 Parts 12, 13 and 18 before any CP6 business table may be created.
 
-The hard ordering remains:
+The hard ordering is now satisfied at the P0 boundary:
 
 ```text
 P0  cp6_provisioning_acl_hardening
-MUST be effective and directly proven
+DIRECT POSTGRESQL PASS / CLOSED
         ↓
 M1  cp6_native_identity_address
-may then create the first 16 business tables
+may now be opened as a separate implementation gate
 ```
 
 P0 does not materialize the DANTE business database. It hardens the technical
@@ -49,13 +50,15 @@ apps/backend/tests/test_settings.py
 docs/development/backend-cp6-04-p0-provisioning-security.md
 ```
 
-The repair gate after the first real PostgreSQL run is limited to:
+The repair gate after the first real PostgreSQL run was limited to:
 
 ```text
 apps/backend/src/dante/platform/database/provisioning.py
 apps/backend/tests/integration/database/test_privileges.py
 docs/development/backend-cp6-04-p0-provisioning-security.md
 ```
+
+The closure gate updates only this documentation record.
 
 No CP6 M1..M7 business revision, business SQLAlchemy mapping, Dictionary object
 entry, API, product persistence adapter or frontend behavior is part of P0.
@@ -149,7 +152,7 @@ ADMIN         FALSE
 
 P0 inspects every direct membership where a DANTE role appears on either side.
 
-The repair makes the reconciliation boundary explicit:
+The reconciliation boundary is explicit:
 
 ```text
 unexpected DANTE ↔ DANTE edge
@@ -234,7 +237,7 @@ types/domains
 
 The first P0 implementation incorrectly placed those two PUBLIC revokes under
 `IN SCHEMA dante`. PostgreSQL per-schema default privileges are additive to
-global defaults and cannot negate a global grant. The repair therefore moves
+global defaults and cannot negate a global grant. The repair therefore moved
 these two PUBLIC revokes to the global owner default-privilege layer.
 
 P0 deliberately does not issue blanket `GRANT ... ON ALL TABLES` or equivalent
@@ -348,7 +351,7 @@ Alembic rejects a non-migrator injected login identity
 existing transaction semantics pass under explicit test ACLs
 ```
 
-The repair adds direct `has_function_privilege(..., 'EXECUTE')` and
+The repair added direct `has_function_privilege(..., 'EXECUTE')` and
 `has_type_privilege(..., 'USAGE')` assertions so the PUBLIC-default behavior is
 proved explicitly rather than inferred from unrelated DML failures.
 
@@ -386,7 +389,7 @@ runtime execution succeeded when InsufficientPrivilege was required
 All migration, role-topology, runtime, transaction and the other privilege tests
 passed in that run.
 
-This run is evidence of a real P0 finding, not a P0 PASS.
+This run was evidence of a real P0 finding, not a P0 PASS.
 
 Root cause:
 
@@ -399,14 +402,90 @@ Review of the same PostgreSQL default-privilege rule exposed the analogous
 `PUBLIC USAGE` risk for future types/domains. That second issue was found by
 analysis before it produced a separate red test.
 
-The repair addresses both.
+The repair addressed both.
 
-## 13. Repair validation state
+## 13. Repair and second real PostgreSQL 18.6 execution
 
-At repair-write time:
+After the repair was written, the existing backend worktree was fast-forwarded
+to the repair HEAD and the real PostgreSQL lane was rerun locally against the
+repository image.
+
+User-executed local command and observed result:
 
 ```text
-P0 ORIGINAL CODE / TEST IMPLEMENTATION
+uv run pytest -m postgres -vv
+
+collected
+59
+
+deselected
+37
+
+selected
+22
+
+PASS
+22
+
+FAIL
+0
+
+elapsed
+19.15s
+```
+
+The newly added external-role fail-closed test passed, as did the explicit
+routine EXECUTE and type USAGE deny-by-default assertions.
+
+The complete selected lane passed:
+
+```text
+migrations                 PASS
+role/security posture      PASS
+migrator identity/SET ROLE PASS
+default privilege denial   PASS
+runtime escalation denial  PASS
+database/schema hardening  PASS
+DANTE membership repair    PASS
+external-edge fail closed  PASS
+ACL non-broadening rerun   PASS
+runtime identity/recovery  PASS
+transaction semantics      PASS
+```
+
+This is direct local PostgreSQL/Docker acceptance evidence supplied from the
+actual test execution. It is not represented as GitHub Actions CI evidence.
+
+## 14. Disposable-container cleanup proof
+
+The PostgreSQL acceptance harness uses an isolated disposable container rather
+than the normal persistent LOCAL Compose database.
+
+Before the first run, the disposable-container query returned no matching
+container. After the successful second run, the user explicitly confirmed that
+the disposable pytest PostgreSQL container had been removed.
+
+Final cleanup state:
+
+```text
+dante-cp3-pytest-* residual containers
+0
+
+persistent LOCAL Compose database touched by this acceptance run
+NO
+
+persistent business database created by P0
+NO
+```
+
+No test database or test container is intentionally retained by this P0 proof.
+
+## 15. P0 closure decision
+
+P0 has earned direct PASS.
+
+```text
+P0 CODE / TEST IMPLEMENTATION
 WRITTEN
 
 FIRST REAL POSTGRESQL 18.6 RUN
@@ -415,43 +494,56 @@ FIRST REAL POSTGRESQL 18.6 RUN
 P0 FINDING
 CONFIRMED
 
-REPAIR PYTHON SYNTAX REVIEW
-COMPLETE
+REPAIR
+WRITTEN
 
-REPAIR REAL POSTGRESQL 18.6 RERUN
-PENDING
+SECOND REAL POSTGRESQL 18.6 RUN
+22 PASS / 0 FAIL
+
+DISPOSABLE CONTAINER CLEANUP
+0 RESIDUAL CONTAINERS CONFIRMED
 
 P0 DIRECT PASS
-NOT YET EARNED
+EARNED
+
+P0
+CLOSED
 
 M1
-NOT STARTED
+NOT STARTED / READY TO OPEN AS A SEPARATE GATE
 ```
 
-No earlier CP3 CI result is reused as proof for P0.
+No earlier CP3 CI result is reused as proof for P0, and no GitHub CI run is
+claimed for this local acceptance evidence.
 
-## 14. Next mandatory operation
+## 16. Next mandatory operation
 
-Before authoring or executing M1:
+The next database-materialization operation is not an extension of P0. It must
+be opened separately as:
 
 ```text
-1. fast-forward the existing backend worktree to the repair HEAD;
-2. verify no disposable pytest PostgreSQL container was left behind;
-3. rerun `uv run pytest -m postgres -vv`;
-4. require the full PostgreSQL P0 lane to pass;
-5. verify the disposable acceptance container is gone after the run;
-6. record exact Docker/PostgreSQL/test evidence;
-7. only then open the separate M1 implementation gate.
+M1  cp6_native_identity_address
 ```
 
-No new worktree is required.
+Before any M1 write, the normal engineering write gate still applies:
 
-The PostgreSQL acceptance harness remains disposable and isolated from the
-normal persistent LOCAL Compose database.
+```text
+1. fetch live feature/logical-postgresql HEAD;
+2. state exact M1 PRE-SCOPE;
+3. state exact CREATE / UPDATE / DELETE surface;
+4. reject a moved HEAD and re-gate if necessary;
+5. implement only M1-authorized business objects;
+6. execute M1 on real PostgreSQL and inspect the resulting schema directly;
+7. require exact diff/readback and direct database proof before M2.
+```
 
-## 15. Explicit exclusions
+The persistent LOCAL database can be brought up deliberately as part of the
+materialization workflow, but it was not created or mutated as part of the P0
+acceptance lane. No extra worktree is required.
 
-P0 does not authorize or create:
+## 17. Explicit exclusions
+
+P0 did not authorize or create:
 
 ```text
 CP6-M01..CP6-M07 Alembic business revisions
