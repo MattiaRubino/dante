@@ -8,9 +8,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from dante.platform.config.database import MigrationDatabaseSettings
+from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.metadata import DANTE_SCHEMA, Base
 
 config = context.config
+
+if {table.fullname for table in MAPPED_TABLES} != set(Base.metadata.tables):
+    raise RuntimeError("DANTE SQLAlchemy mapping registration is incomplete")
+
 target_metadata = Base.metadata
 
 _MIGRATOR_ROLE = "dante_migrator"

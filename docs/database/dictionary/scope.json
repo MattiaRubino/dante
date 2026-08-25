@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/scope-v1.schema.json",
   "dictionary_version": 1,
-  "status": "readiness_only",
+  "status": "materializing",
   "postgresql": {
     "major": 18,
     "schema": "dante"
@@ -23,20 +23,22 @@
     }
   },
   "current_materialization": {
-    "completed_stages": [],
+    "completed_stages": [
+      "CP6-M01"
+    ],
     "standalone_entries": {
-      "tables": 0,
+      "tables": 16,
       "views": 0,
       "routines": 0,
-      "total": 0
+      "total": 16
     },
     "embedded_objects": {
       "triggers": 0,
-      "physical_indexes": 0
+      "physical_indexes": 16
     },
     "constraints": {
       "foreign_keys": 0,
-      "check_constraints": 0
+      "check_constraints": 16
     }
   },
   "technical_foundation": {

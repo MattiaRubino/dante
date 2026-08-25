@@ -10,7 +10,7 @@ from alembic.script import ScriptDirectory
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260820_01"
+_EXPECTED_HEAD = "20260825_01"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
@@ -62,7 +62,7 @@ def test_fresh_database_reaches_the_single_repository_head(
     assert _current_revision(provisioned_database) == _EXPECTED_HEAD
 
 
-def test_technical_baseline_round_trips_head_base_head(
+def test_cp6_m1_round_trips_head_base_head(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
