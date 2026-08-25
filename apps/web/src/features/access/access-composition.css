@@ -118,7 +118,7 @@
   .access-frame {
     width: 100%;
     min-height: calc(100dvh - 76px);
-    grid-template-columns: minmax(0, 1fr) minmax(460px, 509px);
+    grid-template-columns: minmax(0, 1fr) minmax(460px, 480px);
     gap: clamp(44px, 4.6vw, 70px);
     align-items: center;
     padding-right: clamp(64px, 11.6vw, 178px);
