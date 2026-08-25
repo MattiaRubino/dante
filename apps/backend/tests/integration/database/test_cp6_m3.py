@@ -1,4 +1,4 @@
-"""Real PostgreSQL acceptance tests for CP6-M03 Schedule/Actual/Session companions."""
+"""Permanent real-PostgreSQL stage proof for CP6-M03."""
 
 from __future__ import annotations
 
@@ -108,8 +108,11 @@ _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
 def _admin_connection(database: Any) -> psycopg.Connection[Any]:
     return psycopg.connect(
-        host=database.cluster.host, port=database.cluster.port, dbname=database.name,
-        user=database.cluster.admin_user, password=database.cluster.admin_password,
+        host=database.cluster.host,
+        port=database.cluster.port,
+        dbname=database.name,
+        user=database.cluster.admin_user,
+        password=database.cluster.admin_password,
         autocommit=True,
     )
 
@@ -146,7 +149,8 @@ def test_m3_materializes_exact_cumulative_topology(
             """
             SELECT c.relname,con.contype,con.conname,con.condeferrable,
                    con.condeferred,con.convalidated,con.conenforced
-            FROM pg_constraint con JOIN pg_class c ON c.oid=con.conrelid
+            FROM pg_constraint con
+            JOIN pg_class c ON c.oid=con.conrelid
             JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname<>'alembic_version'
             """
@@ -222,9 +226,7 @@ def test_m3_constraints_foreign_keys_and_partial_uniques_are_live(
             (schedule_ref, actual_ref),
         )
 
-        schedule_state = uuid7()
-        session_state = uuid7()
-        actual_state = uuid7()
+        schedule_state, actual_state, session_state = uuid7(), uuid7(), uuid7()
         connection.execute(
             "INSERT INTO dante.material_state_address"
             "(material_state_ref,scoped_owner_ref,facet_code) "
@@ -246,18 +248,21 @@ def test_m3_constraints_foreign_keys_and_partial_uniques_are_live(
             )
         connection.execute(
             "INSERT INTO dante.schedule_placement_state"
-            "(material_state_ref,schedule_ref,temporal_form_code) VALUES (%s,%s,'date_span')",
+            "(material_state_ref,schedule_ref,temporal_form_code) "
+            "VALUES (%s,%s,'date_span')",
             (schedule_state, schedule_ref),
         )
         with pytest.raises(errors.CheckViolation):
             connection.execute(
                 "INSERT INTO dante.schedule_placement_date_state"
-                "(material_state_ref,date_span) VALUES (%s,'[2026-01-01,2026-01-01)'::daterange)",
+                "(material_state_ref,date_span) "
+                "VALUES (%s,'[2026-01-01,2026-01-01)'::daterange)",
                 (schedule_state,),
             )
         connection.execute(
             "INSERT INTO dante.schedule_placement_date_state"
-            "(material_state_ref,date_span) VALUES (%s,'[2026-01-01,2026-01-02)'::daterange)",
+            "(material_state_ref,date_span) "
+            "VALUES (%s,'[2026-01-01,2026-01-02)'::daterange)",
             (schedule_state,),
         )
 
@@ -362,29 +367,26 @@ def test_m3_upgrade_and_downgrade_preserve_m2_boundary(
 
 
 def test_m3_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
-    assert {table.name for table in MAPPED_TABLES} == _CUMULATIVE_TABLES
-    assert set(Base.metadata.tables) == {f"dante.{name}" for name in _CUMULATIVE_TABLES}
-    assert len(tuple(Base.registry.mappers)) == 37
-    assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
+    stage_tables = tuple(t for t in MAPPED_TABLES if t.name in _CUMULATIVE_TABLES)
+    stage_mappers = tuple(
+        mapper for mapper in Base.registry.mappers
+        if mapper.local_table.name in _CUMULATIVE_TABLES
+    )
+    assert {t.name for t in stage_tables} == _CUMULATIVE_TABLES
+    assert {m.local_table.name for m in stage_mappers} == _CUMULATIVE_TABLES
+    assert len(stage_mappers) == 37
+    assert all(len(m.relationships) == 0 for m in stage_mappers)
 
 
-def test_m3_dictionary_matches_live_stage_and_current_scope(
+def test_m3_dictionary_matches_live_stage(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
     database = _upgrade_m3(provisioned_database, alembic_config)
     table_dir = _DICTIONARY_ROOT / "tables"
     entries = {
-        path.stem: json.loads(path.read_text(encoding="utf-8"))
-        for path in table_dir.glob("*.json")
-    }
-    scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
-    assert set(entries) == _CUMULATIVE_TABLES
-    assert scope["current_materialization"] == {
-        "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03"],
-        "standalone_entries": {"tables": 37, "views": 0, "routines": 0, "total": 37},
-        "embedded_objects": {"triggers": 0, "physical_indexes": 55},
-        "constraints": {"foreign_keys": 31, "check_constraints": 47},
+        name: json.loads((table_dir / f"{name}.json").read_text(encoding="utf-8"))
+        for name in _CUMULATIVE_TABLES
     }
     with _admin_connection(database) as connection:
         database_columns = {
@@ -401,19 +403,26 @@ def test_m3_dictionary_matches_live_stage_and_current_scope(
         }
     dictionary_columns = {
         (name, str(c["name"]), str(c["postgres_type"]), "YES" if c["nullable"] else "NO")
-        for name, entry in entries.items() for c in entry["structure"]["columns"]
+        for name, entry in entries.items()
+        for c in entry["structure"]["columns"]
     }
     assert dictionary_columns == database_columns
     m3_entries = {name: entries[name] for name in _M3_TABLES}
     assert {e["implementation"]["alembic_revision"] for e in m3_entries.values()} == {_M3_REVISION}
     assert {e["implementation"]["introducing_stage"] for e in m3_entries.values()} == {"CP6-M03"}
     assert {
-        check["name"] for e in m3_entries.values() for check in e["structure"]["check_constraints"]
+        check["name"]
+        for e in m3_entries.values()
+        for check in e["structure"]["check_constraints"]
     } == _M3_CHECKS
     assert {
-        fk["name"] for e in m3_entries.values() for fk in e["structure"]["foreign_keys"]
+        fk["name"]
+        for e in m3_entries.values()
+        for fk in e["structure"]["foreign_keys"]
     } == _M3_FOREIGN_KEYS
     assert {
-        (name, index["name"]) for name, e in m3_entries.items()
-        for index in e["structure"]["indexes"] if index["source"] == "explicit_index"
+        (name, index["name"])
+        for name, e in m3_entries.items()
+        for index in e["structure"]["indexes"]
+        if index["source"] == "explicit_index"
     } == _M3_EXPLICIT_INDEXES

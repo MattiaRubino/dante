@@ -2,7 +2,7 @@
 
 from sqlalchemy import Table
 
-from . import actual, addressing, identity, schedule, session
+from . import actual, addressing, identity, recurrence, schedule, session
 
 MAPPED_TABLES: tuple[Table, ...] = (
     identity.PersonRow.__table__,
@@ -42,6 +42,32 @@ MAPPED_TABLES: tuple[Table, ...] = (
     session.SessionTimingElapsedRow.__table__,
     session.SessionTimingPauseRow.__table__,
     session.SessionTimingCurrentHistoryRow.__table__,
+    recurrence.RoutineRecurrenceStateRow.__table__,
+    recurrence.RoutineRecurrenceCurrentHistoryRow.__table__,
+    recurrence.RoutineRecurrenceBoundaryStateRow.__table__,
+    recurrence.RoutineRecurrenceCalendarStateRow.__table__,
+    recurrence.RoutineRecurrenceCalendarWallTimeRow.__table__,
+    recurrence.RoutineRecurrenceCalendarWeekdayRow.__table__,
+    recurrence.RoutineRecurrenceCalendarMonthDayRow.__table__,
+    recurrence.RoutineRecurrenceCalendarOrdinalWeekdayRow.__table__,
+    recurrence.RoutineRecurrenceCalendarYearMonthDayRow.__table__,
+    recurrence.RoutineRecurrenceElapsedStateRow.__table__,
+    recurrence.RoutineRecurrenceQuotaStateRow.__table__,
+    recurrence.RoutineRecurrenceCyclicStateRow.__table__,
+    recurrence.RoutineRecurrenceCyclePositionRow.__table__,
+    recurrence.EventRecurrenceStateRow.__table__,
+    recurrence.EventRecurrenceCurrentHistoryRow.__table__,
+    recurrence.EventRecurrenceBoundaryStateRow.__table__,
+    recurrence.EventRecurrenceCalendarStateRow.__table__,
+    recurrence.EventRecurrenceCalendarWallTimeRow.__table__,
+    recurrence.EventRecurrenceCalendarWeekdayRow.__table__,
+    recurrence.EventRecurrenceCalendarMonthDayRow.__table__,
+    recurrence.EventRecurrenceCalendarOrdinalWeekdayRow.__table__,
+    recurrence.EventRecurrenceCalendarYearMonthDayRow.__table__,
+    recurrence.EventRecurrenceElapsedStateRow.__table__,
+    recurrence.EventRecurrenceQuotaStateRow.__table__,
+    recurrence.EventRecurrenceCyclicStateRow.__table__,
+    recurrence.EventRecurrenceCyclePositionRow.__table__,
 )
 
 __all__ = ["MAPPED_TABLES"]
