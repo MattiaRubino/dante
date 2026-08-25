@@ -1,6 +1,6 @@
 # Backend CP6-04 — M3 Schedule / Actual / Session Materialization
 
-- **Status:** IMPLEMENTATION CANDIDATE / DIRECT POSTGRESQL EXECUTION PENDING
+- **Status:** REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING
 - **Date:** 2026-08-25
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/logical-postgresql`
@@ -271,18 +271,27 @@ fresh-head / base-round-trip / Alembic drift
 
 ## 11. Execution honesty
 
-At candidate-write time:
+Current evidence:
 
 ```text
 P0  CLOSED / DIRECT POSTGRESQL PASS
 M1  CLOSED / DIRECT POSTGRESQL PASS
 M2  CLOSED / DIRECT POSTGRESQL PASS
 
-M3 CODE / MIGRATION / MAPPINGS / DICTIONARY / TESTS
-WRITTEN AS IMPLEMENTATION CANDIDATE
+M3 FIRST DIRECT POSTGRESQL 18.6 RUN
+collected      77
+deselected     37
+selected       40
+PASS           39
+FAIL            1
+elapsed        29.58s
 
-REAL POSTGRESQL 18.6 M3 EXECUTION
-PENDING
+ONLY FAILURE
+ test_m3_dictionary_matches_live_stage_and_current_scope
+
+DDL / constraints / FK / partial UNIQUE / ACL / upgrade-downgrade /
+SQLAlchemy mappings / Alembic head-drift proofs
+PASS
 
 M3 DIRECT PASS
 NOT YET EARNED
@@ -291,7 +300,8 @@ M4
 NOT STARTED / BLOCKED
 ```
 
-No GitHub CI result and no previous-stage PostgreSQL result is reused as M3 proof.
+This is local user-executed PostgreSQL evidence, not GitHub Actions CI evidence.
+No previous-stage PostgreSQL result is reused as M3 proof.
 
 ## 12. Explicit exclusions
 
@@ -313,5 +323,39 @@ additional persistent databases
 protected-main merge/rebase/realignment
 ```
 
-The next mandatory operation after this candidate is fresh direct execution against
-the disposable PostgreSQL 18.6 acceptance boundary.
+The next mandatory operation is a fresh direct rerun against the disposable
+PostgreSQL 18.6 acceptance boundary after the Dictionary repair below.
+
+## 13. First-run finding and repair
+
+The first direct M3 run proved the live PostgreSQL schema while exposing a
+Dictionary assembly defect. Nine already-correct Actual/Session Dictionary blobs
+were attached to the wrong filenames during the Git tree assembly. The failure was
+therefore a Dictionary filename/content permutation, not a DDL or ORM defect.
+
+Repair scope:
+
+```text
+Dictionary JSON files corrected                 9
+DDL changes                                     0
+SQLAlchemy mapping changes                      0
+test weakening                                  0
+scope-count changes                             0
+```
+
+The repair reattaches each existing correct blob to its matching filename:
+
+```text
+actual_realization_state
+actual_realization_timing
+actual_realization_session_basis
+actual_realization_current_history
+session_timing_state
+session_timing_absolute
+session_timing_elapsed
+session_timing_pause
+session_timing_current_history
+```
+
+M3 remains `REPAIR CANDIDATE / DIRECT POSTGRESQL RERUN PENDING` until the complete
+`uv run pytest -m postgres -vv` lane passes with zero failures.
