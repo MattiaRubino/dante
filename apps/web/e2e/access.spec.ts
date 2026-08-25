@@ -237,18 +237,26 @@ test.describe('DANTE Access', () => {
   });
 
   test('surfaces browser offline as transport state rather than credential failure', async ({
+    context,
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
-    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await expect(
+      page.getByRole('heading', { level: 1, name: signInHeading }),
+    ).toBeVisible();
+
+    await context.setOffline(true);
 
     await expect(page.getByText('Sei offline.')).toBeVisible();
     await expect(page.getByText('Riconnettiti per continuare.')).toBeVisible();
     await expect(
       page.getByRole('heading', { level: 1, name: signInHeading }),
     ).toBeVisible();
+
+    await context.setOffline(false);
+    await expect(page.locator('.access-condition-notice')).toHaveCount(0);
   });
 
   test('switches to the narrow single-column composition', async ({ page }) => {
