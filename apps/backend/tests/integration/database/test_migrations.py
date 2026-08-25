@@ -10,7 +10,7 @@ from alembic.script import ScriptDirectory
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260825_02"
+_EXPECTED_HEAD = "20260825_03"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
@@ -58,11 +58,10 @@ def test_fresh_database_reaches_the_single_repository_head(
     assert script.get_heads() == [_EXPECTED_HEAD]
 
     command.upgrade(alembic_config, "head")
-
     assert _current_revision(provisioned_database) == _EXPECTED_HEAD
 
 
-def test_cp6_m2_round_trips_head_base_head(
+def test_cp6_m3_round_trips_head_base_head(
     provisioned_database: Any,
     alembic_config: Config,
 ) -> None:
@@ -81,7 +80,6 @@ def test_alembic_check_reports_no_dante_schema_drift_with_extensions_present(
     alembic_config: Config,
 ) -> None:
     command.upgrade(alembic_config, "head")
-
     command.check(alembic_config)
 
     with psycopg.connect(
@@ -112,8 +110,5 @@ def test_alembic_rejects_injected_non_migrator_identity(
         provisioned_database.cluster.admin_password,
     )
 
-    with pytest.raises(
-        RuntimeError,
-        match="authenticate exactly as dante_migrator",
-    ):
+    with pytest.raises(RuntimeError, match="authenticate exactly as dante_migrator"):
         command.upgrade(alembic_config, "head")
