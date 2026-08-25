@@ -217,6 +217,51 @@
   text-align: center;
 }
 
+.access-provider-context {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 18px;
+  border: 1px solid var(--dante-semantic-color-border-divider);
+  border-radius: 12px;
+  background: var(--dante-semantic-color-surface-muted);
+}
+
+.access-provider-context span,
+.access-provider-label {
+  color: var(--dante-semantic-color-text-primary);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.access-provider-label {
+  margin: 4px 0 0;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: var(--dante-semantic-color-surface-muted);
+  text-align: center;
+}
+
+.access-completion-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 20px auto 0;
+  border: 1px solid
+    color-mix(in srgb, var(--dante-semantic-color-brand-accent) 34%, transparent);
+  border-radius: 50%;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-accent) 9%,
+    var(--dante-semantic-color-surface-base)
+  );
+  color: var(--dante-semantic-color-brand-accent-text);
+  font-size: 22px;
+  font-weight: 800;
+}
+
 .access-settings-summary {
   display: grid;
   gap: 10px;
@@ -257,11 +302,11 @@
   gap: 4px;
   width: 100%;
   min-height: 64px;
+  padding: 12px 14px;
   border: 1px solid var(--dante-semantic-color-border-control);
   border-radius: 11px;
   background: var(--dante-semantic-color-surface-base);
   color: var(--dante-semantic-color-text-secondary);
-  padding: 12px 14px;
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -311,7 +356,7 @@
 .access-wait-indicator {
   width: 34px;
   height: 34px;
-  margin: 12px auto;
+  margin: 4px auto 0;
   border: 3px solid var(--dante-semantic-color-border-divider);
   border-top-color: var(--dante-semantic-color-brand-accent);
   border-radius: 50%;
@@ -344,6 +389,12 @@
 
   .access-email-summary > span:first-child {
     display: none;
+  }
+
+  .access-secondary-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
