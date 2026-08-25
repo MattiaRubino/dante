@@ -6,7 +6,9 @@ import {
 
 const localeStorageKey = 'dante.locale';
 
-function normalizeLocale(value: string | null | undefined): SupportedLocale | null {
+function normalizeLocale(
+  value: string | null | undefined,
+): SupportedLocale | null {
   if (!value) {
     return null;
   }

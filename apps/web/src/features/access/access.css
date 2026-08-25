@@ -14,11 +14,7 @@
   justify-content: space-between;
   padding: 0 clamp(22px, 4vw, 62px);
   border-bottom: 1px solid
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-brand-ink) 6%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 6%, transparent);
   background: rgb(244 241 235 / 82%);
   backdrop-filter: blur(18px);
 }
@@ -184,26 +180,14 @@
   flex-direction: column;
   padding: 42px 42px 34px;
   border: 1px solid
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-brand-ink) 10%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 10%, transparent);
   border-radius: 26px;
   background: #fffdfa;
   box-shadow:
     0 24px 70px
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-brand-ink) 9%,
-        transparent
-      ),
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 9%, transparent),
     0 3px 12px
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-brand-ink) 4%,
-        transparent
-      );
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 4%, transparent);
 }
 
 .access-panel-inner {

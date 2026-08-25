@@ -47,9 +47,9 @@ describe('AccessSignInPanel', () => {
 
     expect(passwordInput.type).toBe('text');
     expect(
-      screen.getByRole('button', { name: 'Nascondi password' }).getAttribute(
-        'aria-pressed',
-      ),
+      screen
+        .getByRole('button', { name: 'Nascondi password' })
+        .getAttribute('aria-pressed'),
     ).toBe('true');
 
     expect(

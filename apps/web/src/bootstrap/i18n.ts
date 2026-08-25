@@ -4,7 +4,9 @@ import { initReactI18next } from 'react-i18next';
 
 import { resolvePreferredLocale } from '../platform/locale-preference';
 
-function normalizeDocumentLocale(language: string | undefined): SupportedLocale {
+function normalizeDocumentLocale(
+  language: string | undefined,
+): SupportedLocale {
   return language?.toLowerCase().startsWith('en') ? 'en' : 'it';
 }
 

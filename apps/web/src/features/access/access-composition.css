@@ -49,26 +49,14 @@
   width: 176px;
   padding: 6px;
   border: 1px solid
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-brand-ink) 10%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 10%, transparent);
   border-radius: 12px;
   background: #fffdfa;
   box-shadow:
     0 16px 42px
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-brand-ink) 12%,
-        transparent
-      ),
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 12%, transparent),
     0 2px 8px
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-brand-ink) 5%,
-        transparent
-      );
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 5%, transparent);
 }
 
 .access-locale-option {
@@ -141,9 +129,8 @@
     min-width: 0;
     min-height: calc(100dvh - 76px);
     justify-content: center;
-    padding:
-      clamp(52px, 6vh, 72px) 32px
-      clamp(78px, 9vh, 104px) clamp(54px, 6vw, 96px);
+    padding: clamp(52px, 6vh, 72px) 32px clamp(78px, 9vh, 104px)
+      clamp(54px, 6vw, 96px);
   }
 
   .access-brand-stage h2 {

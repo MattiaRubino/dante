@@ -195,7 +195,9 @@ test.describe('DANTE Access', () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test('exposes a keyboard-operable locale and sign-in path', async ({ page }) => {
+  test('exposes a keyboard-operable locale and sign-in path', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
 
