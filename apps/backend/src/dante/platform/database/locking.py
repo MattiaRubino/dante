@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from hashlib import blake2b
+from hashlib import sha256
 from typing import Final, Literal
 from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_LOCK_PERSON: Final[bytes] = b"dante-lock-v1"
+_LOCK_DOMAIN: Final[bytes] = b"dante-lock-v2"
 _DIGEST_MASK: Final[int] = (1 << 56) - 1
 _NAMESPACE_MAX: Final[int] = 127
 
@@ -28,11 +28,7 @@ def advisory_lock_key(namespace_code: int, semantic_ref: UUID) -> int:
         raise ValueError("namespace_code must be in the frozen 1..127 range")
 
     digest56 = int.from_bytes(
-        blake2b(
-            semantic_ref.bytes,
-            digest_size=7,
-            person=_LOCK_PERSON,
-        ).digest(),
+        sha256(_LOCK_DOMAIN + semantic_ref.bytes).digest()[:7],
         byteorder="big",
         signed=False,
     )

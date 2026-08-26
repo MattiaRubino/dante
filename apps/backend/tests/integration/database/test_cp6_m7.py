@@ -405,16 +405,16 @@ def test_m7_runtime_quota_generation_uses_advisory_locks_without_owner_update(
 
 
 def test_m7_lock_key_contract_is_stable_and_namespaced() -> None:
-    assert advisory_lock_key(1, _GOLDEN_REF) == 117516724220078504
-    assert advisory_lock_key(4, _GOLDEN_REF) == 333689506333862312
-    assert advisory_lock_key(6, _GOLDEN_REF) == 477804694409718184
+    assert advisory_lock_key(1, _GOLDEN_REF) == 114563613494871305
+    assert advisory_lock_key(4, _GOLDEN_REF) == 330736395608655113
+    assert advisory_lock_key(6, _GOLDEN_REF) == 474851583684510985
     assert occurrence_generation_lock_keys("routine", _GOLDEN_REF) == (
-        333689506333862312,
-        477804694409718184,
+        330736395608655113,
+        474851583684510985,
     )
     assert occurrence_generation_lock_keys("event", _GOLDEN_REF) == (
-        405747100371790248,
-        549862288447646120,
+        402793989646583049,
+        546909177722438921,
     )
     with pytest.raises(ValueError):
         advisory_lock_key(0, _GOLDEN_REF)

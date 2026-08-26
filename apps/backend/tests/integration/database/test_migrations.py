@@ -10,7 +10,7 @@ from alembic.script import ScriptDirectory
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_HEAD = "20260826_07"
+_EXPECTED_HEAD = "20260826_08"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 

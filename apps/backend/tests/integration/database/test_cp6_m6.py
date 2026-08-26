@@ -247,12 +247,11 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
     assert set(view_entries) == _VIEWS
     assert len(routine_entries) == 14
     assert _M6_ROUTINE in routine_entries
-    assert scope["current_materialization"] == {
-        "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06"],
-        "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
-        "embedded_objects": {"triggers": 75, "physical_indexes": 95},
-        "constraints": {"foreign_keys": 68, "check_constraints": 120},
-    }
+    current = scope["current_materialization"]
+    assert current["completed_stages"][:6] == ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06"]
+    assert current["standalone_entries"] == {"tables": 68, "views": 5, "routines": 14, "total": 87}
+    assert current["embedded_objects"] == {"triggers": 75, "physical_indexes": 95}
+    assert current["constraints"] == {"foreign_keys": 68, "check_constraints": 120}
     triggers = [trigger for entry in table_entries.values() for trigger in entry["structure"]["triggers"]]
     assert len(triggers) == 75
     assert len({trigger["name"] for trigger in triggers}) == 75
