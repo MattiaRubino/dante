@@ -84,6 +84,25 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]
 
+# CP6 stage migrations are already materialized evidence. Keep them byte-stable except for
+# semantic repairs; these narrow exceptions record pre-existing style/security false positives.
+"migrations/versions/20260825_01_cp6_native_identity_address.py" = ["I001", "RUF005"]
+"migrations/versions/20260825_02_cp6_scoped_material_control.py" = ["I001"]
+"migrations/versions/20260825_03_cp6_schedule_actual_session.py" = ["I001"]
+"migrations/versions/20260825_04_cp6_recurrence.py" = ["I001"]
+"migrations/versions/20260825_05_cp6_core_integrity_current_views.py" = ["I001", "S608"]
+"migrations/versions/20260826_06_cp6_occurrence_generation.py" = ["I001"]
+
+# Historical stage acceptance tests remain executable evidence. New/final tests stay under the
+# full lint contract; only the exact pre-existing findings below are grandfathered.
+"tests/integration/database/test_cp6_m1.py" = ["C420", "I001"]
+"tests/integration/database/test_cp6_m2.py" = ["C420", "I001", "SIM300"]
+"tests/integration/database/test_cp6_m3.py" = ["C420", "I001", "SIM300"]
+"tests/integration/database/test_cp6_m4.py" = ["C420", "I001", "SIM300"]
+"tests/integration/database/test_cp6_m5.py" = ["I001", "SIM117"]
+"tests/integration/database/test_cp6_m6.py" = ["I001", "PT012", "SIM117"]
+"tests/integration/database/test_cp6_m7.py" = ["PT011", "PT012", "SIM117"]
+
 [tool.mypy]
 plugins = ["pydantic.mypy"]
 python_version = "3.14"

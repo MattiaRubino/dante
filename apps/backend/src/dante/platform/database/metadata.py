@@ -1,5 +1,7 @@
 """Canonical SQLAlchemy metadata for DANTE-owned PostgreSQL objects."""
 
+from typing import Any, ClassVar
+
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import DeclarativeBase
@@ -21,7 +23,7 @@ class Base(DeclarativeBase):
     """Shared persistence base; mapped rows remain private to capability adapters."""
 
     metadata = MetaData(schema=DANTE_SCHEMA, naming_convention=NAMING_CONVENTION)
-    type_annotation_map = {
+    type_annotation_map: ClassVar[dict[Any, Any]] = {
         NativeRef: PGUUID(as_uuid=True),
         ScopedRecordRef: PGUUID(as_uuid=True),
         MaterialStateRef: PGUUID(as_uuid=True),
