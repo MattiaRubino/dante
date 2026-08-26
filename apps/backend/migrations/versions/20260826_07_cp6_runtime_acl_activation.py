@@ -1,4 +1,4 @@
-"""Activate CP6-M07 exact runtime ACLs and runtime-compatible Role-13 locking.
+"""Activate CP6-M07 exact runtime ACLs and runtime-compatible integrity dispatch.
 
 Revision ID: 20260826_07
 Revises: 20260826_06
@@ -94,12 +94,57 @@ _EVENT_ADVISORY_BOUNDARY = (
     "NULL; -- CP6-M07: Part-14 advisory locks are acquired by the accepted operation boundary for Event generation"
 )
 
+_HISTORY_IDENTITY_UNSAFE = r"""            IF TG_TABLE_NAME='schedule_placement_current_history' AND
+               (NEW.schedule_ref IS DISTINCT FROM OLD.schedule_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at) THEN
+                RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+            ELSIF TG_TABLE_NAME='actual_realization_current_history' AND
+               (NEW.actual_ref IS DISTINCT FROM OLD.actual_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at) THEN
+                RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+            ELSIF TG_TABLE_NAME='session_timing_current_history' AND
+               (NEW.session_ref IS DISTINCT FROM OLD.session_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at) THEN
+                RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+            ELSIF TG_TABLE_NAME='routine_recurrence_current_history' AND
+               (NEW.routine_ref IS DISTINCT FROM OLD.routine_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at) THEN
+                RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+            ELSIF TG_TABLE_NAME='event_recurrence_current_history' AND
+               (NEW.event_ref IS DISTINCT FROM OLD.event_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at) THEN
+                RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+            END IF;"""
+
+_HISTORY_IDENTITY_SAFE = r"""            IF TG_TABLE_NAME='schedule_placement_current_history' THEN
+                IF NEW.schedule_ref IS DISTINCT FROM OLD.schedule_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+                END IF;
+            ELSIF TG_TABLE_NAME='actual_realization_current_history' THEN
+                IF NEW.actual_ref IS DISTINCT FROM OLD.actual_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+                END IF;
+            ELSIF TG_TABLE_NAME='session_timing_current_history' THEN
+                IF NEW.session_ref IS DISTINCT FROM OLD.session_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+                END IF;
+            ELSIF TG_TABLE_NAME='routine_recurrence_current_history' THEN
+                IF NEW.routine_ref IS DISTINCT FROM OLD.routine_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+                END IF;
+            ELSIF TG_TABLE_NAME='event_recurrence_current_history' THEN
+                IF NEW.event_ref IS DISTINCT FROM OLD.event_ref OR NEW.material_state_ref IS DISTINCT FROM OLD.material_state_ref OR NEW.current_from_at IS DISTINCT FROM OLD.current_from_at THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', CONSTRAINT=TG_NAME, TABLE=TG_TABLE_NAME, SCHEMA=TG_TABLE_SCHEMA, MESSAGE='current-history identity mutation rejected';
+                END IF;
+            END IF;"""
+
 
 def _sql(statement: str) -> None:
     op.get_bind().exec_driver_sql(statement)
 
 
-def _replace_role13_fragment(old: str, new: str) -> None:
+def _replace_routine_fragment(
+    routine: str,
+    old: str,
+    new: str,
+    *,
+    failure: str,
+) -> None:
     connection = op.get_bind()
     definition = connection.exec_driver_sql(
         """
@@ -107,18 +152,57 @@ def _replace_role13_fragment(old: str, new: str) -> None:
         FROM pg_proc AS p
         JOIN pg_namespace AS n ON n.oid = p.pronamespace
         WHERE n.nspname = 'dante'
-          AND p.proname = 'enforce_occurrence_generation_integrity'
+          AND p.proname = %s
           AND p.pronargs = 0
-        """
+        """,
+        (routine,),
     ).scalar_one()
     if definition.count(old) != 1:
-        raise RuntimeError("Role-13 owner-lock fragment did not match exactly once")
+        raise RuntimeError(failure)
     connection.exec_driver_sql(definition.replace(old, new))
 
 
+def _repair_role6_record_dispatch() -> None:
+    _replace_routine_fragment(
+        "enforce_current_history_equivalence",
+        _HISTORY_IDENTITY_UNSAFE,
+        _HISTORY_IDENTITY_SAFE,
+        failure="Role-6 history identity dispatcher did not match exactly once",
+    )
+    _sql("ALTER FUNCTION dante.enforce_current_history_equivalence() OWNER TO dante_owner")
+    _sql(
+        "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_current_history_equivalence() "
+        "FROM PUBLIC, dante_runtime, dante_migrator"
+    )
+
+
+def _restore_m6_role6_record_dispatch() -> None:
+    _replace_routine_fragment(
+        "enforce_current_history_equivalence",
+        _HISTORY_IDENTITY_SAFE,
+        _HISTORY_IDENTITY_UNSAFE,
+        failure="Role-6 M7 dispatcher fragment did not match exactly once",
+    )
+    _sql("ALTER FUNCTION dante.enforce_current_history_equivalence() OWNER TO dante_owner")
+    _sql(
+        "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_current_history_equivalence() "
+        "FROM PUBLIC, dante_runtime, dante_migrator"
+    )
+
+
 def _repair_role13_for_runtime_acl() -> None:
-    _replace_role13_fragment(_ROUTINE_OWNER_LOCK, _ROUTINE_ADVISORY_BOUNDARY)
-    _replace_role13_fragment(_EVENT_OWNER_LOCK, _EVENT_ADVISORY_BOUNDARY)
+    _replace_routine_fragment(
+        "enforce_occurrence_generation_integrity",
+        _ROUTINE_OWNER_LOCK,
+        _ROUTINE_ADVISORY_BOUNDARY,
+        failure="Role-13 Routine owner-lock fragment did not match exactly once",
+    )
+    _replace_routine_fragment(
+        "enforce_occurrence_generation_integrity",
+        _EVENT_OWNER_LOCK,
+        _EVENT_ADVISORY_BOUNDARY,
+        failure="Role-13 Event owner-lock fragment did not match exactly once",
+    )
     _sql("ALTER FUNCTION dante.enforce_occurrence_generation_integrity() OWNER TO dante_owner")
     _sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_occurrence_generation_integrity() "
@@ -127,8 +211,18 @@ def _repair_role13_for_runtime_acl() -> None:
 
 
 def _restore_m6_role13_owner_lock() -> None:
-    _replace_role13_fragment(_ROUTINE_ADVISORY_BOUNDARY, _ROUTINE_OWNER_LOCK)
-    _replace_role13_fragment(_EVENT_ADVISORY_BOUNDARY, _EVENT_OWNER_LOCK)
+    _replace_routine_fragment(
+        "enforce_occurrence_generation_integrity",
+        _ROUTINE_ADVISORY_BOUNDARY,
+        _ROUTINE_OWNER_LOCK,
+        failure="Role-13 Routine M7 fragment did not match exactly once",
+    )
+    _replace_routine_fragment(
+        "enforce_occurrence_generation_integrity",
+        _EVENT_ADVISORY_BOUNDARY,
+        _EVENT_OWNER_LOCK,
+        failure="Role-13 Event M7 fragment did not match exactly once",
+    )
     _sql("ALTER FUNCTION dante.enforce_occurrence_generation_integrity() OWNER TO dante_owner")
     _sql(
         "REVOKE ALL PRIVILEGES ON FUNCTION dante.enforce_occurrence_generation_integrity() "
@@ -213,6 +307,7 @@ def _deactivate_business_acl() -> None:
 
 def upgrade() -> None:
     """Activate the final CP6 runtime capability matrix."""
+    _repair_role6_record_dispatch()
     _repair_role13_for_runtime_acl()
     _activate_exact_acl()
 
@@ -221,3 +316,4 @@ def downgrade() -> None:
     """Return to the M6 deny-by-default runtime posture."""
     _deactivate_business_acl()
     _restore_m6_role13_owner_lock()
+    _restore_m6_role6_record_dispatch()
