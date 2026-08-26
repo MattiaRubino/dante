@@ -314,3 +314,10 @@ Next work = protected-main alignment PREPARATION ONLY.
 First action = read live main, merge-base, branch diff, migration DAG and repository protection state.
 Do not merge/rebase/realign until a new explicit user gate authorizes it.
 ```
+
+
+## 11. Protected-main integration candidate — 2026-08-26
+
+- Final integration PR: #41 (`feature/logical-postgresql` -> `main`).
+- Alignment merge commit: `2c8a047eb9056257fc6e2ed92b00ffd981bf16f1`.
+- CP6 implementation remains unchanged; this note records integration state only.
