@@ -1,10 +1,11 @@
 # Frontend Local Development and Workstation Runbook
 
-- Status: **CURRENT / FRONTEND MATERIALIZATION CLOSED / PASS**
+- Status: **CURRENT / FRONTEND MATERIALIZATION CLOSED / PASS / INTEGRATED VIA PR #28**
 - Purpose: reproducible frontend workstation setup, installation, validation and LOCAL runtime topology
 - Foundation authority: Frontend Engineering Foundation integrated via PR #22
 - Final clean-materialization source commit: `e79beadbddcf401d1d20c483c2d15d0b3cce96ad`
 - FM-07 documentation closure + final hosted-CI proof commit: `c1a77f249c716e0cb35159ecf2ad2c63b0bf4007`
+- Protected-main frontend integration: PR #28 / merge `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`
 
 ## 1. Core posture
 
@@ -569,7 +570,9 @@ Mobile Bundle PASS / 40s
 Vitest        @dante/time 5 PASS + @dante/i18n 5 PASS
 ```
 
-`Frontend CI Gate` later completed controlled green/red/recovery calibration on PR #28. The branch-local canonical protected-main ruleset definition contains `Backend CI Gate`, `Dependency Review` and `Frontend CI Gate`. The repository owner confirmed applying the frontend promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
+`Frontend CI Gate` later completed controlled green/red/recovery calibration on PR #28. The canonical protected-main ruleset definition contains `Backend CI Gate`, `Dependency Review` and `Frontend CI Gate`. The repository owner confirmed applying the frontend promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
+
+PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` directly passed Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate, alongside Backend CI and Dependency Review, before merge to protected `main` as `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. The current connector cannot read push-triggered workflow runs for that merge SHA, so push-main CI remains **DIRECT READBACK UNAVAILABLE**.
 
 ## 15. Known workspace peer diagnostic
 
@@ -677,20 +680,28 @@ PowerSync/SQLite               future sync platform boundary
 
 Do not respond to failures with random global installs, blanket cache deletion, force flags or broad version changes.
 
-## 18. Materialization closure and current continuation
+## 18. Materialization closure and integrated continuation
 
 Frontend materialization is **CLOSED / PASS**. The temporary live handoff has been deleted and the temporary feature-branch CI trigger has been removed; durable materialization knowledge now lives in this runbook and `docs/workstreams/frontend-materialization.md`.
 
-At materialization closure, integration, required-check governance and protected-main merge were deliberately outside FM-00..FM-07. Those later integration steps are governed by `docs/workstreams/frontend-materialization-integration.md` and repository-safety documentation rather than retroactively rewriting FM evidence.
+At materialization closure, integration, required-check governance and protected-main merge were deliberately outside FM-00..FM-07. Those later integration steps are recorded in `docs/workstreams/frontend-materialization-integration.md` and repository-safety documentation rather than retroactively rewriting FM evidence.
 
-Current continuation:
+Integration outcome:
 
 ```text
-PR #28 exact current head
--> hosted CI green
--> branch current with main
--> mergeable / review-thread clean
--> separate protected-main merge authorization
+PR #28               MERGED
+final PR head         a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+protected-main merge  f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+merge parentage       PASS
+merged tree identity  PASS
+```
+
+Current continuation is outside this workstation/materialization runbook:
+
+```text
+repository-security maturation -> CodeQL default setup evaluation under a fresh gate
+backend next                   -> Concrete Logical -> PostgreSQL under a fresh workstream
+product next                   -> first real vertical slice with capability-triggered activation
 ```
 
 Still outside this runbook's materialization scope:
@@ -700,5 +711,5 @@ product Access/Home implementation
 PowerSync product integration
 concrete backend business schema
 remote deployment
-protected-main merge itself
+CodeQL activation
 ```

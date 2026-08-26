@@ -1,16 +1,21 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
 > **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
 > PR #28 is **MERGED** into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`; frontend materialization/integration is therefore no longer an active merge gate. The Frontend CI Gate calibration evidence, exact restore/recovery evidence, owner-confirmed required-check promotion classification, Dependency Review exceptions and accepted-risk review deadline remain valid as recorded. Any later wording below that says PR #28 READY / ACTIVE / FINAL MERGE GATE is preserved pre-merge evidence and is superseded only for current status. Backend `feature/logical-postgresql` has incorporated current `main` and remains the active CP6 branch.  
 
 # Repository Engineering Safety
 
-- Status: **CURRENT — FRONTEND GATE CALIBRATION COMPLETE / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / PR #28 READY / FINAL MERGE GATE**
+- Status: **CURRENT — FRONTEND MATERIALIZATION + INTEGRATION CLOSED / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED**
 - Repository: `MattiaRubino/dante`
 - Default branch: `main`
 - Main ruleset: `lifeos-main-safety`
 - Backend CP4: **CLOSED / DIRECT REMOTE QA PASS**
 - Backend scaffold: **CLOSED / integrated via PR #24**
 - Frontend materialization: **CLOSED / PASS — FM-00..FM-07**
-- Frontend integration hardening: **ACTIVE — PR #28 / READY**
+- Frontend integration hardening: **CLOSED / integrated via PR #28**
 
 ## Purpose
 
@@ -59,7 +64,7 @@ merge queue                          not enabled
 
 Zero approvals remains intentional while one regular maintainer exists. Add real human-review enforcement only when independent ownership/review responsibility exists.
 
-The branch-local canonical ruleset definition in `docs/development/github-main-ruleset.json` matches this intended three-check state. Administrative application was confirmed by the repository owner after the calibrated promotion decision; connector limitations remain an evidence boundary, not a reason to invent direct verification.
+The canonical definition in `docs/development/github-main-ruleset.json` matches this intended three-check state. Administrative application was confirmed by the repository owner after the calibrated promotion decision; connector limitations remain an evidence boundary, not a reason to invent direct verification.
 
 ## Backend CI calibration — established precedent
 
@@ -225,7 +230,26 @@ main deletion protection
 non-fast-forward / force-push protection
 ```
 
-The branch-local `docs/development/github-main-ruleset.json` contains the desired three-check definition. The repository owner confirmed applying the corresponding GitHub ruleset UI change. Because the connector cannot directly read rulesets, this administrative fact remains classified owner-confirmed rather than independently API-verified.
+The canonical `docs/development/github-main-ruleset.json` contains the desired three-check definition. The repository owner confirmed applying the corresponding GitHub ruleset UI change. Because the connector cannot directly read rulesets, this administrative fact remains classified owner-confirmed rather than independently API-verified.
+
+## Frontend protected-main integration — VERIFIED
+
+PR #28 integrated the closed frontend materialization and bounded hardening into protected `main`.
+
+```text
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
+merge commit         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+PR #28               MERGED
+merge parentage      PASS — exactly prior main + final PR head
+merged tree identity PASS — 0 file delta from final PR head to merged main tree
+```
+
+The final PR head directly passed Dependency Review, Backend Quality, Backend PostgreSQL, Backend CI Gate, Frontend Quality, Web E2E, Mobile Bundle and Frontend CI Gate before merge.
+
+The available connector's commit-workflow lookup exposes PR-associated runs only. Push-main CI for `f1aacb...` is therefore **DIRECT READBACK UNAVAILABLE** and is not inferred PASS.
+
+The integration branch was observed absent after merge. No manual branch deletion was performed during the merge operation; do not invent an auto-delete cause or recreate the branch without a new explicit gate.
 
 ## Dependency Review posture
 
@@ -253,7 +277,7 @@ This is not warn-only, severity reduction, scope reduction, global suppression o
 
 ## Dependabot
 
-Intended ecosystems after frontend integration:
+Current ecosystems after frontend integration:
 
 ```text
 uv /apps/backend
@@ -269,12 +293,12 @@ Repository owner previously enabled full-length Action SHA enforcement. Connecto
 
 ## CodeQL
 
-CodeQL is not active yet. Accepted post-integration boundary:
+CodeQL is not active yet. The post-integration activation candidate is now eligible for a fresh explicit gate:
 
 ```text
 TypeScript + Python integrated on main
 -> verify current GitHub default setup
--> activate CodeQL default setup
+-> activate CodeQL default setup under separate authorization
 -> observe real findings/contexts
 -> classify/fix findings
 -> consider required promotion separately
@@ -310,14 +334,16 @@ feature/frontend-materialization
 closed evidence / FM-00..FM-07 PASS
 
 chore/frontend-materialization-integration
-active PR #28 / READY / final merge gate
+closed / integrated via PR #28
+observed absent after merge
+manual deletion during merge operation: NO
 ```
 
 ## Merge/history posture
 
-DANTE preserves useful checkpoint/evidence history and permits merge commits. The integration branch preserves the closed frontend history through a real two-parent merge.
+DANTE preserves useful checkpoint/evidence history and permits merge commits. PR #28 preserved the closed frontend history and was merged using the accepted two-parent merge posture.
 
-The directly observed pre-reconciliation PR #28 head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green for Dependency Review, Backend CI and Frontend CI including both aggregate gates. Any later documentation-only head must independently satisfy the same applicable exact-head gates before merge authorization.
+The final protected-main merge commit `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` has exactly the expected two parents and the same tree as final PR head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`.
 
 ## Current verification classification
 
@@ -339,7 +365,11 @@ Frontend CI Gate promotion decision       APPROVED
 Frontend CI Gate desired ruleset JSON     UPDATED
 Frontend CI Gate GitHub ruleset setting   OWNER-CONFIRMED APPLIED
 Frontend CI Gate direct ruleset readback  UNAVAILABLE IN CONNECTOR
-PR #28 ready state                        READY
+PR #28                                    MERGED
+PR #28 merge parentage                    PASS
+PR #28 merged tree identity               PASS
+PR #28 exact-head hosted CI               PASS
+PR #28 push-main CI readback              UNAVAILABLE IN CONNECTOR
 CodeQL                                    NOT ACTIVE
 ```
 
@@ -350,11 +380,10 @@ Repository safety does not imply complete security assurance, independent human 
 ## Exact next repository-safety step
 
 ```text
-verify hosted CI on the exact current PR #28 head
--> ensure branch remains current with main
--> ensure PR remains mergeable / review-thread clean
--> confirm accepted-risk register remains valid
--> separate protected-main merge authorization
+CodeQL default setup evaluation
+-> fresh explicit branch/write gate
+-> observe real findings/contexts
+-> consider any required-check promotion separately
 ```
 
-Any merge, CodeQL activation or branch deletion remains separately authorized.
+Backend Concrete Logical -> PostgreSQL and first product vertical work remain separately gated. Any CodeQL activation, branch recreation/deletion, ruleset mutation or product/backend implementation requires separate authorization.

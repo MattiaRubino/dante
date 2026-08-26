@@ -1,13 +1,18 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
 > **POST-MERGE CLOSURE — 2026-08-24**  
 > PR #28 is **MERGED** into protected `main` at merge commit `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. This workstream is therefore **CLOSED / INTEGRATED**. The body below is deliberately preserved as phase-time integration evidence: its `OPEN / READY / FINAL MERGE GATE` fields describe the pre-merge state and are not current status. The Dependency Review accepted-risk register, review deadline, Frontend CI Gate calibration/promotion evidence and future-activation register remain durable and applicable after merge; closure does not erase them.  
 
 # Frontend Materialization Integration Hardening
 
-- Status: **ACTIVE — PR #28 / READY / RECOVERY GREEN PASS / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED / FINAL MERGE GATE**
-- Branch: `chore/frontend-materialization-integration`
+- Status: **CLOSED / INTEGRATED VIA PR #28 / REQUIRED-CHECK PROMOTION OWNER-CONFIRMED**
+- Historical integration branch: `chore/frontend-materialization-integration`
 - Main base at branch creation: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
 - Closed frontend source: `893edbbb5fd91377da71c0cc398ab9febdef06f3`
-- Integration merge commit: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
+- Integration merge checkpoint: `a4a5fb6a4a65db3f69f25ca52e128f4494c1b623`
 - Integration hardening commit: `23ca32cb76e9ec2fde2cf73ecc94e9d5f8456df3`
 - First accepted-risk commit: `ca66541f3dc833e3c6fb0d67fe532651b880ce3a`
 - First fully-green combined candidate: `a91fbfc3dcce4ada128cd1c9ae0971eadb531e06`
@@ -16,12 +21,14 @@
 - Recovery-green commit: `02ee9034f37000819afb2c27b0bd826b128f69b5`
 - Promotion-documentation commit: `c551185708936c052248b3bd9c2eebfc41a7d098`
 - Pre-reconciliation final-doc head: `bdd6e08cbca4c19989502235855d52a620d29fb5`
-- Pull request: `#28` — **OPEN / READY**
+- Final PR head: `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`
+- Protected-main merge commit: `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`
+- Pull request: `#28` — **MERGED**
 - Frontend materialization source status: **CLOSED / PASS**
 
 ## 1. Purpose
 
-Integrate the closed frontend materialization into current protected-main truth without rewriting its evidence history, apply bounded integration hardening, calibrate the aggregate frontend CI gate and prepare a merge-ready candidate.
+Integrate the closed frontend materialization into protected-main truth without rewriting its evidence history, apply bounded integration hardening, calibrate the aggregate frontend CI gate, preserve accepted-risk governance and close the integration through a verified merge.
 
 ```text
 closed frontend evidence
@@ -31,9 +38,11 @@ integration reconciliation
 protected-main merge
 ```
 
+All three stages are now complete at their stated scopes.
+
 ## 2. Integration invariants
 
-- current `main` remains the starting authority for integrated backend/repository truth;
+- current `main` remains the authority for integrated backend/repository truth;
 - `feature/frontend-materialization` remains immutable closed evidence for FM-00..FM-07;
 - overlaps are reconciled semantically;
 - backend CP1..CP5 and existing protected-main controls must not regress;
@@ -98,7 +107,7 @@ Web React / React DOM      19.2.8 / 19.2.8
 
 Older design-time examples such as `@js-temporal/polyfill`, Gesture Handler “3 line” or `apps/web/tests/e2e/` do not override later direct evidence.
 
-## 6. Combined-candidate evidence
+## 6. Combined-candidate and merge evidence
 
 ### First fully-green combined candidate
 
@@ -157,7 +166,40 @@ Mobile Bundle        PASS
 Frontend CI Gate     PASS
 ```
 
-Any later documentation-only head must independently satisfy the same applicable hosted-CI/currentness/mergeability/thread-clean gate before protected-main merge authorization. This wording deliberately avoids embedding a commit's own SHA into itself.
+### Final PR head
+
+Final documentation head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` was directly observed before merge:
+
+```text
+branch relation     48 ahead / 0 behind
+PR                   OPEN / READY / mergeable
+review threads       0
+Dependency Review    PASS
+Backend Quality      PASS
+Backend PostgreSQL   PASS
+Backend CI Gate      PASS
+Frontend Quality     PASS
+Web E2E              PASS
+Mobile Bundle        PASS
+Frontend CI Gate     PASS
+```
+
+### Protected-main integration
+
+PR #28 merged successfully as:
+
+```text
+protected-main merge  f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+parent 1              fd3bc8dd918cf6aadeff4572221af68612c3cb42
+parent 2              a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+merge parentage       PASS — exactly prior main + final PR head
+merged tree identity  PASS — final PR head -> merged main has 0 file delta
+PR #28                CLOSED / MERGED
+```
+
+The available connector's commit-workflow lookup exposes PR-associated runs only. Push-main CI for the merge SHA is therefore classified **DIRECT READBACK UNAVAILABLE**, not inferred PASS.
+
+The historical integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation. The cause of branch disappearance is not independently asserted.
 
 ## 7. Dependency Review accepted-risk register
 
@@ -282,7 +324,7 @@ integration_id: 15368
 source: GitHub Actions
 ```
 
-The branch-local canonical ruleset JSON contains:
+The canonical repository ruleset JSON contains:
 
 ```text
 Backend CI Gate
@@ -295,7 +337,7 @@ with strict branch-up-to-date policy preserved.
 Administrative evidence boundary:
 
 ```text
-desired ruleset definition in branch   UPDATED
+desired ruleset definition            UPDATED
 GitHub ruleset UI application          OWNER-CONFIRMED APPLIED
 connector direct ruleset readback       UNAVAILABLE
 ```
@@ -307,14 +349,15 @@ The repository owner confirmed applying the `Frontend CI Gate` ruleset promotion
 ```text
 Backend CP1..CP5                  CLOSED / integrated via PR #24
 Frontend Foundation              CLOSED / integrated via PR #22
-Frontend Materialization         CLOSED / PASS
-PR #28 Integration Hardening     ACTIVE / READY / final merge gate
+Frontend Materialization         CLOSED / PASS / integrated
+PR #28 Integration Hardening     CLOSED / integrated
 Frontend CI Gate calibration     COMPLETE
 Frontend CI Gate promotion       OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
-Dependency Review                GREEN with 3 exact temporary accepted-risk exceptions
+Dependency Review                GREEN at final PR head with 3 exact temporary accepted-risk exceptions
 Concrete business schema         NOT STARTED
 Product verticals                NOT STARTED
 Production deployment            NOT STARTED
+CodeQL                           NOT ACTIVE
 ```
 
 ## 11. Future activation register
@@ -371,7 +414,8 @@ These capabilities remain deliberately dormant until the corresponding trigger b
 
 ### Post-integration security maturation
 
-- activate GitHub CodeQL default setup after TypeScript + Python are integrated on `main`;
+- evaluate GitHub CodeQL default setup now that TypeScript + Python are integrated on `main`;
+- activate only under a fresh explicit gate;
 - observe real CodeQL results/contexts before any required promotion;
 - apply OWASP ASVS/MASVS-derived controls at concrete Auth/session/storage/network/release boundaries.
 
@@ -394,26 +438,34 @@ Do not introduce before measured need:
 - generic feature-flag infrastructure;
 - large browser/device farms.
 
-## 12. Explicitly out of scope
+## 12. Explicitly out of scope of the closed integration
 
 - Access/Home implementation;
 - concrete backend business schema;
-- PowerSync, Query/Form, Orval, Sentry, Cloudflare, EAS activation now;
-- CodeQL activation now;
-- merging PR #28 without separate authorization;
+- PowerSync, Query/Form, Orval, Sentry, Cloudflare, EAS activation;
+- CodeQL activation;
 - React/peer-warning workarounds;
 - pnpm hoisting/nodeLinker changes;
 - unsupported dependency overrides;
-- global vulnerability suppression.
+- global vulnerability suppression;
+- future branch recreation/deletion or ruleset mutation without a new gate.
 
-## 13. Exact next sequence
+## 13. Closure and next boundaries
+
+The frontend integration workstream is **CLOSED / INTEGRATED**. Do not reopen it merely to start unrelated future work.
 
 ```text
-1. verify hosted CI green on the exact current PR #28 head
-2. confirm branch remains current with main
-3. confirm PR remains mergeable and review-thread clean
-4. confirm accepted-risk register remains valid
-5. obtain separate protected-main merge authorization
+REPOSITORY SECURITY NEXT CANDIDATE
+CodeQL default setup evaluation
+-> fresh explicit gate
+
+BACKEND NEXT
+Concrete Logical -> PostgreSQL
+-> fresh bounded workstream/gate
+
+PRODUCT NEXT
+first real vertical slice
+-> activate only capability/testing/lint boundaries actually consumed
 ```
 
-After protected-main integration, CodeQL default setup is the next repository-security activation candidate. Product work then proceeds through vertical slices while consulting this activation register.
+This document remains the durable accepted-risk and future-activation register even though the integration workstream itself is closed.

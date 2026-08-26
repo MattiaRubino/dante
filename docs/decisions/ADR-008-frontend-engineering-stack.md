@@ -1,17 +1,19 @@
 # ADR-008: Frontend Engineering Stack
 
-- Status: **ACCEPTED / INTEGRATED VIA PR #22 / MATERIALIZED AT FM-00..FM-07 STATED SCOPES**
+- Status: **ACCEPTED / INTEGRATED VIA PR #22 / MATERIALIZED AT FM-00..FM-07 STATED SCOPES / INTEGRATED TO MAIN VIA PR #28**
 - Date: 2026-08-20
 - Materialization qualification: 2026-08-23
+- Protected-main integration: 2026-08-23
 - Supersedes: [`ADR-001-client-platforms.md`](ADR-001-client-platforms.md)
 - Design-time specification: [`../architecture/frontend-engineering-foundation.md`](../architecture/frontend-engineering-foundation.md)
 - Direct implementation evidence: [`../workstreams/frontend-materialization.md`](../workstreams/frontend-materialization.md)
+- Integration evidence: [`../workstreams/frontend-materialization-integration.md`](../workstreams/frontend-materialization-integration.md)
 
 ## Context
 
 ADR-001 selected Next.js + React for Web and Expo + React Native for Mobile before the dedicated frontend-engineering workstream evaluated the complete DANTE stack against the closed Physical Model, local/offline semantics, backend boundary, monorepo governance and current ecosystem.
 
-The Frontend Foundation replaced that provisional Web choice and fixed the broader frontend engineering baseline. PR #22 integrated the architecture/design decision. The subsequent `feature/frontend-materialization` workstream then installed, configured and directly validated the real baseline through FM-00..FM-07.
+The Frontend Foundation replaced that provisional Web choice and fixed the broader frontend engineering baseline. PR #22 integrated the architecture/design decision. The subsequent `feature/frontend-materialization` workstream then installed, configured and directly validated the real baseline through FM-00..FM-07. PR #28 subsequently integrated that closed materialization plus bounded integration hardening into protected `main`.
 
 DANTE constraints that remain unchanged:
 
@@ -166,12 +168,23 @@ tracked + untracked repository residue          0
 
 The known workspace peer diagnostic (`react-dom@19.2.8` versus the workspace Mobile React `19.2.3`) is reproducible but non-blocking because Expo `install --check` directly passes for the Mobile baseline. It does not authorize React version forcing, peer suppression, packageExtensions, hoisting or nodeLinker changes.
 
-## Current integration state
+## Protected-main integration state
 
-The closed materialization is being integrated through READY PR #28 on `chore/frontend-materialization-integration`.
+The closed materialization and bounded integration hardening are integrated through PR #28.
 
-`Frontend CI Gate` has completed real-green, controlled deliberate-red, mandatory failure propagation, exact workflow restoration and recovery-green calibration. The repository owner confirmed applying its protected-main promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+```text
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
+merge commit         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+PR #28               MERGED
+merge parentage      PASS
+merged tree identity PASS
+```
 
-The directly observed pre-reconciliation PR head `bdd6e08cbca4c19989502235855d52a620d29fb5` was current with `main`, mergeable, review-thread clean and green. Any later documentation-only head must independently satisfy the same exact-head gates before separate protected-main merge authorization.
+`Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure propagation, exact workflow restoration and recovery-green calibration. The repository owner confirmed applying its protected-main promotion; direct ruleset API readback is unavailable through the current connector, so that administrative setting is recorded as **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
+
+The final PR head directly passed the applicable hosted checks before merge. Push-main CI for the merge SHA is **DIRECT READBACK UNAVAILABLE** through the current connector and is not inferred PASS.
+
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
 
 A failed future material validation reopens the affected technology decision first; the complete frontend stack reopens only if evidence proves a wider contradiction.

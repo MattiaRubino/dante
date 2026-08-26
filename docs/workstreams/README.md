@@ -1,3 +1,8 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
 > **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
 > Frontend materialization integration is **CLOSED / INTEGRATED via merged PR #28** (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). `frontend-materialization.md` remains CLOSED/PASS evidence and `frontend-materialization-integration.md` remains durable integration/accepted-risk/future-activation evidence, but neither is a pending merge workstream now. The active backend continuation is `logical-postgresql.md`: branch current with `main`, CP6-03 ACTIVE, Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized. Any later PR #28 READY/ACTIVE wording is preserved pre-merge status.  
 
@@ -5,14 +10,16 @@
 
 Each active or pending-integration workstream has one operational handoff. It is the safest continuation entry point for that scope.
 
-## Current / pending-integration workstreams
+## Current workstreams
 
-- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **ACTIVE / PR #28 / READY / FINAL MERGE GATE**; integrates the already-closed frontend materialization into current `main`, owns integration hardening, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration/promotion evidence and the durable future-activation register.
 - [`today-home.md`](today-home.md) — separate Phase-4 Home/Today UX/product-structure workstream; prototype/UX authority only, not production engineering authority.
+
+No frontend materialization/integration workstream is currently active. New frontend/product/security/backend work starts from current `main` under a fresh bounded branch and gate.
 
 ## Completed / integrated or closed evidence workstreams
 
-- [`frontend-materialization.md`](frontend-materialization.md) — **CLOSED / PASS — FM-00..FM-07 COMPLETE AT THEIR STATED SCOPES**; direct Web/Mobile/tooling/shared-package/CI/fresh-materialization evidence. The closed branch is evidence source, not the current integration work branch.
+- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **CLOSED / INTEGRATED VIA PR #28**; protected-main integration-hardening record, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration/promotion evidence and durable future-activation register.
+- [`frontend-materialization.md`](frontend-materialization.md) — **CLOSED / PASS — FM-00..FM-07 COMPLETE AT THEIR STATED SCOPES**; direct Web/Mobile/tooling/shared-package/CI/fresh-materialization evidence. The closed branch is evidence source, not a reusable work branch.
 - [`backend-scaffold.md`](backend-scaffold.md) — **CLOSED / DIRECT QA PASS / integrated via PR #24**; CP1-CP5 backend scaffold evidence and protected-main integration record.
 - [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
 - [`engineering-foundation.md`](engineering-foundation.md) — **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #21**.
@@ -32,8 +39,8 @@ PHYSICAL TARGET              CLOSED / ACCEPTED
 ENGINEERING FOUNDATION v0    CLOSED / ACCEPTED
 FRONTEND FOUNDATION          CLOSED / ACCEPTED / integrated
 BACKEND SCAFFOLD             CLOSED / DIRECT QA PASS / integrated
-FRONTEND MATERIALIZATION     CLOSED / PASS
-FRONTEND PR #28              ACTIVE / READY / FINAL MERGE GATE
+FRONTEND MATERIALIZATION     CLOSED / PASS / integrated
+FRONTEND PR #28              CLOSED / MERGED
 FRONTEND CI GATE CALIBRATION COMPLETE
 FRONTEND CI GATE PROMOTION   OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
 SELECTED != IMPLEMENTED
@@ -50,6 +57,21 @@ Gesture Handler              2.32.0 under Expo SDK 57
 Web E2E path                 apps/web/e2e/
 ```
 
+## Frontend integration closure record
+
+```text
+final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
+prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
+protected-main merge f1aacb0724088e0b4b086008a5219c2fba5ce0cf
+PR #28               MERGED
+merge parentage      PASS
+merged tree identity PASS
+exact-head hosted CI PASS
+push-main CI         DIRECT READBACK UNAVAILABLE
+```
+
+The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
+
 ## Operational rule
 
 `main` remains integrated authority. Newer unmerged branch truth is bounded to its active workstream until merge.
@@ -58,7 +80,7 @@ Before continuation:
 
 1. read development operating/safety rules;
 2. verify exact Git relation/PRE-SCOPE;
-3. read the complete active handoff;
+3. read the complete applicable current or closed handoff;
 4. consume applicable closed model/Foundation/ADR authorities;
 5. distinguish selected/installed/configured/directly validated states;
 6. update the active handoff on every substantive slice.
@@ -67,18 +89,19 @@ Before continuation:
 
 Do not reopen general stack/architecture selection by default.
 
-Current sequence:
+There is no remaining PR #28 merge sequence. Future continuation is trigger-based:
 
 ```text
-PR #28 exact current head
--> hosted CI green
--> branch current with main
--> mergeable / review-thread clean
--> accepted-risk register valid
--> separate protected-main merge authorization
-```
+repository-security maturation
+-> CodeQL default setup evaluation under a fresh explicit gate
 
-The directly observed pre-reconciliation head `bdd6e08cbca4c19989502235855d52a620d29fb5` satisfied the technical gates above. Any subsequent documentation-only head must independently satisfy them before merge authorization.
+backend next
+-> Concrete Logical -> PostgreSQL under a fresh bounded workstream
+
+product next
+-> first real vertical slice
+-> activate only capabilities actually consumed
+```
 
 The future-activation register in `frontend-materialization-integration.md` must be consulted when the first real vertical/UI/form/API/offline/deployment/release/security/pre-PROD/scale trigger occurs.
 

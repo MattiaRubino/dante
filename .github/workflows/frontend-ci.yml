@@ -130,6 +130,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Expo dependency compatibility
+        env:
+          EXPO_OFFLINE: "1"
         run: pnpm mobile:compat:check
 
       - name: Android Hermes bundle smoke
