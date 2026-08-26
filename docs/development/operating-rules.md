@@ -126,12 +126,7 @@ post-CP6 product vertical
 → use normal forward schema evolution only for genuine new requirements
 ```
 
-Documentation maintenance currently occurs on:
-
-```text
-chore/documentation-knowledge-cleanup
-→ current-truth/lifecycle/archive/compaction cleanup
-```
+Documentation maintenance follows the current lifecycle/current-truth policy. Create a bounded `docs/` or `chore/` branch only when real documentation work exists; there is no permanent documentation-cleanup development line.
 
 No current workstream should be restarted from an older Foundation/CP6 roadmap merely because historical records remain in the tree.
 
@@ -434,10 +429,12 @@ CP1–CP6 CLOSED / INTEGRATED
 Current documentation continuation:
 
 ```text
-chore/documentation-knowledge-cleanup
-→ repair current truth/lifecycle
-→ preserve knowledge losslessly
-→ draft PR #43 until cleanup is complete
+current protected-main documentation
+→ read current entry points before historical evidence
+→ apply documentation-lifecycle-policy.md continuously
+→ use bounded docs/chore branch only when a real maintenance subject exists
+→ do not create live/session handoffs on main
+→ do not compact split references unless lossless knowledge coverage is proven
 ```
 
 ## 20. Persistent operating principles
