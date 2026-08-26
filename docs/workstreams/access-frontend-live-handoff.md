@@ -1,13 +1,13 @@
 # DANTE Access frontend — live handoff
 
-**Status:** AF-02B PASS / ACCESS VERTICAL STILL OPEN  
-**Date:** 2026-08-25  
-**Branch:** `feature/access-frontend`  
-**Permanent frontend worktree:** `/home/mattia/projects/dante-frontend`  
-**AF-01D synchronized shell checkpoint:** `236d97931b56f1ebd13fb04fedf623138e895743`  
-**AF-02A accepted checkpoint:** `0ba0c5f7012c6b7bd312f5a1ff727a9b764b0d4f`  
-**AF-02B code/formatting checkpoint:** `c39d1a8312fb2d00bc322604bcd453d13fa2b510`  
-**Backend/logical-PostgreSQL worktree:** `/home/mattia/projects/dante`  
+**Status:** AF-02B PASS / ACCESS VERTICAL STILL OPEN
+**Date:** 2026-08-25
+**Branch:** `feature/access-frontend`
+**Permanent frontend worktree:** `/home/mattia/projects/dante-frontend`
+**AF-01D synchronized shell checkpoint:** `236d97931b56f1ebd13fb04fedf623138e895743`
+**AF-02A accepted checkpoint:** `0ba0c5f7012c6b7bd312f5a1ff727a9b764b0d4f`
+**AF-02B code/formatting checkpoint:** `c39d1a8312fb2d00bc322604bcd453d13fa2b510`
+**Backend/logical-PostgreSQL worktree:** `/home/mattia/projects/dante`
 **WSL distro:** `Ubuntu-24.04`
 
 This is the mandatory first continuity read for any new chat/agent/session continuing DANTE Access.
@@ -115,7 +115,7 @@ After AF-02B formatting checkpoint `c39d1a8312fb2d00bc322604bcd453d13fa2b510`, a
 → feature/access-frontend until Access closes
 ```
 
-**NEW CHAT != NEW BRANCH.**  
+**NEW CHAT != NEW BRANCH.**
 **NEW ACCESS PHASE != NEW WORKTREE.**
 
 ---
@@ -196,7 +196,7 @@ client integrity != person identity
 
 Google/Apple Access authenticates DANTE only; it never implicitly authorizes Gmail, Calendar, iCloud or unrelated provider data.
 
-Desktop visual authority: A3.4.  
+Desktop visual authority: A3.4.
 Mobile authority: M1.2 + PRG-0.
 
 Accepted shell direction:
