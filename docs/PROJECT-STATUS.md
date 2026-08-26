@@ -2,7 +2,7 @@
 
 - **Status:** CURRENT TRUTH
 - **Last reconciled:** 2026-08-26
-- **Protected `main`:** `117360b9333fd1a8a62d0dfeb0398a4d5811e393`
+- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
 - **Current active product implementation:** Access frontend on `feature/access-frontend` — UNMERGED
 
@@ -109,7 +109,7 @@ Alembic head        20260826_08
 
 tables              68
 views                5
-routines            14
+routines             14
 triggers             75
 physical indexes    95
 foreign keys         68
