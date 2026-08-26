@@ -3,7 +3,7 @@
 **Stage:** `CP6-M06 / cp6_occurrence_generation`  
 **Revision:** `20260826_06`  
 **Down revision:** `20260825_05`  
-**Status:** IMPLEMENTED / DIRECT POSTGRESQL ACCEPTANCE REQUIRED
+**Status:** CLOSED / DIRECT POSTGRESQL 18.6 PASS
 
 ## Scope
 
@@ -20,7 +20,7 @@ M6 adds exactly:
 - 5 SQLAlchemy ORM row mappings;
 - 5 new table Dictionary entries, 1 new routine entry, and the M6 trigger attachment on the existing `occurrence` entry.
 
-Cumulative structural target after M6:
+Cumulative structural surface after M6:
 
 ```text
 tables              68
@@ -55,11 +55,54 @@ All five M6 tables remain deny-by-default for runtime until M7. M6 activates no 
 
 Upgrade is `20260825_05 -> 20260826_06`. Downgrade removes the 9 M6 trigger attachments, Role-13 routine and five M6 tables and returns to the exact M5 structural surface.
 
-## Proof requirement
+## Direct PostgreSQL acceptance
 
-M6 is not CLOSED until a fresh user-executed PostgreSQL 18.6 run of `uv run pytest -m postgres -vv` succeeds. The qualifying run must cover M1-M6 acceptance, final structural counts, M6 routine security, deny-by-default pre-M7 ACL posture, NativeRef source-family rejection, explicit-extra zero-coordinate enforcement, generated-coordinate membership/duplicate rejection, Dictionary reconciliation, M6->M5 downgrade, Alembic fresh/head round trips and drift, privileges, runtime and transactions.
+Implementation candidate:
 
-## Explicitly out of scope
+```text
+00e60df414218638050c0dacad30c01266643ebb
+feat: materialize CP6-04 M6 occurrence generation
+```
+
+The first direct PostgreSQL 18.6 run reached the complete M6 suite and proved M6 itself green, but exposed two historical M4 tests that incorrectly compared the current repository-wide SQLAlchemy/Dictionary surface to the frozen M4-only 63-table surface. The database, M6 migration and M6 Dictionary were not changed for those failures.
+
+The repair was limited to stage-relative historical assertions in:
+
+```text
+apps/backend/tests/integration/database/test_cp6_m4.py
+```
+
+Repair commit:
+
+```text
+a05ce4fe6e98efa1fcdb7fac095eed93342bc017
+```
+
+The user then executed from `apps/backend`:
+
+```text
+uv run pytest -m postgres -vv
+```
+
+Observed final result:
+
+```text
+102 collected
+37 deselected
+65 selected
+65 passed
+0 failed
+45.17s
+coverage 95.86%
+```
+
+The qualifying run covers M1-M6 acceptance, final structural counts, M6 routine security, deny-by-default pre-M7 ACL posture, NativeRef source-family rejection, explicit-extra zero-coordinate enforcement, generated-coordinate membership/duplicate rejection, Dictionary reconciliation, M6->M5 downgrade, Alembic fresh/head round trips and drift, privileges, runtime and transactions.
+
+## Closure
+
+`CP6-M06` is CLOSED. The next stage is `CP6-M07 — Runtime ACL Activation`.
+
+## Explicitly out of scope for M6
 
 - CP6-M07 runtime ACL activation;
 - persistent local PostgreSQL materialization;
