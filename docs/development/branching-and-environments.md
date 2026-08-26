@@ -1,3 +1,11 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> PR #28 is **MERGED** into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. `feature/frontend-materialization` remains CLOSED/PASS historical evidence; `chore/frontend-materialization-integration` is no longer an active/pending integration boundary. Any later section below that still says PR #28 READY or awaiting merge is preserved pre-merge history and is superseded on current branch status only. Backend `feature/logical-postgresql` has incorporated current `main` and remains the active CP6 branch.  
+
 # Branching and Environments
 
 - Status: **CURRENT**

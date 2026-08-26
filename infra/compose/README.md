@@ -45,7 +45,7 @@ Normal rebuild:
 docker compose -f infra/compose/local.yaml build postgres
 ```
 
-CP2 first-build acceptance also proved a clean build:
+CP2 first-build acceptance also proved a clean build on the then-current PostgreSQL 18.4 image:
 
 ```bash
 docker compose -f infra/compose/local.yaml build --no-cache postgres
@@ -53,13 +53,15 @@ docker compose -f infra/compose/local.yaml build --no-cache postgres
 
 The DANTE image is based on the immutable OCI index digest recorded in `infra/local/postgres/Dockerfile` and installs exact PostGIS/pgvector PGDG package versions.
 
-The resulting LOCAL image name is:
+The current LOCAL image name is:
 
 ```text
-dante-postgres-local:18.4
+dante-postgres-local:18.6
 ```
 
-CP3 real-PostgreSQL tests deliberately reuse this exact image in one disposable acceptance container per pytest PostgreSQL session. They do not mutate the ordinary Compose cluster.
+CP2/CP3 original direct evidence remains historically tied to PostgreSQL 18.4. CP6 refreshed the current PostgreSQL 18 maintenance patch to 18.6 and directly re-proved the technical foundation remotely in Backend CI run `32568664940` at HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`.
+
+The real-PostgreSQL tests deliberately reuse the current exact image in one disposable acceptance container per pytest PostgreSQL session. They do not mutate the ordinary Compose cluster.
 
 ## Start and inspect
 
@@ -145,10 +147,10 @@ Init scripts are bootstrap scripts, not a migration system, and they do not reru
 
 ## Selected database capabilities
 
-A fresh Compose `dante` database contains:
+A fresh current Compose `dante` database contains:
 
 ```text
-PostgreSQL           18.4
+PostgreSQL           18.6
 PostGIS              3.6.4
 pgvector             0.8.6
 pg_trgm              enabled
@@ -163,7 +165,9 @@ Detailed CP2 SQL/image/lifecycle evidence remains in:
 
 `docs/development/backend-cp2-postgres-contract.md`
 
-## CP3 PostgreSQL acceptance isolation
+That CP2 document intentionally preserves the exact PostgreSQL 18.4 phase-time image and direct evidence; it is historical evidence, not the current image tag.
+
+## PostgreSQL acceptance isolation
 
 The real database test suite does not use SQLite and does not point destructive provisioning tests at the ordinary LOCAL Compose cluster.
 
@@ -173,10 +177,10 @@ From `apps/backend`:
 uv run pytest -m postgres
 ```
 
-The test harness:
+The current test harness:
 
 ```text
-requires dante-postgres-local:18.4
+requires dante-postgres-local:18.6
 creates one loopback-only disposable PostgreSQL container
 uses generated test-only admin/migrator/runtime secrets
 creates fresh databases inside that isolated cluster
@@ -187,7 +191,18 @@ destroys the acceptance container after the pytest session
 
 The isolation is necessary because PostgreSQL roles are cluster-global; using the normal LOCAL cluster would allow acceptance provisioning to change the real LOCAL `dante_runtime` / `dante_migrator` credentials.
 
-If the required CP2 image is absent, PostgreSQL-marked tests fail explicitly instead of skipping.
+If the required image is absent, PostgreSQL-marked tests fail explicitly instead of skipping.
+
+Current PostgreSQL 18.6 remote regression evidence:
+
+```text
+Backend CI run        32568664940
+HEAD                  ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+Backend PostgreSQL    SUCCESS
+PostgreSQL suite      18 / 18 PASS
+Backend Quality       SUCCESS
+Backend CI Gate       SUCCESS
+```
 
 ## Windows database GUI
 
@@ -203,7 +218,7 @@ For platform/bootstrap inspection use `postgres` with the contents of `infra/com
 
 After CP3 provisioning, application-level inspection can also use `dante_runtime` with the separately generated LOCAL runtime credential, subject to its intentionally restricted privileges.
 
-The CP2 Windows GUI acceptance remains historical direct evidence and is not re-opened by CP3.
+The CP2 Windows GUI acceptance remains historical direct evidence and is not re-opened by the later PostgreSQL 18.6 patch refresh.
 
 ## Boundaries
 

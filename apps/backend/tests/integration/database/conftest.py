@@ -1,4 +1,4 @@
-"""Real PostgreSQL 18.4 acceptance harness for the CP3 persistence boundary."""
+"""Real PostgreSQL 18.6 acceptance harness for the CP3 persistence boundary."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from sqlalchemy import URL
 from dante.platform.config.database import DatabaseSettings
 from dante.platform.database.provisioning import ProvisioningSettings, provision_database
 
-_POSTGRES_IMAGE = "dante-postgres-local:18.4"
+_POSTGRES_IMAGE = "dante-postgres-local:18.6"
 _BACKEND_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -131,7 +131,7 @@ def _wait_for_postgres(cluster: PostgresCluster) -> None:
                 connect_timeout=1,
             ) as connection:
                 version = connection.execute("SHOW server_version_num").fetchone()
-                if version is not None and version[0] == "180004":
+                if version is not None and version[0] == "180006":
                     return
         except psycopg.Error as error:
             last_error = error
@@ -139,7 +139,7 @@ def _wait_for_postgres(cluster: PostgresCluster) -> None:
 
     logs = _docker("logs", cluster.container_name, check=False).stdout
     pytest.fail(
-        "CP3 PostgreSQL acceptance cluster did not become ready as PostgreSQL 18.4. "
+        "CP3 PostgreSQL acceptance cluster did not become ready as PostgreSQL 18.6. "
         f"Last connection error: {last_error!r}\nContainer logs:\n{logs}"
     )
 
@@ -217,7 +217,7 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     image_check = _docker("image", "inspect", _POSTGRES_IMAGE, check=False)
     if image_check.returncode != 0:
         pytest.fail(
-            "Required CP2 image dante-postgres-local:18.4 is not available. "
+            "Required CP2 image dante-postgres-local:18.6 is not available. "
             "Build it with `docker compose -f infra/compose/local.yaml build postgres`."
         )
 

@@ -1,3 +1,11 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> This banner is the current integrated status authority for this file and supersedes only contradictory status/routing statements later in the preserved historical body. Protected `main` now includes frontend materialization via merged PR #28 (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). Frontend materialization is **CLOSED / PASS / INTEGRATED**, and `Frontend CI Gate` is calibrated with required-check promotion recorded as owner-confirmed where direct ruleset API readback is unavailable. Backend `feature/logical-postgresql` is current with `main` and remains **CP6-03 ACTIVE**: Checkpoint J / DB-U23 are CLOSED, Parts 1–8 are the active Database Reference, `DB-U08 / DB-U15 / DB-U21` remain OPEN, and the exact next block is **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**. Gate 03 is not earned; CP6-04 business-database materialization remains not started/not authorized.  
+
 # DANTE
 
 DANTE is a personal operating system designed to help people understand, organize and improve their real life by turning intentions, needs and possibilities into outcomes they can realistically pursue.
@@ -7,27 +15,103 @@ DANTE is a personal operating system designed to help people understand, organiz
 ## Current state
 
 ```text
-PRODUCT / NORTH STAR                 CURRENT
-DOMAIN MODEL                         CLOSED
-LOGICAL MODEL                        CLOSED / WL-H01..WL-H12 ACTIVE
-PHYSICAL TARGET                      CLOSED / SELECTED / ACCEPTED
-ENGINEERING FOUNDATION v0            CLOSED / ACCEPTED
-FRONTEND ENGINEERING FOUNDATION      CLOSED / ACCEPTED / INTEGRATED VIA PR #22
-PRODUCTION BACKEND SCAFFOLD          CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-FRONTEND MATERIALIZATION             CLOSED / PASS — FM-00..FM-07
-FRONTEND INTEGRATION HARDENING       CLOSED / INTEGRATED VIA PR #28
-FRONTEND CI GATE CALIBRATION         COMPLETE
-FRONTEND CI GATE PROMOTION           OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
-CONCRETE LOGICAL -> POSTGRESQL        NOT STARTED
-PRODUCT VERTICALS                    NOT STARTED
-PRODUCTION DEPLOYMENT                NOT STARTED
+PRODUCT / NORTH STAR
+CURRENT
+
+DOMAIN MODEL
+CLOSED
+
+LOGICAL MODEL
+CLOSED
+WL-H01..WL-H12 ACTIVE
+
+PHYSICAL TARGET
+CLOSED / SELECTED / ACCEPTED
+PostgreSQL 18 major family is the canonical persistence architecture
+Physical phase-time exact patch: PostgreSQL 18.4
+
+ENGINEERING FOUNDATION v0
+CLOSED / ACCEPTED
+
+FRONTEND ENGINEERING FOUNDATION
+DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS
+INTEGRATED VIA PR #22
+
+FRONTEND MATERIALIZATION
+ACTIVE ON feature/frontend-materialization
+DIRECT FRONTEND VALIDATION NOT YET EARNED
+
+PRODUCTION BACKEND SCAFFOLD
+INTEGRATED IN PROTECTED main / DIRECT QA PASS
+CP1 CLOSED / DIRECT QA PASS
+CP2 CLOSED / DIRECT QA PASS — original PostgreSQL 18.4 evidence
+CP3 CLOSED / DIRECT QA PASS — original PostgreSQL 18.4 evidence
+CP4 CLOSED / DIRECT REMOTE QA PASS
+CP5 CLOSED / DIRECT INTEGRATED QA PASS
+PR #24 MERGED / POST-MERGE BACKEND CI PASS
+
+PROTECTED-MAIN CI
+Backend CI Gate REQUIRED
+Dependency Review REQUIRED
+branch up-to-date REQUIRED
+required-check source GitHub Actions
+
+CP6 — CONCRETE POSTGRESQL DATABASE
+ACTIVE ON feature/logical-postgresql
+CP6-00 COMPLETE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 ACTIVE — CHECKPOINT J / DB-U23 CLOSED
+NEXT DESIGN BLOCK — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+DB-U08 / DB-U15 / DB-U21 OPEN
+GATE 03 NOT YET EARNED
+
+CURRENT POSTGRESQL TECHNICAL PATCH
+PostgreSQL 18.6
+configuration refresh APPLIED
+foundation regression DIRECT REMOTE QA PASS
+Backend CI run 32568664940 @ ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+CURRENT DANTE BUSINESS DATABASE
+NOT YET MATERIALIZED
+
+FIRST PRODUCT VERTICAL
+POST-CP6 / NOT STARTED / SEPARATELY AUTHORIZED
+
+DIRECT BUSINESS-SEMANTIC HG / blanket PSV
+NOT RUN BEYOND EXACTLY RECORDED QUALIFYING EVIDENCE
 ```
 
-Architecture/design closure never implies implementation PASS. Direct PASS is recorded only for the exact artifact/scenario that actually ran.
+Architecture/design closure never implies implementation PASS. Direct PASS is recorded only where the relevant artifact or scenario actually ran. PostgreSQL 18.4 remains the exact historical Physical/CP2/CP3 evidence patch; the current CP6 technical patch is 18.6. Patch maintenance inside PostgreSQL 18 does not rewrite historical evidence or reopen the selected persistence architecture.
 
-## Repository direction
+## Current CP6 execution boundary
 
-DANTE remains one product monorepo:
+CP6 now has one concrete job: turn the closed Domain + Logical + Physical model into the real DANTE PostgreSQL database before the first product vertical begins.
+
+```text
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+CURRENT: CHECKPOINT J COMPLETE
+NEXT: FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+        ↓
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
+Alembic + tables + constraints + indexes + SQLAlchemy mappings + DB tests
+        ↓
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
+```
+
+Earlier process language that prohibited all business schema/migrations/mappings anywhere in CP6 is superseded. CP6-01 and CP6-02 themselves correctly created none; later CP6 stages may materialize every database structure already determinable from the closed model. First-product-vertical application behavior, product persistence adapters, APIs and frontend remain post-CP6.
+
+Current execution authority: `docs/workstreams/logical-postgresql.md`.
+
+## Production repository direction
+
+DANTE continues in this repository as one product monorepo.
 
 ```text
 apps/
@@ -43,155 +127,280 @@ prototypes/
 .github/
 ```
 
-These are ownership boundaries, not instructions to create empty directories. Production code never imports from `prototypes/`. `main` is the only integrated source truth; normal work uses bounded branches and PR integration.
+These are ownership boundaries, not an instruction to create empty directories.
+
+- `apps/backend` is the server-side application boundary;
+- `apps/web` and `apps/mobile` are sibling client boundaries;
+- `infra/` owns infrastructure definitions when materialized, never business logic;
+- production apps do not import from `prototypes/`;
+- do **not** create a second implementation repository.
+
+Repository identity governance is complete: `MattiaRubino/lifeos` is historical identity and production implementation continues in `MattiaRubino/dante`.
 
 ## Backend engineering baseline
 
 ```text
-Python                 3.14.x
-current scaffold pin   3.14.7
-package manager        uv 0.12.5 exact project requirement
-format/lint            Ruff
-type checking          mypy strict
-tests                  pytest + Hypothesis where meaningful
-persistence            PostgreSQL 18.4
-ORM/SQL toolkit        SQLAlchemy 2.0 stable
-PostgreSQL driver      psycopg 3
-migrations             Alembic
+Python                   3.14.x
+current scaffold pin      3.14.7
+package manager           uv 0.12.5 exact project requirement
+source root               apps/backend/src/dante
+format/lint               Ruff
+type checking             mypy strict
+unit/integration runner   pytest
+property testing          Hypothesis where meaningful
+
+server semantics          Linux
+Windows workflow          WSL2/Linux
+primary user IDE          PyCharm with WSL interpreter supported
+local stateful infra      Docker Compose
+
+canonical persistence     PostgreSQL 18 major family
+current technical patch   PostgreSQL 18.6
+ORM/SQL toolkit           SQLAlchemy 2.0 stable line
+driver                    psycopg 3
+migrations                Alembic
 ```
 
-The integrated LOCAL PostgreSQL scaffold directly proved PostgreSQL 18.4, PostGIS 3.6.4, pgvector 0.8.6, `pg_trgm`, `unaccent`, `pg_stat_statements`, least-privilege role provisioning, migrations, real readiness and real PostgreSQL acceptance. Detailed CP1-CP5 evidence lives in `docs/workstreams/backend-scaffold.md` and the backend development contracts.
+The materialized current LOCAL PostgreSQL baseline uses:
 
-## Frontend engineering baseline — materialized and integrated
+- PostgreSQL 18.6;
+- PostGIS 3.6.4;
+- pgvector 0.8.6;
+- `pg_trgm`;
+- `unaccent`;
+- `pg_stat_statements` with preload configuration;
+- native PostgreSQL full-text search.
 
-The closed frontend materialization directly qualified the following baseline at its stated scopes and was integrated into protected `main` through PR #28:
+PostgreSQL remains the sole canonical persistence and material-history authority.
+
+The current 18.6 technical envelope was directly re-proved on GitHub Actions run `32568664940` against HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`: Backend Quality, Backend PostgreSQL and Backend CI Gate all succeeded; the fast lane passed 32/32 tests and the PostgreSQL lane passed 18/18 tests, covering the current 50-test corpus across the two mandatory lanes.
+
+## Frontend engineering baseline — closed design / integrated
 
 ```text
-Node                    24.19.0
-pnpm                    11.22.0
-TypeScript              6.0.3 strict
-Turborepo               2.10.11
-ESLint                  10.8.1
-Prettier                3.9.0
+Node 24 LTS
+TypeScript 6.0.x strict
+pnpm 11
+Turborepo 2.x
 
 Web
-React / React DOM       19.2.8 / 19.2.8
-Vite                    8.2.1
-TanStack Router         1.170.31
-Playwright              1.62.1
+React 19.2 + React DOM
+Vite 8
+TanStack Router
 
 Mobile
-Expo SDK                57.x (clean resolution 57.0.15)
-React Native            0.86.2
-React                   19.2.3
-Expo Router             57.x (clean resolution 57.0.15)
-Gesture Handler         2.32.0
-Reanimated              4.5.1
+React Native 0.86
+Expo SDK 57
+Expo Router
 
-Shared
-@dante/design-tokens    DTCG/Terrazzo-backed
-@dante/i18n             i18next 26.3.6; IT primary/fallback, EN secondary
-@dante/time             temporal-polyfill 1.0.4
+Data
+PowerSync + encrypted SQLite
+TanStack Query 5
+TanStack Form
+Zod 4
+Orval 8
 ```
 
-`selected != installed != configured != directly validated` remains the governing rule. The design-time Frontend Foundation remains architecture authority; where version-specific design text differs from later direct materialization evidence, the qualified materialization evidence and later ADR/current-decision reconciliation are authoritative for the implemented baseline.
+Accepted frontend architecture includes feature-first Web/Mobile, thin route/navigation adapters, public-API-only acyclic dependencies, small real-consumer shared packages, a formal Data Authority Matrix, backend canonical effect authority, Mobile PowerSync local/offline posture, Web online-first posture, identity-scoped local storage and platform-specific UI implementations over shared semantic tokens.
 
-The only known workspace peer diagnostic is Web `react-dom@19.2.8` observing Mobile React `19.2.3`. Expo `install --check` passes with Mobile React 19.2.3, so the diagnostic is reproducible/non-blocking and is not a reason for React, hoisting or peer-suppression changes.
+Frontend production materialization continues independently on `feature/frontend-materialization`; no direct frontend PASS is inferred from branch activity.
 
-## Frontend direct evidence
+## Backend CI and protected-main enforcement
 
-The closed materialization proved, among other things:
+CP4 materialized and directly calibrated:
 
 ```text
-fresh frozen pnpm install                     PASS
-strict TypeScript                             PASS
-architecture graph                            36 modules / 45 deps / 0 violations
-generated-source drift                        PASS
-unit tests                                    10 PASS
-Web production build                          PASS
-Web Chromium production-preview E2E           PASS
-Android Hermes bundle smoke                   PASS
-Android emulator / Metro / Hermes runtime     PASS (FM-04)
-Expo dependency compatibility                 PASS
-fresh Playwright browser bootstrap            PASS
-tracked + untracked repository cleanliness    PASS
-GitHub-hosted Frontend CI                     PASS
+Backend CI
+├── Backend Quality
+├── Backend PostgreSQL
+└── Backend CI Gate
+
+Dependency Review
+└── repository-wide dependency policy check
 ```
 
-The detailed evidence authority is `docs/workstreams/frontend-materialization.md`.
-
-## Frontend integration — CLOSED / integrated via PR #28
-
-PR #28 merged the closed frontend materialization plus bounded integration hardening into protected `main`.
+Remote PR #24 calibration directly proved:
 
 ```text
-final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
-prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
-merge commit         f1aacb0724088e0b4b086008a5219c2fba5ce0cf
-merge parentage      PASS — exactly prior main + final PR head
-merged tree identity PASS — PR head -> main has 0 file delta
+M5 GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
+
+M6 DELIBERATE RED
+Backend Quality       FAILURE
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       FAILURE
+Dependency Review     FAILURE
+
+M7 RECOVERY GREEN
+Backend Quality       SUCCESS
+Backend PostgreSQL    SUCCESS
+Backend CI Gate       SUCCESS
+Dependency Review     SUCCESS
 ```
 
-The final PR head directly passed Dependency Review, Backend CI and Frontend CI, including `Backend CI Gate` and `Frontend CI Gate`, before merge. The available connector does not expose push-triggered workflow-run lookup for the merge SHA, therefore push-main CI is classified **DIRECT READBACK UNAVAILABLE**, not falsely called PASS.
+The deliberate red did not introduce a vulnerable package: Dependency Review temporarily denied the already-visible FastAPI dependency and failed for that policy violation. Backend CI Gate independently proved fail-closed behavior when a mandatory upstream job failed.
 
-Dependency Review remains fail-closed at `moderate+`. Three exact transitive tooling advisories are temporarily accepted and documented with a review deadline of **2026-09-23**; this is not a global vulnerability suppression.
-
-The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
-
-## Protected-main enforcement
-
-The canonical repository ruleset definition contains:
+Protected `main` requires:
 
 ```text
 Backend CI Gate
 Dependency Review
-Frontend CI Gate
-branch up to date before merge
-PR-before-merge
-review-thread resolution
-merge commits only
-no force push / no deletion
 ```
 
-`Frontend CI Gate` completed real-green, controlled deliberate-red, mandatory failure-propagation, exact-restore and recovery-green calibration. The repository owner confirmed applying its promotion to the protected-main ruleset. The available connector does not expose direct ruleset readback, so this administrative state remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**, not independently API-verified.
+Both are bound in the ruleset UI to **GitHub Actions**. The branch must be up to date before merge. Zero approvals remains intentional while one regular maintainer exists; PR-before-merge, review-thread resolution, deletion protection and force-push protection remain in place.
 
-## Selected but not yet activated
+Repository owner also enabled the Actions setting requiring full-length Action SHAs. The connected API cannot directly read that setting, so it is recorded as owner-applied rather than falsely API-verified.
 
-The following remain selected/deferred rather than silently implemented: PowerSync + encrypted SQLite, TanStack Query/Form, Orval-generated API client, Web runtime config/Cloudflare delivery, Sentry, EAS release services, CodeQL, browser PWA/offline, production recovery/remote deployment and specialist scale infrastructure.
+No arbitrary coverage threshold is introduced.
 
-Activation triggers are recorded in `docs/workstreams/frontend-materialization-integration.md`.
+## Historical CP5 final integrated scaffold acceptance
+
+CP5 re-proved the complete scaffold on the canonical WSL2/Linux workstation without adding business schema or changing backend implementation. This evidence used the then-current PostgreSQL 18.4 envelope and remains historically exact.
+
+Direct evidence:
+
+```text
+remote PRE-SCOPE / branch relation        PASS
+main ancestry / behind_by=0               PASS
+uv 0.12.5                                 PASS
+Python 3.14.7                              PASS
+uv lock --check / sync --locked           PASS
+Ruff format + lint                        PASS
+mypy strict                               PASS
+fast pytest                               32/32 PASS
+canonical PostgreSQL image rebuild        PASS
+PostgreSQL acceptance                     18/18 PASS
+full backend pytest                       50/50 PASS
+full-run coverage                         97.42% evidence only
+wheel + sdist build                       PASS
+LOCAL PostgreSQL Compose health           PASS
+explicit DB security provisioning         PASS
+real Uvicorn factory startup              PASS
+GET /health/live                          200 {"status":"ok"}
+GET /health/ready                         200 {"status":"ready"}
+CP4 required remote workflows             SUCCESS on PRE-SCOPE
+```
+
+One immediate full-suite rerun after the dedicated PostgreSQL suite encountered a Docker Desktop/WSL port-forwarding `/forwards/expose` HTTP 500 while Docker held a newly created container on an otherwise unused loopback port. After removing that diagnostic container, the clean full suite passed 50/50. This is recorded as a transient local Docker forwarding event, not as a backend/database test failure.
+
+## Backend scaffold protected-main integration
+
+PR #24 merged the closed CP1–CP5 scaffold into protected `main` using the accepted merge-commit method.
+
+```text
+pre-merge main                         ff46eb16b971b1fde96eef9047b09faa02e1a5db
+feature/backend-scaffold HEAD          46b775bfbfc4747daff341d973df133646dbd0c8
+merge commit / protected main          41680497c94b0c2f4830679b93f8eb6f1d543f8d
+Backend CI push-main run               32502330955 SUCCESS
+```
+
+The merge commit has the expected two parents: the prior protected-main SHA and the final scaffold feature HEAD. PR #24 is closed/merged. No branch deletion, CodeQL activation, ruleset mutation, frontend mutation or concrete business-schema implementation was part of the merge gate.
+
+## Direct evidence truth
+
+```text
+CP1 BACKEND PROCESS / CONFIG             DIRECT QA PASS
+CP2 LOCAL POSTGRESQL 18.4                DIRECT QA PASS / HISTORICAL EXACT
+CP3 PERSISTENCE / MIGRATIONS 18.4        DIRECT QA PASS / HISTORICAL EXACT
+CP3 POSTGRESQL ACCEPTANCE                18/18 PASS
+CP3 FULL BACKEND PYTEST                  50/50 PASS
+CP4 LOCAL FAST QA                        32/32 PASS
+CP4 LOCAL POSTGRESQL QA                  18/18 PASS
+CP4 POST-MAIN REGRESSION                 PASS
+CP4 REMOTE PR GREEN                      PASS
+CP4 DELIBERATE RED                       PASS
+CP4 RECOVERY GREEN                       PASS
+CP4 REQUIRED-CHECK PROMOTION             APPLIED
+CP4                                      CLOSED / DIRECT REMOTE QA PASS
+CP5 FAST QA                              32/32 PASS
+CP5 POSTGRESQL QA                        18/18 PASS
+CP5 FULL BACKEND QA                      50/50 PASS
+CP5 REAL STARTUP + LIVE + READY          PASS
+CP5                                      CLOSED / DIRECT INTEGRATED QA PASS
+BACKEND SCAFFOLD MAIN INTEGRATION        PASS
+POST-MERGE BACKEND CI                    PASS
+POSTGRESQL 18.6 FOUNDATION REGRESSION    DIRECT REMOTE QA PASS
+18.6 FAST LANE                           32/32 PASS
+18.6 POSTGRESQL LANE                     18/18 PASS
+18.6 BACKEND CI GATE                     SUCCESS
+CP6-01                                   CLOSED / GATE 01 PASS
+CP6-02                                   CLOSED / GATE 02 PASS
+CP6-03                                   ACTIVE / CHECKPOINT J COMPLETE / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+CONCRETE DANTE BUSINESS DB               NOT YET MATERIALIZED
+DIRECT BUSINESS HG-01..HG-12             NOT RUN / PASS 0
+RESTORE/PITR REHEARSAL                   NOT RUN
+POWERSYNC DIRECT TEST                    NOT RUN
+RESTATE DIRECT TEST                      NOT RUN
+PRODUCTION DEPLOYMENT                    NOT STARTED
+```
+
+Coverage values recorded during scaffold tests remain evidence only, not project thresholds.
 
 ## Environment model
 
 ```text
-LOCAL -> DEV -> UAT -> PROD
+LOCAL
+DEV
+UAT
+PROD
 ```
 
-Environments are runtime contexts, never Git branches.
+Environments are not Git branches. Activation remains progressive and provider-specific infrastructure is selected only when the real boundary requires it.
+
+## Selected Physical posture
+
+The Physical target remains unchanged. Its exact phase-time PostgreSQL patch was 18.4; current patch maintenance within selected major line 18 is lifecycle-managed downstream.
+
+- PostgreSQL 18 major family — sole canonical persistence/material-history authority; Physical phase-time exact patch 18.4; current CP6 technical patch 18.6;
+- PostGIS / pgvector / native FTS / pg_trgm / unaccent / pg_stat_statements;
+- PgBouncer 1.25.2 selected, not forced into every day-one path;
+- PowerSync + encrypted SQLite for bounded noncanonical local/offline state when activated;
+- PostgreSQL transactional outbox for Class-A async work when required;
+- Restate for Class-B durable work, initially dormant;
+- Cloudflare R2 for private ContentArtifact bytes when activated;
+- pgBackRest + AWS S3 `eu-south-1` for recovery, initially dormant;
+- OR-Tools CP-SAT for solver capability when activated;
+- OpenTelemetry + Grafana Alloy + Grafana Cloud EU observability target.
+
+No specialist component becomes active merely because it is selected.
 
 ## Where to continue
 
-Read in order:
+Read before the next backend write:
 
 1. `docs/README.md`
 2. `docs/PROJECT-STATUS.md`
-3. `docs/development/agent-operating-manual.md`
-4. `docs/development/repository-engineering-safety.md`
-5. the applicable current or closed workstream handoff
-6. the applicable closed architecture/ADR/model authorities.
+3. `docs/ROADMAP.md`
+4. `docs/workstreams/logical-postgresql.md`
+5. `docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+6. `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+7. development operating/safety/handoff rules
+8. closed `docs/workstreams/backend-scaffold.md` for scaffold evidence
+9. closed Logical Model owner/ref/invariant authorities
+10. applicable Physical target/validation authorities.
 
-Current continuation boundaries:
+Exact active boundaries:
 
 ```text
-REPOSITORY SECURITY NEXT CANDIDATE
-CodeQL default setup evaluation under a fresh explicit gate
+FRONTEND
+feature/frontend-materialization
+→ continue its independent bounded materialization/direct-validation workstream
 
-BACKEND NEXT
-Concrete Logical -> PostgreSQL through a fresh bounded workstream/gate
-
-PRODUCT NEXT
-first real vertical slice
--> activate only capabilities actually consumed
+BACKEND
+feature/logical-postgresql
+→ CP6 Concrete PostgreSQL Database ACTIVE
+→ CP6-01 CLOSED / GATE 01 PASS
+→ CP6-02 CLOSED / GATE 02 PASS
+→ PostgreSQL 18.6 technical refresh + direct remote regression PASS
+→ CP6-03 ACTIVE / CHECKPOINT J COMPLETE
+→ FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+→ DB-U08 / DB-U15 / DB-U21 remain OPEN until inventory freeze
+→ CP6-04 only after Gate 03 / REAL DATABASE MATERIALIZATION
+→ CP6-05 / WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+→ first product vertical only after CP6 closes
 ```
 
-Backend next remains a separate bounded workstream for Concrete Logical -> PostgreSQL. Product vertical work begins only after its required data/API/UI boundaries are deliberately activated; do not reopen closed foundations by default.
+Do not reopen closed Product/Domain/Logical/Physical/Engineering/Frontend Foundation or CP1–CP5 decisions by default. Do not implement the first product vertical application inside CP6.

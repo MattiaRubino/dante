@@ -8,15 +8,28 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from dante.platform.config.database import MigrationDatabaseSettings
+from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.metadata import DANTE_SCHEMA, Base
 
 config = context.config
+
+if {table.fullname for table in MAPPED_TABLES} != set(Base.metadata.tables):
+    raise RuntimeError("DANTE SQLAlchemy mapping registration is incomplete")
+
 target_metadata = Base.metadata
+
+_MIGRATOR_ROLE = "dante_migrator"
+_OWNER_ROLE = "dante_owner"
+_TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 
 
 def _migration_connection_config() -> tuple[URL, int]:
     injected = config.attributes.get("database_url")
     if isinstance(injected, URL):
+        if injected.username != _MIGRATOR_ROLE:
+            raise RuntimeError(
+                "DANTE Alembic connection must authenticate exactly as dante_migrator"
+            )
         return injected, 5
 
     settings = MigrationDatabaseSettings()
@@ -35,8 +48,37 @@ def _include_name(
     return True
 
 
+def _assert_identity(
+    connection: Connection,
+    *,
+    expected_session_user: str,
+    expected_current_user: str,
+) -> None:
+    row = connection.exec_driver_sql(
+        "SELECT session_user, current_user, current_setting('search_path')"
+    ).one()
+    normalized_search_path = str(row[2]).replace(" ", "")
+    if (
+        row[0] != expected_session_user
+        or row[1] != expected_current_user
+        or normalized_search_path != _TRUSTED_SEARCH_PATH
+    ):
+        raise RuntimeError("DANTE Alembic database identity/search_path precondition failed")
+
+
 def _configure(connection: Connection) -> None:
+    _assert_identity(
+        connection,
+        expected_session_user=_MIGRATOR_ROLE,
+        expected_current_user=_MIGRATOR_ROLE,
+    )
+
     connection.exec_driver_sql("SET ROLE dante_owner")
+    _assert_identity(
+        connection,
+        expected_session_user=_MIGRATOR_ROLE,
+        expected_current_user=_OWNER_ROLE,
+    )
     connection.commit()
 
     context.configure(
@@ -66,7 +108,7 @@ async def _run_online() -> None:
         connect_args={
             "connect_timeout": connect_timeout_seconds,
             "application_name": "dante-migrator",
-            "options": "-c search_path=dante,public",
+            "options": "-c search_path=pg_catalog,dante,pg_temp",
         },
         poolclass=NullPool,
         hide_parameters=True,

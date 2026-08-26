@@ -88,6 +88,31 @@ def test_explicit_settings_are_valid_for_application_injection() -> None:
     assert settings.database.user == "dante_runtime"
 
 
+@pytest.mark.parametrize(
+    "invalid_user",
+    ["postgres", "dante_owner", "dante_migrator", "custom_runtime"],
+)
+def test_runtime_database_identity_is_fixed_to_dante_runtime(invalid_user: str) -> None:
+    with pytest.raises(ValidationError, match="dante_runtime"):
+        DatabaseSettings(
+            host="127.0.0.1",
+            port=5432,
+            name="dante",
+            user=invalid_user,  # type: ignore[arg-type]
+            password=SecretStr("test-runtime-secret"),
+        )
+
+
+def test_environment_rejects_non_runtime_database_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_valid_local_environment(monkeypatch)
+    monkeypatch.setenv("DANTE_DATABASE__USER", "dante_migrator")
+
+    with pytest.raises(ValidationError, match=r"database.*user|dante_runtime"):
+        Settings()
+
+
 def test_missing_environment_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     _set_valid_local_environment(monkeypatch)
     monkeypatch.delenv("DANTE_ENV")

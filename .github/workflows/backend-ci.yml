@@ -115,7 +115,7 @@ jobs:
           uv run --locked python --version
 
       - name: Build canonical PostgreSQL image
-        run: docker build --pull --tag dante-postgres-local:18.4 infra/local/postgres
+        run: docker build --pull --tag dante-postgres-local:18.6 infra/local/postgres
 
       - name: PostgreSQL acceptance suite
         working-directory: apps/backend

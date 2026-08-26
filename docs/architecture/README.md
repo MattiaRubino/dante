@@ -1,3 +1,11 @@
+> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
+> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
+> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
+> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+
+> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
+> Frontend materialization is **CLOSED / PASS / INTEGRATED into protected `main` via PR #28**. Any later statement in this preserved body that still calls it active is pre-merge status. Backend CP6 remains on `feature/logical-postgresql`, current with `main`, with CP6-03 ACTIVE, Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized. This banner supersedes only contradictory status/routing wording below.  
+
 # DANTE Architecture Index
 
 - Status: **CURRENT**
@@ -10,179 +18,120 @@ Logical Model                 CLOSED
 Pre-Physical coherence        CLOSED
 Physical target               CLOSED / ACCEPTED
 Engineering Foundation v0     CLOSED / ACCEPTED
-Frontend Foundation           CLOSED / ACCEPTED / integrated via PR #22
-Backend scaffold              CLOSED / DIRECT QA PASS / integrated via PR #24
-Frontend materialization      CLOSED / PASS — FM-00..FM-07
-Frontend integration          CLOSED / INTEGRATED VIA PR #28
-Frontend CI Gate calibration  COMPLETE
-Frontend CI Gate promotion    OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
-Concrete business schema      NOT STARTED
-Product verticals             NOT STARTED
+Frontend Foundation Passo 1   PASS
+Frontend Foundation Passo 2   PASS
+Frontend Foundation Passo 3   FINAL REVIEW PASS
+Frontend Foundation           DESIGN/ARCHITECTURE CLOSED / ACCEPTED / INTEGRATED VIA PR #22
+Frontend materialization      ACTIVE ON feature/frontend-materialization
+Production backend scaffold   CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS
+Backend CP6                   ACTIVE ON feature/logical-postgresql
+Backend CP6-01                CLOSED / GATE 01 PASS
+Backend CP6-02                CLOSED / GATE 02 PASS
+Backend CP6-03                ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+Gate 03                       NOT YET EARNED
+DB-U08 / DB-U15 / DB-U21      OPEN
+PostgreSQL architecture       18 major family / sole canonical persistence + material-history authority
+Physical exact patch          18.4 / HISTORICAL PHASE-TIME SELECTION
+Current PostgreSQL patch      18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
+Current DANTE business DB     NOT YET MATERIALIZED
+Direct business HG / PSV      ONLY AS EXACTLY EARNED
 ```
 
-`main` remains the integrated source authority. Frontend materialization and its bounded integration hardening are now part of protected `main` through PR #28.
+`main` is integrated authority for closed shared foundations. Current unmerged backend CP6 truth lives on `feature/logical-postgresql`; current frontend materialization truth lives on `feature/frontend-materialization`.
 
 ## 2. Current architecture entry points
 
 - `system-overview.md` — current system/component/authority overview
-- `technical-decisions.md` — current decision register and implementation qualifications
-- `frontend-engineering-foundation.md` — design-time frontend technology specification
+- `technical-decisions.md` — current decision register
+- `frontend-engineering-foundation.md` — frontend technology specification
 - `frontend-engineering-foundation-part-2.md` — frontend application/package/dependency/data-authority specification
-- `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR + materialization qualification
-- `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR + materialization qualification
-- `../workstreams/frontend-materialization.md` — closed direct frontend evidence
-- `../workstreams/frontend-materialization-integration.md` — closed integration record, accepted-risk lifecycle and future-activation authority
-- `../workstreams/backend-scaffold.md` — closed backend CP1-CP5 evidence
-- `../development/repository-engineering-safety.md` — repository/CI/ruleset safety authority
+- `frontend-engineering-foundation-final-review.md` — final review/closure evidence
+- `frontend-engineering-foundation-post-closure-qa.md` — post-closure knowledge/evidence QA
+- `../decisions/ADR-003-primary-database.md` — historical PostgreSQL-primary rationale with current replacement authority identified
+- `../decisions/ADR-007-domain-model-informed-persistence-boundaries.md` — active semantic persistence guardrail with historical Physical posture qualified
+- `../decisions/ADR-008-frontend-engineering-stack.md` — frontend technology ADR
+- `../decisions/ADR-009-frontend-architecture-boundaries.md` — frontend architecture ADR
+- `../decisions/ADR-010-postgresql-persistence-constitution.md` — accepted reusable PostgreSQL persistence doctrine ADR
+- `../workstreams/logical-postgresql.md` — active CP6 database blueprint/materialization handoff and durable exact resume point
+- `../database/README.md` — database System-of-Record/documentation contract
+- `../database/dante-postgresql-database.md` + Parts 2–8 — one canonical multi-part Database Architecture & Reference
+- `../workstreams/frontend-foundation.md` — frontend closure/integration handoff
+- `../workstreams/engineering-foundation.md` — closed Engineering Foundation handoff
+- `../development/engineering-foundation-v0.md` — backend engineering contract
+- `../development/repository-layout-v0.md` — accepted root topology/path ownership
 
 ## 3. Current system direction
 
-One DANTE product monorepo with sibling application boundaries:
+One DANTE product monorepo with `apps/backend`, `apps/web`, `apps/mobile` and accepted root ownership for `packages/`, `infra/`, `tooling/`, `tests/system/`, `docs/`, `prototypes/`, `.github/`. Paths are materialized only when real content exists.
+
+Backend is a capability-first modular monolith. PostgreSQL **18 major family** is the sole canonical persistence/material-history authority. PostgreSQL **18.4** remains exact historical Physical/CP2/CP3 evidence; PostgreSQL **18.6** is the current repository-controlled maintenance patch and has a direct remote technical-foundation regression PASS.
+
+CP6 now converts the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database: CP6-03 blueprint, CP6-04 materialization, CP6-05 direct database QA/closure. CP6-03 has completed Checkpoint J / `DB-U23`; the next design block is the **Final Actual PostgreSQL Object Inventory**, while `DB-U08`, `DB-U15` and `DB-U21` remain open. Gate 03 is not yet earned. The first product vertical is post-CP6.
+
+Frontend is platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Data paths preserve backend canonical authority and operation-specific offline governance. Frontend materialization is already active on its dedicated bounded branch.
+
+## 4. Frontend Foundation accepted design
+
+Passo 1 fixes the TypeScript/React/Vite/Expo/pnpm/Turbo/PowerSync/Query/Form/Zod/Orval/UI/test/release baseline.
+
+Passo 2 fixes:
+
+- inherited repository root ownership;
+- feature-first Web/Mobile architecture;
+- public-API-only and acyclic dependency direction;
+- real-consumer shared-package policy;
+- framework-free shared cores by default;
+- Data Authority Matrix;
+- feature data firewall;
+- mobile local/offline capability with backend-governed canonical effects;
+- Web online-first with PowerSync Web + browser PWA/SW dormant;
+- identity-scoped local data;
+- session adapters without invented backend protocol;
+- design-token/UI/i18n/time/config boundaries;
+- LOCAL/DEV/UAT/PROD vocabulary;
+- versioned Web runtime public config;
+- GitHub Actions CI/CD authority;
+- WSL-backed single-checkout developer posture with native bridge direct validation.
+
+Passo 3 clean review found and repaired root-topology inheritance, feature-cycle enforcement and stale CURRENT documentation/governance. Blocking defects after repair: **0**.
+
+## 5. Remaining bounded deferrals
+
+- exact backend AuthN/AuthZ application protocol where not already fixed by security/persistence authority;
+- concrete product API routes/versioning;
+- concrete product feature inventory/folder contents beyond materialized workstreams;
+- PowerSync Web activation;
+- browser PWA/service-worker activation;
+- backend cloud compute/IaC;
+- remote infrastructure materialization timing;
+- platform release activation schedule;
+- dormant specialist activation based on real need.
+
+These deferrals do not authorize CP6 to omit database structures already determinable from closed Domain/Logical/Physical/CP6 authority.
+
+## 6. Architecture reopen discipline
+
+Closed Domain/Logical/Physical/Engineering/Frontend Foundation and CP6-02 PostgreSQL-doctrine decisions are not casually reselected.
+
+Implementation evidence first reopens the affected technology/adapter/boundary rather than the entire architecture unless a wider contradiction is proven.
+
+## 7. Next architecture work
 
 ```text
-apps/backend
-apps/web
-apps/mobile
+BACKEND
+CP6-03 ACTIVE / WHOLE DANTE DATABASE BLUEPRINT
+→ Checkpoint J / DB-U23 CLOSED
+→ consume Database Reference Parts 1–8 together
+→ FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+→ keep DB-U08 / DB-U15 / DB-U21 open until inventory freeze
+→ close naming/index/ACL + DAG/mapping/Dictionary/direct-proof plan
+→ mandatory SECOND FULL TOMBSTONE AUDIT FROM ZERO
+→ Gate 03 only after clean audit
+→ CP6-04 real database materialization only after separate explicit authorization
+→ CP6-05 direct database QA / CP6 closure
+
+FRONTEND
+continue feature/frontend-materialization independently under its own workstream
 ```
 
-and supporting ownership under `packages/`, `infra/`, `tooling/`, `tests/system/`, `docs/`, `prototypes/`, `.github/`.
-
-Backend is a capability-first modular monolith. PostgreSQL 18.4 remains the sole canonical persistence/material-history authority.
-
-Web and Mobile are platform-specific clients with selective semantic sharing. The frontend cannot replace backend canonical effect, AuthZ, conflict-resolution or material-history authority.
-
-## 4. Frontend architecture — accepted and materially proven
-
-Structural rules:
-
-- feature-first Web/Mobile;
-- route/navigation files are thin adapters;
-- cross-boundary use through public APIs;
-- dependency cycles forbidden;
-- Web and Mobile do not import each other's private/platform implementation;
-- app-local UI/platform ownership;
-- shared packages only for genuine multi-consumer semantics;
-- shared cores framework/platform-free by default;
-- production never imports prototypes;
-- architecture rules become executable checks instead of documentation-only wishes.
-
-The current materialized graph directly passes:
-
-```text
-36 modules
-45 dependencies
-0 architecture violations
-```
-
-Initial genuine shared packages are:
-
-```text
-@dante/design-tokens
-@dante/i18n
-@dante/time
-```
-
-Do not create `@dante/api-client` until real FastAPI OpenAPI exists; do not create shared feature packages before real Web+Mobile reuse exists.
-
-## 5. Data authority
-
-```text
-canonical accepted state/effect   backend + PostgreSQL
-synced local projection           PowerSync/SQLite when activated
-offline pending mutation          local staging only
-offline acceptance                backend governance/conflict checks
-remote request state              TanStack Query + typed API when activated
-form draft                        TanStack Form when activated
-component transient               React
-cross-tree transient              Zustand only when justified
-```
-
-Mobile selected offline/sync infrastructure is not active merely because it is selected. Web remains online-first until a product requirement justifies browser-local sync/offline activation.
-
-## 6. Materialization qualification
-
-The Frontend Foundation remains the design authority. Later direct evidence qualifies implementation-specific/version-specific details.
-
-Current qualified implementation baseline:
-
-```text
-Node                      24.19.0
-pnpm                      11.22.0
-TypeScript                6.0.3
-Web React / React DOM     19.2.8 / 19.2.8
-Vite                      8.2.1
-Expo SDK                  57.x / clean resolve 57.0.15
-React Native              0.86.2
-Mobile React              19.2.3
-Gesture Handler           2.32.0
-temporal-polyfill         1.0.4
-Web E2E directory         apps/web/e2e/
-```
-
-Older design-time wording such as Gesture Handler “3 line” or `@js-temporal/polyfill` does not override the later directly validated implementation. This is a bounded qualification, not a wholesale architecture reselection.
-
-## 7. Direct evidence boundary
-
-Directly proven:
-
-```text
-BACKEND SCAFFOLD                  PASS at CP1-CP5 stated scopes
-FRONTEND MATERIALIZATION         PASS at FM-00..FM-07 stated scopes
-WEB PRODUCTION BUILD             PASS
-WEB CHROMIUM E2E                 PASS
-ANDROID HERMES BUNDLE            PASS
-ANDROID EMULATOR RUNTIME         PASS
-FRONTEND HOSTED CI               PASS
-FRONTEND GATE CALIBRATION        PASS green/red/recovery
-PR #28 PROTECTED-MAIN INTEGRATION PASS
-```
-
-PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` passed the applicable hosted checks before merge. Protected-main merge `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` has exactly the prior-main and final-PR-head parents, and the merged main tree has zero file delta from that PR head.
-
-Push-main CI for the merge SHA remains **DIRECT READBACK UNAVAILABLE** through the current connector because its commit-workflow lookup exposes PR-associated runs only.
-
-Not yet proven/activated:
-
-```text
-CONCRETE BUSINESS SCHEMA        NOT STARTED
-POWERSYNC PRODUCT FLOW          NOT RUN
-ORVAL PRODUCT API CLIENT        NOT MATERIALIZED
-TANSTACK QUERY/FORM PRODUCT USE NOT MATERIALIZED
-IOS DIRECT RELEASE VALIDATION   NOT RUN
-CODEQL                          NOT ACTIVE
-PRODUCTION DEPLOYMENT           NOT STARTED
-```
-
-## 8. Remaining bounded deferrals
-
-- exact backend AuthN/AuthZ protocol;
-- concrete API routes/versioning;
-- first product feature inventory;
-- PowerSync Web / browser PWA activation;
-- remote backend compute/IaC;
-- release/provider infrastructure;
-- specialist scale infrastructure.
-
-Activation triggers are recorded in `../workstreams/frontend-materialization-integration.md`.
-
-## 9. Architecture reopen discipline
-
-Closed Domain/Logical/Physical/Engineering/Frontend Foundation/materialization/integration decisions are not casually reselected.
-
-A material validation failure first reopens the affected technology/adapter/boundary. A wider architecture reopening requires concrete evidence of a wider contradiction.
-
-## 10. Next architecture/engineering boundaries
-
-```text
-REPOSITORY SECURITY NEXT CANDIDATE
-CodeQL default setup evaluation under a fresh explicit gate
-
-BACKEND NEXT
-Concrete Logical -> PostgreSQL in a fresh bounded workstream
-
-PRODUCT NEXT
-first real vertical slice
--> activate only boundaries actually consumed
-```
-
-The durable future-activation register remains in `../workstreams/frontend-materialization-integration.md`.
+Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.

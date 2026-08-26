@@ -1,76 +1,112 @@
 # Physical Model
 
 - Status: **CLOSED AT TARGET-ARCHITECTURE LEVEL — SELECTED / ACCEPTED / INTEGRATED INTO MAIN VIA PR #15**
-- Current product/app name: **DANTE** (`LifeOS` is the previous working/project name retained in historical evidence and technical identifiers)
+- Product: **DANTE** (`LifeOS` remains historical working-name evidence where present)
 - Former workstream branch: `feature/physical-model` — **MERGED / AUTO-DELETED**
 - Physical integration commit: `e6f191bad947388a44defe2c15f4939345084f58` via PR #15
-- Main baseline during workstream: `3de84bb49f9cef30e88e9bde4961ed84335daa79`
-- PM-00: **QA PASS**
-- PM-01: **PASS-CONDITIONAL**
-- PM-02: **COMPLETE**
-- PM-03: **STATIC COMPLETE / 0 REJECTS**
-- PM-04A: **COMPLETE / 0 EXECUTION-WORTHY GAPS**
-- PM-04B: **NOT ADMITTED**
-- PM-05: **COMPLETE**
-- PM-06: **EVIDENCE QUALIFICATION COMPLETE / DIRECT PERFORMANCE NOT RUN**
-- PM-07: **EVIDENCE QUALIFICATION COMPLETE / DIRECT DESTRUCTIVE RUNS NOT RUN**
-- PM-08: **SECONDARY/SPECIALIST QUALIFICATION COMPLETE**
-- PM-09: **EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE**
-- PM-10: **FINAL STACK RECOMMENDATION COMPLETE**
-- PM-11: **EXPLICIT TARGET STACK SELECTION COMPLETE**
-- PM-12: **ACCEPTED PHYSICAL MODEL COMPLETE**
-- PM-13: **CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS**
-- PM-14: **BRANCH / WORKSTREAM CLOSURE COMPLETE**
-- Protected-main integration after PM-14: **PR #15 COMPLETE**
-- Selected canonical primary: **PostgreSQL 18.4**
-- Selected target companion stack: **ESTABLISHED**
-- Direct implementation execution: **NOT STARTED / DIRECT HG PASS 0 / VERIFIED-RUN SCORE NOT AVAILABLE**
-- Backend Foundation: **NOT STARTED / DEFERRED**
-- Development Profile v0: **NOT STARTED / SEPARATE NEXT OPERATIONAL SCOPE**
-- Restate initial DEV posture: **DORMANT / NOT ACTIVE until first real Class-B need**
-- pgBackRest + AWS S3 initial DEV posture: **DORMANT / NOT ACTIVE until recovery/production boundary or real recovery rehearsal**
+- Physical phase-time PostgreSQL patch: **18.4 / HISTORICAL EXACT SELECTION EVIDENCE**
+- PostgreSQL architecture family: **18 / SOLE CANONICAL PERSISTENCE + MATERIAL-HISTORY AUTHORITY**
+- Current downstream PostgreSQL patch: **18.6 / CP6 DIRECT REMOTE FOUNDATION REGRESSION PASS**
+- Current backend progression: **CP1–CP5 CLOSED; CP6-01 CLOSED / GATE 01 PASS; CP6-02 CLOSED / GATE 02 PASS; CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED / FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT**
+- Physical semantic benchmark/direct HG corpus: **DIRECT HG PASS 0 unless an exact qualifying scenario was executed elsewhere**
 
-## Purpose
+## 1. Purpose and historical boundary
 
-This directory contains the evidence, selection and accepted target Physical architecture that translates the CLOSED DANTE Domain + Logical Model into bounded implementation mechanisms without weakening semantic ownership.
+This directory preserves the evidence, selection and accepted Physical architecture that translates the closed DANTE Domain + Logical model into implementation mechanisms.
+
+The Physical Model itself is closed. CP6 consumes it; CP6 does not redesign it merely because concrete PostgreSQL schema work has begun.
+
+PM-00..PM-14 preserve their phase-time facts exactly. Later backend implementation does not rewrite historical statements such as:
 
 ```text
-DOMAIN + LOGICAL
-fixed semantic authority
-
-PHYSICAL
-research
-→ candidate-native mapping
-→ semantic preflight
-→ evidence sufficiency
-→ correctness qualification
-→ finalist qualification
-→ specialist lanes
-→ scoring/sensitivity
-→ final stack audit
-→ recommendation
-→ explicit selection
-→ Accepted Physical Model
-→ clean-room QA
-→ branch/workstream closure
-→ protected-main lifecycle integration via PR #15
+PostgreSQL 18.4 selected
+DATABASE DEPLOYMENT NOT STARTED
+DIRECT HG PASS 0
 ```
 
-## Current authority order
+when those statements accurately described the Physical checkpoint at the time.
 
-For current target architecture read:
+For **current downstream implementation status**, use:
 
-1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack;
+```text
+../PROJECT-STATUS.md
+../ROADMAP.md
+../workstreams/logical-postgresql.md
+```
+
+## 2. PostgreSQL version truth
+
+```text
+ARCHITECTURE FAMILY
+PostgreSQL 18
+sole canonical persistence / material-history authority
+
+PHYSICAL PHASE-TIME EXACT PATCH
+PostgreSQL 18.4
+historical selection evidence
+
+CP2 / CP3 ORIGINAL DIRECT EVIDENCE
+PostgreSQL 18.4
+historical exact direct PASS
+
+CURRENT CP6 TECHNICAL PATCH
+PostgreSQL 18.6
+configuration refresh APPLIED
+direct remote foundation regression PASS
+Backend CI run 32568664940
+HEAD ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+```
+
+A compatible maintenance patch inside PostgreSQL 18 is lifecycle maintenance and does not reopen the accepted Physical architecture. A future PostgreSQL major-version change is a separate review boundary.
+
+## 3. Historical Physical checkpoint results
+
+```text
+PM-00   QA PASS
+PM-01   PASS-CONDITIONAL
+PM-02   COMPLETE
+PM-03   STATIC COMPLETE / 0 REJECTS
+PM-04A  COMPLETE / 0 EXECUTION-WORTHY GAPS
+PM-04B  NOT ADMITTED
+PM-05   COMPLETE
+PM-06   EVIDENCE QUALIFICATION COMPLETE / DIRECT PERFORMANCE NOT RUN
+PM-07   EVIDENCE QUALIFICATION COMPLETE / DIRECT DESTRUCTIVE RUNS NOT RUN
+PM-08   SECONDARY/SPECIALIST QUALIFICATION COMPLETE
+PM-09   EVIDENCE-WEIGHTED SCORING + SENSITIVITY COMPLETE
+PM-10   FINAL STACK RECOMMENDATION COMPLETE
+PM-11   EXPLICIT TARGET STACK SELECTION COMPLETE
+PM-12   ACCEPTED PHYSICAL MODEL COMPLETE
+PM-13   CLEAN-ROOM ARCHITECTURE/DOCUMENTATION QA PASS
+PM-14   BRANCH / WORKSTREAM CLOSURE COMPLETE
+PR #15  PROTECTED-MAIN INTEGRATION COMPLETE
+```
+
+## 4. Current Physical authority order
+
+Read the closed Physical target from:
+
+1. [`pm-11-explicit-selection-v1.md`](pm-11-explicit-selection-v1.md) — explicit selected target stack at phase time;
 2. [`pm-12-accepted-physical-model-v1.md`](pm-12-accepted-physical-model-v1.md) — accepted Physical ownership/topology contract;
-3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA evidence;
-4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — historical branch/workstream closure evidence produced before PR #15;
-5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — mandatory direct implementation-validation carry-forward;
-6. [`result-register-v1.md`](result-register-v1.md) — current result ledger;
-7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — workstream closure/handoff.
+3. [`pm-13-clean-room-qa-v1.md`](pm-13-clean-room-qa-v1.md) — architecture/documentation clean-room QA;
+4. [`pm-14-closure-v1.md`](pm-14-closure-v1.md) — Physical workstream closure evidence;
+5. [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md) — direct implementation-validation carry-forward;
+6. [`result-register-v1.md`](result-register-v1.md) — Physical result ledger;
+7. [`../workstreams/physical-model.md`](../workstreams/physical-model.md) — Physical durable handoff.
 
-PM-01..PM-10 remain evidence/rationale history and must not override later PM-11/12 current selected truth. PM-14 remains truthful historical closure evidence for the state before protected-main integration.
+Current CP6 consumes, additionally:
 
-## Non-negotiable barriers
+```text
+../development/backend-cp6-01-concrete-persistence-coverage.md
+../development/backend-cp6-01-concrete-persistence-coverage-part-2.md
+../development/backend-cp6-02-postgresql-persistence-constitution.md
+../workstreams/logical-postgresql.md
+../database/README.md
+../database/dante-postgresql-database.md + Parts 2–8
+```
+
+The active Database Architecture & Reference must be consumed as one multi-part authority. Checkpoint J / `DB-U23` is closed; the Final Actual PostgreSQL Object Inventory is the next CP6-03 design block.
+
+## 5. Non-negotiable barriers
 
 ```text
 SEMANTIC OWNER != IMPLEMENTATION MECHANISM
@@ -83,20 +119,24 @@ RUNTIME != DOMAIN HISTORY
 MISSING != FALSE
 EVIDENCE-QUALIFIED != EXECUTED PASS
 EVIDENCE-WEIGHTED SCORE != VERIFIED-RUN SCORE
-PUBLIC BENCHMARK != DANTE BENCHMARK
-FINALIST != PREFERRED
-PREFERRED != SELECTED
 SELECTED != DEPLOYED
 SELECTED != DIRECT PASS
+POSTGRESQL PATCH REFRESH != PHYSICAL REOPEN
+CP3 TECHNICAL QA != BUSINESS-SEMANTIC HG PASS
+DATABASE MATERIALIZATION != FIRST PRODUCT VERTICAL APPLICATION IMPLEMENTATION
 ```
 
 No universal Entity/Thing/EAV/generic-edge canonical shortcut is accepted.
 
-## Accepted target stack
+## 6. Accepted target stack
+
+The following preserves the accepted Physical target. Exact phase-time versions remain selection evidence; compatible downstream patch maintenance is separately lifecycle-managed.
 
 ```text
 CANONICAL PRIMARY
-PostgreSQL 18.4
+PostgreSQL 18 architecture family
+Physical phase-time exact patch 18.4
+current CP6 technical patch 18.6
 
 POSTGRESQL CAPABILITIES
 PostGIS 3.6.4
@@ -108,7 +148,7 @@ pg_stat_statements
 PgBouncer 1.25.2
 
 OFFLINE / SYNC
-PowerSync Service 1.25.0 Open Edition
+PowerSync Open Edition target
 encrypted SQLite
 PostgreSQL-backed PowerSync bucket storage
 explicit client-safe sync projections
@@ -118,34 +158,29 @@ PostgreSQL transactional outbox + bounded worker
 
 DURABLE CLASS-B
 Restate runtime
-Restate Python SDK 1.0.3
-Restate Server 1.7.2 self-hosted/reproducible subject
-Restate Cloud EU allowed managed deployment
-GLOBAL RESTATE DEPLOYMENT DEFAULT NONE
+initial DEV posture DORMANT / NOT ACTIVE
 
 OBJECT BYTES
 Cloudflare R2 Standard
-EU jurisdiction
 private
 
 RECOVERY TARGET
-pgBackRest 2.59.0
+pgBackRest
 AWS S3 Standard eu-south-1
 Versioning
 Object Lock GOVERNANCE / finite policy-bound retention
-separate DB/object backup repositories
 
 SOLVER
-OR-Tools 9.15 CP-SAT
+OR-Tools CP-SAT
 
 OBSERVABILITY
 OpenTelemetry
-Grafana Alloy 1.18.0
+Grafana Alloy
 Grafana Cloud EU
 pg_stat_statements
 ```
 
-## Canonical ownership
+## 7. Canonical ownership
 
 ```text
 PostgreSQL
@@ -178,195 +213,179 @@ OTel / Grafana
 
 Canonical persistence authorities: **1 — PostgreSQL**.
 
-## Offline semantics
+## 8. Accepted PostgreSQL mapping thesis
+
+The Physical selection accepted:
 
 ```text
-PostgreSQL canonical
-→ approved PowerSync projection
-→ encrypted SQLite
-→ offline mutation
-→ DANTE backend expected-state + governance + AuthZ revalidation
-→ PostgreSQL canonical commit if valid
+owner-specific canonical tables/families
++
+owner-specific material-state/history tables/families
++
+specific relation tables/families
++
+bounded technical address/control structures only where genuine heterogeneous addressing requires them
++
+separate provider / projection / technical concerns
 ```
 
-Offline is operation-specific. Arrival order does not define truth. Universal consequential last-write-wins is rejected. Visibility/Consent/delete/redaction must propagate to affected local/projection copies.
-
-## Initial DEV activation posture already fixed
-
-The target stack includes components that are intentionally **selected but dormant in initial DEV**. This posture is current operational truth and is consumed by Development Profile v0 rather than reopened there.
+Explicitly rejected:
 
 ```text
-RESTATE RUNTIME
-TARGET = SELECTED
-INITIAL DEV = DORMANT / NOT ACTIVE
-ACTIVATION TRIGGER = first real Class-B durable-workflow need
-DEPLOYMENT MODE = decide only when activation is triggered
-
-pgBackRest + AWS S3 eu-south-1
-TARGET = SELECTED PRODUCTION/OFF-SITE RECOVERY
-INITIAL DEV = DORMANT / NOT ACTIVE
-ACTIVATION TRIGGER = recovery/production boundary
-                     OR real recovery-rehearsal requirement
+universal Entity / Thing table
+universal Relationship table
+generic canonical EAV/property bag
+universal event-log ontology
+universal Fact/Version semantic payload root
+JSONB required-semantic escape hatch
+PostgreSQL inheritance as ontology
 ```
 
-`SELECTED != DEPLOYED` is therefore directly applicable here.
-
-## Restate deployment semantics
-
-Restate is selected as the Class-B durable-execution technology.
+## 9. Reference / state mapping carried into CP6
 
 ```text
-SELF-HOSTED
-FIRST-CLASS DEPLOYMENT OPTION
+homogeneous NativeRef
+→ direct FK
 
-CLOUD EU
-ALLOWED MANAGED DEPLOYMENT OPTION
-
-GLOBAL DEFAULT
-NONE
+genuinely heterogeneous NativeRef
+→ bounded native-address anchor
 ```
 
-Because Restate is dormant in initial DEV, choosing self-hosted vs Cloud EU is **not a current Development Profile v0 decision**. That decision opens only when the first real Class-B activation trigger exists. For the current Python path, do not assume the client-side journal encryption currently documented only for TypeScript; journal payload minimization remains mandatory.
-
-## Object / recovery semantics
-
-`ContentArtifact` identity, metadata, provenance, Visibility, retention, hashes and locator remain PostgreSQL-owned. R2 stores raw bytes only.
-
-Production recovery target:
+Material state:
 
 ```text
-PostgreSQL -> pgBackRest -> S3
-R2 raw bytes -> separate S3 backup repository
+stable semantic owner
++
+bounded material-state address/control
++
+owner-specific material-state row
++
+explicit current accepted-state binding where required
++
+retained owner-specific history
++
+typed correction/replacement/reconciliation lineage
 ```
 
-This recovery target is selected but **not activated in initial DEV**. Activation occurs at the recovery/production boundary or earlier only when an actual recovery-rehearsal requirement makes it necessary.
+`MaterialStateRef` remains distinct from `xmin/xid`, timestamps, row hashes, ETags and provider revisions.
 
-Recovery copies are noncanonical. Restore must preserve deletion/redaction anti-resurrection semantics. Object Lock Compliance is not the default.
+Simple binary relations use specific association tables/families. Qualified/material/n-ary relations preserve their actual contextual semantics rather than collapsing into generic edges.
 
-## Solver semantics
+## 10. Offline / specialist activation posture
+
+Selected does not mean active.
 
 ```text
-OPTIMAL / FEASIBLE / INFEASIBLE / UNKNOWN
-= technical solver status
-!= accepted DANTE Decision
+PowerSync / logical replication
+→ activate on real offline/sync implementation
+
+Restate
+→ activate on first real Class-B durable workflow
+
+pgBackRest + S3
+→ activate at recovery/production boundary or real rehearsal
+
+PgBouncer
+→ activate when connection-pressure value exists
 ```
 
-`UNKNOWN != INFEASIBLE`.
+PostgreSQL transactional outbox is selected for bounded Class-A work but materializes only on a real Class-A requirement.
 
-## Technology exclusions
+A PostgreSQL-native database structure required by the concrete DANTE schema may be implemented in CP6 without automatically activating its surrounding product/runtime capability.
 
-The accepted target does not include:
+## 11. Current CP6 downstream boundary
+
+The current backend workstream has corrected an earlier process misunderstanding.
+
+CP6 is allowed — and expected — to turn the closed model into the concrete DANTE database before the first product vertical.
 
 ```text
-TypeDB / XTDB / SurrealDB as primary
-Neo4j
-Qdrant
-OpenSearch
-TimescaleDB
-Redis / Valkey
-Kafka / RabbitMQ / NATS
-Debezium
-dedicated event store / universal event sourcing
-Temporal
-DBOS
-Celery + broker
-Zero
-Electric as full mutation/sync engine
-CRDT/local-first canonical authority
-MongoDB for PowerSync
-large bytea standard object store
-public R2
-separate vector / graph / search servers
-data lake / Spark / Hudi
-pg_cron as workflow engine
-Object Lock Compliance as default
+CP6-03
+WHOLE DANTE DATABASE BLUEPRINT
+CURRENT: CHECKPOINT J / DB-U23 CLOSED
+NEXT: FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
+DB-U08 / DB-U15 / DB-U21 OPEN
+SECOND FULL TOMBSTONE AUDIT REQUIRED BEFORE GATE 03
+        ↓
+GATE 03
+NOT YET EARNED
+        ↓
+CP6-04
+WHOLE DANTE DATABASE MATERIALIZATION
+        ↓
+CP6-05
+WHOLE DATABASE DIRECT QA + CP6 CLOSURE
+        ↓
+POST-CP6
+FIRST PRODUCT VERTICAL APPLICATION PHASE
 ```
 
-Reintroduction requires an explicit later architecture reopen based on material new requirements/evidence.
-
-## Direct execution truth
-
-Target selection, PM-13 QA, closure and PR #15 integration did **not** execute the selected stack:
+Therefore CP6 may, after exact gates, create:
 
 ```text
-DATABASE DEPLOYMENT      NOT STARTED
-FIXTURE/HARNESS           NOT STARTED
-DIRECT HG PASS            0
-LOW/BASE/HIGH            NOT RUN
-RESTORE                   NOT RUN
-MIGRATION                 NOT RUN
-FAILURE INJECTION         NOT RUN
-POWERSYNC                  NOT RUN
-RESTATE                    NOT RUN
-OBJECT RECOVERY            NOT RUN
-SOLVER                     NOT RUN
-VERIFIED-RUN SCORE        NOT AVAILABLE
+DANTE business tables
+Alembic business-schema migrations
+SQLAlchemy database mappings
+reference/material-state/history structures
+specific relation tables
+constraints / indexes / privileges
+database-level direct tests
 ```
 
-The full mandatory implementation/release register is [`recommendation/post-selection-validation-register-v1.md`](recommendation/post-selection-validation-register-v1.md).
+CP6 still does not implement first-product-vertical application use cases, application services, product persistence adapters, API or frontend.
 
-## Clean-room result
+This current execution boundary is owned by `../workstreams/logical-postgresql.md` and does not retroactively alter what PM-00..PM-14 or CP6-01/02 actually did at their checkpoints.
 
-PM-13 found:
+## 12. Current direct execution truth
+
+Later backend work directly established the technical PostgreSQL substrate:
 
 ```text
-BLOCKING ARCHITECTURE DEFECTS      0
-CANONICAL-AUTHORITY CONFLICTS      0
-UNAPPROVED TECHNOLOGIES            0
-FALSE DIRECT PASS CLAIMS           0
-LOST PSV OBLIGATIONS               0
-DOMAIN/LOGICAL IMPLICIT REOPENS    0
+BACKEND CP1–CP5                  CLOSED / INTEGRATED / DIRECT QA PASS
+POSTGRESQL 18.4                  ORIGINAL CP2/CP3 HISTORICAL DIRECT PASS
+CURRENT POSTGRESQL 18.6          DIRECT REMOTE QA PASS
+18.6 CI RUN                      32568664940
+18.6 EXECUTED HEAD               ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+POSTGIS 3.6.4                    CURRENT ENVELOPE PASS
+PGVECTOR 0.8.6                   CURRENT ENVELOPE PASS
+SQLALCHEMY / PSYCOPG             MATERIALIZED
+ALEMBIC TECHNICAL BASELINE       MATERIALIZED / DIRECT QA PASS
+DANTE SCHEMA / ROLE MODEL        MATERIALIZED / DIRECT QA PASS
+REAL POSTGRESQL TEST HARNESS     MATERIALIZED / DIRECT QA PASS
+DANTE BUSINESS DATABASE          NOT YET MATERIALIZED
+SEMANTIC HG BLANKET PASS         NO
 ```
 
-Verdict: **QA PASS — architecture/documentation coherence**.
+The PostgreSQL 18.6 run passed Backend Quality, Backend PostgreSQL and Backend CI Gate; 32 fast tests and 18 real-PostgreSQL tests covered the current 50-test corpus across the two mandatory lanes.
 
-This is not a direct runtime/database/recovery PASS.
+PostgreSQL 18.6 release-note impact review found no current post-upgrade action for the materialized technical foundation. Future capability activation must re-evaluate then-applicable maintenance requirements.
 
-## Development Profile v0 boundary
-
-A later separate operational scope decides only the **remaining unresolved** questions, such as:
-
-```text
-which selected components without an already-fixed posture are active immediately
-self-hosted vs managed where an active component actually requires that choice now
-accounts / credentials / environment setup
-initial observability activation
-upgrade / production triggers
-```
-
-It must not reopen the already-fixed initial posture:
-
-```text
-Restate initial DEV = DORMANT until real Class-B need
-Restate deployment mode = deferred until Restate activation
-pgBackRest + AWS S3 initial DEV = DORMANT until recovery/production boundary or real rehearsal need
-```
-
-A component being dormant in DEV does not remove it from the accepted target. A DEV deployment choice does not silently change target architecture.
-
-## Current boundary
+## 13. Current boundary summary
 
 ```text
 PHYSICAL MODEL TARGET
 CLOSED / SELECTED / ACCEPTED
-INTEGRATED INTO MAIN VIA PR #15
-PHYSICAL INTEGRATION COMMIT e6f191bad947388a44defe2c15f4939345084f58
-FORMER BRANCH feature/physical-model MERGED / AUTO-DELETED
+PostgreSQL 18 architecture family
+phase-time exact patch 18.4
 
-PM-13
-QA PASS
+BACKEND FOUNDATION CP1–CP5
+CLOSED / INTEGRATED / DIRECT QA PASS
 
-PM-14
-BRANCH / WORKSTREAM CLOSURE COMPLETE / HISTORICAL PRE-MERGE EVIDENCE
+CURRENT POSTGRESQL TECHNICAL PATCH
+18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
 
-DIRECT IMPLEMENTATION VALIDATION
-NOT STARTED / CARRIED FORWARD
+CP6
+ACTIVE ON feature/logical-postgresql
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED
+FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
+DB-U08 / DB-U15 / DB-U21 OPEN
+GATE 03 NOT YET EARNED
 
-NEXT
-Development Profile v0
-Restate initial DEV posture FIXED = DORMANT UNTIL REAL CLASS-B NEED
-pgBackRest + AWS S3 initial DEV posture FIXED = DORMANT UNTIL RECOVERY/PRODUCTION BOUNDARY
+DANTE BUSINESS DATABASE
+NOT YET MATERIALIZED
 
-BACKEND
-NOT STARTED / DEFERRED
+FIRST PRODUCT VERTICAL APPLICATION
+POST-CP6 / NOT STARTED
 ```
