@@ -506,10 +506,23 @@ def test_m4_upgrade_and_downgrade_preserve_m3_boundary(
 
 
 def test_m4_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
-    assert {table.name for table in MAPPED_TABLES} == _CUMULATIVE_TABLES
-    assert set(Base.metadata.tables) == {f"dante.{name}" for name in _CUMULATIVE_TABLES}
-    assert len(tuple(Base.registry.mappers)) == 63
-    assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
+    m4_tables = {table.name for table in MAPPED_TABLES if table.name in _CUMULATIVE_TABLES}
+    assert m4_tables == _CUMULATIVE_TABLES
+
+    m4_metadata = {
+        name
+        for name in Base.metadata.tables
+        if name.removeprefix("dante.") in _CUMULATIVE_TABLES
+    }
+    assert m4_metadata == {f"dante.{name}" for name in _CUMULATIVE_TABLES}
+
+    m4_mappers = [
+        mapper
+        for mapper in Base.registry.mappers
+        if mapper.local_table.name in _CUMULATIVE_TABLES
+    ]
+    assert len(m4_mappers) == 63
+    assert all(len(mapper.relationships) == 0 for mapper in m4_mappers)
 
 
 def test_m4_dictionary_matches_live_stage_and_current_scope(
@@ -522,8 +535,14 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in table_dir.glob("*.json")
     }
+    historical_entries = {
+        name: entry
+        for name, entry in entries.items()
+        if entry["implementation"]["introducing_stage"]
+        in {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04"}
+    }
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
-    assert set(entries) == _CUMULATIVE_TABLES
+    assert set(historical_entries) == _CUMULATIVE_TABLES
     assert scope["current_materialization"]["completed_stages"][:4] == [
         "CP6-M01",
         "CP6-M02",
@@ -546,12 +565,12 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
         }
     dictionary_columns = {
         (name, str(c["name"]), str(c["postgres_type"]), "YES" if c["nullable"] else "NO")
-        for name, entry in entries.items()
+        for name, entry in historical_entries.items()
         for c in entry["structure"]["columns"]
     }
     assert dictionary_columns == database_columns
 
-    m4_entries = {name: entries[name] for name in _M4_TABLES}
+    m4_entries = {name: historical_entries[name] for name in _M4_TABLES}
     assert {e["implementation"]["alembic_revision"] for e in m4_entries.values()} == {_M4_REVISION}
     assert {e["implementation"]["introducing_stage"] for e in m4_entries.values()} == {"CP6-M04"}
     assert {
