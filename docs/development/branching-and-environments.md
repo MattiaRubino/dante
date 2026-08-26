@@ -1,14 +1,7 @@
-> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
-> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
-> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
-> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
-
-> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
-> PR #28 is **MERGED** into protected `main` at `f1aacb0724088e0b4b086008a5219c2fba5ce0cf`. `feature/frontend-materialization` remains CLOSED/PASS historical evidence; `chore/frontend-materialization-integration` is no longer an active/pending integration boundary. Any later section below that still says PR #28 READY or awaiting merge is preserved pre-merge history and is superseded on current branch status only. Backend `feature/logical-postgresql` has incorporated current `main` and remains the active CP6 branch.  
-
 # Branching and Environments
 
-- Status: **CURRENT**
+- **Status:** CURRENT
+- **Last reconciled:** 2026-08-26
 
 ## 1. Core rule
 
@@ -28,11 +21,13 @@ Normal flow:
 
 ```text
 bounded branch
--> PR + applicable validation
--> protected main
+→ PR + applicable validation
+→ protected main
 ```
 
 Short-lived prefixes may include `feature/`, `fix/`, `chore/`, `docs/`, `prototype/`. Prefix never authorizes work outside the explicit gate.
+
+Do not create a permanent generic `feature/backend` or `feature/frontend` branch as a parallel integration line. Product work uses bounded branches named for the real workstream.
 
 ## 3. Exact write gate
 
@@ -63,25 +58,54 @@ EXPLICITLY OUT OF SCOPE
 
 Immediately before the first branch-visible write, verify branch HEAD still equals PRE-SCOPE. If it moved: stop, inspect, re-gate.
 
+A new chat/session is not a reason to create another branch or worktree. Continue the existing bounded workstream unless its lifecycle has actually closed or the user explicitly changes scope.
+
 ## 4. Protected-main integration
+
+Effective repository rules are owned by the live GitHub ruleset `lifeos-main-safety`.
+
+Current enforcement includes:
+
+```text
+PR required
+allowed merge method: merge commit only
+strict required-status-check policy
+branch must be current with main
+review threads must be resolved
+deletion protection
+non-fast-forward protection
+bypass actors: none
+```
+
+Current required checks:
+
+```text
+Backend CI Gate
+Dependency Review
+Frontend CI Gate
+```
 
 Before merge:
 
 - inspect exact changed paths;
-- inspect applicable real checks/statuses;
-- require branch current with `main` where the ruleset requires it;
+- inspect the current live ruleset when integration behavior matters;
+- inspect applicable real checks/statuses on the exact current PR/head;
+- require branch current with `main` when strict policy requires it;
 - verify no unexpected branch movement;
 - verify accepted-risk/waiver state is still valid;
 - verify review threads are resolved;
-- preserve the repository's accepted merge/history policy.
+- preserve merge-commit history policy;
+- do not bypass with squash, rebase, force-push or synthetic status tricks.
 
 After merge:
 
 - reread/compare `main`;
 - verify exact integration result and parentage;
-- verify push-main CI where the available interface permits direct readback;
-- record readback limitations instead of inventing PASS;
-- verify branch lifecycle/autodelete only when intentionally part of closure.
+- verify PR `merged=true`;
+- verify the resulting protected-main tree/commit relation;
+- inspect push-main CI where it actually exists and can be read;
+- record unavailable/nonexistent evidence as such rather than inventing PASS;
+- verify branch lifecycle/autodelete only when intentionally relevant.
 
 ## 5. Environment vocabulary
 
@@ -94,7 +118,7 @@ UAT
 PROD
 ```
 
-`TEST` may exist as automated execution context but is not a promotion environment. Preview environments may exist when useful.
+`TEST` may exist as an automated execution context but is not a promotion environment. Preview environments may exist when useful.
 
 Frontend/mobile provider profile/channel names map to these DANTE contexts rather than creating a second taxonomy.
 
@@ -107,15 +131,18 @@ UAT     real release-candidate acceptance
 PROD    accepted production release
 ```
 
-Remote resources are not created for appearance.
+Remote resources are not created merely for appearance.
 
 ## 7. LOCAL posture
 
-Backend and frontend use one authoritative WSL-backed source tree/worktree posture on Windows systems. Windows may host JetBrains, browser and Android emulator.
+Backend and frontend use authoritative WSL-backed worktrees on Windows systems. Windows may host JetBrains, browser and Android emulator.
+
+Current user worktree pattern includes separate worktrees for genuinely concurrent branches, for example backend/general repository work and an independent frontend Access branch. Multiple worktrees are valid when they represent different real branches; duplicate clones of the same repository state are not the default strategy.
 
 ```text
 NO divergent Windows + WSL source clones
 NO cross-OS shared node_modules
+NO accidental branch switch in the wrong worktree
 ```
 
 Backend process normally runs directly in WSL for reload/debug; Docker Compose owns LOCAL stateful dependencies. Frontend Metro/Vite/pnpm/Turbo run from the authoritative Linux/WSL tree; Windows browser/emulator are native bridge consumers.
@@ -130,7 +157,7 @@ DEV identity  != UAT identity  != PROD identity
 DEV secrets   != UAT secrets   != PROD secrets
 ```
 
-Raw PROD -> DEV is forbidden by default. UAT uses exact release candidates and representative synthetic/sanitized data. PROD uses isolated real state/identity/secrets and accepted recovery/security/observability posture.
+Raw PROD → DEV is forbidden by default. UAT uses exact release candidates and representative synthetic/sanitized data. PROD uses isolated real state/identity/secrets and accepted recovery/security/observability posture.
 
 ## 9. Artifact promotion
 
@@ -138,11 +165,11 @@ Server default:
 
 ```text
 accepted main
--> build once
--> immutable artifact/digest
--> DEV
--> exact UAT candidate
--> exact PROD candidate
+→ build once
+→ immutable artifact/digest
+→ DEV
+→ exact UAT candidate
+→ exact PROD candidate
 ```
 
 Web supports immutable SPA promotion with environment-specific public runtime config when that boundary activates. Mobile follows Expo/EAS native-binary/update compatibility semantics rather than pretending native binaries and OTA JS are the same artifact class.
@@ -151,19 +178,18 @@ Web supports immutable SPA promotion with environment-specific public runtime co
 
 A documented future job name is not a required check.
 
-Promotion protocol:
+Promotion protocol for a new required context:
 
 ```text
 real workflow/context
 + real PR green
-+ controlled deliberate red proving intended failure semantics
++ controlled deliberate red proving intended failure semantics when appropriate
 + recovery green
--> separate explicit ruleset mutation
+→ separate explicit ruleset mutation
+→ live ruleset readback
 ```
 
-For `Frontend CI Gate`, that protocol is complete: real green, controlled deliberate red, mandatory failure propagation, exact restore and recovery green were directly observed. The repository owner confirmed applying the promotion to protected `main`; direct ruleset API readback is unavailable through the current connector, so the administrative setting remains **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE**.
-
-The canonical repository ruleset definition contains:
+The current live ruleset directly confirms:
 
 ```text
 Backend CI Gate
@@ -171,57 +197,141 @@ Dependency Review
 Frontend CI Gate
 ```
 
-with strict branch-up-to-date enforcement preserved.
+with strict branch-up-to-date enforcement. This live remote readback supersedes older documentation that described `Frontend CI Gate` as merely owner-confirmed / connector-unverifiable.
+
+Required-check names must match real emitted contexts exactly; never manufacture a context merely to satisfy a rule.
 
 ## 11. One-developer posture
 
 While one regular maintainer exists:
 
 - PR + automated gates remain real;
-- required approvals remain 0;
+- required approvals remain 0 unless the live ruleset changes;
 - review-thread resolution remains required;
 - do not create fake independent-review ceremony;
 - add CODEOWNERS/required reviewers only when real distributed ownership exists.
 
 ## 12. Current branch/workstream truth
 
-```text
-feature/backend-scaffold
-CLOSED / integrated via PR #24
-historical evidence branch only
+Protected `main` current backend/database baseline includes CP1–CP6, with CP6 integrated via PR #42.
 
-feature/frontend-materialization
-CLOSED / PASS — FM-00..FM-07
-historical evidence source
-
-chore/frontend-materialization-integration
-CLOSED / integrated via PR #28
-final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
-protected-main merge f1aacb0724088e0b4b086008a5219c2fba5ce0cf
-branch observed absent after merge
-manual deletion performed during merge operation: NO
-```
-
-The closed frontend materialization and integration branches are not reused for new product/security/backend work. New work starts from current `main` under a fresh bounded branch and gate.
-
-## 13. Future capability activation
-
-Product/infrastructure capabilities are activated by real boundary, not branch name. The durable trigger register lives in `../workstreams/frontend-materialization-integration.md` and covers first vertical, UI/design system, form, remote API, offline operation, deployment, Mobile release, security maturation, pre-PROD maturity and scale-triggered infrastructure.
-
-## 14. Current next sequence
+Current known active unmerged product branch:
 
 ```text
-REPOSITORY SECURITY NEXT CANDIDATE
-CodeQL default setup evaluation
--> fresh explicit branch/write gate
-
-BACKEND NEXT
-Concrete Logical -> PostgreSQL
--> fresh bounded branch/workstream/gate
-
-PRODUCT NEXT
-first real vertical slice
--> fresh bounded branch/workstream/gate
+feature/access-frontend
+→ Access frontend workstream
+→ AF-01D / AF-02A / AF-02B PASS
+→ Access vertical still OPEN
+→ branch-local workstream record + temporary live handoff
+→ must reconcile with current main before integration
 ```
 
-Frontend PR #28 final head passed its applicable hosted CI before merge. The protected-main merge has the expected parentage and zero file delta from that head. Push-main CI on the merge SHA remains **DIRECT READBACK UNAVAILABLE** through the current connector and is not inferred PASS.
+Current documentation-maintenance branch:
+
+```text
+chore/documentation-knowledge-cleanup
+→ repository documentation current-truth / lifecycle cleanup
+→ draft PR #43 while work is in progress
+```
+
+Closed feature branches are not reusable integration lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
+
+## 13. Worktree discipline
+
+A worktree is tied to one checked-out branch.
+
+Before commands that can mutate source/ref state, verify:
+
+```text
+pwd
+git status -sb
+git branch --show-current
+git rev-parse HEAD
+git worktree list
+```
+
+Do not switch a worktree onto another branch merely because a new chat begins.
+
+If two workstreams must continue concurrently, separate worktrees are appropriate. If one workstream has closed and the worktree is being repurposed, first reconcile/close its branch lifecycle intentionally.
+
+## 14. Documentation lifecycle at branch integration
+
+Temporary live/session/resume handoffs are branch-operational only.
+
+Before merging a branch into `main`:
+
+```text
+temporary handoffs
+→ knowledge coverage
+→ durable current truth updated
+→ important evidence/rationale retained
+→ optional one consolidated branch-history record
+→ temporary handoffs deleted
+```
+
+Protected `main` must not contain `live-handoff`/session-resume files as current navigation.
+
+See `documentation-lifecycle-policy.md`.
+
+## 15. Capability activation
+
+Product/infrastructure capabilities are activated by real boundary, not branch name.
+
+Examples:
+
+```text
+PowerSync
+→ real offline/multi-device requirement
+
+R2
+→ real ContentArtifact byte flow
+
+Restate
+→ first real Class-B durable workflow
+
+pgBackRest
+→ recovery/production boundary
+
+CodeQL or other security controls
+→ explicit repository-security workstream/gate when justified
+```
+
+No branch prefix turns a selected technology into an implemented/directly validated capability.
+
+## 16. Current next boundaries
+
+Backend CP6 is no longer the next branch; it is closed/integrated.
+
+Current practical boundaries are:
+
+```text
+DOCUMENTATION
+complete chore/documentation-knowledge-cleanup
+→ PR #43 only when current docs/links/lifecycle are clean
+
+FRONTEND
+continue existing feature/access-frontend
+→ do not create another Access branch/worktree merely for a new chat
+→ reconcile with current main before final integration
+
+BACKEND
+next post-CP6 product vertical
+→ create only when explicitly scoped
+→ branch from current protected main
+→ consume the existing materialized database
+```
+
+A genuine later DB requirement uses normal forward migration/database-documentation synchronization; it does not reopen `feature/logical-postgresql`.
+
+## 17. Persistent rules
+
+```text
+BRANCH != ENVIRONMENT
+NEW CHAT != NEW BRANCH
+ACTIVE WORKSTREAM != NEW WORKTREE BY DEFAULT
+UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
+CLOSED BRANCH != PERMANENT DEVELOPMENT LINE
+SELECTED TECHNOLOGY != IMPLEMENTED CAPABILITY
+DOCUMENTED CHECK != LIVE REQUIRED CHECK
+TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
+```
