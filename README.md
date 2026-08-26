@@ -45,13 +45,13 @@ Alembic 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 physical indexes / 68 FKs / 120 CHECKs
 
-ACCESS FRONTEND
-ACTIVE / UNMERGED ON feature/access-frontend
-AF-01D PASS / AF-02A PASS / AF-02B PASS
-ACCESS VERTICAL NOT CLOSED
+ACCESS PRE-BACKEND FRONTEND
+CLOSED / ACCEPTED / RELEASE-HARDENED
+AF-01D PASS / AF-02A PASS / AF-02B PASS / AF-03A PASS
 
-FIRST POST-CP6 BACKEND PRODUCT VERTICAL
-NOT STARTED ON A DEDICATED BRANCH
+FULL ACCESS/AUTH PRODUCT VERTICAL
+NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
+NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
 ```
 
 For exact current truth use `docs/PROJECT-STATUS.md`. Do not reconstruct current state from old phase documents, historical workstream continuations or conversation memory.
@@ -137,7 +137,7 @@ Alembic head        20260826_08
 
 tables              68
 views                5
-routines            14
+routines             14
 triggers             75
 physical indexes    95
 foreign keys         68
@@ -230,37 +230,38 @@ Current protected-main frontend docs start at:
 
 - `docs/frontend/README.md`
 
-## Current Access frontend work
+## Access frontend baseline
 
-The active product frontend workstream is:
+The completed pre-backend Access frontend materialization is the accepted Web baseline for the later full-stack Access/Auth vertical.
 
-```text
-feature/access-frontend
-```
-
-Current branch-local accepted checkpoints include:
+Accepted checkpoints:
 
 ```text
-AF-01D  shell completion / professional polish     PASS
-AF-02A  complete pre-backend frontend state graph  PASS
-AF-02B  downstream surface hardening               PASS
+AF-01D  shell completion / professional polish      PASS
+AF-02A  complete pre-backend frontend state graph   PASS
+AF-02B  downstream surface hardening                PASS
+AF-03A  release-hardening viewport matrix           PASS
 ```
 
-Access is **not closed**. The frontend deliberately stops backend-authoritative transitions rather than fabricating account/session/authentication success.
+Current durable Access frontend authority:
 
-Remaining closure pressure includes real backend Auth/account/session/provider/recovery behavior, stable OpenAPI, generated client, frontend/backend integration, isolated full-stack E2E and the applicable release/legal/mobile gates.
+- `docs/frontend/access.md`
+- `apps/web/src/features/access/`
+- `apps/web/e2e/access.spec.ts`
 
-The Access branch is unmerged and must be reconciled with current `main` before integration. Branch-local temporary live/session handoffs may exist while work is active but must be consolidated/removed before merge.
+The frontend deliberately stops backend-authoritative transitions rather than fabricating account/session/authentication success.
 
-## Post-CP6 backend direction
+The whole Access/Auth product vertical is **not closed**. Remaining product work includes real backend Auth/account/session/provider/recovery behavior, stable OpenAPI, generated client integration, full-stack E2E, real authenticated Home handoff and applicable release/legal/mobile gates.
+
+## Post-CP6 product direction
 
 There is no remaining CP6 design/materialization/merge step.
 
-The next backend implementation is a new bounded **post-CP6 product vertical** created from current protected `main` when explicitly started.
-
-The active Access frontend creates a concrete future need for real authentication/account/session backend behavior, but documentation does not itself create or authorize a backend branch.
+The next implementation boundary is a new bounded **full-stack product vertical** created from current protected `main` when explicitly started. For Access/Auth, that branch may modify backend and frontend together where the real contract requires it rather than maintaining permanent backend/frontend branch lines.
 
 A product vertical consumes the existing database and may evolve it only when a genuine new requirement appears. Normal evolution uses forward Alembic migrations and the same-change Database System-of-Record rule; CP6 is not reopened.
+
+Pure later UX polish may use a short-lived UI branch from then-current `main` when it is independent of the active product vertical.
 
 ## Capability-triggered components
 
@@ -376,7 +377,11 @@ Backend/database continuation:
 - `docs/database/dictionary/README.md`
 - `docs/development/backend-cp6-05-whole-database-qa.md`
 
-Current unmerged Access continuation lives only on `feature/access-frontend` and is not protected-main authority until integration.
+Access frontend baseline:
+
+- `docs/frontend/access.md`
+- `apps/web/src/features/access/`
+- `apps/web/e2e/access.spec.ts`
 
 ## Persistent truth rules
 

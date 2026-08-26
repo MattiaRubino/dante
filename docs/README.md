@@ -49,8 +49,8 @@ BACKEND CP6 DATABASE                 CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 CURRENT POSTGRESQL                   18.6
 CURRENT ALEMBIC HEAD                 20260826_08
 CURRENT DATABASE TOPOLOGY            68/5/14/75/95/68/120
-ACCESS FRONTEND                      ACTIVE / UNMERGED ON feature/access-frontend
-FIRST POST-CP6 BACKEND VERTICAL      NOT STARTED ON A DEDICATED BRANCH
+ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
+FULL ACCESS/AUTH PRODUCT VERTICAL    NOT CLOSED / NEXT FULL-STACK VERTICAL NOT STARTED
 ```
 
 For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
@@ -286,6 +286,7 @@ The next backend implementation is a new post-CP6 product vertical started from 
 Current protected-main frontend documentation:
 
 - `frontend/README.md`
+- `frontend/access.md`
 - `frontend/design-tokens.md`
 - `frontend/localization.md`
 - `frontend/terminology.md`
@@ -295,23 +296,31 @@ Current protected-main frontend documentation:
 
 Generic frontend engineering foundation/materialization is closed/integrated.
 
-### Active Access work
+### Access frontend baseline
 
-Current active product frontend branch:
+The completed pre-backend Access frontend materialization is the accepted Web baseline for the next full-stack Access/Auth product vertical.
 
-```text
-feature/access-frontend
-```
-
-Its branch-local record is:
+Accepted checkpoints:
 
 ```text
-docs/workstreams/access-frontend.md
+AF-01D  shell completion / professional polish      PASS
+AF-02A  complete pre-backend frontend state graph   PASS
+AF-02B  downstream surface hardening                PASS
+AF-03A  release-hardening viewport matrix           PASS
 ```
 
-The Access vertical remains unmerged until its own full-stack/release boundaries are satisfied. Branch-local documentation/code is not protected-main authority before reconciliation/integration.
+Current authority:
 
-Temporary Access live handoffs are branch-operational only and must be consolidated/removed before that branch merges.
+- `frontend/access.md`
+- current `../apps/web/src/features/access/` implementation/tests
+
+The whole Access/Auth product vertical is **not closed**. Real backend authentication/session/provider/recovery behavior, stable Auth OpenAPI/client integration, full-stack E2E and the applicable release/legal/mobile gates remain future full-stack work.
+
+Historical branch narrative:
+
+- `archive/branches/2026-08-feature-access-frontend.md` — NON-AUTHORITATIVE
+
+No Access live/session handoff is current authority after branch closure.
 
 ## 13. Workstream records
 
