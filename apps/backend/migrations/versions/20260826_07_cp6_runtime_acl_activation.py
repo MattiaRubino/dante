@@ -159,7 +159,7 @@ def _replace_routine_fragment(
     ).scalar_one()
     if definition.count(old) != 1:
         raise RuntimeError(failure)
-    connection.exec_driver_sql(definition.replace(old, new))
+    connection.exec_driver_sql(definition.replace(old, new).replace("%", "%%"))
 
 
 def _repair_role6_record_dispatch() -> None:
