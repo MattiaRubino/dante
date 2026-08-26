@@ -2,7 +2,7 @@
 
 from sqlalchemy import Table
 
-from . import actual, addressing, identity, recurrence, schedule, session
+from . import actual, addressing, identity, occurrence_generation, recurrence, schedule, session
 
 MAPPED_TABLES: tuple[Table, ...] = (
     identity.PersonRow.__table__,
@@ -68,6 +68,11 @@ MAPPED_TABLES: tuple[Table, ...] = (
     recurrence.EventRecurrenceQuotaStateRow.__table__,
     recurrence.EventRecurrenceCyclicStateRow.__table__,
     recurrence.EventRecurrenceCyclePositionRow.__table__,
+    occurrence_generation.OccurrenceGenerationRow.__table__,
+    occurrence_generation.OccurrenceGenerationCalendarRow.__table__,
+    occurrence_generation.OccurrenceGenerationElapsedRow.__table__,
+    occurrence_generation.OccurrenceGenerationQuotaRow.__table__,
+    occurrence_generation.OccurrenceGenerationCyclicRow.__table__,
 )
 
 __all__ = ["MAPPED_TABLES"]

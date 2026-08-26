@@ -2,75 +2,28 @@
   "$schema": "./schema/scope-v1.schema.json",
   "dictionary_version": 1,
   "status": "materializing",
-  "postgresql": {
-    "major": 18,
-    "schema": "dante"
-  },
+  "postgresql": {"major": 18, "schema": "dante"},
   "expected_baseline": {
-    "standalone_entries": {
-      "tables": 68,
-      "views": 5,
-      "routines": 14,
-      "total": 87
-    },
-    "embedded_objects": {
-      "triggers": 75,
-      "physical_indexes": 95
-    },
-    "constraints": {
-      "foreign_keys": 68,
-      "check_constraints": 120
-    }
+    "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
+    "embedded_objects": {"triggers": 75, "physical_indexes": 95},
+    "constraints": {"foreign_keys": 68, "check_constraints": 120}
   },
   "current_materialization": {
-    "completed_stages": [
-      "CP6-M01",
-      "CP6-M02",
-      "CP6-M03",
-      "CP6-M04",
-      "CP6-M05"
-    ],
-    "standalone_entries": {
-      "tables": 63,
-      "views": 5,
-      "routines": 13,
-      "total": 81
-    },
-    "embedded_objects": {
-      "triggers": 66,
-      "physical_indexes": 87
-    },
-    "constraints": {
-      "foreign_keys": 61,
-      "check_constraints": 109
-    }
+    "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06"],
+    "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
+    "embedded_objects": {"triggers": 75, "physical_indexes": 95},
+    "constraints": {"foreign_keys": 68, "check_constraints": 120}
   },
   "technical_foundation": {
-    "excluded_tables": [
-      "dante.alembic_version"
-    ],
-    "roles": [
-      "dante_owner",
-      "dante_migrator",
-      "dante_runtime"
-    ]
+    "excluded_tables": ["dante.alembic_version"],
+    "roles": ["dante_owner", "dante_migrator", "dante_runtime"]
   },
   "extension_owned": {
-    "postgis": {
-      "version_policy": "foundation dependency; current repository baseline 3.6.4"
-    },
-    "vector": {
-      "version_policy": "foundation dependency; current repository baseline 0.8.6"
-    },
-    "pg_trgm": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    },
-    "unaccent": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    },
-    "pg_stat_statements": {
-      "version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"
-    }
+    "postgis": {"version_policy": "foundation dependency; current repository baseline 3.6.4"},
+    "vector": {"version_policy": "foundation dependency; current repository baseline 0.8.6"},
+    "pg_trgm": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
+    "unaccent": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"},
+    "pg_stat_statements": {"version_policy": "foundation dependency; extension-owned objects excluded from DANTE object entries"}
   },
   "materialization_rules": {
     "object_entries_only_with_real_objects": true,
