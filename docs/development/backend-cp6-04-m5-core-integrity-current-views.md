@@ -3,7 +3,7 @@
 **Stage:** `CP6-M05 / cp6_core_integrity_current_views`  
 **Revision:** `20260825_05`  
 **Down revision:** `20260825_04`  
-**Status:** IMPLEMENTED / FINAL REPOSITORY-CONSISTENCY POSTGRESQL RE-RUN REQUIRED  
+**Status:** CLOSED / DIRECT POSTGRESQL 18.6 PASS  
 
 ## Scope
 
@@ -47,6 +47,8 @@ The migration repairs, without renaming or changing counts:
 
 `downgrade 20260825_05 -> 20260825_04` restores the exact historical M4 CHECK expressions after dropping M5 views, triggers and routines dependency-safely.
 
+SQLAlchemy mappings and the Database Dictionary carry the same final Part-17 expressions.
+
 ## Integrity responsibilities
 
 The M5 trigger layer covers:
@@ -76,19 +78,90 @@ foreign keys         61
 check constraints   109
 ```
 
-The 66 trigger registrations are embedded in the exact 50 target table entries. M5 creates standalone entries only for objects that now physically exist.
+The 66 trigger registrations are embedded in the exact 50 target table entries. M5 creates standalone entries only for objects that physically exist at M5.
 
-## Proof state
+## Closure evidence
 
-A direct PostgreSQL 18.6 run against the implementation candidate at `d2f6543cbd6c632d995e7481d50a895408a69001` completed green before the final Dictionary/mapping reconciliation: **54 passed / 0 failed / coverage 95.63%**. That run covered the migration chain, M1-M5 PostgreSQL tests, M5 routine/view/integrity behavior, downgrade boundary and Alembic drift checks.
+### Intermediate implementation proof
 
-Because this document is committed together with the final repository-consistency reconciliation, **M5 is not declared CLOSED by this record until the post-reconciliation `uv run pytest -m postgres -vv` run is observed green**. The closure update must record the resulting commit SHA and exact observed test result; no synthetic PASS count is permitted.
+A direct PostgreSQL 18.6 run against `d2f6543cbd6c632d995e7481d50a895408a69001`, before the final Dictionary/mapping reconciliation, completed green:
+
+```text
+54 passed
+0 failed
+coverage 95.63%
+```
+
+This was retained as intermediate evidence rather than rewritten as a synthetic first-pass closure.
+
+### Final repository-consistency proof — authoritative M5 closure gate
+
+Final tested implementation/repository-consistency SHA:
+
+```text
+92939004cd2a5437238f2574b47c4f6d3b2ea00a
+feat: complete CP6-04 M5 repository consistency
+```
+
+User-executed command from `~/projects/dante/apps/backend`:
+
+```text
+uv run pytest -m postgres -vv
+```
+
+Observed result:
+
+```text
+collected 92 items
+37 deselected
+55 selected
+55 passed
+0 failed
+80.13s
+coverage 95.63%
+```
+
+The final run explicitly passed:
+
+- all CP6-M01 through CP6-M05 PostgreSQL acceptance tests;
+- `test_m5_dictionary_reconciles_stage_objects_and_part17_repairs`;
+- M5 topology/routine security;
+- ordinary automatically-updatable current views + LOCAL CHECK OPTION;
+- isolated SQLAlchemy Core view metadata;
+- NativeAddress owner binding rejection;
+- IANA timezone rejection with SQLSTATE `22023`;
+- all seven Part-17 / DB-U25 CHECK repairs;
+- no dynamic PL/pgSQL EXECUTE in M5 routines;
+- M5→M4 downgrade boundary;
+- fresh database → single repository head;
+- head → base → head migration round trip;
+- `alembic check` with extensions present;
+- role/privilege hardening;
+- runtime recovery/readiness behavior;
+- transaction/rollback/savepoint behavior.
+
+No PostgreSQL failure remained at closure.
+
+## Closure decision
+
+```text
+CP6-M05: CLOSED
+Revision: 20260825_05
+Direct PostgreSQL 18.6 gate: PASS
+Final selected tests: 55/55 PASS
+Coverage: 95.63%
+Next stage: CP6-M06 occurrence generation
+```
+
+The repository-level M5 implementation gate was reconciled to the actual required surface of **77 paths = 22 CREATE + 55 UPDATE + 0 DELETE**, including the necessary SQLAlchemy Part-17 mapping repairs. The exact PRE-SCOPE→candidate compare contained no unexpected path.
+
+The post-test documentation commits do not change migration, mapping, Dictionary, application, provisioning, or test behavior; they record the observed closure and current cross-chat routing only.
 
 ## Explicitly out of scope
 
 - CP6-M06 occurrence generation materialization;
 - CP6-M07 runtime ACL activation;
-- new tables or indexes;
+- new M5 tables or indexes;
 - final persistent local PostgreSQL lifecycle;
 - frontend work;
 - branch merge/rebase/main integration.
