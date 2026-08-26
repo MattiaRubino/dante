@@ -4,7 +4,7 @@ Production backend application for DANTE.
 
 CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 subsequently merged the closed scaffold into protected `main`.
 
-CP6 now consumes that foundation to derive and materialize the concrete DANTE PostgreSQL database from the closed Domain + Logical + Physical model. The PostgreSQL architecture remains major line 18; CP6 refreshed the current technical patch from 18.4 to 18.6 and directly re-proved the technical foundation remotely before business-schema materialization begins.
+CP6 consumed that foundation and is now **CLOSED / CONCRETE POSTGRESQL DATABASE PASS** on `feature/logical-postgresql`. The concrete DANTE PostgreSQL database was derived from the closed Domain + Logical + Physical model, materialized through the reviewed Alembic DAG plus the forward-only CP6-05 hardening revision, directly tested on PostgreSQL 18.6 and verified on the persistent LOCAL cluster at revision `20260826_08`.
 
 ## Current status
 
@@ -19,33 +19,33 @@ PR #24 MERGED / POST-MERGE BACKEND CI PASS
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 ACTIVE — CHECKPOINT J / DB-U23 CLOSED
-NEXT DESIGN BLOCK — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
-DB-U08 / DB-U15 / DB-U21 OPEN
-GATE 03 NOT YET EARNED
-POSTGRESQL 18.6 FOUNDATION REGRESSION DIRECT REMOTE QA PASS
+CP6-03 CLOSED / GATE 03 PASS
+CP6-04 CLOSED / MATERIALIZATION PASS
+CP6-05 CLOSED / DIRECT QA PASS
+CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+
+POSTGRESQL 18.6
+PERSISTENT LOCAL ALEMBIC 20260826_08
+FINAL TOPOLOGY 68 tables / 5 views / 14 routines / 75 triggers /
+               95 indexes / 68 FKs / 120 CHECKs
 ```
 
-Current CP6 execution boundary:
+Current transition boundary:
 
 ```text
-CP6-03
-whole DANTE database blueprint
-current: Checkpoint J complete
-next: final actual PostgreSQL object inventory
+CP6 CLOSED
+concrete PostgreSQL database materialized and directly verified
         ↓
-CP6-04
-real database materialization
-Alembic schema + tables + constraints + indexes + SQLAlchemy mappings
+PROTECTED-MAIN ALIGNMENT PREPARATION
+read live main / merge-base / branch diff / migration DAG / ruleset
         ↓
-CP6-05
-whole-database direct PostgreSQL QA + CP6 closure
+SEPARATE EXPLICIT INTEGRATION GATE
         ↓
 POST-CP6
 first product vertical application implementation
 ```
 
-CP6 may therefore create business-schema migrations and SQLAlchemy database mappings once the whole-database blueprint authorizes them. CP6 does **not** implement the first product vertical's application use cases, product persistence adapters, API or frontend.
+No merge/rebase/realignment with protected `main` is authorized merely by CP6 closure. The current closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the current resume/handoff lives in `docs/development/backend-cp6-05-live-handoff-2026-08-26.md`.
 
 ## Runtime contract
 
@@ -119,9 +119,13 @@ Formal Gate 02 closure evidence lives in:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
-Current CP6 execution scope and resume point live in:
+The closed CP6 execution history and routing live in:
 
 `docs/workstreams/logical-postgresql.md`
+
+Final CP6 direct closure evidence lives in:
+
+`docs/development/backend-cp6-05-whole-database-qa.md`
 
 ## LOCAL database security provisioning
 
@@ -163,7 +167,7 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The first revision is the technical CP3 baseline `20260820_01`; it intentionally creates no business schema. CP6-04 will add reviewed business-schema revisions only after CP6-03 closes the whole-database blueprint and materialization order.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the final forward-only CP6-05 hardening revision `20260826_08`. Applied migration history is immutable; later corrections use new revisions.
 
 PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
 
@@ -271,9 +275,9 @@ GET /health/ready                          200 {"status":"ready"}
 
 One immediately repeated full-suite launch hit a Docker Desktop/WSL `/forwards/expose` HTTP 500 while creating a disposable PostgreSQL container on a loopback port that had no Linux listener. After the diagnostic container was removed, a clean full run passed 50/50. The event is treated as transient local Docker port-forwarding behavior, not as an application or PostgreSQL acceptance failure.
 
-## Current PostgreSQL 18.6 direct remote regression
+## PostgreSQL 18.6 foundation regression evidence
 
-CP6 refreshed only the PostgreSQL 18 maintenance patch and then executed the existing mandatory CI lanes against the exact branch HEAD:
+Before concrete business-database materialization, CP6 refreshed only the PostgreSQL 18 maintenance patch and executed the then-existing mandatory CI lanes against the exact branch HEAD:
 
 ```text
 Backend CI run                32568664940
@@ -304,21 +308,44 @@ Backend CI Gate               SUCCESS
 current test corpus           50 / 50 covered across the two mandatory CI lanes
 ```
 
-This is **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It does not convert any business-semantic HG/PSV item into PASS and predates the concrete DANTE business-database materialization stage.
+This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 76-test disposable PostgreSQL acceptance and persistent LOCAL closure proof.
 
-PostgreSQL 18.6 release-note review found no current DANTE post-upgrade cleanup action: DANTE currently has no business GIN indexes, `btree_gist`, `ltree`, custom logical-decoding output plugin or `pgcrypto` use. Future PowerSync/logical-replication activation must review `output_plugin_libraries` and any then-applicable maintenance requirements.
+## CP6 final direct acceptance evidence
+
+Final accepted implementation HEAD:
+
+```text
+22bbc078391d52c43665474bf465593d6225106e
+```
+
+Observed final acceptance:
+
+```text
+ruff format --check               PASS — 44 files
+ruff check                        PASS
+mypy strict                       PASS — 40 source files
+fast pytest                       37 / 37 PASS
+uv build                          PASS
+PostgreSQL 18.6 image             PASS
+real PostgreSQL pytest            76 / 76 PASS
+persistent LOCAL upgrade          20260826_07 → 20260826_08
+alembic check                     PASS
+final topology                    68|5|14|75|95|68|120
+final security posture            PASS
+Dictionary JSON-Schema            PASS
+restart without volume deletion   PASS
+revision/topology persistence     PASS
+GET /health/live                  200 {"status":"ok"}
+GET /health/ready                 200 {"status":"ready"}
+```
+
+See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure record, including historical failures and repairs.
 
 ## Boundaries
 
-CP6 now explicitly authorizes, after the relevant blueprint/write gates:
+The concrete PostgreSQL database is closed for CP6. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
 
-- concrete Logical → PostgreSQL DANTE business tables;
-- Alembic business-schema migrations;
-- SQLAlchemy mappings that materialize the approved database model;
-- concrete DB constraints, indexes, privileges and database-level support structures;
-- real PostgreSQL tests of those database structures.
-
-CP6 still does **not** automatically authorize:
+CP6 closure still does **not** automatically authorize:
 
 - first-product-vertical application persistence adapters/use cases;
 - product API routes merely because database objects exist;
@@ -328,6 +355,7 @@ CP6 still does **not** automatically authorize:
 - PowerSync, Restate, PgBouncer or pgBackRest activation merely because selected;
 - transactional outbox implementation without a real Class-A requirement;
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
-- production deployment or blanket Physical HG/PSV PASS.
+- production deployment or blanket Physical HG/PSV PASS;
+- protected-`main` integration without its own explicit gate.
 
-Current next backend action is **CP6-03 — Final Actual PostgreSQL Object Inventory**, the next bounded design block inside the active Whole DANTE Database Blueprint. Checkpoint J / DB-U23 is closed; DB-U08, DB-U15 and DB-U21 remain open until the final inventory is frozen. Only after the remaining CP6-03 blueprint work, the mandatory second full tombstone audit and Gate 03 does CP6-04 begin real database materialization. First product vertical application work begins only after CP6 closes.
+Current next backend operation is **protected-main alignment preparation**: inspect live `main`, merge-base, full branch diff, Alembic DAG/head relation, overlapping paths and repository protection/ruleset state. No merge/rebase/ref move is authorized until that preparation is reviewed and the user gives a separate explicit integration gate.
