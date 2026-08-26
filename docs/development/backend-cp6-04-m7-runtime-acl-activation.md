@@ -3,13 +3,11 @@
 **Stage:** `CP6-M07 / cp6_runtime_acl_activation`  
 **Revision:** `20260826_07`  
 **Down revision:** `20260826_06`  
-**Status:** IMPLEMENTED / DIRECT POSTGRESQL ACCEPTANCE REQUIRED
+**Status:** CLOSED / DIRECT POSTGRESQL PASS
 
-## Scope
+## Final accepted surface
 
-M7 activates the final runtime PostgreSQL capability matrix without changing the frozen structural topology.
-
-Structural surface remains exactly:
+M7 activates the final runtime PostgreSQL capability matrix without changing the frozen structural topology:
 
 ```text
 tables              68
@@ -28,7 +26,7 @@ Dictionary entries   87
 
 ## Runtime ACL matrix
 
-M7 materializes the final Part-12 / Part-17 privilege contract:
+The accepted M7 runtime contract is:
 
 - `SELECT` on all 68 DANTE-owned tables;
 - table-level `INSERT` on exactly 49 tables;
@@ -43,42 +41,76 @@ M7 materializes the final Part-12 / Part-17 privilege contract:
 - direct EXECUTE on all 14 integrity routines remains denied to runtime, migrator and PUBLIC;
 - runtime remains denied all access to `dante.alembic_version`.
 
-## Role-13 runtime-compatibility repair
+## Runtime-compatibility repairs accepted in M7
 
-M6's quota validator still used `SELECT ... FOR UPDATE` on immutable `routine` / `event` owner rows. PostgreSQL requires UPDATE privilege for that row lock, which would contradict the frozen ACL matrix.
+### Role-13 occurrence-generation locking
 
-M7 therefore forward-repairs the existing `enforce_occurrence_generation_integrity()` definition without changing its name, signature, owner, security posture, trigger attachments or routine count. The incompatible owner-row locks are removed. Accepted occurrence-generation operations use the frozen Part-14 transaction advisory-lock boundary instead:
+M6 quota validation used `SELECT ... FOR UPDATE` on immutable Routine/Event owner rows. That would require UPDATE privilege and violate the final ACL matrix. M7 therefore keeps owner rows immutable and moves accepted occurrence-generation operations to the frozen Part-14 transaction advisory-lock boundary. Routine/function count, signatures, owner and security posture remain unchanged.
 
-- Routine: namespaces 4 + 6;
-- Event: namespaces 5 + 7;
-- one-argument positive signed-bigint key;
-- high 7 bits namespace + low 56-bit BLAKE2b digest of UUID bytes;
-- deterministic dedupe/sort/acquire under the caller-owned transaction.
+### Role-6 current-history dispatcher
 
-`dante/platform/database/locking.py` materializes that already-frozen technical helper. It performs no transaction begin/commit/rollback and creates no persisted object.
+The first direct M7 runtime replacement run exposed a real PL/pgSQL record-dispatch bug in `enforce_current_history_equivalence()`: combined `TG_TABLE_NAME='x' AND NEW.<table-specific-field>` expressions could resolve a field that does not exist for another history trigger record. M7 forward-repairs this into a table-first nested dispatcher so each branch references only fields valid for that history table. The invariant is unchanged.
 
-M7 downgrade restores the exact M6 owner-row lock definition and revokes all M7 business ACLs.
+### psycopg function-definition re-emission
+
+The first Role-6 repair then exposed a migration-driver issue: `pg_get_functiondef()` returned a function containing `LIKE '%_current_history'`; re-emitting that definition through psycopg treated `%_` as an invalid placeholder. M7 now escapes percent signs only at the driver re-emission boundary. Database semantics are unchanged.
 
 ## Dictionary repair
 
-Part 17 narrowed the five history INSERT grants after the earlier Part-12 matrix. Their Dictionary entries are reconciled in the same M7 candidate to the exact three-column INSERT grant plus `UPDATE(current_until_at)`.
+Part 17 narrowed the five history INSERT grants after the earlier Part-12 matrix. Their Dictionary entries are reconciled to the exact three-column INSERT grant plus `UPDATE(current_until_at)`. Global Dictionary scope is promoted to `materialized` only after the final direct PostgreSQL PASS.
 
-The global `scope.json` remains at accepted M6 until direct PostgreSQL M7 acceptance succeeds. M7 closure will then mark the Dictionary `materialized` and add `CP6-M07` to completed stages.
+## Acceptance evidence
 
-## Proof requirement
+Final accepted implementation HEAD:
 
-M7 is not CLOSED until a fresh user-executed PostgreSQL 18.6 run of:
+```text
+7fb54f267e9e91512001e3ea6c7cc02630097941
+```
+
+User-executed command from `apps/backend`:
 
 ```text
 uv run pytest -m postgres -vv
 ```
 
-passes against the published candidate. Required M7 evidence includes exact table/view/column ACL catalogs, direct-routine denial, runtime bounded-current replacement, runtime quota materialization under advisory locks, no owner UPDATE privilege, lock-key golden vectors, M7→M6 downgrade, fresh→head, head→base→head, Alembic drift, provisioning non-broadening, runtime and transaction tests.
+Final observed result:
 
-## Explicitly out of scope
+```text
+108 collected
+37 deselected
+71 selected
+71 passed
+0 failed
+51.14s
+coverage 94.14%
+```
 
-- persistent LOCAL PostgreSQL materialization;
-- frontend;
-- protected-main integration;
-- product authorization/visibility semantics;
-- CP6-05 performance/stress evidence beyond the bounded M7 runtime acceptance required to close CP6-04 materialization.
+The accepted run includes:
+
+- M1–M6 regression acceptance;
+- exact M7 table/view/column ACL catalogs;
+- direct routine denial;
+- bounded current recurrence replacement as `dante_runtime`;
+- runtime quota occurrence generation using advisory locks without owner UPDATE;
+- lock-key contract/golden behavior;
+- M7→M6 downgrade restoration;
+- fresh database → single repository head;
+- head→base→head round trip;
+- Alembic drift check;
+- provisioning privilege hardening/non-broadening;
+- runtime connection/recovery/readiness tests;
+- real transaction commit/rollback/flush/savepoint tests.
+
+## Preserved failed-run history
+
+M7 was not a synthetic first-pass green stage:
+
+1. first candidate: `70 passed / 1 failed`; bounded recurrence replacement exposed the Role-6 record-field bug;
+2. first repair: migration failed before acceptance because psycopg interpreted `%_` in the reconstructed function definition as an invalid placeholder;
+3. second repair at `7fb54f267e9e91512001e3ea6c7cc02630097941`: `71/71 PASS`.
+
+The failed evidence is intentionally retained because both failures identified implementation defects; tests were not weakened to obtain green status.
+
+## Next boundary
+
+M7 is CLOSED. Repository schema/ACL materialization M1–M7 is complete. The PostgreSQL workstream is not yet considered operationally finished: next comes explicit persistent LOCAL PostgreSQL materialization, fresh→head migration, backend/runtime smoke, volume/restart persistence verification and optional DBeaver inspection before the explicit gate toward protected `main`.

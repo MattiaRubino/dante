@@ -1,7 +1,7 @@
 {
   "$schema": "./schema/scope-v1.schema.json",
   "dictionary_version": 1,
-  "status": "materializing",
+  "status": "materialized",
   "postgresql": {"major": 18, "schema": "dante"},
   "expected_baseline": {
     "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
@@ -9,7 +9,7 @@
     "constraints": {"foreign_keys": 68, "check_constraints": 120}
   },
   "current_materialization": {
-    "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06"],
+    "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06", "CP6-M07"],
     "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
     "embedded_objects": {"triggers": 75, "physical_indexes": 95},
     "constraints": {"foreign_keys": 68, "check_constraints": 120}
