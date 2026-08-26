@@ -1,9 +1,9 @@
 # Access frontend workstream
 
-**Branch:** `feature/access-frontend`  
-**Permanent frontend worktree:** `/home/mattia/projects/dante-frontend`  
-**Product authority:** `prototypes/frontend/access/README.md`, `docs/frontend/access/current-checkpoint.md`, `docs/frontend/access/contract.md`, `docs/frontend/access/state-model.md`  
-**Desktop visual authority:** Access A3.4  
+**Branch:** `feature/access-frontend`
+**Permanent frontend worktree:** `/home/mattia/projects/dante-frontend`
+**Product authority:** `prototypes/frontend/access/README.md`, `docs/frontend/access/current-checkpoint.md`, `docs/frontend/access/contract.md`, `docs/frontend/access/state-model.md`
+**Desktop visual authority:** Access A3.4
 **Mobile visual authority:** M1.2 + PRG-0
 
 ## Purpose
