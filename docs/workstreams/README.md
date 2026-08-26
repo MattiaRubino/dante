@@ -83,9 +83,30 @@ These records do not represent active generic frontend foundation/materializatio
 
 Domain and Logical workstream files/continuations are historical operational records for phases that are now closed.
 
-Their **semantic current truth** is not owned by this directory; it lives in the accepted Domain/Logical specifications, checkpoints and closure evidence under their dedicated directories.
+Their **semantic current truth** is not owned by this directory. Start instead at:
 
-The documentation cleanup will separately classify whether the many historical `domain-model-part-*` / Logical workstream continuations still provide enough direct inspection value to remain in-tree, should be consolidated losslessly, or are now fully recoverable through Git. Until that classification is complete, they remain evidence only and must not override current Domain/Logical authority.
+- `../domain/README.md`
+- `../logical-model/README.md`
+
+The documentation knowledge audit classified the large Domain/Logical continuation families conservatively:
+
+```text
+current status/routing
+→ consolidated current entry points
+
+concept/reference continuations
+→ retained when they contain durable specification payload
+
+validation/checkpoint continuations
+→ retained as evidence/history where they contain meaningful test/rationale payload
+
+large Logical registers/ledgers
+→ retained because assumptions, rejected alternatives, traceability and tests are not losslessly duplicated by the Whole summary
+```
+
+No destructive compaction was performed merely to reduce file count. A future compaction may proceed only when the complete logical family passes the lossless knowledge-coverage gate.
+
+Historical Domain/Logical workstream records and continuation files must not override their newer current entry points merely because they are detailed or chronologically later within an old phase.
 
 ## Historical/superseded planning
 
