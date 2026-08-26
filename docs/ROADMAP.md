@@ -136,7 +136,7 @@ final authenticated Home handoff
 release/legal/mobile gates where applicable
 ```
 
-`feature/access-frontend` is unmerged and currently diverged from protected `main`. Before its final integration it must be reconciled with current `main`, including the newly integrated CP6 backend/database and this documentation cleanup, without discarding its accepted Access work.
+`feature/access-frontend` is unmerged and currently diverged from protected `main`. Before its final integration it must be reconciled with current `main`, including the newly integrated CP6 backend/database and this documentation lifecycle baseline, without discarding its accepted Access work.
 
 Temporary Access live handoffs may remain branch-local while the workstream is active. They must not merge into `main`; before integration they are consolidated/removed according to `development/documentation-lifecycle-policy.md`.
 
@@ -250,28 +250,30 @@ production deployment
 
 When these become real workstreams, current evidence must replace design-time assumptions.
 
-## 9. Documentation / repository maintenance
+## 9. Documentation lifecycle baseline
 
-The repository is currently undergoing a bounded documentation knowledge cleanup on:
-
-```text
-chore/documentation-knowledge-cleanup
-```
-
-Purpose:
+The documentation knowledge/lifecycle cleanup has established the durable repository policy and current routing baseline:
 
 ```text
-remove temporary handoffs from mergeable main
-separate current truth from historical evidence
-repair stale routing/status docs
-consolidate completed branch history where useful
-compact frozen split documents only when lossless
-preserve important requirements/rationale/evidence
+current specifications state current truth directly
+temporary live/session handoffs do not enter protected main
+completed branch history is retained only when materially useful
+historical evidence is explicitly non-authoritative
+frozen split documents are compacted only when lossless knowledge coverage is proven
+Git remains the complete recoverable chronology
 ```
 
-This is repository maintenance, not a new product architecture phase.
+Current authority:
 
-Before this cleanup merges, temporary cleanup-branch state must itself be closed so `main` receives current documentation rather than another active-handoff layer.
+- `development/documentation-lifecycle-policy.md`
+- `development/documentation-and-handoff.md`
+- `development/branching-and-environments.md`
+- `development/operating-rules.md`
+- `docs/README.md` for navigation/authority order
+
+The cleanup intentionally retained large Domain/Logical/Database split references where unique rationale, tests, assumptions or detailed reference content make destructive compaction unsafe. Fewer files is not a success criterion by itself.
+
+Future documentation maintenance follows the same knowledge-coverage gate rather than reopening a permanent cleanup phase.
 
 ## 10. Persistent engineering rules
 
@@ -293,12 +295,12 @@ TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
 Current practical sequence is:
 
 ```text
-1. complete repository documentation cleanup and reconcile current truth
-2. preserve active Access work independently on feature/access-frontend
-3. start the next bounded backend product vertical only under explicit scope
-4. reconcile Access with current main before protected-main integration
-5. integrate real backend/frontend contracts only after direct full-stack evidence
-6. activate specialist/runtime capabilities only at their real trigger
+1. preserve and continue active Access work on feature/access-frontend
+2. start the next bounded backend product vertical only under explicit scope
+3. reconcile Access with current main before protected-main integration
+4. integrate real backend/frontend contracts only after direct full-stack evidence
+5. activate specialist/runtime capabilities only at their real trigger
+6. apply the documentation lifecycle policy continuously instead of accumulating cleanup debt
 ```
 
 This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure that do not yet have an authorized concrete subject.
