@@ -2,9 +2,9 @@
 
 Production backend application for DANTE.
 
-CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 subsequently merged the closed scaffold into protected `main`.
+CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 merged the closed scaffold into protected `main`.
 
-CP6 consumed that foundation and is now **CLOSED / CONCRETE POSTGRESQL DATABASE PASS** on `feature/logical-postgresql`. The concrete DANTE PostgreSQL database was derived from the closed Domain + Logical + Physical model, materialized through the reviewed Alembic DAG plus the forward-only CP6-05 hardening revision, directly tested on PostgreSQL 18.6 and verified on the persistent LOCAL cluster at revision `20260826_08`.
+CP6 then consumed that foundation and is now **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. The concrete DANTE PostgreSQL database was derived from the closed Domain + Logical + Physical model, materialized through the reviewed Alembic DAG plus the forward-only CP6-05 hardening revision, directly tested on PostgreSQL 18.6 and verified on the persistent LOCAL cluster at revision `20260826_08`.
 
 ## Current status
 
@@ -23,6 +23,7 @@ CP6-03 CLOSED / GATE 03 PASS
 CP6-04 CLOSED / MATERIALIZATION PASS
 CP6-05 CLOSED / DIRECT QA PASS
 CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+PR #42 MERGED INTO PROTECTED main
 
 POSTGRESQL 18.6
 PERSISTENT LOCAL ALEMBIC 20260826_08
@@ -30,22 +31,28 @@ FINAL TOPOLOGY 68 tables / 5 views / 14 routines / 75 triggers /
                95 indexes / 68 FKs / 120 CHECKs
 ```
 
-Current transition boundary:
+Protected-main CP6 integration:
 
 ```text
-CP6 CLOSED
-concrete PostgreSQL database materialized and directly verified
-        ↓
-PROTECTED-MAIN ALIGNMENT PREPARATION
-read live main / merge-base / branch diff / migration DAG / ruleset
-        ↓
-SEPARATE EXPLICIT INTEGRATION GATE
-        ↓
-POST-CP6
-first product vertical application implementation
+final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
+PR                  #42
+merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
+status              MERGED
 ```
 
-No merge/rebase/realignment with protected `main` is authorized merely by CP6 closure. The current closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the current resume/handoff lives in `docs/development/backend-cp6-05-live-handoff-2026-08-26.md`.
+Current backend transition boundary:
+
+```text
+CP6 CLOSED + INTEGRATED
+concrete PostgreSQL database available on protected main
+        ↓
+POST-CP6 PRODUCT IMPLEMENTATION
+new bounded vertical branch only when explicitly started
+        ↓
+normal forward schema evolution only for genuine new requirements
+```
+
+There is no remaining CP6 alignment/merge step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the consolidated historical branch record lives in `docs/archive/branches/2026-08-feature-logical-postgresql.md` and is non-authoritative for current state.
 
 ## Runtime contract
 
@@ -119,13 +126,19 @@ Formal Gate 02 closure evidence lives in:
 
 `docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
-The closed CP6 execution history and routing live in:
+The current Database System of Record lives in:
 
-`docs/workstreams/logical-postgresql.md`
+`docs/database/README.md`
 
 Final CP6 direct closure evidence lives in:
 
 `docs/development/backend-cp6-05-whole-database-qa.md`
+
+Historical CP6 branch chronology lives in:
+
+`docs/archive/branches/2026-08-feature-logical-postgresql.md`
+
+No live/session CP6 handoff is current authority after integration.
 
 ## LOCAL database security provisioning
 
@@ -167,9 +180,11 @@ DDL owner role       dante_owner via explicit SET ROLE
 
 Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the final forward-only CP6-05 hardening revision `20260826_08`. Applied migration history is immutable; later corrections use new revisions.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the final forward-only CP6-05 hardening revision `20260826_08`. Applied migration history is immutable; later corrections use new forward revisions.
 
 PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
+
+A later product vertical that genuinely needs a schema change must evolve the database through normal reviewed forward migration and keep SQLAlchemy, Dictionary, human-readable reference and direct tests aligned in the same change.
 
 ## Run locally
 
@@ -341,11 +356,11 @@ GET /health/ready                 200 {"status":"ready"}
 
 See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure record, including historical failures and repairs.
 
-## Boundaries
+## Post-CP6 boundaries
 
-The concrete PostgreSQL database is closed for CP6. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
+The concrete PostgreSQL database is closed and integrated. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
 
-CP6 closure still does **not** automatically authorize:
+Database existence alone still does **not** authorize or prove:
 
 - first-product-vertical application persistence adapters/use cases;
 - product API routes merely because database objects exist;
@@ -355,7 +370,6 @@ CP6 closure still does **not** automatically authorize:
 - PowerSync, Restate, PgBouncer or pgBackRest activation merely because selected;
 - transactional outbox implementation without a real Class-A requirement;
 - automatic deadlock/serialization retries without operation-specific safety/idempotency design;
-- production deployment or blanket Physical HG/PSV PASS;
-- protected-`main` integration without its own explicit gate.
+- production deployment or blanket Physical HG/PSV PASS.
 
-Current next backend operation is **protected-main alignment preparation**: inspect live `main`, merge-base, full branch diff, Alembic DAG/head relation, overlapping paths and repository protection/ruleset state. No merge/rebase/ref move is authorized until that preparation is reviewed and the user gives a separate explicit integration gate.
+The next backend product work must start as a new bounded post-CP6 vertical from current protected `main`. The active Access frontend workstream creates a concrete future need for real Auth/backend integration, but no backend product branch is considered started merely because that frontend need exists.

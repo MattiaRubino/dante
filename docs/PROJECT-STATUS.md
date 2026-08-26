@@ -1,19 +1,10 @@
-> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
-> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
-> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
-> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
-
-> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
-> Protected `main` is now `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` with PR #28 merged. Frontend materialization is therefore **CLOSED / PASS / INTEGRATED**; any later statement in this preserved body that still calls `feature/frontend-materialization` active or PR #28 pending is historical/pre-merge status. Backend `feature/logical-postgresql` has merged current `main` and remains **CP6-03 ACTIVE** with Checkpoint J / DB-U23 CLOSED, Parts 1–8 active together, `DB-U08 / DB-U15 / DB-U21` OPEN, next = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized.  
-
 # DANTE — Project Status
 
-- Status: **CURRENT TRUTH**
-- Product: **DANTE**
-- Protected-main truth anchor: `fd3bc8dd918cf6aadeff4572221af68612c3cb42`
-- Backend integration PR `#24`: **MERGED**
-- Backend CP6 branch: `feature/logical-postgresql`
-- Frontend materialization branch: `feature/frontend-materialization`
+- **Status:** CURRENT TRUTH
+- **Last reconciled:** 2026-08-26
+- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
+- **Backend CP6 integration:** PR #42 MERGED
+- **Current active product implementation:** Access frontend on `feature/access-frontend` — UNMERGED
 
 ## 1. Executive state
 
@@ -27,7 +18,7 @@ CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
 LOGICAL MODEL
 CLOSED
 57 / 57 CLASSIFIED
-WL-H01..WL-H12 ACTIVE
+WL-H01..WL-H12 ACTIVE AS BINDING HARDENINGS
 
 PRE-PHYSICAL COHERENCE
 CLOSED / FINAL QA PASS
@@ -36,7 +27,7 @@ PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
 PostgreSQL 18 major family
 sole canonical persistence / material-history authority
-Physical phase-time exact patch 18.4
+Physical phase-time exact patch 18.4 / HISTORICAL
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
@@ -45,186 +36,154 @@ FRONTEND ENGINEERING FOUNDATION
 CLOSED / ACCEPTED / INTEGRATED VIA PR #22
 
 FRONTEND MATERIALIZATION
-ACTIVE ON feature/frontend-materialization
-DIRECT PASS ONLY AS EARNED BY THAT WORKSTREAM
+CLOSED / PASS / INTEGRATED VIA PR #28
 
 PRODUCTION BACKEND SCAFFOLD
-INTEGRATED IN PROTECTED main / DIRECT QA PASS
+CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
 CP1 CLOSED / DIRECT QA PASS
 CP2 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
 CP3 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
 CP4 CLOSED / DIRECT REMOTE QA PASS
 CP5 CLOSED / DIRECT INTEGRATED QA PASS
-PR #24 MERGED / POST-MERGE BACKEND CI PASS
 
 CP6 — CONCRETE POSTGRESQL DATABASE
-ACTIVE ON feature/logical-postgresql
+CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+INTEGRATED IN PROTECTED main VIA PR #42
 CP6-00 COMPLETE
 CP6-01 CLOSED / GATE 01 PASS
 CP6-02 CLOSED / GATE 02 PASS
-CP6-03 ACTIVE — CHECKPOINT J / DB-U23 CLOSED
-NEXT DESIGN BLOCK — FINAL ACTUAL POSTGRESQL OBJECT INVENTORY
-DB-U08 / DB-U15 / DB-U21 OPEN
-GATE 03 NOT YET EARNED
+CP6-03 CLOSED / GATE 03 PASS
+CP6-04 CLOSED / MATERIALIZATION PASS
+CP6-05 CLOSED / DIRECT QA PASS
 
 CURRENT POSTGRESQL TECHNICAL PATCH
 18.6
-CONFIGURATION REFRESH APPLIED
-DIRECT REMOTE FOUNDATION REGRESSION PASS
-RUN 32568664940
-HEAD ec3dc795b5e044daa3a77723c94a1b4b5b92865c
 
 CURRENT DANTE BUSINESS DATABASE
-NOT YET MATERIALIZED
+MATERIALIZED / MAPPED / DICTIONARY-RECONCILED / DIRECTLY TESTED
+ALEMBIC 20260826_08
+68 tables / 5 views / 14 routines / 75 triggers /
+95 indexes / 68 FKs / 120 CHECKs
 
-FIRST PRODUCT VERTICAL
-POST-CP6 / NOT STARTED
+ACCESS FRONTEND
+ACTIVE / UNMERGED ON feature/access-frontend
+AF-01D PASS
+AF-02A PASS
+AF-02B PASS
+ACCESS VERTICAL NOT CLOSED
+REAL BACKEND AUTH / FULL-STACK / RELEASE BOUNDARY STILL REQUIRED
+
+FIRST POST-CP6 BACKEND PRODUCT VERTICAL
+NOT STARTED ON A DEDICATED BACKEND BRANCH
 ```
 
-Architecture/design closure never implies direct implementation PASS. PostgreSQL 18.4 remains the exact historical Physical/CP2/CP3 patch; current CP6 technical patch is 18.6. Neither technical result retroactively discharges business-semantic HG/PSV obligations.
+Architecture/design closure is not the same as runtime/product completion. Historical PostgreSQL 18.4 evidence remains exact for the phases that executed on 18.4; current repository-owned PostgreSQL is 18.6.
 
-## 2. CP6 execution boundary — authoritative
+## 2. Current protected-main backend/database truth
 
-CP6 is not a generic persistence-foundation exercise and it is not the first application vertical.
+PR #42 integrated the completed CP6 branch into protected `main` through the required merge-commit path.
 
-It turns the closed Domain + Logical + Physical model into the concrete PostgreSQL database of DANTE.
-
-Current remaining sequence:
+Final accepted CP6 implementation candidate:
 
 ```text
-CP6-03
-WHOLE DANTE DATABASE BLUEPRINT
-CURRENT: Checkpoint J / DB-U23 closed
-NEXT: Final Actual PostgreSQL Object Inventory
-then DB-U08 / DB-U15 / DB-U21 closure
-then implementation/migration dependency DAG
-+ SQLAlchemy mapping plan
-+ Database Dictionary readiness
-+ direct PostgreSQL proof plan
-+ mandatory second full tombstone audit from zero
-        ↓
-GATE 03
-        ↓
-CP6-04
-WHOLE DANTE DATABASE MATERIALIZATION
-real Alembic business-schema migrations
-real DANTE tables / constraints / indexes
-real SQLAlchemy mappings
-real privilege/grant posture
-real PostgreSQL database tests
-        ↓
-CP6-05
-WHOLE DATABASE DIRECT QA + CLEAN-ROOM REVIEW
-        ↓
-CP6 CLOSED
-DANTE DATABASE BLUEPRINT COMPLETE
-MATERIALIZED TO MAXIMUM NON-SPECULATIVE EXTENT
-MIGRATED / MAPPED / DIRECTLY TESTED
-        ↓
-SEPARATE FIRST PRODUCT VERTICAL PHASE
+22bbc078391d52c43665474bf465593d6225106e
 ```
 
-Earlier CP6 planning language that prohibited all business schema/migrations/mappings anywhere inside CP6 is superseded by the current workstream execution boundary.
-
-That old prohibition remains true only for the bounded CP6-01 and CP6-02 checkpoints themselves: those stages correctly closed coverage and global PostgreSQL doctrine before business-schema materialization began.
-
-### CP6 may implement
-
-After exact stage/write gates, CP6 may implement everything already determinable from the closed model, including where applicable:
+Final feature head before merge:
 
 ```text
-DANTE business tables
-owner-specific canonical tables
-specific relation tables
-bounded NativeRef / ScopedRecordRef / MaterialStateRef control structures
-owner-specific material-state/history tables
-explicit current-state bindings
-provider/integration and derived DB structures already required by the closed model
-PostgreSQL native types
-PK / FK / UNIQUE / CHECK / EXCLUDE / range constraints
-structural indexes
-Alembic business-schema revisions
-SQLAlchemy database mappings
-object ownership / grants / runtime privilege posture
-real PostgreSQL acceptance tests
+9297b64c7c912c2cc8e344a6617beb5c91457bbb
 ```
 
-### CP6 still does not implement
+Protected-main merge commit:
 
 ```text
-first-product-vertical application use cases
-first-product-vertical application services
-product persistence adapters that encode application behavior
-business API routes
-frontend behavior
-product workflow orchestration
-AuthN/AuthZ product behavior
-specialist runtime activation merely because selected
-production deployment
+117360b9333fd1a8a62d0dfeb0398a4d5811e393
 ```
 
-The first product vertical therefore starts **after CP6**, over a database already derived/materialized from the earlier Domain/Logical/Physical work.
-
-## 3. Current persistence authority
-
-### CP6-01
+Final database baseline:
 
 ```text
-docs/development/backend-cp6-01-concrete-persistence-coverage.md
-docs/development/backend-cp6-01-concrete-persistence-coverage-part-2.md
-docs/development/backend-cp6-01-concrete-persistence-coverage-closure.md
+PostgreSQL          18.6
+Alembic head        20260826_08
+
+tables              68
+views                5
+routines             14
+triggers             75
+physical indexes    95
+foreign keys         68
+CHECK constraints   120
+
+custom enum/domain    0
+sequences             0
+materialized views    0
+RLS policies          0
 ```
 
-Gate 01 result:
+Final direct acceptance included:
 
 ```text
-57 / 57 concepts accounted                       PASS
-15 / 15 LR-01 native owners                      PASS
-LR-01..LR-13                                     PASS
-WL-H01..WL-H12                                   PASS
-PG-R01..PG-R10                                   PASS
-HG / SC / PSV carry-forward                      COMPLETE / TRUTHFUL
-semantic owner reclassification                  0
-generic semantic fallback                        0
-business DDL at Gate 01                          0
+Ruff format/check                    PASS
+mypy strict                          PASS
+non-PostgreSQL tests                 37 / 37 PASS
+real PostgreSQL tests                76 / 76 PASS
+build                                PASS
+Dictionary JSON-Schema               PASS
+Dictionary ↔ SQLAlchemy              PASS
+Dictionary ↔ Alembic                 PASS
+Dictionary ↔ live PostgreSQL         PASS
+persistent LOCAL upgrade/restart     PASS
+security / ACL posture               PASS
+GET /health/live                     200
+GET /health/ready                    200
 ```
 
-`business DDL = 0` is historical Gate-01 scope truth, not a whole-CP6 prohibition.
+Durable evidence:
 
-### CP6-02
+- `development/backend-cp6-05-whole-database-qa.md`
+- `database/README.md`
+- `database/dictionary/`
+- `archive/branches/2026-08-feature-logical-postgresql.md` — non-authoritative branch history
+
+## 3. Persistence authority
+
+Current persistence authority is layered rather than chosen ad hoc:
 
 ```text
-docs/development/backend-cp6-02-postgresql-persistence-constitution.md
-docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md
+Domain / Logical / Physical
+→ semantic and architectural source
+
+CP6-02 Constitution + ADR-010
+→ durable PostgreSQL doctrine
+
+Database System of Record
+→ current human-readable database meaning + machine Dictionary
+
+Alembic
+→ deployed application-schema evolution authority
+
+SQLAlchemy metadata / mappings
+→ application representation of deployed database contract
+
+real PostgreSQL introspection
+→ observed materialized database
+
+direct tests
+→ executable proof
 ```
+
+Permanent reconciliation invariant:
 
 ```text
-CP6-02
-CLOSED / GATE 02 PASS
+Database Architecture & Reference
+≈ Database Dictionary
+≈ SQLAlchemy metadata / mappings
+≈ Alembic head
+≈ real PostgreSQL schema
 ```
 
-Closed rule families:
-
-```text
-TECH ID REF MAT HIST TIM MISS LIFE TYP REL CON IDX
-TX IDEM PROV CAP MIG SEC QA
-```
-
-Gate 02 closed global PostgreSQL doctrine and correctly created no business schema itself. Its technical rules remain closed; only superseded process/staging language about later CP6 business-database materialization is no longer current execution authority.
-
-Current CP6 execution authority:
-
-`docs/workstreams/logical-postgresql.md`
-
-Current CP6-03 database-reference authority:
-
-```text
-docs/database/dante-postgresql-database.md
-+ Parts 2 through 8
-= one canonical multi-part Database Architecture & Reference
-```
-
-Checkpoint J closed `DB-U23` after the first total pre-freeze audit. The final independent second audit has **not** yet run and remains mandatory before Gate 03.
+A later structural DB change is incomplete if these representations are left inconsistent.
 
 ## 4. Logical / Physical invariants that remain binding
 
@@ -249,7 +208,7 @@ idempotency != semantic identity
 client local state != canonical accepted effect
 ```
 
-Accepted PostgreSQL mapping thesis:
+Accepted persistence thesis:
 
 ```text
 owner-specific canonical families
@@ -281,7 +240,7 @@ MaterialStateRef
 ExternalRef
 ```
 
-Closed physical direction:
+Current physical direction:
 
 ```text
 homogeneous NativeRef
@@ -302,9 +261,11 @@ No application-only `type + uuid` polymorphic integrity.
 
 ## 6. Backend technical foundation
 
-Frozen CP3 posture:
+Current backend baseline:
 
 ```text
+Python                              3.14.x / initial exact pin 3.14.7
+uv                                  repository package authority
 schema                              dante
 SQLAlchemy                          async 2.0 stable line
 psycopg                             3
@@ -319,9 +280,9 @@ outer application operation owns transaction
 adapter may flush / never implicit commit
 READ COMMITTED default
 
-dante_owner                         NOLOGIN
-dante_migrator                      LOGIN NOINHERIT + bounded SET ROLE
-dante_runtime                       LOGIN NOINHERIT / runtime DML posture
+dante_owner                         NOLOGIN ownership identity
+dante_migrator                      LOGIN migration identity
+dante_runtime                       LOGIN application runtime identity
 ```
 
 No generic Repository/UoW/BaseService architecture is introduced merely for uniformity.
@@ -333,108 +294,147 @@ POSTGRESQL ARCHITECTURE
 major 18
 
 PHYSICAL PHASE-TIME EXACT PATCH
-18.4
+18.4 / historical
 
 CP2 / CP3 ORIGINAL DIRECT EVIDENCE
 18.4 / historical exact
 
-CURRENT CP6 TECHNICAL PATCH
+CURRENT REPOSITORY PATCH
 18.6
+
+CURRENT MATERIALIZED DANTE DATABASE
+18.6 / Alembic 20260826_08
 ```
 
-Direct 18.6 evidence:
+Patch maintenance inside major line 18 does not reopen the accepted database architecture or rewrite historical direct evidence.
+
+## 8. Current product implementation work
+
+### Access frontend — active
+
+Branch:
 
 ```text
-Backend CI run                         32568664940
-workflow event                         workflow_dispatch
-executed HEAD                          ec3dc795b5e044daa3a77723c94a1b4b5b92865c
-PostGIS                                3.6.4 PASS
-pgvector                               0.8.6 PASS
-Backend Quality                        SUCCESS / 32 fast tests PASS
-Backend PostgreSQL                     SUCCESS / 18 PostgreSQL tests PASS
-Backend CI Gate                        SUCCESS
-current test corpus                    50 / 50 covered across mandatory lanes
-18.6 release-note impact               PASS / NO CURRENT POST-UPGRADE ACTION
+feature/access-frontend
 ```
 
-This is technical-foundation evidence. It does not prove the not-yet-materialized DANTE business schema or business semantic scenarios.
-
-## 8. Direct-validation non-claims
-
-Current truthful non-claims include:
+Branch-local durable workstream record:
 
 ```text
-DANTE BUSINESS DATABASE MATERIALIZATION    NOT STARTED
-FIRST PRODUCT VERTICAL                     NOT STARTED
-DIRECT BUSINESS HG-01..HG-12               NOT BLANKET-PASSED
-RESTORE/PITR REHEARSAL                     NOT RUN
-REAL V1→V2 BUSINESS-SCHEMA EVOLUTION       NOT RUN
-POWERSYNC DIRECT TEST                      NOT RUN
-RESTATE DIRECT TEST                        NOT RUN
-PRODUCTION DEPLOYMENT                      NOT STARTED
+docs/workstreams/access-frontend.md
 ```
 
-As CP6-04 materializes database structures, direct database evidence will replace the applicable `NOT STARTED` entries. Application-semantic evidence remains staged until the relevant application subject exists.
-
-## 9. Active branches / workstreams
+Current accepted frontend-owned/pre-backend checkpoints include:
 
 ```text
-feature/logical-postgresql
-→ ACTIVE CP6
-→ CP6-00 COMPLETE
-→ CP6-01 CLOSED / GATE 01 PASS
-→ CP6-02 CLOSED / GATE 02 PASS
-→ CP6-03 ACTIVE / CHECKPOINT J + DB-U23 CLOSED
-→ FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
-→ DB-U08 / DB-U15 / DB-U21 OPEN
-→ GATE 03 NOT YET EARNED
-
-feature/frontend-materialization
-→ independent frontend materialization workstream
+AF-01D  shell completion / professional polish     PASS
+AF-02A  complete pre-backend frontend state graph  PASS
+AF-02B  downstream surface hardening               PASS
 ```
 
-Frontend/backend may progress independently. Shared current docs must preserve the newest reconciled truth.
-
-## 10. Exact current backend action
+Access itself is **not closed**. Backend-authoritative/full-stack work still includes, according to the final contract as applicable:
 
 ```text
-1. Treat Product/Domain/Logical/Physical and CP1–CP5 as closed accepted authority.
-2. Treat CP6-01 and CP6-02 as CLOSED; do not redo their discovery/design work.
-3. Consume all active Database Reference Parts 1–8 together.
-4. Treat Checkpoint J / DB-U23 as CLOSED.
-5. Resume CP6-03 from FINAL ACTUAL POSTGRESQL OBJECT INVENTORY.
-6. Enumerate only the surviving baseline PostgreSQL objects; exclude every later no-DDL disposition.
-7. Reconcile scoped families and MaterialState facets against the final survivor set.
-8. Keep DB-U08 / DB-U15 / DB-U21 OPEN while deriving the inventory.
-9. After inventory freeze, close names/indexes/ACLs, then freeze migration DAG, SQLAlchemy plan, Dictionary and direct PostgreSQL proof plan.
-10. Run the mandatory SECOND FULL TOMBSTONE AUDIT FROM ZERO.
-11. Earn Gate 03 only if the complete blueprint remains clean.
-12. Do not create CP6-04 business migrations/mappings/objects before the separate explicit materialization gate.
-13. Only after CP6 closure does the first product vertical application phase begin.
+real account creation and credential authentication
+email verification proof validation
+recovery proof validation and reset mutation
+Google / Apple transaction validation
+secure account linking
+session establishment/bootstrap/expiry/revocation
+reauthentication
+server rate-limit/error mapping
+stable Auth OpenAPI
+generated typed client
+real frontend/backend integration
+full-stack isolated E2E
+final authenticated Home handoff
+release/legal/mobile gates where applicable
 ```
 
-## 11. Durable pointers
+The Access frontend branch is unmerged and currently diverged from protected `main`; it must be reconciled with current `main` before protected-main integration. Its branch-local live handoff may exist while the branch is active, but temporary handoffs must be removed/consolidated before merge under the documentation lifecycle policy.
 
-Current truth / navigation:
+## 9. Current backend boundary
+
+There is no active CP6 continuation. CP6 is complete.
+
+The next backend implementation is a **post-CP6 product vertical**, created from current protected `main` under its own bounded branch when explicitly started.
+
+The currently active Access frontend creates a concrete need for a real Auth/backend boundary, but a backend branch/implementation must not be invented merely by documenting it. Until such a branch exists, backend product-vertical implementation remains `NOT STARTED`.
+
+A later vertical may expose a legitimate database evolution requirement. That becomes a normal reviewed forward migration synchronized with the Database System of Record; it does not reopen CP6.
+
+## 10. Capability-triggered components
+
+Selected components remain dormant until a real consuming requirement exists:
+
+```text
+PowerSync + encrypted SQLite
+→ real offline/multi-device implementation
+
+PostgreSQL transactional outbox
+→ real Class-A async requirement
+
+R2
+→ real ContentArtifact byte flow
+
+OR-Tools
+→ solver-backed capability
+
+Restate
+→ first real Class-B durable workflow
+
+pgBackRest + AWS S3
+→ recovery/production boundary or real recovery rehearsal
+```
+
+Selected architecture does not imply activated runtime capability.
+
+## 11. Repository / documentation truth
+
+Protected `main` is integrated authority. Unmerged branch truth remains bounded to its branch until merge.
+
+Temporary live/session handoffs are branch-operational only and must not merge into `main`. Completed workstreams may retain at most one justified consolidated branch history record; Git/PR history remains the complete backup.
+
+See:
+
+- `development/documentation-lifecycle-policy.md`
+- `archive/README.md`
+- `development/repository-engineering-safety.md`
+- `development/branching-and-environments.md`
+
+## 12. Current direct-validation non-claims
+
+Do not claim work that has not actually run or been implemented:
+
+```text
+FIRST POST-CP6 BACKEND PRODUCT VERTICAL       NOT STARTED
+ACCESS REAL BACKEND/FULL-STACK CLOSURE        NOT COMPLETE
+DIRECT BUSINESS HG-01..HG-12                  NOT BLANKET-PASSED
+RESTORE/PITR REHEARSAL                        NOT RUN
+REAL V1→V2 BUSINESS-SCHEMA EVOLUTION          NOT RUN
+POWERSYNC DIRECT PRODUCT TEST                 NOT RUN
+RESTATE DIRECT PRODUCT TEST                   NOT RUN
+PRODUCTION DEPLOYMENT                         NOT STARTED
+```
+
+## 13. Current navigation
+
+Start from:
 
 ```text
 README.md
 docs/README.md
+docs/PROJECT-STATUS.md
 docs/ROADMAP.md
-docs/workstreams/logical-postgresql.md
-docs/database/README.md
-docs/database/dante-postgresql-database.md + Parts 2–8
 ```
 
-Closed upstream workstreams:
+Backend/database:
 
 ```text
-docs/workstreams/domain-model.md
-docs/workstreams/logical-model.md
-docs/workstreams/pre-physical-coherence.md
-docs/workstreams/physical-model.md
-docs/workstreams/engineering-foundation.md
-docs/workstreams/backend-scaffold.md
+apps/backend/README.md
+docs/database/README.md
+docs/database/dictionary/README.md
+docs/development/backend-cp6-05-whole-database-qa.md
 ```
 
-CP6 current execution details are owned by `docs/workstreams/logical-postgresql.md`.
+Current active Access frontend work is branch-local on `feature/access-frontend`; its `docs/workstreams/access-frontend.md` is not yet protected-main authority.

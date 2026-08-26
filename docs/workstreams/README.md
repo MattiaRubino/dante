@@ -1,108 +1,191 @@
-> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
-> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
-> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
-> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
+# DANTE Workstream Records
 
-> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
-> Frontend materialization integration is **CLOSED / INTEGRATED via merged PR #28** (`f1aacb0724088e0b4b086008a5219c2fba5ce0cf`). `frontend-materialization.md` remains CLOSED/PASS evidence and `frontend-materialization-integration.md` remains durable integration/accepted-risk/future-activation evidence, but neither is a pending merge workstream now. The active backend continuation is `logical-postgresql.md`: branch current with `main`, CP6-03 ACTIVE, Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized. Any later PR #28 READY/ACTIVE wording is preserved pre-merge status.  
+- **Status:** CURRENT INDEX
+- **Rule:** protected `main` stores durable workstream records/evidence, not active live/session handoffs
 
-# Workstream Handoffs
+## Purpose
 
-Each active or pending-integration workstream has one operational handoff. It is the safest continuation entry point for that scope.
+This directory indexes durable workstream records that remain useful after a branch or phase is closed.
 
-## Current workstreams
+It is **not** the permanent home for chat/session save-games.
 
-- [`today-home.md`](today-home.md) — separate Phase-4 Home/Today UX/product-structure workstream; prototype/UX authority only, not production engineering authority.
+Temporary branch-operational files may exist on an active feature branch when needed for continuity, but before protected-main integration they must pass the lifecycle gate in:
 
-No frontend materialization/integration workstream is currently active. New frontend/product/security/backend work starts from current `main` under a fresh bounded branch and gate.
-
-## Completed / integrated or closed evidence workstreams
-
-- [`frontend-materialization-integration.md`](frontend-materialization-integration.md) — **CLOSED / INTEGRATED VIA PR #28**; protected-main integration-hardening record, Dependency Review accepted-risk lifecycle, Frontend CI Gate calibration/promotion evidence and durable future-activation register.
-- [`frontend-materialization.md`](frontend-materialization.md) — **CLOSED / PASS — FM-00..FM-07 COMPLETE AT THEIR STATED SCOPES**; direct Web/Mobile/tooling/shared-package/CI/fresh-materialization evidence. The closed branch is evidence source, not a reusable work branch.
-- [`backend-scaffold.md`](backend-scaffold.md) — **CLOSED / DIRECT QA PASS / integrated via PR #24**; CP1-CP5 backend scaffold evidence and protected-main integration record.
-- [`frontend-foundation.md`](frontend-foundation.md) — **DESIGN / ARCHITECTURE CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #22**.
-- [`engineering-foundation.md`](engineering-foundation.md) — **CLOSED / ACCEPTED / FINAL REVIEW PASS / integrated via PR #21**.
-- [`physical-model.md`](physical-model.md) — **TARGET ARCHITECTURE CLOSED / SELECTED / ACCEPTED / integrated via PR #15**; specialist activation/direct validation remains capability-triggered.
-- [`pre-physical-coherence.md`](pre-physical-coherence.md) — **DEFINITIVE CLOSED / FINAL QA PASS / integrated via PR #13 / post-merge aligned via PR #14**.
-- [`domain-model.md`](domain-model.md) and continuations — historical operational record for CLOSED Domain Model integrated via PR #10.
-- Logical Model workstream documents/continuations — historical operational record for CLOSED Logical Model integrated via PR #11.
-
-## Historical / superseded planning handoffs
-
-- [`backend-foundation.md`](backend-foundation.md) — historical pre-Engineering-Foundation planning; not current implementation authority.
-
-## Current carry-forward rule
+`../development/documentation-lifecycle-policy.md`
 
 ```text
-PHYSICAL TARGET              CLOSED / ACCEPTED
-ENGINEERING FOUNDATION v0    CLOSED / ACCEPTED
-FRONTEND FOUNDATION          CLOSED / ACCEPTED / integrated
-BACKEND SCAFFOLD             CLOSED / DIRECT QA PASS / integrated
-FRONTEND MATERIALIZATION     CLOSED / PASS / integrated
-FRONTEND PR #28              CLOSED / MERGED
-FRONTEND CI GATE CALIBRATION COMPLETE
-FRONTEND CI GATE PROMOTION   OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE
+active branch handoffs
+→ knowledge coverage
+→ current truth moved to durable current docs
+→ important rationale/evidence retained
+→ optional ONE consolidated branch-history record
+→ temporary handoffs removed
+```
+
+Protected `main` should never require a reader to find the newest `live-handoff` in order to know project truth.
+
+## Current project/workstream state
+
+Protected-main current truth is owned by:
+
+- `../PROJECT-STATUS.md`
+- `../ROADMAP.md`
+
+Current high-level state:
+
+```text
+Domain Model                       CLOSED
+Logical Model                      CLOSED
+Pre-Physical coherence             CLOSED
+Physical target                    CLOSED / ACCEPTED
+Engineering Foundation             CLOSED / ACCEPTED
+Frontend Foundation                CLOSED / INTEGRATED
+Frontend Materialization           CLOSED / PASS / INTEGRATED
+Backend CP1–CP5 Scaffold           CLOSED / DIRECT QA / INTEGRATED
+Backend CP6 Database               CLOSED / DIRECT QA / INTEGRATED VIA PR #42
+Access frontend                    ACTIVE / UNMERGED ON feature/access-frontend
+Post-CP6 backend product vertical  NOT STARTED ON A DEDICATED BRANCH
+```
+
+The active Access frontend workstream is **branch-local** on `feature/access-frontend`. Its `docs/workstreams/access-frontend.md` and temporary live handoff exist on that branch and are not protected-main authority until reconciliation/integration. The temporary live handoff must be removed/consolidated before that branch merges.
+
+## Durable closed/integrated records
+
+### Backend
+
+- `backend-scaffold.md` — CP1–CP5 production backend scaffold closure/integration evidence, integrated via PR #24.
+
+CP6 no longer uses an active `logical-postgresql` handoff as current routing. Its final durable state is represented by current database authority plus final QA, with a consolidated non-authoritative branch history under:
+
+- `../archive/branches/2026-08-feature-logical-postgresql.md`
+
+Current CP6/database truth lives in:
+
+- `../database/README.md`
+- `../database/dictionary/`
+- `../development/backend-cp6-05-whole-database-qa.md`
+
+### Frontend
+
+- `frontend-foundation.md` — frontend engineering foundation design/architecture closure, integrated via PR #22.
+- `frontend-materialization.md` — closed production materialization evidence, integrated via PR #28.
+- `frontend-materialization-integration.md` — durable integration/calibration/future-activation evidence for PR #28.
+
+These records do not represent active generic frontend foundation/materialization work anymore.
+
+### Engineering / architecture preparation
+
+- `engineering-foundation.md` — closed engineering foundation, integrated via PR #21.
+- `physical-model.md` — closed/selected Physical target, integrated via PR #15.
+- `pre-physical-coherence.md` — definitive pre-Physical coherence closure, integrated via PR #13 with later alignment as recorded.
+
+### Domain / Logical
+
+Domain and Logical workstream files/continuations are historical operational records for phases that are now closed.
+
+Their **semantic current truth** is not owned by this directory. Start instead at:
+
+- `../domain/README.md`
+- `../logical-model/README.md`
+
+The documentation knowledge audit classified the large Domain/Logical continuation families conservatively:
+
+```text
+current status/routing
+→ consolidated current entry points
+
+concept/reference continuations
+→ retained when they contain durable specification payload
+
+validation/checkpoint continuations
+→ retained as evidence/history where they contain meaningful test/rationale payload
+
+large Logical registers/ledgers
+→ retained because assumptions, rejected alternatives, traceability and tests are not losslessly duplicated by the Whole summary
+```
+
+No destructive compaction was performed merely to reduce file count. A future compaction may proceed only when the complete logical family passes the lossless knowledge-coverage gate.
+
+Historical Domain/Logical workstream records and continuation files must not override their newer current entry points merely because they are detailed or chronologically later within an old phase.
+
+## Historical/superseded planning
+
+- `backend-foundation.md` — historical pre-Engineering-Foundation planning; not current backend implementation authority.
+
+Historical planning records may later move to `docs/archive/` or leave the working tree entirely if knowledge coverage proves Git/current authorities are sufficient.
+
+## `today-home.md`
+
+`today-home.md` is a separate Home/Today product/UX workstream record. Its authority is limited to the scope explicitly stated by that file; it does not override production engineering, current frontend vertical or backend/database authority.
+
+## Branch-local active workstreams
+
+An active unmerged workstream should have one durable branch-local record when needed, plus temporary live/session notes only when they materially improve continuity.
+
+Example current branch-local work:
+
+```text
+feature/access-frontend
+→ docs/workstreams/access-frontend.md
+→ docs/workstreams/access-frontend-live-handoff.md  TEMPORARY / BRANCH-LOCAL ONLY
+```
+
+Before integration:
+
+```text
+access-frontend-live-handoff.md
+→ knowledge coverage
+→ durable Access current/closure docs updated
+→ optional one branch-history record if useful
+→ DELETE temporary handoff
+```
+
+Do not copy branch-local live handoffs into `main` as historical documentation.
+
+## Operational continuation rule
+
+Before continuing work:
+
+1. read `../PROJECT-STATUS.md` and `../ROADMAP.md`;
+2. read development operating/safety/lifecycle policy;
+3. verify exact current branch and relation to `main`;
+4. if the target workstream is active and unmerged, read its branch-local durable record;
+5. use a temporary handoff only when the active branch genuinely needs one;
+6. consume the relevant accepted model/architecture/reference/code/tests;
+7. do not let an old workstream record override newer current truth.
+
+## Closed-workstream rule
+
+Once a workstream is integrated:
+
+```text
+current semantics / architecture
+→ current subsystem docs / ADRs
+
+implementation truth
+→ code / migrations / tests
+
+important acceptance evidence
+→ durable QA / validation record
+
+useful branch narrative
+→ at most one branch-history record
+
+chat/session continuation detail
+→ Git history only
+```
+
+A closed workstream is not a reusable permanent feature branch and does not remain “active” merely because its historical record still exists.
+
+## Current carry-forward engineering rules
+
+```text
 SELECTED != IMPLEMENTED
 SELECTED != DIRECT PASS
+UNMERGED BRANCH TRUTH != protected-main TRUTH
+VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
+TEMPORARY HANDOFF != DURABLE DOCUMENTATION
+CURRENT SPECIFICATION != CHRONOLOGICAL DIARY
 ```
 
-Version-sensitive claims require current evidence. Later direct materialization evidence qualifies older design-time version wording without reopening unrelated architecture.
-
-Current examples:
-
-```text
-Temporal implementation      temporal-polyfill 1.0.4
-Gesture Handler              2.32.0 under Expo SDK 57
-Web E2E path                 apps/web/e2e/
-```
-
-## Frontend integration closure record
-
-```text
-final PR head        a6607ceabd35f874dc9e5f63fe8f57f71a92bf80
-prior main           fd3bc8dd918cf6aadeff4572221af68612c3cb42
-protected-main merge f1aacb0724088e0b4b086008a5219c2fba5ce0cf
-PR #28               MERGED
-merge parentage      PASS
-merged tree identity PASS
-exact-head hosted CI PASS
-push-main CI         DIRECT READBACK UNAVAILABLE
-```
-
-The integration branch was observed absent after merge; no manual branch deletion was performed during the merge operation.
-
-## Operational rule
-
-`main` remains integrated authority. Newer unmerged branch truth is bounded to its active workstream until merge.
-
-Before continuation:
-
-1. read development operating/safety rules;
-2. verify exact Git relation/PRE-SCOPE;
-3. read the complete applicable current or closed handoff;
-4. consume applicable closed model/Foundation/ADR authorities;
-5. distinguish selected/installed/configured/directly validated states;
-6. update the active handoff on every substantive slice.
-
-## Frontend continuation
-
-Do not reopen general stack/architecture selection by default.
-
-There is no remaining PR #28 merge sequence. Future continuation is trigger-based:
-
-```text
-repository-security maturation
--> CodeQL default setup evaluation under a fresh explicit gate
-
-backend next
--> Concrete Logical -> PostgreSQL under a fresh bounded workstream
-
-product next
--> first real vertical slice
--> activate only capabilities actually consumed
-```
-
-The future-activation register in `frontend-materialization-integration.md` must be consulted when the first real vertical/UI/form/API/offline/deployment/release/security/pre-PROD/scale trigger occurs.
-
-Durable architecture changes belong in current specs/ADRs, not only handoff text. Historical sources never override later current truth.
+Durable architecture changes belong in current specs/ADRs. Historical workstream records never override later accepted current truth.
