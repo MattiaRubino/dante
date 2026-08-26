@@ -1,16 +1,9 @@
-> **CURRENT MAIN + CP6 RECONCILIATION — 2026-08-26**
-> Protected `main` anchor imported by this alignment is `87fe668c2ade78b17e0326d635e4d7a67920ae8a`. Its post-merge truth is preserved: frontend materialization/integration is **CLOSED / INTEGRATED via PR #28**, deterministic Frontend CI compatibility repair is integrated via PR #37, and the clean Home B2 v27 React handoff is integrated via PR #36. The main-only frontend contracts, fixtures, tokens and pre-production guard remain byte-identical to that protected-main anchor.
-> Backend CP6 is independently **CLOSED / CONCRETE POSTGRESQL DATABASE PASS**. Accepted implementation HEAD is `22bbc078391d52c43665474bf465593d6225106e`; closure-documentation branch anchor before this alignment is `8c33c897ff57cfff9130fe00db1854470aa06bb5`; persistent LOCAL PostgreSQL 18.6 is at Alembic `20260826_08`; verified topology remains `68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs`.
-> This overlay supersedes only contradictory **current status, routing, branch and next-step prose** later in this file. Historical evidence, accepted architecture, frontend product contracts, failed-run/repair evidence and phase-time records remain historical truth and are not rewritten. The aligned feature branch is only a candidate for protected-main integration: **no final merge into `main` is authorized by this overlay**. Protected-main integration still requires the normal PR, current-head required checks and a separate final merge gate.
-
-> **CURRENT INTEGRATION RECONCILIATION — 2026-08-24**  
-> Frontend materialization is now **CLOSED / PASS / INTEGRATED into protected `main` via PR #28**. Later decision text that still says frontend materialization is active is preserved pre-merge wording and is superseded only on status, not on the technical decisions themselves. Backend CP6 remains **CP6-03 ACTIVE** on `feature/logical-postgresql`, current with `main`, with Checkpoint J / DB-U23 CLOSED, Parts 1–8 active, `DB-U08 / DB-U15 / DB-U21` OPEN, exact next block = **FINAL ACTUAL POSTGRESQL OBJECT INVENTORY**, Gate 03 not earned, CP6-04 not authorized.  
-
 # DANTE Technical Decisions
 
-- Status: **CURRENT DECISION REGISTER**
+- **Status:** CURRENT DECISION REGISTER
+- **Last reconciled:** 2026-08-26
 
-This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs.
+This file summarizes current accepted technical decisions. Detailed rationale and constraints live in linked Domain/Logical/Physical/Engineering/Frontend Foundation sources and ADRs. Historical phase-time status does not override later closure/integration evidence.
 
 ## TD-01 — Canonical persistence
 
@@ -23,7 +16,7 @@ sole canonical persistence + material-history authority
 Physical exact phase-time patch   18.4 / HISTORICAL
 CP2 / CP3 original direct patch   18.4 / HISTORICAL EXACT
 current repository patch          18.6
-18.6 foundation regression        DIRECT REMOTE QA PASS
+current Alembic head              20260826_08
 ```
 
 Patch maintenance inside PostgreSQL 18 does not reopen the selected architecture and does not rewrite historical 18.4 evidence.
@@ -48,7 +41,7 @@ The current repository-owned PostgreSQL 18.6 image preserves the selected PostGI
 
 ## TD-03 — Offline/sync
 
-**ACCEPTED TARGET / NOT IMPLEMENTED**
+**ACCEPTED TARGET / OPERATION-SPECIFIC ACTIVATION**
 
 PowerSync + encrypted SQLite bounded local state.
 
@@ -72,13 +65,13 @@ Class B: Restate selected, initially dormant; activate at first real Class-B dur
 
 ## TD-05 — Object bytes
 
-**ACCEPTED TARGET / NOT IMPLEMENTED**
+**ACCEPTED TARGET / TRIGGER-BASED ACTIVATION**
 
 Cloudflare R2 Standard, private, EU jurisdiction, raw bytes only. PostgreSQL owns ContentArtifact authority/metadata/provenance/visibility/retention/hash/locator semantics.
 
 ## TD-06 — Recovery
 
-**ACCEPTED TARGET / INITIALLY DORMANT**
+**ACCEPTED TARGET / ACTIVATION AT RECOVERY OR PRODUCTION BOUNDARY**
 
 ```text
 pgBackRest 2.59.0
@@ -91,7 +84,7 @@ Recovery copies remain noncanonical and anti-resurrection obligations remain act
 
 ## TD-07 — Solver
 
-**ACCEPTED TARGET / NOT IMPLEMENTED**
+**ACCEPTED TARGET / TRIGGER-BASED ACTIVATION**
 
 OR-Tools CP-SAT. `UNKNOWN != INFEASIBLE`. Solver output remains candidate/derived until governed acceptance.
 
@@ -215,7 +208,7 @@ Feature UI uses feature data/model boundaries rather than direct HTTP/PowerSync/
 
 **ACCEPTED / INTEGRATED VIA PR #22**
 
-Mobile activates PowerSync + encrypted SQLite when materialized, initially app-owned under the Mobile platform sync boundary.
+Mobile activates PowerSync + encrypted SQLite when materialized for a capability that needs it, initially app-owned under the Mobile platform sync boundary.
 
 Web baseline is online-first. PowerSync Web local DB is available/dormant.
 
@@ -284,7 +277,7 @@ Backend canonical semantics: Linux. Primary Windows posture uses one authoritati
 
 Frontend keeps the same single-checkout posture. WSL↔Windows Metro/ADB mechanics are a tooling adapter requiring direct validation, not a product architecture invariant.
 
-No divergent Windows/WSL source-tree clones or shared cross-OS node_modules environment.
+No divergent Windows/WSL source-tree clones or shared cross-OS `node_modules` environment.
 
 ## TD-21 — LOCAL container/persistence toolkit
 
@@ -304,7 +297,7 @@ Async DB I/O at technical boundaries; Domain/application sync/pure by default; a
 
 ## TD-22 — Migration/copy/recovery governance
 
-**ACCEPTED / QUALIFIED BY CP6-02 CONSTITUTION**
+**ACCEPTED / QUALIFIED BY POSTGRESQL CONSTITUTION**
 
 - Alembic revision history = deployment schema-change authority;
 - autogenerate candidate only;
@@ -350,43 +343,62 @@ Backend uses risk-layered unit/application/property/architecture/real-PostgreSQL
 
 Frontend uses co-located unit/component tests, app-level Web E2E/Mobile Maestro, strict type/boundary/cycle checks and higher-cost release validation only where applicable.
 
-Required-check names are never guessed; activate only after real stable emitted contexts are observed.
+Protected-main required contexts are repository-enforced current contexts, not guessed names. Current required contexts are:
+
+```text
+Backend CI Gate
+Dependency Review
+Frontend CI Gate
+```
 
 Protected workflows use least privilege and immutable Action SHA pinning. Supply-chain controls activate with real artifacts/manifests/capabilities; production artifact provenance/SBOM applies at release boundary.
 
-## TD-25 — Cloud/IaC and current next boundary
+## TD-25 — Cloud/IaC and current implementation boundary
 
-**PARTLY DEFERRED / CURRENT HANDOFF**
+**PARTLY DEFERRED / CURRENT**
 
 Backend compute provider, IaC engine, registry and remote sizing remain deliberately deferred until first remote infrastructure.
 
-Frontend Foundation is **CLOSED / ACCEPTED / integrated via PR #22**. Frontend materialization is already **ACTIVE** on `feature/frontend-materialization` under its own bounded workstream.
-
-Backend production scaffold CP1–CP5 is **CLOSED / INTEGRATED IN PROTECTED main / DIRECT QA PASS**.
-
-Current backend boundary:
+Closed/integrated foundations:
 
 ```text
-feature/logical-postgresql
-CP6 Concrete PostgreSQL Database ACTIVE
-CP6-01 CLOSED / GATE 01 PASS
-CP6-02 CLOSED / GATE 02 PASS
-CP6-03 ACTIVE / WHOLE DANTE DATABASE BLUEPRINT
-CHECKPOINT J / DB-U23 CLOSED
-FINAL ACTUAL POSTGRESQL OBJECT INVENTORY NEXT
-DB-U08 / DB-U15 / DB-U21 OPEN
-SECOND FULL TOMBSTONE AUDIT REQUIRED BEFORE GATE 03
-GATE 03 NOT YET EARNED
-→ CP6-04 WHOLE DANTE DATABASE MATERIALIZATION only after Gate 03 + separate explicit authorization
-→ CP6-05 WHOLE DATABASE DIRECT QA + CP6 CLOSURE
-→ first product vertical only after CP6
+Frontend Engineering Foundation   CLOSED / INTEGRATED VIA PR #22
+Frontend Materialization          CLOSED / PASS / INTEGRATED VIA PR #28
+Backend CP1–CP5 scaffold          CLOSED / DIRECT QA / INTEGRATED VIA PR #24
+Backend CP6 database              CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 ```
+
+Current concrete persistence baseline:
+
+```text
+PostgreSQL 18.6
+Alembic 20260826_08
+68 tables
+5 views
+14 routines
+75 triggers
+95 indexes
+68 FKs
+120 CHECKs
+```
+
+Current product boundary:
+
+```text
+Access Frontend
+ACTIVE / UNMERGED on feature/access-frontend
+
+first dedicated post-CP6 backend product vertical
+NOT STARTED
+```
+
+The old CP6-03 → Gate 03 → CP6-04 → CP6-05 sequence is completed historical execution, not a current next-step plan.
 
 ## TD-26 — PostgreSQL Persistence Constitution
 
 **ACCEPTED / CROSS-CUTTING**
 
-DANTE accepts the reusable PostgreSQL persistence doctrine closed by CP6-02.
+DANTE accepts the reusable PostgreSQL persistence doctrine closed by CP6-02 and implemented through CP6.
 
 ADR authority:
 
