@@ -1,0 +1,577 @@
+.access-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr);
+  background: #f4f1eb;
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-topbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(22px, 4vw, 62px);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 6%, transparent);
+  background: rgb(244 241 235 / 82%);
+  backdrop-filter: blur(18px);
+}
+
+.access-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+}
+
+.access-brand-symbol {
+  display: block;
+  flex: none;
+  width: 38px;
+  height: 38px;
+}
+
+.access-brand-wordmark {
+  display: block;
+  flex: none;
+  width: 122px;
+  height: auto;
+}
+
+.access-locale-button {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dante-semantic-color-text-secondary);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.access-locale-button:hover {
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-ink) 5%,
+    transparent
+  );
+}
+
+.access-locale-button:focus-visible {
+  outline: 3px solid var(--dante-semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.access-locale-globe {
+  width: 16px;
+  height: 16px;
+}
+
+.access-locale-chevron {
+  width: 14px;
+  height: 14px;
+}
+
+.access-main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 44px clamp(18px, 3vw, 48px) 50px;
+}
+
+.access-frame {
+  width: min(1180px, 100%);
+  min-height: 690px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(460px, 0.78fr);
+  gap: 70px;
+  align-items: center;
+}
+
+.access-brand-stage {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px 36px 56px 20px;
+}
+
+.access-brand-eyebrow {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 18px;
+  color: var(--dante-semantic-color-brand-accent-text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.access-brand-stage h2 {
+  position: relative;
+  z-index: 2;
+  max-width: 650px;
+  margin: 0;
+  color: var(--dante-semantic-color-text-primary);
+  font-size: clamp(44px, 5.2vw, 72px);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  line-height: 0.99;
+}
+
+.access-brand-body {
+  position: relative;
+  z-index: 2;
+  max-width: 520px;
+  margin: 24px 0 0;
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.access-brand-foot {
+  position: absolute;
+  z-index: 2;
+  left: 20px;
+  bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 12px;
+}
+
+.access-brand-foot::before {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--dante-semantic-color-brand-accent);
+  content: '';
+}
+
+.access-brand-orbits {
+  position: absolute;
+  z-index: 1;
+  left: -390px;
+  bottom: -340px;
+  width: 1080px;
+  height: 1080px;
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+.access-panel {
+  position: relative;
+  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  padding: 42px 42px 34px;
+  border: 1px solid
+    color-mix(in srgb, var(--dante-semantic-color-brand-ink) 10%, transparent);
+  border-radius: 26px;
+  background: #fffdfa;
+  box-shadow:
+    0 24px 70px
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 9%, transparent),
+    0 3px 12px
+      color-mix(in srgb, var(--dante-semantic-color-brand-ink) 4%, transparent);
+}
+
+.access-panel-inner {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.access-kicker {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  margin: 0 0 22px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.access-panel h1 {
+  margin: 0;
+  color: var(--dante-semantic-color-text-primary);
+  font-size: 31px;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.access-signin-copy {
+  margin: 10px 0 26px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.access-provider-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.access-provider-button,
+.access-primary-button {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.access-provider-button {
+  position: relative;
+  height: 52px;
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  border: 1px solid var(--dante-semantic-color-border-control);
+  border-radius: 11px;
+  background: var(--dante-semantic-color-surface-base);
+  color: var(--dante-semantic-color-text-primary);
+  padding: 0 16px;
+}
+
+.access-provider-button > span:last-child {
+  grid-column: 2;
+  text-align: center;
+}
+
+.access-provider-button:hover {
+  border-color: var(--dante-semantic-color-border-hover);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-surface-base) 92%,
+    var(--dante-semantic-color-surface-muted)
+  );
+}
+
+.access-provider-mark {
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-provider-mark svg {
+  display: block;
+}
+
+.access-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.access-divider span {
+  height: 1px;
+  background: var(--dante-semantic-color-border-divider);
+}
+
+.access-divider p {
+  margin: 0;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.access-field-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.access-field {
+  display: grid;
+  gap: 7px;
+  color: var(--dante-semantic-color-text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.access-field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.access-input-wrap {
+  position: relative;
+}
+
+.access-field input {
+  width: 100%;
+  height: 50px;
+  border: 1px solid var(--dante-semantic-color-border-control);
+  border-radius: 10px;
+  background: var(--dante-semantic-color-surface-base);
+  color: var(--dante-semantic-color-text-primary);
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.access-input-wrap input {
+  padding-right: 46px;
+}
+
+.access-field input::placeholder {
+  color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-text-muted) 70%,
+    var(--dante-semantic-color-surface-base)
+  );
+}
+
+.access-field input:hover {
+  border-color: var(--dante-semantic-color-border-hover);
+}
+
+.access-field input:focus-visible {
+  border-color: var(--dante-semantic-color-focus-ring);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--dante-semantic-color-focus-ring) 18%, transparent);
+}
+
+.access-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dante-semantic-color-text-muted);
+  padding: 0;
+  cursor: pointer;
+}
+
+.access-password-toggle:hover {
+  background: #f5f2ed;
+  color: var(--dante-semantic-color-text-primary);
+}
+
+.access-password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.access-inline-action,
+.access-legal button {
+  border: 0;
+  background: transparent;
+  color: var(--dante-semantic-color-text-secondary);
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.access-inline-action:hover,
+.access-legal button:hover {
+  color: var(--dante-semantic-color-brand-accent-text);
+}
+
+.access-inline-action:focus-visible,
+.access-legal button:focus-visible,
+.access-provider-button:focus-visible,
+.access-primary-button:focus-visible,
+.access-password-toggle:focus-visible {
+  outline: 3px solid var(--dante-semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.access-field-heading .access-inline-action {
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.access-primary-button {
+  margin-top: 16px;
+  border: 0;
+  background: var(--dante-semantic-color-brand-ink);
+  color: var(--dante-semantic-color-surface-base);
+  padding: 0 22px;
+  font-weight: 750;
+}
+
+.access-primary-button:hover {
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-brand-ink) 94%,
+    black
+  );
+}
+
+.access-new-account {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 18px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 12.5px;
+}
+
+.access-create-account {
+  color: var(--dante-semantic-color-text-secondary);
+  font-weight: 650;
+}
+
+.access-legal {
+  margin: auto 0 0;
+  padding-top: 22px;
+  color: var(--dante-semantic-color-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.access-legal button {
+  color: var(--dante-semantic-color-text-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--dante-semantic-color-border-control);
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .access-brand-orbits {
+    left: -360px;
+    bottom: -315px;
+    width: 940px;
+    height: 940px;
+    opacity: 0.18;
+  }
+}
+
+@media (max-width: 900px) {
+  .access-topbar {
+    padding: 0 20px;
+  }
+
+  .access-main {
+    padding: 30px 18px 38px;
+  }
+
+  .access-frame {
+    max-width: 520px;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .access-brand-stage {
+    display: none;
+  }
+
+  .access-panel {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .access-shell {
+    grid-template-rows: 64px minmax(0, 1fr);
+  }
+
+  .access-topbar {
+    padding: 0 15px;
+  }
+
+  .access-brand-symbol {
+    width: 32px;
+    height: 32px;
+  }
+
+  .access-brand-wordmark {
+    width: 102px;
+  }
+
+  .access-locale-name {
+    display: none;
+  }
+
+  .access-main {
+    display: block;
+    padding: 0;
+  }
+
+  .access-frame {
+    display: block;
+    width: 100%;
+    max-width: none;
+  }
+
+  .access-panel {
+    min-height: calc(100dvh - 64px);
+    padding: 30px 22px 24px;
+    border: 0;
+    border-radius: 0;
+    background: #fffdfa;
+    box-shadow: none;
+  }
+
+  .access-panel h1 {
+    font-size: 27px;
+  }
+
+  .access-provider-button,
+  .access-primary-button,
+  .access-field input {
+    height: 50px;
+  }
+
+  .access-new-account {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-provider-button,
+  .access-primary-button,
+  .access-field input {
+    transition: none;
+  }
+}

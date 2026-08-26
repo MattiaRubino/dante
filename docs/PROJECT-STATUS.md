@@ -4,7 +4,7 @@
 - **Last reconciled:** 2026-08-26
 - **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 - **Backend CP6 integration:** PR #42 MERGED
-- **Current active product implementation:** Access frontend on `feature/access-frontend` — UNMERGED
+- **Current product boundary:** pre-backend Access frontend materialization CLOSED / accepted; next full-stack Access/Auth vertical not yet started on a dedicated branch
 
 ## 1. Executive state
 
@@ -65,19 +65,19 @@ ALEMBIC 20260826_08
 68 tables / 5 views / 14 routines / 75 triggers /
 95 indexes / 68 FKs / 120 CHECKs
 
-ACCESS FRONTEND
-ACTIVE / UNMERGED ON feature/access-frontend
+ACCESS PRE-BACKEND FRONTEND
+CLOSED / ACCEPTED / RELEASE-HARDENED
 AF-01D PASS
 AF-02A PASS
 AF-02B PASS
-ACCESS VERTICAL NOT CLOSED
-REAL BACKEND AUTH / FULL-STACK / RELEASE BOUNDARY STILL REQUIRED
+AF-03A PASS
 
-FIRST POST-CP6 BACKEND PRODUCT VERTICAL
-NOT STARTED ON A DEDICATED BACKEND BRANCH
+FULL ACCESS/AUTH PRODUCT VERTICAL
+NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
+NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
 ```
 
-Architecture/design closure is not the same as runtime/product completion. Historical PostgreSQL 18.4 evidence remains exact for the phases that executed on 18.4; current repository-owned PostgreSQL is 18.6.
+Architecture/design closure is not the same as runtime/product completion. Closing the Access frontend workstream establishes the accepted frontend baseline; it does not claim real Auth/session/provider behavior.
 
 ## 2. Current protected-main backend/database truth
 
@@ -185,7 +185,7 @@ Database Architecture & Reference
 
 A later structural DB change is incomplete if these representations are left inconsistent.
 
-## 4. Logical / Physical invariants that remain binding
+## 4. Binding semantic invariants
 
 ```text
 Person != Account != Principal != Actor
@@ -208,26 +208,7 @@ idempotency != semantic identity
 client local state != canonical accepted effect
 ```
 
-Accepted persistence thesis:
-
-```text
-owner-specific canonical families
-+ owner-specific material-state/history families
-+ specific typed relation families
-+ bounded technical address/control structures only where genuinely heterogeneous addressing requires them
-+ separate provider/derived/runtime concerns
-```
-
-Forbidden shortcuts remain:
-
-```text
-universal Entity / Thing
-universal Relationship / generic edge
-canonical EAV/property bag
-universal event ontology
-universal Fact/Version semantic payload root
-JSONB required-semantic escape hatch
-```
+Accepted persistence thesis remains owner-specific canonical/material-history families plus specific typed relations and bounded technical addressing/control structures. Universal Entity/Thing, universal generic edges, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
 
 ## 5. Reference / material-state baseline
 
@@ -308,58 +289,34 @@ CURRENT MATERIALIZED DANTE DATABASE
 
 Patch maintenance inside major line 18 does not reopen the accepted database architecture or rewrite historical direct evidence.
 
-## 8. Current product implementation work
+## 8. Access frontend baseline
 
-### Access frontend — active
+The completed `feature/access-frontend` workstream materialized the approved pre-backend Web Access system and release-hardened it without inventing fake Auth success.
 
-Branch:
-
-```text
-feature/access-frontend
-```
-
-Branch-local durable workstream record:
+Accepted checkpoints:
 
 ```text
-docs/workstreams/access-frontend.md
+AF-01D  shell completion / professional polish      PASS
+AF-02A  complete pre-backend frontend state graph   PASS
+AF-02B  downstream surface hardening                PASS
+AF-03A  release-hardening viewport matrix           PASS
 ```
 
-Current accepted frontend-owned/pre-backend checkpoints include:
+Current durable authority:
 
-```text
-AF-01D  shell completion / professional polish     PASS
-AF-02A  complete pre-backend frontend state graph  PASS
-AF-02B  downstream surface hardening               PASS
-```
+- `frontend/access.md`
+- current `apps/web` Access code/tests
+- `archive/branches/2026-08-feature-access-frontend.md` for non-authoritative branch history
 
-Access itself is **not closed**. Backend-authoritative/full-stack work still includes, according to the final contract as applicable:
+The accepted frontend remains intentionally backend-incomplete. Real account creation/authentication, verification/recovery mutation, provider validation/linking, sessions, reauthentication, server error/rate-limit mapping, stable Auth OpenAPI, generated Auth client integration, full-stack E2E, real Home handoff, legal destinations and native Mobile Access are not claimed complete.
 
-```text
-real account creation and credential authentication
-email verification proof validation
-recovery proof validation and reset mutation
-Google / Apple transaction validation
-secure account linking
-session establishment/bootstrap/expiry/revocation
-reauthentication
-server rate-limit/error mapping
-stable Auth OpenAPI
-generated typed client
-real frontend/backend integration
-full-stack isolated E2E
-final authenticated Home handoff
-release/legal/mobile gates where applicable
-```
-
-The Access frontend branch is unmerged and currently diverged from protected `main`; it must be reconciled with current `main` before protected-main integration. Its branch-local live handoff may exist while the branch is active, but temporary handoffs must be removed/consolidated before merge under the documentation lifecycle policy.
-
-## 9. Current backend boundary
+## 9. Next product implementation boundary
 
 There is no active CP6 continuation. CP6 is complete.
 
-The next backend implementation is a **post-CP6 product vertical**, created from current protected `main` under its own bounded branch when explicitly started.
+The next concrete product implementation should be a **full-stack Access/Auth vertical** created from current protected `main` under a fresh bounded branch when explicitly started. Branches should follow product verticals rather than permanent backend/frontend layer lines.
 
-The currently active Access frontend creates a concrete need for a real Auth/backend boundary, but a backend branch/implementation must not be invented merely by documenting it. Until such a branch exists, backend product-vertical implementation remains `NOT STARTED`.
+That vertical may modify backend and frontend together where the real contract requires it. Pure later UX polish may use a separate short-lived UI branch from then-current `main` when it is independent of the vertical.
 
 A later vertical may expose a legitimate database evolution requirement. That becomes a normal reviewed forward migration synchronized with the Database System of Record; it does not reopen CP6.
 
@@ -407,15 +364,18 @@ See:
 Do not claim work that has not actually run or been implemented:
 
 ```text
-FIRST POST-CP6 BACKEND PRODUCT VERTICAL       NOT STARTED
-ACCESS REAL BACKEND/FULL-STACK CLOSURE        NOT COMPLETE
-DIRECT BUSINESS HG-01..HG-12                  NOT BLANKET-PASSED
-RESTORE/PITR REHEARSAL                        NOT RUN
-REAL V1→V2 BUSINESS-SCHEMA EVOLUTION          NOT RUN
-POWERSYNC DIRECT PRODUCT TEST                 NOT RUN
-RESTATE DIRECT PRODUCT TEST                   NOT RUN
-PRODUCTION DEPLOYMENT                         NOT STARTED
+FULL-STACK ACCESS/AUTH VERTICAL                  NOT STARTED
+ACCESS REAL BACKEND/FULL-STACK CLOSURE           NOT COMPLETE
+NATIVE MOBILE ACCESS                             NOT IMPLEMENTED
+DIRECT BUSINESS HG-01..HG-12                     NOT BLANKET-PASSED
+RESTORE/PITR REHEARSAL                           NOT RUN
+REAL V1→V2 BUSINESS-SCHEMA EVOLUTION             NOT RUN
+POWERSYNC DIRECT PRODUCT TEST                    NOT RUN
+RESTATE DIRECT PRODUCT TEST                      NOT RUN
+PRODUCTION DEPLOYMENT                            NOT STARTED
 ```
+
+The Access frontend branch's historical local/automated evidence must not be inflated: AF-03A full automation was proven before its final one-line width refinement; exact final delta plus visual review were accepted, while the final branch integration still requires hosted PR CI.
 
 ## 13. Current navigation
 
@@ -437,4 +397,12 @@ docs/database/dictionary/README.md
 docs/development/backend-cp6-05-whole-database-qa.md
 ```
 
-Current active Access frontend work is branch-local on `feature/access-frontend`; its `docs/workstreams/access-frontend.md` is not yet protected-main authority.
+Frontend Access:
+
+```text
+docs/frontend/access.md
+apps/web/src/features/access/
+apps/web/e2e/access.spec.ts
+```
+
+Historical branch narratives under `docs/archive/branches/` are evidence/navigation only and never current authority.

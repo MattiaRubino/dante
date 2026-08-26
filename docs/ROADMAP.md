@@ -38,35 +38,25 @@ Backend CP1–CP5 Scaffold
           ↓
 Backend CP6 Concrete PostgreSQL Database
         CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
+          ↓
+Access Pre-Backend Web Materialization
+        CLOSED / ACCEPTED / RELEASE-HARDENED
+        AF-01D / AF-02A / AF-02B / AF-03A PASS
 ```
 
-Architecture closure remains distinct from product/runtime completion. PostgreSQL patch maintenance inside accepted major line 18 does not reopen the Physical selection or rewrite historical 18.4 execution evidence.
+Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical.
 
 ## 2. CP6 is complete
 
 CP6 converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database.
 
-Final lifecycle:
-
 ```text
-CP6-00  Authority Reconstruction & Scope Freeze
-         COMPLETE
-
-CP6-01  Concrete Persistence Coverage Map
-         CLOSED / GATE 01 PASS
-
-CP6-02  PostgreSQL Persistence Constitution
-         CLOSED / GATE 02 PASS
-
-CP6-03  Whole DANTE Database Blueprint
-         CLOSED / GATE 03 PASS
-
-CP6-04  Whole DANTE Database Materialization
-         CLOSED / MATERIALIZATION PASS
-
-CP6-05  Whole Database Direct QA
-         CLOSED / DIRECT QA PASS
-
+CP6-00  COMPLETE
+CP6-01  CLOSED / GATE 01 PASS
+CP6-02  CLOSED / GATE 02 PASS
+CP6-03  CLOSED / GATE 03 PASS
+CP6-04  CLOSED / MATERIALIZATION PASS
+CP6-05  CLOSED / DIRECT QA PASS
 CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
          INTEGRATED VIA PR #42
 ```
@@ -85,7 +75,7 @@ Alembic             20260826_08
 120 CHECK constraints
 ```
 
-CP6 is historical implementation/acceptance work now. Do not route new work through old `Gate 03`, `DB-U* open`, `CP6-04 next` or protected-main-alignment steps.
+CP6 is historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04 or protected-main-alignment steps.
 
 Current database authority:
 
@@ -99,72 +89,47 @@ Historical branch record:
 
 - `archive/branches/2026-08-feature-logical-postgresql.md`
 
-## 3. Current active product work — Access frontend
+## 3. Access frontend materialization is closed
 
-The active product implementation workstream is currently:
+The pre-backend Access Web workstream completed:
 
 ```text
-feature/access-frontend
+AF-01D  shell completion / professional polish      PASS
+AF-02A  complete pre-backend frontend state graph   PASS
+AF-02B  downstream surface hardening                PASS
+AF-03A  release-hardening viewport matrix           PASS
 ```
 
-Current branch-local accepted frontend checkpoints:
+It intentionally stops backend-authoritative transitions instead of fabricating authentication success. Current frontend truth is `frontend/access.md` plus current code/tests. The closed branch history is `archive/branches/2026-08-feature-access-frontend.md`.
+
+Closing this workstream does not mean real Access/Auth is complete.
+
+## 4. Next implementation — full-stack Access/Auth vertical
+
+The next product implementation boundary is a **new bounded full-stack Access/Auth vertical created from current protected `main`** when explicitly started.
+
+Its expected responsibilities include, as applicable to the final contract:
 
 ```text
-AF-01D  shell completion / professional polish     PASS
-AF-02A  complete pre-backend frontend state graph  PASS
-AF-02B  downstream surface hardening               PASS
-```
-
-Access is **not closed**. The frontend has intentionally stopped backend-authoritative transitions instead of fabricating authentication success.
-
-Remaining closure pressure includes, as required by the final backend/product contract:
-
-```text
-real backend Auth boundary
 account creation / credential authentication
 verification + recovery proof handling
-provider transaction validation
+Google / Apple transaction validation
 secure account linking
-session lifecycle
+session lifecycle / bootstrap / expiry / revocation
 reauthentication
 server rate-limit/error mapping
 stable Auth OpenAPI
 generated typed client
 frontend/backend integration
 full-stack isolated E2E
-final authenticated Home handoff
-release/legal/mobile gates where applicable
+real authenticated Home handoff
+release/legal gates
+native Mobile Access when its implementation gate opens
 ```
 
-`feature/access-frontend` is unmerged and currently diverged from protected `main`. Before its final integration it must be reconciled with current `main`, including the newly integrated CP6 backend/database and this documentation lifecycle baseline, without discarding its accepted Access work.
+The vertical may touch backend, frontend, generated API client and tests together. Do not split one product vertical into permanent backend/frontend branches merely because the files live in different technical layers.
 
-Temporary Access live handoffs may remain branch-local while the workstream is active. They must not merge into `main`; before integration they are consolidated/removed according to `development/documentation-lifecycle-policy.md`.
-
-## 4. Next backend implementation boundary
-
-The next backend implementation phase is **post-CP6 product behavior**, not more generic database design.
-
-No dedicated post-CP6 backend product branch is currently recorded as started in protected `main`.
-
-When explicitly started, it must branch from current `main` and consume the already-materialized database rather than redesigning persistence from scratch.
-
-The active Access frontend creates a concrete demand for a real authentication/account/session backend boundary. That makes Access/Auth a likely consuming boundary, but roadmap text does not itself authorize or invent a backend branch. The exact backend workstream begins only when explicitly created/scoped.
-
-Expected post-CP6 vertical responsibilities include as applicable:
-
-```text
-application use cases
-capability-specific persistence adapters
-commands / queries
-backend governance/orchestration
-API contracts
-AuthN/AuthZ behavior where the vertical owns it
-frontend/mobile consumption
-full-stack semantic scenarios
-vertical-specific HG / PSV evidence
-```
-
-A vertical may reveal a genuine database evolution need. That becomes a reviewed forward Alembic migration plus synchronized SQLAlchemy/Dictionary/reference/tests; it does not reopen CP6.
+Frontend changes required by the real Auth contract belong to that vertical. Independent later visual polish may use a small short-lived UI branch from then-current `main`.
 
 ## 5. Database evolution after CP6
 
@@ -180,7 +145,7 @@ real structural database change
 → direct tests
 ```
 
-Applied revisions are immutable. No structural change is complete while current documentation or Dictionary describes the old schema.
+Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6.
 
 ## 6. Capability-triggered implementation
 
@@ -211,9 +176,9 @@ pgBackRest + AWS S3
 
 A selected component is not implemented merely because it appears in architecture.
 
-## 7. Frontend direction after foundation/materialization
+## 7. Persistent frontend direction
 
-The generic frontend engineering foundation and production materialization are closed/integrated. Future frontend work is vertical/product work on bounded branches rather than another generic foundation phase.
+The generic frontend engineering foundation, production materialization and pre-backend Access Web materialization are closed. Future frontend work is vertical/product work rather than another generic foundation phase.
 
 Persistent rules remain:
 
@@ -228,8 +193,6 @@ shared packages require real multi-consumer value
 production never imports prototypes
 current design tokens / i18n / time contracts remain governed
 ```
-
-Access is the current active frontend vertical.
 
 ## 8. Infrastructure / release boundaries still deferred
 
@@ -252,8 +215,6 @@ When these become real workstreams, current evidence must replace design-time as
 
 ## 9. Documentation lifecycle baseline
 
-The documentation knowledge/lifecycle cleanup has established the durable repository policy and current routing baseline:
-
 ```text
 current specifications state current truth directly
 temporary live/session handoffs do not enter protected main
@@ -269,11 +230,9 @@ Current authority:
 - `development/documentation-and-handoff.md`
 - `development/branching-and-environments.md`
 - `development/operating-rules.md`
-- `docs/README.md` for navigation/authority order
+- `docs/README.md`
 
-The cleanup intentionally retained large Domain/Logical/Database split references where unique rationale, tests, assumptions or detailed reference content make destructive compaction unsafe. Fewer files is not a success criterion by itself.
-
-Future documentation maintenance follows the same knowledge-coverage gate rather than reopening a permanent cleanup phase.
+Fewer files is not a success criterion by itself. Remove/compact only after knowledge coverage.
 
 ## 10. Persistent engineering rules
 
@@ -292,15 +251,15 @@ TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
 
 ## 11. Immediate sequence
 
-Current practical sequence is:
-
 ```text
-1. preserve and continue active Access work on feature/access-frontend
-2. start the next bounded backend product vertical only under explicit scope
-3. reconcile Access with current main before protected-main integration
-4. integrate real backend/frontend contracts only after direct full-stack evidence
-5. activate specialist/runtime capabilities only at their real trigger
-6. apply the documentation lifecycle policy continuously instead of accumulating cleanup debt
+1. integrate the closed Access frontend baseline into protected main after final hosted CI
+2. close/delete feature/access-frontend; do not reuse it as a permanent layer branch
+3. create the next full-stack Access/Auth vertical from current protected main under an explicit gate
+4. implement backend Auth → stable OpenAPI → generated client → real frontend integration
+5. run full-stack semantic/security/E2E acceptance before closing Access/Auth
+6. use separate short-lived UI polish branches only for independent later design refinement
+7. activate specialist/runtime capabilities only at their real trigger
+8. apply the documentation lifecycle policy continuously
 ```
 
-This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure that do not yet have an authorized concrete subject.
+This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure before their concrete scope is authorized.

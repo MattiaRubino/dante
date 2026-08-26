@@ -3,8 +3,35 @@
  * ------------------------------------------- */
 
 :root {
+  --dante-primitive-color-border-control: rgb(53.726% 58.823% 61.569%);
+  --dante-primitive-color-border-hover: rgb(45.098% 50.588% 53.333%);
+  --dante-primitive-color-brand-accent: rgb(91.765% 36.078% 7.0588%);
+  --dante-primitive-color-brand-accent-text: rgb(78.431% 29.02% 0%);
+  --dante-primitive-color-brand-ink: rgb(13.333% 18.431% 21.569%);
+  --dante-primitive-color-divider: rgb(89.02% 90.196% 90.588%);
+  --dante-primitive-color-text-muted: rgb(41.177% 45.882% 48.628%);
+  --dante-primitive-color-text-secondary: rgb(32.549% 38.039% 41.569%);
+  --dante-primitive-color-warm-50: rgb(96.863% 96.078% 94.51%);
+  --dante-primitive-color-warm-100: rgb(93.726% 93.333% 91.373%);
+  --dante-primitive-color-white: rgb(100% 100% 100%);
   --dante-primitive-radius-12: 12px;
+  --dante-primitive-radius-14: 14px;
   --dante-primitive-radius-20: 20px;
+  --dante-semantic-color-border-control: var(--dante-primitive-color-border-control);
+  --dante-semantic-color-border-divider: var(--dante-primitive-color-divider);
+  --dante-semantic-color-border-hover: var(--dante-primitive-color-border-hover);
+  --dante-semantic-color-brand-accent: var(--dante-primitive-color-brand-accent);
+  --dante-semantic-color-brand-accent-text: var(--dante-primitive-color-brand-accent-text);
+  --dante-semantic-color-brand-ink: var(--dante-primitive-color-brand-ink);
+  --dante-semantic-color-focus-ring: var(--dante-primitive-color-brand-accent);
+  --dante-semantic-color-surface-base: var(--dante-primitive-color-white);
+  --dante-semantic-color-surface-muted: var(--dante-primitive-color-warm-100);
+  --dante-semantic-color-surface-soft: var(--dante-primitive-color-warm-50);
+  --dante-semantic-color-text-muted: var(--dante-primitive-color-text-muted);
+  --dante-semantic-color-text-primary: var(--dante-primitive-color-brand-ink);
+  --dante-semantic-color-text-secondary: var(--dante-primitive-color-text-secondary);
   --dante-semantic-radius-card: var(--dante-primitive-radius-20);
+  --dante-semantic-radius-control: var(--dante-primitive-radius-14);
+  --dante-semantic-radius-input: var(--dante-primitive-radius-12);
   --dante-semantic-radius-panel: var(--dante-primitive-radius-12);
 }
