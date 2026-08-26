@@ -1,4 +1,4 @@
-"""Real PostgreSQL acceptance tests for CP3 transaction semantics."""
+"""Real PostgreSQL acceptance tests for CP3 transaction semantics under CP6 P0 ACLs."""
 
 from typing import Any
 
@@ -28,6 +28,9 @@ async def _create_probe_table(database: Any) -> None:
             await connection.exec_driver_sql(
                 "CREATE TABLE dante.cp3_transaction_probe ("
                 "id bigint PRIMARY KEY, value text NOT NULL)"
+            )
+            await connection.exec_driver_sql(
+                "GRANT SELECT, INSERT ON TABLE dante.cp3_transaction_probe TO dante_runtime"
             )
             await connection.exec_driver_sql("RESET ROLE")
     finally:
@@ -100,7 +103,9 @@ async def test_real_commit_persists_across_sessions(migrated_database: Any) -> N
 
 
 @pytest.mark.asyncio
-async def test_exception_rolls_back_entire_application_transaction(migrated_database: Any) -> None:
+async def test_exception_rolls_back_entire_application_transaction(
+    migrated_database: Any,
+) -> None:
     await _create_probe_table(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:

@@ -2,6 +2,9 @@
 
 - Status: **PM-11 SELECTED-STACK CARRY-FORWARD / DIRECTLY UNEXECUTED**
 - Purpose: define the validation obligations that remain after target-stack selection and must not be mistaken for already executed PASS results.
+- Post-closure traceability maintenance: **2026-08-22 — SC-017/SC-018 labels reconciled to the canonical Physical Benchmark Scenario Corpus; no architecture, selection or validation obligation changed.**
+
+Scenario identifiers and canonical scenario names in this register MUST follow `docs/architecture/physical-benchmark-scenario-corpus.md`. This register may assign selected-stack validation obligations to those scenarios, but MUST NOT rename or reinterpret a canonical `SC-*` identifier.
 
 ## Primary correctness/recovery
 
@@ -16,12 +19,14 @@ PSV-05  WL-H12 system-level non-interference
 ## Search / vector / projection
 
 ```text
-PSV-06  SC-017 selective disclosure/search non-interference
-PSV-07  SC-018 hidden-result leakage surfaces
+PSV-06  SC-017 search hidden-result non-interference
+PSV-07  SC-018 FTS mixed filter/query correctness under applicable Visibility/user/scope filtering
 PSV-08  SC-019 vector recall/relevance after real Visibility/user/scope filtering
 PSV-09  SC-020 projection freshness/material-basis behavior
 PSV-10  SC-021 deletion/redaction propagation
 ```
+
+`SC-017` is the canonical hidden-result non-interference scenario and already covers observable leakage surfaces such as result contents, counts, ranking, error behavior and timing classes. `SC-018` is the canonical FTS mixed filter/query scenario. These obligations are distinct and MUST NOT be collapsed or relabeled.
 
 ## Offline / PowerSync
 

@@ -1,23 +1,28 @@
 # Local Backend Workstation Bootstrap
 
-- Status: **ACTIVE / VERIFIED THROUGH BACKEND CP2**
+- Status: **ACTIVE / VERIFIED REUSABLE WORKSTATION BASELINE**
 - Scope: Windows 11 developer workstation bootstrap for DANTE backend work
 - Canonical backend development environment: **WSL2 + Ubuntu 24.04 LTS + Linux filesystem**
-- Verified workstation checkpoint date: **2026-08-20**
-- Backend CP1: **CLOSED / DIRECT QA PASS**
-- Backend CP2 / PostgreSQL LOCAL: **CLOSED / DIRECT QA PASS**
-- Next backend checkpoint: **CP3 READ-ONLY DESIGN/RESEARCH**
+- First verified workstation checkpoint date: **2026-08-20**
+- First-workstation CP1/CP2 evidence below: **HISTORICAL / DIRECT QA PASS**
+- Production backend scaffold CP1–CP5: **CLOSED / INTEGRATED / DIRECT QA PASS**
+- Current backend workstream: `feature/logical-postgresql` — **CP6 ACTIVE / DESIGN-FIRST**
+- Current PostgreSQL technical image: **`dante-postgres-local:18.6`**
+- PostgreSQL 18.6 technical regression: **DIRECT REMOTE QA PASS — run `32568664940` / HEAD `ec3dc795b5e044daa3a77723c94a1b4b5b92865c`**
+- Current CP6 checkpoint: **CP6-02 CLOSED / GATE 02 PASS; CP6-03 NEXT / NOT STARTED**
 
-## 1. Purpose
+## 1. Purpose and evidence split
 
-This guide is the quick, reproducible path for setting up a new DANTE backend development workstation or onboarding another developer without reconstructing the setup from chat history.
+This guide is the quick, reproducible path for setting up a DANTE backend development workstation or onboarding another developer without reconstructing the setup from chat history.
 
-It records both:
+It deliberately separates:
 
-1. the reusable installation procedure; and
-2. the exact verified checkpoint reached on the first DANTE workstation.
+1. the **reusable current installation/operation procedure**; and
+2. the **exact first-workstation evidence** recorded when CP1/CP2 were originally proved on PostgreSQL 18.4.
 
-The Engineering Foundation and active checkpoint contracts remain authoritative for architectural decisions. This document is an operational bootstrap guide and must not silently redefine those decisions.
+The first-workstation 18.4 observations remain historically exact. Current repository/runtime truth is PostgreSQL major line 18 with maintenance patch 18.6. CP6 directly re-proved the existing technical foundation on 18.6; this does not rewrite CP2/CP3 history or imply business persistence PASS.
+
+The active workstream and current project/status documents remain authoritative for architecture and checkpoint status. This operational guide must not redefine them.
 
 ## 2. Target workstation model
 
@@ -76,7 +81,7 @@ default WSL version = 2
 Ubuntu-24.04 available
 ```
 
-The first verified workstation reported:
+First-workstation evidence:
 
 ```text
 WSL                  2.7.12.0
@@ -170,7 +175,7 @@ curl --version | head -n 1
 rsync --version | head -n 1
 ```
 
-First workstation evidence:
+First-workstation evidence:
 
 ```text
 git    2.43.0
@@ -189,7 +194,7 @@ sudo apt update
 sudo apt install -y gh
 ```
 
-Authenticate through the browser flow:
+Authenticate:
 
 ```bash
 gh auth login --web --git-protocol https
@@ -231,7 +236,7 @@ git config --global user.email "132660543+MattiaRubino@users.noreply.github.com"
 
 A future collaborator uses their own verified GitHub identity instead.
 
-## 8. Clone DANTE into the Linux filesystem
+## 8. Clone DANTE and select the active bounded workstream
 
 Create a Linux-native project directory:
 
@@ -249,14 +254,7 @@ Canonical local path shape:
 /home/<user>/projects/dante
 ```
 
-Do not use routine development locations such as:
-
-```text
-/mnt/c/...
-/mnt/d/...
-```
-
-for the repository itself.
+Do not use routine development locations such as `/mnt/c/...` or `/mnt/d/...` for the repository itself.
 
 Verify:
 
@@ -273,20 +271,23 @@ Current repository remote:
 https://github.com/MattiaRubino/dante.git
 ```
 
-At the current backend-scaffold checkpoint, the working branch is:
+The original backend-scaffold implementation used `feature/backend-scaffold`; that branch is now historical and its work is integrated through PR #24.
+
+Current CP6 backend work uses:
 
 ```text
-feature/backend-scaffold
+feature/logical-postgresql
 ```
 
-Checkout when that branch is the active approved scope:
+When resuming CP6:
 
 ```bash
 git fetch origin
-git switch feature/backend-scaffold
+git switch feature/logical-postgresql
+git pull --ff-only
 ```
 
-Do not treat this branch name as a permanent onboarding branch. Future work starts from the current approved `main` and uses the bounded branch defined by that workstream.
+Never treat a workstream branch name as a permanent onboarding branch. Always consume `docs/PROJECT-STATUS.md` and the active durable workstream before writes.
 
 ## 9. Install `uv`
 
@@ -294,11 +295,6 @@ Use the official standalone installer:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Load the installed path in the current shell:
-
-```bash
 source "$HOME/.local/bin/env"
 ```
 
@@ -309,14 +305,14 @@ uv --version
 command -v uv
 ```
 
-First workstation evidence:
+First-workstation evidence:
 
 ```text
 uv 0.12.5
 /home/mattia/.local/bin/uv
 ```
 
-The verified version is recorded as evidence. The project scaffold/lock/tool policy remains the authority for future reproducible version control.
+The verified version is evidence; project configuration remains the authority for the exact required version.
 
 ## 10. Install DANTE Python with `uv`
 
@@ -327,7 +323,7 @@ supported line  Python 3.14.x
 initial pin     Python 3.14.7
 ```
 
-Install exactly the initial pin:
+Install:
 
 ```bash
 uv python install 3.14.7
@@ -341,23 +337,14 @@ python3.14 --version
 command -v python3.14
 ```
 
-Expected:
-
-```text
-Python 3.14.7
-/home/<user>/.local/bin/python3.14
-```
-
 Do **not** make this a replacement for Ubuntu's generic system `python3`.
 
-The first workstation intentionally keeps:
+First-workstation evidence intentionally kept:
 
 ```text
 Ubuntu system Python  3.12.x
 DANTE uv Python       3.14.7
 ```
-
-separate.
 
 Final interpreter verification:
 
@@ -376,21 +363,19 @@ DANTE interpreter    /home/mattia/.local/bin/python3.14
 
 ## 11. Bootstrap the DANTE backend environment
 
-After CP1 exists on the active branch:
-
 ```bash
 cd ~/projects/dante/apps/backend
 uv sync --locked
 uv lock --check
 ```
 
-`uv sync --locked` creates the repository-local backend environment:
+The repository-local environment is:
 
 ```text
 /home/<user>/projects/dante/apps/backend/.venv
 ```
 
-The first workstation directly verified:
+First-workstation evidence:
 
 ```text
 project Python       3.14.7
@@ -400,7 +385,7 @@ installed namespace  dante from apps/backend/src/dante
 
 The lockfile is repository authority for the exact dependency graph. Do not hand-edit it.
 
-Current CP1 direct graph after final resolver/remote verification:
+Current project resolution at the CP6-02 closure includes:
 
 ```text
 fastapi             0.141.1
@@ -412,6 +397,9 @@ mypy                 2.3.1
 pytest               9.1.1
 pytest-cov           7.1.0
 ruff                 0.16.3
+SQLAlchemy           2.0.52
+psycopg              3.3.4
+Alembic              1.19.1
 ```
 
 ## 12. PyCharm usage model
@@ -436,9 +424,7 @@ WSL Ubuntu-24.04 project
 /home/<user>/projects/dante/apps/backend/.venv/bin/python
 ```
 
-Do not let the IDE manufacture an unrelated Windows Python environment.
-
-IDE convenience must never be required for repository correctness: build/test/lint/type/migration commands remain CLI-capable.
+Do not let the IDE manufacture an unrelated Windows Python environment. CLI build/test/lint/type/migration commands remain authoritative.
 
 ## 13. Install Docker Desktop on Windows
 
@@ -448,7 +434,7 @@ For a normal single-user development workstation, use the per-user installation 
 
 Do not enable Windows Containers or Kubernetes for the DANTE backend bootstrap.
 
-After installation, open Docker Desktop and verify:
+Verify:
 
 ```text
 Settings
@@ -461,32 +447,26 @@ Settings
 → Ubuntu-24.04 ON
 ```
 
-The first workstation explicitly enabled `Ubuntu-24.04` rather than enabling every future/default WSL distribution implicitly.
+The first workstation explicitly enabled `Ubuntu-24.04` rather than every WSL distribution implicitly.
 
 ### Docker data location
 
-Container images, layers, build cache and volumes may become large. Prefer a secondary drive where available, for example:
+Prefer a secondary drive where available, for example:
 
 ```text
 D:\Docker\DesktopData
 ```
 
-Use Docker Desktop's own **Disk image location** setting to move/manage that storage. Do not manually move Docker's VHDX files.
+Use Docker Desktop's own **Disk image location** setting. Do not manually move Docker's VHDX files.
 
-The exact disk-image location must be verified separately on each workstation; Docker functionality PASS does not by itself prove the storage location.
-
-The first DANTE workstation was explicitly verified in Docker Desktop under **Settings → Resources → Advanced** with:
+First-workstation direct verification:
 
 ```text
-WSL 2 backend       ACTIVE
+WSL 2 backend        ACTIVE
 Disk image location D:\Docker\DesktopData\DockerDesktopWSL
 ```
 
-Therefore Docker images, layers, build cache and Docker-managed volume data for this workstation are anchored on the secondary `D:` drive rather than the Windows system drive.
-
 ## 14. Verify Docker inside Ubuntu
-
-With Docker Desktop running and `Ubuntu-24.04` integration enabled, open Ubuntu and run:
 
 ```bash
 command -v docker
@@ -505,7 +485,7 @@ OS=linux
 ARCH=x86_64
 ```
 
-The first workstation ultimately verified:
+First-workstation evidence:
 
 ```text
 Docker Engine/CLI      29.7.2
@@ -514,17 +494,17 @@ Docker daemon OS       linux
 Docker architecture    x86_64
 ```
 
-These Docker/Compose versions are workstation evidence, not permanent DANTE pins unless later repository-controlled infrastructure declares one.
+These Docker/Compose versions are workstation evidence, not permanent DANTE pins.
 
-## 15. Docker socket permission case encountered on the first workstation
+## 15. Docker socket permission case from the first workstation
 
-The first workstation initially showed:
+Initial symptom:
 
 ```text
 permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
 ```
 
-Diagnosis:
+Diagnosis used:
 
 ```bash
 whoami
@@ -537,7 +517,7 @@ env | grep -E '^DOCKER_' || true
 ls -ld /mnt/wsl/docker-desktop 2>/dev/null || echo "docker-desktop mount non trovato"
 ```
 
-Observed state:
+Observed:
 
 ```text
 socket       /var/run/docker.sock
@@ -547,40 +527,26 @@ user         not yet a member of docker group
 Docker Desktop WSL mount present
 ```
 
-Fix used:
+Fix:
 
 ```bash
 sudo usermod -aG docker $USER
 getent group docker
 ```
 
-Then close Ubuntu and from PowerShell terminate the distro so supplementary groups are reloaded:
+Then from PowerShell terminate the distro so supplementary groups reload:
 
 ```powershell
 wsl --terminate Ubuntu-24.04
 ```
 
-Restart Docker Desktop if required, verify `Ubuntu-24.04` remains enabled under **Settings → Resources → WSL Integration**, then reopen Ubuntu.
+Restart Docker Desktop if required and verify WSL integration remains enabled. Do not install a second Docker Engine in Ubuntu and do not use permanent `sudo docker ...` as a workaround.
 
-Verify the group membership:
-
-```bash
-groups
-```
-
-Expected to include:
-
-```text
-docker
-```
-
-Do **not** install a second Docker Engine in Ubuntu and do not use permanent `sudo docker ...` as a workaround for a broken Desktop integration.
-
-Membership of the `docker` group provides high privilege over the local Docker daemon and is intentional only for trusted developer accounts on the workstation.
+Membership of the `docker` group provides high privilege over the local Docker daemon and is intentional only for trusted developer accounts.
 
 ### Integration reset case
 
-After terminating the distro, the first workstation temporarily reported that `docker` could not be found. Docker Desktop's WSL integration was reset by toggling:
+After terminating the distro, if `docker` disappears, reset Docker Desktop's WSL integration:
 
 ```text
 Ubuntu-24.04 OFF
@@ -589,32 +555,15 @@ Ubuntu-24.04 ON
 Apply & Restart
 ```
 
-After reopening Ubuntu, the CLI and daemon were available correctly.
-
 ## 16. Docker end-to-end smoke test
-
-Run without `sudo`:
 
 ```bash
 docker run --rm hello-world
 ```
 
-A valid PASS proves that the WSL CLI can:
+A valid PASS proves WSL CLI → Docker Desktop daemon → pull → Linux container execution → cleanup.
 
-1. contact the Docker Desktop daemon;
-2. pull an image from Docker Hub;
-3. create/run a Linux amd64 container;
-4. receive the container output;
-5. remove the test container after exit.
-
-The first workstation produced:
-
-```text
-Hello from Docker!
-This message shows that your installation appears to be working correctly.
-```
-
-Therefore the workstation checkpoint is:
+First-workstation result:
 
 ```text
 Docker Desktop                  PASS
@@ -629,7 +578,7 @@ hello-world container           PASS
 Docker data location on D:      PASS
 ```
 
-## 17. Verify backend CP1
+## 17. Verify backend quality foundation
 
 From `apps/backend`:
 
@@ -640,26 +589,13 @@ uv sync --locked
 uv run ruff format --check .
 uv run ruff check .
 uv run mypy
-uv run pytest
+uv run pytest -m "not postgres"
 uv build
 ```
 
-The first workstation directly verified all commands above on the final locked environment.
-
-Final CP1 test evidence:
-
-```text
-pytest                  25/25 PASS
-statement coverage      100.00%
-branch coverage         100.00%
-```
-
-The 100% value describes the small CP1 surface only and is not a permanent arbitrary threshold.
-
-For real process verification:
+For real process verification after valid runtime DB configuration:
 
 ```bash
-cp .env.example .env.local
 uv run --env-file .env.local \
   uvicorn dante.bootstrap.app:create_app \
   --factory \
@@ -673,17 +609,22 @@ curl -sS http://127.0.0.1:8000/health/live; printf '\n'
 curl -sS http://127.0.0.1:8000/health/ready; printf '\n'
 ```
 
-First workstation evidence:
+Historical CP1 evidence:
 
 ```text
-Uvicorn factory startup   PASS
-/health/live              {"status":"ok"}
-/health/ready             {"status":"ready"}
+pytest                  25/25 PASS
+statement coverage      100.00%
+branch coverage         100.00%
+Uvicorn factory startup PASS
+/health/live            {"status":"ok"}
+/health/ready           {"status":"ready"}
 ```
 
-`.env.local`, `.venv`, `.coverage`, build output and tool caches are local/generated state and are not committed as source artifacts; `uv.lock` is committed.
+The 100% value describes the small CP1 surface only and is not a project threshold.
 
-## 18. Bootstrap and operate DANTE LOCAL PostgreSQL — CP2 VERIFIED
+`.env.local`, `.venv`, `.coverage`, build output and tool caches are local/generated state and are not committed; `uv.lock` is committed.
+
+## 18. Bootstrap and operate DANTE LOCAL PostgreSQL
 
 PostgreSQL server is **container-only** for the DANTE LOCAL baseline.
 
@@ -698,9 +639,17 @@ infra/compose/local.yaml
 infra/compose/README.md
 ```
 
-The durable design/acceptance authority is:
+Historical CP2 design/acceptance authority:
 
 `docs/development/backend-cp2-postgres-contract.md`
+
+Closed CP6 reusable database doctrine:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Gate 02 closure evidence:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
 
 ### 18.1 Create the workstation-local PostgreSQL password
 
@@ -736,31 +685,35 @@ git check-ignore -v infra/compose/secrets/postgres_password.local
 git status --short
 ```
 
-Required fundamentals:
+Never commit or paste the secret.
 
-```text
-mode                 600
-Git ignore           PASS
-working tree         unchanged by secret creation
-```
-
-Never commit or paste the secret into documentation/chat evidence.
-
-### 18.2 Validate and build
+### 18.2 Validate and build current PostgreSQL image
 
 ```bash
 docker compose -f infra/compose/local.yaml config --quiet
+docker compose -f infra/compose/local.yaml build postgres
 ```
 
-For the canonical clean-build proof:
+For a clean-build proof when explicitly needed:
 
 ```bash
 docker compose -f infra/compose/local.yaml build --no-cache postgres
 ```
 
-Routine later builds may use the standard build command documented in `infra/compose/README.md`.
+Current repository-controlled image:
 
-The first workstation directly verified the repaired clean build after discovering that the pinned PostgreSQL base required Debian `ca-certificates` before HTTPS access to the PGDG historical archive. The repository repair preserves TLS certificate verification and PGDG signed-repository verification.
+```text
+dante-postgres-local:18.6
+postgres:18.6-trixie
+OCI index digest sha256:ae6c78831cbc35fa3a4aaf4d763ddacf6183d6004774cc2dc28b3920410d1d1a
+```
+
+The image keeps exact extension package pins:
+
+```text
+PostGIS   3.6.4
+pgvector  0.8.6
+```
 
 ### 18.3 Start/stop
 
@@ -783,7 +736,7 @@ Normal stop that **preserves data**:
 docker compose -f infra/compose/local.yaml down
 ```
 
-Destructive LOCAL cluster reset:
+Destructive LOCAL reset:
 
 ```bash
 docker compose -f infra/compose/local.yaml down --volumes
@@ -791,9 +744,9 @@ docker compose -f infra/compose/local.yaml down --volumes
 
 `down --volumes` destroys the Compose PostgreSQL named volume. Use it only when an explicit reset is intended.
 
-### 18.4 Verified CP2 database envelope
+### 18.4 Historical first-workstation CP2 database envelope — DO NOT REWRITE
 
-The first workstation directly proved:
+The first workstation directly proved on 2026-08-20:
 
 ```text
 PostgreSQL                       18.4
@@ -809,7 +762,7 @@ destructive reset                PASS
 fresh reinitialization           PASS
 ```
 
-The selected extension inventory observed after fresh initialization:
+Observed extension inventory:
 
 ```text
 pg_stat_statements  1.12
@@ -819,11 +772,11 @@ unaccent            1.1
 vector              0.8.6
 ```
 
-### 18.5 Windows GUI connectivity
+That 18.4 evidence remains exact historical CP2 truth. Current repository image is 18.6 and has separate direct evidence below.
 
-The Windows GUI connects to the container; it does not replace it.
+### 18.5 Historical Windows GUI connectivity
 
-Verified DBeaver connection:
+Verified first-workstation DBeaver connection:
 
 ```text
 Host      127.0.0.1
@@ -833,92 +786,106 @@ User      postgres
 Password  contents of the ignored workstation-local secret
 ```
 
-To copy the password to the Windows clipboard without printing it in the terminal:
-
-```bash
-clip.exe < infra/compose/secrets/postgres_password.local
-```
-
-Direct GUI acceptance query:
+Direct query:
 
 ```sql
 SELECT current_database(), current_user, version();
 ```
 
-First workstation observed:
+First workstation observed PostgreSQL **18.4**. That observation proves the historical Windows → loopback → Docker boundary; it is not a claim that the current image remains 18.4.
+
+## 19. Current PostgreSQL 18.6 direct evidence
+
+The CP6 maintenance refresh changed only the PostgreSQL 18 patch-level envelope and preserved the CP3 persistence contract.
+
+GitHub Actions directly ran:
 
 ```text
-current_database = dante
-current_user     = postgres
-PostgreSQL       = 18.4 line
+Backend CI run                    32568664940
+workflow event                    workflow_dispatch
+executed HEAD                     ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+PostgreSQL base                   18.6-trixie
+PostGIS                           3.6.4 PASS
+pgvector                          0.8.6 PASS
+
+Backend Quality                   SUCCESS
+Ruff format/lint                  PASS
+mypy strict                       PASS
+fast pytest                       32 / 32 PASS
+wheel + sdist                     PASS
+
+Backend PostgreSQL                SUCCESS
+PostgreSQL pytest                 18 / 18 PASS
+Alembic fresh → head              PASS
+Alembic head/base/head            PASS
+Alembic no-drift check            PASS
+owner/migrator/runtime privileges PASS
+runtime/search_path               PASS
+stale connection recovery         PASS
+DB outage/readiness recovery      PASS
+transaction commit/rollback       PASS
+savepoint behavior                PASS
+
+Backend CI Gate                   SUCCESS
+complete current test corpus      50 / 50 covered across two mandatory lanes
 ```
 
-DBeaver therefore directly proved the Windows → loopback published port → Docker PostgreSQL boundary.
+This is **DIRECT REMOTE QA PASS for the PostgreSQL 18.6 technical foundation regression**. It is not a business-semantic HG/PSV PASS.
 
-CP2 does not yet add SQLAlchemy/psycopg application connectivity, Alembic, application DB settings, runtime/migrator identities or concrete schema mappings. Those return under CP3 or later bounded authority.
+PostgreSQL 18.6 release-note review result:
 
-## 19. Current verified checkpoint
+```text
+PASS / NO CURRENT POST-UPGRADE ACTION
+```
 
-As of 2026-08-20:
+Current DANTE does not use a custom logical-decoding output plugin, `pgcrypto`, business GIN index, `btree_gist` or `ltree` object requiring an 18.6-specific cleanup action. When PowerSync/logical replication becomes active, review `output_plugin_libraries` and all then-current PostgreSQL maintenance requirements.
+
+## 20. Current repository/workstream checkpoint
+
+Historical 2026-08-20 workstation snapshot:
+
+```text
+Working branch                     feature/backend-scaffold
+backend CP1                        PASS
+backend CP2 PostgreSQL 18.4        CLOSED / DIRECT QA PASS
+backend CP3                        NEXT / NOT STARTED at that moment
+```
+
+That is phase-time evidence only.
+
+Current repository truth:
 
 ```text
 Repository                         MattiaRubino/dante
-Working branch                     feature/backend-scaffold
-Workspace                          /home/mattia/projects/dante
-
-WSL                                PASS
-WSL2                               PASS
-Ubuntu 24.04 LTS                   PASS
-Linux-native repository path       PASS
-base Linux tools                   PASS
-GitHub CLI authentication          PASS
-HTTPS Git credential integration   PASS
-uv                                 PASS
-Python 3.14.7                      PASS
-Linux x86_64 interpreter           PASS
-
-Docker Desktop                     PASS
-Docker WSL2 backend                PASS
-Ubuntu-24.04 Docker integration    PASS
-Docker CLI                         PASS
-Docker Compose                     PASS
-Docker daemon access               PASS
-Docker hello-world                 PASS
-Docker data location on D:         PASS
-
-backend CP1 project                PASS
-backend .venv                      PASS
-locked dependency graph            PASS / REMOTE
-FastAPI factory process            PASS
-Ruff                               PASS
-mypy strict                        PASS
-pytest                             PASS
-uv build                           PASS
-real HTTP probes                   PASS
-
-backend CP2 PostgreSQL             CLOSED / DIRECT QA PASS
-DANTE PostgreSQL image             PASS
-PostgreSQL 18.4                    PASS
-selected extension envelope        PASS
-functional extension probes        PASS
-pg_stat_statements                 PASS
-named-volume persistence           PASS
-destructive reset                  PASS
-Windows DBeaver connectivity       PASS
-
-backend CP3                        NEXT / NOT STARTED
+Current backend branch             feature/logical-postgresql
+Protected main                     contains CP1–CP5 via merged PR #24
+CP1–CP5                            CLOSED / INTEGRATED / DIRECT QA PASS
+CP6-00                             COMPLETE
+CP6-01                             CLOSED / GATE 01 PASS
+CP6-02                             CLOSED / GATE 02 PASS
+CP6-03                             NEXT / NOT STARTED
+PostgreSQL architecture            major 18
+Physical/CP2/CP3 exact patch       18.4 historical
+current PostgreSQL patch           18.6
+18.6 technical regression          DIRECT REMOTE QA PASS
+business persistence schema        NOT IMPLEMENTED
+Vertical #1 implementation         POST-CP6 / NOT STARTED
 ```
 
-The current post-reset LOCAL PostgreSQL state is a fresh healthy cluster with the selected extension envelope initialized and no CP2 persistence-probe table retained.
-
-## 20. Resume rule
+## 21. Resume rule
 
 When continuing on a new machine or after interruption:
 
-1. identify the first section whose verification is not PASS;
-2. re-run the verification command for the immediately preceding PASS boundary;
-3. continue from there;
-4. treat CP1 and CP2 as CLOSED / DIRECT QA PASS unless new direct evidence contradicts them;
-5. never infer application persistence, migration, HG/PSV or production PASS from CP2 infrastructure evidence;
-6. current next backend checkpoint is CP3 READ-ONLY design/research;
-7. before any repository write, follow the current exact Git write gate for the active branch/workstream.
+1. verify WSL/Docker/uv/Python fundamentals from the relevant preceding sections;
+2. verify repository remote and fetch current protected `main` plus the explicitly active bounded branch;
+3. read `README.md`, `docs/PROJECT-STATUS.md`, `docs/ROADMAP.md` and the active workstream before any write;
+4. preserve CP1/CP2/CP3/CP5 historical evidence exactly rather than rewriting old version numbers;
+5. treat the current repository-owned PostgreSQL image as `dante-postgres-local:18.6` unless newer gated repository truth supersedes it;
+6. use `uv run pytest -m postgres` for the current real PostgreSQL acceptance boundary;
+7. never infer business schema, HG/PSV, recovery or production PASS from technical infrastructure evidence;
+8. for CP6, current durable authority is `docs/workstreams/logical-postgresql.md`;
+9. treat CP6-02 as CLOSED / GATE 02 PASS and consume its closure record plus closed Constitution;
+10. current CP6 resume point is CP6-03 read/research/design-first;
+11. Vertical #1 implementation begins only after whole CP6 closure;
+12. before any repository write, follow the exact Git write gate for the active branch/workstream.

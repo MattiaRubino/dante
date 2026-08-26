@@ -2,37 +2,73 @@
 
 Production backend application for DANTE.
 
-CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL
-PostgreSQL 18.4 image/envelope. CP3 activated application persistence, Alembic authority, PostgreSQL
-role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main
-enforcement. CP5 has now re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation.
+CP1 established the Python/process/configuration foundation. CP2 established the reproducible LOCAL PostgreSQL 18.4 image/envelope and direct phase-time evidence. CP3 activated application persistence, Alembic authority, PostgreSQL role separation and the real PostgreSQL acceptance harness. CP4 established calibrated CI and protected-main enforcement. CP5 re-proved the integrated scaffold end to end on the canonical WSL2/Linux workstation. PR #24 merged the closed scaffold into protected `main`.
 
-## Scaffold status
+CP6 then consumed that foundation and is now **CLOSED / CONCRETE POSTGRESQL DATABASE PASS / INTEGRATED VIA PR #42**. The concrete DANTE PostgreSQL database was derived from the closed Domain + Logical + Physical model, materialized through the reviewed Alembic DAG plus the forward-only CP6-05 hardening revision, directly tested on PostgreSQL 18.6 and verified on the persistent LOCAL cluster at revision `20260826_08`.
+
+## Current status
 
 ```text
 CP1   CLOSED / DIRECT QA PASS
-CP2   CLOSED / DIRECT QA PASS
-CP3   CLOSED / DIRECT QA PASS
+CP2   CLOSED / DIRECT QA PASS — ORIGINAL POSTGRESQL 18.4 EVIDENCE
+CP3   CLOSED / DIRECT QA PASS — ORIGINAL POSTGRESQL 18.4 EVIDENCE
 CP4   CLOSED / DIRECT REMOTE QA PASS
 CP5   CLOSED / DIRECT INTEGRATED QA PASS
+PR #24 MERGED / POST-MERGE BACKEND CI PASS
+
+CP6-00 COMPLETE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 CLOSED / GATE 03 PASS
+CP6-04 CLOSED / MATERIALIZATION PASS
+CP6-05 CLOSED / DIRECT QA PASS
+CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+PR #42 MERGED INTO PROTECTED main
+
+POSTGRESQL 18.6
+PERSISTENT LOCAL ALEMBIC 20260826_08
+FINAL TOPOLOGY 68 tables / 5 views / 14 routines / 75 triggers /
+               95 indexes / 68 FKs / 120 CHECKs
 ```
 
-PR #24 remains open and unmerged. Concrete Logical → PostgreSQL business implementation starts only after a separate protected-main integration gate succeeds.
+Protected-main CP6 integration:
+
+```text
+final feature HEAD  9297b64c7c912c2cc8e344a6617beb5c91457bbb
+PR                  #42
+merge commit        117360b9333fd1a8a62d0dfeb0398a4d5811e393
+status              MERGED
+```
+
+Current backend transition boundary:
+
+```text
+CP6 CLOSED + INTEGRATED
+concrete PostgreSQL database available on protected main
+        ↓
+POST-CP6 PRODUCT IMPLEMENTATION
+new bounded vertical branch only when explicitly started
+        ↓
+normal forward schema evolution only for genuine new requirements
+```
+
+There is no remaining CP6 alignment/merge step. Final CP6 closure evidence lives in `docs/development/backend-cp6-05-whole-database-qa.md`; the consolidated historical branch record lives in `docs/archive/branches/2026-08-feature-logical-postgresql.md` and is non-authoritative for current state.
 
 ## Runtime contract
 
 ```text
-Python supported line   3.14.x
-initial exact pin       3.14.7
-package manager         uv
-import namespace        dante
-project distribution    dante-backend
-server semantics        Linux / WSL2
-canonical DB            PostgreSQL 18.4
+Python supported line      3.14.x
+initial exact pin          3.14.7
+package manager            uv
+import namespace           dante
+project distribution       dante-backend
+server semantics           Linux / WSL2
+canonical DB architecture  PostgreSQL 18
+current technical patch    PostgreSQL 18.6
+Physical/CP2/CP3 evidence  PostgreSQL 18.4 historical exact evidence
 ```
 
-The repository-controlled environment lives at `apps/backend/.venv` after `uv sync`. Do not share a
-single virtual environment between Windows and WSL.
+The repository-controlled environment lives at `apps/backend/.venv` after `uv sync`. Do not share a single virtual environment between Windows and WSL.
 
 ## Dependency bootstrap
 
@@ -44,8 +80,7 @@ uv lock --check
 uv tree --locked --depth 1
 ```
 
-`pyproject.toml` records bounded compatibility policy; `uv.lock` records the exact resolved graph.
-Never hand-edit `uv.lock`.
+`pyproject.toml` records bounded compatibility policy; `uv.lock` records the exact resolved graph. Never hand-edit `uv.lock`.
 
 Current persistence resolution is:
 
@@ -58,8 +93,7 @@ pytest-asyncio   1.4.0
 
 ## Runtime configuration
 
-`.env.example` is a safe runtime-only template. Copy it to `.env.local` and replace the LOCAL runtime
-password with the credential provisioned for `dante_runtime`.
+`.env.example` is a safe runtime-only template. Copy it to `.env.local` and replace the LOCAL runtime password with the credential provisioned for `dante_runtime`.
 
 The application does not discover `.env.local` automatically; inject it explicitly through `uv`.
 
@@ -84,10 +118,31 @@ The complete CP3 database contract lives in:
 
 `docs/development/backend-cp3-persistence-contract.md`
 
+The closed CP6-02 database constitution lives in:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution.md`
+
+Formal Gate 02 closure evidence lives in:
+
+`docs/development/backend-cp6-02-postgresql-persistence-constitution-closure.md`
+
+The current Database System of Record lives in:
+
+`docs/database/README.md`
+
+Final CP6 direct closure evidence lives in:
+
+`docs/development/backend-cp6-05-whole-database-qa.md`
+
+Historical CP6 branch chronology lives in:
+
+`docs/archive/branches/2026-08-feature-logical-postgresql.md`
+
+No live/session CP6 handoff is current authority after integration.
+
 ## LOCAL database security provisioning
 
-The CP2 PostgreSQL container starts with the platform/bootstrap administrator `postgres`. CP3 adds the
-application security boundary through the explicit provisioning command:
+The PostgreSQL container starts with the platform/bootstrap administrator `postgres`. CP3 adds the application security boundary through the explicit provisioning command:
 
 ```text
 dante_owner      NOLOGIN ownership identity
@@ -95,8 +150,7 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-Provisioning is intentionally separate from FastAPI startup and Alembic. Supply admin, migrator and
-runtime credentials only to the provisioning command/process.
+Provisioning is intentionally separate from FastAPI startup and Alembic. Supply admin, migrator and runtime credentials only to the provisioning command/process.
 
 Conceptual invocation from `apps/backend`:
 
@@ -124,11 +178,13 @@ migration login      dante_migrator
 DDL owner role       dante_owner via explicit SET ROLE
 ```
 
-Migration commands must receive the dedicated migrator password separately from runtime config. Normal
-application startup never runs migrations.
+Migration commands must receive the dedicated migrator password separately from runtime config. Normal application startup never runs migrations.
 
-The first revision is the technical CP3 baseline `20260820_01`; it intentionally creates no business
-schema.
+The migration history begins with the technical CP3 baseline `20260820_01`. CP6 materialized the concrete business database through the reviewed M1..M7 linear stages and the final forward-only CP6-05 hardening revision `20260826_08`. Applied migration history is immutable; later corrections use new forward revisions.
+
+PostgreSQL server patch maintenance such as 18.4 → 18.6 is platform/image maintenance and does not rewrite Alembic business/schema history.
+
+A later product vertical that genuinely needs a schema change must evolve the database through normal reviewed forward migration and keep SQLAlchemy, Dictionary, human-readable reference and direct tests aligned in the same change.
 
 ## Run locally
 
@@ -156,8 +212,7 @@ PostgreSQL unavailable   live 200   ready 503
 PostgreSQL recovers      same process can return ready 200
 ```
 
-Probe responses deliberately expose no credentials, DSN, database host/name, SQL or stack details.
-Neither endpoint appears in the product OpenAPI surface.
+Probe responses deliberately expose no credentials, DSN, database host/name, SQL or stack details. Neither endpoint appears in the product OpenAPI surface.
 
 ## Session and transaction rules
 
@@ -171,8 +226,7 @@ expire_on_commit=False
 autoflush=True
 ```
 
-The outer application-operation boundary owns commit/rollback. Persistence adapters never commit
-implicitly. There is no generic `Repository[T]` or generic Unit of Work in the closed scaffold.
+The outer application-operation boundary owns commit/rollback. Persistence adapters never commit implicitly. There is no generic `Repository[T]` or generic Unit of Work in the closed scaffold.
 
 ## API documentation behavior
 
@@ -197,7 +251,7 @@ uv run mypy
 # Fast tests only — no PostgreSQL acceptance container
 uv run pytest -m "not postgres"
 
-# Real PostgreSQL 18.4 acceptance tests
+# Real PostgreSQL 18.6 acceptance tests
 uv run pytest -m postgres
 
 # Full backend suite; includes the real PostgreSQL harness
@@ -207,17 +261,13 @@ uv run pytest
 uv build
 ```
 
-PostgreSQL-marked tests require the CP2 image `dante-postgres-local:18.4`. They start one disposable,
-loopback-only acceptance container for the pytest session and create fresh databases inside that
-isolated cluster. If the required image is absent, the tests fail explicitly rather than skip.
+PostgreSQL-marked tests require the current image `dante-postgres-local:18.6`. They start one disposable, loopback-only acceptance container for the pytest session and create fresh databases inside that isolated cluster. If the required image is absent, the tests fail explicitly rather than skip.
 
-This design protects the ordinary LOCAL `dante` database and its cluster-global application-role
-credentials from destructive acceptance testing while exercising the exact same DANTE PostgreSQL
-image/envelope.
+This design protects the ordinary LOCAL `dante` database and its cluster-global application-role credentials from destructive acceptance testing while exercising the exact same DANTE PostgreSQL image/envelope.
 
-## CP5 integrated acceptance evidence
+## Historical CP5 integrated acceptance evidence
 
-The final scaffold QA re-ran the production bootstrap on the actual WSL2/Linux workstation:
+CP5 re-ran the production scaffold on the actual WSL2/Linux workstation against the then-current PostgreSQL 18.4 envelope:
 
 ```text
 uv 0.12.5                                  PASS
@@ -240,16 +290,86 @@ GET /health/ready                          200 {"status":"ready"}
 
 One immediately repeated full-suite launch hit a Docker Desktop/WSL `/forwards/expose` HTTP 500 while creating a disposable PostgreSQL container on a loopback port that had no Linux listener. After the diagnostic container was removed, a clean full run passed 50/50. The event is treated as transient local Docker port-forwarding behavior, not as an application or PostgreSQL acceptance failure.
 
-## Boundaries
+## PostgreSQL 18.6 foundation regression evidence
 
-The closed scaffold still does not authorize:
+Before concrete business-database materialization, CP6 refreshed only the PostgreSQL 18 maintenance patch and executed the then-existing mandatory CI lanes against the exact branch HEAD:
 
-- concrete Logical → PostgreSQL business tables/mappings;
-- business repositories/adapters;
-- product API routes;
-- AuthN/AuthZ;
+```text
+Backend CI run                32568664940
+workflow event                workflow_dispatch
+HEAD                          ec3dc795b5e044daa3a77723c94a1b4b5b92865c
+
+PostgreSQL base               18.6-trixie
+PostGIS                       3.6.4
+pgvector                      0.8.6
+
+Backend Quality               SUCCESS
+fast pytest                   32 / 32 PASS
+Ruff format/lint              PASS
+mypy strict                   PASS
+wheel + sdist                 PASS
+
+Backend PostgreSQL            SUCCESS
+PostgreSQL pytest             18 / 18 PASS
+Alembic fresh → head          PASS
+Alembic base/head round-trip  PASS
+Alembic drift check           PASS
+privilege matrix              PASS
+runtime identity              PASS
+outage/readiness recovery     PASS
+transaction semantics         PASS
+
+Backend CI Gate               SUCCESS
+current test corpus           50 / 50 covered across the two mandatory CI lanes
+```
+
+This remains historical **DIRECT REMOTE QA PASS for the technical PostgreSQL 18.6 foundation regression**. It predates and does not replace the final CP6-05 76-test disposable PostgreSQL acceptance and persistent LOCAL closure proof.
+
+## CP6 final direct acceptance evidence
+
+Final accepted implementation HEAD:
+
+```text
+22bbc078391d52c43665474bf465593d6225106e
+```
+
+Observed final acceptance:
+
+```text
+ruff format --check               PASS — 44 files
+ruff check                        PASS
+mypy strict                       PASS — 40 source files
+fast pytest                       37 / 37 PASS
+uv build                          PASS
+PostgreSQL 18.6 image             PASS
+real PostgreSQL pytest            76 / 76 PASS
+persistent LOCAL upgrade          20260826_07 → 20260826_08
+alembic check                     PASS
+final topology                    68|5|14|75|95|68|120
+final security posture            PASS
+Dictionary JSON-Schema            PASS
+restart without volume deletion   PASS
+revision/topology persistence     PASS
+GET /health/live                  200 {"status":"ok"}
+GET /health/ready                 200 {"status":"ready"}
+```
+
+See `docs/development/backend-cp6-05-whole-database-qa.md` for the full closure record, including historical failures and repairs.
+
+## Post-CP6 boundaries
+
+The concrete PostgreSQL database is closed and integrated. Post-CP6 work may consume it and may evolve it through normal reviewed forward migrations when a genuine application requirement appears.
+
+Database existence alone still does **not** authorize or prove:
+
+- first-product-vertical application persistence adapters/use cases;
+- product API routes merely because database objects exist;
+- frontend behavior;
+- AuthN/AuthZ product implementation;
 - direct AI database access;
-- PowerSync, Restate, PgBouncer or pgBackRest activation;
-- transactional outbox implementation;
-- automatic deadlock/serialization retries;
+- PowerSync, Restate, PgBouncer or pgBackRest activation merely because selected;
+- transactional outbox implementation without a real Class-A requirement;
+- automatic deadlock/serialization retries without operation-specific safety/idempotency design;
 - production deployment or blanket Physical HG/PSV PASS.
+
+The next backend product work must start as a new bounded post-CP6 vertical from current protected `main`. The active Access frontend workstream creates a concrete future need for real Auth/backend integration, but no backend product branch is considered started merely because that frontend need exists.

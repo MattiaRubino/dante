@@ -1,6 +1,11 @@
 # DANTE System Overview
 
-- Status: **CURRENT ARCHITECTURE OVERVIEW**
+- **Status:** CURRENT ARCHITECTURE / IMPLEMENTATION-BOUNDARY OVERVIEW
+- **Last reconciled:** 2026-08-26
+- **Backend foundation:** CP1–CP6 CLOSED / integrated / directly validated
+- **Current PostgreSQL:** 18.6
+- **Current Alembic head:** `20260826_08`
+- **Current product work:** Access frontend active and unmerged on `feature/access-frontend`
 
 ## 1. Product and authority
 
@@ -8,7 +13,7 @@ DANTE is a personal operating system whose canonical truth represents real life 
 
 Compass: **Understand life. Shape what comes next.**
 
-Implementation consumes the closed Product, Domain, Logical and Physical models, the closed Engineering Foundation and the closed Frontend Engineering Foundation. Backend scaffold CP1-CP5 is integrated in protected `main`; frontend materialization FM-00..FM-07 is closed/directly validated and its bounded integration hardening is integrated through PR #28.
+Implementation consumes closed Product/Domain/Logical/Physical models and closed engineering foundations. Framework or storage convenience does not redefine accepted semantics.
 
 Core invariants include:
 
@@ -26,25 +31,19 @@ AI/solver output != accepted canonical effect
 client local state != canonical accepted effect
 ```
 
-WL-H01..WL-H12 remain active.
+Logical hardenings `WL-H01..WL-H12` remain active implementation contracts.
 
-## 2. Repository/application topology
+## 2. Repository / application topology
+
+One product monorepo:
 
 ```text
 DANTE repository
 │
 ├── apps/backend
-│   └── capability-first modular monolith
-│
 ├── apps/web
-│   └── React DOM/Vite client
-│
 ├── apps/mobile
-│   └── Expo/React Native client
-│
 ├── packages
-│   └── genuine multi-consumer semantics/artifacts only
-│
 ├── infra
 ├── tooling
 ├── tests/system
@@ -53,11 +52,7 @@ DANTE repository
 └── .github
 ```
 
-Paths are created only when real content exists. Production implementation remains in this repository.
-
-## 3. Backend architecture and current evidence
-
-Target internal shape remains capability-first:
+Backend accepted internal shape:
 
 ```text
 apps/backend/src/dante
@@ -69,257 +64,305 @@ apps/backend/src/dante
     ├── application
     ├── ports
     └── adapters
+        ├── inbound/http
+        └── outbound/persistence|integrations
 ```
 
 FastAPI is an inbound adapter/process host. SQLAlchemy/provider/runtime objects stay outside Domain identity. Capability boundaries are behavior/cohesion based, not one owner/table/route per module.
 
-The production backend scaffold is **CLOSED / DIRECT QA PASS / integrated via PR #24**. Direct evidence includes Python/uv bootstrap, Ruff, mypy strict, 50/50 full backend pytest, PostgreSQL 18.4 acceptance, migrations/privileges, package build, real Uvicorn startup and live/ready health endpoints.
-
-Concrete Logical -> PostgreSQL business mapping remains NOT STARTED.
-
-## 4. Frontend architecture and current evidence
-
-Web and Mobile are sibling governed clients with platform-specific renderers and selective shared semantics.
-
-Conceptual ownership:
+## 3. Backend technical foundation
 
 ```text
-Web
-bootstrap
-routes
-features
-ui
-platform
-config
-
-Mobile
-app/          Expo Router adapters
-src/bootstrap
-src/features
-src/ui
-src/platform
-src/config
+CP1 process/config foundation                   CLOSED / DIRECT QA PASS
+CP2 LOCAL PostgreSQL foundation                 CLOSED / DIRECT QA PASS
+CP3 persistence/migrations/privileges           CLOSED / DIRECT QA PASS
+CP4 CI enforcement                              CLOSED / DIRECT REMOTE QA PASS
+CP5 integrated scaffold QA                      CLOSED / DIRECT INTEGRATED QA PASS
+Backend scaffold integration PR #24             MERGED
+CP6 concrete PostgreSQL database                CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 ```
 
-Structural rules:
-
-- feature-first;
-- routes/navigation are thin adapters;
-- public-API-only cross-boundary use;
-- feature dependency cycles forbidden;
-- Web/Mobile do not import each other's private implementation;
-- UI/platform layers do not depend upward on feature internals;
-- no generic shared/common/utils dumping grounds;
-- production never imports prototypes;
-- architecture rules are executable where materialized.
-
-Current dependency graph proof:
+Current technical baseline:
 
 ```text
-36 modules / 45 dependencies / 0 violations
+Python 3.14.x
+uv
+FastAPI
+SQLAlchemy async
+psycopg 3
+Alembic
+PostgreSQL 18.6
+schema dante
+owner / migrator / runtime role separation
+explicit application transaction ownership
+real PostgreSQL acceptance testing
 ```
 
-Shared packages currently materialized:
+The earlier CP2/CP3 PostgreSQL 18.4 runs remain exact historical phase-time evidence. Patch maintenance inside PostgreSQL major line 18 does not reopen the architecture.
+
+## 4. Canonical persistence authority
 
 ```text
-@dante/design-tokens
-@dante/i18n
-@dante/time
-```
-
-Frontend materialization is **CLOSED / PASS** at FM-00..FM-07 stated scopes. It directly proved the Web build/E2E path, Android emulator runtime, Android Hermes bundle smoke, shared packages, strict TS, generated drift, unit tests, architecture enforcement, fresh-clone materialization and hosted CI.
-
-Frontend integration hardening is **CLOSED / integrated via PR #28**.
-
-## 5. Qualified frontend implementation baseline
-
-```text
-Node                      24.19.0
-pnpm                      11.22.0
-TypeScript                6.0.3 strict
-Turborepo                 2.10.11
-
-Web
-React / React DOM         19.2.8 / 19.2.8
-Vite                      8.2.1
-TanStack Router           1.170.31
-Playwright                1.62.1
-
-Mobile
-Expo SDK                  57.x / clean resolution 57.0.15
-React Native              0.86.2
-React                     19.2.3
-Expo Router               57.x / clean resolution 57.0.15
-Gesture Handler           2.32.0
-Reanimated                4.5.1
-
-Shared time implementation
-temporal-polyfill         1.0.4
-
-Web E2E authority
-apps/web/e2e/
-```
-
-The Foundation remains architecture authority; later direct materialization evidence qualifies version-specific implementation details. `selected != installed != configured != directly validated` remains mandatory.
-
-## 6. Canonical persistence and client data authority
-
-```text
-PostgreSQL 18.4
+PostgreSQL 18 major family
 SOLE CANONICAL PERSISTENCE / MATERIAL-HISTORY AUTHORITY
+
+current repository/runtime patch
+18.6
+
+current Alembic head
+20260826_08
 ```
 
-Frontend Data Authority Matrix:
+Current concrete topology:
+
+```text
+68 tables
+5 ordinary views
+14 integrity routines
+75 triggers
+95 physical indexes
+68 foreign keys
+120 named CHECK constraints
+0 custom enum/domain
+0 sequences
+0 materialized views
+0 RLS policies
+```
+
+Selected PostgreSQL capability envelope remains bounded by the accepted Physical/technical decisions, including PostGIS, pgvector, native FTS, `pg_trgm`, `unaccent`, `pg_stat_statements` and a trigger-based PgBouncer activation posture.
+
+Accepted relational thesis:
+
+```text
+owner-specific canonical families
++ owner-specific material-state/history families
++ specific typed relation families
++ bounded technical address/control structures only where genuine heterogeneous addressing requires them
++ separate provider / derived / runtime concerns
+```
+
+Rejected globally:
+
+```text
+universal Entity / Thing
+universal Relationship / generic edge
+canonical EAV/property bag
+universal event ontology
+universal Fact/Version semantic payload root
+JSONB required-semantic escape hatch
+```
+
+## 5. Reference / material-state architecture
+
+Reference families remain distinct:
+
+```text
+NativeRef
+ScopedRecordRef
+MaterialStateRef
+ExternalRef
+```
+
+Current PostgreSQL rules preserve:
+
+```text
+homogeneous NativeRef
+→ direct FK
+
+genuinely heterogeneous NativeRef
+→ bounded native-address anchor
+
+MaterialStateRef
+→ stable PostgreSQL UUID address
+→ bounded material-state address/control
+→ exact owner + facet
+→ owner-specific material-state row
+→ explicit current accepted-state binding where required
+```
+
+Provider revisions, MVCC tokens, timestamps and ETags do not become MaterialStateRef.
+
+## 6. CP6 — Concrete PostgreSQL Database
+
+CP6 is complete. It converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database and then validated the result directly.
+
+Closure state:
+
+```text
+CP6-00 COMPLETE
+CP6-01 CLOSED / GATE 01 PASS
+CP6-02 CLOSED / GATE 02 PASS
+CP6-03 CLOSED / GATE 03 PASS
+CP6-04 CLOSED / MATERIALIZATION PASS
+CP6-05 CLOSED / DIRECT QA PASS
+CP6 CLOSED / CONCRETE POSTGRESQL DATABASE PASS
+```
+
+Durable acceptance evidence:
+
+- `docs/development/backend-cp6-05-whole-database-qa.md`
+- `docs/database/README.md`
+- `docs/database/dictionary/README.md`
+- `docs/decisions/ADR-010-postgresql-persistence-constitution.md`
+
+The former CP6 blueprint/materialization sequence is historical execution evidence. It is not a current next-step plan.
+
+## 7. Boundary to product verticals
+
+Database materialization is not the same thing as product-vertical application implementation.
+
+Post-CP6 product verticals own, where applicable:
+
+```text
+application use cases
+application services
+business persistence adapters encoding application behavior
+business API routes
+frontend behavior
+product workflow orchestration
+```
+
+They consume the already-materialized canonical database. A later real requirement may evolve the DB normally, but accepted schema/semantic invariants are not casually reopened.
+
+Current state:
+
+```text
+Access frontend
+ACTIVE / UNMERGED on feature/access-frontend
+
+first dedicated post-CP6 backend product vertical
+NOT STARTED
+```
+
+## 8. Frontend / client data authority
+
+Frontend Data Authority Matrix remains:
 
 ```text
 canonical accepted state/effect   backend + PostgreSQL
-synced local projection           PowerSync/SQLite when activated
+synced local projection           PowerSync/SQLite noncanonical
 offline pending mutation          local staging only
 offline acceptance                backend governance/conflict checks
-remote request state              TanStack Query + typed API when activated
+remote request state              TanStack Query + typed API
 online governed command           FastAPI/backend
-form draft                        TanStack Form when activated
+form draft                        TanStack Form
 component transient               React
 cross-tree transient              Zustand only when justified
 ```
 
-An offline operation crosses staging -> upload -> backend accept/reject -> reconciliation. Local arrival/staging does not define semantic truth.
+Local arrival/staging never defines canonical truth.
 
-## 7. Frontend data/API boundary
+Generic frontend foundation/materialization is already closed and integrated. Product verticals proceed on bounded branches under their own gates.
 
-Feature UI consumes feature data/model boundaries rather than architecture-level coupling to HTTP, PowerSync, query cache or storage.
+## 9. Offline / specialist capabilities
 
-Real FastAPI OpenAPI eventually feeds Orval-generated React-free/auth-storage-agnostic transport code. `@dante/api-client` does not exist until there is real OpenAPI/product transport to generate.
+Selected Physical targets remain activation-triggered rather than automatically enabled everywhere.
 
-TanStack Query/Form, Orval and PowerSync are selected capabilities, not current product implementation.
+```text
+PowerSync + encrypted SQLite      offline/sync consumer required
+PgBouncer                         real connection-pressure value
+PostgreSQL outbox                 real Class-A async requirement
+Restate                           real Class-B durable workflow
+Cloudflare R2                     real ContentArtifact byte flow
+pgBackRest + S3                   recovery/production boundary or rehearsal
+OR-Tools                          solver-backed capability
+```
 
-## 8. Offline/sync
+A PostgreSQL-native structure required by the canonical schema may exist without activating the surrounding runtime/product capability.
 
-Selected Physical target remains PowerSync + encrypted SQLite bounded local state.
+## 10. Transactions / migrations / privileges
 
-Mobile may activate PowerSync/OP-SQLite/SQLCipher at the first real offline operation. Web starts online-first; PowerSync Web and browser PWA/service-worker behavior remain dormant.
+Current durable posture:
 
-Local client databases must be identity-scoped; cross-account local-data leakage is forbidden.
+```text
+one AsyncEngine per process
+one async_sessionmaker per process
+one AsyncSession per application operation
+autobegin=False
+autoflush=True
+expire_on_commit=False
+outer application operation owns transaction
+adapter may flush / never implicit commit
+READ COMMITTED default
+one Alembic DAG / one canonical head
+metadata.create_all() not deployment authority
 
-## 9. UI/shared semantics
+dante_owner      NOLOGIN
+dante_migrator   LOGIN NOINHERIT + bounded SET ROLE
+dante_runtime    LOGIN NOINHERIT / runtime DML posture
+```
 
-Web owns a DANTE Web UI layer. Mobile owns a separate DANTE Native UI layer. Shared semantic tokens may intentionally render differently per platform.
+Migration/evolution, idempotency, material-state and privilege doctrine is governed by the accepted PostgreSQL Constitution and the real Alembic/mapping implementation.
 
-`@dante/i18n` is framework-free; app bootstrap owns React integration.
+## 11. Current direct database evidence
 
-`@dante/time` owns Temporal semantics through the directly qualified `temporal-polyfill 1.0.4` implementation.
+Final CP6 acceptance established, among other gates:
 
-A full reusable design system, Storybook, visual regression and automated a11y are activation-triggered work, not placeholder baseline infrastructure.
+```text
+uv lock/sync                     PASS
+Ruff format/check                PASS
+mypy                             PASS
+non-PostgreSQL backend tests     PASS
+backend build                    PASS
+real PostgreSQL selected tests   PASS
+schema/topology checks           PASS
+security/ACL checks              PASS
+Database Dictionary checks       PASS
+restart/health                   PASS
+persistent volume retained       PASS
+```
 
-## 10. Configuration/secrets
+The accepted implementation/database evidence is the CP6 closure package, not older pre-materialization foundation runs.
 
-Backend uses typed pydantic-settings fail-fast configuration.
+## 12. Current non-claims
 
-Frontend shipped configuration is public client configuration, never a secret. Versioned/Zod-validated Web runtime config activates at the first shared DEV/Web deployment boundary.
+```text
+FIRST POST-CP6 BACKEND PRODUCT VERTICAL   NOT IMPLEMENTED
+SEMANTIC HG BLANKET PASS                  NO
+RESTORE/PITR PRODUCTION REHEARSAL         NOT CLAIMED BY CP6
+POWERSYNC PRODUCT DIRECT TEST             ONLY WHEN ACTIVATED BY A REAL VERTICAL
+RESTATE DIRECT TEST                       ONLY WHEN ACTIVATED BY A REAL WORKFLOW
+PRODUCTION DEPLOYMENT                     NOT IMPLIED BY LOCAL/CI DATABASE CLOSURE
+```
 
-Remote secret posture remains workload identity -> provider secret manager -> least privilege -> rotation/revocation/audit, with GitHub OIDC preferred where supported.
+## 13. Testing / CI
 
-## 11. Environments
+GitHub Actions remains repository-wide CI/CD authority.
+
+Protected `main` currently requires:
+
+```text
+Backend CI Gate
+Dependency Review
+Frontend CI Gate
+```
+
+Required-check names come from real emitted contexts and repository rules, not guessed prose.
+
+Historical successful runs remain evidence for the exact commit/environment on which they executed. Current claims require current evidence appropriate to the affected scope.
+
+## 14. Environments / developer posture
 
 Exactly:
 
 ```text
-LOCAL -> DEV -> UAT -> PROD
+LOCAL → DEV → UAT → PROD
 ```
 
-They are runtime contexts, not Git branches.
+Environments are runtime contexts, not Git branches.
 
-## 12. Async/durable/object/recovery/solver
+Canonical backend semantics remain Linux. Windows development uses the authoritative WSL-backed checkout; divergent Windows/WSL source clones are forbidden.
 
-Class A async: PostgreSQL transactional outbox + bounded worker when required.
-
-Class B: Restate selected/dormant until a real Class-B workflow.
-
-ContentArtifact raw bytes: private R2 when activated; PostgreSQL owns authority/metadata.
-
-Recovery: pgBackRest + WAL/PITR + S3 accepted target at recovery boundary.
-
-Solver: OR-Tools CP-SAT; `UNKNOWN != INFEASIBLE`; solver output remains candidate until governed acceptance.
-
-## 13. Observability
-
-Backend target: OpenTelemetry + Grafana Alloy + Grafana Cloud EU + pg_stat_statements.
-
-Frontend target: Sentry behind bounded app/platform adapters when shared deployment/release makes it useful.
-
-Observability is privacy-minimized operational telemetry, never canonical history or a shadow personal-data store.
-
-## 14. Testing / CI / supply chain
-
-GitHub Actions is repository-wide primary CI/CD authority.
-
-The canonical protected-main ruleset definition contains:
+## 15. Current execution posture
 
 ```text
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
+DOMAIN MODEL          CLOSED
+LOGICAL MODEL         CLOSED
+PHYSICAL MODEL        CLOSED
+BACKEND FOUNDATION    CLOSED
+CP6 DATABASE          CLOSED / INTEGRATED
+FRONTEND FOUNDATION   CLOSED / INTEGRATED
+ACCESS FRONTEND       ACTIVE / UNMERGED
 ```
 
-`Frontend CI Gate` has directly proved real green, controlled deliberate red, mandatory failure propagation, exact workflow restoration and recovery green. The repository owner confirmed applying its required-check promotion. The available connector does not expose direct ruleset readback, so the administrative setting is classified **OWNER-CONFIRMED APPLIED / DIRECT API READBACK UNAVAILABLE** rather than independently API-verified.
-
-PR #28 final head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80` passed:
-
-```text
-Backend Quality
-Backend PostgreSQL
-Backend CI Gate
-Dependency Review
-Quality
-Web E2E
-Mobile Bundle
-Frontend CI Gate
-```
-
-Protected-main merge `f1aacb0724088e0b4b086008a5219c2fba5ce0cf` has exactly two parents: prior main `fd3bc8dd918cf6aadeff4572221af68612c3cb42` and final PR head `a6607ceabd35f874dc9e5f63fe8f57f71a92bf80`. The merged main tree has zero file delta from the final PR head.
-
-The available connector's commit-workflow lookup exposes PR-associated runs only, so push-main CI for the merge SHA remains **DIRECT READBACK UNAVAILABLE**.
-
-Dependency Review remains fail-closed at moderate severity. Three exact transitive tooling GHSA exceptions are temporarily accepted until review/removal conditions are met; details live in the closed integration handoff.
-
-## 15. Developer posture
-
-Canonical development semantics remain Linux/WSL for the authoritative source tree and JS/backend tooling. Windows remains the UI/browser/Android-emulator/JetBrains host where desired.
-
-No divergent Windows/WSL clones and no cross-OS shared `node_modules`.
-
-## 16. Direct evidence boundary
-
-```text
-BACKEND SCAFFOLD             DIRECT QA PASS / INTEGRATED
-FRONTEND MATERIALIZATION     DIRECT QA PASS AT FM SCOPES / INTEGRATED
-WEB CHROMIUM E2E             PASS
-ANDROID EMULATOR RUNTIME     PASS
-ANDROID HERMES BUNDLE        PASS
-FRONTEND CI GATE CALIBRATION PASS green/red/recovery
-PR #28 INTEGRATION           MERGED / TREE IDENTITY PASS
-PUSH-MAIN CI ON MERGE SHA    DIRECT READBACK UNAVAILABLE
-
-CONCRETE BUSINESS SCHEMA     NOT STARTED
-POWERSYNC PRODUCT FLOW       NOT RUN
-ORVAL PRODUCT CLIENT         NOT MATERIALIZED
-IOS DIRECT RELEASE PATH      NOT RUN
-CODEQL                       NOT ACTIVE
-PRODUCTION DEPLOYMENT        NOT STARTED
-```
-
-## 17. Current next boundaries
-
-```text
-REPOSITORY SECURITY NEXT CANDIDATE
-CodeQL default setup evaluation under a fresh explicit gate
-
-BACKEND NEXT
-Concrete Logical -> PostgreSQL in a fresh bounded workstream
-
-PRODUCT NEXT
-first real vertical slice
--> activate only capabilities actually consumed
-```
-
-Future product capabilities activate according to the trigger register in `docs/workstreams/frontend-materialization-integration.md`.
+Current general repository status is owned by `docs/PROJECT-STATUS.md`; branch-local product work is owned by the relevant workstream documentation and executable branch truth.

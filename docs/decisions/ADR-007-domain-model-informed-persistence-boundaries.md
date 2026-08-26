@@ -1,9 +1,10 @@
 # ADR-007: Domain-Model-Informed Persistence Boundaries
 
-- Status: **Accepted semantic guardrail / partially superseded for Physical posture**
+- Status: **Accepted semantic guardrail / Physical posture superseded by later selection**
 - Date: 2026-08-16
 - Qualified: 2026-08-17
 - Current semantic authority: accepted Domain Atlas + closed Logical Model
+- Current Physical replacement authority: closed Physical Model + ADR-010 + closed CP6-02 PostgreSQL Persistence Constitution
 
 ## Context
 
@@ -120,21 +121,19 @@ The closed Logical Model expands this ADR's original guardrails with `WL-H01..WL
 
 These Logical contracts are now the stronger downstream authority.
 
-## Current Physical qualification
+## Historical pre-selection Physical qualification
 
-The original ADR retained PostgreSQL/hybrid persistence as accepted direction and used a measured-workload-only threshold for specialized infrastructure. Those parts are now qualified.
-
-Current posture:
+When this ADR was qualified on 2026-08-17, the Physical benchmark had not yet closed. The then-current posture was:
 
 ```text
 PostgreSQL hybrid
-CURRENT PREFERRED PHYSICAL BASELINE — not final selection
+PREFERRED PHYSICAL BASELINE — not yet final selection at that checkpoint
 
 TypeDB
-MANDATORY PHYSICAL BENCHMARK CHALLENGER
+MANDATORY PHYSICAL BENCHMARK CHALLENGER at that checkpoint
 
 Neo4j / property graph
-SERIOUS SECONDARY / READ-PROJECTION CANDIDATE
+SERIOUS SECONDARY / READ-PROJECTION CANDIDATE at that checkpoint
 
 event/document mechanisms
 BOUNDED CANDIDATES
@@ -143,16 +142,36 @@ generic EAV / generic edge / universal meta-model
 HARD REJECT FOR CANONICAL KERNEL
 ```
 
-Specialized infrastructure requires demonstrated benefit. Evidence may come from measured workload **or** a sufficiently strong structural improvement in correctness, durability, security, evolvability, operational reliability or migration-risk reduction.
+That block is retained as historical selection-process rationale only.
+
+## Current Physical truth
+
+The later Physical Model completed the benchmark and closed the persistence architecture:
+
+```text
+PostgreSQL 18 major family
+CLOSED / SELECTED / ACCEPTED
+sole canonical persistence + material-history authority
+
+Physical exact phase-time patch
+18.4 / HISTORICAL
+
+current repository-controlled patch
+18.6 / DIRECT REMOTE FOUNDATION REGRESSION PASS
+```
+
+The old PostgreSQL-vs-TypeDB/Neo4j selection contest is therefore not an open current decision. Reopening canonical persistence requires materially changed requirements/evidence and an explicit architecture gate.
+
+The detailed physical persistence doctrine is now governed by ADR-010 and the closed CP6-02 Constitution.
 
 ## Consequences
 
-- Physical design starts from the closed Domain + Logical models, not old candidate table lists.
+- Physical/database implementation starts from the closed Domain + Logical + Physical models, not old candidate table lists.
 - Shared technical representations are allowed only where semantic boundaries remain explicit and reconstructible.
 - Unsupported interpretation remains unresolved/proposed rather than becoming generic canonical truth.
-- Physical/database/schema/API/runtime choices remain separately gated.
+- Current PostgreSQL schema/mapping choices remain separately gated inside CP6 even though the canonical database family is selected.
 - A genuine semantic contradiction triggers a targeted reopen; implementation convenience does not.
 
 ## Historical relation to ADR-006
 
-This ADR originally superseded the semantic-authority implications of ADR-006. ADR-006 is now explicitly superseded as canonical semantic/data-model architecture. This ADR remains useful/current for its semantic guardrails, with the Physical-posture qualifications stated above.
+This ADR originally superseded the semantic-authority implications of ADR-006. ADR-006 is explicitly superseded as canonical semantic/data-model architecture. This ADR remains current for its semantic guardrails; only its old pre-selection Physical posture is historical.

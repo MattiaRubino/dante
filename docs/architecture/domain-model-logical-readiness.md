@@ -1,14 +1,24 @@
 # Domain Model → Logical Model Readiness Contract
 
-**Status:** Accepted pre-logical architecture hardening  
-**Date:** 2026-08-16  
-**Authority:** Domain Validation Methodology v3 + accepted Domain Atlas + ADR-007
+**Status:** CURRENT / SATISFIED  
+**Originally established:** 2026-08-16  
+**Current closure state:** Domain CLOSED; Logical Model CLOSED; WD-03 and WD-05 discharged  
+**Authority:** Domain Validation Methodology v3 + accepted Domain Atlas + ADR-007 + Whole-Logical remote-QA closure
 
 ## Purpose
 
-This document is the implementation bridge between the completed LifeOS semantic Domain Model and the next Logical Model / Persistence Mapping stage.
+This document is the durable implementation bridge between the accepted Domain Model and logical/persistence representation.
 
 It does not define SQL tables, API resources, migrations or ORM classes. Its job is to prevent technical representation from silently changing accepted semantic meaning.
+
+The readiness transition described here is no longer pending: the Logical Model was completed and remotely closed. The original guardrails remain current because downstream physical/database work must continue to preserve them.
+
+Current activation evidence:
+
+- [`../domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md`](../domain/checkpoints/whole-domain-final-regression-v0-validation-part-7.md) — Domain closure;
+- [`../logical-model/checkpoints/whole-logical-v1-remote-qa.md`](../logical-model/checkpoints/whole-logical-v1-remote-qa.md) — Logical Model closure and final WD-03 / WD-05 discharge.
+
+The chronological continuation files `domain-model-logical-readiness-part-2.md` through `domain-model-logical-readiness-part-5.md` are now transition/closure evidence. They do not need to be read to establish the current state represented here.
 
 ---
 
@@ -32,9 +42,9 @@ ADR-007 owns the compatibility rule.
 
 ---
 
-# 2. What logical design is allowed to optimize
+# 2. What logical and physical design may optimize
 
-The logical model may optimize:
+Technical representation may optimize:
 
 - referential integrity;
 - queryability;
@@ -85,7 +95,7 @@ A shared physical structure must preserve typed semantic ownership.
 
 # 4. Required identity distinctions
 
-The logical model must preserve independent identity where the Domain Atlas requires it.
+Technical representation must preserve independent identity where the Domain Atlas requires it.
 
 At minimum:
 
@@ -126,7 +136,7 @@ Actual != Observation
 Actual != Outcome
 ```
 
-Logical shortcuts must not make one-off recurrence exceptions indistinguishable from source-policy changes.
+Logical or physical shortcuts must not make one-off recurrence exceptions indistinguishable from source-policy changes.
 
 Past effective state must remain reconstructible where material.
 
@@ -223,7 +233,7 @@ Storage/provider identity changes must be representable without automatically ch
 
 # 10. Privacy and multi-actor requirement
 
-Logical design must support bounded projection semantics.
+Technical design must support bounded projection semantics.
 
 ```text
 Visibility(object/container)
@@ -234,7 +244,7 @@ Visibility(object/container)
 
 A private source may produce an authorized shared projection without exposing the source.
 
-The logical model must not force object duplication per recipient merely to achieve selective visibility.
+The model must not force object duplication per recipient merely to achieve selective visibility.
 
 External/accountless Persons must remain representable independently from Account/Principal implementation.
 
@@ -244,7 +254,7 @@ External/accountless Persons must remain representable independently from Accoun
 
 Semantic precision is internal capability, not mandatory UI complexity.
 
-Logical design should permit simple cases to remain compact when no material distinction would be lost.
+Technical design should permit simple cases to remain compact when no material distinction would be lost.
 
 ```text
 semantic capability
@@ -275,7 +285,7 @@ AI uncertainty must remain proposal/unresolved/source-backed state rather than b
 
 # 13. Specialist-boundary rule
 
-The logical core must allow specialist modules/adapters to relate to accepted kernel semantics without forcing specialist ontology into the general kernel.
+The logical/physical core must allow specialist modules/adapters to relate to accepted kernel semantics without forcing specialist ontology into the general kernel.
 
 Examples include:
 
@@ -290,11 +300,9 @@ Future specialist evidence may reopen a bounded semantic question, but specialis
 
 ---
 
-# 14. Logical-model validation required before SQL
+# 14. Validation requirement retained downstream
 
-The next stage must produce a reviewed logical mapping and explicitly show how each accepted semantic owner is represented.
-
-Before SQL/migrations/API implementation, the logical model must pass at least:
+The Logical Model was required to prove:
 
 1. semantic owner coverage;
 2. identity preservation;
@@ -307,27 +315,46 @@ Before SQL/migrations/API implementation, the logical model must pass at least:
 9. no semantic-free generic fallback;
 10. reverse mapping from logical representation back to domain meaning.
 
-A logical representation that cannot satisfy an accepted invariant must report the conflict and trigger targeted review; it must not silently simplify the ontology.
+The completed Whole-Logical closure established these properties and discharged the two Domain carry-forward obligations:
+
+```text
+WD-03 historical reconstruction  PASS
+WD-05 persistence/API pressure   PASS
+```
+
+These remain regression obligations for later implementation. A physical/database representation that cannot satisfy an accepted invariant must report the conflict and trigger targeted review; it must not silently simplify the model.
 
 ---
 
-# 15. Readiness verdict
-
-With ADR-007 applied, the architecture is ready to begin logical representation design under the Domain Atlas.
+# 15. Current readiness verdict
 
 ```text
-SEMANTIC MODEL
-COMPLETE FOR CURRENT LIFEOS KERNEL
+DOMAIN MODEL
+SEMANTICALLY CLOSED FOR CURRENT ACCEPTED KERNEL
+
+WD-01..WD-10
+PASS
+
+LOGICAL MODEL
+POST-WRITE QA PASS
+CLOSED
 
 LEGACY GENERIC-MODEL AUTHORITY
 SUPERSEDED WHERE INCOMPATIBLE
 
 POSTGRESQL / HYBRID DIRECTION
-RETAINED
-
-LOGICAL MODEL / PERSISTENCE MAPPING
-READY AFTER WHOLE-DOMAIN REMOTE CLOSURE QA
-
-SQL / MIGRATIONS / API IMPLEMENTATION
-NOT YET AUTHORIZED
+RETAINED AND SUBSEQUENTLY MATERIALIZED UNDER LATER PHYSICAL/BACKEND GATES
 ```
+
+This document no longer grants a future transition by itself; it records the durable semantic compatibility contract that downstream work must continue to satisfy.
+
+## Historical transition evidence
+
+The following files remain evidence of how the readiness state evolved and was activated:
+
+- `domain-model-logical-readiness-part-2.md`;
+- `domain-model-logical-readiness-part-3.md`;
+- `domain-model-logical-readiness-part-4.md`;
+- `domain-model-logical-readiness-part-5.md`.
+
+They are not independent current architecture authorities. Any future compaction/removal of them must pass the documentation knowledge-coverage gate first.
