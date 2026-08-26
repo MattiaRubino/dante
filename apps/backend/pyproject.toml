@@ -53,6 +53,35 @@ target-version = "py314"
 line-length = 100
 src = ["src"]
 
+[tool.ruff.format]
+# CP6 closure preserves already-materialized migrations and accepted pre-existing database
+# implementation/proof files byte-stable. These exact paths are formatter-only grandfathering;
+# Ruff lint, mypy and pytest still cover them. New CP6-05 proof files remain formatter-enforced.
+exclude = [
+    "migrations/versions/20260825_03_cp6_schedule_actual_session.py",
+    "migrations/versions/20260825_04_cp6_recurrence.py",
+    "migrations/versions/20260825_05_cp6_core_integrity_current_views.py",
+    "migrations/versions/20260826_06_cp6_occurrence_generation.py",
+    "migrations/versions/20260826_07_cp6_runtime_acl_activation.py",
+    "migrations/versions/20260826_08_cp6_final_qa_hardening.py",
+    "src/dante/platform/database/mappings/actual.py",
+    "src/dante/platform/database/mappings/recurrence.py",
+    "src/dante/platform/database/mappings/schedule.py",
+    "src/dante/platform/database/mappings/session.py",
+    "src/dante/platform/database/provisioning.py",
+    "src/dante/platform/database/runtime.py",
+    "tests/integration/database/test_cp6_m1.py",
+    "tests/integration/database/test_cp6_m2.py",
+    "tests/integration/database/test_cp6_m3.py",
+    "tests/integration/database/test_cp6_m4.py",
+    "tests/integration/database/test_cp6_m5.py",
+    "tests/integration/database/test_cp6_m6.py",
+    "tests/integration/database/test_cp6_m7.py",
+    "tests/integration/database/test_privileges.py",
+    "tests/integration/database/test_runtime.py",
+    "tests/integration/database/test_transactions.py",
+]
+
 [tool.ruff.lint]
 select = [
     "A",

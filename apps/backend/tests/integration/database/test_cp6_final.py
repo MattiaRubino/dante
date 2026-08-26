@@ -99,8 +99,7 @@ def _create_source(
             (routine_ref,),
         )
         connection.execute(
-            "INSERT INTO dante.native_address(native_ref,owner_family) "
-            "VALUES (%s,'routine')",
+            "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'routine')",
             (routine_ref,),
         )
         connection.execute(
@@ -251,8 +250,7 @@ async def test_cp6_final_async_lock_helper_is_transaction_scoped(
                     migrated_database.cluster.runtime_password,
                 ) as probe:
                     result = probe.execute(
-                        "SELECT pg_try_advisory_xact_lock(%s),"
-                        "pg_try_advisory_xact_lock(%s)",
+                        "SELECT pg_try_advisory_xact_lock(%s),pg_try_advisory_xact_lock(%s)",
                         (first, second),
                     ).fetchone()
                     assert result == (False, False)

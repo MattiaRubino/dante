@@ -91,10 +91,7 @@ def _validate_dictionary(
                 triggers.add(trigger_name)
                 routine_name = str(trigger["routine"]).removeprefix("dante.")
                 assert routine_name in routines
-                assert (
-                    routines[routine_name]["structure"]["routine"]["return_type"]
-                    == "trigger"
-                )
+                assert routines[routine_name]["structure"]["routine"]["return_type"] == "trigger"
     return indexes, constraints, triggers
 
 
@@ -161,9 +158,7 @@ def test_cp6_final_environment_topology_and_cross_representation(
         }
         live_views = {
             str(row[0])
-            for row in connection.execute(
-                "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-            )
+            for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
         }
         live_routines = {
             str(row[0])
