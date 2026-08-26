@@ -3,7 +3,7 @@
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
 - **Last reconciled:** 2026-08-26
 
-This directory is the durable documentation surface for DANTE. Current specifications must describe the present directly; historical evidence, completed workstream records and Git history must not silently override current truth.
+This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
 ## 1. Authority order
 
@@ -38,7 +38,7 @@ An unmerged branch may contain newer truth for its own scope, but it is not prot
 ```text
 PRODUCT / NORTH STAR                 CURRENT
 DOMAIN MODEL                         CLOSED
-LOGICAL MODEL                        CLOSED / 57 OF 57
+LOGICAL MODEL                        CLOSED / 57 OF 57 / REMOTE QA PASS
 PRE-PHYSICAL COHERENCE               CLOSED / FINAL QA PASS
 PHYSICAL TARGET                      CLOSED / ACCEPTED
 ENGINEERING FOUNDATION               CLOSED / ACCEPTED
@@ -53,7 +53,7 @@ ACCESS FRONTEND                      ACTIVE / UNMERGED ON feature/access-fronten
 FIRST POST-CP6 BACKEND VERTICAL      NOT STARTED ON A DEDICATED BRANCH
 ```
 
-For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream files.
+For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
 
 ## 3. Mandatory project entry points
 
@@ -89,14 +89,17 @@ temporary handoffs
 → temporary handoffs removed
 ```
 
-Use:
+Normative lifecycle source:
 
-- `development/documentation-lifecycle-policy.md` — normative lifecycle/compaction rules
-- `archive/README.md` — archive authority boundary
+- `development/documentation-lifecycle-policy.md`
+
+Archive boundary:
+
+- `archive/README.md`
 
 `docs/archive/` is selective non-authoritative history, not a backup mirror. Git remains the complete recoverable history.
 
-Frozen/read-only split documents may be recomposed into fewer files only through **lossless knowledge coverage**. Do not summarize away requirements, invariants, accepted decisions, continuing rationale or important evidence merely to reduce file count.
+Frozen/read-only split documents may be recomposed only through **lossless knowledge coverage**. Do not summarize away requirements, invariants, accepted decisions, continuing rationale, assumptions, counterexamples or important evidence merely to reduce file count.
 
 ## 5. Product
 
@@ -104,39 +107,64 @@ Entry point:
 
 - `product/README.md`
 
-Key durable current/product-definition sources include:
+Key durable product-definition sources include:
 
 - `product/product-identity-and-north-star.md`
 - `product/scope.md`
-- the accepted `product/v1-*.md` specifications where still current
+- accepted `product/v1-*.md` specifications where still current
 
-Research/simulation material is evidence, not automatic current product truth. The documentation cleanup may later reorganize dated research/simulation files into clearer evidence locations without changing accepted product semantics.
+Research/simulation material is evidence, not automatic current product truth.
 
 ## 6. Domain Model
 
-Entry point:
+Current entry point:
 
-- `domain/README.md` and its currently retained canonical continuations
+- `domain/README.md`
 
-The Domain Model is **CLOSED / semantically complete for current scope**.
+The Domain Model is **CLOSED / semantically complete for current accepted scope**.
 
-Canonical terminology and accepted concepts/checkpoints remain under `domain/`.
+Current concept-level semantics remain under:
 
-Important rule during this cleanup: the current Domain README family contains historical chronological continuations as well as substantive current material. It must not be compacted by summary. Any future reorganization requires statement-level knowledge coverage across concepts, checkpoints, language governance, deferred-dependency closure and final Whole-Domain evidence.
+- `domain/concepts/`
 
-Do not infer a semantic kernel primitive merely from UI or persistence naming.
+Validation methodology/evidence remains under the Domain directory and its checkpoints/history.
+
+Important current rule:
+
+```text
+domain/README-part-2.md ... domain/README-part-20.md
+= HISTORICAL / EVIDENCE ONLY
+```
+
+They preserve evolution and closure chronology; they are no longer required to determine current Domain status.
+
+Other Domain `*-part-N.md` families are classified by purpose:
+
+- concept/reference continuations may contain durable specification payload and remain part of that logical specification until proven safe to compact;
+- validation/checkpoint continuations are evidence/history unless explicitly owned as a current contract;
+- chronology alone does not create higher authority.
+
+Do not infer a semantic kernel primitive merely from UI, product or persistence naming.
 
 ## 7. Logical Model
 
-Entry point:
+Current entry point:
 
-- `logical-model/`
+- `logical-model/README.md`
 
-The Logical Model is **CLOSED / 57 of 57 classified**.
+The Logical Model is **CLOSED / 57 of 57 classified / REMOTE QA PASS**.
 
-The Whole-Logical content snapshot and later remote-QA closure/evidence must be interpreted according to their explicit lifecycle labels. Historical phase-time headers are not rewritten merely to look current, but they also must not override later closure records.
+Primary integrated contract/evidence:
 
-Binding hardenings remain `WL-H01..WL-H12` unless deliberately superseded by later accepted authority.
+- `logical-model/whole-logical-model-v1.md`
+- `logical-model/checkpoints/whole-logical-v1-validation.md`
+- `logical-model/checkpoints/whole-logical-v1-remote-qa.md`
+
+The Whole content file was written before its separate remote-QA activation, so any embedded `PENDING`/`CLEARANCE READY` banner is phase-time state. The later remote-QA closure owns the final activation status.
+
+Binding hardenings `WL-H01..WL-H12` remain implementation regression contracts unless deliberately superseded.
+
+Logical split registers/ledgers such as decision/assumption, representation, test-corpus and traceability continuations are retained because they contain detailed rationale, assumptions, rejected alternatives and tests not safely reducible to the Whole summary.
 
 ## 8. Physical Model
 
@@ -151,7 +179,7 @@ PostgreSQL 18 major family
 sole canonical persistence + material-history authority
 ```
 
-PostgreSQL 18.4 remains historical exact Physical/CP2/CP3 execution evidence where those phases ran on 18.4. Current repository/database patch is 18.6. Patch maintenance inside major line 18 does not reopen the architecture.
+PostgreSQL 18.4 remains historical exact phase-time Physical/CP2/CP3 evidence. Current repository/database patch is 18.6. Patch maintenance inside major line 18 does not reopen the architecture.
 
 Specialist capability activation remains trigger-based and direct-validation-specific.
 
@@ -162,20 +190,21 @@ Entry points:
 - `architecture/README.md`
 - `architecture/system-overview.md`
 - `architecture/technical-decisions.md`
+- `architecture/domain-model-logical-readiness.md`
 - `decisions/`
+
+Current architecture docs state current post-CP6 architecture directly. Phase reviews/QA/readiness continuations are evidence according to their explicit lifecycle role.
 
 Important persistence ADRs:
 
-- `decisions/ADR-003-primary-database.md` — historical PostgreSQL-selection rationale where explicitly historical
-- `decisions/ADR-007-domain-model-informed-persistence-boundaries.md` — semantic persistence guardrails
-- `decisions/ADR-010-postgresql-persistence-constitution.md` — current cross-cutting PostgreSQL persistence doctrine
+- `decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
+- `decisions/ADR-010-postgresql-persistence-constitution.md`
+- `decisions/ADR-003-primary-database.md` for historical PostgreSQL-selection rationale where explicitly historical
 
 Important frontend ADRs:
 
 - `decisions/ADR-008-frontend-engineering-stack.md`
 - `decisions/ADR-009-frontend-architecture-boundaries.md`
-
-Current architecture documents must state current architecture directly; phase reviews/QA records are evidence and should be classified accordingly during cleanup.
 
 ## 10. Database System of Record
 
@@ -199,7 +228,7 @@ Alembic             20260826_08
 120 CHECK constraints
 ```
 
-The machine-readable Dictionary is **materialized** with:
+The machine-readable Dictionary is materialized with:
 
 ```text
 68 table entries
@@ -218,16 +247,7 @@ Database Architecture & Reference
 ≈ real PostgreSQL schema
 ```
 
-The human-readable Database Architecture & Reference is currently one logical frozen payload physically stored as:
-
-```text
-database/dante-postgresql-database.md
-+ database/dante-postgresql-database-part-2.md
-...
-+ database/dante-postgresql-database-part-19.md
-```
-
-It may later be reorganized into fewer/topic-based read-only reference files, but only through lossless content-equivalence/knowledge-coverage QA.
+The human-readable Database Architecture & Reference remains one frozen logical payload physically split across `database/dante-postgresql-database.md` and its continuation parts. It may be reorganized only through lossless content-equivalence/knowledge-coverage QA.
 
 CP6 final acceptance:
 
@@ -243,7 +263,7 @@ Application documentation:
 
 - `../apps/backend/README.md`
 
-Durable backend contracts:
+Durable backend contracts include:
 
 - `development/backend-cp1-contract.md`
 - `development/backend-cp2-postgres-contract.md`
@@ -257,9 +277,9 @@ Durable backend contracts:
 - `development/backend-cp6-03-gate-03-closure.md`
 - `development/backend-cp6-05-whole-database-qa.md`
 
-CP1–CP6 are closed. Old text that says CP6-03 is active, Gate 03 is not earned, CP6-04 is next, or protected-main alignment is pending is historical and not current routing.
+CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 is next or protected-main integration is pending is historical unless explicitly scoped to the phase-time record.
 
-The next backend implementation is a new post-CP6 product vertical started from current `main` under an explicit bounded branch. No generic permanent `feature/backend` branch is implied.
+The next backend implementation is a new post-CP6 product vertical started from current `main` under an explicit bounded branch.
 
 ## 12. Frontend
 
@@ -273,18 +293,11 @@ Current protected-main frontend documentation:
 - `frontend/home/`
 - `frontend/production-readiness/`
 
-Engineering-foundation sources:
-
-- `architecture/frontend-engineering-foundation.md`
-- `architecture/frontend-engineering-foundation-part-2.md`
-- `architecture/frontend-engineering-foundation-final-review.md`
-- `architecture/frontend-engineering-foundation-post-closure-qa.md`
-
-Generic frontend foundation/materialization is closed/integrated.
+Generic frontend engineering foundation/materialization is closed/integrated.
 
 ### Active Access work
 
-The currently active product frontend branch is:
+Current active product frontend branch:
 
 ```text
 feature/access-frontend
@@ -296,11 +309,9 @@ Its branch-local record is:
 docs/workstreams/access-frontend.md
 ```
 
-Current branch-local accepted checkpoints include AF-01D, AF-02A and AF-02B PASS, but the Access vertical is not closed until the real backend-auth/full-stack/release boundaries are satisfied.
+The Access vertical remains unmerged until its own full-stack/release boundaries are satisfied. Branch-local documentation/code is not protected-main authority before reconciliation/integration.
 
-`feature/access-frontend` is unmerged and currently diverged from protected `main`; its branch-local docs/code do not become protected-main authority until reconciliation and merge.
-
-Any temporary `access-frontend-live-handoff.md` is branch-operational only and must be consolidated/removed before that branch merges.
+Temporary Access live handoffs are branch-operational only and must be consolidated/removed before that branch merges.
 
 ## 13. Workstream records
 
@@ -308,11 +319,11 @@ Entry point:
 
 - `workstreams/README.md`
 
-On protected `main`, workstream files are durable **records**, not active chat handoffs. Completed workstreams may preserve one useful closure/integration record or other durable evidence; temporary live/session handoffs belong only on active branches and are removed before merge.
+On protected `main`, workstream files are durable records/evidence, not active chat handoffs.
 
-Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization and Backend scaffold/CP6 history as applicable.
+Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization and backend scaffold/CP6 history as applicable.
 
-Active unmerged branch workstream records remain branch-local until integration.
+Active unmerged workstream records remain branch-local until integration.
 
 ## 14. Development governance
 
@@ -341,31 +352,9 @@ Environment != Git branch.
 
 ## 15. Protected-main integration truth
 
-Effective repository ruleset `lifeos-main-safety` currently requires:
+Effective protected-main policy requires normal PR-based integration and repository-enforced current checks.
 
-```text
-PR integration
-normal merge commit only
-branch up-to-date with main
-review threads resolved
-no non-fast-forward update
-no branch-rule bypass
-
-required checks:
-Backend CI Gate
-Dependency Review
-Frontend CI Gate
-```
-
-The live ruleset, not an outdated prose snapshot, is effective repository enforcement.
-
-Do not use squash/rebase/force-push to bypass integration policy.
-
-## 16. CI / executable truth
-
-Backend workflows and tests remain executable evidence, not documentation claims.
-
-Current protected-main required status contexts are:
+Current required contexts:
 
 ```text
 Backend CI Gate
@@ -373,9 +362,15 @@ Dependency Review
 Frontend CI Gate
 ```
 
-No arbitrary coverage threshold is inferred merely because coverage is measured.
+Current repository rules, not an outdated prose snapshot, are effective enforcement. Do not use squash/rebase/force-push or ruleset weakening to bypass integration policy.
 
-Historical successful runs remain evidence for the exact commit/environment on which they executed; later patch/runtime claims require current evidence.
+## 16. Evidence and current claims
+
+Executable truth beats documentation claims.
+
+Historical successful runs remain evidence for the exact commit/environment on which they executed; later patch/runtime/schema claims require evidence appropriate to the later state.
+
+No blanket semantic/direct-pass claim is inferred merely because a technology was selected or a workflow exists.
 
 ## 17. Brand / UX / prototypes
 
@@ -405,7 +400,7 @@ Before modifying a subsystem:
 
 ```text
 read current global status
-→ read current subsystem authority
+→ read current subsystem entry point/authority
 → verify current branch/ref + relation to main
 → inspect relevant executable truth
 → use branch-local handoff only if the branch is active and one is genuinely needed
