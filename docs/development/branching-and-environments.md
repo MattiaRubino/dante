@@ -226,13 +226,7 @@ feature/access-frontend
 → must reconcile with current main before integration
 ```
 
-Current documentation-maintenance branch:
-
-```text
-chore/documentation-knowledge-cleanup
-→ repository documentation current-truth / lifecycle cleanup
-→ draft PR #43 while work is in progress
-```
+The documentation lifecycle/current-truth cleanup is a bounded maintenance change, not a permanent development line. Once its reviewed policy/index changes enter `main`, future documentation maintenance uses ordinary bounded `docs/` or `chore/` branches only when real work exists.
 
 Closed feature branches are not reusable integration lines. New work starts from current protected `main` under a fresh bounded branch unless an already-active workstream explicitly continues on its existing branch.
 
@@ -305,10 +299,6 @@ Backend CP6 is no longer the next branch; it is closed/integrated.
 Current practical boundaries are:
 
 ```text
-DOCUMENTATION
-complete chore/documentation-knowledge-cleanup
-→ PR #43 only when current docs/links/lifecycle are clean
-
 FRONTEND
 continue existing feature/access-frontend
 → do not create another Access branch/worktree merely for a new chat
@@ -319,6 +309,11 @@ next post-CP6 product vertical
 → create only when explicitly scoped
 → branch from current protected main
 → consume the existing materialized database
+
+DOCUMENTATION
+apply the lifecycle/current-truth policy continuously
+→ create a bounded maintenance branch only for real documentation work
+→ never accumulate live/session handoffs on protected main
 ```
 
 A genuine later DB requirement uses normal forward migration/database-documentation synchronization; it does not reopen `feature/logical-postgresql`.
