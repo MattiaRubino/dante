@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
@@ -12,10 +12,11 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.mappings.views import VIEW_METADATA
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
@@ -98,9 +99,7 @@ def test_m5_materializes_exact_topology_and_routine_security(
         }
         views = {
             str(r[0])
-            for r in connection.execute(
-                "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-            )
+            for r in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
         }
         routines = {
             str(r[0]): tuple(r[1:])
@@ -155,7 +154,17 @@ def test_m5_materializes_exact_topology_and_routine_security(
     assert views == _VIEWS
     assert set(routines) == _ROUTINES
     for attrs in routines.values():
-        prosecdef, volatility, parallel, leakproof, owner, config, runtime_x, migrator_x, public_x = attrs
+        (
+            prosecdef,
+            volatility,
+            parallel,
+            leakproof,
+            owner,
+            config,
+            runtime_x,
+            migrator_x,
+            public_x,
+        ) = attrs
         assert prosecdef is False
         assert volatility == "v"
         assert parallel == "u"
@@ -208,8 +217,9 @@ def test_m5_sqlalchemy_view_metadata_is_core_only() -> None:
     assert all(name not in Base.metadata.tables for name in VIEW_METADATA.tables)
     m5_tables = tuple(table for table in MAPPED_TABLES if table.name not in _M6_TABLES)
     m5_mappers = tuple(
-        mapper for mapper in Base.registry.mappers
-        if mapper.local_table.name not in _M6_TABLES
+        mapper
+        for mapper in Base.registry.mappers
+        if cast(Table, mapper.local_table).name not in _M6_TABLES
     )
     assert len(m5_tables) == 63
     assert len(m5_mappers) == 63
@@ -237,16 +247,18 @@ def test_m5_iana_timezone_rejects_unknown_identifier_before_fk(
     alembic_config: Config,
 ) -> None:
     database = _upgrade_m5(provisioned_database, alembic_config)
-    with _owner_connection(database) as connection:
-        with pytest.raises(errors.InvalidParameterValue) as exc_info:
-            connection.execute(
-                """
-                INSERT INTO dante.schedule_placement_named_zone_state
-                    (material_state_ref,extent_code,starts_local_at,zone_id)
-                VALUES (%s,'point',timestamp '2026-01-01 12:00','Etc/Definitely_Not_A_Zone')
-                """,
-                (uuid7(),),
-            )
+    with (
+        _owner_connection(database) as connection,
+        pytest.raises(errors.InvalidParameterValue) as exc_info,
+    ):
+        connection.execute(
+            """
+            INSERT INTO dante.schedule_placement_named_zone_state
+                (material_state_ref,extent_code,starts_local_at,zone_id)
+            VALUES (%s,'point',timestamp '2026-01-01 12:00','Etc/Definitely_Not_A_Zone')
+            """,
+            (uuid7(),),
+        )
     assert _sqlstate(exc_info.value) == "22023"
 
 
@@ -282,7 +294,9 @@ def test_m5_part17_check_repairs_are_live(
     assert "step_unit_code IS NOT NULL" in defs["ck_event_recurrence_calendar_state_step_unit"]
     assert "week_start IS NOT NULL" in defs["ck_routine_recurrence_quota_state_week_start"]
     assert "week_start IS NOT NULL" in defs["ck_event_recurrence_quota_state_week_start"]
-    assert "trunc(elapsed_seconds, 6)" in defs["ck_routine_recurrence_elapsed_state_elapsed_positive"]
+    assert (
+        "trunc(elapsed_seconds, 6)" in defs["ck_routine_recurrence_elapsed_state_elapsed_positive"]
+    )
     assert "trunc(elapsed_seconds, 6)" in defs["ck_event_recurrence_elapsed_state_elapsed_positive"]
 
 
@@ -315,30 +329,59 @@ def test_m5_downgrade_returns_to_m4_surface(
     command.downgrade(alembic_config, _M4_REVISION)
     with _admin_connection(provisioned_database) as connection:
         views = list(connection.execute("SELECT 1 FROM pg_views WHERE schemaname='dante'"))
-        routines = list(connection.execute("SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='dante'"))
-        triggers = list(connection.execute("SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND NOT t.tgisinternal"))
-        end_def = connection.execute("SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conname='ck_session_timing_absolute_end_precision'").fetchone()
+        routines = list(
+            connection.execute(
+                "SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='dante'"
+            )
+        )
+        triggers = list(
+            connection.execute(
+                "SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND NOT t.tgisinternal"
+            )
+        )
+        end_def = connection.execute(
+            "SELECT pg_get_constraintdef(oid,true) FROM pg_constraint WHERE conname='ck_session_timing_absolute_end_precision'"
+        ).fetchone()
     assert views == routines == triggers == []
     assert end_def is not None
     assert "end_precision_code IS NOT NULL" not in str(end_def[0])
 
 
 def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
-    table_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "tables").glob("*.json")}
-    view_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "views").glob("*.json")}
-    routine_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "routines").glob("*.json")}
+    table_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
+    }
+    view_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "views").glob("*.json")
+    }
+    routine_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "routines").glob("*.json")
+    }
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
 
     m5_table_entries = {
-        name: entry for name, entry in table_entries.items()
-        if entry["implementation"]["introducing_stage"] in {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04"}
+        name: entry
+        for name, entry in table_entries.items()
+        if entry["implementation"]["introducing_stage"]
+        in {"CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04"}
     }
-    m5_routine_entries = {name: entry for name, entry in routine_entries.items() if name in _ROUTINES}
+    m5_routine_entries = {
+        name: entry for name, entry in routine_entries.items() if name in _ROUTINES
+    }
 
     assert len(m5_table_entries) == 63
     assert set(view_entries) == _VIEWS
     assert set(m5_routine_entries) == _ROUTINES
-    assert scope["current_materialization"]["completed_stages"][:5] == ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05"]
+    assert scope["current_materialization"]["completed_stages"][:5] == [
+        "CP6-M01",
+        "CP6-M02",
+        "CP6-M03",
+        "CP6-M04",
+        "CP6-M05",
+    ]
 
     trigger_entries = [
         trigger
@@ -353,10 +396,20 @@ def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
     assert sum(not trigger["constraint_trigger"] for trigger in trigger_entries) == 15
     assert sum(trigger["constraint_trigger"] for trigger in trigger_entries) == 51
     assert all(trigger["enabled_mode"] == "ORIGIN" for trigger in trigger_entries)
-    assert all((not trigger["constraint_trigger"]) or (trigger["deferrable"] and trigger["initially_deferred"]) for trigger in trigger_entries)
+    assert all(
+        (not trigger["constraint_trigger"])
+        or (trigger["deferrable"] and trigger["initially_deferred"])
+        for trigger in trigger_entries
+    )
 
     for name, entry in view_entries.items():
-        assert entry["object"] == {"key": f"view:dante.{name}", "type": "view", "schema": "dante", "name": name, "ownership_class": "dante_owned"}
+        assert entry["object"] == {
+            "key": f"view:dante.{name}",
+            "type": "view",
+            "schema": "dante",
+            "name": name,
+            "ownership_class": "dante_owned",
+        }
         assert entry["implementation"]["introducing_stage"] == "CP6-M05"
         assert entry["implementation"]["alembic_revision"] == _M5_REVISION
         assert entry["implementation"]["sqlalchemy"]["mode"] == "core_view"
@@ -368,17 +421,52 @@ def test_m5_dictionary_reconciles_stage_objects_and_part17_repairs() -> None:
         assert entry["object"]["name"] == name
         assert entry["implementation"]["introducing_stage"] == "CP6-M05"
         assert entry["implementation"]["alembic_revision"] == _M5_REVISION
-        assert routine == {"routine_kind": "function", "language": "plpgsql", "argument_types": [], "return_type": "trigger", "security": "INVOKER", "volatility": "VOLATILE", "parallel_safety": "UNSAFE", "leakproof": False, "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": False}
+        assert routine == {
+            "routine_kind": "function",
+            "language": "plpgsql",
+            "argument_types": [],
+            "return_type": "trigger",
+            "security": "INVOKER",
+            "volatility": "VOLATILE",
+            "parallel_safety": "UNSAFE",
+            "leakproof": False,
+            "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+            "direct_runtime_execute": False,
+        }
 
     repaired = {
-        ("session_timing_absolute", "ck_session_timing_absolute_end_precision"): "end_precision_code IS NOT NULL",
-        ("routine_recurrence_calendar_state", "ck_routine_recurrence_calendar_state_step_unit"): "step_unit_code IS NOT NULL",
-        ("event_recurrence_calendar_state", "ck_event_recurrence_calendar_state_step_unit"): "step_unit_code IS NOT NULL",
-        ("routine_recurrence_quota_state", "ck_routine_recurrence_quota_state_week_start"): "week_start IS NOT NULL",
-        ("event_recurrence_quota_state", "ck_event_recurrence_quota_state_week_start"): "week_start IS NOT NULL",
-        ("routine_recurrence_elapsed_state", "ck_routine_recurrence_elapsed_state_elapsed_positive"): "trunc(elapsed_seconds, 6)",
-        ("event_recurrence_elapsed_state", "ck_event_recurrence_elapsed_state_elapsed_positive"): "trunc(elapsed_seconds, 6)",
+        (
+            "session_timing_absolute",
+            "ck_session_timing_absolute_end_precision",
+        ): "end_precision_code IS NOT NULL",
+        (
+            "routine_recurrence_calendar_state",
+            "ck_routine_recurrence_calendar_state_step_unit",
+        ): "step_unit_code IS NOT NULL",
+        (
+            "event_recurrence_calendar_state",
+            "ck_event_recurrence_calendar_state_step_unit",
+        ): "step_unit_code IS NOT NULL",
+        (
+            "routine_recurrence_quota_state",
+            "ck_routine_recurrence_quota_state_week_start",
+        ): "week_start IS NOT NULL",
+        (
+            "event_recurrence_quota_state",
+            "ck_event_recurrence_quota_state_week_start",
+        ): "week_start IS NOT NULL",
+        (
+            "routine_recurrence_elapsed_state",
+            "ck_routine_recurrence_elapsed_state_elapsed_positive",
+        ): "trunc(elapsed_seconds, 6)",
+        (
+            "event_recurrence_elapsed_state",
+            "ck_event_recurrence_elapsed_state_elapsed_positive",
+        ): "trunc(elapsed_seconds, 6)",
     }
     for (table, constraint), fragment in repaired.items():
-        expressions = {check["name"]: check["expression_contract"] for check in table_entries[table]["structure"]["check_constraints"]}
+        expressions = {
+            check["name"]: check["expression_contract"]
+            for check in table_entries[table]["structure"]["check_constraints"]
+        }
         assert fragment in expressions[constraint]

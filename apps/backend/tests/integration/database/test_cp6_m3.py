@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
@@ -13,29 +13,55 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
 _M2_REVISION = "20260825_02"
 _M3_REVISION = "20260825_03"
 _M1_M2_TABLES = {
-    "person", "living_referent", "asset", "place", "content_artifact", "collective",
-    "possibility", "goal", "plan", "activity", "event", "routine", "occurrence",
-    "session", "observation", "native_address", "scoped_address", "schedule", "actual",
-    "material_state_address", "native_current_material_state",
+    "person",
+    "living_referent",
+    "asset",
+    "place",
+    "content_artifact",
+    "collective",
+    "possibility",
+    "goal",
+    "plan",
+    "activity",
+    "event",
+    "routine",
+    "occurrence",
+    "session",
+    "observation",
+    "native_address",
+    "scoped_address",
+    "schedule",
+    "actual",
+    "material_state_address",
+    "native_current_material_state",
     "scoped_current_material_state",
 }
 _M3_TABLES = {
-    "schedule_placement_state", "schedule_placement_date_state",
-    "schedule_placement_floating_local_state", "schedule_placement_named_zone_state",
-    "schedule_placement_absolute_state", "schedule_placement_current_history",
-    "actual_realization_state", "actual_realization_timing",
-    "actual_realization_session_basis", "actual_realization_current_history",
-    "session_timing_state", "session_timing_absolute", "session_timing_elapsed",
-    "session_timing_pause", "session_timing_current_history",
+    "schedule_placement_state",
+    "schedule_placement_date_state",
+    "schedule_placement_floating_local_state",
+    "schedule_placement_named_zone_state",
+    "schedule_placement_absolute_state",
+    "schedule_placement_current_history",
+    "actual_realization_state",
+    "actual_realization_timing",
+    "actual_realization_session_basis",
+    "actual_realization_current_history",
+    "session_timing_state",
+    "session_timing_absolute",
+    "session_timing_elapsed",
+    "session_timing_pause",
+    "session_timing_current_history",
 }
 _CUMULATIVE_TABLES = _M1_M2_TABLES | _M3_TABLES
 _M3_CHECKS = {
@@ -91,12 +117,18 @@ _M3_FOREIGN_KEYS = {
 _M3_EXPLICIT_INDEXES = {
     ("schedule_placement_state", "ix_schedule_placement_state_schedule_ref"),
     ("schedule_placement_current_history", "ux_schedule_placement_current_history_open"),
-    ("schedule_placement_current_history", "ix_schedule_placement_current_history_material_state_ref"),
+    (
+        "schedule_placement_current_history",
+        "ix_schedule_placement_current_history_material_state_ref",
+    ),
     ("actual_realization_state", "ix_actual_realization_state_actual_ref"),
     ("actual_realization_session_basis", "ix_actual_realization_session_basis_session_ref"),
     ("actual_realization_session_basis", "ix_actual_realization_session_basis_timing_state"),
     ("actual_realization_current_history", "ux_actual_realization_current_history_open"),
-    ("actual_realization_current_history", "ix_actual_realization_current_history_material_state_ref"),
+    (
+        "actual_realization_current_history",
+        "ix_actual_realization_current_history_material_state_ref",
+    ),
     ("session_timing_state", "ix_session_timing_state_session_ref"),
     ("session_timing_pause", "ux_session_timing_pause_open"),
     ("session_timing_current_history", "ux_session_timing_current_history_open"),
@@ -137,16 +169,24 @@ def test_m3_materializes_exact_cumulative_topology(
 ) -> None:
     database = _upgrade_m3(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
-        tables = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        owners = {(str(r[0]), str(r[1])) for r in connection.execute(
-            "SELECT tablename,tableowner FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        constraints = {tuple(r) for r in connection.execute(
-            """
+        tables = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        owners = {
+            (str(r[0]), str(r[1]))
+            for r in connection.execute(
+                "SELECT tablename,tableowner FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        constraints = {
+            tuple(r)
+            for r in connection.execute(
+                """
             SELECT c.relname,con.contype,con.conname,con.condeferrable,
                    con.condeferred,con.convalidated,con.conenforced
             FROM pg_constraint con
@@ -154,23 +194,34 @@ def test_m3_materializes_exact_cumulative_topology(
             JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname<>'alembic_version'
             """
-        )}
-        indexes = {(str(r[0]), str(r[1])) for r in connection.execute(
-            "SELECT tablename,indexname FROM pg_indexes "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        views = {str(r[0]) for r in connection.execute(
-            "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-        )}
-        routines = {str(r[0]) for r in connection.execute(
-            "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
-            "WHERE n.nspname='dante'"
-        )}
-        triggers = {str(r[0]) for r in connection.execute(
-            "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
-            "JOIN pg_namespace n ON n.oid=c.relnamespace "
-            "WHERE n.nspname='dante' AND NOT t.tgisinternal"
-        )}
+            )
+        }
+        indexes = {
+            (str(r[0]), str(r[1]))
+            for r in connection.execute(
+                "SELECT tablename,indexname FROM pg_indexes "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        views = {
+            str(r[0])
+            for r in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+        }
+        routines = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+                "WHERE n.nspname='dante'"
+            )
+        }
+        triggers = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
+                "JOIN pg_namespace n ON n.oid=c.relnamespace "
+                "WHERE n.nspname='dante' AND NOT t.tgisinternal"
+            )
+        }
 
     assert tables == _CUMULATIVE_TABLES
     assert owners == {(name, "dante_owner") for name in _CUMULATIVE_TABLES}
@@ -179,7 +230,7 @@ def test_m3_materializes_exact_cumulative_topology(
     assert len({r[2] for r in constraints if r[1] == "f"}) == 31
     assert len({r[2] for r in constraints if r[1] == "u"}) == 2
     assert len(indexes) == 55
-    assert _M3_EXPLICIT_INDEXES <= indexes
+    assert indexes >= _M3_EXPLICIT_INDEXES
     assert views == routines == triggers == set()
 
     m3 = [r for r in constraints if r[0] in _M3_TABLES]
@@ -333,16 +384,19 @@ def test_m3_runtime_business_dml_remains_denied(
     database = _upgrade_m3(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
         privileges = {
-            name: tuple(connection.execute(
-                "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
-                "has_table_privilege('dante_runtime',%s,'INSERT'),"
-                "has_table_privilege('dante_runtime',%s,'UPDATE'),"
-                "has_table_privilege('dante_runtime',%s,'DELETE')",
-                tuple([f"dante.{name}"] * 4),
-            ).fetchone() or ())
+            name: tuple(
+                connection.execute(
+                    "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
+                    "has_table_privilege('dante_runtime',%s,'INSERT'),"
+                    "has_table_privilege('dante_runtime',%s,'UPDATE'),"
+                    "has_table_privilege('dante_runtime',%s,'DELETE')",
+                    tuple([f"dante.{name}"] * 4),
+                ).fetchone()
+                or ()
+            )
             for name in _M3_TABLES
         }
-    assert privileges == {name: (False, False, False, False) for name in _M3_TABLES}
+    assert privileges == dict.fromkeys(_M3_TABLES, (False, False, False, False))
 
 
 def test_m3_upgrade_and_downgrade_preserve_m2_boundary(
@@ -352,28 +406,35 @@ def test_m3_upgrade_and_downgrade_preserve_m2_boundary(
     command.upgrade(alembic_config, _M2_REVISION)
     command.upgrade(alembic_config, _M3_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        at_m3 = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        at_m3 = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert at_m3 == _CUMULATIVE_TABLES
     command.downgrade(alembic_config, _M2_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        after = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        after = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert after == _M1_M2_TABLES
 
 
 def test_m3_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
     stage_tables = tuple(t for t in MAPPED_TABLES if t.name in _CUMULATIVE_TABLES)
     stage_mappers = tuple(
-        mapper for mapper in Base.registry.mappers
-        if mapper.local_table.name in _CUMULATIVE_TABLES
+        mapper
+        for mapper in Base.registry.mappers
+        if cast(Table, mapper.local_table).name in _CUMULATIVE_TABLES
     )
     assert {t.name for t in stage_tables} == _CUMULATIVE_TABLES
-    assert {m.local_table.name for m in stage_mappers} == _CUMULATIVE_TABLES
+    assert {cast(Table, m.local_table).name for m in stage_mappers} == _CUMULATIVE_TABLES
     assert len(stage_mappers) == 37
     assert all(len(m.relationships) == 0 for m in stage_mappers)
 
@@ -411,14 +472,10 @@ def test_m3_dictionary_matches_live_stage(
     assert {e["implementation"]["alembic_revision"] for e in m3_entries.values()} == {_M3_REVISION}
     assert {e["implementation"]["introducing_stage"] for e in m3_entries.values()} == {"CP6-M03"}
     assert {
-        check["name"]
-        for e in m3_entries.values()
-        for check in e["structure"]["check_constraints"]
+        check["name"] for e in m3_entries.values() for check in e["structure"]["check_constraints"]
     } == _M3_CHECKS
     assert {
-        fk["name"]
-        for e in m3_entries.values()
-        for fk in e["structure"]["foreign_keys"]
+        fk["name"] for e in m3_entries.values() for fk in e["structure"]["foreign_keys"]
     } == _M3_FOREIGN_KEYS
     assert {
         (name, index["name"])

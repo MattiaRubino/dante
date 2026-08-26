@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, time, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
@@ -13,185 +13,189 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
 _M3_REVISION = "20260825_03"
 _M4_REVISION = "20260825_04"
 _PRE_M4_TABLES = {
-    'activity',
-    'actual',
-    'actual_realization_current_history',
-    'actual_realization_session_basis',
-    'actual_realization_state',
-    'actual_realization_timing',
-    'asset',
-    'collective',
-    'content_artifact',
-    'event',
-    'goal',
-    'living_referent',
-    'material_state_address',
-    'native_address',
-    'native_current_material_state',
-    'observation',
-    'occurrence',
-    'person',
-    'place',
-    'plan',
-    'possibility',
-    'routine',
-    'schedule',
-    'schedule_placement_absolute_state',
-    'schedule_placement_current_history',
-    'schedule_placement_date_state',
-    'schedule_placement_floating_local_state',
-    'schedule_placement_named_zone_state',
-    'schedule_placement_state',
-    'scoped_address',
-    'scoped_current_material_state',
-    'session',
-    'session_timing_absolute',
-    'session_timing_current_history',
-    'session_timing_elapsed',
-    'session_timing_pause',
-    'session_timing_state',
+    "activity",
+    "actual",
+    "actual_realization_current_history",
+    "actual_realization_session_basis",
+    "actual_realization_state",
+    "actual_realization_timing",
+    "asset",
+    "collective",
+    "content_artifact",
+    "event",
+    "goal",
+    "living_referent",
+    "material_state_address",
+    "native_address",
+    "native_current_material_state",
+    "observation",
+    "occurrence",
+    "person",
+    "place",
+    "plan",
+    "possibility",
+    "routine",
+    "schedule",
+    "schedule_placement_absolute_state",
+    "schedule_placement_current_history",
+    "schedule_placement_date_state",
+    "schedule_placement_floating_local_state",
+    "schedule_placement_named_zone_state",
+    "schedule_placement_state",
+    "scoped_address",
+    "scoped_current_material_state",
+    "session",
+    "session_timing_absolute",
+    "session_timing_current_history",
+    "session_timing_elapsed",
+    "session_timing_pause",
+    "session_timing_state",
 }
 _M4_TABLES = {
-    'event_recurrence_boundary_state',
-    'event_recurrence_calendar_month_day',
-    'event_recurrence_calendar_ordinal_weekday',
-    'event_recurrence_calendar_state',
-    'event_recurrence_calendar_wall_time',
-    'event_recurrence_calendar_weekday',
-    'event_recurrence_calendar_year_month_day',
-    'event_recurrence_current_history',
-    'event_recurrence_cycle_position',
-    'event_recurrence_cyclic_state',
-    'event_recurrence_elapsed_state',
-    'event_recurrence_quota_state',
-    'event_recurrence_state',
-    'routine_recurrence_boundary_state',
-    'routine_recurrence_calendar_month_day',
-    'routine_recurrence_calendar_ordinal_weekday',
-    'routine_recurrence_calendar_state',
-    'routine_recurrence_calendar_wall_time',
-    'routine_recurrence_calendar_weekday',
-    'routine_recurrence_calendar_year_month_day',
-    'routine_recurrence_current_history',
-    'routine_recurrence_cycle_position',
-    'routine_recurrence_cyclic_state',
-    'routine_recurrence_elapsed_state',
-    'routine_recurrence_quota_state',
-    'routine_recurrence_state',
+    "event_recurrence_boundary_state",
+    "event_recurrence_calendar_month_day",
+    "event_recurrence_calendar_ordinal_weekday",
+    "event_recurrence_calendar_state",
+    "event_recurrence_calendar_wall_time",
+    "event_recurrence_calendar_weekday",
+    "event_recurrence_calendar_year_month_day",
+    "event_recurrence_current_history",
+    "event_recurrence_cycle_position",
+    "event_recurrence_cyclic_state",
+    "event_recurrence_elapsed_state",
+    "event_recurrence_quota_state",
+    "event_recurrence_state",
+    "routine_recurrence_boundary_state",
+    "routine_recurrence_calendar_month_day",
+    "routine_recurrence_calendar_ordinal_weekday",
+    "routine_recurrence_calendar_state",
+    "routine_recurrence_calendar_wall_time",
+    "routine_recurrence_calendar_weekday",
+    "routine_recurrence_calendar_year_month_day",
+    "routine_recurrence_current_history",
+    "routine_recurrence_cycle_position",
+    "routine_recurrence_cyclic_state",
+    "routine_recurrence_elapsed_state",
+    "routine_recurrence_quota_state",
+    "routine_recurrence_state",
 }
 _CUMULATIVE_TABLES = _PRE_M4_TABLES | _M4_TABLES
 _M4_CHECKS = {
-    'ck_event_recurrence_boundary_state_boundary_kind',
-    'ck_event_recurrence_boundary_state_boundary_payload',
-    'ck_event_recurrence_boundary_state_boundary_role',
-    'ck_event_recurrence_boundary_state_inclusive_role',
-    'ck_event_recurrence_calendar_month_day_month_day_range',
-    'ck_event_recurrence_calendar_ordinal_weekday_ordinal_range',
-    'ck_event_recurrence_calendar_ordinal_weekday_weekday_range',
-    'ck_event_recurrence_calendar_state_clock_basis',
-    'ck_event_recurrence_calendar_state_interval_positive',
-    'ck_event_recurrence_calendar_state_pattern_code',
-    'ck_event_recurrence_calendar_state_step_unit',
-    'ck_event_recurrence_calendar_state_zone_basis',
-    'ck_event_recurrence_calendar_weekday_weekday_range',
-    'ck_event_recurrence_calendar_year_month_day_month_day_range',
-    'ck_event_recurrence_calendar_year_month_day_month_range',
-    'ck_event_recurrence_current_history_current_interval',
-    'ck_event_recurrence_cycle_position_position_nonnegative',
-    'ck_event_recurrence_cyclic_state_cycle_length_positive',
-    'ck_event_recurrence_cyclic_state_position_unit',
-    'ck_event_recurrence_elapsed_state_anchor_at',
-    'ck_event_recurrence_elapsed_state_anchor_mode',
-    'ck_event_recurrence_elapsed_state_elapsed_positive',
-    'ck_event_recurrence_quota_state_frame',
-    'ck_event_recurrence_quota_state_period_span_positive',
-    'ck_event_recurrence_quota_state_period_unit',
-    'ck_event_recurrence_quota_state_quota_positive',
-    'ck_event_recurrence_quota_state_week_start',
-    'ck_event_recurrence_quota_state_zone_basis',
-    'ck_event_recurrence_state_expected_count',
-    'ck_event_recurrence_state_family_code',
-    'ck_event_recurrence_state_range_kind',
-    'ck_routine_recurrence_boundary_state_boundary_kind',
-    'ck_routine_recurrence_boundary_state_boundary_payload',
-    'ck_routine_recurrence_boundary_state_boundary_role',
-    'ck_routine_recurrence_boundary_state_inclusive_role',
-    'ck_routine_recurrence_calendar_month_day_month_day_range',
-    'ck_routine_recurrence_calendar_ordinal_weekday_ordinal_range',
-    'ck_routine_recurrence_calendar_ordinal_weekday_weekday_range',
-    'ck_routine_recurrence_calendar_state_clock_basis',
-    'ck_routine_recurrence_calendar_state_interval_positive',
-    'ck_routine_recurrence_calendar_state_pattern_code',
-    'ck_routine_recurrence_calendar_state_step_unit',
-    'ck_routine_recurrence_calendar_state_zone_basis',
-    'ck_routine_recurrence_calendar_weekday_weekday_range',
-    'ck_routine_recurrence_calendar_year_month_day_month_day_range',
-    'ck_routine_recurrence_calendar_year_month_day_month_range',
-    'ck_routine_recurrence_current_history_current_interval',
-    'ck_routine_recurrence_cycle_position_position_nonnegative',
-    'ck_routine_recurrence_cyclic_state_cycle_length_positive',
-    'ck_routine_recurrence_cyclic_state_position_unit',
-    'ck_routine_recurrence_elapsed_state_anchor_at',
-    'ck_routine_recurrence_elapsed_state_anchor_mode',
-    'ck_routine_recurrence_elapsed_state_elapsed_positive',
-    'ck_routine_recurrence_quota_state_frame',
-    'ck_routine_recurrence_quota_state_period_span_positive',
-    'ck_routine_recurrence_quota_state_period_unit',
-    'ck_routine_recurrence_quota_state_quota_positive',
-    'ck_routine_recurrence_quota_state_week_start',
-    'ck_routine_recurrence_quota_state_zone_basis',
-    'ck_routine_recurrence_state_expected_count',
-    'ck_routine_recurrence_state_family_code',
-    'ck_routine_recurrence_state_range_kind',
+    "ck_event_recurrence_boundary_state_boundary_kind",
+    "ck_event_recurrence_boundary_state_boundary_payload",
+    "ck_event_recurrence_boundary_state_boundary_role",
+    "ck_event_recurrence_boundary_state_inclusive_role",
+    "ck_event_recurrence_calendar_month_day_month_day_range",
+    "ck_event_recurrence_calendar_ordinal_weekday_ordinal_range",
+    "ck_event_recurrence_calendar_ordinal_weekday_weekday_range",
+    "ck_event_recurrence_calendar_state_clock_basis",
+    "ck_event_recurrence_calendar_state_interval_positive",
+    "ck_event_recurrence_calendar_state_pattern_code",
+    "ck_event_recurrence_calendar_state_step_unit",
+    "ck_event_recurrence_calendar_state_zone_basis",
+    "ck_event_recurrence_calendar_weekday_weekday_range",
+    "ck_event_recurrence_calendar_year_month_day_month_day_range",
+    "ck_event_recurrence_calendar_year_month_day_month_range",
+    "ck_event_recurrence_current_history_current_interval",
+    "ck_event_recurrence_cycle_position_position_nonnegative",
+    "ck_event_recurrence_cyclic_state_cycle_length_positive",
+    "ck_event_recurrence_cyclic_state_position_unit",
+    "ck_event_recurrence_elapsed_state_anchor_at",
+    "ck_event_recurrence_elapsed_state_anchor_mode",
+    "ck_event_recurrence_elapsed_state_elapsed_positive",
+    "ck_event_recurrence_quota_state_frame",
+    "ck_event_recurrence_quota_state_period_span_positive",
+    "ck_event_recurrence_quota_state_period_unit",
+    "ck_event_recurrence_quota_state_quota_positive",
+    "ck_event_recurrence_quota_state_week_start",
+    "ck_event_recurrence_quota_state_zone_basis",
+    "ck_event_recurrence_state_expected_count",
+    "ck_event_recurrence_state_family_code",
+    "ck_event_recurrence_state_range_kind",
+    "ck_routine_recurrence_boundary_state_boundary_kind",
+    "ck_routine_recurrence_boundary_state_boundary_payload",
+    "ck_routine_recurrence_boundary_state_boundary_role",
+    "ck_routine_recurrence_boundary_state_inclusive_role",
+    "ck_routine_recurrence_calendar_month_day_month_day_range",
+    "ck_routine_recurrence_calendar_ordinal_weekday_ordinal_range",
+    "ck_routine_recurrence_calendar_ordinal_weekday_weekday_range",
+    "ck_routine_recurrence_calendar_state_clock_basis",
+    "ck_routine_recurrence_calendar_state_interval_positive",
+    "ck_routine_recurrence_calendar_state_pattern_code",
+    "ck_routine_recurrence_calendar_state_step_unit",
+    "ck_routine_recurrence_calendar_state_zone_basis",
+    "ck_routine_recurrence_calendar_weekday_weekday_range",
+    "ck_routine_recurrence_calendar_year_month_day_month_day_range",
+    "ck_routine_recurrence_calendar_year_month_day_month_range",
+    "ck_routine_recurrence_current_history_current_interval",
+    "ck_routine_recurrence_cycle_position_position_nonnegative",
+    "ck_routine_recurrence_cyclic_state_cycle_length_positive",
+    "ck_routine_recurrence_cyclic_state_position_unit",
+    "ck_routine_recurrence_elapsed_state_anchor_at",
+    "ck_routine_recurrence_elapsed_state_anchor_mode",
+    "ck_routine_recurrence_elapsed_state_elapsed_positive",
+    "ck_routine_recurrence_quota_state_frame",
+    "ck_routine_recurrence_quota_state_period_span_positive",
+    "ck_routine_recurrence_quota_state_period_unit",
+    "ck_routine_recurrence_quota_state_quota_positive",
+    "ck_routine_recurrence_quota_state_week_start",
+    "ck_routine_recurrence_quota_state_zone_basis",
+    "ck_routine_recurrence_state_expected_count",
+    "ck_routine_recurrence_state_family_code",
+    "ck_routine_recurrence_state_range_kind",
 }
 _M4_FOREIGN_KEYS = {
-    'fk_event_recurrence_boundary_state_recurrence_state',
-    'fk_event_recurrence_calendar_month_day_calendar_state',
-    'fk_event_recurrence_calendar_ordinal_weekday_calendar_state',
-    'fk_event_recurrence_calendar_state_recurrence_state',
-    'fk_event_recurrence_calendar_wall_time_calendar_state',
-    'fk_event_recurrence_calendar_weekday_calendar_state',
-    'fk_event_recurrence_calendar_year_month_day_calendar_state',
-    'fk_event_recurrence_current_history_event_ref_event',
-    'fk_event_recurrence_current_history_recurrence_state',
-    'fk_event_recurrence_cycle_position_cyclic_state',
-    'fk_event_recurrence_cyclic_state_recurrence_state',
-    'fk_event_recurrence_elapsed_state_recurrence_state',
-    'fk_event_recurrence_quota_state_recurrence_state',
-    'fk_event_recurrence_state_event_ref_event',
-    'fk_event_recurrence_state_state_address',
-    'fk_routine_recurrence_boundary_state_recurrence_state',
-    'fk_routine_recurrence_calendar_month_day_calendar_state',
-    'fk_routine_recurrence_calendar_ordinal_weekday_calendar_state',
-    'fk_routine_recurrence_calendar_state_recurrence_state',
-    'fk_routine_recurrence_calendar_wall_time_calendar_state',
-    'fk_routine_recurrence_calendar_weekday_calendar_state',
-    'fk_routine_recurrence_calendar_year_month_day_calendar_state',
-    'fk_routine_recurrence_current_history_recurrence_state',
-    'fk_routine_recurrence_current_history_routine_ref_routine',
-    'fk_routine_recurrence_cycle_position_cyclic_state',
-    'fk_routine_recurrence_cyclic_state_recurrence_state',
-    'fk_routine_recurrence_elapsed_state_recurrence_state',
-    'fk_routine_recurrence_quota_state_recurrence_state',
-    'fk_routine_recurrence_state_routine_ref_routine',
-    'fk_routine_recurrence_state_state_address',
+    "fk_event_recurrence_boundary_state_recurrence_state",
+    "fk_event_recurrence_calendar_month_day_calendar_state",
+    "fk_event_recurrence_calendar_ordinal_weekday_calendar_state",
+    "fk_event_recurrence_calendar_state_recurrence_state",
+    "fk_event_recurrence_calendar_wall_time_calendar_state",
+    "fk_event_recurrence_calendar_weekday_calendar_state",
+    "fk_event_recurrence_calendar_year_month_day_calendar_state",
+    "fk_event_recurrence_current_history_event_ref_event",
+    "fk_event_recurrence_current_history_recurrence_state",
+    "fk_event_recurrence_cycle_position_cyclic_state",
+    "fk_event_recurrence_cyclic_state_recurrence_state",
+    "fk_event_recurrence_elapsed_state_recurrence_state",
+    "fk_event_recurrence_quota_state_recurrence_state",
+    "fk_event_recurrence_state_event_ref_event",
+    "fk_event_recurrence_state_state_address",
+    "fk_routine_recurrence_boundary_state_recurrence_state",
+    "fk_routine_recurrence_calendar_month_day_calendar_state",
+    "fk_routine_recurrence_calendar_ordinal_weekday_calendar_state",
+    "fk_routine_recurrence_calendar_state_recurrence_state",
+    "fk_routine_recurrence_calendar_wall_time_calendar_state",
+    "fk_routine_recurrence_calendar_weekday_calendar_state",
+    "fk_routine_recurrence_calendar_year_month_day_calendar_state",
+    "fk_routine_recurrence_current_history_recurrence_state",
+    "fk_routine_recurrence_current_history_routine_ref_routine",
+    "fk_routine_recurrence_cycle_position_cyclic_state",
+    "fk_routine_recurrence_cyclic_state_recurrence_state",
+    "fk_routine_recurrence_elapsed_state_recurrence_state",
+    "fk_routine_recurrence_quota_state_recurrence_state",
+    "fk_routine_recurrence_state_routine_ref_routine",
+    "fk_routine_recurrence_state_state_address",
 }
 _M4_EXPLICIT_INDEXES = {
-    ('event_recurrence_current_history', 'ix_event_recurrence_current_history_material_state_ref'),
-    ('event_recurrence_current_history', 'ux_event_recurrence_current_history_open'),
-    ('event_recurrence_state', 'ix_event_recurrence_state_event_ref'),
-    ('routine_recurrence_current_history', 'ix_routine_recurrence_current_history_material_state_ref'),
-    ('routine_recurrence_current_history', 'ux_routine_recurrence_current_history_open'),
-    ('routine_recurrence_state', 'ix_routine_recurrence_state_routine_ref'),
+    ("event_recurrence_current_history", "ix_event_recurrence_current_history_material_state_ref"),
+    ("event_recurrence_current_history", "ux_event_recurrence_current_history_open"),
+    ("event_recurrence_state", "ix_event_recurrence_state_event_ref"),
+    (
+        "routine_recurrence_current_history",
+        "ix_routine_recurrence_current_history_material_state_ref",
+    ),
+    ("routine_recurrence_current_history", "ux_routine_recurrence_current_history_open"),
+    ("routine_recurrence_state", "ix_routine_recurrence_state_routine_ref"),
 }
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
@@ -228,16 +232,24 @@ def test_m4_materializes_exact_cumulative_topology(
 ) -> None:
     database = _upgrade_m4(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
-        tables = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        owners = {(str(r[0]), str(r[1])) for r in connection.execute(
-            "SELECT tablename,tableowner FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        constraints = {tuple(r) for r in connection.execute(
-            """
+        tables = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        owners = {
+            (str(r[0]), str(r[1]))
+            for r in connection.execute(
+                "SELECT tablename,tableowner FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        constraints = {
+            tuple(r)
+            for r in connection.execute(
+                """
             SELECT c.relname,con.contype,con.conname,con.condeferrable,
                    con.condeferred,con.convalidated,con.conenforced
             FROM pg_constraint con
@@ -245,23 +257,34 @@ def test_m4_materializes_exact_cumulative_topology(
             JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname<>'alembic_version'
             """
-        )}
-        indexes = {(str(r[0]), str(r[1])) for r in connection.execute(
-            "SELECT tablename,indexname FROM pg_indexes "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
-        views = {str(r[0]) for r in connection.execute(
-            "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-        )}
-        routines = {str(r[0]) for r in connection.execute(
-            "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
-            "WHERE n.nspname='dante'"
-        )}
-        triggers = {str(r[0]) for r in connection.execute(
-            "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
-            "JOIN pg_namespace n ON n.oid=c.relnamespace "
-            "WHERE n.nspname='dante' AND NOT t.tgisinternal"
-        )}
+            )
+        }
+        indexes = {
+            (str(r[0]), str(r[1]))
+            for r in connection.execute(
+                "SELECT tablename,indexname FROM pg_indexes "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
+        views = {
+            str(r[0])
+            for r in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+        }
+        routines = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+                "WHERE n.nspname='dante'"
+            )
+        }
+        triggers = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
+                "JOIN pg_namespace n ON n.oid=c.relnamespace "
+                "WHERE n.nspname='dante' AND NOT t.tgisinternal"
+            )
+        }
 
     assert tables == _CUMULATIVE_TABLES
     assert owners == {(name, "dante_owner") for name in _CUMULATIVE_TABLES}
@@ -270,7 +293,7 @@ def test_m4_materializes_exact_cumulative_topology(
     assert len({r[2] for r in constraints if r[1] == "f"}) == 61
     assert len({r[2] for r in constraints if r[1] == "u"}) == 2
     assert len(indexes) == 87
-    assert _M4_EXPLICIT_INDEXES <= indexes
+    assert indexes >= _M4_EXPLICIT_INDEXES
     assert views == routines == triggers == set()
 
     m4 = [r for r in constraints if r[0] in _M4_TABLES]
@@ -293,12 +316,8 @@ def test_m4_constraints_foreign_keys_and_partial_uniques_are_live(
     now = datetime.now(UTC).replace(microsecond=0)
     with _owner_connection(database) as connection:
         routine_ref, event_ref = uuid7(), uuid7()
-        connection.execute(
-            "INSERT INTO dante.routine(routine_ref) VALUES (%s)", (routine_ref,)
-        )
-        connection.execute(
-            "INSERT INTO dante.event(event_ref) VALUES (%s)", (event_ref,)
-        )
+        connection.execute("INSERT INTO dante.routine(routine_ref) VALUES (%s)", (routine_ref,))
+        connection.execute("INSERT INTO dante.event(event_ref) VALUES (%s)", (event_ref,))
         connection.execute(
             "INSERT INTO dante.native_address(native_ref,owner_family) "
             "VALUES (%s,'routine'),(%s,'event')",
@@ -472,16 +491,19 @@ def test_m4_runtime_business_dml_remains_denied(
     database = _upgrade_m4(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
         privileges = {
-            name: tuple(connection.execute(
-                "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
-                "has_table_privilege('dante_runtime',%s,'INSERT'),"
-                "has_table_privilege('dante_runtime',%s,'UPDATE'),"
-                "has_table_privilege('dante_runtime',%s,'DELETE')",
-                tuple([f"dante.{name}"] * 4),
-            ).fetchone() or ())
+            name: tuple(
+                connection.execute(
+                    "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
+                    "has_table_privilege('dante_runtime',%s,'INSERT'),"
+                    "has_table_privilege('dante_runtime',%s,'UPDATE'),"
+                    "has_table_privilege('dante_runtime',%s,'DELETE')",
+                    tuple([f"dante.{name}"] * 4),
+                ).fetchone()
+                or ()
+            )
             for name in _M4_TABLES
         }
-    assert privileges == {name: (False, False, False, False) for name in _M4_TABLES}
+    assert privileges == dict.fromkeys(_M4_TABLES, (False, False, False, False))
 
 
 def test_m4_upgrade_and_downgrade_preserve_m3_boundary(
@@ -491,17 +513,23 @@ def test_m4_upgrade_and_downgrade_preserve_m3_boundary(
     command.upgrade(alembic_config, _M3_REVISION)
     command.upgrade(alembic_config, _M4_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        at_m4 = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        at_m4 = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert at_m4 == _CUMULATIVE_TABLES
     command.downgrade(alembic_config, _M3_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        after = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        after = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert after == _PRE_M4_TABLES
 
 
@@ -510,16 +538,14 @@ def test_m4_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
     assert m4_tables == _CUMULATIVE_TABLES
 
     m4_metadata = {
-        name
-        for name in Base.metadata.tables
-        if name.removeprefix("dante.") in _CUMULATIVE_TABLES
+        name for name in Base.metadata.tables if name.removeprefix("dante.") in _CUMULATIVE_TABLES
     }
     assert m4_metadata == {f"dante.{name}" for name in _CUMULATIVE_TABLES}
 
     m4_mappers = [
         mapper
         for mapper in Base.registry.mappers
-        if mapper.local_table.name in _CUMULATIVE_TABLES
+        if cast(Table, mapper.local_table).name in _CUMULATIVE_TABLES
     ]
     assert len(m4_mappers) == 63
     assert all(len(mapper.relationships) == 0 for mapper in m4_mappers)
@@ -532,8 +558,7 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
     database = _upgrade_m4(provisioned_database, alembic_config)
     table_dir = _DICTIONARY_ROOT / "tables"
     entries = {
-        path.stem: json.loads(path.read_text(encoding="utf-8"))
-        for path in table_dir.glob("*.json")
+        path.stem: json.loads(path.read_text(encoding="utf-8")) for path in table_dir.glob("*.json")
     }
     historical_entries = {
         name: entry
@@ -574,14 +599,10 @@ def test_m4_dictionary_matches_live_stage_and_current_scope(
     assert {e["implementation"]["alembic_revision"] for e in m4_entries.values()} == {_M4_REVISION}
     assert {e["implementation"]["introducing_stage"] for e in m4_entries.values()} == {"CP6-M04"}
     assert {
-        check["name"]
-        for e in m4_entries.values()
-        for check in e["structure"]["check_constraints"]
+        check["name"] for e in m4_entries.values() for check in e["structure"]["check_constraints"]
     } == _M4_CHECKS
     assert {
-        fk["name"]
-        for e in m4_entries.values()
-        for fk in e["structure"]["foreign_keys"]
+        fk["name"] for e in m4_entries.values() for fk in e["structure"]["foreign_keys"]
     } == _M4_FOREIGN_KEYS
     assert {
         (name, index["name"])

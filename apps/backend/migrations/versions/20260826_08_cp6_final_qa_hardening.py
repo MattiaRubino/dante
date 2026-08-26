@@ -48,12 +48,8 @@ _SOURCE_FAMILY_LOCKED = r"""    IF source_family NOT IN ('routine','event') THEN
         ) AS lock_digest;
     END IF;"""
 
-_M7_ROUTINE_MARKER = (
-    "NULL; -- CP6-M07: Part-14 advisory locks are acquired by the accepted operation boundary for Routine generation"
-)
-_M7_EVENT_MARKER = (
-    "NULL; -- CP6-M07: Part-14 advisory locks are acquired by the accepted operation boundary for Event generation"
-)
+_M7_ROUTINE_MARKER = "NULL; -- CP6-M07: Part-14 advisory locks are acquired by the accepted operation boundary for Routine generation"
+_M7_EVENT_MARKER = "NULL; -- CP6-M07: Part-14 advisory locks are acquired by the accepted operation boundary for Event generation"
 _FINAL_ROUTINE_MARKER = (
     "NULL; -- CP6-05: Role-13 already holds the exact Routine occurrence-generation advisory lock"
 )

@@ -137,13 +137,9 @@ class ActualRealizationSessionBasisRow(Base):
         ),
     )
 
-    actual_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        primary_key=True
-    )
+    actual_material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     session_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
-    session_timing_material_state_ref: Mapped[MaterialStateRef] = mapped_column(
-        nullable=False
-    )
+    session_timing_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
 
 
 class ActualRealizationCurrentHistoryRow(Base):
@@ -188,7 +184,5 @@ class ActualRealizationCurrentHistoryRow(Base):
 
     actual_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

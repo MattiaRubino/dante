@@ -14,9 +14,9 @@ from alembic import command
 from alembic.config import Config
 from psycopg import errors
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.mappings.views import VIEW_METADATA
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
@@ -42,11 +42,21 @@ _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
 
 def _admin_connection(database: Any) -> psycopg.Connection[Any]:
-    return psycopg.connect(host=database.cluster.host, port=database.cluster.port, dbname=database.name, user=database.cluster.admin_user, password=database.cluster.admin_password, autocommit=True)
+    return psycopg.connect(
+        host=database.cluster.host,
+        port=database.cluster.port,
+        dbname=database.name,
+        user=database.cluster.admin_user,
+        password=database.cluster.admin_password,
+        autocommit=True,
+    )
 
 
 def _owner_connection(database: Any) -> psycopg.Connection[Any]:
-    connection = psycopg.connect(**database.connection_kwargs("dante_migrator", database.cluster.migrator_password), autocommit=True)
+    connection = psycopg.connect(
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password),
+        autocommit=True,
+    )
     connection.execute("SET ROLE dante_owner")
     return connection
 
@@ -56,35 +66,77 @@ def _upgrade_m6(database: Any, alembic_config: Config) -> Any:
     return database
 
 
-def _create_elapsed_routine(connection: psycopg.Connection[Any], *, elapsed_seconds: str = "60.000000") -> tuple[UUID, UUID, datetime]:
+def _create_elapsed_routine(
+    connection: psycopg.Connection[Any], *, elapsed_seconds: str = "60.000000"
+) -> tuple[UUID, UUID, datetime]:
     routine_ref = uuid7()
     state_ref = uuid7()
     anchor = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
     current_from = datetime(2026, 1, 1, 11, 0, tzinfo=UTC)
     connection.execute("INSERT INTO dante.routine(routine_ref) VALUES (%s)", (routine_ref,))
-    connection.execute("INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'routine')", (routine_ref,))
-    connection.execute("INSERT INTO dante.material_state_address(material_state_ref,native_owner_ref,facet_code) VALUES (%s,%s,'routine.recurrence')", (state_ref, routine_ref))
-    connection.execute("INSERT INTO dante.routine_recurrence_state(material_state_ref,routine_ref,family_code,range_kind) VALUES (%s,%s,'elapsed_interval','open')", (state_ref, routine_ref))
-    connection.execute("INSERT INTO dante.routine_recurrence_elapsed_state(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) VALUES (%s,%s,'fixed_anchor',%s)", (state_ref, elapsed_seconds, anchor))
-    connection.execute("INSERT INTO dante.routine_recurrence_current_history(routine_ref,material_state_ref,current_from_at) VALUES (%s,%s,%s)", (routine_ref, state_ref, current_from))
-    connection.execute("INSERT INTO dante.native_current_material_state(native_owner_ref,facet_code,material_state_ref) VALUES (%s,'routine.recurrence',%s)", (routine_ref, state_ref))
+    connection.execute(
+        "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'routine')",
+        (routine_ref,),
+    )
+    connection.execute(
+        "INSERT INTO dante.material_state_address(material_state_ref,native_owner_ref,facet_code) VALUES (%s,%s,'routine.recurrence')",
+        (state_ref, routine_ref),
+    )
+    connection.execute(
+        "INSERT INTO dante.routine_recurrence_state(material_state_ref,routine_ref,family_code,range_kind) VALUES (%s,%s,'elapsed_interval','open')",
+        (state_ref, routine_ref),
+    )
+    connection.execute(
+        "INSERT INTO dante.routine_recurrence_elapsed_state(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) VALUES (%s,%s,'fixed_anchor',%s)",
+        (state_ref, elapsed_seconds, anchor),
+    )
+    connection.execute(
+        "INSERT INTO dante.routine_recurrence_current_history(routine_ref,material_state_ref,current_from_at) VALUES (%s,%s,%s)",
+        (routine_ref, state_ref, current_from),
+    )
+    connection.execute(
+        "INSERT INTO dante.native_current_material_state(native_owner_ref,facet_code,material_state_ref) VALUES (%s,'routine.recurrence',%s)",
+        (routine_ref, state_ref),
+    )
     return routine_ref, state_ref, anchor
 
 
-def _insert_elapsed_occurrence(connection: psycopg.Connection[Any], *, routine_ref: UUID, state_ref: UUID, expected_at: datetime) -> UUID:
+def _insert_elapsed_occurrence(
+    connection: psycopg.Connection[Any],
+    *,
+    routine_ref: UUID,
+    state_ref: UUID,
+    expected_at: datetime,
+) -> UUID:
     occurrence_ref = uuid7()
-    connection.execute("INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,))
-    connection.execute("INSERT INTO dante.occurrence_generation(occurrence_ref,source_native_ref,governing_recurrence_state_ref,origin_code) VALUES (%s,%s,%s,'recurrence_generated')", (occurrence_ref, routine_ref, state_ref))
-    connection.execute("INSERT INTO dante.occurrence_generation_elapsed(occurrence_ref,expected_at) VALUES (%s,%s)", (occurrence_ref, expected_at))
+    connection.execute(
+        "INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,)
+    )
+    connection.execute(
+        "INSERT INTO dante.occurrence_generation(occurrence_ref,source_native_ref,governing_recurrence_state_ref,origin_code) VALUES (%s,%s,%s,'recurrence_generated')",
+        (occurrence_ref, routine_ref, state_ref),
+    )
+    connection.execute(
+        "INSERT INTO dante.occurrence_generation_elapsed(occurrence_ref,expected_at) VALUES (%s,%s)",
+        (occurrence_ref, expected_at),
+    )
     return occurrence_ref
 
 
-def test_m6_materializes_exact_final_structural_topology(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_materializes_exact_final_structural_topology(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
-        table_count = connection.execute("SELECT count(*) FROM pg_tables WHERE schemaname='dante' AND tablename<>'alembic_version'").fetchone()
-        views = {str(row[0]) for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")}
-        routines = list(connection.execute("""
+        table_count = connection.execute(
+            "SELECT count(*) FROM pg_tables WHERE schemaname='dante' AND tablename<>'alembic_version'"
+        ).fetchone()
+        views = {
+            str(row[0])
+            for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+        }
+        routines = list(
+            connection.execute("""
             SELECT p.proname,p.prosecdef,p.provolatile,p.proparallel,p.proleakproof,
                    pg_get_userbyid(p.proowner),p.proconfig,
                    has_function_privilege('dante_runtime',p.oid,'EXECUTE'),
@@ -92,26 +144,44 @@ def test_m6_materializes_exact_final_structural_topology(provisioned_database: A
                    EXISTS (SELECT 1 FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) acl WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE')
             FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
             WHERE n.nspname='dante' ORDER BY p.proname
-        """))
-        triggers = list(connection.execute("""
+        """)
+        )
+        triggers = list(
+            connection.execute("""
             SELECT t.tgname,t.tgconstraint<>0,con.condeferrable,con.condeferred
             FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
             LEFT JOIN pg_constraint con ON con.oid=t.tgconstraint
             WHERE n.nspname='dante' AND NOT t.tgisinternal ORDER BY t.tgname
-        """))
-        index_count = connection.execute("SELECT count(*) FROM pg_indexes WHERE schemaname='dante' AND tablename<>'alembic_version'").fetchone()
-        constraint_counts = dict(connection.execute("""
+        """)
+        )
+        index_count = connection.execute(
+            "SELECT count(*) FROM pg_indexes WHERE schemaname='dante' AND tablename<>'alembic_version'"
+        ).fetchone()
+        constraint_counts = dict(
+            connection.execute("""
             SELECT con.contype,count(*) FROM pg_constraint con
             JOIN pg_class c ON c.oid=con.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname<>'alembic_version' AND con.contype IN ('c','f','u')
             GROUP BY con.contype
-        """))
+        """)
+        )
     assert table_count == (68,)
     assert views == _VIEWS
     assert len(routines) == 14
     assert {str(row[0]) for row in routines} >= {_M6_ROUTINE}
     for row in routines:
-        _, prosecdef, volatility, parallel, leakproof, owner, config, runtime_x, migrator_x, public_x = row
+        (
+            _,
+            prosecdef,
+            volatility,
+            parallel,
+            leakproof,
+            owner,
+            config,
+            runtime_x,
+            migrator_x,
+            public_x,
+        ) = row
         assert prosecdef is False
         assert volatility == "v"
         assert parallel == "u"
@@ -135,10 +205,14 @@ def test_m6_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in _VIEWS}
 
 
-def test_m6_runtime_business_acl_remains_deny_by_default(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_runtime_business_acl_remains_deny_by_default(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
-        rows = list(connection.execute("""
+        rows = list(
+            connection.execute(
+                """
             SELECT c.relname,
                    has_table_privilege('dante_runtime',c.oid,'SELECT'),
                    has_table_privilege('dante_runtime',c.oid,'INSERT'),
@@ -147,67 +221,134 @@ def test_m6_runtime_business_acl_remains_deny_by_default(provisioned_database: A
             FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname = ANY(%s)
             ORDER BY c.relname
-        """, (sorted(_M6_TABLES),)))
+        """,
+                (sorted(_M6_TABLES),),
+            )
+        )
     assert len(rows) == 5
     assert all(tuple(row[1:]) == (False, False, False, False) for row in rows)
 
 
-def test_m6_native_ref_rejects_non_routine_event_source(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_native_ref_rejects_non_routine_event_source(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     person_ref = uuid7()
     occurrence_ref = uuid7()
-    with _owner_connection(database) as connection:
-        with pytest.raises(errors.ForeignKeyViolation) as exc_info:
-            with connection.transaction():
-                connection.execute("INSERT INTO dante.person(person_ref) VALUES (%s)", (person_ref,))
-                connection.execute("INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')", (person_ref,))
-                connection.execute("INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,))
-                connection.execute("INSERT INTO dante.occurrence_generation(occurrence_ref,source_native_ref,origin_code) VALUES (%s,%s,'explicit_extra')", (occurrence_ref, person_ref))
+
+    def insert_invalid_source(connection: psycopg.Connection[Any]) -> None:
+        with connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.person(person_ref) VALUES (%s)",
+                (person_ref,),
+            )
+            connection.execute(
+                "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'person')",
+                (person_ref,),
+            )
+            connection.execute(
+                "INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)",
+                (occurrence_ref,),
+            )
+            connection.execute(
+                "INSERT INTO dante.occurrence_generation"
+                "(occurrence_ref,source_native_ref,origin_code) "
+                "VALUES (%s,%s,'explicit_extra')",
+                (occurrence_ref, person_ref),
+            )
+
+    with (
+        _owner_connection(database) as connection,
+        pytest.raises(errors.ForeignKeyViolation) as exc_info,
+    ):
+        insert_invalid_source(connection)
     assert exc_info.value.sqlstate == "23503"
 
 
-def test_m6_explicit_extra_requires_zero_generated_coordinates(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_explicit_extra_requires_zero_generated_coordinates(
+    provisioned_database: Any,
+    alembic_config: Config,
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _owner_connection(database) as connection:
         with connection.transaction():
             routine_ref, _, _ = _create_elapsed_routine(connection)
         occurrence_ref = uuid7()
-        with pytest.raises(errors.CheckViolation) as exc_info:
+
+        def insert_invalid_coordinate() -> None:
             with connection.transaction():
-                connection.execute("INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,))
-                connection.execute("INSERT INTO dante.occurrence_generation(occurrence_ref,source_native_ref,origin_code) VALUES (%s,%s,'explicit_extra')", (occurrence_ref, routine_ref))
-                connection.execute("INSERT INTO dante.occurrence_generation_elapsed(occurrence_ref,expected_at) VALUES (%s,timestamptz '2026-01-01 12:01:00+00')", (occurrence_ref,))
+                connection.execute(
+                    "INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)",
+                    (occurrence_ref,),
+                )
+                connection.execute(
+                    "INSERT INTO dante.occurrence_generation"
+                    "(occurrence_ref,source_native_ref,origin_code) "
+                    "VALUES (%s,%s,'explicit_extra')",
+                    (occurrence_ref, routine_ref),
+                )
+                connection.execute(
+                    "INSERT INTO dante.occurrence_generation_elapsed"
+                    "(occurrence_ref,expected_at) "
+                    "VALUES (%s,timestamptz '2026-01-01 12:01:00+00')",
+                    (occurrence_ref,),
+                )
+
+        with pytest.raises(errors.CheckViolation) as exc_info:
+            insert_invalid_coordinate()
     assert exc_info.value.sqlstate == "23514"
 
 
-def test_m6_elapsed_generated_coordinate_requires_exact_governing_lattice(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_elapsed_generated_coordinate_requires_exact_governing_lattice(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _owner_connection(database) as connection:
         with connection.transaction():
             routine_ref, state_ref, anchor = _create_elapsed_routine(connection)
         with connection.transaction():
-            _insert_elapsed_occurrence(connection, routine_ref=routine_ref, state_ref=state_ref, expected_at=anchor + timedelta(seconds=60))
-        with pytest.raises(errors.CheckViolation) as exc_info:
-            with connection.transaction():
-                _insert_elapsed_occurrence(connection, routine_ref=routine_ref, state_ref=state_ref, expected_at=anchor + timedelta(seconds=61))
+            _insert_elapsed_occurrence(
+                connection,
+                routine_ref=routine_ref,
+                state_ref=state_ref,
+                expected_at=anchor + timedelta(seconds=60),
+            )
+        with pytest.raises(errors.CheckViolation) as exc_info, connection.transaction():
+            _insert_elapsed_occurrence(
+                connection,
+                routine_ref=routine_ref,
+                state_ref=state_ref,
+                expected_at=anchor + timedelta(seconds=61),
+            )
     assert exc_info.value.sqlstate == "23514"
 
 
-def test_m6_non_quota_duplicate_generation_identity_is_rejected(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_non_quota_duplicate_generation_identity_is_rejected(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _owner_connection(database) as connection:
         with connection.transaction():
             routine_ref, state_ref, anchor = _create_elapsed_routine(connection)
         expected_at = anchor + timedelta(seconds=60)
         with connection.transaction():
-            _insert_elapsed_occurrence(connection, routine_ref=routine_ref, state_ref=state_ref, expected_at=expected_at)
-        with pytest.raises(errors.CheckViolation) as exc_info:
-            with connection.transaction():
-                _insert_elapsed_occurrence(connection, routine_ref=routine_ref, state_ref=state_ref, expected_at=expected_at)
+            _insert_elapsed_occurrence(
+                connection, routine_ref=routine_ref, state_ref=state_ref, expected_at=expected_at
+            )
+        with pytest.raises(errors.CheckViolation) as exc_info, connection.transaction():
+            _insert_elapsed_occurrence(
+                connection,
+                routine_ref=routine_ref,
+                state_ref=state_ref,
+                expected_at=expected_at,
+            )
     assert exc_info.value.sqlstate == "23514"
 
 
-def test_m6_occurrence_generation_routine_has_no_dynamic_execute(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_occurrence_generation_routine_has_no_dynamic_execute(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     database = _upgrade_m6(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
         definition = connection.execute("""
@@ -218,18 +359,30 @@ def test_m6_occurrence_generation_routine_has_no_dynamic_execute(provisioned_dat
     assert "EXECUTE " not in str(definition[0]).upper()
 
 
-def test_m6_downgrade_returns_exactly_to_m5_surface(provisioned_database: Any, alembic_config: Config) -> None:
+def test_m6_downgrade_returns_exactly_to_m5_surface(
+    provisioned_database: Any, alembic_config: Config
+) -> None:
     command.upgrade(alembic_config, _M6_REVISION)
     command.downgrade(alembic_config, _M5_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        table_count = connection.execute("SELECT count(*) FROM pg_tables WHERE schemaname='dante' AND tablename<>'alembic_version'").fetchone()
-        routine_count = connection.execute("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='dante'").fetchone()
-        trigger_count = connection.execute("SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND NOT t.tgisinternal").fetchone()
-        index_count = connection.execute("SELECT count(*) FROM pg_indexes WHERE schemaname='dante' AND tablename<>'alembic_version'").fetchone()
-        constraints = dict(connection.execute("""
+        table_count = connection.execute(
+            "SELECT count(*) FROM pg_tables WHERE schemaname='dante' AND tablename<>'alembic_version'"
+        ).fetchone()
+        routine_count = connection.execute(
+            "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='dante'"
+        ).fetchone()
+        trigger_count = connection.execute(
+            "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND NOT t.tgisinternal"
+        ).fetchone()
+        index_count = connection.execute(
+            "SELECT count(*) FROM pg_indexes WHERE schemaname='dante' AND tablename<>'alembic_version'"
+        ).fetchone()
+        constraints = dict(
+            connection.execute("""
             SELECT con.contype,count(*) FROM pg_constraint con JOIN pg_class c ON c.oid=con.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='dante' AND c.relname<>'alembic_version' AND con.contype IN ('c','f','u') GROUP BY con.contype
-        """))
+        """)
+        )
     assert table_count == (63,)
     assert routine_count == (13,)
     assert trigger_count == (66,)
@@ -238,9 +391,18 @@ def test_m6_downgrade_returns_exactly_to_m5_surface(provisioned_database: Any, a
 
 
 def test_m6_dictionary_reconciles_final_structural_surface() -> None:
-    table_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "tables").glob("*.json")}
-    view_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "views").glob("*.json")}
-    routine_entries = {path.stem: json.loads(path.read_text(encoding="utf-8")) for path in (_DICTIONARY_ROOT / "routines").glob("*.json")}
+    table_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "tables").glob("*.json")
+    }
+    view_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "views").glob("*.json")
+    }
+    routine_entries = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in (_DICTIONARY_ROOT / "routines").glob("*.json")
+    }
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
     assert len(table_entries) == 68
     assert set(table_entries) >= _M6_TABLES
@@ -248,14 +410,34 @@ def test_m6_dictionary_reconciles_final_structural_surface() -> None:
     assert len(routine_entries) == 14
     assert _M6_ROUTINE in routine_entries
     current = scope["current_materialization"]
-    assert current["completed_stages"][:6] == ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06"]
+    assert current["completed_stages"][:6] == [
+        "CP6-M01",
+        "CP6-M02",
+        "CP6-M03",
+        "CP6-M04",
+        "CP6-M05",
+        "CP6-M06",
+    ]
     assert current["standalone_entries"] == {"tables": 68, "views": 5, "routines": 14, "total": 87}
     assert current["embedded_objects"] == {"triggers": 75, "physical_indexes": 95}
     assert current["constraints"] == {"foreign_keys": 68, "check_constraints": 120}
-    triggers = [trigger for entry in table_entries.values() for trigger in entry["structure"]["triggers"]]
+    triggers = [
+        trigger for entry in table_entries.values() for trigger in entry["structure"]["triggers"]
+    ]
     assert len(triggers) == 75
     assert len({trigger["name"] for trigger in triggers}) == 75
     assert sum(not trigger["constraint_trigger"] for trigger in triggers) == 18
     assert sum(trigger["constraint_trigger"] for trigger in triggers) == 57
     m6_routine = routine_entries[_M6_ROUTINE]["structure"]["routine"]
-    assert m6_routine == {"routine_kind": "function", "language": "plpgsql", "argument_types": [], "return_type": "trigger", "security": "INVOKER", "volatility": "VOLATILE", "parallel_safety": "UNSAFE", "leakproof": False, "function_search_path": ["pg_catalog", "dante", "pg_temp"], "direct_runtime_execute": False}
+    assert m6_routine == {
+        "routine_kind": "function",
+        "language": "plpgsql",
+        "argument_types": [],
+        "return_type": "trigger",
+        "security": "INVOKER",
+        "volatility": "VOLATILE",
+        "parallel_safety": "UNSAFE",
+        "leakproof": False,
+        "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+        "direct_runtime_execute": False,
+    }

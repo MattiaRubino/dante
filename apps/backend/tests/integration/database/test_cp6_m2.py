@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4, uuid7
 
 import psycopg
@@ -12,27 +12,48 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
 _M1_REVISION = "20260825_01"
 _M2_REVISION = "20260825_02"
 _M1_TABLES = {
-    "person", "living_referent", "asset", "place", "content_artifact", "collective",
-    "possibility", "goal", "plan", "activity", "event", "routine", "occurrence",
-    "session", "observation", "native_address",
+    "person",
+    "living_referent",
+    "asset",
+    "place",
+    "content_artifact",
+    "collective",
+    "possibility",
+    "goal",
+    "plan",
+    "activity",
+    "event",
+    "routine",
+    "occurrence",
+    "session",
+    "observation",
+    "native_address",
 }
 _M2_TABLES = {
-    "scoped_address", "schedule", "actual", "material_state_address",
-    "native_current_material_state", "scoped_current_material_state",
+    "scoped_address",
+    "schedule",
+    "actual",
+    "material_state_address",
+    "native_current_material_state",
+    "scoped_current_material_state",
 }
 _CUMULATIVE_TABLES = _M1_TABLES | _M2_TABLES
 _M2_CHECKS = {
-    "ck_scoped_address_scoped_family", "ck_schedule_uuidv7", "ck_actual_uuidv7",
-    "ck_material_state_address_uuidv7", "ck_material_state_address_one_owner",
+    "ck_scoped_address_scoped_family",
+    "ck_schedule_uuidv7",
+    "ck_actual_uuidv7",
+    "ck_material_state_address_uuidv7",
+    "ck_material_state_address_one_owner",
     "ck_material_state_address_facet_code",
     "ck_native_current_material_state_facet_code",
     "ck_scoped_current_material_state_facet_code",
@@ -96,19 +117,22 @@ def test_m2_materializes_exact_cumulative_topology(
     database = _upgrade_m2(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
         tables = {
-            str(row[0]) for row in connection.execute(
+            str(row[0])
+            for row in connection.execute(
                 "SELECT tablename FROM pg_tables "
                 "WHERE schemaname='dante' AND tablename<>'alembic_version'"
             )
         }
         owners = {
-            (str(row[0]), str(row[1])) for row in connection.execute(
+            (str(row[0]), str(row[1]))
+            for row in connection.execute(
                 "SELECT tablename, tableowner FROM pg_tables "
                 "WHERE schemaname='dante' AND tablename<>'alembic_version'"
             )
         }
         constraints = {
-            tuple(row) for row in connection.execute(
+            tuple(row)
+            for row in connection.execute(
                 """
                 SELECT c.relname, con.contype, con.conname, con.condeferrable,
                        con.condeferred, con.convalidated, con.conenforced
@@ -120,23 +144,31 @@ def test_m2_materializes_exact_cumulative_topology(
             )
         }
         indexes = {
-            (str(row[0]), str(row[1])) for row in connection.execute(
+            (str(row[0]), str(row[1]))
+            for row in connection.execute(
                 "SELECT tablename,indexname FROM pg_indexes "
                 "WHERE schemaname='dante' AND tablename<>'alembic_version'"
             )
         }
-        views = {str(row[0]) for row in connection.execute(
-            "SELECT viewname FROM pg_views WHERE schemaname='dante'"
-        )}
-        routines = {str(row[0]) for row in connection.execute(
-            "SELECT p.proname FROM pg_proc p JOIN pg_namespace n "
-            "ON n.oid=p.pronamespace WHERE n.nspname='dante'"
-        )}
-        triggers = {str(row[0]) for row in connection.execute(
-            "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
-            "JOIN pg_namespace n ON n.oid=c.relnamespace "
-            "WHERE n.nspname='dante' AND NOT t.tgisinternal"
-        )}
+        views = {
+            str(row[0])
+            for row in connection.execute("SELECT viewname FROM pg_views WHERE schemaname='dante'")
+        }
+        routines = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT p.proname FROM pg_proc p JOIN pg_namespace n "
+                "ON n.oid=p.pronamespace WHERE n.nspname='dante'"
+            )
+        }
+        triggers = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT t.tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
+                "JOIN pg_namespace n ON n.oid=c.relnamespace "
+                "WHERE n.nspname='dante' AND NOT t.tgisinternal"
+            )
+        }
 
     assert tables == _CUMULATIVE_TABLES
     assert owners == {(name, "dante_owner") for name in _CUMULATIVE_TABLES}
@@ -145,7 +177,7 @@ def test_m2_materializes_exact_cumulative_topology(
     assert {r[2] for r in constraints if r[1] == "f"} == _M2_FOREIGN_KEYS
     assert {r[2] for r in constraints if r[1] == "u"} == _M2_UNIQUES
     assert len(indexes) == 28
-    assert _M2_EXPLICIT_INDEXES <= indexes
+    assert indexes >= _M2_EXPLICIT_INDEXES
     assert views == routines == triggers == set()
 
     m2_constraints = [r for r in constraints if r[0] in _M2_TABLES]
@@ -228,16 +260,19 @@ def test_m2_runtime_business_dml_remains_denied(
     database = _upgrade_m2(provisioned_database, alembic_config)
     with _admin_connection(database) as connection:
         privileges = {
-            name: tuple(connection.execute(
-                "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
-                "has_table_privilege('dante_runtime',%s,'INSERT'),"
-                "has_table_privilege('dante_runtime',%s,'UPDATE'),"
-                "has_table_privilege('dante_runtime',%s,'DELETE')",
-                tuple([f"dante.{name}"] * 4),
-            ).fetchone() or ())
+            name: tuple(
+                connection.execute(
+                    "SELECT has_table_privilege('dante_runtime',%s,'SELECT'),"
+                    "has_table_privilege('dante_runtime',%s,'INSERT'),"
+                    "has_table_privilege('dante_runtime',%s,'UPDATE'),"
+                    "has_table_privilege('dante_runtime',%s,'DELETE')",
+                    tuple([f"dante.{name}"] * 4),
+                ).fetchone()
+                or ()
+            )
             for name in _M2_TABLES
         }
-    assert privileges == {name: (False, False, False, False) for name in _M2_TABLES}
+    assert privileges == dict.fromkeys(_M2_TABLES, (False, False, False, False))
 
 
 def test_m2_upgrade_and_downgrade_preserve_m1_boundary(
@@ -247,28 +282,35 @@ def test_m2_upgrade_and_downgrade_preserve_m1_boundary(
     command.upgrade(alembic_config, _M1_REVISION)
     command.upgrade(alembic_config, _M2_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        at_m2 = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        at_m2 = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert at_m2 == _CUMULATIVE_TABLES
     command.downgrade(alembic_config, _M1_REVISION)
     with _admin_connection(provisioned_database) as connection:
-        after = {str(r[0]) for r in connection.execute(
-            "SELECT tablename FROM pg_tables "
-            "WHERE schemaname='dante' AND tablename<>'alembic_version'"
-        )}
+        after = {
+            str(r[0])
+            for r in connection.execute(
+                "SELECT tablename FROM pg_tables "
+                "WHERE schemaname='dante' AND tablename<>'alembic_version'"
+            )
+        }
     assert after == _M1_TABLES
 
 
 def test_m2_sqlalchemy_mapping_remains_registered_and_relationship_free() -> None:
     stage_tables = tuple(t for t in MAPPED_TABLES if t.name in _CUMULATIVE_TABLES)
     stage_mappers = tuple(
-        mapper for mapper in Base.registry.mappers
-        if mapper.local_table.name in _CUMULATIVE_TABLES
+        mapper
+        for mapper in Base.registry.mappers
+        if cast(Table, mapper.local_table).name in _CUMULATIVE_TABLES
     )
     assert {t.name for t in stage_tables} == _CUMULATIVE_TABLES
-    assert {m.local_table.name for m in stage_mappers} == _CUMULATIVE_TABLES
+    assert {cast(Table, m.local_table).name for m in stage_mappers} == _CUMULATIVE_TABLES
     assert len(stage_mappers) == 22
     assert all(len(m.relationships) == 0 for m in stage_mappers)
 
@@ -298,7 +340,8 @@ def test_m2_dictionary_entries_match_live_m2(
         }
     dictionary_columns = {
         (name, str(c["name"]), str(c["postgres_type"]), "YES" if c["nullable"] else "NO")
-        for name, entry in entries.items() for c in entry["structure"]["columns"]
+        for name, entry in entries.items()
+        for c in entry["structure"]["columns"]
     }
     assert dictionary_columns == database_columns
     m2_entries = {name: entries[name] for name in _M2_TABLES}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4, uuid7
 
 import psycopg
@@ -12,9 +12,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
-from dante.platform.database.metadata import Base
 from dante.platform.database.mappings import MAPPED_TABLES
+from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
@@ -171,9 +172,7 @@ def test_m1_materializes_exact_stage_topology(
     assert checks == _EXPECTED_CHECKS
     assert foreign_keys == set()
     assert unique_constraints == set()
-    assert indexes == {
-        (table_name, f"pk_{table_name}") for table_name in _EXPECTED_TABLES
-    }
+    assert indexes == {(table_name, f"pk_{table_name}") for table_name in _EXPECTED_TABLES}
     assert views == set()
     assert routines == set()
     assert triggers == set()
@@ -203,15 +202,13 @@ def test_m1_constraints_enforce_uuidv7_and_owner_family(
             (valid_ref,),
         )
         connection.execute(
-            "INSERT INTO dante.native_address (native_ref, owner_family) "
-            "VALUES (%s, 'person')",
+            "INSERT INTO dante.native_address (native_ref, owner_family) VALUES (%s, 'person')",
             (valid_ref,),
         )
 
         with pytest.raises(errors.CheckViolation):
             connection.execute(
-                "INSERT INTO dante.native_address (native_ref, owner_family) "
-                "VALUES (%s, 'entity')",
+                "INSERT INTO dante.native_address (native_ref, owner_family) VALUES (%s, 'entity')",
                 (uuid7(),),
             )
 
@@ -227,8 +224,7 @@ def test_m1_runtime_business_dml_remains_denied(
         "UPDATE dante.person SET person_ref = %s",
         "DELETE FROM dante.person",
         "SELECT * FROM dante.native_address",
-        "INSERT INTO dante.native_address (native_ref, owner_family) "
-        "VALUES (%s, 'person')",
+        "INSERT INTO dante.native_address (native_ref, owner_family) VALUES (%s, 'person')",
     )
 
     with _admin_connection(database) as connection:
@@ -248,10 +244,7 @@ def test_m1_runtime_business_dml_remains_denied(
             for qualified_name in (f"dante.{table_name}",)
         }
 
-    assert privilege_matrix == {
-        table_name: (False, False, False, False)
-        for table_name in _EXPECTED_TABLES
-    }
+    assert privilege_matrix == dict.fromkeys(_EXPECTED_TABLES, (False, False, False, False))
 
     with _role_connection(
         database,
@@ -288,9 +281,7 @@ def test_m1_fails_before_business_ddl_when_p0_defaults_are_broadened(
                 "WHERE schemaname = 'dante' AND tablename <> 'alembic_version'"
             )
         }
-        version_table = connection.execute(
-            "SELECT to_regclass('dante.alembic_version')"
-        ).fetchone()
+        version_table = connection.execute("SELECT to_regclass('dante.alembic_version')").fetchone()
         if version_table == ("dante.alembic_version",):
             revision_row = connection.execute(
                 "SELECT version_num FROM dante.alembic_version"
@@ -307,11 +298,11 @@ def test_m1_sqlalchemy_mapping_remains_registered_and_relationship_free() -> Non
     m1_mappers = tuple(
         mapper
         for mapper in Base.registry.mappers
-        if mapper.local_table.name in _EXPECTED_TABLES
+        if cast(Table, mapper.local_table).name in _EXPECTED_TABLES
     )
 
     assert {table.name for table in m1_tables} == _EXPECTED_TABLES
-    assert {mapper.local_table.name for mapper in m1_mappers} == _EXPECTED_TABLES
+    assert {cast(Table, mapper.local_table).name for mapper in m1_mappers} == _EXPECTED_TABLES
     assert len(m1_mappers) == 16
     assert all(len(mapper.relationships) == 0 for mapper in m1_mappers)
 
@@ -323,9 +314,7 @@ def test_m1_dictionary_entries_match_live_m1(
     database = _upgrade_m1(provisioned_database, alembic_config)
     table_directory = _DICTIONARY_ROOT / "tables"
     entries = {
-        table_name: json.loads(
-            (table_directory / f"{table_name}.json").read_text(encoding="utf-8")
-        )
+        table_name: json.loads((table_directory / f"{table_name}.json").read_text(encoding="utf-8"))
         for table_name in _EXPECTED_TABLES
     }
 
@@ -354,14 +343,12 @@ def test_m1_dictionary_entries_match_live_m1(
     }
 
     assert dictionary_columns == database_columns
-    assert {
-        str(entry["implementation"]["alembic_revision"])
-        for entry in entries.values()
-    } == {_EXPECTED_REVISION}
-    assert {
-        str(entry["implementation"]["introducing_stage"])
-        for entry in entries.values()
-    } == {"CP6-M01"}
+    assert {str(entry["implementation"]["alembic_revision"]) for entry in entries.values()} == {
+        _EXPECTED_REVISION
+    }
+    assert {str(entry["implementation"]["introducing_stage"]) for entry in entries.values()} == {
+        "CP6-M01"
+    }
     assert {
         str(check["name"])
         for entry in entries.values()
@@ -371,6 +358,4 @@ def test_m1_dictionary_entries_match_live_m1(
         (table_name, str(index["name"]))
         for table_name, entry in entries.items()
         for index in entry["structure"]["indexes"]
-    } == {
-        (table_name, f"pk_{table_name}") for table_name in _EXPECTED_TABLES
-    }
+    } == {(table_name, f"pk_{table_name}") for table_name in _EXPECTED_TABLES}

@@ -90,10 +90,7 @@ async def test_real_commit_persists_across_sessions(migrated_database: Any) -> N
     try:
         async with runtime.session_factory.begin() as session:
             await session.execute(
-                text(
-                    "INSERT INTO dante.cp3_transaction_probe "
-                    "(id, value) VALUES (1, 'committed')"
-                )
+                text("INSERT INTO dante.cp3_transaction_probe (id, value) VALUES (1, 'committed')")
             )
 
         async with runtime.session_factory.begin() as session:

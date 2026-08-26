@@ -24,9 +24,20 @@ _M6_REVISION = "20260826_06"
 _M7_REVISION = "20260826_07"
 
 _NO_INSERT = {
-    "person", "living_referent", "asset", "place", "content_artifact", "collective",
-    "possibility", "goal", "plan", "activity", "event", "observation",
-    "native_current_material_state", "scoped_current_material_state",
+    "person",
+    "living_referent",
+    "asset",
+    "place",
+    "content_artifact",
+    "collective",
+    "possibility",
+    "goal",
+    "plan",
+    "activity",
+    "event",
+    "observation",
+    "native_current_material_state",
+    "scoped_current_material_state",
 }
 _HISTORY_COLUMNS = {
     "schedule_placement_current_history": "schedule_ref",
@@ -43,13 +54,20 @@ _VIEW_ACL = {
     "event_current_recurrence": ("native_owner_ref", False),
 }
 _ROUTINES = {
-    "enforce_native_address_owner", "enforce_scoped_address_owner",
-    "enforce_native_ref_eligibility", "enforce_material_state_totality",
-    "enforce_current_material_state_binding", "enforce_current_history_equivalence",
-    "enforce_owner_creation_completeness", "enforce_schedule_placement_totality",
-    "enforce_actual_realization_basis", "enforce_session_timing_totality",
-    "enforce_session_pause_consistency", "enforce_recurrence_aggregate_integrity",
-    "enforce_occurrence_generation_integrity", "validate_iana_timezone",
+    "enforce_native_address_owner",
+    "enforce_scoped_address_owner",
+    "enforce_native_ref_eligibility",
+    "enforce_material_state_totality",
+    "enforce_current_material_state_binding",
+    "enforce_current_history_equivalence",
+    "enforce_owner_creation_completeness",
+    "enforce_schedule_placement_totality",
+    "enforce_actual_realization_basis",
+    "enforce_session_timing_totality",
+    "enforce_session_pause_consistency",
+    "enforce_recurrence_aggregate_integrity",
+    "enforce_occurrence_generation_integrity",
+    "validate_iana_timezone",
 }
 _GOLDEN_REF = UUID("018f1f26-8b2e-7abc-8000-000000000001")
 
@@ -207,7 +225,9 @@ def _insert_quota_occurrence(
     state_ref: UUID,
     occurrence_ref: UUID,
 ) -> None:
-    connection.execute("INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,))
+    connection.execute(
+        "INSERT INTO dante.occurrence(occurrence_ref) VALUES (%s)", (occurrence_ref,)
+    )
     connection.execute(
         "INSERT INTO dante.occurrence_generation"
         "(occurrence_ref,source_native_ref,governing_recurrence_state_ref,origin_code) "
@@ -320,7 +340,9 @@ def test_m7_keeps_routines_directly_uncallable_and_role13_runtime_compatible(
         )
     assert {str(row[0]) for row in rows} == _ROUTINES
     assert all(tuple(row[1:4]) == (False, False, False) for row in rows)
-    role13 = next(str(row[4]) for row in rows if row[0] == "enforce_occurrence_generation_integrity")
+    role13 = next(
+        str(row[4]) for row in rows if row[0] == "enforce_occurrence_generation_integrity"
+    )
     assert "FOR UPDATE" not in role13
     assert "CP6-M07: Part-14 advisory locks" in role13
 
@@ -331,7 +353,9 @@ def test_m7_runtime_can_replace_current_recurrence_only_through_bounded_surfaces
 ) -> None:
     database = _upgrade_m7(provisioned_database, alembic_config)
     with _owner_connection(database) as owner:
-        routine_ref, first_state, second_state, current_from = _create_two_elapsed_routine_states(owner)
+        routine_ref, first_state, second_state, current_from = _create_two_elapsed_routine_states(
+            owner
+        )
 
     closure = current_from + timedelta(hours=2)
     with _runtime_connection(database) as runtime:
@@ -377,7 +401,8 @@ def test_m7_runtime_quota_generation_uses_advisory_locks_without_owner_update(
         routine_ref, state_ref = _create_quota_routine(owner)
 
     with _runtime_connection(database) as runtime:
-        with runtime.transaction():
+
+        def insert_locked_occurrence() -> None:
             _acquire_generation_locks(runtime, routine_ref)
             _insert_quota_occurrence(
                 runtime,
@@ -386,15 +411,11 @@ def test_m7_runtime_quota_generation_uses_advisory_locks_without_owner_update(
                 occurrence_ref=uuid7(),
             )
 
-        with pytest.raises(errors.CheckViolation) as exc_info:
-            with runtime.transaction():
-                _acquire_generation_locks(runtime, routine_ref)
-                _insert_quota_occurrence(
-                    runtime,
-                    routine_ref=routine_ref,
-                    state_ref=state_ref,
-                    occurrence_ref=uuid7(),
-                )
+        with runtime.transaction():
+            insert_locked_occurrence()
+
+        with pytest.raises(errors.CheckViolation) as exc_info, runtime.transaction():
+            insert_locked_occurrence()
         assert exc_info.value.sqlstate == "23514"
 
         with pytest.raises(errors.InsufficientPrivilege):
@@ -416,7 +437,10 @@ def test_m7_lock_key_contract_is_stable_and_namespaced() -> None:
         402793989646583049,
         546909177722438921,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"namespace_code must be in the frozen 1\.\.127 range",
+    ):
         advisory_lock_key(0, _GOLDEN_REF)
 
 

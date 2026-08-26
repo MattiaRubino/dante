@@ -41,8 +41,7 @@ class SchedulePlacementStateRow(Base):
     __tablename__ = "schedule_placement_state"
     __table_args__ = (
         CheckConstraint(
-            "temporal_form_code IN "
-            "('date_span','floating_local','named_zone_local','absolute')",
+            "temporal_form_code IN ('date_span','floating_local','named_zone_local','absolute')",
             name="temporal_form",
         ),
         ForeignKeyConstraint(
@@ -130,9 +129,7 @@ class SchedulePlacementFloatingLocalStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False), nullable=False
-    )
+    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
 
 
@@ -173,9 +170,7 @@ class SchedulePlacementNamedZoneStateRow(Base):
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
     extent_code: Mapped[str] = mapped_column(Text, nullable=False)
-    starts_local_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False), nullable=False
-    )
+    starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
     zone_id: Mapped[str] = mapped_column(Text, nullable=False)
     resolved_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -257,7 +252,5 @@ class SchedulePlacementCurrentHistoryRow(Base):
 
     schedule_ref: Mapped[ScopedRecordRef] = mapped_column(primary_key=True)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -34,8 +34,7 @@ class DatabaseRuntime:
                     row = (
                         await connection.execute(
                             text(
-                                "SELECT session_user, current_user, "
-                                "current_setting('search_path')"
+                                "SELECT session_user, current_user, current_setting('search_path')"
                             )
                         )
                     ).one()
@@ -45,7 +44,7 @@ class DatabaseRuntime:
                         and row[1] == _RUNTIME_IDENTITY
                         and normalized_search_path == _TRUSTED_SEARCH_PATH
                     )
-        except (OSError, SQLAlchemyError, TimeoutError):
+        except OSError, SQLAlchemyError, TimeoutError:
             return False
 
     async def dispose(self) -> None:

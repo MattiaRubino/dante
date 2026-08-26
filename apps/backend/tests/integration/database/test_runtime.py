@@ -28,10 +28,7 @@ async def test_runtime_connects_as_exact_identity_with_trusted_search_path(
         async with runtime.engine.connect() as connection:
             row = (
                 await connection.execute(
-                    text(
-                        "SELECT session_user, current_user, "
-                        "current_setting('search_path')"
-                    )
+                    text("SELECT session_user, current_user, current_setting('search_path')")
                 )
             ).one()
 

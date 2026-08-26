@@ -264,8 +264,7 @@ def test_provisioning_reconciles_unexpected_dante_membership_edges(
 ) -> None:
     with _admin_connection(migrated_database) as connection:
         connection.execute(
-            "GRANT dante_migrator TO dante_runtime "
-            "WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
+            "GRANT dante_migrator TO dante_runtime WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
         )
         assert len(_dante_memberships(connection)) == 2
 
@@ -305,12 +304,8 @@ def test_provisioning_fails_closed_on_external_role_membership_edges(
         assert ("dante_runtime", "cp6_p0_external_member") in membership_names
     finally:
         with _admin_connection(migrated_database) as connection:
-            connection.execute(
-                "REVOKE cp6_p0_external_granted FROM dante_runtime"
-            )
-            connection.execute(
-                "REVOKE dante_runtime FROM cp6_p0_external_member"
-            )
+            connection.execute("REVOKE cp6_p0_external_granted FROM dante_runtime")
+            connection.execute("REVOKE dante_runtime FROM cp6_p0_external_member")
             connection.execute("DROP ROLE cp6_p0_external_granted")
             connection.execute("DROP ROLE cp6_p0_external_member")
 

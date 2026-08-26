@@ -51,8 +51,7 @@ class SessionTimingAbsoluteRow(Base):
     __tablename__ = "session_timing_absolute"
     __table_args__ = (
         CheckConstraint(
-            "start_precision_code IN ('exact','approximate','rounded') "
-            "AND isfinite(started_at)",
+            "start_precision_code IN ('exact','approximate','rounded') AND isfinite(started_at)",
             name="start_precision",
         ),
         CheckConstraint(
@@ -121,8 +120,7 @@ class SessionTimingPauseRow(Base):
     __tablename__ = "session_timing_pause"
     __table_args__ = (
         CheckConstraint(
-            "pause_precision_code IN ('exact','approximate','rounded') "
-            "AND isfinite(paused_at)",
+            "pause_precision_code IN ('exact','approximate','rounded') AND isfinite(paused_at)",
             name="pause_precision",
         ),
         CheckConstraint(
@@ -154,9 +152,7 @@ class SessionTimingPauseRow(Base):
     )
 
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(primary_key=True)
-    paused_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    paused_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     pause_precision_code: Mapped[str] = mapped_column(Text, nullable=False)
     resumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     resume_precision_code: Mapped[str | None] = mapped_column(Text)
@@ -204,7 +200,5 @@ class SessionTimingCurrentHistoryRow(Base):
 
     session_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
     material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
-    current_from_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), primary_key=True
-    )
+    current_from_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     current_until_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

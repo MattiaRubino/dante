@@ -102,8 +102,7 @@ async def _reconcile_role_memberships(connection: AsyncConnection[Any]) -> None:
         )
 
     await connection.execute(
-        "GRANT dante_owner TO dante_migrator "
-        "WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
+        "GRANT dante_owner TO dante_migrator WITH INHERIT FALSE, SET TRUE, ADMIN FALSE"
     )
 
 
@@ -113,22 +112,16 @@ async def _configure_database_privileges(
 ) -> None:
     database = sql.Identifier(database_name)
     statements = (
-        sql.SQL(
-            "REVOKE CONNECT, TEMPORARY, CREATE ON DATABASE {} FROM PUBLIC"
-        ).format(database),
+        sql.SQL("REVOKE CONNECT, TEMPORARY, CREATE ON DATABASE {} FROM PUBLIC").format(database),
         sql.SQL(
             "REVOKE TEMPORARY, CREATE ON DATABASE {} FROM dante_migrator, dante_runtime"
         ).format(database),
+        sql.SQL("GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime").format(database),
         sql.SQL(
-            "GRANT CONNECT ON DATABASE {} TO dante_migrator, dante_runtime"
+            "ALTER ROLE dante_runtime IN DATABASE {} SET search_path = pg_catalog, dante, pg_temp"
         ).format(database),
         sql.SQL(
-            "ALTER ROLE dante_runtime IN DATABASE {} "
-            "SET search_path = pg_catalog, dante, pg_temp"
-        ).format(database),
-        sql.SQL(
-            "ALTER ROLE dante_migrator IN DATABASE {} "
-            "SET search_path = pg_catalog, dante, pg_temp"
+            "ALTER ROLE dante_migrator IN DATABASE {} SET search_path = pg_catalog, dante, pg_temp"
         ).format(database),
     )
     for statement in statements:
@@ -172,14 +165,10 @@ async def _configure_owner_defaults(connection: AsyncConnection[Any]) -> None:
     await connection.execute("SET ROLE dante_owner")
     try:
         statements = (
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE ALL ON TABLES FROM dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE ALL ON SEQUENCES FROM dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE ALL ON TYPES FROM dante_runtime",
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante "
-            "REVOKE ALL ON ROUTINES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TABLES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON SEQUENCES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON TYPES FROM dante_runtime",
+            "ALTER DEFAULT PRIVILEGES IN SCHEMA dante REVOKE ALL ON ROUTINES FROM dante_runtime",
             "ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON ROUTINES FROM PUBLIC",
             "ALTER DEFAULT PRIVILEGES REVOKE USAGE ON TYPES FROM PUBLIC",
         )
