@@ -2,7 +2,7 @@
 
 - **Status:** CURRENT
 - **Last reconciled:** 2026-08-26
-- **Protected `main`:** `117360b9333fd1a8a62d0dfeb0398a4d5811e393`
+- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
 
 ## 1. Completed foundations
 
