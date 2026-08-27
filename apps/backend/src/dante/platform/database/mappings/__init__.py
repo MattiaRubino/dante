@@ -4,7 +4,7 @@ from typing import cast
 
 from sqlalchemy import Table
 
-from . import actual, addressing, identity, occurrence_generation, recurrence, schedule, session
+from . import actual, addressing, auth, identity, occurrence_generation, recurrence, schedule, session
 
 MAPPED_TABLES: tuple[Table, ...] = cast(
     tuple[Table, ...],
@@ -77,6 +77,10 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         occurrence_generation.OccurrenceGenerationElapsedRow.__table__,
         occurrence_generation.OccurrenceGenerationQuotaRow.__table__,
         occurrence_generation.OccurrenceGenerationCyclicRow.__table__,
+        auth.AccountRow.__table__,
+        auth.EmailIdentityRow.__table__,
+        auth.PasswordCredentialRow.__table__,
+        auth.AuthSessionRow.__table__,
     ),
 )
 
