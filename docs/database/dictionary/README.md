@@ -1,25 +1,27 @@
 # DANTE Database Dictionary
 
-**Status:** CURRENT / MATERIALIZED / CP6 CLOSED  
+**Status:** CURRENT / MATERIALIZED / CP6 BASELINE CLOSED / POST-CP6 EVOLUTION ACTIVE  
 **Schema version:** 1  
 **Serialization:** JSON  
 **Structural validation dialect:** JSON Schema Draft 2020-12  
-**Current materialization:** CP6-M01..M07 complete; PostgreSQL 18.6; Alembic `20260826_08`  
+**PostgreSQL:** 18.6  
+**Current branch Alembic head:** `20260827_09`  
+**Frozen CP6 head:** `20260826_08`  
 
 ## Purpose
 
 This directory is the machine-readable companion to the human-readable DANTE Database Architecture & Reference.
 
-It does not replace Domain, Logical, Physical, the PostgreSQL Persistence Constitution, Alembic, SQLAlchemy or real PostgreSQL introspection. It provides one structured current metadata surface that those authorities can be reconciled against.
+It does not replace Domain, Logical, Physical, the PostgreSQL Persistence Constitution, Alembic, SQLAlchemy or real PostgreSQL introspection. It provides one structured **current** metadata surface that those authorities can be reconciled against while preserving frozen historical acceptance baselines separately.
 
 The long-lived consistency target is:
 
 ```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy MetaData / mappings
-≈ Alembic head
-≈ real PostgreSQL schema
+Current Database Architecture & Reference
+≈ current Database Dictionary
+≈ current SQLAlchemy MetaData / mappings
+≈ current Alembic head
+≈ current real PostgreSQL schema
 ```
 
 A mismatch is a defect to investigate.
@@ -33,16 +35,20 @@ dictionary/
 ├── schema/
 │   ├── object-v1.schema.json
 │   └── scope-v1.schema.json
-├── tables/       # 68 entries
-├── views/        # 5 entries
-└── routines/     # 14 entries
+├── tables/       # 72 current entries
+├── views/        # 5 current entries
+└── routines/     # 14 current entries
 ```
 
-Object directories exist because real PostgreSQL objects now exist. Empty ceremonial object directories remain forbidden.
+Object directories exist because real PostgreSQL objects are represented by the current branch schema. Empty ceremonial object directories remain forbidden.
 
-## Current baseline entry and embedded-object counts
+## Frozen baseline vs current materialization
 
-The current DANTE-owned Dictionary contains exactly:
+`scope.json` deliberately separates two facts that were identical at CP6 closure but diverge after normal product evolution.
+
+### `expected_baseline`
+
+Immutable CP6 closure benchmark at `20260826_08`:
 
 ```text
 68 table entries
@@ -57,9 +63,28 @@ The current DANTE-owned Dictionary contains exactly:
 120 CHECK constraints
 ```
 
-These values are both the expected baseline and the current materialized values in `scope.json`.
+### `current_materialization`
 
-Object entry keys are stable and typed:
+Current `feature/access-auth` inventory after M3-A migration `20260827_09`:
+
+```text
+72 table entries
+5 view entries
+14 routine entries
+------------------
+91 standalone entries
+
+75 trigger attachments
+104 physical indexes
+71 foreign keys
+137 CHECK constraints
+```
+
+Post-CP6 schema growth **must not rewrite the CP6 benchmark** merely to keep baseline and current counts equal.
+
+`completed_stages` continues to record the frozen CP6 materialization sequence because those stages describe how the baseline was established. Later object provenance is recorded on each object through `implementation.introducing_stage` and `implementation.alembic_revision`.
+
+Object entry keys remain stable and typed:
 
 ```text
 table:dante.<name>
@@ -67,7 +92,7 @@ view:dante.<name>
 routine:dante.<name>
 ```
 
-The exact PostgreSQL object name is also the JSON file name in the applicable directory.
+The exact PostgreSQL object name is also the JSON filename in the applicable directory.
 
 ## Embedded objects
 
@@ -84,7 +109,7 @@ indexes
 trigger attachments
 ```
 
-The 14 integrity routines remain standalone entries because they are independently owned PostgreSQL objects with their own signature/security/ACL properties and may have multiple trigger attachments.
+Integrity routines remain standalone entries because they are independently owned PostgreSQL objects with their own signature/security/ACL properties and may have multiple trigger attachments.
 
 ## Ownership spaces
 
@@ -92,7 +117,7 @@ The 14 integrity routines remain standalone entries because they are independent
 
 ### DANTE-owned
 
-The business/control schema contract materialized by CP6 and governed by the current Database System of Record.
+Current business/control/security objects governed by DANTE migrations and the current Database System of Record. This now includes both the frozen CP6 object set and reviewed post-CP6 product evolution such as the M3-A Access/Auth tables.
 
 ### Technical foundation
 
@@ -109,7 +134,7 @@ dante_runtime
 
 ### Extension-owned
 
-The current foundation extension registry is a strict keyed object with exactly:
+The current foundation extension registry remains exactly:
 
 ```text
 postgis
@@ -121,34 +146,30 @@ pg_stat_statements
 
 Objects internally created/owned by those extensions are not promoted into DANTE object entries merely because PostgreSQL introspection exposes them.
 
-## Materialization lifecycle in scope.json
-
-`expected_baseline` is the current baseline target. `current_materialization` records the actually materialized Dictionary/schema stage.
+## Materialization lifecycle in `scope.json`
 
 Lifecycle statuses remain:
 
 ```text
 readiness_only
-→ no CP6 object entries/materialized counts yet
+→ no materialized DANTE object inventory yet
 
 materializing
-→ one accepted CP6-M01..M07 prefix is being materialized
+→ accepted baseline materialization is in progress
 
 materialized
-→ exact CP6-M01..M07 completion and final 68/5/14/87 + 75/95 + 68/120 counts
+→ the frozen CP6 materialization completed and the current inventory is fully represented
 ```
 
-The current file is in the final state:
+For `materialized`, `completed_stages` remains the exact completed CP6 list:
 
 ```text
-status = materialized
-completed_stages = CP6-M01..CP6-M07
-standalone_entries = 68 tables + 5 views + 14 routines = 87
-embedded_objects = 75 triggers + 95 physical indexes
-constraints = 68 FKs + 120 CHECKs
+CP6-M01 .. CP6-M07
 ```
 
-`completed_stages` must always be a valid ordered prefix of the frozen migration DAG. JSON Schema bounds values; the DANTE semantic validator proves prefix/order/count coherence.
+Current inventory counts are no longer capped to the CP6 totals. They are non-negative evolving values that must reconcile mechanically to current Dictionary entries, mappings and PostgreSQL.
+
+This distinction lets v1 survive normal forward product evolution without pretending later objects were introduced by CP6.
 
 ## Object schema
 
@@ -167,7 +188,7 @@ security
 proof
 ```
 
-Object types are exactly:
+Object types remain exactly:
 
 ```text
 table
@@ -175,7 +196,26 @@ view
 routine
 ```
 
-The schema is intentionally strict (`additionalProperties: false` throughout governed shapes) so accidental new metadata fields require reviewed Dictionary-schema evolution rather than silently becoming convention.
+The schema remains intentionally strict (`additionalProperties: false` throughout governed shapes) so accidental metadata fields require reviewed Dictionary-schema evolution rather than silently becoming convention.
+
+### Post-CP6 provenance fields
+
+`object-v1.schema.json` no longer hardcodes:
+
+```text
+introducing_stage = CP6-M01..M07 only
+runtime_acl_stage = CP6-M07 only
+```
+
+Both fields accept governed stage identifiers such as:
+
+```text
+CP6-M03
+CP6-M07
+M3-A
+```
+
+This is a compatible generalization of provenance metadata, not permission to rewrite existing CP6 entries. Existing CP6 object entries retain their historical stage values.
 
 ## Structural truth and semantic truth
 
@@ -197,6 +237,7 @@ owner
 ACL
 Alembic revision
 SQLAlchemy mapping
+current object/count inventory
 ```
 
 ### Human-authored semantic metadata
@@ -214,7 +255,7 @@ canonicality boundary
 proof rationale
 ```
 
-Generated DDL must not overwrite the human semantic fields.
+Generated DDL must not overwrite human semantic fields.
 
 ## Table entries
 
@@ -229,7 +270,7 @@ indexes
 trigger attachments
 ```
 
-Baseline physical table properties reconcile as applicable to:
+Normal physical table properties reconcile as applicable to:
 
 ```text
 persistence        permanent
@@ -245,7 +286,7 @@ Foreign-key metadata includes reference-family/cardinality/semantic reason plus 
 
 CHECK metadata includes exact expression contract plus enforcement/validation/NO INHERIT state.
 
-Index metadata identifies whether the physical index originates from:
+Index metadata identifies whether a physical index originates from:
 
 ```text
 primary_key
@@ -257,7 +298,7 @@ and records PostgreSQL valid/ready/live state. This prevents duplicate documenta
 
 ## View entries
 
-The five baseline current views describe:
+Current views describe:
 
 ```text
 base relations
@@ -271,11 +312,11 @@ security_barrier
 view-column defaults
 ```
 
-The views are not ORM row entities.
+Views are not ORM row entities.
 
 ## Routine entries
 
-The 14 baseline integrity routines describe:
+Current integrity routines describe:
 
 ```text
 routine kind
@@ -286,11 +327,11 @@ security mode
 volatility
 parallel safety
 leakproof posture
-function search_path
+function_search_path
 direct runtime EXECUTE posture
 ```
 
-Baseline trigger functions are `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante,pg_temp` search path. `pg_temp` is explicitly last by the accepted object-hijack hardening contract.
+The frozen CP6 trigger-function baseline remains `() → trigger`, `plpgsql`, `SECURITY INVOKER`, `VOLATILE`, `PARALLEL UNSAFE`, non-leakproof, with fixed `pg_catalog,dante,pg_temp` search path. `pg_temp` remains explicitly last by the accepted object-hijack hardening contract.
 
 ## Trigger attachments
 
@@ -311,7 +352,7 @@ arguments
 invariant role/reason
 ```
 
-The baseline reconciles to 75 exact enabled attachments: 18 ordinary/immediate and 57 deferred constraint triggers.
+M3-A adds no triggers, so the current branch remains at the 75 CP6 attachments unless a later reviewed evolution changes that inventory.
 
 ## Security
 
@@ -328,7 +369,9 @@ grant_option
 
 This represents column-level UPDATE and view-specific DML truth without broadening it into table-level CRUD.
 
-Routine entries reconcile exact execution-search-path security. Role-membership topology, owner password posture and credential/SCRAM provisioning remain technical-foundation proof rather than standalone business Dictionary entries.
+Routine entries reconcile exact execution/search-path security. Role-membership topology, owner password posture and credential/SCRAM provisioning remain technical-foundation proof rather than standalone business Dictionary entries.
+
+M3-A uses the same model for least-privilege Auth persistence: new object entries declare exact runtime table/column grants and `test_current_catalog.py` is responsible for direct current-PostgreSQL reconciliation.
 
 ## Proof metadata
 
@@ -341,6 +384,8 @@ staged_evidence
 ```
 
 Do not store mutable outcome flags such as `tests_passed=true` inside current object metadata. Actual PASS/FAIL belongs to test/CI/evidence records.
+
+New M3-A object entries therefore name their direct proof targets but do not claim the tests have passed before execution.
 
 ## Two-level validation contract
 
@@ -363,15 +408,23 @@ all FK targets and target columns resolve
 all trigger routine references resolve
 trigger/routine signatures are compatible
 object type ↔ SQLAlchemy mode is correct
-stage prefix/counts reconcile to CP6-M01..M07
-68 tables / 5 views / 14 routines / 87 standalone entries
-75 triggers / 95 physical indexes / 68 FKs / 120 CHECKs
-routine security/search_path facts reconcile to the accepted baseline
-Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
+frozen CP6 completed-stage record remains valid
+current scope counts reconcile to the current entry set
+current Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
+routine security/search_path facts reconcile where applicable
 extension-owned objects do not become false DANTE drift
 ```
 
-This validator is repository/test tooling, not a new semantic authority.
+At the current M3-A head this means the current reconciliation target is:
+
+```text
+72 tables / 5 views / 14 routines / 91 standalone entries
+75 triggers / 104 physical indexes / 71 FKs / 137 CHECKs
+```
+
+The frozen CP6 acceptance test independently proves its own historical `68/5/14/87 + 75/95 + 68/120` topology by migrating to revision `20260826_08`.
+
+This validator/test tooling is not a new semantic authority.
 
 ## Materialization and same-change rule
 
@@ -389,7 +442,21 @@ CP6-M06  +5 table +1 routine entry +9 trigger registrations
 CP6-M07   no new standalone entries; reconcile/activate exact ACL values
 ```
 
-That sequence is now complete. Later structural evolution uses normal reviewed forward migrations plus the same-change Dictionary rule; it does not reopen CP6.
+That sequence remains complete and immutable as historical provenance.
+
+M3-A then introduces:
+
+```text
+20260827_09 / M3-A
++ account
++ email_identity
++ password_credential
++ auth_session
++ 9 physical indexes
++ 3 foreign keys
++ 17 CHECK constraints
++ exact runtime ACL metadata
+```
 
 Hard boundary remains:
 
@@ -398,10 +465,10 @@ no real DANTE object
 → no object-specific Dictionary entry pretending it exists
 ```
 
-The converse is now also current truth:
+And current truth requires:
 
 ```text
-real baseline object
+real current DANTE object
 → matching current Dictionary entry required
 ```
 
@@ -409,9 +476,18 @@ real baseline object
 
 `object-v1.schema.json` and `scope-v1.schema.json` are versioned contracts.
 
-The pre-materialization Part-16 and Part-18 changes hardened v1 before the first object-entry baseline was accepted. That history remains recoverable in Git and CP6 evidence; it is no longer the current operational state of this README.
+The CP6 pre-materialization changes hardened v1 before the first object-entry baseline was accepted. M3-A proves that v1 also needs to support **ordinary forward evolution** after that baseline.
 
-Now that the v1 baseline is materialized, incompatible meaning changes require an explicit later Dictionary schema version/migration rather than silent reinterpretation.
+The M3-A change generalizes only facts that were accidentally frozen to CP6 implementation chronology:
+
+```text
+introducing/runtime ACL stage vocabulary
+current inventory upper bounds/materialized-count equality
+```
+
+It does not reinterpret the shape or meaning of the 87 CP6 entries and therefore does not require a v2 migration.
+
+An actually incompatible metadata meaning/shape change still requires an explicit later Dictionary schema version/migration rather than silent reinterpretation.
 
 ## Validation target
 
@@ -432,21 +508,29 @@ physical table persistence/RLS/partitioning drift
 owner/ACL drift
 SQLAlchemy mapping drift
 Alembic/head traceability drift
-scope-count/stage mismatch
+scope-count mismatch
+frozen-baseline mutation presented as current evolution
 extension-owned false positives
 ```
 
-## CP6 final acceptance
+## CP6 final acceptance and current proof boundary
 
-The materialized v1 Dictionary was included in CP6-05 whole-database reconciliation and final direct QA. Final closure verified:
+The materialized v1 Dictionary baseline was included in CP6-05 whole-database reconciliation and final direct QA:
 
 ```text
-Dictionary JSON-Schema validation       PASS
-Dictionary internal integrity           PASS
-Dictionary ↔ SQLAlchemy reconciliation  PASS
-Dictionary ↔ Alembic reconciliation     PASS
-Dictionary ↔ live PostgreSQL            PASS
-final counts 68/5/14/87 + 75/95/68/120 PASS
+Dictionary JSON-Schema validation       PASS at CP6
+Dictionary internal integrity           PASS at CP6
+Dictionary ↔ SQLAlchemy reconciliation  PASS at CP6
+Dictionary ↔ Alembic reconciliation     PASS at CP6
+Dictionary ↔ live PostgreSQL            PASS at CP6
+final CP6 counts 68/5/14/87 + 75/95/68/120 PASS
 ```
 
-See `docs/development/backend-cp6-05-whole-database-qa.md` for the retained acceptance record.
+Those facts remain historical evidence for revision `20260826_08`.
+
+The new M3-A current inventory and ACLs are **not yet an executed PASS** merely because the files are now represented. Direct local/CI execution against real PostgreSQL 18.6 must prove the current `20260827_09` state before the M3-A database foundation can be accepted.
+
+See:
+
+- `../access-auth.md` for the current Access/Auth database meaning;
+- `../development/backend-cp6-05-whole-database-qa.md` for retained CP6 acceptance evidence.
