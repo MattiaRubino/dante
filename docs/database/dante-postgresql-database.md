@@ -1,24 +1,74 @@
 # DANTE PostgreSQL Database — Architecture, Reference & Whole-Database Blueprint
 
-- **Status:** CP6-03 ACTIVE / CANDIDATE BLUEPRINT / GATE 03 NOT YET EARNED
+- **Status:** CURRENT / EVOLVING WHOLE-DB REFERENCE / CP6 BASELINE CLOSED / M3-A BRANCH EVOLUTION ACTIVE
 - **Created:** 2026-08-22
 - **Product:** DANTE
 - **Database:** PostgreSQL 18 major family
 - **Current repository patch:** PostgreSQL 18.6
 - **Schema:** `dante`
-- **Workstream:** `../workstreams/logical-postgresql.md`
+- **Current product workstream:** `../workstreams/access-auth.md`
+- **Historical CP6 workstream:** `../workstreams/logical-postgresql.md`
+- **Current Access/Auth DB detail:** `access-auth.md`
 - **Database documentation authority:** `README.md`
 - **Persistence Constitution:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **CP6-01 Domain coverage:** `../development/backend-cp6-01-concrete-persistence-coverage.md`
 - **CP6-01 cross-cutting coverage:** `../development/backend-cp6-01-concrete-persistence-coverage-part-2.md`
-- **Implementation status:** business schema / business SQLAlchemy mappings / product vertical **NOT YET MATERIALIZED**
+- **Implementation status:** CP6 baseline integrated; M3-A Access/Auth database foundation source materialized on `feature/access-auth` at Alembic `20260827_09`; direct current PostgreSQL proof pending
+
+---
+
+## 0. Current-reference reconciliation
+
+This document and its continuations are the **current/evolving whole-DANTE database reference**. They originated as the CP6 whole-database blueprint, but they are not frozen merely because CP6 is closed.
+
+The permanent documentation lifecycle is:
+
+```text
+current/evolving database reference
+→ follows accepted current database truth
+
+applied Alembic revisions / CP6 acceptance QA / Git history
+→ preserve exact historical evidence
+```
+
+Accordingly, CP6 derivation/status blocks later in this document remain useful historical checkpoint context where labelled as CP6. Their old counts and unresolved-item sets must not be interpreted as current repository routing after a later accepted evolution has satisfied one of their triggers.
+
+Current branch reconciliation for Access/Auth:
+
+```text
+protected-main CP6 baseline
+→ Alembic 20260826_08
+→ 68 tables / 95 physical indexes / 68 FKs / 120 CHECKs
+
+feature/access-auth M3-A current candidate
+→ Alembic 20260827_09
+→ 72 tables / 104 physical indexes / 71 FKs / 137 CHECKs
+→ source materialized; direct PostgreSQL proof still pending
+
+DB-U09 Account persistence
+→ CP6 disposition: correctly DEFERRED
+→ current resolution: RESOLVED / M3-A MATERIALIZED
+→ dante.account
+→ dante.email_identity
+→ dante.password_credential
+→ dante.auth_session
+→ detailed authority: docs/database/access-auth.md
+
+DB-U10 Principal/security persistence
+→ CP6 disposition: correctly DEFERRED
+→ current resolution: RESOLVED WITHOUT PERSISTENCE
+→ Principal remains runtime-derived from Account + AuthSession + request/security context
+→ no Principal table selected
+```
+
+This reconciliation does not make the historical CP6 deferrals wrong. It records that their explicit future trigger has now fired and prevents a reader from mistaking historical CP6 state for present database truth.
 
 ---
 
 ## 1. Purpose
 
-This is the canonical human-readable specification of the concrete DANTE PostgreSQL database produced by CP6.
+This is the canonical whole-DANTE current/evolving human-readable database reference. It originated as CP6's concrete PostgreSQL blueprint and continues to evolve with accepted later database changes.
 
 It has two simultaneous jobs:
 
@@ -1368,8 +1418,8 @@ Gate 03 requires 100% accounting beyond the 57 Domain concepts. This matrix uses
 | Candidate/unresolved interpretation | GENUINELY DEFERRED | trigger = first accepted candidate-producing capability requiring persistence |
 | Product/organizational profile | GENUINELY DEFERRED | trigger = closed product profile semantics / real product consumer |
 | Specialist extension | GENUINELY DEFERRED | trigger = selected specialist capability with concrete schema requirement |
-| Account | GENUINELY DEFERRED | Domain explicitly keeps Account separate and detailed access model deferred; no speculative login/account table in CP6 |
-| Principal/security context | GENUINELY DEFERRED as independent registry | trigger = closed AuthN/AuthZ security context; provenance must remain able to bind a later Principal without redefining Actor/Person |
+| Account | POST-CP6 RESOLVED / M3-A MATERIALIZED ON `feature/access-auth` | CP6 correctly deferred Account while Access/Auth semantics were open; the trigger is now satisfied by Access/Auth M2 + M3-A. Current persistence is `account` + `email_identity` + `password_credential` + `auth_session`; see `access-auth.md` and Alembic `20260827_09`. |
+| Principal/security context | POST-CP6 RESOLVED WITHOUT PERSISTENCE | Access/Auth closed Principal as runtime-derived security context over Account/AuthSession/request context. No Principal table is selected; Person/Account/Principal/Actor remain distinct. |
 | Actor role | NO INDEPENDENT PERSISTENCE | owning record stores concrete eligible referent/address; no ActorRef |
 | Subject role | NO INDEPENDENT PERSISTENCE | owning Reference Contract stores eligible target; no SubjectRef |
 | Resource role | NO INDEPENDENT PERSISTENCE | concrete eligible provider/value/service/pool/specialist representation; no ResourceRef |
@@ -2719,8 +2769,8 @@ The remaining questions are not generic “TBD” placeholders. Each has an expl
 | ID | Remaining parameter | Current reason / closure requirement |
 |---|---|---|
 | DB-U08 | final PostgreSQL object naming beyond currently frozen control/native design names | freeze remaining concrete relation/context/state names with their object derivations before dictionary generation; Recurrence object names wait for DB-U12 reclosure |
-| DB-U09 | Account persistence | genuinely deferred: Domain keeps Account separate and detailed access model is not closed; do not invent login/account tables |
-| DB-U10 | Principal/security persistence | genuinely deferred: AuthN/AuthZ independent registry not closed; preserve Actor/Person separation and later provenance binding |
+| DB-U09 | Account persistence | **RESOLVED / M3-A MATERIALIZED on `feature/access-auth`**. CP6's deferral was correct while Access/Auth was unclosed. Current authority is `docs/database/access-auth.md`; first materialization is Alembic `20260827_09`. |
+| DB-U10 | Principal/security persistence | **RESOLVED WITHOUT PERSISTENCE**. Principal is runtime-derived from Account + AuthSession + request/security context; no Principal persistence table is selected. |
 | DB-U12 | Recurrence physical ownership + exact constraint contract | REOPENED by whole-blueprint audit; owner-bound/scoped boundary revalidated PASS. Still close exact anchor/policy/frame/zone/selector/qualifying-anchor constraints, family totality, source ownership and Occurrence governing-state eligibility; no placeholder policy fields are allowed |
 | DB-U14 | owner/family-specific lifecycle/tombstone fields and destructive continuity | derive actual retirement/redaction/delete continuity per owner/relation; close native/scoped owner↔address behavior and the owner-specific redacted/tombstone representation that preserves MaterialStateRef totality; no global deleted_at or tombstone semantic root |
 | DB-U15 | remaining structural FK indexes and query indexes | final FK/query graph must justify each; preserve already-closed PK/UNIQUE/material owner-facet indexes and add none speculatively |
@@ -2731,7 +2781,7 @@ The remaining questions are not generic “TBD” placeholders. Each has an expl
 | DB-U21 | object-level runtime privilege matrix + CP3 provisioning reconciliation | Gate-03 blocker before CP6-04. Privilege ownership direction is now fixed: provisioning owns role/schema foundation with no blanket business ACL grants; migrations own exact ACLs across tables/views/sequences/types/domains/routines. Exact object-by-object matrix still must close |
 
 ```text
-UNRESOLVED PARAMETERS CURRENT
+UNRESOLVED PARAMETERS AT THIS CP6 CHECKPOINT — HISTORICAL
 11
 
 UNCLASSIFIED PARAMETERS ALLOWED AT GATE 03
