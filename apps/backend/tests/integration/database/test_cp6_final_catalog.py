@@ -1,4 +1,4 @@
-"""CP6-05 final catalog, Dictionary, SQLAlchemy and Alembic reconciliation."""
+"""CP6-05 frozen baseline catalog reconciliation at revision 20260826_08."""
 
 from __future__ import annotations
 
@@ -9,12 +9,12 @@ from typing import Any
 
 import psycopg
 import pytest
+from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 
 from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.mappings.views import VIEW_METADATA
-from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
@@ -36,9 +36,14 @@ def _admin(database: Any) -> psycopg.Connection[Any]:
 
 
 def _entries(kind: str) -> dict[str, dict[str, Any]]:
-    return {
+    entries = {
         path.stem: json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((_DICTIONARY_ROOT / kind).glob("*.json"))
+    }
+    return {
+        name: entry
+        for name, entry in entries.items()
+        if str(entry["implementation"]["introducing_stage"]).startswith("CP6-")
     }
 
 
@@ -96,8 +101,11 @@ def _validate_dictionary(
 
 
 def test_cp6_final_environment_topology_and_cross_representation(
-    migrated_database: Any,
+    provisioned_database: Any,
+    alembic_config: Config,
 ) -> None:
+    command.upgrade(alembic_config, _FINAL_REVISION)
+
     tables = _entries("tables")
     views = _entries("views")
     routines = _entries("routines")
@@ -107,7 +115,8 @@ def test_cp6_final_environment_topology_and_cross_representation(
         routines,
     )
     scope = json.loads((_DICTIONARY_ROOT / "scope.json").read_text(encoding="utf-8"))
-    with _admin(migrated_database) as connection:
+
+    with _admin(provisioned_database) as connection:
         environment = connection.execute(
             "SELECT current_setting('server_version_num'),"
             "current_setting('server_encoding'),"
@@ -209,6 +218,7 @@ def test_cp6_final_environment_topology_and_cross_representation(
                 "('postgis','vector','pg_trgm','unaccent','pg_stat_statements')"
             )
         )
+
     assert environment == ("180006", "UTF8", "63")
     assert topology == (68, 5, 14, 75, 95, 68, 120, 0, 0, 0)
     assert (len(tables), len(views), len(routines)) == (68, 5, 14)
@@ -229,9 +239,11 @@ def test_cp6_final_environment_topology_and_cross_representation(
         "pg_stat_statements",
     }
     assert scope["current_materialization"]["completed_stages"] == _EXPECTED_STAGES
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 68
-    assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
+
+    current_mapped = {table.name: table for table in MAPPED_TABLES}
+    assert set(tables) <= set(current_mapped)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
+
     for name, entry in tables.items():
         mapping = entry["implementation"]["sqlalchemy"]
         row = getattr(
@@ -240,6 +252,7 @@ def test_cp6_final_environment_topology_and_cross_representation(
         )
         assert row.__table__.name == name
         assert row.__table__.schema == "dante"
+
     config = Config(toml_file=str(_REPO_ROOT / "apps" / "backend" / "pyproject.toml"))
     scripts = ScriptDirectory.from_config(config)
-    assert scripts.get_heads() == [_FINAL_REVISION]
+    assert scripts.get_revision(_FINAL_REVISION) is not None
