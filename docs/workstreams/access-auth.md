@@ -6,7 +6,8 @@
 - **Created from protected `main`:** `f011e252b6a294a12c38927ef2d528244ea1fee6`
 - **M2.1–M2.8 documentation PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
 - **M2 closure documentation PRE-SCOPE:** `1d685dc43dd68916afa34ec84b7f45df20c890b0`
-- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — NEXT / NOT STARTED
+- **M3-A production gate PRE-SCOPE:** `ea75bb33e88bd256018c73ae444cff48a510af63`
+- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — ACTIVE / DB FOUNDATION SOURCE MATERIALIZED / DIRECT DB PROOF PENDING
 - **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED / READBACK QA PASS
 - **Purpose:** operational save-game, authority map, roadmap, decision register, evidence boundaries and Git/write safety for the production Access/Auth vertical.
 
@@ -44,7 +45,7 @@ At the start of each session:
    - `docs/architecture/access-auth-api-contract.md`;
    - `docs/architecture/access-auth-testing-contract.md`;
    - `docs/decisions/ADR-011-access-auth-architecture.md`;
-10. inspect current backend/database/frontend authorities relevant to the active slice;
+10. inspect current backend/database/frontend authorities relevant to the active slice, including `docs/database/README.md`, the whole-DB current reference and `docs/database/access-auth.md`;
 11. verify remote branch HEAD and local worktree before any write.
 
 Local verification minimum:
@@ -74,6 +75,8 @@ current durable subsystem/product/database docs
 ↓
 current branch-local Access/Auth architecture/security/API/testing contracts + ADR-011
 ↓
+current branch-local DB migration/mapping/Dictionary/reference candidate where newer and explicitly scoped
+↓
 this active workstream for operational state/newer unresolved slice decisions
 ↓
 current feature/access-auth implementation
@@ -89,13 +92,43 @@ Important sources include:
 - the four `docs/architecture/access-auth-*.md` contracts;
 - `docs/decisions/ADR-011-access-auth-architecture.md`;
 - frontend production-readiness contracts/gates;
-- `docs/database/README.md` + Database Dictionary/reference;
+- `docs/database/README.md` + whole-DB current/evolving reference + Database Dictionary;
+- `docs/database/access-auth.md` for detailed current Access/Auth DB semantics;
 - ADR-007 / ADR-008 / ADR-009 / ADR-010;
-- PostgreSQL CP3/CP6 persistence/QA authorities;
+- PostgreSQL CP3/CP6 persistence/QA evidence;
 - current backend mappings/migrations/tests;
 - current Access state machine/UI/release tests.
 
 Historical records remain evidence, never newer authority.
+
+### Current-reference lifecycle rule
+
+`docs/development/documentation-lifecycle-policy.md` now makes this permanent across DANTE:
+
+```text
+CURRENT / EVOLVING REFERENCE
+→ must track accepted present truth
+→ a deferred/open claim is reconciled when its trigger fires
+
+FROZEN EVIDENCE / HISTORY
+→ preserves exact historical context
+→ is not rewritten to pretend later knowledge existed earlier
+```
+
+For database evolution specifically:
+
+```text
+structural DB change
+→ migration
+→ mapping
+→ Dictionary
+→ whole-DB current reference
+→ subject/vertical DB reference when applicable
+→ tests/proof
+→ audit of prior DEFERRED/OPEN/TBD claims whose trigger was satisfied
+```
+
+A document is not frozen merely because it was created during CP6. The whole-DB Database Architecture & Reference is current/evolving; CP6 migrations, CP6 acceptance evidence and Git history remain the historical record.
 
 ---
 
@@ -125,9 +158,9 @@ Already integrated:
 - PostgreSQL acceptance/integrity/runtime tests;
 - backend CI.
 
-CP6 intentionally did not invent speculative Account/Principal/Auth persistence.
+CP6 intentionally did not invent speculative Account/Principal/Auth persistence because the Access/Auth trigger had not yet closed.
 
-Current baseline before M3 Auth migration:
+Protected-main CP6 baseline before M3 Auth migration:
 
 ```text
 PostgreSQL          18.6
@@ -140,6 +173,8 @@ Alembic head        20260826_08
 68 foreign keys
 120 CHECK constraints
 ```
+
+That CP6 deferral was correct historically. It is not current unresolved truth on `feature/access-auth` after M2 closure and M3-A DB materialization.
 
 ### Frontend foundation
 
@@ -177,11 +212,54 @@ Native Mobile Access remains M6, but technology/foundation are not open choices.
 
 ### Backend
 
-No dedicated production Access/Auth capability, Account/session application implementation or real Auth API exists yet.
+No dedicated production Access/Auth application service, password runtime, session middleware/Principal derivation or real Auth HTTP API exists yet.
 
 ### Database
 
-No production Account / EmailIdentity / PasswordCredential / ExternalIdentity / PasskeyCredential / AuthSession schema has been materialized yet.
+The M3-A database foundation **source is materialized on this branch** at Alembic `20260827_09`:
+
+```text
+dante.account
+dante.email_identity
+dante.password_credential
+dante.auth_session
+```
+
+Aligned source representations currently exist across:
+
+```text
+Alembic 20260827_09
+SQLAlchemy mappings + MAPPED_TABLES
+Database Dictionary v1
+whole-DB current reference routing
+docs/database/access-auth.md
+migration/current-catalog tests
+```
+
+Current branch inventory encoded by the source/Dictionary candidate is:
+
+```text
+72 tables
+5 views
+14 routines
+75 triggers
+104 physical indexes
+71 foreign keys
+137 CHECK constraints
+```
+
+**Direct real PostgreSQL proof is still pending.** Do not call these current candidate counts an executed database PASS until the requested local/CI suite proves them.
+
+Not yet materialized:
+
+```text
+ExternalIdentity
+PasskeyCredential
+verification/recovery proof persistence
+provider state
+MFA persistence
+Principal table (deliberately not selected)
+```
 
 ### Web
 
@@ -197,7 +275,7 @@ M2 selected the contract/tooling boundary, but no Auth OpenAPI snapshot, Orval p
 
 ### Test harness
 
-M2 selected the proof contract, but the Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
+M2 selected the proof contract. Current DB tests for the first M3-A schema exist, but have not yet been executed/read back in the user's local PostgreSQL harness after the branch write. The Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
 
 These are M3 executable obligations, not missing M2 architecture work.
 
@@ -259,6 +337,17 @@ Account may have 0..N PasskeyCredential
 Principal remains runtime-only absent stronger evidence
 AuthSession belongs to Account, not to one authenticator
 multiple independent sessions are normal
+```
+
+Database consequence now explicit:
+
+```text
+DB-U09 Account persistence
+→ RESOLVED / M3-A MATERIALIZED ON BRANCH
+
+DB-U10 Principal/security persistence
+→ RESOLVED WITHOUT PERSISTENCE
+→ runtime Principal only
 ```
 
 ---
@@ -347,7 +436,9 @@ Alembic migration
 SQLAlchemy mapping/metadata
 mapping registry as applicable
 Database Dictionary
-human DB reference
+whole-DB current/evolving reference
+subject/vertical human DB reference
+prior deferred/open-item reconciliation when trigger satisfied
 constraints
 justified indexes
 least-privilege ACL
@@ -357,7 +448,7 @@ real PostgreSQL proof
 concurrency/negative tests
 ```
 
-Normal migration history remains forward-only.
+Normal migration history remains forward-only. Applied migrations/history are not rewritten to fake later knowledge, while current references must evolve with accepted current truth.
 
 Transaction carry-forward:
 
@@ -594,7 +685,8 @@ A slice closes only when all applicable obligations pass:
 [ ] product states/intents explicit
 [ ] semantic/security invariants preserved
 [ ] persistence justified/minimal
-[ ] migration/mapping/Dictionary/reference aligned
+[ ] migration/mapping/Dictionary/whole-reference/subject-reference aligned
+[ ] resolved former deferrals reconciled in current reference
 [ ] DB constraints/indexes/ACL proved
 [ ] transaction boundaries explicit
 [ ] race/replay/idempotency considered and tested
@@ -656,14 +748,27 @@ M2 implemented no production Auth runtime. Its output is the constitution under 
 
 ## M3 — Email/Password Signin + AuthSession Spine
 
-**Status:** `NEXT / NOT STARTED`
+**Status:** `ACTIVE / M3-A DB FOUNDATION SOURCE MATERIALIZED / DIRECT DB PROOF PENDING`
 
 Goal: first real production authenticated path and reusable Account/AuthSession spine.
 
-Required scope:
+Current accomplished source work:
 
-- slice-justified Account/EmailIdentity/PasswordCredential/AuthSession persistence;
-- exact constraints/indexes/ACL/mappings/Dictionary/reference;
+```text
+Alembic 20260827_09
+Account / EmailIdentity / PasswordCredential / AuthSession
+SQLAlchemy mapping + registry
+Dictionary v1 post-CP6 evolution + 4 entries
+whole-DB/reference lifecycle reconciliation
+docs/database/access-auth.md
+current migration/catalog/ACL test source
+```
+
+No DB PASS is claimed until real PostgreSQL execution succeeds.
+
+Remaining required scope:
+
+- run and close direct M3-A DB foundation proof;
 - password verification/dummy path/rehash policy;
 - authoritative multi-session creation;
 - secure Web cookie/CSRF/session bootstrap;
@@ -709,8 +814,6 @@ real browser
 → logout removes current access
 → independent second session survives current logout
 ```
-
-M3 starts only after a new exact production-code WRITE GATE.
 
 ---
 
@@ -760,10 +863,14 @@ Merge to protected `main` requires a separate explicit user gate.
 | AuthSession != DANTE Session | FIXED | Explicit security/session naming. |
 | Provider auth != data integration | FIXED | Never share semantics/tokens by convenience. |
 | PostgreSQL canonical authority | FIXED | Inherited from CP6/ADR-010. |
+| Current/evolving reference lifecycle | FIXED | Current references evolve with accepted truth; historical evidence stays historical. |
+| Resolved deferred-item reconciliation | REQUIRED | Structural/product evolution audits prior current DEFERRED/OPEN/TBD claims whose trigger fired. |
+| DB-U09 Account persistence | RESOLVED / M3-A MATERIALIZED | CP6 deferral trigger satisfied; detailed authority `docs/database/access-auth.md`. |
+| DB-U10 Principal persistence | RESOLVED WITHOUT PERSISTENCE | Runtime-derived Principal; no Principal table selected. |
 | Frontend fake authoritative success | FORBIDDEN | Server state owns auth/verification/recovery/link/session success. |
 | M1 | CLOSED | Accepted Web baseline; integration checks deferred. |
 | M2 | CLOSED / QA PASS | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
-| M3 | NEXT / NOT STARTED | First executable vertical slice. |
+| M3 | ACTIVE | M3-A DB foundation source materialized; direct DB proof pending; Auth runtime not yet built. |
 | Browser topology | FIXED | Same-origin `/api/v1/*` through edge; services may be physically independent. |
 | Browser session | FIXED | Opaque DB-backed server-authoritative session + host-only HttpOnly cookie. |
 | JWT/localStorage browser auth | NOT SELECTED | Requires concrete reopen evidence. |
@@ -805,7 +912,7 @@ Merge to protected `main` requires a separate explicit user gate.
 | Full-stack proof | FIXED | Real PG/FastAPI/same-origin HTTPS/browser. |
 | Critical browser engines | FIXED M3 PROOF | Chromium + Firefox + WebKit. |
 | Auth E2E shared storageState | NOT SELECTED | Critical Auth spine traverses real signin. |
-| Exact Auth SQL/table names | OPEN BY SLICE | M3 materializes only justified first-slice shape. |
+| Exact remaining Auth SQL beyond M3-A | OPEN BY SLICE | Later slices materialize only justified shape. |
 | Exact KDF worker/DB timeout numbers | OPEN OPERATIONAL | Benchmark/configure in implementation without semantic reopen. |
 | Native credential transport | DEFERRED TO M6 | Same canonical AuthSession semantics. |
 | Full Home implementation | DEFERRED | Separate product vertical. |
@@ -852,14 +959,11 @@ docs/architecture/access-auth-testing-contract.md
 
 Navigation was reconciled in `docs/architecture/README.md` and `docs/README.md`.
 
-Post-write audit against closure PRE-SCOPE `1d685dc43dd68916afa34ec84b7f45df20c890b0` directly observed before this final workstream readback update:
+Post-write audit against closure PRE-SCOPE `1d685dc43dd68916afa34ec84b7f45df20c890b0` observed:
 
 ```text
 branch relation        ahead
-commits                 8 ahead / 0 behind
-changed paths           8
-expected paths          8
-unexpected paths        0
+changed paths           exactly approved documentation paths
 production code paths   0
 DB/migration paths      0
 runtime/CI paths        0
@@ -874,14 +978,69 @@ M2.1–M2.11 accepted
 subject-oriented durable documentation complete
 whole-M2 documentation/readback/path QA PASS
 production runtime implementation none
-M3 production write authorization NOT YET GRANTED
 ```
 
 M2 closure means architecture/security/API/testing readiness, not executable Auth PASS.
 
 ---
 
-## 19. Current known operational incidents
+## 19. M3-A database foundation checkpoint — 2026-08-27
+
+Approved production gate PRE-SCOPE:
+
+```text
+ea75bb33e88bd256018c73ae444cff48a510af63
+```
+
+Source materialized so far:
+
+```text
+Alembic 20260827_09
+SQLAlchemy Auth mappings
+MAPPED_TABLES current registry
+Database Dictionary v1 post-CP6 evolution
+4 Auth table entries
+current catalog/migration/ACL test source
+docs/database/access-auth.md
+Database System-of-Record reconciliation
+```
+
+The Database Dictionary now separates:
+
+```text
+expected_baseline
+→ CP6 68/5/14 + 75/95 + 68/120 benchmark
+
+current_materialization
+→ M3-A branch candidate 72/5/14 + 75/104 + 71/137
+```
+
+Current evidence boundary:
+
+```text
+source/schema/docs materialized      YES
+remote path audit against PRE-SCOPE  PASS for the DB-foundation write set
+local real PostgreSQL execution      PENDING
+M3-A DB PASS                         NOT YET
+Auth runtime                         NOT YET
+```
+
+During `scope.json` reconciliation, one update attempt used a stale/incorrect blob SHA and GitHub returned `409`; no change was applied by that rejected attempt. The file was re-read and the subsequent exact-SHA update succeeded. This did not move any unrelated path or ref.
+
+Documentation-model hardening discovered during the same slice:
+
+```text
+whole DB reference != frozen CP6 artifact
+current/evolving reference must track later accepted DB truth
+CP6 migration/QA/Git evidence remains historical
+resolved DB deferrals must be reconciled when their trigger fires
+```
+
+That rule is now normative in `docs/development/documentation-lifecycle-policy.md` and applied to the Database System of Record.
+
+---
+
+## 20. Current known operational incidents
 
 ### Historical accidental branch
 
@@ -919,7 +1078,7 @@ The mistake was disclosed immediately during execution. File tooling was then ex
 
 ---
 
-## 20. Git/write safety
+## 21. Git/write safety
 
 Every repository write follows:
 
@@ -955,7 +1114,7 @@ New chat != new branch.
 
 ---
 
-## 21. Macro-phase closure protocol
+## 22. Macro-phase closure protocol
 
 A macro-phase is not CLOSED merely because discussion/code appears complete.
 
@@ -985,24 +1144,27 @@ No closed phase may depend on chat memory for durable truth.
 
 ---
 
-## 22. Immediate next action
+## 23. Immediate next action
 
 Current phase:
 
 ```text
 M3 — Email/Password Signin + AuthSession Spine
-NEXT / NOT STARTED
+ACTIVE
+
+M3-A DB FOUNDATION SOURCE
+MATERIALIZED
+
+DIRECT DB PROOF
+PENDING
 ```
 
-M2 documentation/path/readback QA is complete.
+Immediate next safe action:
 
-Before any production code/migration/package/CI write:
+1. align local `/home/mattia/projects/dante` with the latest remote branch after this documentation chain;
+2. execute Ruff/mypy and the exact real PostgreSQL migration/CP6-baseline/current-catalog tests requested for M3-A DB foundation;
+3. treat every real failure as a schema/mapping/Dictionary/test defect to repair rather than weakening proof;
+4. only after DB foundation proof is green, continue the same approved M3-A vertical into email/password runtime, FastAPI signin/session/logout, deterministic OpenAPI/Orval, Web session boundary and AuthenticatedAppShell;
+5. do not claim M3-A PASS until the real full-stack exit gate is earned.
 
-1. verify remote branch and local `/home/mattia/projects/dante` worktree are aligned after this documentation chain;
-2. inspect current M3-relevant backend/database/Web code and exact insertion points;
-3. derive the first **slice-driven M3 production-code gate** from current repository truth;
-4. present exact CREATE/UPDATE/DELETE paths and explicit exclusions;
-5. obtain explicit user approval;
-6. only then materialize the first executable M3 slice.
-
-Do **not** start a mega Auth migration. The first M3 implementation must be a bounded end-to-end spine that moves required DB/backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.
+Do **not** start a second unrelated Auth migration or fake Home. The M3-A goal remains one bounded end-to-end spine that moves required DB/backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.
