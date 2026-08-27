@@ -14,7 +14,7 @@
 - **Persistence ADR:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **CP6-01 Domain coverage:** `../development/backend-cp6-01-concrete-persistence-coverage.md`
 - **CP6-01 cross-cutting coverage:** `../development/backend-cp6-01-concrete-persistence-coverage-part-2.md`
-- **Implementation status:** CP6 baseline integrated; M3-A Access/Auth database foundation source materialized on `feature/access-auth` at Alembic `20260827_09`; direct current PostgreSQL proof pending
+- **Implementation status:** CP6 baseline integrated; M3-A Access/Auth database foundation materialized on `feature/access-auth` at Alembic `20260827_09`; targeted direct PostgreSQL 18.6 proof PASS
 
 ---
 
@@ -44,7 +44,7 @@ protected-main CP6 baseline
 feature/access-auth M3-A current candidate
 → Alembic 20260827_09
 → 72 tables / 104 physical indexes / 71 FKs / 137 CHECKs
-→ source materialized; direct PostgreSQL proof still pending
+→ source materialized; targeted direct PostgreSQL 18.6 proof PASS (migration/current catalog/frozen CP6 catalog/exact Auth ACL)
 
 DB-U09 Account persistence
 → CP6 disposition: correctly DEFERRED

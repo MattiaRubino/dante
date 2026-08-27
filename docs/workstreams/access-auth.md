@@ -7,7 +7,7 @@
 - **M2.1–M2.8 documentation PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
 - **M2 closure documentation PRE-SCOPE:** `1d685dc43dd68916afa34ec84b7f45df20c890b0`
 - **M3-A production gate PRE-SCOPE:** `ea75bb33e88bd256018c73ae444cff48a510af63`
-- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — ACTIVE / DB FOUNDATION SOURCE MATERIALIZED / DIRECT DB PROOF PENDING
+- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — ACTIVE / DB FOUNDATION MATERIALIZED + DIRECT DB PROOF PASS / AUTH RUNTIME NOT YET
 - **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED / READBACK QA PASS
 - **Purpose:** operational save-game, authority map, roadmap, decision register, evidence boundaries and Git/write safety for the production Access/Auth vertical.
 
@@ -248,7 +248,7 @@ Current branch inventory encoded by the source/Dictionary candidate is:
 137 CHECK constraints
 ```
 
-**Direct real PostgreSQL proof is still pending.** Do not call these current candidate counts an executed database PASS until the requested local/CI suite proves them.
+**Direct real PostgreSQL proof is complete.** The targeted disposable PostgreSQL 18.6 suite proved the current 72-table branch catalog, frozen CP6 baseline isolation, migration round-trip/Alembic drift contract and exact M3-A Auth runtime ACLs. This closes the database-foundation proof only; M3 runtime/full-stack proof remains open.
 
 Not yet materialized:
 
@@ -275,7 +275,16 @@ M2 selected the contract/tooling boundary, but no Auth OpenAPI snapshot, Orval p
 
 ### Test harness
 
-M2 selected the proof contract. Current DB tests for the first M3-A schema exist, but have not yet been executed/read back in the user's local PostgreSQL harness after the branch write. The Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
+M2 selected the proof contract. The first M3-A database proof has now executed successfully against the disposable PostgreSQL 18.6 harness:
+
+```text
+ruff format --check .                                               PASS
+ruff check .                                                        PASS
+mypy                                                                PASS / 42 source files
+migration / CP6 baseline / current catalog targeted suite           PASS / 7 of 7
+```
+
+The Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
 
 These are M3 executable obligations, not missing M2 architecture work.
 
@@ -748,7 +757,7 @@ M2 implemented no production Auth runtime. Its output is the constitution under 
 
 ## M3 — Email/Password Signin + AuthSession Spine
 
-**Status:** `ACTIVE / M3-A DB FOUNDATION SOURCE MATERIALIZED / DIRECT DB PROOF PENDING`
+**Status:** `ACTIVE / M3-A DB FOUNDATION MATERIALIZED + DIRECT DB PROOF PASS / AUTH RUNTIME NOT YET`
 
 Goal: first real production authenticated path and reusable Account/AuthSession spine.
 
@@ -764,11 +773,9 @@ docs/database/access-auth.md
 current migration/catalog/ACL test source
 ```
 
-No DB PASS is claimed until real PostgreSQL execution succeeds.
+The M3-A database foundation is now directly proved against PostgreSQL 18.6. This does not close M3 or the end-to-end M3-A Authenticated Spine.
 
 Remaining required scope:
-
-- run and close direct M3-A DB foundation proof;
 - password verification/dummy path/rehash policy;
 - authoritative multi-session creation;
 - secure Web cookie/CSRF/session bootstrap;
@@ -870,7 +877,7 @@ Merge to protected `main` requires a separate explicit user gate.
 | Frontend fake authoritative success | FORBIDDEN | Server state owns auth/verification/recovery/link/session success. |
 | M1 | CLOSED | Accepted Web baseline; integration checks deferred. |
 | M2 | CLOSED / QA PASS | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
-| M3 | ACTIVE | M3-A DB foundation source materialized; direct DB proof pending; Auth runtime not yet built. |
+| M3 | ACTIVE | M3-A DB foundation materialized + direct PostgreSQL 18.6 proof PASS; Auth runtime not yet built. |
 | Browser topology | FIXED | Same-origin `/api/v1/*` through edge; services may be physically independent. |
 | Browser session | FIXED | Opaque DB-backed server-authoritative session + host-only HttpOnly cookie. |
 | JWT/localStorage browser auth | NOT SELECTED | Requires concrete reopen evidence. |
@@ -1020,9 +1027,13 @@ Current evidence boundary:
 ```text
 source/schema/docs materialized      YES
 remote path audit against PRE-SCOPE  PASS for the DB-foundation write set
-local real PostgreSQL execution      PENDING
-M3-A DB PASS                         NOT YET
+local real PostgreSQL 18.6 execution PASS
+Ruff format/check                    PASS
+mypy                                 PASS / 42 source files
+targeted DB integration suite        PASS / 7 of 7
+M3-A database foundation             MATERIALIZED + PROVEN
 Auth runtime                         NOT YET
+whole M3-A / M3 exit gate            NOT YET
 ```
 
 During `scope.json` reconciliation, one update attempt used a stale/incorrect blob SHA and GitHub returned `409`; no change was applied by that rejected attempt. The file was re-read and the subsequent exact-SHA update succeeded. This did not move any unrelated path or ref.
@@ -1152,19 +1163,19 @@ Current phase:
 M3 — Email/Password Signin + AuthSession Spine
 ACTIVE
 
-M3-A DB FOUNDATION SOURCE
-MATERIALIZED
+M3-A DB FOUNDATION
+MATERIALIZED + DIRECTLY PROVEN
 
-DIRECT DB PROOF
-PENDING
+AUTH RUNTIME / API / CLIENT / WEB SPINE
+NOT YET
 ```
 
 Immediate next safe action:
 
-1. align local `/home/mattia/projects/dante` with the latest remote branch after this documentation chain;
-2. execute Ruff/mypy and the exact real PostgreSQL migration/CP6-baseline/current-catalog tests requested for M3-A DB foundation;
-3. treat every real failure as a schema/mapping/Dictionary/test defect to repair rather than weakening proof;
-4. only after DB foundation proof is green, continue the same approved M3-A vertical into email/password runtime, FastAPI signin/session/logout, deterministic OpenAPI/Orval, Web session boundary and AuthenticatedAppShell;
-5. do not claim M3-A PASS until the real full-stack exit gate is earned.
+1. continue the same approved M3-A vertical into email/password runtime and bounded password/KDF execution;
+2. materialize real FastAPI signin/session/logout plus runtime Principal derivation and server-authoritative AuthSession admission;
+3. generate/verify deterministic OpenAPI → Orval `@dante/api-client` and Web transport/application boundary;
+4. wire Access signin/bootstrap/logout into the production-shaped `AuthenticatedAppShell` without creating a fake Home;
+5. earn real API + same-origin HTTPS Chromium/Firefox/WebKit proof before claiming whole M3-A/M3 PASS.
 
 Do **not** start a second unrelated Auth migration or fake Home. The M3-A goal remains one bounded end-to-end spine that moves required DB/backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.

@@ -1,6 +1,6 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3-A BRANCH EVOLUTION MATERIALIZED / DIRECT LOCAL PROOF PENDING
+- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3-A BRANCH EVOLUTION MATERIALIZED + DIRECT LOCAL PROOF PASS
 - **Scope:** DANTE PostgreSQL architecture, Dictionary, mappings, migrations, generated reference, direct proof and documentation consistency
 - **PostgreSQL:** 18.6
 - **Current branch Alembic head:** `20260827_09`
@@ -77,7 +77,7 @@ current_materialization
 → current evolving branch/database inventory
 ```
 
-`docs/database/dictionary/scope.json` remains `status = materialized`; `completed_stages` records the completed CP6 materialization stages while current counts may grow through reviewed forward migrations. The M3-A current counts are source-level branch truth pending direct local/CI PostgreSQL proof; they are not presented as an executed PASS yet and are not yet protected-main truth.
+`docs/database/dictionary/scope.json` remains `status = materialized`; `completed_stages` records the completed CP6 materialization stages while current counts may grow through reviewed forward migrations. The M3-A current counts have been directly proved against disposable PostgreSQL 18.6 by the targeted local migration/catalog/ACL suite on `feature/access-auth`; they remain branch-local and are not yet protected-main truth.
 
 ## 3. Database documentation model
 
@@ -469,7 +469,24 @@ dante_runtime    LOGIN application runtime identity
 
 CP6 proof includes exact DANTE role-membership topology, owner no-password posture, bounded runtime grants, denied runtime access to `dante.alembic_version`, hardened routine search paths and direct negative security evidence.
 
-M3-A adds exact least-privilege Auth ACLs in migration `20260827_09`; their intended shape is documented in `access-auth.md` and the Dictionary. They remain **direct-proof pending** until the real PostgreSQL current-catalog suite executes successfully.
+M3-A adds exact least-privilege Auth ACLs in migration `20260827_09`; their intended shape is documented in `access-auth.md` and the Dictionary. Their exact shape has now been directly proved against the real disposable PostgreSQL 18.6 harness.
+
+M3-A database-foundation proof recorded on 2026-08-27:
+
+```text
+ruff format --check .                                               PASS
+ruff check .                                                        PASS
+mypy                                                                PASS / 42 source files
+test_migrations.py                                                  PASS / 4
+test_cp6_final_catalog.py                                           PASS / 1
+test_current_catalog.py                                             PASS / 2
+targeted real PostgreSQL integration suite                          PASS / 7 of 7
+migration round-trip / Alembic drift / frozen CP6 catalog           PASS
+current Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL         PASS
+exact M3-A Auth runtime ACL                                         PASS
+```
+
+This is direct proof of the M3-A **database foundation**, not of the still-unimplemented signin/session/logout runtime or the whole M3 exit gate.
 
 Security documentation must describe actual grants and invariants rather than broad `read/write` labels.
 

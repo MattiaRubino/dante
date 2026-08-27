@@ -1,6 +1,6 @@
 # DANTE Access/Auth Database Reference
 
-- **Status:** CURRENT / BRANCH-LOCAL / M3-A DATABASE FOUNDATION MATERIALIZED / DIRECT LOCAL PROOF PENDING
+- **Status:** CURRENT / BRANCH-LOCAL / M3-A DATABASE FOUNDATION MATERIALIZED + DIRECT LOCAL PROOF PASS
 - **Branch:** `feature/access-auth`
 - **Current Alembic head on this branch:** `20260827_09`
 - **Protected-main CP6 baseline:** `20260826_08`
@@ -370,17 +370,46 @@ test_migrations.py
 
 Required real execution uses the existing disposable PostgreSQL 18.6 acceptance harness. Static review of these files is not a PASS substitute.
 
-## 13. Current evidence boundary
-
-This branch has materialized the M3-A **database foundation source**. Until the real local/CI commands execute successfully, do not claim:
+The targeted local execution completed successfully on 2026-08-27:
 
 ```text
-migration runtime PASS
-PostgreSQL catalog PASS
-ACL PASS
-Alembic check PASS
-M3-A PASS
-signin works
+ruff format --check .                                               PASS
+ruff check .                                                        PASS
+mypy                                                                PASS / 42 source files
+test_migrations.py                                                  PASS / 4
+test_cp6_final_catalog.py                                           PASS / 1
+test_current_catalog.py                                             PASS / 2
+targeted real PostgreSQL integration suite                          PASS / 7 of 7
 ```
 
-Likewise this database foundation alone does not prove password verification, HTTP endpoints, cookies, CSRF, generated client, Web session bootstrap or browser behavior. Those are subsequent layers of the same approved M3-A vertical slice.
+The executed proof covers the current Alembic head/round trip, frozen CP6 catalog, current M3-A catalog/Dictionary/mapping consistency and exact Auth runtime ACLs against disposable PostgreSQL 18.6.
+
+## 13. Current evidence boundary
+
+This branch has now materialized **and directly proved** the M3-A database foundation.
+
+Directly proved:
+
+```text
+migration runtime / current Alembic head                             PASS
+PostgreSQL current catalog                                           PASS
+frozen CP6 catalog at 20260826_08                                    PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL                  PASS
+exact M3-A Auth runtime ACL                                          PASS
+Ruff / mypy quality gates                                            PASS
+```
+
+Not proved by this database checkpoint:
+
+```text
+password verification runtime
+HTTP signin/session/logout
+cookie + CSRF behavior
+runtime Principal derivation
+generated OpenAPI/Orval client
+Web session bootstrap / AuthenticatedAppShell
+browser full-stack behavior
+whole M3-A / M3 exit gate
+```
+
+The database-foundation PASS must therefore not be inflated into a claim that signin already works or that M3 is closed.
