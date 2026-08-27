@@ -4,13 +4,13 @@
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
 - **Created from protected `main`:** `f011e252b6a294a12c38927ef2d528244ea1fee6`
-- **M2.1–M2.8 documentation checkpoint PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
-- **Current macro-phase:** `M2 — Auth Architecture Freeze`
-- **Last closed macro-phase:** `M1 — Access Visual / UX Freeze`
-- **First production-code target after M2:** `M3 — Email/Password Signin + AuthSession Spine`
-- **Purpose:** operational save-game, authority map, decision register, gated roadmap and quality bar for the production Access/Auth vertical.
+- **M2.1–M2.8 documentation PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
+- **M2 closure documentation PRE-SCOPE:** `1d685dc43dd68916afa34ec84b7f45df20c890b0`
+- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — NEXT / NOT STARTED
+- **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED
+- **Purpose:** operational save-game, authority map, roadmap, decision register, evidence boundaries and Git/write safety for the production Access/Auth vertical.
 
-> This file is the current branch-local continuation authority while `feature/access-auth` is active. It records current workstream state and gates; durable accepted architecture/security/API truth belongs in the subject-oriented current docs referenced below. Do not turn this file into a chronological chat diary or the sole Auth specification.
+> This file is the branch-local operational continuation authority while `feature/access-auth` is active. Durable architecture/security/API/testing truth belongs in the subject-oriented contracts and ADR-011. Do not turn this file into the sole Auth specification or a chat diary.
 
 ---
 
@@ -18,7 +18,7 @@
 
 A new chat, agent or context window does **not** create a new project, branch or worktree.
 
-Continue the same real workstream:
+Continue:
 
 ```text
 repo:      MattiaRubino/dante
@@ -26,24 +26,25 @@ branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-The separate worktree `/home/mattia/projects/dante-frontend` may host independent frontend work such as Home, but Access/Auth frontend changes required by this vertical stay on `feature/access-auth`.
+The separate worktree `/home/mattia/projects/dante-frontend` may host independent frontend work such as Home, but Access/Auth frontend changes required by this vertical remain on `feature/access-auth` unless explicitly re-gated.
 
-At the beginning of every new session:
+At the start of each session:
 
 1. read root `README.md`;
 2. read `docs/README.md`;
 3. read `docs/PROJECT-STATUS.md`;
 4. read `docs/ROADMAP.md`;
 5. read `docs/development/agent-operating-manual.md`;
-6. read current development safety/branching/documentation-lifecycle rules;
+6. read current safety/branching/documentation-lifecycle rules;
 7. read this file completely;
 8. read `docs/frontend/access.md`;
 9. read current Access/Auth durable authorities:
    - `docs/architecture/access-auth-architecture.md`;
    - `docs/architecture/access-auth-security-contract.md`;
    - `docs/architecture/access-auth-api-contract.md`;
+   - `docs/architecture/access-auth-testing-contract.md`;
    - `docs/decisions/ADR-011-access-auth-architecture.md`;
-10. inspect current backend/database/frontend authorities relevant to the active macro-phase;
+10. inspect current backend/database/frontend authorities relevant to the active slice;
 11. verify remote branch HEAD and local worktree before any write.
 
 Local verification minimum:
@@ -63,7 +64,7 @@ Repository truth beats conversation memory.
 
 ## 2. Authority order
 
-Use the strictest current applicable source:
+Use the strictest applicable current source:
 
 ```text
 protected-main implementation / migrations / tests
@@ -71,9 +72,9 @@ protected-main implementation / migrations / tests
 ↓
 current durable subsystem/product/database docs
 ↓
-current branch-local Access/Auth architecture/security/API contracts + ADR-011
+current branch-local Access/Auth architecture/security/API/testing contracts + ADR-011
 ↓
-this active branch-local workstream record for operational state/newer unresolved decisions
+this active workstream for operational state/newer unresolved slice decisions
 ↓
 current feature/access-auth implementation
 ↓
@@ -82,29 +83,27 @@ historical CP6 / Access-frontend evidence
 conversation memory
 ```
 
-Important current sources include, as applicable:
+Important sources include:
 
 - `docs/frontend/access.md`;
-- `docs/architecture/access-auth-architecture.md`;
-- `docs/architecture/access-auth-security-contract.md`;
-- `docs/architecture/access-auth-api-contract.md`;
+- the four `docs/architecture/access-auth-*.md` contracts;
 - `docs/decisions/ADR-011-access-auth-architecture.md`;
 - frontend production-readiness contracts/gates;
-- `docs/database/README.md` and Database Dictionary/reference artifacts;
-- ADR-007 and ADR-010 / PostgreSQL persistence constitution;
-- CP6 PostgreSQL closure/QA material where persistence invariants matter;
-- current backend bootstrap/mappings/migrations/tests;
+- `docs/database/README.md` + Database Dictionary/reference;
+- ADR-007 / ADR-008 / ADR-009 / ADR-010;
+- PostgreSQL CP3/CP6 persistence/QA authorities;
+- current backend mappings/migrations/tests;
 - current Access state machine/UI/release tests.
 
-Historical records are evidence, never newer authority.
+Historical records remain evidence, never newer authority.
 
 ---
 
-## 3. Foundations already closed before this vertical
+## 3. Foundations closed before this vertical
 
 ### Domain / Logical / Physical
 
-The core model and physical target are accepted foundations. Preserve:
+Preserve:
 
 ```text
 Possibility / Proposal != Decision != Plan != Action != Actual != Outcome != Progress
@@ -120,20 +119,34 @@ Already integrated:
 - PostgreSQL canonical persistence;
 - async SQLAlchemy;
 - Alembic forward migration discipline;
-- provisioning/runtime roles and ACL work;
+- owner/migrator/runtime roles and ACL;
 - persistence mappings;
 - whole-database materialization;
 - PostgreSQL acceptance/integrity/runtime tests;
 - backend CI.
 
-CP6 deliberately did not invent speculative Account/Principal/Auth persistence. Access/Auth is the vertical allowed to justify those concepts.
+CP6 intentionally did not invent speculative Account/Principal/Auth persistence.
+
+Current baseline before M3 Auth migration:
+
+```text
+PostgreSQL          18.6
+Alembic head        20260826_08
+68 tables
+5 views
+14 routines
+75 triggers
+95 physical indexes
+68 foreign keys
+120 CHECK constraints
+```
 
 ### Frontend foundation
 
-Already integrated:
+Already integrated/materialized:
 
 - Web Access shell and accepted visual direction;
-- desktop/tablet/mobile-Web responsive behavior;
+- responsive desktop/tablet/mobile-Web behavior;
 - IT/EN;
 - Access state graph;
 - signup/recovery/provider/linking/reauth/setup surfaces;
@@ -141,13 +154,13 @@ Already integrated:
 - accessibility/reduced-motion treatment;
 - Playwright release matrix;
 - frontend CI;
-- explicit refusal to fake backend-authoritative success.
+- explicit refusal to fake server-authoritative success.
 
 The existing Web Access implementation is production UI/state foundation, not disposable mock code.
 
 ### Mobile foundation
 
-Already materialized in `apps/mobile`:
+Already materialized:
 
 ```text
 Expo 57
@@ -156,7 +169,7 @@ Expo Router
 React 19.2.x
 ```
 
-Native Mobile Access is not implemented yet, but the technology choice and mobile runtime foundation already exist. Mobile design authority remains the previously accepted mobile Access direction; Mobile Access is a later macro-phase in this same vertical.
+Native Mobile Access remains M6, but technology/foundation are not open choices.
 
 ---
 
@@ -164,42 +177,60 @@ Native Mobile Access is not implemented yet, but the technology choice and mobil
 
 ### Backend
 
-No dedicated production Access/Auth capability, account/session implementation or real Auth API has been completed yet.
+No dedicated production Access/Auth capability, Account/session application implementation or real Auth API exists yet.
 
 ### Database
 
-No production Account / EmailIdentity / PasswordCredential / ExternalIdentity / PasskeyCredential / AuthSession schema has been materialized yet. This is deliberate vertical deferral, not a CP6 defect.
+No production Account / EmailIdentity / PasswordCredential / ExternalIdentity / PasskeyCredential / AuthSession schema has been materialized yet.
 
-### Web frontend
+### Web
 
-The accepted Access UI/state model exists, but real backend/session wiring, generated client integration and authenticated Home handoff do not.
+Accepted UI/state model exists. Real backend/session/generated-client wiring and authenticated next-route handoff do not.
 
 ### Mobile
 
-Foundation/runtime exists; Native Mobile Access does not.
+Foundation exists; Native Access does not.
 
-### Contract generation
+### OpenAPI/generated client
 
-No production Auth OpenAPI → generated TypeScript client path is complete yet.
+M2 selected the contract/tooling boundary, but no Auth OpenAPI snapshot, Orval package, `@dante/api-client` or TanStack Query Auth integration has been materialized yet.
 
-### M2 architecture documentation
+### Test harness
 
-M2.1–M2.8 accepted decisions are now durably materialized by subject in:
+M2 selected the proof contract, but the Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
 
-```text
-docs/architecture/access-auth-architecture.md
-docs/architecture/access-auth-security-contract.md
-docs/architecture/access-auth-api-contract.md
-docs/decisions/ADR-011-access-auth-architecture.md
-```
-
-These documents state current accepted architecture directly and include diagrams, consequences, rejected shortcuts and reopen discipline. This workstream no longer needs to duplicate their full normative payload.
+These are M3 executable obligations, not missing M2 architecture work.
 
 ---
 
-## 5. Product/security semantic constitution
+## 5. M2 durable authority map
 
-These distinctions are mandatory unless explicitly reopened by stronger evidence:
+M2.1–M2.11 accepted truth is now durably organized by stable subject:
+
+```text
+docs/architecture/access-auth-architecture.md
+→ Account/identity/authenticator/session/Web-Native/transaction/client architecture
+
+docs/architecture/access-auth-security-contract.md
+→ session/CSRF/password/email/provider/passkey/revocation/security behavior
+
+docs/architecture/access-auth-api-contract.md
+→ /api/v1 / RFC9457 / naming / OpenAPI / Orval / generated-client contract
+
+docs/architecture/access-auth-testing-contract.md
+→ PostgreSQL/API/generated/browser/full-stack/CI proof contract
+
+docs/decisions/ADR-011-access-auth-architecture.md
+→ accepted rationale, consequences and rejected alternatives
+```
+
+This workstream references those authorities rather than duplicating every normative detail.
+
+---
+
+## 6. Product/security semantic constitution
+
+Mandatory unless reopened by stronger evidence:
 
 ```text
 Person != Account
@@ -208,712 +239,496 @@ Principal != Actor
 AuthSession != DANTE Session
 signin != provider-data integration authorization
 provider state != DANTE canonical state
-verification != profile/setup completion
+verification != setup completion
 reauthentication != initial signin
 client/device signal != identity
 frontend request/success != backend-authoritative success
+method != factor != assurance
 ```
 
-Current accepted architecture additionally fixes:
+Accepted Account/authenticator model:
 
 ```text
 Account = durable Access/security root
 EmailIdentity != Account
-PasswordCredential is optional
+PasswordCredential optional
 Account may be passwordless
 ExternalIdentity key = issuer + subject
 provider email never silently links Accounts
 Account may have 0..N PasskeyCredential
 Principal remains runtime-only absent stronger evidence
 AuthSession belongs to Account, not to one authenticator
-method != factor != assurance
-passkey != MFA by definition
+multiple independent sessions are normal
 ```
-
-Detailed authority: `docs/architecture/access-auth-architecture.md`.
 
 ---
 
-## 6. Vertical boundary
+## 7. Vertical boundary
 
-### In scope
-
-When justified by the roadmap, this vertical owns:
+### In scope across M3–M7
 
 - Account lifecycle/status;
 - EmailIdentity;
 - PasswordCredential;
 - email/password signin;
-- email signup and verification;
+- signup + verification;
 - recovery/reset;
 - reauthentication/recent-auth;
-- backend-authoritative AuthSession lifecycle;
-- concurrent multi-device/multi-session use;
-- logout, individual revocation, revoke-all-others and logout-everywhere capability;
+- AuthSession lifecycle/multi-session;
+- logout, specific revoke, revoke-all-others, logout-everywhere;
 - Google authentication;
 - Apple authentication;
-- ExternalIdentity mapping;
-- passkeys / WebAuthn capability;
-- provider/account collision handling and explicit linking;
-- Auth API/OpenAPI/generated client;
+- ExternalIdentity;
+- passkeys/WebAuthn;
+- provider/account collision and explicit linking;
+- stable Auth API/OpenAPI/generated client;
 - Web Access real wiring;
-- Native Mobile Access real wiring;
+- Native Mobile Access;
 - required DB migrations/mappings/Dictionary/reference;
-- security, rate-limit, replay, race/concurrency behavior;
-- full-stack QA and authenticated handoff into the next product vertical.
+- rate-limit/replay/race/concurrency behavior;
+- full-stack/security QA and authenticated handoff to the next vertical.
 
 ### Deferred but architecture-aware
 
-- optional MFA enrollment;
-- TOTP/authenticator-app support;
+- TOTP/authenticator-app MFA;
 - recovery codes;
-- step-up MFA for selected sensitive operations;
-- policy-driven mandatory MFA for future roles/accounts if later justified.
-
-MFA is intentionally **not** part of the first Access/Auth release scope, but current data/session/authenticator modeling must not make a future MFA implementation awkward or require semantic rewrites.
+- optional/mandatory MFA policy;
+- future high-security profile.
 
 ### Explicitly out of scope unless separately gated
 
 - full Home/Today implementation;
 - unrelated frontend pages/polish;
-- Gmail/Calendar provider-data integrations;
+- Gmail/Calendar/iCloud data integrations;
 - generic platform-wide RBAC redesign;
-- rewriting accepted CP1–CP6 foundations for style;
+- CP1–CP6 rewrites for style;
+- third-party public developer platform/SDK lifecycle without product requirement;
 - extra branches/worktrees;
-- direct work on `main`;
+- direct work on main;
 - merge/rebase/history rewrite without explicit gate.
 
-A minimal protected destination may be used only to prove authenticated handoff.
+A minimal protected destination is allowed only to prove authenticated handoff.
 
 ---
 
-## 7. Mandatory engineering method
+## 8. Mandatory engineering method
 
-Implement by vertical slice, not backend-first batching and not fake frontend success:
+After M2, implement complete vertical slices:
 
 ```text
 product need/state
-→ contract
+→ exact contract
 → domain/application behavior
 → persistence/security
-→ endpoint
+→ FastAPI endpoint
 → OpenAPI
 → generated client
 → Web/Mobile application boundary as applicable
 → real UI transition
-→ tests
+→ layered tests
 → real full-stack proof
 → QA
-→ documentation closure
+→ durable documentation
 ```
 
-Do not create generic `BaseService`, `GenericRepository`, giant `AuthManager`, speculative UoW wrappers or other convenience abstraction without concrete need.
-
-Application transaction boundaries remain explicit; adapters may flush but do not own hidden commits.
+Do not create generic `BaseService`, `GenericRepository`, giant `AuthManager`, speculative UoW wrappers or mega Auth schema without concrete slice need.
 
 ---
 
-## 8. Database and transaction constitution
+## 9. Database / transaction constitution carried into M3
 
-PostgreSQL remains canonical DANTE persistence authority.
+PostgreSQL remains canonical authority.
 
-### Slice-driven schema
-
-Do not create a speculative mega-migration. Concepts appear only when a slice justifies exact semantics.
-
-Likely concepts include:
-
-- Account;
-- EmailIdentity;
-- PasswordCredential;
-- AuthSession;
-- verification/recovery proof/challenge state;
-- ExternalIdentity;
-- PasskeyCredential or equivalent WebAuthn credential state;
-- linking/collision transaction state only if the protocol requires durable state.
-
-These are conceptual names, not pre-approved SQL table names.
-
-### Same-change database system-of-record rule
-
-A structural DB change is incomplete unless all applicable artifacts move together:
+Every structural Auth change must move applicable artifacts together:
 
 ```text
 semantic design
 Alembic migration
 SQLAlchemy mapping/metadata
-mapping registry where applicable
+mapping registry as applicable
 Database Dictionary
-human-readable DB reference
+human DB reference
 constraints
 justified indexes
 least-privilege ACL
-unit/direct tests
+direct tests
 catalog/schema parity
 real PostgreSQL proof
-concurrency/negative tests where relevant
+concurrency/negative tests
 ```
 
-### Forward-only
+Normal migration history remains forward-only.
 
-Normal migration history is forward-only. Do not rewrite integrated history for convenience.
-
-### Constraints arbitrate races
-
-Application pre-checks improve UX but never replace canonical DB uniqueness/integrity constraints.
-
-### Transactions
-
-Operations that must succeed/fail together require explicit transaction boundaries. Examples include:
-
-- password reset + credential replacement + required session revocation;
-- provider/account linking + uniqueness state;
-- single-use proof consume + authoritative state transition.
-
-Do not hold long DB transactions across external network waits.
-
-Carry-forward contract:
+Transaction carry-forward:
 
 ```text
 one AsyncSession per application operation/task
 autobegin=False
-outer application operation owns transaction
-adapters may flush, not hidden-commit
+outer operation owns transaction
+adapters may flush, never hidden-commit
 READ COMMITTED default
-locking/stronger isolation only for concrete invariant
-no blind retry of ambiguous/non-idempotent security mutations
+narrowest truthful concurrency mechanism
+no hidden retry
+no blind ambiguous-commit retry
+no network/human wait inside DB transaction
 ```
 
-M2.9 closes the exact M3 transaction/concurrency/session-expiry behavior without inventing a second persistence philosophy.
+M2.9 additionally fixes for the first Auth spine:
+
+```text
+normal session admission           no Account lock
+account-wide security mutation     Account row = serialization point
+lock order                         Account → credential/identity → session as needed
+advisory Account lock              NOT SELECTED
+SKIP LOCKED on security state       NOT SELECTED
+signin Argon2/HIBP                  outside authoritative DB mutation
+final signin transaction           lock + re-read Account/Credential
+stale verified credential          cannot create session
+two valid concurrent signins       may create two sessions
+simple current logout              conditional idempotent session revoke
+revocation barrier                 COMMIT
+ambiguous AuthSession commit        reconcile by pre-generated auth_session_ref
+Set-Cookie                          only after commit/reconciliation
+M3 Redis/JWT session cache          NOT SELECTED
+```
 
 ---
 
-## 9. Accepted M2.1–M2.8 security/transport checkpoint
+## 10. Accepted Web/session/security posture
 
 Detailed authority: `docs/architecture/access-auth-security-contract.md`.
 
-Current accepted posture includes:
-
 ```text
-NORMAL WEB BOUNDARY
-same-origin browser API via edge/ingress
-/api/v1/* browser path
-CORS disabled/no ACAO by default
+WEB TOPOLOGY
+same-origin browser path through edge/ingress
+/api/v1/*
+normal browser CORS off/no ACAO
 trusted forwarded headers only from trusted edge
 
-WEB SESSION
+SESSION
 opaque 256-bit CSPRNG secret
 raw secret never persisted
-SHA-256 indexed server verifier
+SHA-256 indexed verifier
 __Host-dante-session
 Secure + HttpOnly + Path=/ + SameSite=Lax
 Domain absent
 browser storage auth token forbidden
-30-day default maximum/inactive-session policy
-background polling does not reset user inactivity
+30-day overall + 30-day inactivity default
+background polling != user activity
+server-side expiry/revocation authority
 
 CSRF
-synchronizer token bound to AuthSession
-exact Origin validation
-Fetch Metadata validation
+session-bound synchronizer token
+exact Origin
+Fetch Metadata
 no state-changing GET
-pre-auth login protected by same-origin JSON/request contract
-
-MULTI-SESSION
-independent session per client
-current logout
-specific remote revoke
-revoke all others
-log out everywhere
-account disable revokes all
-old sessions never resurrect
+pre-auth signin protected by same-origin JSON/request contract
 
 PASSWORD
 minimum 15 Unicode code points
 NFC
 no composition rules
 paste/password-manager first-class
-Argon2id explicit 64 MiB / t=3 / p=4 policy
-HMAC-SHA-256 server pepper before Argon2id
-HIBP k-anonymity breach screening
+Argon2id v19 64 MiB / t=3 / p=4
+HMAC-SHA-256 separate pepper
+HIBP k-anonymity
 bounded KDF concurrency
-rehash-on-auth with authoritative race recheck
+rehash-on-auth with current-credential recheck
 
 RECOVERY / CHANGE
-recovery reset revokes all sessions + fresh sign-in
-normal authenticated password change revokes other sessions and rotates current secret
-email change uses pending/verified atomic transition and revokes other sessions
+recovery reset revokes all + fresh signin
+normal password change revokes others + rotates current
+email change pending/verified/atomic + revokes others
 
 PASSKEY READY
-0..N per Account
+0..N
 passwordless Account valid
-userVerification required direction
+userVerification required
 discoverable credential direction
-random opaque 32-byte non-PII userHandle
-narrow stable RP ID security principle
+32-byte opaque userHandle
+narrow RP-ID principle
 synced/device-bound supported
-consumer mandatory attestation not selected
-signature counter anomaly = risk signal, not automatic lockout
+consumer attestation not mandatory
+counter anomaly = risk signal
 
 MFA
 implementation deferred
-assurance/evidence-aware architecture required
-mfa_enabled Boolean not accepted as complete model
+assurance/evidence-aware architecture
+mfa_enabled Boolean not full model
+
+CACHE/LOG
+sensitive Auth/session responses Cache-Control: no-store
+secret-bearing logs forbidden
 ```
 
 ---
 
-## 10. Verification, recovery and proof rules
+## 11. Email identity policy
 
-Proof/challenge flows must explicitly define:
+Detailed authority: architecture/security contracts.
 
-- strong generation;
-- verifier/digest storage where possible;
-- expiry;
-- single-use semantics;
-- replay resistance;
-- consume-only-if-valid-and-unused behavior;
-- resend/replace behavior;
-- concurrent consume races;
-- anti-enumeration where account existence must not leak;
-- delivery-port abstraction;
-- failure/retry behavior that does not duplicate authoritative transitions.
+```text
+delivery/display address
+!= comparison key
 
-Recovery/reset effects on existing sessions are now fixed by the security contract: successful account recovery/password reset revokes all pre-existing AuthSessions and requires normal fresh sign-in.
+local comparison   NFC + Unicode casefold
+domain comparison  UTS #46 / IDNA ASCII lowercase
+PostgreSQL          final uniqueness arbiter
+```
 
----
+Do not globally remove Gmail dots, strip plus-tags or encode provider-specific alias rules.
 
-## 11. Concurrency, replay and idempotency
+Provider verified email may establish new-account email control under policy when no collision exists, but provider email never becomes canonical federated identity or silent-link authority.
 
-Treat these as normal requirements:
-
-- concurrent signup for same canonical email;
-- concurrent proof consumption;
-- reset racing with signin/session use;
-- repeated logout/revoke;
-- provider callback replay/duplication;
-- unique provider `(issuer, subject)` identity;
-- concurrent linking attempts;
-- unsafe mutation retry;
-- partial external activity + DB rollback;
-- session create/revoke races;
-- passkey registration/authentication replay/counter/credential uniqueness behavior according to WebAuthn semantics.
-
-Do not blindly retry non-idempotent security mutations.
-
-Account is the current natural serialization point for account-wide security mutations when M3/M4 requires row locking; M2.9 must convert that principle into the exact first-slice behavior and proof obligations.
+Standard consumer Account currently maintains a verified recovery/contact EmailIdentity.
 
 ---
 
-## 12. API and naming contract — M2.8 ACCEPTED
+## 12. API and generated-client contract
 
 Detailed authority: `docs/architecture/access-auth-api-contract.md`.
 
-Current accepted contract:
+Accepted API:
 
 ```text
 base product namespace           /api/v1
 version meaning                  major compatibility generation
-health endpoints                 outside product versioning
-API shape                        application intents, not Auth-table CRUD
-success envelope                 no universal wrapper
+API shape                        application intents, not table CRUD
+success envelope                 none globally
 problem standard                 RFC 9457 application/problem+json
-machine code                     stable namespace.snake_case
-category                         stable broad fallback
-request_id                       server-authoritative on every request
-validation                       bounded stable errors[], no Pydantic internals
-anti-enumeration                 explicit end-to-end behavior
+machine code                     namespace.snake_case
+category                         broad forward fallback
+request_id                       server-authoritative every request
+validation                       stable bounded errors[]
+anti-enumeration                 end-to-end behavior
 Retry-After                      standard header where applicable
-retryable                        never implies blind mutation auto-retry
-OpenAPI operationId              explicit/stable/unique
-human detail/title               never parsed as machine logic
+retryable                        never blind-mutation permission
+operationId                      explicit/stable/unique
+human detail/title               never parsed by clients
+JSON wire naming                 snake_case
 ```
 
-Naming is layer-appropriate but semantically aligned:
+M2.10 generated-client path:
 
 ```text
-HTTP paths                stable lowercase intent/resource naming
-OpenAPI operationId       namespaced snake_case
-JSON/RFC9457 extensions   snake_case
-machine error code        namespace.snake_case
-Python                    repository Python convention
-TypeScript                generated-client idiom, not handwritten duplicate contract
-PostgreSQL                DANTE DB naming constitution
+FastAPI/Pydantic declarations
+→ deterministic committed OpenAPI 3.1 snapshot
+→ Orval Fetch
+→ framework-neutral @dante/api-client
+→ Web/Native transport adapter
+→ Access application/data-source boundary
+→ UI
 ```
 
-M2.10 owns generator/tooling/file-ownership details without reopening these API semantics.
+Selected/not selected:
+
+```text
+Orval family                     FIXED
+Fetch client                     FIXED
+exact Orval patch                qualify/pin during M3
+Axios                            NOT SELECTED
+Orval React Query hooks          NOT SELECTED
+generated file hand editing      FORBIDDEN
+remote DEV OpenAPI as CI source  FORBIDDEN
+hardcoded PROD base URL          FORBIDDEN
+runtime Zod validation           REQUIRED
+```
+
+Web adapter owns same-origin credentials + CSRF injection; Native later owns native credential/origin integration.
+
+TanStack Query activates for Web remote request/cache lifecycle in M3, but canonical Auth state remains server-side and Access product/UI state remains separate.
 
 ---
 
-## 13. Web and Mobile integration boundary
+## 13. Testing / proof constitution
 
-### Web target layering
+Detailed authority: `docs/architecture/access-auth-testing-contract.md`.
 
-```text
-Access presentation/state machine
-→ Access application boundary
-→ session + remote mutations/state
-→ data-source port
-→ generated DANTE API client
-```
-
-Global session/bootstrap lifecycle is separate from one form reducer lifecycle.
-
-Preserve:
+Required layered proof:
 
 ```text
-REQUEST_* = user intent
-SERVER_*  = authoritative backend result
+unit/pure application
+real PostgreSQL 18.6
+real FastAPI HTTP
+OpenAPI → Orval → TypeScript/Zod
+Web application boundary
+same-origin HTTPS browser full stack
 ```
 
-### Native Mobile target layering
-
-Mobile consumes the same canonical backend/application semantics but uses native-safe credential/session transport and storage.
+M3 critical browser spine:
 
 ```text
-Account / AuthSession / Principal semantics
-                ↓
-        application Auth contract
-             /        \
-        Web transport  Native transport
-        secure cookie  secure native storage/credential path
+Chromium
+Firefox
+WebKit
 ```
 
-Do not make browser cookies part of the domain/application contract.
+Core scenarios include:
+
+```text
+real signin
+reload/bootstrap
+logout
+multiple independent BrowserContexts/sessions
+expiry
+server-side revoke
+wrong credentials
+degraded/rate-limited failure
+```
+
+PostgreSQL race scenarios include two independent real sessions/connections and deterministic barriers, not timing sleeps.
+
+Critical Auth E2E starts unauthenticated rather than using a shared committed Playwright authenticated `storageState`.
+
+Mandatory CI uses synthetic ephemeral accounts/secrets and protocol-faithful local substitutes for external services. No real user/UAT/PROD credential.
+
+Existing Backend CI Gate and Frontend CI Gate remain owners of their lanes. M3 adds an Access/Auth cross-stack gate rather than duplicating all existing jobs.
 
 ---
 
-## 14. Testing constitution
+## 14. Definition of Done for executable slices
 
-Use the strongest practical proof at each layer.
-
-### Unit/domain/application
-
-Deterministic business/security rules without transport noise.
-
-### PostgreSQL integration
-
-Real PostgreSQL for constraints, transactions, mappings, migrations and race-sensitive behavior.
-
-### API integration
-
-Real FastAPI/HTTP/cookie/header behavior against canonical DB state.
-
-### Generated client
-
-OpenAPI/client drift must be detectable. Generated source is not hand-maintained substitute truth.
-
-### Web full-stack E2E
-
-Ultimately prove:
-
-```text
-real browser
-→ real frontend
-→ application/generated-client boundary
-→ real FastAPI HTTP
-→ real Web session transport
-→ real PostgreSQL
-```
-
-### Native runtime/E2E
-
-When M6 is active, prove the real mobile client against the same backend semantics and a production-representative native runtime/device/emulator path.
-
-### External providers/mail
-
-Protocol-faithful deterministic adapters may be used in CI where direct third-party dependency would be unreliable, but DANTE's internal path may not be faked.
-
-### Regression obligations
-
-Preserve:
-
-- accessibility/WCAG 2.2 AA-quality behavior;
-- keyboard/focus;
-- responsive release matrix;
-- IT/EN;
-- reduced motion;
-- password manager/autofill behavior;
-- offline/degraded-state correctness;
-- no fake backend-authoritative success.
-
-M2.11 will turn these principles into the exact M3 test/harness matrix.
-
----
-
-## 15. Definition of Done for any executable slice
-
-A slice is CLOSED only when all applicable items pass:
+A slice closes only when all applicable obligations pass:
 
 ```text
 [ ] product states/intents explicit
-[ ] semantic invariants preserved
-[ ] architecture decisions ratified
+[ ] semantic/security invariants preserved
 [ ] persistence justified/minimal
 [ ] migration/mapping/Dictionary/reference aligned
-[ ] security/threat cases handled
+[ ] DB constraints/indexes/ACL proved
 [ ] transaction boundaries explicit
-[ ] concurrency/replay/idempotency considered and tested
-[ ] HTTP/API contract stable
-[ ] machine error semantics stable
+[ ] race/replay/idempotency considered and tested
+[ ] HTTP/problem/machine contract stable
 [ ] OpenAPI reflects implementation
-[ ] generated client updated from contract
-[ ] Web/Mobile consumes through intended boundary
+[ ] generated client deterministic/current
+[ ] Web/Mobile consumes intended boundary
 [ ] frontend never invents authoritative success
-[ ] unit tests PASS
-[ ] PostgreSQL integration tests PASS
-[ ] API integration tests PASS
-[ ] full-stack E2E/runtime proof PASS
-[ ] accessibility/responsive/i18n regression PASS
-[ ] no secrets leaked in logs/docs/tests
-[ ] documentation/current workstream record updated
-[ ] exact write-scope QA PASS
+[ ] unit/application tests pass
+[ ] real PostgreSQL tests pass
+[ ] API integration tests pass
+[ ] critical full-stack runtime/browser proof passes
+[ ] accessibility/responsive/i18n regressions applicable to changed surface pass
+[ ] no known secret canary leakage
+[ ] applicable CI gates green
+[ ] durable docs/workstream reconciled
+[ ] exact write-scope/readback QA passes
 ```
 
-“Happy path works” is not a closure criterion.
+Happy-path success or high line coverage alone is never a closure criterion.
 
 ---
 
-# 16. Definitive roadmap — 7 macro-phases
-
-This section supersedes the earlier R0–R7 breakdown. The intent is fewer, clearer macro-phases with detailed internal gates, not a 200-step task list.
+# 15. Definitive roadmap — seven macro-phases
 
 ## M1 — Access Visual / UX Freeze
 
 **Status:** `CLOSED / PASS WITH DEFERRED INTEGRATION CHECKS`
 
-### Goal
-
-Confirm that the accepted Web Access experience has a coherent product-grade visual system and sufficient surface/state coverage before backend integration.
-
-### Closed decisions
-
-- current visual direction is accepted; no redesign-from-zero;
-- desktop composition, responsive strategy and interaction language are locked as the baseline;
-- Web Access is a production UI/state foundation, not disposable mock UI;
-- geometry must remain systematic rather than ad-hoc: content bounds, panel widths, spacing scale, control heights, radii hierarchy, typography and breakpoints must stay governed by semantic/design-system rules when touched;
-- mobile is not a scaled desktop; previously accepted Mobile Access design authority remains separate;
-- backend-authoritative transitions remain impossible to fake locally;
-- Google/Apple production integration must use current official provider mechanisms/assets/guidelines rather than assuming the current pre-backend custom marks/buttons are final provider compliance;
-- final Terms/Privacy destinations are required before vertical closure;
-- final backend-state visual QA happens after real integration, not by inventing fake success now.
-
-### Deferred integration checks
-
-- real loading/pending/error/rate-limit/server-unavailable states;
-- password manager/autofill with real backend flow;
-- provider official rendering/integration behavior;
-- final Terms/Privacy links/content destination;
-- final cross-browser/responsive/accessibility review after backend wiring.
-
-### Exit evidence
-
-Manual review of the current Web Access baseline plus current code/contracts found no architectural need for a visual redesign. Remaining items are integration/closure obligations, not blockers to M2.
+Accepted current Web design baseline; no redesign-from-zero. Mobile remains separate platform-appropriate UI. Backend-authoritative transitions may not be faked. Final real-backend/provider/legal/accessibility checks remain vertical-closure obligations.
 
 ---
 
 ## M2 — Auth Architecture Freeze
 
-**Status:** `ACTIVE / M2.1–M2.8 ACCEPTED AND DURABLY DOCUMENTED`
+**Status:** `CLOSED / M2.1–M2.11 ACCEPTED / DURABLY DOCUMENTED`
 
-### Goal
-
-Ratify the security/application/persistence/API contract needed to build the first executable Auth slice without speculative schema or transport choices.
-
-### Decision sequence / current state
+Decision sequence:
 
 ```text
-1. deployment origin topology                                  ACCEPTED
-2. browser session / cookie / CSRF / CORS model               ACCEPTED
+1. deployment origin topology                                  CLOSED
+2. browser session / cookie / CSRF / CORS                     CLOSED
 3. Account / EmailIdentity / PasswordCredential /
-   AuthSession / Principal semantics                           ACCEPTED
-4. multi-session lifecycle and revoke/logout policy            ACCEPTED
-5. password hashing + breach-policy implementation             ACCEPTED
-6. passkey-ready authenticator + MFA compatibility boundary    ACCEPTED
-7. email normalization/comparison model                        ACCEPTED
-8. API namespace + machine error/naming contract               ACCEPTED
-9. M3 transaction/concurrency/session-expiry behavior           OPEN / NEXT
-10. OpenAPI → generated client → Web application boundary      OPEN
-11. M3 test matrix / full-stack harness                         OPEN
-12. documentation reconciliation + first production-code gate  PENDING
+   AuthSession / Principal semantics                           CLOSED
+4. multi-session lifecycle and revoke/logout policy            CLOSED
+5. password hashing + breach-policy implementation             CLOSED
+6. passkey-ready authenticator + MFA compatibility             CLOSED
+7. email normalization/comparison                              CLOSED
+8. API namespace + machine error/naming                        CLOSED
+9. M3 transaction/concurrency/session-expiry                   CLOSED
+10. OpenAPI → generated client → Web boundary                  CLOSED
+11. M3 test matrix / full-stack harness                         CLOSED
+12. documentation reconciliation/whole-M2 closure              CLOSED
 ```
 
-### Durable M2.1–M2.8 owners
-
-```text
-docs/architecture/access-auth-architecture.md
-docs/architecture/access-auth-security-contract.md
-docs/architecture/access-auth-api-contract.md
-docs/decisions/ADR-011-access-auth-architecture.md
-```
-
-### Explicitly not done in M2
-
-- no production Auth tables merely to “get started”;
-- no Auth endpoints;
-- no generated Auth client;
-- no real provider integration;
-- no Mobile Access implementation.
-
-### Exit gate
-
-No unresolved decision remains that would force speculative M3 account/password/session code or require foreseeable semantic rewrites. Durable docs state current truth directly, M3 test/contract boundaries are explicit, and a separate exact production-code write gate is approved.
-
-### Immediate next action
-
-Close M2.9: exact first-slice transaction/concurrency/session-expiry behavior.
+M2 implemented no production Auth runtime. Its output is the constitution under which M3 can build without foreseeable cross-cutting semantic/security rewrite.
 
 ---
 
 ## M3 — Email/Password Signin + AuthSession Spine
 
-**Status:** `NOT STARTED`
+**Status:** `NEXT / NOT STARTED`
 
-### Goal
+Goal: first real production authenticated path and reusable Account/AuthSession spine.
 
-Create the first real production full-stack authenticated path and the reusable Account/AuthSession spine.
-
-### Required scope
+Required scope:
 
 - slice-justified Account/EmailIdentity/PasswordCredential/AuthSession persistence;
-- exact DB constraints/indexes/ACL/mappings/Dictionary/reference;
-- password verification and rehash-on-auth policy where applicable;
-- authoritative AuthSession creation;
-- secure Web transport;
-- session bootstrap after reload;
+- exact constraints/indexes/ACL/mappings/Dictionary/reference;
+- password verification/dummy path/rehash policy;
+- authoritative multi-session creation;
+- secure Web cookie/CSRF/session bootstrap;
 - runtime Principal derivation;
-- minimal protected authenticated boundary;
+- minimal protected authenticated destination;
 - current-session logout/revocation;
-- capability for multiple concurrent AuthSessions on one Account;
-- stable Auth API/OpenAPI;
-- generated TypeScript client;
-- Web Access signin wiring through application/data-source boundary;
-- real PostgreSQL + FastAPI + Firefox/browser E2E.
+- `/api/v1` Auth operations + RFC9457;
+- deterministic OpenAPI snapshot;
+- Orval Fetch + `@dante/api-client`;
+- TanStack Query remote session state/application boundary;
+- Access signin UI real wiring;
+- real PostgreSQL/API/browser full-stack proof;
+- Backend + Frontend + Access/Auth CI gates as applicable.
 
-### Negative/security scope
-
-- bad password;
-- unknown account with anti-enumeration-safe semantics;
-- disabled/restricted account state as ratified;
-- expired/revoked session;
-- duplicate/replayed logout/revoke behavior;
-- session-create failure/rollback;
-- concurrent session creation/use;
-- reload/bootstrap with valid/invalid session;
-- server-unavailable/rate-limited UI semantics as applicable.
-
-### Exit gate
-
-A real browser signs in against real FastAPI/PostgreSQL, receives a real authoritative session, survives reload, reaches the protected boundary, and logs out so access is removed. Multiple allowed sessions do not overwrite each other.
-
----
-
-## M4 — Account Lifecycle: Signup, Verification, Recovery, Reset, Reauth
-
-**Status:** `NOT STARTED`
-
-### Goal
-
-Complete the first-party account lifecycle around the M3 session spine.
-
-### Scope
-
-#### Signup + verification
-
-- Account/email/password creation semantics;
-- email uniqueness/race handling;
-- verification challenge/proof lifecycle;
-- delivery port;
-- resend/replace semantics;
-- expiry/single-use/replay;
-- verification consume;
-- setup/session transition according to ratified semantics.
-
-#### Recovery/reset
-
-- neutral account-existence response;
-- recovery proof lifecycle;
-- expiry/single-use/replay;
-- password replacement;
-- required session revocation according to security policy;
-- atomicity for credential/session changes;
-- reset completion and next-signin semantics.
-
-#### Reauthentication / recent-auth
-
-- distinguish valid session from fresh proof;
-- server-side freshness/assurance policy;
-- sensitive-operation guard;
-- expiry/negative cases;
-- no accidental second signin/session model.
-
-### Exit gate
-
-A real user can create, verify, recover/reset and reauthenticate through authoritative backend state, including race/replay/negative cases, without account enumeration or unsafe session leftovers.
-
----
-
-## M5 — Federated Auth + Passkeys + Explicit Linking
-
-**Status:** `NOT STARTED`
-
-### Goal
-
-Add modern non-password authentication while preserving DANTE canonical identity/session authority.
-
-### Google + Apple
-
-- current official provider integration mechanism/assets;
-- provider-specific protocol adapter;
-- state/nonce/PKCE where applicable;
-- callback/assertion validation;
-- issuer/audience/signature/subject checks;
-- known/new/collision outcomes;
-- AuthSession creation through canonical DANTE application behavior;
-- replay/error/cancellation handling;
-- no provider-data integration token leakage into Auth semantics.
-
-### Collision/linking
+Required negative/race scope includes:
 
 ```text
-provider/account collision
-→ prove control of existing DANTE account
-→ explicit user link decision
-→ backend-authoritative transactional link
+wrong password / unknown-account anti-enumeration
+disabled Account
+expired/revoked session
+repeat logout
+session-create rollback/ambiguous outcome
+two concurrent signins
+signin vs credential replacement/reset/disable
+reload/bootstrap valid/invalid
+CSRF/Origin/Fetch Metadata
+server unavailable / rate limited
+HIBP degradation policy
+secret redaction
 ```
 
-Requirements:
+Exit gate:
 
-- never silently merge by email coincidence;
-- uniqueness constraints arbitrate races;
-- replay/concurrent link attempts are safe;
-- cancellation/recovery path exists;
-- unlink rules prevent accidental loss of all valid authenticators.
+```text
+real browser
+→ real production-built Web
+→ same-origin HTTPS
+→ real FastAPI
+→ real PostgreSQL 18.6
+→ real authoritative AuthSession
+→ survives reload
+→ protected boundary
+→ logout removes current access
+→ independent second session survives current logout
+```
 
-### Passkeys
+M3 starts only after a new exact production-code WRITE GATE.
 
-Implement production passkey/WebAuthn registration and authentication with current standards/provider/browser/platform behavior while preserving the M2 accepted WebAuthn security boundary.
+---
 
-Must cover at least:
+## M4 — Signup + Verification + Recovery + Reset + Reauth
 
-- credential registration challenge;
-- origin/RP/credential validation;
-- credential uniqueness;
-- authenticator metadata/state required by the selected implementation;
-- authentication challenge;
-- replay protection;
-- add/remove credential lifecycle;
-- account recovery interaction;
-- reauth/recent-auth semantics where relevant;
-- Web and later Mobile compatibility.
+**Status:** `NOT STARTED`
 
-### MFA
+Complete first-party lifecycle around M3 session spine with single-use/replay/race-safe proof state, email delivery port, neutral recovery initiation, reset revocation, fresh signin and assurance-aware reauthentication.
 
-Still deferred unless an explicit new gate promotes it.
+---
 
-### Exit gate
+## M5 — Google + Apple + Passkeys + Explicit Linking
 
-Google, Apple and passkeys authenticate/link through DANTE canonical Account/AuthSession semantics, with no email-coincidence account takeover and no provider-specific shortcut that bypasses the core application model.
+**Status:** `NOT STARTED`
+
+Implement official current provider mechanisms and WebAuthn while preserving issuer+subject identity, explicit collision linking and canonical DANTE Account/AuthSession semantics.
+
+MFA remains deferred unless explicitly promoted.
 
 ---
 
@@ -921,211 +736,175 @@ Google, Apple and passkeys authenticate/link through DANTE canonical Account/Aut
 
 **Status:** `NOT STARTED`
 
-### Goal
-
-Materialize Native Mobile Access on the existing Expo/React Native/Expo Router foundation against the already-stable canonical Auth backend.
-
-### Scope
-
-- native Access UI from accepted mobile design authority;
-- signin/signup/recovery/reauth/provider/passkey flows as supported by the platform and current M3–M5 contracts;
-- native-safe session/credential transport and secure storage;
-- app bootstrap/restart authenticated-state reconstruction;
-- concurrent Web + Mobile sessions;
-- logout/current-session revocation;
-- logout-all/revocation reaction;
-- deep-link/provider callback handling where required;
-- lifecycle/background/foreground behavior;
-- native accessibility/i18n;
-- real emulator/device runtime proof against real backend/PostgreSQL.
-
-### Fixed rule
-
-Mobile does not get a separate Auth domain model or convenience backend. It consumes the same Account/AuthSession/Principal semantics with client-appropriate transport.
-
-### Exit gate
-
-A real Native Mobile client can authenticate, restart, coexist with Web sessions, revoke/logout correctly and follow the same canonical security/account rules as Web.
+Materialize Access on existing Expo/React Native/Expo Router foundation using the same canonical Auth backend with native-safe credential transport/storage, restart bootstrap, provider/passkey platform integration and real emulator/device proof.
 
 ---
 
-## M7 — Security Hardening + Authenticated Home Handoff + Closure
+## M7 — Security Hardening + Authenticated Handoff + Closure
 
 **Status:** `NOT STARTED`
 
-### Goal
+Whole-vertical threat/rate/replay/concurrency/security-event/session-management/privacy/legal/accessibility/native/CI/database/client-drift proof and minimal authenticated handoff into the next product vertical.
 
-Prove the entire Access/Auth vertical is production-ready and hand off cleanly into the next product vertical.
-
-### Hardening scope
-
-- threat-model review;
-- session expiry/rotation/revocation review;
-- active-session/device-management readiness;
-- credential stuffing/brute-force/rate-limit controls;
-- abuse/degraded-service behavior;
-- provider/mail failure behavior;
-- security-event/audit observability as justified;
-- password reset/account disable/recovery revocation rules;
-- concurrency/race/replay suite;
-- restart/bootstrap behavior;
-- secret/log/telemetry review;
-- OpenAPI/generated-client drift check;
-- PostgreSQL schema/catalog/ACL/mapping/Dictionary parity;
-- Web accessibility/responsive/i18n/autofill/password-manager regression;
-- Native runtime/accessibility/i18n regression;
-- hosted CI;
-- final Terms/Privacy destinations;
-- minimal real authenticated Home/next-route handoff without implementing full Home.
-
-### Closure documentation
-
-Before declaring Access/Auth closed:
-
-- propagate durable architecture/security/product truth to current subsystem docs/ADRs;
-- update this workstream record with final status/evidence;
-- remove/consolidate temporary branch-only continuation material according to documentation lifecycle policy;
-- retain only useful branch history/evidence;
-- verify no newer truth exists only in chat memory.
-
-### Exit gate
-
-The whole Access/Auth vertical is production-ready across backend/PostgreSQL/Web/Native, CI is green, documentation is consolidated, and merge to protected `main` happens only after explicit user gate.
+Merge to protected `main` requires a separate explicit user gate.
 
 ---
 
-## 17. Decision register
-
-Use labels strictly:
-
-- **FIXED:** accepted invariant/current authority; do not reopen casually.
-- **RECOMMENDED:** strong current direction; must be ratified before security/contract-sensitive implementation.
-- **OPEN:** unresolved; must not be guessed in code.
-- **DEFERRED:** intentionally postponed with a reopen trigger.
-- **NOT SELECTED / NOT JUSTIFIED:** explicitly rejected or unsupported at current evidence level.
+## 16. Decision register
 
 | Topic | State | Current position / reopen trigger |
 |---|---|---|
 | Person != Account | FIXED | Preserve Domain/security boundary. |
-| Account != Principal | FIXED | Principal is runtime security context unless durable need is proved. |
-| Principal != Actor | FIXED | Authentication identity does not collapse Domain agency. |
-| AuthSession != DANTE Session | FIXED | Explicit security naming required. |
-| Provider auth != provider-data integration | FIXED | Never share semantics/tokens by convenience. |
-| PostgreSQL canonical authority | FIXED | Inherited from backend/CP6/ADR-010. |
-| Frontend cannot fake authoritative success | FIXED | Server state owns auth/verification/recovery/link/session success. |
-| Seven-macro-phase roadmap | FIXED FOR THIS WORKSTREAM | Supersedes earlier R0–R7 breakdown. |
-| M1 Access Visual/UX Freeze | CLOSED | Baseline accepted; integration checks deferred to real wiring/closure. |
-| M2 Auth Architecture Freeze | ACTIVE | M2.1–M2.8 accepted/documented; M2.9–M2.11 remain. |
-| First executable production slice | FIXED | M3 email/password signin + AuthSession spine. |
-| Deployment/browser topology | FIXED | Same-origin browser boundary through edge; `/api/v1/*`; physical service independence preserved. |
-| Browser session model | FIXED | Opaque DB-backed server-authoritative session; secure host-only HttpOnly cookie. |
-| JWT/localStorage browser auth | NOT SELECTED | Requires concrete evidence to reopen. |
-| CSRF/CORS | FIXED | Synchronizer token + Origin + Fetch Metadata; normal browser CORS off. |
-| Session lifetime default | FIXED POLICY | 30-day maximum/default inactive-session policy; background polling not user activity. |
-| Concurrent Web/Mobile use | FIXED | Same Account may have multiple independent AuthSessions. |
-| Multiple concurrent AuthSessions | FIXED | Session-per-client, independent expiry/revocation. |
-| Logout current session | FIXED | Revoke current AuthSession. |
-| Revoke all others | FIXED | Current survives after recent-auth-protected remote revocation. |
-| Logout everywhere | FIXED | Revoke all sessions including current. |
-| Device metadata = identity | NOT SELECTED | Device/IP/UA are metadata/risk signals only. |
-| Account security root | FIXED | Account is not Person/profile/email/password/global role. |
-| Password optional | FIXED | Account may authenticate via provider/passkey without PasswordCredential. |
-| External provider identity | FIXED | Stable issuer + subject; provider email not canonical identity key. |
-| Silent provider-email account merge | NOT SELECTED | Collision requires existing-account proof + consent + transactional link. |
-| Password minimum | FIXED | 15 Unicode code points; >=64 supported; no composition rules. |
-| Password maximum/resource bound | FIXED POLICY | 1024 code points / 4096 normalized UTF-8 bytes; no truncation. |
-| Password manager/paste | FIXED | First-class supported behavior. |
-| Password hashing | FIXED POLICY | Argon2id v19, 64 MiB, t=3, p=4, explicit params; maintained library proof required at dependency admission. |
-| Password pepper | FIXED | HMAC-SHA-256 pre-hash with separate 256-bit server secret/key versioning. |
-| Breached-password screening | FIXED | HIBP range/k-anonymity initial adapter; establish credential fail-closed, existing-login outage fail-open with telemetry. |
-| Passkey-ready architecture | FIXED | 0..N passkeys; passwordless valid; authenticator does not own separate session architecture. |
-| Passkey implementation | PLANNED M5 | Production WebAuthn registration/authentication in M5. |
-| WebAuthn user verification | FIXED PRINCIPLE | Required for DANTE passkey class. |
-| WebAuthn userHandle | FIXED PRINCIPLE | Random opaque 32-byte non-PII value per Account. |
-| Consumer mandatory attestation | NOT SELECTED | Future high-security policy may justify separately. |
-| MFA implementation | DEFERRED | TOTP/recovery codes/step-up/mandatory MFA later; architecture remains compatible. |
-| `mfa_enabled` as full security model | NOT SELECTED | Use evidence/assurance-aware policy. |
-| Email comparison | FIXED POLICY | NFC+casefold local part; IDNA canonical lowercase domain; separate display/delivery address. |
-| Gmail dot/+tag canonicalization | NOT SELECTED | Provider-specific alias rules are not DANTE canonical identity rules. |
-| Standard consumer verified email | FIXED PRODUCT INVARIANT | Maintain verified recovery/contact EmailIdentity, including provider/passkey accounts. |
-| Provider email as canonical identity | NOT SELECTED | Never silently merge/link by email alone. |
-| Google/Apple official provider integration | FIXED REQUIREMENT | Final implementation follows current official mechanisms/assets. |
-| API namespace | FIXED | `/api/v1`; major compatibility generation, not release number. |
-| API failure format | FIXED | RFC 9457 `application/problem+json` + stable DANTE extensions. |
-| Machine error codes | FIXED | `namespace.snake_case`; client never parses human text. |
-| Request correlation | FIXED | Server-authoritative `request_id` on every request/response. |
-| Exact Auth SQL/table names | OPEN | Resolve slice-by-slice; no speculative mega migration. |
-| M3 transaction/concurrency/session-expiry details | OPEN / NEXT | M2.9. |
-| Generated-client tooling/boundary details | OPEN | M2.10. |
-| M3 exact test matrix/harness | OPEN | M2.11. |
-| Native mobile technology | FIXED | Existing Expo + React Native + Expo Router foundation. |
-| Native Mobile Access | PLANNED M6 | Implement after canonical backend contracts are stable. |
-| Full Home implementation | DEFERRED | Separate vertical after Access/Auth handoff. |
+| Account != Principal | FIXED | Principal runtime-only absent concrete durable need. |
+| Principal != Actor | FIXED | Auth identity does not collapse Domain agency. |
+| AuthSession != DANTE Session | FIXED | Explicit security/session naming. |
+| Provider auth != data integration | FIXED | Never share semantics/tokens by convenience. |
+| PostgreSQL canonical authority | FIXED | Inherited from CP6/ADR-010. |
+| Frontend fake authoritative success | FORBIDDEN | Server state owns auth/verification/recovery/link/session success. |
+| M1 | CLOSED | Accepted Web baseline; integration checks deferred. |
+| M2 | CLOSED | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
+| M3 | NEXT / NOT STARTED | First executable vertical slice. |
+| Browser topology | FIXED | Same-origin `/api/v1/*` through edge; services may be physically independent. |
+| Browser session | FIXED | Opaque DB-backed server-authoritative session + host-only HttpOnly cookie. |
+| JWT/localStorage browser auth | NOT SELECTED | Requires concrete reopen evidence. |
+| CSRF/CORS | FIXED | Synchronizer + Origin + Fetch Metadata; normal browser CORS off. |
+| Session lifetime | FIXED POLICY | 30d overall + 30d inactive; background polling not activity. |
+| Multiple sessions | FIXED | Independent AuthSessions per client. |
+| Current logout | FIXED | Conditional idempotent current-session revoke. |
+| Revoke all others / everywhere | FIXED | Separate intents protected by policy/recent auth. |
+| Account security root | FIXED | Not Person/profile/email/password/global role/device. |
+| Password optional | FIXED | Provider/passkey/passwordless Account valid. |
+| Provider identity | FIXED | issuer + subject. |
+| Silent provider-email merge | NOT SELECTED | Proof + explicit consent + transactional link. |
+| Password policy | FIXED | 15 min; 1024/4096 max resource bounds; NFC; no composition; no truncation. |
+| Password storage | FIXED | Argon2id v19 64MiB/t3/p4 + HMAC-SHA256 pepper. |
+| Breach screening | FIXED | HIBP range; establish fail-closed; existing-login outage fail-open telemetry. |
+| KDF concurrency | FIXED PRINCIPLE | Bounded; exact capacity benchmarked at implementation/deployment. |
+| Passkey-ready | FIXED | 0..N; passwordless; UV required; discoverable direction; opaque userHandle. |
+| Consumer attestation | NOT SELECTED | Future high-security policy may reopen. |
+| MFA implementation | DEFERRED | Architecture compatible; no `mfa_enabled` god-flag. |
+| Email comparison | FIXED | NFC+casefold local; IDNA ASCII lowercase domain; separate display/delivery. |
+| Gmail dot/+ canonicalization | NOT SELECTED | Provider-specific alias behavior not canonical identity. |
+| Verified recovery/contact email | FIXED PRODUCT INVARIANT | Standard consumer Account retains one verified EmailIdentity. |
+| API namespace | FIXED | `/api/v1`; compatibility generation. |
+| API problem format | FIXED | RFC9457 + code/category/request_id/retryable/errors. |
+| Machine codes | FIXED | `namespace.snake_case`; human text never parsed. |
+| Transaction isolation | FIXED | READ COMMITTED default; targeted locks. |
+| Account security serialization | FIXED | Account row for account-wide mutation. |
+| Account lock every request | NOT SELECTED | Session admission is read path. |
+| Advisory Account lock | NOT SELECTED | Canonical row lock exists. |
+| Ambiguous commit blind retry | FORBIDDEN | Reconcile or fail safely. |
+| Signin persistent generic idempotency | NOT SELECTED | Raw session secret intentionally not retained. |
+| OpenAPI source | FIXED | FastAPI/Pydantic declaration → generated committed snapshot. |
+| Generated client | FIXED | Orval Fetch → framework-neutral `@dante/api-client`. |
+| Axios for generated client | NOT SELECTED | No need. |
+| Generated React Query hooks | NOT SELECTED | Query/application policy remains separate. |
+| Runtime API validation | FIXED | Zod at generated/normalization boundary. |
+| TanStack Query | ACTIVATE M3 | Remote request/cache lifecycle only. |
+| Auth query-cache persistence | NOT SELECTED | No browser storage auth cache. |
+| Full-stack proof | FIXED | Real PG/FastAPI/same-origin HTTPS/browser. |
+| Critical browser engines | FIXED M3 PROOF | Chromium + Firefox + WebKit. |
+| Auth E2E shared storageState | NOT SELECTED | Critical Auth spine traverses real signin. |
+| Exact Auth SQL/table names | OPEN BY SLICE | M3 materializes only justified first-slice shape. |
+| Exact KDF worker/DB timeout numbers | OPEN OPERATIONAL | Benchmark/configure in implementation without semantic reopen. |
+| Native credential transport | DEFERRED TO M6 | Same canonical AuthSession semantics. |
+| Full Home implementation | DEFERRED | Separate product vertical. |
 
 ---
 
-## 18. Access Visual/UX closure record — 2026-08-27
+## 17. M1 closure record — 2026-08-27
 
-M1 closed after live local review of the existing Web Access surface and code/contract inspection.
+M1 closed after live review of the existing Web Access surface and code/contracts.
 
 Accepted:
 
-- visual composition is coherent and should not be redesigned merely for novelty;
-- current layout already uses deliberate grid/bounds/control sizing/responsive rules;
-- future changes must preserve systematic geometry/design-token discipline;
-- current Web Access surface inventory is sufficient to proceed to architecture/integration;
-- visual polish remains allowed when integration proves a concrete defect or mismatch;
-- provider buttons shown before real provider integration are not final provider-compliance authority;
-- Terms/Privacy and final real-backend state QA remain closure obligations.
+- visual composition coherent; no novelty redesign;
+- geometry/design tokens remain systematic;
+- Web Access surface inventory sufficient to proceed;
+- mobile is not scaled desktop;
+- provider buttons before real integration are not final provider-compliance authority;
+- Terms/Privacy and real-backend visual QA remain later closure obligations.
 
-This closure does **not** claim the complete Access/Auth UX is production-proven before backend/provider/mobile integration.
-
----
-
-## 19. M2.1–M2.8 documentation checkpoint — 2026-08-27
-
-Accepted decisions from M2.1–M2.8 were moved out of chat-only/workstream-only state into durable subject-oriented current documentation.
-
-Created:
-
-```text
-docs/architecture/access-auth-architecture.md
-docs/architecture/access-auth-security-contract.md
-docs/architecture/access-auth-api-contract.md
-docs/decisions/ADR-011-access-auth-architecture.md
-```
-
-Navigation updated in:
-
-```text
-docs/architecture/README.md
-docs/README.md
-```
-
-This checkpoint does **not** close M2 and does not claim runtime proof. It prevents accepted architecture from depending on conversation memory while M2.9–M2.11 continue.
-
-Documentation structure deliberately follows DANTE lifecycle policy:
-
-```text
-architecture/security/API current truth → subject-oriented durable contracts
-architectural rationale/rejected alternatives → ADR-011
-operational state/gates/roadmap → this workstream
-Git chronology → Git
-```
+M1 closure did not claim full integrated Auth UX.
 
 ---
 
-## 20. Current known operational incidents
+## 18. M2 documentation checkpoints and closure — 2026-08-27
 
-During the initial workstream bootstrap an accidental branch `__noop_should_not_create__` was created at the old baseline SHA. It did not modify `main` or `feature/access-auth`. Deletion was previously requested manually because the connector at that time did not expose delete-branch capability; cleanup has not been reconfirmed in this record.
+### First checkpoint
 
-During the 2026-08-27 roadmap-documentation gate, the ref-update action was accidentally invoked as a no-op targeting the already-current `feature/access-auth` SHA. Readback confirmed the branch SHA did not move and no commit/history change resulted. This is operational evidence only; no ref manipulation is part of the approved workstream method.
+M2.1–M2.8 were moved from chat-only state into:
 
-Do not repeat either pattern. File writes must stay within exact approved paths.
+```text
+access-auth-architecture.md
+access-auth-security-contract.md
+access-auth-api-contract.md
+ADR-011
+```
+
+### Final closure checkpoint
+
+M2.9–M2.11 were then reconciled into those authorities and the new:
+
+```text
+docs/architecture/access-auth-testing-contract.md
+```
+
+Navigation was reconciled in `docs/architecture/README.md` and `docs/README.md`.
+
+Closure result:
+
+```text
+M2.1–M2.11 accepted
+subject-oriented durable documentation complete
+known cross-document contradictions: none intended; final readback/compare required by gate
+production runtime implementation: none
+M3 production write authorization: NOT YET GRANTED
+```
+
+M2 closure means architecture/security/API/testing readiness, not executable Auth PASS.
 
 ---
 
-## 21. Git/write safety
+## 19. Current known operational incidents
+
+### Historical accidental branch
+
+During initial workstream bootstrap, an accidental remote branch `__noop_should_not_create__` was created at an old baseline. It did not modify `main` or `feature/access-auth`. Deletion was previously requested manually; cleanup remains unconfirmed in this record.
+
+### Historical no-op ref update
+
+During the 2026-08-27 roadmap documentation gate, a ref-update action was accidentally invoked targeting the already-current `feature/access-auth` SHA. Readback confirmed no movement/commit/history change.
+
+### M2 closure gate duplicate create-branch attempts
+
+During the 2026-08-27 M2 closure documentation gate, the branch-create action was accidentally invoked twice with:
+
+```text
+branch_name = feature/access-auth
+base_ref    = feature/access-auth
+```
+
+GitHub rejected both attempts with:
+
+```text
+422 Reference already exists
+```
+
+Observed effect:
+
+```text
+new branch created     NO
+existing ref moved     NO
+commit created         NO
+history changed        NO
+```
+
+The mistake was disclosed immediately during execution. File tooling was then explicitly reloaded before continuing. Do not repeat this pattern.
+
+---
+
+## 20. Git/write safety
 
 Every repository write follows:
 
@@ -1135,77 +914,78 @@ fresh remote HEAD
 → exact CREATE / UPDATE / DELETE paths
 → purpose + explicit exclusions
 → explicit user authorization
-→ re-fetch HEAD immediately before first write
-→ write only approved scope
+→ re-fetch HEAD immediately before first scoped write
+→ write only approved files
 → readback
 → compare/path audit
 → QA verdict
 ```
 
-If HEAD changes from approved PRE-SCOPE before the first actual scoped write: STOP.
+If HEAD changes from approved PRE-SCOPE before first actual scoped write: STOP / re-gate.
 
-Separate explicit gate is required for force push, rebase, destructive reset, history rewrite, merge to `main`, extra branch/worktree, incidental cleanup or other destructive/out-of-scope action.
+Separate explicit gate required for:
+
+```text
+force push
+rebase
+destructive reset
+history rewrite
+merge to main
+extra branch/worktree
+incidental cleanup
+destructive/out-of-scope action
+```
 
 New chat != new branch.
 
 ---
 
-## 22. Macro-phase closure protocol
+## 21. Macro-phase closure protocol
 
-A macro-phase is not considered CLOSED merely because discussion/code appears complete.
+A macro-phase is not CLOSED merely because discussion/code appears complete.
 
-Before marking any macro-phase closed, update in the same bounded documentation step as applicable:
+Closure updates as applicable:
 
 ```text
 roadmap phase status
-+ decisions accepted during the phase
++ decisions
 + decision register
-+ durable subsystem docs/ADRs affected
-+ QA/evidence already proved
-+ deferred items and reopen triggers
-+ current branch/head handoff state
-+ exact next active macro-phase / safe action
++ durable subsystem docs/ADRs
++ QA/evidence actually proved
++ deferred/open items + reopen triggers
++ branch/head handoff state
++ next safe phase/action
 ```
 
-Minimum closure record must answer:
+Minimum closure record answers:
 
-1. What exactly was decided?
-2. What was implemented, if anything?
+1. What was decided?
+2. What was implemented?
 3. What was directly proved?
 4. What remains deferred/open?
 5. What would reopen the phase?
 6. What is the next safe action?
 
-Do not let a closed phase depend on chat memory for any durable decision.
+No closed phase may depend on chat memory for durable truth.
 
 ---
 
-## 23. Immediate next action
+## 22. Immediate next action
 
-Current active macro-phase is:
-
-```text
-M2 — Auth Architecture Freeze
-```
-
-Do **not** start migrations/endpoints yet.
-
-Current sequence:
+Current phase:
 
 ```text
-1. deployment origin topology                                  ACCEPTED
-2. browser session / cookie / CSRF / CORS model               ACCEPTED
-3. Account / EmailIdentity / PasswordCredential /
-   AuthSession / Principal semantics                           ACCEPTED
-4. multi-session lifecycle and revoke/logout-all policy        ACCEPTED
-5. password hashing + breach-policy implementation             ACCEPTED
-6. passkey-ready authenticator boundary + MFA compatibility    ACCEPTED
-7. email normalization/comparison model                        ACCEPTED
-8. API namespace + machine error/naming contract               ACCEPTED
-9. M3 transaction/concurrency/session-expiry behavior           NEXT
-10. OpenAPI → generated client → Web application boundary      AFTER M2.9
-11. M3 test matrix / full-stack harness                         AFTER M2.10
-12. M2 documentation/QA closure + WRITE GATE for M3 code       LAST
+M3 — Email/Password Signin + AuthSession Spine
+NEXT / NOT STARTED
 ```
 
-Only after all remaining M2 items are ratified and M2 is formally closed should M3 production implementation begin.
+Before any production code/migration/package/CI write:
+
+1. complete post-write readback/compare of the M2 closure documentation gate;
+2. verify branch/local worktree alignment;
+3. derive the first **slice-driven M3 production-code gate** from current repository truth;
+4. present exact CREATE/UPDATE/DELETE paths and explicit exclusions;
+5. obtain explicit user approval;
+6. only then materialize the first executable M3 slice.
+
+Do **not** start a mega Auth migration. The first M3 implementation must be a bounded end-to-end spine that moves required DB/backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.
