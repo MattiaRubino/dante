@@ -3,7 +3,7 @@
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
 - **Last reconciled:** 2026-08-27
 
-This file describes the current architecture state directly. Phase-time reviews, old branch overlays and pre-closure status remain evidence in their owning documents/Git history and do not override this index.
+This file describes current architecture state directly. Phase-time reviews, old overlays and historical workstream evidence do not override this index.
 
 ## 1. Current architecture state
 
@@ -24,35 +24,39 @@ Current Alembic head                 20260826_08
 Current DB topology                  68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs
 Access frontend baseline             CLOSED / ACCEPTED / RELEASE-HARDENED
 Full Access/Auth vertical            ACTIVE / UNMERGED ON feature/access-auth
-Access/Auth M2 architecture freeze   ACTIVE / M2.1–M2.8 ACCEPTED
+Access/Auth M2 architecture freeze   CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED
+Access/Auth M3 implementation        NEXT / NOT STARTED
 ```
 
-Protected `main` is the integrated authority for closed shared foundations and CP6. Active unmerged product work remains branch-local until normal protected-main integration.
+Protected `main` remains integrated authority for closed shared foundations and CP6. Access/Auth M2 truth is current only on `feature/access-auth` until normal protected-main integration.
+
+---
 
 ## 2. Current architecture entry points
 
-Read according to the subject:
+Read according to subject:
 
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
-- [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical semantic compatibility contract;
-- [`access-auth-architecture.md`](access-auth-architecture.md) — current branch-local Access/Auth identity/authenticator/session/Web-Native architecture for accepted M2.1–M2.8 decisions;
-- [`access-auth-security-contract.md`](access-auth-security-contract.md) — current branch-local Access/Auth security contract for session, CSRF/CORS, password, email, recovery and passkey-ready behavior;
-- [`access-auth-api-contract.md`](access-auth-api-contract.md) — current branch-local `/api/v1` / RFC 9457 / machine-error / naming contract;
-- [`../domain/README.md`](../domain/README.md) — current Domain entry point;
-- [`../logical-model/README.md`](../logical-model/README.md) — current Logical Model entry point and closure routing;
-- [`../physical-model/README.md`](../physical-model/README.md) — accepted Physical Model target;
-- [`../database/README.md`](../database/README.md) — current concrete PostgreSQL System of Record;
-- [`../decisions/`](../decisions/) — ADR authority;
-- [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md) — backend engineering foundation;
-- [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and its accepted companion/review records — frontend engineering foundation;
-- [`../frontend/README.md`](../frontend/README.md) — current frontend documentation entry point.
+- [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical compatibility contract;
+- [`access-auth-architecture.md`](access-auth-architecture.md) — Access/Auth identity/authenticator/session/Web-Native/transaction/generated-client architecture;
+- [`access-auth-security-contract.md`](access-auth-security-contract.md) — Access/Auth session, CSRF/CORS, password, recovery, email, provider/passkey and transaction security contract;
+- [`access-auth-api-contract.md`](access-auth-api-contract.md) — `/api/v1`, RFC 9457, naming, OpenAPI, Orval and first-party client contract;
+- [`access-auth-testing-contract.md`](access-auth-testing-contract.md) — real PostgreSQL/API/browser/full-stack proof and CI contract;
+- [`../domain/README.md`](../domain/README.md);
+- [`../logical-model/README.md`](../logical-model/README.md);
+- [`../physical-model/README.md`](../physical-model/README.md);
+- [`../database/README.md`](../database/README.md);
+- [`../decisions/`](../decisions/);
+- [`../development/engineering-foundation-v0.md`](../development/engineering-foundation-v0.md);
+- [`frontend-engineering-foundation.md`](frontend-engineering-foundation.md) and accepted companions;
+- [`../frontend/README.md`](../frontend/README.md).
 
 Important persistence ADRs:
 
-- [`../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`](../decisions/ADR-007-domain-model-informed-persistence-boundaries.md) — semantic persistence guardrails;
-- [`../decisions/ADR-010-postgresql-persistence-constitution.md`](../decisions/ADR-010-postgresql-persistence-constitution.md) — accepted reusable PostgreSQL persistence doctrine;
-- [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md) — historical PostgreSQL-selection rationale where explicitly historical.
+- [`../decisions/ADR-007-domain-model-informed-persistence-boundaries.md`](../decisions/ADR-007-domain-model-informed-persistence-boundaries.md);
+- [`../decisions/ADR-010-postgresql-persistence-constitution.md`](../decisions/ADR-010-postgresql-persistence-constitution.md);
+- [`../decisions/ADR-003-primary-database.md`](../decisions/ADR-003-primary-database.md) where historical PostgreSQL-selection rationale is explicitly relevant.
 
 Important frontend ADRs:
 
@@ -61,15 +65,17 @@ Important frontend ADRs:
 
 Current Access/Auth ADR:
 
-- [`../decisions/ADR-011-access-auth-architecture.md`](../decisions/ADR-011-access-auth-architecture.md) — accepted branch-local Access/Auth architecture constitution for M2.1–M2.8; not protected-main authority until integration.
+- [`../decisions/ADR-011-access-auth-architecture.md`](../decisions/ADR-011-access-auth-architecture.md) — accepted branch-local M2 constitution; not protected-main authority until integration.
+
+---
 
 ## 3. Current system direction
 
 DANTE is one product monorepo with accepted ownership for backend, web, mobile, packages, infrastructure/tooling, system tests, documentation, prototypes and GitHub automation. Paths are materialized when real content exists rather than created as empty architecture theatre.
 
-The backend remains a capability-first modular monolith.
+Backend remains a capability-first modular monolith.
 
-Canonical persistence direction:
+Canonical persistence:
 
 ```text
 PostgreSQL 18 major family
@@ -79,15 +85,17 @@ current repository/runtime patch
 = PostgreSQL 18.6
 ```
 
-The accepted Domain → Logical → Physical chain has already been concretely materialized through CP6. Later backend/product work consumes that database rather than reopening the architecture merely because a new feature is implemented.
+The accepted Domain → Logical → Physical chain is concretely materialized through CP6. Later product verticals consume that database constitution rather than reopening it for convenience.
 
 Frontend remains platform-specific at renderer/UI/platform-adapter level with selective semantic sharing. Backend/database canonical authority and operation-specific offline governance remain preserved.
 
-The active Access/Auth branch adds a branch-local current architecture for the first complete post-CP6 product vertical. Its accepted M2.1–M2.8 rules consume rather than replace the existing DANTE semantic, persistence and frontend constitutions.
+The Access/Auth branch adds the first complete post-CP6 product-vertical architecture. M2 is now closed and establishes the constitution under which M3 may materialize the first production Auth slice.
 
-## 4. Domain / Logical invariants carried into implementation
+---
 
-Downstream implementation must continue to preserve at least:
+## 4. Domain / Logical invariants carried forward
+
+Downstream implementation preserves at least:
 
 ```text
 no universal Entity / Thing ontology
@@ -121,48 +129,97 @@ AuthSession != DANTE Session
 provider identity != provider email
 signin != provider-data integration authorization
 client/device signal != identity
+method != factor != assurance
 ```
+
+---
 
 ## 5. Frontend foundation direction
 
-The accepted frontend foundation fixes, among other things:
+Accepted frontend foundation fixes, among other things:
 
 - TypeScript/React/Vite/Expo/pnpm/Turbo baseline;
 - feature-first Web/Mobile architecture;
 - public-API-only and acyclic dependency direction;
 - selective shared-package policy;
 - Data Authority Matrix and feature data firewall;
-- mobile local/offline capability with backend-governed canonical effects;
+- Mobile local/offline capability with backend-governed canonical effects;
 - Web online-first posture;
 - identity-scoped local data;
 - design-token/UI/i18n/time/config boundaries;
 - LOCAL/DEV/UAT/PROD environment vocabulary;
 - GitHub Actions CI/CD authority.
 
-Foundation/materialization is closed and integrated. The active Access/Auth vertical consumes that foundation and must preserve the frontend application/data-source/generated-client boundary; it does not authorize provider/server success to be faked locally.
+M3 is the first real remote product-API trigger and must materialize the already-selected:
 
-## 6. Current bounded deferrals
+```text
+FastAPI OpenAPI
+→ Orval Fetch
+→ @dante/api-client
+→ Web application/data-source boundary
+```
 
-Architecture is closed where evidence was sufficient, but not every future product choice is pre-decided.
+TanStack Query may activate for remote request/cache state but does not become canonical Auth state or replace the Access product/UI reducer.
 
-Still bounded to the stage that owns them:
+---
 
-- M2.9 exact M3 transaction/concurrency/session-expiry contract;
-- M2.10 exact OpenAPI → generated TypeScript client → Web application boundary/tooling;
-- M2.11 exact M3 test matrix/full-stack harness;
-- exact Auth SQL/table names and material persistence shape, resolved slice-by-slice;
-- exact native credential transport, finalized in M6 under the canonical AuthSession semantics;
-- exact provider/passkey implementation details owned by M5 where not already fixed as architecture/security principles;
-- provider adapters and specialist modules activated only by real need;
+## 6. Access/Auth M2 closed constitution
+
+Accepted M2 subject owners:
+
+```text
+architecture/access-auth-architecture.md
+architecture/access-auth-security-contract.md
+architecture/access-auth-api-contract.md
+architecture/access-auth-testing-contract.md
+decisions/ADR-011-access-auth-architecture.md
+```
+
+M2 accepted:
+
+```text
+same-origin browser security boundary
+opaque server-authoritative multi-session model
+CSRF / Origin / Fetch Metadata / no broad CORS
+Account / EmailIdentity / credential / Principal boundaries
+password Argon2id + pepper + HIBP policy
+recovery/revocation/account-disable lifecycle
+passkey/MFA-ready architecture
+email comparison/normalization policy
+/api/v1 + RFC 9457 machine error contract
+READ COMMITTED + targeted Account row locking
+signin stale-credential/ambiguous-commit behavior
+OpenAPI → Orval → framework-neutral generated client
+TanStack Query application ownership boundary
+real PostgreSQL/API/Chromium+Firefox+WebKit proof contract
+```
+
+M2 does not claim any production Auth table, endpoint, session or browser signin has been implemented. That proof begins in M3.
+
+---
+
+## 7. Current bounded deferrals
+
+Still owned by later stages rather than guessed now:
+
+- exact Auth SQL/table/index names and material shape, resolved slice-by-slice under M3+;
+- exact operation-specific DB timeout values and KDF concurrency numbers after runtime benchmarking;
+- exact native credential transport/secure-storage implementation, finalized in M6;
+- exact provider protocol adapters and provider-specific callback details, finalized in M5 against then-current official mechanisms;
+- exact passkey library/materialized credential columns where M5 evidence is required;
+- future MFA/TOTP/recovery-code implementation;
+- provider-data integrations such as Gmail/Calendar/iCloud authorization;
+- third-party developer platform/public external SDK lifecycle unless product scope later requires it;
 - cloud compute/IaC and remote infrastructure materialization;
-- platform release activation details;
-- dormant frontend capabilities activated only when product requirements justify them.
+- platform release/store activation details beyond current accepted target architecture.
 
-A deferral does not authorize violating already accepted Domain/Logical/Physical/database or branch-local Access/Auth invariants.
+A deferral never authorizes violating already accepted Domain/Logical/Physical/database/Access/Auth invariants.
 
-## 7. Evidence vs current authority
+---
 
-The following kinds of files may remain useful but are not current-status authorities merely because they were written later in a phase:
+## 8. Evidence vs current authority
+
+Files such as:
 
 ```text
 *-final-review.md
@@ -172,36 +229,36 @@ phase audits / readiness records
 workstream closure records
 ```
 
-Use them as reference/evidence according to their explicit role.
+remain reference/evidence according to explicit lifecycle role and do not automatically override consolidated current contracts.
 
-For example, `domain-model-logical-readiness-part-2.md` through `part-5.md` are transition/closure evidence; the consolidated [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) now states the current satisfied contract directly.
+`workstreams/access-auth.md` remains the branch operational save-game. Durable M2 truth belongs in the four subject-oriented contracts + ADR-011.
 
-The active `workstreams/access-auth.md` remains the branch operational save-game. Durable accepted M2.1–M2.8 architecture/security/API truth now lives in the subject-oriented Access/Auth architecture contracts and ADR-011 instead of depending on chat chronology.
+---
 
-## 8. Architecture reopen discipline
+## 9. Architecture reopen discipline
 
-Closed Domain, Logical, Physical, Engineering and Frontend Foundation decisions are not casually reselected.
+Closed Domain, Logical, Physical, Engineering, Frontend Foundation and Access/Auth M2 decisions are not casually reselected.
 
-Implementation evidence first reopens the smallest affected technology/adapter/boundary. A wider architectural reopen requires a demonstrated contradiction that cannot be resolved locally.
+Implementation evidence first reopens the smallest affected technology/adapter/boundary. A wider reopen requires demonstrated contradiction that cannot be resolved locally.
 
 Do not reopen architecture because of:
 
 ```text
 ORM convenience
-table shape preference
+table-count preference
 provider naming
 UI naming
 framework fashion
+generator fashion
+test-suite convenience
 one isolated implementation annoyance
 ```
 
-Reopen when accepted requirements, safety/privacy constraints, real runtime evidence or incompatibility with a current invariant proves that the existing boundary is materially wrong.
+Reopen when accepted requirements, safety/privacy constraints, real runtime evidence or standards/provider incompatibility proves the boundary materially wrong.
 
-The same smallest-reopen rule applies to accepted Access/Auth M2 decisions. Another product's undocumented internals or a desire for fewer tables is not reopen evidence.
+---
 
-## 9. Current next architecture posture
-
-There is no pending CP6 architecture gate.
+## 10. Current next architecture posture
 
 ```text
 DATABASE / CP6
@@ -214,9 +271,10 @@ FULL ACCESS/AUTH VERTICAL
 ACTIVE ON feature/access-auth
 
 M2 AUTH ARCHITECTURE FREEZE
-M2.1–M2.8 ACCEPTED
-M2.9–M2.11 OPEN
-NO PRODUCTION AUTH CODE YET
+CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED
+
+M3 EMAIL/PASSWORD SIGNIN + AUTHSESSION SPINE
+NEXT / NOT STARTED
 ```
 
-Direct implementation evidence is claimed only after the relevant real artifact/scenario executes. M3 production implementation begins only after M2 closure and a separate explicit write gate.
+M3 production implementation begins only through a separate exact production-code write gate. Direct implementation evidence is claimed only after the relevant real artifact/scenario executes.
