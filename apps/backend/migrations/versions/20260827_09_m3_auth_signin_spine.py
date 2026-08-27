@@ -6,8 +6,8 @@ Revises: 20260826_08
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "20260827_09"
@@ -126,8 +126,7 @@ def upgrade() -> None:
             name=op.f("ck_email_identity_created_at"),
         ),
         sa.CheckConstraint(
-            "verified_at IS NULL OR "
-            "(isfinite(verified_at) AND verified_at >= created_at)",
+            "verified_at IS NULL OR (isfinite(verified_at) AND verified_at >= created_at)",
             name=op.f("ck_email_identity_verified_at"),
         ),
         schema=_DANTE_SCHEMA,
@@ -258,8 +257,7 @@ def downgrade() -> None:
     for table_name in _AUTH_TABLES:
         op.execute(
             sa.text(
-                "REVOKE ALL PRIVILEGES ON TABLE "
-                f"{_DANTE_SCHEMA}.{table_name} FROM {_RUNTIME_ROLE}"
+                f"REVOKE ALL PRIVILEGES ON TABLE {_DANTE_SCHEMA}.{table_name} FROM {_RUNTIME_ROLE}"
             )
         )
 

@@ -296,10 +296,22 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
         ).fetchone()
 
     assert table_privileges == (
-        True, False, False, False,
-        True, False, False, False,
-        True, False, False, False,
-        True, True, False, False,
+        True,
+        False,
+        False,
+        False,
+        True,
+        False,
+        False,
+        False,
+        True,
+        False,
+        False,
+        False,
+        True,
+        True,
+        False,
+        False,
     )
     assert password_columns == (True, True, True, False, False)
     assert session_columns == (True, True, True, False, False, False)

@@ -70,8 +70,7 @@ class EmailIdentityRow(Base):
             name="created_at",
         ),
         CheckConstraint(
-            "verified_at IS NULL OR "
-            "(isfinite(verified_at) AND verified_at >= created_at)",
+            "verified_at IS NULL OR (isfinite(verified_at) AND verified_at >= created_at)",
             name="verified_at",
         ),
         ForeignKeyConstraint(
