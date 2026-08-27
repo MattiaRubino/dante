@@ -37,27 +37,44 @@ Frontend Foundation                CLOSED / INTEGRATED
 Frontend Materialization           CLOSED / PASS / INTEGRATED
 Backend CP1–CP5 Scaffold           CLOSED / DIRECT QA / INTEGRATED
 Backend CP6 Database               CLOSED / DIRECT QA / INTEGRATED VIA PR #42
-Access pre-backend frontend        CLOSED / ACCEPTED / branch closure integration
-Full-stack Access/Auth vertical    ACTIVE / R0 ARCHITECTURE + WORKSTREAM BOOTSTRAP
+Access pre-backend frontend        CLOSED / ACCEPTED
+Full-stack Access/Auth vertical    ACTIVE
+M1 Access Visual / UX Freeze       CLOSED / PASS WITH DEFERRED INTEGRATION CHECKS
+M2 Auth Architecture Freeze        ACTIVE
+M3 Signin + AuthSession Spine      NOT STARTED
 ```
 
 ## Active branch-local workstream
 
-- `access-auth.md` — single durable branch-local workstream record, authority map, decision register, gated roadmap and continuation entry point for `feature/access-auth`.
+- `access-auth.md` — single durable branch-local workstream record, authority map, decision register, definitive seven-macro-phase roadmap and continuation entry point for `feature/access-auth`.
 
 Current Access/Auth state:
 
 ```text
 branch                         feature/access-auth
 baseline                       f011e252b6a294a12c38927ef2d528244ea1fee6
-R0                             ACTIVE
+last closed macro-phase        M1 — Access Visual / UX Freeze
+active macro-phase             M2 — Auth Architecture Freeze
 production Auth module         NOT STARTED
 Auth DB migrations             NOT STARTED
 real Access API wiring         NOT STARTED
-first executable target        email/password signin + AuthSession spine
+native Mobile Access           NOT STARTED
+first executable target        M3 — email/password signin + AuthSession spine
 ```
 
-`R0` is intentionally architecture/documentation work first. It must ratify the cross-cutting decisions required by the first executable slice before production Auth migrations/endpoints/client wiring begin.
+M2 is intentionally architecture/security work before production Auth code. It must ratify deployment topology, Web session/cookie/CSRF/CORS behavior, core Account/AuthSession semantics, multi-session lifecycle, password implementation, passkey-ready/MFA-compatible boundaries, email comparison, API/error contract, M3 concurrency/transactions, generated-client boundary and the exact M3 test harness before migrations/endpoints begin.
+
+The current definitive macro-roadmap is:
+
+```text
+M1  Access Visual / UX Freeze                         CLOSED
+M2  Auth Architecture Freeze                         ACTIVE
+M3  Email/Password Signin + AuthSession Spine        NOT STARTED
+M4  Signup + Verify + Recovery + Reset + Reauth      NOT STARTED
+M5  Google + Apple + Passkeys + Explicit Linking     NOT STARTED
+M6  Native Mobile Access                             NOT STARTED
+M7  Security Hardening + Home Handoff + Closure      NOT STARTED
+```
 
 ## Durable closed/integrated records
 
@@ -77,7 +94,7 @@ Current CP6/database truth lives in:
 - `frontend-foundation.md` — frontend engineering foundation design/architecture closure, integrated via PR #22.
 - `frontend-materialization.md` — closed production materialization evidence, integrated via PR #28.
 - `frontend-materialization-integration.md` — durable integration/calibration/future-activation evidence for PR #28.
-- `../frontend/access.md` — current durable contract for the accepted pre-backend Access frontend materialization.
+- `../frontend/access.md` — current durable contract for the accepted Web Access frontend and its current full-stack integration obligations.
 - `../archive/branches/2026-08-feature-access-frontend.md` — consolidated non-authoritative history for `feature/access-frontend`.
 
 The closed Access-frontend branch-local workstream record and live handoff are intentionally not retained after knowledge consolidation. The current full-stack Access/Auth workstream started from protected `main` on `feature/access-auth`; the closed `feature/access-frontend` branch is not a permanent reusable frontend line.
@@ -95,7 +112,7 @@ Domain and Logical workstream continuations are historical operational records f
 - `../domain/README.md`
 - `../logical-model/README.md`
 
-The documentation knowledge audit retained detailed continuation/register material only where unique requirements, rationale, assumptions, rejected alternatives, traceability or validation evidence made destructive compaction unsafe. Historical workstream files never override the newer current entry points.
+Historical workstream files never override newer current entry points.
 
 ## Historical/superseded planning
 
@@ -115,10 +132,26 @@ Before continuing work:
 2. read development operating/safety/lifecycle policy;
 3. verify exact current branch and relation to `main`;
 4. if continuing Access/Auth, read `access-auth.md` completely;
-5. if another target workstream is active and unmerged, read its branch-local durable record;
+5. read `../frontend/access.md` and the subsystem authorities required by the active macro-phase;
 6. use a temporary handoff only when the active branch genuinely needs one;
-7. consume the relevant accepted model/architecture/reference/code/tests;
+7. consume relevant accepted model/architecture/reference/code/tests;
 8. do not let an old workstream record override newer current truth.
+
+## Macro-phase closure rule
+
+For Access/Auth, a macro-phase is not CLOSED until the current record captures:
+
+```text
+accepted decisions
++ implementation/evidence if any
++ deferred/open items
++ reopen triggers
++ updated decision register
++ affected durable authority docs
++ next active macro-phase / safe action
+```
+
+A phase must never rely on chat memory for durable truth.
 
 ## Closed-workstream rule
 
@@ -152,6 +185,7 @@ UNMERGED BRANCH TRUTH != protected-main TRUTH
 VERSION-SENSITIVE CLAIMS REQUIRE CURRENT EVIDENCE
 TEMPORARY HANDOFF != DURABLE DOCUMENTATION
 CURRENT SPECIFICATION != CHRONOLOGICAL DIARY
+NEW CHAT != NEW BRANCH
 ```
 
 Durable architecture changes belong in current specs/ADRs. Historical workstream records never override later accepted current truth.
