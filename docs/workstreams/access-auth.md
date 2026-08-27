@@ -7,7 +7,7 @@
 - **M2.1–M2.8 documentation PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
 - **M2 closure documentation PRE-SCOPE:** `1d685dc43dd68916afa34ec84b7f45df20c890b0`
 - **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — NEXT / NOT STARTED
-- **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED
+- **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED / READBACK QA PASS
 - **Purpose:** operational save-game, authority map, roadmap, decision register, evidence boundaries and Git/write safety for the production Access/Auth vertical.
 
 > This file is the branch-local operational continuation authority while `feature/access-auth` is active. Durable architecture/security/API/testing truth belongs in the subject-oriented contracts and ADR-011. Do not turn this file into the sole Auth specification or a chat diary.
@@ -630,7 +630,7 @@ Accepted current Web design baseline; no redesign-from-zero. Mobile remains sepa
 
 ## M2 — Auth Architecture Freeze
 
-**Status:** `CLOSED / M2.1–M2.11 ACCEPTED / DURABLY DOCUMENTED`
+**Status:** `CLOSED / M2.1–M2.11 ACCEPTED / DURABLY DOCUMENTED / READBACK QA PASS`
 
 Decision sequence:
 
@@ -647,7 +647,7 @@ Decision sequence:
 9. M3 transaction/concurrency/session-expiry                   CLOSED
 10. OpenAPI → generated client → Web boundary                  CLOSED
 11. M3 test matrix / full-stack harness                         CLOSED
-12. documentation reconciliation/whole-M2 closure              CLOSED
+12. documentation reconciliation/whole-M2 closure              CLOSED / QA PASS
 ```
 
 M2 implemented no production Auth runtime. Its output is the constitution under which M3 can build without foreseeable cross-cutting semantic/security rewrite.
@@ -762,7 +762,7 @@ Merge to protected `main` requires a separate explicit user gate.
 | PostgreSQL canonical authority | FIXED | Inherited from CP6/ADR-010. |
 | Frontend fake authoritative success | FORBIDDEN | Server state owns auth/verification/recovery/link/session success. |
 | M1 | CLOSED | Accepted Web baseline; integration checks deferred. |
-| M2 | CLOSED | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
+| M2 | CLOSED / QA PASS | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
 | M3 | NEXT / NOT STARTED | First executable vertical slice. |
 | Browser topology | FIXED | Same-origin `/api/v1/*` through edge; services may be physically independent. |
 | Browser session | FIXED | Opaque DB-backed server-authoritative session + host-only HttpOnly cookie. |
@@ -844,7 +844,7 @@ ADR-011
 
 ### Final closure checkpoint
 
-M2.9–M2.11 were then reconciled into those authorities and the new:
+M2.9–M2.11 were reconciled into those authorities and:
 
 ```text
 docs/architecture/access-auth-testing-contract.md
@@ -852,14 +852,29 @@ docs/architecture/access-auth-testing-contract.md
 
 Navigation was reconciled in `docs/architecture/README.md` and `docs/README.md`.
 
+Post-write audit against closure PRE-SCOPE `1d685dc43dd68916afa34ec84b7f45df20c890b0` directly observed before this final workstream readback update:
+
+```text
+branch relation        ahead
+commits                 8 ahead / 0 behind
+changed paths           8
+expected paths          8
+unexpected paths        0
+production code paths   0
+DB/migration paths      0
+runtime/CI paths        0
+```
+
+Readback directly confirmed current M2-closed status in architecture/security/API/testing/workstream authorities and no remaining M2.9/M2.10/M2.11 OPEN state in those current owners.
+
 Closure result:
 
 ```text
 M2.1–M2.11 accepted
 subject-oriented durable documentation complete
-known cross-document contradictions: none intended; final readback/compare required by gate
-production runtime implementation: none
-M3 production write authorization: NOT YET GRANTED
+whole-M2 documentation/readback/path QA PASS
+production runtime implementation none
+M3 production write authorization NOT YET GRANTED
 ```
 
 M2 closure means architecture/security/API/testing readiness, not executable Auth PASS.
@@ -979,10 +994,12 @@ M3 — Email/Password Signin + AuthSession Spine
 NEXT / NOT STARTED
 ```
 
+M2 documentation/path/readback QA is complete.
+
 Before any production code/migration/package/CI write:
 
-1. complete post-write readback/compare of the M2 closure documentation gate;
-2. verify branch/local worktree alignment;
+1. verify remote branch and local `/home/mattia/projects/dante` worktree are aligned after this documentation chain;
+2. inspect current M3-relevant backend/database/Web code and exact insertion points;
 3. derive the first **slice-driven M3 production-code gate** from current repository truth;
 4. present exact CREATE/UPDATE/DELETE paths and explicit exclusions;
 5. obtain explicit user approval;
