@@ -1,31 +1,43 @@
 # DANTE Access/Auth Architecture Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL AUTHORITATIVE FOR ACCEPTED M2.1–M2.8 DECISIONS
+- **Status:** CURRENT / BRANCH-LOCAL AUTHORITATIVE / M2 CLOSED
 - **Workstream:** `feature/access-auth`
-- **Scope:** Access/Auth architecture, identity/authenticator/session boundaries, Web/Native boundary, lifecycle semantics and passkey/MFA readiness
-- **Does not authorize:** production Auth schema, migrations, endpoints, generated clients or provider integrations before M2 closes
+- **Scope:** Access/Auth identity, authenticator, session, Web/Native, transaction, generated-client and application boundaries accepted in M2.1–M2.11
+- **Does not authorize:** implementation outside the separately gated M3 slice
 
-This document states the current Access/Auth architecture directly. It is organized by subject rather than by the chronology of M2 discussions. The active workstream record remains the operational save-game; this file owns the durable architectural meaning of decisions already accepted in M2.1–M2.8.
+This document states the current Access/Auth architecture directly by subject. It is not a chronology of M2 discussion. The workstream remains the operational save-game; this document owns durable architectural meaning.
 
-The implementation must also preserve all stronger current DANTE authorities, especially Domain/Logical/Physical invariants, ADR-007, ADR-010, the PostgreSQL persistence constitution, current frontend architecture boundaries and the Access frontend contract.
+Companion authorities:
+
+- `access-auth-security-contract.md` — security policy and lifecycle;
+- `access-auth-api-contract.md` — HTTP/OpenAPI/generated-client contract;
+- `access-auth-testing-contract.md` — proof/CI/full-stack harness contract;
+- `../decisions/ADR-011-access-auth-architecture.md` — accepted rationale and rejected alternatives.
+
+All implementation must also preserve stronger current DANTE Domain/Logical/Physical, ADR-007, ADR-008, ADR-009, ADR-010 and PostgreSQL/database authorities.
 
 ---
 
 ## 1. Architectural objective
 
-DANTE Access/Auth must support a consumer-grade authenticated product across Web and Native without collapsing authentication into the Domain model or binding the application to one credential type.
+DANTE Access/Auth must support a consumer-grade first-party product across Web, Android and iOS without collapsing authentication into the Domain model or binding the product to one credential type.
 
 The architecture must support, without semantic rewrite:
 
-- password authentication;
-- Google and Apple authentication;
-- passkeys / WebAuthn;
-- concurrent Web and Native sessions;
-- reauthentication and sensitive-operation step-up;
-- future optional MFA/TOTP/recovery-code capabilities;
-- future account/session management and security UX.
+```text
+password authentication
+Google authentication
+Apple authentication
+passkeys / WebAuthn
+multiple concurrent Web/Native sessions
+reauthentication / sensitive-operation step-up
+recovery/reset
+explicit provider linking
+future optional MFA/TOTP/recovery-code policy
+future account/session security management
+```
 
-The core non-collapse rules are:
+Core non-collapse rules:
 
 ```text
 Person != Account != Principal != Actor
@@ -34,20 +46,22 @@ signin != provider-data integration authorization
 provider identity != provider email
 client/device signal != identity
 frontend request/success != backend-authoritative success
+method != factor != assurance
 ```
 
 ---
 
 ## 2. Canonical conceptual model
 
-`Account` is the durable Access/security root. It is not a profile, a Person, a runtime Principal, a global role holder or an email/password record.
+`Account` is the durable Access/security root. It is not a profile, Person, runtime Principal, global role, device, email or password row.
 
 ```mermaid
 flowchart TD
-    A[Account] --> EI[EmailIdentity]
-    A --> PC[PasswordCredential]
-    A --> XI[ExternalIdentity]
-    A --> PK[PasskeyCredential]
+    A[Account]
+    A --> EI[EmailIdentity]
+    A --> PC[0..1 PasswordCredential]
+    A --> XI[0..N ExternalIdentity]
+    A --> PK[0..N PasskeyCredential]
     A --> S1[AuthSession A]
     A --> S2[AuthSession B]
     A --> S3[AuthSession C]
@@ -55,42 +69,42 @@ flowchart TD
     XI --> AP[Apple issuer + subject]
 
     P[Person] -. no implicit equivalence .- A
-    PR[Principal - runtime only] -. derived from .-> A
-    AC[Actor] -. domain agency != authenticated principal .- PR
+    PR[Principal runtime only] -. derived from session/account .-> A
+    AC[Actor] -. domain agency != principal .- PR
 ```
 
-Conceptual names in this document are not pre-approved PostgreSQL table names. Concrete persistence appears only when a vertical slice justifies exact semantics.
+Conceptual names are not pre-approved SQL table names. Persistence appears only when a vertical slice justifies exact schema semantics.
 
 ### 2.1 Account
 
-`Account` owns durable access/security lifecycle state.
+Account owns stable access/security lifecycle state.
 
-It must not directly contain or imply:
+Do not place directly on Account merely for convenience:
 
 ```text
 password hash
 email as primary key
 Google/Apple subject
-passkey payload
-session secret
+passkey protocol payload
+raw session secret
 Person profile fields
-global workspace role
+workspace/global role
 device identity
 ```
 
-Initial lifecycle must distinguish at least an account that is usable from one that is disabled. Email verification, setup completion, password presence and account availability remain separate facts.
+Initial lifecycle distinguishes at least usable/active from disabled/unavailable. Email verification, setup completion, password presence and account availability remain independent facts.
 
 ### 2.2 Person
 
-`Person` remains the DANTE Domain/native human identity concept. Access/Auth must not retrofit login or password semantics into `Person`.
+`Person` remains the DANTE Domain/native human identity concept. Access/Auth must not retrofit login/password semantics into Person.
 
-No Account↔Person 1:1 relation is inferred merely because a consumer user is normally a human. If the product later needs a relationship between an authenticated Account and a Person, that relation requires explicit semantics and its own justification.
+No Account↔Person 1:1 relation is inferred merely because the consumer user is normally human. Any future binding requires explicit semantics and justification.
 
 ### 2.3 Principal
 
-`Principal` is the runtime authenticated security context derived for a request from Account/AuthSession and applicable authorization context.
+Principal is a request-runtime security context derived from current Account/AuthSession/security/authorization state.
 
-A durable Principal table is **not selected**.
+A durable Principal table is not selected.
 
 Conceptually:
 
@@ -98,14 +112,14 @@ Conceptually:
 Principal
 ├── account_ref
 ├── auth_session_ref
-├── authenticated/recent-auth context
-├── verified authentication properties
+├── authentication/recent-auth context
+├── verified security properties
 └── request-scoped authorization context
 ```
 
 ### 2.4 Actor
 
-`Actor` remains a Domain agency concept. Authentication does not imply that `Principal == Actor`.
+Actor remains a Domain agency concept. Authentication does not imply `Principal == Actor`.
 
 ---
 
@@ -134,16 +148,16 @@ flowchart LR
 
 ### 3.1 EmailIdentity
 
-Email is a separately governed identity/contact/recovery concept, not the Account identifier itself.
+Email is a separately governed identity/contact/recovery concept.
 
-Current consumer product invariant:
+Current consumer invariant:
 
 ```text
 standard consumer Account
 → maintains at least one verified recovery/contact EmailIdentity
 ```
 
-An Account may authenticate without a password while still maintaining a verified EmailIdentity for recovery/contact purposes.
+This remains true for provider-only or passkey-only authentication unless a later product/security decision explicitly replaces the recovery/contact invariant.
 
 ### 3.2 PasswordCredential
 
@@ -153,21 +167,19 @@ Password is optional:
 Account → 0..1 current PasswordCredential
 ```
 
-No architecture may assume `account.password_hash` exists.
-
-Password history is not a default model. Periodic forced password change is not selected without a concrete security reason.
+No architecture may assume every Account has a password.
 
 ### 3.3 ExternalIdentity
 
-Google/Apple identity binding uses protocol-valid stable identity:
+Federated identity key:
 
 ```text
 issuer + subject
 ```
 
-Provider email is an attribute/evidence input, never the canonical federated identity key.
+Provider email is evidence/metadata, never the canonical federated key.
 
-Email coincidence must never silently merge or link Accounts.
+Email coincidence never silently merges Accounts.
 
 ```mermaid
 flowchart TD
@@ -183,35 +195,29 @@ flowchart TD
 
 ### 3.4 PasskeyCredential
 
-An Account may have zero or many passkeys:
-
 ```text
 Account → 0..N PasskeyCredential
 ```
 
-Passwordless Account configurations are valid.
-
-Passkey is not synonymous with MFA. It may be a primary sign-in authenticator or participate in future step-up/MFA policy depending on the verified ceremony properties.
+Passwordless Accounts are valid. Passkey is not synonymous with MFA; it may satisfy primary signin or future step-up/MFA policy according to ceremony properties and DANTE policy.
 
 ---
 
 ## 4. Authentication evidence and policy boundary
 
-Authenticator-specific code verifies evidence. It does **not** own session creation.
+Authenticator-specific code verifies evidence. It does not own session creation.
 
 ```mermaid
 flowchart TD
     PW[Password verifier] --> E[VerifiedAuthenticationEvidence]
     WA[WebAuthn verifier] --> E
     GO[Google/Apple verifier] --> E
-    E --> POL[Authentication Policy]
-    POL -->|satisfies sign-in| SS[AuthSession application operation]
-    POL -->|satisfies reauth/step-up| RA[Refresh same AuthSession security context]
+    E --> POL[Authentication policy]
+    POL -->|signin satisfied| SS[AuthSession application operation]
+    POL -->|reauth/step-up satisfied| RA[Refresh same AuthSession security context]
 ```
 
-This prevents separate session architectures for password, provider and passkey flows.
-
-Conceptually, verified authentication evidence can expose properties such as:
+Verified evidence may conceptually expose:
 
 ```text
 account
@@ -223,56 +229,50 @@ factor capabilities
 protocol-specific trusted properties
 ```
 
-These are application/security concepts, not a requirement for a generic polymorphic database table.
+This is an application/security abstraction, not permission to create one generic polymorphic authenticator table.
 
-### 4.1 Method, factor and assurance are different
+### 4.1 Method, factor, assurance
 
 ```text
 Authentication Method != Authentication Factor != Authentication Assurance
 ```
 
-DANTE must not use a permanent `mfa_enabled` boolean as the core security model.
+Do not use one permanent `mfa_enabled` Boolean as the complete future security model.
 
-Future policy evaluates the authenticators and evidence actually available for an Account and session.
+### 4.2 Compliance labels
 
-### 4.2 No unearned NIST AAL labels
-
-NIST authentication guidance is an engineering benchmark. DANTE must not label a session `AAL2` or similar unless the complete applicable requirements are genuinely implemented and proved.
-
-Store/evaluate concrete security properties rather than borrowed compliance labels.
+NIST assurance levels are engineering benchmarks. DANTE must not claim `AAL2` or similar unless every applicable requirement is actually implemented and proved. Store/evaluate concrete properties instead of borrowing compliance labels.
 
 ---
 
-## 5. AuthSession model
+## 5. AuthSession
 
 DANTE supports multiple independent sessions per Account.
 
 ```mermaid
 flowchart LR
-    A[Account] --> W1[Firefox / desktop]
-    A --> W2[Another browser]
+    A[Account] --> W1[Browser A]
+    A --> W2[Browser B]
     A --> M1[Android]
-    A --> M2[iOS / tablet]
+    A --> M2[iOS]
 ```
 
-Each AuthSession has its own secret, expiry and revocation lifecycle.
+Each AuthSession has independent secret, expiry and revocation lifecycle.
 
 Required conceptual capabilities include:
 
-- stable non-secret AuthSession identifier;
-- independent session secret/verifier;
+- stable non-secret AuthSession reference;
+- independent secret/verifier;
 - created/authenticated/recent-auth timestamps as justified;
-- authoritative expiry;
-- user-activity tracking distinct from background polling;
+- overall and inactivity expiry semantics;
+- user activity distinct from background polling;
 - independent revocation;
-- safe client/session metadata for future session-management UX;
-- security method/evidence history sufficient for current policy without turning the session row into an audit log.
+- safe session/client metadata for future management UX;
+- sufficient authentication-evidence context for current policy without turning the row into a permanent audit log.
 
-Raw session secrets never become durable server-side state.
+Raw session secrets are never durable server-side state.
 
 ### 5.1 Session actions
-
-The product distinguishes:
 
 ```text
 LOG OUT
@@ -288,11 +288,11 @@ LOG OUT EVERYWHERE
 → revoke all, including current
 ```
 
-These are separate application intents.
+These are distinct application intents.
 
 ### 5.2 Reauthentication
 
-Reauthentication does not create a second AuthSession.
+Reauthentication keeps the same AuthSession identity.
 
 ```mermaid
 sequenceDiagram
@@ -302,89 +302,73 @@ sequenceDiagram
     C->>A: Sensitive operation
     A-->>C: reauthentication required
     C->>A: fresh credential/passkey proof
-    A->>S: update recent-auth context
+    A->>S: refresh recent-auth/security context
     A->>S: rotate session secret
-    A-->>C: operation may continue
+    A-->>C: policy may now permit operation
 ```
 
-Recent-auth must remain policy/assurance-aware. A timestamp alone must not become the permanent abstraction.
+Recent-auth remains assurance-aware; a timestamp alone is not the permanent abstraction.
 
 ---
 
-## 6. Account/session security lifecycle
+## 6. Security lifecycle semantics
 
-### 6.1 Normal logout
+### 6.1 Current logout
 
 ```text
 current AuthSession → revoked
-cookie/native credential → cleared/invalid
+browser/native credential → cleared/invalid
 operation → idempotent
 ```
 
 ### 6.2 Authenticated password change
 
-Requires recent authentication.
+Requires valid session + recent authentication.
 
 ```text
 replace PasswordCredential
 + revoke all other AuthSessions
-+ retain initiating AuthSession when policy permits
++ retain initiating AuthSession when continuity is valid
 + rotate initiating session secret
 ```
 
 ### 6.3 Password recovery/reset
 
-Recovery is a stronger security event than normal credential maintenance.
-
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant R as Recovery proof
     participant A as Auth application
     participant DB as PostgreSQL
     U->>A: valid recovery proof + new password
-    A->>A: validate external/security checks
+    A->>A: perform external/expensive validation outside DB transaction
     A->>DB: BEGIN
+    A->>DB: lock/revalidate Account/current state
     A->>DB: consume proof
     A->>DB: replace credential
     A->>DB: revoke all AuthSessions
     A->>DB: COMMIT
-    A-->>U: fresh normal sign-in required
+    A-->>U: fresh normal signin required
 ```
 
-No automatic authenticated session is created after recovery reset.
+No auto-login after recovery reset.
 
 ### 6.4 Account disable
 
-Account disable atomically makes the Account unavailable and revokes all active AuthSessions.
-
-Re-enabling an Account never resurrects old sessions.
+Account disable atomically makes Account unavailable and revokes all active sessions. Re-enable never resurrects historical sessions.
 
 ### 6.5 Authenticator add/remove
 
-Adding security-sensitive authenticators requires recent authentication and creates a security event/notification capability.
+Adding/removing security-sensitive authenticators requires appropriate recent authentication and emits security-event/notification capability.
 
-Removing an authenticator requires proof through a method that remains valid after removal where applicable and may not leave the Account with no usable access/recovery path.
+Removing an authenticator must use proof that remains valid after removal where applicable and must not leave the Account without a usable access/recovery path.
 
-Normal maintenance and declared compromise are distinct flows:
-
-```text
-normal removal
-→ invalidate selected authenticator
-→ rotate current session as required
-→ do not blanket-revoke every session without reason
-
-compromise flow
-→ invalidate compromised authenticator
-→ revoke affected/other sessions according to policy
-→ rotate secured current session after strong proof
-```
+Normal maintenance and compromise are distinct flows; compromise may justify broader session revocation than ordinary maintenance.
 
 ---
 
 ## 7. Web deployment boundary
 
-The normal browser boundary is same-origin even when Web and FastAPI are physically/deployment independent.
+Normal browser security topology is same-origin even when React and FastAPI are physically/deployment independent.
 
 ```mermaid
 flowchart TD
@@ -401,26 +385,24 @@ https://<canonical-app-origin>/
 https://<canonical-app-origin>/api/v1/*
 ```
 
-The edge hides physical service topology from the normal browser security model.
-
-Browser direct cross-origin API access is not the default. CORS is therefore disabled/no ACAO by default for the normal Web path.
+The edge hides physical service topology. Browser direct cross-origin credentialed API access is not the default. Normal Web CORS is disabled/no ACAO.
 
 A future dedicated native/public API hostname remains possible without changing Account/AuthSession semantics.
 
-### 7.1 Local development
+### 7.1 Local development/test
 
-The browser should still see a same-origin model through a development reverse proxy:
+The browser still observes same-origin through reverse proxy/test ingress:
 
 ```text
-localhost Web origin
-/api/* → local FastAPI
+Web origin
+/api/* → FastAPI
 ```
 
-Do not introduce broad development CORS merely because frontend/backend processes use different local ports internally.
+Do not widen CORS merely because internal local processes use different ports.
 
 ### 7.2 Proxy trust
 
-Security-sensitive forwarded headers may only be trusted from the explicitly trusted edge/proxy boundary. FastAPI must not blindly trust Internet-supplied `X-Forwarded-*` headers.
+Security-sensitive forwarded headers are trusted only from the configured trusted edge/proxy. Internet-supplied forwarding headers are never blindly authoritative.
 
 ---
 
@@ -437,192 +419,481 @@ flowchart TD
     N --> NS[Native-safe credential + secure storage]
 ```
 
-Browser cookies are not part of the application/domain contract.
+Browser cookies are not part of application/domain semantics.
 
-Native credential transport is intentionally finalized in M6 when platform runtime and secure-storage behavior are implemented. It must reuse canonical Account/AuthSession semantics rather than creating a second auth backend.
+Native credential transport is finalized in M6 against real platform secure-storage/runtime evidence and the already-stable AuthSession model.
 
 ---
 
 ## 9. Passkey/WebAuthn readiness
 
-The following principles are already fixed even though production WebAuthn is implemented in M5.
+Production WebAuthn is M5, but M3 architecture must preserve these fixed principles.
 
 ### 9.1 User verification
 
-DANTE passkey ceremonies require WebAuthn user verification.
-
-DANTE never receives or stores biometric templates, Face ID data, fingerprints or device PINs. The authenticator performs local user verification and reports the verified ceremony property.
+DANTE passkey ceremonies require WebAuthn user verification. DANTE never receives/stores biometric templates, fingerprints, face data or device PINs.
 
 ### 9.2 Discoverable credentials
 
-DANTE passkeys are designed as discoverable credentials so usernameless/passkey-first sign-in and future conditional UI remain possible.
+DANTE passkeys are designed as discoverable credentials so passkey-first/usernameless signin and future conditional UI remain possible.
 
 ### 9.3 User handle
 
-WebAuthn `userHandle` is a stable random opaque 32-byte identifier per Account.
-
-It must not contain:
-
-```text
-email
-username
-Person ref
-serialized Account ref
-other PII
-```
+`userHandle` is a stable random opaque 32-byte value per Account and contains no PII, email, Person ref or serialized Account ref.
 
 ### 9.4 RP ID
 
-The WebAuthn RP ID must use the narrowest stable canonical application security host compatible with Web and Native platform association. Do not automatically choose the registrable apex merely to grant every future subdomain credential authority.
-
-The concrete production hostname is infrastructure-time configuration, but the security principle is fixed.
+Use the narrowest stable canonical application security host compatible with Web and official Native association. Do not automatically choose the registrable apex merely for subdomain convenience.
 
 ### 9.5 Native association
 
-Native clients must be able to share the same RP/backend account semantics through official platform association mechanisms, including:
+Preserve compatibility with official platform association mechanisms:
 
-- Apple associated domains / `webcredentials`;
-- Android Digital Asset Links.
+```text
+Apple associated domains / webcredentials
+Android Digital Asset Links
+```
 
 ### 9.6 Attestation
 
-Mandatory consumer attestation is not selected. Normal consumer passkey registration uses an attestation-minimizing posture (`none` direction) to avoid unnecessary privacy/vendor coupling.
+Mandatory consumer attestation is not selected. Normal consumer registration uses an attestation-minimizing policy; future high-security/enterprise policy may justify a separate requirement.
 
-Future high-security/enterprise policy may introduce a separately justified attestation requirement.
+### 9.7 Synced/device-bound
 
-### 9.7 Synced and device-bound credentials
-
-Both synced and device-bound passkeys are valid DANTE credentials.
-
-Backup eligibility/state may be retained as risk/security metadata when materialized, but it is not identity and does not automatically determine trust.
+Both are valid credentials. Backup eligibility/state are risk/security metadata, not identity or automatic trust.
 
 ### 9.8 Signature counter
 
-A WebAuthn signature-counter anomaly is a security/risk signal, not by itself an unconditional login failure or Account lock.
+Counter anomaly is a risk/security signal, not by itself unconditional login failure or account lock.
 
 ### 9.9 Challenges
 
-WebAuthn challenges are cryptographically secure, single-ceremony, short-lived and single-use. Current direction is 32 random bytes. Replay is rejected.
+WebAuthn challenges are cryptographically secure, short-lived, single-ceremony and single-use. Current direction is 32 random bytes; replay is rejected.
 
 ---
 
-## 10. MFA compatibility boundary
+## 10. MFA compatibility
 
-MFA implementation is deferred, but the architecture must support later:
+MFA implementation is deferred, but architecture remains compatible with:
 
 ```text
-TOTP authenticator
+TOTP
+authenticator-app factor
 recovery codes
-step-up policy
+step-up
 optional MFA
-future mandatory policy for selected accounts/roles
-future high-security account profile
+future mandatory/high-security policy
 ```
 
-No current model may assume that password is always present or that one Boolean describes all future security posture.
-
-TOTP secrets, if later introduced, require encrypted-at-rest key-management semantics rather than password hashing. Recovery codes are separate strong random single-use credentials/proofs and must not be collapsed into PasswordCredential or EmailIdentity.
+TOTP secret semantics, if introduced, require encrypted-at-rest key-management rather than password hashing. Recovery codes are separate random single-use secrets/proofs and are not PasswordCredential or EmailIdentity.
 
 ---
 
 ## 11. Email identity architecture
 
-DANTE separates the address used for delivery/display from the deterministic comparison representation used for identity lookup and uniqueness.
+DANTE separates delivery/display representation from deterministic identity comparison.
 
 ```mermaid
 flowchart TD
-    R[User/provider supplied email] --> N[Syntax + Unicode/domain normalization]
-    N --> A[Normalized address for delivery/display]
-    N --> C[Deterministic DANTE comparison key]
+    R[Submitted/provider email] --> N[Syntax + Unicode/domain normalization]
+    N --> A[Normalized delivery/display address]
+    N --> C[DANTE comparison key]
     C --> U[PostgreSQL uniqueness arbiter]
 ```
 
 ### 11.1 Comparison policy
 
-DANTE intentionally treats email identity comparison as case-insensitive even though SMTP technically permits case-sensitive local parts.
-
-Conceptual policy:
+DANTE intentionally treats login/recovery email comparison as case-insensitive even though SMTP permits rare case-sensitive local-part semantics.
 
 ```text
-local part  → NFC + Unicode casefold
-
-domain      → UTS #46 / IDNA canonical ASCII lowercase
+local part → NFC + Unicode casefold
+domain     → UTS #46 / IDNA canonical ASCII lowercase
 ```
 
-The normalized delivery/display address preserves the meaningful local-part form rather than forcing the UI to display the comparison key.
+Display/delivery representation preserves meaningful normalized local-part form.
 
 ### 11.2 International email
 
-The model is SMTPUTF8/EAI-ready and must not assume an ASCII-only local part. Production delivery support must nevertheless be proved end-to-end with the selected mail provider before claiming the feature supported.
+The model is SMTPUTF8/EAI-ready. Actual delivery support is claimed only after the selected mail provider is proved end-to-end.
 
-### 11.3 No provider-specific magic
+### 11.3 No provider magic
 
-DANTE does not globally:
-
-```text
-remove Gmail dots
-strip +tags
-rewrite googlemail.com
-apply provider-specific mailbox aliases
-```
-
-Such behavior is not a general email-identity rule and can be incorrect even within one provider ecosystem.
+DANTE does not globally remove Gmail dots, strip plus-tags, rewrite `googlemail.com`, or embed provider-specific mailbox alias rules in canonical identity semantics.
 
 ### 11.4 Provider email
 
-A trusted provider's verified email claim may establish verified email control for a new Account under explicit policy if there is no collision. It never changes the federated identity key and never silently links an existing Account.
+A trusted provider verified-email claim may establish verified email control for a new Account under policy when no collision exists. It never changes the federated identity key and never silently links an existing Account.
 
-Provider email change never silently mutates canonical DANTE EmailIdentity.
+Provider email changes never silently mutate DANTE EmailIdentity.
 
 ### 11.5 Email change
 
-Normal email change is a security-sensitive pending transition, not an in-place update on first request.
-
-Initial password-only policy requires:
-
-- valid AuthSession;
-- recent authentication;
-- confirmation of the old email;
-- confirmation of the new email;
-- notification of the old email;
-- re-check of new comparison-key availability;
-- atomic final switch;
-- revocation of other sessions;
-- initiating session may survive only when its security continuity remains valid and its secret is rotated.
-
-If control of the old address is lost, use account recovery rather than weakening normal email-change semantics.
+Normal email change is a security-sensitive pending transition. Initial password-only policy requires valid session, recent auth, old-email confirmation, new-email confirmation, old-email notification, final uniqueness recheck, atomic switch and revocation of other sessions. If the old address is lost, use recovery rather than weakening the normal mutation.
 
 ---
 
-## 12. Persistence and concurrency doctrine
+## 12. Persistence and transaction doctrine
 
-Access/Auth does not create its own database philosophy.
-
-It inherits ADR-010 and the PostgreSQL persistence constitution:
+Auth inherits ADR-010/CP3/CP6 rather than creating a separate database philosophy.
 
 ```text
 PostgreSQL canonical authority
 one AsyncSession per application operation/task
 autobegin=False
 outer application operation owns transaction
-persistence adapters may flush, not hidden-commit
+persistence adapters may flush, never hidden-commit
 READ COMMITTED default
-constraint/locking escalation only for concrete invariant
-no blind retry of non-idempotent security mutations
-no long transaction around external network work
+narrowest truthful concurrency control
+no hidden transaction retry
+no blind retry after ambiguous commit
+no network/human wait inside DB transaction
 ```
 
-Account-wide security mutations use the Account as the natural serialization point when row locking is required to establish an unambiguous order between security-sensitive operations.
+Preferred concurrency progression remains:
 
-Expensive crypto and external protocol/network validation should happen outside long DB transactions, followed by authoritative revalidation under the transaction before mutation.
+```text
+declarative constraint
+→ conditional update / expected-state compare
+→ row lock with deterministic order
+→ SERIALIZABLE only when a predicate invariant actually requires it
+```
 
-Proof consumption + credential mutation + required session revocation must be atomic when the lifecycle requires all-or-nothing semantics.
+### 12.1 Account as security serialization point
+
+Account-wide security mutations use the Account row as the natural serialization point when row locking is required.
+
+Lock ordering is deterministic:
+
+```text
+Account
+→ credential / identity / authenticator as needed
+→ AuthSession set / specific session as needed
+```
+
+Do not use advisory locks for Account when a canonical row exists. `SKIP LOCKED` is not valid for Auth security invariants.
+
+### 12.2 Normal authenticated request
+
+Normal session validation is a read path and does not lock Account/AuthSession rows merely to authenticate a request.
+
+M3 validates the current AuthSession + Account from PostgreSQL for each authentication admission. No Redis/JWT/process session cache is introduced in M3.
+
+Principal is derived per request and not cached across requests in M3.
+
+### 12.3 Signin transaction shape
+
+Signin deliberately separates expensive/external work from the authoritative mutation.
+
+```mermaid
+flowchart TD
+    R[Signin request] --> V[Cheap validation / rate limit]
+    V --> S[Short DB read: EmailIdentity + Account + PasswordCredential snapshot]
+    S --> K[Outside DB tx: Argon2/dummy Argon2 + HIBP as policy requires]
+    K --> T[Short authoritative write transaction]
+    T --> L[Lock Account]
+    L --> RR[Re-read Account + PasswordCredential]
+    RR --> C{same credential/current state?}
+    C -->|no| X[Abort]
+    C -->|yes| H[Optional safe rehash + create AuthSession]
+    H --> COM[COMMIT]
+    COM --> CK[Issue session cookie]
+```
+
+A credential that was valid at initial read is insufficient if it was replaced/reset before session creation. Final transaction revalidation is mandatory.
+
+### 12.4 Concurrent signins
+
+Two valid signins for the same Account are allowed to create two independent sessions. The short final security mutation may serialize on Account, but successful multi-session behavior is a feature, not a conflict.
+
+### 12.5 Signin vs reset/disable
+
+Whichever Account-wide mutation obtains the Account lock first establishes an order the later operation must re-evaluate against current canonical state.
+
+Safe outcomes include:
+
+```text
+signin commits session, then reset commits and revokes it
+OR
+reset commits first, then stale signin credential recheck fails
+```
+
+The same principle applies to Account disable.
+
+### 12.6 Simple current logout
+
+Current-session logout uses the narrowest truthful mechanism: conditional terminal AuthSession revocation. It does not require Account-wide row locking.
+
+Repeated logout/revoke is idempotent.
+
+### 12.7 Revocation linearization
+
+Revocation/disable commit is the security barrier.
+
+```text
+request admitted before revocation commit
+→ may finish
+
+new authentication admission after commit
+→ must fail
+```
+
+DANTE does not promise distributed cancellation of requests already admitted before the barrier. Security-sensitive Account mutations additionally re-check/lock current state inside their transaction.
+
+### 12.8 Session expiry/activity
+
+Accepted policy:
+
+```text
+overall authentication/reauth window   30 days
+inactive-session threshold             30 days
+background polling resets idle         NO
+server-side expiry authority           YES
+```
+
+`last_seen_at != last_user_activity_at`.
+
+Activity persistence may be conditionally/throttled to avoid a write on every request/action, but the implementation must preserve the accepted expiry semantics and prove its bounded timing behavior.
+
+Expired state may be derived from timestamps; AuthSession does not require a redundant mutable `EXPIRED` flag merely for convenience. Expired rows may be retained for bounded cleanup/security purposes and are not synchronously deleted on every request.
+
+### 12.9 Ambiguous AuthSession commit
+
+Before creating a session, generate:
+
+```text
+non-secret auth_session_ref
+raw session secret
+secret verifier
+```
+
+If connection loss makes COMMIT outcome ambiguous, never blind-insert a second session. When possible reconcile by the pre-generated `auth_session_ref`:
+
+```text
+exact expected row present → treat DB effect as committed
+row absent → effect did not materialize
+cannot reconcile → safe indeterminate service error, no cookie
+```
+
+`Set-Cookie` is emitted only after known commit or successful reconciliation.
+
+If an HTTP response is lost after commit, the browser may or may not possess the cookie; the next bootstrap resolves actual client state. Distributed uncertainty is not fabricated away.
+
+### 12.10 Session verifier uniqueness
+
+The session-secret verifier is database-unique. A collision for a 256-bit random secret is treated as an RNG/security anomaly and internal failure, not normal retry noise.
+
+### 12.11 Retry
+
+M3 introduces no hidden/general deadlock/lock-timeout/transaction retry. A future operation-specific bounded retry requires proof that the complete application operation is safe to repeat under the DANTE idempotency/provenance constitution.
+
+Signin does not create a persistent generic idempotency reservation merely to replay a lost HTTP response, because the raw session secret is intentionally not retained server-side.
 
 ---
 
-## 13. Rejected architectural shortcuts
+## 13. OpenAPI → generated client → frontend boundary
 
-The accepted M2.1–M2.8 architecture rejects the following as defaults:
+ADR-008 already selected FastAPI OpenAPI → Orval when the first real remote product API exists. M3 is that trigger.
+
+Canonical chain:
+
+```mermaid
+flowchart TD
+    B[FastAPI routes + Pydantic API DTOs] --> O[OpenAPI 3.1]
+    O --> J[Committed generated OpenAPI snapshot]
+    J --> R[Orval Fetch generator]
+    R --> C[@dante/api-client]
+    C --> W[Web transport adapter]
+    C --> N[Native transport adapter later]
+    W --> A[Access application/data-source boundary]
+    A --> UI[Access UI/reducer]
+```
+
+### 13.1 Authority
+
+```text
+FastAPI/Pydantic API declarations     source contract
+OpenAPI snapshot                      generated + committed
+Orval TypeScript/Zod                  generated + committed
+```
+
+Generated files are never hand-edited. Generated output does not become a second independent contract authority.
+
+### 13.2 `@dante/api-client`
+
+The package activates in M3 because real OpenAPI + first-party consumers now exist.
+
+It is framework-neutral and transport-contract focused.
+
+It must not own:
+
+```text
+React
+TanStack Query
+router/navigation
+localStorage/sessionStorage
+browser cookie parsing
+CSRF lifecycle
+Native secure storage
+provider flow state
+feature UI state
+```
+
+### 13.3 Orval mode
+
+Use Orval's Fetch-oriented generated client, not Axios and not generated React/TanStack hooks.
+
+Exact Orval version is pinned/qualified at M3 materialization using the then-current stable compatible line; M2 fixes tool family/boundary, not a forever package patch.
+
+### 13.4 Runtime transport injection
+
+Generated operations use an injected/runtime transport boundary.
+
+Web adapter owns Web-specific policy:
+
+```text
+same-origin relative API path
+credentials=same-origin
+X-Dante-CSRF injection on applicable unsafe authenticated requests
+AbortSignal propagation
+safe Accept/content-type behavior
+```
+
+Native later owns native API origin/credential/secure-storage integration outside generated code.
+
+Generated client does not automatically navigate on 401/403; application policy decides the resulting UI/session transition.
+
+### 13.5 Base URL
+
+Generated Web calls use relative `/api/v1/...` semantics. No PROD hostname is hardcoded into generated source.
+
+Native transport may prepend its configured API origin while consuming the same canonical API/application semantics.
+
+### 13.6 Response shape
+
+Generated/client boundary retains access to status and headers needed for:
+
+```text
+RFC 9457 problem handling
+X-Request-ID
+Retry-After
+Content-Type
+```
+
+Do not force every response into a success-only abstraction.
+
+### 13.7 Runtime response validation
+
+DANTE uses the already-selected Zod runtime-validation capability for the generated/normalized client boundary. TypeScript compile-time typing alone is not sufficient proof of runtime JSON shape.
+
+Impossible/out-of-contract server payloads become a client-local `contract_violation`, not a fabricated DANTE server machine code.
+
+Network failure before an HTTP problem response similarly becomes a client-local transport failure such as `network_unavailable`/`aborted`.
+
+### 13.8 Wire naming
+
+Public JSON remains wire-faithful `snake_case`. Do not introduce an implicit recursive global snake→camel transform across arbitrary payloads/problems/providers.
+
+Application models may map explicitly to idiomatic TypeScript property names where useful.
+
+```text
+API DTO != application model != persistence mapping
+```
+
+### 13.9 OpenAPI export/drift
+
+OpenAPI export must be deterministic and executable without live DB, external network or production secrets.
+
+CI/regeneration path:
+
+```text
+FastAPI source
+→ regenerate OpenAPI snapshot
+→ compare committed artifact
+→ Orval regenerate
+→ compare committed generated TS/Zod
+→ compile/test
+```
+
+Backend API change with stale OpenAPI, stale generated client or hand-edited generated output is a CI failure.
+
+Generator input in CI is the local governed OpenAPI artifact, not a remote DEV/UAT URL.
+
+---
+
+## 14. Web remote-state/application ownership
+
+M3 activates TanStack Query because real remote session/bootstrap/mutation state now exists. It does not replace the Access product/UI state machine.
+
+```text
+TanStack Query
+→ remote request/cache lifecycle
+
+Access reducer/application state
+→ product/UI flow
+
+canonical auth state
+→ backend/PostgreSQL
+```
+
+Global session/bootstrap lifecycle is separate from one signin form reducer.
+
+Query keys are application-owned semantic identities, not generator-derived route strings.
+
+Auth query cache is not persisted to browser storage. Raw session cookie is HttpOnly and unavailable to JS; passwords/provider/recovery secrets never enter query persistence.
+
+Automatic blind mutation retry is not selected for signin/logout/reauth. Safe idempotent reads such as session bootstrap may use bounded transient-error retry according to application policy.
+
+Background session refetch/focus/reconnect does not count as user activity server-side.
+
+---
+
+## 15. Feature data firewall
+
+The frontend integration path is:
+
+```text
+Access presentation
+→ Access public application boundary
+→ Access remote/session data source
+→ @dante/api-client
+→ platform transport
+```
+
+Forbidden:
+
+```text
+UI/reducer → raw fetch
+UI/reducer → generated Orval file directly
+feature UI → transport/cookie/CSRF internals
+handwritten duplicate API DTOs/client
+```
+
+Architecture enforcement should be extended when M3 materializes the first real feature/data-source/generated-client structure, as already required by ADR-009's first-product-vertical trigger.
+
+---
+
+## 16. Testing authority
+
+Detailed proof requirements live in `access-auth-testing-contract.md`.
+
+M3 must prove, at the appropriate layers:
+
+```text
+real PostgreSQL 18.6 constraints/ACL/migrations/races
+real FastAPI HTTP/problem/cookie/CSRF behavior
+deterministic OpenAPI + Orval generation
+Web application error/state mapping
+same-origin HTTPS full-stack browser signin/bootstrap/logout
+Chromium + Firefox + WebKit critical Auth spine
+multi-session through separate browser contexts
+secret/log redaction
+```
+
+Mocks/protocol substitutes may replace external third parties in mandatory CI, but DANTE's own Auth path may not be faked.
+
+---
+
+## 17. Rejected architectural shortcuts
 
 ```text
 Account = Person
@@ -633,52 +904,73 @@ silent provider-email account merge
 generic Principal persistence without need
 one universal Authenticator persistence table
 one shared session token across devices
-JWT/localStorage as default browser auth
-browser cross-origin credentialed API as default
-mfa_enabled Boolean as complete future policy
+JWT/localStorage default browser auth
+browser cross-origin credentialed API default
+mfa_enabled as complete future policy
 passkey == MFA by definition
 biometric data stored by DANTE
-Gmail-specific normalization in canonical email identity
+Gmail-specific canonical identity normalization
 CRUD API over Auth persistence tables
+global SERIALIZABLE for Auth
+Account row lock on every authenticated request
+advisory lock for Account when row lock exists
+SKIP LOCKED for security invariants
+network/Argon2 while holding long DB transaction
+blind retry after ambiguous commit
+Redis/JWT session cache in M3
+generic signin idempotency table without need
+generated React Query hooks as API architecture
+Axios added solely for generated transport
+UI direct fetch/generated-client coupling
+remote DEV OpenAPI as CI source
+global automatic snake→camel wire conversion
 ```
 
 ---
 
-## 14. Current implementation boundary
+## 18. M2 closure state
 
-Accepted architecture does not imply materialized persistence or runtime behavior yet.
-
-As of this checkpoint:
+All cross-cutting architecture decisions required before first production Auth code are accepted:
 
 ```text
-M2.1–M2.8 architecture decisions      ACCEPTED
-M2.9 transaction/concurrency closure  OPEN
-M2.10 generated-client boundary       OPEN
-M2.11 M3 test matrix/harness          OPEN
-production Auth schema/API            NOT STARTED
+M2.1  deployment/origin topology                         CLOSED
+M2.2  browser session/cookie/CSRF/CORS                  CLOSED
+M2.3  Account/Identity/Credential/AuthSession/Principal CLOSED
+M2.4  session/credential lifecycle/revocation           CLOSED
+M2.5  password hashing + breach policy                  CLOSED
+M2.6  passkey-ready + MFA compatibility                 CLOSED
+M2.7  email normalization/comparison                    CLOSED
+M2.8  API namespace + machine error/naming              CLOSED
+M2.9  transactions/concurrency/session expiry           CLOSED
+M2.10 OpenAPI/generated-client/Web boundary             CLOSED
+M2.11 test matrix/full-stack harness                     CLOSED
 ```
 
-M3 production implementation starts only after M2 closes and a separate exact write gate is approved.
+No production Auth schema/API/runtime proof is claimed by M2. M3 remains the first executable slice and requires a separate exact write gate.
 
 ---
 
-## 15. Reopen discipline
+## 19. Reopen discipline
 
-Reopen the smallest affected Access/Auth decision only when concrete implementation, security, provider/platform or standards evidence proves the accepted boundary cannot preserve DANTE requirements.
+Reopen the smallest affected decision only when concrete standards, provider/platform, runtime, security or implementation evidence proves the accepted boundary cannot preserve DANTE requirements.
 
-Framework convenience, fewer tables, a preference for JWT, ORM ergonomics, a provider-specific shortcut or a desire to mirror another product's implementation are not reopen evidence.
+Framework convenience, fewer tables, another product's undocumented internals, a preference for JWT, generator fashion or a desire to reduce test scope are not sufficient reopen evidence.
 
 ---
 
-## 16. Standards and benchmark references
+## 20. Standards and benchmark basis
 
-The architecture was cross-checked against current public guidance and product behavior including:
+M2 was pressure-tested against current authoritative/public material including, where applicable:
 
-- NIST SP 800-63B-4 — authentication/session/authenticator lifecycle guidance;
-- OWASP Session Management, CSRF Prevention, Password Storage and Forgot Password guidance;
+- NIST SP 800-63B-4;
+- OWASP Session Management, CSRF, Authentication, Password Storage and recovery guidance;
+- PostgreSQL 18 transaction/locking semantics;
+- RFC 9457 Problem Details;
+- OpenAPI 3.1;
 - W3C WebAuthn Level 3;
-- Google Identity / passkey / OpenID Connect guidance;
-- Apple Sign in with Apple / passkey platform guidance;
-- current public account/session/passkey behavior documented by OpenAI, Notion, Linear and Todoist where materially comparable.
+- Google Identity/OpenID/passkey guidance;
+- Apple Sign in with Apple/passkey/native-association guidance;
+- current FastAPI, Orval, TanStack Query, Vite and Playwright capabilities;
+- public product behavior from OpenAI, Google, Apple, Microsoft, GitHub, Stripe, Notion, Linear and Todoist where materially comparable.
 
-External products are benchmark evidence, not DANTE authority. DANTE keeps the stricter semantic boundary when a public product convention would weaken canonical identity, security or Domain separation.
+External systems are benchmark evidence, never DANTE semantic authority. Undocumented big-tech internals are not invented as justification.
