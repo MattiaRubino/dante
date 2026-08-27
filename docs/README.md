@@ -1,7 +1,7 @@
 # DANTE Documentation Index
 
 - **Status:** CURRENT NAVIGATION / AUTHORITY INDEX
-- **Last reconciled:** 2026-08-26
+- **Last reconciled:** 2026-08-27
 
 This directory is the durable documentation surface for DANTE. Current specifications describe the present directly; historical evidence, phase-time continuations and completed workstream records do not silently override current truth.
 
@@ -50,10 +50,11 @@ CURRENT POSTGRESQL                   18.6
 CURRENT ALEMBIC HEAD                 20260826_08
 CURRENT DATABASE TOPOLOGY            68/5/14/75/95/68/120
 ACCESS PRE-BACKEND FRONTEND          CLOSED / ACCEPTED / RELEASE-HARDENED
-FULL ACCESS/AUTH PRODUCT VERTICAL    NOT CLOSED / NEXT FULL-STACK VERTICAL NOT STARTED
+FULL ACCESS/AUTH PRODUCT VERTICAL    ACTIVE / UNMERGED ON feature/access-auth
+ACCESS/AUTH M2                       ACTIVE / M2.1–M2.8 ACCEPTED
 ```
 
-For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files.
+For exact current state, read `PROJECT-STATUS.md` rather than reconstructing status from historical workstream/checkpoint files. While `feature/access-auth` remains unmerged, its bounded current truth is branch-local and must not be mistaken for protected-main authority.
 
 ## 3. Mandatory project entry points
 
@@ -73,6 +74,15 @@ Read in this order for general project continuation:
 12. current branch/ref and its relation to protected `main`
 
 Repository truth beats incomplete conversation memory.
+
+For the active Access/Auth branch, after the mandatory global sources read:
+
+- `workstreams/access-auth.md` — operational continuation/state;
+- `frontend/access.md` — accepted Access frontend/product UI authority;
+- `architecture/access-auth-architecture.md` — durable branch-local identity/authenticator/session architecture;
+- `architecture/access-auth-security-contract.md` — durable branch-local security contract;
+- `architecture/access-auth-api-contract.md` — durable branch-local API/naming/error contract;
+- `decisions/ADR-011-access-auth-architecture.md` — architectural decision/rationale pointer.
 
 ## 4. Documentation lifecycle
 
@@ -100,6 +110,8 @@ Archive boundary:
 `docs/archive/` is selective non-authoritative history, not a backup mirror. Git remains the complete recoverable history.
 
 Frozen/read-only split documents may be recomposed only through **lossless knowledge coverage**. Do not summarize away requirements, invariants, accepted decisions, continuing rationale, assumptions, counterexamples or important evidence merely to reduce file count.
+
+Long-lived current/reference documentation should be partitioned by stable subject rather than conversation/phase chronology. The Access/Auth M2 checkpoint follows this rule: architecture, security and API contracts own accepted durable decisions, while the workstream stays an operational save-game.
 
 ## 5. Product
 
@@ -195,6 +207,15 @@ Entry points:
 
 Current architecture docs state current post-CP6 architecture directly. Phase reviews/QA/readiness continuations are evidence according to their explicit lifecycle role.
 
+Current branch-local Access/Auth architecture authorities:
+
+- `architecture/access-auth-architecture.md`
+- `architecture/access-auth-security-contract.md`
+- `architecture/access-auth-api-contract.md`
+- `decisions/ADR-011-access-auth-architecture.md`
+
+These currently own accepted M2.1–M2.8 truth on `feature/access-auth`; M2 is still active and M2.9–M2.11 remain open.
+
 Important persistence ADRs:
 
 - `decisions/ADR-007-domain-model-informed-persistence-boundaries.md`
@@ -257,6 +278,8 @@ Historical CP6 branch record:
 
 - `archive/branches/2026-08-feature-logical-postgresql.md` — NON-AUTHORITATIVE
 
+Access/Auth has not yet materialized Account/credential/AuthSession persistence. When M3 begins, every structural Auth DB change must satisfy the same-change migration/mapping/Dictionary/reference/constraint/index/ACL/test/catalog-parity obligations already established by the PostgreSQL constitution.
+
 ## 11. Backend
 
 Application documentation:
@@ -279,7 +302,7 @@ Durable backend contracts include:
 
 CP1–CP6 are closed. Text saying CP6-03 is active, Gate 03 is unearned, CP6-04 is next or protected-main integration is pending is historical unless explicitly scoped to the phase-time record.
 
-The next backend implementation is a new post-CP6 product vertical started from current `main` under an explicit bounded branch.
+The first complete post-CP6 backend/product vertical is now active on branch `feature/access-auth`; production Auth implementation has not yet started because M2 architecture freeze remains active.
 
 ## 12. Frontend
 
@@ -298,7 +321,7 @@ Generic frontend engineering foundation/materialization is closed/integrated.
 
 ### Access frontend baseline
 
-The completed pre-backend Access frontend materialization is the accepted Web baseline for the next full-stack Access/Auth product vertical.
+The completed pre-backend Access frontend materialization is the accepted Web baseline for the active full-stack Access/Auth product vertical.
 
 Accepted checkpoints:
 
@@ -314,7 +337,7 @@ Current authority:
 - `frontend/access.md`
 - current `../apps/web/src/features/access/` implementation/tests
 
-The whole Access/Auth product vertical is **not closed**. Real backend authentication/session/provider/recovery behavior, stable Auth OpenAPI/client integration, full-stack E2E and the applicable release/legal/mobile gates remain future full-stack work.
+The whole Access/Auth product vertical is **not closed**. Real backend authentication/session/provider/recovery behavior, stable Auth OpenAPI/client integration, full-stack E2E and the applicable release/legal/mobile gates remain work in this vertical.
 
 Historical branch narrative:
 
@@ -333,6 +356,10 @@ On protected `main`, workstream files are durable records/evidence, not active c
 Closed records include Domain, Logical, Pre-Physical, Physical, Engineering Foundation, Frontend Foundation/Materialization and backend scaffold/CP6 history as applicable.
 
 Active unmerged workstream records remain branch-local until integration.
+
+Current active Access/Auth workstream:
+
+- `workstreams/access-auth.md` — branch-local operational authority/save-game; durable accepted M2 decisions are now also propagated to the subject-oriented architecture/security/API contracts and ADR-011.
 
 ## 14. Development governance
 
@@ -373,6 +400,8 @@ Frontend CI Gate
 
 Current repository rules, not an outdated prose snapshot, are effective enforcement. Do not use squash/rebase/force-push or ruleset weakening to bypass integration policy.
 
+No Access/Auth branch documentation or implementation is protected-main authority until normal integration.
+
 ## 16. Evidence and current claims
 
 Executable truth beats documentation claims.
@@ -380,6 +409,8 @@ Executable truth beats documentation claims.
 Historical successful runs remain evidence for the exact commit/environment on which they executed; later patch/runtime/schema claims require evidence appropriate to the later state.
 
 No blanket semantic/direct-pass claim is inferred merely because a technology was selected or a workflow exists.
+
+M2.1–M2.8 documentation records accepted architecture decisions, not proof that production Auth runtime behavior already exists.
 
 ## 17. Brand / UX / prototypes
 
