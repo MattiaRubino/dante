@@ -1,9 +1,11 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / MATERIALIZED / CP6 CLOSED / INTEGRATED IN `main`
+- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3-A BRANCH EVOLUTION MATERIALIZED / DIRECT LOCAL PROOF PENDING
 - **Scope:** DANTE PostgreSQL architecture, Dictionary, mappings, migrations, generated reference, direct proof and documentation consistency
 - **PostgreSQL:** 18.6
-- **Alembic head:** `20260826_08`
+- **Current branch Alembic head:** `20260827_09`
+- **Frozen protected-main CP6 head:** `20260826_08`
+- **Current Access/Auth DB reference:** `access-auth.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Architecture decision:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 - **Final CP6 acceptance:** `../development/backend-cp6-05-whole-database-qa.md`
@@ -30,35 +32,52 @@ what remains intentionally unmaterialized and why?
 
 This database documentation does not replace Domain, Logical, Physical or the PostgreSQL Persistence Constitution. Those remain semantic/design/rationale authorities. This system of record is the **current operational and structural reference for the database produced from them**.
 
-## 2. Current materialized baseline
+## 2. Frozen CP6 baseline and current branch materialization
 
-The accepted CP6 database is materialized and directly verified.
-
-```text
-tables               68
-views                 5
-routines             14
-triggers              75
-physical indexes     95
-foreign keys          68
-CHECK constraints    120
-
-custom enum/domain     0
-sequences              0
-materialized views     0
-RLS policies           0
-```
-
-The current machine-readable Dictionary contains:
+The accepted CP6 database remains the frozen directly verified baseline at Alembic `20260826_08`:
 
 ```text
-68 table entries
-5 view entries
-14 routine entries
-87 standalone entries total
+                       CP6 baseline
+ tables                68
+ views                   5
+ routines               14
+ triggers               75
+ physical indexes       95
+ foreign keys           68
+ CHECK constraints     120
+
+ custom enum/domain      0
+ sequences               0
+ materialized views      0
+ RLS policies            0
 ```
 
-`docs/database/dictionary/scope.json` records `status = materialized` and CP6-M01..M07 as complete.
+M3-A is the first normal post-CP6 product evolution. On `feature/access-auth`, migration `20260827_09` adds `Account`, `EmailIdentity`, `PasswordCredential` and `AuthSession` persistence. The current branch inventory recorded by the Dictionary is:
+
+```text
+                       M3-A current
+ tables                72
+ views                   5
+ routines               14
+ triggers               75
+ physical indexes      104
+ foreign keys           71
+ CHECK constraints     137
+
+ standalone entries     91
+```
+
+The machine-readable Dictionary therefore distinguishes:
+
+```text
+expected_baseline
+→ immutable CP6 closure benchmark
+
+current_materialization
+→ current evolving branch/database inventory
+```
+
+`docs/database/dictionary/scope.json` remains `status = materialized`; `completed_stages` records the completed frozen CP6 materialization stages while current counts may grow through reviewed forward migrations. The M3-A current counts are source-level truth pending direct local/CI PostgreSQL proof; they are not presented as an executed PASS yet.
 
 ## 3. Database documentation model
 
@@ -89,6 +108,7 @@ No external enterprise catalog product is required merely to imitate organizatio
 ```text
 docs/database/
 ├── README.md
+├── access-auth.md                    # current post-CP6 Access/Auth evolution reference
 ├── dante-postgresql-database.md
 ├── dante-postgresql-database-part-2.md
 ├── ...
@@ -109,15 +129,17 @@ Empty ceremonial directories are forbidden.
 
 ### Human-readable Database Architecture & Reference
 
-The current human-readable reference is still physically represented by `dante-postgresql-database.md` plus Parts 2–19. Those files were accumulated during CP6 and together contain the accepted detailed derivation, object model and repair history.
+The frozen CP6 human-readable reference is still physically represented by `dante-postgresql-database.md` plus Parts 2–19. Those files were accumulated during CP6 and together contain the accepted detailed derivation, object model and repair history.
 
-They are **one logical reference**, not 19 independent authorities. Until a dedicated lossless compaction/reorganization is completed, readers and tooling that depend on detailed blueprint provenance must treat the complete set as the source payload.
+They are **one logical frozen baseline reference**, not 19 independent authorities. Until a dedicated lossless compaction/reorganization is completed, readers and tooling that depend on detailed blueprint provenance must treat the complete set as the source payload.
 
-The documentation-cleanup workstream may later recompose this frozen reference into fewer/topic-based read-only files, but only under the repository's lossless knowledge-coverage policy. No accepted requirement, invariant, rationale or important evidence may disappear merely to reduce file count.
+Post-CP6 product evolution is documented by subject without rewriting CP6 history. `access-auth.md` is the current subject-oriented reference for the M3 Access/Auth persistence evolution.
+
+The documentation-cleanup workstream may later recompose the frozen CP6 reference into fewer/topic-based read-only files, but only under the repository's lossless knowledge-coverage policy. No accepted requirement, invariant, rationale or important evidence may disappear merely to reduce file count.
 
 ### `dictionary/`
 
-Machine-readable current object metadata. Every materialized DANTE table, view and routine has a structured entry; table-owned subobjects such as FK/CHECK/index/trigger metadata are embedded under their owning entries.
+Machine-readable current object metadata. Every materialized DANTE table, view and routine has a structured entry; table-owned subobjects such as FK/CHECK/index/trigger metadata are embedded under their owning entries. CP6 provenance remains explicit on the frozen entries; later entries identify their actual introducing product stage rather than pretending to belong to CP6.
 
 ### `generated/`
 
@@ -168,7 +190,7 @@ A mismatch is a defect to investigate, not permission to choose whichever repres
 
 ## 6. Permanent consistency invariant
 
-At CP6 closure and after every later structural database change, the following must describe the same accepted database contract:
+At CP6 closure and after every later structural database change, the following must describe the same accepted **current** database contract:
 
 ```text
 DATABASE ARCHITECTURE & REFERENCE
@@ -183,6 +205,8 @@ REAL POSTGRESQL SCHEMA
 ```
 
 `≈` means semantically and structurally consistent for the facts each representation owns; it does not mean identical serialization.
+
+A frozen historical acceptance such as CP6 is proved against its exact historical revision and must not be silently rewritten to match a later current head.
 
 Examples of defects:
 
@@ -215,6 +239,7 @@ semantic traceability
 
 implementation traceability
 - introducing migration
+- actual introducing stage, including post-CP6 product stages
 - later structural migrations where material
 - SQLAlchemy mapping
 - owning backend boundary/module once one exists
@@ -320,6 +345,7 @@ material history != universal event sourcing
 provider state != canonical DANTE state
 derived/search state != canonical DANTE truth
 Person != Account != Principal != Actor
+AuthSession != DANTE Session
 Authority != AuthZ decision
 absence / unknown != explicit negative
 idempotency != semantic identity
@@ -399,11 +425,11 @@ extension-owned false positives
 
 Semantic descriptions cannot be fully generated and remain subject to review.
 
-CP6-05 proved the baseline by reconciling Dictionary ↔ SQLAlchemy ↔ Alembic ↔ live PostgreSQL plus final topology/security and direct concurrency/integrity evidence.
+CP6-05 proved the frozen baseline by reconciling Dictionary ↔ SQLAlchemy ↔ Alembic ↔ live PostgreSQL plus final topology/security and direct concurrency/integrity evidence. Post-CP6 changes require their own current direct proof and do not inherit a PASS merely because CP6 passed.
 
-## 13. Current security baseline
+## 13. Current security baseline and branch evolution
 
-The materialized baseline preserves explicit owner/migrator/runtime separation:
+The materialized foundation preserves explicit owner/migrator/runtime separation:
 
 ```text
 dante_owner      NOLOGIN ownership identity
@@ -411,7 +437,9 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-Current proof includes exact DANTE role-membership topology, owner no-password posture, bounded runtime grants, denied runtime access to `dante.alembic_version`, hardened routine search paths and direct negative security evidence.
+CP6 proof includes exact DANTE role-membership topology, owner no-password posture, bounded runtime grants, denied runtime access to `dante.alembic_version`, hardened routine search paths and direct negative security evidence.
+
+M3-A adds exact least-privilege Auth ACLs in migration `20260827_09`; their intended shape is documented in `access-auth.md` and the Dictionary. They remain **direct-proof pending** until the real PostgreSQL current-catalog suite executes successfully.
 
 Security documentation must describe actual grants and invariants rather than broad `read/write` labels.
 
@@ -441,7 +469,7 @@ CP6 design-stage statements such as `Gate 03 not earned`, `CP6-04 not started`, 
 
 After CP6, the same discipline remains permanent.
 
-Every later product vertical or schema evolution treats database documentation as part of the database change itself.
+Every later product vertical or schema evolution treats database documentation as part of the database change itself. M3-A is the first concrete application of this rule: migration, SQLAlchemy mapping, Dictionary, current human reference and direct-test obligations move together.
 
 For ordinary changes, Git/Alembic history is the chronology; current reference documentation remains current rather than accumulating obsolete implementation stories.
 
@@ -471,6 +499,7 @@ trace it to migration + SQLAlchemy mapping
 locate the tests that prove it
 understand current/history/provider/derived boundaries
 identify what is intentionally deferred and why
+distinguish a frozen historical baseline from the current evolving head
 ```
 
 The goal is not documentation volume. The goal is a database that is understandable, inspectable, reviewable and maintainable at large-system engineering standards.
