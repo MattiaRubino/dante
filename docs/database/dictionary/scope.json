@@ -9,10 +9,18 @@
     "constraints": {"foreign_keys": 68, "check_constraints": 120}
   },
   "current_materialization": {
-    "completed_stages": ["CP6-M01", "CP6-M02", "CP6-M03", "CP6-M04", "CP6-M05", "CP6-M06", "CP6-M07"],
-    "standalone_entries": {"tables": 68, "views": 5, "routines": 14, "total": 87},
-    "embedded_objects": {"triggers": 75, "physical_indexes": 95},
-    "constraints": {"foreign_keys": 68, "check_constraints": 120}
+    "completed_stages": [
+      "CP6-M01",
+      "CP6-M02",
+      "CP6-M03",
+      "CP6-M04",
+      "CP6-M05",
+      "CP6-M06",
+      "CP6-M07"
+    ],
+    "standalone_entries": {"tables": 72, "views": 5, "routines": 14, "total": 91},
+    "embedded_objects": {"triggers": 75, "physical_indexes": 104},
+    "constraints": {"foreign_keys": 71, "check_constraints": 137}
   },
   "technical_foundation": {
     "excluded_tables": ["dante.alembic_version"],
