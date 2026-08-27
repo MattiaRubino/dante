@@ -3,14 +3,37 @@
 - **Status:** CURRENT / BRANCH-LOCAL / M3-A DATABASE FOUNDATION MATERIALIZED / DIRECT LOCAL PROOF PENDING
 - **Branch:** `feature/access-auth`
 - **Current Alembic head on this branch:** `20260827_09`
-- **Frozen protected-main CP6 baseline:** `20260826_08`
+- **Protected-main CP6 baseline:** `20260826_08`
+- **Whole-DB current reference:** `dante-postgresql-database.md` + continuations
+- **Database system-of-record authority:** `README.md`
 - **Architecture authority:** `../architecture/access-auth-architecture.md`
 - **Security authority:** `../architecture/access-auth-security-contract.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 
 ## 1. Purpose
 
-This document is the current human-readable database reference for the Access/Auth persistence introduced by M3-A. It supplements the frozen CP6 database reference; it does not reinterpret Domain, Logical, Physical or the PostgreSQL Persistence Constitution.
+This document is the detailed current Access/Auth module of the DANTE Database System of Record. It is **not** a detached post-CP6 amendment and it does not replace the whole-DB reference. The whole-DB reference accounts for Access/Auth topology and resolved former deferrals; this file owns the detailed schema meaning for the Access/Auth persistence introduced by M3-A.
+
+The documentation relationship is:
+
+```text
+docs/database/README.md
+→ Database System of Record / authority + lifecycle
+
+whole-DB current/evolving reference
+→ dante-postgresql-database.md + continuations
+→ global topology, cross-family invariants, resolved/open whole-DB questions
+
+this file
+→ detailed Access/Auth DB topology and object semantics
+
+Dictionary + SQLAlchemy + Alembic + real PostgreSQL + tests
+→ machine/executable/observed representations and proof
+```
+
+Historical CP6 reasons for deferring Account persistence remain useful rationale, but `DB-U09` is no longer a current unresolved item on this branch: its trigger was satisfied by the closed Access/Auth architecture and M3-A materialization. `DB-U10` is likewise resolved **without** a Principal table because Principal remains runtime-derived security context.
+
+This module does not reinterpret Domain, Logical, Physical or the PostgreSQL Persistence Constitution.
 
 M3-A materializes only the persistence required for the first email/password signin and server-authoritative session spine:
 
@@ -270,12 +293,12 @@ dictionary/tables/auth_session.json
 
 The Dictionary v1 schema was generalized at the first post-CP6 evolution so `introducing_stage`/`runtime_acl_stage` can truthfully identify later product stages such as `M3-A` instead of pretending new objects belonged to CP6.
 
-## 10. Frozen CP6 baseline vs current branch
+## 10. Protected-main baseline vs current branch
 
-CP6 remains frozen historical evidence at Alembic `20260826_08`:
+CP6 remains exact historical/acceptance evidence at Alembic `20260826_08`; it is not the ceiling of the evolving database reference:
 
 ```text
-                         CP6 baseline   M3-A current
+                         CP6 baseline   M3-A branch current
 tables                   68             72
 views                     5              5
 routines                  14             14
@@ -296,16 +319,45 @@ current_materialization
 → current branch database inventory
 ```
 
-Post-CP6 growth must never rewrite the CP6 acceptance record merely to make current counts fit.
+Post-CP6 growth must never rewrite CP6 acceptance evidence merely to make current counts fit. Equally, the whole-DB current reference must not keep a resolved product/database question marked as current `DEFERRED` merely because CP6 originally deferred it.
 
-## 11. Direct proof obligations
+## 11. Former whole-DB deferral resolution
+
+M3-A is the first concrete use of the permanent current-reference reconciliation rule.
+
+```text
+DB-U09 — Account persistence
+CP6 disposition:
+→ DEFERRED correctly because Access/Auth semantics were not closed.
+
+Current branch resolution:
+→ RESOLVED / MATERIALIZED by Access/Auth M2 architecture + M3-A.
+→ dante.account
+→ dante.email_identity
+→ dante.password_credential
+→ dante.auth_session
+→ first migration 20260827_09
+
+DB-U10 — Principal/security persistence
+CP6 disposition:
+→ DEFERRED correctly because AuthN/AuthZ runtime context was not closed.
+
+Current resolution:
+→ RESOLVED WITHOUT PERSISTENCE.
+→ Principal is runtime-derived from Account + AuthSession + request/security context.
+→ no Principal table is selected.
+```
+
+These resolutions do not collapse `Person`, `Account`, `Principal` or `Actor` and do not retroactively make CP6's original decision wrong. They update the current reference because the explicit future trigger has now fired.
+
+## 12. Direct proof obligations
 
 Repository tests are structured as two distinct authorities:
 
 ```text
 test_cp6_final_catalog.py
 → migrate a fresh database explicitly to 20260826_08
-→ prove the frozen CP6 topology independently of later evolution
+→ prove the CP6 topology independently of later evolution
 
 test_current_catalog.py
 → migrate to repository head
@@ -318,7 +370,7 @@ test_migrations.py
 
 Required real execution uses the existing disposable PostgreSQL 18.6 acceptance harness. Static review of these files is not a PASS substitute.
 
-## 12. Current evidence boundary
+## 13. Current evidence boundary
 
 This branch has materialized the M3-A **database foundation source**. Until the real local/CI commands execute successfully, do not claim:
 
