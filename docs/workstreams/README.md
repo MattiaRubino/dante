@@ -25,7 +25,7 @@ Protected-main current truth is owned by:
 - `../PROJECT-STATUS.md`
 - `../ROADMAP.md`
 
-Current high-level state:
+Current high-level state on `feature/access-auth`:
 
 ```text
 Domain Model                       CLOSED
@@ -38,8 +38,26 @@ Frontend Materialization           CLOSED / PASS / INTEGRATED
 Backend CP1–CP5 Scaffold           CLOSED / DIRECT QA / INTEGRATED
 Backend CP6 Database               CLOSED / DIRECT QA / INTEGRATED VIA PR #42
 Access pre-backend frontend        CLOSED / ACCEPTED / branch closure integration
-Full-stack Access/Auth vertical    NOT STARTED ON A DEDICATED BRANCH
+Full-stack Access/Auth vertical    ACTIVE / R0 ARCHITECTURE + WORKSTREAM BOOTSTRAP
 ```
+
+## Active branch-local workstream
+
+- `access-auth.md` — single durable branch-local workstream record, authority map, decision register, gated roadmap and continuation entry point for `feature/access-auth`.
+
+Current Access/Auth state:
+
+```text
+branch                         feature/access-auth
+baseline                       f011e252b6a294a12c38927ef2d528244ea1fee6
+R0                             ACTIVE
+production Auth module         NOT STARTED
+Auth DB migrations             NOT STARTED
+real Access API wiring         NOT STARTED
+first executable target        email/password signin + AuthSession spine
+```
+
+`R0` is intentionally architecture/documentation work first. It must ratify the cross-cutting decisions required by the first executable slice before production Auth migrations/endpoints/client wiring begin.
 
 ## Durable closed/integrated records
 
@@ -62,7 +80,7 @@ Current CP6/database truth lives in:
 - `../frontend/access.md` — current durable contract for the accepted pre-backend Access frontend materialization.
 - `../archive/branches/2026-08-feature-access-frontend.md` — consolidated non-authoritative history for `feature/access-frontend`.
 
-The Access branch-local workstream record and live handoff are intentionally not retained after knowledge consolidation. The later full-stack Access/Auth product vertical must start from current protected `main` on a fresh bounded branch; the closed `feature/access-frontend` branch is not a permanent reusable frontend line.
+The closed Access-frontend branch-local workstream record and live handoff are intentionally not retained after knowledge consolidation. The current full-stack Access/Auth workstream started from protected `main` on `feature/access-auth`; the closed `feature/access-frontend` branch is not a permanent reusable frontend line.
 
 ### Engineering / architecture preparation
 
@@ -89,12 +107,6 @@ Historical planning records may later move to `docs/archive/` or leave the worki
 
 `today-home.md` is a separate Home/Today product/UX workstream record. Its authority is limited to the scope explicitly stated by that file; it does not override production engineering, current frontend vertical or backend/database authority.
 
-## Active branch-local workstreams
-
-No post-CP6 full-stack product vertical is recorded as active by this index at Access-frontend closure time.
-
-When a new vertical starts, it may have one durable branch-local record plus temporary live/session notes only when they materially improve continuity. Before integration, all temporary handoffs must again pass the documentation lifecycle gate.
-
 ## Operational continuation rule
 
 Before continuing work:
@@ -102,10 +114,11 @@ Before continuing work:
 1. read `../PROJECT-STATUS.md` and `../ROADMAP.md`;
 2. read development operating/safety/lifecycle policy;
 3. verify exact current branch and relation to `main`;
-4. if the target workstream is active and unmerged, read its branch-local durable record;
-5. use a temporary handoff only when the active branch genuinely needs one;
-6. consume the relevant accepted model/architecture/reference/code/tests;
-7. do not let an old workstream record override newer current truth.
+4. if continuing Access/Auth, read `access-auth.md` completely;
+5. if another target workstream is active and unmerged, read its branch-local durable record;
+6. use a temporary handoff only when the active branch genuinely needs one;
+7. consume the relevant accepted model/architecture/reference/code/tests;
+8. do not let an old workstream record override newer current truth.
 
 ## Closed-workstream rule
 
