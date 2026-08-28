@@ -2,6 +2,7 @@ import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import './app-shell.css';
+import './app-shell-theme.css';
 import { GlobalTopbar } from './global-topbar';
 
 export function AppShell() {
