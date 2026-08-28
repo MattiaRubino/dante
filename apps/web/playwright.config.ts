@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const baseURL = 'http://127.0.0.1:4173';
+const e2ePort = Number(process.env.PLAYWRIGHT_PORT ?? 42000 + (process.pid % 10000));
+const baseURL = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -15,10 +16,9 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command:
-      'pnpm build && pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort',
+    command: `pnpm build && pnpm exec vite preview --host 127.0.0.1 --port ${e2ePort} --strictPort`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
     stdout: 'pipe',
     stderr: 'pipe',
