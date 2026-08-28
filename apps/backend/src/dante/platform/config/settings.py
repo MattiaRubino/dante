@@ -2,10 +2,12 @@
 
 from enum import StrEnum
 from typing import Annotated, Self
+from urllib.parse import urlsplit
 
 from pydantic import StringConstraints, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from dante.platform.config.auth import AuthSettings
 from dante.platform.config.database import DatabaseSettings
 
 IdentityValue = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -35,6 +37,7 @@ class Settings(BaseSettings):
     build_id: IdentityValue
     debug: bool = False
     database: DatabaseSettings
+    auth: AuthSettings
 
     @model_validator(mode="after")
     def validate_environment_safety(self) -> Self:
@@ -44,8 +47,14 @@ class Settings(BaseSettings):
 
         if self.env is not Environment.LOCAL:
             if self.release_sha.casefold() == "local":
-                raise ValueError("DANTE_RELEASE_SHA=local is allowed only when DANTE_ENV=local")
+                raise ValueError(
+                    "DANTE_RELEASE_SHA=local is allowed only when DANTE_ENV=local"
+                )
             if self.build_id.casefold() == "local":
                 raise ValueError("DANTE_BUILD_ID=local is allowed only when DANTE_ENV=local")
+            if urlsplit(self.auth.canonical_web_origin).scheme != "https":
+                raise ValueError("non-local canonical Web origin must use HTTPS")
+            if urlsplit(self.auth.hibp_base_url).scheme != "https":
+                raise ValueError("non-local HIBP base URL must use HTTPS")
 
         return self

@@ -5,9 +5,12 @@ from typing import cast
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from dante.auth.api import router as auth_router
+from dante.auth.dependencies import BrowserAuthSecurityMiddleware
 from dante.bootstrap.lifespan import lifespan
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
+from dante.platform.http.problem import RequestContextMiddleware, install_problem_handlers
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -25,6 +28,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = effective_settings
+
+    # Browser Auth policy runs before request-body parsing; request context remains
+    # outermost and guarantees the same server-authoritative request_id on every path.
+    app.add_middleware(
+        BrowserAuthSecurityMiddleware,
+        canonical_web_origin=effective_settings.auth.canonical_web_origin,
+    )
+    app.add_middleware(RequestContextMiddleware)
+
+    install_problem_handlers(app)
+    app.include_router(auth_router)
 
     @app.get("/health/live", include_in_schema=False)
     def health_live() -> dict[str, str]:
