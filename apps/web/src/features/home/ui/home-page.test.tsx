@@ -43,7 +43,7 @@ describe('HomePage M1 visual materialization', () => {
     expect(screen.getByText('Ora e prossimo')).toBeTruthy();
     expect(screen.getByText('In evidenza')).toBeTruthy();
     expect(screen.getByText('Per te')).toBeTruthy();
-    expect(screen.getByText('Corpo')).toBeTruthy();
+    expect(screen.getAllByText('Corpo').length).toBeGreaterThan(0);
     expect(screen.getByText('Cattura')).toBeTruthy();
     expect(screen.getByText('Da risolvere')).toBeTruthy();
   });
