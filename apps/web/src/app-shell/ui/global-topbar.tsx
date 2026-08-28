@@ -77,7 +77,7 @@ export function GlobalTopbar() {
             type="button"
             aria-haspopup="dialog"
             aria-expanded={searchOpen}
-            aria-controls={searchOpen ? 'app-search-title' : undefined}
+            aria-controls={searchOpen ? 'app-search-dialog' : undefined}
             aria-label={t(($) => $.common.shell.topbar.searchLabel)}
             onClick={() => {
               setOpenMenu(null);
