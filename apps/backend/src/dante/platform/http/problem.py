@@ -102,7 +102,9 @@ def _payload(problem: ProblemError, *, request_id: str) -> dict[str, Any]:
         "retryable": problem.retryable,
     }
     if problem.errors is not None:
-        body["errors"] = [field_error.model_dump(exclude_none=True) for field_error in problem.errors]
+        body["errors"] = [
+            field_error.model_dump(exclude_none=True) for field_error in problem.errors
+        ]
     return body
 
 
