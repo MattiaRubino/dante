@@ -2,7 +2,7 @@ import { Outlet } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
 import './app-shell.css';
-import { GlobalTopbar } from './ui/global-topbar';
+import { GlobalTopbar } from './global-topbar';
 
 export function AppShell() {
   const { t } = useTranslation('common');
