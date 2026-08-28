@@ -4,7 +4,11 @@ import css from '@terrazzo/plugin-css';
 import nativePlugin from './tooling/native-plugin.ts';
 
 export default defineConfig({
-  tokens: ['./tokens/primitives.json', './tokens/semantic.json'],
+  tokens: [
+    './tokens/primitives.json',
+    './tokens/semantic.json',
+    './tokens/home-theme.json',
+  ],
   outDir: './generated',
   plugins: [
     css({
