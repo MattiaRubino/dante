@@ -51,6 +51,18 @@ export default {
       },
     },
     {
+      name: 'access-feature-no-api-client-direct',
+      comment:
+        'Access consumes the API client only through the Web remote data-source boundary.',
+      severity: 'error',
+      from: {
+        path: '^apps/web/src/features/access/',
+      },
+      to: {
+        path: '^packages/api-client/',
+      },
+    },
+    {
       name: 'web-no-generated-api-client-internals',
       comment:
         'Web consumes @dante/api-client through its governed package boundary, never raw Orval generated internals.',
