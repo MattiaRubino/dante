@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +22,16 @@ export function SearchCommandDialog({
   open,
   onOpenChange,
 }: SearchCommandDialogProps) {
+  if (!open) {
+    return null;
+  }
+
+  return <OpenSearchCommandDialog onOpenChange={onOpenChange} />;
+}
+
+function OpenSearchCommandDialog({
+  onOpenChange,
+}: Pick<SearchCommandDialogProps, 'onOpenChange'>) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -66,12 +76,10 @@ export function SearchCommandDialog({
     });
   }, [destinationCopy, query]);
 
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [query, open]);
+  const closeDialog = () => onOpenChange(false);
 
   const selectDestination = async (destination: AppDestination) => {
-    onOpenChange(false);
+    closeDialog();
     await navigate({ to: destination.to });
   };
 
@@ -102,8 +110,8 @@ export function SearchCommandDialog({
   return (
     <DialogLayer
       id="app-search-dialog"
-      open={open}
-      onClose={() => onOpenChange(false)}
+      open
+      onClose={closeDialog}
       labelledBy="app-search-title"
       describedBy="app-search-description"
       className="app-search-dialog"
@@ -122,7 +130,7 @@ export function SearchCommandDialog({
           type="button"
           className="app-icon-button"
           aria-label={t(($) => $.common.shell.actions.close)}
-          onClick={() => onOpenChange(false)}
+          onClick={closeDialog}
         >
           <CloseIcon />
         </button>
@@ -145,7 +153,10 @@ export function SearchCommandDialog({
               ? `app-search-result-${filteredDestinations[activeIndex].id}`
               : undefined
           }
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setActiveIndex(0);
+          }}
           onKeyDown={handleInputKeyDown}
         />
         <kbd>Esc</kbd>
