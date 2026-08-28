@@ -20,11 +20,7 @@ def single_header_value(scope: Scope, name: str) -> str | None:
     """Return one exact raw ASGI header value; duplicates fail closed."""
     expected_name = name.casefold().encode("ascii")
     raw_headers = cast(list[tuple[bytes, bytes]], scope.get("headers", []))
-    values = [
-        raw_value
-        for raw_name, raw_value in raw_headers
-        if raw_name.lower() == expected_name
-    ]
+    values = [raw_value for raw_name, raw_value in raw_headers if raw_name.lower() == expected_name]
     if len(values) != 1:
         return None
     try:
