@@ -8,10 +8,6 @@
  */
 
 .app-shell {
-  --app-shell-brand-symbol: var(--dante-theme-shell-atmosphere-accent);
-  --app-shell-brand-wordmark: var(--dante-theme-shell-text-primary);
-  --app-shell-brand-glow: var(--dante-theme-shell-atmosphere-glow);
-
   color: var(--dante-theme-shell-text-primary);
   background: var(--dante-theme-shell-canvas);
 }
