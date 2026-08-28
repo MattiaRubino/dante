@@ -29,6 +29,12 @@ _M6_TABLES = {
     "occurrence_generation_quota",
     "occurrence_generation_cyclic",
 }
+_POST_CP6_TABLES = {
+    "account",
+    "email_identity",
+    "password_credential",
+    "auth_session",
+}
 _ROUTINES = {
     "enforce_native_address_owner",
     "enforce_scoped_address_owner",
@@ -215,11 +221,12 @@ def test_m5_views_are_ordinary_updatable_local_check_option(
 def test_m5_sqlalchemy_view_metadata_is_core_only() -> None:
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in _VIEWS}
     assert all(name not in Base.metadata.tables for name in VIEW_METADATA.tables)
-    m5_tables = tuple(table for table in MAPPED_TABLES if table.name not in _M6_TABLES)
+    excluded_tables = _M6_TABLES | _POST_CP6_TABLES
+    m5_tables = tuple(table for table in MAPPED_TABLES if table.name not in excluded_tables)
     m5_mappers = tuple(
         mapper
         for mapper in Base.registry.mappers
-        if cast(Table, mapper.local_table).name not in _M6_TABLES
+        if cast(Table, mapper.local_table).name not in excluded_tables
     )
     assert len(m5_tables) == 63
     assert len(m5_mappers) == 63
