@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RemoteFailure } from '@dante/api-client';
-import { WebAuthRemoteError } from '../../../platform/auth/web-auth-remote';
+import {
+  WebAuthRemoteError,
+  type WebAuthRemoteFailure,
+} from '../../../platform/auth/web-auth-remote';
 import { accessEventForAuthError } from './auth-session';
 
 function serverProblem(
@@ -9,7 +11,7 @@ function serverProblem(
   category: string,
   status: number,
   retryAfter: string | null = null,
-): RemoteFailure {
+): WebAuthRemoteFailure {
   return {
     kind: 'server_problem',
     status,
