@@ -11,21 +11,45 @@ import {
 import {
   accessFlowReducer,
   initialAccessFlowState,
+  type AccessFlowState,
 } from '../model/access-flow';
 import { AccessBrandStage } from './access-brand-stage';
 import { AccessFlowPanel } from './access-flow-panel';
 import { AccessLocaleSwitcher } from './access-locale-switcher';
-import { AccessSignInPanel } from './access-sign-in-panel';
 import '../access.css';
 import '../access-composition.css';
 import '../access-flow.css';
 
+function initialFlowState(
+  authenticated: boolean,
+  sessionError: unknown,
+): AccessFlowState {
+  let state = authenticated
+    ? accessFlowReducer(initialAccessFlowState, {
+        type: 'SERVER_AUTHENTICATED',
+      })
+    : initialAccessFlowState;
+
+  if (sessionError === null || sessionError === undefined) {
+    return state;
+  }
+
+  const event = accessEventForAuthError(sessionError);
+  if (event !== null) {
+    state = accessFlowReducer(state, event);
+  }
+  return state;
+}
+
 export function AccessPage() {
+  const sessionQuery = useAuthSessionQuery();
   const [flow, dispatch] = useReducer(
     accessFlowReducer,
-    initialAccessFlowState,
+    initialFlowState(
+      sessionQuery.data?.authenticated === true,
+      sessionQuery.error,
+    ),
   );
-  const sessionQuery = useAuthSessionQuery();
   const signInMutation = useSignInMutation();
   const logOutMutation = useLogOutMutation();
 
@@ -47,7 +71,10 @@ export function AccessPage() {
   }, []);
 
   useLayoutEffect(() => {
-    if (sessionQuery.data?.authenticated === true) {
+    if (
+      sessionQuery.data?.authenticated === true &&
+      flow.screen.id !== 'AUTHENTICATED_RETURN'
+    ) {
       dispatch({ type: 'SERVER_AUTHENTICATED' });
       return;
     }
@@ -126,29 +153,6 @@ export function AccessPage() {
     );
   }
 
-  const panel = sessionQuery.isPending ? (
-    <AccessSignInPanel
-      condition={flow.condition}
-      onCreateAccount={() => dispatch({ type: 'CREATE_ACCOUNT' })}
-      onForgotPassword={() => dispatch({ type: 'FORGOT_PASSWORD' })}
-      onCredentialSubmit={signIn}
-      onProvider={(provider) =>
-        dispatch({ type: 'REQUEST_PROVIDER', provider })
-      }
-      pending
-      bootstrapHidden
-    />
-  ) : (
-    <AccessFlowPanel
-      flow={flow}
-      dispatch={dispatch}
-      onCredentialSubmit={signIn}
-      onLogOut={logOut}
-      signInPending={signInMutation.isPending}
-      logOutPending={logOutMutation.isPending}
-    />
-  );
-
   return (
     <div className="access-shell">
       <header className="access-topbar">
@@ -172,7 +176,14 @@ export function AccessPage() {
       <main className="access-main">
         <div className="access-frame">
           <AccessBrandStage />
-          {panel}
+          <AccessFlowPanel
+            flow={flow}
+            dispatch={dispatch}
+            onCredentialSubmit={signIn}
+            onLogOut={logOut}
+            signInPending={signInMutation.isPending}
+            logOutPending={logOutMutation.isPending}
+          />
         </div>
       </main>
     </div>
