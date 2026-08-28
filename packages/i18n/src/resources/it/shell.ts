@@ -37,9 +37,7 @@ export const shell = {
     },
   },
   search: {
-    kicker: 'Ricerca globale',
     title: 'Cerca in DANTE',
-    description: 'Raggiungi rapidamente pagine e funzioni disponibili.',
     placeholder: 'Cerca pagine e funzioni…',
     navigationSection: 'Navigazione',
     noResults: 'Nessuna destinazione locale corrisponde alla ricerca.',
