@@ -1,0 +1,90 @@
+{
+  "format": "dante-home-modular-v2",
+  "oracle": {
+    "role": "retained-complete-a2-baseline",
+    "path": "../current/home.html",
+    "size_bytes": 748625,
+    "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+    "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341"
+  },
+  "accepted_output": {
+    "checkpoint": "b1-context-rail-v1",
+    "size_bytes": 760281,
+    "sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0"
+  },
+  "accepted_overrides": [
+    {
+      "id": "b1-context-rail-v1",
+      "file": "overrides/b1-context-rail-v1.patch",
+      "format": "gzip-base64-unified-diff",
+      "patch_sha256": "e5a2c3e6680c080f898811ae6b9877fc84d7e4247b06b90e6eb5656180eec82f",
+      "base_sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+      "result_sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0"
+    }
+  ],
+  "template": "index.template.html",
+  "style_separator": "\n/*__DANTE_A2_STYLE_BLOCK_SPLIT__*/\n",
+  "script_separator": "\n/*__DANTE_A2_SCRIPT_BLOCK_SPLIT__*/\n",
+  "asset": {
+    "file": "assets/day-ribbon-backdrop.png",
+    "token": "__DANTE_A2_DAY_RIBBON_BACKDROP_BASE64__",
+    "storage_encoding": "oracle-pointer",
+    "oracle": "../current/home.html",
+    "media_type": "image/png",
+    "decoded_size_bytes": 281038,
+    "decoded_sha256": "9a273c238835dfd66b65544004d75e2adba03971add634a35e86d7fe10f0cc4d",
+    "source_prefix": "data:image/png;base64,"
+  },
+  "nested_style_blocks": {
+    "3": {
+      "inside_script_block": 2
+    }
+  },
+  "styles": [
+    {"file":"styles/01-base.css","blocks":[1]},
+    {"file":"styles/02-topbar-shared.css","blocks":[2]},
+    {"file":"styles/03-hide-legacy-controls.css","blocks":[3]},
+    {"file":"styles/04-topbar-professional.css","blocks":[4]},
+    {"file":"styles/05-ai-safe-fix.css","blocks":[5]},
+    {"file":"styles/06-requested-fix.css","blocks":[6]},
+    {"file":"styles/07-worlds-click-center.css","blocks":[7]},
+    {"file":"styles/08-ai-conversation.css","blocks":[8]},
+    {"file":"styles/09-left-greeting.css","blocks":[9]},
+    {"file":"styles/10-home-structure.css","blocks":[10]},
+    {"file":"styles/11-collapsed-candidate.css","blocks":[11]},
+    {"file":"styles/12-home-layout-vars.css","blocks":[12]},
+    {"file":"styles/13-orientation-strip.css","blocks":[13]},
+    {"file":"styles/14-hide-old-stage-labels.css","blocks":[14]},
+    {"file":"styles/15-desktop-baseline.css","blocks":[15]},
+    {"file":"styles/16-synaptic-nebula.css","blocks":[16]},
+    {"file":"styles/17-today-rich-surface.css","blocks":[17]},
+    {"file":"styles/18-hero-background.css","blocks":[18]},
+    {"file":"styles/19-hide-magnet-line.css","blocks":[19]},
+    {"file":"styles/20-stage-three-columns.css","blocks":[20]},
+    {"file":"styles/21-round14-refinement.css","blocks":[21]},
+    {"file":"styles/22-round15-refinement.css","blocks":[22]},
+    {"file":"styles/23-round17-carousel.css","blocks":[23]},
+    {"file":"styles/24-round19-wing-symmetry.css","blocks":[24]},
+    {"file":"styles/25-round22-chat-header.css","blocks":[25]},
+    {"file":"styles/26-professional-chat.css","blocks":[26]},
+    {"file":"styles/27-soft-surfaces.css","blocks":[27]},
+    {"file":"styles/28-home-orientation-now.css","blocks":[28]},
+    {"file":"styles/29-neutralize-old-rails.css","blocks":[29]},
+    {"file":"styles/30-collapsed-geometry.css","blocks":[30]},
+    {"file":"styles/31-worlds-dock.css","blocks":[31]},
+    {"file":"styles/32-expanded-composition.css","blocks":[32]},
+    {"file":"styles/33-collapsed-right-rail.css","blocks":[33]},
+    {"file":"styles/34-collapsed-layout.css","blocks":[34]},
+    {"file":"styles/35-top-gap.css","blocks":[35]},
+    {"file":"styles/36-orientation-content.css","blocks":[36]},
+    {"file":"styles/37-day-ribbon.css","blocks":[37,38]}
+  ],
+  "scripts": [
+    {"file":"scripts/01-worlds-base.js","blocks":[1,2,3,4,5]},
+    {"file":"scripts/02-timeline-engine.js","blocks":[6,7,8,9,10]},
+    {"file":"scripts/03-stage-controller.js","blocks":[11,12,13,14,15]},
+    {"file":"scripts/04-day-ribbon.js","blocks":[16,17,18,19,20]}
+  ],
+  "module_storage": "copy-on-write-oracle-pointers",
+  "materialization_note": "If a future edit touches content already represented by an accepted override, absorb/remove that override in the same bounded scope before committing the materialized replacement."
+}

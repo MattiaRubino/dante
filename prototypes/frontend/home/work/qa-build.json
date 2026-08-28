@@ -1,0 +1,42 @@
+{
+  "scope": "B1",
+  "date": "2026-08-19",
+  "branch": "prototype/frontend",
+  "pre_scope": "fd9fc92eafbad0f1532e703c82a805db73b4c00e",
+  "purpose": "preserve the complete A2 baseline while deterministically applying the accepted B1 Context Rail v1 delta",
+  "baseline": {
+    "repository_path": "prototypes/frontend/home/current/home.html",
+    "size_bytes": 748625,
+    "sha256": "986e7d22b4cb536c8a89eacf116bee3350dd0b8aafeb497df2f837fc9c1bf5df",
+    "git_blob_sha": "fd9788212fbbd1ee40e53271cc39cedd9275b341",
+    "retained_unchanged": true
+  },
+  "accepted_override": {
+    "file": "overrides/b1-context-rail-v1.patch",
+    "patch_sha256": "e5a2c3e6680c080f898811ae6b9877fc84d7e4247b06b90e6eb5656180eec82f",
+    "result_size_bytes": 760281,
+    "result_sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0",
+    "storage_format": "gzip-base64-unified-diff"
+  },
+  "build": {
+    "command": "python build.py",
+    "generated_output": "build/home.html (ignored by Git)",
+    "size_bytes": 760281,
+    "sha256": "a781fca7a1ca0f967f41a1b9cad8165c636da900f4bc497974b9d1a849d7a4b0",
+    "accepted_match": true,
+    "result": "PASS"
+  },
+  "static_checks": {
+    "dom_id_count": 114,
+    "duplicate_dom_ids": 0,
+    "style_block_count": 38,
+    "inline_script_count": 20,
+    "inline_js_syntax_failures": 0,
+    "result": "PASS"
+  },
+  "qualification": {
+    "user_visual_acceptance": "B1 preview v3 accepted",
+    "browser_smoke": "NOT_RERUN_IN_WRITE_SCOPE",
+    "full_today_v21_regression": "NOT RUN"
+  }
+}
