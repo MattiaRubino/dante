@@ -10,7 +10,7 @@ export const shell = {
     navigationLabel: 'Primary navigation',
     search: 'Search',
     searchLabel: 'Search DANTE',
-    searchShortcut: 'Ctrl K',
+    searchShortcut: '/',
     create: 'Create',
     review: 'Review',
     launcher: 'Open launcher',
