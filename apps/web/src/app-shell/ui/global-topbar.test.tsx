@@ -85,20 +85,29 @@ describe('GlobalTopbar', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/today'));
   });
 
-  it('opens keyboard-first search and navigates the selected local result', async () => {
+  it('replaces navigation with keyboard-first inline search and routes the selected result', async () => {
     const router = await renderTopbar();
 
     fireEvent.keyDown(document, { key: 'k', ctrlKey: true });
+
     expect(
-      await screen.findByRole('dialog', { name: 'Cerca in DANTE' }),
+      await screen.findByRole('search', { name: 'Cerca in DANTE' }),
     ).toBeTruthy();
+    expect(
+      screen.queryByRole('navigation', { name: 'Navigazione principale' }),
+    ).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
 
     const input = screen.getByRole('combobox', { name: 'Cerca in DANTE' });
+    await waitFor(() => expect(document.activeElement).toBe(input));
     fireEvent.change(input, { target: { value: 'oggi' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/today'));
-    expect(screen.queryByRole('dialog', { name: 'Cerca in DANTE' })).toBeNull();
+    expect(screen.queryByRole('search', { name: 'Cerca in DANTE' })).toBeNull();
+    expect(
+      screen.getByRole('navigation', { name: 'Navigazione principale' }),
+    ).toBeTruthy();
   });
 
   it('supports slash search without hijacking editable controls', async () => {
@@ -109,16 +118,16 @@ describe('GlobalTopbar', () => {
     editor.focus();
 
     fireEvent.keyDown(editor, { key: '/' });
-    expect(screen.queryByRole('dialog', { name: 'Cerca in DANTE' })).toBeNull();
+    expect(screen.queryByRole('search', { name: 'Cerca in DANTE' })).toBeNull();
 
     editor.remove();
     fireEvent.keyDown(document, { key: '/' });
     expect(
-      await screen.findByRole('dialog', { name: 'Cerca in DANTE' }),
+      await screen.findByRole('search', { name: 'Cerca in DANTE' }),
     ).toBeTruthy();
   });
 
-  it('restores search focus and starts each command session clean', async () => {
+  it('restores search focus and starts each inline search session clean', async () => {
     await renderTopbar();
 
     const trigger = screen.getByRole('button', { name: 'Cerca in DANTE' });
@@ -131,8 +140,9 @@ describe('GlobalTopbar', () => {
     fireEvent.change(input, { target: { value: 'mondi' } });
     expect((input as HTMLInputElement).value).toBe('mondi');
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(input, { key: 'Escape' });
     await waitFor(() => expect(document.activeElement).toBe(trigger));
+    expect(screen.queryByRole('search', { name: 'Cerca in DANTE' })).toBeNull();
 
     fireEvent.click(trigger);
     const reopenedInput = await screen.findByRole('combobox', {
@@ -155,7 +165,11 @@ describe('GlobalTopbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Apri launcher' }));
     expect(screen.getByRole('menu', { name: 'Launcher DANTE' })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Account' }));
+    const accountTrigger = screen.getByRole('button', { name: 'Account' });
+    expect(accountTrigger.querySelector('svg')).not.toBeNull();
+    expect(accountTrigger.textContent).not.toContain('MR');
+
+    fireEvent.click(accountTrigger);
     expect(screen.getByRole('menu', { name: 'Menu account' })).toBeTruthy();
     expect(
       screen
