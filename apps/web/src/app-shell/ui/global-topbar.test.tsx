@@ -101,6 +101,23 @@ describe('GlobalTopbar', () => {
     expect(screen.queryByRole('dialog', { name: 'Cerca in DANTE' })).toBeNull();
   });
 
+  it('supports slash search without hijacking editable controls', async () => {
+    await renderTopbar();
+
+    const editor = document.createElement('input');
+    document.body.append(editor);
+    editor.focus();
+
+    fireEvent.keyDown(editor, { key: '/' });
+    expect(screen.queryByRole('dialog', { name: 'Cerca in DANTE' })).toBeNull();
+
+    editor.remove();
+    fireEvent.keyDown(document, { key: '/' });
+    expect(
+      await screen.findByRole('dialog', { name: 'Cerca in DANTE' }),
+    ).toBeTruthy();
+  });
+
   it('restores search focus and starts each command session clean', async () => {
     await renderTopbar();
 
