@@ -99,7 +99,9 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     const reloadPromise = page.reload();
     await sessionStarted;
     await expect(page.locator('#access-signin-title')).toHaveCount(0);
-    await expect(page.locator('#access-authenticated-return-title')).toHaveCount(0);
+    await expect(
+      page.locator('#access-authenticated-return-title'),
+    ).toHaveCount(0);
 
     releaseSession();
     await reloadPromise;

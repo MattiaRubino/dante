@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { authSessionQueryOptions } from '../features/access/application/auth-session';
-import { AccessPage } from '../features/access';
+import {
+  AccessPage,
+  authSessionQueryOptions,
+} from '../features/access';
 
 export const Route = createFileRoute('/')({
   loader: ({ context }) =>
