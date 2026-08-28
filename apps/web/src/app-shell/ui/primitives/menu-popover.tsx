@@ -1,4 +1,11 @@
-import { useEffect, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
 type MenuPopoverProps = {
   id: string;
@@ -24,6 +31,7 @@ export function MenuPopover({
   children,
 }: MenuPopoverProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const setOpenFromEffect = useEffectEvent(onOpenChange);
 
   useEffect(() => {
     if (!open) {
@@ -38,17 +46,17 @@ export function MenuPopover({
         !panelRef.current?.contains(target) &&
         !triggerRef.current?.contains(target)
       ) {
-        onOpenChange(false);
+        setOpenFromEffect(false);
       }
     };
 
     const handleDocumentKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onOpenChange(false);
+        setOpenFromEffect(false);
         triggerRef.current?.focus();
       } else if (event.key === 'Tab') {
-        onOpenChange(false);
+        setOpenFromEffect(false);
       }
     };
 
@@ -66,7 +74,7 @@ export function MenuPopover({
       document.removeEventListener('pointerdown', handlePointerDown, true);
       document.removeEventListener('keydown', handleDocumentKeyDown, true);
     };
-  }, [onOpenChange, open, triggerRef]);
+  }, [open, triggerRef]);
 
   if (!open) {
     return null;
