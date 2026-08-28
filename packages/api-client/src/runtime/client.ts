@@ -92,7 +92,9 @@ export type RemoteSuccess<T> = {
   headers: Headers;
 };
 
-export type RemoteResult<T> = RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
+export type RemoteResult<T> =
+  | RemoteSuccess<T>
+  | { ok: false; failure: RemoteFailure };
 
 type WireResponse = {
   data: unknown;
@@ -100,7 +102,9 @@ type WireResponse = {
   headers: Headers;
 };
 
-type TransportFailureKind = NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
+type TransportFailureKind =
+  | NetworkUnavailableFailure['kind']
+  | AbortedFailure['kind'];
 
 class TransportFailure extends Error {
   constructor(readonly kind: TransportFailureKind) {
@@ -168,7 +172,9 @@ function contractViolation(
   };
 }
 
-function trackedFetch(fetchFn: typeof globalThis.fetch): typeof globalThis.fetch {
+function trackedFetch(
+  fetchFn: typeof globalThis.fetch,
+): typeof globalThis.fetch {
   return async (input, init) => {
     try {
       return await fetchFn(input, init);
@@ -234,7 +240,10 @@ function serverProblem(wire: WireResponse): RemoteResult<never> {
   if (!parsed.success) {
     return contractViolation('invalid_payload', wire);
   }
-  if (parsed.data.status !== wire.status || parsed.data.request_id !== metadata.value) {
+  if (
+    parsed.data.status !== wire.status ||
+    parsed.data.request_id !== metadata.value
+  ) {
     return contractViolation('request_id_mismatch', wire);
   }
   return {
@@ -254,7 +263,9 @@ function serverProblem(wire: WireResponse): RemoteResult<never> {
   };
 }
 
-function parseAuthenticatedSession(wire: WireResponse): RemoteResult<AuthenticatedSession> {
+function parseAuthenticatedSession(
+  wire: WireResponse,
+): RemoteResult<AuthenticatedSession> {
   if (mediaType(wire.headers) !== JSON_MEDIA_TYPE) {
     return contractViolation('content_type_mismatch', wire);
   }
@@ -305,9 +316,11 @@ export type DanteApiClient = {
   logOut(options?: RequestInit): Promise<RemoteResult<void>>;
 };
 
-export function createDanteApiClient(options: {
-  fetchFn?: typeof globalThis.fetch;
-} = {}): DanteApiClient {
+export function createDanteApiClient(
+  options: {
+    fetchFn?: typeof globalThis.fetch;
+  } = {},
+): DanteApiClient {
   const fetchFn = trackedFetch(options.fetchFn ?? globalThis.fetch);
 
   return {
