@@ -18,7 +18,7 @@ export default defineConfig({
     command:
       'pnpm build && pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort',
     url: baseURL,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     stdout: 'pipe',
     stderr: 'pipe',
