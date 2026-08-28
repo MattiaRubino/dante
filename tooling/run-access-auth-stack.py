@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 
@@ -27,7 +28,7 @@ def _load_core() -> ModuleType:
     return module
 
 
-def _extension_guard(database_name: str):
+def _extension_guard(database_name: str) -> Callable[..., None]:
     def ensure_extensions(*, port: int, password: str) -> None:
         with psycopg.connect(
             host="127.0.0.1",
@@ -38,13 +39,11 @@ def _extension_guard(database_name: str):
             autocommit=True,
         ) as connection:
             for extension_name, expected_version in _REQUIRED_EXTENSIONS:
-                statement = sql.SQL("CREATE EXTENSION IF NOT EXISTS {}") .format(
+                statement = sql.SQL("CREATE EXTENSION IF NOT EXISTS {}").format(
                     sql.Identifier(extension_name)
                 )
                 if expected_version is not None:
-                    statement += sql.SQL(" VERSION {}") .format(
-                        sql.Literal(expected_version)
-                    )
+                    statement += sql.SQL(" VERSION {}").format(sql.Literal(expected_version))
                 connection.execute(statement)
 
                 row = connection.execute(
