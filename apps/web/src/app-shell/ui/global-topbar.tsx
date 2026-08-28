@@ -31,6 +31,19 @@ const DESTINATION_ICONS = {
 
 type OpenMenu = 'create' | 'launcher' | 'account' | null;
 
+function isEditableShortcutTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target.isContentEditable ||
+    target.tagName === 'INPUT' ||
+    target.tagName === 'TEXTAREA' ||
+    target.tagName === 'SELECT'
+  );
+}
+
 export function GlobalTopbar() {
   const { t } = useTranslation('common');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -41,15 +54,30 @@ export function GlobalTopbar() {
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
-      if (
-        event.key.toLocaleLowerCase() === 'k' &&
-        (event.metaKey || event.ctrlKey) &&
-        !event.altKey
-      ) {
-        event.preventDefault();
-        setOpenMenu(null);
-        setSearchOpen(true);
+      if (event.repeat) {
+        return;
       }
+
+      const key = event.key.toLocaleLowerCase();
+      const commandShortcut =
+        key === 'k' &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.altKey;
+      const slashShortcut =
+        event.key === '/' &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !isEditableShortcutTarget(event.target);
+
+      if (!commandShortcut && !slashShortcut) {
+        return;
+      }
+
+      event.preventDefault();
+      setOpenMenu(null);
+      setSearchOpen(true);
     };
 
     document.addEventListener('keydown', handleShortcut);
