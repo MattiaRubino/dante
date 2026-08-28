@@ -8,7 +8,7 @@ export const shell = {
     navigationLabel: 'Navigazione principale',
     search: 'Cerca',
     searchLabel: 'Cerca in DANTE',
-    searchShortcut: 'Ctrl K',
+    searchShortcut: '/',
     create: 'Crea',
     review: 'Review',
     launcher: 'Apri launcher',
