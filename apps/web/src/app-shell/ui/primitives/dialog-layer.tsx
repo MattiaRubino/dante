@@ -40,7 +40,7 @@ export function DialogLayer({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const frame = requestAnimationFrame(() => {
+    queueMicrotask(() => {
       const preferred = panelRef.current?.querySelector<HTMLElement>(
         '[data-dialog-autofocus="true"]',
       );
@@ -86,7 +86,6 @@ export function DialogLayer({
     document.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
-      cancelAnimationFrame(frame);
       document.removeEventListener('keydown', handleKeyDown, true);
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus();

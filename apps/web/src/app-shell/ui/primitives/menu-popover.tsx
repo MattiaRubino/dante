@@ -56,7 +56,7 @@ export function MenuPopover({
     document.addEventListener('pointerdown', handlePointerDown, true);
     document.addEventListener('keydown', handleDocumentKeyDown, true);
 
-    const frame = requestAnimationFrame(() => {
+    queueMicrotask(() => {
       const firstItem = panelRef.current?.querySelector<HTMLElement>(
         MENU_ITEM_SELECTOR,
       );
@@ -64,7 +64,6 @@ export function MenuPopover({
     });
 
     return () => {
-      cancelAnimationFrame(frame);
       document.removeEventListener('pointerdown', handlePointerDown, true);
       document.removeEventListener('keydown', handleDocumentKeyDown, true);
     };
@@ -88,7 +87,10 @@ export function MenuPopover({
     }
 
     event.preventDefault();
-    const currentIndex = Math.max(0, items.indexOf(document.activeElement as HTMLElement));
+    const currentIndex = Math.max(
+      0,
+      items.indexOf(document.activeElement as HTMLElement),
+    );
     let nextIndex = currentIndex;
 
     if (event.key === 'ArrowDown') {
