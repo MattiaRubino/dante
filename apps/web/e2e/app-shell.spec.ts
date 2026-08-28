@@ -32,6 +32,11 @@ test('global search works from a browser-safe keyboard shortcut without pretendi
 }) => {
   await page.goto('/home');
 
+  const searchTrigger = page.getByRole('button', { name: 'Cerca in DANTE' });
+  await expect(searchTrigger).toBeVisible();
+  await searchTrigger.focus();
+  await expect(searchTrigger).toBeFocused();
+
   await page.keyboard.press('/');
   const dialog = page.getByRole('dialog', { name: 'Cerca in DANTE' });
   await expect(dialog).toBeVisible();
