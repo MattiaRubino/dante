@@ -28,7 +28,7 @@ function apiResponse(
 }
 
 function fetchReturning(response: Response): typeof globalThis.fetch {
-  return async () => response.clone();
+  return () => Promise.resolve(response.clone());
 }
 
 describe('@dante/api-client governed boundary', () => {
@@ -70,69 +70,78 @@ describe('@dante/api-client governed boundary', () => {
     }
   });
 
-  it('normalizes a valid RFC 9457 failure and rejects malformed session payloads', async () => {
-    const problemClient = createDanteApiClient({
-      fetchFn: fetchReturning(
-        apiResponse(
-          401,
-          {
-            type: 'urn:dante:problem:auth.invalid_credentials',
-            title: 'Authentication failed',
-            status: 401,
-            detail: 'The supplied credentials could not be accepted.',
-            code: 'auth.invalid_credentials',
-            category: 'authentication',
-            request_id: REQUEST_ID,
-            retryable: false,
-          },
-          'application/problem+json',
+  it(
+    'normalizes a valid RFC 9457 failure and rejects malformed session payloads',
+    async () => {
+      const problemClient = createDanteApiClient({
+        fetchFn: fetchReturning(
+          apiResponse(
+            401,
+            {
+              type: 'urn:dante:problem:auth.invalid_credentials',
+              title: 'Authentication failed',
+              status: 401,
+              detail: 'The supplied credentials could not be accepted.',
+              code: 'auth.invalid_credentials',
+              category: 'authentication',
+              request_id: REQUEST_ID,
+              retryable: false,
+            },
+            'application/problem+json',
+          ),
         ),
-      ),
-    });
+      });
 
-    const problem = await problemClient.signIn({
-      email: 'person@example.com',
-      password: 'wrong password',
-    });
-    expect(problem).toMatchObject({
-      ok: false,
-      failure: {
-        kind: 'server_problem',
-        status: 401,
-        code: 'auth.invalid_credentials',
+      const problem = await problemClient.signIn({
+        email: 'person@example.com',
+        password: 'wrong password',
+      });
+      expect(problem).toMatchObject({
+        ok: false,
+        failure: {
+          kind: 'server_problem',
+          status: 401,
+          code: 'auth.invalid_credentials',
+          requestId: REQUEST_ID,
+        },
+      });
+
+      const malformedClient = createDanteApiClient({
+        fetchFn: fetchReturning(apiResponse(200, {}, 'application/json')),
+      });
+      const malformed = await malformedClient.getSession();
+      expect(malformed).toMatchObject({
+        ok: false,
+        failure: {
+          kind: 'contract_violation',
+          reason: 'invalid_payload',
+          status: 200,
+        },
+      });
+    },
+  );
+
+  it(
+    'handles logout success and classifies transport failure separately',
+    async () => {
+      const logoutClient = createDanteApiClient({
+        fetchFn: fetchReturning(apiResponse(204, undefined, null)),
+      });
+      const logout = await logoutClient.logOut();
+      expect(logout).toMatchObject({
+        ok: true,
+        status: 204,
         requestId: REQUEST_ID,
-      },
-    });
+      });
 
-    const malformedClient = createDanteApiClient({
-      fetchFn: fetchReturning(apiResponse(200, {}, 'application/json')),
-    });
-    const malformed = await malformedClient.getSession();
-    expect(malformed).toMatchObject({
-      ok: false,
-      failure: {
-        kind: 'contract_violation',
-        reason: 'invalid_payload',
-        status: 200,
-      },
-    });
-  });
-
-  it('handles logout success and classifies transport failure separately', async () => {
-    const logoutClient = createDanteApiClient({
-      fetchFn: fetchReturning(apiResponse(204, undefined, null)),
-    });
-    const logout = await logoutClient.logOut();
-    expect(logout).toMatchObject({ ok: true, status: 204, requestId: REQUEST_ID });
-
-    const offlineFetch: typeof globalThis.fetch = async () => {
-      throw new TypeError('network unavailable');
-    };
-    const offlineClient = createDanteApiClient({ fetchFn: offlineFetch });
-    const offline = await offlineClient.getSession();
-    expect(offline).toEqual({
-      ok: false,
-      failure: { kind: 'network_unavailable' },
-    });
-  });
+      const offlineFetch: typeof globalThis.fetch = () =>
+        Promise.reject(new TypeError('network unavailable'));
+      const offlineClient = createDanteApiClient({ fetchFn: offlineFetch });
+      const offline = await offlineClient.getSession();
+      expect(offline).toEqual({
+        ok: false,
+        failure: { kind: 'network_unavailable' },
+      });
+    },
+  );
 });
