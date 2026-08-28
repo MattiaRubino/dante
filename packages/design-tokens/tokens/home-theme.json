@@ -3,6 +3,40 @@
   "theme": {
     "home": {
       "$type": "color",
+      "canvas": {
+        "$value": "{primitive.color.home-canvas}"
+      },
+      "text": {
+        "primary": {
+          "$value": "{primitive.color.home-text-primary}"
+        },
+        "secondary": {
+          "$value": "{primitive.color.home-text-secondary}"
+        },
+        "muted": {
+          "$value": "{primitive.color.home-text-muted}"
+        }
+      },
+      "chrome": {
+        "active": {
+          "$value": "{primitive.color.brand-accent}"
+        },
+        "active-text": {
+          "$value": "{primitive.color.home-accent-text}"
+        },
+        "active-soft": {
+          "$value": "{primitive.color.home-accent-soft}"
+        },
+        "active-border": {
+          "$value": "{primitive.color.home-accent-border}"
+        },
+        "inactive": {
+          "$value": "{primitive.color.home-chrome-neutral}"
+        },
+        "inactive-border": {
+          "$value": "{primitive.color.home-chrome-neutral-border}"
+        }
+      },
       "surface": {
         "panel": {
           "$value": {
@@ -54,6 +88,12 @@
         }
       },
       "border": {
+        "subtle": {
+          "$value": "{primitive.color.home-border-subtle}"
+        },
+        "strong": {
+          "$value": "{primitive.color.home-border-strong}"
+        },
         "panel": {
           "$value": {
             "colorSpace": "srgb",
