@@ -88,7 +88,7 @@ def _auth_settings_override(original: Callable[[str], object]) -> Callable[[str]
 
         model_copy = getattr(settings, "model_copy", None)
         if not callable(model_copy):
-            raise RuntimeError("Auth settings do not support bounded E2E overrides.")
+            raise TypeError("Auth settings do not support bounded E2E overrides.")
         return model_copy(update={"signin_rate_capacity": capacity})
 
     return build
