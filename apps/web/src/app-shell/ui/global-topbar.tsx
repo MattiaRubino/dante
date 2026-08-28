@@ -60,9 +60,7 @@ export function GlobalTopbar() {
 
       const key = event.key.toLocaleLowerCase();
       const commandShortcut =
-        key === 'k' &&
-        (event.metaKey || event.ctrlKey) &&
-        !event.altKey;
+        key === 'k' && (event.metaKey || event.ctrlKey) && !event.altKey;
       const slashShortcut =
         event.key === '/' &&
         !event.metaKey &&
