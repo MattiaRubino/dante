@@ -61,6 +61,7 @@ export const access = {
   },
   action: {
     signin: 'Accedi',
+    logout: 'Esci',
     createAccount: 'Crea un account',
     showPassword: 'Mostra password',
     hidePassword: 'Nascondi password',
@@ -89,6 +90,21 @@ export const access = {
     serverUnavailableTitle: 'Servizio temporaneamente non disponibile.',
     serverUnavailableBody:
       'Riprova quando il servizio di accesso torna raggiungibile.',
+  },
+  failure: {
+    invalidCredentialsTitle: 'Accesso non riuscito.',
+    invalidCredentialsBody: 'Email o password non sono corretti.',
+    accountUnavailableTitle: 'Account non disponibile.',
+    accountUnavailableBody:
+      'Questo account non può aprire una nuova sessione in questo momento.',
+    passwordCompromisedTitle: 'Password da aggiornare.',
+    passwordCompromisedBody:
+      'Per proteggere l’account, questa password non può essere usata per aprire una nuova sessione.',
+    requestInvalidTitle: 'Controlla i dati inseriti.',
+    requestInvalidBody:
+      'La richiesta non rispetta i requisiti di accesso. Controlla email e password.',
+    unexpectedTitle: 'Non è stato possibile completare l’accesso.',
+    unexpectedBody: 'Riprova. Se il problema continua, riprova più tardi.',
   },
   locale: {
     control: 'Cambia lingua. Lingua attuale: {{language}}',
