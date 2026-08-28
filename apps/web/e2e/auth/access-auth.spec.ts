@@ -13,7 +13,10 @@ import {
 const baseURL = 'https://127.0.0.1:4173';
 const password = 'correct horse battery staple';
 const sessionCookieName = '__Host-dante-session';
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const repoRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
 
 const projectEmailOffset: Readonly<Record<string, number>> = {
   chromium: 0,
@@ -24,7 +27,9 @@ const projectEmailOffset: Readonly<Record<string, number>> = {
 function emailFor(testInfo: TestInfo, slot: number) {
   const offset = projectEmailOffset[testInfo.project.name];
   if (offset === undefined) {
-    throw new Error(`Unsupported Access/Auth browser project: ${testInfo.project.name}`);
+    throw new Error(
+      `Unsupported Access/Auth browser project: ${testInfo.project.name}`,
+    );
   }
   return `synthetic.user+e2e-${String(offset + slot).padStart(2, '0')}@example.com`;
 }
@@ -95,10 +100,10 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     });
   });
 
-  test('signs in through real HTTPS/FastAPI/PostgreSQL, reloads, and logs out', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('signs in through real HTTPS/FastAPI/PostgreSQL, reloads, and logs out', async ({
+    context,
+    page,
+  }, testInfo) => {
     const signin = await signIn(page, emailFor(testInfo, 1));
     expect(signin.status()).toBe(200);
     expect(await signin.headerValue('cache-control')).toBe('no-store');
@@ -170,10 +175,10 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     expect(await sessionCookie(context)).toBeUndefined();
   });
 
-  test('keeps invalid credentials unauthenticated with safe public feedback', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('keeps invalid credentials unauthenticated with safe public feedback', async ({
+    context,
+    page,
+  }, testInfo) => {
     const response = await signIn(
       page,
       emailFor(testInfo, 2),
@@ -192,10 +197,9 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     expect(await sessionCookie(context)).toBeUndefined();
   });
 
-  test('keeps two browser sessions independent when one logs out', async (
-    { browser },
-    testInfo,
-  ) => {
+  test('keeps two browser sessions independent when one logs out', async ({
+    browser,
+  }, testInfo) => {
     const contextA = await browser.newContext({ ignoreHTTPSErrors: true });
     const contextB = await browser.newContext({ ignoreHTTPSErrors: true });
 
@@ -240,10 +244,10 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     }
   });
 
-  test('converges to unauthenticated after server-side session revocation', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('converges to unauthenticated after server-side session revocation', async ({
+    context,
+    page,
+  }, testInfo) => {
     const signin = await signIn(page, emailFor(testInfo, 4));
     expect(signin.status()).toBe(200);
     await expectAuthenticated(page);
@@ -256,10 +260,10 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     expect(await sessionCookie(context)).toBeUndefined();
   });
 
-  test('converges to unauthenticated after server-side session expiry', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('converges to unauthenticated after server-side session expiry', async ({
+    context,
+    page,
+  }, testInfo) => {
     const signin = await signIn(page, emailFor(testInfo, 5));
     expect(signin.status()).toBe(200);
     await expectAuthenticated(page);
@@ -272,10 +276,10 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     expect(await sessionCookie(context)).toBeUndefined();
   });
 
-  test('does not invent authentication while PostgreSQL is unavailable', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('does not invent authentication while PostgreSQL is unavailable', async ({
+    context,
+    page,
+  }, testInfo) => {
     await page.goto('/');
     await expectUnauthenticated(page);
     await page.getByLabel('Email').fill(emailFor(testInfo, 6));
@@ -305,18 +309,18 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     }
   });
 
-  test('does not invent authentication when the real signin limiter rejects the request', async (
-    { context, page },
-    testInfo,
-  ) => {
+  test('does not invent authentication when the real signin limiter rejects the request', async ({
+    context,
+    page,
+  }, testInfo) => {
     const email = emailFor(testInfo, 7);
 
-    expect((await signIn(page, email, 'wrong password attempt one')).status()).toBe(
-      401,
-    );
-    expect((await signIn(page, email, 'wrong password attempt two')).status()).toBe(
-      401,
-    );
+    expect(
+      (await signIn(page, email, 'wrong password attempt one')).status(),
+    ).toBe(401);
+    expect(
+      (await signIn(page, email, 'wrong password attempt two')).status(),
+    ).toBe(401);
 
     const response = await signIn(page, email, 'wrong password attempt three');
     expect(response.status()).toBe(429);

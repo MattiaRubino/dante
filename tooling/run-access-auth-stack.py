@@ -9,9 +9,8 @@ from types import ModuleType
 from uuid import uuid7
 
 import psycopg
-from psycopg import sql
-
 from dante.auth.email import normalize_email
+from psycopg import sql
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
 _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
@@ -26,7 +25,9 @@ _E2E_EMAIL_ALIAS_COUNT = 32
 
 
 def _load_core() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("dante_access_auth_stack_core", _CORE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "dante_access_auth_stack_core", _CORE_PATH
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError("Could not load the Access/Auth full-stack harness core.")
 
@@ -50,7 +51,9 @@ def _extension_guard(database_name: str) -> Callable[..., None]:
                     sql.Identifier(extension_name)
                 )
                 if expected_version is not None:
-                    statement += sql.SQL(" VERSION {}").format(sql.Literal(expected_version))
+                    statement += sql.SQL(" VERSION {}").format(
+                        sql.Literal(expected_version)
+                    )
                 connection.execute(statement)
 
                 row = connection.execute(
@@ -70,7 +73,9 @@ def _extension_guard(database_name: str) -> Callable[..., None]:
     return ensure_extensions
 
 
-def _auth_settings_override(original: Callable[[str], object]) -> Callable[[str], object]:
+def _auth_settings_override(
+    original: Callable[[str], object],
+) -> Callable[[str], object]:
     def build(hibp_base_url: str) -> object:
         settings = original(hibp_base_url)
         raw_capacity = os.environ.get(_E2E_RATE_CAPACITY_ENV)
@@ -173,9 +178,13 @@ def main() -> None:
     database_name = getattr(core, "_DATABASE_NAME", None)
     primary_email = getattr(core, "_EMAIL", None)
     if not isinstance(database_name, str) or not database_name:
-        raise RuntimeError("Access/Auth harness core does not expose its database name.")
+        raise RuntimeError(
+            "Access/Auth harness core does not expose its database name."
+        )
     if not isinstance(primary_email, str) or not primary_email:
-        raise RuntimeError("Access/Auth harness core does not expose its synthetic email.")
+        raise RuntimeError(
+            "Access/Auth harness core does not expose its synthetic email."
+        )
 
     core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(core._auth_settings)

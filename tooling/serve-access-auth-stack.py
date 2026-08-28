@@ -23,16 +23,18 @@ import psycopg
 import uvicorn
 from alembic import command
 from alembic.config import Config
-from pydantic import SecretStr
-from sqlalchemy import URL
-
 from dante.auth.email import normalize_email
 from dante.auth.passwords import PasswordKdf
 from dante.bootstrap.app import create_app
 from dante.platform.config.auth import AuthSettings
 from dante.platform.config.database import DatabaseSettings
 from dante.platform.config.settings import Environment, Settings
-from dante.platform.database.provisioning import ProvisioningSettings, provision_database
+from dante.platform.database.provisioning import (
+    ProvisioningSettings,
+    provision_database,
+)
+from pydantic import SecretStr
+from sqlalchemy import URL
 
 _POSTGRES_IMAGE = "dante-postgres-local:18.6"
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -305,7 +307,9 @@ def _runtime_settings(
     )
 
 
-def _start_api(settings: Settings, port: int) -> tuple[uvicorn.Server, threading.Thread]:
+def _start_api(
+    settings: Settings, port: int
+) -> tuple[uvicorn.Server, threading.Thread]:
     server = uvicorn.Server(
         uvicorn.Config(
             create_app(settings),
@@ -362,7 +366,9 @@ def _build_web() -> None:
         print(build.stderr, end="")
 
 
-def _start_preview(*, api_port: int, cert_path: Path, key_path: Path) -> subprocess.Popen[str]:
+def _start_preview(
+    *, api_port: int, cert_path: Path, key_path: Path
+) -> subprocess.Popen[str]:
     env = os.environ.copy()
     env["DANTE_E2E_API_TARGET"] = f"http://127.0.0.1:{api_port}"
     env["DANTE_E2E_TLS_CERT"] = str(cert_path)
