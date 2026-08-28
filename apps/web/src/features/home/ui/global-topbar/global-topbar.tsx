@@ -1,6 +1,43 @@
 import { useTranslation } from 'react-i18next';
 
 import danteSymbolUrl from '../../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
+import danteWordmarkRaw from '../../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?raw';
+
+const danteWordmarkWhite = danteWordmarkRaw.replaceAll('#222F37', '#FFFFFF');
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
+    </svg>
+  );
+}
+
+function WorldsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.8 9h16.4M3.8 15h16.4M12 3.5c2.1 2.3 3.2 5.1 3.2 8.5S14.1 18.2 12 20.5M12 3.5C9.9 5.8 8.8 8.6 8.8 12s1.1 6.2 3.2 8.5" />
+    </svg>
+  );
+}
+
+function TodayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm7 6v4l3 2" />
+    </svg>
+  );
+}
 
 export function GlobalTopbar() {
   const { t } = useTranslation('common');
@@ -9,11 +46,15 @@ export function GlobalTopbar() {
     <header className="home-topbar" data-home-region="topbar">
       <div className="home-topbar-left">
         <div
-          className="home-topbar-brand"
+          className="home-topbar-brand home-m1-brand"
           aria-label={t(($) => $.common.home.topbar.brandLabel)}
         >
-          <img src={danteSymbolUrl} alt="" aria-hidden="true" />
-          <span>DANTE</span>
+          <img className="home-m1-brand-symbol" src={danteSymbolUrl} alt="" aria-hidden="true" />
+          <span
+            className="home-m1-brand-wordmark"
+            aria-hidden="true"
+            dangerouslySetInnerHTML={{ __html: danteWordmarkWhite }}
+          />
         </div>
 
         <button
@@ -23,21 +64,25 @@ export function GlobalTopbar() {
           aria-label={t(($) => $.common.home.topbar.search)}
           data-home-control="search"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16 16 4 4" />
-          </svg>
+          <SearchIcon />
           <span>{t(($) => $.common.home.topbar.search)}</span>
-          <kbd>⌘ K</kbd>
+          <kbd>⌘K</kbd>
         </button>
       </div>
 
       <nav aria-label={t(($) => $.common.home.topbar.navigationLabel)}>
         <span aria-current="page">
+          <HomeIcon />
           {t(($) => $.common.home.topbar.home)}
         </span>
-        <span>{t(($) => $.common.home.topbar.worlds)}</span>
-        <span>{t(($) => $.common.home.topbar.today)}</span>
+        <span>
+          <WorldsIcon />
+          {t(($) => $.common.home.topbar.worlds)}
+        </span>
+        <span>
+          <TodayIcon />
+          {t(($) => $.common.home.topbar.today)}
+        </span>
       </nav>
 
       <div className="home-topbar-utilities">
@@ -46,8 +91,9 @@ export function GlobalTopbar() {
           type="button"
           disabled
           data-home-control="create"
+          aria-label={t(($) => $.common.home.topbar.create)}
         >
-          <span aria-hidden="true">＋</span>
+          <span className="home-m1-plus" aria-hidden="true">+</span>
           <span className="home-topbar-create-label">
             {t(($) => $.common.home.topbar.create)}
           </span>
@@ -58,8 +104,13 @@ export function GlobalTopbar() {
           type="button"
           disabled
           data-home-control="review"
+          aria-label={t(($) => $.common.home.topbar.review)}
         >
-          {t(($) => $.common.home.topbar.review)}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 8 2.2 2.2L16 8.5" />
+          </svg>
+          <span className="home-m1-review-label">{t(($) => $.common.home.topbar.review)}</span>
+          <span className="home-m1-review-badge" aria-hidden="true">3</span>
         </button>
 
         <button
@@ -83,7 +134,7 @@ export function GlobalTopbar() {
           aria-label={t(($) => $.common.home.topbar.account)}
           data-home-control="account"
         >
-          <span aria-hidden="true" />
+          <span className="home-m1-avatar" aria-hidden="true">MR</span>
         </button>
       </div>
     </header>

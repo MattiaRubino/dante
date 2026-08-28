@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
 import { AISurface } from './ai-surface/ai-surface';
 import { CentralStage } from './central-stage/central-stage';
 import { ContextRail } from './context-rail/context-rail';
@@ -16,11 +17,17 @@ export function HomeShell() {
 
   return (
     <div
-      className="home-shell"
+      className="home-shell home-m1"
       data-home-region="shell"
       data-home-ai-state={isAiCollapsed ? 'collapsed' : 'expanded'}
       data-home-timeline-state={isTimelineExpanded ? 'expanded' : 'normal'}
+      data-home-visual-source="b2-v27"
     >
+      <div className="home-m1-backdrop" aria-hidden="true">
+        <img src={HOME_COSMOS_DATA_URL} alt="" />
+        <span />
+      </div>
+
       <GlobalTopbar />
 
       <main
