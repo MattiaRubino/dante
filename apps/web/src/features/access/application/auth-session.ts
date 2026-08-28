@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import {
   WebAuthRemoteError,
@@ -90,15 +95,20 @@ export function accessEventForAuthError(
   }
 }
 
-export function useAuthSessionQuery() {
-  return useQuery({
+export function authSessionQueryOptions() {
+  return queryOptions({
     queryKey: authSessionQueryKey,
     queryFn: ({ signal }) => webAuthRemote.getSession(signal),
     retry: (failureCount, error) =>
       failureCount < 1 && isRetryableSessionRead(error),
+    staleTime: 1_000,
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
   });
+}
+
+export function useAuthSessionQuery() {
+  return useQuery(authSessionQueryOptions());
 }
 
 export function useSignInMutation() {
