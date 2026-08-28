@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import UUID, uuid7
 
 import psycopg
@@ -13,6 +13,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from psycopg import errors
+from sqlalchemy import Table
 
 from dante.platform.database.mappings import MAPPED_TABLES
 from dante.platform.database.mappings.views import VIEW_METADATA
@@ -208,7 +209,7 @@ def test_m6_sqlalchemy_mapping_is_exact_and_relationship_free() -> None:
     cp6_mappers = tuple(
         mapper
         for mapper in Base.registry.mappers
-        if mapper.local_table.name not in _POST_CP6_TABLES
+        if cast(Table, mapper.local_table).name not in _POST_CP6_TABLES
     )
     assert len(cp6_tables) == 68
     assert len(cp6_mappers) == 68
