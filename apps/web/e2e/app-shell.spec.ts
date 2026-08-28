@@ -27,7 +27,7 @@ test('application navigation keeps one persistent Topbar and real browser histor
   await expect(page.getByRole('main', { name: 'Home DANTE' })).toBeVisible();
 });
 
-test('global search opens, focuses, searches, and routes without pretending remote search exists', async ({
+test('global search expands inline, focuses, searches, and routes truthfully', async ({
   page,
 }) => {
   await page.goto('/home');
@@ -36,15 +36,22 @@ test('global search opens, focuses, searches, and routes without pretending remo
   await expect(searchTrigger).toBeVisible();
   await searchTrigger.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Cerca in DANTE' });
-  await expect(dialog).toBeVisible();
+  const searchSurface = page.getByRole('search', { name: 'Cerca in DANTE' });
+  await expect(searchSurface).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'Navigazione principale' }),
+  ).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 
   const searchInput = page.getByRole('combobox', { name: 'Cerca in DANTE' });
   await expect(searchInput).toBeFocused();
   await searchInput.fill('impostazioni');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/settings$/);
-  await expect(dialog).toHaveCount(0);
+  await expect(searchSurface).toHaveCount(0);
+  await expect(
+    page.getByRole('navigation', { name: 'Navigazione principale' }),
+  ).toBeVisible();
 });
 
 for (const viewport of [
@@ -67,10 +74,30 @@ for (const viewport of [
   });
 }
 
-test('Topbar shell has no detectable WCAG A/AA violations in isolation', async ({
+test('inline search remains bounded on the 390px mobile shell', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Cerca in DANTE' }).click();
+
+  const searchSurface = page.getByRole('search', { name: 'Cerca in DANTE' });
+  const resultsPanel = page.locator('.app-topbar-search-panel');
+  await expect(searchSurface).toBeVisible();
+  await expect(resultsPanel).toBeVisible();
+
+  for (const locator of [searchSurface, resultsPanel]) {
+    const box = await locator.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  }
+});
+
+test('Topbar including inline search has no detectable WCAG A/AA violations', async ({
   page,
 }) => {
   await page.goto('/home');
+  await page.getByRole('button', { name: 'Cerca in DANTE' }).click();
+  await expect(page.getByRole('search', { name: 'Cerca in DANTE' })).toBeVisible();
 
   const results = await new AxeBuilder({ page })
     .include('[data-app-region="topbar"]')
