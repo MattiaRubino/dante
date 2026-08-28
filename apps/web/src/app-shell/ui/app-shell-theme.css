@@ -1,0 +1,63 @@
+/*
+ * Shell-owned theme bridge.
+ *
+ * P1 intentionally preserves the accepted Home-era visual declarations while
+ * moving ownership of application chrome to theme.shell. Only shell-owned
+ * surfaces receive these aliases, so Home content continues to resolve its
+ * own theme.home tokens independently.
+ */
+
+.app-shell {
+  color: var(--dante-theme-shell-text-primary);
+  background: var(--dante-theme-shell-canvas);
+}
+
+:where(
+  .app-topbar,
+  .app-dialog-backdrop,
+  .app-placeholder-page,
+  .app-skip-link
+) {
+  --dante-theme-home-canvas: var(--dante-theme-shell-canvas);
+  --dante-theme-home-text-primary: var(--dante-theme-shell-text-primary);
+  --dante-theme-home-text-secondary: var(--dante-theme-shell-text-secondary);
+  --dante-theme-home-text-muted: var(--dante-theme-shell-text-muted);
+  --dante-theme-home-chrome-active: var(--dante-theme-shell-chrome-active);
+  --dante-theme-home-chrome-active-text: var(
+    --dante-theme-shell-chrome-active-text
+  );
+  --dante-theme-home-chrome-active-soft: var(
+    --dante-theme-shell-chrome-active-soft
+  );
+  --dante-theme-home-chrome-active-border: var(
+    --dante-theme-shell-chrome-active-border
+  );
+  --dante-theme-home-chrome-inactive: var(--dante-theme-shell-chrome-inactive);
+  --dante-theme-home-chrome-inactive-border: var(
+    --dante-theme-shell-chrome-inactive-border
+  );
+  --dante-theme-home-surface-panel: var(--dante-theme-shell-surface-panel);
+  --dante-theme-home-surface-panel-soft: var(
+    --dante-theme-shell-surface-panel-soft
+  );
+  --dante-theme-home-surface-raised: var(--dante-theme-shell-surface-raised);
+  --dante-theme-home-surface-control: var(--dante-theme-shell-surface-control);
+  --dante-theme-home-surface-overlay: var(--dante-theme-shell-surface-overlay);
+  --dante-theme-home-surface-highlight: var(
+    --dante-theme-shell-surface-highlight
+  );
+  --dante-theme-home-border-subtle: var(--dante-theme-shell-border-subtle);
+  --dante-theme-home-border-strong: var(--dante-theme-shell-border-strong);
+  --dante-theme-home-border-panel: var(--dante-theme-shell-border-panel);
+  --dante-theme-home-border-panel-strong: var(
+    --dante-theme-shell-border-panel-strong
+  );
+  --dante-theme-home-atmosphere-accent: var(
+    --dante-theme-shell-atmosphere-accent
+  );
+  --dante-theme-home-atmosphere-soft: var(--dante-theme-shell-atmosphere-soft);
+  --dante-theme-home-atmosphere-glow: var(--dante-theme-shell-atmosphere-glow);
+  --dante-theme-home-shadow-panel: var(--dante-theme-shell-shadow-panel);
+  --dante-theme-home-shadow-control: var(--dante-theme-shell-shadow-control);
+  --dante-theme-home-backdrop-shade: var(--dante-theme-shell-backdrop-shade);
+}
