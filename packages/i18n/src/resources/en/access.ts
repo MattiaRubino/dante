@@ -67,6 +67,7 @@ export const access = {
   },
   action: {
     signin: 'Sign in',
+    logout: 'Sign out',
     createAccount: 'Create account',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -94,6 +95,21 @@ export const access = {
       'Wait before trying again. The effective retry time will come from the server.',
     serverUnavailableTitle: 'Service temporarily unavailable.',
     serverUnavailableBody: 'Try again when the Access service is reachable.',
+  },
+  failure: {
+    invalidCredentialsTitle: 'Sign-in failed.',
+    invalidCredentialsBody: 'The email or password is incorrect.',
+    accountUnavailableTitle: 'Account unavailable.',
+    accountUnavailableBody:
+      'This account cannot open a new session right now.',
+    passwordCompromisedTitle: 'Password update required.',
+    passwordCompromisedBody:
+      'To protect the account, this password cannot be used to open a new session.',
+    requestInvalidTitle: 'Check the information you entered.',
+    requestInvalidBody:
+      'The request does not meet the sign-in requirements. Check the email and password.',
+    unexpectedTitle: 'Sign-in could not be completed.',
+    unexpectedBody: 'Try again. If the problem continues, try again later.',
   },
   locale: {
     control: 'Change language. Current language: {{language}}',
