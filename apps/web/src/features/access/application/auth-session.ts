@@ -1,0 +1,132 @@
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import type { AuthSession, SignInRequest } from '@dante/api-client';
+
+import {
+  WebAuthRemoteError,
+  webAuthRemote,
+} from '../../../platform/auth/web-auth-remote';
+import type { AccessFlowEvent } from '../model/access-flow';
+
+export const authSessionQueryKey = ['auth', 'session'] as const;
+
+function isRetryableSessionRead(error: unknown): boolean {
+  if (!(error instanceof WebAuthRemoteError)) {
+    return false;
+  }
+
+  const failure = error.failure;
+  if (failure.kind === 'network_unavailable') {
+    return true;
+  }
+  return (
+    failure.kind === 'server_problem' &&
+    failure.retryable &&
+    failure.status >= 500
+  );
+}
+
+function retryAfterSeconds(value: string | null): number | undefined {
+  if (value === null || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+function rateLimitedEvent(retryAfter: string | null): AccessFlowEvent {
+  const seconds = retryAfterSeconds(retryAfter);
+  return seconds === undefined
+    ? { type: 'SERVER_RATE_LIMITED' }
+    : { type: 'SERVER_RATE_LIMITED', retryAfterSeconds: seconds };
+}
+
+export function accessEventForAuthError(
+  error: unknown,
+  online = typeof navigator === 'undefined' ? true : navigator.onLine,
+): AccessFlowEvent | null {
+  if (!(error instanceof WebAuthRemoteError)) {
+    return { type: 'SERVER_UNEXPECTED' };
+  }
+
+  const failure = error.failure;
+  switch (failure.kind) {
+    case 'aborted':
+      return null;
+    case 'network_unavailable':
+      return online
+        ? { type: 'SERVER_UNAVAILABLE' }
+        : { type: 'NETWORK_OFFLINE' };
+    case 'contract_violation':
+      return { type: 'SERVER_UNEXPECTED' };
+    case 'server_problem':
+      switch (failure.code) {
+        case 'auth.invalid_credentials':
+          return { type: 'SERVER_INVALID_CREDENTIALS' };
+        case 'auth.account_unavailable':
+          return { type: 'SERVER_ACCOUNT_UNAVAILABLE' };
+        case 'auth.password_compromised':
+          return { type: 'SERVER_PASSWORD_COMPROMISED' };
+        case 'request.validation_failed':
+        case 'request.malformed':
+          return { type: 'SERVER_REQUEST_INVALID' };
+        case 'rate_limit.exceeded':
+          return rateLimitedEvent(failure.retryAfter);
+        case 'service.unavailable':
+        case 'dependency.unavailable':
+          return { type: 'SERVER_UNAVAILABLE' };
+        default:
+          if (failure.category === 'rate_limit') {
+            return rateLimitedEvent(failure.retryAfter);
+          }
+          if (failure.category === 'validation') {
+            return { type: 'SERVER_REQUEST_INVALID' };
+          }
+          if (failure.status >= 500) {
+            return { type: 'SERVER_UNAVAILABLE' };
+          }
+          return { type: 'SERVER_UNEXPECTED' };
+      }
+  }
+}
+
+export function useAuthSessionQuery() {
+  return useQuery({
+    queryKey: authSessionQueryKey,
+    queryFn: ({ signal }) => webAuthRemote.getSession(signal),
+    retry: (failureCount, error) =>
+      failureCount < 1 && isRetryableSessionRead(error),
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useSignInMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: SignInRequest) => webAuthRemote.signIn(request),
+    retry: false,
+    onSuccess: (session) => {
+      queryClient.setQueryData<AuthSession>(authSessionQueryKey, session);
+    },
+  });
+}
+
+export function useLogOutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ csrfToken }: { csrfToken: string }) =>
+      webAuthRemote.logOut(csrfToken),
+    retry: false,
+    onSuccess: () => {
+      queryClient.setQueryData<AuthSession>(authSessionQueryKey, {
+        authenticated: false,
+      });
+    },
+  });
+}
