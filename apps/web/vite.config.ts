@@ -17,7 +17,11 @@ function accessAuthPreview(): PreviewOptions | undefined {
     return undefined;
   }
 
-  if (apiTarget === undefined || certPath === undefined || keyPath === undefined) {
+  if (
+    apiTarget === undefined ||
+    certPath === undefined ||
+    keyPath === undefined
+  ) {
     throw new Error(
       'DANTE full-stack preview requires API target plus TLS certificate and key.',
     );
