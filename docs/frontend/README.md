@@ -7,15 +7,16 @@ This directory contains durable product-facing frontend contracts carried from a
 ## Read order
 
 1. `docs/frontend/access.md` — current materialized Access Web baseline and remaining full-stack boundary
-2. `docs/frontend/home/current-checkpoint.md`
-3. `docs/frontend/home/contract.md`
-4. `docs/frontend/ui-registry.md`
-5. `docs/frontend/design-tokens.md`
-6. `docs/frontend/terminology.md`
-7. `docs/frontend/localization.md`
-8. `docs/frontend/production-readiness/component-architecture.md`
-9. `docs/frontend/production-readiness/backend-integration-contract.md`
-10. `docs/frontend/production-readiness/quality-gates.md`
+2. `docs/frontend/home/production-depth-handoff.md` — current Home phase, working strategy and new-chat bootstrap
+3. `docs/frontend/home/current-checkpoint.md`
+4. `docs/frontend/home/contract.md`
+5. `docs/frontend/ui-registry.md`
+6. `docs/frontend/design-tokens.md`
+7. `docs/frontend/terminology.md`
+8. `docs/frontend/localization.md`
+9. `docs/frontend/production-readiness/component-architecture.md`
+10. `docs/frontend/production-readiness/backend-integration-contract.md`
+11. `docs/frontend/production-readiness/quality-gates.md`
 
 Engineering/runtime authority remains the materialized frontend workspace, repository architecture, CI and local-development documentation. Product contracts do not replace those engineering authorities.
 
