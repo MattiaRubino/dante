@@ -63,4 +63,18 @@
   --dante-semantic-radius-control: var(--dante-primitive-radius-14);
   --dante-semantic-radius-input: var(--dante-primitive-radius-12);
   --dante-semantic-radius-panel: var(--dante-primitive-radius-12);
+  --dante-theme-home-atmosphere-accent: rgb(55.2941% 38.8235% 100%);
+  --dante-theme-home-atmosphere-glow: rgb(55.2941% 38.8235% 100% / 0.18);
+  --dante-theme-home-atmosphere-soft: rgb(55.2941% 38.8235% 100% / 0.1);
+  --dante-theme-home-backdrop-shade: rgb(0.3922% 1.9608% 3.1373% / 0.2);
+  --dante-theme-home-border-panel: rgb(55.2941% 38.8235% 100% / 0.14);
+  --dante-theme-home-border-panel-strong: rgb(55.2941% 38.8235% 100% / 0.24);
+  --dante-theme-home-shadow-control: rgb(0% 0% 0% / 0.18);
+  --dante-theme-home-shadow-panel: rgb(0% 0% 0% / 0.32);
+  --dante-theme-home-surface-control: rgb(7.8431% 11.3725% 20% / 0.92);
+  --dante-theme-home-surface-highlight: rgb(100% 100% 100% / 0.025);
+  --dante-theme-home-surface-overlay: rgb(3.1373% 5.8824% 11.3725% / 0.94);
+  --dante-theme-home-surface-panel: rgb(4.3137% 7.0588% 12.549% / 0.9);
+  --dante-theme-home-surface-panel-soft: rgb(6.2745% 9.8039% 17.2549% / 0.68);
+  --dante-theme-home-surface-raised: rgb(6.2745% 9.8039% 17.2549% / 0.94);
 }
