@@ -87,8 +87,11 @@ test('inline search remains bounded on the 390px mobile shell', async ({ page })
   for (const locator of [searchSurface, resultsPanel]) {
     const box = await locator.boundingBox();
     expect(box).not.toBeNull();
-    expect(box!.x).toBeGreaterThanOrEqual(0);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+    if (!box) {
+      throw new Error('Expected visible search geometry');
+    }
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
   }
 });
 
