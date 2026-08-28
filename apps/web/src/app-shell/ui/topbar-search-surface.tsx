@@ -121,7 +121,7 @@ export function TopbarSearchSurface({ onClose }: TopbarSearchSurfaceProps) {
       role="search"
       aria-label={t(($) => $.common.shell.search.title)}
     >
-      <label className="app-topbar-search-field">
+      <div className="app-topbar-search-field">
         <SearchIcon />
         <input
           ref={inputRef}
@@ -153,7 +153,7 @@ export function TopbarSearchSurface({ onClose }: TopbarSearchSurfaceProps) {
         >
           <CloseIcon />
         </button>
-      </label>
+      </div>
 
       <div className="app-topbar-search-panel">
         <div className="app-search-section-head">
