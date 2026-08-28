@@ -8,6 +8,25 @@
  */
 
 .home-m1 {
+  /* Rebind the legacy M1 semantic variables after home-m1.css. This makes
+     packages/design-tokens/tokens/home-theme.json the single Home palette
+     authority even where the foundation CSS still consumes old variable names. */
+  --dante-semantic-color-home-canvas: var(--dante-theme-home-canvas);
+  --dante-semantic-color-home-surface-primary: var(--dante-theme-home-surface-panel);
+  --dante-semantic-color-home-surface-raised: var(--dante-theme-home-surface-raised);
+  --dante-semantic-color-home-surface-control: var(--dante-theme-home-surface-control);
+  --dante-semantic-color-home-text-primary: var(--dante-theme-home-text-primary);
+  --dante-semantic-color-home-text-secondary: var(--dante-theme-home-text-secondary);
+  --dante-semantic-color-home-text-muted: var(--dante-theme-home-text-muted);
+  --dante-semantic-color-home-border-subtle: var(--dante-theme-home-border-subtle);
+  --dante-semantic-color-home-border-strong: var(--dante-theme-home-border-strong);
+  --dante-semantic-color-home-chrome-active: var(--dante-theme-home-chrome-active);
+  --dante-semantic-color-home-chrome-active-text: var(--dante-theme-home-chrome-active-text);
+  --dante-semantic-color-home-chrome-active-soft: var(--dante-theme-home-chrome-active-soft);
+  --dante-semantic-color-home-chrome-active-border: var(--dante-theme-home-chrome-active-border);
+  --dante-semantic-color-home-chrome-inactive: var(--dante-theme-home-chrome-inactive);
+  --dante-semantic-color-home-chrome-inactive-border: var(--dante-theme-home-chrome-inactive-border);
+
   color: var(--dante-semantic-color-home-text-primary);
   background: var(--dante-semantic-color-home-canvas);
 }
@@ -136,13 +155,6 @@
   background: var(--dante-theme-home-surface-panel-soft);
 }
 
-.home-m1 .home-day-weather svg,
-.home-m1 .home-day-marker,
-.home-m1 .home-day-route-sunrise,
-.home-m1 .home-day-route-sunset {
-  color: var(--dante-semantic-color-home-chrome-active-text);
-}
-
 .home-m1 .home-day-route-label,
 .home-m1 .home-orientation article footer,
 .home-m1 .home-orientation-kicker-row > span:first-child,
@@ -239,11 +251,6 @@
   border-color: var(--dante-semantic-color-home-chrome-active-border);
   color: var(--dante-semantic-color-home-chrome-active-text);
   background: var(--dante-semantic-color-home-chrome-active-soft);
-}
-
-.home-m1 .home-orientation-progress,
-.home-m1 .signal-grid {
-  color: var(--dante-theme-home-border-panel);
 }
 
 .home-m1 .home-central-stage::before {
