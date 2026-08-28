@@ -8,6 +8,7 @@ import {
   type AccessFlowState,
   type AccessProvider,
 } from '../model/access-flow';
+import { AccessAuthenticatedReturnPanel } from './access-authenticated-return-panel';
 import { AccessConditionNotice } from './access-condition-notice';
 import { AccessDownstreamPanel } from './access-downstream-panel';
 import { AccessPanelFrame, AccessPasswordToggle } from './access-panel-frame';
@@ -18,6 +19,14 @@ type FlowProps = Readonly<{
   flow: AccessFlowState;
   dispatch: Dispatch<AccessFlowEvent>;
 }>;
+
+type AccessFlowPanelProps = FlowProps &
+  Readonly<{
+    onCredentialSubmit: (email: string, password: string) => void;
+    onLogOut: () => void;
+    signInPending: boolean;
+    logOutPending: boolean;
+  }>;
 
 function SignupEmailScreen({ flow, dispatch }: FlowProps) {
   const { t } = useTranslation('common');
@@ -289,7 +298,14 @@ function ForgotPasswordScreen({ flow, dispatch }: FlowProps) {
   );
 }
 
-export function AccessFlowPanel({ flow, dispatch }: FlowProps) {
+export function AccessFlowPanel({
+  flow,
+  dispatch,
+  onCredentialSubmit,
+  onLogOut,
+  signInPending,
+  logOutPending,
+}: AccessFlowPanelProps) {
   const screen = flow.screen;
 
   switch (screen.id) {
@@ -299,10 +315,11 @@ export function AccessFlowPanel({ flow, dispatch }: FlowProps) {
           condition={flow.condition}
           onCreateAccount={() => dispatch({ type: 'CREATE_ACCOUNT' })}
           onForgotPassword={() => dispatch({ type: 'FORGOT_PASSWORD' })}
-          onCredentialSubmit={() => dispatch({ type: 'REQUEST_SIGN_IN' })}
+          onCredentialSubmit={onCredentialSubmit}
           onProvider={(provider) =>
             dispatch({ type: 'REQUEST_PROVIDER', provider })
           }
+          pending={signInPending}
         />
       );
     case 'SIGN_UP_EMAIL':
@@ -311,6 +328,14 @@ export function AccessFlowPanel({ flow, dispatch }: FlowProps) {
       return <SignupPasswordScreen flow={flow} dispatch={dispatch} />;
     case 'FORGOT_PASSWORD':
       return <ForgotPasswordScreen flow={flow} dispatch={dispatch} />;
+    case 'AUTHENTICATED_RETURN':
+      return (
+        <AccessAuthenticatedReturnPanel
+          condition={flow.condition}
+          onLogOut={onLogOut}
+          pending={logOutPending}
+        />
+      );
     default:
       return <AccessDownstreamPanel flow={flow} dispatch={dispatch} />;
   }
