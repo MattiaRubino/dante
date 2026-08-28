@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import danteSymbolRaw from '../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?raw';
+import danteSymbolUrl from '../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkRaw from '../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?raw';
 import { PRIMARY_DESTINATIONS } from '../model/navigation';
 import { AccountMenuContent } from './account-menu';
@@ -19,7 +19,6 @@ import { LauncherMenuContent } from './launcher-menu';
 import { MenuPopover } from './primitives/menu-popover';
 import { TopbarSearchSurface } from './topbar-search-surface';
 
-const danteSymbolBrand = danteSymbolRaw.replaceAll('#222F37', 'currentColor');
 const danteWordmarkCurrentColor = danteWordmarkRaw.replaceAll(
   '#222F37',
   'currentColor',
@@ -119,10 +118,10 @@ export function GlobalTopbar() {
           aria-label={t(($) => $.common.shell.topbar.brandHomeLabel)}
           onClick={() => setSearchOpen(false)}
         >
-          <span
+          <img
             className="app-topbar-brand-symbol"
-            aria-hidden="true"
-            dangerouslySetInnerHTML={{ __html: danteSymbolBrand }}
+            src={danteSymbolUrl}
+            alt=""
           />
           <span
             className="app-topbar-brand-wordmark"
