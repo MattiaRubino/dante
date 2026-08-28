@@ -2,6 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 const baseURL = 'https://127.0.0.1:4173';
 
+process.env.DANTE_E2E_SIGNIN_RATE_CAPACITY = '2';
+
 export default defineConfig({
   testDir: './e2e/auth',
   fullyParallel: false,
