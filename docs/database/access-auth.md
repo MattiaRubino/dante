@@ -1,6 +1,6 @@
 # DANTE Access/Auth Database Reference
 
-- **Status:** CURRENT / BRANCH-LOCAL / M3 BACKEND SPINE MATERIALIZED + DIRECT REAL POSTGRESQL PROOF PASS
+- **Status:** CURRENT / BRANCH-LOCAL / M3 CLOSED / DATABASE SPINE MATERIALIZED + PROVEN
 - **Branch:** `feature/access-auth`
 - **Current Alembic head on this branch:** `20260827_10`
 - **Protected-main CP6 baseline:** `20260826_08`
@@ -9,33 +9,43 @@
 - **Architecture authority:** `../architecture/access-auth-architecture.md`
 - **Security authority:** `../architecture/access-auth-security-contract.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
+- **Current workstream:** `../workstreams/access-auth.md`
 
 ## 1. Purpose
 
-This document is the detailed current Access/Auth module of the DANTE Database System of Record. It is **not** a detached post-CP6 amendment and it does not replace the whole-DB reference. The whole-DB reference accounts for Access/Auth topology and resolved former deferrals; this file owns the detailed schema meaning for the Access/Auth persistence introduced by M3-A and the bounded account-security locking capability added by the M3 backend spine.
+This document is the detailed current Access/Auth module of the DANTE Database System of Record. It does not replace the whole-DB reference. The whole-DB reference owns global topology and current whole-database reconciliation; this file owns the detailed meaning of Access/Auth persistence introduced by M3 and the bounded account-security lock capability used by the production signin/session spine.
 
-The documentation relationship is:
+Authority relationship:
 
 ```text
 docs/database/README.md
-→ Database System of Record / authority + lifecycle
+→ Database System of Record / lifecycle
 
 whole-DB current/evolving reference
-→ dante-postgresql-database.md + continuations
-→ global topology, cross-family invariants, resolved/open whole-DB questions
+→ global topology and current inventory
 
 this file
-→ detailed Access/Auth DB topology and object semantics
+→ Access/Auth object semantics and DB proof
 
 Dictionary + SQLAlchemy + Alembic + real PostgreSQL + tests
-→ machine/executable/observed representations and proof
+→ machine/executable/observed representations
 ```
 
-Historical CP6 reasons for deferring Account persistence remain useful rationale, but `DB-U09` is no longer a current unresolved item on this branch: its trigger was satisfied by the closed Access/Auth architecture and M3-A materialization. `DB-U10` is likewise resolved **without** a Principal table because Principal remains runtime-derived security context.
+Historical CP6 deferrals remain valid history, but they are no longer current unresolved truth:
 
-This module does not reinterpret Domain, Logical, Physical or the PostgreSQL Persistence Constitution.
+```text
+DB-U09 Account persistence
+→ RESOLVED / MATERIALIZED
 
-The first M3 backend spine materializes only the persistence/capability required for email/password signin and server-authoritative session admission:
+DB-U10 Principal/security persistence
+→ RESOLVED WITHOUT PERSISTENCE
+```
+
+`Person != Account != Principal != Actor` and `AuthSession != dante.session` remain mandatory.
+
+---
+
+## 2. Current M3 topology
 
 ```text
 Account
@@ -47,33 +57,36 @@ bounded DB capability
 └── acquire_account_security_lock(uuid)
 ```
 
-Deliberately not materialized here:
+Current branch inventory:
+
+```text
+PostgreSQL          18.6
+Alembic             20260827_10
+72 tables
+5 views
+15 routines
+75 triggers
+104 physical indexes
+71 foreign keys
+137 CHECK constraints
+92 standalone Dictionary entries
+```
+
+Not materialized by M3:
 
 ```text
 ExternalIdentity
 PasskeyCredential
-recovery/verification proof tables
+verification/recovery proof persistence
+provider state
 TOTP / MFA / recovery codes
 Principal table
 Account ↔ Person convenience relation
 ```
 
-`Person != Account != Principal != Actor` remains mandatory. `AuthSession != dante.session` remains mandatory.
+Those are not omissions in M3. They belong to later gated slices if their semantics require persistence.
 
-## 2. Current topology
-
-```mermaid
-flowchart TD
-    A[account] --> E[email_identity]
-    A --> P[password_credential]
-    A --> S1[auth_session]
-    A --> S2[auth_session ...]
-    L[acquire_account_security_lock] -. transaction-scoped lock .-> A
-    PERSON[person] -. no implicit FK/equivalence .- A
-    PRINCIPAL[Principal runtime only] -. derived .-> A
-```
-
-All four new stable row identifiers use application-issued UUIDv7 values. That UUID format does **not** make them `NativeRef`; Access/Auth references are their own security/application identities.
+---
 
 ## 3. `dante.account`
 
@@ -106,13 +119,15 @@ UPDATE  no
 DELETE  no
 ```
 
-The runtime therefore cannot acquire a row lock through direct `SELECT ... FOR UPDATE`, because PostgreSQL requires the corresponding table UPDATE privilege. M3 keeps Account UPDATE denied and exposes only the narrow migration-owned `dante.acquire_account_security_lock(uuid)` capability for transaction-scoped account-security serialization.
+The runtime cannot acquire the required security row lock through direct `SELECT ... FOR UPDATE`, because PostgreSQL requires corresponding UPDATE privilege. M3 deliberately keeps Account UPDATE denied and exposes only the narrow database-owned `dante.acquire_account_security_lock(uuid)` function for transaction-scoped account-security serialization.
 
-Account creation/disable mutation surfaces belong to later slices and receive their own least-privilege evolution.
+Later Account creation/disable/change operations must receive their own narrow reviewed capabilities; do not widen Account UPDATE merely for convenience.
+
+---
 
 ## 4. `dante.email_identity`
 
-Role: canonical DANTE login/contact email identity representation for an Account.
+Role: canonical DANTE email identity representation for an Account.
 
 Columns:
 
@@ -120,19 +135,19 @@ Columns:
 email_identity_ref uuid        PK, UUIDv7
 account_ref        uuid        FK → account
 address            text        normalized delivery/display form
-comparison_key     text        UNIQUE canonical lookup/identity key
+comparison_key     text        UNIQUE canonical lookup key
 created_at         timestamptz finite
 verified_at        timestamptz nullable, finite and >= created_at
 ```
 
-`address` and `comparison_key` are deliberately separate. Application normalization/comparison policy remains:
+Application normalization/comparison:
 
 ```text
 local comparison  NFC + Unicode casefold
 domain comparison UTS #46 / IDNA canonical ASCII lowercase
 ```
 
-PostgreSQL is the final concurrency arbiter through `uq_email_identity_comparison_key`.
+`address` and `comparison_key` are deliberately separate. PostgreSQL remains the final concurrency arbiter through `uq_email_identity_comparison_key`.
 
 Explicit index:
 
@@ -140,7 +155,9 @@ Explicit index:
 ix_email_identity_account_ref(account_ref)
 ```
 
-Current runtime ACL is SELECT only. Signup/email-change mutations are not opened early.
+Current runtime ACL is SELECT only. M4 signup/verification/email-lifecycle work must add mutation capability only through its exact accepted contract.
+
+---
 
 ## 5. `dante.password_credential`
 
@@ -157,9 +174,17 @@ created_at              timestamptz finite
 updated_at              timestamptz finite and >= created_at
 ```
 
-`UNIQUE(account_ref)` enforces the accepted `Account → 0..1 current PasswordCredential` cardinality.
+`UNIQUE(account_ref)` enforces `Account → 0..1 current PasswordCredential`.
 
-The verifier check requires an Argon2id v19 encoded shape. This is database shape defense only; exact algorithm parameters are application security policy and remain explicit in the Auth password implementation.
+The verifier shape check is database defense; exact security parameters remain application policy:
+
+```text
+Argon2id v19
+memory 64 MiB
+time cost 3
+parallelism 4
+separate HMAC-SHA256 pepper
+```
 
 Never persisted:
 
@@ -179,7 +204,9 @@ INSERT                                      no
 DELETE                                      no
 ```
 
-The narrow UPDATE exists for authenticated verifier upgrade/rehash after authoritative stale-credential revalidation. Account binding and credential identity cannot be changed by the runtime role.
+The narrow UPDATE exists only for authenticated verifier upgrade/rehash after authoritative stale-credential revalidation. Runtime cannot change Account binding or credential identity.
+
+---
 
 ## 6. `dante.auth_session`
 
@@ -200,26 +227,24 @@ revoked_at             timestamptz nullable
 revocation_reason_code text        nullable
 ```
 
-`secret_verifier` stores SHA-256 of a CSPRNG 256-bit session secret. The raw secret is returned only through the approved client transport after durable commit/reconciliation and is never stored in PostgreSQL.
+`secret_verifier` stores SHA-256 of the CSPRNG session secret. The raw bearer secret is never stored in PostgreSQL and is emitted to the browser only after durable commit or safe ambiguous-outcome reconciliation.
 
-Chronology checks require finite timestamps and coherent ordering. Revocation is represented terminally as a paired timestamp + non-empty reason code.
-
-Current usability remains derived:
+Current usability is derived:
 
 ```text
 not revoked
-AND within authoritative expiry
-AND within inactivity policy
-AND owning Account is usable
+AND overall expiry not reached
+AND inactivity expiry not reached
+AND owning Account is active
 ```
 
-There is intentionally no redundant mutable `EXPIRED` status flag.
+No mutable `EXPIRED` flag is persisted.
 
 Indexes:
 
 ```text
-uq_auth_session_secret_verifier(secret_verifier)  unique lookup/integrity
-ix_auth_session_account_ref(account_ref)           account session enumeration/revocation
+uq_auth_session_secret_verifier(secret_verifier)
+ix_auth_session_account_ref(account_ref)
 ```
 
 Current runtime ACL:
@@ -233,11 +258,13 @@ UPDATE secret/account/session identity or auth timestamps no
 DELETE                                                   no
 ```
 
-Session-secret rotation on reauthentication is not opened by this ACL because reauthentication belongs to a later slice.
+Current logout is terminal revocation, not physical deletion.
 
-## 7. Foreign-key and deletion posture
+---
 
-M3-A adds exactly three FKs:
+## 7. Foreign-key/deletion posture
+
+M3 adds exactly three Auth foreign keys:
 
 ```text
 email_identity.account_ref       → account.account_ref
@@ -245,46 +272,97 @@ password_credential.account_ref  → account.account_ref
 auth_session.account_ref         → account.account_ref
 ```
 
-All use `NO ACTION` update/delete behavior. Security identity/session history is not cascade-deleted implicitly.
+All use `NO ACTION` update/delete behavior. Security identity/session state is not cascade-deleted implicitly.
 
-No runtime DELETE is granted on the new tables. Current logout is represented by terminal `AuthSession` revocation, not physical deletion.
+No current runtime DELETE exists on the Auth tables.
 
-## 8. Transaction/concurrency relationship
+---
 
-The schema plus migration `20260827_10` support the M2.9 signin contract; they do not replace application-level transaction ownership.
+## 8. Account security lock
+
+Migration `20260827_10_m3_auth_security_lock.py` introduces:
 
 ```text
-short read
-→ EmailIdentity / Account / PasswordCredential snapshot
-→ expensive Argon2 + external breach intelligence outside DB transaction
-→ BEGIN
-→ SELECT dante.acquire_account_security_lock(account_ref)
-→ re-read Account + current PasswordCredential
-→ prove the authenticated credential is still current
-→ insert AuthSession
-→ COMMIT or reconcile ambiguous outcome with a fresh session
-→ only then issue raw Web session secret
+dante.acquire_account_security_lock(uuid)
+SECURITY DEFINER
+owner dante_owner
+trusted exact search_path
+VOLATILE
+PARALLEL UNSAFE
+not leakproof
 ```
 
-`dante.acquire_account_security_lock(uuid)` is a deliberately narrow `SECURITY DEFINER` function owned by `dante_owner`, with exact trusted search path and direct EXECUTE granted only to `dante_runtime`. It takes the canonical Account row lock inside the caller's transaction while preserving deny-by-default direct Account mutation privileges.
+Privilege posture:
 
-Account is the natural serialization row for account-wide security mutations. Normal authenticated request admission remains a read path and does not lock Account merely to authenticate.
+```text
+PUBLIC EXECUTE           no
+dante_migrator EXECUTE   no
+dante_runtime EXECUTE    yes
+Account UPDATE runtime   no
+direct FOR UPDATE runtime no
+```
 
-Two legitimate concurrent signins may create two independent AuthSessions. Reset/disable races must be serialized/revalidated by the application operation when those mutations materialize.
+The function takes the canonical Account row lock inside the caller's existing transaction and returns no authority beyond the lock operation.
 
-## 9. Dictionary / mapping / Alembic traceability
+Real two-connection proof verifies:
+
+```text
+runtime direct FOR UPDATE          denied / 42501
+security function acquires lock    yes
+competing NOWAIT lock              blocked / 55P03
+rollback releases lock             yes
+```
+
+Do not replace this with advisory Account locks or broad Account UPDATE grants.
+
+---
+
+## 9. Signin transaction relationship
+
+M3 signin intentionally keeps expensive work outside the authoritative mutation transaction:
+
+```text
+read EmailIdentity / Account / PasswordCredential snapshot
+→ Argon2 + HIBP outside DB transaction
+→ BEGIN
+→ acquire_account_security_lock(account_ref)
+→ re-read Account + current credential
+→ prove authenticated evidence is still current
+→ optional narrow verifier rehash
+→ insert AuthSession
+→ COMMIT
+→ reconcile ambiguous outcome if necessary
+→ only then issue raw session secret
+```
+
+Rules:
+
+```text
+READ COMMITTED default
+Account row = serialization point for account-wide security mutation
+no hidden commit
+no blind ambiguous-commit retry
+no network/human wait inside DB transaction
+two valid concurrent signins may create two independent sessions
+```
+
+Normal session admission is a read path and does not lock Account merely to authenticate a request.
+
+---
+
+## 10. Migration / mapping / Dictionary traceability
 
 Migrations:
 
 ```text
 20260827_09_m3_auth_signin_spine.py
-→ Account / EmailIdentity / PasswordCredential / AuthSession
+→ account / email_identity / password_credential / auth_session
 
 20260827_10_m3_auth_security_lock.py
 → acquire_account_security_lock(uuid)
 ```
 
-SQLAlchemy mapping:
+SQLAlchemy:
 
 ```text
 dante.platform.database.mappings.auth
@@ -304,14 +382,14 @@ dictionary/tables/auth_session.json
 dictionary/routines/acquire_account_security_lock.json
 ```
 
-The Dictionary v1 schema was generalized at the first post-CP6 evolution so `introducing_stage`/`runtime_acl_stage` can truthfully identify later product stages such as `M3-A` instead of pretending new objects belonged to CP6.
+The post-CP6 Dictionary schema supports truthful later `introducing_stage`/`runtime_acl_stage` values instead of pretending later product objects belonged to CP6.
 
-## 10. Protected-main baseline vs current branch
+---
 
-CP6 remains exact historical/acceptance evidence at Alembic `20260826_08`; it is not the ceiling of the evolving database reference:
+## 11. Protected-main baseline vs current branch
 
 ```text
-                         CP6 baseline   M3 backend current
+                         CP6 baseline   M3 branch current
 tables                   68             72
 views                     5              5
 routines                  14             15
@@ -320,119 +398,102 @@ triggers                  75             75
 physical indexes          95             104
 foreign keys              68             71
 CHECK constraints         120            137
+Alembic                   20260826_08    20260827_10
 ```
 
-`docs/database/dictionary/scope.json` deliberately records both:
+`dictionary/scope.json` keeps CP6 `expected_baseline` separate from current materialization. Later product evolution must not rewrite historical CP6 acceptance counts.
 
-```text
-expected_baseline
-→ immutable CP6 closure benchmark
+---
 
-current_materialization
-→ current branch database inventory
-```
-
-Post-CP6 growth must never rewrite CP6 acceptance evidence merely to make current counts fit. Equally, the whole-DB current reference must not keep a resolved product/database question marked as current `DEFERRED` merely because CP6 originally deferred it.
-
-## 11. Former whole-DB deferral resolution
-
-M3-A is the first concrete use of the permanent current-reference reconciliation rule.
+## 12. Former whole-DB deferrals
 
 ```text
 DB-U09 — Account persistence
-CP6 disposition:
-→ DEFERRED correctly because Access/Auth semantics were not closed.
+CP6:
+→ correctly DEFERRED while Access/Auth semantics were open.
 
-Current branch resolution:
-→ RESOLVED / MATERIALIZED by Access/Auth M2 architecture + M3-A.
-→ dante.account
-→ dante.email_identity
-→ dante.password_credential
-→ dante.auth_session
-→ first migration 20260827_09
+Current:
+→ RESOLVED / MATERIALIZED.
+→ account + email_identity + password_credential + auth_session.
 
 DB-U10 — Principal/security persistence
-CP6 disposition:
-→ DEFERRED correctly because AuthN/AuthZ runtime context was not closed.
+CP6:
+→ correctly DEFERRED.
 
-Current resolution:
+Current:
 → RESOLVED WITHOUT PERSISTENCE.
 → Principal is runtime-derived from Account + AuthSession + request/security context.
-→ no Principal table is selected.
 ```
 
-These resolutions do not collapse `Person`, `Account`, `Principal` or `Actor` and do not retroactively make CP6's original decision wrong. They update the current reference because the explicit future trigger has now fired.
+These resolutions preserve `Person != Account != Principal != Actor` and do not retroactively invalidate CP6.
 
-## 12. Direct proof obligations
+---
 
-Repository tests are structured as distinct authorities:
+## 13. Direct proof
+
+Real PostgreSQL execution completed for the M3 backend/database spine:
 
 ```text
-test_cp6_final_catalog.py
-→ migrate a fresh database explicitly to 20260826_08
-→ prove the CP6 topology independently of later evolution
-
-test_current_catalog.py
-→ migrate to repository head
-→ prove current Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL
-→ prove exact Auth runtime ACLs
-→ prove the narrow Account security-lock capability and transaction-scoped row lock
-
-test_migrations.py
-→ prove the single current head, fresh upgrade, round trip and Alembic drift check
-
-test_signin_session.py
-→ prove real signin/session/bootstrap/logout behavior against disposable PostgreSQL 18.6
+real PostgreSQL marked suite                                         83 / 83 PASS
+real signin/session API integration                                   4 / 4 PASS
+CP6 historical regression                                             PASS
+current catalog / Auth ACL / Account security lock                    PASS
+migration fresh-head / round-trip / Alembic drift                     PASS
+privilege / runtime / transaction suites                              PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL                   PASS
 ```
 
-Required real execution uses the existing disposable PostgreSQL 18.6 acceptance harness. Static review of these files is not a PASS substitute.
-
-The M3 backend PostgreSQL execution completed successfully on 2026-08-28:
+The cross-stack browser harness later proved the same canonical database behavior through the real production Web/FastAPI path:
 
 ```text
-real PostgreSQL marked suite                                         PASS / 83 of 83
-real signin/session integration                                      PASS / 4 of 4
-CP6 M1..M7 historical regression                                    PASS
-current catalog / Auth ACL / Account security lock                   PASS
-migration fresh-head / round-trip / Alembic drift                    PASS
-privilege / runtime / transaction suites                             PASS
-current Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL         PASS
+Chromium / Firefox / WebKit
+7 scenarios each
+21 / 21 PASS
 ```
 
-The same backend checkpoint had already passed the fast non-PostgreSQL suite (`73/73`), Ruff lint, mypy strict and package build before the final PostgreSQL-only test reconciliations. Those final reconciliations touched only historical/runtime test code and the final real PostgreSQL suite passed at branch HEAD.
-
-## 13. Current evidence boundary
-
-The branch has now materialized **and directly proved the M3 backend signin/session spine**.
-
-Directly proved:
+Database-sensitive browser cases include:
 
 ```text
-Alembic head 20260827_10 / migration runtime                         PASS
-PostgreSQL current catalog                                           PASS
-frozen CP6 catalog/baseline behavior                                 PASS
-Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL                  PASS
-exact Auth runtime ACL                                               PASS
-narrow Account security-lock capability                              PASS
-real email/password signin against PostgreSQL                        PASS
-unknown email / wrong-password public equivalence                    PASS
-real AuthSession creation/bootstrap                                  PASS
-current-session logout + independent second-session survival         PASS
-Origin / content-type / CSRF / duplicate-cookie negative behavior    PASS
-runtime DB outage/readiness recovery                                  PASS
-transaction semantics                                                 PASS
+real AuthSession creation/bootstrap/logout
+independent sessions
+server-side AuthSession revoke
+server-side AuthSession expiry
+disposable PostgreSQL actually stopped → service-unavailable/no fake auth → restart
+real process signin rate limiter → 429/no fake auth
 ```
 
-Still outside this backend/database checkpoint:
+The E2E fault-control utility is test support only and does not add public test endpoints to FastAPI.
+
+---
+
+## 14. M3 closure boundary
+
+Database verdict for M3:
 
 ```text
-deterministic committed Auth OpenAPI snapshot
-generated Orval Fetch / @dante/api-client
-Web transport/application boundary
-Access signin/bootstrap/logout UI wiring
-same-origin HTTPS browser proof
-Chromium / Firefox / WebKit full-stack proof
-whole M3 exit gate
+M3 Auth persistence              MATERIALIZED
+current Alembic head             20260827_10
+representation parity            PASS
+runtime ACL                      PASS
+security lock                    PASS
+real PostgreSQL proof            PASS
+full-stack DB-backed proof       PASS
+M3 database work                 CLOSED
 ```
 
-The backend PASS must therefore not be inflated into a claim that the whole M3 full-stack vertical is closed.
+M3 closure does **not** authorize speculative later Auth persistence.
+
+M4 may introduce verification/recovery/account-establishment structures only after the exact proof lifecycle and mutation contract are closed. M5 may introduce ExternalIdentity/PasskeyCredential only when provider/passkey semantics enter implementation. MFA persistence remains deferred.
+
+Permanent rule:
+
+```text
+later Auth need
+→ exact semantic/security contract
+→ minimal forward migration
+→ mapping
+→ Dictionary
+→ whole-DB current reference
+→ this subject reference
+→ direct real PostgreSQL proof
+```

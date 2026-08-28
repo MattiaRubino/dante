@@ -1,8 +1,10 @@
 # DANTE Roadmap
 
-- **Status:** CURRENT
-- **Last reconciled:** 2026-08-26
-- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
+- **Status:** CURRENT FOR `feature/access-auth`
+- **Last reconciled:** 2026-08-28
+- **Protected `main`:** integrated source authority; current Access/Auth branch work is not yet merged
+- **Active vertical:** Access/Auth
+- **Current phase:** M4 next
 
 ## 1. Completed foundations
 
@@ -16,52 +18,47 @@ Domain Model
 Logical Model
         CLOSED / 57 OF 57 / WL-H01..WL-H12
           ↓
-Pre-Physical Repository & Architecture Coherence
+Pre-Physical Coherence
         CLOSED / FINAL QA PASS
           ↓
 Physical Model / Target Selection
-        CLOSED / SELECTED / ACCEPTED
-        PostgreSQL 18 major family canonical
-        exact Physical phase-time patch 18.4 / historical
+        CLOSED / PostgreSQL 18 major family
           ↓
 Engineering Foundation v0
         CLOSED / ACCEPTED
           ↓
 Frontend Engineering Foundation
-        CLOSED / ACCEPTED / INTEGRATED VIA PR #22
+        CLOSED / ACCEPTED
           ↓
 Frontend Production Materialization
-        CLOSED / PASS / INTEGRATED VIA PR #28
+        CLOSED / ACCEPTED
           ↓
-Backend CP1–CP5 Scaffold
-        CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-          ↓
-Backend CP6 Concrete PostgreSQL Database
-        CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #42
+Backend CP1–CP6
+        CLOSED / ACCEPTED / INTEGRATED
           ↓
 Access Pre-Backend Web Materialization
-        CLOSED / ACCEPTED / RELEASE-HARDENED
-        AF-01D / AF-02A / AF-02B / AF-03A PASS
+        CLOSED / ACCEPTED
+          ↓
+Access/Auth M1 — Visual / UX Freeze
+        CLOSED
+          ↓
+Access/Auth M2 — Auth Architecture Freeze
+        CLOSED
+          ↓
+Access/Auth M3 — Email/Password Signin + AuthSession Spine
+        CLOSED / ENGINEERING PASS / USER ACCEPTED
+          ↓
+Access/Auth M4 — Signup + Verification + Recovery + Reset + Reauth
+        NEXT
 ```
 
-Architecture closure remains distinct from product/runtime completion. Closing the pre-backend Access frontend does not close the real full-stack Access/Auth product vertical.
+Architecture closure, a closed macro-phase and whole-product closure are different claims. M3 is closed; the complete Access/Auth vertical is not.
 
-## 2. CP6 is complete
+---
 
-CP6 converted the closed Domain + Logical + Physical model into the concrete DANTE PostgreSQL database.
+## 2. PostgreSQL baseline and branch evolution
 
-```text
-CP6-00  COMPLETE
-CP6-01  CLOSED / GATE 01 PASS
-CP6-02  CLOSED / GATE 02 PASS
-CP6-03  CLOSED / GATE 03 PASS
-CP6-04  CLOSED / MATERIALIZATION PASS
-CP6-05  CLOSED / DIRECT QA PASS
-CP6      CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-         INTEGRATED VIA PR #42
-```
-
-Current materialized baseline:
+Protected-main CP6 historical baseline:
 
 ```text
 PostgreSQL          18.6
@@ -75,88 +72,240 @@ Alembic             20260826_08
 120 CHECK constraints
 ```
 
-CP6 is historical implementation/acceptance work now. Do not route new work through old Gate 03, DB-U*, CP6-04 or protected-main-alignment steps.
-
-Current database authority:
-
-- `database/README.md`
-- `database/dictionary/`
-- `development/backend-cp6-02-postgresql-persistence-constitution.md`
-- `decisions/ADR-010-postgresql-persistence-constitution.md`
-- `development/backend-cp6-05-whole-database-qa.md`
-
-Historical branch record:
-
-- `archive/branches/2026-08-feature-logical-postgresql.md`
-
-## 3. Access frontend materialization is closed
-
-The pre-backend Access Web workstream completed:
+Current Access/Auth branch after M3:
 
 ```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
+PostgreSQL          18.6
+Alembic             20260827_10
+72 tables
+5 views
+15 routines
+75 triggers
+104 physical indexes
+71 foreign keys
+137 CHECK constraints
+92 standalone Dictionary entries
 ```
 
-It intentionally stops backend-authoritative transitions instead of fabricating authentication success. Current frontend truth is `frontend/access.md` plus current code/tests. The closed branch history is `archive/branches/2026-08-feature-access-frontend.md`.
-
-Closing this workstream does not mean real Access/Auth is complete.
-
-## 4. Next implementation — full-stack Access/Auth vertical
-
-The next product implementation boundary is a **new bounded full-stack Access/Auth vertical created from current protected `main`** when explicitly started.
-
-Its expected responsibilities include, as applicable to the final contract:
-
-```text
-account creation / credential authentication
-verification + recovery proof handling
-Google / Apple transaction validation
-secure account linking
-session lifecycle / bootstrap / expiry / revocation
-reauthentication
-server rate-limit/error mapping
-stable Auth OpenAPI
-generated typed client
-frontend/backend integration
-full-stack isolated E2E
-real authenticated Home handoff
-release/legal gates
-native Mobile Access when its implementation gate opens
-```
-
-The vertical may touch backend, frontend, generated API client and tests together. Do not split one product vertical into permanent backend/frontend branches merely because the files live in different technical layers.
-
-Frontend changes required by the real Auth contract belong to that vertical. Independent later visual polish may use a small short-lived UI branch from then-current `main`.
-
-## 5. Database evolution after CP6
+M3 added Account/Auth persistence and the narrow account-security lock capability without reopening CP6 doctrine.
 
 Permanent same-change rule:
 
 ```text
-real structural database change
+structural DB change
 → Alembic forward migration
-→ SQLAlchemy mapping/metadata update
-→ Database Dictionary update
-→ human-readable reference update when meaning/topology changes
-→ generated artifacts/diagrams where governed
-→ direct tests
+→ SQLAlchemy mapping/metadata
+→ Database Dictionary
+→ current/evolving human DB reference
+→ tests
+→ real PostgreSQL proof
 ```
 
-Applied revisions are immutable. A product vertical may reveal a legitimate schema evolution need; that becomes a normal reviewed forward change and does not reopen CP6.
+Applied historical revisions remain immutable. Current references evolve with accepted later truth.
+
+---
+
+## 3. Access/Auth definitive macro-roadmap
+
+### M1 — Access Visual / UX Freeze
+
+**Status:** `CLOSED`
+
+Accepted the existing Web Access design/state baseline. No redesign-from-zero. Backend-authoritative success remains impossible to fake.
+
+### M2 — Auth Architecture Freeze
+
+**Status:** `CLOSED / M2.1–M2.11 ACCEPTED`
+
+Closed:
+
+```text
+same-origin browser topology
+opaque server-side AuthSession
+cookie / CSRF / Origin / Fetch Metadata posture
+Account / EmailIdentity / PasswordCredential / Principal semantics
+multi-session behavior
+password/KDF/breach policy
+passkey-ready architecture
+email normalization/comparison
+/api/v1 + RFC9457 machine errors
+transaction/concurrency/ambiguous outcome policy
+OpenAPI → Orval Fetch → governed client path
+real PostgreSQL + browser proof contract
+```
+
+### M3 — Email/Password Signin + AuthSession Spine
+
+**Status:** `CLOSED / ENGINEERING GATE PASS / USER ACCEPTANCE ACCEPTED`
+
+Implemented:
+
+```text
+Account / EmailIdentity / PasswordCredential / AuthSession persistence
+Account security serialization capability
+email/password signin
+server-authoritative session bootstrap
+current-session logout
+runtime Principal
+FastAPI Auth API
+RFC9457 problems
+cookie / CSRF / Origin / Fetch Metadata enforcement
+OpenAPI 3.1 snapshot
+Orval Fetch + generated Zod
+framework-neutral @dante/api-client
+Web Auth remote boundary
+TanStack Query remote lifecycle
+TanStack Router critical session bootstrap
+real Access signin/session/logout wiring
+real HTTPS full-stack harness
+```
+
+Accepted proof:
+
+```text
+backend fast tests                     73 / 73 PASS
+real PostgreSQL marked suite           83 / 83 PASS
+real Auth API integration              4 / 4 PASS
+Web unit                               25 / 25 PASS
+TypeScript / ESLint / architecture     PASS
+generated drift / build / formatting   PASS
+browser full-stack                     21 / 21 PASS
+Chromium                               7 / 7 PASS
+Firefox                                7 / 7 PASS
+WebKit                                 7 / 7 PASS
+manual UAT                             ACCEPTED
+```
+
+The 21 browser cases cover real signin/logout, bootstrap, invalid credentials, independent sessions, server-side revoke, server-side expiry, real PostgreSQL outage and real rate limiting.
+
+M3 UAT also established the permanent session-bootstrap rule:
+
+```text
+critical auth state unresolved
+→ do not render signed-out as a placeholder
+→ route loader resolves /auth/session
+→ Query cache is ready
+→ AccessPage mounts directly into the authoritative state
+```
+
+A hidden sign-in panel used as a layout placeholder is explicitly rejected because it produced visible recomposition.
+
+### M4 — Signup + Verification + Recovery + Reset + Reauth
+
+**Status:** `NEXT / NOT STARTED`
+
+Build the first-party lifecycle around M3:
+
+```text
+account establishment
+email verification
+neutral recovery initiation
+single-use/replay-safe recovery proof
+password reset
+session revocation after reset
+fresh authentication behavior
+recent-auth / reauthentication
+email delivery abstraction + deterministic test substitute
+```
+
+M4 must close exact proof lifecycle semantics before introducing new persistence. No generic verification/recovery token god-table by convenience.
+
+### M5 — Google + Apple + Passkeys + Explicit Linking
+
+**Status:** `NOT STARTED`
+
+Implement official current provider flows and WebAuthn/passkeys while preserving:
+
+```text
+issuer + subject provider identity
+explicit Account collision/linking
+provider authentication != Gmail/Calendar/iCloud authorization
+passwordless Account support
+canonical DANTE Account/AuthSession authority
+```
+
+MFA remains deferred unless separately promoted.
+
+### M6 — Native Mobile Access
+
+**Status:** `NOT STARTED`
+
+Materialize Access on the existing Expo/React Native/Expo Router foundation using the same canonical Auth backend and native-appropriate secure credential transport/storage.
+
+### M7 — Security Hardening + Authenticated Handoff + Vertical Closure
+
+**Status:** `NOT STARTED`
+
+Whole-vertical proof:
+
+```text
+threat/security review
+rate/resource abuse
+replay/race/concurrency
+session management
+provider/passkey collisions
+privacy/legal destinations
+accessibility/responsive/native proof
+client/schema drift
+CI/release posture
+authenticated handoff into the next product vertical
+manual user acceptance
+```
+
+Only then may the **whole Access/Auth vertical** be declared closed.
+
+---
+
+## 4. M3 reusable foundations for later phases
+
+M4–M7 must reuse rather than replace:
+
+```text
+Account security root
+AuthSession semantics
+runtime Principal
+same-origin Web security posture
+RFC9457 machine error contract
+deterministic OpenAPI/client generation
+Web remote/application boundary
+TanStack Query remote lifecycle
+Router-first critical session bootstrap
+real PostgreSQL acceptance harness
+real HTTPS Chromium/Firefox/WebKit Auth harness
+```
+
+Do not build parallel Auth/session stacks for signup, providers, passkeys or Native.
+
+---
+
+## 5. Persistent Web rules after M3
+
+```text
+backend + PostgreSQL own canonical accepted effect
+REQUEST_* != SERVER_* authoritative result
+unknown/loading != signed-out/empty
+route code imports feature public API, not deep internals
+TanStack Query owns remote lifecycle, not canonical Auth truth
+no persisted browser Auth cache
+mutation retry disabled unless a future exact operation proves it safe
+background refetch must not destroy resolved UI
+production code never imports prototypes
+```
+
+The accepted browser hard-refresh may have a brief document repaint; that is not a reason to reintroduce false Auth states or unstable placeholders.
+
+---
 
 ## 6. Capability-triggered implementation
 
-Selected specialist components activate only at real product/operational triggers:
+Specialist components activate only when a real consumer exists:
 
 ```text
 PowerSync + encrypted SQLite
 → real offline/multi-device implementation
 
 PostgreSQL transactional outbox
-→ real Class-A async requirement
+→ concrete Class-A async requirement
 
 R2
 → real ContentArtifact byte flow
@@ -165,101 +314,47 @@ OR-Tools
 → solver-backed capability
 
 Restate
-→ first real Class-B durable workflow
+→ first concrete Class-B durable workflow
 
 PgBouncer
-→ concrete connection-management need + direct validation
+→ measured connection-management need
 
 pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
+→ recovery/production boundary or rehearsal
 ```
 
-A selected component is not implemented merely because it appears in architecture.
+Selected architecture is not equivalent to activated runtime.
 
-## 7. Persistent frontend direction
+---
 
-The generic frontend engineering foundation, production materialization and pre-backend Access Web materialization are closed. Future frontend work is vertical/product work rather than another generic foundation phase.
+## 7. Branch / worktree roadmap rule
 
-Persistent rules remain:
+Continue Access/Auth on:
 
 ```text
-backend + PostgreSQL own canonical accepted effect
-Web baseline online-first
-Mobile local/offline state remains noncanonical
-identity-scoped local data
-feature-first app boundaries
-route/navigation adapters remain thin
-shared packages require real multi-consumer value
-production never imports prototypes
-current design tokens / i18n / time contracts remain governed
+branch:    feature/access-auth
+worktree:  /home/mattia/projects/dante
 ```
 
-## 8. Infrastructure / release boundaries still deferred
+Do not create a new branch merely because M4 begins. Do not use `/home/mattia/projects/dante-frontend` for this vertical. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without an explicit user gate.
 
-Do not prematurely materialize infrastructure merely to complete a diagram.
+A new chat does not change any of these rules.
 
-Still trigger-bound/not currently complete:
+---
+
+## 8. Immediate sequence
 
 ```text
-production backend compute provider / sizing
-IaC engine and production infrastructure rollout
-production registry/release pipeline where not yet required
-recovery/PITR rehearsal
-real V1→V2 business-schema evolution rehearsal
-PowerSync product activation
-Restate product activation
-production deployment
+1. accept M3 closure documentation/readback
+2. keep feature/access-auth active
+3. begin M4 by closing the exact signup/verification/recovery/reset/reauth contract
+4. materialize only M4 persistence justified by that contract
+5. implement backend → OpenAPI → generated client → Web as one vertical slice
+6. prove race/replay/security behavior on real PostgreSQL
+7. prove critical Web behavior in the real HTTPS browser harness
+8. reconcile durable docs at each closure
+9. proceed to M5, M6, M7 on the same vertical unless explicitly re-gated
+10. merge to protected main only under a separate user gate
 ```
 
-When these become real workstreams, current evidence must replace design-time assumptions.
-
-## 9. Documentation lifecycle baseline
-
-```text
-current specifications state current truth directly
-temporary live/session handoffs do not enter protected main
-completed branch history is retained only when materially useful
-historical evidence is explicitly non-authoritative
-frozen split documents are compacted only when lossless knowledge coverage is proven
-Git remains the complete recoverable chronology
-```
-
-Current authority:
-
-- `development/documentation-lifecycle-policy.md`
-- `development/documentation-and-handoff.md`
-- `development/branching-and-environments.md`
-- `development/operating-rules.md`
-- `docs/README.md`
-
-Fewer files is not a success criterion by itself. Remove/compact only after knowledge coverage.
-
-## 10. Persistent engineering rules
-
-```text
-SELECTED ARCHITECTURE != IMPLEMENTED COMPONENT
-DOCUMENTATION PASS != DIRECT IMPLEMENTATION PASS
-HISTORICAL 18.4 EVIDENCE != CURRENT 18.6 RUNTIME CLAIM
-POSTGRESQL PATCH REFRESH != PHYSICAL ARCHITECTURE REOPEN
-CLIENT LOCAL STATE != CANONICAL EFFECT AUTHORITY
-ENVIRONMENT != GIT BRANCH
-UNMERGED BRANCH TRUTH != PROTECTED-main TRUTH
-DATABASE MATERIALIZATION != PRODUCT APPLICATION IMPLEMENTATION
-DETERMINABLE SCHEMA EVOLUTION != SPECULATIVE PRE-MATERIALIZATION
-TEMPORARY HANDOFF != DURABLE main DOCUMENTATION
-```
-
-## 11. Immediate sequence
-
-```text
-1. integrate the closed Access frontend baseline into protected main after final hosted CI
-2. close/delete feature/access-frontend; do not reuse it as a permanent layer branch
-3. create the next full-stack Access/Auth vertical from current protected main under an explicit gate
-4. implement backend Auth → stable OpenAPI → generated client → real frontend integration
-5. run full-stack semantic/security/E2E acceptance before closing Access/Auth
-6. use separate short-lived UI polish branches only for independent later design refinement
-7. activate specialist/runtime capabilities only at their real trigger
-8. apply the documentation lifecycle policy continuously
-```
-
-This roadmap intentionally does not pre-create future branches, migrations, APIs or infrastructure before their concrete scope is authorized.
+Do not reopen M3 to redesign already accepted foundations unless new direct evidence demonstrates a real defect or an M4+ requirement cannot be met without an explicit bounded reopen.

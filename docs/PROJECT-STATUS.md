@@ -1,10 +1,11 @@
 # DANTE — Project Status
 
-- **Status:** CURRENT TRUTH
-- **Last reconciled:** 2026-08-26
-- **Protected `main`:** integrated source authority; read the live Git ref for the current SHA
-- **Backend CP6 integration:** PR #42 MERGED
-- **Current product boundary:** pre-backend Access frontend materialization CLOSED / accepted; next full-stack Access/Auth vertical not yet started on a dedicated branch
+- **Status:** CURRENT TRUTH FOR `feature/access-auth`
+- **Last reconciled:** 2026-08-28
+- **Protected `main`:** integrated source authority; current Access/Auth branch work remains unmerged until an explicit merge gate
+- **Active product vertical:** Access/Auth on `feature/access-auth`
+- **Current macro-phase:** M4 next
+- **Last closed macro-phase:** M3 — Email/Password Signin + AuthSession Spine
 
 ## 1. Executive state
 
@@ -16,180 +17,147 @@ DOMAIN MODEL
 CLOSED / SEMANTICALLY COMPLETE FOR CURRENT SCOPE
 
 LOGICAL MODEL
-CLOSED
-57 / 57 CLASSIFIED
-WL-H01..WL-H12 ACTIVE AS BINDING HARDENINGS
+CLOSED / 57 OF 57 CLASSIFIED
+WL-H01..WL-H12 BINDING
 
 PRE-PHYSICAL COHERENCE
 CLOSED / FINAL QA PASS
 
 PHYSICAL TARGET
 CLOSED / SELECTED / ACCEPTED
-PostgreSQL 18 major family
-sole canonical persistence / material-history authority
-Physical phase-time exact patch 18.4 / HISTORICAL
+PostgreSQL 18 major family canonical
 
 ENGINEERING FOUNDATION v0
 CLOSED / ACCEPTED
 
 FRONTEND ENGINEERING FOUNDATION
-CLOSED / ACCEPTED / INTEGRATED VIA PR #22
+CLOSED / ACCEPTED / INTEGRATED
 
 FRONTEND MATERIALIZATION
-CLOSED / PASS / INTEGRATED VIA PR #28
+CLOSED / ACCEPTED / INTEGRATED
 
-PRODUCTION BACKEND SCAFFOLD
-CLOSED / DIRECT QA PASS / INTEGRATED VIA PR #24
-CP1 CLOSED / DIRECT QA PASS
-CP2 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP3 CLOSED / DIRECT QA PASS — PostgreSQL 18.4 historical exact evidence
-CP4 CLOSED / DIRECT REMOTE QA PASS
-CP5 CLOSED / DIRECT INTEGRATED QA PASS
+BACKEND CP1–CP6
+CLOSED / ACCEPTED / INTEGRATED
 
-CP6 — CONCRETE POSTGRESQL DATABASE
-CLOSED / CONCRETE POSTGRESQL DATABASE PASS
-INTEGRATED IN PROTECTED main VIA PR #42
-CP6-00 COMPLETE
-CP6-01 CLOSED / GATE 01 PASS
-CP6-02 CLOSED / GATE 02 PASS
-CP6-03 CLOSED / GATE 03 PASS
-CP6-04 CLOSED / MATERIALIZATION PASS
-CP6-05 CLOSED / DIRECT QA PASS
+ACCESS PRE-BACKEND WEB MATERIALIZATION
+CLOSED / ACCEPTED
 
-CURRENT POSTGRESQL TECHNICAL PATCH
-18.6
+ACCESS/AUTH M1
+CLOSED — Visual / UX Freeze
 
-CURRENT DANTE BUSINESS DATABASE
-MATERIALIZED / MAPPED / DICTIONARY-RECONCILED / DIRECTLY TESTED
-ALEMBIC 20260826_08
-68 tables / 5 views / 14 routines / 75 triggers /
-95 indexes / 68 FKs / 120 CHECKs
+ACCESS/AUTH M2
+CLOSED — Auth Architecture Freeze
 
-ACCESS PRE-BACKEND FRONTEND
-CLOSED / ACCEPTED / RELEASE-HARDENED
-AF-01D PASS
-AF-02A PASS
-AF-02B PASS
-AF-03A PASS
+ACCESS/AUTH M3
+CLOSED — Email/Password Signin + AuthSession Spine
+ENGINEERING GATE PASS
+USER ACCEPTANCE ACCEPTED
 
-FULL ACCESS/AUTH PRODUCT VERTICAL
-NOT CLOSED / REAL BACKEND AUTH NOT IMPLEMENTED
-NEXT DEDICATED FULL-STACK VERTICAL NOT YET STARTED
+ACCESS/AUTH M4
+NEXT / NOT STARTED
+
+WHOLE ACCESS/AUTH VERTICAL
+ACTIVE / NOT CLOSED
+M4–M7 REMAIN
 ```
 
-Architecture/design closure is not the same as runtime/product completion. Closing the Access frontend workstream establishes the accepted frontend baseline; it does not claim real Auth/session/provider behavior.
+M3 closure means the first real authenticated production path is accepted. It does **not** mean signup/recovery/providers/passkeys/native/whole-vertical closure are complete.
 
-## 2. Current protected-main backend/database truth
+---
 
-PR #42 integrated the completed CP6 branch into protected `main` through the required merge-commit path.
+## 2. Protected-main baseline vs active branch truth
 
-Final accepted CP6 implementation candidate:
+Protected `main` still carries the integrated CP6 database baseline until the Access/Auth branch is explicitly merged:
 
 ```text
-22bbc078391d52c43665474bf465593d6225106e
+protected main / CP6 baseline
+PostgreSQL          18.6
+Alembic             20260826_08
+68 tables
+5 views
+14 routines
+75 triggers
+95 physical indexes
+68 foreign keys
+120 CHECK constraints
 ```
 
-Final feature head before merge:
-
-```text
-9297b64c7c912c2cc8e344a6617beb5c91457bbb
-```
-
-Protected-main merge commit:
-
-```text
-117360b9333fd1a8a62d0dfeb0398a4d5811e393
-```
-
-Final database baseline:
+Current `feature/access-auth` database truth after M3:
 
 ```text
 PostgreSQL          18.6
-Alembic head        20260826_08
-
-tables              68
-views                5
-routines             14
-triggers             75
-physical indexes    95
-foreign keys         68
-CHECK constraints   120
-
-custom enum/domain    0
-sequences             0
-materialized views    0
-RLS policies          0
+Alembic             20260827_10
+72 tables
+5 views
+15 routines
+75 triggers
+104 physical indexes
+71 foreign keys
+137 CHECK constraints
+92 standalone Dictionary entries
 ```
 
-Final direct acceptance included:
+The branch adds:
 
 ```text
-Ruff format/check                    PASS
-mypy strict                          PASS
-non-PostgreSQL tests                 37 / 37 PASS
-real PostgreSQL tests                76 / 76 PASS
-build                                PASS
-Dictionary JSON-Schema               PASS
-Dictionary ↔ SQLAlchemy              PASS
-Dictionary ↔ Alembic                 PASS
-Dictionary ↔ live PostgreSQL         PASS
-persistent LOCAL upgrade/restart     PASS
-security / ACL posture               PASS
-GET /health/live                     200
-GET /health/ready                    200
+dante.account
+dante.email_identity
+dante.password_credential
+dante.auth_session
+dante.acquire_account_security_lock(uuid)
 ```
 
-Durable evidence:
+The branch-local current reference must describe these objects even though protected `main` has not yet integrated them.
 
-- `development/backend-cp6-05-whole-database-qa.md`
-- `database/README.md`
-- `database/dictionary/`
-- `archive/branches/2026-08-feature-logical-postgresql.md` — non-authoritative branch history
+---
 
 ## 3. Persistence authority
 
-Current persistence authority is layered rather than chosen ad hoc:
+Permanent database authority chain:
 
 ```text
 Domain / Logical / Physical
 → semantic and architectural source
 
-CP6-02 Constitution + ADR-010
-→ durable PostgreSQL doctrine
+PostgreSQL Persistence Constitution + ADR-010
+→ durable persistence doctrine
 
-Database System of Record
-→ current human-readable database meaning + machine Dictionary
+Database current/evolving reference + Dictionary
+→ current human + machine database meaning
 
 Alembic
-→ deployed application-schema evolution authority
+→ deployed schema evolution authority
 
-SQLAlchemy metadata / mappings
-→ application representation of deployed database contract
+SQLAlchemy mappings
+→ application representation
 
-real PostgreSQL introspection
-→ observed materialized database
+real PostgreSQL catalog
+→ observed materialization
 
 direct tests
 → executable proof
 ```
 
-Permanent reconciliation invariant:
+Required same-change invariant:
 
 ```text
-Database Architecture & Reference
-≈ Database Dictionary
-≈ SQLAlchemy metadata / mappings
-≈ Alembic head
-≈ real PostgreSQL schema
+Dictionary
+≈ SQLAlchemy
+≈ Alembic
+≈ current PostgreSQL
+≈ human current reference
+≈ tests
 ```
 
-A later structural DB change is incomplete if these representations are left inconsistent.
+Historical CP6 acceptance evidence is not rewritten to pretend later Auth objects existed during CP6.
+
+---
 
 ## 4. Binding semantic invariants
 
 ```text
 Person != Account != Principal != Actor
-Person != Living Referent != Asset
+AuthSession != DANTE Session
 Subject != Resource != native identity
 Possibility != Goal != Proposal != Decision != Plan != Activity
 Routine != Recurrence != Occurrence
@@ -201,208 +169,332 @@ Authority != Visibility
 Agreement != Consent
 Ownership != Possession
 provider state != canonical DANTE state
+provider authentication != provider-data integration authorization
 derived projection != canonical truth
 absence/unknown != false
 MaterialStateRef != ETag/MVCC/provider revision
 idempotency != semantic identity
 client local state != canonical accepted effect
+frontend request/success != backend-authoritative success
 ```
 
-Accepted persistence thesis remains owner-specific canonical/material-history families plus specific typed relations and bounded technical addressing/control structures. Universal Entity/Thing, universal generic edges, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
+Universal Entity/Thing, generic semantic edge tables, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
 
-## 5. Reference / material-state baseline
+---
 
-Reference families remain distinct:
+## 5. M3 closed implementation
+
+### Backend
+
+Real Auth operations:
 
 ```text
-NativeRef
-ScopedRecordRef
-MaterialStateRef
-ExternalRef
+POST   /api/v1/auth/signin
+GET    /api/v1/auth/session
+DELETE /api/v1/auth/session
 ```
 
-Current physical direction:
+Implemented security/runtime spine:
 
 ```text
-homogeneous NativeRef
-→ direct FK
-
-genuinely heterogeneous NativeRef
-→ bounded native-address anchor
-
-MaterialStateRef
-→ UUIDv7 stable address
-→ bounded material-state address/control
-→ exact owner + facet
-→ owner-specific material-state row
-→ explicit current accepted-state binding where required
+email normalization/comparison
+Argon2id + separate HMAC pepper
+HIBP range integration
+bounded KDF admission/concurrency
+unknown-account dummy verification
+opaque PostgreSQL-backed AuthSession
+runtime Principal
+Secure HttpOnly host-only __Host-dante-session
+session-bound CSRF
+Origin + Fetch Metadata + X-Dante-Client Web protection
+RFC9457 problem responses
+ambiguous AuthSession commit reconciliation
+current-session logout/revocation
+Account-row security serialization through narrow DB function
 ```
 
-No application-only `type + uuid` polymorphic integrity.
-
-## 6. Backend technical foundation
-
-Current backend baseline:
+### OpenAPI/client
 
 ```text
-Python                              3.14.x / initial exact pin 3.14.7
-uv                                  repository package authority
-schema                              dante
-SQLAlchemy                          async 2.0 stable line
-psycopg                             3
-Alembic                             one environment / one DAG / one head
-one AsyncEngine per process
-one async_sessionmaker per process
-one AsyncSession per app operation
-autobegin=False
-autoflush=True
-expire_on_commit=False
-outer application operation owns transaction
-adapter may flush / never implicit commit
-READ COMMITTED default
-
-dante_owner                         NOLOGIN ownership identity
-dante_migrator                      LOGIN migration identity
-dante_runtime                       LOGIN application runtime identity
+FastAPI/Pydantic
+→ deterministic OpenAPI 3.1
+→ Orval Fetch
+→ generated TypeScript/Zod
+→ governed framework-neutral @dante/api-client
 ```
 
-No generic Repository/UoW/BaseService architecture is introduced merely for uniformity.
+No Axios, no generated React Query hooks, no hand-edited generated output and no persisted browser Auth cache.
 
-## 7. PostgreSQL version truth
+### Web
+
+Real Web integration now exists through:
 
 ```text
-POSTGRESQL ARCHITECTURE
-major 18
-
-PHYSICAL PHASE-TIME EXACT PATCH
-18.4 / historical
-
-CP2 / CP3 ORIGINAL DIRECT EVIDENCE
-18.4 / historical exact
-
-CURRENT REPOSITORY PATCH
-18.6
-
-CURRENT MATERIALIZED DANTE DATABASE
-18.6 / Alembic 20260826_08
+TanStack Router
+→ Access feature public API
+→ TanStack Query remote lifecycle
+→ Web Auth remote adapter
+→ @dante/api-client
+→ same-origin /api/v1
 ```
 
-Patch maintenance inside major line 18 does not reopen the accepted database architecture or rewrite historical direct evidence.
+The Access reducer never authenticates from request intent alone.
 
-## 8. Access frontend baseline
+---
 
-The completed `feature/access-frontend` workstream materialized the approved pre-backend Web Access system and release-hardened it without inventing fake Auth success.
+## 6. Session bootstrap / refresh rule
 
-Accepted checkpoints:
+M3 UAT found and fixed a real authenticated-refresh defect.
+
+Rejected behavior:
 
 ```text
-AF-01D  shell completion / professional polish      PASS
-AF-02A  complete pre-backend frontend state graph   PASS
-AF-02B  downstream surface hardening                PASS
-AF-03A  release-hardening viewport matrix           PASS
+initial reducer = SIGN_IN
+→ paint login
+→ async /auth/session
+→ repair UI after paint
 ```
 
-Current durable authority:
-
-- `frontend/access.md`
-- current `apps/web` Access code/tests
-- `archive/branches/2026-08-feature-access-frontend.md` for non-authoritative branch history
-
-The accepted frontend remains intentionally backend-incomplete. Real account creation/authentication, verification/recovery mutation, provider validation/linking, sessions, reauthentication, server error/rate-limit mapping, stable Auth OpenAPI, generated Auth client integration, full-stack E2E, real Home handoff, legal destinations and native Mobile Access are not claimed complete.
-
-## 9. Next product implementation boundary
-
-There is no active CP6 continuation. CP6 is complete.
-
-The next concrete product implementation should be a **full-stack Access/Auth vertical** created from current protected `main` under a fresh bounded branch when explicitly started. Branches should follow product verticals rather than permanent backend/frontend layer lines.
-
-That vertical may modify backend and frontend together where the real contract requires it. Pure later UX polish may use a separate short-lived UI branch from then-current `main` when it is independent of the vertical.
-
-A later vertical may expose a legitimate database evolution requirement. That becomes a normal reviewed forward migration synchronized with the Database System of Record; it does not reopen CP6.
-
-## 10. Capability-triggered components
-
-Selected components remain dormant until a real consuming requirement exists:
+Also rejected:
 
 ```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-PostgreSQL transactional outbox
-→ real Class-A async requirement
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed capability
-
-Restate
-→ first real Class-B durable workflow
-
-pgBackRest + AWS S3
-→ recovery/production boundary or real recovery rehearsal
+keep sign-in panel geometry
++ hide form during bootstrap
+→ removes login flash
+→ introduces perceptible refresh recomposition
 ```
 
-Selected architecture does not imply activated runtime capability.
-
-## 11. Repository / documentation truth
-
-Protected `main` is integrated authority. Unmerged branch truth remains bounded to its branch until merge.
-
-Temporary live/session handoffs are branch-operational only and must not merge into `main`. Completed workstreams may retain at most one justified consolidated branch history record; Git/PR history remains the complete backup.
-
-See:
-
-- `development/documentation-lifecycle-policy.md`
-- `archive/README.md`
-- `development/repository-engineering-safety.md`
-- `development/branching-and-environments.md`
-
-## 12. Current direct-validation non-claims
-
-Do not claim work that has not actually run or been implemented:
+Accepted behavior:
 
 ```text
-FULL-STACK ACCESS/AUTH VERTICAL                  NOT STARTED
-ACCESS REAL BACKEND/FULL-STACK CLOSURE           NOT COMPLETE
-NATIVE MOBILE ACCESS                             NOT IMPLEMENTED
-DIRECT BUSINESS HG-01..HG-12                     NOT BLANKET-PASSED
-RESTORE/PITR REHEARSAL                           NOT RUN
-REAL V1→V2 BUSINESS-SCHEMA EVOLUTION             NOT RUN
-POWERSYNC DIRECT PRODUCT TEST                    NOT RUN
-RESTATE DIRECT PRODUCT TEST                      NOT RUN
-PRODUCTION DEPLOYMENT                            NOT STARTED
+hard refresh
+→ TanStack Router loader resolves authoritative session
+→ Query cache ready
+→ AccessPage mounts once
+→ first business render is already signed-in or signed-out
 ```
 
-The Access frontend branch's historical local/automated evidence must not be inflated: AF-03A full automation was proven before its final one-line width refinement; exact final delta plus visual review were accepted, while the final branch integration still requires hosted PR CI.
-
-## 13. Current navigation
-
-Start from:
+Permanent rule:
 
 ```text
-README.md
-docs/README.md
+unknown/loading != signed-out
+unknown/loading != signed-in
+```
+
+Critical first-screen remote state must not temporarily render a false business state merely because data has not arrived.
+
+The brief browser-owned blank/repaint frame of a hard document reload was manually compared and accepted; it is not an Auth-state or layout regression.
+
+---
+
+## 7. M3 direct proof
+
+### Backend/PostgreSQL
+
+```text
+fast non-PG tests                    73 / 73 PASS
+real PostgreSQL 18.6 marked suite    83 / 83 PASS
+real Auth integration                4 / 4 PASS
+package build                        PASS
+migration/catalog/ACL                PASS
+Dictionary/SQLAlchemy/Alembic/PG     PASS
+Account security lock                PASS
+runtime recovery                     PASS
+transaction behavior                 PASS
+```
+
+### Web
+
+```text
+TypeScript typecheck                 PASS
+ESLint                               PASS
+Vitest                               6 files / 25 tests PASS
+architecture dependency cruise       PASS
+Prettier                             PASS
+production Vite build                PASS
+generated:check                      PASS
+```
+
+### Full stack
+
+```text
+real HTTPS browser
+→ production Vite build
+→ same-origin proxy
+→ real FastAPI
+→ real PostgreSQL 18.6
+
+21 / 21 PASS
+7 scenarios × Chromium / Firefox / WebKit
+```
+
+Browser scenarios prove:
+
+```text
+real signin + cookie + logout
+bootstrap/reload with no false login paint
+wrong credentials
+independent sessions
+server-side revoke
+server-side expiry
+real PostgreSQL outage
+real signin rate limiter / 429
+```
+
+### Manual acceptance
+
+```text
+login flash                  eliminated
+refresh geometry             accepted
+manual user UAT              ACCEPTED
+```
+
+M3 verdict:
+
+```text
+ENGINEERING GATE:      PASS
+USER ACCEPTANCE GATE: ACCEPTED
+M3:                    CLOSED
+```
+
+---
+
+## 8. Current Access frontend truth
+
+The pre-backend Access visual/state system remains the accepted surface, now with real M3 signin/session/logout integration.
+
+Current production rules:
+
+```text
+frontend-owned transition may be local
+backend-authoritative success must come from backend
+transport stays behind application/remote boundary
+route code consumes feature public API, not deep internals
+Auth state is not stored in localStorage/sessionStorage
+session bootstrap is route-coordinated
+background refetch must not reset the screen to false signed-out/loading state
+```
+
+Signup/recovery/provider/passkey/setup surfaces that require later backend behavior remain non-authoritative until their corresponding M4/M5/M7 slices materialize.
+
+---
+
+## 9. Current branch/worktree safety
+
+Continue Access/Auth on:
+
+```text
+branch:    feature/access-auth
+worktree:  /home/mattia/projects/dante
+```
+
+Do not create another `feature/access-*` branch or worktree merely because M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user authorization.
+
+The separate `/home/mattia/projects/dante-frontend` worktree remains independent frontend territory and must not be accidentally used for Access/Auth commands.
+
+---
+
+## 10. Next product boundary — M4
+
+M4 goal:
+
+```text
+Signup
++ Email Verification
++ Recovery
++ Password Reset
++ Reauthentication / Recent Auth
+```
+
+M4 must build on, not replace, the M3 spine.
+
+Required direction:
+
+```text
+close exact proof/token lifecycle semantics first
+→ materialize only justified persistence
+→ backend/FastAPI
+→ deterministic OpenAPI
+→ generated client
+→ Web integration
+→ real PostgreSQL/race/replay proof
+→ full-stack browser proof
+→ durable docs
+```
+
+Important M4 constraints:
+
+```text
+neutral recovery initiation / anti-enumeration
+single-use/replay-safe verification and recovery proofs
+security-sensitive mutations serialized correctly
+reset revocation policy explicit
+fresh authentication behavior explicit
+no speculative generic token god-table
+no fake email delivery success
+```
+
+M5 providers/passkeys, M6 Native and M7 whole-vertical hardening/handoff remain later phases.
+
+---
+
+## 11. Current direct-validation non-claims
+
+Do not claim:
+
+```text
+whole Access/Auth vertical closed                  NO
+M4 signup/verification/recovery/reset/reauth       NOT STARTED
+Google / Apple production authentication           NOT STARTED
+passkeys/WebAuthn                                   NOT STARTED
+Native Mobile Access                               NOT IMPLEMENTED
+whole-vertical legal/release closure               NOT COMPLETE
+production deployment                              NOT STARTED
+PowerSync product activation                       NOT RUN
+Restate product activation                         NOT RUN
+restore/PITR rehearsal                             NOT RUN
+```
+
+M3 closure is deliberately bounded to the first email/password + AuthSession spine.
+
+---
+
+## 12. Current navigation
+
+Start with:
+
+```text
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
+docs/workstreams/access-auth.md
 ```
 
-Backend/database:
+Access/Auth architecture:
 
 ```text
-apps/backend/README.md
-docs/database/README.md
-docs/database/dictionary/README.md
-docs/development/backend-cp6-05-whole-database-qa.md
+docs/architecture/access-auth-architecture.md
+docs/architecture/access-auth-security-contract.md
+docs/architecture/access-auth-api-contract.md
+docs/architecture/access-auth-testing-contract.md
+docs/decisions/ADR-011-access-auth-architecture.md
 ```
 
-Frontend Access:
+Database:
+
+```text
+docs/database/README.md
+docs/database/dante-postgresql-database.md
+docs/database/access-auth.md
+docs/database/dictionary/
+```
+
+Web:
 
 ```text
 docs/frontend/access.md
 apps/web/src/features/access/
-apps/web/e2e/access.spec.ts
+apps/web/src/platform/auth/
+apps/web/e2e/auth/access-auth.spec.ts
 ```
 
-Historical branch narratives under `docs/archive/branches/` are evidence/navigation only and never current authority.
+Historical branch narratives remain evidence only and do not override current implementation/reference truth.

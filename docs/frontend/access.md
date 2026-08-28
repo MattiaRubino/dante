@@ -1,38 +1,42 @@
 # DANTE — Access frontend contract
 
-- **Status:** CURRENT / AUTHORITATIVE FOR THE MATERIALIZED WEB ACCESS FRONTEND
-- **Scope:** accepted Web Access baseline in `apps/web` plus current full-stack integration obligations for `feature/access-auth`
+- **Status:** CURRENT / AUTHORITATIVE FOR MATERIALIZED WEB ACCESS + CLOSED M3 AUTH INTEGRATION
+- **Scope:** accepted Web Access baseline in `apps/web`, closed M3 signin/session/logout integration and carry-forward obligations for M4–M7
 - **Frozen design source:** `prototype/access-system` at `469b68370e80185fa8a16d5335845e402ee1de3b`
-- **Current workstream authority for newer unmerged full-stack decisions:** `../workstreams/access-auth.md`
+- **Current workstream:** `../workstreams/access-auth.md`
 
-## Purpose
+## 1. Purpose
 
-Access gets an unauthenticated person to an authenticated DANTE session and, for a new account, through the smallest useful first-run handoff.
+Access gets an unauthenticated person to a server-authoritative authenticated DANTE session and, in later phases, through the smallest useful first-run/account-lifecycle handoff.
 
-This document owns the current production-frontend contract carried forward from the frozen Access design work and completed Web materialization. Implementation truth remains the checked-out code/tests. The frozen prototype branch is historical design evidence and must not override newer production code, this contract or the active full-stack workstream record.
+This document owns the production Web Access contract. Implementation truth remains current code/tests. The frozen prototype is historical visual evidence and must never override current production code, the active full-stack workstream or newer accepted architecture/security decisions.
 
-## Product invariants
+---
+
+## 2. Product invariants
 
 ```text
 Person != Account != Principal != Actor
-sign-in != external-integration authorization
+AuthSession != DANTE Session
+signin != external-integration authorization
 provider state != canonical DANTE state
 provider authentication != permission to read provider data
 verification != profile setup
-reauthentication != initial sign-in
+reauthentication != initial signin
 client/device signal != person identity
 frontend request/success != backend-authoritative success
+unknown/loading != signed-out/empty
 ```
 
-Google/Apple sign-in authenticates a DANTE account only. Gmail, Calendar, iCloud and other provider-data permissions are separate explicit integration flows.
+Google/Apple authentication is an Auth mechanism only. Gmail, Calendar, iCloud and other provider-data access require separate explicit integration authorization.
 
-## Access Visual / UX Freeze — accepted 2026-08-27
+---
 
-The current Web Access design direction is accepted as the production integration baseline. It must not be redesigned merely for novelty while backend work begins.
+## 3. Visual / UX baseline
 
-Desktop/web review authority remains A3.4. Mobile design authority remains M1.2 + PRG-0.
+The accepted Web Access design direction remains the production baseline. Do not redesign it merely for novelty when a backend phase changes.
 
-The materialized Web composition preserves:
+Composition:
 
 ```text
 warm full canvas
@@ -50,26 +54,24 @@ IT  Comprendi la vita. / Dai forma al prossimo passo.
 EN  Understand life. / Shape what comes next.
 ```
 
-### Geometry rule
+Geometry remains a system:
 
-Access must remain a system, not a collection of one-off visual placements.
+```text
+content bounds
+auth-panel width
+spacing scale
+control heights
+radius hierarchy
+typography hierarchy
+responsive breakpoints
+elevation/surface roles
+```
 
-When the surface is touched, preserve or deliberately evolve a coherent contract for:
+Use governed semantic tokens/roles where available. Mobile-Web is not scaled desktop. Native Mobile Access remains M6 and may use platform-appropriate composition against the same canonical backend semantics.
 
-- content bounds;
-- auth-panel width;
-- spacing scale;
-- control heights;
-- radius hierarchy;
-- typography hierarchy;
-- desktop/compact/tablet/phone breakpoints;
-- elevation/surface roles.
+---
 
-Use semantic design-system/token roles where available rather than adding unrelated repeated raw values. Visual polish may change exact values after review, but the geometry must remain governed and internally consistent.
-
-Mobile is not a scaled desktop. Native Mobile Access is a later implementation macro-phase against the same canonical backend semantics.
-
-## Canonical Access states
+## 4. Canonical Access states
 
 ```text
 SIGN_IN
@@ -94,7 +96,7 @@ DEMO
 HOME_HANDOFF
 ```
 
-Orthogonal frontend conditions are not account states:
+Orthogonal conditions are not Account/Auth states:
 
 ```text
 idle
@@ -104,247 +106,421 @@ server-unavailable
 rate-limited
 ```
 
-Permanent authority rule:
+Permanent transition rule:
 
 ```text
 frontend-owned transition
 → may advance locally
 
 backend-authoritative transition
-→ remain on the safe current state
-→ never fabricate verification/authentication/recovery/link/session success
+→ advance only from real backend result
+→ never fabricate auth/verification/recovery/link/session success
 ```
 
-## Materialized Web baseline
+Preserve:
 
-The completed pre-backend Web materialization includes:
+```text
+REQUEST_* = user/application intent
+SERVER_*  = backend-authoritative result
+```
 
-- production SignIn shell and approved Access surface inventory;
-- staged signup, recovery/reset, provider pending/error, account-link, reauth and lightweight setup/first-run surfaces;
-- feature-local Access state model and reducer tests;
+A `REQUEST_SIGN_IN` transition may never itself establish authenticated state.
+
+---
+
+## 5. Materialized Web baseline through M3
+
+The production Web Access system now includes:
+
+- accepted SignIn shell and full pre-backend Access surface inventory;
+- staged signup/recovery/reset/provider/linking/reauth/setup surfaces for later real integration;
+- feature-local Access reducer/model and tests;
 - IT/EN resources and persisted locale preference with `<html lang>` synchronization;
 - local frontend validation without fake backend success;
 - password show/hide, paste and password-manager-safe behavior;
 - browser offline integration;
 - design-token and feature-boundary enforcement;
-- Testing Library coverage;
-- Playwright production-preview coverage;
-- axe accessibility automation;
-- responsive release-matrix coverage including phone, tablet/narrow, compact desktop and large desktop pressure;
-- reduced-motion and overflow checks;
-- final large-desktop auth-card width refined to a 480px maximum while preserving compact-desktop behavior.
+- responsive/reduced-motion/accessibility foundations;
+- real M3 email/password signin;
+- real authoritative session bootstrap;
+- real current-session logout;
+- real server failure/rate-limit mapping used by the M3 spine;
+- deterministic governed Auth API client integration;
+- TanStack Query remote lifecycle;
+- Router-first critical Auth bootstrap;
+- full-stack cross-browser proof through real FastAPI/PostgreSQL.
 
-The Web frontend is intentionally backend-incomplete rather than backed by a disposable fake Auth service.
+M3 closes only the real email/password + AuthSession spine. Later Access surfaces remain non-authoritative until their M4/M5/M7 backend slices exist.
 
-## Password UX / policy contract
+---
 
-The earlier 12-character minimum is superseded by the current full-stack Access/Auth decision for password-only authentication:
+## 6. Production M3 integration path
+
+Current Web architecture:
 
 ```text
-minimum                    15 characters
+TanStack Router
+→ route loader / route context
+→ Access feature public API
+→ TanStack Query
+→ feature Auth application boundary
+→ platform Web Auth remote
+→ governed @dante/api-client
+→ same-origin /api/v1
+→ FastAPI
+→ PostgreSQL
+```
+
+Important ownership:
+
+```text
+route
+→ navigation/bootstrap coordination only
+
+Access feature
+→ product/application Auth behavior + Access state graph
+
+TanStack Query
+→ remote request/cache lifecycle only
+
+Web Auth remote
+→ browser transport policy
+
+@dante/api-client
+→ governed wire contract/runtime validation
+
+backend + PostgreSQL
+→ canonical Auth authority
+```
+
+Route code imports Access capabilities only through `features/access/index.ts`; route-level deep imports into `features/access/application/*` are forbidden.
+
+Presentation/reducer code does not import generated Orval internals or call raw `fetch`.
+
+---
+
+## 7. Web transport contract
+
+The Web Auth remote owns:
+
+```text
+same-origin relative API use
+credentials: same-origin
+Accept: application/json / application/problem+json
+X-Dante-Client: web
+CSRF injection only for authenticated unsafe mutation
+AbortSignal propagation
+safe header handling
+```
+
+Browser-owned `Origin` and `Sec-Fetch-Site` are not manually forged by application code.
+
+Mutation retry is disabled. Session GET may use only the bounded accepted transient retry behavior. `retryable=true` in a problem response is never blanket permission to replay a mutation.
+
+Auth state/query cache is not persisted to localStorage/sessionStorage.
+
+---
+
+## 8. Session bootstrap contract — M3 UAT regression rule
+
+This rule is now permanent because manual UAT found a real defect.
+
+### Rejected first implementation
+
+```text
+Access reducer initially SIGN_IN
+→ AccessPage paints login
+→ GET /auth/session resolves authenticated
+→ effect repairs state after paint
+```
+
+Result: a visible login flash on authenticated F5.
+
+### Rejected mitigation
+
+```text
+render a real sign-in panel
+→ hide its form while /auth/session is pending
+→ preserve nominal geometry
+```
+
+Result: login flash disappeared but refresh recomposition/rimbalzo became visibly worse. This pattern is rejected.
+
+### Accepted implementation
+
+Critical Auth bootstrap is route-coordinated:
+
+```text
+hard document load
+→ TanStack Router loader resolves/prefetches authoritative /auth/session
+→ Query cache populated
+→ AccessPage mounts
+→ first business render is already SIGNED_IN or SIGNED_OUT
+```
+
+The freshly loader-resolved session is briefly fresh so loader → component mount does not immediately issue a duplicate session read. Subsequent refetches are background lifecycle and must not throw the resolved UI back into bootstrap or signed-out state.
+
+Permanent frontend rule:
+
+```text
+UNKNOWN / LOADING
+!= SIGNED_OUT
+!= SIGNED_IN
+!= ERROR
+```
+
+When a remote fact is critical to the correctness of the first screen, the application must not display a false empty/signed-out state while waiting merely because that is the reducer's convenient default.
+
+### Hard-refresh visual acceptance
+
+Manual Firefox video comparison after the Router-first fix established:
+
+```text
+false login paint                NO
+Access card/brand layout jump    NO app-level regression
+brief whole-document blank       browser hard-reload repaint
+manual acceptance                PASS
+```
+
+Do not reintroduce false Auth states to hide a browser-owned document repaint. A future global HTML/shell paint optimization is a separate Web-platform polish decision, not an M3 Auth fix.
+
+---
+
+## 9. Password UX / policy
+
+Current password-only Auth policy:
+
+```text
+minimum                    15 Unicode code points
 support                    >=64 characters
+request resource bound     current API contract
 mandatory composition      none
 paste/password manager     allowed / first-class
 show/hide                   allowed
 silent truncation           forbidden
-common/breached blocklist  required server-side
+breach screening            server-side HIBP policy
 periodic forced change      not used without a security reason
 ```
 
-Do not add arbitrary composition rules merely because another product uses them.
+Frontend validation is UX. Backend policy remains authoritative.
 
-The server remains authoritative for breached/common-password rejection and any final password acceptance semantics. Frontend validation may provide early feedback but must not become a second independent policy authority.
+---
 
-## Session / multi-device frontend contract
+## 10. Session / multi-client contract
 
-DANTE supports concurrent Web and Native sessions for the same Account.
+DANTE supports concurrent independent AuthSessions.
 
-The frontend must therefore never assume:
+Never assume:
 
 ```text
-one Account == one current session globally
+one Account == one global current session
 ```
 
 Instead:
 
 ```text
 one Account
-→ multiple independent AuthSessions across allowed clients
+→ 0..N independent AuthSessions
 ```
 
-Consequences for Web Access/session UI:
+Consequences:
 
-- current-session logout revokes only the current AuthSession unless the user explicitly chooses a broader action;
-- future logout-all/session-management UI must be possible without changing account semantics;
-- session expiry/revocation must be reflected from backend-authoritative state;
-- a valid session on another device must not be treated as an error;
-- IP/User-Agent/device descriptions are presentation metadata, not identity proof;
-- global session bootstrap is separate from one form reducer lifecycle.
+- current logout revokes only the current AuthSession;
+- another browser/context session may remain authenticated;
+- future revoke-all/session-management is a separate explicit intent;
+- expiry/revocation are reflected from backend-authoritative bootstrap/admission;
+- IP/User-Agent/device metadata is presentation/risk signal, not identity proof;
+- global session bootstrap is not one form reducer lifecycle.
 
-## Provider contract
+M3 full-stack proof directly verifies two independent BrowserContexts and server-side revoke/expiry convergence.
 
-Provider authentication must use the current official provider mechanism/assets where required at real integration time.
+---
 
-The existing pre-backend custom Google/Apple button presentation is a visual baseline only; it is **not** final compliance authority for the production provider integration.
+## 11. Provider contract
+
+Provider authentication must use current official provider protocols/assets at M5 implementation time.
+
+The existing pre-M5 Google/Apple button presentation remains only a visual baseline, not final provider compliance authority.
 
 DANTE owns:
 
-- transaction binding;
-- pending/failure feedback;
-- backend validation handoff;
-- collision/linking UX;
-- authenticated return;
-- canonical DANTE Account/AuthSession state.
+```text
+transaction binding
+pending/failure feedback
+backend validation
+collision/linking UX
+authenticated return
+canonical DANTE Account/AuthSession state
+```
 
 DANTE must not:
 
-- fake provider chooser/consent UI;
-- collect provider credentials;
-- treat provider email alone as proof of an existing DANTE account;
-- silently convert authentication provider permissions into Gmail/Calendar/iCloud integration permissions.
+```text
+fake provider chooser/consent UI
+collect provider credentials
+use provider email alone as existing-account identity proof
+silently link Accounts from matching email
+reuse provider Auth permission as Gmail/Calendar/iCloud data permission
+```
 
-Account collision follows:
+Collision remains:
 
 ```text
 collision
-→ prove control of existing DANTE account
+→ prove existing DANTE Account control
 → explicit link decision
 → backend-authoritative link
 ```
 
-## Passkeys and future MFA
+---
 
-The full-stack architecture is passkey-ready and the production roadmap includes passkeys/WebAuthn.
+## 12. Passkeys and future MFA
 
-The Web frontend must therefore avoid assumptions such as:
+The architecture is passkey-ready. Frontend code must not assume every Account always has a password.
+
+M5 passkey surfaces must reuse the canonical Access/Auth application/session boundary rather than create a parallel login system.
+
+MFA/TOTP/recovery codes/step-up MFA remain deferred. Do not invent an `mfa_enabled` Boolean as a substitute for an assurance/evidence model.
+
+---
+
+## 13. Verification, recovery and reauth relationship
+
+M4 will materialize the backend authority for:
 
 ```text
-all Accounts always have a password
+signup/account establishment
+email verification
+neutral recovery initiation
+single-use/replay-safe recovery proof
+password reset
+post-reset session policy
+reauthentication/recent-auth
 ```
 
-Future passkey surfaces must consume the same Access application/session contract rather than create a parallel login product.
+Until then, corresponding prebuilt UI surfaces remain presentation/state scaffolding and may not claim canonical success.
 
-MFA/TOTP/recovery codes/step-up MFA are intentionally deferred. Current UI and state semantics must not prevent their later addition, but no MFA surface should be invented before that future product/security gate.
+Recovery initiation remains anti-enumeration neutral where required. Verification/recovery secrets remain backend-owned, short-lived and replay-aware.
 
-## Verification, recovery and session contract
+Never log or persist raw password, OTP, recovery proof, OAuth authorization code, PKCE verifier, provider token/assertion, session bearer secret or CSRF secret outside the approved security design.
 
-Recovery start remains neutral to account existence where security requires anti-enumeration.
+---
 
-Verification/recovery proofs are backend-owned, short-lived and replay/single-use aware.
+## 14. Accessibility / responsive quality
 
-Backend session state remains authoritative for:
+Release target remains WCAG 2.2 AA-quality behavior.
 
-- bootstrap;
-- expiry;
-- revocation;
-- reauthentication/recent-auth;
-- account-disable/security-policy effects;
-- logout/logout-all results.
+Automation is necessary but not sufficient. Changed integrated surfaces must review:
 
-Never log or persist raw password, OTP, recovery proof, OAuth authorization code, PKCE verifier, provider token/assertion, access token, refresh token or session secret outside the approved security design.
+```text
+keyboard/focus
+text expansion/zoom
+reduced motion
+touch/mobile-Web behavior
+screen-reader semantics
+autofill/password-manager behavior
+loading/pending/error announcements
+offline/server-unavailable/rate-limited states
+provider-return states when M5 lands
+```
 
-## Accessibility and responsive quality
-
-Release target is WCAG 2.2 AA-quality behavior.
-
-Automated axe is necessary but not sufficient. Changed/real-integrated surfaces must also review:
-
-- keyboard and focus behavior;
-- text expansion and zoom;
-- reduced motion;
-- touch/mobile-Web usability;
-- screen-reader semantics where changed;
-- autofill/password-manager behavior;
-- loading/pending/error announcements;
-- offline/server-unavailable/rate-limited states;
-- provider-return states.
-
-Representative Web pressure includes at least:
+Representative pressure:
 
 ```text
 phone              ~390–430px
 tablet/narrow      ~768–820px
 compact desktop    ~1024–1280px
 accepted desktop   ~1440–1536px
-large desktop      composition pressure / excessive sparsity check
+large desktop      excessive-sparsity/composition pressure
 ```
 
-## Architecture boundary
+---
 
-The real Web integration path is:
+## 15. M3 Web proof
+
+Accepted local/canonical evidence:
 
 ```text
-FastAPI stable Auth OpenAPI
-→ generated typed client (`@dante/api-client` / current repository authority)
-→ Access application / remote-state boundary
-→ existing Access state graph
-→ real provider/session/recovery/passkey flows
-→ full-stack E2E
+TypeScript typecheck                 PASS
+ESLint                               PASS
+Vitest                               6 files / 25 tests PASS
+architecture dependency cruise       PASS
+Prettier                             PASS
+production Vite build                PASS
+generated source drift               PASS
 ```
 
-Do not introduce a fake-success Auth adapter merely to make the frontend reachable.
-
-Preserve the semantic split:
+Real full-stack browser proof:
 
 ```text
-REQUEST_* = user intent
-SERVER_*  = backend-authoritative result
+Chromium  7 / 7 PASS
+Firefox   7 / 7 PASS
+WebKit    7 / 7 PASS
+TOTAL     21 / 21 PASS
 ```
 
-Transport details belong behind the application/data-source boundary; presentation/reducer code must not couple directly to raw `fetch` response shapes or parse English error strings.
-
-## Native Mobile relationship
-
-The repository already has an Expo + React Native + Expo Router foundation. Native Mobile Access is not implemented by the closed Web materialization, but it is now an explicit later macro-phase of the same full-stack Access/Auth vertical.
-
-Native Mobile must consume the same canonical:
+Critical scenarios:
 
 ```text
-Account
-AuthSession
-Principal
-provider/linking/recovery semantics
+real signin / secure cookie / logout
+bootstrap with delayed real session and no false signin render
+wrong credentials
+independent sessions
+server-side revoke
+server-side expiry
+real PostgreSQL unavailable
+real signin rate-limit 429
 ```
 
-while using client-appropriate secure transport/storage rather than forcing browser-cookie semantics into the domain/application layer.
+Manual UAT accepted the final Router-first refresh behavior.
 
-## Deferred integration / closure obligations
+---
 
-The following are not claimed complete merely because the Web visual baseline is accepted:
+## 16. Deferred obligations after M3
+
+M3 is closed. Remaining Access/Auth frontend/full-stack work belongs to later macro-phases:
 
 ```text
-real account creation / credential authentication
-email verification proof validation
-recovery proof validation / reset mutation
-Google / Apple backend protocol validation
-passkey/WebAuthn registration and authentication
-secure account linking
-session establishment/bootstrap/expiry/revocation
-multi-session management backend behavior
-reauthentication backend behavior
-server rate-limit/error mapping
-stable Auth OpenAPI
-generated real Auth client binding
-frontend/backend Auth integration
-full-stack isolated E2E
-real authenticated Home handoff
+M4
+real account creation
+email verification
+recovery/reset
+reauth/recent-auth
+
+M5
+Google / Apple protocol validation
+passkeys/WebAuthn
+secure explicit account linking
+provider collision UX
+
+M6
+Native Mobile Access
+
+M7
+whole-vertical session-management/security hardening
 final Terms/Privacy destinations/content
-native Mobile Access
-final real-backend loading/error/autofill/provider visual QA
+final provider/legal/accessibility/release QA
+real authenticated handoff into next product vertical
+whole-vertical user acceptance
 ```
 
-These belong to the current `feature/access-auth` full-stack workstream and its definitive seven-macro-phase roadmap.
+Do not describe M3 signin/session/logout as incomplete merely because M4–M7 are still open.
 
-## Terms / Privacy
+---
 
-Terms and Privacy remain placeholder destinations in the current pre-backend surface. Before Access/Auth closure they must become real product destinations/content according to the appropriate legal/product gate. Do not leave non-functional legal affordances in a production release.
+## 17. Quality / change rule
 
-## Quality / change rule
+Future Access UI changes are allowed when real M4+ integration proves a defect or missing state. Pure visual polish may evolve layout under normal review, but state semantics and backend-authoritative boundaries require full-stack review.
 
-Future Access UI changes remain allowed when real backend/provider/mobile integration proves a frontend defect, missing state or required contract adjustment.
+Production code never imports prototype implementation.
 
-Pure visual polish may change layout, spacing, typography, geometry or motion under normal review without redesigning backend semantics, provided the visual system remains coherent.
+Current truth is:
 
-Changes to state meaning, provider/linking behavior, session/recovery semantics, passkey semantics or backend-authoritative transitions require full-stack contract review.
+```text
+this document
++ current apps/web code/tests
++ current Access/Auth architecture/security/API/testing contracts
++ active workstream
+```
 
-Production code never imports prototype implementation. Frozen Access prototype material remains recoverable on `prototype/access-system`; current production truth is this document plus current code/tests and the active full-stack workstream record until integration.
+The frozen prototype remains recoverable design evidence only.
