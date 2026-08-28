@@ -24,6 +24,7 @@ export type AccessScreen =
 
 export type AccessBackendOperation =
   | 'sign-in'
+  | 'log-out'
   | 'provider-google'
   | 'provider-apple'
   | 'sign-up'
@@ -41,7 +42,12 @@ export type AccessCondition =
   | { kind: 'backend-required'; operation: AccessBackendOperation }
   | { kind: 'offline' }
   | { kind: 'server-unavailable' }
-  | { kind: 'rate-limited'; retryAfterSeconds?: number };
+  | { kind: 'rate-limited'; retryAfterSeconds?: number }
+  | { kind: 'invalid-credentials' }
+  | { kind: 'account-unavailable' }
+  | { kind: 'password-compromised' }
+  | { kind: 'request-invalid' }
+  | { kind: 'unexpected' };
 
 export type AccessFlowState = Readonly<{
   screen: AccessScreen;
@@ -55,6 +61,7 @@ export type AccessFlowEvent =
   | { type: 'SIGN_UP_EMAIL_ACCEPTED'; email: string }
   | { type: 'CHANGE_SIGN_UP_EMAIL' }
   | { type: 'REQUEST_SIGN_IN' }
+  | { type: 'REQUEST_LOG_OUT' }
   | { type: 'REQUEST_PROVIDER'; provider: AccessProvider }
   | { type: 'REQUEST_SIGN_UP' }
   | { type: 'REQUEST_VERIFY_EMAIL' }
@@ -70,6 +77,11 @@ export type AccessFlowEvent =
   | { type: 'NETWORK_ONLINE' }
   | { type: 'SERVER_UNAVAILABLE' }
   | { type: 'SERVER_RATE_LIMITED'; retryAfterSeconds?: number }
+  | { type: 'SERVER_INVALID_CREDENTIALS' }
+  | { type: 'SERVER_ACCOUNT_UNAVAILABLE' }
+  | { type: 'SERVER_PASSWORD_COMPROMISED' }
+  | { type: 'SERVER_REQUEST_INVALID' }
+  | { type: 'SERVER_UNEXPECTED' }
   | { type: 'SERVER_PROVIDER_STARTED'; provider: AccessProvider }
   | { type: 'SERVER_PROVIDER_FAILED'; provider: AccessProvider }
   | {
@@ -78,6 +90,7 @@ export type AccessFlowEvent =
       email?: string;
     }
   | { type: 'SERVER_AUTHENTICATED' }
+  | { type: 'SERVER_LOGGED_OUT' }
   | { type: 'SERVER_SIGN_UP_CREATED' }
   | { type: 'SERVER_EMAIL_VERIFIED' }
   | { type: 'SERVER_RECOVERY_SENT'; email: string }
@@ -168,6 +181,8 @@ export function accessFlowReducer(
         : state;
     case 'REQUEST_SIGN_IN':
       return requireBackend(state, 'sign-in');
+    case 'REQUEST_LOG_OUT':
+      return requireBackend(state, 'log-out');
     case 'REQUEST_PROVIDER':
       return requireBackend(state, `provider-${event.provider}`);
     case 'REQUEST_SIGN_UP':
@@ -217,6 +232,16 @@ export function accessFlowReducer(
                 retryAfterSeconds: event.retryAfterSeconds,
               },
       };
+    case 'SERVER_INVALID_CREDENTIALS':
+      return { ...state, condition: { kind: 'invalid-credentials' } };
+    case 'SERVER_ACCOUNT_UNAVAILABLE':
+      return { ...state, condition: { kind: 'account-unavailable' } };
+    case 'SERVER_PASSWORD_COMPROMISED':
+      return { ...state, condition: { kind: 'password-compromised' } };
+    case 'SERVER_REQUEST_INVALID':
+      return { ...state, condition: { kind: 'request-invalid' } };
+    case 'SERVER_UNEXPECTED':
+      return { ...state, condition: { kind: 'unexpected' } };
     case 'SERVER_PROVIDER_STARTED':
       return withServerScreen({
         id: 'PROVIDER_PENDING',
@@ -243,6 +268,8 @@ export function accessFlowReducer(
     case 'SERVER_AUTHENTICATED':
     case 'SERVER_REAUTH_SUCCEEDED':
       return withServerScreen({ id: 'AUTHENTICATED_RETURN' });
+    case 'SERVER_LOGGED_OUT':
+      return withServerScreen({ id: 'SIGN_IN' });
     case 'SERVER_SIGN_UP_CREATED':
       return state.screen.id === 'SIGN_UP_PASSWORD'
         ? withServerScreen({ id: 'VERIFY_EMAIL', email: state.screen.email })
