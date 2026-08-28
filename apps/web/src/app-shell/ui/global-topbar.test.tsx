@@ -95,6 +95,27 @@ describe('GlobalTopbar', () => {
     expect(screen.queryByRole('dialog', { name: 'Cerca in DANTE' })).toBeNull();
   });
 
+  it('restores search focus and starts each command session clean', async () => {
+    await renderTopbar();
+
+    const trigger = screen.getByRole('button', { name: 'Cerca in DANTE' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const input = await screen.findByRole('combobox', { name: 'Cerca in DANTE' });
+    fireEvent.change(input, { target: { value: 'mondi' } });
+    expect((input as HTMLInputElement).value).toBe('mondi');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+
+    fireEvent.click(trigger);
+    const reopenedInput = await screen.findByRole('combobox', {
+      name: 'Cerca in DANTE',
+    });
+    expect((reopenedInput as HTMLInputElement).value).toBe('');
+  });
+
   it('keeps create truthful and exposes launcher/account shells without fake writes', async () => {
     await renderTopbar();
 
