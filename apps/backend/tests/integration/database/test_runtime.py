@@ -3,20 +3,41 @@
 from __future__ import annotations
 
 import time
+from base64 import urlsafe_b64encode
 from typing import Any
 
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 from sqlalchemy import text
 
 from dante.bootstrap.app import create_app
+from dante.platform.config.auth import AuthSettings
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
 
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
+_TEST_PEPPER_KEY_ID = "test-v1"
+
+
+def _secret(raw: bytes) -> str:
+    return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
+
+
+def _auth_settings() -> AuthSettings:
+    return AuthSettings(
+        canonical_web_origin="https://dante.test",
+        password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
+        password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(_secret(b"p" * 32))},
+        csrf_key=SecretStr(_secret(b"c" * 32)),
+        kdf_max_concurrency=1,
+        signin_rate_capacity=100,
+        signin_rate_window_seconds=60,
+        hibp_base_url="http://127.0.0.1",
+    )
 
 
 @pytest.mark.asyncio
@@ -84,6 +105,7 @@ def test_liveness_survives_database_outage_and_readiness_recovers_without_app_re
             pool_timeout_seconds=1.0,
             readiness_timeout_seconds=0.5,
         ),
+        auth=_auth_settings(),
     )
 
     with TestClient(create_app(settings)) as client:
@@ -121,6 +143,7 @@ def test_readiness_response_never_exposes_database_details(migrated_database: An
         build_id="local",
         debug=False,
         database=migrated_database.runtime_settings(readiness_timeout_seconds=0.25),
+        auth=_auth_settings(),
     )
 
     with TestClient(create_app(settings)) as client:
