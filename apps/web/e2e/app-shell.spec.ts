@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+test.use({ locale: 'it-IT' });
+
 test('Access stays outside the application shell', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-app-region="topbar"]')).toHaveCount(0);
