@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import './app-shell.css';
 import './app-shell-theme.css';
+import './app-shell-p1-polish.css';
 import { GlobalTopbar } from './global-topbar';
 
 export function AppShell() {
