@@ -2,25 +2,8 @@
   min-width: 176px;
 }
 
-.app-topbar-brand-symbol {
-  display: block;
-  width: 39px;
-  height: 39px;
-  flex: 0 0 39px;
-  color: var(--app-shell-brand-symbol);
-  filter: drop-shadow(0 0 10px var(--app-shell-brand-glow));
-  line-height: 0;
-}
-
-.app-topbar-brand-symbol > svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
 .app-topbar-brand-wordmark {
-  color: var(--app-shell-brand-wordmark);
-  filter: drop-shadow(0 0 8px var(--app-shell-brand-glow));
+  color: var(--dante-theme-home-text-primary);
 }
 
 .app-topbar-search-trigger {
@@ -262,12 +245,6 @@
 }
 
 @media (max-width: 460px) {
-  .app-topbar-brand-symbol {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
-  }
-
   .app-topbar-search-field {
     grid-template-columns: 18px minmax(0, 1fr) 32px;
     gap: 7px;
