@@ -69,6 +69,15 @@
   --dante-theme-home-backdrop-shade: rgb(0.3922% 1.9608% 3.1373% / 0.2);
   --dante-theme-home-border-panel: rgb(55.2941% 38.8235% 100% / 0.14);
   --dante-theme-home-border-panel-strong: rgb(55.2941% 38.8235% 100% / 0.24);
+  --dante-theme-home-border-strong: var(--dante-primitive-color-home-border-strong);
+  --dante-theme-home-border-subtle: var(--dante-primitive-color-home-border-subtle);
+  --dante-theme-home-canvas: var(--dante-primitive-color-home-canvas);
+  --dante-theme-home-chrome-active: var(--dante-primitive-color-brand-accent);
+  --dante-theme-home-chrome-active-border: var(--dante-primitive-color-home-accent-border);
+  --dante-theme-home-chrome-active-soft: var(--dante-primitive-color-home-accent-soft);
+  --dante-theme-home-chrome-active-text: var(--dante-primitive-color-home-accent-text);
+  --dante-theme-home-chrome-inactive: var(--dante-primitive-color-home-chrome-neutral);
+  --dante-theme-home-chrome-inactive-border: var(--dante-primitive-color-home-chrome-neutral-border);
   --dante-theme-home-shadow-control: rgb(0% 0% 0% / 0.18);
   --dante-theme-home-shadow-panel: rgb(0% 0% 0% / 0.32);
   --dante-theme-home-surface-control: rgb(7.8431% 11.3725% 20% / 0.92);
@@ -77,4 +86,7 @@
   --dante-theme-home-surface-panel: rgb(4.3137% 7.0588% 12.549% / 0.9);
   --dante-theme-home-surface-panel-soft: rgb(6.2745% 9.8039% 17.2549% / 0.68);
   --dante-theme-home-surface-raised: rgb(6.2745% 9.8039% 17.2549% / 0.94);
+  --dante-theme-home-text-muted: var(--dante-primitive-color-home-text-muted);
+  --dante-theme-home-text-primary: var(--dante-primitive-color-home-text-primary);
+  --dante-theme-home-text-secondary: var(--dante-primitive-color-home-text-secondary);
 }
