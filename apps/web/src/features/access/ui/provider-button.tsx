@@ -4,6 +4,7 @@ type ProviderButtonProps = Readonly<{
   provider: AccessProvider;
   label: string;
   onClick?: () => void;
+  disabled?: boolean;
 }>;
 
 function GoogleMark() {
@@ -56,6 +57,7 @@ export function ProviderButton({
   provider,
   label,
   onClick,
+  disabled = false,
 }: ProviderButtonProps) {
   const iconClassName =
     provider === 'apple'
@@ -68,6 +70,7 @@ export function ProviderButton({
       type="button"
       data-provider={provider}
       onClick={onClick}
+      disabled={disabled}
     >
       <span className={iconClassName} aria-hidden="true">
         {provider === 'google' ? <GoogleMark /> : <AppleMark />}
