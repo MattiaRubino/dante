@@ -5,8 +5,7 @@ import { fileURLToPath } from 'node:url';
 const thisFile = fileURLToPath(import.meta.url);
 const repoRoot = resolve(dirname(thisFile), '..');
 const backendRoot = join(repoRoot, 'apps/backend');
-const openapiRelativePath =
-  'packages/api-client/openapi/dante-v1.openapi.json';
+const openapiRelativePath = 'packages/api-client/openapi/dante-v1.openapi.json';
 const generatedRelativePath = 'packages/api-client/src/generated';
 
 function run(command, args, { cwd = repoRoot, label }) {
