@@ -1,5 +1,6 @@
 import { access } from './access';
 import { home } from './home';
+import { shell } from './shell';
 
 export const common = {
   runtime: {
@@ -28,6 +29,7 @@ export const common = {
       'Tocca questa superficie per verificare Gesture Handler + Reanimated.',
   },
   access,
+  shell,
   home,
 } as const;
 

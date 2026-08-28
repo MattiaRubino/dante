@@ -5,7 +5,6 @@ import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
 import { AISurface } from './ai-surface/ai-surface';
 import { CentralStage } from './central-stage/central-stage';
 import { ContextRail } from './context-rail/context-rail';
-import { GlobalTopbar } from './global-topbar/global-topbar';
 import { DayContextStrip } from './orientation/day-context-strip';
 import { Orientation } from './orientation/orientation';
 import { TimelineSurface } from './timeline/timeline-surface';
@@ -27,8 +26,6 @@ export function HomeShell() {
         <img src={HOME_COSMOS_DATA_URL} alt="" />
         <span />
       </div>
-
-      <GlobalTopbar />
 
       <main
         className="home-main"
