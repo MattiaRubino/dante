@@ -375,8 +375,7 @@ def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
     with psycopg.connect(**runtime_kwargs) as runtime_connection:
         with pytest.raises(psycopg.errors.InsufficientPrivilege) as direct_lock_error:
             runtime_connection.execute(
-                "SELECT account_ref FROM dante.account "
-                "WHERE account_ref = %s FOR UPDATE",
+                "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE",
                 (account_ref,),
             )
         assert direct_lock_error.value.sqlstate == "42501"
@@ -390,8 +389,7 @@ def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
         with _admin(migrated_database) as contender:
             with pytest.raises(psycopg.errors.LockNotAvailable) as lock_error:
                 contender.execute(
-                    "SELECT account_ref FROM dante.account "
-                    "WHERE account_ref = %s FOR UPDATE NOWAIT",
+                    "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE NOWAIT",
                     (account_ref,),
                 )
             assert lock_error.value.sqlstate == "55P03"
@@ -399,8 +397,7 @@ def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
             runtime_connection.rollback()
 
             acquired = contender.execute(
-                "SELECT account_ref FROM dante.account "
-                "WHERE account_ref = %s FOR UPDATE NOWAIT",
+                "SELECT account_ref FROM dante.account WHERE account_ref = %s FOR UPDATE NOWAIT",
                 (account_ref,),
             ).fetchone()
             assert acquired == (account_ref,)

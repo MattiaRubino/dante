@@ -28,7 +28,6 @@ from dante.auth.contracts import (
     AuthServiceUnavailableError,
     InvalidCredentialsError,
     IssuedSession,
-    KdfCapacityUnavailableError,
     PasswordCompromisedError,
     Principal,
     SigninRateLimitedError,
@@ -420,7 +419,7 @@ class AuthService:
                 if not exc.connection_invalidated:
                     raise
                 ambiguous_commit = True
-        except (AccountUnavailableError, InvalidCredentialsError):
+        except AccountUnavailableError, InvalidCredentialsError:
             raise
         except SQLAlchemyError as exc:
             await self._safe_rollback(database_session)

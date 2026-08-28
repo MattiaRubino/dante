@@ -50,11 +50,7 @@ def upgrade() -> None:
             f"FROM PUBLIC, {_RUNTIME_ROLE}, {_MIGRATOR_ROLE}"
         )
     )
-    op.execute(
-        sa.text(
-            f"GRANT EXECUTE ON FUNCTION {_FUNCTION_SIGNATURE} TO {_RUNTIME_ROLE}"
-        )
-    )
+    op.execute(sa.text(f"GRANT EXECUTE ON FUNCTION {_FUNCTION_SIGNATURE} TO {_RUNTIME_ROLE}"))
 
 
 def downgrade() -> None:

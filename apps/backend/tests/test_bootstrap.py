@@ -30,8 +30,8 @@ def _secret(raw: bytes) -> str:
 
 class _FakeDatabaseRuntime:
     def __init__(self, *, ready: bool) -> None:
-        self.ready = ready
-        self.disposed = False
+        self.ready: bool = ready
+        self.disposed: bool = False
         self.session_factory = object()
 
     async def is_ready(self) -> bool:
@@ -43,7 +43,7 @@ class _FakeDatabaseRuntime:
 
 class _FakeAuthRuntime:
     def __init__(self) -> None:
-        self.closed = False
+        self.closed: bool = False
         self.service = object()
 
     async def aclose(self) -> None:
@@ -162,11 +162,11 @@ def test_lifespan_disposes_process_resources(monkeypatch: pytest.MonkeyPatch) ->
     database_runtime, auth_runtime = _install_fake_runtimes(monkeypatch, ready=True)
 
     with TestClient(create_app(_settings())):
-        assert database_runtime.disposed is False
-        assert auth_runtime.closed is False
+        during_lifespan = (database_runtime.disposed, auth_runtime.closed)
+        assert during_lifespan == (False, False)
 
-    assert auth_runtime.closed is True
-    assert database_runtime.disposed is True
+    after_lifespan = (database_runtime.disposed, auth_runtime.closed)
+    assert after_lifespan == (True, True)
 
 
 @pytest.mark.asyncio

@@ -47,9 +47,7 @@ class Settings(BaseSettings):
 
         if self.env is not Environment.LOCAL:
             if self.release_sha.casefold() == "local":
-                raise ValueError(
-                    "DANTE_RELEASE_SHA=local is allowed only when DANTE_ENV=local"
-                )
+                raise ValueError("DANTE_RELEASE_SHA=local is allowed only when DANTE_ENV=local")
             if self.build_id.casefold() == "local":
                 raise ValueError("DANTE_BUILD_ID=local is allowed only when DANTE_ENV=local")
             if urlsplit(self.auth.canonical_web_origin).scheme != "https":

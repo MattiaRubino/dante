@@ -19,9 +19,10 @@ def get_auth_service(request: Request) -> AuthService:
 def single_header_value(scope: Scope, name: str) -> str | None:
     """Return one exact raw ASGI header value; duplicates fail closed."""
     expected_name = name.casefold().encode("ascii")
+    raw_headers = cast(list[tuple[bytes, bytes]], scope.get("headers", []))
     values = [
         raw_value
-        for raw_name, raw_value in scope.get("headers", [])
+        for raw_name, raw_value in raw_headers
         if raw_name.lower() == expected_name
     ]
     if len(values) != 1:
@@ -56,8 +57,7 @@ class BrowserAuthSecurityMiddleware:
         if (
             single_header_value(scope, "Origin") != self._canonical_web_origin
             or single_header_value(scope, "Sec-Fetch-Site") != "same-origin"
-            or single_header_value(scope, WEB_CLIENT_HEADER_NAME)
-            != WEB_CLIENT_HEADER_VALUE
+            or single_header_value(scope, WEB_CLIENT_HEADER_NAME) != WEB_CLIENT_HEADER_VALUE
         ):
             response = problem_response_for_scope(
                 scope,
@@ -75,9 +75,7 @@ class BrowserAuthSecurityMiddleware:
         if protected_signin:
             content_type = single_header_value(scope, "Content-Type")
             media_type = (
-                content_type.split(";", 1)[0].strip().lower()
-                if content_type is not None
-                else None
+                content_type.split(";", 1)[0].strip().lower() if content_type is not None else None
             )
             if media_type != "application/json":
                 response = problem_response_for_scope(

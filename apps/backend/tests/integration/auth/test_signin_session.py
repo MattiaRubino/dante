@@ -404,17 +404,14 @@ def test_duplicate_session_cookie_fails_closed(
         assert session_secret is not None
         client.cookies.clear()
 
-        duplicate_cookie = (
-            f"{SESSION_COOKIE_NAME}={session_secret}; "
-            f"{SESSION_COOKIE_NAME}=different-value"
-        )
+        duplicate_cookie = f"{SESSION_COOKIE_NAME}={session_secret}; {SESSION_COOKIE_NAME}=different-value"
         bootstrap = client.get(
             "/api/v1/auth/session",
             headers={"Cookie": duplicate_cookie},
         )
         assert bootstrap.status_code == 200
         assert bootstrap.json() == {"authenticated": False}
-        assert f"{SESSION_COOKIE_NAME}=\"\"" in bootstrap.headers["set-cookie"]
+        assert f'{SESSION_COOKIE_NAME}=""' in bootstrap.headers["set-cookie"]
 
         logout = client.delete(
             "/api/v1/auth/session",

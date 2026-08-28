@@ -1,7 +1,7 @@
 """Public M3 Access/Auth application-intent API."""
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -69,7 +69,7 @@ class UnauthenticatedSessionResponse(BaseModel):
 
 SessionResponse = AuthenticatedSessionResponse | UnauthenticatedSessionResponse
 
-_PROBLEM_RESPONSES = {
+_PROBLEM_RESPONSES: dict[int | str, dict[str, Any]] = {
     400: {"model": ProblemDetails},
     401: {"model": ProblemDetails},
     403: {"model": ProblemDetails},

@@ -281,10 +281,14 @@ class HibpPasswordChecker:
 
     async def is_breached(self, normalized_password: str) -> bool:
         """Return whether the complete SHA-1 appears in the k-anonymous range."""
-        digest = sha1(
-            normalized_password.encode("utf-8"),
-            usedforsecurity=False,
-        ).hexdigest().upper()
+        digest = (
+            sha1(
+                normalized_password.encode("utf-8"),
+                usedforsecurity=False,
+            )
+            .hexdigest()
+            .upper()
+        )
         prefix, expected_suffix = digest[:5], digest[5:]
         chunks: list[bytes] = []
         observed_bytes = 0

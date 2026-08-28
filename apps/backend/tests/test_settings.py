@@ -224,8 +224,8 @@ def test_password_pepper_requires_exact_canonical_32_byte_base64url(
     with pytest.raises(ValidationError, match=r"password_peppers|Base64URL|32 bytes"):
         AuthSettings(
             canonical_web_origin="https://dante.test",
-            password_current_pepper_key_id="v1",
-            password_peppers={"v1": SecretStr(bad_secret)},
+            password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
+            password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(bad_secret)},
             csrf_key=SecretStr(_TEST_CSRF_KEY),
             kdf_max_concurrency=1,
             signin_rate_capacity=10,
@@ -237,8 +237,8 @@ def test_csrf_key_requires_purpose_separation_from_password_peppers() -> None:
     with pytest.raises(ValidationError, match="distinct"):
         AuthSettings(
             canonical_web_origin="https://dante.test",
-            password_current_pepper_key_id="v1",
-            password_peppers={"v1": SecretStr(_TEST_PEPPER)},
+            password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
+            password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(_TEST_PEPPER)},
             csrf_key=SecretStr(_TEST_PEPPER),
             kdf_max_concurrency=1,
             signin_rate_capacity=10,

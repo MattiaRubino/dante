@@ -41,7 +41,7 @@ def decode_session_secret(value: str) -> bytes | None:
     padding = b"=" * (-len(raw_ascii) % 4)
     try:
         decoded = b64decode(raw_ascii + padding, altchars=b"-_", validate=True)
-    except (BinasciiError, ValueError):
+    except BinasciiError, ValueError:
         return None
 
     if len(decoded) != _SESSION_SECRET_BYTES:

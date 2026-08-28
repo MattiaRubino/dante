@@ -102,10 +102,7 @@ def _payload(problem: ProblemError, *, request_id: str) -> dict[str, Any]:
         "retryable": problem.retryable,
     }
     if problem.errors is not None:
-        body["errors"] = [
-            field_error.model_dump(exclude_none=True)
-            for field_error in problem.errors
-        ]
+        body["errors"] = [field_error.model_dump(exclude_none=True) for field_error in problem.errors]
     return body
 
 
@@ -164,15 +161,8 @@ class RequestContextMiddleware:
 
 def _validation_field_error(error: Mapping[str, Any]) -> ProblemFieldError:
     location = error.get("loc", ())
-    body_parts = (
-        [str(part) for part in location[1:]]
-        if location and location[0] == "body"
-        else []
-    )
-    pointer = "/" + "/".join(
-        part.replace("~", "~0").replace("/", "~1")
-        for part in body_parts
-    )
+    body_parts = [str(part) for part in location[1:]] if location and location[0] == "body" else []
+    pointer = "/" + "/".join(part.replace("~", "~0").replace("/", "~1") for part in body_parts)
     if not body_parts:
         pointer = "/"
 
