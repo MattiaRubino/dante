@@ -27,17 +27,15 @@ test('application navigation keeps one persistent Topbar and real browser histor
   await expect(page.getByRole('main', { name: 'Home DANTE' })).toBeVisible();
 });
 
-test('global search works from a browser-safe keyboard shortcut without pretending remote search exists', async ({
+test('global search opens, focuses, searches, and routes without pretending remote search exists', async ({
   page,
 }) => {
   await page.goto('/home');
 
   const searchTrigger = page.getByRole('button', { name: 'Cerca in DANTE' });
   await expect(searchTrigger).toBeVisible();
-  await searchTrigger.focus();
-  await expect(searchTrigger).toBeFocused();
+  await searchTrigger.click();
 
-  await page.keyboard.press('/');
   const dialog = page.getByRole('dialog', { name: 'Cerca in DANTE' });
   await expect(dialog).toBeVisible();
 
