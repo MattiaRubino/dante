@@ -75,8 +75,29 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     expect(cookie?.path).toBe('/');
     expect(cookie?.domain).toBe('127.0.0.1');
 
+    let releaseSession!: () => void;
+    const sessionGate = new Promise<void>((resolve) => {
+      releaseSession = resolve;
+    });
+    const sessionRoute = '**/api/v1/auth/session';
+
+    await page.route(sessionRoute, async (route) => {
+      if (route.request().method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+
+      await sessionGate;
+      await route.continue();
+    });
+
     await page.reload();
+    await expect(page.locator('[data-access-session-bootstrap]')).toBeVisible();
+    await expect(page.locator('#access-signin-title')).toBeHidden();
+
+    releaseSession();
     await expectAuthenticated(page);
+    await page.unroute(sessionRoute);
 
     const logoutPromise = page.waitForResponse(
       (response) =>

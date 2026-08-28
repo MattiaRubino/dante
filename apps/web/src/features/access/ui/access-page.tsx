@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useLayoutEffect, useReducer } from 'react';
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
@@ -15,6 +15,7 @@ import {
 import { AccessBrandStage } from './access-brand-stage';
 import { AccessFlowPanel } from './access-flow-panel';
 import { AccessLocaleSwitcher } from './access-locale-switcher';
+import { AccessSignInPanel } from './access-sign-in-panel';
 import '../access.css';
 import '../access-composition.css';
 import '../access-flow.css';
@@ -45,7 +46,7 @@ export function AccessPage() {
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (sessionQuery.data?.authenticated === true) {
       dispatch({ type: 'SERVER_AUTHENTICATED' });
       return;
@@ -125,6 +126,27 @@ export function AccessPage() {
     );
   }
 
+  const panel = sessionQuery.isPending ? (
+    <AccessSignInPanel
+      condition={flow.condition}
+      onCreateAccount={() => dispatch({ type: 'CREATE_ACCOUNT' })}
+      onForgotPassword={() => dispatch({ type: 'FORGOT_PASSWORD' })}
+      onCredentialSubmit={signIn}
+      onProvider={(provider) => dispatch({ type: 'REQUEST_PROVIDER', provider })}
+      pending
+      bootstrapHidden
+    />
+  ) : (
+    <AccessFlowPanel
+      flow={flow}
+      dispatch={dispatch}
+      onCredentialSubmit={signIn}
+      onLogOut={logOut}
+      signInPending={signInMutation.isPending}
+      logOutPending={logOutMutation.isPending}
+    />
+  );
+
   return (
     <div className="access-shell">
       <header className="access-topbar">
@@ -148,14 +170,7 @@ export function AccessPage() {
       <main className="access-main">
         <div className="access-frame">
           <AccessBrandStage />
-          <AccessFlowPanel
-            flow={flow}
-            dispatch={dispatch}
-            onCredentialSubmit={signIn}
-            onLogOut={logOut}
-            signInPending={signInMutation.isPending || sessionQuery.isPending}
-            logOutPending={logOutMutation.isPending}
-          />
+          {panel}
         </div>
       </main>
     </div>
