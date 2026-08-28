@@ -111,7 +111,17 @@ def _upgrade_m7(database: Any, alembic_config: Config) -> Any:
 
 
 def _mapped_table_names() -> set[str]:
-    return {table.name for table in Base.metadata.tables.values()}
+    post_cp6_tables = {
+        "account",
+        "email_identity",
+        "password_credential",
+        "auth_session",
+    }
+    return {
+        table.name
+        for table in Base.metadata.tables.values()
+        if table.name not in post_cp6_tables
+    }
 
 
 def _create_two_elapsed_routine_states(
