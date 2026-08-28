@@ -12,8 +12,13 @@ const WEB_CLIENT_HEADER_VALUE = 'web';
 const CSRF_HEADER_NAME = 'X-Dante-CSRF';
 const ACCEPT_HEADER_VALUE = 'application/json, application/problem+json';
 
+export type WebAuthSession = AuthSession;
+export type WebAuthenticatedSession = AuthenticatedSession;
+export type WebAuthSignInRequest = SignInRequest;
+export type WebAuthRemoteFailure = RemoteFailure;
+
 export class WebAuthRemoteError extends Error {
-  constructor(readonly failure: RemoteFailure) {
+  constructor(readonly failure: WebAuthRemoteFailure) {
     super(`DANTE Auth remote failure: ${failure.kind}`);
     this.name = 'WebAuthRemoteError';
   }
@@ -64,15 +69,15 @@ export function createWebAuthRemote(
   const client = createDanteApiClient({ fetchFn: createWebFetch(fetchFn) });
 
   return {
-    async getSession(signal?: AbortSignal): Promise<AuthSession> {
+    async getSession(signal?: AbortSignal): Promise<WebAuthSession> {
       const result = await client.getSession(requestOptions(signal));
       return unwrapRemoteResult(result);
     },
 
     async signIn(
-      request: SignInRequest,
+      request: WebAuthSignInRequest,
       signal?: AbortSignal,
-    ): Promise<AuthenticatedSession> {
+    ): Promise<WebAuthenticatedSession> {
       const result = await client.signIn(request, requestOptions(signal));
       return unwrapRemoteResult(result);
     },
