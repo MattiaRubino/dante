@@ -18,7 +18,7 @@
       "CP6-M06",
       "CP6-M07"
     ],
-    "standalone_entries": {"tables": 72, "views": 5, "routines": 14, "total": 91},
+    "standalone_entries": {"tables": 72, "views": 5, "routines": 15, "total": 92},
     "embedded_objects": {"triggers": 75, "physical_indexes": 104},
     "constraints": {"foreign_keys": 71, "check_constraints": 137}
   },

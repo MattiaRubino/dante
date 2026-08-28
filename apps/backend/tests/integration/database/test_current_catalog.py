@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import importlib
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid7
 
 import psycopg
 import pytest
@@ -18,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260827_09"
+_CURRENT_REVISION = "20260827_10"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -294,6 +296,36 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
               )
             """
         ).fetchone()
+        function_acl = connection.execute(
+            """
+            SELECT
+              pg_get_userbyid(p.proowner),
+              p.prosecdef,
+              p.provolatile,
+              p.proparallel,
+              p.proleakproof,
+              p.proconfig,
+              has_function_privilege(
+                'dante_runtime',
+                'dante.acquire_account_security_lock(uuid)',
+                'EXECUTE'
+              ),
+              has_function_privilege(
+                'dante_migrator',
+                'dante.acquire_account_security_lock(uuid)',
+                'EXECUTE'
+              ),
+              EXISTS (
+                SELECT 1
+                FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+                WHERE acl.grantee = 0 AND acl.privilege_type = 'EXECUTE'
+              )
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = 'dante'
+              AND p.oid = to_regprocedure('dante.acquire_account_security_lock(uuid)')
+            """
+        ).fetchone()
 
     assert table_privileges == (
         True,
@@ -315,3 +347,60 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
     )
     assert password_columns == (True, True, True, False, False)
     assert session_columns == (True, True, True, False, False, False)
+    assert function_acl is not None
+    assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
+    assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
+    assert function_acl[6:9] == (True, False, False)
+
+
+def test_m3_account_security_lock_is_narrow_and_transaction_scoped(
+    migrated_database: Any,
+) -> None:
+    account_ref = uuid7()
+    created_at = datetime.now(UTC)
+
+    with _admin(migrated_database) as connection:
+        connection.execute(
+            """
+            INSERT INTO dante.account(account_ref, status_code, created_at, disabled_at)
+            VALUES (%s, 'active', %s, NULL)
+            """,
+            (account_ref, created_at),
+        )
+
+    runtime_kwargs = migrated_database.connection_kwargs(
+        "dante_runtime",
+        migrated_database.cluster.runtime_password,
+    )
+    with psycopg.connect(**runtime_kwargs) as runtime_connection:
+        with pytest.raises(psycopg.errors.InsufficientPrivilege) as direct_lock_error:
+            runtime_connection.execute(
+                "SELECT account_ref FROM dante.account "
+                "WHERE account_ref = %s FOR UPDATE",
+                (account_ref,),
+            )
+        assert direct_lock_error.value.sqlstate == "42501"
+        runtime_connection.rollback()
+
+        runtime_connection.execute(
+            "SELECT dante.acquire_account_security_lock(%s)",
+            (account_ref,),
+        )
+
+        with _admin(migrated_database) as contender:
+            with pytest.raises(psycopg.errors.LockNotAvailable) as lock_error:
+                contender.execute(
+                    "SELECT account_ref FROM dante.account "
+                    "WHERE account_ref = %s FOR UPDATE NOWAIT",
+                    (account_ref,),
+                )
+            assert lock_error.value.sqlstate == "55P03"
+
+            runtime_connection.rollback()
+
+            acquired = contender.execute(
+                "SELECT account_ref FROM dante.account "
+                "WHERE account_ref = %s FOR UPDATE NOWAIT",
+                (account_ref,),
+            ).fetchone()
+            assert acquired == (account_ref,)
