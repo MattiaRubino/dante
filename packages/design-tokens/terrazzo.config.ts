@@ -8,6 +8,7 @@ export default defineConfig({
     './tokens/primitives.json',
     './tokens/semantic.json',
     './tokens/home-theme.json',
+    './tokens/shell-theme.json',
   ],
   outDir: './generated',
   plugins: [
