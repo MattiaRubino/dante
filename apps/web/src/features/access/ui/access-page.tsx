@@ -132,7 +132,9 @@ export function AccessPage() {
       onCreateAccount={() => dispatch({ type: 'CREATE_ACCOUNT' })}
       onForgotPassword={() => dispatch({ type: 'FORGOT_PASSWORD' })}
       onCredentialSubmit={signIn}
-      onProvider={(provider) => dispatch({ type: 'REQUEST_PROVIDER', provider })}
+      onProvider={(provider) =>
+        dispatch({ type: 'REQUEST_PROVIDER', provider })
+      }
       pending
       bootstrapHidden
     />

@@ -9,7 +9,11 @@ function accessAuthPreview(): PreviewOptions | undefined {
   const certPath = process.env.DANTE_E2E_TLS_CERT;
   const keyPath = process.env.DANTE_E2E_TLS_KEY;
 
-  if (apiTarget === undefined && certPath === undefined && keyPath === undefined) {
+  if (
+    apiTarget === undefined &&
+    certPath === undefined &&
+    keyPath === undefined
+  ) {
     return undefined;
   }
 
@@ -36,6 +40,8 @@ function accessAuthPreview(): PreviewOptions | undefined {
   };
 }
 
+const preview = accessAuthPreview();
+
 export default defineConfig({
   plugins: [
     tanstackRouter({
@@ -44,5 +50,5 @@ export default defineConfig({
     }),
     react(),
   ],
-  preview: accessAuthPreview(),
+  ...(preview === undefined ? {} : { preview }),
 });
