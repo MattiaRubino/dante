@@ -16,7 +16,6 @@ type AccessSignInPanelProps = Readonly<{
   onCredentialSubmit: (email: string, password: string) => void;
   onProvider: (provider: AccessProvider) => void;
   pending?: boolean;
-  bootstrapHidden?: boolean;
 }>;
 
 type SignInErrors = {
@@ -47,7 +46,6 @@ export function AccessSignInPanel({
   onCredentialSubmit,
   onProvider,
   pending = false,
-  bootstrapHidden = false,
 }: AccessSignInPanelProps) {
   const { t } = useTranslation('common');
   const [email, setEmail] = useState('');
@@ -85,19 +83,8 @@ export function AccessSignInPanel({
   }
 
   return (
-    <section
-      className="access-panel"
-      aria-labelledby={bootstrapHidden ? undefined : 'access-signin-title'}
-      aria-busy={bootstrapHidden || pending}
-      data-access-session-bootstrap={bootstrapHidden ? '' : undefined}
-    >
-      <form
-        className="access-panel-inner"
-        style={bootstrapHidden ? { visibility: 'hidden' } : undefined}
-        aria-hidden={bootstrapHidden || undefined}
-        onSubmit={handleSubmit}
-        noValidate
-      >
+    <section className="access-panel" aria-labelledby="access-signin-title">
+      <form className="access-panel-inner" onSubmit={handleSubmit} noValidate>
         <p className="access-kicker">
           {t(($) => $.common.access.kicker.access)}
         </p>
