@@ -7,7 +7,7 @@
 - **M2.1–M2.8 documentation PRE-SCOPE:** `e969b47ca9c57c5ffa34fb3eeb0145f40ea7efba`
 - **M2 closure documentation PRE-SCOPE:** `1d685dc43dd68916afa34ec84b7f45df20c890b0`
 - **M3-A production gate PRE-SCOPE:** `ea75bb33e88bd256018c73ae444cff48a510af63`
-- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — ACTIVE / DB FOUNDATION MATERIALIZED + DIRECT DB PROOF PASS / AUTH RUNTIME NOT YET
+- **Current macro-phase:** `M3 — Email/Password Signin + AuthSession Spine` — ACTIVE / BACKEND SPINE MATERIALIZED + DIRECT REAL POSTGRESQL PROOF PASS / OPENAPI + GENERATED CLIENT + WEB WIRING OPEN
 - **Last closed macro-phase:** `M2 — Auth Architecture Freeze` — CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED / READBACK QA PASS
 - **Purpose:** operational save-game, authority map, roadmap, decision register, evidence boundaries and Git/write safety for the production Access/Auth vertical.
 
@@ -75,7 +75,7 @@ current durable subsystem/product/database docs
 ↓
 current branch-local Access/Auth architecture/security/API/testing contracts + ADR-011
 ↓
-current branch-local DB migration/mapping/Dictionary/reference candidate where newer and explicitly scoped
+current branch-local DB migration/mapping/Dictionary/reference where newer and explicitly scoped
 ↓
 this active workstream for operational state/newer unresolved slice decisions
 ↓
@@ -174,7 +174,7 @@ Alembic head        20260826_08
 120 CHECK constraints
 ```
 
-That CP6 deferral was correct historically. It is not current unresolved truth on `feature/access-auth` after M2 closure and M3-A DB materialization.
+That CP6 deferral was correct historically. It is not current unresolved truth on `feature/access-auth` after M2 closure and M3 database/backend materialization.
 
 ### Frontend foundation
 
@@ -212,43 +212,83 @@ Native Mobile Access remains M6, but technology/foundation are not open choices.
 
 ### Backend
 
-No dedicated production Access/Auth application service, password runtime, session middleware/Principal derivation or real Auth HTTP API exists yet.
+The first production Access/Auth backend spine is now materialized on this branch:
+
+```text
+dante.auth.api
+dante.auth.contracts
+dante.auth.dependencies
+dante.auth.email
+dante.auth.passwords
+dante.auth.service
+dante.auth.sessions
+platform.config.auth
+platform.http.problem
+bootstrap Auth runtime ownership
+```
+
+Implemented/proved backend behavior includes:
+
+```text
+POST   /api/v1/auth/signin
+GET    /api/v1/auth/session
+DELETE /api/v1/auth/session
+
+email normalization/comparison
+Argon2id password verification + HMAC pepper
+bounded KDF admission/concurrency/queue timeout
+HIBP range integration with bounded/degraded existing-login policy
+dummy unknown-account verification path
+opaque DB-backed AuthSession creation/admission
+canonical session-secret parsing
+HttpOnly __Host-dante-session cookie contract
+session-bound CSRF
+Origin / Fetch Metadata / client-header fail-closed ingress
+runtime Principal derivation
+current-session logout/revocation
+ambiguous AuthSession commit reconciliation without blind retry
+startup resource ownership/cleanup
+```
+
+The backend spine has direct fast-test/build evidence plus the complete real PostgreSQL marked suite at current branch HEAD. This is a backend engineering checkpoint, not the whole M3 full-stack exit gate.
 
 ### Database
 
-The M3-A database foundation **source is materialized on this branch** at Alembic `20260827_09`:
+The M3 database foundation and bounded security-lock capability are materialized at Alembic head `20260827_10`:
 
 ```text
 dante.account
 dante.email_identity
 dante.password_credential
 dante.auth_session
+dante.acquire_account_security_lock(uuid)
 ```
 
-Aligned source representations currently exist across:
+Aligned source representations exist across:
 
 ```text
-Alembic 20260827_09
+Alembic 20260827_09 + 20260827_10
 SQLAlchemy mappings + MAPPED_TABLES
 Database Dictionary v1
 whole-DB current reference routing
 docs/database/access-auth.md
-migration/current-catalog tests
+migration/current-catalog/ACL/lock tests
 ```
 
-Current branch inventory encoded by the source/Dictionary candidate is:
+Current branch inventory is:
 
 ```text
 72 tables
 5 views
-14 routines
+15 routines
 75 triggers
 104 physical indexes
 71 foreign keys
 137 CHECK constraints
+92 standalone Dictionary entries
 ```
 
-**Direct real PostgreSQL proof is complete.** The targeted disposable PostgreSQL 18.6 suite proved the current 72-table branch catalog, frozen CP6 baseline isolation, migration round-trip/Alembic drift contract and exact M3-A Auth runtime ACLs. This closes the database-foundation proof only; M3 runtime/full-stack proof remains open.
+`dante_runtime` still has no Account UPDATE and cannot issue direct `SELECT ... FOR UPDATE`; migration `20260827_10` exposes only `EXECUTE` on the narrow `SECURITY DEFINER` account-security lock function. Real two-connection proof verifies the resulting transaction-scoped row lock and post-rollback release.
 
 Not yet materialized:
 
@@ -263,7 +303,7 @@ Principal table (deliberately not selected)
 
 ### Web
 
-Accepted UI/state model exists. Real backend/session/generated-client wiring and authenticated next-route handoff do not.
+Accepted UI/state model exists. Real generated-client/session wiring and authenticated next-route handoff do not yet exist.
 
 ### Mobile
 
@@ -271,20 +311,28 @@ Foundation exists; Native Access does not.
 
 ### OpenAPI/generated client
 
-M2 selected the contract/tooling boundary, but no Auth OpenAPI snapshot, Orval package, `@dante/api-client` or TanStack Query Auth integration has been materialized yet.
+The backend now declares the real Auth HTTP operations, but the deterministic committed Auth OpenAPI snapshot, Orval Fetch package, `@dante/api-client`, Zod generated/normalization boundary and TanStack Query Auth integration have not yet been materialized.
 
 ### Test harness
 
-M2 selected the proof contract. The first M3-A database proof has now executed successfully against the disposable PostgreSQL 18.6 harness:
+Current backend proof at the M3 backend checkpoint:
 
 ```text
+uv lock --check                                                     PASS
 ruff format --check .                                               PASS
 ruff check .                                                        PASS
-mypy                                                                PASS / 42 source files
-migration / CP6 baseline / current catalog targeted suite           PASS / 7 of 7
+mypy                                                                PASS before final test-only PG reconciliation
+fast non-PostgreSQL pytest                                          PASS / 73 of 73
+uv build                                                            PASS
+real PostgreSQL 18.6 marked suite                                   PASS / 83 of 83
+real Auth signin/session integration                                PASS / 4 of 4
+CP6 M1..M7 regression                                               PASS
+migration/current catalog/ACL/account-lock/runtime/transaction      PASS
 ```
 
-The Access/Auth cross-stack CI/full-stack HTTPS browser harness does not exist yet.
+The final two PostgreSQL-test reconciliations changed only test code and the real marked suite passed at current branch HEAD. A final consolidated fast/static rerun may still be used as closure hygiene before the whole backend/client slice is tagged, but there is no known backend functional failure at this checkpoint.
+
+The Access/Auth cross-stack same-origin HTTPS browser harness does not exist yet.
 
 These are M3 executable obligations, not missing M2 architecture work.
 
@@ -482,7 +530,7 @@ lock order                         Account → credential/identity → session a
 advisory Account lock              NOT SELECTED
 SKIP LOCKED on security state       NOT SELECTED
 signin Argon2/HIBP                  outside authoritative DB mutation
-final signin transaction           lock + re-read Account/Credential
+final signin transaction           bounded DB Account-lock capability + re-read Account/Credential
 stale verified credential          cannot create session
 two valid concurrent signins       may create two sessions
 simple current logout              conditional idempotent session revoke
@@ -491,6 +539,8 @@ ambiguous AuthSession commit        reconcile by pre-generated auth_session_ref
 Set-Cookie                          only after commit/reconciliation
 M3 Redis/JWT session cache          NOT SELECTED
 ```
+
+The implementation preserves Account UPDATE denial and uses `dante.acquire_account_security_lock(uuid)` instead of widening runtime ACL merely to obtain `FOR UPDATE` semantics.
 
 ---
 
@@ -757,38 +807,55 @@ M2 implemented no production Auth runtime. Its output is the constitution under 
 
 ## M3 — Email/Password Signin + AuthSession Spine
 
-**Status:** `ACTIVE / M3-A DB FOUNDATION MATERIALIZED + DIRECT DB PROOF PASS / AUTH RUNTIME NOT YET`
+**Status:** `ACTIVE / BACKEND SPINE MATERIALIZED + DIRECT REAL POSTGRESQL PROOF PASS / OPENAPI + GENERATED CLIENT + WEB WIRING OPEN`
 
 Goal: first real production authenticated path and reusable Account/AuthSession spine.
 
-Current accomplished source work:
+Accomplished source/runtime work:
 
 ```text
-Alembic 20260827_09
+Alembic 20260827_09 + 20260827_10
 Account / EmailIdentity / PasswordCredential / AuthSession
+acquire_account_security_lock(uuid)
 SQLAlchemy mapping + registry
-Dictionary v1 post-CP6 evolution + 4 entries
+Dictionary post-CP6 evolution + Auth routine entry
 whole-DB/reference lifecycle reconciliation
 docs/database/access-auth.md
-current migration/catalog/ACL test source
+email/password normalization + password/KDF/HIBP runtime
+AuthSession issuance/admission/revocation
+runtime Principal
+FastAPI signin/session/logout
+RFC9457 problem mapping
+Origin / Fetch Metadata / CSRF / cookie security boundary
+ambiguous commit reconciliation
+startup resource ownership
+real backend integration tests
 ```
 
-The M3-A database foundation is now directly proved against PostgreSQL 18.6. This does not close M3 or the end-to-end M3-A Authenticated Spine.
+Backend proof already earned:
 
-Remaining required scope:
-- password verification/dummy path/rehash policy;
-- authoritative multi-session creation;
-- secure Web cookie/CSRF/session bootstrap;
-- runtime Principal derivation;
-- minimal protected authenticated destination;
-- current-session logout/revocation;
-- `/api/v1` Auth operations + RFC9457;
-- deterministic OpenAPI snapshot;
-- Orval Fetch + `@dante/api-client`;
+```text
+fast non-PG tests                         73 / 73 PASS
+package build                             PASS
+real PostgreSQL 18.6 suite                83 / 83 PASS
+real signin/session tests                 4 / 4 PASS
+migration + catalog + ACL + lock          PASS
+runtime outage/readiness recovery         PASS
+transactions                              PASS
+```
+
+This does **not** close M3. Remaining required scope:
+- deterministic committed OpenAPI 3.1 Auth snapshot;
+- Orval Fetch + framework-neutral `@dante/api-client`;
+- generated/runtime Zod validation boundary;
+- Web same-origin transport adapter with credentials + CSRF injection;
 - TanStack Query remote session state/application boundary;
-- Access signin UI real wiring;
-- real PostgreSQL/API/browser full-stack proof;
-- Backend + Frontend + Access/Auth CI gates as applicable.
+- Access signin/bootstrap/logout UI real wiring;
+- minimal protected authenticated destination / `AuthenticatedAppShell` handoff;
+- same-origin HTTPS full-stack proof;
+- Chromium + Firefox + WebKit real browser proof;
+- Backend + Frontend + Access/Auth CI gates as applicable;
+- final M3 documentation/readback and user acceptance appropriate to the implemented slice.
 
 Required negative/race scope includes:
 
@@ -806,6 +873,8 @@ server unavailable / rate limited
 HIBP degradation policy
 secret redaction
 ```
+
+Backend coverage already proves a substantial subset; browser/full-stack cases remain open until client/Web materialization.
 
 Exit gate:
 
@@ -877,7 +946,7 @@ Merge to protected `main` requires a separate explicit user gate.
 | Frontend fake authoritative success | FORBIDDEN | Server state owns auth/verification/recovery/link/session success. |
 | M1 | CLOSED | Accepted Web baseline; integration checks deferred. |
 | M2 | CLOSED / QA PASS | M2.1–M2.11 accepted/documented; no runtime proof claimed. |
-| M3 | ACTIVE | M3-A DB foundation materialized + direct PostgreSQL 18.6 proof PASS; Auth runtime not yet built. |
+| M3 | ACTIVE / BACKEND PASS | Backend signin/session spine + real PostgreSQL proof PASS; generated client/Web/browser exit gate open. |
 | Browser topology | FIXED | Same-origin `/api/v1/*` through edge; services may be physically independent. |
 | Browser session | FIXED | Opaque DB-backed server-authoritative session + host-only HttpOnly cookie. |
 | JWT/localStorage browser auth | NOT SELECTED | Requires concrete reopen evidence. |
@@ -893,7 +962,7 @@ Merge to protected `main` requires a separate explicit user gate.
 | Password policy | FIXED | 15 min; 1024/4096 max resource bounds; NFC; no composition; no truncation. |
 | Password storage | FIXED | Argon2id v19 64MiB/t3/p4 + HMAC-SHA256 pepper. |
 | Breach screening | FIXED | HIBP range; establish fail-closed; existing-login outage fail-open telemetry. |
-| KDF concurrency | FIXED PRINCIPLE | Bounded; exact capacity benchmarked at implementation/deployment. |
+| KDF concurrency | IMPLEMENTED PRINCIPLE | Bounded active workers + bounded admission/waiters + queue timeout; deployment capacity remains configurable. |
 | Passkey-ready | FIXED | 0..N; passwordless; UV required; discoverable direction; opaque userHandle. |
 | Consumer attestation | NOT SELECTED | Future high-security policy may reopen. |
 | MFA implementation | DEFERRED | Architecture compatible; no `mfa_enabled` god-flag. |
@@ -901,26 +970,26 @@ Merge to protected `main` requires a separate explicit user gate.
 | Gmail dot/+ canonicalization | NOT SELECTED | Provider-specific alias behavior not canonical identity. |
 | Verified recovery/contact email | FIXED PRODUCT INVARIANT | Standard consumer Account retains one verified EmailIdentity. |
 | API namespace | FIXED | `/api/v1`; compatibility generation. |
-| API problem format | FIXED | RFC9457 + code/category/request_id/retryable/errors. |
+| API problem format | FIXED / IMPLEMENTED FOR M3 BACKEND | RFC9457 + code/category/request_id/retryable/errors. |
 | Machine codes | FIXED | `namespace.snake_case`; human text never parsed. |
 | Transaction isolation | FIXED | READ COMMITTED default; targeted locks. |
-| Account security serialization | FIXED | Account row for account-wide mutation. |
+| Account security serialization | FIXED / IMPLEMENTED | Account row serialized through narrow DB-owned security-definer lock capability; runtime Account UPDATE remains denied. |
 | Account lock every request | NOT SELECTED | Session admission is read path. |
 | Advisory Account lock | NOT SELECTED | Canonical row lock exists. |
-| Ambiguous commit blind retry | FORBIDDEN | Reconcile or fail safely. |
+| Ambiguous commit blind retry | FORBIDDEN / IMPLEMENTED | Fresh-session reconciliation or safe failure. |
 | Signin persistent generic idempotency | NOT SELECTED | Raw session secret intentionally not retained. |
-| OpenAPI source | FIXED | FastAPI/Pydantic declaration → generated committed snapshot. |
-| Generated client | FIXED | Orval Fetch → framework-neutral `@dante/api-client`. |
+| OpenAPI source | FIXED / NEXT M3 SLICE | FastAPI/Pydantic declaration → generated committed snapshot. |
+| Generated client | FIXED / NEXT M3 SLICE | Orval Fetch → framework-neutral `@dante/api-client`. |
 | Axios for generated client | NOT SELECTED | No need. |
 | Generated React Query hooks | NOT SELECTED | Query/application policy remains separate. |
-| Runtime API validation | FIXED | Zod at generated/normalization boundary. |
+| Runtime API validation | FIXED / NEXT M3 SLICE | Zod at generated/normalization boundary. |
 | TanStack Query | ACTIVATE M3 | Remote request/cache lifecycle only. |
 | Auth query-cache persistence | NOT SELECTED | No browser storage auth cache. |
-| Full-stack proof | FIXED | Real PG/FastAPI/same-origin HTTPS/browser. |
-| Critical browser engines | FIXED M3 PROOF | Chromium + Firefox + WebKit. |
+| Full-stack proof | FIXED / OPEN | Real PG/FastAPI/same-origin HTTPS/browser. |
+| Critical browser engines | FIXED M3 PROOF / OPEN | Chromium + Firefox + WebKit. |
 | Auth E2E shared storageState | NOT SELECTED | Critical Auth spine traverses real signin. |
-| Exact remaining Auth SQL beyond M3-A | OPEN BY SLICE | Later slices materialize only justified shape. |
-| Exact KDF worker/DB timeout numbers | OPEN OPERATIONAL | Benchmark/configure in implementation without semantic reopen. |
+| Exact remaining Auth SQL beyond current backend | OPEN BY SLICE | Later slices materialize only justified shape. |
+| Exact KDF worker/DB timeout numbers | OPEN OPERATIONAL | Benchmark/configure without semantic reopen. |
 | Native credential transport | DEFERRED TO M6 | Same canonical AuthSession semantics. |
 | Full Home implementation | DEFERRED | Separate product vertical. |
 
@@ -991,7 +1060,9 @@ M2 closure means architecture/security/API/testing readiness, not executable Aut
 
 ---
 
-## 19. M3-A database foundation checkpoint — 2026-08-27
+## 19. M3 database/backend checkpoints — 2026-08-27 to 2026-08-28
+
+### M3-A database foundation — 2026-08-27
 
 Approved production gate PRE-SCOPE:
 
@@ -999,7 +1070,7 @@ Approved production gate PRE-SCOPE:
 ea75bb33e88bd256018c73ae444cff48a510af63
 ```
 
-Source materialized so far:
+M3-A source materialized:
 
 ```text
 Alembic 20260827_09
@@ -1012,33 +1083,69 @@ docs/database/access-auth.md
 Database System-of-Record reconciliation
 ```
 
-The Database Dictionary now separates:
+The Database Dictionary separates:
 
 ```text
 expected_baseline
 → CP6 68/5/14 + 75/95 + 68/120 benchmark
 
-current_materialization
-→ M3-A branch candidate 72/5/14 + 75/104 + 71/137
+current_materialization after M3 backend DB evolution
+→ 72/5/15 + 75/104 + 71/137
 ```
 
-Current evidence boundary:
+M3-A direct DB foundation proof was PASS before runtime materialization.
+
+### M3 backend spine — 2026-08-28
+
+Forward migration `20260827_10` added the narrow runtime security capability:
 
 ```text
-source/schema/docs materialized      YES
-remote path audit against PRE-SCOPE  PASS for the DB-foundation write set
-local real PostgreSQL 18.6 execution PASS
-Ruff format/check                    PASS
-mypy                                 PASS / 42 source files
-targeted DB integration suite        PASS / 7 of 7
-M3-A database foundation             MATERIALIZED + PROVEN
-Auth runtime                         NOT YET
-whole M3-A / M3 exit gate            NOT YET
+dante.acquire_account_security_lock(uuid)
+SECURITY DEFINER
+owner dante_owner
+trusted exact search_path
+PUBLIC EXECUTE denied
+dante_migrator EXECUTE denied
+dante_runtime EXECUTE yes
+runtime Account UPDATE still denied
+runtime direct Account SELECT ... FOR UPDATE still denied
 ```
 
-During `scope.json` reconciliation, one update attempt used a stale/incorrect blob SHA and GitHub returned `409`; no change was applied by that rejected attempt. The file was re-read and the subsequent exact-SHA update succeeded. This did not move any unrelated path or ref.
+The production backend Auth spine then materialized email/password verification, KDF admission, HIBP handling, AuthSession issuance/admission/revocation, Principal derivation, FastAPI signin/session/logout, RFC9457 problem handling, Web ingress security and ambiguous-commit reconciliation.
 
-Documentation-model hardening discovered during the same slice:
+Quality/proof progression included:
+
+```text
+uv lock --check                        PASS
+ruff format/check                      PASS at pre-final test reconciliation checkpoint
+ruff lint                              PASS
+mypy strict                            PASS
+fast pytest                            73 / 73 PASS
+uv build                               PASS
+real PostgreSQL marked suite           83 / 83 PASS at final backend test HEAD
+real Auth signin/session suite         4 / 4 PASS
+CP6 historical regression              PASS
+migration/current catalog              PASS
+ACL/account lock                       PASS
+runtime recovery                       PASS
+transaction semantics                  PASS
+```
+
+The first PostgreSQL run after backend materialization initially failed before most tests because the required local Docker image `dante-postgres-local:18.6` was absent; after Docker was running and the canonical image was built, the suite executed normally. Three CP6 historical tests were then corrected to preserve the 68-table CP6 baseline rather than reading the four post-CP6 Auth mappings as historical CP6 state. Two runtime health tests were updated to supply now-required Auth settings rather than weakening production configuration. Final result: `83 passed, 73 deselected`.
+
+Evidence boundary now:
+
+```text
+M3 database foundation               MATERIALIZED + PROVEN
+M3 backend signin/session spine       MATERIALIZED + PROVEN
+OpenAPI committed snapshot            NOT YET
+Orval/@dante/api-client               NOT YET
+Web Access real wiring                NOT YET
+same-origin HTTPS browser proof       NOT YET
+whole M3 exit gate                    NOT YET
+```
+
+Documentation-model hardening discovered during the same slice remains normative:
 
 ```text
 whole DB reference != frozen CP6 artifact
@@ -1047,7 +1154,7 @@ CP6 migration/QA/Git evidence remains historical
 resolved DB deferrals must be reconciled when their trigger fires
 ```
 
-That rule is now normative in `docs/development/documentation-lifecycle-policy.md` and applied to the Database System of Record.
+That rule is normative in `docs/development/documentation-lifecycle-policy.md` and applied to the Database System of Record.
 
 ---
 
@@ -1086,6 +1193,10 @@ history changed        NO
 ```
 
 The mistake was disclosed immediately during execution. File tooling was then explicitly reloaded before continuing. Do not repeat this pattern.
+
+### M3 static-QA no-op file incident
+
+During remote M3 static-QA tooling, an empty `__noop__` file was accidentally created and immediately removed before functional work continued. Final tree readback confirmed the file absent and no runtime/database/documentation content affected. The no-op commits remain in feature-branch history; history was not rewritten because no force/rewrite gate was authorized.
 
 ---
 
@@ -1153,6 +1264,30 @@ Minimum closure record answers:
 
 No closed phase may depend on chat memory for durable truth.
 
+Whole-vertical closure additionally requires both verdicts:
+
+```text
+ENGINEERING GATE
+PASS / FAIL
+
+USER ACCEPTANCE GATE
+ACCEPTED / REJECTED
+```
+
+and therefore:
+
+```text
+AUTOMATED + TECHNICAL PROOF PASS
++
+MANUAL UAT PASS
++
+USER EXPLICIT ACCEPTANCE
+=
+VERTICAL CLOSED
+```
+
+A technically green slice is not the same as a user-accepted closed vertical.
+
 ---
 
 ## 23. Immediate next action
@@ -1163,19 +1298,23 @@ Current phase:
 M3 — Email/Password Signin + AuthSession Spine
 ACTIVE
 
-M3-A DB FOUNDATION
+DB FOUNDATION
 MATERIALIZED + DIRECTLY PROVEN
 
-AUTH RUNTIME / API / CLIENT / WEB SPINE
+BACKEND AUTH RUNTIME / API
+MATERIALIZED + DIRECT REAL POSTGRESQL PROOF PASS
+
+OPENAPI / GENERATED CLIENT / WEB SPINE
 NOT YET
 ```
 
 Immediate next safe action:
 
-1. continue the same approved M3-A vertical into email/password runtime and bounded password/KDF execution;
-2. materialize real FastAPI signin/session/logout plus runtime Principal derivation and server-authoritative AuthSession admission;
-3. generate/verify deterministic OpenAPI → Orval `@dante/api-client` and Web transport/application boundary;
-4. wire Access signin/bootstrap/logout into the production-shaped `AuthenticatedAppShell` without creating a fake Home;
-5. earn real API + same-origin HTTPS Chromium/Firefox/WebKit proof before claiming whole M3-A/M3 PASS.
+1. freeze/read back the current FastAPI Auth surface as deterministic OpenAPI 3.1;
+2. qualify/pin Orval and materialize framework-neutral `@dante/api-client` with Fetch + required runtime Zod validation boundary;
+3. implement the Web same-origin transport/application adapter with credentials and CSRF injection, keeping TanStack Query limited to remote lifecycle;
+4. wire existing Access signin/bootstrap/logout states to the real backend and production-shaped `AuthenticatedAppShell` without creating a fake Home;
+5. run frontend static/unit/release gates plus real same-origin HTTPS Chromium/Firefox/WebKit proof against FastAPI + PostgreSQL 18.6;
+6. only then evaluate the M3 engineering exit gate and prepare user manual UAT for the actually implemented M3 behavior.
 
-Do **not** start a second unrelated Auth migration or fake Home. The M3-A goal remains one bounded end-to-end spine that moves required DB/backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.
+Do **not** start M4, a second unrelated Auth migration or a fake Home. The M3 goal remains one bounded end-to-end spine that moves required backend/API/generated-client/Web/test/docs artifacts together and earns real PostgreSQL + browser proof.
