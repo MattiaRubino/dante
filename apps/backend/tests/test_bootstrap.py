@@ -2,11 +2,15 @@
 
 import importlib
 from base64 import urlsafe_b64encode
+from datetime import UTC, datetime
+from types import SimpleNamespace
 from typing import Any, cast
+from uuid import uuid7
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
+from sqlalchemy.exc import DBAPIError
 
 from dante.auth.sessions import WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE
 from dante.bootstrap.app import create_app
@@ -195,6 +199,98 @@ async def test_auth_runtime_partial_startup_closes_already_owned_kdf(
         )
 
     assert lifecycle == {"started": True, "closed": True}
+
+
+@pytest.mark.asyncio
+async def test_ambiguous_commit_closes_original_session_before_reconciliation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    now = datetime.now(UTC)
+    account_ref = uuid7()
+    email_identity_ref = uuid7()
+    credential_ref = uuid7()
+
+    account = SimpleNamespace(status_code="active")
+    email_identity = SimpleNamespace(verified_at=now)
+    credential = SimpleNamespace(
+        password_credential_ref=credential_ref,
+        verifier="$argon2id$v=19$synthetic",
+        pepper_key_id=_TEST_PEPPER_KEY_ID,
+        updated_at=now,
+    )
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.closed = False
+            self._scalar_values = iter((account, email_identity, credential))
+
+        async def begin(self) -> None:
+            return None
+
+        async def execute(self, _statement: object) -> None:
+            return None
+
+        async def scalar(self, _statement: object) -> object:
+            return next(self._scalar_values)
+
+        def add(self, _row: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            raise DBAPIError(
+                statement=None,
+                params=None,
+                orig=RuntimeError("synthetic ambiguous commit"),
+                connection_invalidated=True,
+            )
+
+        async def rollback(self) -> None:
+            return None
+
+        def in_transaction(self) -> bool:
+            return True
+
+        async def close(self) -> None:
+            self.closed = True
+
+    database_session = FakeSession()
+
+    def session_factory() -> FakeSession:
+        return database_session
+
+    service = _auth_service_module.AuthService(
+        session_factory=cast(Any, session_factory),
+        settings=_auth_settings(),
+        password_kdf=cast(Any, object()),
+        breach_checker=cast(Any, object()),
+        signin_limiter=cast(Any, object()),
+    )
+    snapshot = SimpleNamespace(
+        account_ref=account_ref,
+        email_identity_ref=email_identity_ref,
+        password_credential_ref=credential_ref,
+        verifier=credential.verifier,
+        pepper_key_id=credential.pepper_key_id,
+        credential_updated_at=credential.updated_at,
+    )
+    sentinel = object()
+    reconciled = {"called": False}
+
+    async def reconcile(**_kwargs: object) -> object:
+        assert database_session.closed is True
+        reconciled["called"] = True
+        return sentinel
+
+    monkeypatch.setattr(service, "_reconcile_ambiguous_session", reconcile)
+
+    result = await service._finalize_signin(
+        snapshot=cast(Any, snapshot),
+        expected_comparison_key="person@example.com",
+        replacement_verifier=None,
+    )
+
+    assert result is sentinel
+    assert reconciled == {"called": True}
 
 
 @pytest.mark.parametrize("env", [Environment.LOCAL, Environment.DEV, Environment.UAT])
