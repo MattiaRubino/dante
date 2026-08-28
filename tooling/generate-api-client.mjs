@@ -46,13 +46,7 @@ run('pnpm', ['--filter', '@dante/api-client', 'generate'], {
 
 run(
   'pnpm',
-  [
-    'exec',
-    'prettier',
-    '--write',
-    openapiRelativePath,
-    generatedRelativePath,
-  ],
+  ['exec', 'prettier', '--write', openapiRelativePath, generatedRelativePath],
   {
     label: 'generated API formatting',
   },

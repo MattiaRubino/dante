@@ -93,8 +93,7 @@ export type RemoteSuccess<T> = {
 };
 
 export type RemoteResult<T> =
-  | RemoteSuccess<T>
-  | { ok: false; failure: RemoteFailure };
+  RemoteSuccess<T> | { ok: false; failure: RemoteFailure };
 
 type WireResponse = {
   data: unknown;
@@ -103,8 +102,7 @@ type WireResponse = {
 };
 
 type TransportFailureKind =
-  | NetworkUnavailableFailure['kind']
-  | AbortedFailure['kind'];
+  NetworkUnavailableFailure['kind'] | AbortedFailure['kind'];
 
 class TransportFailure extends Error {
   constructor(readonly kind: TransportFailureKind) {
