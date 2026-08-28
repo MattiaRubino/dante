@@ -16,12 +16,7 @@
   background: var(--dante-theme-shell-canvas);
 }
 
-:where(
-  .app-topbar,
-  .app-dialog-backdrop,
-  .app-placeholder-page,
-  .app-skip-link
-) {
+:where(.app-topbar, .app-placeholder-page, .app-skip-link) {
   --dante-theme-home-canvas: var(--dante-theme-shell-canvas);
   --dante-theme-home-text-primary: var(--dante-theme-shell-text-primary);
   --dante-theme-home-text-secondary: var(--dante-theme-shell-text-secondary);
