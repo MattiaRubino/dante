@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
-const e2ePort = Number(process.env.PLAYWRIGHT_PORT ?? 42000 + (process.pid % 10000));
+// Playwright may evaluate this config in multiple processes. The default port
+// must therefore be stable across the runner, web server, and workers.
+const e2ePort = Number(process.env.PLAYWRIGHT_PORT ?? 43117);
 const baseURL = `http://127.0.0.1:${e2ePort}`;
 
 export default defineConfig({
