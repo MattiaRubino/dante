@@ -4,8 +4,8 @@
  * DANTE Backend
  * OpenAPI spec version: 0.1.0
  */
-import { AuthenticatedSessionResponse } from './model';
 import type {
+  AuthenticatedSessionResponse,
   ProblemDetails,
   SignInRequest,
   UnauthenticatedSessionResponse,
@@ -213,17 +213,9 @@ export const authSignIn = async (
     body: JSON.stringify(signInRequest),
   });
 
-  const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
   const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-  const parsedBody = body
-    ? contentType.includes('json')
-      ? JSON.parse(body)
-      : body
-    : {};
-  const data = contentType.includes('json')
-    ? AuthenticatedSessionResponse.parse(parsedBody)
-    : parsedBody;
+  const data: authSignInResponse['data'] = body ? JSON.parse(body) : {};
   return {
     data,
     status: res.status,

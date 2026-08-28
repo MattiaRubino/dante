@@ -6,14 +6,10 @@
  */
 import * as zod from 'zod/mini';
 
-export const unauthenticatedSessionResponseAuthenticatedDefault = false;
 export const UnauthenticatedSessionResponse = /*#__PURE__*/ zod
   .object({
     authenticated: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal(false),
-        unauthenticatedSessionResponseAuthenticatedDefault,
-      )
+      .literal(false)
       .check(/*#__PURE__*/ zod.meta({ title: 'Authenticated' })),
   })
   .check(

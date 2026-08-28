@@ -6,16 +6,12 @@
  */
 import * as zod from 'zod/mini';
 
-export const authenticatedSessionResponseAuthenticatedDefault = true;
 export const AuthenticatedSessionResponse = /*#__PURE__*/ zod
   .object({
     account_ref: /*#__PURE__*/ zod.uuid(),
     auth_session_ref: /*#__PURE__*/ zod.uuid(),
     authenticated: /*#__PURE__*/ zod
-      ._default(
-        /*#__PURE__*/ zod.literal(true),
-        authenticatedSessionResponseAuthenticatedDefault,
-      )
+      .literal(true)
       .check(/*#__PURE__*/ zod.meta({ title: 'Authenticated' })),
     csrf_token: /*#__PURE__*/ zod.string(),
     expires_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),

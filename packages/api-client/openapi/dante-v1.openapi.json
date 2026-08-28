@@ -17,7 +17,6 @@
           },
           "authenticated": {
             "const": true,
-            "default": true,
             "title": "Authenticated",
             "type": "boolean"
           },
@@ -39,9 +38,10 @@
         "required": [
           "account_ref",
           "auth_session_ref",
-          "recent_auth_at",
+          "authenticated",
+          "csrf_token",
           "expires_at",
-          "csrf_token"
+          "recent_auth_at"
         ],
         "title": "AuthenticatedSessionResponse",
         "type": "object"
@@ -172,13 +172,21 @@
         "properties": {
           "authenticated": {
             "const": false,
-            "default": false,
             "title": "Authenticated",
             "type": "boolean"
           }
         },
+        "required": ["authenticated"],
         "title": "UnauthenticatedSessionResponse",
         "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "DanteSessionCookie": {
+        "description": "Opaque host-only HttpOnly Secure AuthSession bearer cookie; browser transport owns it.",
+        "in": "cookie",
+        "name": "__Host-dante-session",
+        "type": "apiKey"
       }
     }
   },
@@ -194,41 +202,136 @@
         "operationId": "auth_log_out",
         "responses": {
           "204": {
-            "description": "Successful Response"
+            "description": "Successful Response",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "Clears the current __Host-dante-session cookie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Service Unavailable"
+            "description": "Service Unavailable",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {},
+          {
+            "DanteSessionCookie": []
+          }
+        ],
         "summary": "Log Out",
-        "tags": ["auth"]
+        "tags": ["auth"],
+        "x-dante-browser-security": {
+          "client_header": {
+            "name": "X-Dante-Client",
+            "owner": "web_transport",
+            "required": true,
+            "required_value": "web"
+          },
+          "csrf_header": {
+            "name": "X-Dante-CSRF",
+            "owner": "web_transport",
+            "required_when": "valid_auth_session_admitted"
+          },
+          "origin": {
+            "must_equal": "canonical_web_origin",
+            "owner": "browser",
+            "required": true
+          },
+          "sec_fetch_site": {
+            "owner": "browser",
+            "required": true,
+            "required_value": "same-origin"
+          }
+        }
       },
       "get": {
         "description": "Return authoritative current Web session state without user activity.",
@@ -250,29 +353,86 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Successful Response",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "May clear an invalid or expired __Host-dante-session cookie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Service Unavailable"
+            "description": "Service Unavailable",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
+        "security": [
+          {},
+          {
+            "DanteSessionCookie": []
+          }
+        ],
         "summary": "Get Session",
         "tags": ["auth"]
       }
@@ -300,81 +460,231 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Successful Response",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "May establish the host-only HttpOnly Secure __Host-dante-session cookie.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "400": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Bad Request"
+            "description": "Bad Request",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "401": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "403": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Unprocessable Content",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "429": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Too Many Requests"
+            "description": "Too Many Requests",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "description": "Minimum delay before another signin attempt is useful.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Internal Server Error"
+            "description": "Internal Server Error",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "503": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Service Unavailable"
+            "description": "Service Unavailable",
+            "headers": {
+              "Cache-Control": {
+                "description": "Auth responses are never cacheable by shared or browser caches.",
+                "schema": {
+                  "const": "no-store",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-authoritative non-secret request correlation identifier.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "summary": "Sign In",
-        "tags": ["auth"]
+        "tags": ["auth"],
+        "x-dante-browser-security": {
+          "client_header": {
+            "name": "X-Dante-Client",
+            "owner": "web_transport",
+            "required": true,
+            "required_value": "web"
+          },
+          "origin": {
+            "must_equal": "canonical_web_origin",
+            "owner": "browser",
+            "required": true
+          },
+          "sec_fetch_site": {
+            "owner": "browser",
+            "required": true,
+            "required_value": "same-origin"
+          }
+        }
       }
     }
   }
