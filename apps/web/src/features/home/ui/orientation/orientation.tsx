@@ -13,7 +13,10 @@ export function Orientation() {
         {t(($) => $.common.home.orientation.title)}
       </h1>
 
-      <article className="home-orientation-now" data-home-orientation="now-next">
+      <article
+        className="home-orientation-now"
+        data-home-orientation="now-next"
+      >
         <div className="home-orientation-kicker-row">
           <span>{t(($) => $.common.home.orientation.nowNext)}</span>
           <span className="home-orientation-status-dot" aria-hidden="true" />
@@ -45,13 +48,20 @@ export function Orientation() {
         </footer>
       </article>
 
-      <article className="home-orientation-for-you" data-home-orientation="for-you">
+      <article
+        className="home-orientation-for-you"
+        data-home-orientation="for-you"
+      >
         <div className="home-orientation-kicker-row">
           <span>{t(($) => $.common.home.orientation.forYou)}</span>
-          <span className="home-orientation-weather" aria-hidden="true">☼</span>
+          <span className="home-orientation-weather" aria-hidden="true">
+            ☼
+          </span>
         </div>
         <strong>Uscita fotografica al tramonto</strong>
-        <p>Luce migliore dalle 18:42. Hai una finestra utile dopo il debrief.</p>
+        <p>
+          Luce migliore dalle 18:42. Hai una finestra utile dopo il debrief.
+        </p>
         <footer>
           <span>54 min liberi</span>
           <span>meteo favorevole</span>

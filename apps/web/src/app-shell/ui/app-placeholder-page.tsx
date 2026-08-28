@@ -13,7 +13,10 @@ export function AppPlaceholderPage({
 }: AppPlaceholderPageProps) {
   return (
     <main className="app-placeholder-page" data-app-placeholder="true">
-      <section className="app-placeholder-card" aria-labelledby="app-placeholder-title">
+      <section
+        className="app-placeholder-card"
+        aria-labelledby="app-placeholder-title"
+      >
         <span className="app-dialog-kicker">{eyebrow}</span>
         <h1 id="app-placeholder-title">{title}</h1>
         <p>{description}</p>

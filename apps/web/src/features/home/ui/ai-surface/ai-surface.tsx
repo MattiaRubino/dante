@@ -7,10 +7,7 @@ type AISurfaceProps = {
   onToggleCollapsed: () => void;
 };
 
-export function AISurface({
-  collapsed,
-  onToggleCollapsed,
-}: AISurfaceProps) {
+export function AISurface({ collapsed, onToggleCollapsed }: AISurfaceProps) {
   const { t } = useTranslation('common');
 
   return (
@@ -40,7 +37,12 @@ export function AISurface({
         <>
           <header className="home-ai-heading">
             <div className="home-ai-identity" aria-label="DANTE">
-              <img className="home-ai-symbol" src={danteSymbolUrl} alt="" aria-hidden="true" />
+              <img
+                className="home-ai-symbol"
+                src={danteSymbolUrl}
+                alt=""
+                aria-hidden="true"
+              />
             </div>
 
             <div className="home-ai-head-actions">

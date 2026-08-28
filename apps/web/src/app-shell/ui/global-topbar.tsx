@@ -7,7 +7,13 @@ import danteWordmarkRaw from '../../../../../assets/brand/wordmark/master/dante-
 import { PRIMARY_DESTINATIONS } from '../model/navigation';
 import { AccountMenuContent } from './account-menu';
 import { CreateMenuContent } from './create-menu';
-import { HomeIcon, ReviewIcon, SearchIcon, TodayIcon, WorldsIcon } from './icons';
+import {
+  HomeIcon,
+  ReviewIcon,
+  SearchIcon,
+  TodayIcon,
+  WorldsIcon,
+} from './icons';
 import { LauncherMenuContent } from './launcher-menu';
 import { MenuPopover } from './primitives/menu-popover';
 import { SearchCommandDialog } from './search-command-dialog';
@@ -64,7 +70,11 @@ export function GlobalTopbar() {
             className="app-topbar-brand"
             aria-label={t(($) => $.common.shell.topbar.brandHomeLabel)}
           >
-            <img className="app-topbar-brand-symbol" src={danteSymbolUrl} alt="" />
+            <img
+              className="app-topbar-brand-symbol"
+              src={danteSymbolUrl}
+              alt=""
+            />
             <span
               className="app-topbar-brand-wordmark"
               aria-hidden="true"
@@ -129,7 +139,9 @@ export function GlobalTopbar() {
               aria-controls="app-create-menu"
               onClick={() => toggleMenu('create')}
             >
-              <span className="app-topbar-plus" aria-hidden="true">+</span>
+              <span className="app-topbar-plus" aria-hidden="true">
+                +
+              </span>
               <span className="app-topbar-create-label">
                 {t(($) => $.common.shell.topbar.create)}
               </span>
@@ -157,7 +169,9 @@ export function GlobalTopbar() {
             <span className="app-topbar-review-label">
               {t(($) => $.common.shell.topbar.review)}
             </span>
-            <span className="app-topbar-review-badge" aria-hidden="true">3</span>
+            <span className="app-topbar-review-badge" aria-hidden="true">
+              3
+            </span>
           </button>
 
           <div className="app-popover-anchor">
@@ -200,7 +214,9 @@ export function GlobalTopbar() {
               aria-label={t(($) => $.common.shell.topbar.account)}
               onClick={() => toggleMenu('account')}
             >
-              <span className="app-topbar-avatar" aria-hidden="true">MR</span>
+              <span className="app-topbar-avatar" aria-hidden="true">
+                MR
+              </span>
             </button>
             <MenuPopover
               id="app-account-menu"

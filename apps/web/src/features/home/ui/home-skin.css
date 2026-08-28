@@ -12,20 +12,46 @@
      packages/design-tokens/tokens/home-theme.json the single Home palette
      authority even where the foundation CSS still consumes old variable names. */
   --dante-semantic-color-home-canvas: var(--dante-theme-home-canvas);
-  --dante-semantic-color-home-surface-primary: var(--dante-theme-home-surface-panel);
-  --dante-semantic-color-home-surface-raised: var(--dante-theme-home-surface-raised);
-  --dante-semantic-color-home-surface-control: var(--dante-theme-home-surface-control);
-  --dante-semantic-color-home-text-primary: var(--dante-theme-home-text-primary);
-  --dante-semantic-color-home-text-secondary: var(--dante-theme-home-text-secondary);
+  --dante-semantic-color-home-surface-primary: var(
+    --dante-theme-home-surface-panel
+  );
+  --dante-semantic-color-home-surface-raised: var(
+    --dante-theme-home-surface-raised
+  );
+  --dante-semantic-color-home-surface-control: var(
+    --dante-theme-home-surface-control
+  );
+  --dante-semantic-color-home-text-primary: var(
+    --dante-theme-home-text-primary
+  );
+  --dante-semantic-color-home-text-secondary: var(
+    --dante-theme-home-text-secondary
+  );
   --dante-semantic-color-home-text-muted: var(--dante-theme-home-text-muted);
-  --dante-semantic-color-home-border-subtle: var(--dante-theme-home-border-subtle);
-  --dante-semantic-color-home-border-strong: var(--dante-theme-home-border-strong);
-  --dante-semantic-color-home-chrome-active: var(--dante-theme-home-chrome-active);
-  --dante-semantic-color-home-chrome-active-text: var(--dante-theme-home-chrome-active-text);
-  --dante-semantic-color-home-chrome-active-soft: var(--dante-theme-home-chrome-active-soft);
-  --dante-semantic-color-home-chrome-active-border: var(--dante-theme-home-chrome-active-border);
-  --dante-semantic-color-home-chrome-inactive: var(--dante-theme-home-chrome-inactive);
-  --dante-semantic-color-home-chrome-inactive-border: var(--dante-theme-home-chrome-inactive-border);
+  --dante-semantic-color-home-border-subtle: var(
+    --dante-theme-home-border-subtle
+  );
+  --dante-semantic-color-home-border-strong: var(
+    --dante-theme-home-border-strong
+  );
+  --dante-semantic-color-home-chrome-active: var(
+    --dante-theme-home-chrome-active
+  );
+  --dante-semantic-color-home-chrome-active-text: var(
+    --dante-theme-home-chrome-active-text
+  );
+  --dante-semantic-color-home-chrome-active-soft: var(
+    --dante-theme-home-chrome-active-soft
+  );
+  --dante-semantic-color-home-chrome-active-border: var(
+    --dante-theme-home-chrome-active-border
+  );
+  --dante-semantic-color-home-chrome-inactive: var(
+    --dante-theme-home-chrome-inactive
+  );
+  --dante-semantic-color-home-chrome-inactive-border: var(
+    --dante-theme-home-chrome-inactive-border
+  );
 
   color: var(--dante-semantic-color-home-text-primary);
   background: var(--dante-semantic-color-home-canvas);
@@ -39,7 +65,11 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--dante-theme-home-backdrop-shade) 52%, transparent),
+      color-mix(
+        in srgb,
+        var(--dante-theme-home-backdrop-shade) 52%,
+        transparent
+      ),
       var(--dante-theme-home-backdrop-shade)
     ),
     radial-gradient(
@@ -102,11 +132,12 @@
       var(--dante-semantic-color-home-canvas)
     )
   );
-  box-shadow: 0 5px 18px color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-chrome-active) 22%,
-    transparent
-  );
+  box-shadow: 0 5px 18px
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-chrome-active) 22%,
+      transparent
+    );
 }
 
 .home-m1-review-badge {
@@ -132,11 +163,7 @@
       var(--dante-theme-home-atmosphere-soft),
       transparent 72%
     ),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-canvas) 30%,
-      transparent
-    );
+    color-mix(in srgb, var(--dante-semantic-color-home-canvas) 30%, transparent);
 }
 
 .home-m1 .home-day-strip::after {
@@ -343,11 +370,8 @@
     repeating-linear-gradient(
       90deg,
       transparent 0 calc(25% - 1px),
-      color-mix(
-        in srgb,
-        var(--dante-theme-home-border-panel) 72%,
-        transparent
-      ) calc(25% - 1px) 25%
+      color-mix(in srgb, var(--dante-theme-home-border-panel) 72%, transparent)
+        calc(25% - 1px) 25%
     );
 }
 

@@ -1,8 +1,6 @@
 export const HOME_STAGE_CONTRACT_VERSION = '0.2.0' as const;
 
-export type HomeStageMode =
-  | 'home.stage.continuity'
-  | 'home.stage.signals';
+export type HomeStageMode = 'home.stage.continuity' | 'home.stage.signals';
 
 export type HomeStageStatus =
   | 'loading'
@@ -33,12 +31,7 @@ export interface HomeContinuityItemViewModel {
 }
 
 export type HomeSignalVisualizationKind =
-  | 'sparkline'
-  | 'bars'
-  | 'dots'
-  | 'progress'
-  | 'range'
-  | 'number_delta';
+  'sparkline' | 'bars' | 'dots' | 'progress' | 'range' | 'number_delta';
 
 export interface HomeSignalVisualizationViewModel {
   kind: HomeSignalVisualizationKind;

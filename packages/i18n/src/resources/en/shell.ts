@@ -88,7 +88,8 @@ export const shell = {
     logoutUnavailable: 'Available when the real session is connected',
   },
   review: {
-    legacyHint: 'Review is a legacy function awaiting reconciliation with Resolution.',
+    legacyHint:
+      'Review is a legacy function awaiting reconciliation with Resolution.',
   },
   placeholder: {
     eyebrow: 'DANTE · application area',

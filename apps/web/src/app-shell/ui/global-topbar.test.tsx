@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import {
   Outlet,
   RouterProvider,
@@ -102,7 +108,9 @@ describe('GlobalTopbar', () => {
     trigger.focus();
     fireEvent.click(trigger);
 
-    const input = await screen.findByRole('combobox', { name: 'Cerca in DANTE' });
+    const input = await screen.findByRole('combobox', {
+      name: 'Cerca in DANTE',
+    });
     fireEvent.change(input, { target: { value: 'mondi' } });
     expect((input as HTMLInputElement).value).toBe('mondi');
 
@@ -122,9 +130,9 @@ describe('GlobalTopbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Crea' }));
     expect(screen.getByRole('menu', { name: 'Crea' })).toBeTruthy();
     expect(
-      screen.getByRole('menuitem', { name: /Evento/ }).getAttribute(
-        'aria-disabled',
-      ),
+      screen
+        .getByRole('menuitem', { name: /Evento/ })
+        .getAttribute('aria-disabled'),
     ).toBe('true');
 
     fireEvent.click(screen.getByRole('button', { name: 'Apri launcher' }));
@@ -133,9 +141,9 @@ describe('GlobalTopbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Account' }));
     expect(screen.getByRole('menu', { name: 'Menu account' })).toBeTruthy();
     expect(
-      screen.getByRole('menuitem', { name: /Esci/ }).getAttribute(
-        'aria-disabled',
-      ),
+      screen
+        .getByRole('menuitem', { name: /Esci/ })
+        .getAttribute('aria-disabled'),
     ).toBe('true');
   });
 

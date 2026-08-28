@@ -25,7 +25,9 @@ export function CreateMenuContent() {
       <div className="app-menu-list" role="none">
         {CREATE_CAPABILITIES.map((capability) => {
           const Icon = CAPABILITY_ICONS[capability.id];
-          const label = t(($) => $.common.shell.create.items[capability.id].label);
+          const label = t(
+            ($) => $.common.shell.create.items[capability.id].label,
+          );
           const description = t(
             ($) => $.common.shell.create.items[capability.id].description,
           );
@@ -47,7 +49,9 @@ export function CreateMenuContent() {
               <span className="app-menu-item-copy">
                 <strong>{label}</strong>
                 <small>{description}</small>
-                <em id={reasonId}>{t(($) => $.common.shell.create.deferred)}</em>
+                <em id={reasonId}>
+                  {t(($) => $.common.shell.create.deferred)}
+                </em>
               </span>
             </button>
           );

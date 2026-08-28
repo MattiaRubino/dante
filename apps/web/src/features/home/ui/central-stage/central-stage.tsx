@@ -98,7 +98,9 @@ function getWorld(index: number): World {
   const world = WORLDS[index];
 
   if (!world) {
-    throw new Error(`Home stage invariant violated: missing world at index ${index}`);
+    throw new Error(
+      `Home stage invariant violated: missing world at index ${index}`,
+    );
   }
 
   return world;

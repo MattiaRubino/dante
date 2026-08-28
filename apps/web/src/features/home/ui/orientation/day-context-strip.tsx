@@ -30,13 +30,26 @@ export function DayContextStrip() {
       <div className="home-day-route" aria-hidden="true">
         <svg viewBox="0 0 760 78" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="home-day-road-gradient" gradientUnits="userSpaceOnUse" x1="0%" y1="0" x2="100%" y2="0">
+            <linearGradient
+              id="home-day-road-gradient"
+              gradientUnits="userSpaceOnUse"
+              x1="0%"
+              y1="0"
+              x2="100%"
+              y2="0"
+            >
               <stop offset="0%" stopColor="#69767b" stopOpacity=".22" />
               <stop offset="36%" stopColor="#EA5C12" stopOpacity=".55" />
               <stop offset="62%" stopColor="#F0A06F" stopOpacity=".92" />
               <stop offset="100%" stopColor="#69767b" stopOpacity=".2" />
             </linearGradient>
-            <linearGradient id="home-day-sky-gradient" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient
+              id="home-day-sky-gradient"
+              x1="0"
+              y1="0"
+              x2="1"
+              y2="0"
+            >
               <stop offset="0" stopColor="#7498b2" stopOpacity=".06" />
               <stop offset=".52" stopColor="#EA5C12" stopOpacity=".13" />
               <stop offset="1" stopColor="#2a3840" stopOpacity="0" />
@@ -59,8 +72,12 @@ export function DayContextStrip() {
           <circle className="home-day-route-sunrise" cx="96" cy="58" r="3.2" />
           <circle className="home-day-route-sunset" cx="690" cy="50" r="3.2" />
         </svg>
-        <span className="home-day-route-label home-day-route-label-start">06:17</span>
-        <span className="home-day-route-label home-day-route-label-end">19:34</span>
+        <span className="home-day-route-label home-day-route-label-start">
+          06:17
+        </span>
+        <span className="home-day-route-label home-day-route-label-end">
+          19:34
+        </span>
         <span className="home-day-now">15:00</span>
         <span className="home-day-marker" />
       </div>

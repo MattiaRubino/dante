@@ -45,9 +45,8 @@ export function DialogLayer({
       const preferred = panelRef.current?.querySelector<HTMLElement>(
         '[data-dialog-autofocus="true"]',
       );
-      const fallback = panelRef.current?.querySelector<HTMLElement>(
-        FOCUSABLE_SELECTOR,
-      );
+      const fallback =
+        panelRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
       (preferred ?? fallback ?? panelRef.current)?.focus();
     });
 
@@ -63,7 +62,8 @@ export function DialogLayer({
       }
 
       const focusable = Array.from(
-        panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [],
+        panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ??
+          [],
       );
 
       if (focusable.length === 0) {

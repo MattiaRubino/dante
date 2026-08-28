@@ -64,9 +64,8 @@ export function MenuPopover({
     document.addEventListener('keydown', handleDocumentKeyDown, true);
 
     queueMicrotask(() => {
-      const firstItem = panelRef.current?.querySelector<HTMLElement>(
-        MENU_ITEM_SELECTOR,
-      );
+      const firstItem =
+        panelRef.current?.querySelector<HTMLElement>(MENU_ITEM_SELECTOR);
       firstItem?.focus();
     });
 

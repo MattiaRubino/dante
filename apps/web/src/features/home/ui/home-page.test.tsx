@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
@@ -30,7 +36,9 @@ describe('HomePage M1 visual materialization', () => {
       'timeline',
       'context-rail',
     ]) {
-      expect(container.querySelector(`[data-home-region="${region}"]`)).toBeTruthy();
+      expect(
+        container.querySelector(`[data-home-region="${region}"]`),
+      ).toBeTruthy();
     }
   });
 
@@ -53,12 +61,16 @@ describe('HomePage M1 visual materialization', () => {
     expect(shell?.getAttribute('data-home-ai-state')).toBe('expanded');
     expect(shell?.getAttribute('data-home-timeline-state')).toBe('normal');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Comprimi assistente' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Comprimi assistente' }),
+    );
     expect(shell?.getAttribute('data-home-ai-state')).toBe('collapsed');
 
     const stage = container.querySelector('[data-home-region="central-stage"]');
     const stageScope = within(stage as HTMLElement);
-    fireEvent.click(stageScope.getByRole('button', { name: 'Proiezione successiva' }));
+    fireEvent.click(
+      stageScope.getByRole('button', { name: 'Proiezione successiva' }),
+    );
     expect(stage?.getAttribute('data-home-stage-mode')).toBe('signals');
     expect(stageScope.getByText('Equilibrio aree')).toBeTruthy();
 

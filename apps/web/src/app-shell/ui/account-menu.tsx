@@ -13,7 +13,9 @@ export function AccountMenuContent({ onSelect }: AccountMenuContentProps) {
   return (
     <div className="app-menu-content app-account-menu-content">
       <header className="app-account-card">
-        <span className="app-account-avatar" aria-hidden="true">MR</span>
+        <span className="app-account-avatar" aria-hidden="true">
+          MR
+        </span>
         <span>
           <strong>{t(($) => $.common.shell.account.title)}</strong>
           <small>{t(($) => $.common.shell.account.identityUnavailable)}</small>

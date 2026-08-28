@@ -2,10 +2,7 @@ import { useMemo, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-import {
-  APP_DESTINATIONS,
-  type AppDestination,
-} from '../model/navigation';
+import { APP_DESTINATIONS, type AppDestination } from '../model/navigation';
 import { ArrowRightIcon, CloseIcon, SearchIcon } from './icons';
 import { DialogLayer } from './primitives/dialog-layer';
 
@@ -72,7 +69,9 @@ function OpenSearchCommandDialog({
 
     return APP_DESTINATIONS.filter((destination) => {
       const copy = destinationCopy[destination.id];
-      return normalize(`${copy.label} ${copy.description}`).includes(normalizedQuery);
+      return normalize(`${copy.label} ${copy.description}`).includes(
+        normalizedQuery,
+      );
     });
   }, [destinationCopy, query]);
 
@@ -96,7 +95,8 @@ function OpenSearchCommandDialog({
       setActiveIndex((current) =>
         filteredDestinations.length === 0
           ? 0
-          : (current - 1 + filteredDestinations.length) % filteredDestinations.length,
+          : (current - 1 + filteredDestinations.length) %
+            filteredDestinations.length,
       );
     } else if (event.key === 'Enter') {
       const destination = filteredDestinations[activeIndex];

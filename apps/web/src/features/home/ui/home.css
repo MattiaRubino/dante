@@ -126,7 +126,11 @@
   border: 0;
   color: var(--dante-semantic-color-home-text-muted);
   background: transparent;
-  font: 600 0.62rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    600 0.62rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 }
 
 .home-topbar nav {
@@ -464,16 +468,15 @@
   border-left: 0;
   border-radius: 0 var(--dante-semantic-radius-card)
     var(--dante-semantic-radius-card) 0;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-home-surface-raised) 70%,
-        transparent
-      ),
-      var(--dante-semantic-color-home-surface-primary)
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-raised) 70%,
+      transparent
+    ),
+    var(--dante-semantic-color-home-surface-primary)
+  );
 }
 
 .home-ai-heading {
@@ -605,16 +608,15 @@
   padding: 20px 18px;
   border: 0;
   border-radius: 0;
-  background:
-    radial-gradient(
-      ellipse at 24% 0%,
-      color-mix(
-        in srgb,
-        var(--dante-semantic-color-home-surface-primary) 22%,
-        transparent
-      ),
-      transparent 68%
-    );
+  background: radial-gradient(
+    ellipse at 24% 0%,
+    color-mix(
+      in srgb,
+      var(--dante-semantic-color-home-surface-primary) 22%,
+      transparent
+    ),
+    transparent 68%
+  );
 }
 
 .home-orientation article::after {
@@ -783,12 +785,11 @@
   padding: 0 15px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 11px;
-  background:
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-surface-control) 48%,
-      transparent
-    );
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control) 48%,
+    transparent
+  );
   color: var(--dante-semantic-color-home-text-secondary);
   font-size: 0.62rem;
   font-weight: 670;
@@ -862,18 +863,18 @@
   display: block;
   border: 1px solid var(--dante-semantic-color-home-border-strong);
   border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 42% 36%,
-      var(--dante-semantic-color-home-surface-control),
-      var(--dante-semantic-color-home-canvas) 68%
-    );
+  background: radial-gradient(
+    circle at 42% 36%,
+    var(--dante-semantic-color-home-surface-control),
+    var(--dante-semantic-color-home-canvas) 68%
+  );
   box-shadow:
-    0 0 0 8px color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-border-subtle) 34%,
-      transparent
-    ),
+    0 0 0 8px
+      color-mix(
+        in srgb,
+        var(--dante-semantic-color-home-border-subtle) 34%,
+        transparent
+      ),
     0 16px 36px rgba(0, 0, 0, 0.18);
 }
 
@@ -1202,10 +1203,6 @@
   min-height: 54px;
 }
 
-
-
-
-
 .home-ai-rail-toggle {
   flex: 0 0 auto;
   width: 38px;
@@ -1223,36 +1220,6 @@
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .home-shell :focus-visible {
   outline: 2px solid var(--dante-semantic-color-focus-ring);
@@ -1634,8 +1601,7 @@
     position: absolute;
     z-index: 10;
     top: calc(
-      var(--home-collapsed-evidence-height)
-      + var(--home-collapsed-stage-gap)
+      var(--home-collapsed-evidence-height) + var(--home-collapsed-stage-gap)
     );
     right: 0;
     bottom: 0;

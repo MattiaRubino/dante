@@ -1,16 +1,8 @@
 export type AppDestinationId =
-  | 'home'
-  | 'worlds'
-  | 'today'
-  | 'profile'
-  | 'settings';
+  'home' | 'worlds' | 'today' | 'profile' | 'settings';
 
 export type AppDestinationPath =
-  | '/home'
-  | '/worlds'
-  | '/today'
-  | '/profile'
-  | '/settings';
+  '/home' | '/worlds' | '/today' | '/profile' | '/settings';
 
 export type AppDestination = {
   id: AppDestinationId;

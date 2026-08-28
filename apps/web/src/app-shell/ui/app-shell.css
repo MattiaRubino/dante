@@ -174,7 +174,11 @@
 .app-topbar-search kbd {
   margin-left: auto;
   color: var(--dante-theme-home-text-muted);
-  font: 650 0.62rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    650 0.62rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 }
 
 .app-topbar-nav {
@@ -243,7 +247,11 @@
   background: linear-gradient(
     135deg,
     var(--dante-theme-home-chrome-active),
-    color-mix(in srgb, var(--dante-theme-home-chrome-active) 82%, var(--dante-theme-home-surface-panel))
+    color-mix(
+      in srgb,
+      var(--dante-theme-home-chrome-active) 82%,
+      var(--dante-theme-home-surface-panel)
+    )
   );
   box-shadow: 0 5px 18px var(--dante-theme-home-atmosphere-soft);
   font-weight: 720;
@@ -664,7 +672,11 @@
   border-radius: 7px;
   color: var(--dante-theme-home-text-muted);
   background: var(--dante-theme-home-surface-panel-soft);
-  font: 650 0.62rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    650 0.62rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 }
 
 .app-search-section-head {

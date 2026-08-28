@@ -8,7 +8,9 @@ test('Access stays outside the application shell', async ({ page }) => {
   await expect(page.locator('[data-app-region="topbar"]')).toHaveCount(0);
 });
 
-test('application navigation keeps one persistent Topbar and real browser history', async ({ page }) => {
+test('application navigation keeps one persistent Topbar and real browser history', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   const topbar = page.locator('[data-app-region="topbar"]');
@@ -25,14 +27,18 @@ test('application navigation keeps one persistent Topbar and real browser histor
   await expect(page.getByRole('main', { name: 'Home DANTE' })).toBeVisible();
 });
 
-test('global search works from the keyboard without pretending remote search exists', async ({ page }) => {
+test('global search works from the keyboard without pretending remote search exists', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   await page.keyboard.press('Control+K');
   const dialog = page.getByRole('dialog', { name: 'Cerca in DANTE' });
   await expect(dialog).toBeVisible();
 
-  await page.getByRole('combobox', { name: 'Cerca in DANTE' }).fill('impostazioni');
+  await page
+    .getByRole('combobox', { name: 'Cerca in DANTE' })
+    .fill('impostazioni');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/settings$/);
   await expect(dialog).toHaveCount(0);
@@ -58,7 +64,9 @@ for (const viewport of [
   });
 }
 
-test('Topbar shell has no detectable WCAG A/AA violations in isolation', async ({ page }) => {
+test('Topbar shell has no detectable WCAG A/AA violations in isolation', async ({
+  page,
+}) => {
   await page.goto('/home');
 
   const results = await new AxeBuilder({ page })

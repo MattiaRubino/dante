@@ -57,9 +57,7 @@ export function HomeShell() {
         >
           <TimelineSurface
             expanded={isTimelineExpanded}
-            onToggleExpanded={() =>
-              setIsTimelineExpanded((value) => !value)
-            }
+            onToggleExpanded={() => setIsTimelineExpanded((value) => !value)}
           />
           <ContextRail />
         </section>
