@@ -2,6 +2,7 @@
 
 import importlib
 from base64 import urlsafe_b64encode
+from typing import Any, cast
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +15,7 @@ from dante.platform.config.database import DatabaseSettings
 from dante.platform.config.settings import Environment, Settings
 
 _lifespan_module = importlib.import_module("dante.bootstrap.lifespan")
+_auth_service_module = importlib.import_module("dante.auth.service")
 _TEST_PEPPER_KEY_ID = "test-v1"
 _CANONICAL_ORIGIN = "https://dante.test"
 
@@ -161,6 +163,38 @@ def test_lifespan_disposes_process_resources(monkeypatch: pytest.MonkeyPatch) ->
 
     assert auth_runtime.closed is True
     assert database_runtime.disposed is True
+
+
+@pytest.mark.asyncio
+async def test_auth_runtime_partial_startup_closes_already_owned_kdf(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lifecycle = {"started": False, "closed": False}
+
+    class FakePasswordKdf:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        async def start(self) -> None:
+            lifecycle["started"] = True
+
+        async def aclose(self) -> None:
+            lifecycle["closed"] = True
+
+    def fail_http_client(**_kwargs: object) -> object:
+        raise RuntimeError("synthetic http client construction failure")
+
+    monkeypatch.setattr(_auth_service_module, "PasswordKdf", FakePasswordKdf)
+    monkeypatch.setattr(_auth_service_module.httpx2, "AsyncClient", fail_http_client)
+
+    with pytest.raises(RuntimeError, match="synthetic http client construction failure"):
+        await _auth_service_module.create_auth_runtime(
+            settings=_auth_settings(),
+            database_runtime=cast(Any, _FakeDatabaseRuntime(ready=True)),
+            release_sha="test-release",
+        )
+
+    assert lifecycle == {"started": True, "closed": True}
 
 
 @pytest.mark.parametrize("env", [Environment.LOCAL, Environment.DEV, Environment.UAT])
