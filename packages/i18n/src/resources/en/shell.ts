@@ -39,9 +39,7 @@ export const shell = {
     },
   },
   search: {
-    kicker: 'Global search',
     title: 'Search DANTE',
-    description: 'Quickly reach available pages and functions.',
     placeholder: 'Search pages and functions…',
     navigationSection: 'Navigation',
     noResults: 'No local destination matches this search.',
