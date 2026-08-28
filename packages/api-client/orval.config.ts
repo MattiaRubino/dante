@@ -19,7 +19,7 @@ export default defineConfig({
         fetch: {
           forceSuccessResponse: false,
           includeHttpResponseReturnType: true,
-          runtimeValidation: true,
+          runtimeValidation: false,
           serializeResponseHeaders: false,
           useRuntimeFetcher: true,
         },
