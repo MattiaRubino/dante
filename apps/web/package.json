@@ -12,9 +12,11 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@dante/api-client": "workspace:*",
     "@dante/design-tokens": "workspace:*",
     "@dante/i18n": "workspace:*",
     "@dante/time": "workspace:*",
+    "@tanstack/react-query": "5.101.4",
     "@tanstack/react-router": "1.170.31",
     "i18next": "26.3.6",
     "react": "19.2.8",
