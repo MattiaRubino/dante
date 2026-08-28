@@ -44,10 +44,7 @@ export default {
         path: '^apps/web/src/features/access/(ui|model)/',
       },
       to: {
-        path: [
-          '^apps/web/src/platform/auth/',
-          '^packages/api-client/',
-        ],
+        path: ['^apps/web/src/platform/auth/', '^packages/api-client/'],
       },
     },
     {

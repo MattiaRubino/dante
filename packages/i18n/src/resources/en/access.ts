@@ -100,8 +100,7 @@ export const access = {
     invalidCredentialsTitle: 'Sign-in failed.',
     invalidCredentialsBody: 'The email or password is incorrect.',
     accountUnavailableTitle: 'Account unavailable.',
-    accountUnavailableBody:
-      'This account cannot open a new session right now.',
+    accountUnavailableBody: 'This account cannot open a new session right now.',
     passwordCompromisedTitle: 'Password update required.',
     passwordCompromisedBody:
       'To protect the account, this password cannot be used to open a new session.',

@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   WebAuthRemoteError,
@@ -109,7 +105,8 @@ export function useSignInMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: WebAuthSignInRequest) => webAuthRemote.signIn(request),
+    mutationFn: (request: WebAuthSignInRequest) =>
+      webAuthRemote.signIn(request),
     retry: false,
     onSuccess: (session) => {
       queryClient.setQueryData<WebAuthSession>(authSessionQueryKey, session);
