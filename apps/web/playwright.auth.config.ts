@@ -30,7 +30,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      'uv run --project ../backend python ../../tooling/serve-access-auth-stack.py',
+      'uv run --project ../backend python ../../tooling/run-access-auth-stack.py',
     url: baseURL,
     reuseExistingServer: false,
     timeout: 180_000,
