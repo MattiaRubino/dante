@@ -1,0 +1,381 @@
+{
+  "components": {
+    "schemas": {
+      "AuthenticatedSessionResponse": {
+        "additionalProperties": false,
+        "description": "Authenticated bootstrap/session representation.",
+        "properties": {
+          "account_ref": {
+            "format": "uuid",
+            "title": "Account Ref",
+            "type": "string"
+          },
+          "auth_session_ref": {
+            "format": "uuid",
+            "title": "Auth Session Ref",
+            "type": "string"
+          },
+          "authenticated": {
+            "const": true,
+            "default": true,
+            "title": "Authenticated",
+            "type": "boolean"
+          },
+          "csrf_token": {
+            "title": "Csrf Token",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "recent_auth_at": {
+            "format": "date-time",
+            "title": "Recent Auth At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_ref",
+          "auth_session_ref",
+          "recent_auth_at",
+          "expires_at",
+          "csrf_token"
+        ],
+        "title": "AuthenticatedSessionResponse",
+        "type": "object"
+      },
+      "ProblemDetails": {
+        "additionalProperties": false,
+        "description": "DANTE RFC 9457 public error contract.",
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProblemFieldError"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "retryable": {
+            "title": "Retryable",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code",
+          "category",
+          "request_id",
+          "retryable"
+        ],
+        "title": "ProblemDetails",
+        "type": "object"
+      },
+      "ProblemFieldError": {
+        "additionalProperties": false,
+        "description": "Stable bounded field error surfaced to first-party clients.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters"
+          },
+          "pointer": {
+            "title": "Pointer",
+            "type": "string"
+          }
+        },
+        "required": ["pointer", "code", "detail"],
+        "title": "ProblemFieldError",
+        "type": "object"
+      },
+      "SignInRequest": {
+        "additionalProperties": false,
+        "description": "Bounded first-party email/password signin request.",
+        "properties": {
+          "email": {
+            "maxLength": 320,
+            "minLength": 1,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": ["email", "password"],
+        "title": "SignInRequest",
+        "type": "object"
+      },
+      "UnauthenticatedSessionResponse": {
+        "additionalProperties": false,
+        "description": "Unauthenticated bootstrap representation.",
+        "properties": {
+          "authenticated": {
+            "const": false,
+            "default": false,
+            "title": "Authenticated",
+            "type": "boolean"
+          }
+        },
+        "title": "UnauthenticatedSessionResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "DANTE Backend",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/auth/session": {
+      "delete": {
+        "description": "Idempotently revoke the current valid AuthSession and clear its cookie.",
+        "operationId": "auth_log_out",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Log Out",
+        "tags": ["auth"]
+      },
+      "get": {
+        "description": "Return authoritative current Web session state without user activity.",
+        "operationId": "auth_get_session",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthenticatedSessionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnauthenticatedSessionResponse"
+                    }
+                  ],
+                  "title": "Response Auth Get Session"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Session",
+        "tags": ["auth"]
+      }
+    },
+    "/api/v1/auth/signin": {
+      "post": {
+        "description": "Authenticate email/password and establish one new independent AuthSession.",
+        "operationId": "auth_sign_in",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticatedSessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Sign In",
+        "tags": ["auth"]
+      }
+    }
+  }
+}
