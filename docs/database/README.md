@@ -1,9 +1,9 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3-A BRANCH EVOLUTION MATERIALIZED + DIRECT LOCAL PROOF PASS
+- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3 BACKEND DB EVOLUTION MATERIALIZED + DIRECT REAL POSTGRESQL PROOF PASS
 - **Scope:** DANTE PostgreSQL architecture, Dictionary, mappings, migrations, generated reference, direct proof and documentation consistency
 - **PostgreSQL:** 18.6
-- **Current branch Alembic head:** `20260827_09`
+- **Current branch Alembic head:** `20260827_10`
 - **Protected-main CP6 baseline head:** `20260826_08`
 - **Current Access/Auth DB reference:** `access-auth.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -52,19 +52,19 @@ The accepted CP6 database remains the directly verified protected-main baseline 
  RLS policies            0
 ```
 
-M3-A is the first normal post-CP6 product evolution. On `feature/access-auth`, migration `20260827_09` adds `Account`, `EmailIdentity`, `PasswordCredential` and `AuthSession` persistence. The current branch inventory recorded by the Dictionary is:
+M3 is the first normal post-CP6 product evolution. On `feature/access-auth`, migration `20260827_09` adds `Account`, `EmailIdentity`, `PasswordCredential` and `AuthSession`; migration `20260827_10` adds the narrow `dante.acquire_account_security_lock(uuid)` runtime capability without widening direct Account mutation privileges. The current branch inventory recorded by the Dictionary is:
 
 ```text
-                       M3-A current
+                       M3 backend current
  tables                72
  views                   5
- routines               14
+ routines               15
  triggers               75
  physical indexes      104
  foreign keys           71
  CHECK constraints     137
 
- standalone entries     91
+ standalone entries     92
 ```
 
 The machine-readable Dictionary therefore distinguishes:
@@ -77,7 +77,7 @@ current_materialization
 → current evolving branch/database inventory
 ```
 
-`docs/database/dictionary/scope.json` remains `status = materialized`; `completed_stages` records the completed CP6 materialization stages while current counts may grow through reviewed forward migrations. The M3-A current counts have been directly proved against disposable PostgreSQL 18.6 by the targeted local migration/catalog/ACL suite on `feature/access-auth`; they remain branch-local and are not yet protected-main truth.
+`docs/database/dictionary/scope.json` remains `status = materialized`; `completed_stages` records the completed CP6 materialization stages while current counts grow through reviewed forward migrations. The M3 current counts, routine ACL and transaction-scoped Account lock have been directly proved against disposable PostgreSQL 18.6 on `feature/access-auth`; they remain branch-local and are not yet protected-main truth.
 
 ## 3. Database documentation model
 
@@ -469,24 +469,26 @@ dante_runtime    LOGIN application runtime identity
 
 CP6 proof includes exact DANTE role-membership topology, owner no-password posture, bounded runtime grants, denied runtime access to `dante.alembic_version`, hardened routine search paths and direct negative security evidence.
 
-M3-A adds exact least-privilege Auth ACLs in migration `20260827_09`; their intended shape is documented in `access-auth.md` and the Dictionary. Their exact shape has now been directly proved against the real disposable PostgreSQL 18.6 harness.
+M3-A adds exact least-privilege Auth table ACLs in migration `20260827_09`. Migration `20260827_10` then adds one narrow runtime capability, `dante.acquire_account_security_lock(uuid)`, because direct `SELECT ... FOR UPDATE` on Account would require widening runtime Account privileges. The function is `SECURITY DEFINER`, owned by `dante_owner`, uses the exact trusted function search path, denies PUBLIC/migrator EXECUTE and grants only `dante_runtime` EXECUTE. Runtime Account UPDATE remains denied.
 
-M3-A database-foundation proof recorded on 2026-08-27:
+The M3 database/backend proof recorded through 2026-08-28 includes:
 
 ```text
-ruff format --check .                                               PASS
-ruff check .                                                        PASS
-mypy                                                                PASS / 42 source files
-test_migrations.py                                                  PASS / 4
-test_cp6_final_catalog.py                                           PASS / 1
-test_current_catalog.py                                             PASS / 2
-targeted real PostgreSQL integration suite                          PASS / 7 of 7
-migration round-trip / Alembic drift / frozen CP6 catalog           PASS
-current Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL         PASS
-exact M3-A Auth runtime ACL                                         PASS
+Alembic head                                                        20260827_10
+current topology                                                     72 tables / 5 views / 15 routines
+Dictionary standalone entries                                       92
+real PostgreSQL marked suite                                         PASS / 83 of 83
+real Auth signin/session integration                                 PASS / 4 of 4
+migration round-trip / Alembic drift / frozen CP6 catalog            PASS
+current Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PostgreSQL          PASS
+exact Auth table ACL                                                 PASS
+Account security-definer lock ACL                                    PASS
+runtime direct Account FOR UPDATE denied                             PASS
+real transaction-scoped Account row lock                             PASS / SQLSTATE 55P03 contender
+runtime recovery / transaction suites                                PASS
 ```
 
-This is direct proof of the M3-A **database foundation**, not of the still-unimplemented signin/session/logout runtime or the whole M3 exit gate.
+This is direct proof of the current **database and backend Auth spine**. It is still not proof of the generated client, Web integration or whole M3 browser exit gate.
 
 Security documentation must describe actual grants and invariants rather than broad `read/write` labels.
 
@@ -516,7 +518,7 @@ CP6 design-stage statements such as `Gate 03 not earned`, `CP6-04 not started`, 
 
 After CP6, the same discipline remains permanent.
 
-Every later product vertical or schema evolution treats database documentation as part of the database change itself. M3-A is the first concrete application of this rule: migration, SQLAlchemy mapping, Dictionary, whole-DB current reference, detailed subject reference and direct-test obligations move together.
+Every later product vertical or schema evolution treats database documentation as part of the database change itself. M3 is the first concrete application of this rule: migration, SQLAlchemy mapping, Dictionary, whole-DB current reference, detailed subject reference and direct-test obligations move together.
 
 For ordinary changes, Git/Alembic history is the chronology; current reference documentation remains current rather than accumulating obsolete implementation stories.
 
