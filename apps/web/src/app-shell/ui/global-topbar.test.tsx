@@ -101,9 +101,10 @@ describe('GlobalTopbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Crea' }));
     expect(screen.getByRole('menu', { name: 'Crea' })).toBeTruthy();
     expect(
-      (screen.getByRole('menuitem', { name: /Evento/ }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+      screen.getByRole('menuitem', { name: /Evento/ }).getAttribute(
+        'aria-disabled',
+      ),
+    ).toBe('true');
 
     fireEvent.click(screen.getByRole('button', { name: 'Apri launcher' }));
     expect(screen.getByRole('menu', { name: 'Launcher DANTE' })).toBeTruthy();
@@ -111,9 +112,10 @@ describe('GlobalTopbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Account' }));
     expect(screen.getByRole('menu', { name: 'Menu account' })).toBeTruthy();
     expect(
-      (screen.getByRole('menuitem', { name: /Esci/ }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+      screen.getByRole('menuitem', { name: /Esci/ }).getAttribute(
+        'aria-disabled',
+      ),
+    ).toBe('true');
   });
 
   it('closes a menu with Escape and restores focus to its trigger', async () => {

@@ -54,8 +54,9 @@ export function AccountMenuContent({ onSelect }: AccountMenuContentProps) {
         type="button"
         role="menuitem"
         className="app-menu-item app-account-logout is-unavailable"
-        disabled
+        aria-disabled="true"
         aria-describedby="app-account-logout-reason"
+        onClick={(event) => event.preventDefault()}
       >
         <span>{t(($) => $.common.shell.account.logout)}</span>
         <small id="app-account-logout-reason">

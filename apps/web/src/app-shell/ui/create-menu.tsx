@@ -9,11 +9,7 @@ const CAPABILITY_ICONS = {
   capture: CaptureIcon,
 } as const;
 
-type CreateMenuContentProps = {
-  onDeferredAction?: (capabilityId: string) => void;
-};
-
-export function CreateMenuContent({ onDeferredAction }: CreateMenuContentProps) {
+export function CreateMenuContent() {
   const { t } = useTranslation('common');
 
   return (
@@ -40,10 +36,10 @@ export function CreateMenuContent({ onDeferredAction }: CreateMenuContentProps) 
               key={capability.id}
               type="button"
               role="menuitem"
-              disabled
+              aria-disabled="true"
               aria-describedby={reasonId}
               className="app-menu-item app-menu-item-rich is-unavailable"
-              onClick={() => onDeferredAction?.(capability.id)}
+              onClick={(event) => event.preventDefault()}
             >
               <span className="app-menu-item-icon" aria-hidden="true">
                 <Icon />

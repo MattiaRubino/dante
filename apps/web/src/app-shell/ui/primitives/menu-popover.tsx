@@ -11,8 +11,7 @@ type MenuPopoverProps = {
   children: ReactNode;
 };
 
-const MENU_ITEM_SELECTOR =
-  '[role="menuitem"]:not([aria-disabled="true"]):not(:disabled)';
+const MENU_ITEM_SELECTOR = '[role="menuitem"]:not(:disabled)';
 
 export function MenuPopover({
   id,
