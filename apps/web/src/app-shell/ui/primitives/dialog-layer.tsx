@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 type DialogLayerProps = {
@@ -30,6 +30,7 @@ export function DialogLayer({
   children,
 }: DialogLayerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const closeFromEffect = useEffectEvent(onClose);
 
   useEffect(() => {
     if (!open) {
@@ -53,7 +54,7 @@ export function DialogLayer({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        closeFromEffect();
         return;
       }
 
@@ -90,7 +91,7 @@ export function DialogLayer({
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus();
     };
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open) {
     return null;
