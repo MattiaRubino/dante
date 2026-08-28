@@ -1,4 +1,5 @@
 import { access } from './access';
+import { home } from './home';
 
 export const common = {
   runtime: {
@@ -27,6 +28,7 @@ export const common = {
       'Tocca questa superficie per verificare Gesture Handler + Reanimated.',
   },
   access,
+  home,
 } as const;
 
 type DeepStringResource<T> = T extends string

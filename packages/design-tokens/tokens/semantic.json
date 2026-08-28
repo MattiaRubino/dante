@@ -51,6 +51,61 @@
         "ring": {
           "$value": "{primitive.color.brand-accent}"
         }
+      },
+      "home": {
+        "canvas": {
+          "$value": "{primitive.color.home-canvas}"
+        },
+        "surface": {
+          "primary": {
+            "$value": "{primitive.color.home-surface-primary}"
+          },
+          "raised": {
+            "$value": "{primitive.color.home-surface-raised}"
+          },
+          "control": {
+            "$value": "{primitive.color.home-surface-control}"
+          }
+        },
+        "text": {
+          "primary": {
+            "$value": "{primitive.color.home-text-primary}"
+          },
+          "secondary": {
+            "$value": "{primitive.color.home-text-secondary}"
+          },
+          "muted": {
+            "$value": "{primitive.color.home-text-muted}"
+          }
+        },
+        "border": {
+          "subtle": {
+            "$value": "{primitive.color.home-border-subtle}"
+          },
+          "strong": {
+            "$value": "{primitive.color.home-border-strong}"
+          }
+        },
+        "chrome": {
+          "active": {
+            "$value": "{primitive.color.brand-accent}"
+          },
+          "active-text": {
+            "$value": "{primitive.color.home-accent-text}"
+          },
+          "active-soft": {
+            "$value": "{primitive.color.home-accent-soft}"
+          },
+          "active-border": {
+            "$value": "{primitive.color.home-accent-border}"
+          },
+          "inactive": {
+            "$value": "{primitive.color.home-chrome-neutral}"
+          },
+          "inactive-border": {
+            "$value": "{primitive.color.home-chrome-neutral-border}"
+          }
+        }
       }
     },
     "radius": {

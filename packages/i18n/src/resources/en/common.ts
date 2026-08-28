@@ -1,5 +1,6 @@
 import type { CommonResource } from '../it/common';
 import { access } from './access';
+import { home } from './home';
 
 export const common = {
   runtime: {
@@ -27,4 +28,5 @@ export const common = {
     description: 'Tap this surface to exercise Gesture Handler + Reanimated.',
   },
   access,
+  home,
 } as const satisfies CommonResource;
