@@ -3,11 +3,12 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { AuthSession, SignInRequest } from '@dante/api-client';
 
 import {
   WebAuthRemoteError,
   webAuthRemote,
+  type WebAuthSession,
+  type WebAuthSignInRequest,
 } from '../../../platform/auth/web-auth-remote';
 import type { AccessFlowEvent } from '../model/access-flow';
 
@@ -108,10 +109,10 @@ export function useSignInMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: SignInRequest) => webAuthRemote.signIn(request),
+    mutationFn: (request: WebAuthSignInRequest) => webAuthRemote.signIn(request),
     retry: false,
     onSuccess: (session) => {
-      queryClient.setQueryData<AuthSession>(authSessionQueryKey, session);
+      queryClient.setQueryData<WebAuthSession>(authSessionQueryKey, session);
     },
   });
 }
@@ -124,7 +125,7 @@ export function useLogOutMutation() {
       webAuthRemote.logOut(csrfToken),
     retry: false,
     onSuccess: () => {
-      queryClient.setQueryData<AuthSession>(authSessionQueryKey, {
+      queryClient.setQueryData<WebAuthSession>(authSessionQueryKey, {
         authenticated: false,
       });
     },
