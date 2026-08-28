@@ -1,0 +1,130 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "theme": {
+    "home": {
+      "$type": "color",
+      "surface": {
+        "panel": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.043137, 0.070588, 0.12549],
+            "alpha": 0.9,
+            "hex": "#0b1220"
+          }
+        },
+        "panel-soft": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.062745, 0.098039, 0.172549],
+            "alpha": 0.68,
+            "hex": "#10192c"
+          }
+        },
+        "raised": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.062745, 0.098039, 0.172549],
+            "alpha": 0.94,
+            "hex": "#10192c"
+          }
+        },
+        "control": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.078431, 0.113725, 0.2],
+            "alpha": 0.92,
+            "hex": "#141d33"
+          }
+        },
+        "overlay": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.031373, 0.058824, 0.113725],
+            "alpha": 0.94,
+            "hex": "#080f1d"
+          }
+        },
+        "highlight": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [1, 1, 1],
+            "alpha": 0.025,
+            "hex": "#ffffff"
+          }
+        }
+      },
+      "border": {
+        "panel": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.552941, 0.388235, 1],
+            "alpha": 0.14,
+            "hex": "#8d63ff"
+          }
+        },
+        "panel-strong": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.552941, 0.388235, 1],
+            "alpha": 0.24,
+            "hex": "#8d63ff"
+          }
+        }
+      },
+      "atmosphere": {
+        "accent": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.552941, 0.388235, 1],
+            "alpha": 1,
+            "hex": "#8d63ff"
+          }
+        },
+        "soft": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.552941, 0.388235, 1],
+            "alpha": 0.1,
+            "hex": "#8d63ff"
+          }
+        },
+        "glow": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.552941, 0.388235, 1],
+            "alpha": 0.18,
+            "hex": "#8d63ff"
+          }
+        }
+      },
+      "shadow": {
+        "panel": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0, 0, 0],
+            "alpha": 0.32,
+            "hex": "#000000"
+          }
+        },
+        "control": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0, 0, 0],
+            "alpha": 0.18,
+            "hex": "#000000"
+          }
+        }
+      },
+      "backdrop": {
+        "shade": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [0.003922, 0.019608, 0.031373],
+            "alpha": 0.2,
+            "hex": "#010508"
+          }
+        }
+      }
+    }
+  }
+}
