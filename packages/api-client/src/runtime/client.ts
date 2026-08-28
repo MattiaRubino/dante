@@ -132,7 +132,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function hasOnlyKeys(value: unknown, allowed: ReadonlySet<string>): boolean {
+function hasOnlyKeys(
+  value: unknown,
+  allowed: ReadonlySet<string>,
+): value is Record<string, unknown> {
   return isRecord(value) && Object.keys(value).every((key) => allowed.has(key));
 }
 
