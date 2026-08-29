@@ -91,9 +91,32 @@ Historical planning records may later move to `docs/archive/` or leave the worki
 
 ## Active branch-local workstreams
 
-No post-CP6 full-stack product vertical is recorded as active by this index at Access-frontend closure time.
+### PostgreSQL recovery — `feature/postgres-recovery`
 
-When a new vertical starts, it may have one durable branch-local record plus temporary live/session notes only when they materially improve continuity. Before integration, all temporary handoffs must again pass the documentation lifecycle gate.
+This branch activates the PostgreSQL recovery capability already selected by the accepted Physical Model. It starts directly from protected `main` at `baa9aba52932a0fa09b957ee7668aeb459fb4a20` and does not reopen CP6.
+
+Read:
+
+- `postgres-recovery.md` — durable branch-local recovery authority, invariants, selected-vs-implemented truth and evidence register;
+- `postgres-recovery-execution-plan.md` — CP01–CP07 implementation/evidence roadmap;
+- `postgres-recovery-live-handoff-2026-08-29.md` — temporary current continuation checkpoint; remove/consolidate before protected-main integration.
+
+Current recovery state at bootstrap:
+
+```text
+CP01 Recovery Contract / Bootstrap   ACTIVE
+pgBackRest                           SELECTED / NOT IMPLEMENTED
+continuous WAL                       SELECTED / NOT IMPLEMENTED
+restore rehearsal                    NOT RUN
+PITR rehearsal                       NOT RUN
+SC-031                               NOT RUN
+SC-011 anti-resurrection             OPEN HARD GATE / NOT RUN
+AWS S3 selected topology             NOT ACTIVATED
+```
+
+No local worktree is assigned to this branch yet; do not steal or repurpose an occupied user worktree.
+
+Other post-CP6 verticals may be active on independent branches. Their unmerged branch-local truth does not become authority on this branch merely because the branch exists elsewhere.
 
 ## Operational continuation rule
 
