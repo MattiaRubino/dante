@@ -32,7 +32,7 @@
  * Month, Now and week typography intentionally remain untouched. */
 .home-m1 .home-timeline--production .dante-timeline-group-chip {
   font-size: 8.5px;
-  font-weight: 680;
+  font-weight: 750;
 }
 
 /* Desktop Home owns the row height. Timeline and Context Rail are peers in
