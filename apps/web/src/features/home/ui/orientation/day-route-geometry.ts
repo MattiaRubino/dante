@@ -1,12 +1,15 @@
 const VIEWBOX_HEIGHT = 74;
-const BASELINE = 31;
-const MIN_SAMPLES = 64;
-const SAMPLE_STEP_PX = 8;
+const BASELINE_RATIO = 0.43;
+const SAMPLE_STEP_PX = 5;
+const MIN_SAMPLES = 120;
 const MINUTES_PER_DAY = 24 * 60;
+const ROAD_BOTTOM = 4;
+const IMAGE_GAP = 8;
 
 export const DAY_ROUTE_HEIGHT = VIEWBOX_HEIGHT;
-export const DAY_ROUTE_ROAD_Y = 66;
-export const DAY_ROUTE_SCENE_BOTTOM_Y = 60;
+export const DAY_ROUTE_BASELINE_Y = VIEWBOX_HEIGHT * BASELINE_RATIO;
+export const DAY_ROUTE_ROAD_Y = VIEWBOX_HEIGHT - ROAD_BOTTOM;
+export const DAY_ROUTE_SCENE_BOTTOM_Y = DAY_ROUTE_ROAD_Y - IMAGE_GAP;
 
 export type DayRouteGeometry = Readonly<{
   width: number;
@@ -30,8 +33,12 @@ export type DayRouteWaveConfig = Readonly<{
   secondaryPhase: number;
 }>;
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function clamp01(value: number): number {
-  return Math.max(0, Math.min(1, value));
+  return clamp(value, 0, 1);
 }
 
 function normalizeWidth(width: number): number {
@@ -40,13 +47,14 @@ function normalizeWidth(width: number): number {
 
 export function waveConfigForWidth(width: number): DayRouteWaveConfig {
   const safeWidth = normalizeWidth(width);
-  const primaryCycles = safeWidth < 760 ? 4.6 : safeWidth < 1180 ? 3.7 : 2.9;
+  const t = clamp((safeWidth - 420) / 900, 0, 1);
+  const primaryCycles = 2.25 + t * 2.35;
 
   return {
     primaryCycles,
-    primaryAmplitude: safeWidth < 760 ? 13.5 : safeWidth < 1180 ? 15 : 16,
-    secondaryCycles: primaryCycles * 2.05,
-    secondaryAmplitude: safeWidth < 760 ? 3.2 : safeWidth < 1180 ? 3.8 : 4.2,
+    primaryAmplitude: 13.5 + t * 2.5,
+    secondaryCycles: primaryCycles * 2,
+    secondaryAmplitude: 1.6 + t * 0.9,
     primaryPhase: 0.28,
     secondaryPhase: 1.82,
   };
@@ -57,7 +65,7 @@ function routeY(progress: number, width: number): number {
   const config = waveConfigForWidth(width);
 
   return (
-    BASELINE -
+    DAY_ROUTE_BASELINE_Y -
     config.primaryAmplitude *
       Math.sin(Math.PI * 2 * p * config.primaryCycles + config.primaryPhase) -
     config.secondaryAmplitude *
@@ -75,7 +83,7 @@ export function createDayRouteGeometry(width: number): DayRouteGeometry {
     const progress = index / sampleCount;
     const x = progress * safeWidth;
     const y = routeY(progress, safeWidth);
-    return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    return `${index === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`;
   });
 
   return {
