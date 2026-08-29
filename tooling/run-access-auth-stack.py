@@ -21,7 +21,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("pg_stat_statements", None),
 )
 _E2E_RATE_CAPACITY_ENV = "DANTE_E2E_SIGNIN_RATE_CAPACITY"
-_E2E_EMAIL_ALIAS_COUNT = 32
+_E2E_ACCOUNT_COUNT = 32
 
 
 def _load_core() -> ModuleType:
@@ -99,7 +99,7 @@ def _auth_settings_override(
     return build
 
 
-def _seed_account_with_e2e_aliases(
+def _seed_account_with_e2e_accounts(
     original: Callable[..., None],
     *,
     database_name: str,
@@ -131,21 +131,35 @@ def _seed_account_with_e2e_aliases(
         ) as connection:
             connection.execute("SET ROLE dante_owner")
             connection.execute("SET search_path TO pg_catalog,dante,pg_temp")
-            row = connection.execute(
+            credential = connection.execute(
                 """
-                SELECT account_ref
-                FROM dante.email_identity
-                WHERE comparison_key = %s
+                SELECT credential.verifier, credential.pepper_key_id
+                FROM dante.email_identity AS identity
+                JOIN dante.password_credential AS credential
+                  ON credential.account_ref = identity.account_ref
+                WHERE identity.comparison_key = %s
                 """,
                 (primary_comparison_key,),
             ).fetchone()
-            if row is None:
-                raise RuntimeError("Synthetic Access/Auth E2E Account was not seeded.")
-            account_ref = row[0]
+            if credential is None:
+                raise RuntimeError(
+                    "Synthetic Access/Auth E2E credential was not seeded."
+                )
+            verifier, pepper_key_id = credential
 
-            for index in range(1, _E2E_EMAIL_ALIAS_COUNT + 1):
+            for index in range(1, _E2E_ACCOUNT_COUNT + 1):
                 normalized = normalize_email(
                     f"synthetic.user+e2e-{index:02d}@example.com"
+                )
+                account_ref = uuid7()
+                connection.execute(
+                    """
+                    INSERT INTO dante.account(
+                        account_ref, status_code, created_at, disabled_at
+                    )
+                    VALUES (%s, 'active', %s, NULL)
+                    """,
+                    (account_ref, now),
                 )
                 connection.execute(
                     """
@@ -164,6 +178,27 @@ def _seed_account_with_e2e_aliases(
                         account_ref,
                         normalized.address,
                         normalized.comparison_key,
+                        now,
+                        now,
+                    ),
+                )
+                connection.execute(
+                    """
+                    INSERT INTO dante.password_credential(
+                        password_credential_ref,
+                        account_ref,
+                        verifier,
+                        pepper_key_id,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        uuid7(),
+                        account_ref,
+                        verifier,
+                        pepper_key_id,
                         now,
                         now,
                     ),
@@ -188,7 +223,7 @@ def main() -> None:
 
     core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(core._auth_settings)
-    core._seed_account = _seed_account_with_e2e_aliases(
+    core._seed_account = _seed_account_with_e2e_accounts(
         core._seed_account,
         database_name=database_name,
         primary_email=primary_email,
