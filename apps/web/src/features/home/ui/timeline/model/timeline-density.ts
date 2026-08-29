@@ -30,7 +30,7 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
   const duration = eventDurationMinutes(event);
   const heights = TIMELINE_POLICY.event.readableHeightPx;
 
-  let height =
+  let height: number =
     duration <= 5
       ? heights.upTo5Minutes
       : duration <= 15
