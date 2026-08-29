@@ -6,10 +6,429 @@
  */
 import type {
   AuthenticatedSessionResponse,
+  ExistingAccountSignupResponse,
+  PasswordRecoveryRequest,
+  PasswordRecoveryValidationRequest,
+  PasswordResetRequest,
   ProblemDetails,
+  ReauthenticateRequest,
+  RecoveryAcceptedResponse,
+  RecoveryValidationResponse,
   SignInRequest,
+  SignupAuthenticatedResponse,
+  SignupCreatedResponse,
+  SignupRequest,
+  SignupResendRequest,
+  SignupVerificationRequest,
   UnauthenticatedSessionResponse,
 } from './model';
+
+export type authReauthenticateResponse200 = {
+  data: AuthenticatedSessionResponse;
+  status: 200;
+};
+
+export type authReauthenticateResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authReauthenticateResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authReauthenticateResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authReauthenticateResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authReauthenticateResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authReauthenticateResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authReauthenticateResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authReauthenticateResponseSuccess =
+  authReauthenticateResponse200 & {
+    headers: Headers;
+  };
+export type authReauthenticateResponseError = (
+  | authReauthenticateResponse400
+  | authReauthenticateResponse401
+  | authReauthenticateResponse403
+  | authReauthenticateResponse422
+  | authReauthenticateResponse429
+  | authReauthenticateResponse500
+  | authReauthenticateResponse503
+) & {
+  headers: Headers;
+};
+
+export type authReauthenticateResponse =
+  authReauthenticateResponseSuccess | authReauthenticateResponseError;
+
+export const getAuthReauthenticateUrl = () => {
+  return `/api/v1/auth/reauthenticate`;
+};
+
+/**
+ * Refresh recent authentication on the same AuthSession and rotate its bearer secret.
+ * @summary Reauthenticate
+ */
+export const authReauthenticate = async (
+  reauthenticateRequest: ReauthenticateRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authReauthenticateResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthReauthenticateUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(reauthenticateRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authReauthenticateResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authReauthenticateResponse;
+};
+
+export type authRequestPasswordRecoveryResponse202 = {
+  data: RecoveryAcceptedResponse;
+  status: 202;
+};
+
+export type authRequestPasswordRecoveryResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authRequestPasswordRecoveryResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authRequestPasswordRecoveryResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authRequestPasswordRecoveryResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authRequestPasswordRecoveryResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authRequestPasswordRecoveryResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authRequestPasswordRecoveryResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authRequestPasswordRecoveryResponseSuccess =
+  authRequestPasswordRecoveryResponse202 & {
+    headers: Headers;
+  };
+export type authRequestPasswordRecoveryResponseError = (
+  | authRequestPasswordRecoveryResponse400
+  | authRequestPasswordRecoveryResponse401
+  | authRequestPasswordRecoveryResponse403
+  | authRequestPasswordRecoveryResponse422
+  | authRequestPasswordRecoveryResponse429
+  | authRequestPasswordRecoveryResponse500
+  | authRequestPasswordRecoveryResponse503
+) & {
+  headers: Headers;
+};
+
+export type authRequestPasswordRecoveryResponse =
+  | authRequestPasswordRecoveryResponseSuccess
+  | authRequestPasswordRecoveryResponseError;
+
+export const getAuthRequestPasswordRecoveryUrl = () => {
+  return `/api/v1/auth/recovery`;
+};
+
+/**
+ * Return neutral accepted semantics for both eligible and ineligible email state.
+ * @summary Request Password Recovery
+ */
+export const authRequestPasswordRecovery = async (
+  passwordRecoveryRequest: PasswordRecoveryRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authRequestPasswordRecoveryResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthRequestPasswordRecoveryUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passwordRecoveryRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authRequestPasswordRecoveryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authRequestPasswordRecoveryResponse;
+};
+
+export type authValidatePasswordRecoveryResponse200 = {
+  data: RecoveryValidationResponse;
+  status: 200;
+};
+
+export type authValidatePasswordRecoveryResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authValidatePasswordRecoveryResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authValidatePasswordRecoveryResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authValidatePasswordRecoveryResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authValidatePasswordRecoveryResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authValidatePasswordRecoveryResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authValidatePasswordRecoveryResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authValidatePasswordRecoveryResponseSuccess =
+  authValidatePasswordRecoveryResponse200 & {
+    headers: Headers;
+  };
+export type authValidatePasswordRecoveryResponseError = (
+  | authValidatePasswordRecoveryResponse400
+  | authValidatePasswordRecoveryResponse401
+  | authValidatePasswordRecoveryResponse403
+  | authValidatePasswordRecoveryResponse422
+  | authValidatePasswordRecoveryResponse429
+  | authValidatePasswordRecoveryResponse500
+  | authValidatePasswordRecoveryResponse503
+) & {
+  headers: Headers;
+};
+
+export type authValidatePasswordRecoveryResponse =
+  | authValidatePasswordRecoveryResponseSuccess
+  | authValidatePasswordRecoveryResponseError;
+
+export const getAuthValidatePasswordRecoveryUrl = () => {
+  return `/api/v1/auth/recovery/validate`;
+};
+
+/**
+ * Validate a recovery proof without consuming it or mutating Account state.
+ * @summary Validate Password Recovery
+ */
+export const authValidatePasswordRecovery = async (
+  passwordRecoveryValidationRequest: PasswordRecoveryValidationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authValidatePasswordRecoveryResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthValidatePasswordRecoveryUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passwordRecoveryValidationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authValidatePasswordRecoveryResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authValidatePasswordRecoveryResponse;
+};
+
+export type authResetPasswordResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type authResetPasswordResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authResetPasswordResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authResetPasswordResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authResetPasswordResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authResetPasswordResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authResetPasswordResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authResetPasswordResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authResetPasswordResponseSuccess = authResetPasswordResponse204 & {
+  headers: Headers;
+};
+export type authResetPasswordResponseError = (
+  | authResetPasswordResponse400
+  | authResetPasswordResponse401
+  | authResetPasswordResponse403
+  | authResetPasswordResponse422
+  | authResetPasswordResponse429
+  | authResetPasswordResponse500
+  | authResetPasswordResponse503
+) & {
+  headers: Headers;
+};
+
+export type authResetPasswordResponse =
+  authResetPasswordResponseSuccess | authResetPasswordResponseError;
+
+export const getAuthResetPasswordUrl = () => {
+  return `/api/v1/auth/reset-password`;
+};
+
+/**
+ * Consume recovery proof, replace PasswordCredential and revoke every AuthSession.
+ * @summary Reset Password
+ */
+export const authResetPassword = async (
+  passwordResetRequest: PasswordResetRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authResetPasswordResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthResetPasswordUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(passwordResetRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authResetPasswordResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authResetPasswordResponse;
+};
 
 export type authLogOutResponse204 = {
   data: void;
@@ -221,4 +640,305 @@ export const authSignIn = async (
     status: res.status,
     headers: res.headers,
   } as authSignInResponse;
+};
+
+export type authBeginSignupResponse200 = {
+  data: SignupCreatedResponse;
+  status: 200;
+};
+
+export type authBeginSignupResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authBeginSignupResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authBeginSignupResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authBeginSignupResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authBeginSignupResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authBeginSignupResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authBeginSignupResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authBeginSignupResponseSuccess = authBeginSignupResponse200 & {
+  headers: Headers;
+};
+export type authBeginSignupResponseError = (
+  | authBeginSignupResponse400
+  | authBeginSignupResponse401
+  | authBeginSignupResponse403
+  | authBeginSignupResponse422
+  | authBeginSignupResponse429
+  | authBeginSignupResponse500
+  | authBeginSignupResponse503
+) & {
+  headers: Headers;
+};
+
+export type authBeginSignupResponse =
+  authBeginSignupResponseSuccess | authBeginSignupResponseError;
+
+export const getAuthBeginSignupUrl = () => {
+  return `/api/v1/auth/signup`;
+};
+
+/**
+ * Create a bounded pending signup challenge without creating canonical Account state.
+ * @summary Begin Signup
+ */
+export const authBeginSignup = async (
+  signupRequest: SignupRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authBeginSignupResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthBeginSignupUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(signupRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authBeginSignupResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authBeginSignupResponse;
+};
+
+export type authResendSignupVerificationResponse200 = {
+  data: SignupCreatedResponse;
+  status: 200;
+};
+
+export type authResendSignupVerificationResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authResendSignupVerificationResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authResendSignupVerificationResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authResendSignupVerificationResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authResendSignupVerificationResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authResendSignupVerificationResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authResendSignupVerificationResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authResendSignupVerificationResponseSuccess =
+  authResendSignupVerificationResponse200 & {
+    headers: Headers;
+  };
+export type authResendSignupVerificationResponseError = (
+  | authResendSignupVerificationResponse400
+  | authResendSignupVerificationResponse401
+  | authResendSignupVerificationResponse403
+  | authResendSignupVerificationResponse422
+  | authResendSignupVerificationResponse429
+  | authResendSignupVerificationResponse500
+  | authResendSignupVerificationResponse503
+) & {
+  headers: Headers;
+};
+
+export type authResendSignupVerificationResponse =
+  | authResendSignupVerificationResponseSuccess
+  | authResendSignupVerificationResponseError;
+
+export const getAuthResendSignupVerificationUrl = () => {
+  return `/api/v1/auth/signup/resend`;
+};
+
+/**
+ * Rotate the OTP for one pending signup reference without clobbering sibling challenges.
+ * @summary Resend Signup Verification
+ */
+export const authResendSignupVerification = async (
+  signupResendRequest: SignupResendRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authResendSignupVerificationResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthResendSignupVerificationUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(signupResendRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authResendSignupVerificationResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authResendSignupVerificationResponse;
+};
+
+export type authVerifySignupResponse200 = {
+  data: SignupAuthenticatedResponse | ExistingAccountSignupResponse;
+  status: 200;
+};
+
+export type authVerifySignupResponse400 = {
+  data: ProblemDetails;
+  status: 400;
+};
+
+export type authVerifySignupResponse401 = {
+  data: ProblemDetails;
+  status: 401;
+};
+
+export type authVerifySignupResponse403 = {
+  data: ProblemDetails;
+  status: 403;
+};
+
+export type authVerifySignupResponse422 = {
+  data: ProblemDetails;
+  status: 422;
+};
+
+export type authVerifySignupResponse429 = {
+  data: ProblemDetails;
+  status: 429;
+};
+
+export type authVerifySignupResponse500 = {
+  data: ProblemDetails;
+  status: 500;
+};
+
+export type authVerifySignupResponse503 = {
+  data: ProblemDetails;
+  status: 503;
+};
+
+export type authVerifySignupResponseSuccess = authVerifySignupResponse200 & {
+  headers: Headers;
+};
+export type authVerifySignupResponseError = (
+  | authVerifySignupResponse400
+  | authVerifySignupResponse401
+  | authVerifySignupResponse403
+  | authVerifySignupResponse422
+  | authVerifySignupResponse429
+  | authVerifySignupResponse500
+  | authVerifySignupResponse503
+) & {
+  headers: Headers;
+};
+
+export type authVerifySignupResponse =
+  authVerifySignupResponseSuccess | authVerifySignupResponseError;
+
+export const getAuthVerifySignupUrl = () => {
+  return `/api/v1/auth/signup/verify`;
+};
+
+/**
+ * Consume one mailbox OTP and establish a new Account or safe existing-account outcome.
+ * @summary Verify Signup
+ */
+export const authVerifySignup = async (
+  signupVerificationRequest: SignupVerificationRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<authVerifySignupResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(getAuthVerifySignupUrl(), {
+    ...options,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(signupVerificationRequest),
+  });
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: authVerifySignupResponse['data'] = body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as authVerifySignupResponse;
 };
