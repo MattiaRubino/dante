@@ -356,7 +356,6 @@ export function TimelineHeader({
                   aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight"
                   title={t(($) => $.common.home.timeline.groups.reorderHint)}
                 >
-                  <i aria-hidden="true" />
                   <span>{group.label}</span>
                   <span className="home-visually-hidden">
                     {t(($) => $.common.home.timeline.groups.position, {
