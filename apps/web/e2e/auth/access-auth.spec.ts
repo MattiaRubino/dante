@@ -579,9 +579,11 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
       });
       expect(browserStorage).not.toContain(secret);
 
-      await recoveryPage.getByLabel('Nuova password').fill(replacementPassword);
       await recoveryPage
-        .getByLabel('Conferma password')
+        .getByLabel('Nuova password', { exact: true })
+        .fill(replacementPassword);
+      await recoveryPage
+        .getByLabel('Conferma password', { exact: true })
         .fill(replacementPassword);
       const resetPromise = recoveryPage.waitForResponse(
         (response) =>
