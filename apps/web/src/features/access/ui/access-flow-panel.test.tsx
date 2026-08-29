@@ -2,7 +2,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
-import { initialAccessFlowState, type AccessFlowEvent } from '../model/access-flow';
+import {
+  initialAccessFlowState,
+  type AccessFlowEvent,
+  type AccessScreen,
+} from '../model/access-flow';
 import { AccessFlowPanel } from './access-flow-panel';
 
 beforeAll(async () => {
@@ -22,7 +26,9 @@ const idlePending = {
   logOut: false,
 } as const;
 
-function renderPanel(screenState = initialAccessFlowState.screen) {
+function renderPanel(
+  screenState: AccessScreen = initialAccessFlowState.screen,
+) {
   const dispatch = vi.fn<(event: AccessFlowEvent) => void>();
   const actions = {
     onRetryRecoveryValidation: vi.fn(),
