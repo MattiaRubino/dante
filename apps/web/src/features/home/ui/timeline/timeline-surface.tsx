@@ -29,6 +29,7 @@ import {
 import {
   addTimelineDays,
   formatTimelineMinute,
+  parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
 import type {
@@ -57,6 +58,9 @@ type TimelineSurfaceProps = Readonly<{
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onExpansionProgress: (progress: number) => void;
+  viewedDateIso?: string | undefined;
+  onViewedDateChange?: ((isoDate: string) => void) | undefined;
+  onDateNavigation?: ((isoDate: string) => void) | undefined;
 }>;
 
 type ScrollTarget = Readonly<{
@@ -86,6 +90,17 @@ type RenderedDayInputs = Readonly<{
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function parseViewedDate(value: string | undefined): PlainDate | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    return parseTimelineDate(value);
+  } catch {
+    return null;
+  }
 }
 
 function buildRenderedDays(
@@ -212,15 +227,21 @@ export function TimelineSurface({
   expanded,
   onExpandedChange,
   onExpansionProgress,
+  viewedDateIso,
+  onViewedDateChange,
+  onDateNavigation,
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const initialDateRef = useRef(
+    parseViewedDate(viewedDateIso) ?? TIMELINE_PROTOTYPE_TODAY,
+  );
   const [state, dispatch] = useReducer(
     timelineReducer,
     createInitialTimelineState(),
   );
-  const [anchor, setAnchor] = useState(TIMELINE_PROTOTYPE_TODAY);
-  const [viewDate, setViewDate] = useState(TIMELINE_PROTOTYPE_TODAY);
+  const [anchor, setAnchor] = useState(initialDateRef.current);
+  const [viewDate, setViewDate] = useState(initialDateRef.current);
   const [pastDays, setPastDays] = useState(
     TIMELINE_POLICY.window.initialPastDays,
   );
@@ -253,6 +274,7 @@ export function TimelineSurface({
   const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
   const pendingScrollTargetRef = useRef<ScrollTarget | null>(null);
   const initialScrollDoneRef = useRef(false);
+  const initialViewPublishedRef = useRef(false);
   const rawScrollRestoreRef = useRef<number | null>(null);
   const pastExtensionRestoreRef = useRef<{
     scrollTop: number;
@@ -290,6 +312,13 @@ export function TimelineSurface({
       toastTimerRef.current = null;
     }, 5000);
   }, []);
+
+  const publishViewportDate = useCallback(
+    (date: PlainDate) => {
+      onViewedDateChange?.(timelineDateKey(date));
+    },
+    [onViewedDateChange],
+  );
 
   const syncExpansion = useCallback(
     (progress: number) => {
@@ -363,6 +392,7 @@ export function TimelineSurface({
         viewportOffset?: number;
         behavior?: ScrollBehavior;
       }> = {},
+      notifyNavigation = true,
     ) => {
       const dateKey = timelineDateKey(date);
       const target: ScrollTarget = {
@@ -372,6 +402,10 @@ export function TimelineSurface({
         behavior: options.behavior ?? 'smooth',
       };
       setViewDate(date);
+      publishViewportDate(date);
+      if (notifyNavigation) {
+        onDateNavigation?.(dateKey);
+      }
       if (scrollToRenderedDay(target)) {
         return;
       }
@@ -380,7 +414,7 @@ export function TimelineSurface({
       setPastDays(TIMELINE_POLICY.window.initialPastDays);
       setFutureDays(TIMELINE_POLICY.window.initialFutureDays);
     },
-    [scrollToRenderedDay],
+    [onDateNavigation, publishViewportDate, scrollToRenderedDay],
   );
 
   const goNow = useCallback(() => {
@@ -406,6 +440,7 @@ export function TimelineSurface({
       const viewed = findDayAtOffset(days, probe);
       if (viewed && !viewed.date.equals(viewDate)) {
         setViewDate(viewed.date);
+        publishViewportDate(viewed.date);
       }
 
       const todayKey = timelineDateKey(TIMELINE_PROTOTYPE_TODAY);
@@ -419,7 +454,7 @@ export function TimelineSurface({
         nowY <= scrollTop + grid.clientHeight;
       setNowNeeded(!visible);
     },
-    [viewDate],
+    [publishViewportDate, viewDate],
   );
 
   const handleScroll = useCallback(
@@ -520,6 +555,22 @@ export function TimelineSurface({
   }, []);
 
   useLayoutEffect(() => {
+    if (initialViewPublishedRef.current) {
+      return;
+    }
+    initialViewPublishedRef.current = true;
+    publishViewportDate(viewDate);
+  }, [publishViewportDate, viewDate]);
+
+  useLayoutEffect(() => {
+    const externalDate = parseViewedDate(viewedDateIso);
+    if (!externalDate || externalDate.equals(viewDate)) {
+      return;
+    }
+    goToDate(externalDate, { behavior: 'auto' }, false);
+  }, [goToDate, viewDate, viewedDateIso]);
+
+  useLayoutEffect(() => {
     const grid = gridRef.current;
     if (!grid) {
       return;
@@ -527,15 +578,13 @@ export function TimelineSurface({
 
     if (!initialScrollDoneRef.current) {
       initialScrollDoneRef.current = true;
-      const todayKey = timelineDateKey(TIMELINE_PROTOTYPE_TODAY);
-      const day = renderedDays.find((candidate) => candidate.dateKey === todayKey);
+      const initialKey = timelineDateKey(initialDateRef.current);
+      const day = renderedDays.find((candidate) => candidate.dateKey === initialKey);
       if (day) {
-        grid.scrollTop = Math.max(
-          0,
-          day.offsetTop +
-            day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) -
-            70,
-        );
+        const minute = initialDateRef.current.equals(TIMELINE_PROTOTYPE_TODAY)
+          ? TIMELINE_PROTOTYPE_NOW_MINUTE - 120
+          : 8 * 60;
+        grid.scrollTop = Math.max(0, day.offsetTop + day.mapper.map(minute) - 70);
       }
     }
 
