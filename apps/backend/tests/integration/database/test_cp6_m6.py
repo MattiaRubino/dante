@@ -35,6 +35,8 @@ _POST_CP6_TABLES = {
     "email_identity",
     "password_credential",
     "auth_session",
+    "password_signup_challenge",
+    "password_recovery_challenge",
 }
 _M6_ROUTINE = "enforce_occurrence_generation_integrity"
 _VIEWS = {

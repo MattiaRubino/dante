@@ -180,9 +180,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["email_identity_ref", "account_ref"],
             ["dante.email_identity.email_identity_ref", "dante.email_identity.account_ref"],
-            name=op.f(
-                "fk_password_recovery_challenge_email_identity_ref_account_ref_email_identity"
-            ),
+            name=op.f("fk_password_recovery_challenge_email_account_email_identity"),
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",

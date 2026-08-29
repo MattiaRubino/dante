@@ -116,6 +116,8 @@ def _mapped_table_names() -> set[str]:
         "email_identity",
         "password_credential",
         "auth_session",
+        "password_signup_challenge",
+        "password_recovery_challenge",
     }
     return {
         table.name for table in Base.metadata.tables.values() if table.name not in post_cp6_tables
