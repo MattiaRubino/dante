@@ -21,12 +21,13 @@ from uuid import uuid7
 
 import psycopg
 import uvicorn
+from access_auth_smtp_capture import start_smtp_capture
 from alembic import command
 from alembic.config import Config
 from dante.auth.email import normalize_email
 from dante.auth.passwords import PasswordKdf
 from dante.bootstrap.app import create_app
-from dante.platform.config.auth import AuthSettings
+from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.database import DatabaseSettings
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.provisioning import (
@@ -44,9 +45,12 @@ _WEB_PORT = 4173
 _DATABASE_NAME = "dante_e2e"
 _EMAIL = "synthetic.user@example.com"
 _PASSWORD = "correct horse battery staple"
-_PEPPER_KEY_ID = "e2e-v1"
+_PEPPER_KEY_ID = "e2e-password-v1"
+_OTP_KEY_ID = "e2e-signup-otp-v1"
 _PEPPER = urlsafe_b64encode(b"p" * 32).rstrip(b"=").decode("ascii")
 _CSRF_KEY = urlsafe_b64encode(b"c" * 32).rstrip(b"=").decode("ascii")
+_OTP_KEY = urlsafe_b64encode(b"o" * 32).rstrip(b"=").decode("ascii")
+_SMTP_CONTROL_LABEL = "dante.e2e.smtp_control_port"
 
 
 class _HibpHandler(BaseHTTPRequestHandler):
@@ -178,12 +182,22 @@ def _migrate_database(*, port: int, migrator_password: str) -> None:
     command.upgrade(config, "head")
 
 
-def _auth_settings(hibp_base_url: str) -> AuthSettings:
+def _auth_settings(hibp_base_url: str, smtp_port: int) -> AuthSettings:
     return AuthSettings(
         canonical_web_origin=_WEB_ORIGIN,
         password_current_pepper_key_id=_PEPPER_KEY_ID,
         password_peppers={_PEPPER_KEY_ID: SecretStr(_PEPPER)},
         csrf_key=SecretStr(_CSRF_KEY),
+        signup_otp_current_key_id=_OTP_KEY_ID,
+        signup_otp_keys={_OTP_KEY_ID: SecretStr(_OTP_KEY)},
+        smtp_host="127.0.0.1",
+        smtp_port=smtp_port,
+        smtp_security=SmtpSecurity.PLAIN,
+        smtp_from_address="no-reply@dante.test",
+        smtp_timeout_seconds=2,
+        email_queue_capacity=128,
+        email_worker_count=2,
+        email_shutdown_drain_seconds=5,
         session_max_age_seconds=3_600,
         session_idle_timeout_seconds=900,
         kdf_max_concurrency=2,
@@ -191,6 +205,11 @@ def _auth_settings(hibp_base_url: str) -> AuthSettings:
         kdf_queue_timeout_seconds=2,
         signin_rate_capacity=100,
         signin_rate_window_seconds=60,
+        signup_rate_capacity=50,
+        signup_source_rate_capacity=200,
+        recovery_rate_capacity=50,
+        recovery_source_rate_capacity=200,
+        reauth_rate_capacity=50,
         hibp_base_url=hibp_base_url,
         hibp_timeout_seconds=1,
         hibp_max_connections=4,
@@ -435,33 +454,38 @@ def main() -> None:
     hibp_thread.start()
     hibp_port = int(hibp_server.server_address[1])
     hibp_base_url = f"http://127.0.0.1:{hibp_port}"
+    smtp_capture = start_smtp_capture()
 
     api_server: uvicorn.Server | None = None
     api_thread: threading.Thread | None = None
     preview_process: subprocess.Popen[str] | None = None
-
-    _docker(
-        "run",
-        "--detach",
-        "--name",
-        container_name,
-        "--publish",
-        f"127.0.0.1:{postgres_port}:5432",
-        "--env",
-        f"POSTGRES_DB={_DATABASE_NAME}",
-        "--env",
-        "POSTGRES_USER=postgres",
-        "--env",
-        f"POSTGRES_PASSWORD={admin_password}",
-        _POSTGRES_IMAGE,
-        "postgres",
-        "-c",
-        "shared_preload_libraries=pg_stat_statements",
-        "-c",
-        "compute_query_id=on",
-    )
+    container_started = False
 
     try:
+        _docker(
+            "run",
+            "--detach",
+            "--name",
+            container_name,
+            "--label",
+            f"{_SMTP_CONTROL_LABEL}={smtp_capture.control_port}",
+            "--publish",
+            f"127.0.0.1:{postgres_port}:5432",
+            "--env",
+            f"POSTGRES_DB={_DATABASE_NAME}",
+            "--env",
+            "POSTGRES_USER=postgres",
+            "--env",
+            f"POSTGRES_PASSWORD={admin_password}",
+            _POSTGRES_IMAGE,
+            "postgres",
+            "-c",
+            "shared_preload_libraries=pg_stat_statements",
+            "-c",
+            "compute_query_id=on",
+        )
+        container_started = True
+
         _wait_for_postgres(port=postgres_port, password=admin_password)
         _create_extensions(port=postgres_port, password=admin_password)
         _provision_database(
@@ -472,7 +496,7 @@ def main() -> None:
         )
         _migrate_database(port=postgres_port, migrator_password=migrator_password)
 
-        auth_settings = _auth_settings(hibp_base_url)
+        auth_settings = _auth_settings(hibp_base_url, smtp_capture.smtp_port)
         _seed_account(
             port=postgres_port,
             migrator_password=migrator_password,
@@ -498,7 +522,7 @@ def main() -> None:
             )
             print(
                 "DANTE Access/Auth full-stack ready: "
-                f"{_WEB_ORIGIN} using disposable PostgreSQL 18.6."
+                f"{_WEB_ORIGIN} using disposable PostgreSQL 18.6 + loopback SMTP capture."
             )
 
             while not stop_event.wait(0.25):
@@ -512,10 +536,12 @@ def main() -> None:
             api_server.should_exit = True
         if api_thread is not None:
             api_thread.join(timeout=10)
+        smtp_capture.close()
         hibp_server.shutdown()
         hibp_thread.join(timeout=2)
         hibp_server.server_close()
-        _docker("rm", "--force", container_name, check=False)
+        if container_started:
+            _docker("rm", "--force", container_name, check=False)
 
 
 if __name__ == "__main__":
