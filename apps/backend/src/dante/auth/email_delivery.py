@@ -8,7 +8,7 @@ import smtplib
 import ssl
 from dataclasses import dataclass
 from email.message import EmailMessage
-from typing import Protocol, TypeAlias
+from typing import Protocol, cast
 from uuid import UUID
 
 from pydantic import SecretStr
@@ -54,12 +54,8 @@ class NoopEmail:
     reason: str = "neutral_recovery"
 
 
-EmailCommand: TypeAlias = (
-    SignupVerificationEmail
-    | PasswordRecoveryEmail
-    | PasswordResetNotificationEmail
-    | NoopEmail
-)
+type DeliverableEmail = SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail
+type EmailCommand = DeliverableEmail | NoopEmail
 
 
 class EmailDeliveryPort(Protocol):
@@ -147,8 +143,9 @@ class SmtpEmailDispatcher:
                     return
                 if isinstance(command, NoopEmail):
                     continue
+                deliverable = cast(DeliverableEmail, command)
                 try:
-                    await asyncio.to_thread(self._send_sync, command)
+                    await asyncio.to_thread(self._send_sync, deliverable)
                 except Exception:
                     # Do not retry after an ambiguous SMTP outcome. User-driven resend is
                     # the recovery path and logs intentionally omit recipient/proof material.
@@ -159,10 +156,7 @@ class SmtpEmailDispatcher:
             finally:
                 self._queue.task_done()
 
-    def _send_sync(
-        self,
-        command: SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail,
-    ) -> None:
+    def _send_sync(self, command: DeliverableEmail) -> None:
         message = self._message(command)
         timeout = self._settings.smtp_timeout_seconds
         security = self._settings.smtp_security
@@ -188,17 +182,16 @@ class SmtpEmailDispatcher:
                 client.starttls(context=context)
                 client.ehlo()
             if self._settings.smtp_username is not None:
-                assert self._settings.smtp_password is not None
+                smtp_password = self._settings.smtp_password
+                if smtp_password is None:
+                    raise RuntimeError("SMTP password missing for configured username")
                 client.login(
                     self._settings.smtp_username,
-                    self._settings.smtp_password.get_secret_value(),
+                    smtp_password.get_secret_value(),
                 )
             client.send_message(message)
 
-    def _message(
-        self,
-        command: SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail,
-    ) -> EmailMessage:
+    def _message(self, command: DeliverableEmail) -> EmailMessage:
         message = EmailMessage()
         message["From"] = self._settings.smtp_from_address
         message["To"] = command.to_address

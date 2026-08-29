@@ -2,6 +2,7 @@
 
 from base64 import urlsafe_b64encode
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
 from pydantic import SecretStr, ValidationError
@@ -86,6 +87,13 @@ _DANTE_ENVIRONMENT_VARIABLES = (
 )
 
 
+class _RequiredM4AuthKwargs(TypedDict):
+    signup_otp_current_key_id: str
+    signup_otp_keys: dict[str, SecretStr]
+    smtp_host: str
+    smtp_from_address: str
+
+
 def _database_settings() -> DatabaseSettings:
     return DatabaseSettings(
         host="127.0.0.1",
@@ -121,7 +129,7 @@ def _auth_settings(
     )
 
 
-def _required_m4_auth_kwargs() -> dict[str, object]:
+def _required_m4_auth_kwargs() -> _RequiredM4AuthKwargs:
     return {
         "signup_otp_current_key_id": _TEST_OTP_KEY_ID,
         "signup_otp_keys": {_TEST_OTP_KEY_ID: SecretStr(_TEST_OTP_KEY)},

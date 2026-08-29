@@ -21,6 +21,7 @@ pytestmark = pytest.mark.postgres
 
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
 _TEST_PEPPER_KEY_ID = "test-v1"
+_TEST_OTP_KEY_ID = "test-signup-otp-v1"
 
 
 def _secret(raw: bytes) -> str:
@@ -33,6 +34,10 @@ def _auth_settings() -> AuthSettings:
         password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
         password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(_secret(b"p" * 32))},
         csrf_key=SecretStr(_secret(b"c" * 32)),
+        signup_otp_current_key_id=_TEST_OTP_KEY_ID,
+        signup_otp_keys={_TEST_OTP_KEY_ID: SecretStr(_secret(b"o" * 32))},
+        smtp_host="smtp.dante.test",
+        smtp_from_address="no-reply@dante.test",
         kdf_max_concurrency=1,
         signin_rate_capacity=100,
         signin_rate_window_seconds=60,

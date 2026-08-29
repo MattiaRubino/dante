@@ -42,7 +42,7 @@ def test_signup_otp_rejects_noncanonical_input_and_unknown_stored_key() -> None:
     signup_ref = uuid7()
     issued = codec.issue(signup_ref)
 
-    for invalid in ("12345", "1234567", "１２３４５６", "12a456"):
+    for invalid in ("12345", "1234567", "\uff11\uff12\uff13\uff14\uff15\uff16", "12a456"):
         assert not codec.matches(
             signup_ref=signup_ref,
             submitted_code=invalid,

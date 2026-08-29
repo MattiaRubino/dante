@@ -226,8 +226,7 @@ class PasswordSignupChallengeRow(Base):
             name="email_address",
         ),
         CheckConstraint(
-            "email_comparison_key = btrim(email_comparison_key) "
-            "AND email_comparison_key <> ''",
+            "email_comparison_key = btrim(email_comparison_key) AND email_comparison_key <> ''",
             name="email_comparison_key",
         ),
         CheckConstraint(
@@ -284,8 +283,12 @@ class PasswordSignupChallengeRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     signup_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    verification_issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    verification_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    verification_issued_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    verification_expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
     failed_verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
@@ -309,10 +312,7 @@ class PasswordRecoveryChallengeRow(Base):
         ForeignKeyConstraint(
             ["email_identity_ref", "account_ref"],
             ["dante.email_identity.email_identity_ref", "dante.email_identity.account_ref"],
-            name=(
-                "fk_password_recovery_challenge_"
-                "email_identity_ref_account_ref_email_identity"
-            ),
+            name=("fk_password_recovery_challenge_email_identity_ref_account_ref_email_identity"),
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",

@@ -242,8 +242,10 @@ class AuthSettings(BaseModel):
     def _decode_ring(values: dict[str, SecretStr], *, name: str) -> dict[str, bytes]:
         decoded: dict[str, bytes] = {}
         for key_id, secret in values.items():
-            if not key_id or key_id.strip() != key_id or any(
-                character in key_id for character in "\r\n"
+            if (
+                not key_id
+                or key_id.strip() != key_id
+                or any(character in key_id for character in "\r\n")
             ):
                 raise ValueError(f"{name} keys must be non-blank, trimmed and single-line")
             decoded[key_id] = _decode_canonical_secret(

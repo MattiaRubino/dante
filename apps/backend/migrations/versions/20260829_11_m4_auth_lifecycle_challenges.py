@@ -59,8 +59,7 @@ def _activate_m4_runtime_acl() -> None:
     )
     op.execute(
         sa.text(
-            "GRANT SELECT, INSERT, DELETE ON TABLE "
-            "dante.password_signup_challenge TO dante_runtime"
+            "GRANT SELECT, INSERT, DELETE ON TABLE dante.password_signup_challenge TO dante_runtime"
         )
     )
     op.execute(
@@ -112,8 +111,7 @@ def upgrade() -> None:
             name=op.f("ck_password_signup_challenge_email_address"),
         ),
         sa.CheckConstraint(
-            "email_comparison_key = btrim(email_comparison_key) "
-            "AND email_comparison_key <> ''",
+            "email_comparison_key = btrim(email_comparison_key) AND email_comparison_key <> ''",
             name=op.f("ck_password_signup_challenge_email_comparison_key"),
         ),
         sa.CheckConstraint(
@@ -246,8 +244,7 @@ def downgrade() -> None:
     for table_name in reversed(_M4_TABLES):
         op.execute(
             sa.text(
-                f"REVOKE ALL PRIVILEGES ON TABLE {_DANTE_SCHEMA}.{table_name} "
-                f"FROM {_RUNTIME_ROLE}"
+                f"REVOKE ALL PRIVILEGES ON TABLE {_DANTE_SCHEMA}.{table_name} FROM {_RUNTIME_ROLE}"
             )
         )
         op.drop_table(table_name, schema=_DANTE_SCHEMA)

@@ -33,8 +33,9 @@ from dante.platform.database.runtime import DatabaseRuntime, create_database_run
 pytestmark = pytest.mark.postgres
 
 _EMAIL = "m4.lifecycle@example.com"
-_PASSWORD = "correct horse battery staple"
-_NEW_PASSWORD = "replacement horse battery staple"
+_ACCOUNT_CREDENTIAL = "correct horse battery staple"
+_REPLACEMENT_CREDENTIAL = "replacement horse battery staple"
+_ATTACKER_CREDENTIAL = "attacker-chosen replacement password"
 _PEPPER_KEY_ID = "test-password-v1"
 _OTP_KEY_ID = "test-signup-otp-v1"
 _PEPPER = b"p" * 32
@@ -159,7 +160,7 @@ async def _establish_account(
     email_delivery: _MemoryEmailDelivery,
     *,
     email: str = _EMAIL,
-    password: str = _PASSWORD,
+    password: str = _ACCOUNT_CREDENTIAL,
     source: str = "integration-source",
 ) -> IssuedSession:
     created = await service.create_signup(
@@ -186,7 +187,7 @@ async def test_signup_creates_no_canonical_account_until_valid_mailbox_proof(
     async with _lifecycle(migrated_database) as (service, email_delivery, _kdf, _runtime):
         created = await service.create_signup(
             email=_EMAIL,
-            password=_PASSWORD,
+            password=_ACCOUNT_CREDENTIAL,
             source_context="signup-source",
         )
 
@@ -194,11 +195,14 @@ async def test_signup_creates_no_canonical_account_until_valid_mailbox_proof(
         assert _count(migrated_database, "SELECT count(*) FROM dante.email_identity") == 0
         assert _count(migrated_database, "SELECT count(*) FROM dante.password_credential") == 0
         assert _count(migrated_database, "SELECT count(*) FROM dante.auth_session") == 0
-        assert _count(
-            migrated_database,
-            "SELECT count(*) FROM dante.password_signup_challenge WHERE signup_ref = %s",
-            (created.signup_ref,),
-        ) == 1
+        assert (
+            _count(
+                migrated_database,
+                "SELECT count(*) FROM dante.password_signup_challenge WHERE signup_ref = %s",
+                (created.signup_ref,),
+            )
+            == 1
+        )
 
         verification = cast(
             SignupVerificationEmail,
@@ -214,7 +218,9 @@ async def test_signup_creates_no_canonical_account_until_valid_mailbox_proof(
         assert _count(migrated_database, "SELECT count(*) FROM dante.email_identity") == 1
         assert _count(migrated_database, "SELECT count(*) FROM dante.password_credential") == 1
         assert _count(migrated_database, "SELECT count(*) FROM dante.auth_session") == 1
-        assert _count(migrated_database, "SELECT count(*) FROM dante.password_signup_challenge") == 0
+        assert (
+            _count(migrated_database, "SELECT count(*) FROM dante.password_signup_challenge") == 0
+        )
 
 
 @pytest.mark.asyncio
@@ -231,7 +237,7 @@ async def test_verified_existing_email_never_overwrites_existing_password_or_cre
 
         created = await service.create_signup(
             email=_EMAIL,
-            password="attacker-chosen replacement password",
+            password=_ATTACKER_CREDENTIAL,
             source_context="second-signup-source",
         )
         verification = cast(
@@ -251,7 +257,9 @@ async def test_verified_existing_email_never_overwrites_existing_password_or_cre
         assert after == before
         assert _count(migrated_database, "SELECT count(*) FROM dante.account") == 1
         assert _count(migrated_database, "SELECT count(*) FROM dante.auth_session") == 1
-        assert _count(migrated_database, "SELECT count(*) FROM dante.password_signup_challenge") == 0
+        assert (
+            _count(migrated_database, "SELECT count(*) FROM dante.password_signup_challenge") == 0
+        )
         assert first.principal.account_ref is not None
 
 
@@ -303,25 +311,33 @@ async def test_recovery_supersedes_prior_proof_and_reset_consumes_once_revoking_
         await service.reset_password(
             password_recovery_ref=second_mail.password_recovery_ref,
             secret=second_mail.secret.get_secret_value(),
-            new_password=_NEW_PASSWORD,
+            new_password=_REPLACEMENT_CREDENTIAL,
         )
 
         with pytest.raises(RecoveryInvalidOrExpiredError):
             await service.reset_password(
                 password_recovery_ref=second_mail.password_recovery_ref,
                 secret=second_mail.secret.get_secret_value(),
-                new_password=_NEW_PASSWORD,
+                new_password=_REPLACEMENT_CREDENTIAL,
             )
 
-        assert _count(migrated_database, "SELECT count(*) FROM dante.password_recovery_challenge") == 0
-        assert _count(
-            migrated_database,
-            "SELECT count(*) FROM dante.auth_session WHERE revoked_at IS NULL",
-        ) == 0
-        assert _count(
-            migrated_database,
-            "SELECT count(*) FROM dante.auth_session WHERE revocation_reason_code = 'password_reset'",
-        ) == 1
+        assert (
+            _count(migrated_database, "SELECT count(*) FROM dante.password_recovery_challenge") == 0
+        )
+        assert (
+            _count(
+                migrated_database,
+                "SELECT count(*) FROM dante.auth_session WHERE revoked_at IS NULL",
+            )
+            == 0
+        )
+        assert (
+            _count(
+                migrated_database,
+                "SELECT count(*) FROM dante.auth_session WHERE revocation_reason_code = 'password_reset'",
+            )
+            == 1
+        )
         assert isinstance(
             email_delivery.latest(PasswordResetNotificationEmail),
             PasswordResetNotificationEmail,
@@ -335,7 +351,7 @@ async def test_recovery_supersedes_prior_proof_and_reset_consumes_once_revoking_
             ).fetchone()
         assert credential is not None
         verification = await password_kdf.verify(
-            normalized_password=normalize_password_for_authentication(_NEW_PASSWORD),
+            normalized_password=normalize_password_for_authentication(_REPLACEMENT_CREDENTIAL),
             verifier=str(credential[0]),
             pepper_key_id=str(credential[1]),
         )
@@ -359,7 +375,7 @@ async def test_reauthentication_rotates_exact_presented_bearer_on_same_session(
         rotated = await service.reauthenticate(
             admitted=admitted,
             presented_session_verifier=old_verifier,
-            password=_PASSWORD,
+            password=_ACCOUNT_CREDENTIAL,
             source_context="reauth-source",
             request_id="integration-request",
         )
@@ -373,7 +389,7 @@ async def test_reauthentication_rotates_exact_presented_bearer_on_same_session(
             await service.reauthenticate(
                 admitted=admitted,
                 presented_session_verifier=old_verifier,
-                password=_PASSWORD,
+                password=_ACCOUNT_CREDENTIAL,
                 source_context="stale-reauth-source",
                 request_id="stale-integration-request",
             )

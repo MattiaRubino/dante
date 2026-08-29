@@ -308,30 +308,32 @@ class AuthLifecycleService:
             now + timedelta(seconds=self._settings.signup_otp_lifetime_seconds),
         )
         try:
-            async with self._session_factory() as database_session:
-                async with database_session.begin():
-                    locked = await database_session.scalar(
-                        select(PasswordSignupChallengeRow)
-                        .where(PasswordSignupChallengeRow.signup_ref == signup_ref)
-                        .with_for_update()
-                    )
-                    if locked is None or locked.signup_expires_at <= now:
-                        raise VerificationInvalidOrExpiredError()
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                locked = await database_session.scalar(
+                    select(PasswordSignupChallengeRow)
+                    .where(PasswordSignupChallengeRow.signup_ref == signup_ref)
+                    .with_for_update()
+                )
+                if locked is None or locked.signup_expires_at <= now:
+                    raise VerificationInvalidOrExpiredError()
 
-                    cooldown_until = locked.verification_issued_at + timedelta(
-                        seconds=self._settings.signup_resend_cooldown_seconds
+                cooldown_until = locked.verification_issued_at + timedelta(
+                    seconds=self._settings.signup_resend_cooldown_seconds
+                )
+                if cooldown_until > now:
+                    raise SignupResendCooldownError(
+                        max(1, math.ceil((cooldown_until - now).total_seconds()))
                     )
-                    if cooldown_until > now:
-                        raise SignupResendCooldownError(
-                            max(1, math.ceil((cooldown_until - now).total_seconds()))
-                        )
 
-                    locked.otp_verifier = otp.verifier
-                    locked.otp_key_id = otp.key_id
-                    locked.updated_at = now
-                    locked.verification_issued_at = now
-                    locked.verification_expires_at = verification_expires_at
-                    locked.failed_verification_attempts = 0
+                locked.otp_verifier = otp.verifier
+                locked.otp_key_id = otp.key_id
+                locked.updated_at = now
+                locked.verification_issued_at = now
+                locked.verification_expires_at = verification_expires_at
+                locked.failed_verification_attempts = 0
         except VerificationInvalidOrExpiredError, SignupResendCooldownError:
             raise
         except SQLAlchemyError as exc:
@@ -488,10 +490,13 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
-        assert comparison_key is not None
-        assert email_address is not None
-        assert password_verifier is not None
-        assert password_pepper_key_id is not None
+        if (
+            comparison_key is None
+            or email_address is None
+            or password_verifier is None
+            or password_pepper_key_id is None
+        ):
+            raise AuthIntegrityError("signup verification completed without frozen challenge state")
         if ambiguous_commit:
             return await self._reconcile_signup_commit(
                 signup_ref=signup_ref,
@@ -595,10 +600,14 @@ class AuthLifecycleService:
                         )
                         .join(
                             EmailIdentityRow,
-                            (EmailIdentityRow.email_identity_ref
-                             == PasswordRecoveryChallengeRow.email_identity_ref)
-                            & (EmailIdentityRow.account_ref
-                               == PasswordRecoveryChallengeRow.account_ref),
+                            (
+                                EmailIdentityRow.email_identity_ref
+                                == PasswordRecoveryChallengeRow.email_identity_ref
+                            )
+                            & (
+                                EmailIdentityRow.account_ref
+                                == PasswordRecoveryChallengeRow.account_ref
+                            ),
                         )
                         .join(
                             PasswordCredentialRow,
@@ -693,11 +702,9 @@ class AuthLifecycleService:
             consumed = await database_session.scalar(
                 delete(PasswordRecoveryChallengeRow)
                 .where(
-                    PasswordRecoveryChallengeRow.password_recovery_ref
-                    == password_recovery_ref,
+                    PasswordRecoveryChallengeRow.password_recovery_ref == password_recovery_ref,
                     PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
-                    PasswordRecoveryChallengeRow.email_identity_ref
-                    == snapshot.email_identity_ref,
+                    PasswordRecoveryChallengeRow.email_identity_ref == snapshot.email_identity_ref,
                     PasswordRecoveryChallengeRow.secret_verifier == snapshot.secret_verifier,
                     PasswordRecoveryChallengeRow.expires_at > mutation_at,
                 )
@@ -735,7 +742,8 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
-        assert mutation_at is not None
+        if mutation_at is None:
+            raise AuthIntegrityError("password reset completed without mutation timestamp")
         if ambiguous_commit:
             await self._reconcile_reset_commit(
                 snapshot=snapshot,
@@ -870,8 +878,7 @@ class AuthLifecycleService:
                     AuthSessionRow.revoked_at.is_(None),
                     AuthSessionRow.expires_at > mutation_at,
                     AuthSessionRow.last_user_activity_at
-                    > mutation_at
-                    - timedelta(seconds=self._settings.session_idle_timeout_seconds),
+                    > mutation_at - timedelta(seconds=self._settings.session_idle_timeout_seconds),
                 )
                 .values(
                     secret_verifier=new_secret_verifier,
@@ -899,12 +906,15 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
-        assert mutation_at is not None
-        assert authenticated_at is not None
-        assert old_recent_auth_at is not None
-        assert old_last_user_activity_at is not None
-        assert old_expires_at is not None
-        assert expires_at is not None
+        if (
+            mutation_at is None
+            or authenticated_at is None
+            or old_recent_auth_at is None
+            or old_last_user_activity_at is None
+            or old_expires_at is None
+            or expires_at is None
+        ):
+            raise AuthIntegrityError("reauthentication completed without frozen session state")
         if ambiguous_commit:
             return await self._reconcile_reauth_commit(
                 account_ref=snapshot.account_ref,
@@ -1033,8 +1043,8 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
-        assert issued_at is not None
-        assert expires_at is not None
+        if issued_at is None or expires_at is None:
+            raise AuthIntegrityError("recovery issuance completed without challenge timestamps")
         if not ambiguous_commit:
             return True
 
@@ -1045,8 +1055,7 @@ class AuthLifecycleService:
             ):
                 persisted = await reconciliation_session.scalar(
                     select(PasswordRecoveryChallengeRow).where(
-                        PasswordRecoveryChallengeRow.password_recovery_ref
-                        == password_recovery_ref
+                        PasswordRecoveryChallengeRow.password_recovery_ref == password_recovery_ref
                     )
                 )
         except SQLAlchemyError as exc:
@@ -1066,20 +1075,22 @@ class AuthLifecycleService:
 
     async def _resolve_signup_collision(self, comparison_key: str) -> None:
         try:
-            async with self._session_factory() as database_session:
-                async with database_session.begin():
-                    existing = await database_session.scalar(
-                        select(EmailIdentityRow.email_identity_ref).where(
-                            EmailIdentityRow.comparison_key == comparison_key
-                        )
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                existing = await database_session.scalar(
+                    select(EmailIdentityRow.email_identity_ref).where(
+                        EmailIdentityRow.comparison_key == comparison_key
                     )
-                    if existing is None:
-                        raise AuthServiceUnavailableError(retryable=True)
-                    await database_session.execute(
-                        delete(PasswordSignupChallengeRow).where(
-                            PasswordSignupChallengeRow.email_comparison_key == comparison_key
-                        )
+                )
+                if existing is None:
+                    raise AuthServiceUnavailableError(retryable=True)
+                await database_session.execute(
+                    delete(PasswordSignupChallengeRow).where(
+                        PasswordSignupChallengeRow.email_comparison_key == comparison_key
                     )
+                )
         except AuthServiceUnavailableError:
             raise
         except SQLAlchemyError as exc:
@@ -1128,9 +1139,7 @@ class AuthLifecycleService:
                 sibling_count = await database_session.scalar(
                     select(func.count())
                     .select_from(PasswordSignupChallengeRow)
-                    .where(
-                        PasswordSignupChallengeRow.email_comparison_key == comparison_key
-                    )
+                    .where(PasswordSignupChallengeRow.email_comparison_key == comparison_key)
                 )
                 canonical_email = await database_session.scalar(
                     select(EmailIdentityRow).where(
@@ -1319,23 +1328,26 @@ class AuthLifecycleService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                return await database_session.scalar(
+                challenge = await database_session.scalar(
                     select(PasswordSignupChallengeRow).where(
                         PasswordSignupChallengeRow.signup_ref == signup_ref
                     )
                 )
+                return cast(PasswordSignupChallengeRow | None, challenge)
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
     async def _delete_signup_ref(self, signup_ref: UUID) -> None:
         try:
-            async with self._session_factory() as database_session:
-                async with database_session.begin():
-                    await database_session.execute(
-                        delete(PasswordSignupChallengeRow).where(
-                            PasswordSignupChallengeRow.signup_ref == signup_ref
-                        )
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                await database_session.execute(
+                    delete(PasswordSignupChallengeRow).where(
+                        PasswordSignupChallengeRow.signup_ref == signup_ref
                     )
+                )
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -1447,10 +1459,14 @@ class AuthLifecycleService:
                         )
                         .join(
                             EmailIdentityRow,
-                            (EmailIdentityRow.email_identity_ref
-                             == PasswordRecoveryChallengeRow.email_identity_ref)
-                            & (EmailIdentityRow.account_ref
-                               == PasswordRecoveryChallengeRow.account_ref),
+                            (
+                                EmailIdentityRow.email_identity_ref
+                                == PasswordRecoveryChallengeRow.email_identity_ref
+                            )
+                            & (
+                                EmailIdentityRow.account_ref
+                                == PasswordRecoveryChallengeRow.account_ref
+                            ),
                         )
                         .where(
                             PasswordRecoveryChallengeRow.password_recovery_ref
@@ -1527,20 +1543,22 @@ class AuthLifecycleService:
             .limit(_EXPIRED_CLEANUP_BATCH)
         )
         try:
-            async with self._session_factory() as database_session:
-                async with database_session.begin():
-                    await database_session.execute(
-                        delete(PasswordSignupChallengeRow).where(
-                            PasswordSignupChallengeRow.signup_ref.in_(expired_signup_refs)
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                await database_session.execute(
+                    delete(PasswordSignupChallengeRow).where(
+                        PasswordSignupChallengeRow.signup_ref.in_(expired_signup_refs)
+                    )
+                )
+                await database_session.execute(
+                    delete(PasswordRecoveryChallengeRow).where(
+                        PasswordRecoveryChallengeRow.password_recovery_ref.in_(
+                            expired_recovery_refs
                         )
                     )
-                    await database_session.execute(
-                        delete(PasswordRecoveryChallengeRow).where(
-                            PasswordRecoveryChallengeRow.password_recovery_ref.in_(
-                                expired_recovery_refs
-                            )
-                        )
-                    )
+                )
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
@@ -1559,9 +1577,7 @@ class AuthLifecycleService:
             raise EmailDeliveryUnavailableError() from exc
 
     async def _pad_recovery_success(self, started_at: float) -> None:
-        remaining = self._settings.recovery_response_floor_seconds - (
-            time.monotonic() - started_at
-        )
+        remaining = self._settings.recovery_response_floor_seconds - (time.monotonic() - started_at)
         if remaining > 0:
             await asyncio.sleep(remaining)
 
