@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import './timeline-material.css';
+
 import {
   addTimelineDays,
   buildIsoWeek,
