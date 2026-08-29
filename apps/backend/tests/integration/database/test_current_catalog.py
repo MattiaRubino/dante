@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260827_10"
+_CURRENT_REVISION = "20260829_11"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -230,7 +230,7 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
 
-def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
+def test_m4_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         table_privileges = connection.execute(
             """
@@ -251,6 +251,49 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
               has_table_privilege('dante_runtime','dante.auth_session','INSERT'),
               has_table_privilege('dante_runtime','dante.auth_session','UPDATE'),
               has_table_privilege('dante_runtime','dante.auth_session','DELETE')
+            """
+        ).fetchone()
+        creation_columns = connection.execute(
+            """
+            SELECT
+              has_column_privilege('dante_runtime','dante.account','account_ref','INSERT'),
+              has_column_privilege('dante_runtime','dante.account','status_code','INSERT'),
+              has_column_privilege('dante_runtime','dante.account','created_at','INSERT'),
+              has_column_privilege('dante_runtime','dante.account','disabled_at','INSERT'),
+              has_column_privilege(
+                'dante_runtime','dante.email_identity','email_identity_ref','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.email_identity','account_ref','INSERT'
+              ),
+              has_column_privilege('dante_runtime','dante.email_identity','address','INSERT'),
+              has_column_privilege(
+                'dante_runtime','dante.email_identity','comparison_key','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.email_identity','created_at','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.email_identity','verified_at','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','password_credential_ref','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','account_ref','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','verifier','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','pepper_key_id','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','created_at','INSERT'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_credential','updated_at','INSERT'
+              )
             """
         ).fetchone()
         password_columns = connection.execute(
@@ -289,10 +332,83 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
                 'dante_runtime','dante.auth_session','secret_verifier','UPDATE'
               ),
               has_column_privilege(
+                'dante_runtime','dante.auth_session','recent_auth_at','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.auth_session','expires_at','UPDATE'
+              ),
+              has_column_privilege(
                 'dante_runtime','dante.auth_session','account_ref','UPDATE'
               ),
               has_column_privilege(
                 'dante_runtime','dante.auth_session','auth_session_ref','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.auth_session','authenticated_at','UPDATE'
+              )
+            """
+        ).fetchone()
+        challenge_privileges = connection.execute(
+            """
+            SELECT
+              has_table_privilege(
+                'dante_runtime','dante.password_signup_challenge','SELECT'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_signup_challenge','INSERT'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_signup_challenge','UPDATE'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_signup_challenge','DELETE'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_recovery_challenge','SELECT'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_recovery_challenge','INSERT'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_recovery_challenge','UPDATE'
+              ),
+              has_table_privilege(
+                'dante_runtime','dante.password_recovery_challenge','DELETE'
+              )
+            """
+        ).fetchone()
+        signup_update_columns = connection.execute(
+            """
+            SELECT
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','otp_verifier','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','otp_key_id','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','updated_at','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge',
+                'verification_issued_at','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge',
+                'verification_expires_at','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge',
+                'failed_verification_attempts','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','signup_ref','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','email_address','UPDATE'
+              ),
+              has_column_privilege(
+                'dante_runtime','dante.password_signup_challenge','password_verifier','UPDATE'
               )
             """
         ).fetchone()
@@ -345,8 +461,21 @@ def test_m3_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
         False,
         False,
     )
+    assert creation_columns == (True,) * 16
     assert password_columns == (True, True, True, False, False)
-    assert session_columns == (True, True, True, False, False, False)
+    assert session_columns == (True, True, True, True, True, True, False, False, False)
+    assert challenge_privileges == (True, True, False, True, True, True, False, True)
+    assert signup_update_columns == (
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        False,
+        False,
+        False,
+    )
     assert function_acl is not None
     assert function_acl[0:5] == ("dante_owner", True, "v", "u", False)
     assert function_acl[5] == ["search_path=pg_catalog, dante, pg_temp"]
