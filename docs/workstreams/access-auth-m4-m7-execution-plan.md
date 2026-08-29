@@ -1,13 +1,14 @@
-# DANTE — Access/Auth PRE-M4 + M4–M7 Execution Plan
+# DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / PRE-M4 NEXT / M4–M7 PLANNED
+- **Status:** CURRENT EXECUTION PLAN / M4 NEXT / M5–M7 PLANNED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Prerequisite:** M1–M3 CLOSED; M3 engineering gate PASS; user acceptance ACCEPTED
-- **Purpose:** remove ambiguity for future chats/engineers, preserve lessons from M3, and define the highest-quality safe sequence from the accepted AuthSession spine to whole-vertical closure.
+- **Observability rule:** quick feasibility before M4; implement early only if bounded/non-invasive, otherwise defer full baseline to M7
+- **Purpose:** remove ambiguity for future chats/engineers, preserve M3 lessons, and define the safe production-quality sequence from the accepted AuthSession spine to whole-vertical closure.
 
-> This plan refines the macro-roadmap. It does not reopen M1–M3 and does not authorize a new branch/worktree. Repository truth and the accepted Access/Auth architecture/security/API/testing contracts remain binding.
+> This plan does not reopen M1–M3 and does not authorize a new branch/worktree. Repository truth and accepted Access/Auth architecture/security/API/testing contracts remain binding.
 
 ---
 
@@ -47,13 +48,13 @@ Read, in this order:
 11. `docs/database/README.md` + `docs/database/access-auth.md` when persistence is touched;
 12. `docs/development/agent-operating-manual.md` and documentation lifecycle policy.
 
-Never infer that a new chat means a new phase topology. Never create a new `feature/access-*` branch/worktree without explicit user authorization.
+Never infer that a new chat means a new branch/worktree.
 
 ---
 
 ## 2. M3 frozen foundations — reuse, do not replace
 
-M4–M7 build on these accepted foundations:
+M4–M7 build on:
 
 ```text
 Account = durable access/security root
@@ -70,7 +71,7 @@ Origin + Fetch Metadata + X-Dante-Client Web ingress
 Account security serialization point
 READ COMMITTED + targeted locking
 no blind mutation retry
-ambiguous-commit reconciliation where explicitly designed
+ambiguous-commit reconciliation only where explicitly designed
 FastAPI/Pydantic → deterministic OpenAPI → Orval Fetch → governed @dante/api-client
 TanStack Query remote lifecycle
 TanStack Router critical-session bootstrap
@@ -97,9 +98,7 @@ route deep-import of Access application internals
 
 ---
 
-## 3. Permanent M3 lessons / regression-prevention rules
-
-These are not optional style preferences. They were learned through direct implementation/UAT and must survive later phases.
+## 3. Permanent M3 lessons / regression guards
 
 ### 3.1 Unknown remote truth is not a business state
 
@@ -111,7 +110,7 @@ unknown/loading
 != error
 ```
 
-If first-screen correctness depends on remote state, coordinate that state at the route/bootstrap boundary. Do not paint a false business state and repair it after an effect.
+If first-screen correctness depends on remote state, resolve/coordinate it at the route/bootstrap boundary. Do not paint a false business state and repair it later.
 
 ### 3.2 Router-first Auth bootstrap remains canonical
 
@@ -123,253 +122,179 @@ hard load
 → first business render is authoritative
 ```
 
-Do not reintroduce:
-
-```text
-initial SIGN_IN reducer default during unknown session
-login flash then effect repair
-visibility:hidden sign-in geometry placeholder
-persisted client Auth cache
-```
-
-A browser-owned hard-reload blank frame is not solved by displaying false Auth state.
+Do not reintroduce login-first + effect repair, `visibility:hidden` sign-in geometry, or persisted client Auth cache.
 
 ### 3.3 Feature boundaries are real architecture
 
-Routes consume Access only through its public API. Presentation/model code must not reach generated transport internals. Platform Web code owns browser transport policy. Generated code is never hand-edited.
+Routes consume Access through its public API. Presentation/model code does not reach raw generated transport internals. Platform Web code owns browser transport policy. Generated code is never hand-edited.
 
-### 3.4 Real degraded-path proof is mandatory
+### 3.4 Real degraded/race/replay proof is mandatory
 
-M3 proved that happy-path-only browser tests are insufficient. Later phases must include deterministic degraded/race/replay cases using real product boundaries where practical, without public `/test/*` production APIs.
+Happy path alone is insufficient for security-sensitive slices. Use real PostgreSQL and real product boundaries where practical. Do not expose public production `/test/*` endpoints merely to make E2E easy.
 
-### 3.5 Formatter/tooling discipline
+### 3.5 Tooling/documentation discipline
 
-For pure Prettier/Ruff drift, use the repository formatter. Do not guess formatting manually. Do not hand-edit lockfiles/generated artifacts.
-
-### 3.6 Documentation discipline
-
-A closed capability is not complete until current docs, code, generated contracts, DB Dictionary where applicable, and executable evidence agree. Historical evidence remains historical; current references evolve.
+Pure Prettier/Ruff drift uses repo formatters. Lockfiles/generated artifacts are not hand-edited. A capability is not closed until code, generated contracts, DB artifacts where applicable, docs and executable evidence agree.
 
 ---
 
-# PRE-M4 — Operational Observability Baseline
+# 4. Observability quick-feasibility decision
 
-## 4. Why this gate exists before M4
+## 4.1 Intent
 
-M3 now gives DANTE a real security-sensitive runtime. M4 adds verification/recovery/reset/reauth and email side effects; M5 adds external identity providers/passkeys. Entering those phases without a governed observability baseline would make race/replay/provider/email failures unnecessarily hard to diagnose and could encourage unsafe ad-hoc logging of secrets.
+Observability is useful before verification/recovery/provider complexity, but it must **not** become an early infrastructure programme that delays M4.
 
-PRE-M4 therefore establishes observability **before** lifecycle complexity expands.
+Before M4 implementation, perform only a bounded architecture/readback and determine whether a useful baseline is genuinely small and isolated.
 
-**Status:** `NEXT / NOT STARTED`
+## 4.2 Quick-path scope
 
-This is a bounded engineering gate, not a new product vertical and not a reason to create a new branch.
-
-## 5. PRE-M4 architecture target
-
-Application observability contract must remain vendor-neutral at instrumentation boundaries:
+Suitable for implementation before M4 only if the work can stay roughly within:
 
 ```text
-application
-→ structured safe logs
-→ OpenTelemetry traces + metrics
-→ stable correlation/resource attributes
-→ collector/forwarder boundary
-→ selected local/production backend(s)
-→ Grafana-class query/dashboard/alert surface
+structured privacy-safe backend logs
+request_id correlation
+trace_id/span_id correlation where available
+minimal OpenTelemetry traces/metrics
+small disposable local collector/backend path
+one representative Auth query/dashboard path
+secret-redaction/leakage proof
 ```
 
-Preferred candidate stack for evaluation:
+Application instrumentation remains vendor-neutral.
+
+Candidate technologies may include:
 
 ```text
-Grafana            visualization / exploration / dashboards
-Grafana Alloy      stable collector/forwarder candidate
-Loki               logs
-Tempo              traces
-Prometheus or Mimir metrics
-OpenTelemetry      application instrumentation contract
+OpenTelemetry
+Grafana
+Grafana Alloy
+Loki
+Tempo
+Prometheus or Mimir
 ```
 
-Selection is not final merely because these names appear here. PRE-M4 must explicitly close local-development and future-production topology, retention, resource cost and operational ownership.
+These are candidates, not mandatory brands.
 
-Do not couple application business code directly to Loki/Tempo/Grafana APIs.
+## 4.3 Early-stop conditions
 
-## 6. PRE-M4 signal contract
-
-### Logs
-
-Required:
+Do **not** implement full observability before M4 if it requires any meaningful combination of:
 
 ```text
-structured machine-readable application logs
-UTC timestamp
-level
-service/component
-environment
-request_id
-trace_id/span_id when available
-stable event name/category
-safe machine error code where relevant
-bounded context fields
+new product/domain persistence
+invasive M3 Auth refactor
+large permanent infrastructure subsystem
+new cross-service business architecture
+production deployment/on-call design
+CI/release redesign
+retention/alerting/platform operations project
+significant operational ownership before a real deployment exists
 ```
 
-Forbidden in logs/telemetry:
+Decision rule:
+
+```text
+small / isolated / immediately useful
+→ implement + prove before M4
+
+scope expands materially
+→ document DEFERRED TO M7
+→ start M4
+```
+
+No guilt and no scope creep when deferring.
+
+## 4.4 Security rules regardless of timing
+
+Never emit:
 
 ```text
 passwords
-session tokens/cookie values
+session/cookie/token values
 CSRF secrets
-verification/recovery/reset proof secrets
+verification/recovery/reset raw proof secrets
+OAuth authorization codes/access/refresh tokens
 passkey private material
-OAuth authorization codes/tokens
-email message secret links
 password hashes/pepper
-full sensitive request/response bodies
+secret-link full URLs
+sensitive request/response bodies by default
 unbounded provider payloads
 ```
 
-Email/identity values require a deliberate privacy policy; do not scatter raw addresses through logs by convenience. Prefer stable opaque/hashed correlation only where genuinely needed and privacy-reviewed.
+Never use raw email/account/session/request identifiers or arbitrary error strings as metric labels.
 
-### Metrics
+If full observability is deferred, M4–M6 still require safe logs/errors and leakage tests around new secret-bearing flows.
 
-At minimum define low-cardinality service and Auth metrics for:
+## 4.5 If the quick path is taken
 
-```text
-HTTP request rate / duration / status class
-readiness/liveness state where useful
-DB pool/connection pressure where measurable
-Auth signin outcomes by safe category
-rate-limit events
-session bootstrap success/error category
-verification/recovery/reset outcome category once M4 exists
-external dependency latency/failure once dependencies exist
-```
-
-Never use raw email, account UUID, session UUID, request ID or arbitrary error strings as metric labels.
-
-### Traces
-
-At minimum:
+Minimum proof:
 
 ```text
-HTTP server spans
-DB spans at a safe abstraction level
-external dependency spans (HIBP, later email/provider)
-request_id ↔ trace correlation
-error/status recording without secret payloads
-```
-
-Trace instrumentation must not change transaction ownership, retry behavior or product semantics.
-
-## 7. PRE-M4 implementation posture
-
-Current 2026 direction:
-
-- OpenTelemetry traces/metrics are acceptable instrumentation foundations;
-- structured application logging remains independently governed rather than requiring the Python OpenTelemetry Logs SDK;
-- if Grafana Alloy is selected, use its stable/default supported pipeline unless a later explicit gate accepts an experimental engine;
-- local observability must be reproducible and disposable, preferably through repository-governed container configuration;
-- production topology may remain trigger-bound if no production environment exists yet, but the instrumentation/semantic contract must already be production-credible.
-
-Do not create a giant monitoring platform merely to look enterprise. Start with the smallest complete path that can answer:
-
-```text
-what request failed?
-where did it fail?
-how long did it take?
-was PostgreSQL/external dependency involved?
-what safe machine error category occurred?
-can we correlate logs ↔ trace ↔ request_id?
-are error/latency/rate-limit rates changing?
-```
-
-## 8. PRE-M4 security/privacy gate
-
-Before declaring PRE-M4 closed, prove:
-
-```text
-no Auth secret leakage in logs
-no sensitive body capture by default
-no high-cardinality user/session labels in metrics
-trace attributes are allowlisted/bounded
-telemetry endpoints are not publicly writable by default
-local dashboard/collector ports have explicit development-only exposure
-production credentials are environment/secret supplied, never committed
-telemetry failure cannot break core Auth correctness
-```
-
-## 9. PRE-M4 proof / closure gate
-
-Expected evidence:
-
-```text
-unit/static tests for log redaction/context helpers
-real backend request produces correlated request_id + trace
-metrics endpoint/collector path proven
-real signin success and failure visible without secret leakage
-real PostgreSQL outage observable and still semantically correct
-collector/backend outage does not fail Auth requests
-local dashboard can traverse representative logs/trace/metrics
-format/lint/type/build gates green
+real Auth request correlates request_id ↔ safe log ↔ trace
+basic HTTP/Auth metrics visible
+signin success/failure visible without secrets
+real PostgreSQL outage observable
+collector/backend outage does not fail Auth correctness
+redaction/leakage tests PASS
+one local dashboard/query path usable
+format/lint/type/build gates PASS
 operational docs current
 ```
 
-PRE-M4 closes only after technical review + direct local proof. It is not necessary to build alert paging/on-call infrastructure before a production deployment exists; alert rules can be staged to the first real deployment boundary while metric semantics are fixed now.
+If that proof cannot be reached without expanding scope, stop and defer.
 
 ---
 
-# M4 — Signup + Verification + Recovery + Reset + Reauth
+# 5. M4 — Signup + Verification + Recovery + Reset + Reauth
 
-## 10. M4 goal
+**Status:** `NEXT / NOT STARTED`
 
-Complete the **first-party account lifecycle** around the accepted M3 signin/AuthSession spine without creating parallel security roots.
+## 5.1 Goal
 
-**Status:** `PLANNED / START ONLY AFTER PRE-M4`
+Complete the first-party Account lifecycle around the accepted M3 signin/AuthSession spine without creating parallel security roots.
 
-## 11. M4 contract-first subphases
+## 5.2 M4.1 Account establishment / signup contract
 
-Do not begin with tables or screens. Close semantics in this order.
-
-### M4.1 Account establishment / signup contract
-
-Decide and document exactly:
+Close before code/schema:
 
 ```text
 when Account is created
 when EmailIdentity is created
-verified vs unverified state semantics
+verified vs unverified semantics
 password establishment path
 normalization/collision behavior
-whether an unverified Account can sign in and with what capability
-expiry/cleanup policy for abandoned signup if any
+whether unverified Account may sign in and with what authority
+abandoned-signup cleanup/expiry if any
 concurrent duplicate signup behavior
 ```
 
-Do not create Person automatically unless the accepted product contract explicitly requires that semantic transition. `Person != Account` remains binding.
+`Person != Account` remains binding. Signup must not silently create Person without an accepted product contract.
 
-### M4.2 Verification proof lifecycle
+## 5.3 M4.2 Verification proof lifecycle
 
 Close:
 
 ```text
-proof secret entropy/encoding/storage representation
-server stores verifier/digest, not reusable raw secret where avoidable
+secret entropy / encoding
+stored verifier/digest shape
 purpose binding
-Account/EmailIdentity binding
-issued/expires/consumed semantics
+Account / EmailIdentity binding
+issued / expires / consumed semantics
 single-use behavior
-new-proof invalidation/supersession policy
-concurrent consume behavior
+reissue / supersession / invalidation
+concurrent double-consume
 ambiguous commit behavior
 safe public response
 ```
 
-Verification success is backend-authoritative. Clicking a link does not grant frontend authority by itself.
+Verification success is backend-authoritative. Clicking a link is not frontend authority.
 
-### M4.3 Email delivery boundary
+Do not begin with a generic `auth_token(type,payload,status)` table.
 
-Introduce an application port/adaptor boundary, not provider calls in domain/application code.
+## 5.4 M4.3 Email delivery boundary
 
-Need:
+Introduce a provider-independent port/adapter boundary.
+
+Close:
 
 ```text
 message purpose/template identity
@@ -378,66 +303,65 @@ secret-link construction at safe boundary
 provider message identifier where useful
 send attempt/result semantics
 local deterministic protocol-faithful substitute
-no production secret/token in committed config
+provider unavailable/degraded behavior
 ```
 
-Do not fake successful delivery in production code. Decide whether delivery requires transactional outbox only when a real Class-A async/effect contract proves it; do not activate outbox ceremonially.
+Do not fake successful delivery in production code.
 
-### M4.4 Recovery initiation
+Transactional outbox activates only if the real delivery/effect contract proves it is required. Do not activate it ceremonially.
 
-Public initiation must be neutral enough to avoid account enumeration.
+## 5.5 M4.4 Recovery initiation
+
+Public initiation must resist account enumeration.
 
 Close:
 
 ```text
 known vs unknown email external equivalence
-rate/resource limits
+bounded rate/resource limits
 proof issuance/replacement semantics
-email delivery failure semantics
-request id / observability behavior
-no disclosure that an Account exists
+email dependency unavailable behavior
+request_id / diagnostics behavior
+no Account-existence disclosure
 ```
 
-### M4.5 Password reset
-
-Close exact mutation semantics:
-
-```text
-proof validation
-password policy + HIBP + KDF reuse from M3
-Account security serialization
-consume proof + replace PasswordCredential atomically where possible
-session revocation policy
-current request/session behavior
-ambiguous commit reconciliation
-notification/audit requirements
-```
-
-No blind retry of password-reset mutation.
-
-### M4.6 Reauthentication / recent-auth
-
-Define a real assurance/freshness contract, not a boolean UI flag.
+## 5.6 M4.5 Password reset
 
 Close:
 
 ```text
-which future operations require recent Auth
-what counts as acceptable reauth method
-freshness duration
-how recent-auth fact is represented server-side
-session binding
-failure/lock/rate-limit behavior
-step-up vs normal signin distinction
+proof validation/consumption
+M3 password policy + HIBP + KDF reuse
+Account security serialization
+PasswordCredential replacement
+session revocation policy
+current session/request behavior
+ambiguous commit reconciliation
+notification/audit requirement if any
 ```
 
-M4 may implement password reauth first while keeping the model ready for passkey/provider reauth in M5.
+No blind retry of reset mutation.
 
-## 12. M4 persistence discipline
+## 5.7 M4.6 Reauthentication / recent-auth
 
-Before migration, derive exact objects from the closed proof lifecycle. Avoid a generic `auth_token(type,payload,status)` god-table.
+Represent real server-side assurance/freshness, not a UI boolean.
 
-Every structural DB change must update together:
+Close:
+
+```text
+which operations require recent Auth
+what methods satisfy reauth
+freshness duration
+server-side representation/session binding
+failure/lock/rate-limit behavior
+step-up vs initial signin distinction
+```
+
+Password may be the first method while the model stays compatible with passkey/provider reauth in M5.
+
+## 5.8 M4 persistence discipline
+
+Derive exact DB objects from the closed lifecycle. Every structural change updates together:
 
 ```text
 Alembic
@@ -448,213 +372,205 @@ Access/Auth DB reference
 direct tests
 ```
 
-Use declarative PostgreSQL constraints first. Use Account serialization only for Account-wide security races. Do not lock unrelated rows globally.
+Use declarative PostgreSQL constraints first. Use Account serialization only for Account-wide security races.
 
-## 13. M4 API/client/Web path
+## 5.9 M4 API/client/Web chain
 
 For each vertical slice:
 
 ```text
-FastAPI/Pydantic contract
-→ RFC9457 errors
-→ deterministic OpenAPI snapshot
+FastAPI/Pydantic
+→ RFC9457 problems
+→ deterministic OpenAPI
 → Orval Fetch generation
 → governed @dante/api-client
 → Web remote/application boundary
 → TanStack Query lifecycle
-→ Access state transition only on authoritative response
+→ authoritative Access transition only on backend result
 ```
 
-No hand-written parallel client and no raw generated operation imports from presentation code.
+No parallel hand-written client and no raw generated operation imports from presentation code.
 
-## 14. M4 browser/DB proof
+## 5.10 M4 real proof matrix
 
-At minimum prove on real PostgreSQL and real HTTPS browser stack:
+At minimum:
 
 ```text
 signup happy path
-normalized duplicate/collision path
+normalized duplicate/collision
 verification valid
 verification expired
 verification replay
 verification concurrent double-consume
+email dependency unavailable
 recovery known/unknown externally neutral
 recovery rate limit
 reset valid
 reset expired/replayed
 reset concurrent consume
-password policy/breach failure
-post-reset session revocation behavior
+password policy/HIBP failure
+post-reset session revocation
 reauth success/failure/freshness expiry
-email dependency unavailable
 PostgreSQL unavailable
 no false frontend success
-no secret leakage in observability
+no secret leakage in logs/errors/telemetry if active
 ```
 
-Critical race/replay tests must not rely only on mocks.
+Critical race/replay tests must not be mocks only.
 
-## 15. M4 closure gate
+## 5.11 M4 closure gate
 
 M4 closes only when:
 
 ```text
-contract + persistence + runtime implementation complete
+contract + persistence + runtime complete
 security/code review PASS
 OpenAPI/generated-client drift PASS
 real PostgreSQL race/replay proof PASS
-Chromium/Firefox/WebKit critical browser proof PASS
-observability safe/usable for M4 flows
+critical Chromium/Firefox/WebKit proof PASS
 manual UAT PASS
 current docs reconciled
 user explicitly accepts M4
 ```
 
+Full Grafana/OTel observability is **not** an M4 blocker if explicitly deferred by the quick-feasibility decision.
+
 ---
 
-# M5 — Google + Apple + Passkeys + Explicit Linking
-
-## 16. M5 goal
-
-Add passwordless/external authentication mechanisms **without weakening DANTE Account identity or silently merging people/accounts**.
+# 6. M5 — Google + Apple + Passkeys + Explicit Linking
 
 **Status:** `PLANNED / AFTER M4`
 
-## 17. M5.1 Provider architecture revalidation
+## 6.1 Goal
 
-Before coding, verify official current Google/Apple flows and platform requirements. Provider specifications change; use current first-party documentation during implementation.
+Add external/passwordless authentication without weakening DANTE Account identity or silently merging Accounts.
+
+## 6.2 Current-spec gate
+
+Before coding, verify current official Google, Apple and WebAuthn/FIDO documentation. Do not implement provider flows from stale memory.
 
 Preserve:
 
 ```text
 ExternalIdentity key = issuer + subject
-provider email is an attribute/evidence, not Account identity key for linking
+provider email is evidence/attribute, not an automatic link key
 provider authentication != provider-data integration authorization
 provider token != DANTE AuthSession
 DANTE creates its own AuthSession after successful provider authentication
 ```
 
-## 18. M5.2 Explicit collision/linking state machine
+## 6.3 Explicit linking/collision state machine
 
-Design first:
+Design before implementation:
 
 ```text
 new provider subject / no collision
 existing linked subject
-same email on an existing Account but no link
+same email on existing Account but no link
 already-authenticated user adding provider
-provider subject already linked to another Account
+subject already linked to another Account
 link confirmation / recent-auth requirement
-unlink constraints / account lockout prevention
+unlink constraints / Account lockout prevention
+concurrent linking races
 ```
 
-Never silently merge based on matching provider email.
+Silent provider-email merge is forbidden.
 
-Account linking is a security-sensitive Account-wide mutation and must use the accepted serialization/concurrency strategy.
+## 6.4 Google + Apple
 
-## 19. M5.3 Google + Apple
-
-Implement separately behind a common Auth mechanism boundary only where semantics genuinely align.
-
-Prove:
+Prove as applicable:
 
 ```text
-state/nonce/PKCE as applicable
+state / nonce / PKCE
 redirect/callback integrity
-issuer/audience/subject validation
+issuer / audience / subject validation
 clock/skew handling
-provider key rotation behavior
+provider key rotation
 cancel/error paths
 replay resistance
-explicit linking collisions
+linking collisions
 provider outage/degradation
 ```
 
-Do not store provider access/refresh tokens merely for login if not required. Gmail/Calendar/iCloud integration authorization belongs to a separate integration capability.
+Do not store provider access/refresh tokens merely for login if not required. Gmail/Calendar/iCloud authorization is a separate integration capability.
 
-## 20. M5.4 WebAuthn/passkeys
+## 6.5 WebAuthn / passkeys
 
 Close before persistence:
 
 ```text
 RP ID / origin policy
 credential ID uniqueness
-public key + sign counter/metadata semantics
+public-key storage
 user handle strategy
+UV requirement
 attestation posture
 resident/discoverable credential posture
-UV requirement
-registration recent-auth requirement
 multiple passkeys per Account
+registration recent-auth
 rename/delete/revoke lifecycle
 lost-device recovery interaction
 ```
 
 Passkey private keys never exist on DANTE servers.
 
-Use current WebAuthn/FIDO guidance during implementation; do not freeze browser/platform assumptions from old knowledge.
-
-## 21. M5 proof matrix
-
-Real-browser/device-capable proof where available:
+## 6.6 M5 proof matrix
 
 ```text
 Google happy/cancel/error/collision/link/replay
 Apple happy/cancel/error/collision/link/replay
-provider-email mismatch/change does not silently relink
+provider-email change/mismatch never silently relinks
 passkey registration/authentication
 multiple passkeys
-credential replay/challenge expiry
+challenge expiry/replay
 wrong RP/origin
-credential removal + remaining-account-access rule
+credential removal + remaining Account access
 passwordless Account
-Account with password + provider + passkey combinations
+password + provider + passkey combinations
 session issuance remains DANTE AuthSession
-observability contains no provider token/authorization code/passkey secret
+no provider token/code/passkey secret leakage
 ```
 
-Cross-browser coverage must include browser/platform limits honestly; do not fake support where the environment cannot execute it.
+Cross-browser/platform support is proved honestly; do not fake universal compatibility.
 
-## 22. M5 closure gate
+## 6.7 M5 closure
 
-Security review + current provider/WebAuthn spec verification + direct integration proof + collision/linking concurrency proof + manual UAT + docs + explicit user acceptance.
+Current-spec review + security review + direct integration/replay/collision concurrency proof + platform/browser UAT + docs + explicit user acceptance.
 
 ---
 
-# M6 — Native Mobile Access
-
-## 23. M6 goal
-
-Materialize Access on the existing Expo / React Native / Expo Router foundation while preserving one canonical backend Auth model and using **native-appropriate** credential/session handling.
+# 7. M6 — Native Mobile Access
 
 **Status:** `PLANNED / AFTER M5 UNLESS EXPLICITLY RE-GATED`
 
-## 24. M6 architecture gate
+## 7.1 Goal
 
-Do not copy browser cookie/storage mechanics blindly into Native.
+Materialize Access on the existing Expo / React Native / Expo Router foundation while preserving one canonical backend Auth model and using native-appropriate security.
 
-Close current native security topology first:
+## 7.2 Native architecture gate
+
+Do not copy browser cookie/storage mechanics blindly.
+
+Close:
 
 ```text
-transport/session credential shape
-SecureStore/Keychain/Keystore use
-CSRF applicability vs native client model
+native transport/session credential representation
+SecureStore / Keychain / Keystore usage
+CSRF applicability
 refresh/reissue semantics if required
-app lifecycle/background behavior
-multiple device sessions
+app restart/background lifecycle
+multiple-device sessions
 logout/revoke
 uninstall/reinstall semantics
-universal/deep link handling for verification/recovery/provider callbacks
+verification/recovery/provider deep links
 passkey platform APIs
 ```
 
-Backend canonical Account/AuthSession semantics remain shared. If Native requires a different transport credential representation, it must still map to the same server-side session authority and revocation model.
+If Native needs a different transport credential representation, it still maps to the same server-side AuthSession authority and revocation model.
 
-## 25. M6 UX/materialization
+## 7.3 Native UX
 
-Reuse semantic Access states but design platform-appropriate native composition. Mobile Native is not scaled-down Web.
-
-Must cover:
+Cover:
 
 ```text
 signin
@@ -666,16 +582,16 @@ Google/Apple where platform-appropriate
 passkeys
 linking/collision flows
 loading/offline/background transitions
-accessible keyboard/focus/error behavior
+keyboard/focus/accessibility
 ```
 
-## 26. M6 security/proof
+Native is not scaled-down Web.
 
-At minimum:
+## 7.4 Native proof
 
 ```text
-no secrets in AsyncStorage/plaintext storage
-secure credential persistence proof
+no Auth secret in AsyncStorage/plaintext
+secure credential persistence
 app restart/session restoration
 logout/revoke convergence
 expired/revoked session
@@ -683,31 +599,31 @@ deep-link tampering
 provider callback integrity
 lost/invalid local credential
 network loss/retry behavior
-multiple-device session independence
-native logs/telemetry redaction
+multiple-device independence
+no native log/telemetry secret leakage
 ```
 
-Use real device/emulator platform proof for critical native-only semantics. Browser tests do not prove Native security/storage.
+Critical native-only semantics require emulator/device proof.
 
-## 27. M6 closure gate
+## 7.5 M6 closure
 
-Native architecture/security contract accepted, implementation complete, platform tests/UAT complete, shared backend regression green, docs current, user explicitly accepts M6.
+Accepted native architecture/security contract + implementation + platform tests/UAT + shared backend regression + docs + explicit user acceptance.
 
 ---
 
-# M7 — Security Hardening + Authenticated Handoff + Whole-Vertical Closure
-
-## 28. M7 goal
-
-Prove the **entire Access/Auth vertical** as one coherent production-grade system and hand an authenticated Principal/session safely into the next DANTE product vertical.
+# 8. M7 — Security Hardening + Authenticated Handoff + Whole-Vertical Closure
 
 **Status:** `PLANNED / FINAL ACCESS-AUTH MACRO-PHASE`
 
-M7 is not a bucket for work we knowingly skipped earlier. Each M4–M6 slice must meet its own quality bar first.
+## 8.1 Goal
 
-## 29. M7.1 Whole-vertical threat review
+Prove the entire Access/Auth vertical as one coherent production-grade system and hand an authenticated Principal/session safely into the next DANTE product vertical.
 
-Re-run threat analysis over the implemented system, including:
+M7 is not a dumping ground for known M4–M6 correctness/security defects. Earlier phases still close their own scope.
+
+## 8.2 Whole-vertical threat review
+
+Re-test:
 
 ```text
 credential stuffing / password spraying
@@ -723,45 +639,61 @@ Account lockout/recovery traps
 concurrent security mutations
 ambiguous commits
 logging/telemetry secret leakage
-native credential theft/device-loss cases
+native credential theft/device-loss
 ```
 
-Every finding gets one of: fix, accepted bounded risk with rationale, or explicitly deferred owner/trigger. No vague TODOs.
+Every finding becomes: fixed, bounded accepted risk with rationale, or explicit deferred owner/trigger. No vague TODOs.
 
-## 30. M7.2 Session/account management
+## 8.3 Session/account management
 
-Close any product-required management surface such as:
+Implement only product-required surfaces such as:
 
 ```text
-list active sessions/devices if selected
+active session/device listing if selected
 revoke one session
 revoke other sessions
-security-change session invalidation
-credential/passkey/provider inventory where selected
-account recovery safety
+security-change invalidation
+credential/passkey/provider inventory if selected
+Account recovery safety
 ```
 
-Do not add dashboards/settings merely because other apps have them; implement what the accepted DANTE product contract requires.
+No ceremonial settings just because other products have them.
 
-## 31. M7.3 Authenticated handoff
-
-The Access vertical must end in a real server-authoritative handoff, not a mock Home transition.
+## 8.4 Authenticated handoff
 
 Close:
 
 ```text
-what route/shell receives authenticated user
-what minimum Principal/session data it may consume
+real next route/shell
+minimum Principal/session data it may consume
 first-run/setup distinction
 authorization boundary
 loading/degraded behavior
 Home workstream integration ownership
-no Access feature leakage into unrelated product features
+no Access internals leaking into unrelated features
 ```
 
-Coordinate with the separate Home/frontend workstream under an explicit integration gate. Do not merge or rewrite that worktree implicitly.
+Coordinate with the separate Home/frontend worktree only through an explicit integration gate.
 
-## 32. M7.4 Operational/security release gate
+## 8.5 Observability release gate
+
+If the quick pre-M4 path was deferred, M7 must now close a production-credible baseline. At minimum:
+
+```text
+privacy-safe structured logs
+request_id ↔ trace correlation
+OpenTelemetry traces/metrics or explicitly superior current equivalent
+collector/backend topology
+low-cardinality service/Auth metrics
+representative logs/trace/metrics queries or dashboards
+secret-redaction tests
+telemetry-outage non-fatal behavior
+operational documentation
+```
+
+Technology choice is current-spec/evidence based. Grafana/Alloy/Loki/Tempo/Prometheus/Mimir remain candidates, not mandatory brands.
+
+## 8.6 Release/operational gate
 
 At minimum:
 
@@ -769,50 +701,48 @@ At minimum:
 static/type/lint/architecture/generated/build PASS
 full backend suite PASS
 real PostgreSQL suite PASS
-migration upgrade/downgrade/drift PASS as applicable
+migration/drift proof PASS
 real HTTPS browser regression PASS
 Native regression PASS where supported
-observability dashboards/queries prove critical paths
-no secret leakage review
+observability gate PASS
+secret-leakage review PASS
 rate/dependency/outage behavior PASS
-accessibility/responsive checks PASS
-privacy/legal destination links/content real and current where required
+accessibility/responsive PASS
+privacy/legal destinations current where required
 supply-chain/dependency review
 CI/release configuration truthful
-backup/recovery requirements triggered by deployment stage assessed
+backup/recovery requirements assessed against actual deployment stage
 ```
 
-Dependabot/security findings are evaluated deliberately at M7 or earlier if they affect an active dependency/security path; never disable controls merely to get green CI.
+## 8.7 Manual whole-vertical UAT
 
-## 33. M7 manual acceptance
-
-User must actually exercise the complete Access/Auth journey that is intended for release:
+User exercises release-intended journey:
 
 ```text
-new account
+new Account
 verification
 signin
 recovery/reset
 reauth-sensitive operation
-provider/passkey path(s)
+provider/passkey paths
 multiple sessions/devices where applicable
 logout/revoke
-native path where applicable
+Native path where applicable
 authenticated handoff
 ```
 
-Issues found in UAT are fixed and re-proved before acceptance.
+Issues are fixed and re-proved before acceptance.
 
-## 34. Whole-vertical closure formula
+## 8.8 Whole-vertical closure formula
 
 ```text
 M1 CLOSED
 + M2 CLOSED
 + M3 CLOSED
-+ PRE-M4 observability baseline CLOSED
 + M4 CLOSED
 + M5 CLOSED
 + M6 CLOSED
++ observability baseline CLOSED either early or in M7
 + M7 whole-vertical review/handoff PASS
 + user explicit whole-vertical acceptance
 = ACCESS/AUTH VERTICAL CLOSED
@@ -822,15 +752,15 @@ Do not claim whole Access/Auth closure before this formula is true.
 
 ---
 
-## 35. Cross-phase engineering gates
+## 9. Cross-phase engineering gate
 
-Every M4–M7 code slice should follow:
+Every M4–M7 code slice follows:
 
 ```text
 contract/authority readback
 → smallest production-complete slice
 → schema only if semantically required
-→ backend application/domain/adapter implementation
+→ backend implementation
 → OpenAPI
 → generated client
 → platform integration
@@ -843,28 +773,11 @@ contract/authority readback
 → explicit macro-phase gate
 ```
 
-No phase is “done” because code compiles or happy-path tests pass.
+No phase is done because code compiles or the happy path passes.
 
 ---
 
-## 36. Observability across M4–M7
-
-Once PRE-M4 closes, every security-sensitive new capability must add safe telemetry at the same time as implementation:
-
-```text
-stable event names
-safe machine outcome categories
-trace spans across external dependencies
-low-cardinality metrics
-request/trace correlation
-redaction tests
-```
-
-Telemetry is evidence/debugging support, never canonical product truth and never a substitute for database history/audit semantics.
-
----
-
-## 37. Documentation/handoff rule
+## 10. Documentation/handoff rule
 
 At each macro closure update at minimum:
 
@@ -872,13 +785,13 @@ At each macro closure update at minimum:
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
 docs/workstreams/access-auth.md
-this execution plan when future sequencing changes
-docs/frontend/access.md when Web/Native Access contract changes
-Access/Auth architecture/security/API/testing docs when their authority changes
+this execution plan when sequencing changes
+docs/frontend/access.md when Access contract changes
+architecture/security/API/testing docs when authority changes
 docs/database/* + Dictionary when persistence changes
 ```
 
-A future chat should not need conversation history to know:
+A future chat must be able to determine without conversation history:
 
 ```text
 what is closed
@@ -887,13 +800,13 @@ which branch/worktree to use
 which decisions are frozen
 which mistakes are forbidden
 what proof is required
-what exact gate closes the phase
+what gate closes the phase
 ```
 
 ---
 
-## 38. Merge/history rule
+## 11. Merge/history rule
 
-The whole vertical stays on `feature/access-auth` unless explicitly re-gated. Do not merge to `main`, rebase, squash, force-push or rewrite the connector-polluted branch history without explicit user approval.
+The vertical stays on `feature/access-auth` unless explicitly re-gated. Do not merge to `main`, rebase, squash, force-push or rewrite connector-polluted history without explicit user approval.
 
-Before eventual merge, review whether the user wants a clean squash/history rewrite. Tree correctness and evidence come first; history aesthetics never justify an unauthorized force rewrite.
+Before eventual merge, ask whether the user wants a clean squash/history rewrite. Tree correctness and evidence come first.
