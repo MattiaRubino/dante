@@ -10,6 +10,18 @@ import type {
   TimelineTimeMapper,
 } from './timeline-types';
 
+function valueAt(values: ArrayLike<number>, index: number): number {
+  return values[index] ?? 0;
+}
+
+function incrementAt(
+  values: Int16Array | Uint16Array,
+  index: number,
+  delta: number,
+): void {
+  values[index] = valueAt(values, index) + delta;
+}
+
 function eventDurationMinutes(event: TimelineEvent): number {
   return Math.max(1, event.endMinute - event.startMinute);
 }
@@ -63,14 +75,20 @@ export function computeTimelineDensityMetrics(
       shortCount += 1;
     }
 
-    const first = Math.max(0, Math.floor(event.startMinute / slotMinutes));
-    const last = Math.min(
-      bins.length - 1,
-      Math.ceil(event.endMinute / slotMinutes) - 1,
+    const first = Math.max(
+      0,
+      Math.min(bins.length - 1, Math.floor(event.startMinute / slotMinutes)),
+    );
+    const last = Math.max(
+      first,
+      Math.min(
+        bins.length - 1,
+        Math.ceil(event.endMinute / slotMinutes) - 1,
+      ),
     );
 
     for (let index = first; index <= last; index += 1) {
-      bins[index] += 1;
+      incrementAt(bins, index, 1);
     }
   }
 
@@ -84,7 +102,16 @@ export function computeTimelineDensityMetrics(
   let burst = 0;
   let left = 0;
   for (let right = 0; right < starts.length; right += 1) {
-    while (starts[right] - starts[left] >= 60) {
+    const rightStart = starts[right];
+    if (rightStart === undefined) {
+      continue;
+    }
+
+    while (left < right) {
+      const leftStart = starts[left];
+      if (leftStart === undefined || rightStart - leftStart < 60) {
+        break;
+      }
       left += 1;
     }
     burst = Math.max(burst, right - left + 1);
@@ -147,14 +174,20 @@ export function createTimelineTimeMapper(
   const nearbyStartDiff = new Int16Array(minuteCount + 2);
 
   for (const event of events) {
-    const start = Math.max(0, Math.min(minuteCount, Math.floor(event.startMinute)));
-    const end = Math.max(start + 1, Math.min(minuteCount, Math.ceil(event.endMinute)));
-    activeDiff[start] += 1;
-    activeDiff[end] -= 1;
+    const start = Math.max(
+      0,
+      Math.min(minuteCount - 1, Math.floor(event.startMinute)),
+    );
+    const end = Math.max(
+      start + 1,
+      Math.min(minuteCount, Math.ceil(event.endMinute)),
+    );
+    incrementAt(activeDiff, start, 1);
+    incrementAt(activeDiff, end, -1);
 
     if (eventDurationMinutes(event) <= policy.shortEventThresholdMinutes) {
-      shortActiveDiff[start] += 1;
-      shortActiveDiff[end] -= 1;
+      incrementAt(shortActiveDiff, start, 1);
+      incrementAt(shortActiveDiff, end, -1);
     }
 
     const nearbyFrom = Math.max(
@@ -165,8 +198,8 @@ export function createTimelineTimeMapper(
       minuteCount + 1,
       Math.ceil(event.startMinute + policy.nearbyStartWindowMinutes + 1),
     );
-    nearbyStartDiff[nearbyFrom] += 1;
-    nearbyStartDiff[nearbyTo] -= 1;
+    incrementAt(nearbyStartDiff, nearbyFrom, 1);
+    incrementAt(nearbyStartDiff, nearbyTo, -1);
   }
 
   const localScale = new Float64Array(minuteCount + 1);
@@ -175,9 +208,9 @@ export function createTimelineTimeMapper(
   let nearbyStarts = 0;
 
   for (let minute = 0; minute <= minuteCount; minute += 1) {
-    active += activeDiff[minute];
-    shortActive += shortActiveDiff[minute];
-    nearbyStarts += nearbyStartDiff[minute];
+    active += valueAt(activeDiff, minute);
+    shortActive += valueAt(shortActiveDiff, minute);
+    nearbyStarts += valueAt(nearbyStartDiff, minute);
     const localFactor =
       1 +
       Math.max(0, active - 1) * policy.activeOverlapFactor +
@@ -192,14 +225,15 @@ export function createTimelineTimeMapper(
   const smoothScale = new Float64Array(minuteCount + 1);
   const prefix = new Float64Array(minuteCount + 2);
   for (let minute = 0; minute <= minuteCount; minute += 1) {
-    prefix[minute + 1] = prefix[minute] + localScale[minute];
+    prefix[minute + 1] = valueAt(prefix, minute) + valueAt(localScale, minute);
   }
 
   const radius = policy.smoothingRadiusMinutes;
   for (let minute = 0; minute <= minuteCount; minute += 1) {
     const from = Math.max(0, minute - radius);
     const to = Math.min(minuteCount, minute + radius);
-    smoothScale[minute] = (prefix[to + 1] - prefix[from]) / (to - from + 1);
+    smoothScale[minute] =
+      (valueAt(prefix, to + 1) - valueAt(prefix, from)) / (to - from + 1);
   }
 
   const requiredScale = new Float64Array(minuteCount + 1);
@@ -210,7 +244,10 @@ export function createTimelineTimeMapper(
     const to = Math.max(0, Math.min(minuteCount, Math.ceil(event.endMinute)));
 
     for (let minute = from; minute < to; minute += 1) {
-      requiredScale[minute] = Math.max(requiredScale[minute], requiredPerMinute);
+      requiredScale[minute] = Math.max(
+        valueAt(requiredScale, minute),
+        requiredPerMinute,
+      );
     }
 
     for (
@@ -223,13 +260,13 @@ export function createTimelineTimeMapper(
         (1 - shoulder / (policy.readableHeightShoulderMinutes + 2));
       if (from - shoulder >= 0) {
         requiredScale[from - shoulder] = Math.max(
-          requiredScale[from - shoulder],
+          valueAt(requiredScale, from - shoulder),
           eased,
         );
       }
       if (to - 1 + shoulder <= minuteCount) {
         requiredScale[to - 1 + shoulder] = Math.max(
-          requiredScale[to - 1 + shoulder],
+          valueAt(requiredScale, to - 1 + shoulder),
           eased,
         );
       }
@@ -239,9 +276,13 @@ export function createTimelineTimeMapper(
   const minuteScale = new Float64Array(minuteCount + 1);
   const cumulative = new Float64Array(minuteCount + 1);
   for (let minute = 0; minute <= minuteCount; minute += 1) {
-    minuteScale[minute] = Math.max(smoothScale[minute], requiredScale[minute]);
+    minuteScale[minute] = Math.max(
+      valueAt(smoothScale, minute),
+      valueAt(requiredScale, minute),
+    );
     if (minute > 0) {
-      cumulative[minute] = cumulative[minute - 1] + minuteScale[minute - 1];
+      cumulative[minute] =
+        valueAt(cumulative, minute - 1) + valueAt(minuteScale, minute - 1);
     }
   }
 
@@ -265,9 +306,9 @@ export function createTimelineTimeMapper(
     const whole = Math.floor(position);
     const fraction = position - whole;
     if (whole >= minuteCount) {
-      return cumulative[minuteCount];
+      return valueAt(cumulative, minuteCount);
     }
-    return cumulative[whole] + minuteScale[whole] * fraction;
+    return valueAt(cumulative, whole) + valueAt(minuteScale, whole) * fraction;
   };
 
   const map = (minute: number): number => {
