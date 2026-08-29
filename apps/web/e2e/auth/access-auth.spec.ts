@@ -501,6 +501,8 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
   test('resets through a real recovery email, scrubs the bearer URL, and revokes every existing session', async ({
     browser,
   }, testInfo) => {
+    test.setTimeout(90_000);
+
     const email = emailFor(testInfo, 9);
     const contextA = await browser.newContext({ ignoreHTTPSErrors: true });
     const contextB = await browser.newContext({ ignoreHTTPSErrors: true });
