@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
@@ -9,10 +9,59 @@ import { DayContextStrip } from './orientation/day-context-strip';
 import { Orientation } from './orientation/orientation';
 import { TimelineSurface } from './timeline/timeline-surface';
 
+type TimelineExpansionMetrics = Readonly<{
+  railWidth: number;
+  gap: number;
+}>;
+
 export function HomeShell() {
   const { t } = useTranslation('common');
   const [isAiCollapsed, setIsAiCollapsed] = useState(false);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
+  const todayLayoutRef = useRef<HTMLElement | null>(null);
+  const timelineExpansionMetricsRef = useRef<TimelineExpansionMetrics | null>(
+    null,
+  );
+
+  const applyTimelineExpansionProgress = useCallback((progress: number) => {
+    const layout = todayLayoutRef.current;
+    if (!layout) {
+      return;
+    }
+
+    const p = Math.max(0, Math.min(1, progress));
+    if (!timelineExpansionMetricsRef.current) {
+      const computed = getComputedStyle(layout);
+      const railWidth = Number.parseFloat(
+        computed.getPropertyValue('--home-today-rail-width'),
+      );
+      const gap = Number.parseFloat(computed.getPropertyValue('--home-today-gap'));
+      timelineExpansionMetricsRef.current = {
+        railWidth: Number.isFinite(railWidth) ? railWidth : 306,
+        gap: Number.isFinite(gap) ? gap : 16,
+      };
+    }
+
+    const metrics = timelineExpansionMetricsRef.current;
+    const compactViewport = window.innerWidth <= 1120;
+    const visible = compactViewport ? 0 : 1 - p;
+    layout.style.setProperty(
+      '--rail-width',
+      `${compactViewport ? 0 : metrics.railWidth * visible}px`,
+    );
+    layout.style.setProperty(
+      '--layout-gap',
+      `${compactViewport ? 0 : metrics.gap * visible}px`,
+    );
+    layout.style.setProperty('--rail-opacity', String(visible));
+    layout.style.setProperty('--rail-shift', `${18 * p}px`);
+
+    if (!compactViewport && p > 0.001 && p < 0.999) {
+      layout.dataset.timelineResizing = 'true';
+    } else {
+      delete layout.dataset.timelineResizing;
+    }
+  }, []);
 
   return (
     <div
@@ -51,13 +100,15 @@ export function HomeShell() {
         </section>
 
         <section
+          ref={todayLayoutRef}
           className="home-today-layout"
           data-home-layout="today"
           data-expanded={isTimelineExpanded ? 'true' : 'false'}
         >
           <TimelineSurface
             expanded={isTimelineExpanded}
-            onToggleExpanded={() => setIsTimelineExpanded((value) => !value)}
+            onExpandedChange={setIsTimelineExpanded}
+            onExpansionProgress={applyTimelineExpansionProgress}
           />
           <ContextRail />
         </section>
