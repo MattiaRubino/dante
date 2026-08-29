@@ -92,6 +92,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function timelineNowViewportOffset(gridHeight: number): number {
+  return Math.max(80, gridHeight * 0.34);
+}
+
 function parseViewedDate(value: string | undefined): PlainDate | null {
   if (!value) {
     return null;
@@ -432,9 +436,8 @@ export function TimelineSurface({
   const goNow = useCallback(() => {
     goToDate(timelineToday, {
       minute: timelineNowMinute,
-      viewportOffset: Math.max(
-        80,
-        (gridRef.current?.clientHeight ?? 570) * 0.34,
+      viewportOffset: timelineNowViewportOffset(
+        gridRef.current?.clientHeight ?? 570,
       ),
       behavior: 'smooth',
     });
@@ -596,10 +599,19 @@ export function TimelineSurface({
       const initialKey = timelineDateKey(initialDateRef.current);
       const day = renderedDays.find((candidate) => candidate.dateKey === initialKey);
       if (day) {
-        const minute = initialDateRef.current.equals(timelineToday)
-          ? Math.max(0, timelineNowMinute - 120)
-          : 8 * 60;
-        grid.scrollTop = Math.max(0, day.offsetTop + day.mapper.map(minute) - 70);
+        if (initialDateRef.current.equals(timelineToday)) {
+          grid.scrollTop = Math.max(
+            0,
+            day.offsetTop +
+              day.mapper.map(timelineNowMinute) -
+              timelineNowViewportOffset(grid.clientHeight),
+          );
+        } else {
+          grid.scrollTop = Math.max(
+            0,
+            day.offsetTop + day.mapper.map(8 * 60) - 70,
+          );
+        }
       }
     }
 
