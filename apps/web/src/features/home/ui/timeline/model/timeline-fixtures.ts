@@ -1,5 +1,10 @@
-import { parseTimelineDate } from './timeline-temporal';
+import {
+  addTimelineDays,
+  parseTimelineDate,
+  timelineDateKey,
+} from './timeline-temporal';
 import type { TimelineEvent, TimelineGroup } from './timeline-types';
+import type { PlainDate } from '@dante/time';
 
 export const TIMELINE_PROTOTYPE_TODAY = parseTimelineDate('2026-08-04');
 export const TIMELINE_PROTOTYPE_NOW_MINUTE = 14 * 60 + 20;
@@ -251,13 +256,15 @@ export function createTimelinePrototypeEventsForDate(
   ];
 }
 
-export function createTimelinePrototypeStore(): Readonly<
-  Record<string, readonly TimelineEvent[]>
-> {
+export function createTimelinePrototypeStore(
+  anchorDate: PlainDate = TIMELINE_PROTOTYPE_TODAY,
+): Readonly<Record<string, readonly TimelineEvent[]>> {
   return Object.fromEntries(
-    Object.keys(TIMELINE_PROTOTYPE_EVENTS).map((dateKey) => [
-      dateKey,
-      createTimelinePrototypeEventsForDate(dateKey),
-    ]),
+    Object.entries(TIMELINE_PROTOTYPE_EVENTS).map(([sourceKey, events]) => {
+      const sourceDate = parseTimelineDate(sourceKey);
+      const dayOffset = TIMELINE_PROTOTYPE_TODAY.until(sourceDate).days;
+      const targetKey = timelineDateKey(addTimelineDays(anchorDate, dayOffset));
+      return [targetKey, events.map(cloneTimelineEvent)];
+    }),
   );
 }
