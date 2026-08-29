@@ -2,11 +2,12 @@
 
 - **Status:** CURRENT FOR `feature/access-auth`
 - **Last reconciled:** 2026-08-29
-- **Protected `main`:** integrated source authority; current Access/Auth branch work is not yet merged
+- **Protected `main`:** integrated source authority; Access/Auth branch remains unmerged until explicit gate
 - **Active vertical:** Access/Auth
-- **Immediate decision:** quick observability feasibility check; complete before M4 only if bounded, otherwise defer to M7
-- **Next product macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth
-- **Detailed execution authority:** `workstreams/access-auth-m4-m7-execution-plan.md`
+- **Current macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth
+- **M4 architecture authority:** `architecture/access-auth-m4-contract.md`
+- **Forward execution authority:** `workstreams/access-auth-m4-m7-execution-plan.md`
+- **Observability:** PRE-M4 feasibility review completed; full observability DEFERRED TO M7
 
 ## 1. Completed foundations and forward sequence
 
@@ -41,12 +42,12 @@ Access/Auth M2 — Auth Architecture Freeze
 Access/Auth M3 — Email/Password Signin + AuthSession Spine
         CLOSED / ENGINEERING PASS / USER ACCEPTED
           ↓
-Observability quick-feasibility decision
-        DO NOW ONLY IF BOUNDED
-        OTHERWISE DEFER TO M7
+Observability PRE-M4 feasibility
+        COMPLETE
+        FULL STACK DEFERRED TO M7
           ↓
 Access/Auth M4 — Signup + Verification + Recovery + Reset + Reauth
-        NEXT
+        ACTIVE
           ↓
 Access/Auth M5 — Google + Apple + Passkeys + Explicit Linking
         PLANNED
@@ -54,34 +55,15 @@ Access/Auth M5 — Google + Apple + Passkeys + Explicit Linking
 Access/Auth M6 — Native Mobile Access
         PLANNED
           ↓
-Access/Auth M7 — Security Hardening + Authenticated Handoff + Vertical Closure
-        PLANNED / FINAL GATE
-        FULL OBSERVABILITY MANDATORY HERE IF NOT CLOSED EARLIER
+Access/Auth M7 — Security Hardening + Observability + Authenticated Handoff
+        PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
 M3 is closed. The whole Access/Auth vertical is not.
 
-The observability work is intentionally **conditional before M4**. DANTE must not lose momentum by turning a useful logging/metrics improvement into an early infrastructure programme. The next chat performs a bounded readback first; if the useful baseline is small and isolated, do it. If not, record the deferral and continue directly to M4.
-
 ---
 
-## 2. PostgreSQL baseline and branch evolution
-
-Protected-main CP6 historical baseline:
-
-```text
-PostgreSQL          18.6
-Alembic             20260826_08
-68 tables
-5 views
-14 routines
-75 triggers
-95 physical indexes
-68 foreign keys
-120 CHECK constraints
-```
-
-Current Access/Auth branch after M3:
+## 2. Current branch database baseline
 
 ```text
 PostgreSQL          18.6
@@ -96,7 +78,7 @@ Alembic             20260827_10
 92 standalone Dictionary entries
 ```
 
-Permanent same-change rule for structural DB evolution:
+Permanent structural change rule:
 
 ```text
 Alembic
@@ -107,73 +89,50 @@ Alembic
 ≈ direct tests
 ```
 
-Applied historical revisions remain immutable. Current references evolve with accepted later truth.
+Applied historical revisions are immutable evidence.
 
 ---
 
-## 3. Closed Access/Auth foundations
+## 3. M1–M3 closed foundations
 
-### M1 — Access Visual / UX Freeze
+### M1 — Visual / UX Freeze
 
-**Status:** `CLOSED`
-
-Accepted the existing Web Access composition. No redesign-from-zero. Backend-authoritative success may never be fabricated.
+**CLOSED.** Existing Access composition is the production baseline. No redesign-for-novelty.
 
 ### M2 — Auth Architecture Freeze
 
-**Status:** `CLOSED / M2.1–M2.11 ACCEPTED`
-
-Frozen foundations include:
+**CLOSED / M2.1–M2.11 ACCEPTED.** Binding foundations include:
 
 ```text
 same-origin browser topology
-opaque server-side AuthSession
-cookie / CSRF / Origin / Fetch Metadata posture
-Account / EmailIdentity / PasswordCredential / Principal semantics
-multiple sessions normal
-Argon2id / HIBP / email normalization
+opaque DB-backed AuthSession
+Secure HttpOnly host-only cookie
+CSRF + Origin + Fetch Metadata
+Account / EmailIdentity / optional PasswordCredential
+runtime-only Principal
+multiple independent sessions
+Argon2id + HIBP + normalized email comparison
 /api/v1 + RFC9457
 READ COMMITTED + targeted locking
 Account security serialization point
-OpenAPI → Orval Fetch → governed client
+OpenAPI → Orval Fetch → governed @dante/api-client
 real PostgreSQL + real browser proof contract
 ```
 
 ### M3 — Email/Password Signin + AuthSession Spine
 
-**Status:** `CLOSED / ENGINEERING GATE PASS / USER ACCEPTANCE ACCEPTED`
-
-Implemented and accepted:
-
-```text
-Account / EmailIdentity / PasswordCredential / AuthSession persistence
-email/password signin
-server-authoritative session bootstrap
-current-session logout
-runtime Principal
-FastAPI Auth API
-RFC9457 problems
-same-origin cookie / CSRF / Origin / Fetch Metadata enforcement
-deterministic OpenAPI 3.1
-Orval Fetch + Zod + @dante/api-client
-Web Auth remote boundary
-TanStack Query remote lifecycle
-TanStack Router critical session bootstrap
-real HTTPS full-stack harness
-```
-
-Evidence:
+**CLOSED / ENGINEERING PASS / USER ACCEPTED.** Evidence:
 
 ```text
 backend fast tests                     73 / 73 PASS
 real PostgreSQL marked suite           83 / 83 PASS
-real Auth API integration              4 / 4 PASS
+real Auth integration                   4 / 4 PASS
 Web unit                               25 / 25 PASS
 TypeScript / ESLint / architecture     PASS
 generated drift / build / formatting   PASS
 browser full-stack                     21 / 21 PASS
-Chromium / Firefox / WebKit            7 / 7 each
-manual UAT                             ACCEPTED
+Chromium / Firefox / WebKit             7 / 7 each
+manual refresh/UAT                     ACCEPTED
 ```
 
 Permanent M3 regression rules:
@@ -190,382 +149,332 @@ no fake frontend Auth success
 
 ---
 
-## 4. Observability decision before M4
+## 4. Observability decision
 
-**Status:** `CONDITIONAL QUICK GATE`
+The bounded feasibility review found that DANTE already has server-authoritative `request_id` correlation but currently has no OTel/Prometheus dependency and no local Grafana-class stack; local Compose is essentially PostgreSQL.
 
-Do **not** automatically implement a complete Grafana/OTel stack before M4.
-
-First determine whether a useful baseline fits within this bounded shape:
+Therefore:
 
 ```text
-safe structured logs
-request_id / trace correlation
-minimal OpenTelemetry traces/metrics
-small disposable local collector/backend path
-one representative Auth dashboard/query path
-secret-redaction proof
+FULL OBSERVABILITY BEFORE M4 = NO
+FULL OBSERVABILITY = DEFERRED TO M7
 ```
 
-It is suitable for PRE-M4 only if it does **not** require:
+M4–M6 still require privacy-safe logging and must never emit Auth/proof/provider/passkey secrets.
 
-```text
-new product/domain persistence
-invasive Auth refactor
-large permanent infrastructure subsystem
-production deployment/on-call design
-CI/release redesign
-new cross-service business architecture
-significant operational ownership before a deployment exists
-```
-
-Candidate technologies remain:
-
-```text
-OpenTelemetry instrumentation contract
-Grafana
-Grafana Alloy
-Loki
-Tempo
-Prometheus or Mimir
-```
-
-The application boundary stays vendor-neutral. Never emit passwords, session/CSRF secrets, verification/recovery/reset proofs, OAuth codes/tokens, passkey private material, password hashes/pepper, full secret links or sensitive bodies.
-
-### Decision rule
-
-```text
-bounded + isolated + directly useful
-→ implement and close before M4
-
-turns into real infrastructure workstream
-→ document DEFERRED TO M7
-→ begin M4 immediately
-```
-
-If deferred, M4–M6 still require safe logging/redaction discipline. Full correlation/metrics/traces/dashboard/release observability becomes an explicit M7 closure requirement.
+M7 may not close Access/Auth without a production-credible observability/release gate.
 
 ---
 
-## 5. M4 — Signup + Verification + Recovery + Reset + Reauth
+# 5. M4 — Signup + Verification + Recovery + Reset + Reauth
 
-**Status:** `NEXT / NOT STARTED`
+**Status:** `ACTIVE / CONTRACT FREEZE → IMPLEMENTATION`
 
-Objective: complete the first-party Account lifecycle around the accepted M3 session spine.
-
-### M4.1 Signup / Account establishment
-
-Close before implementation:
+Detailed authority:
 
 ```text
-when Account and EmailIdentity are created
-verified vs unverified semantics
-password establishment
-normalization/collision behavior
-abandoned-signup policy if any
-concurrent duplicate signup
-whether unverified Accounts may sign in and with what authority
+docs/architecture/access-auth-m4-contract.md
 ```
 
-`Person != Account` remains binding.
+M4 is executed as **one coherent macro-batch**, not six independent mini releases.
 
-### M4.2 Verification proof lifecycle
+## 5.1 Standard password signup
 
-Define:
+Frozen Web shape stays:
 
 ```text
-entropy / encoding / stored verifier shape
-purpose + Account/EmailIdentity binding
-issued / expiry / consumed semantics
+email
+→ password
+→ 6-digit email OTP
+```
+
+Canonical backend decision:
+
+```text
+email + password
+→ pending PasswordSignupChallenge only
+→ NO canonical Account yet
+
+valid OTP
+→ create Account
+→ create VERIFIED EmailIdentity
+→ create PasswordCredential
+→ create AuthSession
+→ delete pending signup
+→ commit
+→ issue cookie
+```
+
+This avoids canonical junk Accounts, unverified AuthSessions and email squatting by abandoned signup.
+
+Initial signup remains non-enumerating. Existing verified-email signup does not modify the real Account/credential. Only after mailbox proof may the product reveal an `existing_account` outcome and route to signin/recovery.
+
+## 5.2 Signup proof
+
+```text
+6 numeric digits
+CSPRNG
+HMAC-SHA256 verifier under dedicated purpose key
+15-minute OTP lifetime
+max 5 failed attempts per issued OTP
+resend rotates OTP and invalidates old code
+pending signup lifetime 24 h
+```
+
+A plain digest of the six-digit OTP is forbidden.
+
+## 5.3 Email delivery
+
+```text
+Auth application
+→ EmailDeliveryPort
+→ bounded async dispatch queue
+→ SMTP adapter
+→ production transactional provider / local SMTP capture
+```
+
+No email network I/O inside PostgreSQL transactions. No unbounded `create_task` fan-out. No blind resend after ambiguous SMTP acceptance.
+
+Transactional outbox remains capability-triggered; activate only if real deployment requires durable guaranteed dispatch.
+
+## 5.4 Recovery
+
+Public recovery initiation is neutral for known/unknown/disabled/provider-only accounts.
+
+Eligible M4 password recovery requires:
+
+```text
+verified EmailIdentity
+active Account
+current PasswordCredential
+```
+
+Recovery challenge:
+
+```text
+32 random bytes / 256 bits
 single use
-reissue/supersession
-concurrent double-consume
-ambiguous commit
-safe public result
+30-minute baseline lifetime
+new issuance supersedes previous challenge
+raw secret never persisted/logged
 ```
 
-No generic `auth_token(type,payload,status)` god-table by convenience.
+Preferred email link keeps the raw bearer secret out of normal query strings and local/session storage.
 
-### M4.3 Email delivery boundary
-
-Provider-independent port/adapter + deterministic local substitute. No fake delivery success. Activate transactional outbox only if the real effect contract proves it necessary.
-
-### M4.4 Recovery initiation
-
-Known vs unknown Accounts must remain externally neutral enough to resist enumeration. Close rate/resource limits, proof issuance and email-dependency degradation.
-
-### M4.5 Password reset
-
-Reuse M3 password policy/KDF/HIBP + Account serialization. Close proof consumption, password replacement, session revocation and ambiguous-outcome semantics. No blind mutation retry.
-
-### M4.6 Reauthentication / recent-auth
-
-Represent server-side assurance freshness, not a client boolean. Define accepted method, freshness window, session binding, expiry, failure and rate-limit semantics. Keep the model compatible with M5 passkeys/providers.
-
-### M4 implementation chain
+## 5.5 Password reset
 
 ```text
-closed contract
-→ exact persistence only if required
-→ Alembic + SQLAlchemy + Dictionary + DB docs
-→ FastAPI/Pydantic + RFC9457
-→ deterministic OpenAPI
-→ Orval Fetch + governed client
-→ Web remote/application integration
-→ authoritative Access transitions
-→ real PostgreSQL race/replay proof
-→ real HTTPS browser proof
-→ docs + manual UAT
+valid recovery proof + new password
+→ HIBP + Argon2 outside transaction
+→ Account security lock
+→ replace credential
+→ consume/remove recovery proof
+→ revoke ALL AuthSessions
+→ commit/reconcile ambiguity
+→ NO auto-login
+→ fresh normal signin required
 ```
 
-If the observability quick gate was deferred, do not make full Grafana/OTel infrastructure an M4 closure blocker. Still prove that logs/errors do not leak M4 secrets.
-
-Minimum degraded/race matrix:
+## 5.6 Reauthentication
 
 ```text
-normalized duplicate signup
-verification expired/replayed/concurrent-consume
-verification email dependency unavailable
-recovery known vs unknown externally neutral
-recovery rate limit
-reset expired/replayed/concurrent-consume
-password policy/HIBP failure
-post-reset session revocation
-reauth success/failure/freshness expiry
-PostgreSQL unavailable
-no secret leakage
-no fake frontend success
+same AuthSession
++ fresh password evidence
+→ update server-side recent_auth_at
+→ rotate session secret
+→ replacement cookie/CSRF
 ```
 
-M4 closes only through technical/security review, real DB/browser proof, current docs, manual UAT and explicit user acceptance.
+Default recent-auth freshness candidate: **10 minutes**, configurable and always enforced by backend-sensitive operations.
+
+Reauth does not create a second AuthSession and is not a client boolean.
+
+## 5.7 M4 planned persistence
+
+Exactly two purpose-specific ephemeral security objects are expected:
+
+```text
+password_signup_challenge
+password_recovery_challenge
+```
+
+No generic `auth_token`, `proof(type,payload)` or JSONB god-table.
+
+## 5.8 M4 target API
+
+Semantic target, subject to final OpenAPI readback:
+
+```text
+POST /api/v1/auth/signup
+POST /api/v1/auth/signup/verify
+POST /api/v1/auth/signup/resend
+POST /api/v1/auth/recovery
+POST /api/v1/auth/recovery/validate
+POST /api/v1/auth/reset-password
+POST /api/v1/auth/reauth/password
+```
+
+All unsafe Web calls preserve the M3 ingress/security contract.
+
+## 5.9 M4 performance posture
+
+```text
+Argon2/HIBP outside DB transactions
+existing bounded KDF admission reused
+bounded signup/recovery/reauth ingress limiters
+bounded email dispatch queue/workers
+short READ COMMITTED transactions
+indexed equality lookups on hot paths
+PostgreSQL uniqueness = final email race arbiter
+Account lock only for Account-wide mutations
+no blanket SERIALIZABLE
+no network/human wait while row locks are held
+no blind mutation retries
+```
+
+## 5.10 M4 testing strategy
+
+Do **not** run six expensive closure cycles.
+
+During implementation:
+
+```text
+focused unit/service tests
+schema/Dictionary/migration checks
+critical concurrency/replay tests
+static/type/lint/generated checks
+```
+
+At candidate closure:
+
+```text
+ONE integrated real PostgreSQL M4 matrix
++ ONE integrated Chromium/Firefox/WebKit M4 matrix
++ ONE manual integrated M4 UAT
+```
+
+Low-level DB race tests are not redundantly repeated in all browser engines.
+
+Critical browser proof:
+
+```text
+signup → captured real OTP → verify → authenticated/setup
+existing-account signup after mailbox proof remains non-destructive
+resend invalidates old code
+recovery link → reset → fresh signin
+old sessions rejected after reset
+reauth rotates cookie but preserves AuthSession identity
+degraded DB/email/server paths never fake success
+M3 Router-first refresh regression remains fixed
+```
+
+M4 closes only after technical/security review, aligned DB/client/docs, real DB/browser proof and explicit user acceptance.
 
 ---
 
-## 6. M5 — Google + Apple + Passkeys + Explicit Linking
+# 6. M5 — Google + Apple + Passkeys + Explicit Linking
 
 **Status:** `PLANNED / AFTER M4`
 
-Before coding, re-read current official Google, Apple and WebAuthn/FIDO documentation.
+Before coding, re-read current official Google/Apple/WebAuthn/FIDO specifications.
 
-Permanent identity rules:
+Permanent rules:
 
 ```text
 ExternalIdentity = issuer + subject
-provider email != automatic Account link key
-provider login != provider-data integration authorization
+provider email != automatic Account-link key
+provider login != Gmail/Calendar/iCloud authorization
 provider token != DANTE AuthSession
 DANTE AuthSession remains canonical
 ```
 
-Design explicit collision/linking state machine first:
+Design explicit collision/linking state machine before implementation. Prove replay/cancel/outage/key rotation and linking races.
 
-```text
-new subject / no collision
-already-linked subject
-same provider email but unlinked existing Account
-signed-in user adds provider
-subject linked to another Account
-link confirmation / recent-auth
-unlink without Account lockout
-concurrent linking races
-```
-
-Google/Apple proof must cover state/nonce/PKCE where applicable, issuer/audience/subject, cancel/error/replay/outage/key rotation and linking collisions.
-
-Passkey/WebAuthn gate must close RP ID/origin, credential ID/public key, user handle, UV/attestation posture, discoverable credentials, multiple passkeys, recent-auth for registration, revoke/lost-device behavior and passwordless Account support.
-
-Passkey private keys never exist on DANTE servers.
-
-M5 closes with current-spec review, security review, real collision/replay proof, platform/browser UAT, docs and explicit user acceptance.
+Passkey gate covers RP ID/origin, user handle, UV, attestation posture, discoverable credentials, multiple passkeys, revoke/lost-device and passwordless Accounts. Private passkey material never reaches DANTE servers.
 
 ---
 
-## 7. M6 — Native Mobile Access
+# 7. M6 — Native Mobile Access
 
 **Status:** `PLANNED / AFTER M5 UNLESS EXPLICITLY RE-GATED`
 
-Use the existing Expo / React Native / Expo Router foundation and the same canonical backend Account/AuthSession authority.
+Use existing Expo / React Native / Expo Router and the same canonical Account/AuthSession backend.
 
-Do not copy browser cookie/storage mechanics blindly. Close first:
+Close native-specific transport/security first:
 
 ```text
-native session credential transport
+session credential representation
 SecureStore / Keychain / Keystore
 CSRF applicability
-app restart/background lifecycle
+app lifecycle / restart / background
 logout/revoke
-multi-device behavior
+multi-device
 verification/recovery/provider deep links
 passkey platform APIs
 uninstall/reinstall semantics
 ```
 
-Native UX covers signin/signup/verification/recovery/reset/reauth/providers/passkeys/linking with platform-appropriate layout, focus, keyboard and accessibility.
-
-Proof must include secure credential persistence, restart restoration, expiry/revoke convergence, deep-link tampering, provider callback integrity, network loss and multiple-device independence. Critical native semantics require emulator/device proof.
-
-M6 closes with accepted native architecture/security contract, implementation, platform UAT, shared backend regression, docs and explicit user acceptance.
+Native is not scaled Web. Critical native security requires real emulator/device proof.
 
 ---
 
-## 8. M7 — Security Hardening + Authenticated Handoff + Vertical Closure
+# 8. M7 — Security Hardening + Observability + Authenticated Handoff + Vertical Closure
 
-**Status:** `PLANNED / FINAL ACCESS-AUTH GATE`
+**Status:** `PLANNED / FINAL GATE`
 
-M7 proves the complete vertical and performs the real authenticated handoff to the next DANTE product surface.
-
-Whole-vertical threat review covers at least:
+M7 owns:
 
 ```text
-credential stuffing / spraying
-enumeration
-rate/resource exhaustion
-session fixation/theft/replay
-CSRF/origin/fetch-metadata bypass
+whole-vertical threat review
+credential stuffing / spraying / enumeration / rate abuse
+session theft/fixation/replay
 verification/recovery/reset replay
-email compromise implications
-provider collision/link replay
-WebAuthn challenge/origin/RP mistakes
-concurrent security mutations
-ambiguous commits
-native credential/device-loss risk
-telemetry secret leakage
+provider/linking/WebAuthn collision review
+native credential/device-loss review
+session/account management required by product
+FULL observability baseline
+privacy/legal/accessibility/dependency/release review
+real authenticated handoff into next DANTE vertical
+complete manual whole-vertical UAT
 ```
 
-Implement only product-required session/account management. Do not add ceremonial settings screens.
+Observability must include privacy-safe structured logs, request/trace correlation, metrics/traces, collector/backend topology, useful dashboards/queries, redaction proof and non-fatal telemetry outage behavior. Grafana/Alloy/Loki/Tempo/Prometheus/Mimir remain candidates, not mandatory brand choices.
 
-Authenticated handoff must close the real next route/shell, minimum Principal/session data, setup/first-run distinction, authorization boundary and degraded behavior. Coordinate with the separate Home/frontend worktree only through an explicit integration gate.
-
-### Observability at M7
-
-If not completed before M4, M7 must now close a production-credible observability baseline:
-
-```text
-privacy-safe structured logs
-request_id ↔ trace correlation
-OpenTelemetry traces/metrics or an explicitly superior current equivalent
-collector/backend topology
-low-cardinality service/Auth metrics
-representative dashboards/queries
-secret-redaction tests
-telemetry-outage non-fatal behavior
-operational documentation
-```
-
-Technology selection remains current-spec/evidence based; Grafana/Alloy/Loki/Tempo/Prometheus/Mimir are candidates, not mandatory brands.
-
-M7 release gate additionally requires static/type/lint/architecture/generated/build, backend/PostgreSQL, migration/drift, cross-browser, Native where applicable, accessibility/responsive, privacy/legal, dependency/supply-chain and release configuration review.
-
-Manual whole-vertical UAT exercises new Account, verification, signin, recovery/reset, reauth, providers/passkeys, multiple sessions/devices where applicable, logout/revoke, Native path where applicable and authenticated handoff.
-
-Whole vertical closes only after explicit final user acceptance.
+Only M7 + explicit final user acceptance may close the whole Access/Auth vertical.
 
 ---
 
-## 9. Reusable M3 foundations for M4–M7
+## 9. Branch/worktree rule
 
-Reuse rather than replace:
-
-```text
-Account security root
-AuthSession semantics
-runtime Principal
-same-origin Web security posture
-RFC9457 machine error contract
-deterministic OpenAPI/client generation
-Web remote/application boundary
-TanStack Query remote lifecycle
-Router-first critical session bootstrap
-real PostgreSQL acceptance harness
-real HTTPS Chromium/Firefox/WebKit Auth harness
-```
-
-Do not build parallel Auth/session stacks for signup, providers, passkeys or Native.
-
----
-
-## 10. Persistent engineering rules
+Continue exactly:
 
 ```text
-backend + PostgreSQL own canonical accepted effect
-REQUEST_* != SERVER_* authoritative result
-unknown/loading != signed-out/empty
-route code imports feature public API, not deep internals
-TanStack Query owns remote lifecycle, not canonical Auth truth
-no persisted browser Auth cache
-mutation retry disabled unless a future exact operation proves it safe
-background refetch must not destroy resolved UI
-production code never imports prototypes
-formatter handles pure formatter drift
-generated code and lockfiles are not hand-edited
-```
-
-The accepted browser hard-refresh may have a brief document repaint; that is not a reason to reintroduce false Auth states or unstable placeholders.
-
----
-
-## 11. Capability-triggered implementation
-
-Specialist components activate only when a real consumer exists:
-
-```text
-PowerSync + encrypted SQLite
-→ real offline/multi-device implementation
-
-PostgreSQL transactional outbox
-→ concrete Class-A async requirement
-
-R2
-→ real ContentArtifact byte flow
-
-OR-Tools
-→ solver-backed capability
-
-Restate
-→ first concrete Class-B durable workflow
-
-PgBouncer
-→ measured connection-management need
-
-pgBackRest + AWS S3
-→ recovery/production boundary or rehearsal
-```
-
-Observability follows the same principle: implement the useful bounded baseline early only if it stays cheap/isolated; otherwise close it when the release/operational boundary actually requires it.
-
----
-
-## 12. Branch / worktree rule
-
-Continue Access/Auth on:
-
-```text
+repo:      MattiaRubino/dante
 branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-Do not create a new branch merely because the quick observability decision or M4 begins. Do not use `/home/mattia/projects/dante-frontend` for this vertical. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without an explicit user gate.
+No new branch/worktree merely because M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user gate.
 
-A new chat does not change these rules.
+The separate `/home/mattia/projects/dante-frontend` worktree remains independent Home/frontend territory.
 
 ---
 
-## 13. Immediate sequence
+## 10. Immediate sequence
 
 ```text
 1. M3 remains CLOSED
-2. perform a bounded observability feasibility/readback only
-3. if the useful baseline is genuinely small/isolated → implement + close it
-4. if it expands into infrastructure work → record DEFERRED TO M7, no guilt/no scope creep
-5. begin M4 contract-first
-6. materialize only justified M4 persistence
-7. backend → OpenAPI → generated client → Web per slice
-8. prove race/replay/degradation on real PostgreSQL/browser boundaries
-9. close M4 with manual user acceptance
-10. repeat the same standard for M5
-11. materialize Native in M6 under its own security gate
-12. run M7 whole-vertical threat/release/observability-if-needed/handoff/UAT gate
-13. merge to protected main only under a separate explicit user gate
+2. M4 architecture contract readback against M2 authorities
+3. materialize exact two-table M4 persistence + ACL delta
+4. implement signup/verification/recovery/reset/reauth + email boundary as one batch
+5. regenerate OpenAPI/client
+6. wire existing Access states
+7. focused tests while coding
+8. one integrated static + real PostgreSQL M4 gate
+9. one integrated cross-browser M4 gate
+10. manual M4 UAT
+11. docs reconciliation + explicit M4 acceptance
+12. then M5
 ```
 
-Do not reopen M3 unless new direct evidence demonstrates a real defect or a later requirement cannot be met without an explicit bounded reopen.
+Do not reopen M3 or implement the deferred observability stack now unless a new direct requirement explicitly re-gates it.
