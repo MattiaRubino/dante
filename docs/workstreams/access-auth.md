@@ -1,15 +1,16 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M3 CLOSED / M4 ACTIVE
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 NEXT
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
 - **Created from protected `main`:** `f011e252b6a294a12c38927ef2d528244ea1fee6`
 - **M3 status:** CLOSED / ENGINEERING PASS / USER ACCEPTED
-- **M4 implementation checkpoint before current handoff:** `538f29ad9367ab03135644e3cbc9bc5c5c5d5653`
-- **M4 live handoff:** `access-auth-m4-live-handoff-2026-08-29.md`
+- **M4 status:** CLOSED / ENGINEERING PASS / USER ACCEPTED
+- **M4 final accepted implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
+- **M4 closure handoff:** `access-auth-m4-live-handoff-2026-08-29.md`
 - **M4 architecture authority:** `../architecture/access-auth-m4-contract.md`
 - **M4–M7 forward plan:** `access-auth-m4-m7-execution-plan.md`
-- **Observability:** full Grafana/OpenTelemetry-class baseline DEFERRED TO M7; not blocking M4
+- **Observability:** full Grafana/OpenTelemetry-class baseline DEFERRED TO M7
 
 > A new chat is not a new project, branch or worktree. Continue this vertical on `feature/access-auth` and `/home/mattia/projects/dante` until whole Access/Auth closure or an explicit user topology gate.
 
@@ -34,17 +35,19 @@ Read first:
 3. this file
 4. `docs/workstreams/access-auth-m4-live-handoff-2026-08-29.md`
 5. `docs/workstreams/access-auth-m4-m7-execution-plan.md`
-6. `docs/architecture/access-auth-m4-contract.md`
-7. M2 architecture/security/API/testing contracts + ADR-011
-8. DB System of Record + `docs/database/access-auth.md` + Dictionary
-9. `docs/frontend/access.md`
-10. `docs/development/agent-operating-manual.md`
+6. relevant current M5 contracts once materialized
+7. `docs/architecture/access-auth-architecture.md`
+8. `docs/architecture/access-auth-security-contract.md`
+9. `docs/architecture/access-auth-api-contract.md`
+10. `docs/architecture/access-auth-testing-contract.md`
+11. `docs/decisions/ADR-011-access-auth-architecture.md`
+12. DB System of Record + `docs/database/access-auth.md` + Dictionary
+13. `docs/frontend/access.md`
+14. `docs/development/agent-operating-manual.md`
 
-Repository truth beats conversation memory.
+Repository truth beats conversation memory. Do not reinterpret M1–M4 from scratch.
 
-No new branch/worktree, merge, rebase, force-push/history rewrite or write to protected `main` without explicit user authorization.
-
-If Docker is required, tell the user **Docker deve essere acceso** before asking for the proof.
+No new branch/worktree, merge, rebase, force-push/history rewrite or protected-main write without explicit user authorization.
 
 ---
 
@@ -96,23 +99,12 @@ CLOSED / M2.1–M2.11 ACCEPTED / QA PASS
 
 M3 — Email/Password Signin + AuthSession Spine
 CLOSED / ENGINEERING PASS / USER ACCEPTED
+
+M4 — Signup + Verification + Recovery + Reset + Reauth
+CLOSED / ENGINEERING PASS / USER ACCEPTED
 ```
 
-M3 accepted evidence remains:
-
-```text
-backend fast tests                     73 / 73 PASS
-real PostgreSQL marked suite           83 / 83 PASS
-real Auth integration                   4 / 4 PASS
-Web unit                               25 / 25 PASS
-TypeScript / ESLint / architecture     PASS
-generated drift / build / formatting   PASS
-browser full-stack                     21 / 21 PASS
-Chromium / Firefox / WebKit             7 / 7 each
-manual refresh/UAT                     ACCEPTED
-```
-
-M3 Router-first bootstrap is a permanent regression guard:
+M3 Router-first bootstrap remains a permanent regression guard:
 
 ```text
 hard refresh
@@ -122,172 +114,49 @@ hard refresh
 → first business render already authoritative
 ```
 
----
-
-## 4. M4 current state
-
-**M4 is ACTIVE and materially implemented, but NOT CLOSED.**
-
-Current implementation checkpoint before the live-handoff docs:
+M4 adds permanent lifecycle guards:
 
 ```text
-538f29ad9367ab03135644e3cbc9bc5c5c5d5653
-test(auth): prove M4 lifecycle on real PostgreSQL
+no canonical Account before mailbox proof
+anonymous signup does not reveal account existence
+existing-account outcome only after mailbox proof
+recovery initiation is neutral
+recovery proof is single-use/superseding and exact-identity bound
+password reset revokes ALL AuthSessions and never auto-logs-in
+reauth rotates the exact bearer on the same auth_session_ref
+Web recovery secret is memory-only and URL-fragment scrubbed
 ```
 
-Current M4 backend/security materialization includes:
+---
+
+## 4. M4 closed implementation state
+
+Final accepted implementation checkpoint:
 
 ```text
-migration 20260829_11
-SQLAlchemy mappings
-Dictionary evolution
-narrow runtime ACL delta
-PasswordSignupChallenge
-PasswordRecoveryChallenge
-signup OTP crypto
-recovery proof crypto
-signup/account establishment
-verification
-resend
-recovery initiation/validation
-password reset
-all-session revocation after reset
-reauthentication with exact bearer rotation
+c95e3b2ca664725bcacc374cb5ba6ed49409fe2b
+fix(auth): reconcile M4 PostgreSQL acceptance
+```
+
+M4 materialized one full first-party lifecycle across:
+
+```text
+PostgreSQL/Alembic/SQLAlchemy/Dictionary
+Auth lifecycle service + security proofs
 bounded lifecycle rate limiting
 bounded SMTP dispatcher
-SMTP capture test support
-M4 public FastAPI API
-M4 browser ingress security
-M4 OpenAPI exporter governance changes
-M4 unit/bootstrap/catalog/lifecycle test code
+FastAPI/Pydantic public API
+browser ingress security
+OpenAPI + generated Orval client
+governed @dante/api-client
+Web Auth remote
+TanStack Query mutation lifecycle
+Access state graph and UI wiring
+real HTTPS full-stack harness
+protocol-faithful SMTP capture
 ```
 
-The new test code is **prepared evidence**, not accepted PASS until the canonical local run output exists.
-
----
-
-## 5. Current M4 database source target
-
-Migration:
-
-```text
-20260829_11_m4_auth_lifecycle_challenges.py
-```
-
-Expected source/current-catalog target after migration 11:
-
-```text
-PostgreSQL          18.6
-Alembic             20260829_11
-74 tables
-5 views
-15 routines
-75 triggers
-113 physical indexes
-72 foreign keys
-149 CHECK constraints
-94 standalone Dictionary entries
-```
-
-M4 delta:
-
-```text
-+ dante.password_signup_challenge
-+ dante.password_recovery_challenge
-+ exact composite EmailIdentity/Account recovery binding
-+ narrow Account/EmailIdentity/PasswordCredential INSERT grants
-+ narrow AuthSession reauth update grants
-```
-
-Permanent invariant:
-
-```text
-Dictionary
-≈ SQLAlchemy
-≈ Alembic
-≈ real PostgreSQL catalog
-≈ human DB reference
-≈ direct tests
-```
-
-Do not claim the numbers as observed PostgreSQL PASS until the real marked/current-catalog run confirms them.
-
----
-
-## 6. M4 frozen lifecycle design
-
-Signup:
-
-```text
-email + password
-→ pending PasswordSignupChallenge only
-→ six-digit CSPRNG OTP
-→ HMAC-SHA256 verifier under dedicated purpose key
-→ no canonical Account before mailbox proof
-
-valid OTP
-→ Account(active)
-→ verified EmailIdentity
-→ PasswordCredential
-→ AuthSession
-→ delete sibling pending challenges for canonical email
-→ commit / bounded ambiguity reconciliation
-→ only then issue cookie
-```
-
-Existing canonical email after mailbox proof returns explicit `existing_account` and never overwrites the existing credential.
-
-Recovery:
-
-```text
-public known/unknown semantics neutral
-256-bit raw bearer
-single current challenge per Account
-proof bound to exact EmailIdentity + Account
-new issue supersedes old
-30-minute baseline lifetime
-raw secret never persisted/logged
-```
-
-Reset:
-
-```text
-HIBP + Argon2 outside transaction
-→ Account security lock
-→ exact credential/email/proof revalidation
-→ conditional single-use consume
-→ replace password
-→ revoke ALL AuthSessions
-→ commit/reconcile
-→ no auto-login
-→ fresh signin required
-```
-
-Reauth:
-
-```text
-POST /api/v1/auth/reauthenticate
-valid AuthSession + CSRF + fresh password
-→ same auth_session_ref
-→ exact presented bearer verifier required
-→ refresh recent_auth_at/session window
-→ rotate session secret
-→ stale bearer cannot rotate again
-```
-
----
-
-## 7. Current public API
-
-M3:
-
-```text
-POST   /api/v1/auth/signin
-GET    /api/v1/auth/session
-DELETE /api/v1/auth/session
-```
-
-M4 materialized:
+Canonical M4 public API:
 
 ```text
 POST /api/v1/auth/signup
@@ -311,13 +180,137 @@ auth_reset_password
 auth_reauthenticate
 ```
 
-Do not reintroduce the obsolete `/auth/reauth/password` wording.
-
-All M4 JSON POSTs preserve fail-closed same-origin browser ingress before body parsing. Reauth additionally requires current session + session-bound CSRF.
+Do not reintroduce obsolete `/auth/reauth/password` naming.
 
 ---
 
-## 8. Email/runtime posture
+## 5. Accepted M4 database state
+
+```text
+PostgreSQL          18.6
+Alembic             20260829_11
+74 tables
+5 views
+15 routines
+75 triggers
+113 physical indexes
+72 foreign keys
+149 CHECK constraints
+94 standalone Dictionary entries
+```
+
+M4 DB delta:
+
+```text
++ dante.password_signup_challenge
++ dante.password_recovery_challenge
++ exact composite EmailIdentity/Account recovery binding
++ narrow Account/EmailIdentity/PasswordCredential establishment grants
++ narrow AuthSession reauth update grants
+```
+
+Permanent invariant:
+
+```text
+Dictionary
+≈ SQLAlchemy
+≈ Alembic
+≈ real PostgreSQL catalog
+≈ human DB reference
+≈ direct tests
+```
+
+Least privilege remains deliberate; never widen Auth tables to broad UPDATE/DELETE for convenience.
+
+---
+
+## 6. Closed M4 lifecycle design
+
+Signup:
+
+```text
+email + password
+→ pending PasswordSignupChallenge only
+→ six-digit CSPRNG OTP
+→ dedicated purpose-separated HMAC verifier
+→ no Account before mailbox proof
+
+valid OTP
+→ Account(active)
+→ verified EmailIdentity
+→ PasswordCredential
+→ AuthSession
+→ delete sibling pending challenges
+→ durable commit/reconciliation
+→ cookie only after authoritative success
+```
+
+Existing canonical email after mailbox proof returns explicit `existing_account`; it never overwrites the existing credential or creates a signup session.
+
+Recovery/reset:
+
+```text
+public known/unknown semantics neutral
+256-bit raw bearer
+single current challenge per Account
+proof bound to exact EmailIdentity + Account
+new issue supersedes old
+raw proof never persisted/logged
+conditional single-use consume
+replace credential
+revoke ALL AuthSessions
+no auto-login
+fresh signin required
+```
+
+Reauth:
+
+```text
+POST /api/v1/auth/reauthenticate
+valid AuthSession + CSRF + fresh password
+→ same auth_session_ref
+→ exact presented bearer verifier required
+→ refresh recent_auth_at/session window
+→ rotate session secret
+→ stale bearer cannot rotate again
+```
+
+M4 reuses the M3 PostgreSQL pool, PasswordKdf and HIBP transport; it does not create a second Auth stack.
+
+---
+
+## 7. Accepted M4 proof
+
+Canonical accumulated closure evidence:
+
+```text
+backend static / typing / lint / build        PASS
+backend fast                                 87 / 87 PASS
+real PostgreSQL marked suite                 87 / 87 PASS
+Web Access UI                                22 / 22 PASS
+real Auth full-stack browser                 33 / 33 PASS
+Chromium                                     11 / 11 PASS
+Firefox                                      11 / 11 PASS
+WebKit                                       11 / 11 PASS
+manual integrated M4 UAT                     PASS / USER ACCEPTED
+```
+
+Manual UAT accepted:
+
+```text
+login/session/logout regression
+new signup → captured OTP → Account/AuthSession → setup handoff
+recovery → captured link → reset → fresh signin with replacement password
+existing-account signup → OTP → explicit safe existing_account guidance
+```
+
+The full-stack browser proof used production-built Web, real same-origin HTTPS, FastAPI, disposable PostgreSQL 18.6 and loopback SMTP capture.
+
+`TEST CODE EXISTS != TEST EXECUTION PASS` remains a permanent evidence rule for future phases; for M4 the required executions are complete and accepted.
+
+---
+
+## 8. Email/runtime posture carried forward
 
 ```text
 AuthLifecycleService
@@ -340,100 +333,58 @@ non-local SMTP must use STARTTLS/TLS
 proof/recipient secrets never logged
 ```
 
-M4 reuses the M3 PostgreSQL pool, PasswordKdf and HIBP transport. It does not create a second Auth stack.
-
-Test SMTP capture/control is private harness support only; no production `/test/*` endpoint.
+Test SMTP capture/control remains private harness support only; no production `/test/*` endpoint.
 
 ---
 
-## 9. Immediate remaining M4 work
+## 9. Next work: M5
 
-Do **not** restart architecture design. Continue the integration batch:
-
-```text
-1. canonical deterministic OpenAPI regeneration
-2. Orval-generated M4 operations/models/Zod
-3. governed @dante/api-client M4 runtime parsing
-4. strict no-store / request-id / content-type / status / ProblemDetails enforcement
-5. Web Auth remote M4 operations
-6. TanStack Query mutations/remote lifecycle
-7. Access real wiring:
-   signup
-   verify OTP
-   resend
-   recovery
-   recovery link fragment capture + scrub
-   reset
-   reauth
-8. focused backend/frontend static + unit QA
-9. real PostgreSQL M4 matrix execution
-10. integrated HTTPS FastAPI/PostgreSQL/SMTP browser harness
-11. Chromium + Firefox + WebKit M4 matrix
-12. manual integrated M4 UAT
-13. DB/API/frontend/workstream docs reconciliation
-14. explicit user M4 acceptance
-```
-
-Generated files/lockfiles are not hand-edited. Use the repo generator/formatters.
-
----
-
-## 10. Test strategy
-
-Keep M4 as one macro-batch.
-
-During implementation:
+Do **not** restart M4 architecture or implementation by default.
 
 ```text
-focused unit/service/schema/race tests
-static/type/lint/architecture checks
-OpenAPI/generated drift checks
-```
-
-At closure:
-
-```text
-ONE integrated real PostgreSQL M4 gate
-+ ONE integrated Chromium/Firefox/WebKit full-stack gate
-+ ONE manual integrated M4 UAT
-```
-
-Do not make the user rerun expensive end-to-end gates after every small subfeature unless a critical security issue requires an earlier direct proof.
-
-`TEST CODE EXISTS != TEST EXECUTION PASS` remains binding.
-
----
-
-## 11. Observability decision
-
-Full Grafana/Alloy/Loki/Tempo/Prometheus-class observability is **DEFERRED TO M7**.
-
-Do not stop M4 for it.
-
-M4–M6 still forbid secret leakage in logs and must preserve privacy-safe diagnostics.
-
----
-
-## 12. Forward roadmap
-
-```text
-M4 — Signup + Verification + Recovery + Reset + Reauth
-ACTIVE / ADVANCED BACKEND-SECURITY MATERIALIZATION / NOT CLOSED
-
 M5 — Google + Apple + Passkeys + Explicit Linking
-PLANNED
-
-M6 — Native Mobile Access
-PLANNED
-
-M7 — Security Hardening + Observability + Authenticated Handoff
-PLANNED / FINAL WHOLE-VERTICAL GATE
+PLANNED / NEXT / NOT STARTED
 ```
 
-Only M7 + final explicit user acceptance may close the whole Access/Auth vertical.
-
-For exact continuation details, use:
+Before implementation:
 
 ```text
-docs/workstreams/access-auth-m4-live-handoff-2026-08-29.md
+read current official Google authentication guidance
+read current official Apple Sign in with Apple guidance
+read current WebAuthn/FIDO specifications
+reconcile with DANTE M1–M4 contracts
+freeze exact provider/passkey/linking semantics
+then materialize minimal persistence/API/Web changes
 ```
+
+Permanent M5 rules already known:
+
+```text
+ExternalIdentity = issuer + subject
+provider email != Account merge key
+provider authentication != provider-data integration authorization
+provider token != DANTE AuthSession
+linking requires explicit proof + explicit consent
+DANTE AuthSession remains canonical
+```
+
+M6 remains Native Mobile Access. M7 remains the final whole-vertical security/observability/handoff gate.
+
+---
+
+## 10. Whole-vertical status
+
+```text
+M1 CLOSED
+M2 CLOSED
+M3 CLOSED
+M4 CLOSED
+M5 NEXT / PLANNED
+M6 PLANNED
+M7 PLANNED / FINAL GATE
+
+Whole Access/Auth vertical
+ACTIVE / NOT CLOSED
+```
+
+Only M7 plus explicit final user acceptance may close the whole Access/Auth vertical.

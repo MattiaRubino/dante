@@ -1,15 +1,16 @@
 # DANTE Access/Auth Database Reference
 
-- **Status:** CURRENT / BRANCH-LOCAL / M3 CLOSED / M4 SOURCE CANDIDATE MATERIALIZED / M4 ACCEPTANCE PENDING
+- **Status:** CURRENT / BRANCH-LOCAL / M3 CLOSED / M4 PERSISTENCE CLOSED + REAL POSTGRESQL PROVEN
 - **Branch:** `feature/access-auth`
-- **Current Alembic head in source:** `20260829_11`
+- **Current accepted Alembic head:** `20260829_11`
 - **Accepted M3 Alembic baseline:** `20260827_10`
 - **Protected-main CP6 baseline:** `20260826_08`
+- **M4 final accepted implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
 - **Database System of Record:** `README.md`
 - **M4 architecture authority:** `../architecture/access-auth-m4-contract.md`
 - **Security authority:** `../architecture/access-auth-security-contract.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
-- **Current live handoff:** `../workstreams/access-auth-m4-live-handoff-2026-08-29.md`
+- **M4 closure handoff:** `../workstreams/access-auth-m4-live-handoff-2026-08-29.md`
 
 ## 1. Purpose / evidence status
 
@@ -28,19 +29,19 @@ Dictionary + SQLAlchemy + Alembic
 real PostgreSQL catalog + direct tests
 ```
 
-Important distinction at this checkpoint:
+Current accepted evidence state:
 
 ```text
 M3 persistence
 → MATERIALIZED + REAL POSTGRESQL PROVEN + CLOSED
 
 M4 persistence
-→ MATERIALIZED IN SOURCE / DICTIONARY / MAPPING / MIGRATION
-→ REAL POSTGRESQL ACCEPTANCE EXECUTION STILL REQUIRED
-→ NOT CLOSED
+→ MATERIALIZED IN DICTIONARY / SQLALCHEMY / ALEMBIC
+→ REAL POSTGRESQL/CURRENT-CATALOG PROVEN
+→ CLOSED / ACCEPTED
 ```
 
-Do not turn source/test-code existence into a false PASS.
+`TEST CODE EXISTS != TEST EXECUTION PASS` remains a permanent rule; M4 now has accepted execution evidence.
 
 ---
 
@@ -60,7 +61,7 @@ bounded DB capability
 └── acquire_account_security_lock(uuid)
 ```
 
-Current M4 source/catalog target:
+Accepted M4 catalog:
 
 ```text
 PostgreSQL          18.6
@@ -75,7 +76,7 @@ Alembic             20260829_11
 94 standalone Dictionary entries
 ```
 
-Accepted M3 baseline remains:
+Accepted M3 baseline remains historical comparison:
 
 ```text
 Alembic             20260827_10
@@ -91,7 +92,7 @@ Alembic             20260827_10
 
 ---
 
-## 3. Canonical M3 security objects
+## 3. Canonical Account/Auth objects
 
 ### `dante.account`
 
@@ -104,9 +105,9 @@ created_at    finite timestamptz
 disabled_at   nullable finite timestamptz
 ```
 
-Still does not store email/password/provider/passkey/profile/device/global-role payload.
+It does not store email/password/provider/passkey/profile/device/global-role payload.
 
-M4 current runtime ACL evolution is deliberately narrow:
+M4 runtime ACL remains deliberately narrow:
 
 ```text
 SELECT                                         yes
@@ -116,7 +117,7 @@ broad UPDATE                                   no
 DELETE                                         no
 ```
 
-Account security serialization continues through `dante.acquire_account_security_lock(uuid)`, not broad Account UPDATE or advisory locks.
+Account security serialization continues through `dante.acquire_account_security_lock(uuid)`, not broad Account UPDATE or ad-hoc advisory-lock replacement.
 
 ### `dante.email_identity`
 
@@ -131,23 +132,21 @@ created_at
 verified_at
 ```
 
-Canonical comparison remains application-owned NFC/casefold + canonical IDNA ASCII lower domain; PostgreSQL uniqueness remains final race arbiter.
+Canonical comparison remains application-owned NFC/casefold + canonical IDNA ASCII lower domain; PostgreSQL uniqueness remains the final race arbiter.
 
-M4 adds:
+M4 adds the composite uniqueness needed for exact recovery binding:
 
 ```text
 uq_email_identity_email_identity_ref_account_ref
 (email_identity_ref, account_ref)
 ```
 
-This exists so a recovery challenge can prove that the exact EmailIdentity belongs to the exact Account with declarative PostgreSQL integrity.
-
-M4 runtime ACL:
+Runtime ACL:
 
 ```text
-SELECT                                                        yes
-INSERT exact account-establishment columns                    yes
-broad UPDATE / DELETE                                         no
+SELECT                                      yes
+INSERT exact establishment columns          yes
+broad UPDATE / DELETE                       no
 ```
 
 ### `dante.password_credential`
@@ -193,7 +192,7 @@ revocation_reason_code
 
 Raw bearer secret remains transient only.
 
-M4 runtime ACL extends M3 only for reauthentication:
+M4 reauthentication capability is column-bounded:
 
 ```text
 SELECT                                                   yes
@@ -204,7 +203,7 @@ UPDATE secret_verifier,recent_auth_at,expires_at        yes
 broad UPDATE / DELETE                                    no
 ```
 
-Reauthentication preserves `auth_session_ref` while rotating `secret_verifier` and recent-auth/session-window state.
+Reauthentication preserves `auth_session_ref` while rotating the exact presented bearer verifier and recent-auth/session-window state.
 
 ---
 
@@ -239,7 +238,7 @@ multiple pending challenges for one email are allowed
 signup_ref isolates anonymous attempts
 no UNIQUE(email_comparison_key)
 OTP raw value never persisted
-OTP verifier is bound cryptographically to signup_ref
+OTP verifier is cryptographically bound to signup_ref
 successful verification deletes sibling pending challenges for canonical email
 expired state is operational/ephemeral, not product history
 ```
@@ -276,14 +275,20 @@ issued_at
 expires_at
 ```
 
-Declarative binding:
+Declarative exact-owner binding:
 
 ```text
 FK(email_identity_ref, account_ref)
 → email_identity(email_identity_ref, account_ref)
 ```
 
-This prevents cross-binding recovery authority to an EmailIdentity owned by another Account.
+The physical constraint name is deliberately bounded below PostgreSQL's identifier limit:
+
+```text
+fk_password_recovery_challenge_email_account_email_identity
+```
+
+This avoids implicit server-side name truncation while preserving the semantic identity of the composite relationship.
 
 Current constraints/indexes include:
 
@@ -302,7 +307,7 @@ Lifecycle:
 raw secret never persisted
 new issuance supersedes prior challenge
 single use
-30-minute baseline lifetime
+bounded lifetime
 consumption is physical DELETE
 not retained as canonical product history
 ```
@@ -316,7 +321,7 @@ UPDATE                 no
 
 ---
 
-## 6. M4 transaction/race posture
+## 6. Transaction/race posture
 
 ### Signup verification
 
@@ -395,7 +400,7 @@ A stale pre-rotation bearer cannot perform another reauth merely because it was 
 ```text
 READ COMMITTED default
 no blanket SERIALIZABLE
-Account row lock only for Account-wide security mutation
+Account security lock only for Account-wide security mutation
 Argon2/HIBP/network work outside DB transaction
 no email/SMTP wait under DB lock
 indexed equality lookups on hot paths
@@ -452,30 +457,30 @@ The original introducing stage of M3 objects remains M3; their `runtime_acl_stag
 
 ---
 
-## 9. Evidence status
-
-Accepted M3 database proof:
+## 9. Accepted M4 persistence evidence
 
 ```text
-real PostgreSQL marked suite              83 / 83 PASS
-real signin/session integration            4 / 4 PASS
-current M3 catalog/ACL/security lock       PASS
-migration/drift/privilege suites           PASS
-full-stack M3 browser DB-backed proof      21 / 21 PASS
+real PostgreSQL marked suite                 87 / 87 PASS
+current-catalog / Alembic head parity        PASS
+M4 lifecycle PostgreSQL tests                PASS
+M3 signin/session PostgreSQL regression      PASS
+runtime ACL exactness                        PASS
+migration head/base/head round-trip          PASS
+real browser DB-backed Auth matrix           33 / 33 PASS
+Chromium / Firefox / WebKit                  11 / 11 each
+manual signup/recovery/existing-account UAT  PASS
 ```
 
-M4 test code now exists for current catalog/ACL/lifecycle behavior, including real-PostgreSQL lifecycle tests.
+The final PostgreSQL acceptance run proved the complete 87-test marked suite against the accepted M4 source/catalog state.
 
-At this live checkpoint:
+Therefore:
 
 ```text
-M4 source representation parity candidate  MATERIALIZED
-M4 real PostgreSQL execution evidence       PENDING ACCEPTED RUN
-M4 full-stack browser DB evidence            PENDING
-M4 database closure                          NOT CLOSED
+M4 source representation parity              ACCEPTED
+M4 real PostgreSQL execution evidence         PASS
+M4 full-stack browser DB evidence             PASS
+M4 database closure                           CLOSED
 ```
-
-`TEST CODE EXISTS != TEST EXECUTION PASS`.
 
 ---
 
@@ -506,8 +511,4 @@ later Auth need
 → real PostgreSQL proof
 ```
 
-For the exact current continuation state, read:
-
-```text
-docs/workstreams/access-auth-m4-live-handoff-2026-08-29.md
-```
+M5 is next and must freeze provider/passkey/linking semantics before any persistence delta is added.
