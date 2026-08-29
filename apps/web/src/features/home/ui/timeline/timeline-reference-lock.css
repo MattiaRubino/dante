@@ -28,6 +28,13 @@
   }
 }
 
+/* Keep only the group labels slightly tighter than the material default.
+ * Month, Now and week typography intentionally remain untouched. */
+.home-m1 .home-timeline--production .dante-timeline-group-chip {
+  font-size: 8.5px;
+  font-weight: 680;
+}
+
 /* Desktop Home owns the row height. Timeline and Context Rail are peers in
  * that row and keep the same 10px bottom breathing room. Timeline stays a
  * normal grid item: do not turn the root into an internal grid, otherwise the
