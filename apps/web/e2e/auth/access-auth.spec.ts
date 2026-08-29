@@ -12,6 +12,7 @@ import {
 
 const baseURL = 'https://127.0.0.1:4173';
 const password = 'correct horse battery staple';
+const replacementPassword = 'replacement horse battery staple';
 const sessionCookieName = '__Host-dante-session';
 const repoRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -24,33 +25,101 @@ const projectEmailOffset: Readonly<Record<string, number>> = {
   webkit: 20,
 };
 
-function emailFor(testInfo: TestInfo, slot: number) {
+type CapturedEmail = Readonly<{
+  recipient: string;
+  subject: string;
+  body: string;
+}>;
+
+function projectOffset(testInfo: TestInfo): number {
   const offset = projectEmailOffset[testInfo.project.name];
   if (offset === undefined) {
     throw new Error(
       `Unsupported Access/Auth browser project: ${testInfo.project.name}`,
     );
   }
-  return `synthetic.user+e2e-${String(offset + slot).padStart(2, '0')}@example.com`;
+  return offset;
 }
 
-function runHarnessControl(action: string, authSessionRef?: string) {
-  const args = [
-    'run',
-    '--project',
-    'apps/backend',
-    'python',
-    'tooling/access-auth-e2e-control.py',
-    action,
-  ];
-  if (authSessionRef !== undefined) {
-    args.push(authSessionRef);
+function emailFor(testInfo: TestInfo, slot: number) {
+  return `synthetic.user+e2e-${String(projectOffset(testInfo) + slot).padStart(2, '0')}@example.com`;
+}
+
+function signupEmailFor(testInfo: TestInfo) {
+  return `synthetic.signup+e2e-${String(projectOffset(testInfo) + 1).padStart(2, '0')}@example.com`;
+}
+
+function runHarnessCommand(args: readonly string[]): string {
+  return execFileSync(
+    'uv',
+    [
+      'run',
+      '--project',
+      'apps/backend',
+      'python',
+      'tooling/access-auth-e2e-control.py',
+      ...args,
+    ],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      timeout: 30_000,
+    },
+  );
+}
+
+function runHarnessControl(action: string, value?: string) {
+  const args = value === undefined ? [action] : [action, value];
+  runHarnessCommand(args);
+}
+
+function capturedEmail(recipient: string, subject: string): CapturedEmail {
+  const output = runHarnessCommand([
+    'email-latest',
+    recipient,
+    '--subject',
+    subject,
+    '--wait-seconds',
+    '10',
+  ]);
+  const parsed = JSON.parse(output) as unknown;
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    !('recipient' in parsed) ||
+    !('subject' in parsed) ||
+    !('body' in parsed) ||
+    typeof parsed.recipient !== 'string' ||
+    typeof parsed.subject !== 'string' ||
+    typeof parsed.body !== 'string'
+  ) {
+    throw new Error('SMTP capture returned a malformed email payload.');
   }
-  execFileSync('uv', args, {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    stdio: 'pipe',
-    timeout: 30_000,
+  return parsed as CapturedEmail;
+}
+
+function verificationCode(email: CapturedEmail): string {
+  const match = email.body.match(/verification code is ([0-9]{6})\./);
+  if (!match?.[1]) {
+    throw new Error('Signup verification email did not contain a six-digit code.');
+  }
+  return match[1];
+}
+
+function recoveryUrl(email: CapturedEmail): string {
+  const match = email.body.match(
+    /https:\/\/127\.0\.0\.1:4173\/\?recovery=[^\s#]+#[^\s]+/,
+  );
+  if (!match?.[0]) {
+    throw new Error('Recovery email did not contain the canonical recovery URL.');
+  }
+  return match[0];
+}
+
+async function useItalianLocale(page: Page) {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('dante.locale', 'it');
   });
 }
 
@@ -95,9 +164,7 @@ async function sessionCookie(context: BrowserContext) {
 
 test.describe('DANTE Access/Auth full-stack spine', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      window.localStorage.setItem('dante.locale', 'it');
-    });
+    await useItalianLocale(page);
   });
 
   test('signs in through real HTTPS/FastAPI/PostgreSQL, reloads, and logs out', async ({
@@ -208,12 +275,8 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
       const pageB = await contextB.newPage();
       const email = emailFor(testInfo, 3);
 
-      await pageA.addInitScript(() => {
-        window.localStorage.setItem('dante.locale', 'it');
-      });
-      await pageB.addInitScript(() => {
-        window.localStorage.setItem('dante.locale', 'it');
-      });
+      await useItalianLocale(pageA);
+      await useItalianLocale(pageB);
 
       expect((await signIn(pageA, email)).status()).toBe(200);
       expect((await signIn(pageB, email)).status()).toBe(200);
@@ -332,5 +395,278 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     await expect(page.getByText('Troppi tentativi.')).toBeVisible();
     await expectUnauthenticated(page);
     expect(await sessionCookie(context)).toBeUndefined();
+  });
+
+  test('creates a new password account only after real mailbox verification', async ({
+    context,
+    page,
+  }, testInfo) => {
+    const email = signupEmailFor(testInfo);
+    runHarnessControl('email-clear');
+
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    await page.getByLabel('Email').fill(email);
+    await page.getByRole('button', { name: 'Continua con email' }).click();
+    await page
+      .getByLabel('Password', { exact: true })
+      .fill(password);
+
+    const signupPromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v1/auth/signup') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    const signup = await signupPromise;
+    expect(signup.status()).toBe(200);
+    expect(await signup.headerValue('cache-control')).toBe('no-store');
+    expect(await signup.headerValue('x-request-id')).toBeTruthy();
+
+    await expect(
+      page.getByRole('heading', { name: 'Controlla la tua email' }),
+    ).toBeVisible();
+    expect(await sessionCookie(context)).toBeUndefined();
+
+    const verificationEmail = capturedEmail(email, 'Verify your DANTE email');
+    expect(verificationEmail.recipient).toBe(email);
+    const code = verificationCode(verificationEmail);
+
+    const verifyPromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v1/auth/signup/verify') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByLabel('Codice di verifica').fill(code);
+    await page.getByRole('button', { name: 'Verifica e continua' }).click();
+    const verify = await verifyPromise;
+    expect(verify.status()).toBe(200);
+    expect(await verify.headerValue('cache-control')).toBe('no-store');
+    expect((await verify.json()) as { outcome: string }).toMatchObject({
+      outcome: 'authenticated',
+    });
+
+    await expect(
+      page.getByRole('heading', { name: 'Come vuoi che DANTE ti chiami?' }),
+    ).toBeVisible();
+    expect(await sessionCookie(context)).toBeDefined();
+  });
+
+  test('verifies an existing mailbox without creating a new authenticated session', async ({
+    context,
+    page,
+  }, testInfo) => {
+    const email = emailFor(testInfo, 8);
+    runHarnessControl('email-clear');
+
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    await page.getByLabel('Email').fill(email);
+    await page.getByRole('button', { name: 'Continua con email' }).click();
+    await page
+      .getByLabel('Password', { exact: true })
+      .fill('different strong password value');
+
+    const signupPromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v1/auth/signup') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Crea un account' }).click();
+    expect((await signupPromise).status()).toBe(200);
+
+    const code = verificationCode(
+      capturedEmail(email, 'Verify your DANTE email'),
+    );
+    const verifyPromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v1/auth/signup/verify') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByLabel('Codice di verifica').fill(code);
+    await page.getByRole('button', { name: 'Verifica e continua' }).click();
+    const verify = await verifyPromise;
+    expect(verify.status()).toBe(200);
+    expect((await verify.json()) as { outcome: string }).toEqual({
+      outcome: 'existing_account',
+    });
+
+    await expectUnauthenticated(page);
+    await expect(page.getByText('Account già esistente.')).toBeVisible();
+    expect(await sessionCookie(context)).toBeUndefined();
+  });
+
+  test('resets through a real recovery email, scrubs the bearer URL, and revokes every existing session', async ({
+    browser,
+  }, testInfo) => {
+    const email = emailFor(testInfo, 9);
+    const contextA = await browser.newContext({ ignoreHTTPSErrors: true });
+    const contextB = await browser.newContext({ ignoreHTTPSErrors: true });
+    const recoveryContext = await browser.newContext({ ignoreHTTPSErrors: true });
+
+    try {
+      const pageA = await contextA.newPage();
+      const pageB = await contextB.newPage();
+      const recoveryPage = await recoveryContext.newPage();
+      await useItalianLocale(pageA);
+      await useItalianLocale(pageB);
+      await useItalianLocale(recoveryPage);
+
+      expect((await signIn(pageA, email)).status()).toBe(200);
+      expect((await signIn(pageB, email)).status()).toBe(200);
+      await expectAuthenticated(pageA);
+      await expectAuthenticated(pageB);
+      expect(await sessionCookie(contextA)).toBeDefined();
+      expect(await sessionCookie(contextB)).toBeDefined();
+
+      runHarnessControl('email-clear');
+      await recoveryPage.goto('/');
+      await recoveryPage
+        .getByRole('button', { name: 'Password dimenticata?' })
+        .click();
+      await recoveryPage.getByLabel('Email').fill(email);
+      const recoveryRequestPromise = recoveryPage.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/v1/auth/recovery') &&
+          response.request().method() === 'POST',
+      );
+      await recoveryPage
+        .getByRole('button', { name: 'Invia link di recupero' })
+        .click();
+      const recoveryRequest = await recoveryRequestPromise;
+      expect(recoveryRequest.status()).toBe(202);
+      expect(await recoveryRequest.json()).toEqual({ accepted: true });
+
+      const emailPayload = capturedEmail(email, 'Reset your DANTE password');
+      const url = recoveryUrl(emailPayload);
+      const secret = new URL(url).hash.slice(1);
+      expect(secret.length).toBeGreaterThan(0);
+
+      const validationPromise = recoveryPage.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/v1/auth/recovery/validate') &&
+          response.request().method() === 'POST',
+      );
+      await recoveryPage.goto(url);
+      const validation = await validationPromise;
+      expect(validation.status()).toBe(200);
+      expect(await validation.json()).toEqual({ valid: true });
+
+      await expect(
+        recoveryPage.getByRole('heading', { name: 'Crea una nuova password' }),
+      ).toBeVisible();
+      const validatedUrl = new URL(recoveryPage.url());
+      expect(validatedUrl.hash).toBe('');
+      expect(validatedUrl.searchParams.has('recovery')).toBe(true);
+
+      const browserStorage = await recoveryPage.evaluate(() => {
+        const values: string[] = [];
+        for (const storage of [window.localStorage, window.sessionStorage]) {
+          for (let index = 0; index < storage.length; index += 1) {
+            const key = storage.key(index);
+            if (key !== null) {
+              values.push(`${key}=${storage.getItem(key) ?? ''}`);
+            }
+          }
+        }
+        return values.join('\n');
+      });
+      expect(browserStorage).not.toContain(secret);
+
+      await recoveryPage
+        .getByLabel('Nuova password')
+        .fill(replacementPassword);
+      await recoveryPage
+        .getByLabel('Conferma password')
+        .fill(replacementPassword);
+      const resetPromise = recoveryPage.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/v1/auth/reset-password') &&
+          response.request().method() === 'POST',
+      );
+      await recoveryPage
+        .getByRole('button', { name: 'Aggiorna password' })
+        .click();
+      const reset = await resetPromise;
+      expect(reset.status()).toBe(204);
+      expect(await reset.headerValue('cache-control')).toBe('no-store');
+
+      await expect(
+        recoveryPage.getByRole('heading', { name: 'Password aggiornata' }),
+      ).toBeVisible();
+      const consumedUrl = new URL(recoveryPage.url());
+      expect(consumedUrl.hash).toBe('');
+      expect(consumedUrl.searchParams.has('recovery')).toBe(false);
+
+      const notification = capturedEmail(
+        email,
+        'Your DANTE password was changed',
+      );
+      expect(notification.body).toContain('All existing sessions were signed out.');
+
+      await pageA.reload();
+      await pageB.reload();
+      await expectUnauthenticated(pageA);
+      await expectUnauthenticated(pageB);
+      expect(await sessionCookie(contextA)).toBeUndefined();
+      expect(await sessionCookie(contextB)).toBeUndefined();
+    } finally {
+      await contextA.close();
+      await contextB.close();
+      await recoveryContext.close();
+    }
+  });
+
+  test('reauthenticates in the browser on the same AuthSession while rotating the bearer', async ({
+    context,
+    page,
+  }, testInfo) => {
+    const signin = await signIn(page, emailFor(testInfo, 10));
+    expect(signin.status()).toBe(200);
+    const session = (await signin.json()) as {
+      auth_session_ref: string;
+      csrf_token: string;
+    };
+    const beforeCookie = await sessionCookie(context);
+    expect(beforeCookie?.value).toBeTruthy();
+
+    const result = await page.evaluate(
+      async ({ passwordValue, csrfToken }) => {
+        const response = await window.fetch('/api/v1/auth/reauthenticate', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            Accept: 'application/json, application/problem+json',
+            'Content-Type': 'application/json',
+            'X-Dante-Client': 'web',
+            'X-Dante-CSRF': csrfToken,
+          },
+          body: JSON.stringify({ password: passwordValue }),
+        });
+        return {
+          status: response.status,
+          cacheControl: response.headers.get('cache-control'),
+          requestId: response.headers.get('x-request-id'),
+          payload: (await response.json()) as {
+            auth_session_ref: string;
+            authenticated: boolean;
+          },
+        };
+      },
+      { passwordValue: password, csrfToken: session.csrf_token },
+    );
+
+    expect(result.status).toBe(200);
+    expect(result.cacheControl).toBe('no-store');
+    expect(result.requestId).toBeTruthy();
+    expect(result.payload.authenticated).toBe(true);
+    expect(result.payload.auth_session_ref).toBe(session.auth_session_ref);
+
+    const afterCookie = await sessionCookie(context);
+    expect(afterCookie?.value).toBeTruthy();
+    expect(afterCookie?.value).not.toBe(beforeCookie?.value);
+
+    await page.reload();
+    await expectAuthenticated(page);
   });
 });
