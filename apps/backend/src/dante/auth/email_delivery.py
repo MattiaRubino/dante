@@ -111,12 +111,28 @@ class SmtpEmailDispatcher:
             raise EmailDispatchCapacityError("email dispatcher capacity is exhausted") from exc
 
     async def aclose(self) -> None:
-        """Drain admitted work, stop workers in-order and release task references."""
+        """Bound shutdown drain time, then discard only still-queued resendable email work."""
         if self._closed:
             return
         self._closed = True
         if not self._started:
             return
+
+        dropped = 0
+        try:
+            async with asyncio.timeout(self._settings.email_shutdown_drain_seconds):
+                await self._queue.join()
+        except TimeoutError:
+            while True:
+                try:
+                    self._queue.get_nowait()
+                except asyncio.QueueEmpty:
+                    break
+                else:
+                    dropped += 1
+                    self._queue.task_done()
+            if dropped:
+                _LOGGER.warning("auth.email_shutdown_dropped queued_count=%d", dropped)
 
         for _worker in self._workers:
             await self._queue.put(_STOP)
