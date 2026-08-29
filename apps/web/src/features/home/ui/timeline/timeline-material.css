@@ -1,49 +1,74 @@
 /*
- * Timeline material layer.
+ * Timeline Phase 1 parity material layer.
  *
- * Geometry and visual hierarchy intentionally mirror the accepted Home
- * prototype. The React timeline engine owns behavior and runtime geometry;
- * this file owns the production surface without inheriting legacy Home/M1
- * timeline selectors.
+ * Source of truth: accepted A2 Timeline cascade plus the explicit DANTE
+ * v12/v13/v38/v43 overrides preserved by the v43 restore artifact.
+ * Do not redesign here during Phase 1: React owns behavior; this layer mirrors
+ * the accepted prototype surface.
  */
+
+/* The Home grid row can be taller than Timeline because the Context Rail is
+ * independent. The accepted Timeline itself is exactly 72 + 52 + 570px.
+ * Prevent CSS-grid stretch from creating dead space below the 570px frame. */
+@media (min-width: 1121px) {
+  .home-m1 .home-timeline--production {
+    height: 694px;
+    min-height: 694px;
+    max-height: 694px;
+    align-self: start;
+  }
+}
 
 .dante-timeline-header {
   min-height: 124px;
-  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
-  background: linear-gradient(
-    180deg,
-    rgb(255 255 255 / 0.9%),
-    rgb(255 255 255 / 0.1%)
-  );
+  border-bottom: 0;
+  background: transparent;
 }
 
+/* v7 temporal header + v13 real quick-add column. The 56px add column is NOT
+ * the 84px ruler: those are different coordinate systems in the prototype. */
 .dante-timeline-header-row {
   display: grid;
-  grid-template-columns: 84px auto auto minmax(330px, 1fr) auto 14px;
-  grid-template-areas: 'add month now week actions gutter';
+  grid-template-columns: 56px auto auto minmax(330px, 1fr) auto;
+  grid-template-areas: 'add month now week actions';
   align-items: center;
   width: 100%;
   height: 72px;
+  min-height: 72px;
   min-width: 0;
-  column-gap: 12px;
-  padding: 0;
-  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
+  gap: 12px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.009),
+    rgba(255, 255, 255, 0.001)
+  );
 }
 
 .dante-timeline-quick-add {
   grid-area: add;
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
   place-items: center;
-  justify-self: center;
+  justify-self: start;
+  align-self: center;
   padding: 0;
-  border: 1px solid var(--dante-semantic-color-home-chrome-active-border);
-  border-radius: 12px;
-  color: var(--dante-semantic-color-home-chrome-active);
-  background: var(--dante-semantic-color-home-chrome-active-soft);
-  font-size: 20px;
-  font-weight: 520;
+  border: 1px solid rgba(234, 92, 18, 0.34);
+  border-radius: 14px;
+  color: #f06a1a;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 27, 40, 0.96),
+    rgba(11, 18, 29, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+  font-size: 24px;
+  font-weight: 500;
   line-height: 1;
   opacity: 1;
 }
@@ -63,7 +88,7 @@
   padding: 0 10px;
   border: 0;
   border-radius: 10px;
-  color: var(--dante-semantic-color-home-text-secondary);
+  color: #98a6ba;
   background: transparent;
   box-shadow: none;
   font-size: 11px;
@@ -75,8 +100,8 @@
 
 .dante-timeline-month:hover,
 .dante-timeline-month[aria-expanded='true'] {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: rgb(255 255 255 / 3.5%);
+  color: #eef3fa;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .dante-timeline-month > span {
@@ -84,10 +109,10 @@
 }
 
 .dante-timeline-month > i {
-  color: var(--dante-semantic-color-home-text-muted);
+  color: #78879b;
   font-size: 8px;
   font-style: normal;
-  opacity: 0.72;
+  opacity: 0.7;
   transition: transform 160ms ease;
 }
 
@@ -95,6 +120,7 @@
   transform: rotate(180deg);
 }
 
+/* v43 exact orange chrome recolor. */
 .dante-timeline-now {
   grid-area: now;
   display: inline-flex;
@@ -104,10 +130,10 @@
   gap: 6px;
   height: 34px;
   padding: 0 10px;
-  border: 0;
+  border: 1px solid rgba(234, 92, 18, 0.38);
   border-radius: 10px;
-  color: var(--dante-semantic-color-home-chrome-active-text);
-  background: var(--dante-semantic-color-home-chrome-active-soft);
+  color: #f0a06f;
+  background: rgba(234, 92, 18, 0.11);
   box-shadow: none;
   font-size: 10px;
   font-weight: 650;
@@ -117,17 +143,8 @@
 }
 
 .dante-timeline-now:hover {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: rgb(255 255 255 / 3.5%);
-}
-
-.dante-timeline-now.is-needed {
-  color: var(--dante-semantic-color-home-chrome-active-text);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-chrome-active) 13%,
-    transparent
-  );
+  color: #fff;
+  background: rgba(234, 92, 18, 0.14);
 }
 
 .dante-timeline-now-dot {
@@ -135,11 +152,8 @@
   height: 5px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: var(--dante-semantic-color-home-chrome-active);
-  opacity: 0.6;
-}
-
-.dante-timeline-now.is-needed .dante-timeline-now-dot {
+  color: #ea5c12;
+  background: #ea5c12;
   opacity: 1;
 }
 
@@ -161,7 +175,7 @@
   padding: 0;
   border: 0;
   border-radius: 9px;
-  color: var(--dante-semantic-color-home-text-muted);
+  color: #78879b;
   background: transparent;
   font-size: 19px;
   line-height: 1;
@@ -169,8 +183,8 @@
 }
 
 .dante-timeline-week-step:hover {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: rgb(255 255 255 / 3.5%);
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .dante-timeline-week {
@@ -180,8 +194,8 @@
   padding: 3px;
   border: 0;
   border-radius: 14px;
-  background: rgb(255 255 255 / 1.2%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2.4%);
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.024);
 }
 
 .dante-timeline-week > button {
@@ -196,37 +210,25 @@
   padding: 3px 2px 6px;
   border: 0;
   border-radius: 10px;
-  color: var(--dante-semantic-color-home-text-muted);
+  color: #95a3b8;
   background: transparent;
   box-shadow: none;
   cursor: pointer;
 }
 
 .dante-timeline-week > button:hover {
-  color: var(--dante-semantic-color-home-text-secondary);
-  background: rgb(255 255 255 / 3.2%);
+  color: #dce4f0;
+  background: rgba(255, 255, 255, 0.032);
 }
 
 .dante-timeline-week > button.is-viewing {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: linear-gradient(
-    180deg,
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-chrome-active) 14%,
-      transparent
-    ),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-chrome-active) 8%,
-      transparent
-    )
-  );
-  box-shadow: inset 0 0 0 1px var(--dante-semantic-color-home-chrome-active-border);
+  color: #f0a06f;
+  background: rgba(234, 92, 18, 0.11);
+  box-shadow: none;
 }
 
 .dante-timeline-week > button.is-today:not(.is-viewing) {
-  color: var(--dante-semantic-color-home-text-secondary);
+  color: #dce4f0;
 }
 
 .dante-timeline-week b {
@@ -252,7 +254,7 @@
   height: 4px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: var(--dante-semantic-color-home-chrome-active);
+  background: #ea5c12;
   opacity: 0;
 }
 
@@ -262,11 +264,11 @@
 
 .dante-timeline-actions {
   grid-area: actions;
+  position: relative;
   display: flex;
   align-items: center;
   justify-self: end;
   gap: 5px;
-  position: relative;
 }
 
 .dante-timeline-actions > button {
@@ -278,20 +280,20 @@
   padding: 0;
   border: 0;
   border-radius: 10px;
-  color: var(--dante-semantic-color-home-text-muted);
+  color: #78879b;
   background: transparent;
   box-shadow: none;
   cursor: pointer;
 }
 
 .dante-timeline-actions > button:hover {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: rgb(255 255 255 / 3.5%);
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .dante-timeline-actions > button.is-active {
-  color: var(--dante-semantic-color-home-chrome-active-text);
-  background: var(--dante-semantic-color-home-chrome-active-soft);
+  color: #f0a06f;
+  background: rgba(234, 92, 18, 0.11);
 }
 
 .dante-timeline-actions svg,
@@ -305,17 +307,19 @@
   stroke-linejoin: round;
 }
 
+/* Prototype v7 group geometry: ruler | reset | groups | handle. */
 .dante-timeline-group-row {
   display: grid;
   grid-template-columns: 84px 44px minmax(0, 1fr) 14px;
   align-items: center;
   width: 100%;
   height: 52px;
+  min-height: 52px;
   min-width: 0;
   gap: 0;
   padding: 0;
-  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
-  background: rgb(255 255 255 / 0.2%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.002);
   overflow: visible;
 }
 
@@ -326,27 +330,31 @@
   height: 30px;
   place-items: center;
   justify-self: center;
+  align-self: center;
   padding: 0;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 9px;
-  color: var(--dante-semantic-color-home-text-muted);
-  background: transparent;
+  color: #91a0b7;
+  background: rgba(255, 255, 255, 0.018);
   box-shadow: none;
   cursor: pointer;
 }
 
 .dante-timeline-group-reset:hover {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: rgb(255 255 255 / 3.5%);
+  color: #e5ebf6;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .dante-timeline-group-reset.is-active {
-  color: var(--dante-semantic-color-home-chrome-active-text);
-  background: var(--dante-semantic-color-home-chrome-active-soft);
+  border-color: rgba(234, 92, 18, 0.38);
+  color: #f0a06f;
+  background: rgba(234, 92, 18, 0.11);
 }
 
 .dante-timeline-group-scroller {
   grid-column: 3;
+  position: relative;
   align-self: center;
   width: auto;
   min-width: 0;
@@ -356,7 +364,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 13%) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
   overscroll-behavior-x: contain;
 }
 
@@ -364,7 +372,7 @@
   display: grid;
   grid-template-columns: repeat(var(--timeline-group-count), 260px);
   align-items: center;
-  width: max(100%, calc(var(--timeline-group-count) * 260px));
+  width: max(100%, calc(var(--timeline-group-count) * 260px + 16px));
   min-width: 100%;
   height: 30px;
 }
@@ -378,24 +386,12 @@
   min-width: 0;
   padding: 0 12px;
   border: 1px solid
-    color-mix(
-      in srgb,
-      var(--timeline-group-color) 28%,
-      var(--dante-semantic-color-home-border-subtle)
-    );
+    color-mix(in srgb, var(--timeline-group-color) 28%, rgba(255, 255, 255, 0.08));
   border-radius: 999px;
-  color: color-mix(
-    in srgb,
-    var(--timeline-group-color) 72%,
-    var(--dante-semantic-color-home-text-primary)
-  );
-  background: color-mix(
-    in srgb,
-    var(--timeline-group-color) 12%,
-    var(--dante-semantic-color-home-surface-primary)
-  );
+  color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
+  background: color-mix(in srgb, var(--timeline-group-color) 12%, rgba(10, 19, 34, 0.92));
   box-shadow: none;
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 650;
   line-height: 1;
   cursor: grab;
@@ -410,8 +406,8 @@
 }
 
 .dante-timeline-group-chip > i {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--timeline-group-color);
@@ -424,12 +420,8 @@
 }
 
 .dante-timeline-group-chip.is-active {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: color-mix(
-    in srgb,
-    var(--timeline-group-color) 18%,
-    var(--dante-semantic-color-home-surface-primary)
-  );
+  color: #f3f6ff;
+  background: color-mix(in srgb, var(--timeline-group-color) 18%, rgba(10, 19, 34, 0.92));
 }
 
 .dante-timeline-group-chip.is-dimmed {
@@ -442,146 +434,130 @@
 }
 
 .dante-timeline-group-chip.is-drop-target {
-  box-shadow: 0 0 0 2px var(--dante-semantic-color-home-chrome-active);
+  box-shadow: 0 0 0 2px #ea5c12;
 }
 
-/* Event surface: accepted prototype proportions, tuned to the reviewed capture. */
-.timeline-ruler-label {
+/* Exact A2 event surface. Scope with the production root so the old M1 static
+ * Timeline cannot win on specificity. */
+.home-m1 .home-timeline--production .timeline-ruler-label {
   right: 12px;
-  color: var(--dante-semantic-color-home-text-muted);
+  color: #7f8da4;
   font-size: 9px;
+  line-height: 1;
 }
 
-.timeline-event-card,
+.home-m1 .home-timeline--production .timeline-event-card,
 .timeline-event-drag-overlay {
-  border: 1px solid
-    color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
   border-radius: 12px;
-  background: linear-gradient(
-    180deg,
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-surface-raised) 78%,
-      #07101d
-    ),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-surface-primary) 78%,
-      #06101d
-    )
-  );
+  background: linear-gradient(180deg, rgba(13, 24, 42, 0.94), rgba(9, 17, 31, 0.94));
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
-    0 10px 22px rgb(0 0 0 / 13%);
+    0 10px 22px rgba(0, 0, 0, 0.13);
 }
 
-.timeline-event-card.is-expanded {
+.home-m1 .home-timeline--production .timeline-event-card.is-expanded {
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
-    0 20px 40px rgb(0 0 0 / 28%),
-    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 34%, transparent);
+    0 20px 40px rgba(0, 0, 0, 0.28),
+    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 34%, rgba(255, 255, 255, 0.08));
 }
 
-.timeline-event-card.is-focused {
+.home-m1 .home-timeline--production .timeline-event-card.is-focused {
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
     0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 42%, transparent),
-    0 14px 28px rgb(0 0 0 / 22%);
+    0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
-.timeline-event-card__top {
-  padding: 6px 9px 2px 11px;
+.home-m1 .home-timeline--production .timeline-event-card__top {
+  padding: 7px 10px 3px 12px;
 }
 
-.timeline-event-card__title {
-  color: var(--dante-semantic-color-home-text-primary);
-  font-size: 9.5px;
-  font-weight: 720;
+.home-m1 .home-timeline--production .timeline-event-card__title {
+  color: #e7edf7;
+  font-size: 11px;
+  font-weight: 750;
   letter-spacing: 0;
-  line-height: 1.24;
+  line-height: 1.28;
 }
 
-.timeline-event-card__title:hover {
+.home-m1 .home-timeline--production .timeline-event-card__title:hover {
   color: color-mix(in srgb, var(--timeline-group-color) 54%, white);
 }
 
-.timeline-event-card__time {
+.home-m1 .home-timeline--production .timeline-event-card__time {
+  margin-top: 5px;
+  color: #9caabe;
+  font-size: 9px;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__meta {
   margin-top: 4px;
-  color: var(--dante-semantic-color-home-text-secondary);
-  font-size: 8px;
+  color: #75869f;
+  font-size: 8.5px;
 }
 
-.timeline-event-card__meta {
-  margin-top: 3px;
-  color: var(--dante-semantic-color-home-text-muted);
-  font-size: 7.5px;
+.home-m1 .home-timeline--production .timeline-event-card__subitems {
+  padding: 4px 5px 28px 8px;
+  margin: 2px 4px 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.07);
 }
 
-.timeline-event-card__expander {
+.home-m1 .home-timeline--production .timeline-event-card__subitem {
+  min-height: 25px;
+  padding: 4px 5px;
+  border-radius: 6px;
+  color: #95a3b8;
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__expander {
   right: 5px;
   bottom: 4px;
   left: 5px;
-  min-height: 23px;
-  padding: 3px 6px;
+  min-height: 25px;
+  padding: 4px 6px;
   border-radius: 6px;
-  color: var(--dante-semantic-color-home-text-muted);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-canvas) 72%,
-    transparent
-  );
-  font-size: 8.5px;
-  font-weight: 620;
+  color: #8492a8;
+  background: rgba(6, 14, 26, 0.72);
+  font-size: 9.5px;
+  font-weight: 650;
 }
 
-.timeline-now-line {
-  background: linear-gradient(
-    90deg,
-    var(--dante-semantic-color-home-chrome-active),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-chrome-active) 60%,
-      transparent
-    ),
-    transparent
-  );
+/* v43 exact now chrome. */
+.home-m1 .home-timeline--production .timeline-now-line {
+  background: linear-gradient(90deg, #ea5c12, rgba(234, 92, 18, 0.6), transparent);
 }
 
-.timeline-now-line::before {
-  border-color: var(--dante-semantic-color-home-chrome-active-text);
-  background: var(--dante-semantic-color-home-chrome-active);
+.home-m1 .home-timeline--production .timeline-now-line::before {
+  border-color: #f0a06f;
+  background: #ea5c12;
   box-shadow: none;
 }
 
-.timeline-now-line > span {
-  color: var(--dante-semantic-color-home-text-primary);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-chrome-active) 84%,
-    var(--dante-semantic-color-home-canvas)
-  );
+.home-m1 .home-timeline--production .timeline-now-line > span {
+  color: #fff;
+  background: #c94b0e;
   font-size: 9px;
   font-weight: 750;
 }
 
-.timeline-split-columns > span {
-  border-left-color: color-mix(
-    in srgb,
-    var(--timeline-group-color) 18%,
-    transparent
-  );
-  border-right-color: rgb(255 255 255 / 1.8%);
+.home-m1 .home-timeline--production .timeline-split-columns > span {
+  border-left-color: color-mix(in srgb, var(--timeline-group-color) 18%, transparent);
+  border-right-color: rgba(255, 255, 255, 0.018);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--timeline-group-color) 2.8%, transparent),
-    rgb(255 255 255 / 0.2%)
+    rgba(255, 255, 255, 0.002)
   );
 }
 
 @media (max-width: 1120px) {
   .dante-timeline-header-row {
-    grid-template-columns: 84px auto auto minmax(300px, 1fr) auto 14px;
-    column-gap: 8px;
+    grid-template-columns: 56px auto auto minmax(300px, 1fr) auto;
+    gap: 8px;
   }
 
   .dante-timeline-week > button {
@@ -596,17 +572,13 @@
   }
 
   .dante-timeline-header-row {
-    grid-template-columns: 64px auto auto 1fr auto 10px;
+    grid-template-columns: 56px auto auto 1fr auto;
     grid-template-rows: 56px 68px;
     grid-template-areas:
-      'add month now spacer actions gutter'
-      'week week week week week gutter';
+      'add month now spacer actions'
+      'week week week week week';
     height: 124px;
-  }
-
-  .dante-timeline-quick-add {
-    width: 36px;
-    height: 36px;
+    padding: 0 10px;
   }
 
   .dante-timeline-week-nav {
