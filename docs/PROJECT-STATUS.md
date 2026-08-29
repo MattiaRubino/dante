@@ -4,7 +4,7 @@
 - **Last reconciled:** 2026-08-29
 - **Protected `main`:** integrated source authority; current Access/Auth branch work remains unmerged until an explicit merge gate
 - **Active product vertical:** Access/Auth on `feature/access-auth`
-- **Current engineering gate:** PRE-M4 — Operational Observability Baseline
+- **Immediate decision:** PRE-M4 observability quick-feasibility check only; do not let it become a blocking infrastructure workstream
 - **Next product macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth
 - **Last closed macro-phase:** M3 — Email/Password Signin + AuthSession Spine
 - **Detailed forward plan:** `workstreams/access-auth-m4-m7-execution-plan.md`
@@ -55,11 +55,13 @@ CLOSED — Email/Password Signin + AuthSession Spine
 ENGINEERING GATE PASS
 USER ACCEPTANCE ACCEPTED
 
-PRE-M4 OBSERVABILITY BASELINE
-NEXT / NOT STARTED
+PRE-M4 OBSERVABILITY
+CONDITIONAL QUICK GATE
+DO NOW ONLY IF BOUNDED / NON-INVASIVE
+OTHERWISE DEFER TO M7
 
 ACCESS/AUTH M4
-PLANNED / START AFTER PRE-M4
+NEXT / NOT STARTED
 
 ACCESS/AUTH M5
 PLANNED
@@ -69,15 +71,16 @@ PLANNED
 
 ACCESS/AUTH M7
 PLANNED / FINAL WHOLE-VERTICAL GATE
+OBSERVABILITY MANDATORY HERE IF NOT CLOSED EARLIER
 
 WHOLE ACCESS/AUTH VERTICAL
 ACTIVE / NOT CLOSED
-PRE-M4 + M4–M7 REMAIN
+M4–M7 REMAIN
 ```
 
 M3 closure means the first real authenticated production path is accepted. It does **not** mean signup/recovery/providers/passkeys/native/whole-vertical closure are complete.
 
-PRE-M4 is a bounded engineering gate inside the same Access/Auth branch, not a new product vertical and not a new branch/worktree.
+PRE-M4 observability is **not** allowed to delay the product vertical merely to build infrastructure early. The next chat must first perform a bounded feasibility/readback. If the baseline is genuinely small and isolated, it may be completed before M4. If it expands into a real observability/infrastructure workstream, record the deferral and start M4; M7 then owns mandatory observability/release closure.
 
 ---
 
@@ -422,51 +425,43 @@ branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-Do not create another `feature/access-*` branch or worktree merely because PRE-M4 or M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user authorization.
+Do not create another `feature/access-*` branch or worktree merely because the observability feasibility check or M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user authorization.
 
 The separate `/home/mattia/projects/dante-frontend` worktree remains independent frontend territory and must not be accidentally used for Access/Auth commands.
 
 ---
 
-## 10. Immediate next boundary — PRE-M4 Observability
+## 10. Immediate decision — observability quick gate vs defer
 
-PRE-M4 goal:
+Before M4 implementation, perform **only a bounded observability feasibility/readback**.
 
-```text
-production-credible structured logging
-+ safe request/trace correlation
-+ OpenTelemetry traces/metrics contract
-+ collector/backend decision
-+ Grafana-class local exploration/dashboard path
-+ Auth secret-redaction policy/tests
-+ degraded telemetry behavior
-```
-
-Candidate stack to evaluate, not blindly preselect:
+Do it before M4 only if the useful baseline can stay within all of these boundaries:
 
 ```text
-OpenTelemetry instrumentation
-Grafana
-Grafana Alloy
-Loki
-Tempo
-Prometheus or Mimir
+no new product/domain persistence
+no invasive refactor of M3 Auth
+no new cross-service business architecture
+no production deployment/on-call project
+no CI/release redesign merely for observability
+no large permanent infrastructure subsystem
+telemetry failure remains non-fatal to Auth
+application instrumentation remains vendor-neutral
 ```
 
-Application instrumentation must remain vendor-neutral. Do not couple business code directly to Grafana/Loki/Tempo APIs.
-
-Important constraints:
+A quick pre-M4 baseline may include, if genuinely contained:
 
 ```text
-no password/session/CSRF/proof/provider-token leakage
-no sensitive bodies by default
-no raw user/session/request identifiers as metric labels
-bounded low-cardinality metric labels
-telemetry failure must not fail Auth correctness
-local collector/dashboard exposure must be development-bounded
+safe structured logs
+request_id / trace correlation
+minimal OpenTelemetry traces/metrics
+small disposable local collector/backend stack
+one representative Auth query/dashboard path
+secret-redaction proof
 ```
 
-PRE-M4 closes only after direct local proof. Detailed contract and closure matrix are in `docs/workstreams/access-auth-m4-m7-execution-plan.md`.
+If achieving that requires a real infrastructure workstream, **stop before implementation, document `DEFERRED TO M7`, and begin M4**. Do not build Grafana/Loki/Tempo/Prometheus/Mimir early just because they are good tools.
+
+If deferred, M4–M6 still must preserve safe logging and must never emit Auth/proof/provider/passkey secrets. Full observability then becomes a mandatory M7 release/operational gate before whole-vertical closure.
 
 ---
 
@@ -474,7 +469,9 @@ PRE-M4 closes only after direct local proof. Detailed contract and closure matri
 
 ### M4 — Signup + Verification + Recovery + Reset + Reauth
 
-Contract-first implementation of first-party lifecycle. Must prove anti-enumeration, proof expiry/replay/concurrency, email delivery degradation, password-reset/session-revocation semantics and recent-auth behavior on real PostgreSQL and real browser boundaries.
+**Status:** `NEXT / NOT STARTED`
+
+Contract-first implementation of the first-party lifecycle. Must prove anti-enumeration, proof expiry/replay/concurrency, email delivery degradation, password-reset/session-revocation semantics and recent-auth behavior on real PostgreSQL and real browser boundaries.
 
 ### M5 — Google + Apple + Passkeys + Explicit Linking
 
@@ -486,7 +483,7 @@ Existing Expo/React Native/Expo Router foundation, same canonical server-side Ac
 
 ### M7 — Security Hardening + Authenticated Handoff + Vertical Closure
 
-Whole-vertical threat review, session/account management as product-required, observability/release/security/privacy/accessibility regression, authenticated handoff into the next DANTE vertical and complete manual user acceptance.
+Whole-vertical threat review, session/account management as product-required, **mandatory observability/release baseline if not completed before M4**, security/privacy/accessibility regression, authenticated handoff into the next product vertical and complete manual user acceptance.
 
 Exact subphases, anti-patterns and exit gates are authoritative in:
 
@@ -502,7 +499,7 @@ Do not claim:
 
 ```text
 whole Access/Auth vertical closed                  NO
-PRE-M4 observability baseline                      NOT STARTED
+full observability baseline                        NOT YET CLOSED / CONDITIONAL PRE-M4 OR M7
 M4 signup/verification/recovery/reset/reauth       NOT STARTED
 Google / Apple production authentication           NOT STARTED
 passkeys/WebAuthn                                  NOT STARTED
