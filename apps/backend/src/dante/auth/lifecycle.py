@@ -15,6 +15,7 @@ from hashlib import sha256
 from typing import cast
 from uuid import UUID, uuid7
 
+from pydantic import SecretStr
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -42,6 +43,7 @@ from dante.auth.contracts import (
 )
 from dante.auth.email import EmailNormalizationError, NormalizedEmail, normalize_email
 from dante.auth.email_delivery import (
+    EmailCommand,
     EmailDeliveryPort,
     EmailDispatchCapacityError,
     NoopEmail,
@@ -101,6 +103,7 @@ class KeyedRateLimiter:
         self._lock = asyncio.Lock()
 
     async def consume(self, value: str, *, code: str) -> None:
+        """Consume one token using only a one-way in-memory key representation."""
         key = sha256(value.encode("utf-8")).digest()
         now = time.monotonic()
 
@@ -131,14 +134,27 @@ class KeyedRateLimiter:
 
 
 @dataclass(frozen=True, slots=True)
+class _EligibleRecoveryIdentity:
+    account_ref: UUID
+    email_identity_ref: UUID
+    email_address: str
+    email_comparison_key: str
+    password_credential_ref: UUID
+    verifier: str
+    pepper_key_id: str
+    credential_updated_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
 class _RecoverySnapshot:
     password_recovery_ref: UUID
     account_ref: UUID
+    email_identity_ref: UUID
+    email_address: str
     secret_verifier: bytes
+    issued_at: datetime
     expires_at: datetime
     account_status_code: str
-    email_address: str
-    email_verified: bool
     password_credential_ref: UUID
     verifier: str
     pepper_key_id: str
@@ -189,6 +205,7 @@ class AuthLifecycleService:
 
     @property
     def session_cookie_max_age_seconds(self) -> int:
+        """Return browser cookie lifetime for newly established/rotated sessions."""
         return self._settings.session_max_age_seconds
 
     async def create_signup(
@@ -200,7 +217,7 @@ class AuthLifecycleService:
     ) -> SignupCreated:
         """Create isolated pending signup proof state without creating an Account."""
         normalized_email = self._normalize_email(email)
-        normalized_password = self._normalize_new_password(password)
+        normalized_password = self._normalize_new_password(password, pointer="/password")
         await self._limiters.signup_email.consume(
             normalized_email.comparison_key,
             code="auth.signup_rate_limited",
@@ -258,7 +275,7 @@ class AuthLifecycleService:
         signup_ref: UUID,
         source_context: str,
     ) -> SignupCreated:
-        """Rotate only the OTP for one pending signup challenge."""
+        """Rotate only the OTP owned by one pending signup challenge."""
         snapshot = await self._read_signup_challenge(signup_ref)
         if snapshot is None:
             raise VerificationInvalidOrExpiredError()
@@ -339,7 +356,7 @@ class AuthLifecycleService:
         signup_ref: UUID,
         code: str,
     ) -> IssuedSession | ExistingAccountSignupResult:
-        """Consume one OTP and atomically establish canonical Account state or resolve collision."""
+        """Consume one OTP and establish canonical Account state or a safe collision outcome."""
         now = datetime.now(UTC)
         auth_session_ref = uuid7()
         account_ref = uuid7()
@@ -349,6 +366,9 @@ class AuthLifecycleService:
         secret_verifier = session_secret_verifier(session_secret)
         expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
         comparison_key: str | None = None
+        email_address: str | None = None
+        password_verifier: str | None = None
+        password_pepper_key_id: str | None = None
         ambiguous_commit = False
 
         database_session = self._session_factory()
@@ -387,6 +407,9 @@ class AuthLifecycleService:
                 raise VerificationInvalidOrExpiredError()
 
             comparison_key = challenge.email_comparison_key
+            email_address = challenge.email_address
+            password_verifier = challenge.password_verifier
+            password_pepper_key_id = challenge.password_pepper_key_id
             existing = await database_session.scalar(
                 select(EmailIdentityRow.email_identity_ref).where(
                     EmailIdentityRow.comparison_key == comparison_key
@@ -412,7 +435,7 @@ class AuthLifecycleService:
                     EmailIdentityRow(
                         email_identity_ref=email_identity_ref,
                         account_ref=account_ref,
-                        address=challenge.email_address,
+                        address=email_address,
                         comparison_key=comparison_key,
                         created_at=now,
                         verified_at=now,
@@ -420,8 +443,8 @@ class AuthLifecycleService:
                     PasswordCredentialRow(
                         password_credential_ref=password_credential_ref,
                         account_ref=account_ref,
-                        verifier=challenge.password_verifier,
-                        pepper_key_id=challenge.password_pepper_key_id,
+                        verifier=password_verifier,
+                        pepper_key_id=password_pepper_key_id,
                         created_at=now,
                         updated_at=now,
                     ),
@@ -456,7 +479,6 @@ class AuthLifecycleService:
         except IntegrityError as exc:
             await self._safe_rollback(database_session)
             if comparison_key is not None and self._is_email_uniqueness_conflict(exc):
-                await database_session.close()
                 await self._resolve_signup_collision(comparison_key)
                 return ExistingAccountSignupResult()
             raise AuthServiceUnavailableError(retryable=False) from exc
@@ -466,10 +488,17 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
+        assert comparison_key is not None
+        assert email_address is not None
+        assert password_verifier is not None
+        assert password_pepper_key_id is not None
         if ambiguous_commit:
             return await self._reconcile_signup_commit(
                 signup_ref=signup_ref,
-                comparison_key=cast(str, comparison_key),
+                comparison_key=comparison_key,
+                email_address=email_address,
+                password_verifier=password_verifier,
+                password_pepper_key_id=password_pepper_key_id,
                 account_ref=account_ref,
                 email_identity_ref=email_identity_ref,
                 password_credential_ref=password_credential_ref,
@@ -497,6 +526,7 @@ class AuthLifecycleService:
         source_context: str,
     ) -> None:
         """Issue a neutral, single-current recovery proof for eligible password Accounts."""
+        started_at = time.monotonic()
         normalized_email = self._normalize_email(email)
         await self._limiters.recovery_email.consume(
             normalized_email.comparison_key,
@@ -510,21 +540,19 @@ class AuthLifecycleService:
         snapshot = await self._read_eligible_recovery_identity(normalized_email.comparison_key)
         if snapshot is None:
             await self._enqueue(NoopEmail())
+            await self._pad_recovery_success(started_at)
             return
 
         recovery_ref = uuid7()
         proof = issue_recovery_proof()
-        now = datetime.now(UTC)
-        expires_at = now + timedelta(seconds=self._settings.recovery_lifetime_seconds)
         committed = await self._persist_recovery_challenge(
             snapshot=snapshot,
             password_recovery_ref=recovery_ref,
             secret_verifier=proof.verifier,
-            issued_at=now,
-            expires_at=expires_at,
         )
         if not committed:
             await self._enqueue(NoopEmail())
+            await self._pad_recovery_success(started_at)
             return
 
         await self._enqueue(
@@ -534,6 +562,7 @@ class AuthLifecycleService:
                 secret=proof.secret,
             )
         )
+        await self._pad_recovery_success(started_at)
 
     async def validate_password_recovery(
         self,
@@ -554,10 +583,22 @@ class AuthLifecycleService:
             ):
                 row = (
                     await database_session.execute(
-                        select(PasswordRecoveryChallengeRow, AccountRow, PasswordCredentialRow)
+                        select(
+                            PasswordRecoveryChallengeRow,
+                            AccountRow,
+                            EmailIdentityRow,
+                            PasswordCredentialRow,
+                        )
                         .join(
                             AccountRow,
                             AccountRow.account_ref == PasswordRecoveryChallengeRow.account_ref,
+                        )
+                        .join(
+                            EmailIdentityRow,
+                            (EmailIdentityRow.email_identity_ref
+                             == PasswordRecoveryChallengeRow.email_identity_ref)
+                            & (EmailIdentityRow.account_ref
+                               == PasswordRecoveryChallengeRow.account_ref),
                         )
                         .join(
                             PasswordCredentialRow,
@@ -575,10 +616,11 @@ class AuthLifecycleService:
 
         if row is None:
             return RecoveryValidation(valid=False)
-        challenge, account, _credential = row
+        challenge, account, email_identity, _credential = row
         return RecoveryValidation(
             valid=(
                 account.status_code == "active"
+                and email_identity.verified_at is not None
                 and challenge.expires_at > now
                 and hmac.compare_digest(verifier, challenge.secret_verifier)
             )
@@ -591,29 +633,35 @@ class AuthLifecycleService:
         secret: str,
         new_password: str,
     ) -> None:
-        """Consume recovery proof, replace password and revoke every AuthSession atomically."""
+        """Consume recovery proof, replace password and revoke every prior AuthSession."""
         snapshot = await self._read_recovery_snapshot(password_recovery_ref)
-        now = datetime.now(UTC)
+        preflight_now = datetime.now(UTC)
         if (
             snapshot is None
-            or snapshot.expires_at <= now
+            or snapshot.account_status_code != "active"
+            or snapshot.expires_at <= preflight_now
             or not recovery_secret_matches(secret, snapshot.secret_verifier)
         ):
             raise RecoveryInvalidOrExpiredError()
 
-        normalized_password = self._normalize_new_password(new_password)
+        normalized_password = self._normalize_new_password(
+            new_password,
+            pointer="/new_password",
+        )
         await self._require_uncompromised_new_password(normalized_password)
         new_verifier, new_pepper_key_id = await self._password_kdf.hash_normalized_password(
             normalized_password
         )
 
         ambiguous_commit = False
+        mutation_at: datetime | None = None
         database_session = self._session_factory()
         try:
             await database_session.begin()
             await database_session.execute(
                 select(func.dante.acquire_account_security_lock(snapshot.account_ref))
             )
+            mutation_at = datetime.now(UTC)
             account = await database_session.scalar(
                 select(AccountRow).where(AccountRow.account_ref == snapshot.account_ref)
             )
@@ -622,20 +670,18 @@ class AuthLifecycleService:
                     PasswordCredentialRow.account_ref == snapshot.account_ref
                 )
             )
-            challenge = await database_session.scalar(
-                select(PasswordRecoveryChallengeRow).where(
-                    PasswordRecoveryChallengeRow.password_recovery_ref
-                    == password_recovery_ref,
-                    PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
+            email_identity = await database_session.scalar(
+                select(EmailIdentityRow).where(
+                    EmailIdentityRow.email_identity_ref == snapshot.email_identity_ref,
+                    EmailIdentityRow.account_ref == snapshot.account_ref,
                 )
             )
             if (
                 account is None
                 or account.status_code != "active"
                 or credential is None
-                or challenge is None
-                or challenge.expires_at <= now
-                or not hmac.compare_digest(challenge.secret_verifier, snapshot.secret_verifier)
+                or email_identity is None
+                or email_identity.verified_at is None
                 or credential.password_credential_ref != snapshot.password_credential_ref
                 or credential.verifier != snapshot.verifier
                 or credential.pepper_key_id != snapshot.pepper_key_id
@@ -644,14 +690,26 @@ class AuthLifecycleService:
                 await database_session.rollback()
                 raise RecoveryInvalidOrExpiredError()
 
+            consumed = await database_session.scalar(
+                delete(PasswordRecoveryChallengeRow)
+                .where(
+                    PasswordRecoveryChallengeRow.password_recovery_ref
+                    == password_recovery_ref,
+                    PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
+                    PasswordRecoveryChallengeRow.email_identity_ref
+                    == snapshot.email_identity_ref,
+                    PasswordRecoveryChallengeRow.secret_verifier == snapshot.secret_verifier,
+                    PasswordRecoveryChallengeRow.expires_at > mutation_at,
+                )
+                .returning(PasswordRecoveryChallengeRow.password_recovery_ref)
+            )
+            if consumed is None:
+                await database_session.rollback()
+                raise RecoveryInvalidOrExpiredError()
+
             credential.verifier = new_verifier
             credential.pepper_key_id = new_pepper_key_id
-            credential.updated_at = now
-            await database_session.execute(
-                delete(PasswordRecoveryChallengeRow).where(
-                    PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref
-                )
-            )
+            credential.updated_at = mutation_at
             await database_session.execute(
                 update(AuthSessionRow)
                 .where(
@@ -659,7 +717,7 @@ class AuthLifecycleService:
                     AuthSessionRow.revoked_at.is_(None),
                 )
                 .values(
-                    revoked_at=now,
+                    revoked_at=mutation_at,
                     revocation_reason_code="password_reset",
                 )
             )
@@ -677,12 +735,13 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
+        assert mutation_at is not None
         if ambiguous_commit:
             await self._reconcile_reset_commit(
                 snapshot=snapshot,
                 new_verifier=new_verifier,
                 new_pepper_key_id=new_pepper_key_id,
-                updated_at=now,
+                mutation_at=mutation_at,
             )
 
         try:
@@ -696,11 +755,12 @@ class AuthLifecycleService:
         self,
         *,
         admitted: AdmittedSession,
+        presented_session_verifier: bytes,
         password: str,
         source_context: str,
         request_id: str,
     ) -> IssuedSession:
-        """Refresh recent auth on the same session while rotating its bearer secret."""
+        """Refresh recent auth on the same session while rotating its exact presented bearer."""
         await self._limiters.reauth.consume(
             f"{admitted.principal.auth_session_ref}:{source_context}",
             code="auth.reauthentication_rate_limited",
@@ -737,9 +797,13 @@ class AuthLifecycleService:
 
         new_session_secret = generate_session_secret()
         new_secret_verifier = session_secret_verifier(new_session_secret)
-        now = datetime.now(UTC)
-        expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
         ambiguous_commit = False
+        mutation_at: datetime | None = None
+        authenticated_at: datetime | None = None
+        old_recent_auth_at: datetime | None = None
+        old_last_user_activity_at: datetime | None = None
+        old_expires_at: datetime | None = None
+        expires_at: datetime | None = None
 
         database_session = self._session_factory()
         try:
@@ -747,6 +811,9 @@ class AuthLifecycleService:
             await database_session.execute(
                 select(func.dante.acquire_account_security_lock(snapshot.account_ref))
             )
+            mutation_at = datetime.now(UTC)
+            expires_at = mutation_at + timedelta(seconds=self._settings.session_max_age_seconds)
+
             account = await database_session.scalar(
                 select(AccountRow).where(AccountRow.account_ref == snapshot.account_ref)
             )
@@ -759,22 +826,23 @@ class AuthLifecycleService:
                 select(AuthSessionRow).where(
                     AuthSessionRow.auth_session_ref == admitted.principal.auth_session_ref,
                     AuthSessionRow.account_ref == snapshot.account_ref,
+                    AuthSessionRow.secret_verifier == presented_session_verifier,
+                    AuthSessionRow.revoked_at.is_(None),
                 )
             )
-            idle_deadline = (
-                auth_session.last_user_activity_at
-                + timedelta(seconds=self._settings.session_idle_timeout_seconds)
-                if auth_session is not None
-                else now
+            if auth_session is None:
+                await database_session.rollback()
+                raise InvalidCredentialsError()
+
+            idle_deadline = auth_session.last_user_activity_at + timedelta(
+                seconds=self._settings.session_idle_timeout_seconds
             )
             if (
                 account is None
                 or account.status_code != "active"
                 or credential is None
-                or auth_session is None
-                or auth_session.revoked_at is not None
-                or auth_session.expires_at <= now
-                or idle_deadline <= now
+                or auth_session.expires_at <= mutation_at
+                or idle_deadline <= mutation_at
                 or credential.password_credential_ref != snapshot.password_credential_ref
                 or credential.verifier != snapshot.verifier
                 or credential.pepper_key_id != snapshot.pepper_key_id
@@ -783,16 +851,40 @@ class AuthLifecycleService:
                 await database_session.rollback()
                 raise InvalidCredentialsError()
 
+            authenticated_at = auth_session.authenticated_at
+            old_recent_auth_at = auth_session.recent_auth_at
+            old_last_user_activity_at = auth_session.last_user_activity_at
+            old_expires_at = auth_session.expires_at
+
             if replacement_verifier is not None:
                 credential.verifier = replacement_verifier[0]
                 credential.pepper_key_id = replacement_verifier[1]
-                credential.updated_at = now
+                credential.updated_at = mutation_at
 
-            authenticated_at = auth_session.authenticated_at
-            auth_session.secret_verifier = new_secret_verifier
-            auth_session.recent_auth_at = now
-            auth_session.last_user_activity_at = now
-            auth_session.expires_at = expires_at
+            rotated = await database_session.scalar(
+                update(AuthSessionRow)
+                .where(
+                    AuthSessionRow.auth_session_ref == admitted.principal.auth_session_ref,
+                    AuthSessionRow.account_ref == snapshot.account_ref,
+                    AuthSessionRow.secret_verifier == presented_session_verifier,
+                    AuthSessionRow.revoked_at.is_(None),
+                    AuthSessionRow.expires_at > mutation_at,
+                    AuthSessionRow.last_user_activity_at
+                    > mutation_at
+                    - timedelta(seconds=self._settings.session_idle_timeout_seconds),
+                )
+                .values(
+                    secret_verifier=new_secret_verifier,
+                    recent_auth_at=mutation_at,
+                    last_user_activity_at=mutation_at,
+                    expires_at=expires_at,
+                )
+                .returning(AuthSessionRow.authenticated_at)
+            )
+            if rotated is None:
+                await database_session.rollback()
+                raise InvalidCredentialsError()
+
             try:
                 await database_session.commit()
             except DBAPIError as exc:
@@ -807,12 +899,22 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
+        assert mutation_at is not None
+        assert authenticated_at is not None
+        assert old_recent_auth_at is not None
+        assert old_last_user_activity_at is not None
+        assert old_expires_at is not None
+        assert expires_at is not None
         if ambiguous_commit:
             return await self._reconcile_reauth_commit(
                 account_ref=snapshot.account_ref,
                 auth_session_ref=admitted.principal.auth_session_ref,
                 authenticated_at=authenticated_at,
-                recent_auth_at=now,
+                old_secret_verifier=presented_session_verifier,
+                old_recent_auth_at=old_recent_auth_at,
+                old_last_user_activity_at=old_last_user_activity_at,
+                old_expires_at=old_expires_at,
+                recent_auth_at=mutation_at,
                 expires_at=expires_at,
                 new_secret_verifier=new_secret_verifier,
                 new_session_secret=new_session_secret,
@@ -822,7 +924,7 @@ class AuthLifecycleService:
             account_ref=snapshot.account_ref,
             auth_session_ref=admitted.principal.auth_session_ref,
             authenticated_at=authenticated_at,
-            recent_auth_at=now,
+            recent_auth_at=mutation_at,
             expires_at=expires_at,
             secret_verifier=new_secret_verifier,
             session_secret=new_session_secret,
@@ -837,11 +939,11 @@ class AuthLifecycleService:
             raise ReauthenticationRequiredError()
 
     async def _insert_signup_challenge(self, row: PasswordSignupChallengeRow) -> None:
+        await self._cleanup_expired_challenges(datetime.now(UTC))
         ambiguous_commit = False
         database_session = self._session_factory()
         try:
             await database_session.begin()
-            await self._cleanup_expired(database_session, datetime.now(UTC))
             database_session.add(row)
             try:
                 await database_session.commit()
@@ -866,7 +968,7 @@ class AuthLifecycleService:
             or persisted.email_comparison_key != row.email_comparison_key
             or persisted.password_verifier != row.password_verifier
             or persisted.password_pepper_key_id != row.password_pepper_key_id
-            or persisted.otp_verifier != row.otp_verifier
+            or not hmac.compare_digest(persisted.otp_verifier, row.otp_verifier)
             or persisted.otp_key_id != row.otp_key_id
             or persisted.created_at != row.created_at
             or persisted.updated_at != row.updated_at
@@ -880,28 +982,30 @@ class AuthLifecycleService:
     async def _persist_recovery_challenge(
         self,
         *,
-        snapshot: _RecoverySnapshot,
+        snapshot: _EligibleRecoveryIdentity,
         password_recovery_ref: UUID,
         secret_verifier: bytes,
-        issued_at: datetime,
-        expires_at: datetime,
     ) -> bool:
+        await self._cleanup_expired_challenges(datetime.now(UTC))
         ambiguous_commit = False
+        issued_at: datetime | None = None
+        expires_at: datetime | None = None
         database_session = self._session_factory()
         try:
             await database_session.begin()
             await database_session.execute(
                 select(func.dante.acquire_account_security_lock(snapshot.account_ref))
             )
-            current = await self._read_eligible_recovery_identity_in_session(
+            current = await self._read_exact_eligible_recovery_identity_in_session(
                 database_session,
-                snapshot.account_ref,
+                snapshot,
             )
             if current is None:
                 await database_session.rollback()
                 return False
 
-            await self._cleanup_expired(database_session, issued_at)
+            issued_at = datetime.now(UTC)
+            expires_at = issued_at + timedelta(seconds=self._settings.recovery_lifetime_seconds)
             await database_session.execute(
                 delete(PasswordRecoveryChallengeRow).where(
                     PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref
@@ -911,6 +1015,7 @@ class AuthLifecycleService:
                 PasswordRecoveryChallengeRow(
                     password_recovery_ref=password_recovery_ref,
                     account_ref=snapshot.account_ref,
+                    email_identity_ref=snapshot.email_identity_ref,
                     secret_verifier=secret_verifier,
                     issued_at=issued_at,
                     expires_at=expires_at,
@@ -928,6 +1033,8 @@ class AuthLifecycleService:
         finally:
             await database_session.close()
 
+        assert issued_at is not None
+        assert expires_at is not None
         if not ambiguous_commit:
             return True
 
@@ -949,6 +1056,7 @@ class AuthLifecycleService:
             raise AuthServiceUnavailableError(retryable=True)
         if (
             persisted.account_ref != snapshot.account_ref
+            or persisted.email_identity_ref != snapshot.email_identity_ref
             or not hmac.compare_digest(persisted.secret_verifier, secret_verifier)
             or persisted.issued_at != issued_at
             or persisted.expires_at != expires_at
@@ -982,6 +1090,9 @@ class AuthLifecycleService:
         *,
         signup_ref: UUID,
         comparison_key: str,
+        email_address: str,
+        password_verifier: str,
+        password_pepper_key_id: str,
         account_ref: UUID,
         email_identity_ref: UUID,
         password_credential_ref: UUID,
@@ -989,7 +1100,7 @@ class AuthLifecycleService:
         secret_verifier: bytes,
         created_at: datetime,
         expires_at: datetime,
-        session_secret: object,
+        session_secret: SecretStr,
     ) -> IssuedSession | ExistingAccountSignupResult:
         try:
             async with (
@@ -1014,14 +1125,21 @@ class AuthLifecycleService:
                         AuthSessionRow.auth_session_ref == auth_session_ref
                     )
                 )
-                challenge = await database_session.scalar(
-                    select(PasswordSignupChallengeRow.signup_ref).where(
-                        PasswordSignupChallengeRow.signup_ref == signup_ref
+                sibling_count = await database_session.scalar(
+                    select(func.count())
+                    .select_from(PasswordSignupChallengeRow)
+                    .where(
+                        PasswordSignupChallengeRow.email_comparison_key == comparison_key
                     )
                 )
                 canonical_email = await database_session.scalar(
                     select(EmailIdentityRow).where(
                         EmailIdentityRow.comparison_key == comparison_key
+                    )
+                )
+                original_challenge = await database_session.scalar(
+                    select(PasswordSignupChallengeRow.signup_ref).where(
+                        PasswordSignupChallengeRow.signup_ref == signup_ref
                     )
                 )
         except SQLAlchemyError as exc:
@@ -1032,17 +1150,35 @@ class AuthLifecycleService:
             and email_identity is not None
             and credential is not None
             and auth_session is not None
+            and canonical_email is not None
             and account.account_ref == account_ref
             and account.status_code == "active"
+            and account.created_at == created_at
+            and account.disabled_at is None
+            and email_identity.email_identity_ref == email_identity_ref
             and email_identity.account_ref == account_ref
+            and email_identity.address == email_address
             and email_identity.comparison_key == comparison_key
+            and email_identity.created_at == created_at
             and email_identity.verified_at == created_at
+            and canonical_email.email_identity_ref == email_identity_ref
+            and credential.password_credential_ref == password_credential_ref
             and credential.account_ref == account_ref
+            and credential.verifier == password_verifier
+            and credential.pepper_key_id == password_pepper_key_id
+            and credential.created_at == created_at
+            and credential.updated_at == created_at
             and auth_session.account_ref == account_ref
             and hmac.compare_digest(auth_session.secret_verifier, secret_verifier)
             and auth_session.created_at == created_at
+            and auth_session.authenticated_at == created_at
+            and auth_session.recent_auth_at == created_at
+            and auth_session.last_user_activity_at == created_at
             and auth_session.expires_at == expires_at
-            and challenge is None
+            and auth_session.revoked_at is None
+            and auth_session.revocation_reason_code is None
+            and original_challenge is None
+            and sibling_count == 0
         )
         if exact_new_account:
             return self._issued_session(
@@ -1052,12 +1188,12 @@ class AuthLifecycleService:
                 recent_auth_at=created_at,
                 expires_at=expires_at,
                 secret_verifier=secret_verifier,
-                session_secret=cast(object, session_secret),
+                session_secret=session_secret,
             )
         if account is None and canonical_email is not None:
             await self._resolve_signup_collision(comparison_key)
             return ExistingAccountSignupResult()
-        if account is None and challenge is not None:
+        if account is None and canonical_email is None and original_challenge is not None:
             raise AuthServiceUnavailableError(retryable=True)
         raise AuthIntegrityError("ambiguous signup verification reconciliation mismatched state")
 
@@ -1067,7 +1203,7 @@ class AuthLifecycleService:
         snapshot: _RecoverySnapshot,
         new_verifier: str,
         new_pepper_key_id: str,
-        updated_at: datetime,
+        mutation_at: datetime,
     ) -> None:
         try:
             async with (
@@ -1081,14 +1217,16 @@ class AuthLifecycleService:
                 )
                 challenge = await database_session.scalar(
                     select(PasswordRecoveryChallengeRow.password_recovery_ref).where(
-                        PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref
+                        PasswordRecoveryChallengeRow.password_recovery_ref
+                        == snapshot.password_recovery_ref
                     )
                 )
-                unrevoked_sessions = await database_session.scalar(
+                prior_unrevoked_sessions = await database_session.scalar(
                     select(func.count())
                     .select_from(AuthSessionRow)
                     .where(
                         AuthSessionRow.account_ref == snapshot.account_ref,
+                        AuthSessionRow.created_at <= mutation_at,
                         AuthSessionRow.revoked_at.is_(None),
                     )
                 )
@@ -1099,9 +1237,9 @@ class AuthLifecycleService:
             credential is not None
             and credential.verifier == new_verifier
             and credential.pepper_key_id == new_pepper_key_id
-            and credential.updated_at == updated_at
+            and credential.updated_at == mutation_at
             and challenge is None
-            and unrevoked_sessions == 0
+            and prior_unrevoked_sessions == 0
         ):
             return
         if (
@@ -1119,10 +1257,14 @@ class AuthLifecycleService:
         account_ref: UUID,
         auth_session_ref: UUID,
         authenticated_at: datetime,
+        old_secret_verifier: bytes,
+        old_recent_auth_at: datetime,
+        old_last_user_activity_at: datetime,
+        old_expires_at: datetime,
         recent_auth_at: datetime,
         expires_at: datetime,
         new_secret_verifier: bytes,
-        new_session_secret: object,
+        new_session_secret: SecretStr,
     ) -> IssuedSession:
         try:
             async with (
@@ -1143,7 +1285,9 @@ class AuthLifecycleService:
         if (
             persisted.revoked_at is None
             and hmac.compare_digest(persisted.secret_verifier, new_secret_verifier)
+            and persisted.authenticated_at == authenticated_at
             and persisted.recent_auth_at == recent_auth_at
+            and persisted.last_user_activity_at == recent_auth_at
             and persisted.expires_at == expires_at
         ):
             return self._issued_session(
@@ -1153,8 +1297,17 @@ class AuthLifecycleService:
                 recent_auth_at=recent_auth_at,
                 expires_at=expires_at,
                 secret_verifier=new_secret_verifier,
-                session_secret=cast(object, new_session_secret),
+                session_secret=new_session_secret,
             )
+        if (
+            persisted.revoked_at is None
+            and hmac.compare_digest(persisted.secret_verifier, old_secret_verifier)
+            and persisted.authenticated_at == authenticated_at
+            and persisted.recent_auth_at == old_recent_auth_at
+            and persisted.last_user_activity_at == old_last_user_activity_at
+            and persisted.expires_at == old_expires_at
+        ):
+            raise AuthServiceUnavailableError(retryable=True)
         raise AuthServiceUnavailableError(retryable=False)
 
     async def _read_signup_challenge(
@@ -1189,7 +1342,7 @@ class AuthLifecycleService:
     async def _read_eligible_recovery_identity(
         self,
         comparison_key: str,
-    ) -> _RecoverySnapshot | None:
+    ) -> _EligibleRecoveryIdentity | None:
         try:
             async with (
                 self._session_factory() as database_session,
@@ -1216,25 +1369,22 @@ class AuthLifecycleService:
         email_identity, account, credential = row
         if email_identity.verified_at is None or account.status_code != "active":
             return None
-        return _RecoverySnapshot(
-            password_recovery_ref=uuid7(),
+        return _EligibleRecoveryIdentity(
             account_ref=account.account_ref,
-            secret_verifier=b"",
-            expires_at=datetime.min.replace(tzinfo=UTC),
-            account_status_code=account.status_code,
+            email_identity_ref=email_identity.email_identity_ref,
             email_address=email_identity.address,
-            email_verified=True,
+            email_comparison_key=email_identity.comparison_key,
             password_credential_ref=credential.password_credential_ref,
             verifier=credential.verifier,
             pepper_key_id=credential.pepper_key_id,
             credential_updated_at=credential.updated_at,
         )
 
-    async def _read_eligible_recovery_identity_in_session(
+    async def _read_exact_eligible_recovery_identity_in_session(
         self,
         database_session: AsyncSession,
-        account_ref: UUID,
-    ) -> _RecoverySnapshot | None:
+        expected: _EligibleRecoveryIdentity,
+    ) -> _EligibleRecoveryIdentity | None:
         row = (
             await database_session.execute(
                 select(EmailIdentityRow, AccountRow, PasswordCredentialRow)
@@ -1244,28 +1394,30 @@ class AuthLifecycleService:
                     PasswordCredentialRow.account_ref == AccountRow.account_ref,
                 )
                 .where(
-                    AccountRow.account_ref == account_ref,
+                    AccountRow.account_ref == expected.account_ref,
                     AccountRow.status_code == "active",
+                    EmailIdentityRow.email_identity_ref == expected.email_identity_ref,
+                    EmailIdentityRow.comparison_key == expected.email_comparison_key,
                     EmailIdentityRow.verified_at.is_not(None),
+                    PasswordCredentialRow.password_credential_ref
+                    == expected.password_credential_ref,
                 )
             )
-        ).first()
+        ).one_or_none()
         if row is None:
             return None
         email_identity, account, credential = row
-        return _RecoverySnapshot(
-            password_recovery_ref=uuid7(),
+        current = _EligibleRecoveryIdentity(
             account_ref=account.account_ref,
-            secret_verifier=b"",
-            expires_at=datetime.min.replace(tzinfo=UTC),
-            account_status_code=account.status_code,
+            email_identity_ref=email_identity.email_identity_ref,
             email_address=email_identity.address,
-            email_verified=True,
+            email_comparison_key=email_identity.comparison_key,
             password_credential_ref=credential.password_credential_ref,
             verifier=credential.verifier,
             pepper_key_id=credential.pepper_key_id,
             credential_updated_at=credential.updated_at,
         )
+        return current if current == expected else None
 
     async def _read_recovery_snapshot(
         self,
@@ -1295,7 +1447,10 @@ class AuthLifecycleService:
                         )
                         .join(
                             EmailIdentityRow,
-                            EmailIdentityRow.account_ref == PasswordRecoveryChallengeRow.account_ref,
+                            (EmailIdentityRow.email_identity_ref
+                             == PasswordRecoveryChallengeRow.email_identity_ref)
+                            & (EmailIdentityRow.account_ref
+                               == PasswordRecoveryChallengeRow.account_ref),
                         )
                         .where(
                             PasswordRecoveryChallengeRow.password_recovery_ref
@@ -1303,7 +1458,7 @@ class AuthLifecycleService:
                             EmailIdentityRow.verified_at.is_not(None),
                         )
                     )
-                ).first()
+                ).one_or_none()
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
         if row is None:
@@ -1312,11 +1467,12 @@ class AuthLifecycleService:
         return _RecoverySnapshot(
             password_recovery_ref=challenge.password_recovery_ref,
             account_ref=challenge.account_ref,
+            email_identity_ref=challenge.email_identity_ref,
+            email_address=email_identity.address,
             secret_verifier=challenge.secret_verifier,
+            issued_at=challenge.issued_at,
             expires_at=challenge.expires_at,
             account_status_code=account.status_code,
-            email_address=email_identity.address,
-            email_verified=email_identity.verified_at is not None,
             password_credential_ref=credential.password_credential_ref,
             verifier=credential.verifier,
             pepper_key_id=credential.pepper_key_id,
@@ -1356,7 +1512,8 @@ class AuthLifecycleService:
             credential_updated_at=credential.updated_at,
         )
 
-    async def _cleanup_expired(self, database_session: AsyncSession, now: datetime) -> None:
+    async def _cleanup_expired_challenges(self, now: datetime) -> None:
+        """Bound cleanup in its own short transaction, never under an Account security lock."""
         expired_signup_refs = (
             select(PasswordSignupChallengeRow.signup_ref)
             .where(PasswordSignupChallengeRow.signup_expires_at <= now)
@@ -1369,16 +1526,23 @@ class AuthLifecycleService:
             .order_by(PasswordRecoveryChallengeRow.expires_at)
             .limit(_EXPIRED_CLEANUP_BATCH)
         )
-        await database_session.execute(
-            delete(PasswordSignupChallengeRow).where(
-                PasswordSignupChallengeRow.signup_ref.in_(expired_signup_refs)
-            )
-        )
-        await database_session.execute(
-            delete(PasswordRecoveryChallengeRow).where(
-                PasswordRecoveryChallengeRow.password_recovery_ref.in_(expired_recovery_refs)
-            )
-        )
+        try:
+            async with self._session_factory() as database_session:
+                async with database_session.begin():
+                    await database_session.execute(
+                        delete(PasswordSignupChallengeRow).where(
+                            PasswordSignupChallengeRow.signup_ref.in_(expired_signup_refs)
+                        )
+                    )
+                    await database_session.execute(
+                        delete(PasswordRecoveryChallengeRow).where(
+                            PasswordRecoveryChallengeRow.password_recovery_ref.in_(
+                                expired_recovery_refs
+                            )
+                        )
+                    )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
 
     async def _require_uncompromised_new_password(self, normalized_password: str) -> None:
         try:
@@ -1388,11 +1552,18 @@ class AuthLifecycleService:
         if breached:
             raise PasswordCompromisedError()
 
-    async def _enqueue(self, command: object) -> None:
+    async def _enqueue(self, command: EmailCommand) -> None:
         try:
-            await self._email_delivery.enqueue(cast(object, command))
+            await self._email_delivery.enqueue(command)
         except EmailDispatchCapacityError as exc:
             raise EmailDeliveryUnavailableError() from exc
+
+    async def _pad_recovery_success(self, started_at: float) -> None:
+        remaining = self._settings.recovery_response_floor_seconds - (
+            time.monotonic() - started_at
+        )
+        if remaining > 0:
+            await asyncio.sleep(remaining)
 
     @staticmethod
     def _normalize_email(value: str) -> NormalizedEmail:
@@ -1406,12 +1577,12 @@ class AuthLifecycleService:
             ) from exc
 
     @staticmethod
-    def _normalize_new_password(value: str) -> str:
+    def _normalize_new_password(value: str, *, pointer: str) -> str:
         try:
             return validate_new_password(value)
         except PasswordInputError as exc:
             raise AuthInputError(
-                pointer="/password",
+                pointer=pointer,
                 code=exc.code,
                 detail=exc.detail,
                 parameters=exc.parameters,
@@ -1431,8 +1602,7 @@ class AuthLifecycleService:
 
     @staticmethod
     def _is_email_uniqueness_conflict(exc: IntegrityError) -> bool:
-        original = exc.orig
-        diagnostic = getattr(original, "diag", None)
+        diagnostic = getattr(exc.orig, "diag", None)
         return getattr(diagnostic, "constraint_name", None) == _EMAIL_UNIQUENESS_CONSTRAINT
 
     def _issued_session(
@@ -1444,11 +1614,8 @@ class AuthLifecycleService:
         recent_auth_at: datetime,
         expires_at: datetime,
         secret_verifier: bytes,
-        session_secret: object,
+        session_secret: SecretStr,
     ) -> IssuedSession:
-        from pydantic import SecretStr
-
-        secret = cast(SecretStr, session_secret)
         return IssuedSession(
             principal=Principal(
                 account_ref=account_ref,
@@ -1457,7 +1624,7 @@ class AuthLifecycleService:
                 recent_auth_at=recent_auth_at,
             ),
             expires_at=expires_at,
-            session_secret=secret,
+            session_secret=session_secret,
             csrf_token=derive_csrf_token(
                 csrf_key=self._csrf_key,
                 auth_session_ref=auth_session_ref,
