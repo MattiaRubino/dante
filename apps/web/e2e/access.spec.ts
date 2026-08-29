@@ -643,6 +643,9 @@ test.describe('DANTE Access', () => {
       name: 'Continua con Google',
     });
 
+    await expect(localeButton).toBeVisible();
+    await expect(googleButton).toBeVisible();
+
     await page.keyboard.press('Tab');
     await expect(localeButton).toBeFocused();
 
