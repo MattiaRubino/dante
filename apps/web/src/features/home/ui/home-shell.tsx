@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
@@ -19,6 +19,11 @@ type HomeShellProps = Readonly<{
   onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
 }>;
 
+type ViewedDateMirror = Readonly<{
+  externalIso: string | undefined;
+  localIso: string | undefined;
+}>;
+
 export function HomeShell({
   viewedDateIso,
   onViewedDateChange,
@@ -26,31 +31,53 @@ export function HomeShell({
   const { t } = useTranslation('common');
   const [isAiCollapsed, setIsAiCollapsed] = useState(false);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
-  const [localViewedDateIso, setLocalViewedDateIso] = useState(viewedDateIso);
+  const [viewedDateMirror, setViewedDateMirror] = useState<ViewedDateMirror>(
+    () => ({
+      externalIso: viewedDateIso,
+      localIso: viewedDateIso,
+    }),
+  );
   const todayLayoutRef = useRef<HTMLElement | null>(null);
   const timelineExpansionMetricsRef = useRef<TimelineExpansionMetrics | null>(
     null,
   );
 
-  useEffect(() => {
-    setLocalViewedDateIso(viewedDateIso);
-  }, [viewedDateIso]);
+  const localViewedDateIso =
+    viewedDateMirror.externalIso === viewedDateIso
+      ? viewedDateMirror.localIso
+      : viewedDateIso;
 
   const navigateViewedDate = useCallback(
     (isoDate: string | undefined) => {
-      setLocalViewedDateIso(isoDate);
+      setViewedDateMirror({
+        externalIso: viewedDateIso,
+        localIso: isoDate,
+      });
       onViewedDateChange?.(isoDate);
     },
-    [onViewedDateChange],
+    [onViewedDateChange, viewedDateIso],
   );
 
   const mirrorTimelineViewedDate = useCallback(
     (isoDate: string | undefined) => {
-      setLocalViewedDateIso((current) =>
-        current === isoDate ? current : isoDate,
-      );
+      setViewedDateMirror((current) => {
+        const currentLocalIso =
+          current.externalIso === viewedDateIso
+            ? current.localIso
+            : viewedDateIso;
+        if (
+          current.externalIso === viewedDateIso &&
+          currentLocalIso === isoDate
+        ) {
+          return current;
+        }
+        return {
+          externalIso: viewedDateIso,
+          localIso: isoDate,
+        };
+      });
     },
-    [],
+    [viewedDateIso],
   );
 
   const applyTimelineExpansionProgress = useCallback((progress: number) => {
