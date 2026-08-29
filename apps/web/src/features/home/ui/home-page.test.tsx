@@ -19,6 +19,7 @@ beforeAll(async () => {
       disconnect() {}
     },
   );
+  vi.stubGlobal('innerWidth', 1440);
   await i18n.changeLanguage('it');
 });
 
@@ -35,13 +36,15 @@ describe('HomePage M1 visual materialization', () => {
     const { container } = render(<HomePage />);
 
     expect(screen.getByRole('main', { name: 'Home DANTE' })).toBeTruthy();
+    expect(
+      screen.getByRole('region', { name: 'Contesto della giornata' }),
+    ).toBeTruthy();
 
     const homeShell = container.querySelector('[data-home-region="shell"]');
     expect(homeShell?.getAttribute('data-home-visual-source')).toBe('b2-v27');
     expect(container.querySelector('[data-app-region="topbar"]')).toBeNull();
 
     for (const region of [
-      'day-strip',
       'orientation',
       'ai-surface',
       'central-stage',
