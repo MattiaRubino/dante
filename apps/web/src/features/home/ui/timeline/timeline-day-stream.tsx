@@ -5,6 +5,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type RefObject,
   useEffect,
+  useLayoutEffect,
   useRef,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -476,8 +477,10 @@ export function TimelineDayStream({
   const dragCleanupRef = useRef<(() => void) | null>(null);
   const suppressClickRef = useRef<string | null>(null);
 
-  daysRef.current = days;
-  stateRef.current = state;
+  useLayoutEffect(() => {
+    daysRef.current = days;
+    stateRef.current = state;
+  }, [days, state]);
 
   const focusedEvent = state.focusedEventId
     ? findTimelineEvent(state, state.focusedEventId)?.event ?? null
