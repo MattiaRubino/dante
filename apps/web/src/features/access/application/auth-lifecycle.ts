@@ -13,6 +13,8 @@ import {
 } from '../../../platform/auth/web-auth-remote';
 import { authSessionQueryKey } from './auth-session';
 
+export type { RecoveryProofStore } from '../../../platform/auth/recovery-proof';
+
 export function authenticatedSessionFromSignup(
   result: WebSignupVerificationResult,
 ): WebAuthenticatedSession | null {

@@ -54,7 +54,7 @@ describe('Web Auth remote transport', () => {
       response(202, { accepted: true }, 'application/json'),
     ];
     const fetchFn: typeof globalThis.fetch = (input, init) => {
-      captures.push({ input, init });
+      captures.push(init === undefined ? { input } : { input, init });
       const next = responses.shift();
       if (!next) {
         throw new Error('Unexpected test request.');
@@ -98,7 +98,7 @@ describe('Web Auth remote transport', () => {
       response(200, authenticatedSession(), 'application/json'),
     ];
     const fetchFn: typeof globalThis.fetch = (input, init) => {
-      captures.push({ input, init });
+      captures.push(init === undefined ? { input } : { input, init });
       const next = responses.shift();
       if (!next) {
         throw new Error('Unexpected test request.');

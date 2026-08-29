@@ -9,8 +9,8 @@ import {
 
 import danteSymbolUrl from '../../../../../../assets/brand/logo/master/dante-symbol-master-v0.svg?url';
 import danteWordmarkUrl from '../../../../../../assets/brand/wordmark/master/dante-wordmark-master-v0.svg?url';
-import type { RecoveryProofStore } from '../../../platform/auth/recovery-proof';
 import {
+  type RecoveryProofStore,
   useBeginSignupMutation,
   useReauthenticateMutation,
   useRequestPasswordRecoveryMutation,
@@ -151,8 +151,11 @@ export function AccessPage({
 
     const proof = recoveryProofStore.peek();
     if (proof === null) {
-      setRecoveryEntryState('none');
-      dispatch({ type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' });
+      recoveryValidationStarted.current = true;
+      queueMicrotask(() => {
+        setRecoveryEntryState('none');
+        dispatch({ type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' });
+      });
       return;
     }
 
