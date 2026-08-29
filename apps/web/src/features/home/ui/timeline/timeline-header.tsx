@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import './timeline-material.css';
+import './timeline-reference-lock.css';
 
 import {
   addTimelineDays,
