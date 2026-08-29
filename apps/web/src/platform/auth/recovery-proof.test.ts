@@ -1,0 +1,64 @@
+import { describe, expect, it, vi } from 'vitest';
+
+import { captureRecoveryProof } from './recovery-proof';
+
+const RECOVERY_REF = '00000000-0000-4000-8000-000000000004';
+
+function location(search: string, hash: string) {
+  return { pathname: '/', search, hash } as Pick<
+    Location,
+    'pathname' | 'search' | 'hash'
+  >;
+}
+
+function history() {
+  return {
+    state: { preserved: true },
+    replaceState: vi.fn(),
+  } as unknown as Pick<History, 'state' | 'replaceState'>;
+}
+
+describe('recovery proof bootstrap boundary', () => {
+  it('captures a valid proof in memory and scrubs the fragment immediately', () => {
+    const browserHistory = history();
+    const store = captureRecoveryProof(
+      location(`?recovery=${RECOVERY_REF}&lang=it`, '#high-entropy-secret'),
+      browserHistory,
+    );
+
+    expect(store.peek()).toEqual({
+      password_recovery_ref: RECOVERY_REF,
+      secret: 'high-entropy-secret',
+    });
+    expect(browserHistory.replaceState).toHaveBeenCalledWith(
+      { preserved: true },
+      '',
+      `/?recovery=${RECOVERY_REF}&lang=it`,
+    );
+
+    store.clear();
+    expect(store.peek()).toBeNull();
+  });
+
+  it('scrubs malformed or ambiguous recovery fragments without retaining a bearer', () => {
+    const browserHistory = history();
+    const store = captureRecoveryProof(
+      location(`?recovery=${RECOVERY_REF}&recovery=${RECOVERY_REF}`, '#secret'),
+      browserHistory,
+    );
+
+    expect(store.peek()).toBeNull();
+    expect(browserHistory.replaceState).toHaveBeenCalledOnce();
+  });
+
+  it('does not erase unrelated application fragments', () => {
+    const browserHistory = history();
+    const store = captureRecoveryProof(
+      location('?lang=it', '#settings'),
+      browserHistory,
+    );
+
+    expect(store.peek()).toBeNull();
+    expect(browserHistory.replaceState).not.toHaveBeenCalled();
+  });
+});

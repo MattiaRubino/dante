@@ -1,0 +1,100 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import {
+  webAuthRemote,
+  type WebAuthenticatedSession,
+  type WebPasswordRecoveryRequest,
+  type WebPasswordRecoveryValidationRequest,
+  type WebPasswordResetRequest,
+  type WebSignupAuthenticated,
+  type WebSignupRequest,
+  type WebSignupResendRequest,
+  type WebSignupVerificationRequest,
+  type WebSignupVerificationResult,
+} from '../../../platform/auth/web-auth-remote';
+import { authSessionQueryKey } from './auth-session';
+
+export function authenticatedSessionFromSignup(
+  result: WebSignupVerificationResult,
+): WebAuthenticatedSession | null {
+  if (result.outcome !== 'authenticated') {
+    return null;
+  }
+  const { outcome: _outcome, ...session } = result as WebSignupAuthenticated;
+  return session;
+}
+
+export function useBeginSignupMutation() {
+  return useMutation({
+    mutationFn: (request: WebSignupRequest) => webAuthRemote.beginSignup(request),
+    retry: false,
+  });
+}
+
+export function useVerifySignupMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: WebSignupVerificationRequest) =>
+      webAuthRemote.verifySignup(request),
+    retry: false,
+    onSuccess: (result) => {
+      const session = authenticatedSessionFromSignup(result);
+      if (session !== null) {
+        queryClient.setQueryData(authSessionQueryKey, session);
+      }
+    },
+  });
+}
+
+export function useResendSignupVerificationMutation() {
+  return useMutation({
+    mutationFn: (request: WebSignupResendRequest) =>
+      webAuthRemote.resendSignupVerification(request),
+    retry: false,
+  });
+}
+
+export function useRequestPasswordRecoveryMutation() {
+  return useMutation({
+    mutationFn: (request: WebPasswordRecoveryRequest) =>
+      webAuthRemote.requestPasswordRecovery(request),
+    retry: false,
+  });
+}
+
+export function useValidatePasswordRecoveryMutation() {
+  return useMutation({
+    mutationFn: (request: WebPasswordRecoveryValidationRequest) =>
+      webAuthRemote.validatePasswordRecovery(request),
+    retry: false,
+  });
+}
+
+export function useResetPasswordMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: WebPasswordResetRequest) =>
+      webAuthRemote.resetPassword(request),
+    retry: false,
+    onSuccess: () => {
+      queryClient.setQueryData(authSessionQueryKey, { authenticated: false });
+    },
+  });
+}
+
+export function useReauthenticateMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      password,
+      csrfToken,
+    }: {
+      password: string;
+      csrfToken: string;
+    }) => webAuthRemote.reauthenticate({ password }, csrfToken),
+    retry: false,
+    onSuccess: (session) => {
+      queryClient.setQueryData(authSessionQueryKey, session);
+    },
+  });
+}
