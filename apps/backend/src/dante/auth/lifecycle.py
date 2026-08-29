@@ -1328,12 +1328,10 @@ class AuthLifecycleService:
                 self._session_factory() as database_session,
                 database_session.begin(),
             ):
-                challenge = await database_session.scalar(
-                    select(PasswordSignupChallengeRow).where(
-                        PasswordSignupChallengeRow.signup_ref == signup_ref
-                    )
+                statement = select(PasswordSignupChallengeRow).where(
+                    PasswordSignupChallengeRow.signup_ref == signup_ref
                 )
-                return challenge
+                return await database_session.scalar(statement)
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 
