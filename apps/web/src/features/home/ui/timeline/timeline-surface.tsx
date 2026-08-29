@@ -17,20 +17,26 @@ import { createTimelineTimeMapper } from './model/timeline-density';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
   TIMELINE_PROTOTYPE_TODAY,
+  createTimelinePrototypeEventsForDate,
 } from './model/timeline-fixtures';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import { TIMELINE_POLICY } from './model/timeline-policy';
 import {
   createInitialTimelineState,
-  timelineEventsForDate,
   timelineReducer,
+  type TimelineState,
 } from './model/timeline-state';
 import {
   addTimelineDays,
   formatTimelineMinute,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type { TimelineEvent, TimelineGroupId } from './model/timeline-types';
+import type {
+  TimelineEvent,
+  TimelineEventId,
+  TimelineGroup,
+  TimelineGroupId,
+} from './model/timeline-types';
 import {
   TimelineDayStream,
   type TimelineRenderedDay,
@@ -71,6 +77,13 @@ type DetailState = Readonly<{
   opener: HTMLElement;
 }>;
 
+type RenderedDayInputs = Readonly<{
+  eventsByDate: TimelineState['eventsByDate'];
+  groups: readonly TimelineGroup[];
+  zoom: number;
+  expandedEventIds: ReadonlySet<TimelineEventId>;
+}>;
+
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -79,7 +92,7 @@ function buildRenderedDays(
   anchor: PlainDate,
   pastDays: number,
   futureDays: number,
-  state: ReturnType<typeof createInitialTimelineState>,
+  inputs: RenderedDayInputs,
 ): readonly TimelineRenderedDay[] {
   const days: TimelineRenderedDay[] = [];
   let offsetTop = 0;
@@ -87,11 +100,13 @@ function buildRenderedDays(
   for (let offset = -pastDays; offset <= futureDays; offset += 1) {
     const date = addTimelineDays(anchor, offset);
     const dateKey = timelineDateKey(date);
-    const events = timelineEventsForDate(state, dateKey);
-    const mapper = createTimelineTimeMapper(events, state.zoom, {
-      expandedEventIds: state.expandedEventIds,
+    const events =
+      inputs.eventsByDate[dateKey] ??
+      createTimelinePrototypeEventsForDate(dateKey);
+    const mapper = createTimelineTimeMapper(events, inputs.zoom, {
+      expandedEventIds: inputs.expandedEventIds,
     });
-    const layouts = computeTimelineEventLayouts(events, state.groups, mapper);
+    const layouts = computeTimelineEventLayouts(events, inputs.groups, mapper);
     days.push({
       date,
       dateKey,
@@ -248,9 +263,19 @@ export function TimelineSurface({
   const scrollFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
+  const renderedDayInputs = useMemo<RenderedDayInputs>(
+    () => ({
+      eventsByDate: state.eventsByDate,
+      groups: state.groups,
+      zoom: state.zoom,
+      expandedEventIds: state.expandedEventIds,
+    }),
+    [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
+  );
   const renderedDays = useMemo(
-    () => buildRenderedDays(anchor, pastDays, futureDays, state),
-    [anchor, futureDays, pastDays, state],
+    () =>
+      buildRenderedDays(anchor, pastDays, futureDays, renderedDayInputs),
+    [anchor, futureDays, pastDays, renderedDayInputs],
   );
   renderedDaysRef.current = renderedDays;
 
@@ -316,7 +341,8 @@ export function TimelineSurface({
       if (!day) {
         return false;
       }
-      const minuteOffset = target.minute === null ? 0 : day.mapper.map(target.minute);
+      const minuteOffset =
+        target.minute === null ? 0 : day.mapper.map(target.minute);
       const viewportOffset = target.viewportOffset ?? 0;
       const top = Math.max(0, day.offsetTop + minuteOffset - viewportOffset);
       if (target.behavior === 'auto' || typeof grid.scrollTo !== 'function') {
@@ -360,7 +386,10 @@ export function TimelineSurface({
   const goNow = useCallback(() => {
     goToDate(TIMELINE_PROTOTYPE_TODAY, {
       minute: TIMELINE_PROTOTYPE_NOW_MINUTE,
-      viewportOffset: Math.max(80, (gridRef.current?.clientHeight ?? 570) * 0.34),
+      viewportOffset: Math.max(
+        80,
+        (gridRef.current?.clientHeight ?? 570) * 0.34,
+      ),
       behavior: 'smooth',
     });
   }, [goToDate]);
@@ -503,7 +532,9 @@ export function TimelineSurface({
       if (day) {
         grid.scrollTop = Math.max(
           0,
-          day.offsetTop + day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) - 70,
+          day.offsetTop +
+            day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) -
+            70,
         );
       }
     }
@@ -547,20 +578,28 @@ export function TimelineSurface({
     if (expansionDragRef.current) {
       return;
     }
+    if (window.innerWidth <= 1120 && expanded) {
+      syncExpansion(0);
+      onExpandedChange(false);
+      return;
+    }
     syncExpansion(expanded ? 1 : 0);
-  }, [expanded, renderedDays, state.groups, syncExpansion]);
+  }, [expanded, onExpandedChange, renderedDays, state.groups, syncExpansion]);
 
   useLayoutEffect(() => {
     const onResize = () => {
       if (window.innerWidth <= 1120) {
         syncExpansion(0);
+        if (expanded) {
+          onExpandedChange(false);
+        }
       } else {
         syncExpansion(expanded ? 1 : expansionProgressRef.current);
       }
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [expanded, syncExpansion]);
+  }, [expanded, onExpandedChange, syncExpansion]);
 
   useLayoutEffect(() => {
     return () => {
