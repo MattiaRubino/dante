@@ -74,7 +74,7 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
-  it('expands event subitems and opens the precise time editor', () => {
+  it('expands event subitems and exposes precise keyboard, wheel and pointer time controls', () => {
     renderTimeline();
 
     fireEvent.click(
@@ -88,8 +88,18 @@ describe('TimelineSurface production parity', () => {
       }),
     );
     expect(screen.getByRole('dialog', { name: 'Modifica orario' })).toBeTruthy();
-    expect(screen.getByLabelText('Inizio ore')).toBeTruthy();
-    expect(screen.getByLabelText('Fine minuti')).toBeTruthy();
+
+    const startMinute = screen.getByLabelText('Inizio minuti');
+    const endMinute = screen.getByLabelText('Fine minuti');
+    expect(startMinute).toHaveValue('00');
+    expect(endMinute).toHaveValue('00');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aumenta Inizio di 5 minuti' }),
+    );
+
+    expect(startMinute).toHaveValue('05');
+    expect(endMinute).toHaveValue('05');
   });
 
   it('exposes group split as a real semantic expansion command', () => {
