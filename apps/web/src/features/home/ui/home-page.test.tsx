@@ -5,17 +5,29 @@ import {
   screen,
   within,
 } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
 import { HomePage } from './home-page';
 
 beforeAll(async () => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class ResizeObserverStub {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
   await i18n.changeLanguage('it');
 });
 
 afterEach(() => {
   cleanup();
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('HomePage M1 visual materialization', () => {
