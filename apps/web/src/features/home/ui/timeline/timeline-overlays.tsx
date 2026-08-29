@@ -38,10 +38,6 @@ type PopoverPosition = Readonly<{
   placement: 'top' | 'bottom';
 }>;
 
-function displayDate(date: PlainDate): Date {
-  return new Date(Date.UTC(date.year, date.month - 1, date.day, 12));
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -152,9 +148,12 @@ export function CalendarPopover({
     if (!open) {
       return;
     }
-    setLevel('days');
-    setCursor(calendarCursorFromDate(viewDate));
-    setFocusedDateKey(timelineDateKey(viewDate));
+    const frame = requestAnimationFrame(() => {
+      setLevel('days');
+      setCursor(calendarCursorFromDate(viewDate));
+      setFocusedDateKey(timelineDateKey(viewDate));
+    });
+    return () => cancelAnimationFrame(frame);
   }, [open, viewDate]);
 
   useLayoutEffect(() => {
@@ -676,8 +675,8 @@ export function TimeEditorPopover({
 }: TimeEditorPopoverProps) {
   const { t } = useTranslation('common');
   const popoverRef = useRef<HTMLDivElement | null>(null);
-  const anchorRef = useMemo(
-    () => ({ current: anchor }) as RefObject<HTMLElement | null>,
+  const anchorRef = useMemo<RefObject<HTMLElement | null>>(
+    () => ({ current: anchor }),
     [anchor],
   );
   const [startMinute, setStartMinute] = useState(event.startMinute);
