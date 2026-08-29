@@ -20,7 +20,7 @@ class AccountUnavailableError(AuthError):
 
 
 class PasswordCompromisedError(AuthError):
-    """The correctly proven password is known compromised and cannot open a session."""
+    """The correctly proven/new password is known compromised and cannot be accepted."""
 
 
 class AuthInputError(AuthError):
@@ -47,6 +47,43 @@ class SigninRateLimitedError(AuthError):
     def __init__(self, retry_after_seconds: int) -> None:
         super().__init__("signin rate limited")
         self.retry_after_seconds = retry_after_seconds
+
+
+class LifecycleRateLimitedError(AuthError):
+    """A bounded M4 lifecycle ingress guard refused more work."""
+
+    def __init__(self, *, code: str, retry_after_seconds: int) -> None:
+        super().__init__("auth lifecycle rate limited")
+        self.code = code
+        self.retry_after_seconds = retry_after_seconds
+
+
+class SignupResendCooldownError(AuthError):
+    """The same signup challenge requested OTP rotation too quickly."""
+
+    def __init__(self, retry_after_seconds: int) -> None:
+        super().__init__("signup resend cooldown active")
+        self.retry_after_seconds = retry_after_seconds
+
+
+class VerificationInvalidOrExpiredError(AuthError):
+    """Signup reference/code is invalid, expired or otherwise no longer usable."""
+
+
+class VerificationAttemptsExhaustedError(AuthError):
+    """The current issued six-digit OTP exhausted its online guess budget."""
+
+
+class RecoveryInvalidOrExpiredError(AuthError):
+    """Password recovery proof is invalid, expired, superseded or consumed."""
+
+
+class ReauthenticationRequiredError(AuthError):
+    """Current AuthSession lacks sufficiently recent authentication evidence."""
+
+
+class EmailDeliveryUnavailableError(AuthError):
+    """The bounded email dispatch boundary cannot safely admit another message."""
 
 
 class AuthServiceUnavailableError(AuthError):
@@ -95,3 +132,24 @@ class AdmittedSession:
     principal: Principal
     expires_at: datetime
     csrf_token: SecretStr
+
+
+@dataclass(frozen=True, slots=True)
+class SignupCreated:
+    """Public non-secret metadata for one pending password signup."""
+
+    signup_ref: UUID
+    signup_expires_at: datetime
+    verification_expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ExistingAccountSignupResult:
+    """Mailbox ownership was proven but a canonical Account already owns the email."""
+
+
+@dataclass(frozen=True, slots=True)
+class RecoveryValidation:
+    """Non-consuming public recovery-proof validation result."""
+
+    valid: bool
