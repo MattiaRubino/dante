@@ -405,14 +405,6 @@
   cursor: grabbing;
 }
 
-.dante-timeline-group-chip > i {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--timeline-group-color);
-}
-
 .dante-timeline-group-chip > span:not(.home-visually-hidden) {
   overflow: hidden;
   text-overflow: ellipsis;
