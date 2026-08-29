@@ -1,0 +1,51 @@
+/*
+ * Final Phase 1 visual reference lock for Timeline chrome.
+ *
+ * The accepted prototype is the visual authority. This file only resolves
+ * differences caused by the production Home composition (Context Rail width,
+ * shared legacy Home cascade and current browser rendering). Timeline event
+ * geometry remains owned by the pure layout/density engine.
+ */
+
+.home-m1 .home-timeline--production .dante-timeline-header-row {
+  position: relative;
+}
+
+/* The accepted week strip is aligned to the same optical axis as the global
+ * Home/Mondi/Oggi navigation. In compact mode Timeline is narrower because the
+ * Context Rail occupies the right side, so 50% of Timeline is not 50% of Home.
+ * HomeShell publishes the exact missing-right-side half-width as a CSS var.
+ */
+.home-m1 .home-timeline--production .dante-timeline-week-nav {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: calc(50% + var(--timeline-week-home-offset, 0px));
+  justify-self: auto;
+  transform: translate(-50%, -50%);
+}
+
+/* Match the actual reference capture. The event-card typography is already
+ * pixel-close and intentionally untouched; only the temporal/group chrome was
+ * rendering materially larger in the production Home composition. */
+.home-m1 .home-timeline--production .dante-timeline-month {
+  font-size: 8px;
+  font-weight: 680;
+}
+
+.home-m1 .home-timeline--production .dante-timeline-now {
+  font-size: 8px;
+  font-weight: 670;
+}
+
+.home-m1 .home-timeline--production .dante-timeline-group-chip {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+
+@media (max-width: 1120px) {
+  .home-m1 .home-timeline--production .dante-timeline-week-nav {
+    left: 50%;
+  }
+}
