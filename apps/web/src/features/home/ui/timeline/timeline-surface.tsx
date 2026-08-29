@@ -1,9 +1,8 @@
-import { Temporal, type PlainDate } from '@dante/time';
+import type { PlainDate } from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useReducer,
@@ -15,7 +14,11 @@ import { useTranslation } from 'react-i18next';
 import './timeline.css';
 
 import { createTimelineTimeMapper } from './model/timeline-density';
-import { createTimelinePrototypeEventsForDate } from './model/timeline-fixtures';
+import {
+  createTimelinePrototypeEventsForDate,
+  TIMELINE_PROTOTYPE_NOW_MINUTE,
+  TIMELINE_PROTOTYPE_TODAY,
+} from './model/timeline-fixtures';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import { TIMELINE_POLICY } from './model/timeline-policy';
 import {
@@ -85,11 +88,6 @@ type RenderedDayInputs = Readonly<{
   expandedEventIds: ReadonlySet<TimelineEventId>;
 }>;
 
-type TimelineClock = Readonly<{
-  today: PlainDate;
-  nowMinute: number;
-}>;
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -103,67 +101,6 @@ function parseViewedDate(value: string | undefined): PlainDate | null {
   } catch {
     return null;
   }
-}
-
-function readTimelineClock(): TimelineClock {
-  const now = Temporal.Now.zonedDateTimeISO();
-  return {
-    today: now.toPlainDate(),
-    nowMinute: now.hour * 60 + now.minute,
-  };
-}
-
-function millisecondsToNextMinute(): number {
-  const now = Temporal.Now.zonedDateTimeISO();
-  const elapsed =
-    now.second * 1_000 + now.millisecond + now.microsecond / 1_000;
-  return Math.max(50, 60_000 - elapsed + 20);
-}
-
-function useTimelineClock(): TimelineClock {
-  const [clock, setClock] = useState<TimelineClock>(readTimelineClock);
-
-  useEffect(() => {
-    let timeoutId: number | undefined;
-    let active = true;
-
-    const schedule = () => {
-      timeoutId = window.setTimeout(() => {
-        if (!active) {
-          return;
-        }
-        setClock(readTimelineClock());
-        schedule();
-      }, millisecondsToNextMinute());
-    };
-
-    const syncAfterVisibilityChange = () => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
-      }
-      setClock(readTimelineClock());
-      schedule();
-    };
-
-    schedule();
-    document.addEventListener('visibilitychange', syncAfterVisibilityChange);
-
-    return () => {
-      active = false;
-      document.removeEventListener(
-        'visibilitychange',
-        syncAfterVisibilityChange,
-      );
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, []);
-
-  return clock;
 }
 
 function buildRenderedDays(
@@ -296,12 +233,17 @@ export function TimelineSurface({
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const { today: runtimeToday, nowMinute: runtimeNowMinute } = useTimelineClock();
-  const initialDate = parseViewedDate(viewedDateIso) ?? runtimeToday;
+  // Phase 1 parity deliberately uses the accepted prototype clock. The mock
+  // dataset is built around this instant; using wall-clock time makes the
+  // initial viewport visually incomparable and moves the Now line away from
+  // the reference scene. A real clock belongs to the later data-source layer.
+  const timelineToday = TIMELINE_PROTOTYPE_TODAY;
+  const timelineNowMinute = TIMELINE_PROTOTYPE_NOW_MINUTE;
+  const initialDate = parseViewedDate(viewedDateIso) ?? timelineToday;
   const initialDateRef = useRef(initialDate);
   const [state, dispatch] = useReducer(
     timelineReducer,
-    runtimeToday,
+    timelineToday,
     createInitialTimelineState,
   );
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
@@ -383,10 +325,10 @@ export function TimelineSurface({
   const publishViewportDate = useCallback(
     (date: PlainDate) => {
       onViewedDateChange?.(
-        date.equals(runtimeToday) ? undefined : timelineDateKey(date),
+        date.equals(timelineToday) ? undefined : timelineDateKey(date),
       );
     },
-    [onViewedDateChange, runtimeToday],
+    [onViewedDateChange, timelineToday],
   );
 
   const syncExpansion = useCallback(
@@ -464,7 +406,7 @@ export function TimelineSurface({
       notifyNavigation = true,
     ) => {
       const dateKey = timelineDateKey(date);
-      const routeDate = date.equals(runtimeToday) ? undefined : dateKey;
+      const routeDate = date.equals(timelineToday) ? undefined : dateKey;
       const target: ScrollTarget = {
         dateKey,
         minute: options.minute ?? null,
@@ -484,19 +426,19 @@ export function TimelineSurface({
       setPastDays(TIMELINE_POLICY.window.initialPastDays);
       setFutureDays(TIMELINE_POLICY.window.initialFutureDays);
     },
-    [onDateNavigation, publishViewportDate, runtimeToday, scrollToRenderedDay],
+    [onDateNavigation, publishViewportDate, scrollToRenderedDay, timelineToday],
   );
 
   const goNow = useCallback(() => {
-    goToDate(runtimeToday, {
-      minute: runtimeNowMinute,
+    goToDate(timelineToday, {
+      minute: timelineNowMinute,
       viewportOffset: Math.max(
         80,
         (gridRef.current?.clientHeight ?? 570) * 0.34,
       ),
       behavior: 'smooth',
     });
-  }, [goToDate, runtimeNowMinute, runtimeToday]);
+  }, [goToDate, timelineNowMinute, timelineToday]);
 
   const synchronizeViewportContext = useCallback(
     (scrollTop: number) => {
@@ -513,10 +455,10 @@ export function TimelineSurface({
         publishViewportDate(viewed.date);
       }
 
-      const todayKey = timelineDateKey(runtimeToday);
+      const todayKey = timelineDateKey(timelineToday);
       const today = days.find((day) => day.dateKey === todayKey);
       const nowY = today
-        ? today.offsetTop + today.mapper.map(runtimeNowMinute)
+        ? today.offsetTop + today.mapper.map(timelineNowMinute)
         : null;
       const visible =
         nowY !== null &&
@@ -524,7 +466,7 @@ export function TimelineSurface({
         nowY <= scrollTop + grid.clientHeight;
       setNowNeeded(!visible);
     },
-    [publishViewportDate, runtimeNowMinute, runtimeToday, viewDate],
+    [publishViewportDate, timelineNowMinute, timelineToday, viewDate],
   );
 
   const handleScroll = useCallback(
@@ -633,7 +575,7 @@ export function TimelineSurface({
   }, [publishViewportDate, viewDate]);
 
   useLayoutEffect(() => {
-    const externalDate = parseViewedDate(viewedDateIso) ?? runtimeToday;
+    const externalDate = parseViewedDate(viewedDateIso) ?? timelineToday;
     if (externalDate.equals(viewDate)) {
       return;
     }
@@ -641,7 +583,7 @@ export function TimelineSurface({
       goToDate(externalDate, { behavior: 'auto' }, false);
     });
     return () => cancelAnimationFrame(frame);
-  }, [goToDate, runtimeToday, viewDate, viewedDateIso]);
+  }, [goToDate, timelineToday, viewDate, viewedDateIso]);
 
   useLayoutEffect(() => {
     const grid = gridRef.current;
@@ -654,8 +596,8 @@ export function TimelineSurface({
       const initialKey = timelineDateKey(initialDateRef.current);
       const day = renderedDays.find((candidate) => candidate.dateKey === initialKey);
       if (day) {
-        const minute = initialDateRef.current.equals(runtimeToday)
-          ? Math.max(0, runtimeNowMinute - 120)
+        const minute = initialDateRef.current.equals(timelineToday)
+          ? Math.max(0, timelineNowMinute - 120)
           : 8 * 60;
         grid.scrollTop = Math.max(0, day.offsetTop + day.mapper.map(minute) - 70);
       }
@@ -691,11 +633,11 @@ export function TimelineSurface({
     );
   }, [
     renderedDays,
-    runtimeNowMinute,
-    runtimeToday,
     scrollToRenderedDay,
     state.groups.length,
     synchronizeViewportContext,
+    timelineNowMinute,
+    timelineToday,
   ]);
 
   useLayoutEffect(() => {
@@ -827,7 +769,7 @@ export function TimelineSurface({
     >
       <TimelineHeader
         locale={locale}
-        today={runtimeToday}
+        today={timelineToday}
         viewDate={viewDate}
         groups={state.groups}
         filters={state.filters}
@@ -872,8 +814,8 @@ export function TimelineSurface({
 
       <TimelineDayStream
         days={renderedDays}
-        today={runtimeToday}
-        nowMinute={runtimeNowMinute}
+        today={timelineToday}
+        nowMinute={timelineNowMinute}
         state={state}
         expanded={expanded}
         gridRef={gridRef}
@@ -939,7 +881,7 @@ export function TimelineSurface({
       <CalendarPopover
         open={calendarOpen}
         locale={locale}
-        today={runtimeToday}
+        today={timelineToday}
         viewDate={viewDate}
         triggerRef={calendarTriggerRef}
         onClose={closeCalendar}
