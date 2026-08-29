@@ -144,8 +144,12 @@ function applyTimelineExpansion(
   const safeGroupCount = Math.max(1, groupCount);
   const groupWidth = expandedInner / safeGroupCount;
 
-  root.style.setProperty('--timeline-group-opacity', String(clamp((p - 0.16) / 0.52, 0, 1)));
+  root.style.setProperty(
+    '--timeline-group-opacity',
+    String(clamp((p - 0.16) / 0.52, 0, 1)),
+  );
   root.style.setProperty('--timeline-expansion-progress', String(p));
+  root.style.setProperty('--timeline-group-count', String(safeGroupCount));
 
   const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
   if (stream) {
@@ -198,8 +202,7 @@ export function TimelineSurface({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const [state, dispatch] = useReducer(
     timelineReducer,
-    undefined,
-    createInitialTimelineState,
+    createInitialTimelineState(),
   );
   const [anchor, setAnchor] = useState(TIMELINE_PROTOTYPE_TODAY);
   const [viewDate, setViewDate] = useState(TIMELINE_PROTOTYPE_TODAY);
@@ -222,7 +225,6 @@ export function TimelineSurface({
   const groupScrollerRef = useRef<HTMLDivElement | null>(null);
   const calendarTriggerRef = useRef<HTMLButtonElement | null>(null);
   const viewOptionsTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const expansionHandleRef = useRef<HTMLButtonElement | null>(null);
   const expansionProgressRef = useRef(expanded ? 1 : 0);
   const expansionFrameRef = useRef<number | null>(null);
   const pendingExpansionRef = useRef(expansionProgressRef.current);
@@ -232,6 +234,7 @@ export function TimelineSurface({
     startProgress: number;
     dragDistance: number;
   } | null>(null);
+  const suppressExpansionClickRef = useRef(false);
   const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
   const pendingScrollTargetRef = useRef<ScrollTarget | null>(null);
   const initialScrollDoneRef = useRef(false);
@@ -313,11 +316,14 @@ export function TimelineSurface({
       if (!day) {
         return false;
       }
-      const minuteOffset =
-        target.minute === null ? 0 : day.mapper.map(target.minute);
+      const minuteOffset = target.minute === null ? 0 : day.mapper.map(target.minute);
       const viewportOffset = target.viewportOffset ?? 0;
       const top = Math.max(0, day.offsetTop + minuteOffset - viewportOffset);
-      grid.scrollTo({ top, behavior: target.behavior });
+      if (target.behavior === 'auto' || typeof grid.scrollTo !== 'function') {
+        grid.scrollTop = top;
+      } else {
+        grid.scrollTo({ top, behavior: target.behavior });
+      }
       return true;
     },
     [],
@@ -497,9 +503,7 @@ export function TimelineSurface({
       if (day) {
         grid.scrollTop = Math.max(
           0,
-          day.offsetTop +
-            day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) -
-            70,
+          day.offsetTop + day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) - 70,
         );
       }
     }
@@ -607,12 +611,34 @@ export function TimelineSurface({
     if (!drag || drag.pointerId !== event.pointerId) {
       return;
     }
+    const deltaX = event.clientX - drag.startX;
     const progress = clamp(
-      drag.startProgress + (event.clientX - drag.startX) / drag.dragDistance,
+      drag.startProgress + deltaX / drag.dragDistance,
       0,
       1,
     );
+    expansionDragRef.current = null;
+    rootRef.current?.removeAttribute('data-timeline-expansion-dragging');
+
+    if (Math.abs(deltaX) < 4) {
+      return;
+    }
+
+    suppressExpansionClickRef.current = true;
     settleExpansion(progress >= 0.5 ? 1 : 0);
+    requestAnimationFrame(() => {
+      suppressExpansionClickRef.current = false;
+    });
+  };
+
+  const cancelExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = expansionDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    expansionDragRef.current = null;
+    rootRef.current?.removeAttribute('data-timeline-expansion-dragging');
+    settleExpansion(drag.startProgress >= 0.5 ? 1 : 0);
   };
 
   const expansionKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -723,13 +749,19 @@ export function TimelineSurface({
       />
 
       <button
-        ref={expansionHandleRef}
         className="timeline-expansion-handle"
         type="button"
+        onClick={() => {
+          if (suppressExpansionClickRef.current) {
+            suppressExpansionClickRef.current = false;
+            return;
+          }
+          settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1);
+        }}
         onPointerDown={beginExpansionDrag}
         onPointerMove={moveExpansionDrag}
         onPointerUp={finishExpansionDrag}
-        onPointerCancel={finishExpansionDrag}
+        onPointerCancel={cancelExpansionDrag}
         onKeyDown={expansionKeyDown}
         aria-label={t(($) =>
           expanded
