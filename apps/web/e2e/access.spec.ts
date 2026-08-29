@@ -212,6 +212,7 @@ test.describe('DANTE Access', () => {
         window.localStorage.setItem('dante.locale', 'it');
       }
     });
+    await mockUnauthenticatedSession(page);
   });
 
   test('renders the hardened desktop sign-in shell', async ({ page }) => {
@@ -335,7 +336,6 @@ test.describe('DANTE Access', () => {
   test('wires signup to governed server outcomes without inventing account creation', async ({
     page,
   }) => {
-    await mockUnauthenticatedSession(page);
     await page.route('**/api/v1/auth/signup', async (route) => {
       expect(route.request().method()).toBe('POST');
       expect(route.request().postDataJSON()).toEqual({
@@ -413,7 +413,6 @@ test.describe('DANTE Access', () => {
   test('keeps password recovery neutral after the governed 202 response', async ({
     page,
   }) => {
-    await mockUnauthenticatedSession(page);
     await page.route('**/api/v1/auth/recovery', async (route) => {
       expect(route.request().method()).toBe('POST');
       expect(route.request().postDataJSON()).toEqual({
@@ -453,7 +452,6 @@ test.describe('DANTE Access', () => {
     page,
   }) => {
     const secret = 'browser-only-recovery-secret';
-    await mockUnauthenticatedSession(page);
     await page.route('**/api/v1/auth/recovery/validate', async (route) => {
       expect(route.request().postDataJSON()).toEqual({
         password_recovery_ref: recoveryRef,
@@ -502,10 +500,10 @@ test.describe('DANTE Access', () => {
     expect(storageValues).not.toContain(secret);
 
     await page
-      .getByLabel('Nuova password')
+      .getByLabel('Nuova password', { exact: true })
       .fill('new correct horse battery staple');
     await page
-      .getByLabel('Conferma password')
+      .getByLabel('Conferma password', { exact: true })
       .fill('new correct horse battery staple');
     await page.getByRole('button', { name: 'Aggiorna password' }).click();
 
