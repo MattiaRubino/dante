@@ -4,8 +4,11 @@ import * as publicApi from '../src';
 import { createDanteApiClient } from '../src';
 
 const REQUEST_ID = '019d0000-0000-7000-8000-000000000001';
+const OTHER_REQUEST_ID = '019d0000-0000-7000-8000-000000000002';
 const ACCOUNT_REF = '00000000-0000-4000-8000-000000000001';
 const AUTH_SESSION_REF = '00000000-0000-4000-8000-000000000002';
+const SIGNUP_REF = '00000000-0000-4000-8000-000000000003';
+const RECOVERY_REF = '00000000-0000-4000-8000-000000000004';
 
 function apiResponse(
   status: number,
@@ -31,29 +34,53 @@ function fetchReturning(response: Response): typeof globalThis.fetch {
   return () => Promise.resolve(response.clone());
 }
 
+function authenticatedSession() {
+  return {
+    authenticated: true as const,
+    account_ref: ACCOUNT_REF,
+    auth_session_ref: AUTH_SESSION_REF,
+    recent_auth_at: '2026-08-28T16:00:00Z',
+    expires_at: '2026-09-27T16:00:00Z',
+    csrf_token: 'csrf-token',
+  };
+}
+
+function problem(status = 401, requestId = REQUEST_ID) {
+  return {
+    type: 'urn:dante:problem:auth.invalid_credentials',
+    title: 'Authentication failed',
+    status,
+    detail: 'The supplied credentials could not be accepted.',
+    code: 'auth.invalid_credentials',
+    category: 'authentication',
+    request_id: requestId,
+    retryable: false,
+  };
+}
+
 describe('@dante/api-client governed boundary', () => {
   it('does not expose raw generated operations from the package root', () => {
-    expect('authSignIn' in publicApi).toBe(false);
-    expect('authGetSession' in publicApi).toBe(false);
-    expect('authLogOut' in publicApi).toBe(false);
+    for (const operation of [
+      'authSignIn',
+      'authGetSession',
+      'authLogOut',
+      'authBeginSignup',
+      'authVerifySignup',
+      'authResendSignupVerification',
+      'authRequestPasswordRecovery',
+      'authValidatePasswordRecovery',
+      'authResetPassword',
+      'authReauthenticate',
+    ]) {
+      expect(operation in publicApi).toBe(false);
+    }
     expect(typeof publicApi.createDanteApiClient).toBe('function');
   });
 
-  it('validates a successful signin response before returning it', async () => {
+  it('validates successful signin and session responses before returning them', async () => {
     const client = createDanteApiClient({
       fetchFn: fetchReturning(
-        apiResponse(
-          200,
-          {
-            authenticated: true,
-            account_ref: ACCOUNT_REF,
-            auth_session_ref: AUTH_SESSION_REF,
-            recent_auth_at: '2026-08-28T16:00:00Z',
-            expires_at: '2026-09-27T16:00:00Z',
-            csrf_token: 'csrf-token',
-          },
-          'application/json',
-        ),
+        apiResponse(200, authenticatedSession(), 'application/json'),
       ),
     });
 
@@ -70,31 +97,150 @@ describe('@dante/api-client governed boundary', () => {
     }
   });
 
-  it('normalizes a valid RFC 9457 failure and rejects malformed session payloads', async () => {
-    const problemClient = createDanteApiClient({
+  it('validates each M4 success contract and signup outcome discriminator', async () => {
+    const signupClient = createDanteApiClient({
       fetchFn: fetchReturning(
         apiResponse(
-          401,
+          200,
           {
-            type: 'urn:dante:problem:auth.invalid_credentials',
-            title: 'Authentication failed',
-            status: 401,
-            detail: 'The supplied credentials could not be accepted.',
-            code: 'auth.invalid_credentials',
-            category: 'authentication',
-            request_id: REQUEST_ID,
-            retryable: false,
+            signup_ref: SIGNUP_REF,
+            signup_expires_at: '2026-08-29T20:00:00Z',
+            verification_expires_at: '2026-08-29T19:15:00Z',
+            verification_required: true,
           },
-          'application/problem+json',
+          'application/json',
+        ),
+      ),
+    });
+    const signup = await signupClient.beginSignup({
+      email: 'person@example.com',
+      password: 'correct horse battery staple',
+    });
+    expect(signup).toMatchObject({
+      ok: true,
+      status: 200,
+      value: { signup_ref: SIGNUP_REF, verification_required: true },
+    });
+
+    const authenticatedClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          { ...authenticatedSession(), outcome: 'authenticated' },
+          'application/json',
+        ),
+      ),
+    });
+    const authenticated = await authenticatedClient.verifySignup({
+      signup_ref: SIGNUP_REF,
+      code: '123456',
+    });
+    expect(authenticated).toMatchObject({
+      ok: true,
+      value: { outcome: 'authenticated', account_ref: ACCOUNT_REF },
+    });
+
+    const existingClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, { outcome: 'existing_account' }, 'application/json'),
+      ),
+    });
+    const existing = await existingClient.verifySignup({
+      signup_ref: SIGNUP_REF,
+      code: '123456',
+    });
+    expect(existing).toMatchObject({
+      ok: true,
+      value: { outcome: 'existing_account' },
+    });
+
+    const recoveryClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(202, { accepted: true }, 'application/json'),
+      ),
+    });
+    expect(
+      await recoveryClient.requestPasswordRecovery({
+        email: 'person@example.com',
+      }),
+    ).toMatchObject({ ok: true, status: 202, value: { accepted: true } });
+
+    const validationClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, { valid: true }, 'application/json'),
+      ),
+    });
+    expect(
+      await validationClient.validatePasswordRecovery({
+        password_recovery_ref: RECOVERY_REF,
+        secret: 'recovery-secret',
+      }),
+    ).toMatchObject({ ok: true, value: { valid: true } });
+
+    const resetClient = createDanteApiClient({
+      fetchFn: fetchReturning(apiResponse(204, undefined, null)),
+    });
+    expect(
+      await resetClient.resetPassword({
+        password_recovery_ref: RECOVERY_REF,
+        secret: 'recovery-secret',
+        new_password: 'correct horse battery staple replacement',
+      }),
+    ).toMatchObject({ ok: true, status: 204 });
+
+    const reauthClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(200, authenticatedSession(), 'application/json'),
+      ),
+    });
+    expect(
+      await reauthClient.reauthenticate({ password: 'correct horse battery staple' }),
+    ).toMatchObject({
+      ok: true,
+      value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
+    });
+  });
+
+  it('rejects unknown success payload keys instead of silently widening contracts', async () => {
+    const client = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(
+          200,
+          {
+            signup_ref: SIGNUP_REF,
+            signup_expires_at: '2026-08-29T20:00:00Z',
+            verification_expires_at: '2026-08-29T19:15:00Z',
+            verification_required: true,
+            secret: 'must-never-be-public',
+          },
+          'application/json',
         ),
       ),
     });
 
-    const problem = await problemClient.signIn({
-      email: 'person@example.com',
-      password: 'wrong password',
+    expect(
+      await client.beginSignup({
+        email: 'person@example.com',
+        password: 'correct horse battery staple',
+      }),
+    ).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'invalid_payload' },
     });
-    expect(problem).toMatchObject({
+  });
+
+  it('normalizes RFC 9457 failures and distinguishes status from request-id mismatch', async () => {
+    const problemClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(401, problem(), 'application/problem+json'),
+      ),
+    });
+    expect(
+      await problemClient.signIn({
+        email: 'person@example.com',
+        password: 'wrong password',
+      }),
+    ).toMatchObject({
       ok: false,
       failure: {
         kind: 'server_problem',
@@ -104,11 +250,42 @@ describe('@dante/api-client governed boundary', () => {
       },
     });
 
+    const statusMismatchClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(401, problem(403), 'application/problem+json'),
+      ),
+    });
+    expect(
+      await statusMismatchClient.signIn({
+        email: 'person@example.com',
+        password: 'wrong password',
+      }),
+    ).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'status_mismatch' },
+    });
+
+    const requestIdMismatchClient = createDanteApiClient({
+      fetchFn: fetchReturning(
+        apiResponse(401, problem(401, OTHER_REQUEST_ID), 'application/problem+json'),
+      ),
+    });
+    expect(
+      await requestIdMismatchClient.signIn({
+        email: 'person@example.com',
+        password: 'wrong password',
+      }),
+    ).toMatchObject({
+      ok: false,
+      failure: { kind: 'contract_violation', reason: 'request_id_mismatch' },
+    });
+  });
+
+  it('rejects malformed session payloads', async () => {
     const malformedClient = createDanteApiClient({
       fetchFn: fetchReturning(apiResponse(200, {}, 'application/json')),
     });
-    const malformed = await malformedClient.getSession();
-    expect(malformed).toMatchObject({
+    expect(await malformedClient.getSession()).toMatchObject({
       ok: false,
       failure: {
         kind: 'contract_violation',
@@ -122,8 +299,7 @@ describe('@dante/api-client governed boundary', () => {
     const logoutClient = createDanteApiClient({
       fetchFn: fetchReturning(apiResponse(204, undefined, null)),
     });
-    const logout = await logoutClient.logOut();
-    expect(logout).toMatchObject({
+    expect(await logoutClient.logOut()).toMatchObject({
       ok: true,
       status: 204,
       requestId: REQUEST_ID,
@@ -132,8 +308,7 @@ describe('@dante/api-client governed boundary', () => {
     const offlineFetch: typeof globalThis.fetch = () =>
       Promise.reject(new TypeError('network unavailable'));
     const offlineClient = createDanteApiClient({ fetchFn: offlineFetch });
-    const offline = await offlineClient.getSession();
-    expect(offline).toEqual({
+    expect(await offlineClient.getSession()).toEqual({
       ok: false,
       failure: { kind: 'network_unavailable' },
     });

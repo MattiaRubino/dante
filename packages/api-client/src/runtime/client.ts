@@ -1,16 +1,40 @@
 import {
+  authBeginSignup as generatedAuthBeginSignup,
   authGetSession as generatedAuthGetSession,
   authLogOut as generatedAuthLogOut,
+  authReauthenticate as generatedAuthReauthenticate,
+  authRequestPasswordRecovery as generatedAuthRequestPasswordRecovery,
+  authResendSignupVerification as generatedAuthResendSignupVerification,
+  authResetPassword as generatedAuthResetPassword,
   authSignIn as generatedAuthSignIn,
+  authValidatePasswordRecovery as generatedAuthValidatePasswordRecovery,
+  authVerifySignup as generatedAuthVerifySignup,
 } from '../generated/dante';
 import {
   AuthenticatedSessionResponse,
+  ExistingAccountSignupResponse,
   ProblemDetails,
+  RecoveryAcceptedResponse,
+  RecoveryValidationResponse,
+  SignupAuthenticatedResponse,
+  SignupCreatedResponse,
   UnauthenticatedSessionResponse,
   type AuthenticatedSessionResponseOutput,
+  type ExistingAccountSignupResponseOutput,
+  type PasswordRecoveryRequest,
+  type PasswordRecoveryValidationRequest,
+  type PasswordResetRequest,
   type ProblemDetailsOutput,
   type ProblemFieldErrorOutput,
+  type ReauthenticateRequest,
+  type RecoveryAcceptedResponseOutput,
+  type RecoveryValidationResponseOutput,
   type SignInRequest,
+  type SignupAuthenticatedResponseOutput,
+  type SignupCreatedResponseOutput,
+  type SignupRequest,
+  type SignupResendRequest,
+  type SignupVerificationRequest,
   type UnauthenticatedSessionResponseOutput,
 } from '../generated/model';
 
@@ -24,7 +48,20 @@ const AUTHENTICATED_SESSION_KEYS = new Set([
   'expires_at',
   'recent_auth_at',
 ]);
+const SIGNUP_AUTHENTICATED_KEYS = new Set([
+  ...AUTHENTICATED_SESSION_KEYS,
+  'outcome',
+]);
 const UNAUTHENTICATED_SESSION_KEYS = new Set(['authenticated']);
+const SIGNUP_CREATED_KEYS = new Set([
+  'signup_expires_at',
+  'signup_ref',
+  'verification_expires_at',
+  'verification_required',
+]);
+const EXISTING_ACCOUNT_SIGNUP_KEYS = new Set(['outcome']);
+const RECOVERY_ACCEPTED_KEYS = new Set(['accepted']);
+const RECOVERY_VALIDATION_KEYS = new Set(['valid']);
 const PROBLEM_KEYS = new Set([
   'category',
   'code',
@@ -41,12 +78,21 @@ const FIELD_ERROR_KEYS = new Set(['code', 'detail', 'parameters', 'pointer']);
 export type AuthenticatedSession = AuthenticatedSessionResponseOutput;
 export type UnauthenticatedSession = UnauthenticatedSessionResponseOutput;
 export type AuthSession = AuthenticatedSession | UnauthenticatedSession;
+export type SignupCreated = SignupCreatedResponseOutput;
+export type SignupAuthenticated = SignupAuthenticatedResponseOutput;
+export type ExistingAccountSignup = ExistingAccountSignupResponseOutput;
+export type SignupVerificationResult =
+  | SignupAuthenticated
+  | ExistingAccountSignup;
+export type RecoveryAccepted = RecoveryAcceptedResponseOutput;
+export type RecoveryValidation = RecoveryValidationResponseOutput;
 
 export type ContractViolationReason =
   | 'cache_policy_mismatch'
   | 'content_type_mismatch'
   | 'invalid_payload'
   | 'request_id_mismatch'
+  | 'status_mismatch'
   | 'unexpected_status'
   | 'unexpected_wire_exception';
 
@@ -238,10 +284,10 @@ function serverProblem(wire: WireResponse): RemoteResult<never> {
   if (!parsed.success) {
     return contractViolation('invalid_payload', wire);
   }
-  if (
-    parsed.data.status !== wire.status ||
-    parsed.data.request_id !== metadata.value
-  ) {
+  if (parsed.data.status !== wire.status) {
+    return contractViolation('status_mismatch', wire);
+  }
+  if (parsed.data.request_id !== metadata.value) {
     return contractViolation('request_id_mismatch', wire);
   }
   return {
@@ -261,20 +307,31 @@ function serverProblem(wire: WireResponse): RemoteResult<never> {
   };
 }
 
-function parseAuthenticatedSession(
+function parseJsonSchema<T>(
   wire: WireResponse,
-): RemoteResult<AuthenticatedSession> {
+  keys: ReadonlySet<string>,
+  schema: { safeParse(value: unknown): { success: true; data: T } | { success: false } },
+): RemoteResult<T> {
   if (mediaType(wire.headers) !== JSON_MEDIA_TYPE) {
     return contractViolation('content_type_mismatch', wire);
   }
-  if (!hasOnlyKeys(wire.data, AUTHENTICATED_SESSION_KEYS)) {
+  if (!hasOnlyKeys(wire.data, keys)) {
     return contractViolation('invalid_payload', wire);
   }
-  const parsed = AuthenticatedSessionResponse.safeParse(wire.data);
-  if (!parsed.success) {
-    return contractViolation('invalid_payload', wire);
-  }
-  return success(wire, parsed.data);
+  const parsed = schema.safeParse(wire.data);
+  return parsed.success
+    ? success(wire, parsed.data)
+    : contractViolation('invalid_payload', wire);
+}
+
+function parseAuthenticatedSession(
+  wire: WireResponse,
+): RemoteResult<AuthenticatedSession> {
+  return parseJsonSchema(
+    wire,
+    AUTHENTICATED_SESSION_KEYS,
+    AuthenticatedSessionResponse,
+  );
 }
 
 function parseSession(wire: WireResponse): RemoteResult<AuthSession> {
@@ -285,24 +342,68 @@ function parseSession(wire: WireResponse): RemoteResult<AuthSession> {
     return contractViolation('invalid_payload', wire);
   }
   if (wire.data.authenticated === true) {
-    if (!hasOnlyKeys(wire.data, AUTHENTICATED_SESSION_KEYS)) {
-      return contractViolation('invalid_payload', wire);
-    }
-    const parsed = AuthenticatedSessionResponse.safeParse(wire.data);
-    return parsed.success
-      ? success(wire, parsed.data)
-      : contractViolation('invalid_payload', wire);
+    return parseJsonSchema(
+      wire,
+      AUTHENTICATED_SESSION_KEYS,
+      AuthenticatedSessionResponse,
+    );
   }
   if (wire.data.authenticated === false) {
-    if (!hasOnlyKeys(wire.data, UNAUTHENTICATED_SESSION_KEYS)) {
-      return contractViolation('invalid_payload', wire);
-    }
-    const parsed = UnauthenticatedSessionResponse.safeParse(wire.data);
-    return parsed.success
-      ? success(wire, parsed.data)
-      : contractViolation('invalid_payload', wire);
+    return parseJsonSchema(
+      wire,
+      UNAUTHENTICATED_SESSION_KEYS,
+      UnauthenticatedSessionResponse,
+    );
   }
   return contractViolation('invalid_payload', wire);
+}
+
+function parseSignupCreated(wire: WireResponse): RemoteResult<SignupCreated> {
+  return parseJsonSchema(wire, SIGNUP_CREATED_KEYS, SignupCreatedResponse);
+}
+
+function parseSignupVerification(
+  wire: WireResponse,
+): RemoteResult<SignupVerificationResult> {
+  if (mediaType(wire.headers) !== JSON_MEDIA_TYPE || !isRecord(wire.data)) {
+    return contractViolation(
+      mediaType(wire.headers) === JSON_MEDIA_TYPE
+        ? 'invalid_payload'
+        : 'content_type_mismatch',
+      wire,
+    );
+  }
+  if (wire.data.outcome === 'authenticated') {
+    return parseJsonSchema(
+      wire,
+      SIGNUP_AUTHENTICATED_KEYS,
+      SignupAuthenticatedResponse,
+    );
+  }
+  if (wire.data.outcome === 'existing_account') {
+    return parseJsonSchema(
+      wire,
+      EXISTING_ACCOUNT_SIGNUP_KEYS,
+      ExistingAccountSignupResponse,
+    );
+  }
+  return contractViolation('invalid_payload', wire);
+}
+
+function parseRecoveryAccepted(
+  wire: WireResponse,
+): RemoteResult<RecoveryAccepted> {
+  return parseJsonSchema(wire, RECOVERY_ACCEPTED_KEYS, RecoveryAcceptedResponse);
+}
+
+function parseRecoveryValidation(
+  wire: WireResponse,
+): RemoteResult<RecoveryValidation> {
+  return parseJsonSchema(
+    wire,
+    RECOVERY_VALIDATION_KEYS,
+    RecoveryValidationResponse,
+  );
 }
 
 export type DanteApiClient = {
@@ -312,6 +413,34 @@ export type DanteApiClient = {
   ): Promise<RemoteResult<AuthenticatedSession>>;
   getSession(options?: RequestInit): Promise<RemoteResult<AuthSession>>;
   logOut(options?: RequestInit): Promise<RemoteResult<void>>;
+  beginSignup(
+    request: SignupRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<SignupCreated>>;
+  verifySignup(
+    request: SignupVerificationRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<SignupVerificationResult>>;
+  resendSignupVerification(
+    request: SignupResendRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<SignupCreated>>;
+  requestPasswordRecovery(
+    request: PasswordRecoveryRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<RecoveryAccepted>>;
+  validatePasswordRecovery(
+    request: PasswordRecoveryValidationRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<RecoveryValidation>>;
+  resetPassword(
+    request: PasswordResetRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<void>>;
+  reauthenticate(
+    request: ReauthenticateRequest,
+    options?: RequestInit,
+  ): Promise<RemoteResult<AuthenticatedSession>>;
 };
 
 export function createDanteApiClient(
@@ -363,6 +492,130 @@ export function createDanteApiClient(
       }
       if (wire.status === 204) {
         return success(wire, undefined);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async beginSignup(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthBeginSignup(request, requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseSignupCreated(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async verifySignup(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthVerifySignup(request, requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseSignupVerification(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async resendSignupVerification(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthResendSignupVerification(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseSignupCreated(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async requestPasswordRecovery(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthRequestPasswordRecovery(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 202) {
+        return parseRecoveryAccepted(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async validatePasswordRecovery(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthValidatePasswordRecovery(
+          request,
+          requestOptions,
+          fetchFn,
+        );
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseRecoveryValidation(wire);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async resetPassword(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthResetPassword(request, requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 204) {
+        return success(wire, undefined);
+      }
+      if (wire.status >= 400) {
+        return serverProblem(wire);
+      }
+      return contractViolation('unexpected_status', wire);
+    },
+
+    async reauthenticate(request, requestOptions) {
+      let wire: WireResponse;
+      try {
+        wire = await generatedAuthReauthenticate(request, requestOptions, fetchFn);
+      } catch (error) {
+        return fromThrown(error);
+      }
+      if (wire.status === 200) {
+        return parseAuthenticatedSession(wire);
       }
       if (wire.status >= 400) {
         return serverProblem(wire);
