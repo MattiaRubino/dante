@@ -14,7 +14,15 @@ type TimelineExpansionMetrics = Readonly<{
   gap: number;
 }>;
 
-export function HomeShell() {
+type HomeShellProps = Readonly<{
+  viewedDateIso?: string | undefined;
+  onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
+}>;
+
+export function HomeShell({
+  viewedDateIso,
+  onViewedDateChange,
+}: HomeShellProps) {
   const { t } = useTranslation('common');
   const [isAiCollapsed, setIsAiCollapsed] = useState(false);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
@@ -81,7 +89,10 @@ export function HomeShell() {
         aria-label={t(($) => $.common.home.shell.mainLabel)}
       >
         <section className="home-hero" data-home-layout="hero">
-          <DayContextStrip />
+          <DayContextStrip
+            viewedDateIso={viewedDateIso}
+            onViewedDateChange={onViewedDateChange}
+          />
 
           <div className="home-hero-body">
             <AISurface

@@ -4,6 +4,11 @@ import './home-skin.css';
 
 import { HomeShell } from './home-shell';
 
-export function HomePage() {
-  return <HomeShell />;
+type HomePageProps = Readonly<{
+  viewedDateIso?: string | undefined;
+  onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
+}>;
+
+export function HomePage(props: HomePageProps) {
+  return <HomeShell {...props} />;
 }
