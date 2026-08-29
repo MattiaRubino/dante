@@ -19,11 +19,6 @@ import { LauncherMenuContent } from './launcher-menu';
 import { MenuPopover } from './primitives/menu-popover';
 import { TopbarSearchSurface } from './topbar-search-surface';
 
-const danteWordmarkCurrentColor = danteWordmarkRaw.replaceAll(
-  '#222F37',
-  'currentColor',
-);
-
 const DESTINATION_ICONS = {
   home: HomeIcon,
   worlds: WorldsIcon,
@@ -126,7 +121,7 @@ export function GlobalTopbar() {
           <span
             className="app-topbar-brand-wordmark"
             aria-hidden="true"
-            dangerouslySetInnerHTML={{ __html: danteWordmarkCurrentColor }}
+            dangerouslySetInnerHTML={{ __html: danteWordmarkRaw }}
           />
         </Link>
       </div>
