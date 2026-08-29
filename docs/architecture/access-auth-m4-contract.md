@@ -1,6 +1,6 @@
 # DANTE — Access/Auth M4 Lifecycle Architecture Contract
 
-- **Status:** CURRENT M4 ARCHITECTURE CANDIDATE / CONTRACT FREEZE ACTIVE
+- **Status:** CURRENT / CONTRACT FREEZE CLOSED / IMPLEMENTATION AUTHORITY
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Prerequisite:** M1–M3 CLOSED / M3 ENGINEERING PASS / USER ACCEPTED
@@ -179,18 +179,20 @@ Backend semantics:
 email + password submitted
 → validate / normalize / rate-limit
 → HIBP + Argon2id outside DB transaction
-→ create/replace one pending password-signup challenge
+→ create one independent pending PasswordSignupChallenge keyed by signup_ref
 → enqueue six-digit email OTP
+→ return signup_ref + bounded expiry metadata
 → public response remains non-enumerating
 
-valid OTP
+valid signup_ref + OTP
 → one short authoritative transaction
+→ lock exactly that pending challenge
 → re-check current email collision
-→ create Account
+→ create Account when no canonical collision exists
 → create verified EmailIdentity
 → create PasswordCredential
 → create AuthSession
-→ remove pending signup challenge
+→ delete all pending signup challenges for that comparison key
 → COMMIT
 → issue session cookie only after durable success/reconciliation
 ```
@@ -210,13 +212,15 @@ verified recovery identity exists at Account birth
 
 `Person` is still not created implicitly. `Person != Account` remains binding.
 
-## 4.2 Existing-email anti-enumeration
+## 4.2 Existing-email anti-enumeration and anonymous challenge isolation
 
 Initial signup must not reveal whether an Account already exists.
 
-The same syntactically valid request path creates/replaces a pending signup challenge and queues an OTP email regardless of current Account existence. Canonical Account state is not changed.
+Every syntactically valid accepted signup creates its **own** bounded pending challenge and returns a non-secret `signup_ref`, regardless of current Account existence. Canonical Account state is not changed.
 
-Only **after the user proves control of that mailbox with the OTP** may verification return a safe business outcome such as:
+Do **not** maintain one replaceable challenge row per email. Otherwise an anonymous actor who knows a victim's address could repeatedly start signup and invalidate the victim's pending password/OTP. Multiple bounded, expiring pending challenges for the same comparison key are therefore allowed.
+
+Only **after the user proves control of that mailbox with the OTP for a specific `signup_ref`** may verification return a safe business outcome such as:
 
 ```text
 new_account_authenticated
@@ -229,10 +233,13 @@ For `existing_account`:
 submitted signup password is discarded
 existing PasswordCredential is never changed
 no AuthSession is issued
+all pending signup challenges for that comparison key are removed
 UI routes to normal signin/recovery
 ```
 
-This prevents registration enumeration without turning signup into email-OTP login or password reset.
+For successful new Account establishment, all remaining pending signup challenges for the comparison key are removed in the same authoritative transaction so stale anonymous attempts cannot later establish another Account.
+
+This prevents anonymous registration enumeration and challenge-clobbering without turning signup into email-OTP login or password reset.
 
 ## 4.3 Pending signup lifetime
 
@@ -247,9 +254,9 @@ PasswordSignupChallenge
 It owns only pending first-party password signup:
 
 ```text
-password_signup_ref
+signup_ref                    UUIDv7 public non-secret challenge reference
 normalized email address
-email comparison key (unique active row)
+email comparison key          indexed, NOT unique
 Argon2id password verifier
 password pepper key id
 HMAC verifier for current email OTP
@@ -268,13 +275,13 @@ Baseline lifetimes:
 pending signup lifetime        24 h
 individual email OTP lifetime  15 min
 failed OTP attempts            max 5 per issued OTP
-resend                         rotates OTP and resets attempt counter
+resend                         rotates only that signup_ref OTP and resets attempt counter
 old OTP after resend           invalid immediately
 ```
 
-Exact rate capacities remain validated settings so deployment pressure can be tuned without changing semantics.
+Exact rate capacities remain validated settings so deployment pressure can be tuned without changing semantics. Rate/cooldown controls by canonical email comparison key and source context must prevent one attacker from using multiple `signup_ref` values to create unbounded email spam.
 
-On successful account establishment, delete the pending challenge in the same transaction. Expired pending rows may be replaced lazily by a new signup; they are not canonical history.
+Expired pending rows are ephemeral operational state and may be deleted lazily/boundedly. They are not canonical product history.
 
 ## 4.4 Six-digit OTP security
 
@@ -360,17 +367,17 @@ No public `/test/*` endpoint is added to DANTE.
 
 # 6. Verification transaction and race behavior
 
-Verification consumes the pending signup challenge under row-level serialization.
+Verification consumes one specific pending signup challenge under row-level serialization.
 
 Expected transaction:
 
 ```text
 BEGIN
-→ lock current PasswordSignupChallenge
+→ resolve + lock PasswordSignupChallenge by signup_ref
 → reject expired/exhausted/incorrect code
 → re-check EmailIdentity uniqueness/current collision
 → if collision exists:
-     remove pending challenge
+     delete all pending challenges for same comparison key
      COMMIT
      return existing_account
 → else:
@@ -378,13 +385,13 @@ BEGIN
      insert EmailIdentity(verified_at=now)
      insert PasswordCredential(pending verifier)
      insert AuthSession
-     remove pending challenge
+     delete all pending challenges for same comparison key
 → COMMIT
 → reconcile ambiguous outcome by exact generated refs/verifiers if needed
 → only then emit raw AuthSession secret
 ```
 
-PostgreSQL unique `EmailIdentity.comparison_key` remains the final concurrency arbiter. Two concurrent verification attempts cannot create two Accounts for one canonical email.
+PostgreSQL unique `EmailIdentity.comparison_key` remains the final concurrency arbiter. Two concurrent verification attempts cannot create two Accounts for one canonical email. A uniqueness race is resolved as the same safe existing-account business outcome after transaction recovery/re-read, never by overwriting an existing credential.
 
 Do not use global SERIALIZABLE or advisory locks for this flow.
 
@@ -549,7 +556,9 @@ M4 materializes password reauthentication as the first method while keeping the 
 valid AuthSession
 + fresh password evidence
 → refresh recent-auth security context on SAME AuthSession
+→ refresh applicable authentication/session window
 → rotate session bearer secret
+→ invalidate old bearer secret
 ```
 
 Do not create a second AuthSession for reauth.
@@ -562,7 +571,7 @@ Use a configurable server-side recent-auth window with a conservative default:
 10 minutes
 ```
 
-Endpoints that require recent auth enforce it on the backend and return a stable problem such as:
+Endpoints that require recent auth enforce it on the backend and return the stable M2-aligned problem:
 
 ```text
 auth.reauthentication_required
@@ -581,13 +590,15 @@ read current credential snapshot
 → re-read current credential/session
 → prove credential evidence still current
 → update AuthSession.recent_auth_at
+→ refresh last_user_activity_at / last_seen_at as the user-initiated operation requires
+→ refresh AuthSession.expires_at under the accepted 30-day authentication/reauthentication window
 → rotate AuthSession.secret_verifier
 → COMMIT
 → reconcile ambiguity if needed
 → issue replacement __Host-dante-session cookie + derived CSRF
 ```
 
-`authenticated_at` remains the original session authentication time; `recent_auth_at` tracks fresh assurance.
+`authenticated_at` remains the original session authentication time; `recent_auth_at` records fresh assurance. Reauthentication refreshes the applicable session window exactly as required by the M2 security contract while preserving the same `auth_session_ref` identity.
 
 No reauth mutation retry.
 
@@ -610,7 +621,7 @@ Expected existing-table permission/evolution needs:
 Account              narrow INSERT capability for verified account establishment
 EmailIdentity        narrow INSERT capability
 PasswordCredential   narrow INSERT capability + existing verifier UPDATE
-AuthSession          existing INSERT/revoke + narrow recent_auth_at/secret_verifier UPDATE for reauth
+AuthSession          existing INSERT/revoke + narrow recent_auth/session-window/secret update for reauth
 ```
 
 Exact grants must remain column-bounded where possible and be proven against `dante_runtime` in real PostgreSQL.
@@ -632,7 +643,7 @@ Likely next migration starts from `20260827_10`; never edit applied revisions.
 
 # 12. Proposed M4 HTTP surface
 
-Exact names remain subject to OpenAPI readback, but the target semantic surface is:
+The public operation naming must stay aligned with the already-frozen M2 API contract:
 
 ```text
 POST /api/v1/auth/signup
@@ -643,7 +654,7 @@ POST /api/v1/auth/recovery
 POST /api/v1/auth/recovery/validate
 POST /api/v1/auth/reset-password
 
-POST /api/v1/auth/reauth/password
+POST /api/v1/auth/reauthenticate
 ```
 
 All browser unsafe operations preserve M3 browser ingress protections.
@@ -654,14 +665,16 @@ All browser unsafe operations preserve M3 browser ingress protections.
 
 ```text
 request: email + password (+ locale if selected for email copy)
-response: neutral verification-required result
+response: signup_ref + bounded expiry metadata + neutral verification-required state
 no cookie
 ```
+
+`signup_ref` is public/non-secret and reveals nothing about whether a canonical Account already exists.
 
 `POST /auth/signup/verify`
 
 ```text
-request: email + 6-digit code
+request: signup_ref + 6-digit code
 response discriminator:
   authenticated
   existing_account
@@ -672,9 +685,9 @@ Set-Cookie only for authenticated outcome after durable commit/reconciliation.
 `POST /auth/signup/resend`
 
 ```text
-request: email
+request: signup_ref
 response: neutral accepted/resend result
-rotates current OTP
+rotates only the OTP owned by that signup_ref
 ```
 
 ### Recovery
@@ -705,14 +718,19 @@ clears any current browser Auth cookie defensively
 
 ### Reauth
 
-`POST /auth/reauth/password`
+`POST /auth/reauthenticate`
 
 ```text
+operation id: auth_reauthenticate
 requires current AuthSession + CSRF
-request: current password
+M4 request: password evidence for the current Account
 response: refreshed session metadata
+same AuthSession identity
+refreshes recent-auth/session window
 rotates cookie/session secret
 ```
+
+M4 deliberately uses the already-frozen generic reauthentication operation instead of adding `/reauth/password`. M5 may add passkey/provider ceremonies behind compatible reauthentication semantics without creating a second v1 naming convention.
 
 No endpoint returns raw proof secrets except the out-of-band email channel.
 
@@ -755,7 +773,7 @@ bounded per-process ingress token buckets
 bounded email dispatch queue/workers
 short READ COMMITTED transactions
 indexed equality lookups only on hot Auth paths
-PostgreSQL uniqueness as final email race arbiter
+PostgreSQL uniqueness as final canonical email race arbiter
 Account lock only for Account-wide security mutations
 no SERIALIZABLE blanket mode
 no network/email wait under row lock
@@ -766,15 +784,16 @@ no raw request bodies in logs
 Expected hot-path lookup indexes:
 
 ```text
-password_signup_challenge.email_comparison_key UNIQUE
-password_recovery_challenge.password_recovery_ref UNIQUE/PK
+password_signup_challenge.signup_ref PRIMARY KEY / UNIQUE
+password_signup_challenge.email_comparison_key non-unique lookup index
+password_signup_challenge.signup_expires_at bounded-cleanup index if justified by query plan
+password_recovery_challenge.password_recovery_ref PRIMARY KEY / UNIQUE
 password_recovery_challenge.account_ref UNIQUE
-password_recovery_challenge.secret_verifier UNIQUE or bounded lookup companion
 existing email_identity.comparison_key UNIQUE
 existing auth_session.secret_verifier UNIQUE
 ```
 
-Do not introduce Redis merely to claim scale. A later measured multi-instance/edge requirement may move rate limiting behind an explicit operational gate.
+Do not add a unique constraint on pending signup `email_comparison_key`; challenge isolation is intentional. Do not introduce Redis merely to claim scale. A later measured multi-instance/edge requirement may move rate limiting behind an explicit operational gate.
 
 ---
 
@@ -787,16 +806,17 @@ Required real wiring:
 ```text
 REQUEST_SIGN_UP
 → POST signup
+→ store public signup_ref in in-memory Access flow state
 → SERVER_SIGN_UP_CREATED
 → VERIFY_EMAIL
 
 REQUEST_VERIFY_EMAIL
-→ POST signup/verify
+→ POST signup/verify(signup_ref, code)
 → authenticated new Account: SERVER_EMAIL_VERIFIED + real AuthSession
 → existing Account after mailbox proof: explicit existing-account server outcome
 
 REQUEST_RESEND_VERIFICATION
-→ real resend
+→ POST signup/resend(signup_ref)
 
 REQUEST_RECOVERY
 → neutral POST recovery
@@ -815,13 +835,15 @@ REQUEST_RESET_PASSWORD
 SERVER_REAUTH_REQUIRED
 → REAUTH
 REQUEST_REAUTH
-→ password reauth
+→ POST /auth/reauthenticate with password evidence
 → SERVER_REAUTH_SUCCEEDED
 ```
 
+`signup_ref` is not a bearer secret and may live only as transient Access flow state; no Auth truth is moved to localStorage/sessionStorage.
+
 `SERVER_EMAIL_VERIFIED` may continue into existing setup UI after a real AuthSession is established. Setup persistence/handoff remains outside M4 unless separately promoted.
 
-Fix existing M4 password-UX drift: `isValidNewPassword` must match the authoritative M3 policy minimum of **15 Unicode code points**, not the current pre-backend 12-character placeholder.
+Fix existing M4 password-UX drift: `isValidNewPassword` must match the authoritative M3 policy minimum of **15 Unicode code points**, not the current pre-backend 12-character placeholder or JavaScript UTF-16 code-unit length.
 
 ---
 
@@ -849,14 +871,16 @@ Prove all security invariants once on the integrated M4 candidate:
 
 ```text
 new signup → OTP → atomic Account/verified Email/Password/AuthSession
+multiple anonymous pending signup challenges for same email do not clobber one another
 existing verified email signup remains non-destructive
-concurrent signup same email
+concurrent verification same canonical email
 OTP expiry
 OTP replay
-OTP resend invalidates old code
+OTP resend invalidates only that signup_ref old code
 OTP max attempts
 verification concurrent double-consume
 Account/email uniqueness race
+successful verification removes sibling pending challenges
 recovery known vs unknown public equivalence
 recovery expiry
 recovery replay
@@ -867,7 +891,7 @@ reset revokes every AuthSession
 ambiguous commit reconciliation
 reauth invalid password
 reauth credential changed during KDF
-reauth updates recent_auth_at and rotates session secret
+reauth refreshes recent_auth/session window and rotates secret on same session identity
 runtime ACL exactness
 email dispatcher outage does not corrupt DB state
 ```
@@ -884,7 +908,7 @@ existing-account signup after verified OTP → safe signin/recovery guidance
 resend → old code fails/new code succeeds
 recovery → captured link → reset → fresh signin required
 post-reset old sessions rejected
-reauth → cookie rotates / session identity preserved
+reauth → cookie rotates / same session identity / refreshed window
 server/DB/email degraded states never fake success
 refresh/bootstrap remains regression-free after M4
 ```
@@ -950,6 +974,7 @@ Full observability is now an explicit mandatory M7 release gate unless independe
 generic auth_token/proof table with type + JSON payload
 creating canonical Account on initial anonymous signup before mailbox proof
 letting unverified standard signup issue AuthSession
+one replaceable anonymous signup challenge per email
 using plain SHA-256 for six-digit OTP
 storing raw OTP/reset token/password
 reset auto-login
@@ -959,6 +984,8 @@ recovery response that reveals Account existence
 frontend fake verification/reset success
 client-only recent-auth boolean
 reauth creating a second AuthSession
+reauth failing to refresh the M2 session window
+adding /auth/reauth/password beside the frozen /auth/reauthenticate operation
 persisting recovery bearer secret in local/session storage
 raw recovery secret in normal query string
 blind mutation retry
@@ -970,10 +997,10 @@ copying provider-specific/email-mailbox tricks into canonical email comparison
 
 # 20. Immediate implementation sequence
 
-M4 should now proceed as one coordinated batch:
+M4 now proceeds as one coordinated batch:
 
 ```text
-1. readback this contract against M2 security/API/testing authorities
+1. contract readback against M2 security/API/testing authorities — COMPLETE
 2. materialize exact two-table M4 DB delta + ACL changes
 3. implement proof codecs + signup/recovery/reauth application operations
 4. implement bounded email dispatcher + SMTP adapter + local capture boundary
