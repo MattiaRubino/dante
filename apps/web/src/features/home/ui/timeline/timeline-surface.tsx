@@ -297,19 +297,19 @@ export function TimelineSurface({
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const { today: runtimeToday, nowMinute: runtimeNowMinute } = useTimelineClock();
-  const initialDateRef = useRef(parseViewedDate(viewedDateIso) ?? runtimeToday);
-  const fixtureAnchorRef = useRef(runtimeToday);
+  const initialDate = parseViewedDate(viewedDateIso) ?? runtimeToday;
+  const initialDateRef = useRef(initialDate);
   const [state, dispatch] = useReducer(
     timelineReducer,
-    fixtureAnchorRef.current,
+    runtimeToday,
     createInitialTimelineState,
   );
-  const [anchor, setAnchor] = useState(initialDateRef.current);
-  const [viewDate, setViewDate] = useState(initialDateRef.current);
-  const [pastDays, setPastDays] = useState(
+  const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
+  const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
+  const [pastDays, setPastDays] = useState<number>(
     TIMELINE_POLICY.window.initialPastDays,
   );
-  const [futureDays, setFutureDays] = useState(
+  const [futureDays, setFutureDays] = useState<number>(
     TIMELINE_POLICY.window.initialFutureDays,
   );
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -327,7 +327,7 @@ export function TimelineSurface({
   const viewOptionsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const expansionProgressRef = useRef(expanded ? 1 : 0);
   const expansionFrameRef = useRef<number | null>(null);
-  const pendingExpansionRef = useRef(expansionProgressRef.current);
+  const pendingExpansionRef = useRef(expanded ? 1 : 0);
   const expansionDragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -363,7 +363,10 @@ export function TimelineSurface({
       buildRenderedDays(anchor, pastDays, futureDays, renderedDayInputs),
     [anchor, futureDays, pastDays, renderedDayInputs],
   );
-  renderedDaysRef.current = renderedDays;
+
+  useLayoutEffect(() => {
+    renderedDaysRef.current = renderedDays;
+  }, [renderedDays]);
 
   const showFeedback = useCallback((message: string) => {
     setToastMessage(message);
@@ -634,7 +637,10 @@ export function TimelineSurface({
     if (externalDate.equals(viewDate)) {
       return;
     }
-    goToDate(externalDate, { behavior: 'auto' }, false);
+    const frame = requestAnimationFrame(() => {
+      goToDate(externalDate, { behavior: 'auto' }, false);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [goToDate, runtimeToday, viewDate, viewedDateIso]);
 
   useLayoutEffect(() => {
