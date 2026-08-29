@@ -124,6 +124,7 @@ class AuthSettings(BaseModel):
     smtp_timeout_seconds: PositiveFloat = 5.0
     email_queue_capacity: PositiveInt = 256
     email_worker_count: PositiveInt = 2
+    email_shutdown_drain_seconds: PositiveFloat = 10.0
 
     session_max_age_seconds: PositiveInt = 2_592_000
     session_idle_timeout_seconds: PositiveInt = 2_592_000
