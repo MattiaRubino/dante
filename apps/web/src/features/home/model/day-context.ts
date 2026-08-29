@@ -25,7 +25,6 @@ export type WeatherCondition =
 export type DailyWeatherForecast = Readonly<{
   date: Temporal.PlainDate;
   condition: WeatherCondition;
-  conditionLabel: string;
   highCelsius: number;
   lowCelsius: number;
   precipitationPercent: number;
@@ -41,7 +40,6 @@ export type WeeklyWeatherForecast = Readonly<{
 const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   {
     condition: 'clear',
-    conditionLabel: 'Sereno',
     highCelsius: 29,
     lowCelsius: 20,
     precipitationPercent: 8,
@@ -50,7 +48,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'clear',
-    conditionLabel: 'Sereno',
     highCelsius: 30,
     lowCelsius: 20,
     precipitationPercent: 6,
@@ -59,7 +56,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'partly-cloudy',
-    conditionLabel: 'Parzialmente nuvoloso',
     highCelsius: 31,
     lowCelsius: 21,
     precipitationPercent: 16,
@@ -68,7 +64,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'partly-cloudy',
-    conditionLabel: 'Variabile',
     highCelsius: 28,
     lowCelsius: 20,
     precipitationPercent: 28,
@@ -77,7 +72,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'rain',
-    conditionLabel: 'Pioggia',
     highCelsius: 27,
     lowCelsius: 19,
     precipitationPercent: 56,
@@ -86,7 +80,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'clear',
-    conditionLabel: 'Sereno',
     highCelsius: 29,
     lowCelsius: 19,
     precipitationPercent: 9,
@@ -95,7 +88,6 @@ const PROTOTYPE_WEATHER: readonly Omit<DailyWeatherForecast, 'date'>[] = [
   },
   {
     condition: 'storm',
-    conditionLabel: 'Temporali',
     highCelsius: 26,
     lowCelsius: 18,
     precipitationPercent: 68,

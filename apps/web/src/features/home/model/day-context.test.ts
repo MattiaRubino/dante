@@ -62,7 +62,7 @@ describe('day context model', () => {
     expect(shiftIsoDate('2026-12-31', 1, now.toPlainDate())).toBe('2027-01-01');
   });
 
-  it('creates exactly seven deterministic frontend forecast rows', () => {
+  it('creates exactly seven deterministic, presentation-neutral forecast rows', () => {
     const forecast = createPrototypeWeeklyForecast(
       Temporal.PlainDate.from('2026-08-29'),
     );
@@ -71,5 +71,6 @@ describe('day context model', () => {
     expect(forecast.days).toHaveLength(7);
     expect(forecast.days[0]?.date.toString()).toBe('2026-08-29');
     expect(forecast.days[6]?.date.toString()).toBe('2026-09-04');
+    expect(forecast.days[0]).not.toHaveProperty('conditionLabel');
   });
 });
