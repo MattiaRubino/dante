@@ -1,3 +1,4 @@
+import { Temporal } from '@dante/time';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -18,17 +19,34 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function renderTimeline() {
+type RenderTimelineOptions = Readonly<{
+  viewedDateIso?: string | undefined;
+  onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
+  onDateNavigation?: ((isoDate: string | undefined) => void) | undefined;
+}>;
+
+function renderTimeline(options: RenderTimelineOptions = {}) {
   const onExpandedChange = vi.fn();
   const onExpansionProgress = vi.fn();
+  const onViewedDateChange = options.onViewedDateChange ?? vi.fn();
+  const onDateNavigation = options.onDateNavigation ?? vi.fn();
   const view = render(
     <TimelineSurface
       expanded={false}
       onExpandedChange={onExpandedChange}
       onExpansionProgress={onExpansionProgress}
+      viewedDateIso={options.viewedDateIso}
+      onViewedDateChange={onViewedDateChange}
+      onDateNavigation={onDateNavigation}
     />,
   );
-  return { ...view, onExpandedChange, onExpansionProgress };
+  return {
+    ...view,
+    onExpandedChange,
+    onExpansionProgress,
+    onViewedDateChange,
+    onDateNavigation,
+  };
 }
 
 describe('TimelineSurface production parity', () => {
@@ -48,8 +66,20 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
+  it('anchors the accepted rich fixture to runtime today and publishes today without a route date', () => {
+    const onViewedDateChange = vi.fn();
+    const { container } = renderTimeline({ onViewedDateChange });
+    const todayKey = Temporal.Now.plainDateISO().toString();
+
+    expect(
+      container.querySelector(`[data-timeline-date="${todayKey}"]`),
+    ).toBeTruthy();
+    expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
+    expect(onViewedDateChange).toHaveBeenCalledWith(undefined);
+  });
+
   it('opens the three-level calendar and keeps today distinct from the viewed date', () => {
-    renderTimeline();
+    renderTimeline({ viewedDateIso: '2026-08-04' });
 
     fireEvent.click(screen.getByRole('button', { name: 'Apri il calendario' }));
     expect(screen.getByRole('dialog', { name: 'Vai a una data' })).toBeTruthy();
@@ -60,6 +90,21 @@ describe('TimelineSurface production parity', () => {
     fireEvent.click(screen.getByRole('button', { name: "Scegli l'anno" }));
     expect(screen.getByText('2016')).toBeTruthy();
     expect(screen.getByText('2027')).toBeTruthy();
+  });
+
+  it('clears the route date when returning to runtime now', () => {
+    const onDateNavigation = vi.fn();
+    const { container } = renderTimeline({
+      viewedDateIso: '2034-02-17',
+      onDateNavigation,
+    });
+    onDateNavigation.mockClear();
+
+    const nowButton = container.querySelector<HTMLButtonElement>('.home-timeline-now');
+    expect(nowButton).toBeTruthy();
+    fireEvent.click(nowButton as HTMLButtonElement);
+
+    expect(onDateNavigation).toHaveBeenCalledWith(undefined);
   });
 
   it('filters groups without rebuilding the timeline as fake server state', () => {
