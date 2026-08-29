@@ -90,6 +90,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         auth.EmailIdentityRow.__table__,
         auth.PasswordCredentialRow.__table__,
         auth.AuthSessionRow.__table__,
+        auth.PasswordSignupChallengeRow.__table__,
+        auth.PasswordRecoveryChallengeRow.__table__,
     ),
 )
 
