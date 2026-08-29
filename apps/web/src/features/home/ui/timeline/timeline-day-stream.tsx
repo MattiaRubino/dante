@@ -15,9 +15,14 @@ import {
   TIMELINE_POLICY,
   timelineDragSnapMinutes,
 } from './model/timeline-policy';
-import type { TimelineState } from './model/timeline-state';
 import {
+  findTimelineEvent,
+  type TimelineState,
+} from './model/timeline-state';
+import {
+  addTimelineDays,
   formatTimelineMinute,
+  parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
 import type {
@@ -86,20 +91,15 @@ type DragRuntime = {
   lastAutoFrame: number;
 };
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function groupForEvent(
   event: TimelineEvent,
   groups: readonly TimelineGroup[],
 ): TimelineGroup | undefined {
   return groups.find((group) => group.id === event.groupId);
-}
-
-function dateLabel(date: PlainDate, locale: string, today: PlainDate): string {
-  const value = date.toLocaleString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-  });
-  return date.equals(today) ? `Oggi · ${value}` : value;
 }
 
 function TimelineEventCard({
@@ -183,10 +183,7 @@ function TimelineEventCard({
     }
 
     const directions: Partial<
-      Record<
-        string,
-        'earlier' | 'later' | 'previous-day' | 'next-day'
-      >
+      Record<string, 'earlier' | 'later' | 'previous-day' | 'next-day'>
     > = {
       ArrowUp: 'earlier',
       ArrowDown: 'later',
@@ -279,10 +276,7 @@ function TimelineEventCard({
         </div>
       ) : null}
 
-      <div
-        className="timeline-event-card__drag-zone"
-        aria-hidden="true"
-      />
+      <div className="timeline-event-card__drag-zone" aria-hidden="true" />
 
       {event.subitems?.length ? (
         <button
@@ -355,8 +349,16 @@ function TimelineDay({
   ) => void;
   suppressClickRef: RefObject<string | null>;
 }>) {
-  const { i18n } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const isToday = day.date.equals(today);
+  const label = day.date.toLocaleString(i18n.language, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+  });
+  const fullLabel = isToday
+    ? `${t(($) => $.common.home.timeline.todayPrefix)} · ${label}`
+    : label;
   const gaps = state.viewOptions.showMargins
     ? computeTimelineGaps(day.events)
     : [];
@@ -366,11 +368,9 @@ function TimelineDay({
       className="timeline-day-section"
       data-timeline-date={day.dateKey}
       style={{ height: day.height }}
-      aria-label={dateLabel(day.date, i18n.language, today)}
+      aria-label={fullLabel}
     >
-      <div className="timeline-day-section__label">
-        {dateLabel(day.date, i18n.language, today)}
-      </div>
+      <div className="timeline-day-section__label">{fullLabel}</div>
 
       {Array.from({ length: 49 }, (_, index) => index * 30).map((minute) => (
         <span
@@ -480,9 +480,7 @@ export function TimelineDayStream({
   stateRef.current = state;
 
   const focusedEvent = state.focusedEventId
-    ? days
-        .flatMap((day) => day.events)
-        .find((event) => event.id === state.focusedEventId) ?? null
+    ? findTimelineEvent(state, state.focusedEventId)?.event ?? null
     : null;
 
   const stopAutoScroll = () => {
@@ -630,7 +628,11 @@ export function TimelineDayStream({
     });
     suppressClickRef.current = runtime.event.id;
     const duration = runtime.event.endMinute - runtime.event.startMinute;
-    const bounded = clamp(snappedMinute, 0, TIMELINE_MINUTES_PER_DAY - duration);
+    const bounded = clamp(
+      snappedMinute,
+      0,
+      TIMELINE_MINUTES_PER_DAY - duration,
+    );
     onMoveFeedback(
       `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
     );
@@ -729,16 +731,14 @@ export function TimelineDayStream({
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
     const snap = timelineDragSnapMinutes(state.zoom);
-    const currentDayIndex = days.findIndex((day) => day.dateKey === dateKey);
     if (direction === 'previous-day' || direction === 'next-day') {
       const delta = direction === 'next-day' ? 1 : -1;
-      const target = days[currentDayIndex + delta];
-      if (!target) {
-        return;
-      }
+      const toDateKey = timelineDateKey(
+        addTimelineDays(parseTimelineDate(dateKey), delta),
+      );
       onMoveEvent({
         fromDateKey: dateKey,
-        toDateKey: target.dateKey,
+        toDateKey,
         eventId: event.id,
         startMinute: event.startMinute,
       });
@@ -758,7 +758,12 @@ export function TimelineDayStream({
 
   useEffect(() => {
     return () => {
-      cancelDrag();
+      dragCleanupRef.current?.();
+      if (autoScrollFrameRef.current !== null) {
+        cancelAnimationFrame(autoScrollFrameRef.current);
+      }
+      runtimeRef.current?.overlay?.remove();
+      runtimeRef.current?.card.classList.remove('is-drag-source');
     };
   }, []);
 
@@ -830,7 +835,7 @@ export function TimelineDayStream({
               nowMinute={nowMinute}
               state={state}
               focusedEvent={focusedEvent}
-              key={timelineDateKey(day.date)}
+              key={day.dateKey}
               onFocusEvent={onFocusEvent}
               onToggleSubitems={onToggleSubitems}
               onOpenEventDetail={onOpenEventDetail}
@@ -847,7 +852,10 @@ export function TimelineDayStream({
         </div>
       </div>
 
-      <div className="timeline-zoom-float" aria-label={t(($) => $.common.home.timeline.zoom.label)}>
+      <div
+        className="timeline-zoom-float"
+        aria-label={t(($) => $.common.home.timeline.zoom.label)}
+      >
         <button
           type="button"
           onClick={() => {
