@@ -48,10 +48,38 @@ describe('Access Auth application error mapping', () => {
     expect(
       accessEventForAuthError(
         new WebAuthRemoteError(
-          serverProblem('rate_limit.exceeded', 'rate_limit', 429, '17'),
+          serverProblem('auth.signup_resend_cooldown', 'rate_limit', 429, '17'),
         ),
       ),
     ).toEqual({ type: 'SERVER_RATE_LIMITED', retryAfterSeconds: 17 });
+
+    expect(
+      accessEventForAuthError(
+        new WebAuthRemoteError(
+          serverProblem(
+            'auth.verification_invalid_or_expired',
+            'authentication',
+            400,
+          ),
+        ),
+      ),
+    ).toEqual({ type: 'SERVER_VERIFICATION_INVALID_OR_EXPIRED' });
+
+    expect(
+      accessEventForAuthError(
+        new WebAuthRemoteError(
+          serverProblem('auth.recovery_invalid_or_expired', 'authentication', 400),
+        ),
+      ),
+    ).toEqual({ type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' });
+
+    expect(
+      accessEventForAuthError(
+        new WebAuthRemoteError(
+          serverProblem('auth.reauthentication_required', 'authentication', 401),
+        ),
+      ),
+    ).toEqual({ type: 'SERVER_REAUTH_REQUIRED' });
   });
 
   it('uses category and status fallbacks without inventing server codes', () => {

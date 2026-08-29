@@ -46,6 +46,9 @@ export type AccessCondition =
   | { kind: 'invalid-credentials' }
   | { kind: 'account-unavailable' }
   | { kind: 'password-compromised' }
+  | { kind: 'existing-account' }
+  | { kind: 'verification-invalid-or-expired' }
+  | { kind: 'recovery-invalid-or-expired' }
   | { kind: 'request-invalid' }
   | { kind: 'unexpected' };
 
@@ -92,9 +95,12 @@ export type AccessFlowEvent =
   | { type: 'SERVER_AUTHENTICATED' }
   | { type: 'SERVER_LOGGED_OUT' }
   | { type: 'SERVER_SIGN_UP_CREATED' }
+  | { type: 'SERVER_SIGN_UP_EXISTING_ACCOUNT' }
+  | { type: 'SERVER_VERIFICATION_INVALID_OR_EXPIRED' }
   | { type: 'SERVER_EMAIL_VERIFIED' }
   | { type: 'SERVER_RECOVERY_SENT'; email: string }
   | { type: 'SERVER_RECOVERY_PROOF_VALID' }
+  | { type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' }
   | { type: 'SERVER_RESET_SUCCEEDED' }
   | { type: 'SERVER_REAUTH_REQUIRED' }
   | { type: 'SERVER_REAUTH_SUCCEEDED' }
@@ -273,13 +279,30 @@ export function accessFlowReducer(
     case 'SERVER_SIGN_UP_CREATED':
       return state.screen.id === 'SIGN_UP_PASSWORD'
         ? withServerScreen({ id: 'VERIFY_EMAIL', email: state.screen.email })
-        : state;
+        : state.screen.id === 'VERIFY_EMAIL'
+          ? { ...state, condition: { kind: 'idle' } }
+          : state;
+    case 'SERVER_SIGN_UP_EXISTING_ACCOUNT':
+      return {
+        screen: { id: 'SIGN_IN' },
+        condition: { kind: 'existing-account' },
+      };
+    case 'SERVER_VERIFICATION_INVALID_OR_EXPIRED':
+      return {
+        ...state,
+        condition: { kind: 'verification-invalid-or-expired' },
+      };
     case 'SERVER_EMAIL_VERIFIED':
       return withServerScreen({ id: 'SETUP_NAME', preferredName: '' });
     case 'SERVER_RECOVERY_SENT':
       return withServerScreen({ id: 'RECOVERY_SENT', email: event.email });
     case 'SERVER_RECOVERY_PROOF_VALID':
       return withServerScreen({ id: 'RESET_PASSWORD' });
+    case 'SERVER_RECOVERY_INVALID_OR_EXPIRED':
+      return {
+        screen: { id: 'FORGOT_PASSWORD', email: '' },
+        condition: { kind: 'recovery-invalid-or-expired' },
+      };
     case 'SERVER_RESET_SUCCEEDED':
       return withServerScreen({ id: 'RESET_COMPLETE' });
     case 'SERVER_REAUTH_REQUIRED':
@@ -312,5 +335,5 @@ export function isValidAccessEmail(value: string): boolean {
 }
 
 export function isValidNewPassword(value: string): boolean {
-  return value.length >= 12;
+  return Array.from(value).length >= 15;
 }

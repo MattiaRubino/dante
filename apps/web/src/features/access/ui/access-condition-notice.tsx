@@ -39,6 +39,18 @@ export function AccessConditionNotice({
       title = t(($) => $.common.access.failure.passwordCompromisedTitle);
       body = t(($) => $.common.access.failure.passwordCompromisedBody);
       break;
+    case 'existing-account':
+      title = t(($) => $.common.access.failure.existingAccountTitle);
+      body = t(($) => $.common.access.failure.existingAccountBody);
+      break;
+    case 'verification-invalid-or-expired':
+      title = t(($) => $.common.access.failure.verificationInvalidTitle);
+      body = t(($) => $.common.access.failure.verificationInvalidBody);
+      break;
+    case 'recovery-invalid-or-expired':
+      title = t(($) => $.common.access.failure.recoveryInvalidTitle);
+      body = t(($) => $.common.access.failure.recoveryInvalidBody);
+      break;
     case 'request-invalid':
       title = t(($) => $.common.access.failure.requestInvalidTitle);
       body = t(($) => $.common.access.failure.requestInvalidBody);

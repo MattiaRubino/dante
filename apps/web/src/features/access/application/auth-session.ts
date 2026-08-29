@@ -72,11 +72,23 @@ export function accessEventForAuthError(
           return { type: 'SERVER_ACCOUNT_UNAVAILABLE' };
         case 'auth.password_compromised':
           return { type: 'SERVER_PASSWORD_COMPROMISED' };
+        case 'auth.verification_invalid_or_expired':
+        case 'auth.verification_attempts_exhausted':
+          return { type: 'SERVER_VERIFICATION_INVALID_OR_EXPIRED' };
+        case 'auth.recovery_invalid_or_expired':
+          return { type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' };
+        case 'auth.reauthentication_required':
+          return { type: 'SERVER_REAUTH_REQUIRED' };
         case 'request.validation_failed':
         case 'request.malformed':
           return { type: 'SERVER_REQUEST_INVALID' };
         case 'rate_limit.exceeded':
+        case 'auth.signup_rate_limited':
+        case 'auth.signup_resend_cooldown':
+        case 'auth.recovery_rate_limited':
+        case 'auth.reauthentication_rate_limited':
           return rateLimitedEvent(failure.retryAfter);
+        case 'auth.email_delivery_unavailable':
         case 'service.unavailable':
         case 'dependency.unavailable':
           return { type: 'SERVER_UNAVAILABLE' };

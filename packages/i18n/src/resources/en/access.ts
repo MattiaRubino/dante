@@ -40,7 +40,7 @@ export const access = {
   },
   password: {
     guideTitle: 'Minimum length',
-    proposal: '12+ characters',
+    proposal: '15+ characters',
     manager:
       'You can paste or generate the password with your password manager.',
   },
@@ -81,7 +81,7 @@ export const access = {
   validation: {
     email: 'Enter a valid email address.',
     passwordRequired: 'Enter your password.',
-    passwordMinimum: 'Use at least 12 characters.',
+    passwordMinimum: 'Use at least 15 characters.',
     passwordMismatch: 'The passwords do not match.',
     verificationCode: 'Enter the 6-digit code.',
     preferredName: 'Enter the name you want DANTE to use.',
@@ -104,9 +104,18 @@ export const access = {
     passwordCompromisedTitle: 'Password update required.',
     passwordCompromisedBody:
       'To protect the account, this password cannot be used to open a new session.',
+    existingAccountTitle: 'Account already exists.',
+    existingAccountBody:
+      'The address is verified. Sign in with the account already associated with this email.',
+    verificationInvalidTitle: 'Code invalid or expired.',
+    verificationInvalidBody:
+      'Request a new code or restart account creation.',
+    recoveryInvalidTitle: 'Recovery link invalid or expired.',
+    recoveryInvalidBody:
+      'Request a new link to reset your password securely.',
     requestInvalidTitle: 'Check the information you entered.',
     requestInvalidBody:
-      'The request does not meet the sign-in requirements. Check the email and password.',
+      'The request does not meet the access requirements. Check the information and try again.',
     unexpectedTitle: 'Sign-in could not be completed.',
     unexpectedBody: 'Try again. If the problem continues, try again later.',
   },
@@ -138,6 +147,9 @@ export const access = {
   recovery: {
     title: 'Check your email',
     body: 'If an account exists for the address you entered, you’ll receive instructions to recover access.',
+    validatingTitle: 'Checking recovery link',
+    validatingBody:
+      'We’re securely validating the link before showing the password reset form.',
   },
   reset: {
     title: 'Create a new password',
@@ -166,8 +178,8 @@ export const access = {
   },
   reauth: {
     title: 'Confirm your identity again',
-    body: 'To protect your account, confirm your identity again before continuing.',
-    action: 'Continue',
+    body: 'To protect your account, enter your password again before continuing.',
+    action: 'Confirm identity',
   },
   setupName: {
     title: 'What should DANTE call you?',

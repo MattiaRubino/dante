@@ -34,7 +34,7 @@ export const access = {
   },
   password: {
     guideTitle: 'Lunghezza minima',
-    proposal: '12+ caratteri',
+    proposal: '15+ caratteri',
     manager:
       'Puoi incollare o generare la password con il tuo password manager.',
   },
@@ -43,7 +43,7 @@ export const access = {
     apple: 'Continua con Apple',
     googleName: 'Google',
     appleName: 'Apple',
-    body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non a DANTE.',
+    body: 'DANTE apre il flusso ufficiale del provider. La schermata di consenso appartiene al provider, non DANTE.',
     wait: 'Completa l’accesso',
     pendingBody:
       'Completa l’accesso nella finestra del provider. Tornerai automaticamente a DANTE.',
@@ -75,7 +75,7 @@ export const access = {
   validation: {
     email: 'Inserisci un indirizzo email valido.',
     passwordRequired: 'Inserisci la password.',
-    passwordMinimum: 'Usa almeno 12 caratteri.',
+    passwordMinimum: 'Usa almeno 15 caratteri.',
     passwordMismatch: 'Le password non coincidono.',
     verificationCode: 'Inserisci il codice a 6 cifre.',
     preferredName: 'Inserisci il nome con cui vuoi essere chiamato.',
@@ -100,9 +100,18 @@ export const access = {
     passwordCompromisedTitle: 'Password da aggiornare.',
     passwordCompromisedBody:
       'Per proteggere l’account, questa password non può essere usata per aprire una nuova sessione.',
+    existingAccountTitle: 'Account già esistente.',
+    existingAccountBody:
+      'L’indirizzo è stato verificato. Accedi con l’account già associato a questa email.',
+    verificationInvalidTitle: 'Codice non valido o scaduto.',
+    verificationInvalidBody:
+      'Richiedi un nuovo codice oppure ricomincia la creazione dell’account.',
+    recoveryInvalidTitle: 'Link di recupero non valido o scaduto.',
+    recoveryInvalidBody:
+      'Richiedi un nuovo link per reimpostare la password in sicurezza.',
     requestInvalidTitle: 'Controlla i dati inseriti.',
     requestInvalidBody:
-      'La richiesta non rispetta i requisiti di accesso. Controlla email e password.',
+      'La richiesta non rispetta i requisiti di accesso. Controlla i dati e riprova.',
     unexpectedTitle: 'Non è stato possibile completare l’accesso.',
     unexpectedBody: 'Riprova. Se il problema continua, riprova più tardi.',
   },
@@ -134,6 +143,9 @@ export const access = {
   recovery: {
     title: 'Controlla la tua email',
     body: 'Se esiste un account associato all’indirizzo indicato, riceverai le istruzioni per recuperare l’accesso.',
+    validatingTitle: 'Verifica del link di recupero',
+    validatingBody:
+      'Stiamo verificando il link in modo sicuro prima di mostrarti il cambio password.',
   },
   reset: {
     title: 'Crea una nuova password',
@@ -162,8 +174,8 @@ export const access = {
   },
   reauth: {
     title: 'Conferma di nuovo la tua identità',
-    body: 'Per proteggere il tuo account, conferma di nuovo la tua identità per continuare.',
-    action: 'Continua',
+    body: 'Per proteggere il tuo account, inserisci di nuovo la password prima di continuare.',
+    action: 'Conferma identità',
   },
   setupName: {
     title: 'Come vuoi che DANTE ti chiami?',
