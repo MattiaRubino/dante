@@ -6,7 +6,6 @@ import {
   type WebPasswordRecoveryRequest,
   type WebPasswordRecoveryValidationRequest,
   type WebPasswordResetRequest,
-  type WebSignupAuthenticated,
   type WebSignupRequest,
   type WebSignupResendRequest,
   type WebSignupVerificationRequest,
@@ -20,8 +19,14 @@ export function authenticatedSessionFromSignup(
   if (result.outcome !== 'authenticated') {
     return null;
   }
-  const { outcome: _outcome, ...session } = result as WebSignupAuthenticated;
-  return session;
+  return {
+    authenticated: result.authenticated,
+    account_ref: result.account_ref,
+    auth_session_ref: result.auth_session_ref,
+    recent_auth_at: result.recent_auth_at,
+    expires_at: result.expires_at,
+    csrf_token: result.csrf_token,
+  };
 }
 
 export function useBeginSignupMutation() {
