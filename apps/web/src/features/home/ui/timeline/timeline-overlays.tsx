@@ -54,21 +54,25 @@ function positionNearAnchor(
 ): PopoverPosition {
   const anchorRect = anchor.getBoundingClientRect();
   const visibleLeft = Math.max(4, bounds?.left ?? 4);
-  const visibleRight = Math.min(window.innerWidth - 4, bounds?.right ?? window.innerWidth - 4);
+  const visibleRight = Math.min(
+    window.innerWidth - 4,
+    bounds?.right ?? window.innerWidth - 4,
+  );
   const visibleTop = Math.max(4, bounds?.top ?? 4);
   const visibleBottom = Math.min(
     window.innerHeight - 4,
     bounds?.bottom ?? window.innerHeight - 4,
   );
-
   const maxLeft = Math.max(visibleLeft, visibleRight - width);
   const left = clamp(anchorRect.left, visibleLeft, maxLeft);
   const below = anchorRect.bottom + 8;
   const above = anchorRect.top - height - 8;
   const useTop = below + height > visibleBottom && above >= visibleTop;
-  const rawTop = useTop ? above : below;
-  const top = clamp(rawTop, visibleTop, Math.max(visibleTop, visibleBottom - height));
-
+  const top = clamp(
+    useTop ? above : below,
+    visibleTop,
+    Math.max(visibleTop, visibleBottom - height),
+  );
   return { left, top, placement: useTop ? 'top' : 'bottom' };
 }
 
@@ -82,7 +86,6 @@ function useDismissablePopover(
     if (!open) {
       return;
     }
-
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) {
@@ -97,13 +100,11 @@ function useDismissablePopover(
       onClose(false);
     };
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') {
-        return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose(true);
       }
-      event.preventDefault();
-      onClose(true);
     };
-
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
@@ -161,10 +162,15 @@ export function CalendarPopover({
       return;
     }
     const update = () => {
-      if (!triggerRef.current) {
-        return;
+      if (triggerRef.current) {
+        setPosition(
+          positionNearAnchor(
+            triggerRef.current,
+            300,
+            level === 'days' ? 356 : 272,
+          ),
+        );
       }
-      setPosition(positionNearAnchor(triggerRef.current, 300, level === 'days' ? 356 : 272));
     };
     update();
     window.addEventListener('resize', update);
@@ -194,7 +200,10 @@ export function CalendarPopover({
   }, [focusedDateKey, level, open]);
 
   const monthGrid = useMemo(() => buildCalendarMonthGrid(cursor), [cursor]);
-  const yearPage = useMemo(() => buildCalendarYearPage(cursor.year), [cursor.year]);
+  const yearPage = useMemo(
+    () => buildCalendarYearPage(cursor.year),
+    [cursor.year],
+  );
 
   if (!open) {
     return null;
@@ -250,7 +259,7 @@ export function CalendarPopover({
     setFocusedDateKey(timelineDateKey(next));
   };
 
-  const calendar = (
+  return createPortal(
     <div
       ref={popoverRef}
       className="timeline-calendar-popover"
@@ -293,7 +302,8 @@ export function CalendarPopover({
           </button>
         ) : (
           <span className="timeline-calendar-level is-static">
-            {calendarYearPageBase(cursor.year)}–{calendarYearPageBase(cursor.year) + 11}
+            {calendarYearPageBase(cursor.year)}–
+            {calendarYearPageBase(cursor.year) + 11}
           </span>
         )}
         <button
@@ -352,7 +362,8 @@ export function CalendarPopover({
       ) : level === 'months' ? (
         <div className="timeline-calendar-grid is-blocks">
           {Array.from({ length: 12 }, (_, index) => index + 1).map((month) => {
-            const selected = viewDate.year === cursor.year && viewDate.month === month;
+            const selected =
+              viewDate.year === cursor.year && viewDate.month === month;
             const current = today.year === cursor.year && today.month === month;
             const label = monthShort.format(
               new Date(Date.UTC(cursor.year, month - 1, 1, 12)),
@@ -411,10 +422,9 @@ export function CalendarPopover({
           {t(($) => $.common.home.timeline.calendar.today)}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
-
-  return createPortal(calendar, document.body);
 }
 
 type ViewOptionsPopoverProps = Readonly<{
@@ -480,7 +490,9 @@ export function ViewOptionsPopover({
         <input
           type="checkbox"
           checked={options.showMargins}
-          onChange={(event) => onChange('showMargins', event.currentTarget.checked)}
+          onChange={(event) =>
+            onChange('showMargins', event.currentTarget.checked)
+          }
         />
         {t(($) => $.common.home.timeline.viewOptions.margins)}
       </label>
@@ -515,7 +527,12 @@ type TimeEditorPopoverProps = Readonly<{
   dateKey: string;
   anchor: HTMLButtonElement;
   gridRef: RefObject<HTMLDivElement | null>;
-  onSave: (dateKey: string, eventId: string, startMinute: number, endMinute: number) => void;
+  onSave: (
+    dateKey: string,
+    eventId: string,
+    startMinute: number,
+    endMinute: number,
+  ) => void;
   onClose: (restoreFocus?: boolean) => void;
 }>;
 
@@ -534,8 +551,17 @@ function TimeSegment({
   onMarkDirty: () => void;
   onSubmit: () => void;
 }>) {
+  const { t } = useTranslation('common');
   const hour = Math.floor(minute / 60);
   const minutePart = minute % 60;
+  const maximum = isEnd ? 1440 : 1439;
+
+  const applyDelta = (amount: number) => {
+    if (isEnd) {
+      onMarkDirty();
+    }
+    onChange(clamp(minute + amount, 0, maximum));
+  };
 
   const changePart = (part: 'hour' | 'minute', raw: string) => {
     const numeric = Number.parseInt(raw, 10);
@@ -550,11 +576,11 @@ function TimeSegment({
       const nextHour = clamp(numeric, 0, maxHour);
       const nextMinute = nextHour === 24 ? 0 : minutePart;
       onChange(nextHour * 60 + nextMinute);
-    } else {
-      const nextMinute = clamp(numeric, 0, 59);
-      const safeHour = hour === 24 ? 23 : hour;
-      onChange(safeHour * 60 + nextMinute);
+      return;
     }
+    const nextMinute = clamp(numeric, 0, 59);
+    const safeHour = hour === 24 ? 23 : hour;
+    onChange(safeHour * 60 + nextMinute);
   };
 
   const step = (
@@ -569,9 +595,6 @@ function TimeSegment({
       return;
     }
     event.preventDefault();
-    if (isEnd) {
-      onMarkDirty();
-    }
     const positive = event.key === 'ArrowUp' || event.key === 'PageUp';
     const amount = event.altKey
       ? 1
@@ -582,8 +605,7 @@ function TimeSegment({
         : segment === 'hour'
           ? 60
           : 5;
-    const maximum = isEnd ? 1440 : 1439;
-    onChange(clamp(minute + (positive ? amount : -amount), 0, maximum));
+    applyDelta(positive ? amount : -amount);
   };
 
   return (
@@ -598,13 +620,11 @@ function TimeSegment({
           onKeyDown={(event) => step(event, 'hour')}
           onWheel={(event) => {
             event.preventDefault();
-            if (isEnd) {
-              onMarkDirty();
-            }
-            const maximum = isEnd ? 1440 : 1439;
-            onChange(clamp(minute + (event.deltaY < 0 ? 60 : -60), 0, maximum));
+            applyDelta(event.deltaY < 0 ? 60 : -60);
           }}
-          aria-label={`${label} ore`}
+          aria-label={t(($) => $.common.home.timeline.timeEditor.hourPart, {
+            label,
+          })}
         />
         <b>:</b>
         <input
@@ -615,18 +635,32 @@ function TimeSegment({
           onKeyDown={(event) => step(event, 'minute')}
           onWheel={(event) => {
             event.preventDefault();
-            if (isEnd) {
-              onMarkDirty();
-            }
-            const maximum = isEnd ? 1440 : 1439;
-            onChange(clamp(minute + (event.deltaY < 0 ? 5 : -5), 0, maximum));
+            applyDelta(event.deltaY < 0 ? 5 : -5);
           }}
-          aria-label={`${label} minuti`}
+          aria-label={t(($) => $.common.home.timeline.timeEditor.minutePart, {
+            label,
+          })}
         />
       </div>
-      <div className="timeline-time-steps" aria-hidden="true">
-        <span>▲</span>
-        <span>▼</span>
+      <div className="timeline-time-steps">
+        <button
+          type="button"
+          onClick={() => applyDelta(5)}
+          aria-label={t(($) => $.common.home.timeline.timeEditor.increase, {
+            label,
+          })}
+        >
+          ▲
+        </button>
+        <button
+          type="button"
+          onClick={() => applyDelta(-5)}
+          aria-label={t(($) => $.common.home.timeline.timeEditor.decrease, {
+            label,
+          })}
+        >
+          ▼
+        </button>
       </div>
     </div>
   );
@@ -684,7 +718,12 @@ export function TimeEditorPopover({
   useLayoutEffect(() => {
     const update = () => {
       setPosition(
-        positionNearAnchor(anchor, 286, 246, gridRef.current?.getBoundingClientRect()),
+        positionNearAnchor(
+          anchor,
+          286,
+          246,
+          gridRef.current?.getBoundingClientRect(),
+        ),
       );
     };
     update();
@@ -778,6 +817,9 @@ export function EventDetailDialog({
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        closeButtonRef.current?.focus();
       }
     };
     document.addEventListener('keydown', keydown, true);
