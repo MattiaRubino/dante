@@ -82,7 +82,6 @@ function useElementWidth<T extends HTMLElement>(fallback: number) {
       }
     };
 
-    update(element.getBoundingClientRect().width);
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
