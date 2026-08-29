@@ -1,4 +1,4 @@
-"""Real PostgreSQL 18.6 + FastAPI proof for the first M3 authenticated spine."""
+"""Real PostgreSQL 18.6 + FastAPI proof for the accepted M3 authenticated spine under M4 runtime."""
 
 from __future__ import annotations
 
@@ -25,13 +25,14 @@ from dante.auth.sessions import (
     WEB_CLIENT_HEADER_VALUE,
 )
 from dante.bootstrap.app import create_app
-from dante.platform.config.auth import AuthSettings
+from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.settings import Environment, Settings
 
 _CANONICAL_ORIGIN = "https://dante.test"
 _AUTH_TEST_VALUE = "correct horse battery staple"
 _EMAIL = "synthetic.user@example.com"
-_TEST_PEPPER_KEY_ID = "test-v1"
+_TEST_PEPPER_KEY_ID = "test-password-v1"
+_TEST_OTP_KEY_ID = "test-signup-otp-v1"
 
 
 def _secret(raw: bytes) -> str:
@@ -40,6 +41,7 @@ def _secret(raw: bytes) -> str:
 
 _PEPPER = _secret(b"p" * 32)
 _CSRF_KEY = _secret(b"c" * 32)
+_OTP_KEY = _secret(b"o" * 32)
 
 
 class _HibpHandler(BaseHTTPRequestHandler):
@@ -83,6 +85,12 @@ def _auth_settings(hibp_stub_url: str) -> AuthSettings:
         password_current_pepper_key_id=_TEST_PEPPER_KEY_ID,
         password_peppers={_TEST_PEPPER_KEY_ID: SecretStr(_PEPPER)},
         csrf_key=SecretStr(_CSRF_KEY),
+        signup_otp_current_key_id=_TEST_OTP_KEY_ID,
+        signup_otp_keys={_TEST_OTP_KEY_ID: SecretStr(_OTP_KEY)},
+        smtp_host="127.0.0.1",
+        smtp_port=9,
+        smtp_security=SmtpSecurity.PLAIN,
+        smtp_from_address="no-reply@dante.test",
         session_max_age_seconds=3_600,
         session_idle_timeout_seconds=60,
         kdf_max_concurrency=2,
