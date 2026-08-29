@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
   createDayContextSnapshot,
   createPrototypeWeeklyForecast,
+  getDayGreetingPeriod,
   normalizeHomeDateSearch,
+  normalizePreferredName,
   shiftIsoDate,
 } from './day-context';
 
@@ -18,6 +20,23 @@ describe('day context model', () => {
     expect(normalizeHomeDateSearch('2026-02-30')).toBeUndefined();
     expect(normalizeHomeDateSearch('29-08-2026')).toBeUndefined();
     expect(normalizeHomeDateSearch(20260829)).toBeUndefined();
+  });
+
+  it('normalizes the preferred display name without inventing an identity', () => {
+    expect(normalizePreferredName('  Mattia   Rubino  ')).toBe('Mattia Rubino');
+    expect(normalizePreferredName('   ')).toBeUndefined();
+    expect(normalizePreferredName(undefined)).toBeUndefined();
+  });
+
+  it('maps local hours to deterministic greeting periods', () => {
+    expect(getDayGreetingPeriod(4)).toBe('night');
+    expect(getDayGreetingPeriod(5)).toBe('morning');
+    expect(getDayGreetingPeriod(11)).toBe('morning');
+    expect(getDayGreetingPeriod(12)).toBe('afternoon');
+    expect(getDayGreetingPeriod(17)).toBe('afternoon');
+    expect(getDayGreetingPeriod(18)).toBe('evening');
+    expect(getDayGreetingPeriod(22)).toBe('evening');
+    expect(getDayGreetingPeriod(23)).toBe('night');
   });
 
   it('exposes current-minute progress only for the local today', () => {

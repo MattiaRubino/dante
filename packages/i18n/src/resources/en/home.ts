@@ -19,6 +19,12 @@ export const home = {
   orientation: {
     title: 'Your situation',
     greeting: 'Good afternoon.',
+    greetings: {
+      morning: 'Good morning',
+      afternoon: 'Good afternoon',
+      evening: 'Good evening',
+      night: 'Good night',
+    },
     dayKicker: 'Today',
     dayTitle: 'Your day',
     dayMeta: 'Sunrise · Sunset',

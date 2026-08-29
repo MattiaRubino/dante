@@ -33,22 +33,47 @@
 .day-context-greeting {
   min-width: 0;
   padding-right: 24px;
+  overflow: hidden;
   border-right: 0;
 }
 
 .day-context-greeting h2 {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
-  color: #f2f6ff;
-  font-size: 25px;
-  font-weight: 760;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  overflow: hidden;
+  color: #e8eef8;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.033em;
+  line-height: 1.05;
   white-space: nowrap;
 }
 
 .day-context-greeting h2.is-long-greeting {
   font-size: 21px;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.026em;
+}
+
+.day-context-greeting-salutation,
+.day-context-greeting-punctuation {
+  flex: 0 0 auto;
+}
+
+.day-context-greeting-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #fbfdff;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 22px rgba(172, 190, 226, 0.08);
+}
+
+.day-context-greeting-punctuation {
+  color: #c9d3e3;
+  font-weight: 620;
 }
 
 .day-context-disclosure {
@@ -82,28 +107,40 @@
 }
 
 .day-context-orientation-weather {
+  position: relative;
   grid-column: 1;
   grid-row: 1 / 3;
   display: grid;
   place-items: center;
   align-self: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   overflow: visible;
-  border: 1px solid rgba(255, 210, 121, 0.13);
-  border-radius: 11px;
+  border: 1px solid rgba(255, 220, 149, 0.12);
+  border-radius: 10px;
   background:
-    radial-gradient(circle at 35% 28%, rgba(255, 247, 207, 0.13), transparent 35%),
-    linear-gradient(180deg, rgba(255, 190, 83, 0.1), rgba(255, 174, 65, 0.025));
+    radial-gradient(circle at 36% 30%, rgba(255, 249, 220, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(255, 192, 89, 0.085), rgba(255, 173, 69, 0.018));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.055),
-    0 0 16px rgba(255, 184, 66, 0.045);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 5px 14px rgba(0, 0, 0, 0.08);
+}
+
+.day-context-orientation-weather::before {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 198, 91, 0.08), transparent 70%);
+  content: '';
+  pointer-events: none;
 }
 
 .day-context-orientation-weather svg {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 25px;
-  height: 25px;
+  width: 26px;
+  height: 26px;
   overflow: visible;
 }
 
@@ -204,8 +241,7 @@
   content: '';
 }
 
-/* Weekly weather disclosure: intentionally richer than the visual oracle while
-   the closed orientation strip remains pixel-faithful to the accepted prototype. */
+/* Weekly weather disclosure extends the accepted prototype only while open. */
 .day-context-panel {
   position: absolute;
   z-index: 90;

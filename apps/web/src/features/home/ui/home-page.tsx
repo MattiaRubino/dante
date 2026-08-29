@@ -6,6 +6,7 @@ import { HomeShell } from './home-shell';
 
 type HomePageProps = Readonly<{
   viewedDateIso?: string | undefined;
+  preferredName?: string | undefined;
   onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
 }>;
 

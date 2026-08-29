@@ -69,6 +69,15 @@ describe('HomePage M1 visual materialization', () => {
     expect(screen.getByText('Da risolvere')).toBeTruthy();
   });
 
+  it('renders the preferred profile name only when an identity is supplied', () => {
+    const { rerender } = render(<HomePage preferredName="  Mattia   Rubino  " />);
+
+    expect(screen.getByText('Mattia Rubino')).toBeTruthy();
+
+    rerender(<HomePage />);
+    expect(screen.queryByText('Mattia Rubino')).toBeNull();
+  });
+
   it('supports the contracted local AI, stage and timeline states', () => {
     const { container } = render(<HomePage />);
     const shell = container.querySelector('[data-home-region="shell"]');

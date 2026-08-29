@@ -7,12 +7,15 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import dayRibbonBackdropUrl from 'virtual:dante-day-ribbon-backdrop';
 
 import {
   createDayContextSnapshot,
   createPrototypeWeeklyForecast,
   getBrowserTimeZone,
+  getDayGreetingPeriod,
+  normalizePreferredName,
   type DailyWeatherForecast,
 } from '../../model/day-context';
 import {
@@ -27,13 +30,13 @@ import './day-context-strip.css';
 
 type DayContextStripProps = Readonly<{
   viewedDateIso?: string | undefined;
+  preferredName?: string | undefined;
 }>;
 
 type RouteStyle = CSSProperties & {
   '--day-route-x'?: string;
 };
 
-const LOCALE = 'it-IT';
 const DEFAULT_ROUTE_WIDTH = 900;
 const WALKER_SCALE = 2;
 const WALKER_FRAME_MS = 420;
@@ -74,9 +77,13 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function capitalize(value: string): string {
+function resolveLocale(language: string | undefined): string {
+  return language?.toLowerCase().startsWith('en') ? 'en-US' : 'it-IT';
+}
+
+function capitalize(value: string, locale: string): string {
   return value.length > 0
-    ? value[0]!.toLocaleUpperCase(LOCALE) + value.slice(1)
+    ? value[0]!.toLocaleUpperCase(locale) + value.slice(1)
     : value;
 }
 
@@ -84,39 +91,29 @@ function formatTime(now: Temporal.ZonedDateTime): string {
   return `${String(now.hour).padStart(2, '0')}:${String(now.minute).padStart(2, '0')}`;
 }
 
-function formatLongDate(date: Temporal.PlainDate): string {
+function formatLongDate(date: Temporal.PlainDate, locale: string): string {
   return capitalize(
-    date.toLocaleString(LOCALE, {
+    date.toLocaleString(locale, {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
     }),
+    locale,
   );
 }
 
-function formatWeekday(date: Temporal.PlainDate): string {
-  return date.toLocaleString(LOCALE, { weekday: 'short' });
+function formatWeekday(date: Temporal.PlainDate, locale: string): string {
+  return date.toLocaleString(locale, { weekday: 'short' });
 }
 
 function formatOrientationDay(
   date: Temporal.PlainDate,
   relation: 'past' | 'today' | 'future',
+  locale: string,
+  todayLabel: string,
 ): string {
-  const label = formatLongDate(date);
-  return relation === 'today' ? `Oggi · ${label}` : label;
-}
-
-function greetingForHour(hour: number): string {
-  if (hour >= 5 && hour < 12) {
-    return 'Buongiorno, Mattia.';
-  }
-  if (hour >= 12 && hour < 18) {
-    return 'Buon pomeriggio, Mattia.';
-  }
-  if (hour >= 18 && hour < 23) {
-    return 'Buonasera, Mattia.';
-  }
-  return 'Buonanotte, Mattia.';
+  const label = formatLongDate(date, locale);
+  return relation === 'today' ? `${todayLabel} · ${label}` : label;
 }
 
 function WeatherGlyph({ condition }: Pick<DailyWeatherForecast, 'condition'>) {
@@ -133,27 +130,36 @@ function WeatherGlyph({ condition }: Pick<DailyWeatherForecast, 'condition'>) {
 function OrientationWeatherMark({
   gradientId,
 }: Readonly<{ gradientId: string }>) {
+  const haloId = `${gradientId}-halo`;
+
   return (
     <span className="day-context-orientation-weather" aria-hidden="true">
       <svg viewBox="0 0 32 32">
         <defs>
-          <radialGradient id={gradientId} cx="35%" cy="30%" r="70%">
-            <stop offset="0" stopColor="#fff2b8" />
-            <stop offset=".42" stopColor="#ffd46f" />
-            <stop offset="1" stopColor="#f0a246" />
+          <radialGradient id={haloId} cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="#ffd67a" stopOpacity=".32" />
+            <stop offset=".58" stopColor="#ffbd62" stopOpacity=".08" />
+            <stop offset="1" stopColor="#ffad54" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={gradientId} cx="34%" cy="28%" r="72%">
+            <stop offset="0" stopColor="#fff8d8" />
+            <stop offset=".36" stopColor="#ffe18a" />
+            <stop offset=".72" stopColor="#ffc45e" />
+            <stop offset="1" stopColor="#e98f39" />
           </radialGradient>
         </defs>
+        <circle cx="16" cy="16" r="12.5" fill={`url(#${haloId})`} />
         <g
           fill="none"
-          stroke="#ffd985"
-          strokeWidth="1.45"
+          stroke="#ffd98a"
+          strokeWidth="1.25"
           strokeLinecap="round"
-          opacity=".78"
+          opacity=".7"
         >
-          <path d="M16 3.5v3M16 25.5v3M3.5 16h3M25.5 16h3M7.2 7.2l2.1 2.1M22.7 22.7l2.1 2.1M24.8 7.2l-2.1 2.1M9.3 22.7l-2.1 2.1" />
+          <path d="M16 3.6v2.8M16 25.6v2.8M3.6 16h2.8M25.6 16h2.8M7.35 7.35l1.95 1.95M22.7 22.7l1.95 1.95M24.65 7.35L22.7 9.3M9.3 22.7l-1.95 1.95" />
         </g>
-        <circle cx="16" cy="16" r="6.7" fill={`url(#${gradientId})`} />
-        <circle cx="14.1" cy="13.8" r="1.4" fill="#fff7d6" opacity=".55" />
+        <circle cx="16" cy="16" r="6.9" fill={`url(#${gradientId})`} />
+        <circle cx="13.8" cy="13.5" r="1.5" fill="#fffbe9" opacity=".58" />
       </svg>
     </span>
   );
@@ -578,7 +584,12 @@ function DayRibbon({
   );
 }
 
-export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
+export function DayContextStrip({
+  viewedDateIso,
+  preferredName,
+}: DayContextStripProps) {
+  const { t, i18n } = useTranslation('common');
+  const locale = resolveLocale(i18n.resolvedLanguage);
   const timeZone = useMemo(() => getBrowserTimeZone(), []);
   const now = useMinuteClock(timeZone);
   const snapshot = useMemo(
@@ -629,9 +640,27 @@ export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
     return null;
   }
 
-  const greeting = greetingForHour(now.hour);
-  const dayTitle = formatOrientationDay(snapshot.viewedDate, snapshot.relation);
+  const greetingPeriod = getDayGreetingPeriod(now.hour);
+  const greetingLabel =
+    greetingPeriod === 'morning'
+      ? t(($) => $.common.home.orientation.greetings.morning)
+      : greetingPeriod === 'afternoon'
+        ? t(($) => $.common.home.orientation.greetings.afternoon)
+        : greetingPeriod === 'evening'
+          ? t(($) => $.common.home.orientation.greetings.evening)
+          : t(($) => $.common.home.orientation.greetings.night);
+  const displayName = normalizePreferredName(preferredName);
+  const greetingAccessibleLabel = displayName
+    ? `${greetingLabel}, ${displayName}.`
+    : `${greetingLabel}.`;
+  const dayTitle = formatOrientationDay(
+    snapshot.viewedDate,
+    snapshot.relation,
+    locale,
+    t(($) => $.common.home.orientation.dayKicker),
+  );
   const nowLabel = formatTime(now);
+  const longGreeting = greetingPeriod === 'afternoon' || (displayName?.length ?? 0) > 12;
 
   return (
     <section
@@ -640,11 +669,19 @@ export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
     >
       <div className="home-day-greeting day-context-greeting">
         <h2
-          className={
-            greeting.includes('pomeriggio') ? 'is-long-greeting' : undefined
-          }
+          className={longGreeting ? 'is-long-greeting' : undefined}
+          aria-label={greetingAccessibleLabel}
         >
-          {greeting}
+          <span className="day-context-greeting-salutation">
+            {displayName ? `${greetingLabel},` : `${greetingLabel}.`}
+          </span>
+          {displayName ? (
+            <>
+              {' '}
+              <span className="day-context-greeting-name">{displayName}</span>
+              <span className="day-context-greeting-punctuation">.</span>
+            </>
+          ) : null}
         </h2>
       </div>
 
@@ -676,7 +713,7 @@ export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
             <header className="day-context-panel-header">
               <div>
                 <small>METEO · ANTEPRIMA FRONTEND</small>
-                <strong>{formatLongDate(selectedForecast.date)}</strong>
+                <strong>{formatLongDate(selectedForecast.date, locale)}</strong>
               </div>
               <button
                 type="button"
@@ -709,7 +746,7 @@ export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
               </div>
               <div className="day-context-weather-hero-title">
                 <strong>Meteo</strong>
-                <span>{formatLongDate(selectedForecast.date)}</span>
+                <span>{formatLongDate(selectedForecast.date, locale)}</span>
                 <span>{selectedForecast.conditionLabel}</span>
               </div>
             </div>
@@ -731,9 +768,9 @@ export function DayContextStrip({ viewedDateIso }: DayContextStripProps) {
                       data-selected={isSelected ? 'true' : 'false'}
                       aria-current={isSelected ? 'date' : undefined}
                       onClick={() => setSelectedWeatherDate(dateKey)}
-                      aria-label={`${formatLongDate(day.date)}, ${day.conditionLabel}, massima ${day.highCelsius} gradi, minima ${day.lowCelsius} gradi, precipitazioni ${day.precipitationPercent} percento`}
+                      aria-label={`${formatLongDate(day.date, locale)}, ${day.conditionLabel}, massima ${day.highCelsius} gradi, minima ${day.lowCelsius} gradi, precipitazioni ${day.precipitationPercent} percento`}
                     >
-                      <span>{formatWeekday(day.date)}</span>
+                      <span>{formatWeekday(day.date, locale)}</span>
                       <WeatherGlyph condition={day.condition} />
                       <span className="day-context-forecast-temperatures">
                         <strong>{day.highCelsius}°</strong>

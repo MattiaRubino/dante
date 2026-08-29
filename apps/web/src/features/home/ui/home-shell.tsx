@@ -16,6 +16,7 @@ type TimelineExpansionMetrics = Readonly<{
 
 type HomeShellProps = Readonly<{
   viewedDateIso?: string | undefined;
+  preferredName?: string | undefined;
   onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
 }>;
 
@@ -26,6 +27,7 @@ type ViewedDateMirror = Readonly<{
 
 export function HomeShell({
   viewedDateIso,
+  preferredName,
   onViewedDateChange,
 }: HomeShellProps) {
   const { t } = useTranslation('common');
@@ -142,7 +144,10 @@ export function HomeShell({
         aria-label={t(($) => $.common.home.shell.mainLabel)}
       >
         <section className="home-hero" data-home-layout="hero">
-          <DayContextStrip viewedDateIso={localViewedDateIso} />
+          <DayContextStrip
+            viewedDateIso={localViewedDateIso}
+            preferredName={preferredName}
+          />
 
           <div className="home-hero-body">
             <AISurface

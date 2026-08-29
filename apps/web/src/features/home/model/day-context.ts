@@ -4,6 +4,7 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MINUTES_PER_DAY = 24 * 60;
 
 export type DayRelation = 'past' | 'today' | 'future';
+export type DayGreetingPeriod = 'morning' | 'afternoon' | 'evening' | 'night';
 
 export type DayContextSnapshot = Readonly<{
   viewedDate: Temporal.PlainDate;
@@ -117,6 +118,28 @@ export function parseHomeDate(value: unknown): Temporal.PlainDate | null {
 
 export function normalizeHomeDateSearch(value: unknown): string | undefined {
   return parseHomeDate(value)?.toString();
+}
+
+export function normalizePreferredName(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim().replace(/\s+/g, ' ');
+  return normalized.length === 0 ? undefined : normalized;
+}
+
+export function getDayGreetingPeriod(hour: number): DayGreetingPeriod {
+  if (hour >= 5 && hour < 12) {
+    return 'morning';
+  }
+  if (hour >= 12 && hour < 18) {
+    return 'afternoon';
+  }
+  if (hour >= 18 && hour < 23) {
+    return 'evening';
+  }
+  return 'night';
 }
 
 export function resolveTimeZone(candidate?: string): string {
