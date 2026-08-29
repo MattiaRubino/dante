@@ -27,7 +27,7 @@ describe('day context model', () => {
 
     expect(today.relation).toBe('today');
     expect(today.minuteOfDay).toBe(12 * 60 + 34);
-    expect(today.progress).toBeCloseTo((12 * 60 + 34) / 1439, 8);
+    expect(today.progress).toBeCloseTo((12 * 60 + 34) / 1440, 8);
     expect(past.relation).toBe('past');
     expect(past.minuteOfDay).toBeNull();
     expect(past.progress).toBeNull();
@@ -38,6 +38,9 @@ describe('day context model', () => {
   it('keeps date arithmetic in Temporal calendar space', () => {
     expect(shiftIsoDate('2026-02-28', 1, now.toPlainDate())).toBe('2026-03-01');
     expect(shiftIsoDate(undefined, -1, now.toPlainDate())).toBe('2026-08-28');
+    expect(shiftIsoDate('2028-02-28', 1, now.toPlainDate())).toBe('2028-02-29');
+    expect(shiftIsoDate('2028-02-29', 1, now.toPlainDate())).toBe('2028-03-01');
+    expect(shiftIsoDate('2026-12-31', 1, now.toPlainDate())).toBe('2027-01-01');
   });
 
   it('creates exactly seven deterministic frontend forecast rows', () => {

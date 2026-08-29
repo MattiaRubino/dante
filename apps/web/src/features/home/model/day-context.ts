@@ -157,7 +157,7 @@ export function createDayContextSnapshot(
     progress:
       minuteOfDay === null
         ? null
-        : Math.max(0, Math.min(1, minuteOfDay / (MINUTES_PER_DAY - 1))),
+        : Math.max(0, Math.min(1, minuteOfDay / MINUTES_PER_DAY)),
   };
 }
 

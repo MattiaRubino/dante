@@ -138,10 +138,7 @@ export function HomeShell({
         aria-label={t(($) => $.common.home.shell.mainLabel)}
       >
         <section className="home-hero" data-home-layout="hero">
-          <DayContextStrip
-            viewedDateIso={localViewedDateIso}
-            onViewedDateChange={navigateViewedDate}
-          />
+          <DayContextStrip />
 
           <div className="home-hero-body">
             <AISurface

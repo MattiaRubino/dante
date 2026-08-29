@@ -1,12 +1,16 @@
-const VIEWBOX_WIDTH = 1000;
 const VIEWBOX_HEIGHT = 74;
-const BASELINE = 43;
-const PRIMARY_CYCLES = 2.25;
-const PRIMARY_PHASE = -0.16;
-const SECONDARY_PHASE = 0.19;
-const SAMPLE_COUNT = 96;
+const BASELINE = 31;
+const MIN_SAMPLES = 64;
+const SAMPLE_STEP_PX = 8;
+const MINUTES_PER_DAY = 24 * 60;
+
+export const DAY_ROUTE_HEIGHT = VIEWBOX_HEIGHT;
+export const DAY_ROUTE_ROAD_Y = 66;
+export const DAY_ROUTE_SCENE_BOTTOM_Y = 60;
 
 export type DayRouteGeometry = Readonly<{
+  width: number;
+  height: number;
   path: string;
   viewBox: string;
 }>;
@@ -17,53 +21,68 @@ export type DayRoutePoint = Readonly<{
   rotation: number;
 }>;
 
-type WaveConfig = Readonly<{
+export type DayRouteWaveConfig = Readonly<{
+  primaryCycles: number;
   primaryAmplitude: number;
+  secondaryCycles: number;
   secondaryAmplitude: number;
+  primaryPhase: number;
+  secondaryPhase: number;
 }>;
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-export function waveConfigForWidth(width: number): WaveConfig {
-  if (width <= 460) {
-    return { primaryAmplitude: 7.4, secondaryAmplitude: 1.7 };
-  }
+function normalizeWidth(width: number): number {
+  return Number.isFinite(width) && width > 0 ? width : 900;
+}
 
-  if (width <= 760) {
-    return { primaryAmplitude: 9.3, secondaryAmplitude: 2.1 };
-  }
+export function waveConfigForWidth(width: number): DayRouteWaveConfig {
+  const safeWidth = normalizeWidth(width);
+  const primaryCycles = safeWidth < 760 ? 4.6 : safeWidth < 1180 ? 3.7 : 2.9;
 
-  return { primaryAmplitude: 11.2, secondaryAmplitude: 2.55 };
+  return {
+    primaryCycles,
+    primaryAmplitude: safeWidth < 760 ? 13.5 : safeWidth < 1180 ? 15 : 16,
+    secondaryCycles: primaryCycles * 2.05,
+    secondaryAmplitude: safeWidth < 760 ? 3.2 : safeWidth < 1180 ? 3.8 : 4.2,
+    primaryPhase: 0.28,
+    secondaryPhase: 1.82,
+  };
 }
 
 function routeY(progress: number, width: number): number {
   const p = clamp01(progress);
   const config = waveConfigForWidth(width);
-  const primary =
-    Math.sin(Math.PI * 2 * (PRIMARY_CYCLES * p + PRIMARY_PHASE)) *
-    config.primaryAmplitude;
-  const secondary =
-    Math.sin(
-      Math.PI * 2 * (PRIMARY_CYCLES * 2 * p + SECONDARY_PHASE),
-    ) * config.secondaryAmplitude;
 
-  return BASELINE + primary + secondary;
+  return (
+    BASELINE -
+    config.primaryAmplitude *
+      Math.sin(Math.PI * 2 * p * config.primaryCycles + config.primaryPhase) -
+    config.secondaryAmplitude *
+      Math.sin(Math.PI * 2 * p * config.secondaryCycles + config.secondaryPhase)
+  );
 }
 
 export function createDayRouteGeometry(width: number): DayRouteGeometry {
-  const safeWidth = Number.isFinite(width) && width > 0 ? width : 900;
-  const points = Array.from({ length: SAMPLE_COUNT + 1 }, (_, index) => {
-    const progress = index / SAMPLE_COUNT;
-    const x = progress * VIEWBOX_WIDTH;
+  const safeWidth = normalizeWidth(width);
+  const sampleCount = Math.max(
+    MIN_SAMPLES,
+    Math.round(safeWidth / SAMPLE_STEP_PX),
+  );
+  const points = Array.from({ length: sampleCount + 1 }, (_, index) => {
+    const progress = index / sampleCount;
+    const x = progress * safeWidth;
     const y = routeY(progress, safeWidth);
     return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
   });
 
   return {
+    width: safeWidth,
+    height: VIEWBOX_HEIGHT,
     path: points.join(' '),
-    viewBox: `0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`,
+    viewBox: `0 0 ${safeWidth} ${VIEWBOX_HEIGHT}`,
   };
 }
 
@@ -71,14 +90,15 @@ export function pointOnDayRoute(
   progress: number,
   width: number,
 ): DayRoutePoint {
+  const safeWidth = normalizeWidth(width);
   const p = clamp01(progress);
   const epsilon = 0.001;
   const before = Math.max(0, p - epsilon);
   const after = Math.min(1, p + epsilon);
-  const x = p * VIEWBOX_WIDTH;
-  const y = routeY(p, width);
-  const dx = Math.max(Number.EPSILON, (after - before) * VIEWBOX_WIDTH);
-  const dy = routeY(after, width) - routeY(before, width);
+  const x = p * safeWidth;
+  const y = routeY(p, safeWidth);
+  const dx = Math.max(Number.EPSILON, (after - before) * safeWidth);
+  const dy = routeY(after, safeWidth) - routeY(before, safeWidth);
 
   return {
     x,
@@ -106,5 +126,5 @@ export function minuteToProgress(time: string): number {
     return 0;
   }
 
-  return (hours * 60 + minutes) / (24 * 60 - 1);
+  return (hours * 60 + minutes) / MINUTES_PER_DAY;
 }
