@@ -102,7 +102,9 @@ function capturedEmail(recipient: string, subject: string): CapturedEmail {
 function verificationCode(email: CapturedEmail): string {
   const match = email.body.match(/verification code is ([0-9]{6})\./);
   if (!match?.[1]) {
-    throw new Error('Signup verification email did not contain a six-digit code.');
+    throw new Error(
+      'Signup verification email did not contain a six-digit code.',
+    );
   }
   return match[1];
 }
@@ -112,7 +114,9 @@ function recoveryUrl(email: CapturedEmail): string {
     /https:\/\/127\.0\.0\.1:4173\/\?recovery=[^\s#]+#[^\s]+/,
   );
   if (!match?.[0]) {
-    throw new Error('Recovery email did not contain the canonical recovery URL.');
+    throw new Error(
+      'Recovery email did not contain the canonical recovery URL.',
+    );
   }
   return match[0];
 }
@@ -408,9 +412,7 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     await page.getByRole('button', { name: 'Crea un account' }).click();
     await page.getByLabel('Email').fill(email);
     await page.getByRole('button', { name: 'Continua con email' }).click();
-    await page
-      .getByLabel('Password', { exact: true })
-      .fill(password);
+    await page.getByLabel('Password', { exact: true }).fill(password);
 
     const signupPromise = page.waitForResponse(
       (response) =>
@@ -502,7 +504,9 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
     const email = emailFor(testInfo, 9);
     const contextA = await browser.newContext({ ignoreHTTPSErrors: true });
     const contextB = await browser.newContext({ ignoreHTTPSErrors: true });
-    const recoveryContext = await browser.newContext({ ignoreHTTPSErrors: true });
+    const recoveryContext = await browser.newContext({
+      ignoreHTTPSErrors: true,
+    });
 
     try {
       const pageA = await contextA.newPage();
@@ -573,9 +577,7 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
       });
       expect(browserStorage).not.toContain(secret);
 
-      await recoveryPage
-        .getByLabel('Nuova password')
-        .fill(replacementPassword);
+      await recoveryPage.getByLabel('Nuova password').fill(replacementPassword);
       await recoveryPage
         .getByLabel('Conferma password')
         .fill(replacementPassword);
@@ -602,7 +604,9 @@ test.describe('DANTE Access/Auth full-stack spine', () => {
         email,
         'Your DANTE password was changed',
       );
-      expect(notification.body).toContain('All existing sessions were signed out.');
+      expect(notification.body).toContain(
+        'All existing sessions were signed out.',
+      );
 
       await pageA.reload();
       await pageB.reload();

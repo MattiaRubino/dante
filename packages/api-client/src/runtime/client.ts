@@ -82,8 +82,7 @@ export type SignupCreated = SignupCreatedResponseOutput;
 export type SignupAuthenticated = SignupAuthenticatedResponseOutput;
 export type ExistingAccountSignup = ExistingAccountSignupResponseOutput;
 export type SignupVerificationResult =
-  | SignupAuthenticated
-  | ExistingAccountSignup;
+  SignupAuthenticated | ExistingAccountSignup;
 export type RecoveryAccepted = RecoveryAcceptedResponseOutput;
 export type RecoveryValidation = RecoveryValidationResponseOutput;
 
@@ -310,7 +309,9 @@ function serverProblem(wire: WireResponse): RemoteResult<never> {
 function parseJsonSchema<T>(
   wire: WireResponse,
   keys: ReadonlySet<string>,
-  schema: { safeParse(value: unknown): { success: true; data: T } | { success: false } },
+  schema: {
+    safeParse(value: unknown): { success: true; data: T } | { success: false };
+  },
 ): RemoteResult<T> {
   if (mediaType(wire.headers) !== JSON_MEDIA_TYPE) {
     return contractViolation('content_type_mismatch', wire);
@@ -393,7 +394,11 @@ function parseSignupVerification(
 function parseRecoveryAccepted(
   wire: WireResponse,
 ): RemoteResult<RecoveryAccepted> {
-  return parseJsonSchema(wire, RECOVERY_ACCEPTED_KEYS, RecoveryAcceptedResponse);
+  return parseJsonSchema(
+    wire,
+    RECOVERY_ACCEPTED_KEYS,
+    RecoveryAcceptedResponse,
+  );
 }
 
 function parseRecoveryValidation(
@@ -518,7 +523,11 @@ export function createDanteApiClient(
     async verifySignup(request, requestOptions) {
       let wire: WireResponse;
       try {
-        wire = await generatedAuthVerifySignup(request, requestOptions, fetchFn);
+        wire = await generatedAuthVerifySignup(
+          request,
+          requestOptions,
+          fetchFn,
+        );
       } catch (error) {
         return fromThrown(error);
       }
@@ -594,7 +603,11 @@ export function createDanteApiClient(
     async resetPassword(request, requestOptions) {
       let wire: WireResponse;
       try {
-        wire = await generatedAuthResetPassword(request, requestOptions, fetchFn);
+        wire = await generatedAuthResetPassword(
+          request,
+          requestOptions,
+          fetchFn,
+        );
       } catch (error) {
         return fromThrown(error);
       }
@@ -610,7 +623,11 @@ export function createDanteApiClient(
     async reauthenticate(request, requestOptions) {
       let wire: WireResponse;
       try {
-        wire = await generatedAuthReauthenticate(request, requestOptions, fetchFn);
+        wire = await generatedAuthReauthenticate(
+          request,
+          requestOptions,
+          fetchFn,
+        );
       } catch (error) {
         return fromThrown(error);
       }

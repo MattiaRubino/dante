@@ -86,7 +86,9 @@ describe('AccessFlowPanel M4 wiring surfaces', () => {
     const code = screen.getByLabelText<HTMLInputElement>('Codice di verifica');
     fireEvent.change(code, { target: { value: '12a34b56' } });
     expect(code.value).toBe('123456');
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica e continua' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Verifica e continua' }),
+    );
     expect(actions.onVerifySubmit).toHaveBeenCalledWith('123456');
     fireEvent.click(screen.getByRole('button', { name: 'Invia di nuovo' }));
     expect(actions.onResendVerification).toHaveBeenCalledOnce();
@@ -100,7 +102,9 @@ describe('AccessFlowPanel M4 wiring surfaces', () => {
 
     const password = screen.getByLabelText<HTMLInputElement>('Password');
     expect(password.autocomplete).toBe('current-password');
-    fireEvent.change(password, { target: { value: 'fresh password evidence' } });
+    fireEvent.change(password, {
+      target: { value: 'fresh password evidence' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Conferma identità' }));
     expect(actions.onReauthenticate).toHaveBeenCalledWith(
       'fresh password evidence',

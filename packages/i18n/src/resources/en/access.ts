@@ -108,11 +108,9 @@ export const access = {
     existingAccountBody:
       'The address is verified. Sign in with the account already associated with this email.',
     verificationInvalidTitle: 'Code invalid or expired.',
-    verificationInvalidBody:
-      'Request a new code or restart account creation.',
+    verificationInvalidBody: 'Request a new code or restart account creation.',
     recoveryInvalidTitle: 'Recovery link invalid or expired.',
-    recoveryInvalidBody:
-      'Request a new link to reset your password securely.',
+    recoveryInvalidBody: 'Request a new link to reset your password securely.',
     requestInvalidTitle: 'Check the information you entered.',
     requestInvalidBody:
       'The request does not meet the access requirements. Check the information and try again.',

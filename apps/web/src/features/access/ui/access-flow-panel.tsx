@@ -637,7 +637,9 @@ function ReauthenticateScreen({
               value={password}
               disabled={pending}
               aria-invalid={Boolean(error)}
-              aria-describedby={error ? 'access-reauth-password-error' : undefined}
+              aria-describedby={
+                error ? 'access-reauth-password-error' : undefined
+              }
               onChange={(event) => {
                 setPassword(event.target.value);
                 setError(null);
@@ -651,7 +653,10 @@ function ReauthenticateScreen({
             />
           </div>
           {error ? (
-            <span id="access-reauth-password-error" className="access-field-error">
+            <span
+              id="access-reauth-password-error"
+              className="access-field-error"
+            >
               {error}
             </span>
           ) : null}
@@ -698,7 +703,11 @@ function RecoveryValidationScreen({
       {state === 'validating' ? (
         <div className="access-wait-indicator" aria-hidden="true" />
       ) : (
-        <button className="access-primary-button" type="button" onClick={onRetry}>
+        <button
+          className="access-primary-button"
+          type="button"
+          onClick={onRetry}
+        >
           {t(($) => $.common.access.action.tryAgain)}
         </button>
       )}

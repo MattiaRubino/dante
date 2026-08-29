@@ -68,7 +68,11 @@ describe('Access Auth application error mapping', () => {
     expect(
       accessEventForAuthError(
         new WebAuthRemoteError(
-          serverProblem('auth.recovery_invalid_or_expired', 'authentication', 400),
+          serverProblem(
+            'auth.recovery_invalid_or_expired',
+            'authentication',
+            400,
+          ),
         ),
       ),
     ).toEqual({ type: 'SERVER_RECOVERY_INVALID_OR_EXPIRED' });
@@ -76,7 +80,11 @@ describe('Access Auth application error mapping', () => {
     expect(
       accessEventForAuthError(
         new WebAuthRemoteError(
-          serverProblem('auth.reauthentication_required', 'authentication', 401),
+          serverProblem(
+            'auth.reauthentication_required',
+            'authentication',
+            401,
+          ),
         ),
       ),
     ).toEqual({ type: 'SERVER_REAUTH_REQUIRED' });

@@ -225,10 +225,7 @@ export function AccessPage({
   }
 
   function signIn(email: string, password: string) {
-    if (
-      signInMutation.isPending ||
-      !beginRemote({ type: 'REQUEST_SIGN_IN' })
-    ) {
+    if (signInMutation.isPending || !beginRemote({ type: 'REQUEST_SIGN_IN' })) {
       return;
     }
 

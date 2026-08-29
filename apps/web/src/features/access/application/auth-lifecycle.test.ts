@@ -7,7 +7,9 @@ const AUTH_SESSION_REF = '00000000-0000-4000-8000-000000000002';
 
 describe('Access Auth lifecycle application boundary', () => {
   it('projects only authenticated signup outcomes into session state', () => {
-    expect(authenticatedSessionFromSignup({ outcome: 'existing_account' })).toBeNull();
+    expect(
+      authenticatedSessionFromSignup({ outcome: 'existing_account' }),
+    ).toBeNull();
 
     expect(
       authenticatedSessionFromSignup({

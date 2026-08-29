@@ -194,7 +194,9 @@ describe('@dante/api-client governed boundary', () => {
       ),
     });
     expect(
-      await reauthClient.reauthenticate({ password: 'correct horse battery staple' }),
+      await reauthClient.reauthenticate({
+        password: 'correct horse battery staple',
+      }),
     ).toMatchObject({
       ok: true,
       value: { authenticated: true, auth_session_ref: AUTH_SESSION_REF },
@@ -267,7 +269,11 @@ describe('@dante/api-client governed boundary', () => {
 
     const requestIdMismatchClient = createDanteApiClient({
       fetchFn: fetchReturning(
-        apiResponse(401, problem(401, OTHER_REQUEST_ID), 'application/problem+json'),
+        apiResponse(
+          401,
+          problem(401, OTHER_REQUEST_ID),
+          'application/problem+json',
+        ),
       ),
     });
     expect(

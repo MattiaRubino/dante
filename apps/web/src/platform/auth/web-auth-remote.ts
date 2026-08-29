@@ -83,7 +83,10 @@ function requestOptions(
   return options;
 }
 
-function csrfRequestOptions(csrfToken: string, signal?: AbortSignal): RequestInit {
+function csrfRequestOptions(
+  csrfToken: string,
+  signal?: AbortSignal,
+): RequestInit {
   if (!csrfToken) {
     throw new Error('Authenticated Auth mutation requires a CSRF token.');
   }

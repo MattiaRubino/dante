@@ -33,7 +33,8 @@ export function authenticatedSessionFromSignup(
 
 export function useBeginSignupMutation() {
   return useMutation({
-    mutationFn: (request: WebSignupRequest) => webAuthRemote.beginSignup(request),
+    mutationFn: (request: WebSignupRequest) =>
+      webAuthRemote.beginSignup(request),
     retry: false,
   });
 }

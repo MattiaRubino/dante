@@ -38,7 +38,8 @@ function authenticatedSession() {
 
 describe('Web Auth remote transport', () => {
   it('uses same-origin credentials and governed Web headers for public auth mutations', async () => {
-    const captures: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+    const captures: Array<{ input: RequestInfo | URL; init?: RequestInit }> =
+      [];
     const responses = [
       response(200, authenticatedSession(), 'application/json'),
       response(
@@ -92,7 +93,8 @@ describe('Web Auth remote transport', () => {
   });
 
   it('injects the in-memory session CSRF token only for authenticated mutations', async () => {
-    const captures: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+    const captures: Array<{ input: RequestInfo | URL; init?: RequestInit }> =
+      [];
     const responses = [
       response(204, undefined, null),
       response(200, authenticatedSession(), 'application/json'),
