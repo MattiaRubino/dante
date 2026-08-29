@@ -1,20 +1,19 @@
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+  buildIsoWeek,
+  formatTimelineMinute,
+  parseTimelineDate,
+} from './model/timeline-temporal';
+
 type TimelineSurfaceProps = {
   expanded: boolean;
   onToggleExpanded: () => void;
 };
 
-const DAYS = [
-  ['L', '24'],
-  ['M', '25'],
-  ['M', '26'],
-  ['G', '27'],
-  ['V', '28'],
-  ['S', '29'],
-  ['D', '30'],
-] as const;
+const MATERIALIZED_VIEW_DATE = parseTimelineDate('2026-08-28');
+const MATERIALIZED_NOW_MINUTE = 15 * 60;
 const HOURS = ['00', '03', '06', '09', '12', '15', '18', '21', '24'] as const;
 const GROUPS = [
   ['Focus', '#8a74ff'],
@@ -99,7 +98,13 @@ export function TimelineSurface({
   expanded,
   onToggleExpanded,
 }: TimelineSurfaceProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const week = buildIsoWeek(MATERIALIZED_VIEW_DATE);
+  const monthLabel = MATERIALIZED_VIEW_DATE.toLocaleString(locale, {
+    month: 'long',
+  }).toLocaleUpperCase(locale);
+
   return (
     <section
       className="home-timeline"
@@ -125,8 +130,8 @@ export function TimelineSurface({
           >
             <TimelineIcon type="calendar" />
             <span>
-              <small>AGOSTO</small>
-              <strong>2026</strong>
+              <small>{monthLabel}</small>
+              <strong>{MATERIALIZED_VIEW_DATE.year}</strong>
             </span>
           </button>
           <button
@@ -140,13 +145,15 @@ export function TimelineSurface({
           </button>
         </div>
         <div className="home-timeline-week" aria-label="Settimana corrente">
-          {DAYS.map(([day, date]) => (
+          {week.map((date) => (
             <span
-              className={date === '28' ? 'is-active' : ''}
-              key={`${day}-${date}`}
+              className={date.equals(MATERIALIZED_VIEW_DATE) ? 'is-active' : ''}
+              key={date.toString()}
             >
-              <small>{day}</small>
-              <strong>{date}</strong>
+              <small>
+                {date.toLocaleString(locale, { weekday: 'narrow' })}
+              </small>
+              <strong>{date.day}</strong>
             </span>
           ))}
         </div>
@@ -184,7 +191,7 @@ export function TimelineSurface({
         </div>
         <div className="home-timeline-grid">
           <span className="home-timeline-now-line" aria-hidden="true">
-            <i>15:00</i>
+            <i>{formatTimelineMinute(MATERIALIZED_NOW_MINUTE)}</i>
           </span>
           {EVENTS.map((event) => (
             <article
