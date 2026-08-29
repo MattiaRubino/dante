@@ -1,5 +1,8 @@
+import type { PlainDate } from '@dante/time';
+
 import {
   TIMELINE_GROUPS,
+  TIMELINE_PROTOTYPE_TODAY,
   createTimelinePrototypeEventsForDate,
   createTimelinePrototypeStore,
 } from './timeline-fixtures';
@@ -89,9 +92,11 @@ function sortEvents(events: readonly TimelineEvent[]): readonly TimelineEvent[] 
   );
 }
 
-export function createInitialTimelineState(): TimelineState {
+export function createInitialTimelineState(
+  fixtureAnchor: PlainDate = TIMELINE_PROTOTYPE_TODAY,
+): TimelineState {
   return {
-    eventsByDate: createTimelinePrototypeStore(),
+    eventsByDate: createTimelinePrototypeStore(fixtureAnchor),
     groups: [...TIMELINE_GROUPS],
     filters: new Set<TimelineGroupId>(),
     focusedEventId: null,
