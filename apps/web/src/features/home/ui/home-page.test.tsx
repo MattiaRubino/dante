@@ -37,7 +37,7 @@ describe('HomePage M1 visual materialization', () => {
 
     expect(screen.getByRole('main', { name: 'Home DANTE' })).toBeTruthy();
     expect(
-      screen.getByRole('region', { name: 'Contesto della giornata' }),
+      screen.getByRole('region', { name: 'Orientamento Home' }),
     ).toBeTruthy();
 
     const homeShell = container.querySelector('[data-home-region="shell"]');
