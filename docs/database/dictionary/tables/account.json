@@ -1,1 +1,182 @@
-{"$schema":"../schema/object-v1.schema.json","dictionary_version":1,"object":{"key":"table:dante.account","type":"table","schema":"dante","name":"account","ownership_class":"dante_owned"},"purpose":"Durable Access/security root for authentication lifecycle; distinct from Person, Principal and Actor.","classification":{"persistence_role":"security_identity_root","canonicality":"canonical","family":"access_auth"},"semantic_traceability":{"authority_sources":["docs/architecture/access-auth-architecture.md","docs/architecture/access-auth-security-contract.md","docs/database/access-auth.md"],"domain_concepts":["Account"],"logical_families":["Access/Auth"],"reference_families":[],"material_facets":[]},"implementation":{"introducing_stage":"M3-A","alembic_revision":"20260827_09","sqlalchemy":{"mode":"orm_row","module":"dante.platform.database.mappings.auth","symbol":"AccountRow"},"runtime_acl_stage":"M3-A"},"structure":{"columns":[{"name":"account_ref","postgres_type":"uuid","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Stable DANTE Account identifier.","semantic_type":"AccountRef","value_contract":"UUIDv7 only; not a NativeRef or PersonRef."},{"name":"status_code","postgres_type":"text","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Current account access lifecycle state.","semantic_type":null,"value_contract":"active or disabled"},{"name":"created_at","postgres_type":"timestamp with time zone","nullable":false,"default":{"kind":"none","expression":null},"meaning":"Account creation instant.","semantic_type":null,"value_contract":"Finite timestamp."},{"name":"disabled_at","postgres_type":"timestamp with time zone","nullable":true,"default":{"kind":"none","expression":null},"meaning":"Instant the current disabled state began; null while active.","semantic_type":null,"value_contract":"Finite and >= created_at when present."}],"primary_key":{"name":"pk_account","columns":["account_ref"],"reason":"Stable Account identity.","deferrable":false,"initially":"NOT DEFERRABLE","enforced":true},"foreign_keys":[],"unique_constraints":[],"check_constraints":[{"name":"ck_account_uuidv7","expression_contract":"uuid_extract_version(account_ref) IS NOT DISTINCT FROM 7","reason":"Account references use application-issued UUIDv7.","enforced":true,"validated":true,"no_inherit":false},{"name":"ck_account_status_code","expression_contract":"status_code IN ('active','disabled')","reason":"Bound the initial Account lifecycle vocabulary.","enforced":true,"validated":true,"no_inherit":false},{"name":"ck_account_created_at","expression_contract":"isfinite(created_at)","reason":"Reject infinite Account creation timestamps.","enforced":true,"validated":true,"no_inherit":false},{"name":"ck_account_disabled_state","expression_contract":"(status_code='active' AND disabled_at IS NULL) OR (status_code='disabled' AND disabled_at IS NOT NULL AND isfinite(disabled_at) AND disabled_at >= created_at)","reason":"Keep current disabled state and timestamp coherent.","enforced":true,"validated":true,"no_inherit":false}],"indexes":[{"name":"pk_account","method":"btree","unique":true,"keys":["account_ref"],"predicate":null,"include":[],"source":"primary_key","reason":"Primary-key lookup/enforcement.","valid":true,"ready":true,"live":true}],"triggers":[],"table":{"persistence":"permanent","access_method":"heap","partitioned":false,"row_security":false,"force_row_security":false,"replica_identity":"default","reloptions":[]},"view":null,"routine":null},"state_history":{"material_state_behavior":null,"current_binding":null,"chronology":null,"immutability_policy":null},"lifecycle":{"retention":"Durable security identity retained according to future account-retention policy.","redaction":null,"retirement_tombstone":null,"delete_behavior":"No runtime DELETE in M3-A; disable is a state transition."},"security":{"owner_role":"dante_owner","default_deny_non_owner":true,"expected_grants":[{"grantee":"dante_runtime","privilege":"SELECT","columns":[],"grant_option":false}]},"proof":{"obligations":["M3-A real PostgreSQL schema, ACL, mapping and catalog proof"],"test_refs":["apps/backend/tests/integration/database/test_current_catalog.py"],"staged_evidence":[]}}
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "table:dante.account",
+    "type": "table",
+    "schema": "dante",
+    "name": "account",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Durable Access/security root for authentication lifecycle; distinct from Person, Principal and Actor.",
+  "classification": {
+    "persistence_role": "security_identity_root",
+    "canonicality": "canonical",
+    "family": "access_auth"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/architecture/access-auth-architecture.md",
+      "docs/architecture/access-auth-security-contract.md",
+      "docs/database/access-auth.md"
+    ],
+    "domain_concepts": ["Account"],
+    "logical_families": ["Access/Auth"],
+    "reference_families": [],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "M3-A",
+    "alembic_revision": "20260827_09",
+    "sqlalchemy": {
+      "mode": "orm_row",
+      "module": "dante.platform.database.mappings.auth",
+      "symbol": "AccountRow"
+    },
+    "runtime_acl_stage": "M4"
+  },
+  "structure": {
+    "columns": [
+      {
+        "name": "account_ref",
+        "postgres_type": "uuid",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Stable DANTE Account identifier.",
+        "semantic_type": "AccountRef",
+        "value_contract": "UUIDv7 only; not a NativeRef or PersonRef."
+      },
+      {
+        "name": "status_code",
+        "postgres_type": "text",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Current account access lifecycle state.",
+        "semantic_type": null,
+        "value_contract": "active or disabled"
+      },
+      {
+        "name": "created_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": false,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Account creation instant.",
+        "semantic_type": null,
+        "value_contract": "Finite timestamp."
+      },
+      {
+        "name": "disabled_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {"kind": "none", "expression": null},
+        "meaning": "Instant the current disabled state began; null while active.",
+        "semantic_type": null,
+        "value_contract": "Finite and >= created_at when present."
+      }
+    ],
+    "primary_key": {
+      "name": "pk_account",
+      "columns": ["account_ref"],
+      "reason": "Stable Account identity.",
+      "deferrable": false,
+      "initially": "NOT DEFERRABLE",
+      "enforced": true
+    },
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_account_uuidv7",
+        "expression_contract": "uuid_extract_version(account_ref) IS NOT DISTINCT FROM 7",
+        "reason": "Account references use UUIDv7.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_account_status_code",
+        "expression_contract": "status_code IN ('active','disabled')",
+        "reason": "Bound the initial Account lifecycle vocabulary.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_account_created_at",
+        "expression_contract": "isfinite(created_at)",
+        "reason": "Reject infinite Account creation timestamps.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      },
+      {
+        "name": "ck_account_disabled_state",
+        "expression_contract": "(status_code='active' AND disabled_at IS NULL) OR (status_code='disabled' AND disabled_at IS NOT NULL AND isfinite(disabled_at) AND disabled_at >= created_at)",
+        "reason": "Keep current disabled state and timestamp coherent.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "pk_account",
+        "method": "btree",
+        "unique": true,
+        "keys": ["account_ref"],
+        "predicate": null,
+        "include": [],
+        "source": "primary_key",
+        "reason": "Primary-key lookup/enforcement.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      }
+    ],
+    "triggers": [],
+    "table": {
+      "persistence": "permanent",
+      "access_method": "heap",
+      "partitioned": false,
+      "row_security": false,
+      "force_row_security": false,
+      "replica_identity": "default",
+      "reloptions": []
+    },
+    "view": null,
+    "routine": null
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": null
+  },
+  "lifecycle": {
+    "retention": "Durable security identity retained according to future account-retention policy.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime DELETE in M4; disable remains a distinct later state transition."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "SELECT", "columns": [], "grant_option": false},
+      {
+        "grantee": "dante_runtime",
+        "privilege": "INSERT",
+        "columns": ["account_ref", "status_code", "created_at", "disabled_at"],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "M3 real PostgreSQL Account integrity proof",
+      "M4 verified-account establishment column-level INSERT ACL proof"
+    ],
+    "test_refs": ["apps/backend/tests/integration/database/test_current_catalog.py"],
+    "staged_evidence": []
+  }
+}
