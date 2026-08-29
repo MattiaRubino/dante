@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP01 ACTIVE
+- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 IMPLEMENTED / LOCAL PROOF PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Baseline:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
@@ -48,7 +48,7 @@ CP01 Recovery Contract / Bootstrap
    ├── version/security/topology freeze
    ├── evidence vocabulary
    ├── RPO/RTO measurement contract
-   └── anti-resurrection problem statement
+   └── anti-resurrection hard-gate statement
    ↓
 CP02 pgBackRest Foundation
    │
@@ -56,12 +56,13 @@ CP02 pgBackRest Foundation
    ├── config/secrets boundary
    ├── repository topology
    ├── stanza-create
-   └── pgBackRest check
+   └── info / foundation readability
    ↓
 CP03 Continuous WAL + Backup
    │
    ├── PostgreSQL archive settings
    ├── archive-push
+   ├── pgBackRest check
    ├── archive health
    ├── full backup
    └── retention behavior
@@ -125,27 +126,52 @@ infra/local/postgres/
 infra/compose/
 ```
 
-## Decisions to freeze
+## Frozen decisions
 
 ### Version
 
 ```text
-PostgreSQL        18.6
-pgBackRest        accepted baseline 2.59.0
-maintenance       2.59.1 candidate pending direct activation evidence
+PostgreSQL                  18.6
+accepted pgBackRest baseline 2.59.0
+activation implementation    2.59.1
+PGDG package pin             2.59.1-1.pgdg13+1
 ```
 
-Expected decision rule:
+The `2.59.1` package exists for Debian 13/Trixie and is now pinned in source for the first activation attempt. This is a source-level maintenance decision, not yet runtime compatibility PASS and not yet a silent rewrite of the accepted Physical Model baseline.
+
+Decision rule:
 
 ```text
-2.59.1 direct compatibility/reproducibility PASS
-→ ratify maintenance refresh
+2.59.1 clean build + exact version assertion + stanza foundation proof
+→ ratify maintenance refresh for implementation
 
-material incompatibility or packaging/repository issue
-→ retain 2.59.0 and document why
+material incompatibility / packaging / runtime problem
+→ stop and reassess explicitly
 ```
 
 No technology-selection reopening unless direct evidence invalidates the accepted choice.
+
+### PostgreSQL image/data-path contract
+
+```text
+base image      postgres:18.6-trixie pinned by digest
+PGDATA          /var/lib/postgresql/18/docker
+persistent root /var/lib/postgresql
+```
+
+The PostgreSQL 18 image uses a version-specific `PGDATA`, so pgBackRest must target the exact nested path while Docker persists the parent `/var/lib/postgresql` volume.
+
+### Local repository topology
+
+```text
+stanza                       dante
+repo1-type                   posix
+repo1-path                   /var/lib/pgbackrest
+repository Docker volume     pgbackrest-repository
+PostgreSQL Docker volume     postgres-data
+```
+
+The recovery repository is physically distinct from `PGDATA` so a destructive database-loss rehearsal can destroy/recreate PostgreSQL state without also destroying the recovery source.
 
 ### Initial backup schedule
 
@@ -177,7 +203,7 @@ CP01 does not invent numeric production targets. It defines what is measured and
 
 ### Security
 
-Freeze:
+Frozen:
 
 ```text
 no secrets in repository
@@ -187,9 +213,11 @@ separate break-glass administration
 finite retention
 ```
 
+Local pgBackRest configuration contains no credentials or secret material.
+
 ### Anti-resurrection
 
-Keep the problem as an explicit hard gate. CP01 may derive candidate mechanisms, but no new persistent subsystem is accepted without semantic and operational justification.
+The problem remains an explicit hard gate. CP01 freezes the failure model and forbids fake closure; no new persistent subsystem is accepted merely to satisfy the checklist.
 
 ## CP01 evidence
 
@@ -199,23 +227,26 @@ execution plan exists
 live handoff exists
 current runtime inspected
 accepted recovery authority reconciled
-external/current pgBackRest maintenance version checked
+current pgBackRest maintenance release/package checked
 implementation scope bounded
+PGDATA/repository/config topology frozen
 NOT-PROVEN list explicit
 ```
 
 ## CP01 close criteria
 
 ```text
-[ ] version activation decision recorded
-[ ] package acquisition/pinning strategy identified
-[ ] local repository topology frozen
-[ ] production S3 contract frozen enough for later acceptance
-[ ] secret/config separation frozen
-[ ] RPO/RTO measurement semantics frozen
-[ ] anti-resurrection candidate analysis recorded without fake closure
-[ ] CP02 exact file/write/test scope defined
+[x] activation implementation version recorded
+[x] package acquisition/pinning strategy identified
+[x] local repository topology frozen
+[x] production S3 contract frozen enough for later acceptance
+[x] secret/config separation frozen
+[x] RPO/RTO measurement semantics frozen
+[x] anti-resurrection retained as explicit open hard gate without fake mechanism
+[x] CP02 exact source/write/test scope defined
 ```
+
+CP01 is contract-frozen. SC-011 itself is **not** closed by CP01 and remains owned by the later semantic recovery gate.
 
 ---
 
@@ -223,63 +254,97 @@ NOT-PROVEN list explicit
 
 ## Goal
 
-Materialize pgBackRest reproducibly without yet claiming backup/recovery correctness.
+Materialize pgBackRest reproducibly without yet claiming backup, WAL archive or recovery correctness.
 
-## Likely implementation surface
-
-Exact paths must be verified before write, but expected bounded areas are:
+## Implemented source surface
 
 ```text
-infra/local/postgres/
-infra/compose/
-recovery-specific scripts/config under infra or development tooling
-recovery tests/docs only
+infra/local/postgres/Dockerfile
+infra/local/postgres/pgbackrest/pgbackrest.conf
+infra/compose/local.yaml
 ```
 
-No Alembic migration or application/domain schema change is expected.
+No Alembic migration or application/domain schema change is involved.
 
 ## Required materialization
 
 ```text
 exact pgBackRest version/package source
 version assertion in image/build
-pgBackRest configuration file/template
+pgBackRest configuration
 repository path ownership/permissions
 stanza name
-log/spool paths if required
-secrets injected externally
-PostgreSQL path/socket settings compatible with current image
+secrets injected externally when later required
+PostgreSQL path settings compatible with current image
+```
+
+Current source materializes:
+
+```text
+pgBackRest package             2.59.1-1.pgdg13+1
+expected CLI                   pgBackRest 2.59.1
+config                         /etc/pgbackrest/pgbackrest.conf
+config ownership               root:postgres / 0640
+stanza                         dante
+pg1-path                       /var/lib/postgresql/18/docker
+repo1-type                     posix
+repo1-path                     /var/lib/pgbackrest
+repository image ownership     postgres:postgres / 0750
+repository volume              pgbackrest-repository:/var/lib/pgbackrest
 ```
 
 ### Foundation commands/evidence
 
-At minimum prove:
+At minimum prove on the actual DANTE local runtime:
 
 ```text
+clean Docker image build
 pgbackrest version
-pgbackrest --stanza=<dante> stanza-create
-pgbackrest --stanza=<dante> check
+configuration is readable by postgres
+repository path is writable by postgres
+PostgreSQL readiness remains healthy
+pgbackrest --stanza=dante stanza-create
+pgbackrest --stanza=dante info
 ```
 
-`check` must succeed in the actual local topology intended for CP03. A binary being present is not sufficient.
+A binary being present is not sufficient.
+
+### Why `pgbackrest check` is not a CP02 gate
+
+A meaningful `pgbackrest check` validates repository/archive integration and forces PostgreSQL WAL/archive interaction. Continuous WAL archiving is deliberately not activated in CP02. Therefore:
+
+```text
+CP02 check requirement  = NONE
+CP03 check requirement  = MANDATORY
+```
+
+A pre-WAL `check` failure must not be mislabeled as CP02 failure, and a syntactically configured but non-archiving system must not be mislabeled as recovery health.
 
 ## Quality gates
 
 ```text
-rebuild from clean image succeeds
-pin/version assertion succeeds
-no credential material committed
-container ownership/permissions explicit
-configuration parse succeeds
-stanza-create succeeds
-check succeeds or expected pre-WAL limitation is explicitly understood and bounded
-existing PostgreSQL readiness is not regressed
+[ ] rebuild from clean image succeeds
+[ ] exact package/version assertion succeeds
+[ ] no credential material committed
+[ ] config ownership/permissions verified
+[ ] repository ownership/permissions verified
+[ ] stanza-create succeeds
+[ ] info reads the stanza/repository
+[ ] existing PostgreSQL readiness is not regressed
+```
+
+Current state:
+
+```text
+source/config IMPLEMENTED
+runtime LOCAL PASS PENDING
 ```
 
 ## CP02 NOT-PROVEN even after success
 
 ```text
 continuous WAL durability
+pgBackRest archive check
 usable full backup
 restore
 PITR
@@ -310,22 +375,25 @@ If asynchronous archiving is justified for the final remote topology, configure 
 
 ## WAL proof
 
-Deterministic evidence should include:
+Deterministic evidence must include:
 
 ```text
 force WAL switch or generate bounded WAL
 confirm pgBackRest archive-push succeeds
 confirm archived segment exists in repository
-confirm pgBackRest check sees healthy archive path
+run pgbackrest --stanza=dante check
+confirm check sees healthy repository + archive path
 record WAL/LSN marker useful for later recovery assertions
 ```
+
+`pgbackrest check` belongs here because this is the first checkpoint where archive behavior is intentionally active and can be truthfully verified.
 
 ## Backup proof
 
 Start with:
 
 ```text
-pgbackrest --stanza=<dante> --type=full backup
+pgbackrest --stanza=dante --type=full backup
 ```
 
 Verify:
@@ -361,8 +429,9 @@ Do not expire WAL so aggressively that remaining backups advertise recovery poin
 ```text
 [ ] continuous archive observed directly
 [ ] forced/generated WAL found in repository
+[ ] pgBackRest check direct PASS
 [ ] full backup direct PASS
-[ ] pgBackRest info/check usable
+[ ] pgBackRest info usable
 [ ] archive failure produces visible failure/degraded evidence
 [ ] existing database tests/readiness not regressed
 ```
@@ -750,17 +819,21 @@ R2 object-recovery implementation beyond the defined reconciliation contract
 
 ## 13. Current next action
 
-CP01 remains active.
+CP01 is contract-frozen. CP02 source/config is implemented but **LOCAL PASS is pending**.
 
-Next safe technical step:
+Next safe technical sequence:
 
 ```text
 1. bind feature/postgres-recovery to a safe free local worktree when available
-2. inspect exact PostgreSQL image/package acquisition constraints
-3. revalidate pgBackRest 2.59.1 vs accepted 2.59.0 baseline
-4. freeze local repository/config/secrets topology
-5. define CP02 exact write gate
-6. materialize pgBackRest foundation only
+2. fetch the current branch HEAD without rewriting history
+3. build the local PostgreSQL image cleanly
+4. verify pgBackRest package/CLI == 2.59.1
+5. verify PGDATA/config/repository ownership and permissions
+6. start PostgreSQL and verify readiness
+7. run pgbackrest --stanza=dante stanza-create
+8. run pgbackrest --stanza=dante info
+9. capture exact command outputs as CP02 evidence
+10. only after CP02 local PASS define a new write gate for CP03 archive_mode/archive_command/WAL backup work
 ```
 
-No runtime recovery setting should be changed before that bounded CP02 gate.
+Do **not** enable WAL archiving under the current gate. `pgbackrest check` becomes mandatory in CP03 after archive configuration is deliberately active.
