@@ -44,6 +44,25 @@
   letter-spacing: 0.005em;
 }
 
+/* Desktop height follows the viewport instead of stretching temporal geometry.
+ * Keep the accepted 570px as the floor, expose more of the day on taller
+ * screens, and cap growth before Timeline visually sticks to the page bottom.
+ * Header + groups remain 124px, so only the scrollable viewport grows. */
+@media (min-width: 1121px) {
+  .home-m1 .home-timeline--production {
+    --timeline-grid-height: clamp(570px, 68dvh, 640px);
+    height: calc(124px + var(--timeline-grid-height));
+    min-height: calc(124px + var(--timeline-grid-height));
+    max-height: calc(124px + var(--timeline-grid-height));
+    align-self: start;
+  }
+
+  .home-m1 .home-timeline--production .timeline-frame--production {
+    height: var(--timeline-grid-height);
+    min-height: var(--timeline-grid-height);
+  }
+}
+
 @media (max-width: 1120px) {
   .home-m1 .home-timeline--production .dante-timeline-week-nav {
     left: 50%;
