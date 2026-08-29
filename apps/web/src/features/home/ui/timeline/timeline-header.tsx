@@ -1,5 +1,6 @@
 import type { PlainDate } from '@dante/time';
 import {
+  type CSSProperties,
   type DragEvent,
   type KeyboardEvent,
   type RefObject,
@@ -36,11 +37,7 @@ function weekdayLabel(date: PlainDate, locale: string): string {
     .toLocaleUpperCase(locale);
 }
 
-function TimelineIcon({
-  type,
-}: {
-  type: 'calendar' | 'view' | 'group' | 'reset';
-}) {
+function TimelineIcon({ type }: { type: 'calendar' | 'view' | 'group' | 'reset' }) {
   switch (type) {
     case 'calendar':
       return (
@@ -168,6 +165,9 @@ export function TimelineHeader({
   };
 
   const hasGroupFocus = filters.size > 0;
+  const groupTrackStyle = {
+    '--timeline-group-count': groups.length,
+  } as CSSProperties;
 
   return (
     <header className="home-timeline-head home-timeline-head--production">
@@ -283,10 +283,7 @@ export function TimelineHeader({
           className="home-timeline-group-scroller"
           onScroll={(event) => onGroupScroll(event.currentTarget.scrollLeft)}
         >
-          <div
-            className="home-timeline-group-track"
-            style={{ '--timeline-group-count': groups.length } as React.CSSProperties}
-          >
+          <div className="home-timeline-group-track" style={groupTrackStyle}>
             {groups.map((group, index) => {
               const active = filters.has(group.id);
               const dimmed = filters.size > 0 && !active;
