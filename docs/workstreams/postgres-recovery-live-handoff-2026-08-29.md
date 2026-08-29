@@ -1,14 +1,15 @@
 # DANTE — PostgreSQL Recovery Live Handoff — 2026-08-29
 
-- **Status:** CURRENT LIVE HANDOFF / CP01 ACTIVE / RUNTIME NOT YET MODIFIED
+- **Status:** CURRENT LIVE HANDOFF / CP02 SOURCE IMPLEMENTED / LOCAL PROOF PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
-- **Latest checkpoint before this handoff:** `f02337c20878973698d7f30e7ce249ccf198dd4f`
-- **Checkpoint message:** `docs(recovery): define recovery execution plan`
+- **Latest validated checkpoint before this handoff update:** `1edc0d66d049797120a684e967fd78454b546c59`
+- **Checkpoint message:** `docs(recovery): align CP02 and CP03 proof boundaries`
 - **Local worktree:** NOT ASSIGNED; an additional user worktree is currently occupied by another branch
-- **Current macro-checkpoint:** CP01 — Recovery Contract / Bootstrap
-- **Runtime recovery implementation:** NOT STARTED
+- **Current macro-checkpoint:** CP02 — pgBackRest Foundation
+- **Runtime source/config:** IMPLEMENTED
+- **Runtime execution evidence:** NOT YET RUN
 
 > This file is the temporary continuation checkpoint for the active recovery branch. Repository truth beats conversation memory. It must be removed/consolidated before protected-main integration under the documentation lifecycle policy.
 
@@ -55,7 +56,8 @@ Read in this order:
 10. `docs/development/agent-operating-manual.md`
 11. documentation lifecycle policy
 12. `infra/local/postgres/Dockerfile`
-13. `infra/compose/local.yaml`
+13. `infra/local/postgres/pgbackrest/pgbackrest.conf`
+14. `infra/compose/local.yaml`
 
 Do not reinterpret the database architecture from scratch.
 
@@ -73,43 +75,107 @@ feature/postgres-recovery
 
 No feature branch was merged into it.
 
-### Documentation/bootstrap created
+### Documentation/bootstrap
 
 ```text
 docs/workstreams/postgres-recovery.md
-
 docs/workstreams/postgres-recovery-execution-plan.md
-
 docs/workstreams/postgres-recovery-live-handoff-2026-08-29.md
+docs/workstreams/README.md
 ```
 
 The workstream record freezes authority, boundaries, evidence vocabulary, selected-vs-implemented truth, local/remote acceptance boundary, provisional backup-policy hypothesis, recovery semantics, SC-011 hard gate and documentation lifecycle.
 
 The execution plan defines CP01–CP07 with explicit implementation/evidence/closure conditions.
 
+### CP01 contract freeze
+
+Frozen enough to enter runtime proof:
+
+```text
+PostgreSQL                   18.6
+base image                   postgres:18.6-trixie pinned by digest
+PGDATA                       /var/lib/postgresql/18/docker
+accepted pgBackRest baseline 2.59.0
+activation implementation    2.59.1
+PGDG package                 2.59.1-1.pgdg13+1
+stanza                       dante
+local repository             POSIX
+repo path                    /var/lib/pgbackrest
+repository volume            pgbackrest-repository
+AWS                          NOT ACTIVATED
+initial backup hypothesis    continuous WAL + daily FULL
+numeric RPO/RTO              NOT INVENTED
+SC-011                       OPEN HARD GATE
+```
+
+The accepted Physical Model baseline is not silently rewritten from 2.59.0 merely because source now attempts 2.59.1. Runtime proof is still required before maintenance refresh ratification.
+
+### CP02 source materialization
+
+Changed recovery runtime paths:
+
+```text
+infra/local/postgres/Dockerfile
+infra/local/postgres/pgbackrest/pgbackrest.conf
+infra/compose/local.yaml
+```
+
+Implemented source behavior:
+
+```text
+pgBackRest package pin       2.59.1-1.pgdg13+1
+build package assertion      exact dpkg version
+build CLI assertion          pgBackRest 2.59.1
+config path                  /etc/pgbackrest/pgbackrest.conf
+config ownership             root:postgres / 0640
+repository image ownership   postgres:postgres / 0750
+stanza                       dante
+pg1-path                     /var/lib/postgresql/18/docker
+repo1-type                   posix
+repo1-path                   /var/lib/pgbackrest
+Docker repository volume     pgbackrest-repository:/var/lib/pgbackrest
+```
+
+The recovery repository is intentionally separate from the PostgreSQL data volume so a later destructive `PGDATA` scenario does not delete the recovery source at the same time.
+
 ---
 
 ## 4. Current runtime truth
 
-At branch start the real local PostgreSQL surface is:
+Current source/config state:
 
 ```text
-PostgreSQL image     18.6-trixie
-PostGIS              installed/pinned
-pgvector             installed/pinned
-persistent volume    yes
-pg_stat_statements   enabled in local compose
-pgBackRest           NOT installed/configured
-stanza               NONE
-archive_mode         not activated for this workstream
-archive_command      no pgBackRest archive-push
-recovery repository  NONE
-restore harness      NONE
-PITR harness         NONE
-AWS S3               NOT ACTIVATED
+PostgreSQL image             18.6-trixie / pinned digest
+PostGIS                      installed/pinned
+pgvector                     installed/pinned
+PostgreSQL persistent volume yes
+pg_stat_statements           enabled in local compose
+pgBackRest source            IMPLEMENTED / exact 2.59.1 package pin
+pgBackRest runtime install   NOT YET DIRECTLY PROVEN
+pgBackRest config            IMPLEMENTED
+stanza-create                NOT RUN
+pgBackRest info              NOT RUN
+archive_mode                 NOT activated for this workstream
+archive_command              no pgBackRest archive-push yet
+WAL archive proof            NONE
+recovery repository source   IMPLEMENTED as separate named volume
+recovery repository runtime  NOT YET DIRECTLY PROVEN
+restore harness              NONE
+PITR harness                 NONE
+AWS S3                       NOT ACTIVATED
 ```
 
-No runtime file under `infra/`, `apps/`, migrations or database schema has been modified by the recovery workstream yet.
+Important distinction:
+
+```text
+source/config IMPLEMENTED
+!= image build PASS
+!= stanza PASS
+!= WAL archive PASS
+!= backup PASS
+!= recovery PASS
+```
 
 ---
 
@@ -126,13 +192,14 @@ pgBackRest 2.59.0 accepted baseline
 → finite policy-bound retention
 ```
 
-Current maintenance candidate:
+Activation implementation candidate:
 
 ```text
 pgBackRest 2.59.1
+PGDG Debian 13/Trixie package 2.59.1-1.pgdg13+1
 ```
 
-Do not silently change the accepted pin. CP01/CP02 must directly prove the maintenance refresh is appropriate before ratifying it in durable current authority.
+Source is pinned to the candidate. Direct build/runtime evidence decides whether the maintenance refresh is ratified for implementation.
 
 ---
 
@@ -140,9 +207,13 @@ Do not silently change the accepted pin. CP01/CP02 must directly prove the maint
 
 ```text
 PostgreSQL 18.6                  IMPLEMENTED
-pgBackRest                       SELECTED / NOT IMPLEMENTED
+CP01 contract                    FROZEN
+pgBackRest source/config         IMPLEMENTED / LOCAL PROOF PENDING
+pgBackRest 2.59.1 runtime        NOT PROVEN
+stanza-create                    NOT RUN
+pgBackRest info                  NOT RUN
 continuous WAL                   SELECTED / NOT IMPLEMENTED
-local POSIX recovery harness     DESIGNED / NOT IMPLEMENTED
+local POSIX repository topology  IMPLEMENTED IN SOURCE / RUNTIME NOT PROVEN
 full backup proof                NOT RUN
 fresh/destructive restore        NOT RUN
 PITR                             NOT RUN
@@ -163,8 +234,8 @@ Never shorten this to `recovery started = done`.
 ## 7. Frozen execution order
 
 ```text
-CP01  Recovery Contract / Bootstrap                  ACTIVE
-CP02  pgBackRest Foundation                          NOT STARTED
+CP01  Recovery Contract / Bootstrap                  CONTRACT FROZEN
+CP02  pgBackRest Foundation                          IMPLEMENTED / LOCAL PROOF PENDING
 CP03  Continuous WAL + Backup                        NOT STARTED
 CP04  Destructive / Isolated Restore                 NOT STARTED
 CP05  Deterministic PITR                             NOT STARTED
@@ -173,6 +244,8 @@ CP07  Whole Recovery QA + Runbook + Closure          NOT STARTED
 ```
 
 Do not skip directly to AWS or a production bucket. Deterministic local proof comes first; real AWS selected-stack acceptance comes before final production-recovery PASS.
+
+`pgbackrest check` is explicitly a **CP03** gate, not CP02, because a meaningful check validates WAL/archive integration and forces archive interaction. CP02 must not activate WAL merely to make `check` green.
 
 ---
 
@@ -284,21 +357,27 @@ break-glass/admin
 → separately controlled
 ```
 
+The local POSIX pgBackRest config contains no credentials.
+
 Do not choose Terraform/OpenTofu merely because a bucket may later be needed. Production IaC remains a separate production-boundary decision unless explicitly activated.
 
 ---
 
 ## 11. What was intentionally NOT changed
 
+The current approved source scope did **not** modify:
+
 ```text
-infra/local/postgres/
-infra/compose/
 apps/backend/
 apps/web/
 Alembic migrations
 DANTE database schema
 PostgreSQL roles/ACLs
-PostgreSQL runtime settings
+archive_mode
+archive_command
+WAL archive runtime configuration
+backup scheduling
+restore/PITR configuration
 AWS resources
 S3 buckets
 secrets
@@ -314,50 +393,61 @@ other feature branches/worktrees
 
 ## 12. Immediate next safe action
 
-Finish CP01 before runtime writes.
+Run **CP02 local proof** before any CP03 write.
 
-The next technical read/write sequence is:
+Required sequence once a safe local worktree is available:
 
 ```text
-1. obtain/bind a safe free local worktree for feature/postgres-recovery
-2. inspect package/build constraints of postgres:18.6-trixie
-3. directly revalidate pgBackRest 2.59.1 vs accepted 2.59.0 baseline
-4. freeze exact local POSIX repository layout
-5. freeze config/secrets/ownership paths
-6. freeze pgBackRest stanza name and command topology
-7. define exact CP02 write gate
-8. install/configure pgBackRest foundation only
-9. prove version + stanza-create + check
-10. update this handoff with observed evidence
+1. bind/fetch feature/postgres-recovery without rewriting history
+2. verify local HEAD == origin/feature/postgres-recovery
+3. build the local PostgreSQL image cleanly
+4. start the current local PostgreSQL service
+5. verify PostgreSQL readiness
+6. verify `pgbackrest version` == `pgBackRest 2.59.1`
+7. verify config ownership/readability as postgres
+8. verify /var/lib/pgbackrest is writable by postgres and distinct from PGDATA
+9. run `pgbackrest --stanza=dante stanza-create`
+10. run `pgbackrest --stanza=dante info`
+11. capture exact outputs
+12. update workstream/handoff with observed evidence
 ```
 
-Do not enable WAL archiving in the same uncontrolled edit if CP02 foundation has not first been proven.
+Do **not** enable WAL archiving under the current gate.
+
+Do **not** require a successful `pgbackrest check` in CP02. `check` becomes mandatory after `archive_mode` + `archive_command` are deliberately activated in CP03.
 
 ---
 
-## 13. Expected CP02 write boundary
+## 13. CP02 proof boundary
 
-Exact paths must be verified against the free local worktree before authorization. Likely scope is narrowly within:
-
-```text
-infra/local/postgres/
-infra/compose/
-possibly one recovery-specific config/script/test directory after confirming repo conventions
-recovery workstream docs
-```
-
-Explicitly not expected in CP02:
+CP02 may become LOCAL PASS only if direct runtime evidence proves:
 
 ```text
-business/domain migrations
-application API changes
-frontend changes
-Auth changes
-new canonical stores
-AWS activation
-PITR implementation
-anti-resurrection persistence implementation
+clean image build                  PASS
+exact pgBackRest version           PASS
+PostgreSQL readiness               PASS
+config permissions                 PASS
+repository permissions             PASS
+stanza-create                      PASS
+info / stanza readability          PASS
+existing local PostgreSQL behavior no regression observed
 ```
+
+Even then the following remain NOT PROVEN:
+
+```text
+WAL archive
+pgBackRest check
+full backup
+restore
+PITR
+AWS
+Object Lock
+SC-031
+SC-011
+```
+
+CP03 requires a **new exact Git write gate** before archive settings or backup behavior are changed.
 
 ---
 
@@ -366,7 +456,7 @@ anti-resurrection persistence implementation
 At every meaningful checkpoint update this file with:
 
 ```text
-exact HEAD
+latest validated implementation/documentation checkpoint
 what changed
 what direct commands/tests ran
 what PASS means
@@ -374,5 +464,7 @@ what remains NOT PROVEN
 new blockers/risks
 next safe action
 ```
+
+The handoff may identify the latest validated checkpoint immediately preceding its own update; the branch HEAD itself is always re-read from Git before the next write/proof.
 
 When the workstream is ready for protected-main integration, consolidate durable truth/evidence and delete this temporary handoff after documentation knowledge coverage is verified.
