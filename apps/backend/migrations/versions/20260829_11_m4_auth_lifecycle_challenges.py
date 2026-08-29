@@ -80,6 +80,13 @@ def _activate_m4_runtime_acl() -> None:
 
 def upgrade() -> None:
     """Create purpose-specific M4 challenge persistence and required runtime grants."""
+    op.create_unique_constraint(
+        "uq_email_identity_email_identity_ref_account_ref",
+        "email_identity",
+        ["email_identity_ref", "account_ref"],
+        schema=_DANTE_SCHEMA,
+    )
+
     op.create_table(
         "password_signup_challenge",
         sa.Column("signup_ref", postgresql.UUID(as_uuid=True), nullable=False),
@@ -164,6 +171,7 @@ def upgrade() -> None:
         "password_recovery_challenge",
         sa.Column("password_recovery_ref", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("account_ref", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("email_identity_ref", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("secret_verifier", sa.LargeBinary(), nullable=False),
         sa.Column("issued_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
@@ -172,9 +180,11 @@ def upgrade() -> None:
             name=op.f("pk_password_recovery_challenge"),
         ),
         sa.ForeignKeyConstraint(
-            ["account_ref"],
-            ["dante.account.account_ref"],
-            name=op.f("fk_password_recovery_challenge_account_ref_account"),
+            ["email_identity_ref", "account_ref"],
+            ["dante.email_identity.email_identity_ref", "dante.email_identity.account_ref"],
+            name=op.f(
+                "fk_password_recovery_challenge_email_identity_ref_account_ref_email_identity"
+            ),
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
@@ -200,6 +210,13 @@ def upgrade() -> None:
             "isfinite(issued_at) AND isfinite(expires_at) AND expires_at > issued_at",
             name=op.f("ck_password_recovery_challenge_chronology"),
         ),
+        schema=_DANTE_SCHEMA,
+    )
+    op.create_index(
+        "ix_password_recovery_challenge_email_identity_ref",
+        "password_recovery_challenge",
+        ["email_identity_ref"],
+        unique=False,
         schema=_DANTE_SCHEMA,
     )
     op.create_index(
@@ -234,3 +251,10 @@ def downgrade() -> None:
             )
         )
         op.drop_table(table_name, schema=_DANTE_SCHEMA)
+
+    op.drop_constraint(
+        "uq_email_identity_email_identity_ref_account_ref",
+        "email_identity",
+        type_="unique",
+        schema=_DANTE_SCHEMA,
+    )
