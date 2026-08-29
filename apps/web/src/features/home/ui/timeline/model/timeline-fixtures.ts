@@ -207,3 +207,57 @@ export const TIMELINE_PROTOTYPE_EVENTS: Readonly<
     },
   ],
 };
+
+function cloneTimelineEvent(event: TimelineEvent): TimelineEvent {
+  const base = {
+    id: event.id,
+    startMinute: event.startMinute,
+    endMinute: event.endMinute,
+    title: event.title,
+    groupId: event.groupId,
+  };
+
+  const withMeta = event.meta ? { ...base, meta: event.meta } : base;
+  return event.subitems
+    ? { ...withMeta, subitems: [...event.subitems] }
+    : withMeta;
+}
+
+export function createTimelinePrototypeEventsForDate(
+  dateKey: string,
+): readonly TimelineEvent[] {
+  const configured = TIMELINE_PROTOTYPE_EVENTS[dateKey];
+  if (configured) {
+    return configured.map(cloneTimelineEvent);
+  }
+
+  return [
+    {
+      id: `gen-${dateKey}-1`,
+      startMinute: 9 * 60,
+      endMinute: 10 * 60 + 30,
+      title: 'Focus programmato',
+      groupId: 'focus',
+      meta: 'Pianificazione',
+    },
+    {
+      id: `gen-${dateKey}-2`,
+      startMinute: 14 * 60,
+      endMinute: 14 * 60 + 45,
+      title: 'Attività personale',
+      groupId: 'personale',
+      meta: 'Promemoria',
+    },
+  ];
+}
+
+export function createTimelinePrototypeStore(): Readonly<
+  Record<string, readonly TimelineEvent[]>
+> {
+  return Object.fromEntries(
+    Object.keys(TIMELINE_PROTOTYPE_EVENTS).map((dateKey) => [
+      dateKey,
+      createTimelinePrototypeEventsForDate(dateKey),
+    ]),
+  );
+}
