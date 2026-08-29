@@ -98,6 +98,33 @@ describe('timeline state', () => {
     expect(zoomed.zoom).toBe(2.1);
   });
 
+  it('moves a group exactly one adjacent slot in either direction', () => {
+    const initial = createInitialTimelineState();
+    const movedRight = timelineReducer(initial, {
+      type: 'reorder-group',
+      groupId: 'focus',
+      targetIndex: 1,
+    });
+
+    expect(movedRight.groups.slice(0, 3).map((group) => group.id)).toEqual([
+      'riunioni',
+      'focus',
+      'salute',
+    ]);
+
+    const movedLeft = timelineReducer(movedRight, {
+      type: 'reorder-group',
+      groupId: 'focus',
+      targetIndex: 0,
+    });
+
+    expect(movedLeft.groups.slice(0, 3).map((group) => group.id)).toEqual([
+      'focus',
+      'riunioni',
+      'salute',
+    ]);
+  });
+
   it('materializes deterministic prototype events for distant calendar dates', () => {
     const state = createInitialTimelineState();
     const first = timelineEventsForDate(state, '2034-02-17');
