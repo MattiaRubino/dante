@@ -133,6 +133,7 @@ class AuthSettings(BaseModel):
     signup_otp_lifetime_seconds: PositiveInt = 900
     signup_resend_cooldown_seconds: PositiveInt = 60
     recovery_lifetime_seconds: PositiveInt = 1_800
+    recovery_response_floor_seconds: PositiveFloat = 0.25
 
     kdf_max_concurrency: PositiveInt
     kdf_max_queue_depth: NonNegativeInt = 4
