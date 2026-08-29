@@ -1333,7 +1333,7 @@ class AuthLifecycleService:
                         PasswordSignupChallengeRow.signup_ref == signup_ref
                     )
                 )
-                return cast(PasswordSignupChallengeRow | None, challenge)
+                return challenge
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=True) from exc
 

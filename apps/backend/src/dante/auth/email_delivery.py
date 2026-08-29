@@ -54,7 +54,9 @@ class NoopEmail:
     reason: str = "neutral_recovery"
 
 
-type DeliverableEmail = SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail
+type DeliverableEmail = (
+    SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail
+)
 type EmailCommand = DeliverableEmail | NoopEmail
 
 
