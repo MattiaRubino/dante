@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
@@ -26,10 +26,29 @@ export function HomeShell({
   const { t } = useTranslation('common');
   const [isAiCollapsed, setIsAiCollapsed] = useState(false);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
+  const [localViewedDateIso, setLocalViewedDateIso] = useState(viewedDateIso);
   const todayLayoutRef = useRef<HTMLElement | null>(null);
   const timelineExpansionMetricsRef = useRef<TimelineExpansionMetrics | null>(
     null,
   );
+
+  useEffect(() => {
+    setLocalViewedDateIso(viewedDateIso);
+  }, [viewedDateIso]);
+
+  const navigateViewedDate = useCallback(
+    (isoDate: string | undefined) => {
+      setLocalViewedDateIso(isoDate);
+      onViewedDateChange?.(isoDate);
+    },
+    [onViewedDateChange],
+  );
+
+  const mirrorTimelineViewedDate = useCallback((isoDate: string) => {
+    setLocalViewedDateIso((current) =>
+      current === isoDate ? current : isoDate,
+    );
+  }, []);
 
   const applyTimelineExpansionProgress = useCallback((progress: number) => {
     const layout = todayLayoutRef.current;
@@ -90,8 +109,8 @@ export function HomeShell({
       >
         <section className="home-hero" data-home-layout="hero">
           <DayContextStrip
-            viewedDateIso={viewedDateIso}
-            onViewedDateChange={onViewedDateChange}
+            viewedDateIso={localViewedDateIso}
+            onViewedDateChange={navigateViewedDate}
           />
 
           <div className="home-hero-body">
@@ -120,6 +139,9 @@ export function HomeShell({
             expanded={isTimelineExpanded}
             onExpandedChange={setIsTimelineExpanded}
             onExpansionProgress={applyTimelineExpansionProgress}
+            viewedDateIso={localViewedDateIso}
+            onViewedDateChange={mirrorTimelineViewedDate}
+            onDateNavigation={(isoDate) => navigateViewedDate(isoDate)}
           />
           <ContextRail />
         </section>
