@@ -44,11 +44,14 @@ export function HomeShell({
     [onViewedDateChange],
   );
 
-  const mirrorTimelineViewedDate = useCallback((isoDate: string) => {
-    setLocalViewedDateIso((current) =>
-      current === isoDate ? current : isoDate,
-    );
-  }, []);
+  const mirrorTimelineViewedDate = useCallback(
+    (isoDate: string | undefined) => {
+      setLocalViewedDateIso((current) =>
+        current === isoDate ? current : isoDate,
+      );
+    },
+    [],
+  );
 
   const applyTimelineExpansionProgress = useCallback((progress: number) => {
     const layout = todayLayoutRef.current;
@@ -141,7 +144,7 @@ export function HomeShell({
             onExpansionProgress={applyTimelineExpansionProgress}
             viewedDateIso={localViewedDateIso}
             onViewedDateChange={mirrorTimelineViewedDate}
-            onDateNavigation={(isoDate) => navigateViewedDate(isoDate)}
+            onDateNavigation={navigateViewedDate}
           />
           <ContextRail />
         </section>
