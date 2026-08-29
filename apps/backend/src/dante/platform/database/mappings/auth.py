@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKeyConstraint,
     Index,
+    Integer,
     LargeBinary,
     Text,
     UniqueConstraint,
@@ -204,3 +205,124 @@ class AuthSessionRow(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revocation_reason_code: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class PasswordSignupChallengeRow(Base):
+    """Ephemeral password-signup proof state keyed by public non-secret signup_ref."""
+
+    __tablename__ = "password_signup_challenge"
+    __table_args__ = (
+        CheckConstraint(
+            "uuid_extract_version(signup_ref) IS NOT DISTINCT FROM 7",
+            name="uuidv7",
+        ),
+        CheckConstraint(
+            "email_address = btrim(email_address) AND email_address <> ''",
+            name="email_address",
+        ),
+        CheckConstraint(
+            "email_comparison_key = btrim(email_comparison_key) "
+            "AND email_comparison_key <> ''",
+            name="email_comparison_key",
+        ),
+        CheckConstraint(
+            "password_verifier LIKE '$argon2id$v=19$%'",
+            name="password_verifier_format",
+        ),
+        CheckConstraint(
+            "password_pepper_key_id = btrim(password_pepper_key_id) "
+            "AND password_pepper_key_id <> ''",
+            name="password_pepper_key_id",
+        ),
+        CheckConstraint(
+            "octet_length(otp_verifier) = 32",
+            name="otp_verifier_length",
+        ),
+        CheckConstraint(
+            "otp_key_id = btrim(otp_key_id) AND otp_key_id <> ''",
+            name="otp_key_id",
+        ),
+        CheckConstraint(
+            "isfinite(created_at) "
+            "AND isfinite(updated_at) "
+            "AND isfinite(signup_expires_at) "
+            "AND isfinite(verification_issued_at) "
+            "AND isfinite(verification_expires_at) "
+            "AND updated_at >= created_at "
+            "AND signup_expires_at > created_at "
+            "AND verification_issued_at >= created_at "
+            "AND verification_expires_at > verification_issued_at "
+            "AND verification_expires_at <= signup_expires_at",
+            name="chronology",
+        ),
+        CheckConstraint(
+            "failed_verification_attempts BETWEEN 0 AND 5",
+            name="failed_attempts",
+        ),
+        Index(
+            "ix_password_signup_challenge_email_comparison_key",
+            "email_comparison_key",
+        ),
+        Index(
+            "ix_password_signup_challenge_signup_expires_at",
+            "signup_expires_at",
+        ),
+    )
+
+    signup_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    email_address: Mapped[str] = mapped_column(Text, nullable=False)
+    email_comparison_key: Mapped[str] = mapped_column(Text, nullable=False)
+    password_verifier: Mapped[str] = mapped_column(Text, nullable=False)
+    password_pepper_key_id: Mapped[str] = mapped_column(Text, nullable=False)
+    otp_verifier: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    otp_key_id: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    signup_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    verification_issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    verification_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    failed_verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class PasswordRecoveryChallengeRow(Base):
+    """Ephemeral high-entropy password-recovery proof state for one Account."""
+
+    __tablename__ = "password_recovery_challenge"
+    __table_args__ = (
+        CheckConstraint(
+            "uuid_extract_version(password_recovery_ref) IS NOT DISTINCT FROM 7",
+            name="uuidv7",
+        ),
+        CheckConstraint(
+            "octet_length(secret_verifier) = 32",
+            name="secret_verifier_length",
+        ),
+        CheckConstraint(
+            "isfinite(issued_at) AND isfinite(expires_at) AND expires_at > issued_at",
+            name="chronology",
+        ),
+        ForeignKeyConstraint(
+            ["account_ref"],
+            ["dante.account.account_ref"],
+            name="fk_password_recovery_challenge_account_ref_account",
+            match="SIMPLE",
+            onupdate="NO ACTION",
+            ondelete="NO ACTION",
+            deferrable=False,
+        ),
+        UniqueConstraint(
+            "account_ref",
+            name="uq_password_recovery_challenge_account_ref",
+        ),
+        UniqueConstraint(
+            "secret_verifier",
+            name="uq_password_recovery_challenge_secret_verifier",
+        ),
+        Index("ix_password_recovery_challenge_expires_at", "expires_at"),
+    )
+
+    password_recovery_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    account_ref: Mapped[UUID] = mapped_column(nullable=False)
+    secret_verifier: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
