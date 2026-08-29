@@ -1,11 +1,13 @@
 # DANTE — Project Status
 
 - **Status:** CURRENT TRUTH FOR `feature/access-auth`
-- **Last reconciled:** 2026-08-28
+- **Last reconciled:** 2026-08-29
 - **Protected `main`:** integrated source authority; current Access/Auth branch work remains unmerged until an explicit merge gate
 - **Active product vertical:** Access/Auth on `feature/access-auth`
-- **Current macro-phase:** M4 next
+- **Current engineering gate:** PRE-M4 — Operational Observability Baseline
+- **Next product macro-phase:** M4 — Signup + Verification + Recovery + Reset + Reauth
 - **Last closed macro-phase:** M3 — Email/Password Signin + AuthSession Spine
+- **Detailed forward plan:** `workstreams/access-auth-m4-m7-execution-plan.md`
 
 ## 1. Executive state
 
@@ -53,15 +55,29 @@ CLOSED — Email/Password Signin + AuthSession Spine
 ENGINEERING GATE PASS
 USER ACCEPTANCE ACCEPTED
 
-ACCESS/AUTH M4
+PRE-M4 OBSERVABILITY BASELINE
 NEXT / NOT STARTED
+
+ACCESS/AUTH M4
+PLANNED / START AFTER PRE-M4
+
+ACCESS/AUTH M5
+PLANNED
+
+ACCESS/AUTH M6
+PLANNED
+
+ACCESS/AUTH M7
+PLANNED / FINAL WHOLE-VERTICAL GATE
 
 WHOLE ACCESS/AUTH VERTICAL
 ACTIVE / NOT CLOSED
-M4–M7 REMAIN
+PRE-M4 + M4–M7 REMAIN
 ```
 
 M3 closure means the first real authenticated production path is accepted. It does **not** mean signup/recovery/providers/passkeys/native/whole-vertical closure are complete.
+
+PRE-M4 is a bounded engineering gate inside the same Access/Auth branch, not a new product vertical and not a new branch/worktree.
 
 ---
 
@@ -153,7 +169,7 @@ Historical CP6 acceptance evidence is not rewritten to pretend later Auth object
 
 ---
 
-## 4. Binding semantic invariants
+## 4. Binding semantic and Auth invariants
 
 ```text
 Person != Account != Principal != Actor
@@ -176,9 +192,25 @@ MaterialStateRef != ETag/MVCC/provider revision
 idempotency != semantic identity
 client local state != canonical accepted effect
 frontend request/success != backend-authoritative success
+unknown/loading != signed-out/signed-in
 ```
 
 Universal Entity/Thing, generic semantic edge tables, canonical EAV/property bags and JSONB required-semantic escape hatches remain forbidden shortcuts.
+
+Do not reopen without an explicit bounded architecture gate:
+
+```text
+JWT/localStorage browser Auth
+Redis/JWT session authority
+Principal persistence
+silent provider-email merge
+Account advisory-lock replacement
+Axios
+generated React Query hooks as app boundary
+wide credentialed CORS
+fake frontend Auth success
+persisted browser Auth cache
+```
 
 ---
 
@@ -227,7 +259,7 @@ No Axios, no generated React Query hooks, no hand-edited generated output and no
 
 ### Web
 
-Real Web integration now exists through:
+Real Web integration:
 
 ```text
 TanStack Router
@@ -242,11 +274,11 @@ The Access reducer never authenticates from request intent alone.
 
 ---
 
-## 6. Session bootstrap / refresh rule
+## 6. Permanent M3 bootstrap / refresh regression rule
 
 M3 UAT found and fixed a real authenticated-refresh defect.
 
-Rejected behavior:
+Rejected:
 
 ```text
 initial reducer = SIGN_IN
@@ -264,7 +296,7 @@ keep sign-in panel geometry
 → introduces perceptible refresh recomposition
 ```
 
-Accepted behavior:
+Accepted:
 
 ```text
 hard refresh
@@ -284,6 +316,8 @@ unknown/loading != signed-in
 Critical first-screen remote state must not temporarily render a false business state merely because data has not arrived.
 
 The brief browser-owned blank/repaint frame of a hard document reload was manually compared and accepted; it is not an Auth-state or layout regression.
+
+Routes consume Access through its public API, never through deep feature imports.
 
 ---
 
@@ -341,7 +375,7 @@ real PostgreSQL outage
 real signin rate limiter / 429
 ```
 
-### Manual acceptance
+Manual acceptance:
 
 ```text
 login flash                  eliminated
@@ -375,7 +409,7 @@ session bootstrap is route-coordinated
 background refetch must not reset the screen to false signed-out/loading state
 ```
 
-Signup/recovery/provider/passkey/setup surfaces that require later backend behavior remain non-authoritative until their corresponding M4/M5/M7 slices materialize.
+Signup/recovery/provider/passkey/setup surfaces requiring later backend behavior remain non-authoritative until their corresponding M4/M5/M7 slices materialize.
 
 ---
 
@@ -388,65 +422,90 @@ branch:    feature/access-auth
 worktree:  /home/mattia/projects/dante
 ```
 
-Do not create another `feature/access-*` branch or worktree merely because M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user authorization.
+Do not create another `feature/access-*` branch or worktree merely because PRE-M4 or M4 begins. Do not merge/rebase/force-push/history-rewrite or write to protected `main` without explicit user authorization.
 
 The separate `/home/mattia/projects/dante-frontend` worktree remains independent frontend territory and must not be accidentally used for Access/Auth commands.
 
 ---
 
-## 10. Next product boundary — M4
+## 10. Immediate next boundary — PRE-M4 Observability
 
-M4 goal:
-
-```text
-Signup
-+ Email Verification
-+ Recovery
-+ Password Reset
-+ Reauthentication / Recent Auth
-```
-
-M4 must build on, not replace, the M3 spine.
-
-Required direction:
+PRE-M4 goal:
 
 ```text
-close exact proof/token lifecycle semantics first
-→ materialize only justified persistence
-→ backend/FastAPI
-→ deterministic OpenAPI
-→ generated client
-→ Web integration
-→ real PostgreSQL/race/replay proof
-→ full-stack browser proof
-→ durable docs
+production-credible structured logging
++ safe request/trace correlation
++ OpenTelemetry traces/metrics contract
++ collector/backend decision
++ Grafana-class local exploration/dashboard path
++ Auth secret-redaction policy/tests
++ degraded telemetry behavior
 ```
 
-Important M4 constraints:
+Candidate stack to evaluate, not blindly preselect:
 
 ```text
-neutral recovery initiation / anti-enumeration
-single-use/replay-safe verification and recovery proofs
-security-sensitive mutations serialized correctly
-reset revocation policy explicit
-fresh authentication behavior explicit
-no speculative generic token god-table
-no fake email delivery success
+OpenTelemetry instrumentation
+Grafana
+Grafana Alloy
+Loki
+Tempo
+Prometheus or Mimir
 ```
 
-M5 providers/passkeys, M6 Native and M7 whole-vertical hardening/handoff remain later phases.
+Application instrumentation must remain vendor-neutral. Do not couple business code directly to Grafana/Loki/Tempo APIs.
+
+Important constraints:
+
+```text
+no password/session/CSRF/proof/provider-token leakage
+no sensitive bodies by default
+no raw user/session/request identifiers as metric labels
+bounded low-cardinality metric labels
+telemetry failure must not fail Auth correctness
+local collector/dashboard exposure must be development-bounded
+```
+
+PRE-M4 closes only after direct local proof. Detailed contract and closure matrix are in `docs/workstreams/access-auth-m4-m7-execution-plan.md`.
 
 ---
 
-## 11. Current direct-validation non-claims
+## 11. Forward macro-roadmap
+
+### M4 — Signup + Verification + Recovery + Reset + Reauth
+
+Contract-first implementation of first-party lifecycle. Must prove anti-enumeration, proof expiry/replay/concurrency, email delivery degradation, password-reset/session-revocation semantics and recent-auth behavior on real PostgreSQL and real browser boundaries.
+
+### M5 — Google + Apple + Passkeys + Explicit Linking
+
+Current official provider/WebAuthn flows, issuer+subject identity, explicit collision/linking, no provider-email silent merge, provider login distinct from provider-data integration authorization.
+
+### M6 — Native Mobile Access
+
+Existing Expo/React Native/Expo Router foundation, same canonical server-side Account/AuthSession authority, native-specific secure credential transport/storage, deep-link/provider/passkey handling and real native proof.
+
+### M7 — Security Hardening + Authenticated Handoff + Vertical Closure
+
+Whole-vertical threat review, session/account management as product-required, observability/release/security/privacy/accessibility regression, authenticated handoff into the next DANTE vertical and complete manual user acceptance.
+
+Exact subphases, anti-patterns and exit gates are authoritative in:
+
+```text
+docs/workstreams/access-auth-m4-m7-execution-plan.md
+```
+
+---
+
+## 12. Current direct-validation non-claims
 
 Do not claim:
 
 ```text
 whole Access/Auth vertical closed                  NO
+PRE-M4 observability baseline                      NOT STARTED
 M4 signup/verification/recovery/reset/reauth       NOT STARTED
 Google / Apple production authentication           NOT STARTED
-passkeys/WebAuthn                                   NOT STARTED
+passkeys/WebAuthn                                  NOT STARTED
 Native Mobile Access                               NOT IMPLEMENTED
 whole-vertical legal/release closure               NOT COMPLETE
 production deployment                              NOT STARTED
@@ -459,7 +518,7 @@ M3 closure is deliberately bounded to the first email/password + AuthSession spi
 
 ---
 
-## 12. Current navigation
+## 13. Current navigation
 
 Start with:
 
@@ -467,6 +526,7 @@ Start with:
 docs/PROJECT-STATUS.md
 docs/ROADMAP.md
 docs/workstreams/access-auth.md
+docs/workstreams/access-auth-m4-m7-execution-plan.md
 ```
 
 Access/Auth architecture:
@@ -498,3 +558,7 @@ apps/web/e2e/auth/access-auth.spec.ts
 ```
 
 Historical branch narratives remain evidence only and do not override current implementation/reference truth.
+
+### Known documentation cleanup note
+
+`docs/database/dante-postgresql-database.md` is a very large evolving blueprint whose opening current-reconciliation block still contains an older M3-A/Alembic `20260827_09` wording. Current DB authority is `docs/database/README.md`, `docs/database/access-auth.md`, Dictionary, Alembic `20260827_10` and real tests. This wording drift does **not** reopen M3; reconcile it safely in a bounded documentation sweep before the next structural DB change rather than risking destructive whole-file replacement.
