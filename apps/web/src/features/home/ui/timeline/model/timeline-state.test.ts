@@ -11,6 +11,7 @@ import {
   timelineEventsForDate,
   timelineReducer,
 } from './timeline-state';
+import { parseTimelineDate } from './timeline-temporal';
 
 function eventById(
   state: ReturnType<typeof createInitialTimelineState>,
@@ -123,6 +124,20 @@ describe('timeline state', () => {
       'riunioni',
       'salute',
     ]);
+  });
+
+  it('anchors the accepted rich fixture sequence to an arbitrary runtime day', () => {
+    const state = createInitialTimelineState(parseTimelineDate('2034-02-17'));
+
+    expect(eventById(state, '2034-02-17', '2')).toMatchObject({
+      title: 'Redesign LifeOS — sessione focus',
+      startMinute: 540,
+      endMinute: 660,
+    });
+    expect(eventById(state, '2034-02-18', '101')).toMatchObject({
+      title: 'Standup settimanale',
+    });
+    expect(state.eventsByDate['2026-08-04']).toBeUndefined();
   });
 
   it('materializes deterministic prototype events for distant calendar dates', () => {
