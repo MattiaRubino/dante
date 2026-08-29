@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 from pydantic import StringConstraints, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from dante.platform.config.auth import AuthSettings
+from dante.platform.config.auth import AuthSettings, SmtpSecurity
 from dante.platform.config.database import DatabaseSettings
 
 IdentityValue = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -54,5 +54,7 @@ class Settings(BaseSettings):
                 raise ValueError("non-local canonical Web origin must use HTTPS")
             if urlsplit(self.auth.hibp_base_url).scheme != "https":
                 raise ValueError("non-local HIBP base URL must use HTTPS")
+            if self.auth.smtp_security is SmtpSecurity.PLAIN:
+                raise ValueError("non-local SMTP transport must use STARTTLS or implicit TLS")
 
         return self
