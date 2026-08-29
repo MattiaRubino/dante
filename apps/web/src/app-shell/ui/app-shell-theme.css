@@ -8,6 +8,22 @@
  */
 
 .app-shell {
+  --app-shell-topbar-base: color-mix(
+    in srgb,
+    var(--dante-theme-shell-surface-panel) 92%,
+    var(--dante-theme-shell-surface-raised)
+  );
+  --app-shell-topbar-brand-surface: color-mix(
+    in srgb,
+    var(--dante-theme-shell-text-primary) 88%,
+    var(--dante-theme-shell-surface-panel)
+  );
+  --app-shell-topbar-brand-fade: color-mix(
+    in srgb,
+    var(--dante-theme-shell-text-primary) 36%,
+    var(--dante-theme-shell-surface-panel)
+  );
+
   color: var(--dante-theme-shell-text-primary);
   background: var(--dante-theme-shell-canvas);
 }
