@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import {
+  addTimelineDays,
   buildIsoWeek,
   isSameTimelineDate,
   timelineDateKey,
@@ -21,9 +22,9 @@ function displayDate(date: PlainDate): Date {
 }
 
 function monthLabel(date: PlainDate, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' })
-    .format(displayDate(date))
-    .toLocaleUpperCase(locale);
+  return new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }).format(
+    displayDate(date),
+  );
 }
 
 function weekdayLabel(date: PlainDate, locale: string): string {
@@ -37,14 +38,8 @@ function weekdayLabel(date: PlainDate, locale: string): string {
     .toLocaleUpperCase(locale);
 }
 
-function TimelineIcon({ type }: { type: 'calendar' | 'view' | 'group' | 'reset' }) {
+function TimelineIcon({ type }: { type: 'view' | 'group' | 'reset' }) {
   switch (type) {
-    case 'calendar':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
-        </svg>
-      );
     case 'view':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -168,6 +163,8 @@ export function TimelineHeader({
   const groupTrackStyle = {
     '--timeline-group-count': groups.length,
   } as CSSProperties;
+  const previousWeekDate = addTimelineDays(viewDate, -7);
+  const nextWeekDate = addTimelineDays(viewDate, 7);
 
   return (
     <header className="home-timeline-head home-timeline-head--production">
@@ -191,44 +188,11 @@ export function TimelineHeader({
             aria-haspopup="dialog"
             aria-expanded={calendarOpen}
           >
-            <TimelineIcon type="calendar" />
-            <span>
-              <small>{monthLabel(viewDate, locale)}</small>
-              <strong>{viewDate.year}</strong>
-            </span>
+            <strong>
+              {monthLabel(viewDate, locale)} {viewDate.year}
+            </strong>
+            <span aria-hidden="true">⌄</span>
           </button>
-        </div>
-
-        <div
-          className="home-timeline-week"
-          role="group"
-          aria-label={t(($) => $.common.home.timeline.weekLabel)}
-        >
-          {week.map((date) => {
-            const selected = isSameTimelineDate(date, viewDate);
-            const isToday = isSameTimelineDate(date, today);
-            return (
-              <button
-                className={`${selected ? 'is-active' : ''}${isToday ? ' is-today' : ''}`}
-                key={timelineDateKey(date)}
-                type="button"
-                onClick={() => onDateSelect(date)}
-                aria-current={selected ? 'date' : undefined}
-                aria-label={date.toLocaleString(locale, {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              >
-                <small>{weekdayLabel(date, locale)}</small>
-                <strong>{date.day}</strong>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="home-timeline-navigation-actions">
           <button
             className={`home-timeline-now${nowNeeded ? ' is-needed' : ''}`}
             type="button"
@@ -242,6 +206,64 @@ export function TimelineHeader({
             <span className="home-timeline-now-dot" aria-hidden="true" />
             {t(($) => $.common.home.timeline.now.label)}
           </button>
+        </div>
+
+        <div className="home-timeline-week-shell">
+          <button
+            className="home-timeline-week-step"
+            type="button"
+            onClick={() => onDateSelect(previousWeekDate)}
+            aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${previousWeekDate.toLocaleString(locale, {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}`}
+          >
+            ‹
+          </button>
+          <div
+            className="home-timeline-week"
+            role="group"
+            aria-label={t(($) => $.common.home.timeline.weekLabel)}
+          >
+            {week.map((date) => {
+              const selected = isSameTimelineDate(date, viewDate);
+              const isToday = isSameTimelineDate(date, today);
+              return (
+                <button
+                  className={`${selected ? 'is-active' : ''}${isToday ? ' is-today' : ''}`}
+                  key={timelineDateKey(date)}
+                  type="button"
+                  onClick={() => onDateSelect(date)}
+                  aria-current={selected ? 'date' : undefined}
+                  aria-label={date.toLocaleString(locale, {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                >
+                  <small>{weekdayLabel(date, locale)}</small>
+                  <strong>{date.day}</strong>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="home-timeline-week-step"
+            type="button"
+            onClick={() => onDateSelect(nextWeekDate)}
+            aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${nextWeekDate.toLocaleString(locale, {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}`}
+          >
+            ›
+          </button>
+        </div>
+
+        <div className="home-timeline-navigation-actions">
           <button
             ref={viewOptionsTriggerRef}
             className={viewOptionsOpen ? 'is-active' : ''}
