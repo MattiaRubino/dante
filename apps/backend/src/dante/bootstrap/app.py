@@ -11,12 +11,20 @@ from dante.bootstrap.lifespan import lifespan
 from dante.platform.config.settings import Environment, Settings
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import RequestContextMiddleware, install_problem_handlers
+from dante.platform.observability.middleware import ObservabilityMiddleware
+from dante.platform.observability.runtime import create_observability_runtime
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Create a fully validated DANTE FastAPI application instance."""
     effective_settings = settings if settings is not None else Settings()
     expose_openapi = effective_settings.env is not Environment.PROD
+    observability_runtime = create_observability_runtime(
+        settings=effective_settings.observability,
+        environment=effective_settings.env.value,
+        release_sha=str(effective_settings.release_sha),
+        build_id=str(effective_settings.build_id),
+    )
 
     app = FastAPI(
         title="DANTE Backend",
@@ -28,6 +36,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = effective_settings
+    app.state.observability_runtime = observability_runtime
 
     # Browser Auth policy runs before request-body parsing; request context remains
     # outermost and guarantees the same server-authoritative request_id on every path.
@@ -35,6 +44,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         BrowserAuthSecurityMiddleware,
         canonical_web_origin=effective_settings.auth.canonical_web_origin,
     )
+    app.add_middleware(ObservabilityMiddleware, runtime=observability_runtime)
     app.add_middleware(RequestContextMiddleware)
 
     install_problem_handlers(app)

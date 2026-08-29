@@ -64,6 +64,16 @@ first executable target        M3 — email/password signin + AuthSession spine
 
 M2 is intentionally architecture/security work before production Auth code. It must ratify deployment topology, Web session/cookie/CSRF/CORS behavior, core Account/AuthSession semantics, multi-session lifecycle, password implementation, passkey-ready/MFA-compatible boundaries, email comparison, API/error contract, M3 concurrency/transactions, generated-client boundary and the exact M3 test harness before migrations/endpoints begin.
 
+Independent platform work also exists on a separately pinned branch:
+
+- `platform-observability.md` — OpenTelemetry/Faro/Alloy/Grafana Cloud Free,
+  PostgreSQL observer, dashboards, alerts, failure handling and acceptance
+  evidence for `feature/platform-observability`.
+
+That workstream does not advance or override the Access/Auth macro-roadmap and
+does not absorb later Access commits merely because both touch shared backend
+runtime boundaries.
+
 The current definitive macro-roadmap is:
 
 ```text

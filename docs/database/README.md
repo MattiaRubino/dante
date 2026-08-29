@@ -262,9 +262,31 @@ Do not introduce generic relational escape hatches to avoid closing actual seman
 dante_owner      NOLOGIN ownership identity
 dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
+dante_observer   LOGIN statistics-only collector identity
 ```
 
 CP6 proves the baseline role topology and runtime posture.
+
+The platform-observability evolution adds `dante_observer` through the same
+idempotent provisioning boundary. It receives `CONNECT` plus the PostgreSQL
+system role `pg_read_all_stats`, but no `TEMP`, database/schema `CREATE`,
+`USAGE` on `dante`/`public`, DANTE object privileges, DANTE-role membership or
+owner transition. Its database-scoped `search_path` is exactly `pg_catalog`.
+The exporter selects operational statistics with SQL/query identity disabled;
+the credential remains an operational secret because the underlying PostgreSQL
+statistics role can expose cluster metadata if compromised.
+
+This technical role does not change the material schema, Alembic head,
+Dictionary object counts or SQLAlchemy mappings. Its same-change consistency
+chain is therefore:
+
+```text
+Database Blueprint privilege overlay
+≈ Dictionary technical-foundation role registry/schema
+≈ provisioning implementation
+≈ live PostgreSQL role/membership/ACL proof
+≈ Alloy statistics-only collector policy
+```
 
 M3 adds exact Auth ACLs plus one narrow runtime function:
 

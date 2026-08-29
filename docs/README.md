@@ -226,6 +226,7 @@ Entry points:
 - `architecture/system-overview.md`
 - `architecture/technical-decisions.md`
 - `architecture/domain-model-logical-readiness.md`
+- `architecture/observability-runtime-contract.md`
 - `decisions/`
 
 Current branch-local Access/Auth architecture authorities:
@@ -248,6 +249,17 @@ Important frontend ADRs:
 
 - `decisions/ADR-008-frontend-engineering-stack.md`
 - `decisions/ADR-009-frontend-architecture-boundaries.md`
+
+Current branch-local platform-observability owners:
+
+- `architecture/observability-runtime-contract.md`
+- `development/observability-runbook.md`
+- `workstreams/platform-observability.md`
+- `../infra/observability/`
+
+They are current only for the pinned `feature/platform-observability` scope
+until normal protected-main integration. They do not override Access/Auth or
+Home/Today product authority.
 
 ---
 
@@ -413,6 +425,12 @@ Current Access/Auth workstream:
 
 - `workstreams/access-auth.md` — operational authority/save-game; durable M2 truth belongs to the four Access/Auth contracts + ADR-011.
 
+Current independent platform workstream:
+
+- `workstreams/platform-observability.md` — branch evidence/state only; durable
+  runtime truth belongs to the observability architecture contract, code,
+  infrastructure and runbook.
+
 ---
 
 ## 15. Development governance
@@ -428,6 +446,7 @@ Primary sources:
 - `development/local-backend-workstation-bootstrap.md`
 - `development/testing-and-ci-v0.md`
 - `development/toolchain-and-dx-v0.md`
+- `development/observability-runbook.md`
 
 Environment vocabulary remains exactly:
 

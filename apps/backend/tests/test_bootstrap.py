@@ -96,7 +96,7 @@ def _install_fake_runtimes(
     monkeypatch.setattr(
         _lifespan_module,
         "create_database_runtime",
-        lambda _settings: database_runtime,
+        lambda _settings, **_kwargs: database_runtime,
     )
 
     async def create_fake_auth_runtime(**_kwargs: object) -> _FakeAuthRuntime:

@@ -1,0 +1,272 @@
+logging {
+  level  = "info"
+  format = "json"
+}
+
+local.file "grafana_cloud_api_key" {
+  filename  = "/run/secrets/grafana_cloud_api_key"
+  is_secret = true
+}
+
+local.file "postgres_observer_dsn" {
+  filename  = "/run/secrets/dante_observer_dsn"
+  is_secret = true
+}
+
+otelcol.auth.basic "grafana_cloud" {
+  client_auth {
+    username = sys.env("GRAFANA_CLOUD_OTLP_USERNAME")
+    password = local.file.grafana_cloud_api_key.content
+  }
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+  client {
+    endpoint           = sys.env("GRAFANA_CLOUD_OTLP_ENDPOINT")
+    auth               = otelcol.auth.basic.grafana_cloud.handler
+    compression        = "gzip"
+    max_conns_per_host = 4
+    timeout            = "5s"
+  }
+
+  retry_on_failure {
+    enabled              = true
+    initial_interval     = "1s"
+    max_interval         = "15s"
+    max_elapsed_time     = "2m"
+    randomization_factor = 0.5
+    multiplier           = 1.5
+  }
+
+  sending_queue {
+    enabled           = true
+    block_on_overflow = false
+    num_consumers     = 2
+    queue_size        = 128
+    sizer             = "requests"
+  }
+
+  debug_metrics {
+    disable_high_cardinality_metrics = true
+  }
+}
+
+otelcol.processor.batch "bounded" {
+  timeout             = "1s"
+  send_batch_size     = 512
+  send_batch_max_size = 1_024
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    traces  = [otelcol.exporter.otlphttp.grafana_cloud.input]
+  }
+}
+
+otelcol.processor.memory_limiter "bounded" {
+  check_interval = "1s"
+  limit          = "256MiB"
+  spike_limit    = "64MiB"
+
+  output {
+    metrics = [otelcol.processor.batch.bounded.input]
+    logs    = [otelcol.processor.batch.bounded.input]
+    traces  = [otelcol.processor.batch.bounded.input]
+  }
+}
+
+otelcol.receiver.otlp "dante" {
+  grpc {
+    endpoint            = "0.0.0.0:4317"
+    include_metadata    = false
+    max_recv_msg_size   = "4MiB"
+    max_concurrent_streams = 32
+  }
+
+  http {
+    endpoint              = "0.0.0.0:4318"
+    include_metadata      = false
+    max_request_body_size = "4MiB"
+    read_header_timeout   = "5s"
+    read_timeout          = "10s"
+    write_timeout         = "10s"
+  }
+
+  output {
+    metrics = [otelcol.processor.memory_limiter.bounded.input]
+    logs    = [otelcol.processor.memory_limiter.bounded.input]
+    traces  = [otelcol.processor.memory_limiter.bounded.input]
+  }
+
+  debug_metrics {
+    disable_high_cardinality_metrics = true
+  }
+}
+
+loki.write "grafana_cloud" {
+  external_labels = {
+    application = "dante",
+    environment = sys.env("DANTE_ENV"),
+  }
+  max_streams = 64
+
+  endpoint {
+    name                = "grafana-cloud-loki"
+    url                 = sys.env("GRAFANA_CLOUD_LOKI_URL")
+    batch_size          = "512KiB"
+    batch_wait          = "1s"
+    remote_timeout      = "5s"
+    retry_on_http_429   = true
+    min_backoff_period  = "500ms"
+    max_backoff_period  = "15s"
+    max_backoff_retries = 10
+
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_LOKI_USERNAME")
+      password = local.file.grafana_cloud_api_key.content
+    }
+  }
+}
+
+loki.source.file "dante_backend" {
+  targets = [{
+    __path__     = "/var/log/dante/*.jsonl*",
+    service_name = "dante-backend",
+  }]
+  forward_to = [loki.write.grafana_cloud.receiver]
+
+  file_match {
+    enabled           = true
+    ignore_older_than = "24h"
+    sync_period       = "10s"
+  }
+}
+
+faro.receiver "dante_web_local" {
+  extra_log_labels = {
+    service_name = "dante-web",
+    environment  = sys.env("DANTE_ENV"),
+  }
+  log_format = "json"
+
+  server {
+    listen_address           = "0.0.0.0"
+    listen_port              = 12347
+    cors_allowed_origins     = [
+      sys.env("DANTE_FARO_ORIGIN_PRIMARY"),
+      sys.env("DANTE_FARO_ORIGIN_SECONDARY"),
+    ]
+    include_metadata         = false
+    max_allowed_payload_size = "512KiB"
+
+    rate_limiting {
+      enabled    = true
+      strategy   = "per_app"
+      rate       = 10
+      burst_size = 20
+    }
+  }
+
+  output {
+    logs   = [loki.write.grafana_cloud.receiver]
+    traces = [otelcol.processor.memory_limiter.bounded.input]
+  }
+}
+
+prometheus.remote_write "grafana_cloud" {
+  external_labels = {
+    application = "dante",
+    environment = sys.env("DANTE_ENV"),
+  }
+
+  endpoint {
+    name                   = "grafana-cloud-prometheus"
+    url                    = sys.env("GRAFANA_CLOUD_PROMETHEUS_URL")
+    remote_timeout         = "5s"
+    send_native_histograms = true
+
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_PROMETHEUS_USERNAME")
+      password = local.file.grafana_cloud_api_key.content
+    }
+
+    queue_config {
+      capacity             = 5_000
+      max_samples_per_send = 1_000
+      min_shards           = 1
+      max_shards           = 2
+      min_backoff          = "100ms"
+      max_backoff          = "10s"
+      retry_on_http_429    = true
+      sample_age_limit     = "10m"
+    }
+  }
+
+  wal {
+    truncate_frequency = "15m"
+    min_keepalive_time = "5m"
+    max_keepalive_time = "1h"
+  }
+}
+
+prometheus.exporter.postgres "dante" {
+  data_source_names        = [local.file.postgres_observer_dsn.content]
+  disable_settings_metrics = true
+  enabled_collectors = [
+    "database_wraparound",
+    "long_running_transactions",
+    "stat_checkpointer",
+  ]
+}
+
+prometheus.scrape "postgres" {
+  targets         = prometheus.exporter.postgres.dante.targets
+  forward_to      = [prometheus.relabel.postgres_privacy_budget.receiver]
+  job_name        = "dante-postgres"
+  scrape_interval = "30s"
+  scrape_timeout  = "10s"
+}
+
+prometheus.relabel "postgres_privacy_budget" {
+  forward_to     = [prometheus.remote_write.grafana_cloud.receiver]
+  max_cache_size = 1000
+
+  // Fail closed for privacy and Grafana Cloud Free cardinality. In particular,
+  // table, role, replication-slot and per-vacuum relation labels never leave Alloy.
+  rule {
+    action        = "keep"
+    source_labels = ["__name__"]
+    regex         = "(up|scrape_.*|pg_exporter_.*|pg_database_.*|pg_stat_database_.*|pg_locks_count|pg_stat_bgwriter_.*|pg_wal_.*|pg_replication_.*|pg_database_wraparound_.*|pg_long_running_transactions.*|pg_stat_checkpointer_.*)"
+  }
+}
+
+prometheus.exporter.blackbox "dante" {
+  config = "{ modules: { dante_http: { prober: http, timeout: 3s, http: { method: GET, preferred_ip_protocol: ip4, valid_status_codes: [200] } } } }"
+
+  target {
+    name    = "dante-backend-ready"
+    address = sys.env("DANTE_BACKEND_HEALTH_URL")
+    module  = "dante_http"
+    labels = {
+      service_name = "dante-backend",
+    }
+  }
+}
+
+prometheus.scrape "availability" {
+  targets         = prometheus.exporter.blackbox.dante.targets
+  forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+  job_name        = "dante-blackbox"
+  scrape_interval = "30s"
+  scrape_timeout  = "5s"
+}
+
+prometheus.exporter.self "alloy" {}
+
+prometheus.scrape "alloy" {
+  targets         = prometheus.exporter.self.alloy.targets
+  forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+  job_name        = "dante-alloy"
+  scrape_interval = "30s"
+  scrape_timeout  = "10s"
+}

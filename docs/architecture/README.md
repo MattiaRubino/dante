@@ -1,7 +1,7 @@
 # DANTE Architecture Index
 
 - **Status:** CURRENT / AUTHORITATIVE NAVIGATION
-- **Last reconciled:** 2026-08-27
+- **Last reconciled:** 2026-08-29
 
 This file describes current architecture state directly. Phase-time reviews, old overlays and historical workstream evidence do not override this index.
 
@@ -26,6 +26,7 @@ Access frontend baseline             CLOSED / ACCEPTED / RELEASE-HARDENED
 Full Access/Auth vertical            ACTIVE / UNMERGED ON feature/access-auth
 Access/Auth M2 architecture freeze   CLOSED / M2.1–M2.11 ACCEPTED / DOCUMENTED
 Access/Auth M3 implementation        NEXT / NOT STARTED
+Platform observability runtime       IMPLEMENTED ON INDEPENDENT BRANCH / FINAL GATES PENDING
 ```
 
 Protected `main` remains integrated authority for closed shared foundations and CP6. Access/Auth M2 truth is current only on `feature/access-auth` until normal protected-main integration.
@@ -39,6 +40,8 @@ Read according to subject:
 - [`system-overview.md`](system-overview.md) — system/component/authority overview;
 - [`technical-decisions.md`](technical-decisions.md) — current architecture decision register;
 - [`domain-model-logical-readiness.md`](domain-model-logical-readiness.md) — satisfied Domain → Logical compatibility contract;
+- [`observability-runtime-contract.md`](observability-runtime-contract.md) —
+  backend/Web/PostgreSQL/Alloy/Grafana signal, privacy, cost and failure contract;
 - [`access-auth-architecture.md`](access-auth-architecture.md) — Access/Auth identity/authenticator/session/Web-Native/transaction/generated-client architecture;
 - [`access-auth-security-contract.md`](access-auth-security-contract.md) — Access/Auth session, CSRF/CORS, password, recovery, email, provider/passkey and transaction security contract;
 - [`access-auth-api-contract.md`](access-auth-api-contract.md) — `/api/v1`, RFC 9457, naming, OpenAPI, Orval and first-party client contract;

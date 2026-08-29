@@ -8,6 +8,7 @@ from pydantic import SecretStr, ValidationError
 
 from dante.platform.config.auth import AuthSettings
 from dante.platform.config.database import DatabaseSettings
+from dante.platform.config.observability import ObservabilitySettings
 from dante.platform.config.settings import Environment, Settings
 
 _TEST_PEPPER_KEY_ID = "test-v1"
@@ -262,6 +263,39 @@ def test_remote_environment_requires_https_auth_boundaries() -> None:
             database=_database_settings(),
             auth=_auth_settings(canonical_web_origin="http://dante.test"),
         )
+
+
+def test_remote_environment_rejects_plaintext_non_loopback_otlp() -> None:
+    with pytest.raises(ValidationError, match="observability OTLP"):
+        Settings(
+            env=Environment.PROD,
+            release_sha="abcdef123456",
+            build_id="build-42",
+            debug=False,
+            database=_database_settings(),
+            auth=_auth_settings(),
+            observability=ObservabilitySettings(
+                enabled=True,
+                otlp_http_endpoint="http://alloy.internal:4318",
+            ),
+        )
+
+
+def test_remote_environment_allows_loopback_otlp_sidecar() -> None:
+    settings = Settings(
+        env=Environment.PROD,
+        release_sha="abcdef123456",
+        build_id="build-42",
+        debug=False,
+        database=_database_settings(),
+        auth=_auth_settings(),
+        observability=ObservabilitySettings(
+            enabled=True,
+            otlp_http_endpoint="http://127.0.0.1:4318",
+        ),
+    )
+
+    assert settings.observability.enabled is True
 
 
 def test_missing_environment_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -128,9 +128,21 @@ dante.alembic_version
 dante_owner
 dante_migrator
 dante_runtime
+dante_observer
 ```
 
 `dante.alembic_version` is not a DANTE semantic/business table entry.
+
+`dante_observer` is a technical, statistics-only collector login. It has no
+`USAGE` on `dante` or `public`, no DANTE table/view/routine/sequence/type
+privileges and no SQLAlchemy mapping because a PostgreSQL role is not an
+application persistence object. Its only inherited capability is
+`pg_read_all_stats`; collector configuration does not enable the
+`pg_stat_statements` collector, so query IDs and SQL text are excluded. A
+fail-closed remote-write allowlist additionally drops per-object and future
+unreviewed metric families. The exact role/Blueprint/live PostgreSQL proof is
+owned by provisioning plus the observability contract tests, not by a fake
+Dictionary object entry.
 
 ### Extension-owned
 
@@ -414,6 +426,7 @@ frozen CP6 completed-stage record remains valid
 current scope counts reconcile to the current entry set
 current Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL reconciliation
 routine security/search_path facts reconcile where applicable
+technical role topology ↔ Blueprint ↔ provisioning ↔ live PostgreSQL reconciliation
 extension-owned objects do not become false DANTE drift
 ```
 

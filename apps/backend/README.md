@@ -194,9 +194,12 @@ The PostgreSQL container starts with the platform/bootstrap administrator `postg
 dante_owner      NOLOGIN ownership identity
 dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
+dante_observer   LOGIN statistics-only collector identity
 ```
 
-Provisioning is intentionally separate from FastAPI startup and Alembic. Supply admin, migrator and runtime credentials only to the provisioning command/process.
+Provisioning is intentionally separate from FastAPI startup and Alembic. Supply
+admin, migrator, runtime and observer credentials only to the provisioning
+command/process.
 
 Conceptual invocation from `apps/backend`:
 
@@ -208,10 +211,15 @@ DANTE_ADMIN__USER=postgres \
 DANTE_ADMIN__PASSWORD='<local admin secret>' \
 DANTE_MIGRATOR__PASSWORD='<local migrator secret>' \
 DANTE_RUNTIME__PASSWORD='<local runtime secret>' \
+DANTE_OBSERVER__PASSWORD='<independent local observer secret>' \
 uv run python -m dante.platform.database.provisioning
 ```
 
 Do not commit these secrets or reuse LOCAL credentials in DEV/UAT/PROD.
+
+`dante_observer` inherits only `pg_read_all_stats`, has `search_path=pg_catalog`
+and has no DANTE business-object privileges. It exists for the external
+PostgreSQL metrics collector and is never a backend runtime fallback.
 
 ## Alembic
 

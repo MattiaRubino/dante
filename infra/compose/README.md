@@ -2,7 +2,11 @@
 
 This directory owns the developer-facing Docker Compose entry point for DANTE LOCAL stateful infrastructure.
 
-The Compose topology still contains only PostgreSQL. The backend process continues to run directly in WSL during the normal developer inner loop. CP3 consumes this PostgreSQL boundary without adding a backend container, PgBouncer or additional LOCAL services.
+The default Compose topology still starts only PostgreSQL. The optional
+`observability` profile adds one hardened Grafana Alloy collector; the backend
+process continues to run directly in WSL during the normal developer inner
+loop. No backend container, PgBouncer, Loki, Tempo or Prometheus server is run
+locally.
 
 ## Prerequisites
 
@@ -100,6 +104,7 @@ CP3 provisions the application security boundary separately from Compose/initdb:
 dante_owner      NOLOGIN ownership identity
 dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN normal backend runtime identity
+dante_observer   LOGIN statistics-only collector identity
 ```
 
 The explicit provisioning command owns creation/reconciliation of these roles, their memberships, the `dante` schema, database/schema hardening and default privileges.
@@ -114,12 +119,21 @@ DANTE_ADMIN__USER=postgres \
 DANTE_ADMIN__PASSWORD="$(cat ../../infra/compose/secrets/postgres_password.local)" \
 DANTE_MIGRATOR__PASSWORD='<generated LOCAL migrator secret>' \
 DANTE_RUNTIME__PASSWORD='<generated LOCAL runtime secret>' \
+DANTE_OBSERVER__PASSWORD="$(cat ../../infra/compose/secrets/dante_observer_password.local)" \
 uv run python -m dante.platform.database.provisioning
 ```
 
-The migrator/runtime values must be generated independently, kept outside Git and supplied only to the process that needs them. The backend runtime receives only the runtime credential. Alembic receives only the migrator credential.
+The migrator/runtime/observer values must be generated independently, kept
+outside Git and supplied only to the process that needs them. The backend
+runtime receives only the runtime credential. Alembic receives only the
+migrator credential. Alloy receives only the observer credential through a
+mode-0600 Docker secret.
 
 `dante_owner` has `NOLOGIN` and therefore no password.
+
+The observer receives `pg_read_all_stats` but no DANTE schema or object access.
+Its exact boundary and the optional profile procedure are documented in
+`infra/observability/README.md`.
 
 Detailed persistence/security authority is recorded in:
 

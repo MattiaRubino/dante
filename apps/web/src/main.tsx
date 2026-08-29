@@ -5,8 +5,14 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 
 import '@dante/design-tokens/web.css';
 import './bootstrap/i18n';
+import {
+  initializeWebObservability,
+  ObservabilityErrorBoundary,
+} from './platform/observability';
 import { routeTree } from './routeTree.gen';
 import './styles.css';
+
+initializeWebObservability();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,8 +44,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <ObservabilityErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ObservabilityErrorBoundary>
   </StrictMode>,
 );
