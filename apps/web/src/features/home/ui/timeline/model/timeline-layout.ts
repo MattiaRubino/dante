@@ -1,5 +1,5 @@
-import { TIMELINE_POLICY } from './timeline-policy';
 import { timelineEventReadableHeight } from './timeline-density';
+import { TIMELINE_POLICY } from './timeline-policy';
 import type {
   TimelineEvent,
   TimelineEventId,
@@ -148,10 +148,7 @@ export function computeTimelineEventLayouts(
         layoutPolicy.compactLaneRegionPercent / compact.laneCount;
       compactLeftPercent =
         layoutPolicy.compactLeftInsetPercent + compact.lane * laneSpan;
-      compactWidthPercent = Math.max(
-        14,
-        laneSpan - 1,
-      );
+      compactWidthPercent = Math.max(14, laneSpan - 1);
     }
 
     compactLeftPercent = Math.max(
@@ -199,12 +196,20 @@ export function computeTimelineGaps(
     }
   }
 
-  return clusters.slice(0, -1).map((cluster, index) => {
+  const gaps: TimelineGap[] = [];
+  for (let index = 0; index < clusters.length - 1; index += 1) {
+    const cluster = clusters[index];
     const next = clusters[index + 1];
-    return {
+    if (!cluster || !next) {
+      continue;
+    }
+
+    gaps.push({
       fromMinute: cluster.endMinute,
       toMinute: next.startMinute,
       durationMinutes: next.startMinute - cluster.endMinute,
-    };
-  });
+    });
+  }
+
+  return gaps;
 }
