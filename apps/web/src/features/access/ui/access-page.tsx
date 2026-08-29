@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useReducer,
@@ -99,16 +100,19 @@ export function AccessPage({
   const resetPasswordMutation = useResetPasswordMutation();
   const reauthenticateMutation = useReauthenticateMutation();
 
-  function dispatchAuthError(error: unknown): AccessFlowEvent | null {
-    const event = accessEventForAuthError(error);
-    if (event !== null) {
-      if (isRecoveryInvalidEvent(event)) {
-        recoveryProofStore.clear();
+  const dispatchAuthError = useCallback(
+    (error: unknown): AccessFlowEvent | null => {
+      const event = accessEventForAuthError(error);
+      if (event !== null) {
+        if (isRecoveryInvalidEvent(event)) {
+          recoveryProofStore.clear();
+        }
+        dispatch(event);
       }
-      dispatch(event);
-    }
-    return event;
-  }
+      return event;
+    },
+    [recoveryProofStore],
+  );
 
   function beginRemote(event: AccessFlowEvent): boolean {
     if (!window.navigator.onLine) {
@@ -173,7 +177,12 @@ export function AccessPage({
         setRecoveryEntryState('error');
       },
     });
-  }, [recoveryEntryState, recoveryProofStore, validateRecoveryMutation]);
+  }, [
+    dispatchAuthError,
+    recoveryEntryState,
+    recoveryProofStore,
+    validateRecoveryMutation,
+  ]);
 
   useLayoutEffect(() => {
     if (
@@ -204,7 +213,7 @@ export function AccessPage({
       return;
     }
     dispatchAuthError(sessionQuery.error);
-  }, [sessionQuery.error]);
+  }, [dispatchAuthError, sessionQuery.error]);
 
   function retryRecoveryValidation() {
     recoveryValidationStarted.current = false;
