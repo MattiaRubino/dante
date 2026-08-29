@@ -35,6 +35,13 @@ function recoveryProofFromLocation(location: RecoveryLocation): RecoveryProof | 
   });
 }
 
+function locationWithoutRecoveryQuery(location: RecoveryLocation): string {
+  const params = new URLSearchParams(location.search);
+  params.delete('recovery');
+  const query = params.toString();
+  return `${location.pathname}${query ? `?${query}` : ''}`;
+}
+
 export function captureRecoveryProof(
   location: RecoveryLocation,
   history: RecoveryHistory,
@@ -51,6 +58,13 @@ export function captureRecoveryProof(
     peek: () => proof,
     clear: () => {
       proof = null;
+      if (hasRecoveryEntry) {
+        history.replaceState(
+          history.state,
+          '',
+          locationWithoutRecoveryQuery(location),
+        );
+      }
     },
   });
 }

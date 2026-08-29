@@ -19,7 +19,7 @@ function history() {
 }
 
 describe('recovery proof bootstrap boundary', () => {
-  it('captures a valid proof in memory and scrubs the fragment immediately', () => {
+  it('captures a valid proof, scrubs the fragment, then clears the recovery handle', () => {
     const browserHistory = history();
     const store = captureRecoveryProof(
       location(`?recovery=${RECOVERY_REF}&lang=it`, '#high-entropy-secret'),
@@ -30,7 +30,8 @@ describe('recovery proof bootstrap boundary', () => {
       password_recovery_ref: RECOVERY_REF,
       secret: 'high-entropy-secret',
     });
-    expect(browserHistory.replaceState).toHaveBeenCalledWith(
+    expect(browserHistory.replaceState).toHaveBeenNthCalledWith(
+      1,
       { preserved: true },
       '',
       `/?recovery=${RECOVERY_REF}&lang=it`,
@@ -38,6 +39,12 @@ describe('recovery proof bootstrap boundary', () => {
 
     store.clear();
     expect(store.peek()).toBeNull();
+    expect(browserHistory.replaceState).toHaveBeenNthCalledWith(
+      2,
+      { preserved: true },
+      '',
+      '/?lang=it',
+    );
   });
 
   it('scrubs malformed or ambiguous recovery fragments without retaining a bearer', () => {
@@ -51,7 +58,7 @@ describe('recovery proof bootstrap boundary', () => {
     expect(browserHistory.replaceState).toHaveBeenCalledOnce();
   });
 
-  it('does not erase unrelated application fragments', () => {
+  it('does not erase unrelated application fragments or query parameters', () => {
     const browserHistory = history();
     const store = captureRecoveryProof(
       location('?lang=it', '#settings'),
@@ -59,6 +66,9 @@ describe('recovery proof bootstrap boundary', () => {
     );
 
     expect(store.peek()).toBeNull();
+    expect(browserHistory.replaceState).not.toHaveBeenCalled();
+
+    store.clear();
     expect(browserHistory.replaceState).not.toHaveBeenCalled();
   });
 });
