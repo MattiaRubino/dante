@@ -87,6 +87,11 @@ class EmailIdentityRow(Base):
             "comparison_key",
             name="uq_email_identity_comparison_key",
         ),
+        UniqueConstraint(
+            "email_identity_ref",
+            "account_ref",
+            name="uq_email_identity_email_identity_ref_account_ref",
+        ),
         Index("ix_email_identity_account_ref", "account_ref"),
     )
 
@@ -285,7 +290,7 @@ class PasswordSignupChallengeRow(Base):
 
 
 class PasswordRecoveryChallengeRow(Base):
-    """Ephemeral high-entropy password-recovery proof state for one Account."""
+    """Ephemeral high-entropy password-recovery proof state for one Account/email channel."""
 
     __tablename__ = "password_recovery_challenge"
     __table_args__ = (
@@ -302,9 +307,12 @@ class PasswordRecoveryChallengeRow(Base):
             name="chronology",
         ),
         ForeignKeyConstraint(
-            ["account_ref"],
-            ["dante.account.account_ref"],
-            name="fk_password_recovery_challenge_account_ref_account",
+            ["email_identity_ref", "account_ref"],
+            ["dante.email_identity.email_identity_ref", "dante.email_identity.account_ref"],
+            name=(
+                "fk_password_recovery_challenge_"
+                "email_identity_ref_account_ref_email_identity"
+            ),
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
@@ -318,11 +326,16 @@ class PasswordRecoveryChallengeRow(Base):
             "secret_verifier",
             name="uq_password_recovery_challenge_secret_verifier",
         ),
+        Index(
+            "ix_password_recovery_challenge_email_identity_ref",
+            "email_identity_ref",
+        ),
         Index("ix_password_recovery_challenge_expires_at", "expires_at"),
     )
 
     password_recovery_ref: Mapped[UUID] = mapped_column(primary_key=True)
     account_ref: Mapped[UUID] = mapped_column(nullable=False)
+    email_identity_ref: Mapped[UUID] = mapped_column(nullable=False)
     secret_verifier: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
     issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
