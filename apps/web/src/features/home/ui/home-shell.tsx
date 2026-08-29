@@ -115,8 +115,8 @@ export function HomeShell({
     layout.style.setProperty('--rail-opacity', String(visible));
     layout.style.setProperty('--rail-shift', `${18 * p}px`);
     layout.style.setProperty(
-      '--timeline-week-compensation',
-      `${compactViewport ? 0 : ((metrics.railWidth + metrics.gap) * p) / 2}px`,
+      '--timeline-week-home-offset',
+      `${compactViewport ? 0 : ((metrics.railWidth + metrics.gap) * visible) / 2}px`,
     );
 
     if (!compactViewport && p > 0.001 && p < 0.999) {
