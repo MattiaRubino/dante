@@ -167,50 +167,50 @@ export function TimelineHeader({
   const nextWeekDate = addTimelineDays(viewDate, 7);
 
   return (
-    <header className="home-timeline-head home-timeline-head--production">
-      <div className="home-timeline-navigation">
-        <div className="home-timeline-primary-controls">
-          <button
-            className="home-timeline-quick-add"
-            type="button"
-            disabled
-            aria-label={t(($) => $.common.home.timeline.quickAdd)}
-            title={t(($) => $.common.home.timeline.quickAddDeferred)}
-          >
-            +
-          </button>
-          <button
-            ref={calendarTriggerRef}
-            className="home-timeline-month"
-            type="button"
-            onClick={onCalendarToggle}
-            aria-label={t(($) => $.common.home.timeline.calendar.open)}
-            aria-haspopup="dialog"
-            aria-expanded={calendarOpen}
-          >
-            <strong>
-              {monthLabel(viewDate, locale)} {viewDate.year}
-            </strong>
-            <span aria-hidden="true">⌄</span>
-          </button>
-          <button
-            className={`home-timeline-now${nowNeeded ? ' is-needed' : ''}`}
-            type="button"
-            onClick={onGoNow}
-            aria-label={t(($) =>
-              nowNeeded
-                ? $.common.home.timeline.now.go
-                : $.common.home.timeline.now.visible,
-            )}
-          >
-            <span className="home-timeline-now-dot" aria-hidden="true" />
-            {t(($) => $.common.home.timeline.now.label)}
-          </button>
-        </div>
+    <header className="dante-timeline-header">
+      <div className="dante-timeline-header-row">
+        <button
+          className="dante-timeline-quick-add"
+          type="button"
+          disabled
+          aria-label={t(($) => $.common.home.timeline.quickAdd)}
+          title={t(($) => $.common.home.timeline.quickAddDeferred)}
+        >
+          +
+        </button>
 
-        <div className="home-timeline-week-shell">
+        <button
+          ref={calendarTriggerRef}
+          className="dante-timeline-month"
+          type="button"
+          onClick={onCalendarToggle}
+          aria-label={t(($) => $.common.home.timeline.calendar.open)}
+          aria-haspopup="dialog"
+          aria-expanded={calendarOpen}
+        >
+          <span>
+            {monthLabel(viewDate, locale)} {viewDate.year}
+          </span>
+          <i aria-hidden="true">▾</i>
+        </button>
+
+        <button
+          className={`dante-timeline-now${nowNeeded ? ' is-needed' : ''}`}
+          type="button"
+          onClick={onGoNow}
+          aria-label={t(($) =>
+            nowNeeded
+              ? $.common.home.timeline.now.go
+              : $.common.home.timeline.now.visible,
+          )}
+        >
+          <span className="dante-timeline-now-dot" aria-hidden="true" />
+          {t(($) => $.common.home.timeline.now.label)}
+        </button>
+
+        <div className="dante-timeline-week-nav">
           <button
-            className="home-timeline-week-step"
+            className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(previousWeekDate)}
             aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${previousWeekDate.toLocaleString(locale, {
@@ -222,20 +222,20 @@ export function TimelineHeader({
             ‹
           </button>
           <div
-            className="home-timeline-week"
+            className="dante-timeline-week"
             role="group"
             aria-label={t(($) => $.common.home.timeline.weekLabel)}
           >
             {week.map((date) => {
-              const selected = isSameTimelineDate(date, viewDate);
+              const viewing = isSameTimelineDate(date, viewDate);
               const isToday = isSameTimelineDate(date, today);
               return (
                 <button
-                  className={`${selected ? 'is-active' : ''}${isToday ? ' is-today' : ''}`}
+                  className={`${viewing ? 'is-viewing' : ''}${isToday ? ' is-today' : ''}`}
                   key={timelineDateKey(date)}
                   type="button"
                   onClick={() => onDateSelect(date)}
-                  aria-current={selected ? 'date' : undefined}
+                  aria-current={viewing ? 'date' : undefined}
                   aria-label={date.toLocaleString(locale, {
                     weekday: 'long',
                     day: 'numeric',
@@ -243,14 +243,15 @@ export function TimelineHeader({
                     year: 'numeric',
                   })}
                 >
-                  <small>{weekdayLabel(date, locale)}</small>
+                  <b>{weekdayLabel(date, locale)}</b>
                   <strong>{date.day}</strong>
+                  <span className="dante-timeline-week-mark" aria-hidden="true" />
                 </button>
               );
             })}
           </div>
           <button
-            className="home-timeline-week-step"
+            className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(nextWeekDate)}
             aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${nextWeekDate.toLocaleString(locale, {
@@ -263,7 +264,7 @@ export function TimelineHeader({
           </button>
         </div>
 
-        <div className="home-timeline-navigation-actions">
+        <div className="dante-timeline-actions">
           <button
             ref={viewOptionsTriggerRef}
             className={viewOptionsOpen ? 'is-active' : ''}
@@ -291,9 +292,9 @@ export function TimelineHeader({
         </div>
       </div>
 
-      <div className="home-timeline-toolbar">
+      <div className="dante-timeline-group-row">
         <button
-          className={`home-timeline-group-reset${hasGroupFocus ? ' is-active' : ''}`}
+          className={`dante-timeline-group-reset${hasGroupFocus ? ' is-active' : ''}`}
           type="button"
           onClick={onResetGroupsFocus}
           aria-label={t(($) => $.common.home.timeline.groups.reset)}
@@ -302,16 +303,16 @@ export function TimelineHeader({
         </button>
         <div
           ref={groupScrollerRef}
-          className="home-timeline-group-scroller"
+          className="dante-timeline-group-scroller"
           onScroll={(event) => onGroupScroll(event.currentTarget.scrollLeft)}
         >
-          <div className="home-timeline-group-track" style={groupTrackStyle}>
+          <div className="dante-timeline-group-track" style={groupTrackStyle}>
             {groups.map((group, index) => {
               const active = filters.has(group.id);
               const dimmed = filters.size > 0 && !active;
               return (
                 <button
-                  className={`home-timeline-group-chip${active ? ' is-active' : ''}${dimmed ? ' is-dimmed' : ''}${draggingGroupId === group.id ? ' is-reordering' : ''}${dropTargetId === group.id ? ' is-drop-target' : ''}`}
+                  className={`dante-timeline-group-chip${active ? ' is-active' : ''}${dimmed ? ' is-dimmed' : ''}${draggingGroupId === group.id ? ' is-reordering' : ''}${dropTargetId === group.id ? ' is-drop-target' : ''}`}
                   data-timeline-tone={group.tone}
                   data-group-id={group.id}
                   key={group.id}
