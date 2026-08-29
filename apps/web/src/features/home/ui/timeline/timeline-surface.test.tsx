@@ -134,17 +134,17 @@ describe('TimelineSurface production parity', () => {
     );
     expect(screen.getByRole('dialog', { name: 'Modifica orario' })).toBeTruthy();
 
-    const startMinute = screen.getByLabelText('Inizio minuti');
-    const endMinute = screen.getByLabelText('Fine minuti');
-    expect(startMinute).toHaveValue('00');
-    expect(endMinute).toHaveValue('00');
+    const startMinute = screen.getByLabelText<HTMLInputElement>('Inizio minuti');
+    const endMinute = screen.getByLabelText<HTMLInputElement>('Fine minuti');
+    expect(startMinute.value).toBe('00');
+    expect(endMinute.value).toBe('00');
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Aumenta Inizio di 5 minuti' }),
     );
 
-    expect(startMinute).toHaveValue('05');
-    expect(endMinute).toHaveValue('05');
+    expect(startMinute.value).toBe('05');
+    expect(endMinute.value).toBe('05');
   });
 
   it('exposes group split as a real semantic expansion command', () => {
