@@ -44,22 +44,33 @@
   letter-spacing: 0.005em;
 }
 
-/* Desktop height follows the viewport instead of stretching temporal geometry.
- * Keep the accepted 570px as the floor, expose more of the day on taller
- * screens, and cap growth before Timeline visually sticks to the page bottom.
- * Header + groups remain 124px, so only the scrollable viewport grows. */
+/* Desktop Home owns the row height. Timeline and Context Rail are peers in
+ * that row and keep the same 10px bottom breathing room. Timeline stays a
+ * normal grid item: do not turn the root into an internal grid, otherwise the
+ * unbounded day stream can feed back into row sizing. The frame is instead
+ * anchored below the fixed 124px header/group chrome and fills the remaining
+ * already-resolved root height without contributing to parent height sizing. */
 @media (min-width: 1121px) {
-  .home-m1 .home-timeline--production {
-    --timeline-grid-height: clamp(570px, 68dvh, 640px);
-    height: calc(124px + var(--timeline-grid-height));
-    min-height: calc(124px + var(--timeline-grid-height));
-    max-height: calc(124px + var(--timeline-grid-height));
-    align-self: start;
+  .home-m1 .home-today-layout > .home-timeline--production {
+    position: relative;
+    height: auto;
+    min-height: 694px;
+    max-height: none;
+    margin-bottom: 10px;
+    align-self: stretch;
   }
 
-  .home-m1 .home-timeline--production .timeline-frame--production {
-    height: var(--timeline-grid-height);
-    min-height: var(--timeline-grid-height);
+  .home-m1
+    .home-today-layout
+    > .home-timeline--production
+    .timeline-frame--production {
+    position: absolute;
+    top: 124px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    min-height: 0;
   }
 }
 
