@@ -5,5 +5,10 @@ import { AccessPage, authSessionQueryOptions } from '../features/access';
 export const Route = createFileRoute('/')({
   loader: ({ context }) =>
     context.queryClient.prefetchQuery(authSessionQueryOptions()),
-  component: AccessPage,
+  component: AccessRoute,
 });
+
+function AccessRoute() {
+  const { recoveryProofStore } = Route.useRouteContext();
+  return <AccessPage recoveryProofStore={recoveryProofStore} />;
+}

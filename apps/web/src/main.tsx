@@ -5,8 +5,11 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 
 import '@dante/design-tokens/web.css';
 import './bootstrap/i18n';
+import { captureWindowRecoveryProof } from './platform/auth/recovery-proof';
 import { routeTree } from './routeTree.gen';
 import './styles.css';
+
+const recoveryProofStore = captureWindowRecoveryProof();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +23,7 @@ const router = createRouter({
   routeTree,
   context: {
     queryClient,
+    recoveryProofStore,
   },
   defaultPreloadStaleTime: 0,
 });
