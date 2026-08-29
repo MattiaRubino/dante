@@ -1,215 +1,736 @@
-import type { CSSProperties } from 'react';
+import type { PlainDate } from '@dante/time';
+import {
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
+import './timeline.css';
+
+import { createTimelineTimeMapper } from './model/timeline-density';
 import {
-  buildIsoWeek,
+  TIMELINE_PROTOTYPE_NOW_MINUTE,
+  TIMELINE_PROTOTYPE_TODAY,
+} from './model/timeline-fixtures';
+import { computeTimelineEventLayouts } from './model/timeline-layout';
+import { TIMELINE_POLICY } from './model/timeline-policy';
+import {
+  createInitialTimelineState,
+  timelineEventsForDate,
+  timelineReducer,
+} from './model/timeline-state';
+import {
+  addTimelineDays,
   formatTimelineMinute,
-  parseTimelineDate,
+  timelineDateKey,
 } from './model/timeline-temporal';
+import type { TimelineEvent, TimelineGroupId } from './model/timeline-types';
+import {
+  TimelineDayStream,
+  type TimelineRenderedDay,
+} from './timeline-day-stream';
+import { TimelineHeader } from './timeline-header';
+import {
+  CalendarPopover,
+  EventDetailDialog,
+  TimeEditorPopover,
+  UndoToast,
+  ViewOptionsPopover,
+  detailFromEvent,
+  detailFromSubitem,
+  type TimelineDetail,
+} from './timeline-overlays';
 
-type TimelineSurfaceProps = {
+type TimelineSurfaceProps = Readonly<{
   expanded: boolean;
-  onToggleExpanded: () => void;
-};
+  onExpandedChange: (expanded: boolean) => void;
+  onExpansionProgress: (progress: number) => void;
+}>;
 
-const MATERIALIZED_VIEW_DATE = parseTimelineDate('2026-08-28');
-const MATERIALIZED_NOW_MINUTE = 15 * 60;
-const HOURS = ['00', '03', '06', '09', '12', '15', '18', '21', '24'] as const;
-const GROUPS = [
-  ['Focus', '#8a74ff'],
-  ['Riunioni', '#27d9f5'],
-  ['Salute', '#8bdc47'],
-  ['Creatività', '#ffad34'],
-] as const;
-const EVENTS = [
-  {
-    className: 'timeline-event-focus',
-    time: '09:30 – 11:15',
-    title: 'Revisione concept',
-    meta: 'Focus',
-    color: '#8a74ff',
-  },
-  {
-    className: 'timeline-event-call',
-    time: '12:10 – 13:00',
-    title: 'Call progetto',
-    meta: 'Riunioni',
-    color: '#27d9f5',
-  },
-  {
-    className: 'timeline-event-health',
-    time: '16:20 – 17:00',
-    title: 'Allenamento',
-    meta: 'Salute',
-    color: '#8bdc47',
-  },
-  {
-    className: 'timeline-event-creative',
-    time: '18:40 – 20:00',
-    title: 'Uscita fotografica',
-    meta: 'Creatività',
-    color: '#ffad34',
-  },
-] as const;
+type ScrollTarget = Readonly<{
+  dateKey: string;
+  minute: number | null;
+  viewportOffset: number | null;
+  behavior: ScrollBehavior;
+}>;
 
-function TimelineIcon({
-  type,
-}: {
-  type: 'calendar' | 'filter' | 'group' | 'zoom-out' | 'zoom-in';
-}) {
-  switch (type) {
-    case 'calendar':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
-        </svg>
-      );
-    case 'filter':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 6h16M7 12h10M10 18h4" />
-        </svg>
-      );
-    case 'group':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="4" y="5" width="16" height="5" rx="2" />
-          <rect x="4" y="14" width="10" height="5" rx="2" />
-        </svg>
-      );
-    case 'zoom-out':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="10.5" cy="10.5" r="6" />
-          <path d="M7.5 10.5h6M15 15l5 5" />
-        </svg>
-      );
-    case 'zoom-in':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="10.5" cy="10.5" r="6" />
-          <path d="M7.5 10.5h6M10.5 7.5v6M15 15l5 5" />
-        </svg>
-      );
+type TimeEditorState = Readonly<{
+  dateKey: string;
+  event: TimelineEvent;
+  anchor: HTMLButtonElement;
+}>;
+
+type DetailState = Readonly<{
+  detail: TimelineDetail;
+  opener: HTMLElement;
+}>;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function buildRenderedDays(
+  anchor: PlainDate,
+  pastDays: number,
+  futureDays: number,
+  state: ReturnType<typeof createInitialTimelineState>,
+): readonly TimelineRenderedDay[] {
+  const days: TimelineRenderedDay[] = [];
+  let offsetTop = 0;
+
+  for (let offset = -pastDays; offset <= futureDays; offset += 1) {
+    const date = addTimelineDays(anchor, offset);
+    const dateKey = timelineDateKey(date);
+    const events = timelineEventsForDate(state, dateKey);
+    const mapper = createTimelineTimeMapper(events, state.zoom, {
+      expandedEventIds: state.expandedEventIds,
+    });
+    const layouts = computeTimelineEventLayouts(events, state.groups, mapper);
+    days.push({
+      date,
+      dateKey,
+      events,
+      mapper,
+      layouts,
+      offsetTop,
+      height: mapper.height,
+    });
+    offsetTop += mapper.height;
+  }
+
+  return days;
+}
+
+function findDayAtOffset(
+  days: readonly TimelineRenderedDay[],
+  offset: number,
+): TimelineRenderedDay | null {
+  return (
+    days.find(
+      (day) => offset >= day.offsetTop && offset < day.offsetTop + day.height,
+    ) ??
+    (offset < (days[0]?.offsetTop ?? 0)
+      ? days[0] ?? null
+      : days.at(-1) ?? null)
+  );
+}
+
+function applyTimelineExpansion(
+  root: HTMLElement | null,
+  grid: HTMLDivElement | null,
+  groupScroller: HTMLDivElement | null,
+  groupCount: number,
+  progress: number,
+) {
+  if (!root || !grid) {
+    return;
+  }
+
+  const p = window.innerWidth <= 1120 ? 0 : clamp(progress, 0, 1);
+  const viewportWidth = Math.max(1, grid.clientWidth);
+  const expandedTrack = Math.max(
+    viewportWidth,
+    44 + groupCount * TIMELINE_POLICY.layout.groupMinWidthPx + 16,
+  );
+  const trackWidth = viewportWidth + (expandedTrack - viewportWidth) * p;
+  const compactInner = Math.max(1, trackWidth - 60);
+  const expandedInner = Math.max(1, expandedTrack - 60);
+  const safeGroupCount = Math.max(1, groupCount);
+  const groupWidth = expandedInner / safeGroupCount;
+
+  root.style.setProperty('--timeline-group-opacity', String(clamp((p - 0.16) / 0.52, 0, 1)));
+  root.style.setProperty('--timeline-expansion-progress', String(p));
+
+  const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
+  if (stream) {
+    stream.style.minWidth = `${trackWidth}px`;
+  }
+  root.querySelectorAll<HTMLElement>('.timeline-day-section').forEach((section) => {
+    section.style.minWidth = `${trackWidth}px`;
+  });
+
+  root.querySelectorAll<HTMLElement>('.timeline-event-card').forEach((card) => {
+    const compactLeft = Number(card.dataset.compactLeft ?? 1.4);
+    const compactWidth = Number(card.dataset.compactWidth ?? 56);
+    const groupIndex = Math.max(0, Number(card.dataset.groupIndex ?? 0));
+    const groupLane = Math.max(0, Number(card.dataset.groupLane ?? 0));
+    const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
+
+    const leftA = (compactLeft / 100) * compactInner;
+    const widthA = (compactWidth / 100) * compactInner;
+    const leftB =
+      groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
+    const widthB = Math.max(24, groupWidth / groupLanes - 8);
+    const left = leftA + (leftB - leftA) * p;
+    const width = widthA + (widthB - widthA) * p;
+
+    card.style.left = `${left + 4}px`;
+    card.style.width = `${Math.max(24, width)}px`;
+  });
+
+  if (p < 0.98) {
+    if (Math.abs(grid.scrollLeft) > 0.5) {
+      grid.scrollLeft = 0;
+    }
+    if (groupScroller && Math.abs(groupScroller.scrollLeft) > 0.5) {
+      groupScroller.scrollLeft = 0;
+    }
+  } else if (
+    groupScroller &&
+    Math.abs(groupScroller.scrollLeft - grid.scrollLeft) > 0.5
+  ) {
+    groupScroller.scrollLeft = grid.scrollLeft;
   }
 }
 
 export function TimelineSurface({
   expanded,
-  onToggleExpanded,
+  onExpandedChange,
+  onExpansionProgress,
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const week = buildIsoWeek(MATERIALIZED_VIEW_DATE);
-  const monthLabel = MATERIALIZED_VIEW_DATE.toLocaleString(locale, {
-    month: 'long',
-  }).toLocaleUpperCase(locale);
+  const [state, dispatch] = useReducer(
+    timelineReducer,
+    undefined,
+    createInitialTimelineState,
+  );
+  const [anchor, setAnchor] = useState(TIMELINE_PROTOTYPE_TODAY);
+  const [viewDate, setViewDate] = useState(TIMELINE_PROTOTYPE_TODAY);
+  const [pastDays, setPastDays] = useState(
+    TIMELINE_POLICY.window.initialPastDays,
+  );
+  const [futureDays, setFutureDays] = useState(
+    TIMELINE_POLICY.window.initialFutureDays,
+  );
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
+  const [timeEditor, setTimeEditor] = useState<TimeEditorState | null>(null);
+  const [detailState, setDetailState] = useState<DetailState | null>(null);
+  const [nowNeeded, setNowNeeded] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+
+  const rootRef = useRef<HTMLElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const groupScrollerRef = useRef<HTMLDivElement | null>(null);
+  const calendarTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const viewOptionsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const expansionHandleRef = useRef<HTMLButtonElement | null>(null);
+  const expansionProgressRef = useRef(expanded ? 1 : 0);
+  const expansionFrameRef = useRef<number | null>(null);
+  const pendingExpansionRef = useRef(expansionProgressRef.current);
+  const expansionDragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startProgress: number;
+    dragDistance: number;
+  } | null>(null);
+  const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
+  const pendingScrollTargetRef = useRef<ScrollTarget | null>(null);
+  const initialScrollDoneRef = useRef(false);
+  const rawScrollRestoreRef = useRef<number | null>(null);
+  const pastExtensionRestoreRef = useRef<{
+    scrollTop: number;
+    scrollHeight: number;
+  } | null>(null);
+  const extendingPastRef = useRef(false);
+  const extendingFutureRef = useRef(false);
+  const scrollFrameRef = useRef<number | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+
+  const renderedDays = useMemo(
+    () => buildRenderedDays(anchor, pastDays, futureDays, state),
+    [anchor, futureDays, pastDays, state],
+  );
+  renderedDaysRef.current = renderedDays;
+
+  const showFeedback = useCallback((message: string) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastVisible(false);
+      toastTimerRef.current = null;
+    }, 5000);
+  }, []);
+
+  const syncExpansion = useCallback(
+    (progress: number) => {
+      const p = window.innerWidth <= 1120 ? 0 : clamp(progress, 0, 1);
+      expansionProgressRef.current = p;
+      onExpansionProgress(p);
+      applyTimelineExpansion(
+        rootRef.current,
+        gridRef.current,
+        groupScrollerRef.current,
+        state.groups.length,
+        p,
+      );
+    },
+    [onExpansionProgress, state.groups.length],
+  );
+
+  const requestExpansion = useCallback(
+    (progress: number) => {
+      pendingExpansionRef.current = progress;
+      if (expansionFrameRef.current !== null) {
+        return;
+      }
+      expansionFrameRef.current = requestAnimationFrame(() => {
+        expansionFrameRef.current = null;
+        syncExpansion(pendingExpansionRef.current);
+      });
+    },
+    [syncExpansion],
+  );
+
+  const settleExpansion = useCallback(
+    (target: 0 | 1) => {
+      expansionDragRef.current = null;
+      rootRef.current?.removeAttribute('data-timeline-expansion-dragging');
+      syncExpansion(target);
+      onExpandedChange(target === 1);
+    },
+    [onExpandedChange, syncExpansion],
+  );
+
+  const scrollToRenderedDay = useCallback(
+    (target: ScrollTarget, days = renderedDaysRef.current) => {
+      const grid = gridRef.current;
+      if (!grid) {
+        return false;
+      }
+      const day = days.find((candidate) => candidate.dateKey === target.dateKey);
+      if (!day) {
+        return false;
+      }
+      const minuteOffset =
+        target.minute === null ? 0 : day.mapper.map(target.minute);
+      const viewportOffset = target.viewportOffset ?? 0;
+      const top = Math.max(0, day.offsetTop + minuteOffset - viewportOffset);
+      grid.scrollTo({ top, behavior: target.behavior });
+      return true;
+    },
+    [],
+  );
+
+  const goToDate = useCallback(
+    (
+      date: PlainDate,
+      options: Readonly<{
+        minute?: number;
+        viewportOffset?: number;
+        behavior?: ScrollBehavior;
+      }> = {},
+    ) => {
+      const dateKey = timelineDateKey(date);
+      const target: ScrollTarget = {
+        dateKey,
+        minute: options.minute ?? null,
+        viewportOffset: options.viewportOffset ?? null,
+        behavior: options.behavior ?? 'smooth',
+      };
+      setViewDate(date);
+      if (scrollToRenderedDay(target)) {
+        return;
+      }
+      pendingScrollTargetRef.current = target;
+      setAnchor(date);
+      setPastDays(TIMELINE_POLICY.window.initialPastDays);
+      setFutureDays(TIMELINE_POLICY.window.initialFutureDays);
+    },
+    [scrollToRenderedDay],
+  );
+
+  const goNow = useCallback(() => {
+    goToDate(TIMELINE_PROTOTYPE_TODAY, {
+      minute: TIMELINE_PROTOTYPE_NOW_MINUTE,
+      viewportOffset: Math.max(80, (gridRef.current?.clientHeight ?? 570) * 0.34),
+      behavior: 'smooth',
+    });
+  }, [goToDate]);
+
+  const synchronizeViewportContext = useCallback(
+    (scrollTop: number) => {
+      const grid = gridRef.current;
+      const days = renderedDaysRef.current;
+      if (!grid || days.length === 0) {
+        return;
+      }
+
+      const probe = scrollTop + grid.clientHeight * 0.34;
+      const viewed = findDayAtOffset(days, probe);
+      if (viewed && !viewed.date.equals(viewDate)) {
+        setViewDate(viewed.date);
+      }
+
+      const todayKey = timelineDateKey(TIMELINE_PROTOTYPE_TODAY);
+      const today = days.find((day) => day.dateKey === todayKey);
+      const nowY = today
+        ? today.offsetTop + today.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE)
+        : null;
+      const visible =
+        nowY !== null &&
+        nowY >= scrollTop &&
+        nowY <= scrollTop + grid.clientHeight;
+      setNowNeeded(!visible);
+    },
+    [viewDate],
+  );
+
+  const handleScroll = useCallback(
+    (scrollTop: number, scrollLeft: number) => {
+      const grid = gridRef.current;
+      if (!grid) {
+        return;
+      }
+      if (expanded && groupScrollerRef.current) {
+        const scroller = groupScrollerRef.current;
+        if (Math.abs(scroller.scrollLeft - scrollLeft) > 0.5) {
+          scroller.scrollLeft = scrollLeft;
+        }
+      }
+
+      if (scrollFrameRef.current === null) {
+        scrollFrameRef.current = requestAnimationFrame(() => {
+          scrollFrameRef.current = null;
+          synchronizeViewportContext(grid.scrollTop);
+        });
+      }
+
+      if (
+        scrollTop < 420 &&
+        pastDays < TIMELINE_POLICY.window.maxPastDays &&
+        !extendingPastRef.current
+      ) {
+        extendingPastRef.current = true;
+        pastExtensionRestoreRef.current = {
+          scrollTop,
+          scrollHeight: grid.scrollHeight,
+        };
+        setPastDays((value) =>
+          Math.min(
+            TIMELINE_POLICY.window.maxPastDays,
+            value + TIMELINE_POLICY.window.extendByDays,
+          ),
+        );
+      }
+
+      if (
+        scrollTop + grid.clientHeight > grid.scrollHeight - 500 &&
+        futureDays < TIMELINE_POLICY.window.maxFutureDays &&
+        !extendingFutureRef.current
+      ) {
+        extendingFutureRef.current = true;
+        setFutureDays((value) =>
+          Math.min(
+            TIMELINE_POLICY.window.maxFutureDays,
+            value + TIMELINE_POLICY.window.extendByDays,
+          ),
+        );
+      }
+    },
+    [expanded, futureDays, pastDays, synchronizeViewportContext],
+  );
+
+  const zoomAt = useCallback(
+    (clientY: number, factor: number) => {
+      const grid = gridRef.current;
+      if (!grid) {
+        return;
+      }
+      const rect = grid.getBoundingClientRect();
+      const viewportOffset = clientY - rect.top;
+      const contentY = grid.scrollTop + viewportOffset;
+      const day = findDayAtOffset(renderedDaysRef.current, contentY);
+      if (!day) {
+        return;
+      }
+      pendingScrollTargetRef.current = {
+        dateKey: day.dateKey,
+        minute: day.mapper.inv(contentY - day.offsetTop),
+        viewportOffset,
+        behavior: 'auto',
+      };
+      dispatch({ type: 'set-zoom', zoom: state.zoom * factor });
+    },
+    [state.zoom],
+  );
+
+  const preserveRawScroll = useCallback(() => {
+    rawScrollRestoreRef.current = gridRef.current?.scrollTop ?? null;
+  }, []);
+
+  const closeCalendar = useCallback((restoreFocus = true) => {
+    setCalendarOpen(false);
+    if (restoreFocus) {
+      requestAnimationFrame(() => calendarTriggerRef.current?.focus());
+    }
+  }, []);
+
+  const closeViewOptions = useCallback((restoreFocus = true) => {
+    setViewOptionsOpen(false);
+    if (restoreFocus) {
+      requestAnimationFrame(() => viewOptionsTriggerRef.current?.focus());
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) {
+      return;
+    }
+
+    if (!initialScrollDoneRef.current) {
+      initialScrollDoneRef.current = true;
+      const todayKey = timelineDateKey(TIMELINE_PROTOTYPE_TODAY);
+      const day = renderedDays.find((candidate) => candidate.dateKey === todayKey);
+      if (day) {
+        grid.scrollTop = Math.max(
+          0,
+          day.offsetTop +
+            day.mapper.map(TIMELINE_PROTOTYPE_NOW_MINUTE - 120) -
+            70,
+        );
+      }
+    }
+
+    const pastRestore = pastExtensionRestoreRef.current;
+    if (pastRestore) {
+      const delta = grid.scrollHeight - pastRestore.scrollHeight;
+      grid.scrollTop = pastRestore.scrollTop + Math.max(0, delta);
+      pastExtensionRestoreRef.current = null;
+    }
+    extendingPastRef.current = false;
+    extendingFutureRef.current = false;
+
+    const rawScroll = rawScrollRestoreRef.current;
+    if (rawScroll !== null) {
+      grid.scrollTop = rawScroll;
+      rawScrollRestoreRef.current = null;
+    }
+
+    const target = pendingScrollTargetRef.current;
+    if (target && scrollToRenderedDay(target, renderedDays)) {
+      pendingScrollTargetRef.current = null;
+    }
+
+    synchronizeViewportContext(grid.scrollTop);
+    applyTimelineExpansion(
+      rootRef.current,
+      grid,
+      groupScrollerRef.current,
+      state.groups.length,
+      expansionProgressRef.current,
+    );
+  }, [
+    renderedDays,
+    scrollToRenderedDay,
+    state.groups.length,
+    synchronizeViewportContext,
+  ]);
+
+  useLayoutEffect(() => {
+    if (expansionDragRef.current) {
+      return;
+    }
+    syncExpansion(expanded ? 1 : 0);
+  }, [expanded, renderedDays, state.groups, syncExpansion]);
+
+  useLayoutEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth <= 1120) {
+        syncExpansion(0);
+      } else {
+        syncExpansion(expanded ? 1 : expansionProgressRef.current);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [expanded, syncExpansion]);
+
+  useLayoutEffect(() => {
+    return () => {
+      if (expansionFrameRef.current !== null) {
+        cancelAnimationFrame(expansionFrameRef.current);
+      }
+      if (scrollFrameRef.current !== null) {
+        cancelAnimationFrame(scrollFrameRef.current);
+      }
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const beginExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (window.innerWidth <= 1120 || event.button !== 0) {
+      return;
+    }
+    const parent = rootRef.current?.parentElement;
+    const rail = parent?.querySelector<HTMLElement>('.home-context-rail');
+    const railWidth = rail?.getBoundingClientRect().width ?? 190;
+    expansionDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startProgress: expansionProgressRef.current,
+      dragDistance: Math.max(110, railWidth),
+    };
+    rootRef.current?.setAttribute('data-timeline-expansion-dragging', 'true');
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const moveExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = expansionDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    const progress = clamp(
+      drag.startProgress + (event.clientX - drag.startX) / drag.dragDistance,
+      0,
+      1,
+    );
+    requestExpansion(progress);
+  };
+
+  const finishExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = expansionDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    const progress = clamp(
+      drag.startProgress + (event.clientX - drag.startX) / drag.dragDistance,
+      0,
+      1,
+    );
+    settleExpansion(progress >= 0.5 ? 1 : 0);
+  };
+
+  const expansionKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      settleExpansion(1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      settleExpansion(0);
+    }
+  };
 
   return (
     <section
-      className="home-timeline"
+      ref={rootRef}
+      className="home-timeline home-timeline--production"
       data-home-region="timeline"
       data-home-timeline-state={expanded ? 'expanded' : 'normal'}
       aria-label={t(($) => $.common.home.timeline.label)}
     >
-      <header className="home-timeline-head">
-        <div className="home-timeline-primary-controls">
-          <button
-            className="home-timeline-quick-add"
-            type="button"
-            disabled
-            aria-label="Aggiungi alla timeline"
-          >
-            +
-          </button>
-          <button
-            className="home-timeline-month"
-            type="button"
-            disabled
-            aria-label="Apri calendario"
-          >
-            <TimelineIcon type="calendar" />
-            <span>
-              <small>{monthLabel}</small>
-              <strong>{MATERIALIZED_VIEW_DATE.year}</strong>
-            </span>
-          </button>
-          <button
-            className="home-timeline-now"
-            type="button"
-            disabled
-            aria-label="Torna a ora"
-          >
-            <span className="home-timeline-now-dot" aria-hidden="true" />
-            Ora
-          </button>
-        </div>
-        <div className="home-timeline-week" aria-label="Settimana corrente">
-          {week.map((date) => (
-            <span
-              className={date.equals(MATERIALIZED_VIEW_DATE) ? 'is-active' : ''}
-              key={date.toString()}
-            >
-              <small>
-                {date.toLocaleString(locale, { weekday: 'narrow' })}
-              </small>
-              <strong>{date.day}</strong>
-            </span>
-          ))}
-        </div>
-        <div className="home-timeline-actions">
-          <button type="button" disabled aria-label="Filtri timeline">
-            <TimelineIcon type="filter" />
-          </button>
-          <button type="button" disabled aria-label="Gruppi timeline">
-            <TimelineIcon type="group" />
-          </button>
-          <button type="button" disabled aria-label="Riduci zoom">
-            <TimelineIcon type="zoom-out" />
-          </button>
-          <button type="button" disabled aria-label="Aumenta zoom">
-            <TimelineIcon type="zoom-in" />
-          </button>
-        </div>
-        <div className="home-timeline-groups" aria-label="Gruppi visibili">
-          {GROUPS.map(([name, color]) => (
-            <span
-              key={name}
-              style={{ '--group-color': color } as CSSProperties}
-            >
-              <i aria-hidden="true" />
-              {name}
-            </span>
-          ))}
-        </div>
-      </header>
-      <div className="home-timeline-frame">
-        <div className="home-timeline-ruler" aria-hidden="true">
-          {HOURS.map((hour) => (
-            <span key={hour}>{hour}:00</span>
-          ))}
-        </div>
-        <div className="home-timeline-grid">
-          <span className="home-timeline-now-line" aria-hidden="true">
-            <i>{formatTimelineMinute(MATERIALIZED_NOW_MINUTE)}</i>
-          </span>
-          {EVENTS.map((event) => (
-            <article
-              className={`home-timeline-event ${event.className}`}
-              key={event.title}
-              style={{ '--event-color': event.color } as CSSProperties}
-            >
-              <time>{event.time}</time>
-              <strong>{event.title}</strong>
-              <span>{event.meta}</span>
-            </article>
-          ))}
-        </div>
-      </div>
+      <TimelineHeader
+        locale={locale}
+        today={TIMELINE_PROTOTYPE_TODAY}
+        viewDate={viewDate}
+        groups={state.groups}
+        filters={state.filters}
+        nowNeeded={nowNeeded}
+        split={expanded}
+        calendarOpen={calendarOpen}
+        viewOptionsOpen={viewOptionsOpen}
+        calendarTriggerRef={calendarTriggerRef}
+        viewOptionsTriggerRef={viewOptionsTriggerRef}
+        groupScrollerRef={groupScrollerRef}
+        onCalendarToggle={() => {
+          setViewOptionsOpen(false);
+          setCalendarOpen((value) => !value);
+        }}
+        onDateSelect={(date) => goToDate(date)}
+        onGoNow={goNow}
+        onViewOptionsToggle={() => {
+          setCalendarOpen(false);
+          setViewOptionsOpen((value) => !value);
+        }}
+        onSplitToggle={() =>
+          settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1)
+        }
+        onResetGroupsFocus={() => dispatch({ type: 'reset-groups-focus' })}
+        onToggleFilter={(groupId: TimelineGroupId) =>
+          dispatch({ type: 'toggle-filter', groupId })
+        }
+        onReorderGroup={(groupId, targetIndex) =>
+          dispatch({ type: 'reorder-group', groupId, targetIndex })
+        }
+        onGroupScroll={(scrollLeft) => {
+          const grid = gridRef.current;
+          if (
+            expanded &&
+            grid &&
+            Math.abs(grid.scrollLeft - scrollLeft) > 0.5
+          ) {
+            grid.scrollLeft = scrollLeft;
+          }
+        }}
+      />
+
+      <TimelineDayStream
+        days={renderedDays}
+        today={TIMELINE_PROTOTYPE_TODAY}
+        nowMinute={TIMELINE_PROTOTYPE_NOW_MINUTE}
+        state={state}
+        expanded={expanded}
+        gridRef={gridRef}
+        onScroll={handleScroll}
+        onZoomAt={zoomAt}
+        onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
+        onToggleSubitems={(eventId) => {
+          preserveRawScroll();
+          dispatch({ type: 'toggle-event-subitems', eventId });
+        }}
+        onOpenEventDetail={(event, opener) =>
+          setDetailState({
+            detail: detailFromEvent(event, state.groups),
+            opener,
+          })
+        }
+        onOpenSubitemDetail={(event, subitem, opener) =>
+          setDetailState({
+            detail: detailFromSubitem(
+              event,
+              subitem,
+              state.groups,
+              t(($) => $.common.home.timeline.detail.subitemParent),
+            ),
+            opener,
+          })
+        }
+        onOpenTimeEditor={(dateKey, event, editorAnchor) =>
+          setTimeEditor({ dateKey, event, anchor: editorAnchor })
+        }
+        onMoveEvent={(move) => {
+          preserveRawScroll();
+          dispatch({ type: 'move-event', ...move });
+        }}
+        onMoveFeedback={showFeedback}
+      />
+
       <button
-        className="home-timeline-expand-handle"
+        ref={expansionHandleRef}
+        className="timeline-expansion-handle"
         type="button"
-        onClick={onToggleExpanded}
+        onPointerDown={beginExpansionDrag}
+        onPointerMove={moveExpansionDrag}
+        onPointerUp={finishExpansionDrag}
+        onPointerCancel={finishExpansionDrag}
+        onKeyDown={expansionKeyDown}
         aria-label={t(($) =>
           expanded
             ? $.common.home.timeline.collapse
@@ -217,8 +738,75 @@ export function TimelineSurface({
         )}
         aria-pressed={expanded}
       >
-        <span aria-hidden="true">{expanded ? '‹' : '›'}</span>
+        <span aria-hidden="true" />
       </button>
+
+      <CalendarPopover
+        open={calendarOpen}
+        locale={locale}
+        today={TIMELINE_PROTOTYPE_TODAY}
+        viewDate={viewDate}
+        triggerRef={calendarTriggerRef}
+        onClose={closeCalendar}
+        onDateSelect={(date) => goToDate(date)}
+        onGoToday={goNow}
+      />
+
+      <ViewOptionsPopover
+        open={viewOptionsOpen}
+        triggerRef={viewOptionsTriggerRef}
+        options={state.viewOptions}
+        onChange={(option, value) =>
+          dispatch({ type: 'set-view-option', option, value })
+        }
+        onReset={() => dispatch({ type: 'reset-view-options' })}
+        onClose={closeViewOptions}
+      />
+
+      {timeEditor ? (
+        <TimeEditorPopover
+          event={timeEditor.event}
+          dateKey={timeEditor.dateKey}
+          anchor={timeEditor.anchor}
+          gridRef={gridRef}
+          onSave={(dateKey, eventId, startMinute, endMinute) => {
+            preserveRawScroll();
+            dispatch({
+              type: 'update-event-time',
+              dateKey,
+              eventId,
+              startMinute,
+              endMinute,
+            });
+            showFeedback(
+              `${t(($) => $.common.home.timeline.feedback.timeUpdated)} ${formatTimelineMinute(startMinute)}–${formatTimelineMinute(endMinute)}`,
+            );
+          }}
+          onClose={(restoreFocus = true) => {
+            const anchorButton = timeEditor.anchor;
+            setTimeEditor(null);
+            if (restoreFocus) {
+              requestAnimationFrame(() => anchorButton.focus());
+            }
+          }}
+        />
+      ) : null}
+
+      <EventDetailDialog
+        detail={detailState?.detail ?? null}
+        opener={detailState?.opener ?? null}
+        onClose={() => setDetailState(null)}
+      />
+
+      <UndoToast
+        visible={toastVisible && state.undo !== null}
+        message={toastMessage}
+        onUndo={() => {
+          preserveRawScroll();
+          dispatch({ type: 'undo-last-event-change' });
+          setToastVisible(false);
+        }}
+      />
     </section>
   );
 }
