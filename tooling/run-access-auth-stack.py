@@ -74,10 +74,10 @@ def _extension_guard(database_name: str) -> Callable[..., None]:
 
 
 def _auth_settings_override(
-    original: Callable[[str], object],
-) -> Callable[[str], object]:
-    def build(hibp_base_url: str) -> object:
-        settings = original(hibp_base_url)
+    original: Callable[[str, int], object],
+) -> Callable[[str, int], object]:
+    def build(hibp_base_url: str, smtp_port: int) -> object:
+        settings = original(hibp_base_url, smtp_port)
         raw_capacity = os.environ.get(_E2E_RATE_CAPACITY_ENV)
         if raw_capacity is None:
             return settings
