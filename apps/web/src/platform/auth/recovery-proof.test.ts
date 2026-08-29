@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { captureRecoveryProof } from './recovery-proof';
 
-const RECOVERY_REF = '00000000-0000-4000-8000-000000000004';
+const RECOVERY_REF = '019d0000-0000-7000-8000-000000000004';
 
 function location(search: string, hash: string) {
   return { pathname: '/', search, hash } as Pick<
@@ -19,7 +19,7 @@ function history() {
 }
 
 describe('recovery proof bootstrap boundary', () => {
-  it('captures a valid proof, scrubs the fragment, then clears the recovery handle', () => {
+  it('captures a valid UUIDv7 proof, scrubs the fragment, then clears the recovery handle', () => {
     const browserHistory = history();
     const store = captureRecoveryProof(
       location(`?recovery=${RECOVERY_REF}&lang=it`, '#high-entropy-secret'),
