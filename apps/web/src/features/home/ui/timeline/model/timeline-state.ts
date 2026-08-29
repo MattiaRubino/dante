@@ -318,8 +318,7 @@ export function timelineReducer(
       if (!moved) {
         return state;
       }
-      const adjustedTarget = fromIndex < targetIndex ? targetIndex - 1 : targetIndex;
-      groups.splice(adjustedTarget, 0, moved);
+      groups.splice(targetIndex, 0, moved);
       return { ...state, groups };
     }
 
