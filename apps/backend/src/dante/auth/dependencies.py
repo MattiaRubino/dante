@@ -5,15 +5,35 @@ from typing import cast
 from fastapi import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from dante.auth.lifecycle import AuthLifecycleService
+from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
 from dante.auth.service import AuthRuntime, AuthService
 from dante.auth.sessions import WEB_CLIENT_HEADER_NAME, WEB_CLIENT_HEADER_VALUE
 from dante.platform.http.problem import ProblemError, problem_response_for_scope
 
+_M4_JSON_POST_PATHS = frozenset(
+    {
+        "/api/v1/auth/signup",
+        "/api/v1/auth/signup/verify",
+        "/api/v1/auth/signup/resend",
+        "/api/v1/auth/recovery",
+        "/api/v1/auth/recovery/validate",
+        "/api/v1/auth/reset-password",
+        "/api/v1/auth/reauthenticate",
+    }
+)
+
 
 def get_auth_service(request: Request) -> AuthService:
-    """Resolve the process-scoped AuthService installed by lifespan."""
+    """Resolve the process-scoped M3 AuthService installed by lifespan."""
     auth_runtime = cast(AuthRuntime, request.app.state.auth_runtime)
     return auth_runtime.service
+
+
+def get_auth_lifecycle_service(request: Request) -> AuthLifecycleService:
+    """Resolve the process-scoped M4 AuthLifecycleService installed by lifespan."""
+    lifecycle_runtime = cast(AuthLifecycleRuntime, request.app.state.auth_lifecycle_runtime)
+    return lifecycle_runtime.service
 
 
 def single_header_value(scope: Scope, name: str) -> str | None:
@@ -30,7 +50,7 @@ def single_header_value(scope: Scope, name: str) -> str | None:
 
 
 class BrowserAuthSecurityMiddleware:
-    """Fail closed on Web signin/logout origin metadata before body parsing."""
+    """Fail closed on Web Auth mutations before request-body parsing."""
 
     def __init__(self, app: ASGIApp, *, canonical_web_origin: str) -> None:
         self._app = app
@@ -43,10 +63,11 @@ class BrowserAuthSecurityMiddleware:
 
         method = str(scope.get("method", "")).upper()
         path = str(scope.get("path", ""))
-
-        protected_signin = method == "POST" and path == "/api/v1/auth/signin"
+        protected_json_post = method == "POST" and (
+            path == "/api/v1/auth/signin" or path in _M4_JSON_POST_PATHS
+        )
         protected_logout = method == "DELETE" and path == "/api/v1/auth/session"
-        if not (protected_signin or protected_logout):
+        if not (protected_json_post or protected_logout):
             await self._app(scope, receive, send)
             return
 
@@ -68,7 +89,7 @@ class BrowserAuthSecurityMiddleware:
             await response(scope, receive, send)
             return
 
-        if protected_signin:
+        if protected_json_post:
             content_type = single_header_value(scope, "Content-Type")
             media_type = (
                 content_type.split(";", 1)[0].strip().lower() if content_type is not None else None
