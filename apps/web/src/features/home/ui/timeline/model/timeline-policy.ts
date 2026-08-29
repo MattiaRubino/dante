@@ -1,0 +1,79 @@
+export const TIMELINE_MINUTES_PER_DAY = 24 * 60;
+
+export const TIMELINE_POLICY = {
+  density: {
+    slotMinutes: 15,
+    baseScale: 0.72,
+    minScale: 0.72,
+    maxScale: 2.85,
+    maxLocalScale: 6.2,
+    smoothingRadiusMinutes: 7,
+    eventPressurePerItem: 0.045,
+    concurrencyPressurePerItem: 0.15,
+    overlapPressureFactor: 0.28,
+    shortEventPressurePerItem: 0.032,
+    burstPressurePerItem: 0.085,
+    activeOverlapFactor: 0.24,
+    nearbyStartFactor: 0.095,
+    shortActiveFactor: 0.1,
+    nearbyStartWindowMinutes: 30,
+    shortEventThresholdMinutes: 30,
+    readableHeightShoulderMinutes: 4,
+  },
+  zoom: {
+    min: 0.75,
+    max: 2.1,
+    precisionThreshold: 1.75,
+  },
+  drag: {
+    defaultSnapMinutes: 5,
+    precisionSnapMinutes: 1,
+    activationDistancePx: 7,
+    autoScrollEdgePx: 56,
+    autoScrollMinPxPerSecond: 100,
+    autoScrollMaxPxPerSecond: 700,
+  },
+  event: {
+    readableHeightPx: {
+      upTo5Minutes: 50,
+      upTo15Minutes: 68,
+      upTo30Minutes: 78,
+      upTo45Minutes: 84,
+      upTo60Minutes: 90,
+      upTo90Minutes: 96,
+      longer: 102,
+    },
+    subitemsMinimumHeightPx: 98,
+    longTitleThreshold: 34,
+    longTitleExtraHeightPx: 6,
+  },
+  window: {
+    initialPastDays: 1,
+    initialFutureDays: 3,
+    extendByDays: 3,
+    maxPastDays: 14,
+    maxFutureDays: 14,
+  },
+  layout: {
+    rulerWidthPx: 84,
+    expansionHandleGutterPx: 14,
+    groupMinWidthPx: 260,
+    compactLeftInsetPercent: 1.4,
+    compactLaneRegionPercent: 91.6,
+    compactMaxLeftPercent: 64,
+    compactMaxRightPercent: 94,
+    compactSingleLaneMinWidthPercent: 56,
+    compactSingleLaneMaxWidthPercent: 76,
+    compactMultiLaneMinWidthPercent: 18,
+  },
+} as const;
+
+export function clampTimelineZoom(value: number): number {
+  return Math.max(TIMELINE_POLICY.zoom.min, Math.min(TIMELINE_POLICY.zoom.max, value));
+}
+
+export function timelineDragSnapMinutes(zoom: number): number {
+  return zoom >= TIMELINE_POLICY.zoom.precisionThreshold
+    ? TIMELINE_POLICY.drag.precisionSnapMinutes
+    : TIMELINE_POLICY.drag.defaultSnapMinutes;
+}
