@@ -1,9 +1,36 @@
-.app-topbar-brand {
-  min-width: 176px;
+.app-topbar {
+  isolation: isolate;
+  background: var(--app-shell-topbar-base);
 }
 
-.app-topbar-brand-wordmark {
-  color: var(--dante-theme-home-text-primary);
+.app-topbar::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(420px, 42vw);
+  background: linear-gradient(
+    90deg,
+    var(--app-shell-topbar-brand-surface) 0%,
+    var(--app-shell-topbar-brand-surface) 50%,
+    var(--app-shell-topbar-brand-fade) 80%,
+    transparent 100%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.app-topbar-left,
+.app-topbar-nav,
+.app-topbar-utilities,
+.app-topbar-search-surface {
+  position: relative;
+  z-index: 1;
+}
+
+.app-topbar-brand {
+  min-width: 176px;
 }
 
 .app-topbar-search-trigger {
@@ -215,6 +242,11 @@
 }
 
 @media (max-width: 760px) {
+  .app-topbar::before {
+    bottom: auto;
+    height: 56px;
+  }
+
   .app-topbar.is-searching {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: 56px 44px;
@@ -245,6 +277,10 @@
 }
 
 @media (max-width: 460px) {
+  .app-topbar::before {
+    width: 54vw;
+  }
+
   .app-topbar-search-field {
     grid-template-columns: 18px minmax(0, 1fr) 32px;
     gap: 7px;
