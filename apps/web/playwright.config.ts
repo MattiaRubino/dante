@@ -4,7 +4,7 @@ const baseURL = 'http://127.0.0.1:4173';
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['auth/**'],
+  testIgnore: ['**/auth/**'],
   fullyParallel: false,
   workers: 1,
   retries: 0,
