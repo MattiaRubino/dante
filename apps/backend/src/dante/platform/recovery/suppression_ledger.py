@@ -131,6 +131,27 @@ def _committed_path(root: Path, suppression_ref: UUID) -> Path:
     return root / "records" / f"{suppression_ref}.committed.json"
 
 
+def _validated_uuid7_text(value: Any, *, context: str) -> UUID:
+    text = str(value)
+    try:
+        parsed = UUID(text)
+    except ValueError as exc:
+        raise RecoverySuppressionBlocked(f"invalid {context} UUID") from exc
+    if parsed.version != 7 or str(parsed) != text:
+        raise RecoverySuppressionBlocked(f"{context} must be canonical UUIDv7")
+    return parsed
+
+
+def _validated_timestamp(value: Any, *, context: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise RecoverySuppressionBlocked(f"invalid {context} timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise RecoverySuppressionBlocked(f"{context} timestamp must be timezone-aware")
+    return parsed
+
+
 def _validate_prepared(value: dict[str, Any]) -> PreparedSuppression:
     required = {
         "record_version",
@@ -153,14 +174,9 @@ def _validate_prepared(value: dict[str, Any]) -> PreparedSuppression:
         raise RecoverySuppressionBlocked("invalid PREPARED material facet")
     if value["retirement_code"] not in _ALLOWED_RETIREMENT_CODES:
         raise RecoverySuppressionBlocked("invalid PREPARED retirement code")
-    try:
-        suppression_ref = UUID(str(value["recovery_suppression_ref"]))
-        material_ref = UUID(str(value["material_state_ref"]))
-        datetime.fromisoformat(str(value["accepted_at"]).replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise RecoverySuppressionBlocked("invalid PREPARED UUID/timestamp") from exc
-    if suppression_ref.version != 7 or material_ref.version != 7:
-        raise RecoverySuppressionBlocked("PREPARED references must be UUIDv7")
+    _validated_uuid7_text(value["recovery_suppression_ref"], context="PREPARED suppression reference")
+    _validated_uuid7_text(value["material_state_ref"], context="PREPARED MaterialStateRef")
+    _validated_timestamp(value["accepted_at"], context="PREPARED accepted_at")
     return PreparedSuppression(**value)
 
 
@@ -180,14 +196,9 @@ def _validate_committed(value: dict[str, Any]) -> CommittedSuppression:
     digest = str(value["prepared_sha256"])
     if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
         raise RecoverySuppressionBlocked("invalid COMMITTED prepared SHA-256")
-    try:
-        suppression_ref = UUID(str(value["recovery_suppression_ref"]))
-        material_ref = UUID(str(value["material_state_ref"]))
-        datetime.fromisoformat(str(value["committed_at"]).replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise RecoverySuppressionBlocked("invalid COMMITTED UUID/timestamp") from exc
-    if suppression_ref.version != 7 or material_ref.version != 7:
-        raise RecoverySuppressionBlocked("COMMITTED references must be UUIDv7")
+    _validated_uuid7_text(value["recovery_suppression_ref"], context="COMMITTED suppression reference")
+    _validated_uuid7_text(value["material_state_ref"], context="COMMITTED MaterialStateRef")
+    _validated_timestamp(value["committed_at"], context="COMMITTED committed_at")
     return CommittedSuppression(**value)
 
 
@@ -266,16 +277,23 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
         )
 
     verified: list[PreparedSuppression] = []
+    material_state_refs: set[str] = set()
     for key in sorted(prepared_paths):
+        file_ref = _validated_uuid7_text(key, context="suppression filename reference")
         prepared_value, prepared_raw = _read_json(prepared_paths[key])
         committed_value, _ = _read_json(committed_paths[key])
         prepared = _validate_prepared(prepared_value)
         committed = _validate_committed(committed_value)
+        if prepared.recovery_suppression_ref != str(file_ref) or committed.recovery_suppression_ref != str(file_ref):
+            raise RecoverySuppressionBlocked("suppression filename/content identity mismatch")
         if prepared.recovery_suppression_ref != committed.recovery_suppression_ref:
             raise RecoverySuppressionBlocked("suppression PREPARED/COMMITTED identity mismatch")
         if prepared.material_state_ref != committed.material_state_ref:
             raise RecoverySuppressionBlocked("suppression PREPARED/COMMITTED target mismatch")
         if committed.prepared_sha256 != _sha256_hex(prepared_raw):
             raise RecoverySuppressionBlocked("suppression PREPARED hash mismatch")
+        if prepared.material_state_ref in material_state_refs:
+            raise RecoverySuppressionBlocked("ambiguous suppression ledger: duplicate MaterialStateRef target")
+        material_state_refs.add(prepared.material_state_ref)
         verified.append(prepared)
     return tuple(verified)
