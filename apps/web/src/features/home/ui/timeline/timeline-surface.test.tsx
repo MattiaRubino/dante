@@ -161,7 +161,40 @@ describe('TimelineSurface production parity', () => {
     expect(card?.classList.contains('is-focused')).toBe(true);
   });
 
-  it('opens the quick peek from keyboard, restores focus on Escape and hands off to full detail', () => {
+  it('moves one quick peek between cards and clears selection from empty timeline space', () => {
+    const { container } = renderTimeline();
+    const focusTitle = screen.getByRole('button', {
+      name: 'Redesign LifeOS — sessione focus',
+    });
+    const focusCard = focusTitle.closest<HTMLElement>('[data-timeline-event]');
+    const meetingTitle = screen.getByRole('button', { name: 'Team sync' });
+    const meetingCard = meetingTitle.closest<HTMLElement>('[data-timeline-event]');
+    expect(focusCard).toBeTruthy();
+    expect(meetingCard).toBeTruthy();
+
+    fireEvent.click(focusTitle);
+    fireEvent.click(meetingTitle);
+
+    expect(
+      screen.queryByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeNull();
+    expect(
+      screen.getAllByRole('dialog', { name: 'Ispezione rapida di Team sync' }),
+    ).toHaveLength(1);
+    expect(focusCard?.classList.contains('is-selected')).toBe(false);
+    expect(meetingCard?.classList.contains('is-selected')).toBe(true);
+
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
+    expect(grid).toBeTruthy();
+    fireEvent.pointerDown(grid as HTMLElement);
+
+    expect(screen.queryByRole('dialog', { name: /Ispezione rapida/ })).toBeNull();
+    expect(meetingCard?.classList.contains('is-selected')).toBe(false);
+  });
+
+  it('opens the quick peek from keyboard, moves focus into it, restores focus on Escape and hands off to full detail', () => {
     renderTimeline();
     const titleButton = screen.getByRole('button', {
       name: 'Redesign LifeOS — sessione focus',
@@ -176,6 +209,9 @@ describe('TimelineSurface production parity', () => {
         name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
       }),
     ).toBeTruthy();
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Apri dettagli' }),
+    );
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(document.activeElement).toBe(card);
