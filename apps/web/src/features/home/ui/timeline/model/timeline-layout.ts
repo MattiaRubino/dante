@@ -18,16 +18,23 @@ function groupOrderIndex(
   return index < 0 ? groups.length : index;
 }
 
+function timelineEventsOverlap(
+  left: TimelineEvent,
+  right: TimelineEvent,
+): boolean {
+  return left.startMinute < right.endMinute && right.startMinute < left.endMinute;
+}
+
 export function computeTimelineOverlapLayout(
   events: readonly TimelineEvent[],
   groups: readonly TimelineGroup[] = [],
 ): ReadonlyMap<TimelineEventId, TimelineOverlapSlot> {
-  const sorted = [...events].sort((left, right) => {
+  const chronological = [...events].sort((left, right) => {
     return (
       left.startMinute - right.startMinute ||
+      left.endMinute - right.endMinute ||
       groupOrderIndex(left.groupId, groups) -
         groupOrderIndex(right.groupId, groups) ||
-      left.endMinute - right.endMinute ||
       left.id.localeCompare(right.id)
     );
   });
@@ -35,7 +42,7 @@ export function computeTimelineOverlapLayout(
   const clusters: TimelineEvent[][] = [];
   let current: { events: TimelineEvent[]; endMinute: number } | undefined;
 
-  for (const event of sorted) {
+  for (const event of chronological) {
     if (!current || event.startMinute >= current.endMinute) {
       current = { events: [event], endMinute: event.endMinute };
       clusters.push(current.events);
@@ -48,23 +55,57 @@ export function computeTimelineOverlapLayout(
 
   const result = new Map<TimelineEventId, TimelineOverlapSlot>();
   for (const cluster of clusters) {
-    const laneEndMinutes: number[] = [];
-    const laneByEvent = new Map<TimelineEventId, number>();
-
-    for (const event of cluster) {
-      let lane = laneEndMinutes.findIndex(
-        (endMinute) => endMinute <= event.startMinute,
+    /*
+     * Compact mode is not a rigid grouped grid, but overlapping cards still
+     * need a truthful left-to-right relationship with the visible group row.
+     * Assigning lanes only by event start time made reordered group chips and
+     * their cards drift apart. Within each temporal collision cluster we keep
+     * the minimum number of practical lanes while guaranteeing this invariant:
+     * when two cards overlap, a card from an earlier visible group can never be
+     * placed to the right of a card from a later visible group.
+     */
+    const semanticOrder = [...cluster].sort((left, right) => {
+      return (
+        groupOrderIndex(left.groupId, groups) -
+          groupOrderIndex(right.groupId, groups) ||
+        left.startMinute - right.startMinute ||
+        left.endMinute - right.endMinute ||
+        left.id.localeCompare(right.id)
       );
-      if (lane < 0) {
-        lane = laneEndMinutes.length;
-        laneEndMinutes.push(event.endMinute);
-      } else {
-        laneEndMinutes[lane] = event.endMinute;
+    });
+    const laneByEvent = new Map<TimelineEventId, number>();
+    const assigned: TimelineEvent[] = [];
+    let maxLane = 0;
+
+    for (const event of semanticOrder) {
+      const eventGroupIndex = groupOrderIndex(event.groupId, groups);
+      let lane = 0;
+
+      for (const previous of assigned) {
+        if (
+          timelineEventsOverlap(previous, event) &&
+          groupOrderIndex(previous.groupId, groups) < eventGroupIndex
+        ) {
+          lane = Math.max(lane, (laneByEvent.get(previous.id) ?? 0) + 1);
+        }
       }
+
+      while (
+        assigned.some(
+          (previous) =>
+            laneByEvent.get(previous.id) === lane &&
+            timelineEventsOverlap(previous, event),
+        )
+      ) {
+        lane += 1;
+      }
+
       laneByEvent.set(event.id, lane);
+      assigned.push(event);
+      maxLane = Math.max(maxLane, lane);
     }
 
-    const laneCount = Math.max(1, laneEndMinutes.length);
+    const laneCount = Math.max(1, maxLane + 1);
     for (const event of cluster) {
       result.set(event.id, {
         lane: laneByEvent.get(event.id) ?? 0,
