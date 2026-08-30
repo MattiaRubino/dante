@@ -1,0 +1,39 @@
+/*
+ * Timeline-owned visual tokens.
+ *
+ * These values are intentionally limited to reusable/configurable visual
+ * semantics. Runtime interaction thresholds belong in TIMELINE_POLICY and
+ * one-off implementation details stay local to their owning rule.
+ */
+:root {
+  --dante-timeline-header-stack-height: 124px;
+  --dante-timeline-header-row-height: 72px;
+  --dante-timeline-group-row-height: 52px;
+  --dante-timeline-frame-height: 570px;
+  --dante-timeline-home-min-height: 694px;
+  --dante-timeline-home-bottom-gap: 10px;
+
+  --dante-timeline-ruler-width: 84px;
+  --dante-timeline-expansion-handle-gutter: 14px;
+  --dante-timeline-group-min-width: 260px;
+  --dante-timeline-group-chip-height: 30px;
+
+  --dante-timeline-group-label-font-size: 9px;
+  --dante-timeline-group-label-font-weight: 780;
+
+  --dante-timeline-event-radius: 12px;
+  --dante-timeline-control-radius: 10px;
+  --dante-timeline-pill-radius: 999px;
+
+  --dante-timeline-accent: #ea5c12;
+  --dante-timeline-accent-strong: #c94b0e;
+  --dante-timeline-accent-bright: #f06a1a;
+  --dante-timeline-accent-text: #f0a06f;
+
+  --dante-timeline-text-primary: #eef3fa;
+  --dante-timeline-text-secondary: #98a6ba;
+  --dante-timeline-text-muted: #78879b;
+  --dante-timeline-event-title: #e7edf7;
+  --dante-timeline-event-time: #9caabe;
+  --dante-timeline-event-meta: #75869f;
+}
