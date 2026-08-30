@@ -105,7 +105,7 @@ def test_accepts_exact_rs256_header_boundary() -> None:
 def test_generated_rsa_rs256_token_verifies_with_trusted_public_jwk() -> None:
     private_key = rsa.generate_private_key(public_exponent=65_537, key_size=2_048)
     kid = "provider-key"
-    claims = {"sub": "provider-subject", "nonce": "test-nonce"}
+    claims: dict[str, object] = {"sub": "provider-subject", "nonce": "test-nonce"}
     token = _signed_rs256_token(private_key=private_key, kid=kid, claims=claims)
 
     verified = verify_compact_jwt(
