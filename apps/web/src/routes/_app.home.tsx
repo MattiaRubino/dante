@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { HomePage } from '../features/home';
 import { normalizeHomeDateSearch } from '../features/home/model/day-context';
+import { HOME_PROTOTYPE_IDENTITY_FIXTURE } from '../features/home/model/home-fixtures';
 
 type HomeSearch = Readonly<{
   date?: string;
@@ -28,6 +29,7 @@ function HomeRoute() {
   return (
     <HomePage
       viewedDateIso={search.date}
+      preferredName={HOME_PROTOTYPE_IDENTITY_FIXTURE.preferredName}
       onViewedDateChange={onViewedDateChange}
     />
   );
