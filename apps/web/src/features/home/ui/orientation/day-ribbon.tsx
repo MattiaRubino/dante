@@ -129,9 +129,8 @@ export function DayRibbon({
 }>) {
   const visualId = useId().replace(/:/g, '');
   const reducedMotion = useReducedMotion();
-  const [routeRef, routeWidth] = useElementWidth<HTMLDivElement>(
-    DEFAULT_ROUTE_WIDTH,
-  );
+  const [routeRef, routeWidth] =
+    useElementWidth<HTMLDivElement>(DEFAULT_ROUTE_WIDTH);
   const geometry = useMemo(
     () => createDayRouteGeometry(routeWidth),
     [routeWidth],
@@ -157,7 +156,9 @@ export function DayRibbon({
   const roadFillPath = `${roadPath} L${Math.max(
     10,
     geometry.width - 10,
-  ).toFixed(2)},${DAY_ROUTE_HEIGHT.toFixed(2)} L10,${DAY_ROUTE_HEIGHT.toFixed(2)} Z`;
+  ).toFixed(
+    2,
+  )},${DAY_ROUTE_HEIGHT.toFixed(2)} L10,${DAY_ROUTE_HEIGHT.toFixed(2)} Z`;
   const routeStyle: RouteStyle = {
     '--day-route-x': `${(progress ?? 0) * 100}%`,
   };
@@ -178,7 +179,10 @@ export function DayRibbon({
       }
       visibleFrame = index;
       frameRefs.current.forEach((frame, frameIndex) => {
-        frame?.setAttribute('display', frameIndex === index ? 'inline' : 'none');
+        frame?.setAttribute(
+          'display',
+          frameIndex === index ? 'inline' : 'none',
+        );
       });
     };
 

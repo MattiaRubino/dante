@@ -145,7 +145,9 @@ describe('timeline state', () => {
     const first = timelineEventsForDate(state, '2034-02-17');
     const second = timelineEventsForDate(state, '2034-02-17');
 
-    expect(first.map((event) => event.id)).toEqual(second.map((event) => event.id));
+    expect(first.map((event) => event.id)).toEqual(
+      second.map((event) => event.id),
+    );
     expect(first[0]?.id).toBe('gen-2034-02-17-1');
   });
 });
@@ -162,8 +164,7 @@ describe('timeline calendar model', () => {
 
   it('uses stable twelve-year pages', () => {
     expect(buildCalendarYearPage(2026)).toEqual([
-      2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026,
-      2027,
+      2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027,
     ]);
   });
 });

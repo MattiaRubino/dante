@@ -16,11 +16,7 @@ export type DayContextSnapshot = Readonly<{
 }>;
 
 export type WeatherCondition =
-  | 'clear'
-  | 'partly-cloudy'
-  | 'cloudy'
-  | 'rain'
-  | 'storm';
+  'clear' | 'partly-cloudy' | 'cloudy' | 'rain' | 'storm';
 
 export type DailyWeatherForecast = Readonly<{
   date: Temporal.PlainDate;

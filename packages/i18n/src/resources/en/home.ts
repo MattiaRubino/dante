@@ -73,7 +73,8 @@ export const home = {
     expand: 'Expand timeline',
     collapse: 'Collapse timeline',
     quickAdd: 'Add to timeline',
-    quickAddDeferred: 'Full creation becomes available in the Timeline vertical',
+    quickAddDeferred:
+      'Full creation becomes available in the Timeline vertical',
     weekLabel: 'Displayed week',
     todayPrefix: 'Today',
     streamHint: 'Scroll up for previous days · down for following days',

@@ -14,7 +14,10 @@ export function addTimelineDays(date: PlainDate, days: number): PlainDate {
   return date.add({ days });
 }
 
-export function compareTimelineDates(left: PlainDate, right: PlainDate): number {
+export function compareTimelineDates(
+  left: PlainDate,
+  right: PlainDate,
+): number {
   return Temporal.PlainDate.compare(left, right);
 }
 

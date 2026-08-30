@@ -219,7 +219,10 @@
 
 @media (max-width: 1280px) {
   .app-topbar.is-searching {
-    grid-template-columns: minmax(150px, 1fr) minmax(340px, 560px) minmax(0, 1fr);
+    grid-template-columns: minmax(150px, 1fr) minmax(340px, 560px) minmax(
+        0,
+        1fr
+      );
   }
 
   .app-topbar-search-surface {

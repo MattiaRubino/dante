@@ -4,12 +4,7 @@ export type TimelineEventId = string;
 export type TimelineGroupId = string;
 
 export type TimelineSemanticTone =
-  | 'focus'
-  | 'meeting'
-  | 'health'
-  | 'creative'
-  | 'personal'
-  | 'urgent';
+  'focus' | 'meeting' | 'health' | 'creative' | 'personal' | 'urgent';
 
 export type TimelineGroup = Readonly<{
   id: TimelineGroupId;

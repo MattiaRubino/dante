@@ -135,8 +135,7 @@ export function computeTimelineEventLayouts(
     const naturalHeight = mapper.map(event.endMinute) - top;
     const height = Math.max(naturalHeight, timelineEventReadableHeight(event));
     const orderIndex = Math.max(0, groupOrderIndex(event.groupId, groups));
-    const orderBias =
-      groupCount > 1 ? (orderIndex / (groupCount - 1)) * 14 : 0;
+    const orderBias = groupCount > 1 ? (orderIndex / (groupCount - 1)) * 14 : 0;
 
     let compactLeftPercent: number;
     let compactWidthPercent: number;

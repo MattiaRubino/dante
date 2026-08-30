@@ -386,10 +386,18 @@
   min-width: 0;
   padding: 0 12px;
   border: 1px solid
-    color-mix(in srgb, var(--timeline-group-color) 28%, rgba(255, 255, 255, 0.08));
+    color-mix(
+      in srgb,
+      var(--timeline-group-color) 28%,
+      rgba(255, 255, 255, 0.08)
+    );
   border-radius: 999px;
   color: color-mix(in srgb, var(--timeline-group-color) 72%, white);
-  background: color-mix(in srgb, var(--timeline-group-color) 12%, rgba(10, 19, 34, 0.92));
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 12%,
+    rgba(10, 19, 34, 0.92)
+  );
   box-shadow: none;
   font-size: 10px;
   font-weight: 650;
@@ -413,7 +421,11 @@
 
 .dante-timeline-group-chip.is-active {
   color: #f3f6ff;
-  background: color-mix(in srgb, var(--timeline-group-color) 18%, rgba(10, 19, 34, 0.92));
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 18%,
+    rgba(10, 19, 34, 0.92)
+  );
 }
 
 .dante-timeline-group-chip.is-dimmed {
@@ -440,9 +452,14 @@
 
 .home-m1 .home-timeline--production .timeline-event-card,
 .timeline-event-drag-overlay {
-  border: 1px solid color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--timeline-group-color) 42%, transparent);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(13, 24, 42, 0.94), rgba(9, 17, 31, 0.94));
+  background: linear-gradient(
+    180deg,
+    rgba(13, 24, 42, 0.94),
+    rgba(9, 17, 31, 0.94)
+  );
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
     0 10px 22px rgba(0, 0, 0, 0.13);
@@ -452,7 +469,12 @@
   box-shadow:
     inset 3px 0 0 var(--timeline-group-color),
     0 20px 40px rgba(0, 0, 0, 0.28),
-    0 0 0 1px color-mix(in srgb, var(--timeline-group-color) 34%, rgba(255, 255, 255, 0.08));
+    0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--timeline-group-color) 34%,
+        rgba(255, 255, 255, 0.08)
+      );
 }
 
 .home-m1 .home-timeline--production .timeline-event-card.is-focused {
@@ -520,7 +542,12 @@
 
 /* v43 exact now chrome. */
 .home-m1 .home-timeline--production .timeline-now-line {
-  background: linear-gradient(90deg, #ea5c12, rgba(234, 92, 18, 0.6), transparent);
+  background: linear-gradient(
+    90deg,
+    #ea5c12,
+    rgba(234, 92, 18, 0.6),
+    transparent
+  );
 }
 
 .home-m1 .home-timeline--production .timeline-now-line::before {
@@ -537,7 +564,11 @@
 }
 
 .home-m1 .home-timeline--production .timeline-split-columns > span {
-  border-left-color: color-mix(in srgb, var(--timeline-group-color) 18%, transparent);
+  border-left-color: color-mix(
+    in srgb,
+    var(--timeline-group-color) 18%,
+    transparent
+  );
   border-right-color: rgba(255, 255, 255, 0.018);
   background: linear-gradient(
     180deg,

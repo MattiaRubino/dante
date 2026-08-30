@@ -16,10 +16,7 @@ import {
   TIMELINE_POLICY,
   timelineDragSnapMinutes,
 } from './model/timeline-policy';
-import {
-  findTimelineEvent,
-  type TimelineState,
-} from './model/timeline-state';
+import { findTimelineEvent, type TimelineState } from './model/timeline-state';
 import {
   addTimelineDays,
   formatTimelineMinute,
@@ -483,7 +480,7 @@ export function TimelineDayStream({
   }, [days, state]);
 
   const focusedEvent = state.focusedEventId
-    ? findTimelineEvent(state, state.focusedEventId)?.event ?? null
+    ? (findTimelineEvent(state, state.focusedEventId)?.event ?? null)
     : null;
 
   const stopAutoScroll = () => {
@@ -526,7 +523,10 @@ export function TimelineDayStream({
     }
 
     const previousTime = runtime.lastAutoFrame || time;
-    const elapsedSeconds = Math.min(0.05, Math.max(0, time - previousTime) / 1000);
+    const elapsedSeconds = Math.min(
+      0.05,
+      Math.max(0, time - previousTime) / 1000,
+    );
     runtime.lastAutoFrame = time;
 
     if (direction !== 0) {
@@ -651,7 +651,10 @@ export function TimelineDayStream({
       return;
     }
     const target = pointerEvent.target;
-    if (target instanceof Element && target.closest('button,input,textarea,select,a')) {
+    if (
+      target instanceof Element &&
+      target.closest('button,input,textarea,select,a')
+    ) {
       return;
     }
 

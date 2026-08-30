@@ -51,8 +51,7 @@ describe('timeline layout engine', () => {
     expect(gaps.every((gap) => gap.durationMinutes >= 0)).toBe(true);
     expect(
       gaps.some(
-        (gap) =>
-          gap.fromMinute === 11 * 60 && gap.toMinute === 11 * 60 + 45,
+        (gap) => gap.fromMinute === 11 * 60 && gap.toMinute === 11 * 60 + 45,
       ),
     ).toBe(true);
   });

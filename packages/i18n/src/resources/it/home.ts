@@ -74,7 +74,8 @@ export const home = {
     quickAddDeferred: 'Creazione completa disponibile nel vertical Timeline',
     weekLabel: 'Settimana visualizzata',
     todayPrefix: 'Oggi',
-    streamHint: 'Scorri in alto per i giorni precedenti · in basso per i successivi',
+    streamHint:
+      'Scorri in alto per i giorni precedenti · in basso per i successivi',
     undo: 'Annulla',
     calendar: {
       open: 'Apri il calendario',

@@ -25,9 +25,10 @@ function displayDate(date: PlainDate): Date {
 }
 
 function monthLabel(date: PlainDate, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }).format(
-    displayDate(date),
-  );
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(displayDate(date));
 }
 
 function weekdayLabel(date: PlainDate, locale: string): string {
@@ -116,10 +117,11 @@ export function TimelineHeader({
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
-  const [draggingGroupId, setDraggingGroupId] = useState<TimelineGroupId | null>(
+  const [draggingGroupId, setDraggingGroupId] =
+    useState<TimelineGroupId | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<TimelineGroupId | null>(
     null,
   );
-  const [dropTargetId, setDropTargetId] = useState<TimelineGroupId | null>(null);
   const suppressFilterClickRef = useRef(false);
 
   const reorderFromDrop = (
@@ -216,11 +218,14 @@ export function TimelineHeader({
             className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(previousWeekDate)}
-            aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${previousWeekDate.toLocaleString(locale, {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}`}
+            aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${previousWeekDate.toLocaleString(
+              locale,
+              {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              },
+            )}`}
           >
             ‹
           </button>
@@ -248,7 +253,10 @@ export function TimelineHeader({
                 >
                   <b>{weekdayLabel(date, locale)}</b>
                   <strong>{date.day}</strong>
-                  <span className="dante-timeline-week-mark" aria-hidden="true" />
+                  <span
+                    className="dante-timeline-week-mark"
+                    aria-hidden="true"
+                  />
                 </button>
               );
             })}
@@ -257,11 +265,14 @@ export function TimelineHeader({
             className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(nextWeekDate)}
-            aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${nextWeekDate.toLocaleString(locale, {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}`}
+            aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${nextWeekDate.toLocaleString(
+              locale,
+              {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              },
+            )}`}
           >
             ›
           </button>

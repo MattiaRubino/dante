@@ -74,7 +74,9 @@ for (const viewport of [
   });
 }
 
-test('inline search remains bounded on the 390px mobile shell', async ({ page }) => {
+test('inline search remains bounded on the 390px mobile shell', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
   await page.getByRole('button', { name: 'Cerca in DANTE' }).click();
@@ -100,7 +102,9 @@ test('Topbar including inline search has no detectable WCAG A/AA violations', as
 }) => {
   await page.goto('/home');
   await page.getByRole('button', { name: 'Cerca in DANTE' }).click();
-  await expect(page.getByRole('search', { name: 'Cerca in DANTE' })).toBeVisible();
+  await expect(
+    page.getByRole('search', { name: 'Cerca in DANTE' }),
+  ).toBeVisible();
 
   const results = await new AxeBuilder({ page })
     .include('[data-app-region="topbar"]')

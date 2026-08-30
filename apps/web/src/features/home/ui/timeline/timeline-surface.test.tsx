@@ -100,7 +100,8 @@ describe('TimelineSurface production parity', () => {
     });
     onDateNavigation.mockClear();
 
-    const nowButton = container.querySelector<HTMLButtonElement>('.home-timeline-now');
+    const nowButton =
+      container.querySelector<HTMLButtonElement>('.home-timeline-now');
     expect(nowButton).toBeTruthy();
     fireEvent.click(nowButton as HTMLButtonElement);
 
@@ -132,9 +133,12 @@ describe('TimelineSurface production parity', () => {
         name: 'Modifica orario di Redesign LifeOS — sessione focus',
       }),
     );
-    expect(screen.getByRole('dialog', { name: 'Modifica orario' })).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Modifica orario' }),
+    ).toBeTruthy();
 
-    const startMinute = screen.getByLabelText<HTMLInputElement>('Inizio minuti');
+    const startMinute =
+      screen.getByLabelText<HTMLInputElement>('Inizio minuti');
     const endMinute = screen.getByLabelText<HTMLInputElement>('Fine minuti');
     expect(startMinute.value).toBe('00');
     expect(endMinute.value).toBe('00');

@@ -180,8 +180,8 @@ export function DayContextStrip({ preferredName }: DayContextStripProps) {
       case 'clear':
         return t(($) => $.common.home.orientation.dayContext.conditions.clear);
       case 'partly-cloudy':
-        return t(($) =>
-          $.common.home.orientation.dayContext.conditions.partlyCloudy,
+        return t(
+          ($) => $.common.home.orientation.dayContext.conditions.partlyCloudy,
         );
       case 'cloudy':
         return t(($) => $.common.home.orientation.dayContext.conditions.cloudy);
@@ -243,22 +243,24 @@ export function DayContextStrip({ preferredName }: DayContextStripProps) {
             id={panelId}
             className="day-context-panel"
             role="region"
-            aria-label={t(($) =>
-              $.common.home.orientation.dayContext.weatherPanelLabel,
+            aria-label={t(
+              ($) => $.common.home.orientation.dayContext.weatherPanelLabel,
             )}
           >
             <header className="day-context-panel-header">
               <div>
                 <small>
-                  {t(($) => $.common.home.orientation.dayContext.weatherPreview)}
+                  {t(
+                    ($) => $.common.home.orientation.dayContext.weatherPreview,
+                  )}
                 </small>
                 <strong>{formatLongDate(selectedForecast.date, locale)}</strong>
               </div>
               <button
                 type="button"
                 className="day-context-panel-close"
-                aria-label={t(($) =>
-                  $.common.home.orientation.dayContext.closeWeather,
+                aria-label={t(
+                  ($) => $.common.home.orientation.dayContext.closeWeather,
                 )}
                 onClick={() => {
                   setIsForecastOpen(false);
@@ -278,8 +280,8 @@ export function DayContextStrip({ preferredName }: DayContextStripProps) {
               <div className="day-context-weather-hero-details">
                 <span>{selectedConditionLabel}</span>
                 <span>
-                  {t(($) => $.common.home.orientation.dayContext.precipitation)}:{' '}
-                  {selectedForecast.precipitationPercent}%
+                  {t(($) => $.common.home.orientation.dayContext.precipitation)}
+                  : {selectedForecast.precipitationPercent}%
                 </span>
                 <span>
                   {t(($) => $.common.home.orientation.dayContext.sunrise)}{' '}
@@ -299,14 +301,13 @@ export function DayContextStrip({ preferredName }: DayContextStripProps) {
 
             <ul
               className="day-context-week"
-              aria-label={t(($) =>
-                $.common.home.orientation.dayContext.sevenDayForecast,
+              aria-label={t(
+                ($) => $.common.home.orientation.dayContext.sevenDayForecast,
               )}
             >
               {forecast.days.map((day) => {
                 const dateKey = day.date.toString();
-                const isSelected =
-                  dateKey === selectedForecast.date.toString();
+                const isSelected = dateKey === selectedForecast.date.toString();
                 const conditionLabel = weatherLabel(day.condition);
                 const forecastAriaLabel = [
                   formatLongDate(day.date, locale),

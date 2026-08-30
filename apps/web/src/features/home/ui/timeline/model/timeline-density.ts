@@ -81,10 +81,7 @@ export function computeTimelineDensityMetrics(
     );
     const last = Math.max(
       first,
-      Math.min(
-        bins.length - 1,
-        Math.ceil(event.endMinute / slotMinutes) - 1,
-      ),
+      Math.min(bins.length - 1, Math.ceil(event.endMinute / slotMinutes) - 1),
     );
 
     for (let index = first; index <= last; index += 1) {
@@ -135,12 +132,14 @@ export function computeTimelineBaseScale(
 
   const density = computeTimelineDensityMetrics(events);
   const policy = TIMELINE_POLICY.density;
-  const eventPressure = Math.max(0, density.count - 5) * policy.eventPressurePerItem;
+  const eventPressure =
+    Math.max(0, density.count - 5) * policy.eventPressurePerItem;
   const concurrencyPressure =
     Math.max(0, density.maxConcurrent - 1) * policy.concurrencyPressurePerItem;
   const overlapPressure = density.overlapRatio * policy.overlapPressureFactor;
   const shortPressure = density.shortCount * policy.shortEventPressurePerItem;
-  const burstPressure = Math.max(0, density.burst - 3) * policy.burstPressurePerItem;
+  const burstPressure =
+    Math.max(0, density.burst - 3) * policy.burstPressurePerItem;
 
   return Math.max(
     policy.minScale,
@@ -240,7 +239,10 @@ export function createTimelineTimeMapper(
   for (const event of events) {
     const duration = eventDurationMinutes(event);
     const requiredPerMinute = timelineEventReadableHeight(event) / duration;
-    const from = Math.max(0, Math.min(minuteCount, Math.floor(event.startMinute)));
+    const from = Math.max(
+      0,
+      Math.min(minuteCount, Math.floor(event.startMinute)),
+    );
     const to = Math.max(0, Math.min(minuteCount, Math.ceil(event.endMinute)));
 
     for (let minute = from; minute < to; minute += 1) {
@@ -319,7 +321,8 @@ export function createTimelineTimeMapper(
           ? 0
           : minute >= stretch.end
             ? 1
-            : (minute - stretch.start) / Math.max(1, stretch.end - stretch.start);
+            : (minute - stretch.start) /
+              Math.max(1, stretch.end - stretch.start);
       pixel += stretch.extra * progress;
     }
     return pixel;

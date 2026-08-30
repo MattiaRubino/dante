@@ -7,7 +7,9 @@ export type TimelineCalendarCursor = Readonly<{
   month: number;
 }>;
 
-export function calendarCursorFromDate(date: PlainDate): TimelineCalendarCursor {
+export function calendarCursorFromDate(
+  date: PlainDate,
+): TimelineCalendarCursor {
   return { year: date.year, month: date.month };
 }
 
@@ -23,14 +25,18 @@ export function shiftCalendarCursorMonth(
   cursor: TimelineCalendarCursor,
   delta: number,
 ): TimelineCalendarCursor {
-  return calendarCursorFromDate(calendarCursorDate(cursor).add({ months: delta }));
+  return calendarCursorFromDate(
+    calendarCursorDate(cursor).add({ months: delta }),
+  );
 }
 
 export function shiftCalendarCursorYear(
   cursor: TimelineCalendarCursor,
   delta: number,
 ): TimelineCalendarCursor {
-  return calendarCursorFromDate(calendarCursorDate(cursor).add({ years: delta }));
+  return calendarCursorFromDate(
+    calendarCursorDate(cursor).add({ years: delta }),
+  );
 }
 
 export function calendarYearPageBase(year: number): number {
@@ -56,9 +62,6 @@ export function moveCalendarDay(date: PlainDate, delta: number): PlainDate {
   return date.add({ days: delta });
 }
 
-export function compareCalendarDate(
-  left: PlainDate,
-  right: PlainDate,
-): number {
+export function compareCalendarDate(left: PlainDate, right: PlainDate): number {
   return Temporal.PlainDate.compare(left, right);
 }

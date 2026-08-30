@@ -8,9 +8,7 @@ function millisecondsToNextMinute(now: Temporal.ZonedDateTime): number {
 }
 
 export function useMinuteClock(timeZone: string): Temporal.ZonedDateTime {
-  const [now, setNow] = useState(() =>
-    Temporal.Now.zonedDateTimeISO(timeZone),
-  );
+  const [now, setNow] = useState(() => Temporal.Now.zonedDateTimeISO(timeZone));
 
   useEffect(() => {
     let timeoutId: number | undefined;

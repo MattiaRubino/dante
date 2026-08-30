@@ -83,7 +83,9 @@ const DEFAULT_VIEW_OPTIONS: TimelineViewOptions = {
   showMilestones: true,
 };
 
-function sortEvents(events: readonly TimelineEvent[]): readonly TimelineEvent[] {
+function sortEvents(
+  events: readonly TimelineEvent[],
+): readonly TimelineEvent[] {
   return [...events].sort(
     (left, right) =>
       left.startMinute - right.startMinute ||
@@ -111,7 +113,9 @@ export function timelineEventsForDate(
   state: TimelineState,
   dateKey: string,
 ): readonly TimelineEvent[] {
-  return state.eventsByDate[dateKey] ?? createTimelinePrototypeEventsForDate(dateKey);
+  return (
+    state.eventsByDate[dateKey] ?? createTimelinePrototypeEventsForDate(dateKey)
+  );
 }
 
 export function findTimelineEvent(

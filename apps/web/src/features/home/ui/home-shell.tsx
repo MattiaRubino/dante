@@ -94,7 +94,9 @@ export function HomeShell({
       const railWidth = Number.parseFloat(
         computed.getPropertyValue('--home-today-rail-width'),
       );
-      const gap = Number.parseFloat(computed.getPropertyValue('--home-today-gap'));
+      const gap = Number.parseFloat(
+        computed.getPropertyValue('--home-today-gap'),
+      );
       timelineExpansionMetricsRef.current = {
         railWidth: Number.isFinite(railWidth) ? railWidth : 306,
         gap: Number.isFinite(gap) ? gap : 16,

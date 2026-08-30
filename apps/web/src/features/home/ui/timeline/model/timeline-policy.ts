@@ -69,7 +69,10 @@ export const TIMELINE_POLICY = {
 } as const;
 
 export function clampTimelineZoom(value: number): number {
-  return Math.max(TIMELINE_POLICY.zoom.min, Math.min(TIMELINE_POLICY.zoom.max, value));
+  return Math.max(
+    TIMELINE_POLICY.zoom.min,
+    Math.min(TIMELINE_POLICY.zoom.max, value),
+  );
 }
 
 export function timelineDragSnapMinutes(zoom: number): number {

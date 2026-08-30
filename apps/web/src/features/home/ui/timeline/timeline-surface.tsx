@@ -150,8 +150,8 @@ function findDayAtOffset(
       (day) => offset >= day.offsetTop && offset < day.offsetTop + day.height,
     ) ??
     (offset < (days[0]?.offsetTop ?? 0)
-      ? days[0] ?? null
-      : days.at(-1) ?? null)
+      ? (days[0] ?? null)
+      : (days.at(-1) ?? null))
   );
 }
 
@@ -189,9 +189,11 @@ function applyTimelineExpansion(
   if (stream) {
     stream.style.minWidth = `${trackWidth}px`;
   }
-  root.querySelectorAll<HTMLElement>('.timeline-day-section').forEach((section) => {
-    section.style.minWidth = `${trackWidth}px`;
-  });
+  root
+    .querySelectorAll<HTMLElement>('.timeline-day-section')
+    .forEach((section) => {
+      section.style.minWidth = `${trackWidth}px`;
+    });
 
   root.querySelectorAll<HTMLElement>('.timeline-event-card').forEach((card) => {
     const compactLeft = Number(card.dataset.compactLeft ?? 1.4);
@@ -305,8 +307,7 @@ export function TimelineSurface({
     [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
   );
   const renderedDays = useMemo(
-    () =>
-      buildRenderedDays(anchor, pastDays, futureDays, renderedDayInputs),
+    () => buildRenderedDays(anchor, pastDays, futureDays, renderedDayInputs),
     [anchor, futureDays, pastDays, renderedDayInputs],
   );
 
@@ -381,7 +382,9 @@ export function TimelineSurface({
       if (!grid) {
         return false;
       }
-      const day = days.find((candidate) => candidate.dateKey === target.dateKey);
+      const day = days.find(
+        (candidate) => candidate.dateKey === target.dateKey,
+      );
       if (!day) {
         return false;
       }
@@ -597,7 +600,9 @@ export function TimelineSurface({
     if (!initialScrollDoneRef.current) {
       initialScrollDoneRef.current = true;
       const initialKey = timelineDateKey(initialDateRef.current);
-      const day = renderedDays.find((candidate) => candidate.dateKey === initialKey);
+      const day = renderedDays.find(
+        (candidate) => candidate.dateKey === initialKey,
+      );
       if (day) {
         if (initialDateRef.current.equals(timelineToday)) {
           grid.scrollTop = Math.max(
