@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from dante.auth.google import (
+    GoogleIdentityEvidence,
     GoogleProofError,
     GoogleProviderUnavailableError,
     GoogleTokenVerifier,
@@ -110,7 +111,7 @@ async def _verify(
     private_key: rsa.RSAPrivateKey,
     nonce_verifier: bytes,
     runtime: _StubProviderRuntime | None = None,
-):
+) -> GoogleIdentityEvidence:
     provider_runtime = runtime or _StubProviderRuntime(_public_jwk(private_key))
     verifier = GoogleTokenVerifier(
         settings=_settings(),
