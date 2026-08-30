@@ -7,6 +7,8 @@
  * geometry remains owned by the pure layout/density engine.
  */
 
+@import './timeline-tokens.css';
+
 .home-m1 .home-timeline--production .dante-timeline-header-row {
   position: relative;
 }
@@ -31,23 +33,23 @@
 /* Keep only the group labels slightly tighter than the material default.
  * Month, Now and week typography intentionally remain untouched. */
 .home-m1 .home-timeline--production .dante-timeline-group-chip {
-  font-size: 9px;
-  font-weight: 780;
+  font-size: var(--dante-timeline-group-label-font-size);
+  font-weight: var(--dante-timeline-group-label-font-weight);
 }
 
 /* Desktop Home owns the row height. Timeline and Context Rail are peers in
- * that row and keep the same 10px bottom breathing room. Timeline stays a
- * normal grid item: do not turn the root into an internal grid, otherwise the
+ * that row and keep the same bottom breathing room. Timeline stays a normal
+ * grid item: do not turn the root into an internal grid, otherwise the
  * unbounded day stream can feed back into row sizing. The frame is instead
- * anchored below the fixed 124px header/group chrome and fills the remaining
+ * anchored below the fixed header/group chrome and fills the remaining
  * already-resolved root height without contributing to parent height sizing. */
 @media (min-width: 1121px) {
   .home-m1 .home-today-layout > .home-timeline--production {
     position: relative;
     height: auto;
-    min-height: 694px;
+    min-height: var(--dante-timeline-home-min-height);
     max-height: none;
-    margin-bottom: 10px;
+    margin-bottom: var(--dante-timeline-home-bottom-gap);
     align-self: stretch;
   }
 
@@ -56,7 +58,7 @@
     > .home-timeline--production
     .timeline-frame--production {
     position: absolute;
-    top: 124px;
+    top: var(--dante-timeline-header-stack-height);
     right: 0;
     bottom: 0;
     left: 0;
