@@ -7,7 +7,6 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,10 +29,6 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
-import {
-  TIMELINE_EVENT_PEEK_ID,
-  TimelineEventPeek,
-} from './timeline-event-peek';
 
 export type TimelineRenderedDay = Readonly<{
   date: PlainDate;
@@ -94,11 +89,6 @@ type DragRuntime = {
   lastAutoFrame: number;
 };
 
-type TimelinePeekState = Readonly<{
-  eventId: string;
-  opener: HTMLElement;
-}>;
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -110,22 +100,16 @@ function groupForEvent(
   return groups.find((group) => group.id === event.groupId);
 }
 
-function cardForTarget(target: HTMLElement): HTMLElement {
-  return target.closest<HTMLElement>('[data-timeline-event]') ?? target;
-}
-
 function TimelineEventCard({
   dateKey,
   layout,
   groups,
   focusedEvent,
-  selected,
-  peekOpen,
   expandedSubitems,
   filtered,
-  onSelectEvent,
-  onPrepareOverlay,
+  onFocusEvent,
   onToggleSubitems,
+  onOpenEventDetail,
   onOpenSubitemDetail,
   onOpenTimeEditor,
   onPointerPress,
@@ -136,13 +120,11 @@ function TimelineEventCard({
   layout: TimelineEventLayout;
   groups: readonly TimelineGroup[];
   focusedEvent: TimelineEvent | null;
-  selected: boolean;
-  peekOpen: boolean;
   expandedSubitems: boolean;
   filtered: boolean;
-  onSelectEvent: (event: TimelineEvent, opener: HTMLElement) => void;
-  onPrepareOverlay: (eventId: string) => void;
+  onFocusEvent: (eventId: string) => void;
   onToggleSubitems: (eventId: string) => void;
+  onOpenEventDetail: (event: TimelineEvent, opener: HTMLElement) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,
     subitem: string,
@@ -193,7 +175,7 @@ function TimelineEventCard({
         (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ')
       ) {
         keyboardEvent.preventDefault();
-        onSelectEvent(event, keyboardEvent.currentTarget);
+        onFocusEvent(event.id);
       }
       return;
     }
@@ -216,7 +198,7 @@ function TimelineEventCard({
 
   return (
     <article
-      className={`timeline-event-card${expandedSubitems ? ' is-expanded' : ''}${selected ? ' is-selected' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
+      className={`timeline-event-card${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
       data-timeline-tone={group?.tone ?? 'personal'}
       data-compact-left={layout.compactLeftPercent}
@@ -227,10 +209,7 @@ function TimelineEventCard({
       style={style}
       tabIndex={0}
       aria-label={`${event.title}, ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
-      aria-haspopup="dialog"
-      aria-expanded={peekOpen}
-      aria-controls={peekOpen ? TIMELINE_EVENT_PEEK_ID : undefined}
-      aria-keyshortcuts="Enter Space Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
+      aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
       onKeyDown={keyboardMove}
       onPointerDown={(pointerEvent) =>
         onPointerPress(pointerEvent, dateKey, event)
@@ -243,7 +222,7 @@ function TimelineEventCard({
           suppressClickRef.current = null;
           return;
         }
-        onSelectEvent(event, clickEvent.currentTarget);
+        onFocusEvent(event.id);
       }}
     >
       <div className="timeline-event-card__top">
@@ -252,7 +231,7 @@ function TimelineEventCard({
           type="button"
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
-            onSelectEvent(event, cardForTarget(clickEvent.currentTarget));
+            onOpenEventDetail(event, clickEvent.currentTarget);
           }}
         >
           {event.title}
@@ -262,7 +241,6 @@ function TimelineEventCard({
           type="button"
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
-            onPrepareOverlay(event.id);
             onOpenTimeEditor(dateKey, event, clickEvent.currentTarget);
           }}
           aria-label={t(($) => $.common.home.timeline.timeEditor.open, {
@@ -287,7 +265,6 @@ function TimelineEventCard({
               type="button"
               onClick={(clickEvent) => {
                 clickEvent.stopPropagation();
-                onPrepareOverlay(event.id);
                 onOpenSubitemDetail(event, subitem, clickEvent.currentTarget);
               }}
             >
@@ -331,11 +308,9 @@ function TimelineDay({
   nowMinute,
   state,
   focusedEvent,
-  selectedEventId,
-  peekEventId,
-  onSelectEvent,
-  onPrepareOverlay,
+  onFocusEvent,
   onToggleSubitems,
+  onOpenEventDetail,
   onOpenSubitemDetail,
   onOpenTimeEditor,
   onPointerPress,
@@ -347,11 +322,9 @@ function TimelineDay({
   nowMinute: number;
   state: TimelineState;
   focusedEvent: TimelineEvent | null;
-  selectedEventId: string | null;
-  peekEventId: string | null;
-  onSelectEvent: (event: TimelineEvent, opener: HTMLElement) => void;
-  onPrepareOverlay: (eventId: string) => void;
+  onFocusEvent: (eventId: string) => void;
   onToggleSubitems: (eventId: string) => void;
+  onOpenEventDetail: (event: TimelineEvent, opener: HTMLElement) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,
     subitem: string,
@@ -465,16 +438,14 @@ function TimelineDay({
             layout={layout}
             groups={state.groups}
             focusedEvent={focusedEvent}
-            selected={selectedEventId === layout.event.id}
-            peekOpen={peekEventId === layout.event.id}
             expandedSubitems={state.expandedEventIds.has(layout.event.id)}
             filtered={
               state.filters.size > 0 && !state.filters.has(layout.event.groupId)
             }
             key={layout.event.id}
-            onSelectEvent={onSelectEvent}
-            onPrepareOverlay={onPrepareOverlay}
+            onFocusEvent={onFocusEvent}
             onToggleSubitems={onToggleSubitems}
+            onOpenEventDetail={onOpenEventDetail}
             onOpenSubitemDetail={onOpenSubitemDetail}
             onOpenTimeEditor={onOpenTimeEditor}
             onPointerPress={onPointerPress}
@@ -512,8 +483,6 @@ export function TimelineDayStream({
   const autoScrollFrameRef = useRef<number | null>(null);
   const dragCleanupRef = useRef<(() => void) | null>(null);
   const suppressClickRef = useRef<string | null>(null);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [peekState, setPeekState] = useState<TimelinePeekState | null>(null);
 
   useLayoutEffect(() => {
     daysRef.current = days;
@@ -523,50 +492,6 @@ export function TimelineDayStream({
   const focusedEvent = state.focusedEventId
     ? (findTimelineEvent(state, state.focusedEventId)?.event ?? null)
     : null;
-  const peekEvent = peekState
-    ? (findTimelineEvent(state, peekState.eventId)?.event ?? null)
-    : null;
-  const peekGroup = peekEvent ? groupForEvent(peekEvent, state.groups) : undefined;
-
-  const clearSelection = (restoreFocus: boolean) => {
-    const opener = peekState?.opener ?? null;
-    setPeekState(null);
-    setSelectedEventId(null);
-    if (restoreFocus && opener?.isConnected) {
-      opener.focus();
-    }
-  };
-
-  const selectEvent = (event: TimelineEvent, opener: HTMLElement) => {
-    setSelectedEventId(event.id);
-    setPeekState({ eventId: event.id, opener });
-  };
-
-  const prepareOverlay = (eventId: string) => {
-    setSelectedEventId(eventId);
-    setPeekState(null);
-  };
-
-  useEffect(() => {
-    if (!selectedEventId) {
-      return;
-    }
-    const selected = findTimelineEvent(state, selectedEventId)?.event ?? null;
-    const hiddenByFilter =
-      selected !== null &&
-      state.filters.size > 0 &&
-      !state.filters.has(selected.groupId);
-    if (!selected || hiddenByFilter) {
-      setSelectedEventId(null);
-      setPeekState(null);
-    }
-  }, [selectedEventId, state]);
-
-  useEffect(() => {
-    if (peekState && !peekState.opener.isConnected) {
-      setPeekState(null);
-    }
-  }, [days, peekState]);
 
   const stopAutoScroll = () => {
     if (autoScrollFrameRef.current !== null) {
@@ -634,20 +559,11 @@ export function TimelineDayStream({
     if (!runtime || runtime.dragging) {
       return;
     }
-    setSelectedEventId(runtime.event.id);
-    setPeekState(null);
     const rect = runtime.card.getBoundingClientRect();
     const overlay = runtime.card.cloneNode(true) as HTMLElement;
-    overlay.classList.remove(
-      'is-selected',
-      'is-focused',
-      'is-groupmate',
-      'is-dim',
-    );
+    overlay.classList.remove('is-focused', 'is-groupmate', 'is-dim');
     overlay.classList.add('timeline-event-drag-overlay');
     overlay.removeAttribute('data-timeline-event');
-    overlay.removeAttribute('aria-expanded');
-    overlay.removeAttribute('aria-controls');
     overlay.querySelectorAll<HTMLElement>('button').forEach((button) => {
       button.tabIndex = -1;
     });
@@ -914,15 +830,6 @@ export function TimelineDayStream({
       <div
         ref={gridRef}
         className={`timeline-grid${expanded ? ' is-expanded' : ''}`}
-        onPointerDown={(pointerEvent) => {
-          const target = pointerEvent.target;
-          if (
-            target instanceof Element &&
-            !target.closest('[data-timeline-event]')
-          ) {
-            clearSelection(false);
-          }
-        }}
         onScroll={handleGridScroll}
         onWheel={(wheelEvent) => {
           if (wheelEvent.ctrlKey) {
@@ -952,12 +859,10 @@ export function TimelineDayStream({
               nowMinute={nowMinute}
               state={state}
               focusedEvent={focusedEvent}
-              selectedEventId={selectedEventId}
-              peekEventId={peekState?.eventId ?? null}
               key={day.dateKey}
-              onSelectEvent={selectEvent}
-              onPrepareOverlay={prepareOverlay}
+              onFocusEvent={onFocusEvent}
               onToggleSubitems={onToggleSubitems}
+              onOpenEventDetail={onOpenEventDetail}
               onOpenSubitemDetail={onOpenSubitemDetail}
               onOpenTimeEditor={onOpenTimeEditor}
               onPointerPress={startPointerPress}
@@ -1008,19 +913,6 @@ export function TimelineDayStream({
           +
         </button>
       </div>
-
-      {peekState && peekEvent ? (
-        <TimelineEventPeek
-          event={peekEvent}
-          group={peekGroup}
-          opener={peekState.opener}
-          focused={state.focusedEventId === peekEvent.id}
-          onDismiss={clearSelection}
-          onHandoff={() => setPeekState(null)}
-          onOpenDetail={onOpenEventDetail}
-          onToggleFocus={onFocusEvent}
-        />
-      ) : null}
     </div>
   );
 }
