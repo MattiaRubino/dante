@@ -90,6 +90,7 @@ def test_apple_grant_key_must_be_exactly_256_bits() -> None:
 
 def test_apple_grant_key_cannot_reuse_other_auth_secret_material() -> None:
     reused_secret = _secret(b"p" * 32)
+    pepper_key_id = "password-v1"
     provider = AuthProviderSettings(
         apple=AppleProviderSettings(
             grant_encryption_current_key_id="v1",
@@ -100,8 +101,8 @@ def test_apple_grant_key_cannot_reuse_other_auth_secret_material() -> None:
     with pytest.raises(ValidationError, match="distinct across cryptographic purposes"):
         AuthSettings(
             canonical_web_origin="https://dante.test",
-            password_current_pepper_key_id="password-v1",
-            password_peppers={"password-v1": SecretStr(reused_secret)},
+            password_current_pepper_key_id=pepper_key_id,
+            password_peppers={pepper_key_id: SecretStr(reused_secret)},
             csrf_key=SecretStr(_secret(b"c" * 32)),
             signup_otp_current_key_id="otp-v1",
             signup_otp_keys={"otp-v1": SecretStr(_secret(b"o" * 32))},
