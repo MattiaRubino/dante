@@ -172,7 +172,6 @@ export function computeTimelineEventLayouts(
     }
   });
 
-  const groupCount = Math.max(1, groups.length);
   const layoutPolicy = TIMELINE_POLICY.layout;
 
   return events.map((event) => {
@@ -185,17 +184,13 @@ export function computeTimelineEventLayouts(
     const top = mapper.map(event.startMinute);
     const naturalHeight = mapper.map(event.endMinute) - top;
     const height = Math.max(naturalHeight, timelineEventReadableHeight(event));
-    const orderIndex = Math.max(0, groupOrderIndex(event.groupId, groups));
-    const orderBias =
-      groupCount > 1
-        ? (orderIndex / (groupCount - 1)) *
-          layoutPolicy.compactOrderBiasMaxPercent
-        : 0;
 
     let compactLeftPercent: number;
     let compactWidthPercent: number;
     if (compact.laneCount === 1) {
-      compactLeftPercent = layoutPolicy.compactLeftInsetPercent + orderBias;
+      // A lone event has no spatial conflict to explain. Keep the common
+      // timeline axis instead of shifting isolated cards left/right by group.
+      compactLeftPercent = layoutPolicy.compactLeftInsetPercent;
       compactWidthPercent = preferredCompactWidthPercent(event, 1);
     } else {
       const laneSpan =
