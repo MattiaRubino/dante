@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 NOT STARTED
+- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 SOURCE-CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Baseline:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
@@ -379,25 +379,64 @@ anti-resurrection
 
 Prove that PostgreSQL 18.6 continuously archives WAL through pgBackRest and that a physical full backup completes only with the required archive state.
 
-## PostgreSQL settings
+## Source/config activation
 
-Expected concepts, exact values to be derived from the current isolated recovery topology:
+The approved CP03 source scope is now materialized in the isolated recovery harness only:
+
+```text
+infra/compose/postgres-recovery.override.yaml
+infra/local/postgres/pgbackrest/pgbackrest.conf
+```
+
+Exact recovery-only PostgreSQL configuration:
 
 ```text
 archive_mode = on
-archive_command = pgBackRest archive-push ...
-wal_level compatible with current workload/recovery
+archive_command = /usr/bin/pgbackrest --stanza=dante archive-push %p
+archive_library = unset
+wal_level = replica (existing/inherited value; deliberately not overridden)
 ```
 
-The exact command/path/quoting must be frozen in a new CP03 write gate and directly tested. If asynchronous archiving is justified for the final remote topology, configure it only with explicit spool ownership/durability behavior. Do not add `archive-async` merely because it exists.
+The override repeats the existing `shared_preload_libraries=pg_stat_statements` and `compute_query_id=on` command-line settings before adding the two archive settings so Compose command replacement cannot silently drop the established LOCAL PostgreSQL behavior.
+
+The LOCAL POSIX pgBackRest repository now also configures:
+
+```text
+repo1-retention-full=2
+```
+
+This is a deterministic LOCAL test retention policy only. It is not the production AWS retention value and does not prove S3 Versioning, Object Lock or lifecycle behavior.
+
+Current CP03 state:
+
+```text
+source/config activation       IMPLEMENTED
+runtime container recreation   NOT YET PROVEN
+archive_mode runtime           NOT YET PROVEN
+archive_command runtime        NOT YET PROVEN
+continuous archive             NOT YET PROVEN
+pgBackRest check               NOT RUN
+full backup                    NOT RUN
+retention behavior             NOT YET PROVEN
+```
+
+Source/config existence must not be promoted to CP03 LOCAL PASS.
 
 ## WAL proof
 
 Deterministic evidence must include:
 
 ```text
+recreate/restart only the isolated recovery PostgreSQL service
+confirm resolved archive_mode=on
+confirm resolved archive_command exact value
+confirm archive_library remains unset
+confirm wal_level remains replica
+record pre-test pg_stat_archiver counters/state
+record current WAL LSN/segment
 force WAL switch or generate bounded WAL
 confirm pgBackRest archive-push succeeds
+confirm pg_stat_archiver records a successful archive
 confirm archived segment exists in repository
 run pgbackrest --stanza=dante check
 confirm check sees healthy repository + archive path
@@ -405,6 +444,8 @@ record WAL/LSN marker useful for later recovery assertions
 ```
 
 `pgbackrest check` belongs here because this is the first checkpoint where archive behavior is intentionally active and can be truthfully verified.
+
+The ordinary `dante-local` PostgreSQL/observability stack must remain running and unchanged while this proof executes against `dante-postgres-recovery` on host port `55432`.
 
 ## Backup proof
 
@@ -426,7 +467,9 @@ repository integrity/check path passes
 
 ## Retention
 
-Initial local retention exists to exercise expiry behavior without pretending it equals production object retention.
+The LOCAL policy `repo1-retention-full=2` exists to exercise expiry behavior without pretending it equals production object retention.
+
+The checkpoint must prove the retention command/behavior deliberately rather than inferring it from configuration text. Do not create or delete backup sets merely to satisfy a checkbox without retaining enough evidence to understand the result.
 
 Production retention must later reconcile:
 
@@ -445,13 +488,17 @@ Do not expire WAL so aggressively that remaining backups advertise recovery poin
 ## CP03 close criteria
 
 ```text
+[ ] resolved archive settings direct PASS
 [ ] continuous archive observed directly
 [ ] forced/generated WAL found in repository
+[ ] pg_stat_archiver success evidence captured
 [ ] pgBackRest check direct PASS
 [ ] full backup direct PASS
 [ ] pgBackRest info usable
+[ ] local retention behavior exercised and recorded
 [ ] archive failure produces visible failure/degraded evidence
 [ ] existing database tests/readiness not regressed
+[ ] ordinary LOCAL/observability runtime remains unaffected
 ```
 
 ---
@@ -837,21 +884,24 @@ R2 object-recovery implementation beyond the defined reconciliation contract
 
 ## 13. Current next action
 
-CP01 is contract-frozen and CP02 is **LOCAL PASS**.
+CP01 is contract-frozen, CP02 is **LOCAL PASS**, and CP03 source/config is **IMPLEMENTED / RUNTIME PROOF PENDING**.
 
 Next safe technical sequence:
 
 ```text
 1. fast-forward /home/mattia/projects/dante-postgres-recovery to the current remote branch HEAD
-2. validate infra/compose/postgres-recovery.override.yaml resolves to the already-proven isolated project/image/port contract
+2. validate the versioned recovery overlay resolves to the isolated image/port/volumes plus the exact archive command
 3. keep ordinary dante-local PostgreSQL/observability running and untouched
-4. inspect the exact current PostgreSQL archive settings in the isolated recovery container
-5. derive the minimal CP03 archive_mode/archive_command configuration
-6. define a new exact Git write gate for CP03
-7. only after approval activate WAL archiving
-8. force/generate WAL and prove archive-push
-9. run full pgbackrest --stanza=dante check
-10. run the first full backup and verify metadata/WAL completeness
+4. recreate only dante-postgres-recovery-postgres-1
+5. prove runtime archive_mode=on
+6. prove runtime archive_command=/usr/bin/pgbackrest --stanza=dante archive-push %p
+7. prove archive_library remains unset and wal_level remains replica
+8. capture pg_stat_archiver baseline plus current LSN/WAL segment
+9. force/generate WAL and prove successful archive-push through pg_stat_archiver and repository files
+10. run full pgbackrest --stanza=dante check
+11. run the first full backup and verify info/metadata/WAL completeness
+12. exercise and record the bounded LOCAL repo1-retention-full=2 behavior
+13. only after direct evidence reconcile CP03 as LOCAL PASS
 ```
 
-Do **not** enable WAL archiving without the new CP03 gate. CP02 evidence does not prove backup, restore, PITR or AWS behavior.
+Do **not** enter restore, PITR, AWS or production retention work under CP03. Source/config presence alone is not archive or backup proof.
