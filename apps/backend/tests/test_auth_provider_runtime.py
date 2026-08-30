@@ -13,6 +13,7 @@ from pydantic import SecretStr, ValidationError
 
 from dante.auth.proofs import FlowProofPurpose, flow_proof_matches, issue_flow_proof
 from dante.auth.provider_runtime import ProviderRuntime, ProviderRuntimeError
+from dante.platform.config.auth import AuthSettings
 from dante.platform.config.auth_provider import (
     AppleProviderSettings,
     AuthProviderSettings,
@@ -49,7 +50,7 @@ def _mocked_runtime(
     def client_factory(**_kwargs: object) -> httpx2.AsyncClient:
         return real_async_client(transport=httpx2.MockTransport(handler))
 
-    monkeypatch.setattr(httpx2, "AsyncClient", client_factory)
+    monkeypatch.setattr("dante.auth.provider_runtime.httpx2.AsyncClient", client_factory)
     return ProviderRuntime(
         settings=settings or AuthProviderSettings(),
         release_sha="test-release",
@@ -65,11 +66,48 @@ def test_provider_defaults_are_disabled_and_canonical() -> None:
     assert settings.apple.issuer == "https://appleid.apple.com"
 
 
+@pytest.mark.parametrize("field_name", ["client_id", "team_id", "key_id"])
+def test_apple_provider_identifiers_reject_blank_values(field_name: str) -> None:
+    with pytest.raises(ValidationError, match="Apple provider identity"):
+        AppleProviderSettings(**{field_name: "   "})
+
+
+def test_apple_provider_private_key_rejects_blank_material() -> None:
+    with pytest.raises(ValidationError, match="private key"):
+        AppleProviderSettings(client_private_key_pem=SecretStr("   "))
+
+
 def test_apple_grant_key_must_be_exactly_256_bits() -> None:
     with pytest.raises(ValidationError):
         AppleProviderSettings(
             grant_encryption_current_key_id="v1",
             grant_encryption_keys={"v1": SecretStr(_secret(b"short"))},
+        )
+
+
+def test_apple_grant_key_cannot_reuse_other_auth_secret_material() -> None:
+    reused_secret = _secret(b"p" * 32)
+    provider = AuthProviderSettings(
+        apple=AppleProviderSettings(
+            grant_encryption_current_key_id="v1",
+            grant_encryption_keys={"v1": SecretStr(reused_secret)},
+        )
+    )
+
+    with pytest.raises(ValidationError, match="distinct across cryptographic purposes"):
+        AuthSettings(
+            canonical_web_origin="https://dante.test",
+            password_current_pepper_key_id="password-v1",
+            password_peppers={"password-v1": SecretStr(reused_secret)},
+            csrf_key=SecretStr(_secret(b"c" * 32)),
+            signup_otp_current_key_id="otp-v1",
+            signup_otp_keys={"otp-v1": SecretStr(_secret(b"o" * 32))},
+            provider=provider,
+            smtp_host="smtp.dante.test",
+            smtp_from_address="no-reply@dante.test",
+            kdf_max_concurrency=1,
+            signin_rate_capacity=10,
+            signin_rate_window_seconds=60,
         )
 
 
@@ -279,6 +317,30 @@ async def test_expired_cache_revalidates_conditionally_and_accepts_304(
 
 
 @pytest.mark.asyncio
+async def test_jwks_declared_size_bound_is_enforced_before_streaming(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = AuthProviderSettings(
+        network=ProviderNetworkSettings(max_jwks_response_bytes=32)
+    )
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
+            200,
+            request=request,
+            headers={"Content-Length": "1024"},
+            content=b'{}',
+        )
+
+    runtime = _mocked_runtime(monkeypatch, handler, settings=settings)
+    try:
+        with pytest.raises(ProviderRuntimeError, match="configured bound"):
+            await runtime.jwk_for_kid(provider="google", kid="known")
+    finally:
+        await runtime.aclose()
+
+
+@pytest.mark.asyncio
 async def test_jwks_streaming_bound_is_enforced_without_content_length(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -303,6 +365,46 @@ async def test_jwks_streaming_bound_is_enforced_without_content_length(
     try:
         with pytest.raises(ProviderRuntimeError, match="configured bound"):
             await runtime.jwk_for_kid(provider="google", kid="known")
+    finally:
+        await runtime.aclose()
+
+
+@pytest.mark.asyncio
+async def test_public_jwks_rejects_duplicate_kids(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
+            200,
+            request=request,
+            json={"keys": [_public_jwk("duplicate"), _public_jwk("duplicate")]},
+        )
+
+    runtime = _mocked_runtime(monkeypatch, handler)
+    try:
+        with pytest.raises(ProviderRuntimeError, match="duplicated"):
+            await runtime.jwk_for_kid(provider="google", kid="duplicate")
+    finally:
+        await runtime.aclose()
+
+
+@pytest.mark.asyncio
+async def test_public_jwks_rejects_configured_key_count_overflow(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = AuthProviderSettings(network=ProviderNetworkSettings(max_jwk_count=1))
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
+            200,
+            request=request,
+            json={"keys": [_public_jwk("one"), _public_jwk("two")]},
+        )
+
+    runtime = _mocked_runtime(monkeypatch, handler, settings=settings)
+    try:
+        with pytest.raises(ProviderRuntimeError, match="too many keys"):
+            await runtime.jwk_for_kid(provider="google", kid="one")
     finally:
         await runtime.aclose()
 

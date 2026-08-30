@@ -131,10 +131,23 @@ class AppleProviderSettings(BaseModel):
     def validate_urls(cls, value: str) -> str:
         return _canonical_url(value, name="Apple authority URL")
 
+    @field_validator("client_id", "team_id", "key_id")
+    @classmethod
+    def validate_optional_identity(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _trimmed(value, name="Apple provider identity")
+
     @model_validator(mode="after")
     def validate_configuration(self) -> Self:
         if self.allowed_algorithms != _ALLOWED_PROVIDER_ALGORITHMS:
             raise ValueError("Apple allowed_algorithms is frozen to RS256")
+
+        if self.client_private_key_pem is not None:
+            private_key = self.client_private_key_pem.get_secret_value()
+            if not private_key.strip() or "\x00" in private_key:
+                raise ValueError("Apple client private key must be non-blank PEM material")
+
         decoded: dict[str, bytes] = {}
         for key_id, value in self.grant_encryption_keys.items():
             _trimmed(key_id, name="Apple grant key id")

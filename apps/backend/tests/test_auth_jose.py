@@ -22,7 +22,7 @@ def _segment(value: dict[str, object]) -> str:
 
 
 def _token(header: dict[str, object]) -> str:
-    return f"{_segment(header)}.e30.signature"
+    return f"{_segment(header)}.{_b64url(b'{}')}.{_b64url(b'signature')}"
 
 
 def _unsigned_integer(value: int) -> str:
@@ -84,7 +84,21 @@ def test_duplicate_protected_header_member_is_rejected() -> None:
     duplicate_header = _b64url(b'{"alg":"RS256","alg":"RS256","kid":"k"}')
     with pytest.raises(JoseBoundaryError, match="duplicate JOSE"):
         parse_compact_header(
-            f"{duplicate_header}.e30.signature",
+            f"{duplicate_header}.{_b64url(b'{}')}.{_b64url(b'signature')}",
+            allowed_algorithms=("RS256",),
+            max_token_bytes=16_384,
+            max_header_bytes=4_096,
+        )
+
+
+@pytest.mark.parametrize("segment_index", [0, 1, 2])
+def test_rejects_padded_compact_jws_segments(segment_index: int) -> None:
+    segments = _token({"alg": "RS256", "kid": "provider-key"}).split(".")
+    segments[segment_index] += "="
+
+    with pytest.raises(JoseBoundaryError, match="unpadded Base64URL"):
+        parse_compact_header(
+            ".".join(segments),
             allowed_algorithms=("RS256",),
             max_token_bytes=16_384,
             max_header_bytes=4_096,

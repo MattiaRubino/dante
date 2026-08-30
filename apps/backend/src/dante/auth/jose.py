@@ -42,7 +42,12 @@ def _json_no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def _decode_canonical_segment(segment: str, *, maximum_bytes: int) -> bytes:
+def _decode_canonical_segment(
+    segment: str,
+    *,
+    maximum_bytes: int,
+    label: str,
+) -> bytes:
     if not segment or "=" in segment:
         raise JoseBoundaryError("compact-JWS segment must use unpadded Base64URL")
     try:
@@ -51,7 +56,7 @@ def _decode_canonical_segment(segment: str, *, maximum_bytes: int) -> bytes:
     except (UnicodeEncodeError, BinasciiError, ValueError) as exc:
         raise JoseBoundaryError("compact-JWS segment is not canonical Base64URL") from exc
     if len(decoded) > maximum_bytes:
-        raise JoseBoundaryError("JOSE protected header exceeds configured bound")
+        raise JoseBoundaryError(f"{label} exceeds configured bound")
     if urlsafe_b64encode(decoded).rstrip(b"=").decode("ascii") != segment:
         raise JoseBoundaryError("compact-JWS segment is not canonical Base64URL")
     return decoded
@@ -74,7 +79,23 @@ def parse_compact_header(
     segments = token.split(".")
     if len(segments) != 3 or any(not segment for segment in segments):
         raise JoseBoundaryError("provider token must be a three-segment compact JWS")
-    protected = _decode_canonical_segment(segments[0], maximum_bytes=max_header_bytes)
+
+    protected = _decode_canonical_segment(
+        segments[0],
+        maximum_bytes=max_header_bytes,
+        label="JOSE protected header",
+    )
+    _decode_canonical_segment(
+        segments[1],
+        maximum_bytes=max_token_bytes,
+        label="JOSE payload",
+    )
+    _decode_canonical_segment(
+        segments[2],
+        maximum_bytes=max_token_bytes,
+        label="JOSE signature",
+    )
+
     try:
         header = json.loads(protected, object_pairs_hook=_json_no_duplicates)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:

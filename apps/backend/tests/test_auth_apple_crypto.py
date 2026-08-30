@@ -48,3 +48,43 @@ def test_apple_grant_aad_mismatch_fails() -> None:
             grant_ref=grant_ref,
             client_id="different-client",
         )
+
+
+def test_apple_grant_unknown_key_id_fails_closed() -> None:
+    grant_ref = uuid7()
+    cipher = AppleGrantCipher(key_ring={"v1": b"a" * 32}, current_key_id="v1")
+    encrypted = cipher.encrypt(
+        plaintext=SecretStr("refresh-token"),
+        grant_ref=grant_ref,
+        client_id="com.dante.web",
+    )
+
+    with pytest.raises(AppleGrantCryptoError, match="unknown encryption key"):
+        cipher.decrypt(
+            key_id="retired-or-invalid",
+            nonce=encrypted.nonce,
+            ciphertext=encrypted.ciphertext,
+            grant_ref=grant_ref,
+            client_id="com.dante.web",
+        )
+
+
+def test_apple_grant_ciphertext_tampering_fails_authentication() -> None:
+    grant_ref = uuid7()
+    cipher = AppleGrantCipher(key_ring={"v1": b"a" * 32}, current_key_id="v1")
+    encrypted = cipher.encrypt(
+        plaintext=SecretStr("refresh-token"),
+        grant_ref=grant_ref,
+        client_id="com.dante.web",
+    )
+    tampered = bytearray(encrypted.ciphertext)
+    tampered[-1] ^= 1
+
+    with pytest.raises(AppleGrantCryptoError, match="authentication failed"):
+        cipher.decrypt(
+            key_id=encrypted.key_id,
+            nonce=encrypted.nonce,
+            ciphertext=bytes(tampered),
+            grant_ref=grant_ref,
+            client_id="com.dante.web",
+        )
