@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 const faroMocks = vi.hoisted(() => ({
   addBeforeSendHooks: vi.fn(),
   initializeFaro: vi.fn(),
+  removeMeta: vi.fn(),
   pushError: vi.fn(),
   pushEvent: vi.fn(),
 }));
@@ -19,6 +20,7 @@ vi.mock('@grafana/faro-web-sdk', () => {
     SessionInstrumentation: FakeInstrumentation,
     ViewInstrumentation: FakeInstrumentation,
     WebVitalsInstrumentation: FakeInstrumentation,
+    browserMeta: vi.fn(),
     initializeFaro: faroMocks.initializeFaro,
   };
 });
@@ -40,6 +42,9 @@ describe('Faro vendor runtime', () => {
       },
       transports: {
         addBeforeSendHooks: faroMocks.addBeforeSendHooks,
+      },
+      metas: {
+        remove: faroMocks.removeMeta,
       },
     });
     const { initializeFaroRuntime } = await import('./runtime');
@@ -80,6 +85,7 @@ describe('Faro vendor runtime', () => {
       'experimental',
     );
     expect(faroMocks.addBeforeSendHooks).toHaveBeenCalledTimes(1);
+    expect(faroMocks.removeMeta).toHaveBeenCalledTimes(1);
 
     bridge.observeResolvedRoute('/access');
     bridge.observeRenderFailure(
