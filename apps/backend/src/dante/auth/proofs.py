@@ -39,7 +39,7 @@ def _decode_secret(value: str) -> bytes | None:
     try:
         raw_ascii = value.encode("ascii")
         decoded = b64decode(raw_ascii + b"=" * (-len(raw_ascii) % 4), altchars=b"-_", validate=True)
-    except (UnicodeEncodeError, BinasciiError, ValueError):
+    except UnicodeEncodeError, BinasciiError, ValueError:
         return None
     if len(decoded) != _SECRET_BYTES or _encode_urlsafe(decoded) != value:
         return None
@@ -62,10 +62,20 @@ class SignupOtpCodec:
 
     def issue(self, signup_ref: UUID) -> IssuedSignupOtp:
         code = f"{secrets.randbelow(10**_OTP_DIGITS):0{_OTP_DIGITS}d}"
-        return IssuedSignupOtp(code=SecretStr(code), verifier=self._derive(signup_ref, code, self._current_key_id), key_id=self._current_key_id)
+        return IssuedSignupOtp(
+            code=SecretStr(code),
+            verifier=self._derive(signup_ref, code, self._current_key_id),
+            key_id=self._current_key_id,
+        )
 
-    def matches(self, *, signup_ref: UUID, submitted_code: str, expected_verifier: bytes, key_id: str) -> bool:
-        if len(submitted_code) != _OTP_DIGITS or not submitted_code.isascii() or not submitted_code.isdigit():
+    def matches(
+        self, *, signup_ref: UUID, submitted_code: str, expected_verifier: bytes, key_id: str
+    ) -> bool:
+        if (
+            len(submitted_code) != _OTP_DIGITS
+            or not submitted_code.isascii()
+            or not submitted_code.isdigit()
+        ):
             return False
         if key_id not in self._key_ring:
             raise AuthIntegrityError("stored signup challenge references unknown OTP key")
@@ -73,7 +83,11 @@ class SignupOtpCodec:
         return hmac.compare_digest(candidate, expected_verifier)
 
     def _derive(self, signup_ref: UUID, code: str, key_id: str) -> bytes:
-        return hmac.digest(self._key_ring[key_id], _SIGNUP_OTP_DOMAIN + signup_ref.bytes + code.encode("ascii"), "sha256")
+        return hmac.digest(
+            self._key_ring[key_id],
+            _SIGNUP_OTP_DOMAIN + signup_ref.bytes + code.encode("ascii"),
+            "sha256",
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,7 +98,9 @@ class IssuedRecoveryProof:
 
 def issue_recovery_proof() -> IssuedRecoveryProof:
     raw = secrets.token_bytes(_SECRET_BYTES)
-    return IssuedRecoveryProof(secret=SecretStr(_encode_urlsafe(raw)), verifier=sha256(_RECOVERY_DOMAIN + raw).digest())
+    return IssuedRecoveryProof(
+        secret=SecretStr(_encode_urlsafe(raw)), verifier=sha256(_RECOVERY_DOMAIN + raw).digest()
+    )
 
 
 def recovery_secret_verifier(encoded_secret: str) -> bytes | None:
@@ -121,6 +137,8 @@ def issue_flow_proof(purpose: FlowProofPurpose) -> IssuedFlowProof:
     return IssuedFlowProof(secret=SecretStr(encoded), verifier=verifier, purpose=purpose)
 
 
-def flow_proof_matches(*, purpose: FlowProofPurpose, encoded_secret: str, expected_verifier: bytes) -> bool:
+def flow_proof_matches(
+    *, purpose: FlowProofPurpose, encoded_secret: str, expected_verifier: bytes
+) -> bool:
     candidate = flow_proof_verifier(purpose=purpose, encoded_secret=encoded_secret)
     return candidate is not None and hmac.compare_digest(candidate, expected_verifier)

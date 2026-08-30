@@ -235,7 +235,9 @@ class AuthSettings(BaseModel):
         ]
         for index, values in enumerate(purpose_sets):
             if any(values & other for other in purpose_sets[index + 1 :]):
-                raise ValueError("Auth security keys must be distinct across cryptographic purposes")
+                raise ValueError(
+                    "Auth security keys must be distinct across cryptographic purposes"
+                )
 
         if (self.smtp_username is None) != (self.smtp_password is None):
             raise ValueError("smtp_username and smtp_password must be configured together")

@@ -61,8 +61,12 @@ class Settings(BaseSettings):
                 raise ValueError("non-local SMTP transport must use STARTTLS or implicit TLS")
 
             google = self.auth.provider.google
-            if google.enabled and (google.issuer != GOOGLE_ISSUER or google.jwks_url != GOOGLE_JWKS_URL):
-                raise ValueError("non-local Google authority endpoints are frozen to canonical values")
+            if google.enabled and (
+                google.issuer != GOOGLE_ISSUER or google.jwks_url != GOOGLE_JWKS_URL
+            ):
+                raise ValueError(
+                    "non-local Google authority endpoints are frozen to canonical values"
+                )
 
             apple = self.auth.provider.apple
             if apple.enabled and (
@@ -72,7 +76,9 @@ class Settings(BaseSettings):
                 or apple.token_url != APPLE_TOKEN_URL
                 or apple.revoke_url != APPLE_REVOKE_URL
             ):
-                raise ValueError("non-local Apple authority endpoints are frozen to canonical values")
+                raise ValueError(
+                    "non-local Apple authority endpoints are frozen to canonical values"
+                )
 
             webauthn = self.auth.provider.webauthn
             if webauthn.enabled:

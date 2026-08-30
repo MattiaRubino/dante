@@ -30,7 +30,14 @@ class EncryptedAppleGrant:
 def apple_grant_aad(*, grant_ref: UUID, client_id: str) -> bytes:
     if not client_id or client_id.strip() != client_id or any(char in client_id for char in "\r\n"):
         raise AppleGrantCryptoError("Apple client_id must be canonical")
-    return _AAD_PREFIX + str(grant_ref).encode("ascii") + b":" + APPLE_GRANT_ISSUER.encode("ascii") + b":" + client_id.encode("utf-8")
+    return (
+        _AAD_PREFIX
+        + str(grant_ref).encode("ascii")
+        + b":"
+        + APPLE_GRANT_ISSUER.encode("ascii")
+        + b":"
+        + client_id.encode("utf-8")
+    )
 
 
 class AppleGrantCipher:
@@ -44,7 +51,9 @@ class AppleGrantCipher:
         self._key_ring = dict(key_ring)
         self._current_key_id = current_key_id
 
-    def encrypt(self, *, plaintext: SecretStr, grant_ref: UUID, client_id: str) -> EncryptedAppleGrant:
+    def encrypt(
+        self, *, plaintext: SecretStr, grant_ref: UUID, client_id: str
+    ) -> EncryptedAppleGrant:
         raw = plaintext.get_secret_value().encode("utf-8")
         if not raw or len(raw) > _MAX_SECRET_BYTES:
             raise AppleGrantCryptoError("Apple grant secret is empty or oversized")

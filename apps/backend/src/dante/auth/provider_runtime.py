@@ -132,9 +132,7 @@ class ProviderRuntime:
                     expires_at=time.monotonic()
                     + self._ttl(response.headers, self._settings.network),
                     etag=response.headers.get("etag", previous.etag),
-                    last_modified=response.headers.get(
-                        "last-modified", previous.last_modified
-                    ),
+                    last_modified=response.headers.get("last-modified", previous.last_modified),
                 )
                 self._cache[provider] = entry
                 return entry
@@ -166,8 +164,7 @@ class ProviderRuntime:
 
         entry = _JwkCacheEntry(
             keys_by_kid=keys,
-            expires_at=time.monotonic()
-            + self._ttl(response_headers, self._settings.network),
+            expires_at=time.monotonic() + self._ttl(response_headers, self._settings.network),
             etag=response_headers.get("etag"),
             last_modified=response_headers.get("last-modified"),
         )

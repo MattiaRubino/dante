@@ -132,14 +132,20 @@ def test_flow_proofs_are_purpose_separated() -> None:
 
 def test_jwk_ttl_respects_age_clamp_and_no_store() -> None:
     network = ProviderNetworkSettings(max_jwk_ttl_seconds=500)
-    assert ProviderRuntime._ttl(
-        httpx2.Headers({"Cache-Control": "public, max-age=1000", "Age": "100"}),
-        network,
-    ) == 500.0
-    assert ProviderRuntime._ttl(
-        httpx2.Headers({"Cache-Control": "no-store, max-age=1000"}),
-        network,
-    ) == 0.0
+    assert (
+        ProviderRuntime._ttl(
+            httpx2.Headers({"Cache-Control": "public, max-age=1000", "Age": "100"}),
+            network,
+        )
+        == 500.0
+    )
+    assert (
+        ProviderRuntime._ttl(
+            httpx2.Headers({"Cache-Control": "no-store, max-age=1000"}),
+            network,
+        )
+        == 0.0
+    )
 
 
 @pytest.mark.asyncio
@@ -324,16 +330,14 @@ async def test_expired_cache_revalidates_conditionally_and_accepts_304(
 async def test_jwks_declared_size_bound_is_enforced_before_streaming(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    settings = AuthProviderSettings(
-        network=ProviderNetworkSettings(max_jwks_response_bytes=32)
-    )
+    settings = AuthProviderSettings(network=ProviderNetworkSettings(max_jwks_response_bytes=32))
 
     def handler(request: httpx2.Request) -> httpx2.Response:
         return httpx2.Response(
             200,
             request=request,
             headers={"Content-Length": "1024"},
-            content=b'{}',
+            content=b"{}",
         )
 
     runtime = _mocked_runtime(monkeypatch, handler, settings=settings)
@@ -348,9 +352,7 @@ async def test_jwks_declared_size_bound_is_enforced_before_streaming(
 async def test_jwks_streaming_bound_is_enforced_without_content_length(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    settings = AuthProviderSettings(
-        network=ProviderNetworkSettings(max_jwks_response_bytes=32)
-    )
+    settings = AuthProviderSettings(network=ProviderNetworkSettings(max_jwks_response_bytes=32))
 
     def handler(request: httpx2.Request) -> httpx2.Response:
         return httpx2.Response(
