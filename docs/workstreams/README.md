@@ -101,20 +101,26 @@ Read:
 - `postgres-recovery-execution-plan.md` — CP01–CP07 implementation/evidence roadmap;
 - `postgres-recovery-live-handoff-2026-08-29.md` — temporary current continuation checkpoint; remove/consolidate before protected-main integration.
 
-Current recovery state at bootstrap:
+Current recovery state:
 
 ```text
-CP01 Recovery Contract / Bootstrap   ACTIVE
-pgBackRest                           SELECTED / NOT IMPLEMENTED
-continuous WAL                       SELECTED / NOT IMPLEMENTED
-restore rehearsal                    NOT RUN
-PITR rehearsal                       NOT RUN
-SC-031                               NOT RUN
-SC-011 anti-resurrection             OPEN HARD GATE / NOT RUN
-AWS S3 selected topology             NOT ACTIVATED
+CP01 Recovery Contract / Bootstrap      CONTRACT FROZEN
+CP02 pgBackRest Foundation              LOCAL PASS
+CP03 Continuous WAL + Backup            LOCAL PASS
+CP04 Destructive / Isolated Restore     LOCAL PASS
+SC-031 destructive local restore        PASS
+CP05 Deterministic PITR                 NOT STARTED
+SC-011 anti-resurrection                OPEN HARD GATE / NOT RUN
+AWS S3 selected topology                NOT ACTIVATED
 ```
 
-No local worktree is assigned to this branch yet; do not steal or repurpose an occupied user worktree.
+The dedicated local worktree is:
+
+```text
+/home/mattia/projects/dante-postgres-recovery
+```
+
+The local recovery harness uses the isolated `dante-postgres-recovery` Compose project, PostgreSQL host port `55432`, a dedicated PostgreSQL data volume and a physically separate pgBackRest repository volume. CP04 directly proved deletion/recreation of the PostgreSQL volume followed by an exact-set pgBackRest restore of a materialized DANTE database, including Alembic `20260826_08`, exact accepted catalog topology, canonical fixture, role/ACL and runtime-login verification.
 
 Other post-CP6 verticals may be active on independent branches. Their unmerged branch-local truth does not become authority on this branch merely because the branch exists elsewhere.
 
