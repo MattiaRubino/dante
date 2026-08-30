@@ -97,6 +97,9 @@ describe('browser telemetry sanitization', () => {
       type: 'event',
       meta: {
         user: { id: 'private-user-id' },
+        browser: { userAgent: 'private browser fingerprint' },
+        page: { url: 'https://dante.example/private-path?token=never-export' },
+        session: { id: 'private-session-id' },
       },
       payload: {
         attributes: 'not-a-string-map',
@@ -109,6 +112,9 @@ describe('browser telemetry sanitization', () => {
     };
 
     expect(sanitized.meta).not.toHaveProperty('user');
+    expect(sanitized.meta).not.toHaveProperty('browser');
+    expect(sanitized.meta).not.toHaveProperty('page');
+    expect(sanitized.meta).not.toHaveProperty('session');
     expect(sanitized.payload).not.toHaveProperty('attributes');
   });
 

@@ -295,6 +295,7 @@ def _validate_web_contract() -> None:
         (sanitizer, "MAX_TOTAL_NODES"),
         (sanitizer, "new WeakSet<object>()"),
         (sanitizer, "normalizeFaroV1Boundary"),
+        (sanitizer, "'user', 'browser', 'page', 'session'"),
     )
     for source, fragment in required_fragments:
         if fragment not in source:

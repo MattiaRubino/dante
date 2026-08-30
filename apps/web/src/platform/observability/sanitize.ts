@@ -233,15 +233,12 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
 
   const metadata = item.meta;
   if (isRecord(metadata)) {
-    // Browser identity is never part of DANTE's telemetry contract. Remove the
-    // entire structural field rather than replacing it with a scalar, which
-    // would make the collector reject the payload.
-    delete metadata.user;
-    for (const field of ['session', 'page'] as const) {
-      const section = metadata[field];
-      if (isRecord(section)) {
-        normalizeStringRecordField(section, 'attributes');
-      }
+    // Browser identity, browser fingerprinting, navigation URLs and session
+    // identifiers are not part of DANTE's telemetry contract. Remove complete
+    // structural fields rather than replacing them with scalars, which would
+    // both leak data and make the pinned collector reject the payload.
+    for (const field of ['user', 'browser', 'page', 'session'] as const) {
+      delete metadata[field];
     }
   }
 

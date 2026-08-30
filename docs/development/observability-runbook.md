@@ -189,8 +189,9 @@ with a real-browser smoke, not only a minimal `OPTIONS` request.
 
 The browser boundary also normalizes event/context attribute maps to the
 string-map protocol accepted by this pinned Alloy receiver and removes browser
-user metadata entirely. This preserves low-cardinality operational dimensions
-while keeping the Web SDK and collector independently upgradeable.
+user metadata, session identifiers, browser fingerprinting and page URLs
+entirely. This preserves low-cardinality operational dimensions while keeping
+the Web SDK and collector independently upgradeable.
 
 The Web build runs a manifest-backed bundle gate. It fails if the Faro runtime
 stops being a dynamic chunk, the initial entry exceeds 500 KiB or the governed
