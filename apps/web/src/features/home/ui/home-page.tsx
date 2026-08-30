@@ -1,6 +1,7 @@
 import './home.css';
 import './home-m1.css';
 import './home-skin.css';
+import './central-stage/central-stage-m1-geometry.css';
 
 import { HomeShell } from './home-shell';
 

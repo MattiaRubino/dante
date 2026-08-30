@@ -1,0 +1,88 @@
+/*
+ * Central Stage — M1 geometry bridge.
+ *
+ * The prototype parity layer owns the Worlds visual language and interaction.
+ * This file owns only the placement of that projection inside the already
+ * accepted M1 Home geography. Keep these anchors aligned with home.css /
+ * home-m1.css instead of re-solving the outer stage inside the projection.
+ */
+
+.home-m1 .home-upper-workspace .home-central-stage {
+  --home-m1-world-shift: clamp(96px, 24%, 128px);
+}
+
+/* M1 authority: the surface selector lives at 39% of the stage, centered. */
+.home-m1 .home-upper-workspace .home-central-stage .home-stage-dock {
+  top: 39%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  gap: 5px;
+  width: max-content;
+  transform: translate(-50%, -50%);
+}
+
+/* Keep the accepted control visible and use the product-facing M1 labels. */
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-surface-label {
+  font-size: 0;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage[data-home-stage-mode='continuity']
+  .home-stage-surface-label::after {
+  content: 'MONDI';
+  font-size: 10px;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage[data-home-stage-mode='signals']
+  .home-stage-surface-label::after {
+  content: 'SINTESI';
+  font-size: 10px;
+}
+
+/*
+ * The prototype scene itself stays intact; it is translated as one unit so
+ * DOM worlds and canvas FX cannot drift apart. At the current M1 height this
+ * restores the old bottom-aligned Worlds baseline without changing carousel
+ * math, drag semantics or the accepted stellar skin.
+ */
+.home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
+  transform: translateY(var(--home-m1-world-shift));
+}
+
+/*
+ * M1 authority: side navigation is anchored 105px from the stage bottom and
+ * 2% from each side. Because the arrows live inside the translated scene, the
+ * same shift is compensated here so their final screen position remains M1.
+ */
+.home-m1 .home-upper-workspace .home-central-stage .home-world-arrow {
+  top: auto;
+  bottom: calc(105px + var(--home-m1-world-shift));
+  transform: none;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world-arrow-prev {
+  left: 2%;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world-arrow-next {
+  right: 2%;
+}
+
+@media (max-width: 900px) {
+  .home-m1 .home-upper-workspace .home-central-stage {
+    --home-m1-world-shift: clamp(72px, 18%, 96px);
+  }
+}
