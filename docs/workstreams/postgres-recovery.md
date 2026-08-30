@@ -1,35 +1,33 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP05 LOCAL PASS / CP06 NOT STARTED
+- **Status:** ACTIVE / CP06 IMPLEMENTED / FINAL LOCAL QA PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
-- **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
-- **Local worktree:** `/home/mattia/projects/dante-postgres-recovery`
-- **Current PostgreSQL:** 18.6
-- **Accepted recovery technology baseline:** pgBackRest 2.59.0 + AWS S3 Standard `eu-south-1` + Versioning + Object Lock GOVERNANCE
-- **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; CP02 foundation, CP03 WAL/backup, CP04 destructive restore and CP05 deterministic PITR direct local proof PASS
-- **Current macro-checkpoint:** CP05 — Deterministic PITR / LOCAL PASS; CP06 failure injection + semantic recovery / anti-resurrection NOT STARTED
-- **Live handoff:** `postgres-recovery-live-handoff-2026-08-29.md`
+- **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
+- **PostgreSQL:** 18.6
+- **Current DANTE Alembic head on this branch:** `20260830_09`
+- **Current DANTE topology:** `69|5|15|76|97|69|123|0|0|0`
+- **pgBackRest:** 2.59.1 / PGDG `2.59.1-1.pgdg13+1`
+- **Current checkpoint:** CP06 Failure Injection + Semantic Recovery / Anti-Resurrection — implementation materialized, final versioned proof pending
 - **Execution plan:** `postgres-recovery-execution-plan.md`
+- **Live continuation:** `postgres-recovery-live-handoff-2026-08-29.md`
 
-> Repository truth beats conversation memory. This workstream activates the recovery capability already selected by the accepted Physical Model. It does not reopen CP6, does not create a second canonical database, and does not treat a backup copy as accepted application truth.
+> Repository truth beats conversation memory. PostgreSQL remains the sole canonical DANTE persistence authority. Backup/restore tooling, suppression evidence and derived stores do not become alternate canonical truth.
 
 ---
 
-## 1. Mandatory continuation boundary
+## 1. Continuation boundary
 
-Continue exactly:
+Continue only on:
 
 ```text
-repo:     MattiaRubino/dante
-branch:   feature/postgres-recovery
-base:     baa9aba52932a0fa09b957ee7668aeb459fb4a20
-worktree: /home/mattia/projects/dante-postgres-recovery
+branch     feature/postgres-recovery
+worktree   /home/mattia/projects/dante-postgres-recovery
 ```
 
-The recovery branch has its own dedicated worktree. Do not steal, detach, reset, rebase, or repurpose the other occupied DANTE worktrees.
+Do not detach/reset/rebase another occupied DANTE worktree. Never write directly to protected `main`.
 
-Before any local write/proof:
+Before local proof:
 
 ```bash
 pwd
@@ -40,39 +38,22 @@ git rev-parse origin/main
 git worktree list --porcelain
 ```
 
-Never write to protected `main`. No force-push/history rewrite. No merge/rebase from another feature branch without an explicit integration reason and user gate.
+Local proof requires local HEAD == remote branch HEAD and a clean worktree.
 
----
-
-## 2. Authority and read order
-
-Read before implementation:
+## 2. Authority / read order
 
 1. `docs/PROJECT-STATUS.md`
 2. `docs/ROADMAP.md`
 3. this file
-4. `docs/workstreams/postgres-recovery-execution-plan.md`
-5. current database System of Record under `docs/database/`
-6. accepted Physical Model and post-selection validation material
-7. whole-database QA / CP6 closure evidence
-8. `docs/development/agent-operating-manual.md`
-9. documentation lifecycle policy
-10. current `infra/local/postgres/` and `infra/compose/` runtime materialization
+4. `postgres-recovery-execution-plan.md`
+5. `docs/database/README.md`
+6. `docs/database/dante-postgresql-database.md`
+7. `docs/database/dante-postgresql-database-part-19.md`
+8. accepted Domain / Logical / Physical recovery semantics
+9. `docs/development/agent-operating-manual.md`
+10. current recovery source under `infra/local/postgres/` and `infra/compose/`
 
-Authority order:
-
-```text
-current protected-main code / migrations / executable tests
-> accepted current Domain / Logical / Physical / ADR contracts
-> Database System of Record and current development QA contracts
-> this branch-local workstream record
-> temporary live handoff
-> conversation memory
-```
-
-This branch may add direct recovery evidence and later update durable recovery authority, but it must not silently reinterpret accepted database semantics.
-
----
+The recovery workstream activates accepted capability; it does not reinterpret closed Domain/Logical semantics.
 
 ## 3. Recovery constitution
 
@@ -82,764 +63,413 @@ Permanent constraints:
 PostgreSQL = sole canonical persistence + material-history authority
 backup repository != canonical truth
 restored bytes != automatically accepted current semantic truth
-restore != resurrection of logically retired truth
-selected != implemented != activated != directly proven
 successful backup != successful restore
 successful restore != successful PITR
 successful PITR != semantic recovery PASS
-configuration present != operational evidence
+pg_isready != traffic-open proof
+restore != permission to resurrect later-retired payload
+selected != implemented != directly proven
+local POSIX proof != AWS selected-stack proof
 ```
 
-Recovery must preserve the accepted DANTE semantic rules, including:
+DANTE semantic invariants remain active during recovery, including:
 
 ```text
-specific truthful semantics > generic catch-all abstraction
 planned/intended != Actual
 Observation != Actual
 Evidence != Provenance
 absence != false
 canonical != provider state
+NativeRef / MaterialStateRef non-reuse
 retention/redaction/tombstone integrity
-NativeRef non-reuse
 non-interference / inference-leakage obligations
 ```
 
-No recovery shortcut may rewrite historical semantics merely to make a restored database look current.
-
----
-
-## 4. Accepted target vs current implementation
-
-### 4.1 Current implementation after CP05 local proof
-
-Current branch source materializes a PostgreSQL 18.6 image with PostGIS, pgvector and an exact pgBackRest package pin. The local compose topology mounts a dedicated recovery repository volume physically distinct from `PGDATA`, and the recovery-specific compose overlay isolates the test runtime from the ordinary LOCAL/observability stack.
-
-CP03 adds recovery-only PostgreSQL archive settings in the versioned overlay and a bounded LOCAL full-backup retention value in pgBackRest configuration. The isolated runtime has been directly proven for WAL archiving, pgBackRest archive integration, physical FULL backup, local retention behavior and archive-path failure/recovery.
-
-CP04 then directly proved recovery after destructive deletion/recreation of the isolated PostgreSQL data volume. The semantic restore source was created only after the recovery cluster was materialized through the existing backend P0 provisioning + Alembic boundaries and verified against the accepted CP6 database topology.
-
-CP05 directly proved deterministic point-in-time recovery to a named PostgreSQL restore point across a timeline promotion. The test source contained a baseline canonical fixture, state A before the restore point and state B after the restore point. After destructive PGDATA replacement, pgBackRest restored the exact CP04 FULL and PostgreSQL replayed the archived timeline chain only to the named target; the promoted target contained baseline + A and did not contain B.
-
-Current source/runtime topology:
+## 4. Current local recovery topology
 
 ```text
 PostgreSQL base image            postgres:18.6-trixie pinned by digest
-PostgreSQL runtime               PostgreSQL 18.6 direct local PASS
-PostgreSQL PGDATA                /var/lib/postgresql/18/docker direct local PASS
-PostgreSQL persistence volume    postgres-data:/var/lib/postgresql
-pgBackRest package pin           2.59.1-1.pgdg13+1 clean build PASS
-pgBackRest CLI                   pgBackRest 2.59.1 direct local PASS
-pgBackRest config                /etc/pgbackrest/pgbackrest.conf
-stanza                           dante direct local PASS
-local repository type            POSIX
-local repository path            /var/lib/pgbackrest
-local repository volume          pgbackrest-repository:/var/lib/pgbackrest
-local full retention             repo1-retention-full=2 direct LOCAL behavior PASS
-config ownership                 root:postgres / 0640 direct local PASS
-repository ownership             postgres:postgres / 0750 direct local PASS
-recovery Compose project         dante-postgres-recovery
+PGDATA                           /var/lib/postgresql/18/docker
+persistent PostgreSQL root       /var/lib/postgresql
+pgBackRest package               2.59.1-1.pgdg13+1
+pgBackRest CLI                   2.59.1
+stanza                           dante
+LOCAL repository type            POSIX
+LOCAL repository path            /var/lib/pgbackrest
+LOCAL full retention             repo1-retention-full=2
+Compose project                  dante-postgres-recovery
 recovery image                   dante-postgres-recovery:18.6-pgbackrest-2.59.1
-recovery host port               127.0.0.1:55432
-recovery archive_mode            on direct local CP03 PASS
-recovery archive_command         /usr/bin/pgbackrest --stanza=dante archive-push %p direct local CP03 PASS
-recovery archive_library         intentionally unset direct local CP03 PASS
-recovery wal_level               replica inherited/current baseline direct local CP03 PASS
-archive failure harness          infra/local/postgres/recovery/archive-failure-recovery-check.sh
-CP04 materialize harness         infra/local/postgres/recovery/cp04-materialize-backup.sh
-CP04 destructive harness         infra/local/postgres/recovery/cp04-destructive-restore-check.sh
-CP05 source harness              infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
-CP05 destructive PITR harness    infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
+host port                        127.0.0.1:55432
+PostgreSQL volume                dante-postgres-recovery_postgres-data
+pgBackRest volume                dante-postgres-recovery_pgbackrest-repository
+archive_mode source              on
+archive_command                  /usr/bin/pgbackrest --stanza=dante archive-push %p
+wal_level                        replica
+archive_library                  unset
 ```
 
-Direct CP02 evidence observed on the dedicated worktree/runtime:
+`repo1-retention-full=2` is only a deterministic LOCAL harness policy.
+
+## 5. Selected production target
 
 ```text
-clean image build                              PASS
-container health                               PASS
-ordinary dante-local PostgreSQL non-interference PASS
-ordinary Alloy non-interference                PASS
-pgbackrest version == pgBackRest 2.59.1        PASS
-PostgreSQL version == 18.6                     PASS
-data_directory == /var/lib/postgresql/18/docker PASS
-config readable by postgres                    PASS
-repository writable by postgres                PASS
-PGDATA writable by postgres                    PASS
-stanza-create                                  PASS
-pgbackrest --stanza=dante info                 PASS
-archive.info / backup.info metadata present    PASS
+pgBackRest
+→ AWS S3 Standard eu-south-1
+→ S3 Versioning
+→ Object Lock GOVERNANCE
+→ finite policy-bound retention
 ```
 
-Expected end-of-CP02 `info` state was intentionally:
+Production activation is **not yet implemented or directly proven**.
+
+Normal backup identity must remain scoped and must not have ordinary `s3:BypassGovernanceRetention`. Governance bypass, if ever required, belongs to separate break-glass administration.
+
+## 6. Current checkpoint matrix
 
 ```text
-stanza: dante
-status: error (no valid backups)
-wal archive min/max (18): none present
+CP01 Recovery Contract / Bootstrap      CLOSED / CONTRACT FROZEN
+CP02 pgBackRest Foundation              LOCAL PASS
+CP03 Continuous WAL + Backup            LOCAL PASS
+CP04 Destructive / Isolated Restore     LOCAL PASS
+SC-031 destructive restore              PASS
+CP05 Deterministic PITR                 LOCAL PASS
+PSV-40 local archive/restore/PITR       PASS
+CP06 Failure Injection + Semantic       IMPLEMENTED / FINAL LOCAL QA PENDING
+Failure Matrix prototype/direct proof   LOCAL PASS CANDIDATE
+SC-011 mechanism prototype              LOCAL PASS CANDIDATE
+SC-011 versioned implementation         MATERIALIZED
+SC-011 definitive versioned harness     IMPLEMENTED / NOT YET RUN
+CP07 Whole Recovery QA + Runbook        NOT STARTED
+AWS selected-stack acceptance           NOT RUN
 ```
 
-That state was not a CP02 failure. It proved the stanza/repository foundation existed while backup and WAL work remained deliberately unstarted.
+CP06 is not closed until direct proof runs on the exact current branch HEAD.
 
-Direct CP03 evidence observed on the isolated recovery runtime:
+## 7. Retained direct CP02–CP05 evidence
+
+### CP02
 
 ```text
-recovery image rebuild with current pgBackRest config       PASS
-container recreated / health                                PASS
-archive_mode=on                                              PASS
-archive_command exact pgBackRest archive-push value          PASS
-archive_library unset                                        PASS
-wal_level=replica                                            PASS
-forced WAL switch                                            PASS
-pg_stat_archiver successful archive                          PASS
-WAL artifact physically present in pgBackRest repository     PASS
-pgbackrest --stanza=dante check                              PASS
-first FULL backup 20260830-114043F                            PASS
-repeated FULL backups                                        PASS
-pgbackrest info status=ok                                    PASS
-repo1-retention-full=2 automatic expiry behavior             PASS
-explicit pgbackrest expire                                   PASS
-retained FULL sets 20260830-114411F / 20260830-114419F       PASS
-archive failure visibility for WAL ...000E                   PASS
-archive-directory permissions 0750 -> 0550 -> 0750           PASS
-same WAL retry after repository recovery                     PASS
-same WAL physically present after retry                      PASS
-post-failure pgbackrest check                                PASS
-post-failure pgbackrest info status=ok                       PASS
-final observed WAL range ...000A / ...000F                   PASS
+exact pgBackRest package/CLI             PASS
+PostgreSQL 18.6                          PASS
+PGDATA path                              PASS
+config/repository permissions            PASS
+stanza-create/info metadata              PASS
+ordinary LOCAL non-interference          PASS
 ```
 
-The archive failure/recovery proof intentionally demonstrated a visible failure before recovery rather than treating only success paths as evidence. `pg_stat_archiver` counters are operational statistics and can reset across PostgreSQL restart/statistics reset, so persistent proof also relies on the actual repository artifacts plus pgBackRest `check`/`info`.
-
-Direct CP04 evidence observed on the isolated recovery topology:
+### CP03
 
 ```text
-bootstrap-only CP03 backup semantics discovered              PASS
-semantic database materialized via official P0 provisioning  PASS
-Alembic upgrade/current/check == 20260826_08                 PASS
-accepted topology 68/5/14/75/95/68/120                      PASS
-forbidden enum/domain + seq/matview/partition/RLS counts 0   PASS
-DANTE owner == dante_owner                                   PASS
-DANTE role set owner/migrator/runtime                        PASS
-dante_runtime denied SELECT on dante.alembic_version        PASS
-required extensions/version set                              PASS
-canonical Person UUIDv7 fixture                              PASS
-semantic FULL backup 20260830-132540F                        PASS
-backup database size 40.6MB / repo set 4.9MB                 PASS
-source-volume destruction marker written                    PASS
-recovery postgres service stopped/removed                    PASS
-dante-postgres-recovery_postgres-data deleted               PASS
-repository volume preserved and metadata hash unchanged      PASS
-empty PostgreSQL volume recreated                            PASS
-old source-volume marker absent                              PASS
-exact-set pgBackRest restore                                 PASS
-restore size 40.6MB / 1501 files / pg_control last          PASS
-first restored boot exposed version-parent permission defect PASS
-/var/lib/postgresql/18 normalized postgres:postgres 0700      PASS
-restored PostgreSQL ready / pg_is_in_recovery=false          PASS
-isolated restored archive_mode=off                           PASS
-restored Alembic == 20260826_08                              PASS
-restored topology == accepted topology                       PASS
-restored canonical fixture                                   PASS
-restored owners/roles/ACL/extensions                         PASS
-real dante_runtime login + SELECT fixture                    PASS
+archive_mode/archive_command             PASS
+forced WAL archival                      PASS
+physical WAL repository artifact         PASS
+pgBackRest check                         PASS
+FULL backup                              PASS
+LOCAL retention behavior                 PASS
+archive failure visibility/retry         PASS
 ```
 
-The initial restored-startup defect is retained as evidence. pgBackRest had already restored the correct PGDATA successfully; the new version parent `/var/lib/postgresql/18` had been created as `root:root 0700`, preventing the PostgreSQL entrypoint from traversing it after dropping privileges. The proven correction is narrowly:
+Versioned negative archive harness:
+
+`infra/local/postgres/recovery/archive-failure-recovery-check.sh`
+
+### CP04
+
+Direct destructive restore proved:
+
+```text
+semantic DANTE source materialized       PASS
+canonical UUIDv7 fixture                 PASS
+source PGDATA volume deleted             PASS
+pgBackRest repository preserved          PASS
+exact-set restore                        PASS
+PostgreSQL 18.6 boot                     PASS
+pg_is_in_recovery=false                  PASS
+owners/roles/ACL/extensions              PASS
+runtime login/read path                  PASS
+```
+
+A PostgreSQL 18 restore-parent permission defect was found and corrected narrowly:
 
 ```text
 chown postgres:postgres /var/lib/postgresql/18
 chmod 0700 /var/lib/postgresql/18
 ```
 
-The versioned CP04 and CP05 destructive harnesses perform this normalization immediately after restore and before the first PostgreSQL boot.
+Do not replace this with recursive ownership mutation.
 
-Direct CP05 deterministic PITR evidence:
-
-```text
-base FULL                         20260830-132540F
-source promoted timeline          2
-source timeline history           00000002.history
-scenario                          dante_cp05_20260830T140906Z_19757
-restore point                     dante_cp05_20260830T140906Z_19757_R1
-restore point LSN                 0/16000230
-restore point WAL                 000000020000000000000016
-A                                 01a05300-a55e-7845-a710-69387408d147
-B                                 01a05300-a5c0-7d08-a608-74ac9d821817
-B WAL                             000000020000000000000017
-source baseline/A/B               1 / 1 / 1 PASS
-timeline-2 WAL archive            PASS
-timeline history in repository    PASS
-restore-point WAL archive         PASS
-post-target B WAL archive         PASS
-post-scenario pgBackRest check    PASS
-PGDATA destructive replacement    PASS
-repository preserved              PASS
-old source marker absent          PASS
-exact FULL restore                PASS
---type=name                       PASS
---target=<R1>                     PASS
---target-timeline=2               PASS
---target-action=promote           PASS
-recovery stopped at named R1      PASS
-promoted timeline                 3
-promoted WAL                      000000030000000000000016
-baseline after PITR               PRESENT
-A after PITR                      PRESENT
-B after PITR                      ABSENT
-restored PostgreSQL 18.6          PASS
-restored Alembic 20260826_08      PASS
-restored accepted topology        PASS
-restored owners/roles/ACL         PASS
-restored extension versions       PASS
-dante_runtime A visible/B absent  PASS
-repository metadata unchanged     PASS
-```
-
-Timeline-history finding retained from CP05: the timeline-2 history file was created by the CP04 promotion while the isolated verification target intentionally had `archive_mode=off`. Re-enabling archiving later did not retroactively queue that already-created history file. Before A/R1/B were allowed, the existing PostgreSQL `00000002.history` was explicitly pushed through `pgbackrest --stanza=dante archive-push`; `archive_status` was not manipulated manually. The reusable CP05 source harness incorporates this behavior and first accepts an already-archived history file when present.
-
-Direct LOCAL timing observations for the exercised CP05 scenario:
+Current reusable CP04 harnesses now materialize and accept the **current branch database head**, not the pre-recovery database shape:
 
 ```text
-pgBackRest physical restore reported       7.530 s
-WAL replay start -> named target           0.263121 s
-recovery start -> database ready           0.539736 s
-named target -> database ready             0.276615 s
-```
-
-PostgreSQL logs directly showed:
-
-```text
-starting point-in-time recovery to named R1
-redo starts at 0/11000028
-recovery stopping at named R1
-redo done at 0/160001C8
-selected new timeline ID: 3
-archive recovery complete
-database system is ready to accept connections
-```
-
-These are LOCAL workstation observations for this small deterministic dataset. They are evidence that timing measurement works; they are **not** production RPO/RTO targets.
-
-Therefore the truthful status is:
-
-```text
-PostgreSQL 18.6                    LOCAL PASS
-pgBackRest source/config           LOCAL PASS
-pgBackRest 2.59.1 foundation       LOCAL PASS
-stanza-create                      LOCAL PASS
-continuous WAL archive             LOCAL PASS
-pgBackRest check                   LOCAL PASS
-full backup                        LOCAL PASS
-local retention behavior           LOCAL PASS
-archive failure/retry path         LOCAL PASS
-CP03 Continuous WAL + Backup       LOCAL PASS
-destructive isolated restore       LOCAL PASS
-semantic/catalog restore proof     LOCAL PASS
-SC-031 destructive local proof     PASS
-CP04 Destructive Restore           LOCAL PASS
-deterministic named PITR           LOCAL PASS
-A present / B absent               LOCAL PASS
-recovery timing readback           LOCAL PASS
-PSV-40 local archive/restore/PITR  PASS
-CP05 Deterministic PITR            LOCAL PASS
-AWS S3 recovery repository         SELECTED / NOT ACTIVATED
-S3 Versioning                      SELECTED / NOT ACTIVATED
-Object Lock GOVERNANCE             SELECTED / NOT ACTIVATED
-SC-011 anti-resurrection proof      NOT RUN / CP06 OWNED
-```
-
-### 4.2 Accepted production recovery target
-
-Accepted Physical target:
-
-```text
-POSTGRESQL BACKUP
-pgBackRest 2.59.0 baseline
-→ AWS S3 Standard eu-south-1
-→ Versioning
-→ Object Lock GOVERNANCE
-→ finite policy-bound retention
-```
-
-Recovery copies remain non-canonical.
-
-`Object Lock COMPLIANCE` is not the default because irreversible retention must not defeat privacy/deletion obligations.
-
-### 4.3 Activation-time version rule
-
-pgBackRest `2.59.1` is the maintenance release selected for the implementation. External evidence identified the exact Debian 13/Trixie PGDG package `2.59.1-1.pgdg13+1`; CP02 directly proved a clean local image build, exact CLI version, PostgreSQL 18.6 interoperability and stanza/repository initialization, CP03 directly proved archive/backup interoperability, CP04 directly proved destructive restore interoperability, and CP05 directly proved timeline-aware named PITR interoperability.
-
-Therefore `2.59.1` is ratified as the implementation maintenance pin for this workstream. This does **not** silently rewrite historical Physical Model evidence that selected `2.59.0`; durable architecture/current-state documentation is reconciled at the appropriate integration boundary.
-
-Decision result:
-
-```text
-2.59.1 clean build                         PASS
-exact version assertion                    PASS
-PostgreSQL 18.6 foundation interoperability PASS
-stanza/repository foundation               PASS
-WAL archive + full-backup interoperability PASS
-destructive restore interoperability       PASS
-deterministic PITR interoperability        PASS
-→ implementation maintenance refresh RATIFIED
-```
-
-### 4.4 CP01 recovery-contract freeze
-
-CP01 is frozen:
-
-```text
-PostgreSQL major/patch        18.6
-PGDATA                        /var/lib/postgresql/18/docker
-implementation pgBackRest     2.59.1 exact PGDG pin
-stanza                        dante
-local repository              POSIX / dedicated Docker named volume
-repository path               /var/lib/pgbackrest
-config path                   /etc/pgbackrest/pgbackrest.conf
-secrets                       none in pgBackRest local config
-AWS                           deferred / not activated
-initial backup hypothesis     continuous WAL + daily FULL
-RPO/RTO                       measured later; no invented targets
-SC-011                        OPEN HARD GATE
-```
-
-The pgBackRest `check` command is explicitly owned by CP03 rather than CP02 because a meaningful `check` validates the archive path and forces WAL/archive interaction. CP02 proves the foundation only; CP03 directly proves the archive/check/backup path; CP04 proves that a selected FULL can actually restore the accepted PostgreSQL database after loss of PGDATA; CP05 proves that the archived WAL/timeline chain can return to a deterministic earlier accepted point.
-
----
-
-## 5. Recovery objectives
-
-The workstream closes only when DANTE can demonstrate, not merely describe:
-
-```text
-1. reproducible pgBackRest installation/configuration
-2. valid stanza/repository health
-3. continuous WAL archiving
-4. usable physical backup
-5. destructive or fresh-target restore
-6. deterministic PITR
-7. negative-path behavior under recovery failures
-8. semantic verification after restore
-9. anti-resurrection handling for later deletion/redaction state
-10. measured recovery timing/data-loss behavior
-11. operator-grade runbook from dead database to reopened traffic
-12. direct remote acceptance on the selected AWS S3 topology before production-recovery PASS
-```
-
-CP01–CP05 have now directly proven objectives 1–6 on the LOCAL deterministic topology and established direct local recovery/replay timing observations. Later checkpoints still own broader failure semantics, anti-resurrection, full operator recovery closure and selected-stack remote acceptance.
-
-No evidence may be promoted from `DESIGNED` to `PASS` without the relevant executable artifact/output.
-
----
-
-## 6. RPO / RTO contract
-
-No numeric production RPO/RTO is frozen at branch start.
-
-Rules:
-
-```text
-RPO desired value != observed recoverability
-RTO desired value != measured restoration duration
-```
-
-CP01 defines measurement semantics and business questions. Recovery rehearsals record actual values. A production target may only be ratified after workload/backup/WAL characteristics are measurable enough to make the number meaningful.
-
-Required measurements include at minimum:
-
-```text
-last archived WAL position / archive freshness
-backup age
-backup duration
-restore duration
-WAL replay duration
-semantic verification duration
-operator critical-path duration
-actual recoverable target
-actual data-loss window in the exercised scenario
-```
-
-CP05 has directly measured physical restore and WAL replay/readiness duration for one LOCAL deterministic scenario. These numbers are observations only; they do not ratify production RPO/RTO.
-
----
-
-## 7. Initial backup-policy hypothesis
-
-DANTE favors maximum correctness with minimum unjustified operational complexity.
-
-Initial operational hypothesis:
-
-```text
-continuous WAL archiving
-+
-daily FULL physical backup
-```
-
-This is a hypothesis to validate, not an irreversible production policy. At current project scale it minimizes backup-chain and restore-chain complexity.
-
-Differential/incremental capability may be exercised in QA without being enabled in the default schedule. The policy should evolve only when measured database size, full-backup duration, WAL volume, storage cost or restore time justify the additional chain complexity.
-
-For deterministic LOCAL CP03 work, `repo1-retention-full=2` is configured and directly proven so expiry behavior can be exercised without unbounded local growth. This remains only a local test policy; production retention must still be co-designed with S3 Versioning/Object Lock behavior and directly tested. Apparent lifecycle expiration must not be mistaken for deletion of a still-retained protected version.
-
----
-
-## 8. Local vs remote proof boundary
-
-### LOCAL deterministic harness
-
-Versioned local recovery topology:
-
-```text
-base compose     infra/compose/local.yaml
-recovery overlay infra/compose/postgres-recovery.override.yaml
-project          dante-postgres-recovery
-host port        127.0.0.1:55432
-PostgreSQL 18.6
-+ pgBackRest 2.59.1
-+ separate POSIX repository volume
-→ backup
-→ WAL archive
-→ destructive/fresh restore
-→ PITR
-→ failure injection
-```
-
-The POSIX repository is test infrastructure only. It is not a second selected production recovery architecture.
-
-Local proof exists to make recovery deterministic, cheap and repeatable. Recovery commands must include the dedicated project name and overlay so the ordinary `dante-local`/observability runtime is not targeted.
-
-Versioned recovery harnesses:
-
-```text
-infra/local/postgres/recovery/archive-failure-recovery-check.sh
 infra/local/postgres/recovery/cp04-materialize-backup.sh
 infra/local/postgres/recovery/cp04-destructive-restore-check.sh
-infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
-infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
 ```
 
-### REMOTE selected-stack acceptance
+### CP05
 
-Before production-recovery PASS:
+Direct PITR proof used:
 
 ```text
-real AWS S3 eu-south-1
-+ Versioning
-+ Object Lock GOVERNANCE
-+ actual scoped credentials
-+ backup
-+ WAL archive
-+ restore / PITR
-+ retention / access behavior checks
+base FULL            20260830-132540F
+source timeline      2
+restore point        dante_cp05_20260830T140906Z_19757_R1
+restore WAL          000000020000000000000016
+A_REF                01a05300-a55e-7845-a710-69387408d147
+B_REF                01a05300-a5c0-7d08-a608-74ac9d821817
 ```
 
-MinIO/LocalStack/local POSIX evidence must never be mislabeled as direct AWS S3 acceptance.
-
-No paid cloud resource or production IaC system is activated by the current local checkpoints.
-
----
-
-## 9. Security and credential model
-
-Configuration and secrets are separate.
-
-Never commit:
+After destructive PGDATA replacement and named-target recovery:
 
 ```text
-AWS access keys
-secret keys
-session credentials
-repository encryption passphrases
-PostgreSQL passwords
-raw recovery secrets
-private bucket policy credentials
+BASELINE present                       PASS
+A present                              PASS
+B absent                               PASS
+promotion to a new timeline            PASS
+repository metadata unchanged          PASS
 ```
 
-Remote acceptance should prefer narrowly scoped, temporary/role-derived AWS credentials when the deployment environment supports them.
-
-Object Lock GOVERNANCE posture:
+Direct LOCAL timing observations from that exercised dataset:
 
 ```text
-normal backup identity
-→ minimum required repository read/write/list permissions
-→ NO s3:BypassGovernanceRetention
-
-break-glass/admin identity
-→ separately controlled
-→ bypass capability only if operationally required
+pgBackRest physical restore        7.530 s
+replay start -> target             0.263121 s
+recovery start -> ready            0.539736 s
+target -> ready                    0.276615 s
 ```
 
-This boundary must be proven against the final remote topology rather than assumed from configuration text.
+These are observations, not production RPO/RTO targets.
 
----
+Current reusable CP05 destructive harness now accepts the current `20260830_09` database contract when a fresh current CP04 source/scenario is prepared.
 
-## 10. Restore strategy
+## 8. CP06 failure-injection evidence
 
-Default acceptance strategy is restoration into a clean, isolated PostgreSQL 18.6 target or destructive replacement of an explicitly disposable test target.
-
-Recovery test must not depend on preserving the original live `PGDATA`.
-
-CP04 directly proved this with the isolated recovery volume pair:
+Direct disposable failure work has already demonstrated:
 
 ```text
-destroy/recreate    dante-postgres-recovery_postgres-data
-preserve            dante-postgres-recovery_pgbackrest-repository
-restore exact set   20260830-132540F
-verify old marker   absent
+N1 wrong stanza                         PASS
+N2 empty/unavailable repository         PASS
+N3 invalid backup set                   PASS
+N4 impossible PITR target fail-closed   PASS
+N5 missing required WAL fail-closed     PASS
+N6 corrupted cloned backup artifact     PASS
+N7 bootable stale DB rejected           PASS
+real pgBackRest repository unchanged    PASS
+CP05 target unchanged                   PASS
 ```
 
-CP05 repeated destructive PGDATA replacement for deterministic PITR and again proved the repository survived independently.
+Important finding:
 
-Minimum post-restore verification remains:
-
-```text
-server version
-expected extensions
-Alembic head
-schema/catalog topology
-critical roles/ACL expectations
-representative canonical data
-constraints/routines/triggers required by current DB authority
-application readiness boundary
-semantic verification suite
-```
-
-CP04 and CP05 satisfy the local direct subset with PostgreSQL 18.6, exact topology, deterministic canonical fixtures/states, role/ACL checks and real `dante_runtime` authentication/read access. Whole product-traffic reopen semantics remain later CP06/CP07 concerns.
-
-Traffic must remain closed until recovery verification and required reconciliation steps finish.
-
----
-
-## 11. PITR acceptance model
-
-Use a deterministic scenario, not an imprecise sleep-and-clock test.
-
-Accepted LOCAL primary scenario:
-
-```text
-physical backup
-→ promoted source timeline becomes archiving primary
-→ ensure timeline-history file is archived
-→ write A and commit
-→ create named restore point R
-→ force/confirm WAL containing R is archived
-→ write B and commit
-→ force/confirm later WAL containing B is archived
-→ prove source contains baseline + A + B
-→ destroy source PGDATA
-→ restore exact FULL
-→ target named restore point on exact timeline
-→ promote at target
-→ assert baseline present
-→ assert A present
-→ assert B absent
-→ run catalog/ACL/runtime verification
-→ capture replay/readiness timings
-```
-
-CP05 direct scenario:
-
-```text
-base FULL          20260830-132540F
-target timeline    2
-history            00000002.history
-restore point      dante_cp05_20260830T140906Z_19757_R1
-restore LSN        0/16000230
-A                  01a05300-a55e-7845-a710-69387408d147
-B                  01a05300-a5c0-7d08-a608-74ac9d821817
-result             baseline present / A present / B absent
-promotion          timeline 3
-```
-
-The named restore point is the primary deterministic proof. A wall-clock recovery-target test may later be retained as supplementary evidence but is not required to replace the less-flaky named-marker proof.
-
----
-
-## 12. Mandatory validation gates
-
-This workstream inherits the accepted post-selection validations, including:
-
-```text
-SC-031  destructive backup/restore operational verification
-SC-011  old-backup anti-resurrection
-PSV-31  primary object-loss recovery from object backup where applicable
-PSV-32  database restore + object-backup reconciliation
-PSV-34  backup access/audit + finite retention
-PSV-40  pgBackRest archive/restore/PITR rehearsal
-```
-
-Current local disposition:
-
-```text
-SC-031 destructive PostgreSQL recovery   PASS (LOCAL deterministic topology)
-PSV-40 archive/restore/PITR rehearsal    PASS (LOCAL deterministic topology)
-SC-011 anti-resurrection                 NOT PASS / OPEN HARD GATE
-```
-
-The PostgreSQL recovery branch directly owns the PostgreSQL side of these gates and must preserve explicit boundaries with any later R2/object recovery work. Local SC-031/PSV-40 evidence does not replace later selected-stack AWS proof where that topology is required for production recovery closure.
-
----
-
-## 13. Anti-resurrection hard gate
-
-This is intentionally unresolved and may not be hand-waved.
-
-Failure model:
-
-```text
-T0 backup contains sensitive/currently-visible state X
-T1 accepted later deletion/redaction D1 removes or restricts X
-T2 disaster destroys canonical database
-T3 operator restores T0
-```
-
-A byte-correct restore can physically reintroduce X. DANTE must not silently treat X as permitted current truth again.
-
-Accepted required recovery sequence remains conceptually:
-
-```text
-restore canonical PostgreSQL under accepted recovery procedure
-→ apply/verify deletion-redaction suppression / anti-resurrection state
-→ verify canonical semantic state
-→ rebuild/discard stale derived sync/search/vector state
-→ reconcile object-backup state
-→ only then reopen affected traffic
-```
-
-There is still no accepted concrete implementation for a post-backup deletion/redaction suppression source that survives independently enough to reconcile an older restore.
+PostgreSQL may report readiness for **read-only connections** during recovery and later terminate because a configured target/WAL cannot be reached.
 
 Therefore:
 
 ```text
-ANTI-RESURRECTION DESIGN      OPEN HARD GATE
-SC-011                        NOT PASS
+pg_isready == success
 ```
 
-Do not invent a generic ledger, external canonical store or second database merely to close the checklist. CP06 must derive the narrowest truthful mechanism consistent with PostgreSQL remaining canonical and with DANTE deletion/redaction semantics.
+is not sufficient to reopen application traffic.
 
----
+Versioned definitive failure matrix:
 
-## 14. Checkpoint model
+`infra/local/postgres/recovery/cp06-failure-matrix-check.sh`
+
+It is implemented but must still be rerun from the exact final CP06 HEAD before closure.
+
+## 9. SC-011 canonical retirement model
+
+The current branch materializes:
 
 ```text
-CP01  Recovery Contract / Bootstrap                         CONTRACT FROZEN
-CP02  pgBackRest Foundation                                 LOCAL PASS
-CP03  Continuous WAL + Backup                               LOCAL PASS
-CP04  Destructive / Isolated Restore                        LOCAL PASS
-CP05  Deterministic PITR                                    LOCAL PASS
-CP06  Failure Injection + Semantic Recovery / Anti-Resurrection  NOT STARTED
-CP07  Whole Recovery QA + Runbook + Closure                 NOT STARTED
+Alembic 20260830_09
+dante.material_state_retirement
+dante.enforce_material_state_retirement()
 ```
 
-Detailed sequencing and evidence gates live in `postgres-recovery-execution-plan.md`.
-
-Each checkpoint must end with:
+Current database topology becomes:
 
 ```text
-implementation delta
-+ direct evidence
-+ explicit NOT-PROVEN list
-+ docs reconciliation
-+ safe next action
+69 tables
+5 views
+15 routines
+76 triggers
+97 indexes
+69 FKs
+123 CHECKs
+0 enum/domain
+0 sequences/materialized/partitioned/RLS
 ```
 
----
+Retirement is append-only and runtime has SELECT only.
 
-## 15. Evidence-state vocabulary
-
-Use only truthful states:
+Supported materialized facets:
 
 ```text
-SELECTED      accepted architectural target
-DESIGNED      contract/approach written, not materialized
-IMPLEMENTED   source/config exists
-LOCAL PASS    direct local selected-substitute evidence exists
-REMOTE PASS   direct remote selected-stack evidence exists
-CLOSED        required implementation + evidence + documentation closure complete
-DEFERRED      intentionally outside current boundary
-BLOCKED       cannot truthfully advance without a missing prerequisite
+schedule.placement
+actual.realization
+session.timing
+routine.recurrence
+event.recurrence
 ```
 
-Never collapse these states into a generic `done`.
-
----
-
-## 16. Documentation lifecycle
-
-During the active branch:
+For retired state:
 
 ```text
-postgres-recovery.md
-→ durable workstream record
-
-postgres-recovery-execution-plan.md
-→ durable execution/evidence plan while active
-
-postgres-recovery-live-handoff-2026-08-29.md
-→ temporary branch/session continuation artifact
+MaterialStateRef address/envelope remains
+permitted current/history remains
+explicit retirement reason/time remains
+protected payload/selectors must be absent
+later payload reinsertion rejects
 ```
 
-Before protected-main integration:
+The existing Schedule/Actual/Session/Recurrence validators are retirement-aware.
+
+## 10. External recovery suppression ledger
+
+The suppression ledger exists because an old backup may predate the canonical PostgreSQL tombstone.
+
+It is independent from:
 
 ```text
-current recovery truth
-→ durable current architecture / operations / database docs
-
-accepted evidence
-→ durable QA/recovery validation record
-
-useful branch narrative
-→ optional single consolidated history record
-
-live handoff
-→ REMOVE after knowledge-coverage audit
+canonical PGDATA
+pgBackRest database backup repository
 ```
 
-`PROJECT-STATUS.md` and `ROADMAP.md` remain protected-main current truth and are updated at the appropriate integration/closure boundary, not used as a branch diary.
+It is not a second canonical datastore.
 
----
-
-## 17. Current state
+Versioned protocol:
 
 ```text
-branch created from protected main            YES
-recovery worktree assigned                     YES
-CP01 recovery contract frozen                 YES
-CP02 pgBackRest foundation                     LOCAL PASS
-runtime recovery source/config changed        YES
-versioned recovery compose overlay            YES
-pgBackRest exact source pin                    LOCAL PASS
-pgBackRest locally installed/executed          LOCAL PASS
-stanza-create                                  LOCAL PASS
-archive_mode=on runtime                        LOCAL PASS
-archive_command archive-push runtime           LOCAL PASS
-wal_level                                      replica / unchanged / LOCAL PASS
-continuous WAL archive                         LOCAL PASS
-physical WAL repository evidence               LOCAL PASS
-pgBackRest check                               LOCAL PASS
-full backup                                    LOCAL PASS
-local repo1-retention-full=2                   LOCAL PASS
-archive failure/retry path                     LOCAL PASS
-CP03                                           LOCAL PASS
-semantic CP04 FULL 20260830-132540F            LOCAL PASS
-destructive PostgreSQL volume replacement      LOCAL PASS
-exact-set pgBackRest restore                   LOCAL PASS
-restored PostgreSQL boot                       LOCAL PASS
-restored catalog/fixture/ACL/runtime path       LOCAL PASS
-CP04                                           LOCAL PASS
-SC-031 local destructive proof                 PASS
-timeline-history archive continuity            LOCAL PASS
-deterministic named restore point              LOCAL PASS
-A present / B absent                           LOCAL PASS
-PITR promoted target                           LOCAL PASS
-replay/readiness timing evidence               LOCAL PASS
-CP05                                           LOCAL PASS
-PSV-40 local archive/restore/PITR              PASS
-AWS resources created                         NO
-AWS credentials committed                     NO
-anti-resurrection mechanism frozen            NO
-SC-011 PASS                                   NO
-CP06                                           NOT STARTED
-runbook accepted                              NO
+PREPARED durable intent
+→ canonical DB retirement/redaction commit
+→ canonical DB read-back verification
+→ COMMITTED marker bound to PREPARED SHA-256
 ```
 
-**Next safe action:** keep the CP05 PITR verification target isolated with `archive_mode=off` until CP05 closure is synchronized locally, then open CP06 under a new exact gate. CP06 must exercise a broader negative recovery matrix and resolve or truthfully block on SC-011 anti-resurrection. Do not treat successful byte recovery/PITR as permission to reopen traffic after restoring an older state that may predate accepted deletion/redaction facts; do not enter AWS activation under the CP05 closure gate.
+Recovery blocks on:
+
+```text
+PREPARED without COMMITTED
+COMMITTED without PREPARED
+identity/target mismatch
+prepared hash mismatch
+non-canonical/invalid record
+```
+
+Suppression evidence retention must cover the complete resurrection horizon: it may not expire while any retained database/WAL/object version could still reintroduce the protected payload.
+
+## 11. SC-011 direct prototype evidence
+
+The disposable mechanism prototype directly proved:
+
+```text
+real Session + MaterialState + protected X      PASS
+old B0 contains X                               PASS
+accepted retirement removes X                   PASS
+NativeRef continuity                            PASS
+MaterialStateRef continuity                     PASS
+current/history continuity                      PASS
+PGDATA destruction                              PASS
+B0 + independent ledger survive                 PASS
+old B0 physically resurrects X                  PROVEN
+restored target isolated                        PASS
+ledger reconciliation removes resurrected X     PASS
+runtime sees tombstone, not X                   PASS
+NativeRef reuse rejected                        PASS
+real pgBackRest repository untouched            PASS
+CP05 target untouched                           PASS
+```
+
+This proved the architecture. It did not by itself prove the versioned final implementation.
+
+Definitive versioned harness:
+
+`infra/local/postgres/recovery/cp06-sc011-anti-resurrection-check.sh`
+
+The definitive harness upgrades its disposable source to `20260830_09`, creates B0 on that real schema, uses the versioned Python PREPARED/COMMITTED ledger implementation, destroys only disposable PGDATA, proves physical resurrection and performs reconciliation using the real migration/integrity contract.
+
+It is implemented but not yet executed against the exact final CP06 HEAD.
+
+## 12. Derived-state reconciliation boundary
+
+Derived/search/vector/sync state is non-canonical.
+
+After database recovery:
+
+```text
+stale derived state must never override PostgreSQL
+```
+
+Any disposable derived state that can reflect retired/recovered payload must be discarded/rebuilt from accepted PostgreSQL or independently reconciled before that capability is reopened.
+
+Current CP06 boundary:
+
+```text
+PostgreSQL semantic recovery can close locally
+while provider-specific derived-store implementation remains deferred
+provided traffic/feature reopen explicitly blocks on rebuild/reconciliation
+```
+
+PowerSync/search/vector activation is not introduced by this branch.
+
+## 13. Object-store reconciliation boundary
+
+A PostgreSQL restore does not prove R2/object availability or consistency.
+
+Current recovery rule:
+
+```text
+DB row/reference restored
+!=
+referenced object proven recoverable/current
+```
+
+Full R2 backup/recovery implementation is deferred, but operator recovery must keep object-backed features closed until referenced object state is verified/reconciled.
+
+The database recovery path must never manufacture object consistency by deleting/rewriting canonical references merely because object recovery is incomplete.
+
+## 14. CP06 closure contract
+
+Before CP06 may become `LOCAL PASS / CLOSED`:
+
+```text
+[ ] exact branch/worktree alignment
+[ ] migration fresh -> head PASS
+[ ] 20260830_09 -> 20260826_08 -> 20260830_09 PASS
+[ ] Alembic check PASS
+[ ] current topology exact PASS
+[ ] Dictionary ↔ SQLAlchemy ↔ PostgreSQL PASS
+[ ] retirement ACL/integrity tests PASS
+[ ] all five material facets retirement tests PASS
+[ ] suppression-ledger unit tests PASS
+[ ] Ruff/static checks required by backend PASS
+[ ] versioned CP06 failure matrix PASS
+[ ] versioned definitive SC-011 destructive rehearsal PASS
+[ ] real pgBackRest repository non-interference PASS
+[ ] CP05 target non-interference PASS where retained
+[ ] current documentation reconciled
+```
+
+Until then:
+
+```text
+CP06 IMPLEMENTED / FINAL LOCAL QA PENDING
+SC-011 NOT YET FINAL PASS
+```
+
+## 15. CP07 next boundary
+
+CP07 will own:
+
+```text
+whole clean operator-grade recovery rehearsal
+measured end-to-end recovery evidence
+operator runbook
+real AWS selected-stack activation/acceptance
+Versioning/Object Lock/security/retention proof
+selected-cloud backup/WAL/restore/PITR readback
+object/derived reopen procedures
+final recovery workstream closure/integration
+```
+
+Do not start AWS activation without its own explicit implementation/write gate.
