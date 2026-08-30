@@ -3,7 +3,6 @@ import {
   ErrorsInstrumentation,
   InternalLoggerLevel,
   NavigationInstrumentation,
-  PerformanceInstrumentation,
   SessionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
@@ -36,7 +35,6 @@ function instrumentations(): NonNullable<
     new SessionInstrumentation(),
     new ViewInstrumentation(),
     new NavigationInstrumentation(),
-    new PerformanceInstrumentation(),
     new CSPInstrumentation(),
     new ReactIntegration(),
     new TracingInstrumentation({
