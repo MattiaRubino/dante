@@ -18,9 +18,9 @@
       "CP6-M06",
       "CP6-M07"
     ],
-    "standalone_entries": {"tables": 74, "views": 5, "routines": 15, "total": 94},
-    "embedded_objects": {"triggers": 75, "physical_indexes": 113},
-    "constraints": {"foreign_keys": 72, "check_constraints": 149}
+    "standalone_entries": {"tables": 83, "views": 5, "routines": 15, "total": 103},
+    "embedded_objects": {"triggers": 75, "physical_indexes": 156},
+    "constraints": {"foreign_keys": 85, "check_constraints": 233}
   },
   "technical_foundation": {
     "excluded_tables": ["dante.alembic_version"],

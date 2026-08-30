@@ -92,6 +92,15 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         auth.AuthSessionRow.__table__,
         auth.PasswordSignupChallengeRow.__table__,
         auth.PasswordRecoveryChallengeRow.__table__,
+        auth.ExternalIdentityRow.__table__,
+        auth.ExternalAuthTransactionRow.__table__,
+        auth.AppleAuthGrantRow.__table__,
+        auth.ExternalLinkChallengeRow.__table__,
+        auth.ExternalSignupChallengeRow.__table__,
+        auth.AccountProfileBootstrapRow.__table__,
+        auth.WebAuthnAccountRow.__table__,
+        auth.PasskeyCredentialRow.__table__,
+        auth.WebAuthnChallengeRow.__table__,
     ),
 )
 
