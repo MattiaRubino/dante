@@ -8,6 +8,12 @@ export const TIMELINE_POLICY = {
     maxScale: 2.85,
     maxLocalScale: 6.2,
     smoothingRadiusMinutes: 7,
+    burstWindowMinutes: 60,
+    eventPressureBaselineCount: 5,
+    concurrencyPressureBaselineCount: 1,
+    burstPressureBaselineCount: 3,
+    activeOverlapBaselineCount: 1,
+    nearbyStartBaselineCount: 2,
     eventPressurePerItem: 0.045,
     concurrencyPressurePerItem: 0.15,
     overlapPressureFactor: 0.28,
@@ -19,6 +25,7 @@ export const TIMELINE_POLICY = {
     nearbyStartWindowMinutes: 30,
     shortEventThresholdMinutes: 30,
     readableHeightShoulderMinutes: 4,
+    readableHeightShoulderEasePadding: 2,
   },
   zoom: {
     min: 0.75,
@@ -34,6 +41,14 @@ export const TIMELINE_POLICY = {
     autoScrollMaxPxPerSecond: 700,
   },
   event: {
+    readableHeightThresholdMinutes: {
+      upTo5Minutes: 5,
+      upTo15Minutes: 15,
+      upTo30Minutes: 30,
+      upTo45Minutes: 45,
+      upTo60Minutes: 60,
+      upTo90Minutes: 90,
+    },
     readableHeightPx: {
       upTo5Minutes: 50,
       upTo15Minutes: 68,
@@ -44,7 +59,10 @@ export const TIMELINE_POLICY = {
       longer: 102,
     },
     subitemsMinimumHeightPx: 98,
+    expandedSubitemsBaseExtraHeightPx: 18,
+    expandedSubitemExtraHeightPx: 27,
     longTitleThreshold: 34,
+    longTitleMaxDurationMinutes: 30,
     longTitleExtraHeightPx: 6,
   },
   window: {
