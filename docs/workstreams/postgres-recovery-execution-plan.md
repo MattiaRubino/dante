@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 LOCAL PASS / CP04 NOT STARTED
+- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 LOCAL PASS / CP04 LOCAL PASS / CP05 NOT STARTED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Baseline:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
@@ -131,13 +131,13 @@ infra/compose/
 ### Version
 
 ```text
-PostgreSQL                  18.6
-accepted pgBackRest baseline 2.59.0
-activation implementation    2.59.1
-PGDG package pin             2.59.1-1.pgdg13+1
+PostgreSQL                    18.6
+accepted pgBackRest baseline  2.59.0
+activation implementation     2.59.1
+PGDG package pin              2.59.1-1.pgdg13+1
 ```
 
-The `2.59.1` package exists for Debian 13/Trixie, is pinned in source and has now passed the CP02 local foundation proof plus CP03 local WAL/backup proof. It is ratified as the implementation maintenance pin while the historical accepted Physical Model selection record remains reconciled at integration rather than silently rewritten in place.
+The `2.59.1` package exists for Debian 13/Trixie, is pinned in source and has passed CP02 foundation, CP03 archive/backup and CP04 destructive-restore proof. It is ratified as the implementation maintenance pin while the historical accepted Physical Model selection record remains reconciled at integration rather than silently rewritten in place.
 
 No technology-selection reopening unless direct evidence invalidates the accepted choice.
 
@@ -371,7 +371,7 @@ Object Lock
 anti-resurrection
 ```
 
-Those first three items were subsequently proven by CP03; restore/PITR/AWS/anti-resurrection remain open later gates.
+The first three items were subsequently proven by CP03 and restore was proven by CP04; PITR/AWS/anti-resurrection remain later gates.
 
 ---
 
@@ -444,8 +444,6 @@ pgbackrest --stanza=dante check exits successfully
 
 The first forced segment observed in the repository was `000000010000000000000002`. Later backup/recovery activity advanced the retained archive range.
 
-`pgbackrest check` belongs here because this is the first checkpoint where archive behavior is intentionally active and can be truthfully verified.
-
 ## Backup proof
 
 Direct FULL backup evidence:
@@ -458,7 +456,7 @@ repo1 backup set size   4.7MB
 status                  PASS
 ```
 
-Additional FULL backups were deliberately/redundantly generated while exercising retention. At the CP03 closure boundary the two retained FULL sets are:
+Additional FULL backups were deliberately/redundantly generated while exercising retention. At the CP03 closure boundary the two retained FULL sets were:
 
 ```text
 20260830-114411F
@@ -498,8 +496,6 @@ privacy/deletion policy
 storage growth
 PITR continuity
 ```
-
-Do not expire WAL so aggressively that remaining backups advertise recovery points requiring missing WAL.
 
 ## Archive failure/recovery proof
 
@@ -549,7 +545,7 @@ Current state:
 CP03 LOCAL PASS
 ```
 
-CP03 does **not** prove restore, PITR, AWS S3 behavior, Object Lock, production retention, SC-031 or SC-011.
+CP03 does **not** prove restore, PITR, AWS S3 behavior, Object Lock, production retention, SC-031 or SC-011. Restore/SC-031 were subsequently proven by CP04; the remaining items stay open.
 
 ---
 
@@ -559,46 +555,183 @@ CP03 does **not** prove restore, PITR, AWS S3 behavior, Object Lock, production 
 
 Prove SC-031-class recovery from a real physical backup after the active/disposable source state is unavailable.
 
-## Preferred topology
+## Proven topology
 
-Use a brand-new PostgreSQL 18.6 target or a clearly disposable target whose `PGDATA` is destroyed before restore.
-
-The test must not accidentally succeed because original data files remain mounted.
-
-## Scenario
+CP04 uses the dedicated recovery project only:
 
 ```text
-seed deterministic canonical fixture
-→ full backup
-→ record backup metadata
-→ destroy/isolate target PGDATA
-→ initialize recovery target prerequisites only
-→ pgBackRest restore
-→ start PostgreSQL
-→ run direct catalog + semantic verification
+PostgreSQL data volume     dante-postgres-recovery_postgres-data
+pgBackRest repo volume     dante-postgres-recovery_pgbackrest-repository
+semantic backup            20260830-132540F
+canonical fixture          Person 01993f19-9c00-7000-8000-000000000001
+verification target        dante-postgres-recovery-cp04-restore
+archive_mode               off during isolated restore verification
 ```
 
-## Required post-restore verification
+The pgBackRest repository and PostgreSQL data volumes are distinct. Only the PostgreSQL data volume is disposable in this checkpoint.
 
-At minimum:
+## Semantic backup preparation
+
+A preflight discovered that the CP03 backup sets contained only bootstrap PostgreSQL plus extensions: no `dante` schema, no Alembic relation and no DANTE application roles. That discovery does not invalidate CP03, whose scope was WAL/archive/physical-backup mechanics, but it prevents those backups from being used as semantic SC-031 proof.
+
+The versioned materialization harness is:
 
 ```text
-PostgreSQL server version == expected 18.6 family
-required extensions available
-Alembic head == source backup expectation
-schema objects/topology match expected source
-critical roles/ACLs are valid for recovered deployment model
-representative rows/checksums/fixtures match
-critical constraints/routines/triggers available
-application/backend can reach readiness boundary where appropriate
-whole-database semantic smoke suite passes
+infra/local/postgres/recovery/cp04-materialize-backup.sh
 ```
 
-The verification must be specific enough that an empty or partially restored cluster cannot accidentally pass.
+It directly uses the accepted backend boundaries:
 
-## SC-031 state
+```text
+P0 provisioning command
+→ dante_owner / dante_migrator / dante_runtime
+→ dante schema + security envelope
+→ Alembic upgrade head as dante_migrator / SET ROLE dante_owner
+→ P0 reconciliation
+→ Alembic current/check
+→ deterministic Person NativeRef fixture
+→ catalog/owner/ACL/extension verification
+→ pgBackRest check
+→ dedicated FULL
+```
 
-Only after this checkpoint may SC-031 be considered for PASS, and only if the accepted exact deployment/version criteria are directly satisfied.
+Direct materialization evidence:
+
+```text
+uv                                            0.12.5
+P0 provisioning                               PASS
+Alembic upgrade                               PASS
+P0 post-migration reconciliation              PASS
+Alembic current                               20260826_08 (head)
+Alembic check                                 no new upgrade operations
+fixture UUID version                          7
+fixture                                       01993f19-9c00-7000-8000-000000000001
+topology                                      68|5|14|75|95|68|120|0|0|0
+DANTE object owner                            dante_owner
+DANTE role set                                owner/migrator/runtime
+required extension set                        PASS
+pgBackRest check                              PASS
+```
+
+Dedicated semantic FULL:
+
+```text
+label             20260830-132540F
+start/stop        2026-08-30 13:25:40+00 / 13:26:24+00
+wal start/stop    000000010000000000000011 / 000000010000000000000012
+database size     40.6MB
+repo set size     4.9MB
+```
+
+## Destructive restore scenario
+
+The versioned destructive harness is:
+
+```text
+infra/local/postgres/recovery/cp04-destructive-restore-check.sh
+```
+
+The directly executed sequence was:
+
+```text
+verify exact semantic backup + fixture
+→ hash pgBackRest backup.info
+→ write unique marker outside PGDATA but inside PostgreSQL volume
+→ manual DELETE_RECOVERY_PGDATA confirmation
+→ stop/remove only recovery PostgreSQL service
+→ delete dante-postgres-recovery_postgres-data
+→ prove pgBackRest repository survives unchanged
+→ recreate empty PostgreSQL volume without initdb
+→ prove old source marker absent
+→ restore exact set 20260830-132540F with --archive-mode=off
+→ verify restored PG_VERSION
+→ start isolated target
+→ verify PostgreSQL/catalog/fixture/security/runtime path
+```
+
+pgBackRest restore direct output:
+
+```text
+restore backup set 20260830-132540F
+recovery start reference 2026-08-30 13:25:40
+updated postgresql.auto.conf
+restored global/pg_control last
+restore size 40.6MB
+file total 1501
+restore command completed successfully
+```
+
+## First-boot filesystem finding
+
+The first restored startup failed after the restore itself had succeeded:
+
+```text
+mkdir: cannot create directory '/var/lib/postgresql/18': Permission denied
+```
+
+Direct inspection found:
+
+```text
+/var/lib/postgresql              postgres:postgres 1777
+/var/lib/postgresql/18           root:root 0700
+/var/lib/postgresql/18/docker    postgres:root 0700
+```
+
+The root restore process had created the PostgreSQL 18 version parent, and the official entrypoint could not traverse that parent after dropping privileges. This was a harness/filesystem-boundary defect, not a backup-data defect.
+
+The exact proven correction is:
+
+```text
+chown postgres:postgres /var/lib/postgresql/18
+chmod 0700 /var/lib/postgresql/18
+```
+
+The versioned destructive harness performs this normalization immediately after restore and before boot.
+
+## Required post-restore verification — direct result
+
+```text
+[x] original PGDATA volume genuinely deleted/recreated
+[x] source-volume marker absent after recreation/restore
+[x] pgBackRest repository survives unchanged
+[x] exact-set pgBackRest restore completes
+[x] PostgreSQL starts from restored PGDATA
+[x] server_version_num == 180006
+[x] pg_is_in_recovery() == false
+[x] isolated restore target archive_mode == off
+[x] required extensions/version set restored
+[x] Alembic head == 20260826_08
+[x] exact schema/catalog topology == 68/5/14/75/95/68/120
+[x] forbidden enum/domain + sequence/materialized/partitioned/RLS counts == 0
+[x] DANTE object owner == dante_owner
+[x] DANTE role set restored
+[x] dante_runtime remains denied SELECT on dante.alembic_version
+[x] deterministic canonical Person fixture restored exactly once
+[x] real dante_runtime credential authenticates and reads restored fixture
+```
+
+## CP04 close criteria
+
+```text
+[x] semantic backup source is materially meaningful
+[x] source PGDATA cannot survive the destructive rehearsal
+[x] recovery repository survives independently
+[x] restore target starts from restored bytes
+[x] catalog/schema topology matches accepted source
+[x] deterministic semantic fixture matches accepted source
+[x] roles/ACL/runtime access path match accepted source
+[x] filesystem restore/startup boundary is understood and repeatably handled
+[x] SC-031 local destructive proof directly satisfied
+```
+
+Current state:
+
+```text
+CP04 LOCAL PASS
+SC-031 LOCAL PASS
+```
+
+CP04 does **not** prove PITR, AWS S3 behavior, S3 Versioning, Object Lock, production retention or SC-011.
 
 ---
 
@@ -628,6 +761,23 @@ Prove recovery to a selected point between two observable business/database stat
 ```
 
 Use a unique scenario identifier so stale data from an earlier run cannot satisfy assertions.
+
+## CP05 opening constraints carried from CP04
+
+The CP04 restored target is intentionally left isolated with `archive_mode=off` after verification. CP05 must explicitly choose whether to discard/recreate that target or reactivate a fresh archive-producing source; it may not silently use the isolated CP04 verification target as if it were the continuous-archive primary.
+
+The CP05 harness must preserve:
+
+```text
+same accepted PostgreSQL 18.6 image
+dedicated recovery project/volumes only
+repository independence from disposable PGDATA
+P0/Alembic/catalog semantic baseline
+unique deterministic A/B fixture identifiers
+named restore point rather than timing-only target
+explicit WAL archive evidence before destruction
+traffic/application closed until target assertions pass
+```
 
 ## Additional wall-clock test
 
@@ -681,7 +831,7 @@ operator starts from wrong recovery set / mismatch detection
 
 A negative scenario passes when the system fails safely, observably and diagnosably—not when the command happens to return zero.
 
-CP03 already proves one narrow archive-push failure/retry path. That evidence is retained, but it does not replace the broader CP06 failure matrix.
+CP03 already proves one narrow archive-push failure/retry path. CP04 proves one restore-startup filesystem defect and its bounded recovery. Those evidence items are retained, but they do not replace the broader CP06 failure matrix.
 
 ## SC-011 anti-resurrection
 
@@ -814,7 +964,8 @@ No step may require chat memory.
 [ ] CP01–CP06 evidence reconciled
 [ ] local clean whole rehearsal PASS
 [ ] direct AWS selected-stack acceptance PASS
-[ ] SC-031 PASS
+[x] SC-031 local destructive PostgreSQL proof PASS
+[ ] SC-031 selected-stack evidence reconciled where required
 [ ] SC-011 PASS or explicitly blocks production recovery closure
 [ ] measured timing/data-loss evidence captured
 [ ] security/retention checks PASS
@@ -936,21 +1087,27 @@ R2 object-recovery implementation beyond the defined reconciliation contract
 
 ## 13. Current next action
 
-CP01 is contract-frozen, CP02 is **LOCAL PASS**, CP03 is **LOCAL PASS**, and CP04 is **NOT STARTED**.
+CP01 is contract-frozen, CP02 is **LOCAL PASS**, CP03 is **LOCAL PASS**, CP04 is **LOCAL PASS**, and CP05 is **NOT STARTED**.
 
 Next safe technical sequence:
 
 ```text
-1. fast-forward /home/mattia/projects/dante-postgres-recovery to the CP03 closure HEAD
-2. confirm the two retained FULL backups and repository health still read correctly
-3. preserve the recovery repository volume as the recovery source
-4. derive an explicitly disposable/fresh PostgreSQL 18.6 restore target that cannot accidentally reuse source PGDATA
-5. define the deterministic fixture/catalog/semantic evidence that must survive the restore
-6. freeze exactly what PGDATA/container/volume may be destroyed and what recovery repository must not be destroyed
-7. freeze the exact pgBackRest restore command and target topology
-8. define and approve a new CP04 Git/runtime write gate
-9. only after approval execute destructive/isolated restore
-10. verify PostgreSQL startup plus catalog/schema/representative semantic state before considering SC-031
+1. fast-forward /home/mattia/projects/dante-postgres-recovery to the CP04 closure HEAD
+2. keep dante-postgres-recovery-cp04-restore isolated with archive_mode=off until CP05 topology is frozen
+3. decide whether CP05 discards that target and recreates the archive-producing recovery source or uses another explicitly isolated source/target pair
+4. materialize/verify the accepted DANTE database baseline before PITR writes
+5. create a fresh valid FULL baseline appropriate for the PITR scenario
+6. write deterministic state A and commit
+7. create a unique named pg_create_restore_point marker R
+8. force/confirm WAL containing R is archived through pgBackRest
+9. write deterministic state B and commit
+10. force/confirm later WAL archival
+11. destroy/isolate the CP05 target PGDATA while preserving the repository
+12. restore the selected FULL with recovery_target_name=R and an explicit target action
+13. prove recovery actually reaches R
+14. prove A PRESENT and B ABSENT
+15. repeat catalog/owner/ACL/extension/runtime semantic verification
+16. capture recovery/replay timings
 ```
 
-Do **not** enter PITR, AWS, production retention or anti-resurrection implementation under CP04. CP03 backup success is not restore proof.
+Do **not** enter AWS, production retention or SC-011 implementation under CP05. A successful CP04 full restore is not deterministic PITR proof.
