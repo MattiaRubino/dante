@@ -83,16 +83,26 @@ function preferredCompactWidthPercent(
   const layout = TIMELINE_POLICY.layout;
   if (laneCount > 1) {
     const laneWidth = layout.compactMaxRightPercent / laneCount;
-    return Math.max(layout.compactMultiLaneMinWidthPercent, laneWidth - 1);
+    return Math.max(
+      layout.compactMultiLaneMinWidthPercent,
+      laneWidth - layout.compactMultiLaneGapPercent,
+    );
   }
 
-  const titleWeight = Math.min(68, event.title.length);
-  const metaWeight = Math.min(44, event.meta?.length ?? 0) * 0.24;
+  const titleWeight = Math.min(
+    layout.compactTitleWeightMaxChars,
+    event.title.length,
+  );
+  const metaWeight =
+    Math.min(layout.compactMetaWeightMaxChars, event.meta?.length ?? 0) *
+    layout.compactMetaWeightScale;
   return Math.max(
     layout.compactSingleLaneMinWidthPercent,
     Math.min(
       layout.compactSingleLaneMaxWidthPercent,
-      48 + titleWeight * 0.34 + metaWeight * 0.14,
+      layout.compactWidthBasePercent +
+        titleWeight * layout.compactTitleWidthFactor +
+        metaWeight * layout.compactMetaWidthFactor,
     ),
   );
 }
@@ -135,7 +145,11 @@ export function computeTimelineEventLayouts(
     const naturalHeight = mapper.map(event.endMinute) - top;
     const height = Math.max(naturalHeight, timelineEventReadableHeight(event));
     const orderIndex = Math.max(0, groupOrderIndex(event.groupId, groups));
-    const orderBias = groupCount > 1 ? (orderIndex / (groupCount - 1)) * 14 : 0;
+    const orderBias =
+      groupCount > 1
+        ? (orderIndex / (groupCount - 1)) *
+          layoutPolicy.compactOrderBiasMaxPercent
+        : 0;
 
     let compactLeftPercent: number;
     let compactWidthPercent: number;
@@ -147,7 +161,10 @@ export function computeTimelineEventLayouts(
         layoutPolicy.compactLaneRegionPercent / compact.laneCount;
       compactLeftPercent =
         layoutPolicy.compactLeftInsetPercent + compact.lane * laneSpan;
-      compactWidthPercent = Math.max(14, laneSpan - 1);
+      compactWidthPercent = Math.max(
+        layoutPolicy.compactAbsoluteMinLaneWidthPercent,
+        laneSpan - layoutPolicy.compactMultiLaneGapPercent,
+      );
     }
 
     compactLeftPercent = Math.max(
@@ -155,7 +172,7 @@ export function computeTimelineEventLayouts(
       Math.min(layoutPolicy.compactMaxLeftPercent, compactLeftPercent),
     );
     compactWidthPercent = Math.max(
-      30,
+      layoutPolicy.compactAbsoluteMinWidthPercent,
       Math.min(
         compactWidthPercent,
         layoutPolicy.compactMaxRightPercent - compactLeftPercent,
