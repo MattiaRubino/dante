@@ -1,8 +1,8 @@
-import { Temporal } from '@dante/time';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
+import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { TimelineSurface } from './timeline-surface';
 
 beforeAll(async () => {
@@ -66,10 +66,10 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
-  it('anchors the accepted rich fixture to runtime today and publishes today without a route date', () => {
+  it('anchors the accepted rich fixture to the frozen parity date and publishes it without a route date', () => {
     const onViewedDateChange = vi.fn();
     const { container } = renderTimeline({ onViewedDateChange });
-    const todayKey = Temporal.Now.plainDateISO().toString();
+    const todayKey = TIMELINE_PROTOTYPE_TODAY.toString();
 
     expect(
       container.querySelector(`[data-timeline-date="${todayKey}"]`),
@@ -92,7 +92,7 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('2027')).toBeTruthy();
   });
 
-  it('clears the route date when returning to runtime now', () => {
+  it('clears the route date when returning to the frozen parity now', () => {
     const onDateNavigation = vi.fn();
     const { container } = renderTimeline({
       viewedDateIso: '2034-02-17',
@@ -101,7 +101,7 @@ describe('TimelineSurface production parity', () => {
     onDateNavigation.mockClear();
 
     const nowButton =
-      container.querySelector<HTMLButtonElement>('.home-timeline-now');
+      container.querySelector<HTMLButtonElement>('.dante-timeline-now');
     expect(nowButton).toBeTruthy();
     fireEvent.click(nowButton as HTMLButtonElement);
 
