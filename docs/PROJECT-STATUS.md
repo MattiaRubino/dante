@@ -8,7 +8,9 @@
 - **Current macro-phase:** M5 — Google + Apple + Passkeys + Explicit Linking — **ACTIVE**
 - **M5.1:** architecture/external-authority freeze — **COMPLETE**
 - **M5.2:** exact persistence + API design — **COMPLETE**
-- **Next exact step:** M5-A — persistence foundations — **NEXT / NOT STARTED**
+- **M5-A:** persistence foundations — **COMPLETE / REAL POSTGRESQL PROVEN**
+- **Next exact step:** M5-B — provider transaction + JOSE/JWK/AEAD infrastructure — **NEXT**
+- **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **Final accepted M4 implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
 - **M4 documentation closure:** `a95955da72cbb9119982aa1544c2aaa356fc5e6a`
 - **M5.1 documentation checkpoint:** `8f993ace74d21c98d4034b0e521a1f9b458b007a`
@@ -45,7 +47,8 @@ Access/Auth M5 — Google + Apple + Passkeys + Explicit Linking
 ACTIVE
 ├── M5.1 architecture/external-authority freeze  COMPLETE
 ├── M5.2 exact persistence + API design          COMPLETE
-└── M5-A persistence foundations                 NEXT / NOT STARTED
+├── M5-A persistence foundations                 COMPLETE / POSTGRESQL PROVEN
+└── M5-B provider/JWK/JOSE/AEAD infrastructure   NEXT
 
 Access/Auth M6 — Native Mobile Access
 PLANNED
@@ -57,7 +60,7 @@ Whole Access/Auth vertical
 ACTIVE / NOT CLOSED
 ```
 
-M1–M4 remain closed unless direct defect evidence justifies a bounded reopen. M5.1/M5.2 completion is a design freeze, **not evidence that M5 runtime capability exists**.
+M1–M4 remain closed unless direct defect evidence justifies a bounded reopen. M5-A proves the persistence foundation only; it does **not** claim that Google/Apple/passkey runtime, public API, generated client or Web integration already exists.
 
 ---
 
@@ -91,7 +94,7 @@ Alembic             20260827_10
 92 standalone Dictionary entries
 ```
 
-Accepted M4 branch state — still the **current materialized DB truth**:
+Accepted M4 historical baseline:
 
 ```text
 PostgreSQL          18.6
@@ -106,33 +109,53 @@ Alembic             20260829_11
 94 standalone Dictionary entries
 ```
 
-M5.2 freezes a future persistence delta but does not materialize it.
-
-Frozen M5-A target design:
+Accepted current M5-A materialized state:
 
 ```text
-ALTER email_identity
-+ recovery_restriction_code
-+ recovery_restriction_observed_at
-
-CREATE
-external_identity
-external_auth_transaction
-external_link_challenge
-external_signup_challenge
-account_profile_bootstrap
-apple_auth_grant
-webauthn_account
-passkey_credential
-webauthn_challenge
+PostgreSQL          18.6
+Alembic             20260830_12
+83 tables
+5 views
+15 routines
+75 triggers
+156 physical indexes
+85 foreign keys
+233 CHECK constraints
+103 standalone Dictionary entries
 ```
 
-Until M5-A migrations/tests are accepted:
+M5-A materialized:
 
 ```text
-accepted Alembic head = 20260829_11
-M5 tables in PostgreSQL = 0
-M5 Dictionary objects = 0
+ALTER dante.email_identity
+  + recovery_restriction_code
+  + recovery_restriction_observed_at
+
+CREATE
+  dante.external_identity
+  dante.external_auth_transaction
+  dante.external_link_challenge
+  dante.external_signup_challenge
+  dante.account_profile_bootstrap
+  dante.apple_auth_grant
+  dante.webauthn_account
+  dante.passkey_credential
+  dante.webauthn_challenge
+```
+
+Implementation hardening discovered and accepted during physical materialization:
+
+```text
+Apple grant ↔ exact ExternalIdentity issuer+subject binding
+Apple link/signup challenge ↔ exact pending Apple grant identity
+WebAuthn challenge ↔ exact Account/AuthSession/userHandle ownership
+PasskeyCredential ↔ WebAuthnAccount ownership
+backup_state=true → backup_eligible=true
+logical PasskeyCredential revocation / lifetime credential-id retention
+explicit cose_algorithm persistence
+pending Apple grant lifecycle for abandoned-flow revocation
+cleanup indexes for profile bootstrap and pending Apple grants
+EmailIdentity INSERT ACL extended only to the two new nullable ORM columns
 ```
 
 Permanent structural invariant:
@@ -145,6 +168,8 @@ Database Dictionary
 ≈ current human DB reference
 ≈ direct tests
 ```
+
+Observed PostgreSQL truth, not source estimation, is authoritative for accepted counts.
 
 ---
 
@@ -291,29 +316,67 @@ Provider/profile data remains bootstrap only; later user-owned DANTE values are 
 
 ---
 
-## 6. Exact next work — M5-A
+## 6. M5-A — COMPLETE / ACCEPTED
+
+M5-A persistence foundations are **COMPLETE / REAL POSTGRESQL PROVEN**.
+
+Accepted implementation checkpoint:
 
 ```text
-M5-A — persistence foundations
-NEXT / NOT STARTED
+7e40e02d301b0812b3f55e0d9d4ce6439e420b2a
+fix(auth): reconcile M5 persistence acceptance
 ```
 
-Order:
+Accepted proof:
 
 ```text
-M5-A1  Dictionary objects + EmailIdentity delta
-M5-A2  SQLAlchemy mappings
-M5-A3  Alembic migration + runtime ACL
-M5-A4  real PostgreSQL catalog/constraint/ACL/race acceptance
+uv lock                                      PASS
+Ruff format                                  PASS
+Ruff lint                                    PASS
+mypy strict                                  PASS
+backend fast                                 87 / 87 PASS
+real PostgreSQL 18.6                         95 / 95 PASS
+M5 persistence tests                          8 / 8 PASS
+migration head/base/head                      PASS
+Alembic autogenerate drift                    PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PG       PASS
+runtime ACL / negative constraints            PASS
+backend build                                 PASS
 ```
 
-M5-A must be separately write-gated before modifying implementation/schema files.
-
-No dependency/OpenAPI/Web/provider adapter change is implied by M5-A unless explicitly included in that future gate.
+The PostgreSQL acceptance includes retained CP6/M3/M4 regression proof and exact M5 persistence constraints/ACLs. No browser/provider full-stack claim is attached to M5-A.
 
 ---
 
-## 7. M5 proof/deployment posture
+## 7. Exact next work — M5-B
+
+```text
+M5-B — provider transaction + JOSE/JWK/AEAD infrastructure
+NEXT
+```
+
+M5-B owns the bounded runtime infrastructure required before Google/Apple/WebAuthn product flows:
+
+```text
+qualify/admit exact dependencies actually consumed
+current advisory/Python 3.14 compatibility proof
+typed Google/Apple/WebAuthn/provider settings
+bounded provider/JWK HTTP clients
+JWK cache and rotation behavior
+explicit JOSE algorithm allowlists
+Apple grant encryption key ring / AEAD primitive
+purpose-separated provider-flow verifier primitives
+no provider network I/O under DB transaction
+no token/assertion/bearer logging
+clean lifecycle/shutdown
+focused vectors + static/type/test/build proof
+```
+
+No Google/Apple end-user flow, public API/OpenAPI/client or Web Access materialization is implied unless included in the exact M5-B write gate.
+
+---
+
+## 8. M5 proof/deployment posture
 
 ```text
 provider CI = deterministic protocol-faithful local substitutes
@@ -330,7 +393,7 @@ Provider/JWK/token/network work stays outside DB transactions. No blind retry of
 
 ---
 
-## 8. M5/M7 boundary
+## 9. M5/M7 boundary
 
 M5 correctness includes provider/passkey lifecycle, linking, anti-lockout, provider revoke/account-change handling and correct security-management metadata.
 
@@ -340,7 +403,7 @@ M7 is not permission to leave M5 correctness incomplete.
 
 ---
 
-## 9. Branch/worktree safety
+## 10. Branch/worktree safety
 
 Continue exactly unless explicitly changed by the user:
 

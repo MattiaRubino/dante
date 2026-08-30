@@ -1,13 +1,15 @@
 # DANTE Database System of Record
 
-- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3 DB CLOSED + PROVEN / M4 DB SOURCE CANDIDATE ACTIVE
+- **Status:** CURRENT / CP6 BASELINE CLOSED IN `main` / M3–M4 DB CLOSED / M5-A DB MATERIALIZED + REAL POSTGRESQL PROVEN
 - **Scope:** DANTE PostgreSQL architecture, Dictionary, mappings, migrations, human current reference, direct proof and documentation consistency
 - **PostgreSQL:** 18.6
-- **Current branch Alembic head in source:** `20260829_11`
+- **Current accepted branch Alembic head:** `20260830_12`
+- **Accepted M5-A implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
+- **Accepted M4 baseline head:** `20260829_11`
 - **Accepted M3 head:** `20260827_10`
 - **Protected-main CP6 baseline head:** `20260826_08`
 - **Current Access/Auth DB reference:** `access-auth.md`
-- **Current live handoff:** `../workstreams/access-auth-m4-live-handoff-2026-08-29.md`
+- **Current live handoff:** `../workstreams/access-auth-m5-live-handoff-2026-08-29.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
 - **Architecture decision:** `../decisions/ADR-010-postgresql-persistence-constitution.md`
 
@@ -30,11 +32,11 @@ what tests prove it?
 what remains intentionally unmaterialized and why?
 ```
 
-Current-reference documentation evolves with branch truth. Historical CP6/M3 evidence remains historical and is never rewritten to impersonate later state.
+Current-reference documentation evolves with branch truth. Historical CP6/M3/M4 evidence remains historical and is never rewritten to impersonate later state.
 
 ---
 
-## 2. Protected-main baseline / accepted M3 / current M4 source target
+## 2. Accepted baseline progression
 
 Protected-main CP6 baseline:
 
@@ -64,7 +66,7 @@ CHECK constraints    137
 standalone entries   92
 ```
 
-Current M4 branch source/catalog target:
+Accepted M4 Access/Auth baseline:
 
 ```text
 Alembic             20260829_11
@@ -78,14 +80,22 @@ CHECK constraints    149
 standalone entries   94
 ```
 
-Evidence rule:
+Accepted current M5-A branch truth:
 
 ```text
-source/Dictionary/migration target
-!= accepted observed PostgreSQL PASS
+PostgreSQL          18.6
+Alembic             20260830_12
+tables              83
+views                5
+routines             15
+triggers             75
+physical indexes     156
+foreign keys         85
+CHECK constraints    233
+standalone entries   103
 ```
 
-The M4 counts above become accepted observed truth only after the canonical real PostgreSQL/current-catalog run passes.
+The M5-A counts are **observed PostgreSQL truth**, reconciled against the Dictionary, SQLAlchemy and Alembic. They are no longer source-only targets.
 
 ---
 
@@ -129,7 +139,7 @@ Database current reference
 
 ---
 
-## 4. Current Access/Auth evolution
+## 4. Access/Auth evolution
 
 M3 materialized and proved:
 
@@ -144,7 +154,7 @@ M3 materialized and proved:
 → dante.acquire_account_security_lock(uuid)
 ```
 
-M4 current source evolution:
+M4 materialized and proved:
 
 ```text
 20260829_11
@@ -155,7 +165,25 @@ M4 current source evolution:
 → narrow AuthSession reauth update capability
 ```
 
-M4 does not add a generic token/proof god-table.
+M5-A materialized and proved:
+
+```text
+20260830_12
+→ EmailIdentity recovery-restriction state
+→ external_identity
+→ external_auth_transaction
+→ external_link_challenge
+→ external_signup_challenge
+→ account_profile_bootstrap
+→ apple_auth_grant
+→ webauthn_account
+→ passkey_credential
+→ webauthn_challenge
+→ exact Apple/WebAuthn composite bindings
+→ least-privilege runtime ACL
+```
+
+No generic token/proof god-table was introduced.
 
 Detailed semantics:
 
@@ -165,7 +193,58 @@ docs/database/access-auth.md
 
 ---
 
-## 5. Same-change database rule
+## 5. M5-A physical hardening accepted during implementation
+
+The physical implementation preserved the M5.2 semantic contract while strengthening database-enforced exact ownership/lifecycle invariants:
+
+```text
+ExternalIdentity
+→ composite UQ(external_identity_ref, issuer, subject)
+→ exact target for Apple grant binding
+
+AppleAuthGrant
+→ exact ExternalIdentity issuer+subject binding
+→ pending unbound lifecycle retained for abandoned-flow revocation
+
+ExternalLinkChallenge / ExternalSignupChallenge
+→ exact Apple grant issuer+subject binding
+
+AuthSession
+→ composite UQ(auth_session_ref, account_ref)
+
+WebAuthnAccount
+→ composite UQ(account_ref, user_handle)
+
+WebAuthnChallenge
+→ exact Account+AuthSession ownership
+→ exact Account+userHandle ownership
+
+PasskeyCredential
+→ account_ref references WebAuthnAccount ownership
+→ explicit cose_algorithm
+→ logical active/revoked lifecycle
+→ lifetime credential_id uniqueness retained
+→ backup_state=true requires backup_eligible=true
+
+cleanup
+→ account_profile_bootstrap(expires_at)
+→ apple_auth_grant(pending_expires_at)
+
+EmailIdentity ACL
+→ INSERT remains column-scoped and now includes the two new nullable recovery columns
+→ UPDATE remains limited to recovery_restriction_code / recovery_restriction_observed_at
+```
+
+PostgreSQL identifier-limit shortening accepted consistently:
+
+```text
+fk_external_link_challenge_apple_grant
+fk_external_signup_challenge_apple_grant
+```
+
+---
+
+## 6. Same-change database rule
 
 A structural DB change is incomplete unless the same reviewed slice updates all affected current representations:
 
@@ -197,7 +276,7 @@ when their trigger is satisfied.
 
 ---
 
-## 6. Dictionary contract
+## 7. Dictionary contract
 
 Every materialized DANTE table/view/routine has structured current metadata.
 
@@ -219,11 +298,11 @@ proof/test traceability
 
 `dictionary/scope.json` separates immutable historical baselines from current materialization.
 
-M3 objects keep their original introducing stage even when M4 legitimately evolves their current ACL stage.
+M3/M4 objects keep their original introducing stage even when later stages legitimately evolve current ACL/constraints.
 
 ---
 
-## 7. Security / role posture
+## 8. Security / role posture
 
 ```text
 dante_owner      NOLOGIN ownership identity
@@ -231,7 +310,7 @@ dante_migrator   LOGIN migration identity
 dante_runtime    LOGIN application runtime identity
 ```
 
-M3 security capability remains:
+Permanent security capability:
 
 ```text
 dante.acquire_account_security_lock(uuid)
@@ -245,71 +324,48 @@ broad Account UPDATE denied
 runtime direct Account FOR UPDATE denied
 ```
 
-M4 adds only narrow reviewed privileges required by its exact contract:
+Access/Auth runtime grants remain least privilege and column-bounded where broad table write authority is not required.
+
+M5-A explicitly preserves:
 
 ```text
-column-bounded Account INSERT
-column-bounded EmailIdentity INSERT
-column-bounded PasswordCredential INSERT
-narrow AuthSession secret/recent-auth/expiry UPDATE
-purpose-specific challenge-table operational ACL
-```
-
-Do not widen Account/Auth tables for convenience.
-
----
-
-## 8. M3 accepted database proof
-
-```text
-Alembic head                                         20260827_10
-real PostgreSQL marked suite                        83 / 83 PASS
-real Auth signin/session integration                4 / 4 PASS
-migration round-trip / Alembic drift                PASS
-CP6 historical catalog regression                   PASS
-Dictionary ≈ SQLAlchemy ≈ Alembic ≈ live PG        PASS
-exact Auth ACL                                      PASS
-Account security-definer lock                       PASS
-runtime direct Account FOR UPDATE denied            PASS
-browser full-stack DB-backed proof                  21 / 21 PASS
-```
-
-M3 database status remains:
-
-```text
-MATERIALIZED + PROVEN + CLOSED
+no runtime DELETE of durable ExternalIdentity
+no runtime DELETE of durable PasskeyCredential
+no broad EmailIdentity INSERT/UPDATE
+no runtime network/provider authority encoded into PostgreSQL grants
 ```
 
 ---
 
-## 9. M4 current database evidence state
-
-M4 test code now exists for:
+## 9. Accepted M5-A database proof
 
 ```text
-current catalog / ACL
-signup pre-verification non-materialization
-verified Account establishment
-existing-email collision non-overwrite
-recovery supersession
-single-use reset
-all-session revocation
-replacement password validity
-same-session reauth
-exact bearer rotation
-stale bearer rejection
+uv lock                                      PASS
+Ruff format / lint                           PASS
+mypy strict                                  PASS
+backend fast                                 87 / 87 PASS
+real PostgreSQL 18.6                         95 / 95 PASS
+M5 persistence tests                          8 / 8 PASS
+migration previous-head → head                PASS
+fresh DB → head                               PASS
+migration head/base/head                      PASS
+single Alembic head                           PASS
+Alembic autogenerate drift                    PASS
+CP6 historical regressions                    PASS
+M3/M4 Auth DB regressions                     PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PG       PASS
+exact Auth runtime ACL                        PASS
+negative constraint cases                     PASS
+backend build                                 PASS
 ```
 
-At this live checkpoint:
+M5-A database status:
 
 ```text
-M4 schema/mappings/Dictionary       MATERIALIZED IN SOURCE
-M4 real PostgreSQL acceptance       PENDING CANONICAL EXECUTION
-M4 browser DB-backed acceptance     PENDING
-M4 DB closure                        NOT CLOSED
+MATERIALIZED + REAL POSTGRESQL PROVEN + COMPLETE
 ```
 
-`TEST CODE EXISTS != TEST EXECUTION PASS`.
+This persistence proof does not claim later Google/Apple/WebAuthn runtime, public API, generated-client or browser/provider acceptance.
 
 ---
 
@@ -321,6 +377,9 @@ current accepted state != newest inserted row
 provider state != canonical DANTE state
 Person != Account != Principal != Actor
 AuthSession != DANTE Session
+EmailIdentity != ExternalIdentity
+provider email != provider identity key
+provider authentication != provider-data integration authorization
 Authority != AuthZ decision
 absence/unknown != explicit negative
 idempotency != semantic identity
@@ -349,31 +408,29 @@ Subject modules such as `access-auth.md` are parts of the same System of Record,
 
 ## 12. Forward Auth persistence boundary
 
-M4 may materialize only its accepted signup/recovery lifecycle objects.
+M5-A has materialized the accepted multi-authenticator persistence foundation.
 
-Still deferred to later explicit contracts:
+Next runtime/infrastructure work is bounded by M5-B and later M5 slices.
+
+Still deferred unless separately authorized:
 
 ```text
-ExternalIdentity
-PasskeyCredential
-provider transaction/challenge state
-TOTP/MFA/recovery-code persistence
+TOTP / generic MFA / recovery-code persistence
 Principal table
 Account ↔ Person convenience relation
+provider-data integration grants for Gmail/Calendar/iCloud
+whole-vertical security-event/observability persistence owned by M7
 ```
 
-Correct future sequence:
+Correct forward sequence remains:
 
 ```text
 exact semantic/security contract
-→ minimal migration
-→ mapping
-→ Dictionary
+→ minimal migration/runtime delta
+→ mapping/Dictionary where structural
 → human current reference
-→ direct real PostgreSQL proof
+→ direct proof at the truthful boundary
 ```
-
-No speculative generic token table and no parallel Account/security root.
 
 ---
 
@@ -383,8 +440,8 @@ No speculative generic token table and no parallel Account/security root.
 docs/database/access-auth.md
 → current detailed Access/Auth persistence
 
-docs/workstreams/access-auth-m4-live-handoff-2026-08-29.md
-→ current M4 continuation/evidence state
+docs/workstreams/access-auth-m5-live-handoff-2026-08-29.md
+→ current M5 continuation/evidence state
 
 docs/database/dictionary/
 → structured machine current reference

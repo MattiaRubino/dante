@@ -1,24 +1,125 @@
 # DANTE — Access/Auth M5 Persistence + API Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL AUTHORITATIVE FOR M5.2 / DESIGN FREEZE COMPLETE
+- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE MATERIALIZATION ACCEPTED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Prerequisite:** M1–M4 CLOSED; M5.1 architecture/external-authority freeze COMPLETE
-- **Runtime materialization:** NOT STARTED at this checkpoint
-- **Accepted PostgreSQL head before M5 implementation:** `20260829_11`
-- **Next implementation step:** M5-A — persistence foundations (Dictionary → SQLAlchemy → Alembic → PostgreSQL proof)
+- **M5.2:** exact persistence/API/state/race design COMPLETE
+- **M5-A persistence materialization:** COMPLETE / REAL POSTGRESQL 18.6 PROVEN
+- **Accepted PostgreSQL head:** `20260830_12`
+- **Prior accepted persistence baseline:** `20260829_11`
+- **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
+- **Next implementation step:** M5-B — provider transaction + JOSE/JWK/AEAD infrastructure
 - **Companion authority:** `access-auth-m5-contract.md`
 - **Binding foundations:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record, CP6 persistence constitution
 
-This document freezes the **exact M5 persistence and public-API design** required before implementation of Google authentication, Sign in with Apple, passkeys/WebAuthn, explicit provider linking, passwordless Accounts and authenticator management.
-
-It is an implementation contract, not evidence that the schema/API exists yet.
+This document remains the **exact M5 persistence and public-API design authority**. M5-A has now materialized and proved the persistence subset. Provider runtime, public API, generated client, Web integration and provider/browser acceptance remain future M5 slices.
 
 ---
 
-## 1. Design result
+# 0. M5-A implementation reconciliation
 
-M5 materializes the following physical delta:
+M5-A materialized the frozen nine-table design plus the EmailIdentity recovery-reachability delta at Alembic `20260830_12`.
+
+Accepted catalog:
+
+```text
+PostgreSQL          18.6
+Alembic             20260830_12
+83 tables
+5 views
+15 routines
+75 triggers
+156 physical indexes
+85 foreign keys
+233 CHECK constraints
+103 standalone Dictionary entries
+```
+
+Accepted proof:
+
+```text
+uv lock                                      PASS
+Ruff format / lint                           PASS
+mypy strict                                  PASS
+backend fast                                 87 / 87 PASS
+real PostgreSQL 18.6                         95 / 95 PASS
+M5 persistence tests                          8 / 8 PASS
+migration previous-head → head                PASS
+fresh DB → head                               PASS
+migration head/base/head                      PASS
+single Alembic head                           PASS
+Alembic autogenerate drift                    PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PG       PASS
+runtime ACL / negative constraints            PASS
+CP6/M3/M4 persistence regressions             PASS
+backend build                                 PASS
+```
+
+Physical materialization strengthened the design in these bounded ways:
+
+```text
+ExternalIdentity
+→ composite UQ(external_identity_ref, issuer, subject)
+→ exact Apple grant identity target
+
+AppleAuthGrant
+→ exact ExternalIdentity issuer+subject binding
+
+ExternalLinkChallenge / ExternalSignupChallenge
+→ exact Apple grant issuer+subject binding
+
+AuthSession
+→ composite UQ(auth_session_ref, account_ref)
+
+WebAuthnAccount
+→ composite UQ(account_ref, user_handle)
+
+WebAuthnChallenge
+→ exact Account+AuthSession ownership
+→ exact Account+userHandle ownership
+
+PasskeyCredential
+→ account_ref targets WebAuthnAccount ownership
+→ explicit cose_algorithm persisted
+→ logical active/revoked lifecycle
+→ lifetime credential-id uniqueness retained
+→ backup_state=true requires backup_eligible=true
+
+cleanup indexes
+→ account_profile_bootstrap(expires_at)
+→ apple_auth_grant(pending_expires_at)
+
+EmailIdentity ACL
+→ INSERT remains column-scoped and includes the two new nullable recovery fields
+→ UPDATE remains limited to those two recovery fields
+```
+
+PostgreSQL's 63-byte identifier ceiling required and accepted these shortened exact FK names:
+
+```text
+fk_external_link_challenge_apple_grant
+fk_external_signup_challenge_apple_grant
+```
+
+After M5-A, the exact **physical** source of truth for names/columns/constraints/indexes/ACL is the reconciled set:
+
+```text
+this contract
+≈ Database Dictionary
+≈ SQLAlchemy mappings
+≈ Alembic 20260830_12
+≈ real PostgreSQL 18.6 catalog
+≈ direct tests
+```
+
+Any mismatch is a defect.
+
+---
+
+# 1. Design result
+
+M5 persistence delta:
 
 ```text
 ALTER
@@ -36,11 +137,9 @@ CREATE
   dante.webauthn_challenge
 ```
 
-Exactly **9 new tables** are frozen by M5.2.
+Exactly **9 new tables**.
 
-No generic `auth_token`, `oauth_token`, `provider_challenge`, `credential`, `security_blob` or other cross-purpose god-table is permitted.
-
-M5.2 deliberately does **not** add speculative session-method/security-event columns. Current M5 methods must satisfy the accepted policy for the operation they authorize. Durable whole-vertical security-event/session-management history remains an M7 concern unless implementation proves an earlier correctness dependency.
+No generic `auth_token`, `oauth_token`, `provider_challenge`, `credential`, `security_blob` or cross-purpose god-table is permitted.
 
 Permanent identity direction:
 
@@ -74,13 +173,11 @@ no server-side SQL defaults merely for application convenience
 runtime role = least privilege / default deny
 ```
 
-Identifiers are named below. If PostgreSQL's 63-byte identifier ceiling requires shortening during Alembic materialization, the shorter name must be frozen consistently across Dictionary, migration, mappings and catalog tests before acceptance.
-
 All timestamps are `timestamp with time zone`, finite, application-supplied UTC instants.
 
 All external strings are bounded before persistence. Application validation remains stricter where protocol syntax cannot be expressed safely as a small PostgreSQL CHECK.
 
-Raw capabilities are never stored. When a flow uses a high-entropy raw secret, PostgreSQL stores only a 32-byte verifier derived with the purpose-specific M5 verifier primitive frozen by implementation. The implementation may use SHA-256 for uniformly random 256-bit flow secrets where no password-hardening property is needed; raw values never enter logs.
+Raw high-entropy flow capabilities are never stored. PostgreSQL stores only 32-byte purpose-specific verifiers. Raw values never enter logs.
 
 ---
 
@@ -103,16 +200,14 @@ recovery_restriction_code
 = current known policy restriction that prevents this EmailIdentity being treated as a viable recovery channel
 
 recovery_restriction_observed_at
-= latest provider reachability evidence timestamp relevant to that restriction, retained even when the restriction is cleared
+= latest provider reachability evidence timestamp relevant to that restriction, retained even when restriction is cleared
 ```
 
-M5 initial code vocabulary:
+Initial vocabulary:
 
 ```text
 provider_delivery_disabled
 ```
-
-The vocabulary may be extended only by an explicit later contract; do not overload the field with SMTP bounce heuristics.
 
 Checks:
 
@@ -130,42 +225,48 @@ OR (
 )
 ```
 
-Important Apple ordering rule:
+Apple ordering:
 
 ```text
-email-disabled event at T
-→ update only if T > current recovery_restriction_observed_at (or current is NULL)
-→ set code = provider_delivery_disabled
-→ set observed_at = T
+email-disabled at T
+→ apply only when T is newer than current observed_at
+→ code=provider_delivery_disabled
+→ observed_at=T
 
-email-enabled event at T
-→ update only if T > current recovery_restriction_observed_at (or current is NULL)
-→ set code = NULL
-→ retain observed_at = T
+email-enabled at T
+→ apply only when T is newer
+→ code=NULL
+→ observed_at=T retained
 ```
 
-Therefore a replayed/out-of-order old Apple event cannot reverse newer reachability truth.
+Never clear `verified_at` merely because provider delivery is disabled.
 
-M5 runtime ACL delta:
+M5-A runtime ACL reconciliation:
 
 ```text
-GRANT UPDATE (
-  recovery_restriction_code,
+existing SELECT remains
+
+INSERT remains column-scoped across exact EmailIdentity establishment columns,
+including:
+  recovery_restriction_code
   recovery_restriction_observed_at
-) ON dante.email_identity TO dante_runtime
+
+UPDATE only:
+  recovery_restriction_code
+  recovery_restriction_observed_at
 ```
 
-Existing SELECT/INSERT posture remains.
+The INSERT extension is necessary because SQLAlchemy names these nullable columns in establishment INSERT statements; it is not permission for broad EmailIdentity writes.
 
 ---
 
 # 4. `external_identity`
 
-## 4.1 Purpose
+## Purpose
 
 Durable lifetime binding between one DANTE Account and one verified external provider identity.
 
-Provider identity authority:
+Authority:
 
 ```text
 issuer + subject
@@ -173,7 +274,7 @@ issuer + subject
 
 Email is not the identity key.
 
-## 4.2 Columns
+## Columns
 
 ```text
 external_identity_ref       uuid        NOT NULL
@@ -192,11 +293,7 @@ revoked_at                  timestamptz NULL
 revocation_reason_code      text        NULL
 ```
 
-`provider_email_address` is a display/support hint only. It never participates in Account lookup/link authority.
-
-`provider_email_private` is present iff a provider email hint is present. In M5 it is always false for Google and may reflect Apple's private-relay claim for Apple.
-
-## 4.3 Keys / constraints
+## Keys / constraints
 
 ```text
 PK  pk_external_identity
@@ -205,126 +302,65 @@ PK  pk_external_identity
 FK  fk_external_identity_account_ref_account
     (account_ref)
     → dante.account(account_ref)
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
 
 FK  fk_external_identity_email_account_email_identity
     (email_identity_ref, account_ref)
     → dante.email_identity(email_identity_ref, account_ref)
     MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
 
 UQ  uq_external_identity_issuer_subject
     (issuer, subject)
+
+UQ  uq_external_identity_external_identity_ref_issuer_subject
+    (external_identity_ref, issuer, subject)
 ```
 
-No `UNIQUE(account_ref, provider_code)` is created.
+No `UNIQUE(account_ref, provider_code)`.
 
-Checks:
+Checks include:
 
 ```text
-uuid_extract_version(external_identity_ref) IS NOT DISTINCT FROM 7
+UUIDv7 ref
 provider_code IN ('google','apple')
-
-(
-  provider_code='google'
-  AND issuer='https://accounts.google.com'
-)
-OR (
-  provider_code='apple'
-  AND issuer='https://appleid.apple.com'
-)
-
-subject = btrim(subject)
-AND subject <> ''
-AND char_length(subject) <= 255
-
-(provider_email_address IS NULL AND provider_email_private IS NULL)
-OR (
-  provider_email_address IS NOT NULL
-  AND provider_email_address = btrim(provider_email_address)
-  AND provider_email_address <> ''
-  AND char_length(provider_email_address) <= 320
-  AND provider_email_private IS NOT NULL
-)
-
+provider/issuer canonical pair
+subject trimmed/nonempty <=255
+provider email/private flag all-or-none
 status_code IN ('active','revoked')
-
-isfinite(created_at)
-AND isfinite(status_changed_at)
-AND isfinite(last_authenticated_at)
-AND status_changed_at >= created_at
-AND last_authenticated_at >= created_at
-
-(status_code='active'
- AND revoked_at IS NULL
- AND revocation_reason_code IS NULL)
-OR
-(status_code='revoked'
- AND revoked_at IS NOT NULL
- AND isfinite(revoked_at)
- AND revoked_at >= created_at
- AND revocation_reason_code IN (
-   'user_unlinked',
-   'provider_revoked',
-   'provider_account_deleted'
- ))
+finite/ordered timestamps
+active ↔ revoked fields exact
 ```
 
-## 4.4 Indexes
+Indexes:
 
 ```text
-PK / UQ backing indexes
-ix_external_identity_account_ref          (account_ref)
-ix_external_identity_email_identity_ref    (email_identity_ref)
+ix_external_identity_account_ref
+ix_external_identity_email_identity_ref
 ```
 
-## 4.5 Lifecycle
-
-Normal unlink is **logical revocation**, not SQL DELETE.
+Lifecycle:
 
 ```text
 active → revoked
 ```
 
-The `(issuer, subject)` row is retained so the external identity cannot silently be recycled onto another Account after unlink.
+Normal unlink is logical, not SQL DELETE. Lifetime `(issuer, subject)` cannot silently move to another Account.
 
-A fresh explicit proof may reactivate the same row only for the same owning Account. Moving a lifetime provider identity to another Account is outside normal M5 linking and requires a future explicit account-transfer/deletion policy.
-
-Provider email/profile changes never change `account_ref` or `(issuer, subject)`.
-
-## 4.6 Runtime ACL
+Runtime:
 
 ```text
 SELECT
-INSERT (
-  external_identity_ref, account_ref, email_identity_ref,
-  provider_code, issuer, subject,
-  provider_email_address, provider_email_private,
-  status_code, created_at, status_changed_at,
-  last_authenticated_at, revoked_at, revocation_reason_code
-)
-UPDATE (
-  provider_email_address, provider_email_private,
-  status_code, status_changed_at,
-  last_authenticated_at, revoked_at, revocation_reason_code
-)
+INSERT exact immutable/current columns
+UPDATE provider email/private + status/timestamps/revocation metadata
+NO DELETE
 ```
-
-No runtime DELETE.
 
 ---
 
 # 5. `external_auth_transaction`
 
-## 5.1 Purpose
+Short-lived server-authoritative Google/Apple transaction.
 
-Short-lived server-authoritative transaction for Google/Apple authentication before final provider evidence is applied to DANTE state.
-
-One table is valid because Google and Apple transactions share the same lifecycle/security semantics; provider-specific network details remain adapters.
-
-## 5.2 Columns
+Columns:
 
 ```text
 external_auth_transaction_ref  uuid        NOT NULL
@@ -341,7 +377,7 @@ expires_at                     timestamptz NOT NULL
 claimed_at                     timestamptz NULL
 ```
 
-Semantics:
+Vocabulary:
 
 ```text
 purpose_code:
@@ -354,96 +390,52 @@ return_target_code:
   security
 ```
 
-`state_verifier` is the verifier for the high-entropy transaction capability:
-
-- Apple: raw capability is the provider `state` value.
-- Google: raw capability is an in-memory client flow secret returned by begin and supplied to complete; it is never browser-persisted.
-
-`nonce_verifier` binds the server-issued OIDC nonce.
-
-`auth_session_secret_verifier` is a snapshot of the exact DANTE AuthSession bearer verifier at begin. It is **not** a raw session secret and is intentionally not a foreign key, because AuthSession bearer rotation must remain possible.
-
-## 5.3 Keys / constraints
+Keys:
 
 ```text
-PK  pk_external_auth_transaction
-    (external_auth_transaction_ref)
-
-FK  fk_external_auth_transaction_auth_session_ref_auth_session
-    (auth_session_ref)
-    → dante.auth_session(auth_session_ref)
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-
-UQ  uq_external_auth_transaction_state_verifier
-    (state_verifier)
-
-UQ  uq_external_auth_transaction_nonce_verifier
-    (nonce_verifier)
+PK external_auth_transaction_ref
+FK auth_session_ref → auth_session
+UQ state_verifier
+UQ nonce_verifier
 ```
 
 Checks:
 
 ```text
-UUIDv7 ref
-provider_code IN ('google','apple')
-provider/expected_issuer canonical pair
-purpose_code IN ('sign_in','link','reauthenticate')
-return_target_code IN ('access','security')
-octet_length(state_verifier)=32
-octet_length(nonce_verifier)=32
-
-purpose_code='sign_in'
-→ auth_session_ref IS NULL
-  AND auth_session_secret_verifier IS NULL
-
-purpose_code IN ('link','reauthenticate')
-→ auth_session_ref IS NOT NULL
-  AND auth_session_secret_verifier IS NOT NULL
-  AND octet_length(auth_session_secret_verifier)=32
-
-isfinite(created_at)
-AND isfinite(expires_at)
-AND expires_at > created_at
-AND expires_at <= created_at + interval '15 minutes'
-
-claimed_at IS NULL
-OR (
-  isfinite(claimed_at)
-  AND claimed_at >= created_at
-  AND claimed_at <= expires_at
-)
+provider/issuer canonical pair
+purpose/return target vocabulary
+state/nonce verifier exactly 32 bytes
+sign_in → session fields NULL
+link/reauth → session ref + 32-byte bearer-verifier snapshot present
+expires_at > created_at and <= created_at + 15 minutes
+claimed_at NULL or finite within issued lifetime
 ```
 
-## 5.4 Claim semantics
-
-Completion begins with a single conditional claim:
+Claim semantics:
 
 ```text
 UPDATE ...
-SET claimed_at = :now
-WHERE ref + verifier match
+SET claimed_at=:now
+WHERE ref/verifier match
   AND claimed_at IS NULL
-  AND expires_at > :now
+  AND expires_at>:now
 RETURNING ...
 ```
 
-Apple claim happens **before** authorization-code exchange. Two callbacks cannot exchange the same single-use Apple code twice.
+Apple claim occurs **before** authorization-code exchange. Ambiguous code exchange is not blindly retried.
 
-If an Apple exchange has an ambiguous network outcome after claim, do not replay the code. The transaction stays claimed and the user restarts.
-
-## 5.5 Indexes / ACL
+Indexes:
 
 ```text
-ix_external_auth_transaction_expires_at       (expires_at)
-ix_external_auth_transaction_auth_session_ref (auth_session_ref)
+ix_external_auth_transaction_expires_at
+ix_external_auth_transaction_auth_session_ref
 ```
 
 Runtime:
 
 ```text
 SELECT, INSERT, DELETE
-UPDATE (claimed_at)
+UPDATE claimed_at only
 ```
 
 DELETE is cleanup/terminal retention only.
@@ -452,13 +444,9 @@ DELETE is cleanup/terminal retention only.
 
 # 6. `apple_auth_grant`
 
-## 6.1 Purpose
+Durable encrypted Apple refresh-grant lifecycle, including the gap between successful Apple code exchange and final DANTE Account/link completion.
 
-Durable encrypted Apple server-side refresh-grant lifecycle, including the period between successful Apple code exchange and final DANTE Account link/create.
-
-This table intentionally supports **pending unbound grants** so DANTE never loses the token required to revoke an abandoned/expired Apple authorization.
-
-## 6.2 Columns
+Columns:
 
 ```text
 apple_auth_grant_ref          uuid        NOT NULL
@@ -487,437 +475,244 @@ revocation_pending
 revoked
 ```
 
-## 6.3 Encryption
-
-For `pending`, `active` and `revocation_pending`:
+Encryption:
 
 ```text
-refresh_token_ciphertext != NULL
-refresh_token_nonce      = 12 bytes
-key id                   != NULL
+application-layer AEAD
+baseline AES-256-GCM
+12-byte nonce
+key id/version
+key outside PostgreSQL/Git/logs
+stable AAD binds grant ref + issuer + subject + client_id
 ```
 
-Use application-layer AEAD, baseline AES-256-GCM through `cryptography`.
-
-Key material is outside PostgreSQL, Git and logs.
-
-Stable AAD direction:
+Exact bound identity rule after M5-A:
 
 ```text
-dante:apple-auth-grant:v1:
-<apple_auth_grant_ref>:
-<issuer>:
-<subject>:
-<client_id>
+(external_identity_ref, issuer, subject)
+→ external_identity(external_identity_ref, issuer, subject)
 ```
 
-Never reuse a nonce under the same encryption key.
+Grant uniqueness remains one issuer+subject and one bound ExternalIdentity lifecycle.
 
-After confirmed provider revocation, secret material is nulled.
-
-## 6.4 Keys / constraints
-
-```text
-PK  pk_apple_auth_grant
-    (apple_auth_grant_ref)
-
-FK  fk_apple_auth_grant_external_identity_ref_external_identity
-    (external_identity_ref)
-    → dante.external_identity(external_identity_ref)
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-
-UQ  uq_apple_auth_grant_issuer_subject
-    (issuer, subject)
-
-UQ  uq_apple_auth_grant_external_identity_ref
-    (external_identity_ref)
-```
-
-Checks include:
-
-```text
-UUIDv7 ref
-issuer='https://appleid.apple.com'
-subject trimmed/nonempty <=255
-client_id trimmed/nonempty <=255
-status_code IN ('pending','active','revocation_pending','revoked')
-finite/ordered timestamps
-
-pending:
-  external_identity_ref MAY be NULL
-  pending_expires_at NOT NULL
-  pending_expires_at <= created_at + interval '30 minutes'
-  token fields all NOT NULL
-
-active:
-  external_identity_ref NOT NULL
-  pending_expires_at IS NULL
-  token fields all NOT NULL
-
-revocation_pending:
-  token fields all NOT NULL
-  revocation_requested_at NOT NULL
-
-revoked:
-  revoked_at NOT NULL
-  token fields all NULL
-
-refresh_token_ciphertext when present:
-  octet_length > 16
-  octet_length <= 16384
-refresh_token_nonce when present:
-  octet_length = 12
-encryption_key_id when present:
-  trimmed/nonempty <=128
-```
-
-## 6.5 Lifecycle
-
-New unbound Apple proof:
+Lifecycle:
 
 ```text
 code exchange + identity verification
-→ create/reconcile pending AppleAuthGrant
-→ then enter direct Account create OR link challenge OR enrollment challenge
-```
+→ pending grant
 
-Successful bind:
-
-```text
-pending
-→ external_identity_ref set
+successful Account/link finalization
+→ bind exact ExternalIdentity
 → active
-→ pending_expires_at cleared
-```
 
-User unlink/provider revoke:
-
-```text
-local ExternalIdentity disabled first
-→ AppleAuthGrant revocation_pending
+local unlink/provider revoke
+→ ExternalIdentity locally revoked first
+→ grant revocation_pending
 → COMMIT
-→ provider revoke outside DB transaction
-→ on confirmed success: revoked + encrypted token material cleared
-```
+→ remote Apple revoke outside DB tx
+→ confirmed → revoked + encrypted token cleared
 
-Provider outage never keeps the external identity locally usable.
-
-Expired abandoned pending grant:
-
-```text
-pending expiry
+abandoned pending expiry
 → revocation_pending
-→ bounded reconciliation worker
-→ revoke
-→ revoked / secret cleared
+→ bounded reconciliation
+→ remote revoke
+→ revoked + secret cleared
 ```
 
-## 6.6 Index / ACL
+Cleanup indexes include:
 
 ```text
-ix_apple_auth_grant_status_updated_at (status_code, updated_at)
+status_code + updated_at
+pending_expires_at
 ```
 
 Runtime:
 
 ```text
 SELECT, INSERT
-UPDATE (
-  external_identity_ref,
-  refresh_token_ciphertext,
-  refresh_token_nonce,
-  encryption_key_id,
-  status_code,
-  updated_at,
-  status_changed_at,
-  pending_expires_at,
-  revocation_requested_at,
-  revoked_at
-)
+bounded UPDATE of binding/secret/status/timestamp fields
+NO DELETE
 ```
-
-No runtime DELETE.
 
 ---
 
 # 7. `external_link_challenge`
 
-## 7.1 Purpose
+Purpose: short-lived provider-first collision state after valid provider proof identifies an email already owned by a DANTE Account.
 
-Short-lived provider-first collision state after valid provider proof identifies an email already owned by a DANTE Account. It carries sufficient verified provider identity evidence for explicit linking **without** creating a duplicate Account or silently merging by email.
-
-## 7.2 Columns
+Columns include:
 
 ```text
-external_link_challenge_ref  uuid        NOT NULL
-target_account_ref           uuid        NOT NULL
-target_email_identity_ref    uuid        NOT NULL
-provider_code                text        NOT NULL
-issuer                       text        NOT NULL
-subject                      text        NOT NULL
-provider_email_address       text        NULL
-provider_email_private       boolean     NULL
-apple_auth_grant_ref         uuid        NULL
-continuation_verifier        bytea       NOT NULL
-created_at                   timestamptz NOT NULL
-expires_at                   timestamptz NOT NULL
+external_link_challenge_ref
+target_account_ref
+target_email_identity_ref
+provider_code
+issuer
+subject
+provider_email_address?
+provider_email_private?
+apple_auth_grant_ref?
+continuation_verifier
+created_at
+expires_at
 ```
 
-The raw continuation capability is held only in the Secure HttpOnly host-only provider-link flow cookie.
+Raw continuation capability exists only in the Secure HttpOnly host-only provider-link cookie.
 
-## 7.3 Keys / constraints
+Keys/invariants:
 
 ```text
-PK  pk_external_link_challenge
-
-FK  (target_account_ref) → account
-FK  (target_email_identity_ref,target_account_ref)
-    → email_identity(email_identity_ref,account_ref)
-FK  (apple_auth_grant_ref) → apple_auth_grant
-
-UQ  uq_external_link_challenge_issuer_subject
-    (issuer,subject)
-UQ  uq_external_link_challenge_continuation_verifier
-    (continuation_verifier)
+exact target Account
+exact target EmailIdentity+Account binding
+UNIQUE(issuer,subject)
+UNIQUE(continuation_verifier)
+Google → no Apple grant
+Apple → exact Apple grant required
+continuation verifier 32 bytes
+TTL <= 15 minutes
 ```
 
-Checks:
+M5-A exact Apple grant binding verifies matching grant issuer+subject, not merely grant-row existence.
+
+PostgreSQL-safe FK name:
 
 ```text
-UUIDv7 ref
-canonical provider/issuer pair
-subject trimmed <=255
-provider email all-or-none with private flag
-octet_length(continuation_verifier)=32
-
-provider_code='google' → apple_auth_grant_ref IS NULL
-provider_code='apple'  → apple_auth_grant_ref IS NOT NULL
-
-expires_at > created_at
-AND expires_at <= created_at + interval '15 minutes'
-```
-
-## 7.4 Index / ACL
-
-```text
-ix_external_link_challenge_target_account_ref        (target_account_ref)
-ix_external_link_challenge_target_email_identity_ref (target_email_identity_ref)
-ix_external_link_challenge_apple_auth_grant_ref      (apple_auth_grant_ref)
-ix_external_link_challenge_expires_at                 (expires_at)
+fk_external_link_challenge_apple_grant
 ```
 
 Runtime:
 
 ```text
 SELECT, INSERT, DELETE
+NO UPDATE
 ```
 
-No UPDATE. Successful confirm consumes via same transaction that creates/reactivates ExternalIdentity.
-
-Expired Apple-linked challenges transition the pending grant toward revocation before the challenge is finally purged.
+Successful confirm consumes challenge in the same authoritative transaction as identity creation/reactivation.
 
 ---
 
 # 8. `external_signup_challenge`
 
-## 8.1 Purpose
+Purpose: pending provider enrollment when provider proof is valid but DANTE still requires current mailbox proof before canonical Account creation.
 
-Pending provider enrollment when provider proof is valid but DANTE still requires current mailbox proof before a canonical Account can exist.
-
-Typical M5 case: Google Account backed by a third-party mailbox where Google `email_verified` is not sufficient as durable DANTE mailbox authority.
-
-## 8.2 Columns
+Columns:
 
 ```text
-external_signup_ref             uuid        NOT NULL
-provider_code                  text        NOT NULL
-issuer                         text        NOT NULL
-subject                        text        NOT NULL
-provider_email_address         text        NULL
-provider_email_private         boolean     NULL
-apple_auth_grant_ref           uuid        NULL
-continuation_verifier          bytea       NOT NULL
-email_address                  text        NULL
-email_comparison_key           text        NULL
-otp_verifier                   bytea       NULL
-otp_key_id                     text        NULL
-verification_issued_at         timestamptz NULL
-verification_expires_at        timestamptz NULL
-failed_verification_attempts   integer     NOT NULL
-bootstrap_display_name         text        NULL
-bootstrap_given_name           text        NULL
-bootstrap_family_name          text        NULL
-bootstrap_picture_url          text        NULL
-bootstrap_locale               text        NULL
-created_at                     timestamptz NOT NULL
-updated_at                     timestamptz NOT NULL
-expires_at                     timestamptz NOT NULL
+external_signup_ref
+provider_code
+issuer
+subject
+provider_email_address?
+provider_email_private?
+apple_auth_grant_ref?
+continuation_verifier
+email_address?
+email_comparison_key?
+otp_verifier?
+otp_key_id?
+verification_issued_at?
+verification_expires_at?
+failed_verification_attempts
+bootstrap_display_name?
+bootstrap_given_name?
+bootstrap_family_name?
+bootstrap_picture_url?
+bootstrap_locale?
+created_at
+updated_at
+expires_at
 ```
 
-## 8.3 Keys / constraints
+Keys/invariants:
 
 ```text
-PK  pk_external_signup_challenge
-FK  (apple_auth_grant_ref) → apple_auth_grant
-UQ  uq_external_signup_challenge_issuer_subject
-    (issuer,subject)
-UQ  uq_external_signup_challenge_continuation_verifier
-    (continuation_verifier)
+UNIQUE(issuer,subject)
+UNIQUE(continuation_verifier)
+continuation verifier 32 bytes
+Google → no Apple grant
+Apple → exact Apple grant required
+email address/key all-or-none
+OTP state all-or-none when email present
+OTP verifier 32 bytes
+OTP <= 15 minutes
+challenge <= 30 minutes
+failed_verification_attempts 0..5
+bootstrap fields bounded
 ```
 
-Important checks:
+M5-A exact Apple grant binding verifies matching grant issuer+subject.
+
+PostgreSQL-safe FK name:
 
 ```text
-UUIDv7 ref
-provider/issuer canonical pair
-subject trimmed <=255
-octet_length(continuation_verifier)=32
-
-provider_code='google' → apple_auth_grant_ref IS NULL
-provider_code='apple'  → apple_auth_grant_ref IS NOT NULL
-
-email_address and email_comparison_key are both NULL or both non-NULL
-
-when email is NULL:
-  otp_verifier IS NULL
-  otp_key_id IS NULL
-  verification_issued_at IS NULL
-  verification_expires_at IS NULL
-  failed_verification_attempts = 0
-
-when email is present:
-  normalized/bounded email fields nonempty
-  otp_verifier NOT NULL and octet_length=32
-  otp_key_id trimmed/nonempty <=128
-  verification times NOT NULL
-  verification_expires_at > verification_issued_at
-  verification_expires_at <= verification_issued_at + interval '15 minutes'
-  verification_expires_at <= expires_at
-
-failed_verification_attempts BETWEEN 0 AND 5
-
-finite chronology
-expires_at > created_at
-expires_at <= created_at + interval '30 minutes'
-updated_at >= created_at
-
-bootstrap fields bounded:
- display <=256
- given/family <=128
- picture URL <=2048
- locale <=64
+fk_external_signup_challenge_apple_grant
 ```
 
-At least one bootstrap field is not required; no row in `account_profile_bootstrap` is created when all are absent.
-
-## 8.4 OTP purpose separation
-
-Provider-enrollment OTP uses the existing cryptographic key-management discipline but a distinct purpose/domain-separation string from password signup OTP. A verifier from one challenge family cannot validate in the other.
-
-## 8.5 Verification terminal behavior
-
-Valid mailbox proof re-checks canonical state transactionally:
+Terminal mailbox proof:
 
 ```text
-email belongs to no Account
-→ create Account
-→ verified EmailIdentity
-→ ExternalIdentity
-→ bind AppleAuthGrant if applicable
+email still unowned
+→ Account + verified EmailIdentity + ExternalIdentity
+→ bind Apple grant if applicable
 → AuthSession
-→ AccountProfileBootstrap if useful
-→ delete challenge
+→ profile bootstrap if useful
 
-email now belongs to existing Account
-→ DO NOT create duplicate Account
-→ transition verified provider evidence into ExternalLinkChallenge
-→ disclose only safe link-required outcome
-→ delete signup challenge
+email now owned due race
+→ no duplicate Account
+→ convert verified provider evidence into ExternalLinkChallenge
 ```
 
-Database uniqueness remains the race arbiter.
-
-## 8.6 Index / ACL
-
-```text
-ix_external_signup_challenge_email_comparison_key (email_comparison_key)
-ix_external_signup_challenge_apple_auth_grant_ref (apple_auth_grant_ref)
-ix_external_signup_challenge_expires_at           (expires_at)
-```
+Database uniqueness remains final arbiter.
 
 Runtime:
 
 ```text
 SELECT, INSERT, DELETE
-UPDATE (
-  email_address,
-  email_comparison_key,
-  otp_verifier,
-  otp_key_id,
-  verification_issued_at,
-  verification_expires_at,
-  failed_verification_attempts,
-  updated_at
-)
+UPDATE only bounded email/OTP/attempt/time fields
+provider/bootstrap identity evidence immutable
 ```
-
-Provider/bootstrap identity evidence is immutable after challenge creation.
 
 ---
 
 # 9. `account_profile_bootstrap`
 
-## 9.1 Purpose
+Bounded non-canonical first-account provider bootstrap staging.
 
-Bounded non-canonical staging for useful **first-account** provider profile data until the canonical authenticated profile/settings owner consumes it.
-
-This exists because Apple name data may be one-shot.
-
-It is not a Person/Profile table.
-
-## 9.2 Columns
+Columns:
 
 ```text
-account_ref             uuid        NOT NULL
-source_provider_code    text        NOT NULL
-source_issuer           text        NOT NULL
-display_name            text        NULL
-given_name              text        NULL
-family_name             text        NULL
-picture_url              text        NULL
-locale                   text        NULL
-created_at               timestamptz NOT NULL
-expires_at               timestamptz NOT NULL
+account_ref             uuid PK/FK Account
+source_provider_code
+source_issuer
+display_name?
+given_name?
+family_name?
+picture_url?
+locale?
+created_at
+expires_at
 ```
 
-## 9.3 Keys / constraints
-
-```text
-PK/FK account_ref → dante.account(account_ref)
-```
-
-Checks:
+Rules:
 
 ```text
 source provider/issuer canonical pair
-at least one bootstrap value IS NOT NULL
-bounded trimmed text
-picture_url <=2048
-locale <=64
-finite chronology
-expires_at > created_at
-expires_at <= created_at + interval '30 days'
+at least one bootstrap value present
+bounded trimmed values
+expires_at > created_at and <= created_at + 30 days
+NO UPDATE lifecycle
 ```
 
-No UPDATE lifecycle.
+Lifecycle:
 
 ```text
-provider proof → INSERT once
-future profile/setup owner consumes values → DELETE
-provider login later → MUST NOT refresh/overwrite row
+first provider Account creation → optional INSERT
+future canonical profile/setup consumes → DELETE
+later provider login → MUST NOT refresh/overwrite
 expiry → DELETE
 ```
+
+M5-A adds `expires_at` cleanup indexing.
 
 Runtime:
 
@@ -925,17 +720,13 @@ Runtime:
 SELECT, INSERT, DELETE
 ```
 
-Remote `picture_url` is never a free SSRF fetch primitive. Future avatar import goes through the governed Asset/media boundary.
+Remote picture URL is not an unrestricted SSRF fetch primitive.
 
 ---
 
 # 10. `webauthn_account`
 
-## 10.1 Purpose
-
 One stable opaque WebAuthn user handle per DANTE Account.
-
-## 10.2 Columns
 
 ```text
 account_ref   uuid        NOT NULL
@@ -943,34 +734,32 @@ user_handle   bytea       NOT NULL
 created_at    timestamptz NOT NULL
 ```
 
-## 10.3 Keys / constraints
+Keys:
 
 ```text
-PK/FK account_ref → account(account_ref)
-UQ uq_webauthn_account_user_handle (user_handle)
+PK/FK account_ref → account
+UQ user_handle
+UQ (account_ref,user_handle)
 CHECK octet_length(user_handle)=32
-CHECK isfinite(created_at)
+CHECK finite created_at
 ```
 
-`user_handle` is 256 random bits, created once and never changed. `account_ref` is not exposed as WebAuthn `user.id`.
+`user_handle` is immutable random 256-bit state. Never use AccountRef/email/PersonRef as WebAuthn `user.id`.
 
 Runtime:
 
 ```text
 SELECT, INSERT
+NO UPDATE/DELETE
 ```
-
-No runtime UPDATE/DELETE in M5.
 
 ---
 
 # 11. `passkey_credential`
 
-## 11.1 Purpose
+Durable public WebAuthn credential. Private keys never reach DANTE.
 
-Durable public WebAuthn credential owned by one Account. Private keys never reach DANTE.
-
-## 11.2 Columns
+Columns:
 
 ```text
 passkey_credential_ref   uuid        NOT NULL
@@ -991,96 +780,67 @@ revoked_at               timestamptz NULL
 revocation_reason_code   text        NULL
 ```
 
-No AAGUID/device fingerprint is persisted in M5 because no correctness/product consumer justifies that privacy cost.
-
-## 11.3 Keys / constraints
+Keys:
 
 ```text
-PK  pk_passkey_credential
-FK  account_ref → account
-UQ  uq_passkey_credential_credential_id (credential_id)
+PK passkey_credential_ref
+FK account_ref → webauthn_account(account_ref)
+UQ credential_id
 ```
 
-Checks:
+Checks include:
 
 ```text
 UUIDv7 ref
-1 <= octet_length(credential_id) <= 1023
-1 <= octet_length(credential_public_key) <= 8192
-sign_count BETWEEN 0 AND 4294967295
-cardinality(transports) <= 8
-array_position(transports,NULL) IS NULL
-label=btrim(label) AND label<>'' AND char_length(label)<=100
-status_code IN ('active','revoked')
+1..1023 credential-id bytes
+1..8192 public-key bytes
+sign_count 0..4294967295
+backup_state=true → backup_eligible=true
+transports bounded / no NULL element
+label trimmed/nonempty <=100
+status active|revoked
 finite ordered timestamps
-last_used_at IS NULL OR last_used_at >= created_at
-
-active:
-  revoked_at/reason NULL
-
-revoked:
-  revoked_at finite >= created_at
-  revocation_reason_code='user_removed'
+active/revoked fields exact
 ```
 
-Do **not** DB-enumerate WebAuthn transport strings. Unknown/future standardized transport values are preserved after bounded application normalization.
+Do **not** DB-enumerate transport strings; future valid standardized transports are accepted after bounded application normalization.
 
-`credential_public_key`, `credential_id`, `cose_algorithm`, `backup_eligible` and Account binding are immutable.
-
-## 11.4 Counter / backup updates
-
-On successful assertion:
+Immutable:
 
 ```text
-sign_count increases
-→ persist larger count
+credential_public_key
+credential_id
+cose_algorithm
+backup_eligible
+Account binding
+```
 
-zero/non-increasing count where credential verifies
-→ do not lower stored count
-→ treat as bounded risk signal
-→ do not auto-lock Account merely from this signal
+Successful assertion:
 
-backup_state may be updated from verified authenticator data
+```text
+larger sign_count → persist larger value
+zero/non-increasing valid count → do not lower stored count; bounded risk signal
+backup_state may update from verified authenticator data
 last_used_at / updated_at advance
 ```
 
-## 11.5 Removal
-
-Passkey DELETE API performs logical revoke, not SQL DELETE. `credential_id` remains lifetime-unique so an old removed credential cannot silently reappear as the same DANTE credential row.
-
-## 11.6 Index / ACL
-
-```text
-ix_passkey_credential_account_status (account_ref,status_code)
-```
+Removal is logical revoke, not SQL DELETE. Credential-id lifetime uniqueness remains.
 
 Runtime:
 
 ```text
 SELECT, INSERT
-UPDATE (
-  sign_count,
-  backup_state,
-  label,
-  status_code,
-  updated_at,
-  last_used_at,
-  revoked_at,
-  revocation_reason_code
-)
+UPDATE sign_count, backup_state, label, status/timestamps/revocation metadata
+NO DELETE
 ```
-
-No runtime DELETE.
 
 ---
 
 # 12. `webauthn_challenge`
 
-## 12.1 Purpose
+Purpose-specific short-lived WebAuthn ceremony state.
 
-One purpose-specific short-lived WebAuthn ceremony state table because registration, anonymous authentication and session reauthentication share the same challenge lifecycle and verifier model.
-
-## 12.2 Columns
+Columns:
 
 ```text
 webauthn_challenge_ref          uuid        NOT NULL
@@ -1105,69 +865,39 @@ authentication
 reauthentication
 ```
 
-## 12.3 Keys / constraints
+Keys/invariants after M5-A:
 
 ```text
-PK  pk_webauthn_challenge
-FK  account_ref → account
-FK  auth_session_ref → auth_session
-UQ  uq_webauthn_challenge_challenge_verifier
-    (challenge_verifier)
+PK challenge ref
+UQ challenge_verifier
+anonymous authentication → Account/session/userHandle fields NULL
+registration/reauth → all binding fields present
+exact (auth_session_ref,account_ref) FK
+exact (account_ref,user_handle) FK
+challenge/session verifiers exactly 32 bytes
+rp_id/origin bounded
+TTL <= 5 minutes
+claimed_at within lifetime
 ```
 
-Checks:
+Registration requires recent auth at begin and rechecks at complete.
 
-```text
-UUIDv7 ref
-octet_length(challenge_verifier)=32
-rp_id trimmed/nonempty <=253
-expected_origin trimmed/nonempty <=2048
-
-ceremony_code='authentication'
-→ account_ref/auth_session_ref/auth_session_secret_verifier/user_handle all NULL
-
-ceremony_code IN ('registration','reauthentication')
-→ account_ref/auth_session_ref/auth_session_secret_verifier/user_handle all NOT NULL
-→ octet_length(auth_session_secret_verifier)=32
-→ octet_length(user_handle)=32
-
-expires_at > created_at
-AND expires_at <= created_at + interval '5 minutes'
-
-claimed_at NULL
-OR finite, >=created_at and <=expires_at
-```
-
-Registration requires recent auth at begin **and rechecks freshness at complete**.
-
-Reauthentication requires a valid current session but deliberately does **not** require recent auth before the ceremony; successful passkey proof refreshes `recent_auth_at` and rotates that same AuthSession bearer.
-
-## 12.4 Claim / index / ACL
-
-Complete uses a single conditional claim before accepting a response. A failed or replayed ceremony requires a new challenge.
-
-Indexes:
-
-```text
-ix_webauthn_challenge_expires_at       (expires_at)
-ix_webauthn_challenge_account_ref      (account_ref)
-ix_webauthn_challenge_auth_session_ref (auth_session_ref)
-```
+Reauthentication requires current session + CSRF but **does not** require already-fresh recent auth; successful proof refreshes `recent_auth_at` and rotates the same session bearer.
 
 Runtime:
 
 ```text
 SELECT, INSERT, DELETE
-UPDATE (claimed_at)
+UPDATE claimed_at only
 ```
 
 ---
 
 # 13. Account security / anti-lockout rules
 
-Every authenticator mutation uses the accepted Account security serialization function and re-reads current truth under that lock.
+Every authenticator mutation uses Account security serialization and re-reads current truth under lock.
 
-M5 active direct authenticators are:
+Active direct authenticators:
 
 ```text
 PasswordCredential present
@@ -1175,127 +905,108 @@ active ExternalIdentity count
 active PasskeyCredential count
 ```
 
-Normal removal must preserve at least one direct authenticator after the mutation.
+Normal removal must preserve at least one direct authenticator.
 
-Additionally, a passwordless Account must retain at least one verified, recovery-eligible EmailIdentity so loss of all external/passkey authenticators is recoverable.
+A passwordless Account additionally retains at least one verified, recovery-eligible EmailIdentity.
 
-A current password means temporary absence of a usable recovery mailbox does not automatically forbid removal of some *other* authenticator; policy must not manufacture lock-in beyond the accepted recovery invariant.
+UI checks are advisory only; backend transaction is authority.
 
-UI checks are advisory only. The backend transaction is the authority.
-
-Security-sensitive successful mutations retain the same `auth_session_ref` only after rotating its bearer verifier.
+Security-sensitive successful mutations that retain the current session rotate its bearer verifier.
 
 ---
 
 # 14. Password lifecycle adaptation
 
-## 14.1 Establish first password
-
-Provider/passkey-only Account:
+## Establish first password
 
 ```text
-valid AuthSession
-+ CSRF
-+ recent authentication
-+ password policy
-+ HIBP fail-closed screening
-+ Argon2id/pepper
+valid AuthSession + CSRF + recent auth
++ password policy + HIBP fail-closed
++ Argon2id/pepper outside DB transaction
 → Account security lock
 → assert PasswordCredential still absent
-→ invalidate pending password_recovery_challenge for Account
+→ invalidate pending password recovery proof
 → INSERT PasswordCredential
-→ rotate current AuthSession bearer
+→ rotate current session bearer
 ```
 
-## 14.2 Remove password
+## Remove password
 
 ```text
-valid AuthSession
-+ CSRF
-+ recent authentication
+valid AuthSession + CSRF + recent auth
 → Account security lock
 → anti-lockout recheck
-→ invalidate pending password recovery challenge
+→ invalidate pending recovery proof
 → DELETE PasswordCredential
-→ rotate current AuthSession bearer
+→ rotate current session bearer
 ```
 
-`PasswordCredential` remains the existing 0..1 table; no tombstone table is added in M5.
-
-## 14.3 Passwordless recovery
+## Passwordless recovery
 
 Existing M4 `password_recovery_challenge` remains the proof table.
-
-Reset terminal action becomes create-or-replace:
 
 ```text
 strong exact EmailIdentity+Account recovery proof
 → Account security lock
 → PasswordCredential exists?
-   yes → replace verifier
-   no  → insert first PasswordCredential
-→ conditionally consume recovery proof
+   yes → replace
+   no  → insert first credential
+→ conditionally consume proof
 → revoke ALL AuthSessions
 → COMMIT/reconcile
 → NO auto-login
-→ fresh normal signin
+→ fresh signin
 ```
 
-M4 anti-enumeration, supersession, exact identity binding and single-use semantics do not change.
-
-Any normal password add/remove/change invalidates older pending recovery proof under the same Account lock.
+Normal password add/remove/change invalidates older recovery proof under the same Account lock.
 
 ---
 
 # 15. Provider state machines
 
-## 15.1 Known provider identity sign-in
+## Known provider identity sign-in
 
 ```text
 begin
-→ transaction + nonce/state capability
+→ transaction + state/nonce capability
 → provider proof
 → claim transaction
-→ verify provider evidence/network outside DB write transaction
+→ verify provider/network evidence outside DB write transaction
 → resolve active ExternalIdentity by issuer+subject
-→ Account security lock
-→ re-read Account active + ExternalIdentity active
+→ Account lock
+→ re-read Account/ExternalIdentity active
 → reconcile Apple grant if Apple
 → create canonical AuthSession
-→ COMMIT/reconcile
+→ commit/reconcile
 → session cookie only after durable success
 ```
 
-## 15.2 New provider identity with authoritative mailbox
+## New provider identity with accepted mailbox authority
 
 ```text
 provider proof
-→ normalize/classify exact email
+→ normalize/classify email
 → no existing EmailIdentity collision
 → Account transaction
-→ create Account
-→ verified EmailIdentity
-→ ExternalIdentity
-→ AppleAuthGrant bind if Apple
-→ Web/profile bootstrap staging when useful
+→ Account + verified EmailIdentity + ExternalIdentity
+→ Apple grant bind if applicable
+→ profile bootstrap if useful
 → AuthSession
-→ COMMIT/reconcile
 ```
 
-## 15.3 New provider identity requiring DANTE mailbox proof
+## New provider identity requiring DANTE mailbox proof
 
 ```text
 provider proof
 → ExternalSignupChallenge
-→ user supplies mailbox if necessary
+→ mailbox input if necessary
 → DANTE OTP
-→ valid OTP
 → terminal new-account or collision transition
 ```
 
-No Account exists before accepted mailbox proof.
+No Account before accepted mailbox proof.
 
-## 15.4 Provider-first collision
+## Provider-first collision
 
 ```text
 valid provider proof
@@ -1303,59 +1014,50 @@ valid provider proof
 → no Account creation
 → ExternalLinkChallenge targeted to exact Account/EmailIdentity
 → Secure HttpOnly link-flow cookie
-→ user authenticates existing Account using any accepted authenticator
-→ GET link state validates challenge target == current Account
-→ explicit Confirm
+→ user authenticates existing Account
+→ explicit confirm
 → Account lock + recent-auth recheck
 → issuer+subject uniqueness recheck
 → create/reactivate ExternalIdentity
-→ bind AppleAuthGrant if Apple
+→ bind Apple grant if applicable
 → consume challenge
-→ rotate current AuthSession bearer
+→ rotate current session bearer
 ```
 
-Before mailbox/account proof, public copy never reveals additional Account existence detail.
-
-## 15.5 Authenticated provider link
-
-From authenticated Security/Access settings:
+## Authenticated provider link
 
 ```text
 begin purpose=link
 requires session + CSRF + recent auth
 → provider proof
 → Account lock
-→ recent-auth recheck at completion
+→ recent-auth recheck
 → issuer+subject uniqueness recheck
-→ create/reactivate ExternalIdentity for same Account
-→ rotate session bearer
+→ create/reactivate identity for same Account
+→ rotate bearer
 ```
 
-No `ExternalLinkChallenge` is needed because Account control already exists.
+No ExternalLinkChallenge required because Account control already exists.
 
-## 15.6 Provider reauthentication
+## Provider reauthentication
 
 ```text
 begin purpose=reauthenticate
 requires valid session + CSRF
 DOES NOT require recent auth
 → provider proof
-→ exact auth_session_ref + begin-time bearer-verifier snapshot must still match
+→ exact session + begin-time bearer verifier must still match
 → Account lock
-→ same session remains
-→ recent_auth_at refreshed
-→ bearer rotated
+→ same auth_session_ref
+→ recent_auth_at refresh
+→ bearer rotation
 ```
-
-This mirrors M4 password reauthentication semantics rather than creating a separate session.
 
 ---
 
 # 16. Apple callback and notification topology
 
-## 16.1 Web callback
-
-Apple callback is:
+Apple callback:
 
 ```text
 POST /api/v1/auth/apple/callback
@@ -1364,34 +1066,28 @@ Content-Type: application/x-www-form-urlencoded
 
 It is the single reviewed external browser-ingress exception to normal same-origin unsafe-API CSRF handling.
 
-Security authority is the bounded server transaction:
+Security authority remains:
 
 ```text
 state verifier
 + nonce
 + expected provider/client audience
-+ authorization-code exchange
++ code exchange
 + signed ID-token verification
-+ session snapshot for link/reauth where applicable
++ session snapshot for link/reauth
 ```
 
-The callback must not weaken global DANTE cookie policy.
+After terminal processing return `303 See Other` to a **fixed DANTE destination** selected from bounded stored `return_target_code`, never arbitrary return URLs.
 
-For authenticated Apple link/reauth, the normal SameSite cookie may be absent on the cross-site POST; the transaction carries `auth_session_ref` plus exact begin-time bearer verifier snapshot. Completion rejects revoked/expired/rotated sessions.
-
-After terminal processing Apple returns a `303 See Other` to a **fixed DANTE destination** selected only from the stored bounded `return_target_code`. Never reflect arbitrary return URLs.
-
-## 16.2 Apple notifications
+Apple notifications:
 
 ```text
 POST /api/v1/auth/apple/notifications
 ```
 
-No browser CSRF. Verify Apple signed payload/JWS first.
+Verify signed payload/JWS first.
 
-Use provider event time to apply bounded idempotent transitions.
-
-Relevant M5 classes:
+Relevant classes:
 
 ```text
 email-disabled
@@ -1404,24 +1100,22 @@ Rules:
 
 ```text
 email disabled/enabled
-→ exact bound EmailIdentity recovery restriction with event-time ordering
+→ exact bound EmailIdentity reachability state with event-time ordering
 
 consent revoked/account deleted
 → Account lock where bound
-→ ExternalIdentity local revoke (monotonic)
-→ AppleAuthGrant revocation/reconciliation state
-→ never delete DANTE Account merely because Apple Account state changed
+→ local ExternalIdentity revoke
+→ AppleAuthGrant reconciliation
+→ never delete DANTE Account merely because Apple state changed
 ```
-
-Full DANTE Account deletion/privacy lifecycle remains separately governed.
 
 ---
 
 # 17. Exact M5 public API inventory
 
-All routes are under `/api/v1`, use explicit stable `operationId`, RFC 9457 problems, request IDs and `Cache-Control: no-store` for sensitive Auth responses.
+All routes are under `/api/v1`, use stable operationIds, RFC 9457 problems, request IDs and `Cache-Control: no-store` for sensitive Auth responses.
 
-## 17.1 Google
+## Google
 
 ```text
 POST /api/v1/auth/google/begin
@@ -1431,13 +1125,7 @@ POST /api/v1/auth/google/complete
 operationId: auth_complete_google_authentication
 ```
 
-`begin` body:
-
-```text
-purpose: sign_in | link | reauthenticate
-```
-
-Policy:
+Begin purpose:
 
 ```text
 sign_in        → anonymous allowed
@@ -1445,11 +1133,7 @@ link           → AuthSession + CSRF + recent auth
 reauthenticate → AuthSession + CSRF; recent auth NOT required
 ```
 
-Begin returns a typed transaction reference, raw in-memory transaction capability, OIDC nonce and expiry. Raw capability/nonce are never persisted in browser storage.
-
-Complete submits the transaction reference/capability plus GIS credential. Backend verifies signature/JWK/issuer/audience/azp where required/expiry/nonce/subject.
-
-## 17.2 Apple
+## Apple
 
 ```text
 POST /api/v1/auth/apple/begin
@@ -1462,9 +1146,7 @@ POST /api/v1/auth/apple/notifications
 operationId: auth_process_apple_notification
 ```
 
-Begin body/policy uses the same purpose vocabulary as Google. Response contains the server-built Apple authorization URL and expiry, not arbitrary client-composed security parameters.
-
-## 17.3 Provider enrollment
+## Provider enrollment
 
 ```text
 GET  /api/v1/auth/provider-enrollment
@@ -1480,18 +1162,7 @@ POST /api/v1/auth/provider-enrollment/resend
 operationId: auth_resend_provider_enrollment_verification
 ```
 
-Enrollment state is authorized by the Secure HttpOnly provider-enrollment flow cookie, not localStorage/sessionStorage.
-
-Successful verify returns either:
-
-```text
-authenticated
-link_required
-```
-
-according to authoritative terminal state.
-
-## 17.4 Provider link / methods
+## Provider link / methods
 
 ```text
 GET /api/v1/auth/provider-link
@@ -1507,11 +1178,7 @@ DELETE /api/v1/auth/providers/{external_identity_ref}
 operationId: auth_unlink_provider
 ```
 
-`provider-link` requires an authenticated Account after the user proves the existing Account. GET verifies challenge target Account before returning safe provider-link UI data. Confirm requires CSRF + recent auth.
-
-`auth_get_authentication_methods` returns only safe management metadata, such as active method type, stable DANTE ref, provider hint/private-relay indicator, passkey label/created/last-used and reconciliation state. No provider tokens/subjects/public keys are exposed.
-
-## 17.5 Password management
+## Password management
 
 ```text
 POST /api/v1/auth/password/establish
@@ -1521,11 +1188,9 @@ DELETE /api/v1/auth/password
 operationId: auth_remove_password
 ```
 
-Both require session + CSRF + recent auth and backend anti-lockout/account-lock checks.
+Existing M4 `/auth/reset-password` remains stable and adapts internally to create-or-replace credential.
 
-Existing M4 `/auth/reset-password` is adapted internally to create-or-replace PasswordCredential; its public path remains stable.
-
-## 17.6 Passkeys
+## Passkeys
 
 ```text
 POST /api/v1/auth/passkeys/registration/begin
@@ -1564,15 +1229,15 @@ attestation none
 
 Anonymous authentication is discoverable/username-less and creates a fresh canonical AuthSession.
 
-Reauthentication requires current session + CSRF but no initial recent-auth requirement; complete refreshes `recent_auth_at` and rotates the same session bearer.
+Passkey reauth refreshes recent auth and rotates same session bearer.
 
-PATCH changes the user-facing label only in M5.
+PATCH changes label only in M5.
 
 ---
 
 # 18. Provider authentication success union
 
-Google complete and server-internal Apple callback resolve to the same application outcome union:
+Google complete and Apple callback resolve to:
 
 ```text
 authenticated
@@ -1580,19 +1245,15 @@ link_required
 enrollment_required
 ```
 
-`authenticated` issues/rotates canonical DANTE AuthSession according to purpose.
+Email collision is a typed `link_required` state, not an error.
 
-`link_required` creates/retains provider-link flow state and never creates a duplicate Account.
-
-`enrollment_required` creates/retains provider-enrollment flow state and never creates an Account before mailbox proof.
-
-Frontend does not infer success from provider SDK callbacks alone.
+Frontend never infers DANTE success from provider SDK callback alone.
 
 ---
 
 # 19. Machine problem codes
 
-M5 adds the smallest stable set needed by client behavior:
+M5 stable additions:
 
 ```text
 auth.provider_transaction_invalid_or_expired
@@ -1603,21 +1264,18 @@ auth.provider_identity_conflict
 auth.provider_reconciliation_pending
 auth.provider_enrollment_invalid_or_expired
 auth.provider_enrollment_verification_invalid_or_expired
-
 auth.passkey_challenge_invalid_or_expired
 auth.passkey_verification_failed
 auth.passkey_already_registered
 auth.passkey_not_found
-
 auth.password_already_established
 auth.authenticator_removal_blocked
-
 dependency.provider_unavailable
 auth.provider_rate_limited
 auth.passkey_rate_limited
 ```
 
-Existing codes remain authoritative where they already fit:
+Existing codes remain authoritative where applicable:
 
 ```text
 auth.authentication_required
@@ -1632,15 +1290,13 @@ service.unavailable
 internal.unexpected
 ```
 
-Provider email collision itself is **not** an error; it is a typed `link_required` outcome.
-
 No client parses provider/backend English text.
 
 ---
 
 # 20. Browser flow-cookie contract
 
-M5 may use two bounded Secure HttpOnly host-only flow cookies:
+M5 bounded Secure HttpOnly host-only flow cookies:
 
 ```text
 __Host-dante-provider-link
@@ -1654,15 +1310,14 @@ Secure
 HttpOnly
 Path=/
 SameSite=Lax
-bounded Max-Age <= backing challenge TTL
+Max-Age <= backing challenge TTL
 raw high-entropy continuation capability only
-cleared on terminal success/cancel/invalid expiry where response control exists
 never localStorage/sessionStorage
 ```
 
-The ordinary `__Host-dante-session` policy is unchanged.
+Ordinary `__Host-dante-session` policy is unchanged.
 
-Google begin/complete transaction capability stays in browser memory only; Apple transports its transaction capability as provider `state`.
+Google begin/complete transaction capability remains browser-memory only; Apple transports transaction capability as provider `state`.
 
 ---
 
@@ -1671,49 +1326,49 @@ Google begin/complete transaction capability stays in browser memory only; Apple
 Production:
 
 ```text
-RP ID = exact DANTE registrable application domain configured for deployment
+RP ID = exact configured DANTE registrable application domain
 allowed origins = explicit canonical HTTPS origins
 ```
 
 No suffix/substring origin acceptance.
 
-Local browser proof changes the M4 harness target from IP-host RP posture to:
+Local browser proof:
 
 ```text
 origin = https://localhost:<ephemeral-port>
 RP ID  = localhost
 ```
 
-or an explicitly reviewed local domain with equivalent security.
+`https://127.0.0.1` is not M5 WebAuthn RP authority.
 
-`https://127.0.0.1` is not the M5 WebAuthn RP test authority.
-
-The exact `rp_id` and `expected_origin` are copied into each WebAuthnChallenge so a config change cannot reinterpret an already-issued ceremony.
+Each issued challenge persists exact `rp_id` and `expected_origin`; configuration changes cannot reinterpret an already-issued ceremony.
 
 ---
 
-# 22. Dependency qualification result
+# 22. Dependency direction / M5-B admission gate
 
-As of 2026-08-30, M5.2 approves these **families/versions as implementation candidates**, not yet as locked dependencies:
+M5.2 candidate baseline as of 2026-08-30:
 
 ```text
-fido2        2.2.1  — Yubico WebAuthn/FIDO server primitives
-joserfc      1.7.4  — JOSE/JWS/JWT/JWK
-cryptography 50.0.0 — AEAD / cryptographic backend
-httpx2       existing governed provider HTTP boundary
+fido2         2.2.1
+joserfc       1.7.4
+cryptography  50.0.x baseline
+existing httpx
 ```
 
-Before the dependency write gate actually changes `pyproject.toml`/`uv.lock`, implementation must prove:
+These are **candidates**, not accepted lock truth.
+
+Before changing `pyproject.toml` / `uv.lock`, M5-B must recheck:
 
 ```text
+current package versions
 Python 3.14 compatibility
-current advisory status
-no unsafe implicit algorithm selection
+current advisories
 explicit JOSE algorithm allowlists
-JWK parsing/key rotation vectors
+JWK parsing/rotation vectors
 WebAuthn ceremony vectors
-counter policy owned by DANTE rather than hidden auto-lock behavior
-no credential/token logging by dependency defaults
+DANTE-owned counter/risk policy
+no credential/token logging defaults
 Ruff/mypy/test/build compatibility
 uv lock determinism
 ```
@@ -1738,7 +1393,7 @@ Apple notification verification
 Apple pending/revocation reconciliation
 ```
 
-Unknown `kid` may cause one bounded JWK refresh per cache coordination window, not one refresh per concurrent request.
+Unknown `kid` may cause one bounded coordinated JWK refresh, not one refresh per concurrent request.
 
 Provider requests use bounded connect/read/total timeouts.
 
@@ -1755,7 +1410,7 @@ Google/Apple ID token
 authorization code
 Apple refresh/access token
 Apple client private key/client-secret JWT
-raw provider state/transaction capability
+raw provider transaction/state capability
 raw OIDC nonce
 raw passkey challenge
 raw WebAuthn assertion/signature beyond protected bounded diagnostics
@@ -1768,13 +1423,13 @@ Safe logs use DANTE refs, provider class, request ID and bounded machine failure
 
 Provider email/name/avatar/locale are personal data.
 
-Provider subject is security identity data; do not expose it to normal UI or logs merely for convenience.
+Provider subject is security identity data; do not expose it to normal UI/logs for convenience.
 
 ---
 
 # 25. Concurrency/race contract
 
-Every case below must be assigned a deterministic real-PostgreSQL proof where DB state is the arbiter:
+Deterministic proof is required where DB state is arbiter:
 
 ```text
 two first provider signins for same issuer+subject
@@ -1787,7 +1442,7 @@ pending Apple grant expiry vs link completion
 provider enrollment verify vs competing Account/email creation
 passkey duplicate registration
 passkey authentication vs passkey removal
-add password vs password recovery reset
+add password vs recovery reset
 remove password vs pending recovery proof
 authenticator removal vs concurrent authenticator removal
 reauth vs concurrent bearer rotation
@@ -1809,7 +1464,7 @@ no blind mutation retry
 
 # 26. Proof matrix
 
-## 26.1 Pure/unit
+## Pure/unit
 
 ```text
 provider claim normalization
@@ -1818,27 +1473,29 @@ Google mailbox-authority classification
 Apple event ordering decision
 AEAD AAD/key-ring behavior
 flow verifier hashing
-anti-lockout decision function
+anti-lockout decision
 WebAuthn option policy
 signCount risk policy
 problem mapping
 ```
 
-## 26.2 Real PostgreSQL
+## Real PostgreSQL
+
+M5-A already proves the persistence foundation. Later lifecycle slices add focused PG proof only where they add DB/race behavior.
 
 ```text
-all M5 PK/FK/UQ/CHECK/index/ACL
+PK/FK/UQ/CHECK/index/ACL
 EmailIdentity reachability ordering
-ExternalIdentity lifetime uniqueness/revocation
+ExternalIdentity uniqueness/revocation
 flow TTL/claim/consume
-pending AppleGrant lifecycle
-Account lock races
+pending Apple grant lifecycle
+Account-lock races
 provider collision/account creation races
 passkey duplicate/removal/auth races
 password/recovery races
 ```
 
-## 26.3 FastAPI HTTP
+## FastAPI HTTP
 
 ```text
 exact paths/status/media/cache-control/request-id
@@ -1849,85 +1506,77 @@ RFC9457 problems
 no unsafe field exposure
 ```
 
-## 26.4 OpenAPI/generated client
+## OpenAPI/generated client
 
 ```text
 deterministic OpenAPI without live providers/secrets
-generated operationIds exactly frozen
+operationIds exactly frozen
 success-union schemas
 RFC9457 typed problems
 governed client only
-no raw generated operation export to product UI
 ```
 
-## 26.5 Web/browser
+## Web/browser
 
 ```text
-Google/Apple buttons and cancel/error states
-provider-enrollment OTP flow
-provider collision → sign in → explicit link
-smart bootstrap without redundant name questions
+Google/Apple controls + cancel/error states
+provider-enrollment OTP
+provider collision → Account proof → explicit link
+smart bootstrap without redundant questions
 passkey registration
 username-less passkey authentication
 passkey reauth
 flow-cookie/URL scrubbing
-hard refresh remains authoritative
+hard refresh authoritative
 Chromium/Firefox/WebKit truthful capability matrix
 ```
 
-## 26.6 Real providers
+## Real providers
 
 Before M5 production-ready closure:
 
 ```text
-real Google configured client smoke/UAT
+real Google configured-client smoke/UAT
 real Apple registered HTTPS Services ID/domain smoke/UAT
 Apple Private Email Relay delivery configuration proof
 real provider revoke/account-change path where safely testable
+real WebAuthn/passkey UAT
 ```
 
 CI remains deterministic and does not depend on public providers.
 
 ---
 
-# 27. M5-A implementation order
-
-After this contract is committed, implementation begins in bounded slices:
+# 27. Current implementation order
 
 ```text
-M5-A1  Dictionary exact objects / EmailIdentity delta
-M5-A2  SQLAlchemy mappings
-M5-A3  Alembic migration + least-privilege ACL
-M5-A4  real PostgreSQL catalog/constraint/ACL/race acceptance
-
-M5-B   provider/JWK/JOSE/AEAD infrastructure + dependency lock
-M5-C   Google
-M5-D   Apple grant/callback/notifications
-M5-E   linking + authenticator management/anti-lockout
-M5-F   WebAuthn/passkeys
-M5-G   add/remove password + passwordless recovery adaptation
-M5-H   FastAPI/OpenAPI public materialization
-M5-I   governed generated client
-M5-J   Access Web/smart onboarding
-M5-K+  focused proof → real provider/browser UAT → docs/user acceptance
+M5-A   persistence foundations                              COMPLETE / PROVEN
+M5-B   provider/JWK/JOSE/AEAD infrastructure               NEXT
+M5-C   Google                                              PLANNED
+M5-D   Apple grant/callback/notifications                   PLANNED
+M5-E   linking + authenticator management/anti-lockout      PLANNED
+M5-F   WebAuthn/passkeys                                    PLANNED
+M5-G   add/remove password + passwordless recovery          PLANNED
+M5-H   FastAPI public materialization                       PLANNED
+M5-I   deterministic OpenAPI + governed client              PLANNED
+M5-J   Access Web/smart onboarding                          PLANNED
+M5-K+  focused proof → provider/browser UAT → acceptance    PLANNED
 ```
 
 Do not combine the entire M5 implementation into one uncontrolled patch.
 
 ---
 
-# 28. M5.2 closure condition
-
-M5.2 is complete when this document and current status/handoff sources agree that:
+# 28. Current closure state
 
 ```text
-exact persistence design frozen     YES
-exact API inventory frozen          YES
-state/race lifecycle frozen         YES
-callback/RP/origin topology frozen  YES
-dependency direction qualified      YES
-proof layering frozen               YES
-runtime/schema materialization      NO
+M5.1 architecture/external-authority freeze   COMPLETE
+M5.2 exact persistence/API design             COMPLETE
+M5-A persistence materialization              COMPLETE
+M5-A real PostgreSQL acceptance               95 / 95 PASS
+M5-A current catalog parity                   PASS
+M5-A static/type/fast/build                    PASS
+M5-B                                           NEXT
 ```
 
-Next action is **M5-A persistence foundations**, under a new exact Git write gate.
+M5 as a whole remains ACTIVE. M5-A persistence acceptance does not imply provider/API/Web/browser/provider-UAT completion.

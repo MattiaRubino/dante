@@ -8,8 +8,9 @@
 - **Current macro-phase:** M5 — Google + Apple + Passkeys + Explicit Linking
 - **M5.1:** COMPLETE
 - **M5.2:** COMPLETE
-- **Next exact step:** M5-A — persistence foundations
-- **M4 final accepted implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
+- **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
+- **Next exact step:** M5-B — Provider/JWK/JOSE/AEAD Infrastructure
+- **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M5 architecture authority:** `architecture/access-auth-m5-contract.md`
 - **M5.2 authority:** `architecture/access-auth-m5-persistence-api-contract.md`
 - **M5 continuation handoff:** `workstreams/access-auth-m5-live-handoff-2026-08-29.md`
@@ -53,10 +54,10 @@ M5.2 — Exact Persistence + API Design
         COMPLETE
           ↓
 M5-A — Persistence Foundations
-        NEXT / NOT STARTED
+        COMPLETE / REAL POSTGRESQL PROVEN
           ↓
 M5-B — Provider/JWK/JOSE/AEAD Infrastructure
-        PLANNED
+        NEXT
           ↓
 M5-C — Google Authentication
         PLANNED
@@ -89,7 +90,7 @@ M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The whole Access/Auth vertical is **not closed**. M5.1/M5.2 are design gates only; they do not imply runtime/schema/API capability and do not authorize merge to `main`.
+The whole Access/Auth vertical is **not closed**. M5-A proves only its persistence boundary and does not imply provider runtime, API, client, Web or provider/browser acceptance.
 
 ---
 
@@ -109,7 +110,7 @@ Alembic             20260827_10
 92 standalone Dictionary entries
 ```
 
-Accepted/current M4 materialized state:
+Accepted M4 historical baseline:
 
 ```text
 PostgreSQL          18.6
@@ -124,9 +125,22 @@ Alembic             20260829_11
 94 standalone Dictionary entries
 ```
 
-M5.2 adds **design only**, no accepted persistence yet.
+Accepted/current M5-A materialized state:
 
-Frozen M5-A target:
+```text
+PostgreSQL          18.6
+Alembic             20260830_12
+83 tables
+5 views
+15 routines
+75 triggers
+156 physical indexes
+85 foreign keys
+233 CHECK constraints
+103 standalone Dictionary entries
+```
+
+M5-A materialized:
 
 ```text
 ALTER dante.email_identity
@@ -145,10 +159,21 @@ CREATE
   dante.webauthn_challenge
 ```
 
-Exact columns/PK/FK/UQ/CHECK/index/ACL are authoritative in:
+Physical implementation hardening accepted during M5-A:
 
 ```text
-docs/architecture/access-auth-m5-persistence-api-contract.md
+ExternalIdentity exact Apple issuer+subject composite target
+AppleAuthGrant exact ExternalIdentity issuer+subject binding
+Apple link/signup challenge exact grant identity binding
+AuthSession exact auth_session_ref+account_ref composite target
+WebAuthnAccount exact account_ref+user_handle composite target
+WebAuthnChallenge exact Account/AuthSession/userHandle ownership
+PasskeyCredential ownership through WebAuthnAccount
+explicit cose_algorithm
+logical passkey revocation
+backup_state => backup_eligible
+profile-bootstrap / pending-grant cleanup indexes
+least-privilege EmailIdentity INSERT/UPDATE delta
 ```
 
 Permanent rule:
@@ -265,55 +290,80 @@ Authority:
 docs/architecture/access-auth-m5-persistence-api-contract.md
 ```
 
-No schema/code/dependency/OpenAPI/client/Web materialization occurred in M5.2.
+M5.2 was a design freeze; M5-A subsequently materialized only the persistence subset.
 
 ---
 
-# 6. M5-A — NEXT
+# 6. M5-A — COMPLETE / ACCEPTED
 
-**Purpose:** materialize only the persistence foundation frozen in M5.2.
+**Purpose:** materialize only the persistence foundation frozen in M5.2 and prove it on real PostgreSQL 18.6.
 
-Recommended split:
+Implemented:
 
 ```text
-M5-A1
-Database Dictionary
-→ 9 new table entries
-→ email_identity Dictionary evolution
-
-M5-A2
-SQLAlchemy auth mappings
-
-M5-A3
-one canonical Alembic revision from 20260829_11
-→ tables/constraints/indexes
-→ runtime ACL
-→ downgrade exact inverse
-
-M5-A4
-focused tests
-→ Dictionary parity
-→ migration head/DAG
-→ real PostgreSQL catalog
-→ exact ACL
-→ negative constraints
-→ synchronization races where persistence itself is arbiter
+M5-A1  Dictionary objects + EmailIdentity delta                 COMPLETE
+M5-A2  SQLAlchemy mappings                                      COMPLETE
+M5-A3  Alembic 20260830_12 + runtime ACL                        COMPLETE
+M5-A4  real PostgreSQL catalog/constraint/ACL/migration proof   COMPLETE
 ```
 
-Do not add Google/Apple provider HTTP clients, JOSE dependencies, WebAuthn dependencies or frontend code merely because they are downstream consumers unless a separate approved gate includes them.
+Accepted proof:
+
+```text
+uv lock                                      PASS
+Ruff format / lint                           PASS
+mypy strict                                  PASS
+backend fast                                 87 / 87 PASS
+real PostgreSQL 18.6                         95 / 95 PASS
+M5 persistence tests                          8 / 8 PASS
+migration head/base/head                      PASS
+Alembic autogenerate drift                    PASS
+Dictionary ≈ SQLAlchemy ≈ Alembic ≈ PG       PASS
+runtime ACL / negative constraints            PASS
+backend build                                 PASS
+```
+
+No Google/Apple provider HTTP client, JOSE/JWK runtime, WebAuthn library, public M5 API, generated client or Web UI was smuggled into M5-A.
 
 ---
 
-# 7. M5-B onward
+# 7. M5-B — NEXT
+
+M5-B owns **Provider/JWK/JOSE/AEAD Infrastructure**.
+
+Required gate direction:
 
 ```text
-M5-B
-provider/JWK/JOSE/AEAD infrastructure
-→ qualify/pin fido2, joserfc, cryptography where actually consumed
-→ typed provider settings
-→ bounded JWK cache/network timeouts
-→ encrypted Apple grant key ring
+qualify dependencies actually consumed
+Python 3.14 compatibility + current advisory review
+deterministic uv lock
+explicit JOSE algorithm allowlists
+typed Google/Apple/WebAuthn settings
+bounded provider/JWK HTTP clients
+JWK cache + rotation behavior
+Apple grant AEAD key ring / AES-256-GCM baseline
+purpose-separated provider transaction verifiers
+secret/token/assertion logging controls
+process-scoped lifecycle / clean shutdown
+focused vectors + static/type/test/build
+```
 
+Candidate dependency direction identified in M5.2:
+
+```text
+fido2         2.2.1
+joserfc       1.7.4
+cryptography  50.0.x baseline
+existing httpx
+```
+
+Versions are candidates until M5-B performs current qualification and lock admission.
+
+---
+
+# 8. M5-C onward
+
+```text
 M5-C
 Google signin/new Account/collision/reauth/link
 
@@ -351,7 +401,7 @@ Access UI
 
 M5-K+
 focused security/race proof
-→ real PostgreSQL acceptance
+→ whole-stage PostgreSQL acceptance where needed
 → browser acceptance
 → real provider UAT
 → manual UAT
@@ -361,7 +411,7 @@ focused security/race proof
 
 ---
 
-# 8. Browser/provider acceptance topology
+# 9. Browser/provider acceptance topology
 
 Mandatory CI:
 
@@ -391,7 +441,7 @@ Chromium/Firefox/WebKit remain critical. Engine-specific native capability gaps 
 
 ---
 
-# 9. M6 / M7
+# 10. M6 / M7
 
 ```text
 M6 — Native Mobile Access
@@ -405,7 +455,7 @@ M7 owns complete session/device/security management, new-login alerts/“this wa
 
 ---
 
-# 10. Whole-vertical closure rule
+# 11. Whole-vertical closure rule
 
 ```text
 M1 CLOSED
@@ -415,7 +465,8 @@ M4 CLOSED
 M5 ACTIVE
   M5.1 COMPLETE
   M5.2 COMPLETE
-  M5-A NEXT
+  M5-A COMPLETE / POSTGRESQL PROVEN
+  M5-B NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
