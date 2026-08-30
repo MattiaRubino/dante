@@ -54,9 +54,9 @@ line-length = 100
 src = ["src"]
 
 [tool.ruff.format]
-# Applied CP6 migrations are immutable evidence under MIG-02. Formatter exclusion prevents
-# style-only history rewrites; Ruff lint still covers them with only the exact historical
-# findings documented below. The current CP6-05 candidate revision is not excluded.
+# Applied migrations listed below remain byte-stable under MIG-02. Formatter exclusion
+# prevents style-only rewrites; Ruff lint still covers them with the exact historical findings
+# documented below. Revisions not listed here, including current 20260830_09, use normal checks.
 exclude = [
     "migrations/versions/20260825_01_cp6_native_identity_address.py",
     "migrations/versions/20260825_02_cp6_scoped_material_control.py",
