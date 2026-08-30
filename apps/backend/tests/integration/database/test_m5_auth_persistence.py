@@ -130,8 +130,7 @@ def test_m5_tables_email_delta_and_runtime_acl_are_exact(migrated_database: Any)
         tables = {
             str(row[0])
             for row in connection.execute(
-                "SELECT tablename FROM pg_tables "
-                "WHERE schemaname='dante' AND tablename = ANY(%s)",
+                "SELECT tablename FROM pg_tables WHERE schemaname='dante' AND tablename = ANY(%s)",
                 (sorted(_M5_TABLES),),
             )
         }
@@ -513,11 +512,43 @@ def test_passkey_requires_webauthn_owner_and_valid_backup_state(
 
 def test_durable_credentials_are_not_runtime_deletable(migrated_database: Any) -> None:
     with _runtime(migrated_database) as connection:
-        for table_name in (
-            "external_identity",
-            "apple_auth_grant",
-            "webauthn_account",
-            "passkey_credential",
+        for statement in (
+            "DELETE FROM dante.external_identity",
+            "DELETE FROM dante.apple_auth_grant",
+            "DELETE FROM dante.webauthn_account",
+            "DELETE FROM dante.passkey_credential",
         ):
             with pytest.raises(psycopg.errors.InsufficientPrivilege):
-                connection.execute(f"DELETE FROM dante.{table_name}")
+                connection.execute(statement)
+
+
+def test_email_identity_m5_insert_acl_remains_column_scoped(
+    migrated_database: Any,
+) -> None:
+    with _admin(migrated_database) as connection:
+        table_insert = connection.execute(
+            "SELECT has_table_privilege('dante_runtime','dante.email_identity','INSERT')"
+        ).fetchone()
+        insert_columns = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT column_name "
+                "FROM information_schema.column_privileges "
+                "WHERE grantee='dante_runtime' "
+                "AND table_schema='dante' "
+                "AND table_name='email_identity' "
+                "AND privilege_type='INSERT'"
+            )
+        }
+
+    assert table_insert == (False,)
+    assert insert_columns == {
+        "email_identity_ref",
+        "account_ref",
+        "address",
+        "comparison_key",
+        "created_at",
+        "verified_at",
+        "recovery_restriction_code",
+        "recovery_restriction_observed_at",
+    }

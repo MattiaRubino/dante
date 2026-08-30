@@ -62,8 +62,7 @@ class EmailIdentityRow(Base):
         ),
         CheckConstraint("isfinite(created_at)", name="created_at"),
         CheckConstraint(
-            "verified_at IS NULL OR "
-            "(isfinite(verified_at) AND verified_at >= created_at)",
+            "verified_at IS NULL OR (isfinite(verified_at) AND verified_at >= created_at)",
             name="verified_at",
         ),
         CheckConstraint(
@@ -72,8 +71,7 @@ class EmailIdentityRow(Base):
             name="recovery_restriction_code",
         ),
         CheckConstraint(
-            "recovery_restriction_code IS NULL OR "
-            "recovery_restriction_observed_at IS NOT NULL",
+            "recovery_restriction_code IS NULL OR recovery_restriction_observed_at IS NOT NULL",
             name="recovery_restriction_observed",
         ),
         CheckConstraint(
@@ -128,8 +126,7 @@ class PasswordCredentialRow(Base):
             name="pepper_key_id",
         ),
         CheckConstraint(
-            "isfinite(created_at) AND isfinite(updated_at) "
-            "AND updated_at >= created_at",
+            "isfinite(created_at) AND isfinite(updated_at) AND updated_at >= created_at",
             name="chronology",
         ),
         ForeignKeyConstraint(
@@ -224,8 +221,7 @@ class PasswordSignupChallengeRow(Base):
             name="email_address",
         ),
         CheckConstraint(
-            "email_comparison_key = btrim(email_comparison_key) "
-            "AND email_comparison_key <> ''",
+            "email_comparison_key = btrim(email_comparison_key) AND email_comparison_key <> ''",
             name="email_comparison_key",
         ),
         CheckConstraint(
@@ -272,8 +268,12 @@ class PasswordSignupChallengeRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     signup_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    verification_issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    verification_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    verification_issued_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    verification_expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
     failed_verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
@@ -493,8 +493,7 @@ class AppleAuthGrantRow(Base):
             name="subject",
         ),
         CheckConstraint(
-            "client_id=btrim(client_id) AND client_id<>'' "
-            "AND char_length(client_id)<=255",
+            "client_id=btrim(client_id) AND client_id<>'' AND char_length(client_id)<=255",
             name="client_id",
         ),
         CheckConstraint(
@@ -594,8 +593,12 @@ class AppleAuthGrantRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    pending_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    revocation_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pending_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    revocation_requested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
@@ -855,8 +858,12 @@ class ExternalSignupChallengeRow(Base):
     email_comparison_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     otp_verifier: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     otp_key_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    verification_issued_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verification_issued_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    verification_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     failed_verification_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
     bootstrap_display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
     bootstrap_given_name: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -908,8 +915,7 @@ class AccountProfileBootstrapRow(Base):
             name="picture_url",
         ),
         CheckConstraint(
-            "locale IS NULL OR (locale=btrim(locale) "
-            "AND locale<>'' AND char_length(locale)<=64)",
+            "locale IS NULL OR (locale=btrim(locale) AND locale<>'' AND char_length(locale)<=64)",
             name="locale",
         ),
         CheckConstraint(

@@ -36,6 +36,15 @@ _POST_CP6_TABLES = {
     "auth_session",
     "password_signup_challenge",
     "password_recovery_challenge",
+    "account_profile_bootstrap",
+    "apple_auth_grant",
+    "external_auth_transaction",
+    "external_identity",
+    "external_link_challenge",
+    "external_signup_challenge",
+    "passkey_credential",
+    "webauthn_account",
+    "webauthn_challenge",
 }
 _ROUTINES = {
     "enforce_native_address_owner",

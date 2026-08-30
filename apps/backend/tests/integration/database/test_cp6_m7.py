@@ -118,6 +118,15 @@ def _mapped_table_names() -> set[str]:
         "auth_session",
         "password_signup_challenge",
         "password_recovery_challenge",
+        "account_profile_bootstrap",
+        "apple_auth_grant",
+        "external_auth_transaction",
+        "external_identity",
+        "external_link_challenge",
+        "external_signup_challenge",
+        "passkey_credential",
+        "webauthn_account",
+        "webauthn_challenge",
     }
     return {
         table.name for table in Base.metadata.tables.values() if table.name not in post_cp6_tables
