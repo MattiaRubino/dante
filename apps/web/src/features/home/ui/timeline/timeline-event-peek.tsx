@@ -95,6 +95,7 @@ export function TimelineEventPeek({
   const { t } = useTranslation('common');
   const peekRef = useRef<HTMLDivElement | null>(null);
   const firstActionRef = useRef<HTMLButtonElement | null>(null);
+  const dismissRef = useRef(onDismiss);
   const [position, setPosition] = useState<PeekPosition>(() =>
     computePeekPosition(
       opener,
@@ -107,13 +108,17 @@ export function TimelineEventPeek({
   );
 
   useLayoutEffect(() => {
+    dismissRef.current = onDismiss;
+  }, [onDismiss]);
+
+  useLayoutEffect(() => {
     firstActionRef.current?.focus();
   }, [event.id]);
 
   useLayoutEffect(() => {
     const update = () => {
       if (!opener.isConnected) {
-        onDismiss(false);
+        dismissRef.current(false);
         return;
       }
       const peekRect = peekRef.current?.getBoundingClientRect();
@@ -143,7 +148,7 @@ export function TimelineEventPeek({
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
-  }, [onDismiss, opener]);
+  }, [opener]);
 
   useEffect(() => {
     const onPointerDown = (pointerEvent: PointerEvent) => {
@@ -157,7 +162,7 @@ export function TimelineEventPeek({
       ) {
         return;
       }
-      onDismiss(false);
+      dismissRef.current(false);
     };
 
     const onKeyDown = (keyboardEvent: globalThis.KeyboardEvent) => {
@@ -166,7 +171,7 @@ export function TimelineEventPeek({
       }
       keyboardEvent.preventDefault();
       keyboardEvent.stopPropagation();
-      onDismiss(true);
+      dismissRef.current(true);
     };
 
     document.addEventListener('pointerdown', onPointerDown, true);
@@ -175,7 +180,7 @@ export function TimelineEventPeek({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [onDismiss, opener]);
+  }, [opener]);
 
   const subitemsCount = event.subitems?.length ?? 0;
 
@@ -208,7 +213,7 @@ export function TimelineEventPeek({
         <button
           className="timeline-event-peek__close"
           type="button"
-          onClick={() => onDismiss(true)}
+          onClick={() => dismissRef.current(true)}
           aria-label={t(($) => $.common.home.timeline.peek.close)}
         >
           ×
