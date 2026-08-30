@@ -1,14 +1,14 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP04 LOCAL PASS / CP05 NOT STARTED
+- **Status:** ACTIVE / CP05 LOCAL PASS / CP06 NOT STARTED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
 - **Local worktree:** `/home/mattia/projects/dante-postgres-recovery`
 - **Current PostgreSQL:** 18.6
 - **Accepted recovery technology baseline:** pgBackRest 2.59.0 + AWS S3 Standard `eu-south-1` + Versioning + Object Lock GOVERNANCE
-- **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; CP02 foundation, CP03 WAL/backup and CP04 destructive restore direct local proof PASS
-- **Current macro-checkpoint:** CP04 — Destructive / Isolated Restore / LOCAL PASS; CP05 deterministic PITR NOT STARTED
+- **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; CP02 foundation, CP03 WAL/backup, CP04 destructive restore and CP05 deterministic PITR direct local proof PASS
+- **Current macro-checkpoint:** CP05 — Deterministic PITR / LOCAL PASS; CP06 failure injection + semantic recovery / anti-resurrection NOT STARTED
 - **Live handoff:** `postgres-recovery-live-handoff-2026-08-29.md`
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 
@@ -110,13 +110,15 @@ No recovery shortcut may rewrite historical semantics merely to make a restored 
 
 ## 4. Accepted target vs current implementation
 
-### 4.1 Current implementation after CP04 local proof
+### 4.1 Current implementation after CP05 local proof
 
 Current branch source materializes a PostgreSQL 18.6 image with PostGIS, pgvector and an exact pgBackRest package pin. The local compose topology mounts a dedicated recovery repository volume physically distinct from `PGDATA`, and the recovery-specific compose overlay isolates the test runtime from the ordinary LOCAL/observability stack.
 
 CP03 adds recovery-only PostgreSQL archive settings in the versioned overlay and a bounded LOCAL full-backup retention value in pgBackRest configuration. The isolated runtime has been directly proven for WAL archiving, pgBackRest archive integration, physical FULL backup, local retention behavior and archive-path failure/recovery.
 
 CP04 then directly proved recovery after destructive deletion/recreation of the isolated PostgreSQL data volume. The semantic restore source was created only after the recovery cluster was materialized through the existing backend P0 provisioning + Alembic boundaries and verified against the accepted CP6 database topology.
+
+CP05 directly proved deterministic point-in-time recovery to a named PostgreSQL restore point across a timeline promotion. The test source contained a baseline canonical fixture, state A before the restore point and state B after the restore point. After destructive PGDATA replacement, pgBackRest restored the exact CP04 FULL and PostgreSQL replayed the archived timeline chain only to the named target; the promoted target contained baseline + A and did not contain B.
 
 Current source/runtime topology:
 
@@ -145,6 +147,8 @@ recovery wal_level               replica inherited/current baseline direct local
 archive failure harness          infra/local/postgres/recovery/archive-failure-recovery-check.sh
 CP04 materialize harness         infra/local/postgres/recovery/cp04-materialize-backup.sh
 CP04 destructive harness         infra/local/postgres/recovery/cp04-destructive-restore-check.sh
+CP05 source harness              infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
+CP05 destructive PITR harness    infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
 ```
 
 Direct CP02 evidence observed on the dedicated worktree/runtime:
@@ -246,7 +250,74 @@ chown postgres:postgres /var/lib/postgresql/18
 chmod 0700 /var/lib/postgresql/18
 ```
 
-The versioned CP04 destructive harness performs this normalization immediately after restore and before the first PostgreSQL boot.
+The versioned CP04 and CP05 destructive harnesses perform this normalization immediately after restore and before the first PostgreSQL boot.
+
+Direct CP05 deterministic PITR evidence:
+
+```text
+base FULL                         20260830-132540F
+source promoted timeline          2
+source timeline history           00000002.history
+scenario                          dante_cp05_20260830T140906Z_19757
+restore point                     dante_cp05_20260830T140906Z_19757_R1
+restore point LSN                 0/16000230
+restore point WAL                 000000020000000000000016
+A                                 01a05300-a55e-7845-a710-69387408d147
+B                                 01a05300-a5c0-7d08-a608-74ac9d821817
+B WAL                             000000020000000000000017
+source baseline/A/B               1 / 1 / 1 PASS
+timeline-2 WAL archive            PASS
+timeline history in repository    PASS
+restore-point WAL archive         PASS
+post-target B WAL archive         PASS
+post-scenario pgBackRest check    PASS
+PGDATA destructive replacement    PASS
+repository preserved              PASS
+old source marker absent          PASS
+exact FULL restore                PASS
+--type=name                       PASS
+--target=<R1>                     PASS
+--target-timeline=2               PASS
+--target-action=promote           PASS
+recovery stopped at named R1      PASS
+promoted timeline                 3
+promoted WAL                      000000030000000000000016
+baseline after PITR               PRESENT
+A after PITR                      PRESENT
+B after PITR                      ABSENT
+restored PostgreSQL 18.6          PASS
+restored Alembic 20260826_08      PASS
+restored accepted topology        PASS
+restored owners/roles/ACL         PASS
+restored extension versions       PASS
+dante_runtime A visible/B absent  PASS
+repository metadata unchanged     PASS
+```
+
+Timeline-history finding retained from CP05: the timeline-2 history file was created by the CP04 promotion while the isolated verification target intentionally had `archive_mode=off`. Re-enabling archiving later did not retroactively queue that already-created history file. Before A/R1/B were allowed, the existing PostgreSQL `00000002.history` was explicitly pushed through `pgbackrest --stanza=dante archive-push`; `archive_status` was not manipulated manually. The reusable CP05 source harness incorporates this behavior and first accepts an already-archived history file when present.
+
+Direct LOCAL timing observations for the exercised CP05 scenario:
+
+```text
+pgBackRest physical restore reported       7.530 s
+WAL replay start -> named target           0.263121 s
+recovery start -> database ready           0.539736 s
+named target -> database ready             0.276615 s
+```
+
+PostgreSQL logs directly showed:
+
+```text
+starting point-in-time recovery to named R1
+redo starts at 0/11000028
+recovery stopping at named R1
+redo done at 0/160001C8
+selected new timeline ID: 3
+archive recovery complete
+database system is ready to accept connections
+```
+
+These are LOCAL workstation observations for this small deterministic dataset. They are evidence that timing measurement works; they are **not** production RPO/RTO targets.
 
 Therefore the truthful status is:
 
@@ -265,10 +336,14 @@ destructive isolated restore       LOCAL PASS
 semantic/catalog restore proof     LOCAL PASS
 SC-031 destructive local proof     PASS
 CP04 Destructive Restore           LOCAL PASS
+deterministic named PITR           LOCAL PASS
+A present / B absent               LOCAL PASS
+recovery timing readback           LOCAL PASS
+PSV-40 local archive/restore/PITR  PASS
+CP05 Deterministic PITR            LOCAL PASS
 AWS S3 recovery repository         SELECTED / NOT ACTIVATED
 S3 Versioning                      SELECTED / NOT ACTIVATED
 Object Lock GOVERNANCE             SELECTED / NOT ACTIVATED
-PITR rehearsal                     NOT RUN / CP05 OWNED
 SC-011 anti-resurrection proof      NOT RUN / CP06 OWNED
 ```
 
@@ -291,7 +366,7 @@ Recovery copies remain non-canonical.
 
 ### 4.3 Activation-time version rule
 
-pgBackRest `2.59.1` is the maintenance release selected for the implementation. External evidence identified the exact Debian 13/Trixie PGDG package `2.59.1-1.pgdg13+1`; CP02 directly proved a clean local image build, exact CLI version, PostgreSQL 18.6 interoperability and stanza/repository initialization, CP03 directly proved archive/backup interoperability, and CP04 directly proved destructive restore interoperability.
+pgBackRest `2.59.1` is the maintenance release selected for the implementation. External evidence identified the exact Debian 13/Trixie PGDG package `2.59.1-1.pgdg13+1`; CP02 directly proved a clean local image build, exact CLI version, PostgreSQL 18.6 interoperability and stanza/repository initialization, CP03 directly proved archive/backup interoperability, CP04 directly proved destructive restore interoperability, and CP05 directly proved timeline-aware named PITR interoperability.
 
 Therefore `2.59.1` is ratified as the implementation maintenance pin for this workstream. This does **not** silently rewrite historical Physical Model evidence that selected `2.59.0`; durable architecture/current-state documentation is reconciled at the appropriate integration boundary.
 
@@ -304,6 +379,7 @@ PostgreSQL 18.6 foundation interoperability PASS
 stanza/repository foundation               PASS
 WAL archive + full-backup interoperability PASS
 destructive restore interoperability       PASS
+deterministic PITR interoperability        PASS
 → implementation maintenance refresh RATIFIED
 ```
 
@@ -326,7 +402,7 @@ RPO/RTO                       measured later; no invented targets
 SC-011                        OPEN HARD GATE
 ```
 
-The pgBackRest `check` command is explicitly owned by CP03 rather than CP02 because a meaningful `check` validates the archive path and forces WAL/archive interaction. CP02 proves the foundation only; CP03 directly proves the archive/check/backup path; CP04 proves that a selected FULL can actually restore the accepted PostgreSQL database after loss of PGDATA.
+The pgBackRest `check` command is explicitly owned by CP03 rather than CP02 because a meaningful `check` validates the archive path and forces WAL/archive interaction. CP02 proves the foundation only; CP03 directly proves the archive/check/backup path; CP04 proves that a selected FULL can actually restore the accepted PostgreSQL database after loss of PGDATA; CP05 proves that the archived WAL/timeline chain can return to a deterministic earlier accepted point.
 
 ---
 
@@ -349,6 +425,8 @@ The workstream closes only when DANTE can demonstrate, not merely describe:
 12. direct remote acceptance on the selected AWS S3 topology before production-recovery PASS
 ```
 
+CP01–CP05 have now directly proven objectives 1–6 on the LOCAL deterministic topology and established direct local recovery/replay timing observations. Later checkpoints still own broader failure semantics, anti-resurrection, full operator recovery closure and selected-stack remote acceptance.
+
 No evidence may be promoted from `DESIGNED` to `PASS` without the relevant executable artifact/output.
 
 ---
@@ -364,7 +442,7 @@ RPO desired value != observed recoverability
 RTO desired value != measured restoration duration
 ```
 
-CP01 defines measurement semantics and business questions. Later recovery rehearsals record actual values. A production target may only be ratified after workload/backup/WAL characteristics are measurable enough to make the number meaningful.
+CP01 defines measurement semantics and business questions. Recovery rehearsals record actual values. A production target may only be ratified after workload/backup/WAL characteristics are measurable enough to make the number meaningful.
 
 Required measurements include at minimum:
 
@@ -379,6 +457,8 @@ operator critical-path duration
 actual recoverable target
 actual data-loss window in the exercised scenario
 ```
+
+CP05 has directly measured physical restore and WAL replay/readiness duration for one LOCAL deterministic scenario. These numbers are observations only; they do not ratify production RPO/RTO.
 
 ---
 
@@ -433,6 +513,8 @@ Versioned recovery harnesses:
 infra/local/postgres/recovery/archive-failure-recovery-check.sh
 infra/local/postgres/recovery/cp04-materialize-backup.sh
 infra/local/postgres/recovery/cp04-destructive-restore-check.sh
+infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
+infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
 ```
 
 ### REMOTE selected-stack acceptance
@@ -452,7 +534,7 @@ real AWS S3 eu-south-1
 
 MinIO/LocalStack/local POSIX evidence must never be mislabeled as direct AWS S3 acceptance.
 
-No paid cloud resource or production IaC system is activated by this bootstrap.
+No paid cloud resource or production IaC system is activated by the current local checkpoints.
 
 ---
 
@@ -505,6 +587,8 @@ restore exact set   20260830-132540F
 verify old marker   absent
 ```
 
+CP05 repeated destructive PGDATA replacement for deterministic PITR and again proved the repository survived independently.
+
 Minimum post-restore verification remains:
 
 ```text
@@ -519,7 +603,7 @@ application readiness boundary
 semantic verification suite
 ```
 
-CP04 satisfied the local direct subset with PostgreSQL 18.6, exact topology, deterministic canonical fixture, role/ACL checks and real `dante_runtime` authentication/read access. Whole product-traffic reopen semantics remain later CP06/CP07 concerns.
+CP04 and CP05 satisfy the local direct subset with PostgreSQL 18.6, exact topology, deterministic canonical fixtures/states, role/ACL checks and real `dante_runtime` authentication/read access. Whole product-traffic reopen semantics remain later CP06/CP07 concerns.
 
 Traffic must remain closed until recovery verification and required reconciliation steps finish.
 
@@ -529,22 +613,44 @@ Traffic must remain closed until recovery verification and required reconciliati
 
 Use a deterministic scenario, not an imprecise sleep-and-clock test.
 
-Preferred automated scenario:
+Accepted LOCAL primary scenario:
 
 ```text
 physical backup
-→ write A
-→ create named restore point / deterministic recovery marker
-→ force/confirm WAL archival
-→ write B
-→ destroy/isolate source target
-→ restore to marker
-→ assert A is present
-→ assert B is absent
-→ run semantic verification
+→ promoted source timeline becomes archiving primary
+→ ensure timeline-history file is archived
+→ write A and commit
+→ create named restore point R
+→ force/confirm WAL containing R is archived
+→ write B and commit
+→ force/confirm later WAL containing B is archived
+→ prove source contains baseline + A + B
+→ destroy source PGDATA
+→ restore exact FULL
+→ target named restore point on exact timeline
+→ promote at target
+→ assert baseline present
+→ assert A present
+→ assert B absent
+→ run catalog/ACL/runtime verification
+→ capture replay/readiness timings
 ```
 
-A wall-clock recovery-target test may also be retained as additional evidence, but the primary automated proof should minimize timing flakiness.
+CP05 direct scenario:
+
+```text
+base FULL          20260830-132540F
+target timeline    2
+history            00000002.history
+restore point      dante_cp05_20260830T140906Z_19757_R1
+restore LSN        0/16000230
+A                  01a05300-a55e-7845-a710-69387408d147
+B                  01a05300-a5c0-7d08-a608-74ac9d821817
+result             baseline present / A present / B absent
+promotion          timeline 3
+```
+
+The named restore point is the primary deterministic proof. A wall-clock recovery-target test may later be retained as supplementary evidence but is not required to replace the less-flaky named-marker proof.
 
 ---
 
@@ -565,16 +671,17 @@ Current local disposition:
 
 ```text
 SC-031 destructive PostgreSQL recovery   PASS (LOCAL deterministic topology)
+PSV-40 archive/restore/PITR rehearsal    PASS (LOCAL deterministic topology)
 SC-011 anti-resurrection                 NOT PASS / OPEN HARD GATE
 ```
 
-The PostgreSQL recovery branch directly owns the PostgreSQL side of these gates and must preserve explicit boundaries with any later R2/object recovery work. Local SC-031 evidence does not replace later selected-stack AWS proof where that topology is required for production recovery closure.
+The PostgreSQL recovery branch directly owns the PostgreSQL side of these gates and must preserve explicit boundaries with any later R2/object recovery work. Local SC-031/PSV-40 evidence does not replace later selected-stack AWS proof where that topology is required for production recovery closure.
 
 ---
 
 ## 13. Anti-resurrection hard gate
 
-This is intentionally unresolved at bootstrap and may not be hand-waved.
+This is intentionally unresolved and may not be hand-waved.
 
 Failure model:
 
@@ -598,7 +705,7 @@ restore canonical PostgreSQL under accepted recovery procedure
 → only then reopen affected traffic
 ```
 
-At workstream start there is no accepted concrete implementation for a post-backup deletion/redaction suppression source that survives independently enough to reconcile an older restore.
+There is still no accepted concrete implementation for a post-backup deletion/redaction suppression source that survives independently enough to reconcile an older restore.
 
 Therefore:
 
@@ -607,7 +714,7 @@ ANTI-RESURRECTION DESIGN      OPEN HARD GATE
 SC-011                        NOT PASS
 ```
 
-Do not invent a generic ledger, external canonical store or second database merely to close the checklist. CP01/CP06 must derive the narrowest truthful mechanism consistent with PostgreSQL remaining canonical and with DANTE deletion/redaction semantics.
+Do not invent a generic ledger, external canonical store or second database merely to close the checklist. CP06 must derive the narrowest truthful mechanism consistent with PostgreSQL remaining canonical and with DANTE deletion/redaction semantics.
 
 ---
 
@@ -618,7 +725,7 @@ CP01  Recovery Contract / Bootstrap                         CONTRACT FROZEN
 CP02  pgBackRest Foundation                                 LOCAL PASS
 CP03  Continuous WAL + Backup                               LOCAL PASS
 CP04  Destructive / Isolated Restore                        LOCAL PASS
-CP05  Deterministic PITR                                    NOT STARTED
+CP05  Deterministic PITR                                    LOCAL PASS
 CP06  Failure Injection + Semantic Recovery / Anti-Resurrection  NOT STARTED
 CP07  Whole Recovery QA + Runbook + Closure                 NOT STARTED
 ```
@@ -720,12 +827,19 @@ restored PostgreSQL boot                       LOCAL PASS
 restored catalog/fixture/ACL/runtime path       LOCAL PASS
 CP04                                           LOCAL PASS
 SC-031 local destructive proof                 PASS
+timeline-history archive continuity            LOCAL PASS
+deterministic named restore point              LOCAL PASS
+A present / B absent                           LOCAL PASS
+PITR promoted target                           LOCAL PASS
+replay/readiness timing evidence               LOCAL PASS
+CP05                                           LOCAL PASS
+PSV-40 local archive/restore/PITR              PASS
 AWS resources created                         NO
 AWS credentials committed                     NO
-PITR rehearsal                                NO / CP05 NOT STARTED
 anti-resurrection mechanism frozen            NO
 SC-011 PASS                                   NO
+CP06                                           NOT STARTED
 runbook accepted                              NO
 ```
 
-**Next safe action:** keep the CP04-restored verification target isolated with `archive_mode=off` until CP05 topology is frozen. Define a deterministic PITR harness that creates a fresh valid backup baseline, writes state A, creates a named PostgreSQL restore point, confirms the required WAL is archived, writes state B, confirms later WAL archival, then restores to the named marker and proves A present / B absent plus the same catalog/semantic acceptance checks. Do not enter AWS or SC-011 implementation under CP05.
+**Next safe action:** keep the CP05 PITR verification target isolated with `archive_mode=off` until CP05 closure is synchronized locally, then open CP06 under a new exact gate. CP06 must exercise a broader negative recovery matrix and resolve or truthfully block on SC-011 anti-resurrection. Do not treat successful byte recovery/PITR as permission to reopen traffic after restoring an older state that may predate accepted deletion/redaction facts; do not enter AWS activation under the CP05 closure gate.
