@@ -20,7 +20,10 @@ import {
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
-import { TIMELINE_POLICY } from './model/timeline-policy';
+import {
+  TIMELINE_POLICY,
+  timelineSupportsExpandedLayout,
+} from './model/timeline-policy';
 import {
   createInitialTimelineState,
   timelineReducer,
@@ -93,7 +96,10 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function timelineNowViewportOffset(gridHeight: number): number {
-  return Math.max(80, gridHeight * 0.34);
+  return Math.max(
+    TIMELINE_POLICY.viewport.nowOffsetMinPx,
+    gridHeight * TIMELINE_POLICY.viewport.nowOffsetRatio,
+  );
 }
 
 function parseViewedDate(value: string | undefined): PlainDate | null {
@@ -166,21 +172,35 @@ function applyTimelineExpansion(
     return;
   }
 
-  const p = window.innerWidth <= 1120 ? 0 : clamp(progress, 0, 1);
+  const expansion = TIMELINE_POLICY.expansion;
+  const layout = TIMELINE_POLICY.layout;
+  const syncTolerance = TIMELINE_POLICY.viewport.horizontalSyncTolerancePx;
+  const p = timelineSupportsExpandedLayout(window.innerWidth)
+    ? clamp(progress, 0, 1)
+    : 0;
   const viewportWidth = Math.max(1, grid.clientWidth);
   const expandedTrack = Math.max(
     viewportWidth,
-    44 + groupCount * TIMELINE_POLICY.layout.groupMinWidthPx + 16,
+    expansion.trackChromeWidthPx + groupCount * layout.groupMinWidthPx,
   );
   const trackWidth = viewportWidth + (expandedTrack - viewportWidth) * p;
-  const compactInner = Math.max(1, trackWidth - 60);
-  const expandedInner = Math.max(1, expandedTrack - 60);
+  const compactInner = Math.max(1, trackWidth - expansion.trackChromeWidthPx);
+  const expandedInner = Math.max(
+    1,
+    expandedTrack - expansion.trackChromeWidthPx,
+  );
   const safeGroupCount = Math.max(1, groupCount);
   const groupWidth = expandedInner / safeGroupCount;
 
   root.style.setProperty(
     '--timeline-group-opacity',
-    String(clamp((p - 0.16) / 0.52, 0, 1)),
+    String(
+      clamp(
+        (p - expansion.groupOpacityStart) / expansion.groupOpacityRange,
+        0,
+        1,
+      ),
+    ),
   );
   root.style.setProperty('--timeline-expansion-progress', String(p));
   root.style.setProperty('--timeline-group-count', String(safeGroupCount));
@@ -196,8 +216,12 @@ function applyTimelineExpansion(
     });
 
   root.querySelectorAll<HTMLElement>('.timeline-event-card').forEach((card) => {
-    const compactLeft = Number(card.dataset.compactLeft ?? 1.4);
-    const compactWidth = Number(card.dataset.compactWidth ?? 56);
+    const compactLeft = Number(
+      card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
+    );
+    const compactWidth = Number(
+      card.dataset.compactWidth ?? layout.compactSingleLaneMinWidthPercent,
+    );
     const groupIndex = Math.max(0, Number(card.dataset.groupIndex ?? 0));
     const groupLane = Math.max(0, Number(card.dataset.groupLane ?? 0));
     const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
@@ -206,24 +230,27 @@ function applyTimelineExpansion(
     const widthA = (compactWidth / 100) * compactInner;
     const leftB =
       groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
-    const widthB = Math.max(24, groupWidth / groupLanes - 8);
+    const widthB = Math.max(
+      expansion.cardMinWidthPx,
+      groupWidth / groupLanes - expansion.cardLaneGapPx,
+    );
     const left = leftA + (leftB - leftA) * p;
     const width = widthA + (widthB - widthA) * p;
 
-    card.style.left = `${left + 4}px`;
-    card.style.width = `${Math.max(24, width)}px`;
+    card.style.left = `${left + expansion.cardInsetPx}px`;
+    card.style.width = `${Math.max(expansion.cardMinWidthPx, width)}px`;
   });
 
-  if (p < 0.98) {
-    if (Math.abs(grid.scrollLeft) > 0.5) {
+  if (p < expansion.settledProgress) {
+    if (Math.abs(grid.scrollLeft) > syncTolerance) {
       grid.scrollLeft = 0;
     }
-    if (groupScroller && Math.abs(groupScroller.scrollLeft) > 0.5) {
+    if (groupScroller && Math.abs(groupScroller.scrollLeft) > syncTolerance) {
       groupScroller.scrollLeft = 0;
     }
   } else if (
     groupScroller &&
-    Math.abs(groupScroller.scrollLeft - grid.scrollLeft) > 0.5
+    Math.abs(groupScroller.scrollLeft - grid.scrollLeft) > syncTolerance
   ) {
     groupScroller.scrollLeft = grid.scrollLeft;
   }
@@ -324,7 +351,7 @@ export function TimelineSurface({
     toastTimerRef.current = window.setTimeout(() => {
       setToastVisible(false);
       toastTimerRef.current = null;
-    }, 5000);
+    }, TIMELINE_POLICY.feedback.toastDurationMs);
   }, []);
 
   const publishViewportDate = useCallback(
@@ -338,7 +365,9 @@ export function TimelineSurface({
 
   const syncExpansion = useCallback(
     (progress: number) => {
-      const p = window.innerWidth <= 1120 ? 0 : clamp(progress, 0, 1);
+      const p = timelineSupportsExpandedLayout(window.innerWidth)
+        ? clamp(progress, 0, 1)
+        : 0;
       expansionProgressRef.current = p;
       onExpansionProgress(p);
       applyTimelineExpansion(
@@ -440,7 +469,8 @@ export function TimelineSurface({
     goToDate(timelineToday, {
       minute: timelineNowMinute,
       viewportOffset: timelineNowViewportOffset(
-        gridRef.current?.clientHeight ?? 570,
+        gridRef.current?.clientHeight ??
+          TIMELINE_POLICY.viewport.defaultGridHeightPx,
       ),
       behavior: 'smooth',
     });
@@ -454,7 +484,9 @@ export function TimelineSurface({
         return;
       }
 
-      const probe = scrollTop + grid.clientHeight * 0.34;
+      const probe =
+        scrollTop +
+        grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio;
       const viewed = findDayAtOffset(days, probe);
       if (viewed && !viewed.date.equals(viewDate)) {
         setViewDate(viewed.date);
@@ -481,9 +513,10 @@ export function TimelineSurface({
       if (!grid) {
         return;
       }
+      const syncTolerance = TIMELINE_POLICY.viewport.horizontalSyncTolerancePx;
       if (expanded && groupScrollerRef.current) {
         const scroller = groupScrollerRef.current;
-        if (Math.abs(scroller.scrollLeft - scrollLeft) > 0.5) {
+        if (Math.abs(scroller.scrollLeft - scrollLeft) > syncTolerance) {
           scroller.scrollLeft = scrollLeft;
         }
       }
@@ -496,7 +529,7 @@ export function TimelineSurface({
       }
 
       if (
-        scrollTop < 420 &&
+        scrollTop < TIMELINE_POLICY.window.extendPastTriggerPx &&
         pastDays < TIMELINE_POLICY.window.maxPastDays &&
         !extendingPastRef.current
       ) {
@@ -514,7 +547,8 @@ export function TimelineSurface({
       }
 
       if (
-        scrollTop + grid.clientHeight > grid.scrollHeight - 500 &&
+        scrollTop + grid.clientHeight >
+          grid.scrollHeight - TIMELINE_POLICY.window.extendFutureTriggerPx &&
         futureDays < TIMELINE_POLICY.window.maxFutureDays &&
         !extendingFutureRef.current
       ) {
@@ -614,7 +648,9 @@ export function TimelineSurface({
         } else {
           grid.scrollTop = Math.max(
             0,
-            day.offsetTop + day.mapper.map(8 * 60) - 70,
+            day.offsetTop +
+              day.mapper.map(TIMELINE_POLICY.viewport.initialExternalMinute) -
+              TIMELINE_POLICY.viewport.initialExternalOffsetPx,
           );
         }
       }
@@ -661,7 +697,7 @@ export function TimelineSurface({
     if (expansionDragRef.current) {
       return;
     }
-    if (window.innerWidth <= 1120 && expanded) {
+    if (!timelineSupportsExpandedLayout(window.innerWidth) && expanded) {
       syncExpansion(0);
       onExpandedChange(false);
       return;
@@ -671,7 +707,7 @@ export function TimelineSurface({
 
   useLayoutEffect(() => {
     const onResize = () => {
-      if (window.innerWidth <= 1120) {
+      if (!timelineSupportsExpandedLayout(window.innerWidth)) {
         syncExpansion(0);
         if (expanded) {
           onExpandedChange(false);
@@ -699,17 +735,22 @@ export function TimelineSurface({
   }, []);
 
   const beginExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (window.innerWidth <= 1120 || event.button !== 0) {
+    if (!timelineSupportsExpandedLayout(window.innerWidth) || event.button !== 0) {
       return;
     }
     const parent = rootRef.current?.parentElement;
     const rail = parent?.querySelector<HTMLElement>('.home-context-rail');
-    const railWidth = rail?.getBoundingClientRect().width ?? 190;
+    const railWidth =
+      rail?.getBoundingClientRect().width ??
+      TIMELINE_POLICY.expansion.defaultContextRailWidthPx;
     expansionDragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startProgress: expansionProgressRef.current,
-      dragDistance: Math.max(110, railWidth),
+      dragDistance: Math.max(
+        TIMELINE_POLICY.expansion.minDragDistancePx,
+        railWidth,
+      ),
     };
     rootRef.current?.setAttribute('data-timeline-expansion-dragging', 'true');
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -742,12 +783,14 @@ export function TimelineSurface({
     expansionDragRef.current = null;
     rootRef.current?.removeAttribute('data-timeline-expansion-dragging');
 
-    if (Math.abs(deltaX) < 4) {
+    if (Math.abs(deltaX) < TIMELINE_POLICY.expansion.dragActivationDistancePx) {
       return;
     }
 
     suppressExpansionClickRef.current = true;
-    settleExpansion(progress >= 0.5 ? 1 : 0);
+    settleExpansion(
+      progress >= TIMELINE_POLICY.expansion.settleThreshold ? 1 : 0,
+    );
     requestAnimationFrame(() => {
       suppressExpansionClickRef.current = false;
     });
@@ -760,13 +803,19 @@ export function TimelineSurface({
     }
     expansionDragRef.current = null;
     rootRef.current?.removeAttribute('data-timeline-expansion-dragging');
-    settleExpansion(drag.startProgress >= 0.5 ? 1 : 0);
+    settleExpansion(
+      drag.startProgress >= TIMELINE_POLICY.expansion.settleThreshold ? 1 : 0,
+    );
   };
 
   const expansionKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1);
+      settleExpansion(
+        expansionProgressRef.current >= TIMELINE_POLICY.expansion.settleThreshold
+          ? 0
+          : 1,
+      );
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
       settleExpansion(1);
@@ -808,7 +857,12 @@ export function TimelineSurface({
           setViewOptionsOpen((value) => !value);
         }}
         onSplitToggle={() =>
-          settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1)
+          settleExpansion(
+            expansionProgressRef.current >=
+              TIMELINE_POLICY.expansion.settleThreshold
+              ? 0
+              : 1,
+          )
         }
         onResetGroupsFocus={() => dispatch({ type: 'reset-groups-focus' })}
         onToggleFilter={(groupId: TimelineGroupId) =>
@@ -822,7 +876,8 @@ export function TimelineSurface({
           if (
             expanded &&
             grid &&
-            Math.abs(grid.scrollLeft - scrollLeft) > 0.5
+            Math.abs(grid.scrollLeft - scrollLeft) >
+              TIMELINE_POLICY.viewport.horizontalSyncTolerancePx
           ) {
             grid.scrollLeft = scrollLeft;
           }
@@ -878,7 +933,12 @@ export function TimelineSurface({
             suppressExpansionClickRef.current = false;
             return;
           }
-          settleExpansion(expansionProgressRef.current >= 0.5 ? 0 : 1);
+          settleExpansion(
+            expansionProgressRef.current >=
+              TIMELINE_POLICY.expansion.settleThreshold
+              ? 0
+              : 1,
+          );
         }}
         onPointerDown={beginExpansionDrag}
         onPointerMove={moveExpansionDrag}
