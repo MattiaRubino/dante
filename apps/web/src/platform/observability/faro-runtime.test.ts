@@ -16,7 +16,6 @@ vi.mock('@grafana/faro-web-sdk', () => {
     ErrorsInstrumentation: FakeInstrumentation,
     InternalLoggerLevel: { ERROR: 'error' },
     NavigationInstrumentation: FakeInstrumentation,
-    PerformanceInstrumentation: FakeInstrumentation,
     SessionInstrumentation: FakeInstrumentation,
     ViewInstrumentation: FakeInstrumentation,
     WebVitalsInstrumentation: FakeInstrumentation,
