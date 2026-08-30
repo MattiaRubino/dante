@@ -23,6 +23,67 @@
   line-height: 1;
 }
 
+/* Event cards are explicitly sized by the temporal layout engine, therefore a
+ * size container is safe here and lets typography breathe progressively with
+ * the real rendered card height instead of using one fixed scale everywhere. */
+.home-m1 .home-timeline--production .timeline-event-card,
+.timeline-event-drag-overlay {
+  container-type: size;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__top,
+.timeline-event-drag-overlay .timeline-event-card__top {
+  padding-top: clamp(6px, calc(4.8px + 1.6cqh), 8.5px);
+  padding-bottom: clamp(2px, calc(1.2px + 0.9cqh), 3.5px);
+}
+
+/* Title and time are precise actions, not full-row hit zones. The remaining
+ * card surface stays owned by focus/selection and drag. */
+.home-m1 .home-timeline--production .timeline-event-card__title,
+.home-m1 .home-timeline--production .timeline-event-card__time,
+.timeline-event-drag-overlay .timeline-event-card__title,
+.timeline-event-drag-overlay .timeline-event-card__time {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__title,
+.timeline-event-drag-overlay .timeline-event-card__title {
+  font-size: clamp(10.5px, calc(9px + 2cqh), 12px);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time,
+.timeline-event-drag-overlay .timeline-event-card__time {
+  margin-top: clamp(2.5px, calc(1.5px + 1.1cqh), 4.5px);
+  font-size: clamp(8.5px, calc(7.7px + 1.3cqh), 9.75px);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time:hover {
+  color: color-mix(in srgb, var(--timeline-group-color) 54%, white);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__meta,
+.timeline-event-drag-overlay .timeline-event-card__meta {
+  margin-top: clamp(2.5px, calc(1.5px + 1cqh), 4.5px);
+  font-size: clamp(8px, calc(7.4px + 1.1cqh), 9.25px);
+}
+
+/* While another card owns focus, nested actions on surrounding cards are not
+ * active pointer targets: the first pointer interaction transfers focus to the
+ * new card. The React handler mirrors the same rule for keyboard activation. */
+.home-m1
+  .home-timeline--production
+  .timeline-event-card:is(.is-groupmate, .is-dim)
+  :is(
+    .timeline-event-card__title,
+    .timeline-event-card__time,
+    .timeline-event-card__subitem,
+    .timeline-event-card__expander
+  ) {
+  pointer-events: none;
+}
+
 /* Compact/normal keeps the prototype's native header-grid placement. Only the
  * fully expanded Timeline overrides the week strip so it sits on the Home's
  * central optical axis beneath Home / Mondi / Oggi. */
