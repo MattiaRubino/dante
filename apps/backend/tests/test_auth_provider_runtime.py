@@ -11,7 +11,6 @@ import httpx2
 import pytest
 from pydantic import SecretStr, ValidationError
 
-import dante.auth.provider_runtime as provider_runtime_module
 from dante.auth.proofs import FlowProofPurpose, flow_proof_matches, issue_flow_proof
 from dante.auth.provider_runtime import ProviderRuntime, ProviderRuntimeError
 from dante.platform.config.auth_provider import (
@@ -50,7 +49,7 @@ def _mocked_runtime(
     def client_factory(**_kwargs: object) -> httpx2.AsyncClient:
         return real_async_client(transport=httpx2.MockTransport(handler))
 
-    monkeypatch.setattr(provider_runtime_module.httpx2, "AsyncClient", client_factory)
+    monkeypatch.setattr(httpx2, "AsyncClient", client_factory)
     return ProviderRuntime(
         settings=settings or AuthProviderSettings(),
         release_sha="test-release",
