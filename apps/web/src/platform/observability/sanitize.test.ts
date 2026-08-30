@@ -151,6 +151,35 @@ describe('browser telemetry sanitization', () => {
     expect(malformed.payload).not.toHaveProperty('trace');
   });
 
+  it('removes automatic Web Vitals context before it reaches the collector', () => {
+    const item = {
+      type: 'measurement',
+      meta: {},
+      payload: {
+        context: {
+          element: 'main>section>input#private-id',
+          id: 'v6-1788116460400-6582841316571',
+          navigation_entry_id: 'zXamkWxPJ',
+          navigation_type: 'reload',
+          rating: 'good',
+        },
+        values: { lcp: 92, resource_load_delay: 68 },
+      },
+    } as unknown as TransportItem;
+
+    const sanitized = sanitizeTransportItem(item) as unknown as {
+      payload: Record<string, unknown>;
+    };
+
+    expect(sanitized.payload).not.toHaveProperty('context');
+    expect(sanitized.payload.values).toEqual({
+      lcp: 92,
+      resource_load_delay: 68,
+    });
+    expect(JSON.stringify(sanitized)).not.toContain('private-id');
+    expect(JSON.stringify(sanitized)).not.toContain('6582841316571');
+  });
+
   it('handles circular objects and accessors without evaluating untrusted code', () => {
     const getter = vi.fn(() => 'never-read-this');
     const attributes: Record<string, unknown> = {};
