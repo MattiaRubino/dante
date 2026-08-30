@@ -92,6 +92,7 @@ def _validate_alloy() -> None:
         'filename  = "/run/secrets/grafana_cloud_otlp_authorization"',
         "auth               = otelcol.auth.headers.grafana_cloud.handler",
         'prometheus.relabel "postgres_privacy_budget"',
+        '"database",',
         "pg_long_running_transactions.*",
         "max_streams = 64",
         "rate_limiting {",

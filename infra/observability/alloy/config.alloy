@@ -218,6 +218,7 @@ prometheus.exporter.postgres "dante" {
   data_source_names        = [local.file.postgres_observer_dsn.content]
   disable_settings_metrics = true
   enabled_collectors = [
+    "database",
     "database_wraparound",
     "long_running_transactions",
     "stat_checkpointer",
