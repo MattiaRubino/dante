@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
-from dante.auth.proofs import SignupOtpCodec
+from dante.auth.proofs import ProviderEnrollmentOtpCodec
 from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
 from dante.auth.service import AuthRuntime
 from dante.platform.config.auth import AuthSettings
@@ -52,7 +52,7 @@ def create_provider_flow_runtime(
             settings=settings.provider,
             provider_runtime=auth_runtime.provider_runtime,
         ),
-        otp_codec=SignupOtpCodec(
+        otp_codec=ProviderEnrollmentOtpCodec(
             key_ring=settings.signup_otp_key_bytes,
             current_key_id=settings.signup_otp_current_key_id,
         ),
