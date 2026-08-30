@@ -66,10 +66,13 @@ def test_provider_defaults_are_disabled_and_canonical() -> None:
     assert settings.apple.issuer == "https://appleid.apple.com"
 
 
-@pytest.mark.parametrize("field_name", ["client_id", "team_id", "key_id"])
-def test_apple_provider_identifiers_reject_blank_values(field_name: str) -> None:
+def test_apple_provider_identifiers_reject_blank_values() -> None:
     with pytest.raises(ValidationError, match="Apple provider identity"):
-        AppleProviderSettings(**{field_name: "   "})
+        AppleProviderSettings(client_id="   ")
+    with pytest.raises(ValidationError, match="Apple provider identity"):
+        AppleProviderSettings(team_id="   ")
+    with pytest.raises(ValidationError, match="Apple provider identity"):
+        AppleProviderSettings(key_id="   ")
 
 
 def test_apple_provider_private_key_rejects_blank_material() -> None:
