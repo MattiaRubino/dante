@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { HomePage } from '../features/home';
-import { normalizeHomeDateSearch } from '../features/home/model/day-context';
-import { HOME_PROTOTYPE_IDENTITY_FIXTURE } from '../features/home/model/home-fixtures';
+import {
+  HomePage,
+  HOME_PROTOTYPE_IDENTITY_FIXTURE,
+  normalizeHomeDateSearch,
+} from '../features/home';
 
 type HomeSearch = Readonly<{
   date?: string;
