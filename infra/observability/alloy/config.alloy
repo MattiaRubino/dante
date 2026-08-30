@@ -54,7 +54,7 @@ otelcol.exporter.otlphttp "grafana_cloud" {
 otelcol.processor.batch "bounded" {
   timeout             = "1s"
   send_batch_size     = 512
-  send_batch_max_size = 1_024
+  send_batch_max_size = 1024
 
   output {
     metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
@@ -191,8 +191,8 @@ prometheus.remote_write "grafana_cloud" {
     }
 
     queue_config {
-      capacity             = 5_000
-      max_samples_per_send = 1_000
+      capacity             = 5000
+      max_samples_per_send = 1000
       min_shards           = 1
       max_shards           = 2
       min_backoff          = "100ms"
