@@ -25,6 +25,8 @@ const IPV4 =
   /(?<![\d.])(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])/g;
 const IDENTIFIER_LIKE_SEGMENT =
   /^(?:\d{4,}|[A-Fa-f0-9]{12,}|[A-Za-z0-9_-]{24,})$/;
+const AUTOMATIC_IDENTITY_FIELD =
+  /^(?:browser|context|page|session|user|event_data|eventData)[_-]/i;
 
 type SanitizationState = {
   remainingNodes: number;
@@ -226,6 +228,14 @@ function normalizeTraceContextField(record: SanitizedRecord): void {
   };
 }
 
+function removeAutomaticIdentityFields(record: SanitizedRecord): void {
+  for (const field of Object.keys(record)) {
+    if (AUTOMATIC_IDENTITY_FIELD.test(field)) {
+      delete record[field];
+    }
+  }
+}
+
 function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
   if (!isRecord(item) || !isRecord(item.payload)) {
     return null;
@@ -240,6 +250,7 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
     for (const field of ['user', 'browser', 'page', 'session'] as const) {
       delete metadata[field];
     }
+    removeAutomaticIdentityFields(metadata);
   }
 
   const payload = item.payload;
@@ -257,6 +268,7 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
       // Web Vitals context includes browser/DOM/navigation identifiers. The
       // metric name and numeric values are sufficient for DANTE operations.
       delete payload.context;
+      removeAutomaticIdentityFields(payload);
       normalizeTraceContextField(payload);
       const values = normalizeNumericRecord(payload.values);
       if (values === undefined) {
