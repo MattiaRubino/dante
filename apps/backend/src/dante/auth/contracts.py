@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import SecretStr
@@ -86,6 +87,38 @@ class EmailDeliveryUnavailableError(AuthError):
     """The bounded email dispatch boundary cannot safely admit another message."""
 
 
+class ProviderTransactionInvalidOrExpiredError(AuthError):
+    """Provider transaction capability is invalid, expired, claimed or mismatched."""
+
+
+class ProviderProofInvalidError(AuthError):
+    """External provider evidence did not satisfy DANTE's trust contract."""
+
+
+class ProviderIdentityConflictError(AuthError):
+    """A provider identity is durably bound to a different DANTE Account."""
+
+
+class ProviderEnrollmentInvalidOrExpiredError(AuthError):
+    """Provider enrollment continuation state is unavailable or expired."""
+
+
+class ProviderEnrollmentVerificationInvalidOrExpiredError(AuthError):
+    """Provider enrollment mailbox proof is invalid or expired."""
+
+
+class ProviderEnrollmentAttemptsExhaustedError(AuthError):
+    """Provider enrollment mailbox proof exhausted its online guess budget."""
+
+
+class ProviderUnavailableError(AuthError):
+    """External provider trust material/service is temporarily unavailable."""
+
+    def __init__(self, *, retryable: bool) -> None:
+        super().__init__("provider unavailable")
+        self.retryable = retryable
+
+
 class AuthServiceUnavailableError(AuthError):
     """A local/dependency boundary cannot safely complete the operation."""
 
@@ -103,6 +136,21 @@ class KdfCapacityUnavailableError(AuthServiceUnavailableError):
 
 class AuthIntegrityError(RuntimeError):
     """Stored/configured security state violates an internal invariant."""
+
+
+class ProviderPurpose(StrEnum):
+    """Security intent bound into one provider transaction."""
+
+    SIGN_IN = "sign_in"
+    LINK = "link"
+    REAUTHENTICATE = "reauthenticate"
+
+
+class ProviderReturnTarget(StrEnum):
+    """Bounded post-provider application destination."""
+
+    ACCESS = "access"
+    SECURITY = "security"
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,3 +201,47 @@ class RecoveryValidation:
     """Non-consuming public recovery-proof validation result."""
 
     valid: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderAuthenticationBegun:
+    """Transient capabilities for one server-authoritative provider transaction."""
+
+    external_auth_transaction_ref: UUID
+    state: SecretStr
+    nonce: SecretStr
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderAuthenticated:
+    """Provider proof converged on a committed canonical DANTE AuthSession."""
+
+    session: IssuedSession
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderLinkRequired:
+    """Verified provider evidence collided with an existing DANTE Account."""
+
+    external_link_challenge_ref: UUID
+    continuation_secret: SecretStr
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderEnrollmentRequired:
+    """Provider evidence requires DANTE mailbox proof before Account creation."""
+
+    external_signup_ref: UUID
+    continuation_secret: SecretStr
+    expires_at: datetime
+    email_address: str | None
+    verification_expires_at: datetime | None
+
+
+type ProviderAuthenticationResult = (
+    ProviderAuthenticated | ProviderLinkRequired | ProviderEnrollmentRequired
+)
+
+type ProviderEnrollmentResult = ProviderAuthenticated | ProviderLinkRequired
