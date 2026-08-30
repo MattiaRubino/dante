@@ -239,10 +239,10 @@ docker compose \
 The recovery overlay intentionally keeps the ordinary LOCAL stack untouched and resolves to:
 
 ```text
-Compose project  dante-postgres-recovery
-image            dante-postgres-recovery:18.6-pgbackrest-2.59.1
-host endpoint    127.0.0.1:55432
-container port   5432
+Compose project   dante-postgres-recovery
+image             dante-postgres-recovery:18.6-pgbackrest-2.59.1
+host endpoint     127.0.0.1:55432
+container port    5432
 PostgreSQL volume dante-postgres-recovery_postgres-data
 recovery volume   dante-postgres-recovery_pgbackrest-repository
 ```
@@ -255,4 +255,31 @@ The recovery worktree currently used for direct local proof is:
 
 The same workstation-local `infra/compose/secrets/postgres_password.local` contract applies; the secret is ignored by Git and must never be committed. Recovery commands must include both Compose files and the `-p dante-postgres-recovery` project name so they cannot accidentally target the ordinary `dante-local` cluster.
 
-CP02 directly proved the isolated harness with PostgreSQL 18.6 and pgBackRest 2.59.1. WAL archiving, backups, restore and PITR remain separate later recovery checkpoints and must not be inferred from foundation health.
+CP02 directly proved the isolated harness with PostgreSQL 18.6 and pgBackRest 2.59.1.
+
+### Recovery CP03 source activation
+
+CP03 source/config is now materialized only in the isolated recovery overlay. The ordinary `dante-local` service remains unchanged.
+
+Resolved recovery-only PostgreSQL settings are intended to be:
+
+```text
+shared_preload_libraries = pg_stat_statements
+compute_query_id          = on
+archive_mode              = on
+archive_command           = /usr/bin/pgbackrest --stanza=dante archive-push %p
+wal_level                 = replica (inherited/current PostgreSQL default; not overridden)
+archive_library           = unset
+```
+
+The local pgBackRest repository also sets:
+
+```text
+repo1-retention-full=2
+```
+
+This retention value is a deterministic LOCAL test policy only. It is not the production AWS retention contract and must not be extrapolated to S3 Versioning/Object Lock/lifecycle behavior.
+
+Source/config presence is not runtime proof. CP03 remains runtime-pending until the isolated container is recreated from the current branch and direct evidence proves the resolved settings, successful WAL archival, `pgbackrest check`, a full backup, metadata readback and the bounded local retention behavior.
+
+Restore, PITR and AWS acceptance remain later checkpoints.
