@@ -9,7 +9,9 @@
 - **M5.1:** COMPLETE
 - **M5.2:** COMPLETE
 - **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
-- **Next exact step:** M5-B — Provider/JWK/JOSE/AEAD Infrastructure
+- **M5-B:** COMPLETE / ENGINEERING PASS
+- **Next exact step:** M5-C — Google Authentication + Account Creation / Collision
+- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M5 architecture authority:** `architecture/access-auth-m5-contract.md`
 - **M5.2 authority:** `architecture/access-auth-m5-persistence-api-contract.md`
@@ -57,10 +59,10 @@ M5-A — Persistence Foundations
         COMPLETE / REAL POSTGRESQL PROVEN
           ↓
 M5-B — Provider/JWK/JOSE/AEAD Infrastructure
-        NEXT
+        COMPLETE / ENGINEERING PASS
           ↓
-M5-C — Google Authentication
-        PLANNED
+M5-C — Google Authentication + Account Creation / Collision
+        NEXT
           ↓
 M5-D — Apple Authentication + Grant/Notification Lifecycle
         PLANNED
@@ -90,7 +92,7 @@ M7 — Security Hardening + Observability + Authenticated Handoff
         PLANNED / FINAL WHOLE-VERTICAL GATE
 ```
 
-The whole Access/Auth vertical is **not closed**. M5-A proves only its persistence boundary and does not imply provider runtime, API, client, Web or provider/browser acceptance.
+The whole Access/Auth vertical is **not closed**. M5-A proves its persistence boundary and M5-B proves the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. Neither implies Google/Apple end-user flows, public M5 API, generated client, Web integration or provider/browser acceptance.
 
 ---
 
@@ -327,45 +329,66 @@ No Google/Apple provider HTTP client, JOSE/JWK runtime, WebAuthn library, public
 
 ---
 
-# 7. M5-B — NEXT
+# 7. M5-B — COMPLETE / ENGINEERING PASS
 
-M5-B owns **Provider/JWK/JOSE/AEAD Infrastructure**.
+M5-B now owns an accepted **Provider/JWK/JOSE/AEAD/WebAuthn Policy Infrastructure** baseline.
 
-Required gate direction:
+Accepted implementation checkpoint:
 
 ```text
-qualify dependencies actually consumed
-Python 3.14 compatibility + current advisory review
-deterministic uv lock
-explicit JOSE algorithm allowlists
-typed Google/Apple/WebAuthn settings
-bounded provider/JWK HTTP clients
-JWK cache + rotation behavior
-Apple grant AEAD key ring / AES-256-GCM baseline
-purpose-separated provider transaction verifiers
-secret/token/assertion logging controls
-process-scoped lifecycle / clean shutdown
-focused vectors + static/type/test/build
+e2d40a7666e3c0130afecd8113b8063390b86b9d
 ```
 
-Candidate dependency direction identified in M5.2:
+Admitted dependencies:
 
 ```text
 fido2         2.2.1
 joserfc       1.7.4
-cryptography  50.0.x baseline
-existing httpx
+cryptography  50.0.1
+existing httpx2
+Python        3.14
+uv            0.12.5
 ```
 
-Versions are candidates until M5-B performs current qualification and lock admission.
+Implemented:
+
+```text
+deterministic uv lock
+explicit RS256 JOSE allowlist and strict compact/header admission
+typed Google/Apple/WebAuthn provider settings
+bounded provider/JWK HTTP runtime
+coordinated JWK cache/rotation/unknown-kid refresh cooldown
+conditional ETag/Last-Modified revalidation
+JWKS size/key-count/duplicate/private-material rejection
+Apple AES-256-GCM grant key ring with stable AAD contract
+purpose-separated provider-flow verifier primitives
+FIDO2 WebAuthn RP/origin/policy construction
+process-scoped provider runtime + clean shutdown
+no provider network I/O at startup
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / lint                 PASS
+mypy strict                                  PASS / 73 source files
+backend fast                                 127 / 127 PASS
+backend build                                PASS
+git diff --check                             PASS
+```
+
+M5-B changes no schema/Alembic/Dictionary; the accepted M5-A PostgreSQL gate was therefore not rerun absent regression evidence.
+
+M5-B intentionally stops before Google/Apple product flows, complete WebAuthn ceremonies, public routes/OpenAPI/client, Web UI and real provider/browser UAT.
 
 ---
 
 # 8. M5-C onward
 
 ```text
-M5-C
-Google signin/new Account/collision/reauth/link
+M5-C — NEXT
+Google signin/new Account/collision/reauth/link using the accepted M5-B trust/runtime foundation
 
 M5-D
 Apple begin/form_post/code exchange/new Account/link/reauth
@@ -466,7 +489,8 @@ M5 ACTIVE
   M5.1 COMPLETE
   M5.2 COMPLETE
   M5-A COMPLETE / POSTGRESQL PROVEN
-  M5-B NEXT
+  M5-B COMPLETE / ENGINEERING PASS
+  M5-C NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
