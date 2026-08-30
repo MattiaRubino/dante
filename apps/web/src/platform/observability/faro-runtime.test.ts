@@ -72,6 +72,9 @@ describe('Faro vendor runtime', () => {
         },
       }),
     );
+    expect(faroMocks.initializeFaro.mock.calls[0]?.[0]).not.toHaveProperty(
+      'experimental',
+    );
 
     bridge.observeResolvedRoute('/access');
     bridge.observeRenderFailure(

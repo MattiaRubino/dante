@@ -88,9 +88,6 @@ export function initializeFaroRuntime(config: WebObservabilityConfig): void {
       reportAllChanges: false,
       trackAttributionSources: false,
     },
-    experimental: {
-      fetchTransportV2: true,
-    },
   });
   webObservability = faro;
 

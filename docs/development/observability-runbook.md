@@ -181,6 +181,12 @@ policy above. The production CSP must add the exact Faro collector origin to
 `connect-src`; never use `*`. Keep browser API calls behind the same-origin
 `/api/` boundary so trace propagation remains narrowly scoped.
 
+LOCAL Alloy `faro.receiver` v1.19 accepts the Faro session header but not the
+experimental fetch-v2 `Idempotency-Key` header. DANTE therefore deliberately
+uses Faro's stable transport. Do not enable `fetchTransportV2` unless the
+collector version and its exact CORS header contract are upgraded and verified
+with a real-browser smoke, not only a minimal `OPTIONS` request.
+
 The Web build runs a manifest-backed bundle gate. It fails if the Faro runtime
 stops being a dynamic chunk, the initial entry exceeds 500 KiB or the governed
 Faro chunk exceeds 300 KiB. These are uncompressed transfer-independent upper
