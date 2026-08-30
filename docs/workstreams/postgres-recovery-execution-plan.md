@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 SOURCE-CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
+- **Status:** CURRENT EXECUTION PLAN / CP01 FROZEN / CP02 LOCAL PASS / CP03 LOCAL PASS / CP04 NOT STARTED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Baseline:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
@@ -137,7 +137,7 @@ activation implementation    2.59.1
 PGDG package pin             2.59.1-1.pgdg13+1
 ```
 
-The `2.59.1` package exists for Debian 13/Trixie, is pinned in source and has now passed the CP02 local foundation proof. It is ratified as the implementation maintenance pin while the historical accepted Physical Model selection record remains reconciled at integration rather than silently rewritten in place.
+The `2.59.1` package exists for Debian 13/Trixie, is pinned in source and has now passed the CP02 local foundation proof plus CP03 local WAL/backup proof. It is ratified as the implementation maintenance pin while the historical accepted Physical Model selection record remains reconciled at integration rather than silently rewritten in place.
 
 No technology-selection reopening unless direct evidence invalidates the accepted choice.
 
@@ -325,11 +325,11 @@ cipher: none
 wal archive min/max (18): none present
 ```
 
-This is expected because CP02 intentionally contains no WAL archive and no backup.
+This was expected because CP02 intentionally contained no WAL archive and no backup.
 
 ### Why `pgbackrest check` is not a CP02 gate
 
-A meaningful `pgbackrest check` validates repository/archive integration and forces PostgreSQL WAL/archive interaction. Continuous WAL archiving is deliberately not activated in CP02. Therefore:
+A meaningful `pgbackrest check` validates repository/archive integration and forces PostgreSQL WAL/archive interaction. Continuous WAL archiving was deliberately not activated in CP02. Therefore:
 
 ```text
 CP02 check requirement  = NONE
@@ -371,6 +371,8 @@ Object Lock
 anti-resurrection
 ```
 
+Those first three items were subsequently proven by CP03; restore/PITR/AWS/anti-resurrection remain open later gates.
+
 ---
 
 # 5. CP03 — Continuous WAL + Backup
@@ -381,7 +383,7 @@ Prove that PostgreSQL 18.6 continuously archives WAL through pgBackRest and that
 
 ## Source/config activation
 
-The approved CP03 source scope is now materialized in the isolated recovery harness only:
+The approved CP03 source scope is materialized in the isolated recovery harness only:
 
 ```text
 infra/compose/postgres-recovery.override.yaml
@@ -399,7 +401,7 @@ wal_level = replica (existing/inherited value; deliberately not overridden)
 
 The override repeats the existing `shared_preload_libraries=pg_stat_statements` and `compute_query_id=on` command-line settings before adding the two archive settings so Compose command replacement cannot silently drop the established LOCAL PostgreSQL behavior.
 
-The LOCAL POSIX pgBackRest repository now also configures:
+The LOCAL POSIX pgBackRest repository configures:
 
 ```text
 repo1-retention-full=2
@@ -410,66 +412,80 @@ This is a deterministic LOCAL test retention policy only. It is not the producti
 Current CP03 state:
 
 ```text
-source/config activation       IMPLEMENTED
-runtime container recreation   NOT YET PROVEN
-archive_mode runtime           NOT YET PROVEN
-archive_command runtime        NOT YET PROVEN
-continuous archive             NOT YET PROVEN
-pgBackRest check               NOT RUN
-full backup                    NOT RUN
-retention behavior             NOT YET PROVEN
+source/config activation       LOCAL PASS
+runtime container recreation   LOCAL PASS
+archive_mode runtime           LOCAL PASS
+archive_command runtime        LOCAL PASS
+continuous archive             LOCAL PASS
+pgBackRest check               LOCAL PASS
+full backup                    LOCAL PASS
+retention behavior             LOCAL PASS
+archive failure/retry          LOCAL PASS
 ```
-
-Source/config existence must not be promoted to CP03 LOCAL PASS.
 
 ## WAL proof
 
-Deterministic evidence must include:
+Directly observed:
 
 ```text
-recreate/restart only the isolated recovery PostgreSQL service
-confirm resolved archive_mode=on
-confirm resolved archive_command exact value
-confirm archive_library remains unset
-confirm wal_level remains replica
-record pre-test pg_stat_archiver counters/state
-record current WAL LSN/segment
-force WAL switch or generate bounded WAL
-confirm pgBackRest archive-push succeeds
-confirm pg_stat_archiver records a successful archive
-confirm archived segment exists in repository
-run pgbackrest --stanza=dante check
-confirm check sees healthy repository + archive path
-record WAL/LSN marker useful for later recovery assertions
+recovery PostgreSQL service recreated from current source
+archive_mode=on
+archive_command=/usr/bin/pgbackrest --stanza=dante archive-push %p
+archive_library unset
+wal_level=replica
+initial pg_stat_archiver baseline clean
+current WAL segment recorded
+pg_switch_wal() executed
+closed WAL archived successfully
+pg_stat_archiver successful archive observed
+compressed WAL artifact physically present in repository
+pgbackrest --stanza=dante check exits successfully
 ```
+
+The first forced segment observed in the repository was `000000010000000000000002`. Later backup/recovery activity advanced the retained archive range.
 
 `pgbackrest check` belongs here because this is the first checkpoint where archive behavior is intentionally active and can be truthfully verified.
 
-The ordinary `dante-local` PostgreSQL/observability stack must remain running and unchanged while this proof executes against `dante-postgres-recovery` on host port `55432`.
-
 ## Backup proof
 
-Start with:
+Direct FULL backup evidence:
 
 ```text
-pgbackrest --stanza=dante --type=full backup
+first FULL backup       20260830-114043F
+start/stop              2026-08-30 11:40:43+00 / 11:40:50+00
+database size           38.2MB
+repo1 backup set size   4.7MB
+status                  PASS
 ```
 
-Verify:
+Additional FULL backups were deliberately/redundantly generated while exercising retention. At the CP03 closure boundary the two retained FULL sets are:
 
 ```text
-backup completes
-backup metadata/info lists expected set
-required WAL archive completeness is satisfied
-backup age/time recorded
-repository integrity/check path passes
+20260830-114411F
+20260830-114419F
+```
+
+Final direct `pgbackrest info` after the archive-failure/recovery proof reported:
+
+```text
+stanza: dante
+status: ok
+wal archive min/max (18): 00000001000000000000000A/00000001000000000000000F
 ```
 
 ## Retention
 
-The LOCAL policy `repo1-retention-full=2` exists to exercise expiry behavior without pretending it equals production object retention.
+The LOCAL policy `repo1-retention-full=2` was exercised directly rather than inferred from configuration text.
 
-The checkpoint must prove the retention command/behavior deliberately rather than inferring it from configuration text. Do not create or delete backup sets merely to satisfy a checkbox without retaining enough evidence to understand the result.
+Observed behavior:
+
+```text
+multiple FULL backups completed
+older full sets expired as new full sets crossed retention=2
+explicit pgbackrest --stanza=dante expire completed successfully
+exactly two current full backups remained
+remaining WAL range advanced consistently with retained recovery sets
+```
 
 Production retention must later reconcile:
 
@@ -485,21 +501,55 @@ PITR continuity
 
 Do not expire WAL so aggressively that remaining backups advertise recovery points requiring missing WAL.
 
+## Archive failure/recovery proof
+
+A reusable copy of the directly executed failure/recovery test is versioned at:
+
+```text
+infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+The direct run proved:
+
+```text
+archive directory owner/mode baseline     postgres:postgres 0750
+target WAL                                00000001000000000000000E
+injected archive-directory mode           0550
+pg_stat_archiver failure became visible   PASS
+last_failed_wal matched target WAL        PASS
+repository mode restored                  0750
+same WAL automatically retried            PASS
+last_archived_wal matched target WAL      PASS
+compressed target WAL physically present PASS
+post-failure pgbackrest check             PASS
+post-failure pgbackrest info status=ok    PASS
+```
+
+The harness restores the original archive-directory mode through a shell trap. `pg_stat_archiver` counters are not treated as persistent history because they can reset across PostgreSQL restart/statistics reset; repository artifacts plus pgBackRest `check`/`info` provide the durable evidence layer.
+
 ## CP03 close criteria
 
 ```text
-[ ] resolved archive settings direct PASS
-[ ] continuous archive observed directly
-[ ] forced/generated WAL found in repository
-[ ] pg_stat_archiver success evidence captured
-[ ] pgBackRest check direct PASS
-[ ] full backup direct PASS
-[ ] pgBackRest info usable
-[ ] local retention behavior exercised and recorded
-[ ] archive failure produces visible failure/degraded evidence
-[ ] existing database tests/readiness not regressed
-[ ] ordinary LOCAL/observability runtime remains unaffected
+[x] resolved archive settings direct PASS
+[x] continuous archive observed directly
+[x] forced/generated WAL found in repository
+[x] pg_stat_archiver success evidence captured
+[x] pgBackRest check direct PASS
+[x] full backup direct PASS
+[x] pgBackRest info usable
+[x] local retention behavior exercised and recorded
+[x] archive failure produces visible failure/degraded evidence
+[x] recovery service PostgreSQL readiness/health preserved
+[x] recovery isolation contract preserved; ordinary LOCAL source/runtime contract not modified
 ```
+
+Current state:
+
+```text
+CP03 LOCAL PASS
+```
+
+CP03 does **not** prove restore, PITR, AWS S3 behavior, Object Lock, production retention, SC-031 or SC-011.
 
 ---
 
@@ -630,6 +680,8 @@ operator starts from wrong recovery set / mismatch detection
 ```
 
 A negative scenario passes when the system fails safely, observably and diagnosably—not when the command happens to return zero.
+
+CP03 already proves one narrow archive-push failure/retry path. That evidence is retained, but it does not replace the broader CP06 failure matrix.
 
 ## SC-011 anti-resurrection
 
@@ -884,24 +936,21 @@ R2 object-recovery implementation beyond the defined reconciliation contract
 
 ## 13. Current next action
 
-CP01 is contract-frozen, CP02 is **LOCAL PASS**, and CP03 source/config is **IMPLEMENTED / RUNTIME PROOF PENDING**.
+CP01 is contract-frozen, CP02 is **LOCAL PASS**, CP03 is **LOCAL PASS**, and CP04 is **NOT STARTED**.
 
 Next safe technical sequence:
 
 ```text
-1. fast-forward /home/mattia/projects/dante-postgres-recovery to the current remote branch HEAD
-2. validate the versioned recovery overlay resolves to the isolated image/port/volumes plus the exact archive command
-3. keep ordinary dante-local PostgreSQL/observability running and untouched
-4. recreate only dante-postgres-recovery-postgres-1
-5. prove runtime archive_mode=on
-6. prove runtime archive_command=/usr/bin/pgbackrest --stanza=dante archive-push %p
-7. prove archive_library remains unset and wal_level remains replica
-8. capture pg_stat_archiver baseline plus current LSN/WAL segment
-9. force/generate WAL and prove successful archive-push through pg_stat_archiver and repository files
-10. run full pgbackrest --stanza=dante check
-11. run the first full backup and verify info/metadata/WAL completeness
-12. exercise and record the bounded LOCAL repo1-retention-full=2 behavior
-13. only after direct evidence reconcile CP03 as LOCAL PASS
+1. fast-forward /home/mattia/projects/dante-postgres-recovery to the CP03 closure HEAD
+2. confirm the two retained FULL backups and repository health still read correctly
+3. preserve the recovery repository volume as the recovery source
+4. derive an explicitly disposable/fresh PostgreSQL 18.6 restore target that cannot accidentally reuse source PGDATA
+5. define the deterministic fixture/catalog/semantic evidence that must survive the restore
+6. freeze exactly what PGDATA/container/volume may be destroyed and what recovery repository must not be destroyed
+7. freeze the exact pgBackRest restore command and target topology
+8. define and approve a new CP04 Git/runtime write gate
+9. only after approval execute destructive/isolated restore
+10. verify PostgreSQL startup plus catalog/schema/representative semantic state before considering SC-031
 ```
 
-Do **not** enter restore, PITR, AWS or production retention work under CP03. Source/config presence alone is not archive or backup proof.
+Do **not** enter PITR, AWS, production retention or anti-resurrection implementation under CP04. CP03 backup success is not restore proof.
