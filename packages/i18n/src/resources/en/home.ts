@@ -130,6 +130,14 @@ export const home = {
       cancel: 'Cancel',
       save: 'Confirm',
     },
+    peek: {
+      dialogLabel: 'Quick inspect {{title}}',
+      close: 'Close quick inspect',
+      openDetail: 'Open details',
+      focus: 'Focus',
+      clearFocus: 'Exit focus',
+      subitems: '{{count}} activities',
+    },
     detail: {
       subitems: '{{count}} linked subitems',
       aiNote:
