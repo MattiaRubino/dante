@@ -15,6 +15,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ALLOY = _REPO_ROOT / "infra" / "observability" / "alloy" / "config.alloy"
 _COMPOSE = _REPO_ROOT / "infra" / "compose" / "local.yaml"
 _ENV_EXAMPLE = _REPO_ROOT / "infra" / "observability" / ".env.example"
+_BACKEND_ENV_EXAMPLE = _REPO_ROOT / "apps" / "backend" / ".env.example"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
     _REPO_ROOT / "infra" / "observability" / "grafana" / "alerts" / "dante-alerts.json"
@@ -82,6 +83,7 @@ def _validate_alloy() -> None:
     alloy = _read(_ALLOY)
     compose = _read(_COMPOSE)
     environment = _read(_ENV_EXAMPLE)
+    backend_environment = _read(_BACKEND_ENV_EXAMPLE)
 
     required_fragments = (
         'otelcol.processor.memory_limiter "bounded"',
@@ -144,6 +146,12 @@ def _validate_alloy() -> None:
     missing_environment = alloy_environment - declared_environment
     if missing_environment:
         _fail(f"Alloy environment example is missing: {sorted(missing_environment)}")
+
+    expected_backend_log_path = (
+        "DANTE_OBSERVABILITY__LOG_FILE=../../.dante/observability/logs/backend.jsonl"
+    )
+    if expected_backend_log_path not in backend_environment:
+        _fail("backend LOCAL log file must resolve to the worktree-root Alloy mount")
 
 
 def _panel_queries(panel: Mapping[str, Any]) -> Iterable[str]:

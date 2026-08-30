@@ -160,7 +160,8 @@ DANTE_OBSERVABILITY__OTLP_HTTP_ENDPOINT=http://127.0.0.1:4318
 DANTE_OBSERVABILITY__TRACE_SAMPLE_RATIO=0.10
 DANTE_OBSERVABILITY__TRACE_HEALTH_CHECKS=false
 DANTE_OBSERVABILITY__METRIC_EXPORT_INTERVAL_SECONDS=30
-DANTE_OBSERVABILITY__LOG_FILE=.dante/observability/logs/backend.jsonl
+# Run from apps/backend: resolve to the worktree-root path mounted into Alloy.
+DANTE_OBSERVABILITY__LOG_FILE=../../.dante/observability/logs/backend.jsonl
 ```
 
 Web LOCAL uses:
