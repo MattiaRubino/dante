@@ -815,6 +815,10 @@ export function TimelineDayStream({
     onScroll(grid.scrollTop, grid.scrollLeft);
   };
 
+  const pointerIsInsideFocusedCard = (target: EventTarget | null) =>
+    target instanceof Element &&
+    target.closest('.timeline-event-card.is-focused') !== null;
+
   return (
     <div className="timeline-frame timeline-frame--production">
       <div className="timeline-ruler" aria-hidden="true">
@@ -851,6 +855,18 @@ export function TimelineDayStream({
       <div
         ref={gridRef}
         className={`timeline-grid${expanded ? ' is-expanded' : ''}`}
+        onPointerDownCapture={(pointerEvent) => {
+          if (focusedEvent && !pointerIsInsideFocusedCard(pointerEvent.target)) {
+            pointerEvent.stopPropagation();
+          }
+        }}
+        onClickCapture={(clickEvent) => {
+          if (!focusedEvent || pointerIsInsideFocusedCard(clickEvent.target)) {
+            return;
+          }
+          clickEvent.stopPropagation();
+          onFocusEvent(focusedEvent.id);
+        }}
         onScroll={handleGridScroll}
         onWheel={(wheelEvent) => {
           if (wheelEvent.ctrlKey) {
