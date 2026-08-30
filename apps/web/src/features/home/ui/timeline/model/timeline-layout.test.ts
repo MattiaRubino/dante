@@ -106,7 +106,9 @@ describe('timeline layout engine', () => {
       expect(layout?.compactWidthPercent ?? 0).toBeGreaterThanOrEqual(
         TIMELINE_POLICY.layout.compactSingleLaneMinWidthPercent,
       );
-      expect(layout?.compactWidthPercent ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(
+      expect(
+        layout?.compactWidthPercent ?? Number.POSITIVE_INFINITY,
+      ).toBeLessThanOrEqual(
         TIMELINE_POLICY.layout.compactSingleLaneMaxWidthPercent,
       );
     }
