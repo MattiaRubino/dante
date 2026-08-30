@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const faroMocks = vi.hoisted(() => ({
+  addBeforeSendHooks: vi.fn(),
   initializeFaro: vi.fn(),
   pushError: vi.fn(),
   pushEvent: vi.fn(),
@@ -36,6 +37,9 @@ describe('Faro vendor runtime', () => {
       api: {
         pushError: faroMocks.pushError,
         pushEvent: faroMocks.pushEvent,
+      },
+      transports: {
+        addBeforeSendHooks: faroMocks.addBeforeSendHooks,
       },
     });
     const { initializeFaroRuntime } = await import('./runtime');
@@ -75,6 +79,7 @@ describe('Faro vendor runtime', () => {
     expect(faroMocks.initializeFaro.mock.calls[0]?.[0]).not.toHaveProperty(
       'experimental',
     );
+    expect(faroMocks.addBeforeSendHooks).toHaveBeenCalledTimes(1);
 
     bridge.observeResolvedRoute('/access');
     bridge.observeRenderFailure(
