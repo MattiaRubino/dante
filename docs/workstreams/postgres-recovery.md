@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP02 LOCAL PASS / CP03 NOT STARTED
+- **Status:** ACTIVE / CP02 LOCAL PASS / CP03 SOURCE-CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
@@ -8,7 +8,7 @@
 - **Current PostgreSQL:** 18.6
 - **Accepted recovery technology baseline:** pgBackRest 2.59.0 + AWS S3 Standard `eu-south-1` + Versioning + Object Lock GOVERNANCE
 - **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; CP02 direct local foundation proof PASS
-- **Current macro-checkpoint:** CP02 — pgBackRest Foundation / LOCAL PASS; CP03 requires a new write gate
+- **Current macro-checkpoint:** CP03 — Continuous WAL + Backup / source-config implemented / runtime proof pending
 - **Live handoff:** `postgres-recovery-live-handoff-2026-08-29.md`
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 
@@ -110,9 +110,11 @@ No recovery shortcut may rewrite historical semantics merely to make a restored 
 
 ## 4. Accepted target vs current implementation
 
-### 4.1 Current implementation after CP02 local proof
+### 4.1 Current implementation after CP02 local proof and CP03 source activation
 
 Current branch source materializes a PostgreSQL 18.6 image with PostGIS, pgvector and an exact pgBackRest package pin. The local compose topology mounts a dedicated recovery repository volume physically distinct from `PGDATA`, and the recovery-specific compose overlay isolates the test runtime from the ordinary LOCAL/observability stack.
+
+CP03 now adds recovery-only PostgreSQL archive settings in the versioned overlay and a bounded LOCAL full-backup retention value in pgBackRest configuration. These are source/config implementation facts only until the isolated runtime is recreated and directly proven.
 
 Current source/runtime topology:
 
@@ -128,12 +130,17 @@ stanza                           dante direct local PASS
 local repository type            POSIX
 local repository path            /var/lib/pgbackrest
 local repository volume          pgbackrest-repository:/var/lib/pgbackrest
+local full retention             repo1-retention-full=2 SOURCE/CONFIG IMPLEMENTED
 config ownership                 root:postgres / 0640 direct local PASS
 repository ownership             postgres:postgres / 0750 direct local PASS
 recovery Compose project         dante-postgres-recovery
 recovery image                   dante-postgres-recovery:18.6-pgbackrest-2.59.1
 recovery host port               127.0.0.1:55432
-ordinary LOCAL PostgreSQL        remained healthy on 127.0.0.1:5432
+recovery archive_mode            on SOURCE/CONFIG IMPLEMENTED / RUNTIME NOT YET PROVEN
+recovery archive_command         /usr/bin/pgbackrest --stanza=dante archive-push %p SOURCE/CONFIG IMPLEMENTED / RUNTIME NOT YET PROVEN
+recovery archive_library         intentionally unset
+recovery wal_level               replica inherited/current baseline; not overridden
+ordinary LOCAL PostgreSQL        remained healthy on 127.0.0.1:5432 during CP02 proof
 ```
 
 Direct CP02 evidence observed on the dedicated worktree/runtime:
@@ -172,9 +179,11 @@ pgBackRest source/config           LOCAL PASS
 pgBackRest 2.59.1 foundation       LOCAL PASS
 stanza-create                      LOCAL PASS
 pgBackRest info                    LOCAL PASS
-continuous WAL archive             SELECTED / NOT IMPLEMENTED
+CP03 archive source/config         IMPLEMENTED / RUNTIME PROOF PENDING
+continuous WAL archive             NOT YET DIRECTLY PROVEN
 pgBackRest check                   NOT RUN / CP03 OWNED
 full backup                        NOT RUN
+local retention behavior           CONFIGURED / NOT YET PROVEN
 AWS S3 recovery repository         SELECTED / NOT ACTIVATED
 S3 Versioning                      SELECTED / NOT ACTIVATED
 Object Lock GOVERNANCE             SELECTED / NOT ACTIVATED
@@ -308,7 +317,7 @@ This is a hypothesis to validate, not an irreversible production policy. At curr
 
 Differential/incremental capability may be exercised in QA without being enabled in the default schedule. The policy should evolve only when measured database size, full-backup duration, WAL volume, storage cost or restore time justify the additional chain complexity.
 
-Retention must be co-designed with S3 Versioning/Object Lock behavior and directly tested; apparent lifecycle expiration must not be mistaken for deletion of a still-retained protected version.
+For deterministic LOCAL CP03 work, `repo1-retention-full=2` is configured so expiry behavior can be exercised without unbounded local growth. This is only a local test policy; production retention must still be co-designed with S3 Versioning/Object Lock behavior and directly tested. Apparent lifecycle expiration must not be mistaken for deletion of a still-retained protected version.
 
 ---
 
@@ -500,7 +509,7 @@ Do not invent a generic ledger, external canonical store or second database mere
 ```text
 CP01  Recovery Contract / Bootstrap                         CONTRACT FROZEN
 CP02  pgBackRest Foundation                                 LOCAL PASS
-CP03  Continuous WAL + Backup                               NOT STARTED
+CP03  Continuous WAL + Backup                               SOURCE/CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
 CP04  Destructive / Isolated Restore                        NOT STARTED
 CP05  Deterministic PITR                                    NOT STARTED
 CP06  Failure Injection + Semantic Recovery / Anti-Resurrection  NOT STARTED
@@ -581,14 +590,20 @@ live handoff
 branch created from protected main            YES
 recovery worktree assigned                     YES
 CP01 recovery contract frozen                 YES
+CP02 pgBackRest foundation                     LOCAL PASS
 runtime recovery source/config changed        YES
 versioned recovery compose overlay            YES
 pgBackRest exact source pin                    LOCAL PASS
 pgBackRest locally installed/executed          LOCAL PASS
 stanza-create                                  LOCAL PASS
 pgBackRest info                                LOCAL PASS
+CP03 archive source/config                     IMPLEMENTED
+archive_mode=on source                         YES / RUNTIME NOT YET PROVEN
+archive_command archive-push source            YES / RUNTIME NOT YET PROVEN
+wal_level                                      replica / unchanged
+local repo1-retention-full=2                   CONFIGURED / BEHAVIOR NOT YET PROVEN
+continuous WAL archive                         NOT YET PROVEN
 pgBackRest check                               NOT RUN / CP03 OWNED
-WAL archive enabled                            NO
 full backup                                    NOT RUN
 AWS resources created                         NO
 AWS credentials committed                     NO
@@ -600,4 +615,4 @@ SC-031 PASS                                   NO
 runbook accepted                              NO
 ```
 
-**Next safe action:** fast-forward the dedicated recovery worktree to the current branch HEAD, validate the versioned `infra/compose/postgres-recovery.override.yaml` resolves to the same isolated runtime contract, then define and approve a new exact CP03 write gate for `archive_mode`, pgBackRest `archive-push`, full `pgbackrest check`, WAL evidence and the first FULL backup. Do not enable WAL archiving without that new gate.
+**Next safe action:** fast-forward the dedicated recovery worktree to the CP03 source/config HEAD, validate the resolved Compose command, recreate only the isolated recovery PostgreSQL service, prove `archive_mode`, `archive_command`, `archive_library` and `wal_level`, force/observe WAL archival through `pg_stat_archiver` and repository files, run full `pgbackrest --stanza=dante check`, execute the first FULL backup, read back `info`, then exercise the bounded LOCAL retention behavior. Do not enter restore, PITR or AWS work under this checkpoint.
