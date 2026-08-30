@@ -13,13 +13,10 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline.css';
 
-import { createTimelineTimeMapper } from './model/timeline-density';
 import {
-  createTimelinePrototypeEventsForDate,
   TIMELINE_PROTOTYPE_NOW_MINUTE,
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
-import { computeTimelineEventLayouts } from './model/timeline-layout';
 import {
   TIMELINE_POLICY,
   timelineSupportsExpandedLayout,
@@ -27,24 +24,13 @@ import {
 import {
   createInitialTimelineState,
   timelineReducer,
-  type TimelineState,
 } from './model/timeline-state';
 import {
-  addTimelineDays,
   formatTimelineMinute,
-  parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
-import type {
-  TimelineEvent,
-  TimelineEventId,
-  TimelineGroup,
-  TimelineGroupId,
-} from './model/timeline-types';
-import {
-  TimelineDayStream,
-  type TimelineRenderedDay,
-} from './timeline-day-stream';
+import type { TimelineEvent, TimelineGroupId } from './model/timeline-types';
+import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
   CalendarPopover,
@@ -56,6 +42,15 @@ import {
   detailFromSubitem,
   type TimelineDetail,
 } from './timeline-overlays';
+import {
+  applyTimelineExpansion,
+  buildTimelineRenderedDays,
+  clampTimelineRuntime,
+  findTimelineDayAtOffset,
+  parseTimelineViewedDate,
+  timelineNowViewportOffset,
+  type TimelineRenderedDay,
+} from './timeline-viewport-runtime';
 
 type TimelineSurfaceProps = Readonly<{
   expanded: boolean;
@@ -84,178 +79,6 @@ type DetailState = Readonly<{
   opener: HTMLElement;
 }>;
 
-type RenderedDayInputs = Readonly<{
-  eventsByDate: TimelineState['eventsByDate'];
-  groups: readonly TimelineGroup[];
-  zoom: number;
-  expandedEventIds: ReadonlySet<TimelineEventId>;
-}>;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function timelineNowViewportOffset(gridHeight: number): number {
-  return Math.max(
-    TIMELINE_POLICY.viewport.nowOffsetMinPx,
-    gridHeight * TIMELINE_POLICY.viewport.nowOffsetRatio,
-  );
-}
-
-function parseViewedDate(value: string | undefined): PlainDate | null {
-  if (!value) {
-    return null;
-  }
-  try {
-    return parseTimelineDate(value);
-  } catch {
-    return null;
-  }
-}
-
-function buildRenderedDays(
-  anchor: PlainDate,
-  pastDays: number,
-  futureDays: number,
-  inputs: RenderedDayInputs,
-): readonly TimelineRenderedDay[] {
-  const days: TimelineRenderedDay[] = [];
-  let offsetTop = 0;
-
-  for (let offset = -pastDays; offset <= futureDays; offset += 1) {
-    const date = addTimelineDays(anchor, offset);
-    const dateKey = timelineDateKey(date);
-    const events =
-      inputs.eventsByDate[dateKey] ??
-      createTimelinePrototypeEventsForDate(dateKey);
-    const mapper = createTimelineTimeMapper(events, inputs.zoom, {
-      expandedEventIds: inputs.expandedEventIds,
-    });
-    const layouts = computeTimelineEventLayouts(events, inputs.groups, mapper);
-    days.push({
-      date,
-      dateKey,
-      events,
-      mapper,
-      layouts,
-      offsetTop,
-      height: mapper.height,
-    });
-    offsetTop += mapper.height;
-  }
-
-  return days;
-}
-
-function findDayAtOffset(
-  days: readonly TimelineRenderedDay[],
-  offset: number,
-): TimelineRenderedDay | null {
-  return (
-    days.find(
-      (day) => offset >= day.offsetTop && offset < day.offsetTop + day.height,
-    ) ??
-    (offset < (days[0]?.offsetTop ?? 0)
-      ? (days[0] ?? null)
-      : (days.at(-1) ?? null))
-  );
-}
-
-function applyTimelineExpansion(
-  root: HTMLElement | null,
-  grid: HTMLDivElement | null,
-  groupScroller: HTMLDivElement | null,
-  groupCount: number,
-  progress: number,
-) {
-  if (!root || !grid) {
-    return;
-  }
-
-  const expansion = TIMELINE_POLICY.expansion;
-  const layout = TIMELINE_POLICY.layout;
-  const syncTolerance = TIMELINE_POLICY.viewport.horizontalSyncTolerancePx;
-  const p = timelineSupportsExpandedLayout(window.innerWidth)
-    ? clamp(progress, 0, 1)
-    : 0;
-  const viewportWidth = Math.max(1, grid.clientWidth);
-  const expandedTrack = Math.max(
-    viewportWidth,
-    expansion.trackChromeWidthPx + groupCount * layout.groupMinWidthPx,
-  );
-  const trackWidth = viewportWidth + (expandedTrack - viewportWidth) * p;
-  const compactInner = Math.max(1, trackWidth - expansion.trackChromeWidthPx);
-  const expandedInner = Math.max(
-    1,
-    expandedTrack - expansion.trackChromeWidthPx,
-  );
-  const safeGroupCount = Math.max(1, groupCount);
-  const groupWidth = expandedInner / safeGroupCount;
-
-  root.style.setProperty(
-    '--timeline-group-opacity',
-    String(
-      clamp(
-        (p - expansion.groupOpacityStart) / expansion.groupOpacityRange,
-        0,
-        1,
-      ),
-    ),
-  );
-  root.style.setProperty('--timeline-expansion-progress', String(p));
-  root.style.setProperty('--timeline-group-count', String(safeGroupCount));
-
-  const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
-  if (stream) {
-    stream.style.minWidth = `${trackWidth}px`;
-  }
-  root
-    .querySelectorAll<HTMLElement>('.timeline-day-section')
-    .forEach((section) => {
-      section.style.minWidth = `${trackWidth}px`;
-    });
-
-  root.querySelectorAll<HTMLElement>('.timeline-event-card').forEach((card) => {
-    const compactLeft = Number(
-      card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
-    );
-    const compactWidth = Number(
-      card.dataset.compactWidth ?? layout.compactSingleLaneMinWidthPercent,
-    );
-    const groupIndex = Math.max(0, Number(card.dataset.groupIndex ?? 0));
-    const groupLane = Math.max(0, Number(card.dataset.groupLane ?? 0));
-    const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
-
-    const leftA = (compactLeft / 100) * compactInner;
-    const widthA = (compactWidth / 100) * compactInner;
-    const leftB =
-      groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
-    const widthB = Math.max(
-      expansion.cardMinWidthPx,
-      groupWidth / groupLanes - expansion.cardLaneGapPx,
-    );
-    const left = leftA + (leftB - leftA) * p;
-    const width = widthA + (widthB - widthA) * p;
-
-    card.style.left = `${left + expansion.cardInsetPx}px`;
-    card.style.width = `${Math.max(expansion.cardMinWidthPx, width)}px`;
-  });
-
-  if (p < expansion.settledProgress) {
-    if (Math.abs(grid.scrollLeft) > syncTolerance) {
-      grid.scrollLeft = 0;
-    }
-    if (groupScroller && Math.abs(groupScroller.scrollLeft) > syncTolerance) {
-      groupScroller.scrollLeft = 0;
-    }
-  } else if (
-    groupScroller &&
-    Math.abs(groupScroller.scrollLeft - grid.scrollLeft) > syncTolerance
-  ) {
-    groupScroller.scrollLeft = grid.scrollLeft;
-  }
-}
-
 export function TimelineSurface({
   expanded,
   onExpandedChange,
@@ -272,7 +95,7 @@ export function TimelineSurface({
   // the reference scene. A real clock belongs to the later data-source layer.
   const timelineToday = TIMELINE_PROTOTYPE_TODAY;
   const timelineNowMinute = TIMELINE_PROTOTYPE_NOW_MINUTE;
-  const initialDate = parseViewedDate(viewedDateIso) ?? timelineToday;
+  const initialDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
   const initialDateRef = useRef(initialDate);
   const [state, dispatch] = useReducer(
     timelineReducer,
@@ -324,7 +147,7 @@ export function TimelineSurface({
   const scrollFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
-  const renderedDayInputs = useMemo<RenderedDayInputs>(
+  const renderedDayInputs = useMemo(
     () => ({
       eventsByDate: state.eventsByDate,
       groups: state.groups,
@@ -334,7 +157,13 @@ export function TimelineSurface({
     [state.eventsByDate, state.expandedEventIds, state.groups, state.zoom],
   );
   const renderedDays = useMemo(
-    () => buildRenderedDays(anchor, pastDays, futureDays, renderedDayInputs),
+    () =>
+      buildTimelineRenderedDays(
+        anchor,
+        pastDays,
+        futureDays,
+        renderedDayInputs,
+      ),
     [anchor, futureDays, pastDays, renderedDayInputs],
   );
 
@@ -365,17 +194,17 @@ export function TimelineSurface({
 
   const syncExpansion = useCallback(
     (progress: number) => {
-      const p = timelineSupportsExpandedLayout(window.innerWidth)
-        ? clamp(progress, 0, 1)
+      const normalizedProgress = timelineSupportsExpandedLayout(window.innerWidth)
+        ? clampTimelineRuntime(progress, 0, 1)
         : 0;
-      expansionProgressRef.current = p;
-      onExpansionProgress(p);
+      expansionProgressRef.current = normalizedProgress;
+      onExpansionProgress(normalizedProgress);
       applyTimelineExpansion(
         rootRef.current,
         gridRef.current,
         groupScrollerRef.current,
         state.groups.length,
-        p,
+        normalizedProgress,
       );
     },
     [onExpansionProgress, state.groups.length],
@@ -487,7 +316,7 @@ export function TimelineSurface({
       const probe =
         scrollTop +
         grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio;
-      const viewed = findDayAtOffset(days, probe);
+      const viewed = findTimelineDayAtOffset(days, probe);
       if (viewed && !viewed.date.equals(viewDate)) {
         setViewDate(viewed.date);
         publishViewportDate(viewed.date);
@@ -573,7 +402,7 @@ export function TimelineSurface({
       const rect = grid.getBoundingClientRect();
       const viewportOffset = clientY - rect.top;
       const contentY = grid.scrollTop + viewportOffset;
-      const day = findDayAtOffset(renderedDaysRef.current, contentY);
+      const day = findTimelineDayAtOffset(renderedDaysRef.current, contentY);
       if (!day) {
         return;
       }
@@ -615,7 +444,7 @@ export function TimelineSurface({
   }, [publishViewportDate, viewDate]);
 
   useLayoutEffect(() => {
-    const externalDate = parseViewedDate(viewedDateIso) ?? timelineToday;
+    const externalDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
     if (externalDate.equals(viewDate)) {
       return;
     }
@@ -761,7 +590,7 @@ export function TimelineSurface({
     if (!drag || drag.pointerId !== event.pointerId) {
       return;
     }
-    const progress = clamp(
+    const progress = clampTimelineRuntime(
       drag.startProgress + (event.clientX - drag.startX) / drag.dragDistance,
       0,
       1,
@@ -775,7 +604,7 @@ export function TimelineSurface({
       return;
     }
     const deltaX = event.clientX - drag.startX;
-    const progress = clamp(
+    const progress = clampTimelineRuntime(
       drag.startProgress + deltaX / drag.dragDistance,
       0,
       1,
