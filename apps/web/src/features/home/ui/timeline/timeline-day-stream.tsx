@@ -156,6 +156,7 @@ function TimelineEventCard({
     !isFocused &&
     focusedEvent.groupId === event.groupId;
   const isDim = focusedEvent !== null && !isFocused && !isGroupmate;
+  const inlineActionsEnabled = focusedEvent === null || isFocused;
 
   if (filtered) {
     return null;
@@ -229,8 +230,13 @@ function TimelineEventCard({
         <button
           className="timeline-event-card__title"
           type="button"
+          tabIndex={inlineActionsEnabled ? 0 : -1}
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
+            if (!inlineActionsEnabled) {
+              onFocusEvent(event.id);
+              return;
+            }
             onOpenEventDetail(event, clickEvent.currentTarget);
           }}
         >
@@ -239,8 +245,13 @@ function TimelineEventCard({
         <button
           className="timeline-event-card__time"
           type="button"
+          tabIndex={inlineActionsEnabled ? 0 : -1}
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
+            if (!inlineActionsEnabled) {
+              onFocusEvent(event.id);
+              return;
+            }
             onOpenTimeEditor(dateKey, event, clickEvent.currentTarget);
           }}
           aria-label={t(($) => $.common.home.timeline.timeEditor.open, {
@@ -263,8 +274,13 @@ function TimelineEventCard({
               className="timeline-event-card__subitem"
               key={`${event.id}-${index}`}
               type="button"
+              tabIndex={inlineActionsEnabled ? 0 : -1}
               onClick={(clickEvent) => {
                 clickEvent.stopPropagation();
+                if (!inlineActionsEnabled) {
+                  onFocusEvent(event.id);
+                  return;
+                }
                 onOpenSubitemDetail(event, subitem, clickEvent.currentTarget);
               }}
             >
@@ -280,8 +296,13 @@ function TimelineEventCard({
         <button
           className="timeline-event-card__expander"
           type="button"
+          tabIndex={inlineActionsEnabled ? 0 : -1}
           onClick={(clickEvent) => {
             clickEvent.stopPropagation();
+            if (!inlineActionsEnabled) {
+              onFocusEvent(event.id);
+              return;
+            }
             onToggleSubitems(event.id);
           }}
           aria-expanded={expandedSubitems}
