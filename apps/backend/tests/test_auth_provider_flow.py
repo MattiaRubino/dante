@@ -24,7 +24,7 @@ from dante.auth.contracts import (
 from dante.auth.email_delivery import EmailCommand, EmailDeliveryPort
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
-from dante.auth.proofs import SignupOtpCodec
+from dante.auth.proofs import ProviderEnrollmentOtpCodec
 from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
 from dante.platform.config.auth import AuthSettings
 from dante.platform.config.auth_provider import AuthProviderSettings, GoogleProviderSettings
@@ -68,23 +68,25 @@ def _settings(*, google_enabled: bool) -> AuthSettings:
     )
 
 
+def _limiter() -> KeyedRateLimiter:
+    return KeyedRateLimiter(capacity=20, window_seconds=60, max_keys=16)
+
+
 def _service(*, google_enabled: bool = True) -> ProviderFlowService:
     settings = _settings(google_enabled=google_enabled)
-    max_keys = 16
-    limiter = lambda: KeyedRateLimiter(capacity=20, window_seconds=60, max_keys=max_keys)
     return ProviderFlowService(
         session_factory=cast(async_sessionmaker[AsyncSession], _NoDatabase()),
         settings=settings,
         google_verifier=cast(GoogleTokenVerifier, object()),
-        otp_codec=SignupOtpCodec(
+        otp_codec=ProviderEnrollmentOtpCodec(
             key_ring=settings.signup_otp_key_bytes,
             current_key_id=settings.signup_otp_current_key_id,
         ),
         email_delivery=cast(EmailDeliveryPort, _NoopDelivery()),
         limiters=ProviderFlowLimiters(
-            begin=limiter(),
-            complete=limiter(),
-            enrollment=limiter(),
+            begin=_limiter(),
+            complete=_limiter(),
+            enrollment=_limiter(),
         ),
     )
 
