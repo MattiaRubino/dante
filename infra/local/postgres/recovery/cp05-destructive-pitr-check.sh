@@ -207,7 +207,7 @@ printf '%s\n' "$auto_conf" | grep -F "recovery_target_name = '$RESTORE_POINT'" >
 printf '%s\n' "$auto_conf" | grep -F "recovery_target_timeline = '$TARGET_TIMELINE'" >/dev/null || die "recovery_target_timeline not generated"
 printf '%s\n' "$auto_conf" | grep -F "recovery_target_action = 'promote'" >/dev/null || die "recovery_target_action=promote not generated"
 printf '%s\n' "$auto_conf" | grep -F "archive_mode = 'off'" >/dev/null || die "archive_mode=off not generated"
-printf '%s\n' "$auto_conf" | grep -F 'restore_command = '\''/usr/bin/pgbackrest --stanza=dante archive-get %f "%p"'\''' >/dev/null || die "restore_command not generated"
+printf '%s\n' "$auto_conf" | grep -F "restore_command = '/usr/bin/pgbackrest --stanza=dante archive-get %f \"%p\"'" >/dev/null || die "restore_command not generated"
 echo "GENERATED PITR SETTINGS: PASS"
 
 echo
