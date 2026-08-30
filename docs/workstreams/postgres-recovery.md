@@ -1,14 +1,14 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP02 FOUNDATION IMPLEMENTED / LOCAL PROOF PENDING
+- **Status:** ACTIVE / CP02 LOCAL PASS / CP03 NOT STARTED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
-- **Local worktree:** NOT ASSIGNED; do not reuse an occupied worktree
+- **Local worktree:** `/home/mattia/projects/dante-postgres-recovery`
 - **Current PostgreSQL:** 18.6
 - **Accepted recovery technology baseline:** pgBackRest 2.59.0 + AWS S3 Standard `eu-south-1` + Versioning + Object Lock GOVERNANCE
-- **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; runtime compatibility proof still required before durable baseline ratification
-- **Current macro-checkpoint:** CP02 — pgBackRest Foundation / local runtime proof pending
+- **Activation implementation pin:** pgBackRest 2.59.1 / PGDG `2.59.1-1.pgdg13+1`; CP02 direct local foundation proof PASS
+- **Current macro-checkpoint:** CP02 — pgBackRest Foundation / LOCAL PASS; CP03 requires a new write gate
 - **Live handoff:** `postgres-recovery-live-handoff-2026-08-29.md`
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 
@@ -21,12 +21,13 @@
 Continue exactly:
 
 ```text
-repo:   MattiaRubino/dante
-branch: feature/postgres-recovery
-base:   baa9aba52932a0fa09b957ee7668aeb459fb4a20
+repo:     MattiaRubino/dante
+branch:   feature/postgres-recovery
+base:     baa9aba52932a0fa09b957ee7668aeb459fb4a20
+worktree: /home/mattia/projects/dante-postgres-recovery
 ```
 
-A local worktree is intentionally not assigned yet because the user has another new worktree occupied by a different branch. Do not steal, detach, reset, rebase, or repurpose an occupied worktree. Before local runtime work, first verify the available worktree topology and explicitly bind this branch to a safe path.
+The recovery branch has its own dedicated worktree. Do not steal, detach, reset, rebase, or repurpose the other occupied DANTE worktrees.
 
 Before any local write/proof:
 
@@ -109,36 +110,71 @@ No recovery shortcut may rewrite historical semantics merely to make a restored 
 
 ## 4. Accepted target vs current implementation
 
-### 4.1 Current implementation after CP02 source materialization
+### 4.1 Current implementation after CP02 local proof
 
-Current branch source now materializes a PostgreSQL 18.6 image with PostGIS, pgvector and an exact pgBackRest package pin. The local compose topology also mounts a dedicated recovery repository volume that is physically distinct from `PGDATA`.
+Current branch source materializes a PostgreSQL 18.6 image with PostGIS, pgvector and an exact pgBackRest package pin. The local compose topology mounts a dedicated recovery repository volume physically distinct from `PGDATA`, and the recovery-specific compose overlay isolates the test runtime from the ordinary LOCAL/observability stack.
 
-Current source/config topology:
+Current source/runtime topology:
 
 ```text
-PostgreSQL image                 postgres:18.6-trixie pinned by digest
-PostgreSQL PGDATA                /var/lib/postgresql/18/docker
+PostgreSQL base image            postgres:18.6-trixie pinned by digest
+PostgreSQL runtime               PostgreSQL 18.6 direct local PASS
+PostgreSQL PGDATA                /var/lib/postgresql/18/docker direct local PASS
 PostgreSQL persistence volume    postgres-data:/var/lib/postgresql
-pgBackRest package pin           2.59.1-1.pgdg13+1
-pgBackRest expected CLI          pgBackRest 2.59.1
+pgBackRest package pin           2.59.1-1.pgdg13+1 clean build PASS
+pgBackRest CLI                   pgBackRest 2.59.1 direct local PASS
 pgBackRest config                /etc/pgbackrest/pgbackrest.conf
-stanza                           dante
+stanza                           dante direct local PASS
 local repository type            POSIX
 local repository path            /var/lib/pgbackrest
 local repository volume          pgbackrest-repository:/var/lib/pgbackrest
-config ownership                 root:postgres / 0640
-repository image-path ownership  postgres:postgres / 0750
+config ownership                 root:postgres / 0640 direct local PASS
+repository ownership             postgres:postgres / 0750 direct local PASS
+recovery Compose project         dante-postgres-recovery
+recovery image                   dante-postgres-recovery:18.6-pgbackrest-2.59.1
+recovery host port               127.0.0.1:55432
+ordinary LOCAL PostgreSQL        remained healthy on 127.0.0.1:5432
 ```
 
-The source state is implemented but has not yet been built/executed on the DANTE local runtime. Therefore the truthful status is:
+Direct CP02 evidence observed on the dedicated worktree/runtime:
 
 ```text
-PostgreSQL 18.6                    IMPLEMENTED / previously proven elsewhere in current local stack
-pgBackRest source/config           IMPLEMENTED / LOCAL PROOF PENDING
-pgBackRest 2.59.1 runtime          NOT YET PROVEN
-stanza-create                      NOT RUN
-pgBackRest info                    NOT RUN
+clean image build                              PASS
+container health                               PASS
+ordinary dante-local PostgreSQL non-interference PASS
+ordinary Alloy non-interference                PASS
+pgbackrest version == pgBackRest 2.59.1        PASS
+PostgreSQL version == 18.6                     PASS
+data_directory == /var/lib/postgresql/18/docker PASS
+config readable by postgres                    PASS
+repository writable by postgres                PASS
+PGDATA writable by postgres                    PASS
+stanza-create                                  PASS
+pgbackrest --stanza=dante info                 PASS
+archive.info / backup.info metadata present    PASS
+```
+
+Expected end-of-CP02 `info` state is intentionally:
+
+```text
+stanza: dante
+status: error (no valid backups)
+wal archive min/max (18): none present
+```
+
+That state is not a CP02 failure. It proves the stanza/repository foundation exists while backup and WAL work remain deliberately unstarted.
+
+Therefore the truthful status is:
+
+```text
+PostgreSQL 18.6                    LOCAL PASS
+pgBackRest source/config           LOCAL PASS
+pgBackRest 2.59.1 foundation       LOCAL PASS
+stanza-create                      LOCAL PASS
+pgBackRest info                    LOCAL PASS
 continuous WAL archive             SELECTED / NOT IMPLEMENTED
+pgBackRest check                   NOT RUN / CP03 OWNED
+full backup                        NOT RUN
 AWS S3 recovery repository         SELECTED / NOT ACTIVATED
 S3 Versioning                      SELECTED / NOT ACTIVATED
 Object Lock GOVERNANCE             SELECTED / NOT ACTIVATED
@@ -167,28 +203,28 @@ Recovery copies remain non-canonical.
 
 ### 4.3 Activation-time version rule
 
-pgBackRest `2.59.1` is the maintenance release selected for the first implementation attempt. Current external evidence confirms the release exists and PGDG publishes the exact Debian 13/Trixie package `2.59.1-1.pgdg13+1`. The branch Dockerfile pins that package and asserts both the package version and CLI version at build time.
+pgBackRest `2.59.1` is the maintenance release selected for the implementation. External evidence identified the exact Debian 13/Trixie PGDG package `2.59.1-1.pgdg13+1`; CP02 then directly proved a clean local image build, exact CLI version, PostgreSQL 18.6 interoperability and stanza/repository initialization.
 
-This does **not** yet promote the accepted Physical Model baseline from `2.59.0` to `2.59.1`. Durable maintenance refresh ratification requires direct local build/runtime evidence that the pin installs cleanly and interoperates with PostgreSQL 18.6 and the intended stanza/repository topology.
+Therefore `2.59.1` is ratified as the implementation maintenance pin for this workstream. This does **not** silently rewrite historical Physical Model evidence that selected `2.59.0`; durable architecture/current-state documentation is reconciled at the appropriate integration boundary.
 
-Decision rule:
+Decision result:
 
 ```text
-2.59.1 clean build + version assertion + stanza foundation proof
-→ ratify maintenance refresh for implementation
-
-material incompatibility / unavailable package / runtime issue
-→ stop and reassess without silently falling forward/backward
+2.59.1 clean build                         PASS
+exact version assertion                    PASS
+PostgreSQL 18.6 foundation interoperability PASS
+stanza/repository foundation               PASS
+→ implementation maintenance refresh RATIFIED
 ```
 
 ### 4.4 CP01 recovery-contract freeze
 
-CP01 is frozen enough to permit bounded runtime materialization:
+CP01 is frozen:
 
 ```text
 PostgreSQL major/patch        18.6
 PGDATA                        /var/lib/postgresql/18/docker
-implementation pgBackRest     2.59.1 candidate, exact PGDG pin
+implementation pgBackRest     2.59.1 exact PGDG pin
 stanza                        dante
 local repository              POSIX / dedicated Docker named volume
 repository path               /var/lib/pgbackrest
@@ -280,12 +316,16 @@ Retention must be co-designed with S3 Versioning/Object Lock behavior and direct
 
 ### LOCAL deterministic harness
 
-Permitted test topology:
+Versioned local recovery topology:
 
 ```text
+base compose     infra/compose/local.yaml
+recovery overlay infra/compose/postgres-recovery.override.yaml
+project          dante-postgres-recovery
+host port        127.0.0.1:55432
 PostgreSQL 18.6
-+ pgBackRest
-+ temporary/local POSIX repository
++ pgBackRest 2.59.1
++ separate POSIX repository volume
 → backup
 → WAL archive
 → destructive/fresh restore
@@ -295,7 +335,7 @@ PostgreSQL 18.6
 
 The POSIX repository is test infrastructure only. It is not a second selected production recovery architecture.
 
-Local proof exists to make recovery deterministic, cheap and repeatable.
+Local proof exists to make recovery deterministic, cheap and repeatable. Recovery commands must include the dedicated project name and overlay so the ordinary `dante-local`/observability runtime is not targeted.
 
 ### REMOTE selected-stack acceptance
 
@@ -459,7 +499,7 @@ Do not invent a generic ledger, external canonical store or second database mere
 
 ```text
 CP01  Recovery Contract / Bootstrap                         CONTRACT FROZEN
-CP02  pgBackRest Foundation                                 IMPLEMENTED / LOCAL PROOF PENDING
+CP02  pgBackRest Foundation                                 LOCAL PASS
 CP03  Continuous WAL + Backup                               NOT STARTED
 CP04  Destructive / Isolated Restore                        NOT STARTED
 CP05  Deterministic PITR                                    NOT STARTED
@@ -539,14 +579,17 @@ live handoff
 
 ```text
 branch created from protected main            YES
+recovery worktree assigned                     YES
 CP01 recovery contract frozen                 YES
 runtime recovery source/config changed        YES
-pgBackRest exact source pin                    IMPLEMENTED
-pgBackRest locally installed/executed          NOT YET PROVEN
-stanza-create                                  NOT RUN
+versioned recovery compose overlay            YES
+pgBackRest exact source pin                    LOCAL PASS
+pgBackRest locally installed/executed          LOCAL PASS
+stanza-create                                  LOCAL PASS
+pgBackRest info                                LOCAL PASS
 pgBackRest check                               NOT RUN / CP03 OWNED
 WAL archive enabled                            NO
-local recovery proof                          NO
+full backup                                    NOT RUN
 AWS resources created                         NO
 AWS credentials committed                     NO
 restore rehearsal                             NO
@@ -557,4 +600,4 @@ SC-031 PASS                                   NO
 runbook accepted                              NO
 ```
 
-**Next safe action:** bind the branch to a safe local worktree when available and execute CP02 local proof: clean image build, exact pgBackRest version assertion, config/permission inspection, PostgreSQL readiness, `stanza-create`, and `info`. Do not enable WAL archiving or call a successful `check` a CP02 requirement; archive-path `check` belongs to CP03.
+**Next safe action:** fast-forward the dedicated recovery worktree to the current branch HEAD, validate the versioned `infra/compose/postgres-recovery.override.yaml` resolves to the same isolated runtime contract, then define and approve a new exact CP03 write gate for `archive_mode`, pgBackRest `archive-push`, full `pgbackrest check`, WAL evidence and the first FULL backup. Do not enable WAL archiving without that new gate.
