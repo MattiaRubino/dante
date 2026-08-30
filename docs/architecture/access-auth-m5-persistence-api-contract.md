@@ -1,19 +1,21 @@
 # DANTE — Access/Auth M5 Persistence + API Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE MATERIALIZATION ACCEPTED
+- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE ACCEPTED / M5-B RUNTIME INFRASTRUCTURE ACCEPTED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Prerequisite:** M1–M4 CLOSED; M5.1 architecture/external-authority freeze COMPLETE
 - **M5.2:** exact persistence/API/state/race design COMPLETE
 - **M5-A persistence materialization:** COMPLETE / REAL POSTGRESQL 18.6 PROVEN
+- **M5-B provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure:** COMPLETE / ENGINEERING PASS
 - **Accepted PostgreSQL head:** `20260830_12`
 - **Prior accepted persistence baseline:** `20260829_11`
+- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
-- **Next implementation step:** M5-B — provider transaction + JOSE/JWK/AEAD infrastructure
+- **Next implementation step:** M5-C — Google authentication + Account creation/collision
 - **Companion authority:** `access-auth-m5-contract.md`
 - **Binding foundations:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record, CP6 persistence constitution
 
-This document remains the **exact M5 persistence and public-API design authority**. M5-A has now materialized and proved the persistence subset. Provider runtime, public API, generated client, Web integration and provider/browser acceptance remain future M5 slices.
+This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. Public M5 API, generated client, Web integration and provider/browser acceptance remain future M5 slices.
 
 ---
 
@@ -114,6 +116,60 @@ this contract
 ```
 
 Any mismatch is a defect.
+
+## 0.1 M5-B runtime reconciliation
+
+M5-B materialized the shared provider/crypto/WebAuthn policy infrastructure without changing persistence, Alembic or Dictionary truth.
+
+Accepted implementation checkpoint:
+
+```text
+e2d40a7666e3c0130afecd8113b8063390b86b9d
+chore(auth): finalize M5-B lock and formatting
+```
+
+Accepted dependency/runtime baseline:
+
+```text
+fido2         2.2.1
+joserfc       1.7.4
+cryptography  50.0.1
+existing httpx2
+Python        3.14
+uv            0.12.5
+```
+
+Accepted infrastructure:
+
+```text
+typed Google/Apple/WebAuthn/provider settings with safe disabled defaults
+bounded provider/JWK HTTP runtime
+configured provider JWKS endpoints are the only JWK trust sources
+coordinated JWK cache, conditional revalidation, rotation and unknown-kid cooldown
+JWKS response/key-count/duplicate/private-material bounds
+strict JOSE compact/header admission and exact RS256 allowlist
+canonical unpadded Base64URL compact segments
+Apple AES-256-GCM grant key ring, random 12-byte nonce and stable AAD
+purpose-separated 256-bit provider/link/enrollment/WebAuthn flow proofs
+FIDO2 WebAuthn exact RP/origin policy baseline
+single process-scoped ProviderRuntime inside existing AuthRuntime lifecycle
+no provider network I/O at process startup
+```
+
+Accepted closeout proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / lint                 PASS
+mypy strict                                  PASS / 73 source files
+backend fast                                 127 / 127 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+PostgreSQL was intentionally not rerun for M5-B because this slice changes no DB/schema/Alembic/Dictionary contract and no regression evidence justified reopening the accepted M5-A persistence gate.
+
+M5-B does not claim Google/Apple product flows, complete WebAuthn ceremonies, public M5 routes/OpenAPI/client, Web UI or real provider/browser acceptance.
 
 ---
 
@@ -1345,35 +1401,37 @@ Each issued challenge persists exact `rp_id` and `expected_origin`; configuratio
 
 ---
 
-# 22. Dependency direction / M5-B admission gate
+# 22. Dependency direction / M5-B accepted admission
 
-M5.2 candidate baseline as of 2026-08-30:
+Accepted M5-B baseline as of 2026-08-30:
 
 ```text
 fido2         2.2.1
 joserfc       1.7.4
-cryptography  50.0.x baseline
-existing httpx
+cryptography  50.0.1
+existing httpx2
+Python        3.14
+uv            0.12.5
 ```
 
-These are **candidates**, not accepted lock truth.
+This is accepted lock/runtime truth for M5-B, not a candidate list.
 
-Before changing `pyproject.toml` / `uv.lock`, M5-B must recheck:
+M5-B admission proved:
 
 ```text
-current package versions
-Python 3.14 compatibility
-current advisories
-explicit JOSE algorithm allowlists
-JWK parsing/rotation vectors
-WebAuthn ceremony vectors
-DANTE-owned counter/risk policy
-no credential/token logging defaults
+Python 3.14 compatibility in the project runtime
+explicit JOSE RS256 allowlist
+strict JWK parsing/rotation bounds
+WebAuthn policy construction through fido2
+Apple grant AEAD through cryptography AESGCM
+no credential/token logging behavior introduced
 Ruff/mypy/test/build compatibility
-uv lock determinism
+uv lock determinism / uv lock --check
 ```
 
-Do not hand-roll JWT/JWS/JWK, CBOR/COSE/WebAuthn or AES-GCM.
+The permanent rule remains: do not hand-roll JWT/JWS/JWK, CBOR/COSE/WebAuthn or AES-GCM.
+
+Future dependency upgrades require their own current compatibility/advisory review; M5-C does not silently widen the algorithms or trust sources admitted by M5-B.
 
 ---
 
@@ -1551,8 +1609,8 @@ CI remains deterministic and does not depend on public providers.
 
 ```text
 M5-A   persistence foundations                              COMPLETE / PROVEN
-M5-B   provider/JWK/JOSE/AEAD infrastructure               NEXT
-M5-C   Google                                              PLANNED
+M5-B   provider/JWK/JOSE/AEAD infrastructure               COMPLETE / ENGINEERING PASS
+M5-C   Google                                              NEXT
 M5-D   Apple grant/callback/notifications                   PLANNED
 M5-E   linking + authenticator management/anti-lockout      PLANNED
 M5-F   WebAuthn/passkeys                                    PLANNED
@@ -1576,7 +1634,10 @@ M5-A persistence materialization              COMPLETE
 M5-A real PostgreSQL acceptance               95 / 95 PASS
 M5-A current catalog parity                   PASS
 M5-A static/type/fast/build                    PASS
-M5-B                                           NEXT
+M5-B provider/JWK/JOSE/AEAD infrastructure    COMPLETE / ENGINEERING PASS
+M5-B fast                                      127 / 127 PASS
+M5-B Ruff/mypy/build                           PASS
+M5-C                                           NEXT
 ```
 
-M5 as a whole remains ACTIVE. M5-A persistence acceptance does not imply provider/API/Web/browser/provider-UAT completion.
+M5 as a whole remains ACTIVE. M5-A persistence acceptance plus M5-B runtime-infrastructure acceptance do not imply Google/Apple product flows, public API/Web materialization, browser/provider UAT or whole-M5 completion.
