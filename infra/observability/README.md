@@ -44,6 +44,20 @@ python3 tooling/observability/write-observer-dsn.py
 
 The generated `infra/compose/secrets/dante_observer_dsn.local` is ignored by Git. It contains only the least-privilege observer identity; it is never a backend runtime or database administrator credential.
 
+For LOCAL Compose, Alloy runs as non-root UID `473` and is added only to your
+primary WSL group. Docker Compose implements file-backed secrets as bind mounts,
+so make the two files read-only for that private group (not world-readable):
+
+```bash
+chmod 640 \
+  infra/compose/secrets/grafana_cloud_api_key.local \
+  infra/compose/secrets/dante_observer_dsn.local
+```
+
+The observer password source remains `0600`: only the derived DSN and Grafana
+ingestion token are projected to Alloy. Re-run the `chmod` after rotating either
+file. Remote deployments use their platform-native secret manager instead.
+
 ## Grafana Cloud Free connection
 
 1. Create or select one Grafana Cloud Free stack in an EU region.

@@ -69,7 +69,8 @@ def _password(path: Path) -> str:
     return value
 
 
-def _atomic_private_write(path: Path, value: str) -> None:
+def _atomic_collector_secret_write(path: Path, value: str) -> None:
+    """Write a LOCAL collector secret readable by its supplementary host group."""
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     descriptor: int | None = None
@@ -77,7 +78,7 @@ def _atomic_private_write(path: Path, value: str) -> None:
         descriptor = os.open(
             temporary,
             os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
-            0o600,
+            0o640,
         )
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as stream:
             descriptor = None
@@ -85,7 +86,7 @@ def _atomic_private_write(path: Path, value: str) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
-        os.chmod(path, 0o600, follow_symlinks=False)
+        os.chmod(path, 0o640, follow_symlinks=False)
         directory_descriptor = os.open(path.parent, os.O_RDONLY)
         try:
             os.fsync(directory_descriptor)
@@ -99,7 +100,9 @@ def _atomic_private_write(path: Path, value: str) -> None:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Write Alloy's dante_observer DSN as a mode-0600 Docker secret.",
+        description=(
+            "Write Alloy's dante_observer DSN as a mode-0640 LOCAL Docker secret."
+        ),
     )
     parser.add_argument("--host", type=_non_blank, default="postgres")
     parser.add_argument("--port", type=_port, default=5432)
@@ -125,7 +128,7 @@ def main() -> None:
         user=arguments.user,
         sslmode=arguments.sslmode,
     )
-    _atomic_private_write(
+    _atomic_collector_secret_write(
         arguments.output.resolve(),
         connection.dsn(_password(arguments.password_file.resolve())),
     )

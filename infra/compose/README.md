@@ -127,7 +127,10 @@ The migrator/runtime/observer values must be generated independently, kept
 outside Git and supplied only to the process that needs them. The backend
 runtime receives only the runtime credential. Alembic receives only the
 migrator credential. Alloy receives only the observer credential through a
-mode-0600 Docker secret.
+LOCAL Docker file secret. Because Compose implements that projection as a bind
+mount, the derived observer DSN is mode `0640` and readable only by the
+workstation user's private primary group, which Alloy receives as a
+supplementary group. The observer password source remains mode `0600`.
 
 `dante_owner` has `NOLOGIN` and therefore no password.
 
