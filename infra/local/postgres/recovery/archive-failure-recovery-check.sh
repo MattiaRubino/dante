@@ -70,7 +70,7 @@ compose exec --user root postgres sh -lc '
 
   while [ "$i" -lt 30 ]; do
     failed="$(pg "SELECT failed_count FROM pg_stat_archiver;")"
-    last_failed="$(pg "SELECT COALESCE(last_failed_wal, '''''' ) FROM pg_stat_archiver;")"
+    last_failed="$(pg "SELECT last_failed_wal FROM pg_stat_archiver;")"
 
     echo "failure poll: failed=$failed last_failed=$last_failed"
 
@@ -101,7 +101,7 @@ compose exec --user root postgres sh -lc '
 
   while [ "$i" -lt 30 ]; do
     archived="$(pg "SELECT archived_count FROM pg_stat_archiver;")"
-    last_archived="$(pg "SELECT COALESCE(last_archived_wal, '''''' ) FROM pg_stat_archiver;")"
+    last_archived="$(pg "SELECT last_archived_wal FROM pg_stat_archiver;")"
 
     echo "recovery poll: archived=$archived last_archived=$last_archived"
 
