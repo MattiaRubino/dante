@@ -457,4 +457,160 @@ CP04 Destructive / Isolated Restore   LOCAL PASS
 SC-031 destructive local restore      PASS
 ```
 
-The current restored verification target is intentionally isolated with `archive_mode=off` until the next checkpoint topology is established. CP04 does **not** prove PITR, AWS S3, S3 Versioning, Object Lock, production retention or SC-011 anti-resurrection.
+### Recovery CP05 deterministic PITR
+
+CP05 is **LOCAL PASS** for deterministic named-restore-point PITR on the isolated POSIX recovery topology.
+
+Versioned harnesses:
+
+```text
+infra/local/postgres/recovery/cp05-prepare-pitr-source.sh
+infra/local/postgres/recovery/cp05-destructive-pitr-check.sh
+```
+
+The preparation harness starts from the proven CP04 restored database, turns the promoted target back into an archiving primary, proves current-timeline WAL archiving, verifies the promoted timeline history is physically present in the repository, then creates deterministic A / restore-point / B state.
+
+A promoted timeline-history file may have been created while the CP04 verification target intentionally had `archive_mode=off`. Re-enabling archiving does not retroactively queue that existing file. The harness therefore checks the repository first and, only when necessary, explicitly pushes the already-existing PostgreSQL history file with pgBackRest:
+
+```bash
+pgbackrest --stanza=dante archive-push \
+  /var/lib/postgresql/18/docker/pg_wal/<timeline>.history
+```
+
+Do not manually manipulate `pg_wal/archive_status` to fake timeline-history readiness.
+
+The directly exercised CP05 scenario was:
+
+```text
+base FULL          20260830-132540F
+target timeline    2
+history            00000002.history
+scenario           dante_cp05_20260830T140906Z_19757
+restore point      dante_cp05_20260830T140906Z_19757_R1
+restore LSN        0/16000230
+restore WAL        000000020000000000000016
+A                  01a05300-a55e-7845-a710-69387408d147
+B                  01a05300-a5c0-7d08-a608-74ac9d821817
+B WAL              000000020000000000000017
+```
+
+Before destruction the source directly proved:
+
+```text
+BASELINE  PRESENT
+A         PRESENT
+B         PRESENT
+```
+
+Required archive chain before destruction:
+
+```text
+timeline-2 WAL                     PASS
+00000002.history                   PASS
+restore-point WAL ...0016          PASS
+post-target B WAL ...0017          PASS
+pgBackRest check                   PASS
+```
+
+The destructive harness again deletes only:
+
+```text
+dante-postgres-recovery_postgres-data
+```
+
+and preserves:
+
+```text
+dante-postgres-recovery_pgbackrest-repository
+ordinary dante-local volumes
+workstation-local ignored scenario/credential files
+```
+
+It requires the explicit confirmation:
+
+```text
+DELETE_RECOVERY_PGDATA_FOR_PITR
+```
+
+The successful PITR contract is:
+
+```text
+--set=<exact FULL>
+--type=name
+--target=<named restore point>
+--target-timeline=<exact source timeline>
+--target-action=promote
+--archive-mode=off
+```
+
+The direct exercised restore used:
+
+```text
+--set=20260830-132540F
+--type=name
+--target=dante_cp05_20260830T140906Z_19757_R1
+--target-timeline=2
+--target-action=promote
+--archive-mode=off
+```
+
+Final CP05 direct evidence:
+
+```text
+PGDATA destructive replacement                  PASS
+old source-volume marker absent                PASS
+repository survived unchanged                  PASS
+base FULL exact-set restore                    PASS
+generated named recovery target                PASS
+generated target timeline                      2 PASS
+generated target action                        promote PASS
+PITR target ready / promoted                   PASS
+promoted timeline                              3
+promoted current WAL                           000000030000000000000016
+BASELINE                                       PRESENT
+A                                              PRESENT
+B                                              ABSENT
+PostgreSQL server_version_num                  180006 PASS
+pg_is_in_recovery()                            false PASS
+archive_mode isolated verification target     off PASS
+Alembic                                        20260826_08 PASS
+catalog topology                               68/5/14/75/95/68/120 PASS
+DANTE owners / roles / ACL                     PASS
+required extension/version set                 PASS
+dante_runtime sees A and not B                 PASS
+repository metadata unchanged                 PASS
+```
+
+PostgreSQL recovery logs showed the named target being reached and promotion occurring:
+
+```text
+starting point-in-time recovery to R1
+redo starts at 0/11000028
+recovery stopping at R1
+redo done at 0/160001C8
+selected new timeline ID: 3
+archive recovery complete
+database system is ready to accept connections
+```
+
+Direct LOCAL timing observations for this scenario:
+
+```text
+pgBackRest physical restore reported       7.530 s
+replay start → target                      0.263121 s
+recovery start → database ready            0.539736 s
+target → database ready                    0.276615 s
+```
+
+These timings are local rehearsal observations, not production RPO/RTO targets. The versioned destructive harness derives replay/readiness timings from PostgreSQL timestamped logs so future rehearsals do not need a separate ad-hoc timing script.
+
+Therefore:
+
+```text
+CP05 Deterministic PITR                   LOCAL PASS
+PSV-40 local archive/restore/PITR        PASS
+```
+
+The current CP05 verification target is intentionally left isolated with `archive_mode=off` until checkpoint evidence is reconciled and the next destructive topology is explicitly gated.
+
+CP05 does **not** prove AWS S3, S3 Versioning, Object Lock, production retention, production RPO/RTO, whole operator recovery closure or SC-011 anti-resurrection.
