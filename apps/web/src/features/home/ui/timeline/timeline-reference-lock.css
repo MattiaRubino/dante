@@ -69,6 +69,33 @@
   font-size: clamp(8px, calc(7.4px + 1.1cqh), 9.25px);
 }
 
+/* Pointer grammar is deliberately binary: the free body is the draggable /
+ * focusable surface, while only explicit nested actions use the pointer hand.
+ * This removes the default-arrow / hand / grab flicker caused by different
+ * descendants inheriting different cursor defaults. */
+.home-m1 .home-timeline--production .timeline-event-card {
+  cursor: grab;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card:active {
+  cursor: grabbing;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__drag-zone {
+  cursor: inherit;
+}
+
+.home-m1
+  .home-timeline--production
+  :is(
+    .timeline-event-card__title,
+    .timeline-event-card__time,
+    .timeline-event-card__subitem,
+    .timeline-event-card__expander
+  ) {
+  cursor: pointer;
+}
+
 /* While another card owns focus, nested actions on surrounding cards are not
  * active pointer targets: the first pointer interaction transfers focus to the
  * new card. The React handler mirrors the same rule for keyboard activation. */
