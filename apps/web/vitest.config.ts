@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-import { dayRibbonBackdropPlugin } from './config/day-ribbon-backdrop-plugin';
+import { dayRibbonBackdropPlugin } from './config/day-ribbon-backdrop-plugin.ts';
 
 export default defineConfig({
   plugins: [dayRibbonBackdropPlugin()],
