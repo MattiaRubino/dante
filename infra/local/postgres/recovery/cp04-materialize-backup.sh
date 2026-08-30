@@ -11,8 +11,8 @@ MIGRATOR_SECRET="infra/compose/secrets/postgres_recovery_migrator_password.local
 RUNTIME_SECRET="infra/compose/secrets/postgres_recovery_runtime_password.local"
 BACKUP_LABEL_FILE="infra/compose/secrets/postgres_recovery_cp04_backup_label.local"
 FIXTURE_REF="01993f19-9c00-7000-8000-000000000001"
-EXPECTED_HEAD="20260826_08"
-EXPECTED_TOPOLOGY="68|5|14|75|95|68|120|0|0|0"
+EXPECTED_HEAD="20260830_09"
+EXPECTED_TOPOLOGY="69|5|15|76|97|69|123|0|0|0"
 
 cd "$REPO_ROOT"
 
@@ -32,7 +32,7 @@ print(secrets.token_urlsafe(32))
 PY
 }
 
-echo "=== DANTE CP04 — materialize canonical database + dedicated FULL ==="
+echo "=== DANTE CP04 — materialize current canonical database + dedicated FULL ==="
 
 test "$(git branch --show-current)" = "feature/postgres-recovery" || die "wrong Git branch"
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feature/postgres-recovery)" || die "local HEAD differs from origin"
@@ -100,6 +100,12 @@ SELECT
 ")"
 test "$topology" = "$EXPECTED_TOPOLOGY" || die "topology=$topology"
 
+retirement_table="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT to_regclass('dante.material_state_retirement') IS NOT NULL;")"
+test "$retirement_table" = "t" || die "material_state_retirement missing at current head"
+
+runtime_retirement="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT has_table_privilege('dante_runtime','dante.material_state_retirement','SELECT')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','INSERT')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','UPDATE')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','DELETE')::text;")"
+test "$runtime_retirement" = "true|false|false|false" || die "unexpected runtime retirement ACL=$runtime_retirement"
+
 owners="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT string_agg(owner, ',' ORDER BY owner) FROM (SELECT DISTINCT pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relname<>'alembic_version') x;")"
 test "$owners" = "dante_owner" || die "owners=$owners"
 
@@ -112,7 +118,7 @@ test "$runtime_alembic" = "f" || die "dante_runtime can SELECT dante.alembic_ver
 extensions="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT string_agg(extname || '=' || extversion, ',' ORDER BY extname) FROM pg_extension WHERE extname IN ('postgis','vector','pg_trgm','unaccent','pg_stat_statements');")"
 test "$extensions" = "pg_stat_statements=1.12,pg_trgm=1.6,postgis=3.6.4,unaccent=1.1,vector=0.8.6" || die "extensions=$extensions"
 
-echo "MATERIALIZED DATABASE ACCEPTANCE: PASS"
+echo "CURRENT MATERIALIZED DATABASE ACCEPTANCE: PASS"
 compose exec --user postgres postgres pgbackrest --stanza=dante check
 echo "PGBACKREST CHECK: PASS"
 compose exec --user postgres postgres pgbackrest --stanza=dante --type=full backup
@@ -125,6 +131,8 @@ chmod 600 "$BACKUP_LABEL_FILE"
 
 test -z "$(git status --porcelain)" || die "tracked/unignored worktree changes appeared"
 
-echo "CP04 BACKUP LABEL: $latest_label"
-echo "CP04 FIXTURE REF:  $FIXTURE_REF"
-echo "=== CP04 MATERIALIZATION + BACKUP COMPLETE — NO PGDATA DELETED ==="
+echo "CURRENT BACKUP LABEL: $latest_label"
+echo "CANONICAL FIXTURE REF: $FIXTURE_REF"
+echo "ALEMBIC HEAD:          $EXPECTED_HEAD"
+echo "TOPOLOGY:              $EXPECTED_TOPOLOGY"
+echo "=== CURRENT MATERIALIZATION + BACKUP COMPLETE — NO PGDATA DELETED ==="
