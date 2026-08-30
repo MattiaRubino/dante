@@ -17,9 +17,39 @@
   right: auto;
   bottom: auto;
   left: 50%;
-  gap: 5px;
+  gap: 4px;
   width: max-content;
+  padding: 3px;
+  border: 1px solid rgba(159, 177, 184, 0.09);
+  border-radius: 14px;
+  background: rgba(10, 17, 29, 0.44);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 9px 28px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(12px) saturate(120%);
   transform: translate(-50%, -50%);
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-mode-arrow {
+  width: 29px;
+  height: 29px;
+  border: 0;
+  border-radius: 9px;
+  color: rgba(185, 198, 210, 0.68);
+  background: transparent;
+  opacity: 0.72;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-mode-arrow:hover {
+  color: #f2f4f2;
+  background: rgba(255, 255, 255, 0.045);
+  opacity: 1;
 }
 
 /* Keep the accepted control visible and use the product-facing M1 labels. */
@@ -27,7 +57,22 @@
   .home-upper-workspace
   .home-central-stage
   .home-stage-surface-label {
+  width: auto;
+  min-width: 106px;
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid rgba(234, 92, 18, 0.24);
+  border-radius: 10px;
+  color: #f2f4f2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent),
+    rgba(234, 92, 18, 0.075);
+  box-shadow:
+    inset 0 -2px 0 rgba(234, 92, 18, 0.48),
+    0 0 22px rgba(234, 92, 18, 0.055);
   font-size: 0;
+  font-weight: 720;
+  letter-spacing: 0.145em;
 }
 
 .home-m1
@@ -35,7 +80,7 @@
   .home-central-stage[data-home-stage-mode='continuity']
   .home-stage-surface-label::after {
   content: 'MONDI';
-  font-size: 10px;
+  font-size: 9.5px;
 }
 
 .home-m1
@@ -43,7 +88,7 @@
   .home-central-stage[data-home-stage-mode='signals']
   .home-stage-surface-label::after {
   content: 'SINTESI';
-  font-size: 10px;
+  font-size: 9.5px;
 }
 
 /*
@@ -54,6 +99,16 @@
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
   transform: translateY(var(--home-m1-world-shift));
+}
+
+/* The accepted stellar treatment stays untouched; the complete orb scales as
+   one unit so icon, label, halo and progress remain in the same proportions. */
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-world
+  .stellar-node {
+  transform: translate(-50%, -50%) scale(1.17);
 }
 
 /*
@@ -84,5 +139,13 @@
 @media (max-width: 900px) {
   .home-m1 .home-upper-workspace .home-central-stage {
     --home-m1-world-shift: clamp(72px, 18%, 96px);
+  }
+
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world
+    .stellar-node {
+    transform: translate(-50%, -50%) scale(1.1);
   }
 }
