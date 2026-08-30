@@ -80,6 +80,7 @@ def _validate_alloy() -> None:
         "sending_queue {",
         "block_on_overflow = false",
         'max_elapsed_time     = "2m"',
+        'password_file = "/run/secrets/grafana_cloud_api_key"',
         'prometheus.relabel "postgres_privacy_budget"',
         "pg_long_running_transactions.*",
         "max_streams = 64",

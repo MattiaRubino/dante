@@ -15,8 +15,8 @@ local.file "postgres_observer_dsn" {
 
 otelcol.auth.basic "grafana_cloud" {
   client_auth {
-    username = sys.env("GRAFANA_CLOUD_OTLP_USERNAME")
-    password = local.file.grafana_cloud_api_key.content
+    username      = sys.env("GRAFANA_CLOUD_OTLP_USERNAME")
+    password_file = "/run/secrets/grafana_cloud_api_key"
   }
 }
 
