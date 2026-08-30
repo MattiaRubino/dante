@@ -128,6 +128,14 @@ export const home = {
       cancel: 'Annulla',
       save: 'Conferma',
     },
+    peek: {
+      dialogLabel: 'Ispezione rapida di {{title}}',
+      close: 'Chiudi ispezione rapida',
+      openDetail: 'Apri dettagli',
+      focus: 'Focus',
+      clearFocus: 'Esci dal focus',
+      subitems: '{{count}} attività',
+    },
     detail: {
       subitems: '{{count}} sotto-attività collegate',
       aiNote:
