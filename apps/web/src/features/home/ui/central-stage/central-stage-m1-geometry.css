@@ -1,9 +1,8 @@
 /*
  * Central Stage — M1 geometry bridge.
  *
- * M1 owns the outer geography. The projection layers keep the accepted
- * prototype visuals and interactions, while this file only reconciles their
- * placement and scale with that geography.
+ * M1 owns the outer geography. Projection layers only adapt their placement to
+ * that geometry; they do not redefine the Home workspace.
  */
 
 .home-m1 .home-upper-workspace .home-central-stage {
@@ -11,7 +10,10 @@
   --home-m1-world-inline-bleed: 6%;
 }
 
-/* Surface switch: one quiet control, no nested pills or heavy chrome. */
+/*
+ * Surface navigator: intentionally almost chromeless. The mode name is the
+ * focus; chevrons remain secondary controls. No nested pill, no orange card.
+ */
 .home-m1 .home-upper-workspace .home-central-stage .home-stage-dock {
   position: absolute;
   z-index: 40;
@@ -23,7 +25,7 @@
   width: max-content;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 13px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -37,30 +39,31 @@
   .home-central-stage
   .home-stage-mode-arrow {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 27px;
+  height: 27px;
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 9px;
-  color: rgba(181, 194, 208, 0.48);
+  border-radius: 50%;
+  color: rgba(178, 191, 206, 0.42);
   background: transparent;
-  font-size: 24px;
-  font-weight: 300;
+  font-size: 23px;
+  font-weight: 250;
   line-height: 1;
-  opacity: 0.9;
+  opacity: 0.82;
+  cursor: pointer;
   transition:
-    color 160ms ease,
-    background 160ms ease,
-    transform 160ms ease;
+    color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-mode-arrow:hover {
-  color: rgba(242, 246, 248, 0.9);
-  background: rgba(255, 255, 255, 0.028);
+  color: rgba(243, 247, 250, 0.88);
+  background: rgba(255, 255, 255, 0.025);
   transform: translateY(-1px);
 }
 
@@ -70,22 +73,40 @@
   .home-stage-surface-label {
   position: relative;
   display: grid;
-  min-width: 104px;
-  height: 32px;
+  min-width: 72px;
+  height: 28px;
   place-items: center;
-  padding: 0 16px;
-  border: 1px solid rgba(170, 185, 198, 0.11);
-  border-radius: 10px;
-  color: rgba(214, 222, 228, 0.8);
-  background: rgba(13, 21, 33, 0.32);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.018),
-    inset 0 -1px 0 rgba(234, 92, 18, 0.28);
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  color: rgba(218, 225, 232, 0.72);
+  background: transparent;
+  box-shadow: none;
   font-size: 0;
   font-weight: 680;
-  letter-spacing: 0.155em;
+  letter-spacing: 0.16em;
   line-height: 1;
   user-select: none;
+}
+
+.home-m1
+  .home-upper-workspace
+  .home-central-stage
+  .home-stage-surface-label::before {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 20px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(234, 92, 18, 0.62),
+    transparent
+  );
+  content: '';
+  opacity: 0.72;
 }
 
 .home-m1
@@ -105,9 +126,9 @@
 }
 
 /*
- * The scene is made slightly wider than the M1 viewport. ResizeObserver then
- * feeds that real width back into the carousel projection, increasing spacing
- * without desynchronising the DOM Worlds from their canvas FX.
+ * Expanded M1: keep the accepted Worlds scale and spacing from the previous
+ * visual pass. The measured scene width drives both DOM projection and canvas
+ * FX, so spacing cannot drift from the stellar effects.
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
   right: calc(-1 * var(--home-m1-world-inline-bleed));
@@ -115,8 +136,6 @@
   transform: translateY(var(--home-m1-world-shift));
 }
 
-/* Keep the complete stellar object proportional while giving the active group
-   a little more presence than the first M1 mock-up. */
 .home-m1
   .home-upper-workspace
   .home-central-stage
@@ -125,8 +144,6 @@
   transform: translate(-50%, -50%) scale(1.18);
 }
 
-/* The scene itself is wider, so compensate the arrow lanes to land at the
-   original M1 visual anchors rather than on the clipped bleed edge. */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-arrow {
   top: auto;
   bottom: calc(105px + var(--home-m1-world-shift));
@@ -145,6 +162,57 @@
   .home-central-stage
   .home-world-arrow-next {
   right: 7.2%;
+}
+
+/*
+ * Desktop collapsed M1 is a different geometry, not a wider expanded layout.
+ * CentralStage already starts below In evidenza and to the right of Per te;
+ * therefore the expanded downward translation must be removed completely.
+ */
+@media (min-width: 901px) {
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage {
+    --home-m1-world-shift: 0px;
+    --home-m1-world-inline-bleed: 2.5%;
+  }
+
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-stage-dock {
+    top: 20%;
+  }
+
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-scene {
+    transform: none;
+  }
+
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow {
+    top: 54%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-prev {
+    left: 3.5%;
+  }
+
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-next {
+    right: 3.5%;
+  }
 }
 
 @media (max-width: 1240px) {
