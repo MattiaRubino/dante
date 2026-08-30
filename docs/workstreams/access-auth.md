@@ -1,6 +1,6 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-A COMPLETE / M5-B NEXT
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-B COMPLETE / M5-C NEXT
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
 - **Created from protected `main`:** `f011e252b6a294a12c38927ef2d528244ea1fee6`
@@ -9,7 +9,9 @@
 - **M5.1:** COMPLETE / architecture + external-authority freeze
 - **M5.2:** COMPLETE / exact persistence + API design
 - **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
-- **M5-B:** NEXT / provider transaction + JOSE/JWK/AEAD infrastructure
+- **M5-B:** COMPLETE / ENGINEERING PASS / provider-JWK-JOSE-AEAD-WebAuthn policy infrastructure
+- **M5-C:** NEXT / Google authentication + Account creation/collision
+- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M4 final implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
 - **M4 documentation closure:** `a95955da72cbb9119982aa1544c2aaa356fc5e6a`
@@ -50,7 +52,7 @@ Read first:
 10. CP6 persistence constitution
 11. `docs/frontend/access.md`
 12. `docs/development/agent-operating-manual.md`
-13. current implementation/tests for the exact M5-B concern
+13. current implementation/tests for the exact M5-C concern
 
 Repository truth beats conversation memory. Do not reinterpret M1–M4 or redo broad M5 discovery from scratch.
 
@@ -339,49 +341,107 @@ M5-A does **not** claim Google/Apple/WebAuthn runtime, FastAPI public API, gener
 
 ---
 
-## 8. Exact next slice — M5-B
+## 8. M5-B — COMPLETE / ENGINEERING PASS
 
 ```text
-M5-B — Provider/JWK/JOSE/AEAD Infrastructure
-NEXT
+M5-B — Provider/JWK/JOSE/AEAD/WebAuthn Policy Infrastructure
+COMPLETE / ENGINEERING PASS
 ```
 
-M5-B goal: build the shared provider/crypto infrastructure once, at production quality, before Google/Apple product-flow code.
-
-Required direction:
+Accepted implementation checkpoint:
 
 ```text
-qualify dependencies actually consumed
-current security advisory review
-Python 3.14 compatibility
-uv deterministic lock
-explicit JOSE algorithm allowlists
-typed provider settings
-bounded provider/JWK HTTP clients
-coordinated JWK cache/refresh
-Apple grant AEAD key ring
-purpose-separated verifier primitives
-strict token/assertion logging redaction
-process-scoped lifecycle / clean shutdown
-focused vectors + static/type/test/build
+e2d40a7666e3c0130afecd8113b8063390b86b9d
+chore(auth): finalize M5-B lock and formatting
 ```
 
-Candidate baseline from M5.2:
+Admitted baseline:
 
 ```text
 fido2         2.2.1
 joserfc       1.7.4
-cryptography  50.0.x baseline
-existing httpx
+cryptography  50.0.1
+existing httpx2
+Python        3.14
+uv            0.12.5
 ```
 
-Candidate versions are not admission until M5-B rechecks current package/advisory/Python compatibility and produces the deterministic lock.
+Implemented:
 
-Provider/JWK/token network work stays outside DB transactions.
+```text
+typed provider configuration with safe disabled defaults
+bounded provider/JWK HTTP runtime
+trusted configured JWKS authority only
+strict RS256 JOSE allowlist and canonical compact admission
+coordinated JWK cache, conditional revalidation, rotation and unknown-kid cooldown
+JWKS byte/key-count/duplicate/private-material bounds
+Apple AES-256-GCM grant key ring / 12-byte nonce / stable AAD
+purpose-separated provider-flow verifiers
+FIDO2 WebAuthn RP/origin policy baseline
+process-scoped ProviderRuntime inside existing AuthRuntime lifecycle
+no provider network I/O at startup
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / lint                 PASS
+mypy strict                                  PASS / 73 source files
+backend fast                                 127 / 127 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+M5-B changes no schema/Alembic/Dictionary, so the already accepted M5-A PostgreSQL gate was not rerun absent direct regression evidence.
+
+M5-B intentionally does **not** implement Google/Apple end-user flows, full passkey ceremonies, public API/OpenAPI/client, Access Web or real provider/browser acceptance.
 
 ---
 
-## 9. Provider-enriched onboarding
+## 9. Exact next slice — M5-C
+
+```text
+M5-C — Google Authentication + Account Creation / Collision
+NEXT
+```
+
+M5-C goal: consume the accepted M5-B trust/runtime foundation to implement the Google product path without creating parallel auth/session authority.
+
+Required direction:
+
+```text
+Google GIS/OIDC begin + complete
+transaction/state/nonce binding
+trusted JWK signature verification through M5-B runtime
+claim validation: issuer/audience/azp/nonce/expiry/subject
+known ExternalIdentity signin
+new Account creation only under frozen mailbox-authority rules
+provider enrollment when mailbox proof is still required
+email collision → explicit link_required, never silent merge
+provider reauthentication/link semantics only as frozen by M5 contract
+provider profile bootstrap staging
+canonical DANTE AuthSession issuance only
+```
+
+Still out of scope for M5-C unless separately re-gated:
+
+```text
+Apple auth/code exchange/grant notifications
+unlink/authenticator management
+full passkey ceremonies
+password lifecycle adaptation
+public M5 API/OpenAPI/client
+Access Web UI
+Gmail/Calendar/Drive integration authorization
+real whole-M5 provider/browser acceptance
+```
+
+Provider/JWK/token network work remains outside DB transactions.
+
+---
+
+## 10. Provider-enriched onboarding
 
 User requirement remains: take **all provider data genuinely useful to DANTE** at mature-app quality, then let DANTE own/edit resulting values later.
 
@@ -421,11 +481,11 @@ security/authentication claims actually supplied
 
 No DANTE username is inferred.
 
-Apple name may be one-shot; `account_profile_bootstrap` now exists specifically so later M5 lifecycle code can preserve it without dumping profile state into Account/ExternalIdentity.
+Apple name may be one-shot; `account_profile_bootstrap` exists so later lifecycle code can preserve it without dumping profile state into Account/ExternalIdentity.
 
 ---
 
-## 10. Exact provider/link/passkey invariants carried forward
+## 11. Exact provider/link/passkey invariants carried forward
 
 ### ExternalIdentity
 
@@ -444,7 +504,7 @@ TTL <= 15 min
 state/nonce verifier only
 link/reauth bind exact auth_session_ref + begin-time bearer verifier snapshot
 single conditional claim
-Apple claim before single-use code exchange
+Apple claim before code exchange
 ```
 
 ### Provider-first collision
@@ -486,7 +546,7 @@ backup/signCount metadata handled as risk state, not fake device identity
 
 ---
 
-## 11. Frozen public API inventory for later M5-H/I
+## 12. Frozen public API inventory for later M5-H/I
 
 ```text
 POST   /api/v1/auth/google/begin
@@ -534,11 +594,10 @@ Email collision is a typed link state, not an exception.
 
 ---
 
-## 12. Forward execution sequence
+## 13. Forward execution sequence
 
 ```text
-M5-B  provider/JWK/JOSE/AEAD infrastructure        NEXT
-M5-C  Google authentication                        PLANNED
+M5-C  Google authentication                        NEXT
 M5-D  Apple auth + grant/notifications             PLANNED
 M5-E  explicit linking/authenticator lifecycle     PLANNED
 M5-F  WebAuthn/passkeys                            PLANNED
@@ -557,7 +616,7 @@ Chromium/Firefox/WebKit remain product-critical. Real Google, real Apple registe
 
 ---
 
-## 13. Whole-vertical state
+## 14. Whole-vertical state
 
 ```text
 M1 CLOSED
@@ -568,7 +627,8 @@ M5 ACTIVE
   M5.1 COMPLETE
   M5.2 COMPLETE
   M5-A COMPLETE / POSTGRESQL PROVEN
-  M5-B NEXT
+  M5-B COMPLETE / ENGINEERING PASS
+  M5-C NEXT
 M6 PLANNED
 M7 PLANNED / FINAL WHOLE-VERTICAL GATE
 
