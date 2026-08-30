@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-A COMPLETE / M5-B NEXT / M6–M7 PLANNED
+- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-B COMPLETE / M5-C NEXT / M6–M7 PLANNED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Closed prerequisite:** M1–M4 CLOSED; M4 engineering gate PASS; user acceptance ACCEPTED
+- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M4 final accepted implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
 - **M5.1 architecture checkpoint:** `8f993ace74d21c98d4034b0e521a1f9b458b007a`
@@ -211,7 +212,7 @@ provider/link/register/remove mutations require recent-auth
 provider profile bootstrap expires after <=30 days and never resyncs
 ```
 
-Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A.
+Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A/M5-B.
 
 ---
 
@@ -317,70 +318,90 @@ M5-A browser/provider full-stack was intentionally not run because no provider/W
 
 # 5. M5-B — Provider / JOSE / JWK / AEAD Infrastructure
 
-**Status:** `NEXT`
+**Status:** `COMPLETE / ENGINEERING PASS`
 
-M5-B must build the production-grade shared runtime foundation used by Google/Apple/WebAuthn without prematurely implementing product flows.
-
-Required work:
+Accepted implementation checkpoint:
 
 ```text
-dependency qualification/admission
-current advisory review
-Python 3.14 compatibility
-uv deterministic lock
-explicit JOSE algorithm allowlists
-typed nested Auth provider settings
-bounded provider/JWK HTTP clients
-connection pooling/timeouts
-coordinated JWK cache + bounded refresh
-Apple grant encryption key ring
-AES-256-GCM baseline + stable AAD contract
-purpose-separated flow verifier primitives
-secret/token/assertion logging redaction
-process-scoped clients + clean shutdown
-focused crypto/protocol vectors
-Ruff/mypy/tests/build
+e2d40a7666e3c0130afecd8113b8063390b86b9d
+chore(auth): finalize M5-B lock and formatting
 ```
 
-Candidate baseline identified in M5.2:
+Accepted dependency/runtime baseline:
 
 ```text
 fido2         2.2.1
 joserfc       1.7.4
-cryptography  50.0.x baseline
-existing httpx
+cryptography  50.0.1
+existing httpx2
+Python        3.14
+uv            0.12.5
 ```
 
-Versions remain candidates until current M5-B qualification.
+Implemented:
 
-No scattered `os.getenv()`; settings remain typed/governed.
+```text
+deterministic uv lock
+explicit RS256 JOSE allowlist
+strict compact/header/Base64URL admission
+nested typed Google/Apple/WebAuthn settings
+bounded provider/JWK HTTP clients and connection/time bounds
+trusted configured JWKS authority only
+coordinated JWK cache + conditional revalidation + bounded refresh
+unknown-kid cooldown preventing refresh storms
+JWKS response/key-count/duplicate/private-material rejection
+Apple grant AES-256-GCM key ring + 12-byte nonce + stable AAD
+purpose-separated 256-bit flow verifier primitives
+FIDO2 WebAuthn RP/origin policy baseline
+process-scoped runtime + clean shutdown
+no provider network I/O at process startup
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / lint                 PASS
+mypy strict                                  PASS / 73 source files
+backend fast                                 127 / 127 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+No scattered `os.getenv()` was introduced; settings remain typed/governed.
 
 Provider/JWK/token network calls remain outside DB transactions.
+
+M5-B changed no DB schema/Alembic/Dictionary, so the accepted M5-A PostgreSQL gate was not rerun absent direct regression evidence.
+
+M5-B intentionally stops before Google/Apple product flows, full passkey ceremonies, public M5 API/OpenAPI/client, Access Web and real provider/browser acceptance.
 
 ---
 
 # 6. M5-C — Google Authentication
 
-**Status:** PLANNED after M5-B.
+**Status:** `NEXT`.
 
 Implement:
 
 ```text
 GIS begin/complete
 OIDC nonce/transaction binding
-JWK validation
+JWK validation through accepted M5-B runtime
+issuer/audience/azp/nonce/expiry/subject claim validation
 known identity signin
-new Account with provider-authoritative mailbox
+new Account with provider-authoritative mailbox when frozen rules permit
 third-party Google mailbox → provider enrollment
 email collision → explicit link-required flow
 provider reauthentication
-provider Settings link
-profile bootstrap
+provider Settings link semantics where frozen by M5 contract
+profile bootstrap staging
+canonical DANTE AuthSession issuance only
 ```
 
 No Gmail/Calendar/Drive scopes.
 
-Proof includes invalid iss/aud/signature/nonce/expiry, unknown-kid bounded refresh, provider cancel/outage, identity/profile changes, races and canonical DANTE AuthSession issuance.
+Proof includes invalid iss/aud/azp/signature/nonce/expiry/subject, unknown-kid bounded refresh, provider cancel/outage, identity/profile changes, races and canonical DANTE AuthSession issuance.
 
 ---
 
@@ -615,7 +636,7 @@ known identity
 new Account
 authoritative mailbox distinction
 third-party Google mailbox enrollment
-invalid signature/issuer/audience/expiry/nonce
+invalid signature/issuer/audience/azp/expiry/nonce
 unknown kid bounded refresh
 email/profile changes preserve binding
 ```
@@ -675,9 +696,10 @@ M5 ACTIVE
   M5.1 COMPLETE
   M5.2 COMPLETE
   M5-A COMPLETE / REAL POSTGRESQL PROVEN
-  M5-B NEXT
+  M5-B COMPLETE / ENGINEERING PASS
+  M5-C NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 ```
 
-Do not begin M5-C before M5-B shared provider/crypto infrastructure is accepted unless the user explicitly re-gates the sequence.
+M5-C is now the exact next slice. It must consume the accepted M5-B shared provider/crypto infrastructure rather than rebuilding or bypassing it.
