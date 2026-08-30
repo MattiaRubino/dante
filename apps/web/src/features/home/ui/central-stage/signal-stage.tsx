@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import './signal-stage.css';
 
 function FocusGraphic() {
@@ -26,7 +28,10 @@ function SleepGraphic() {
 
 function SpendGraphic() {
   return (
-    <div className="home-synthesis-bars home-synthesis-bars-spend" aria-hidden="true">
+    <div
+      className="home-synthesis-bars home-synthesis-bars-spend"
+      aria-hidden="true"
+    >
       {[34, 50, 40, 68, 84, 58].map((height, index) => (
         <i key={index} style={{ height }} />
       ))}
@@ -34,31 +39,87 @@ function SpendGraphic() {
   );
 }
 
+const SYNTHESIS_METRICS = [
+  {
+    id: 'focus',
+    className: 'home-synthesis-focus',
+    kicker: 'FOCUS',
+    value: '5h 20m',
+    detail: 'questa settimana',
+    Graphic: FocusGraphic,
+  },
+  {
+    id: 'sleep',
+    className: 'home-synthesis-sleep',
+    kicker: 'SONNO',
+    value: '6h 38m',
+    detail: '↓ 42m · media 3 sett.',
+    Graphic: SleepGraphic,
+  },
+  {
+    id: 'spend',
+    className: 'home-synthesis-spend',
+    kicker: 'SPESA',
+    value: '€412',
+    detail: '↑ 18% · questo mese',
+    Graphic: SpendGraphic,
+  },
+] as const;
+
+function modulo(value: number, divisor: number) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
 export function SignalStage() {
+  const [offset, setOffset] = useState(0);
+  const visibleMetrics = SYNTHESIS_METRICS.map(
+    (_, slot) =>
+      SYNTHESIS_METRICS[modulo(slot + offset, SYNTHESIS_METRICS.length)]!,
+  );
+
+  const step = (direction: -1 | 1) => {
+    setOffset((current) =>
+      modulo(current + direction, SYNTHESIS_METRICS.length),
+    );
+  };
+
   return (
     <section className="home-stats-stage" aria-label="Sintesi" role="region">
       <div className="home-stats-track" role="list">
-        <article className="home-synthesis-metric home-synthesis-focus" role="listitem">
-          <span className="home-synthesis-kicker">FOCUS</span>
-          <strong className="home-synthesis-value">5h 20m</strong>
-          <FocusGraphic />
-          <small className="home-synthesis-detail">questa settimana</small>
-        </article>
+        {visibleMetrics.map((metric) => {
+          const Graphic = metric.Graphic;
 
-        <article className="home-synthesis-metric home-synthesis-sleep" role="listitem">
-          <span className="home-synthesis-kicker">SONNO</span>
-          <strong className="home-synthesis-value">6h 38m</strong>
-          <SleepGraphic />
-          <small className="home-synthesis-detail">↓ 42m · media 3 sett.</small>
-        </article>
-
-        <article className="home-synthesis-metric home-synthesis-spend" role="listitem">
-          <span className="home-synthesis-kicker">SPESA</span>
-          <strong className="home-synthesis-value">€412</strong>
-          <SpendGraphic />
-          <small className="home-synthesis-detail">↑ 18% · questo mese</small>
-        </article>
+          return (
+            <article
+              key={metric.id}
+              className={`home-synthesis-metric ${metric.className}`}
+              role="listitem"
+            >
+              <span className="home-synthesis-kicker">{metric.kicker}</span>
+              <strong className="home-synthesis-value">{metric.value}</strong>
+              <Graphic />
+              <small className="home-synthesis-detail">{metric.detail}</small>
+            </article>
+          );
+        })}
       </div>
+
+      <button
+        className="home-world-arrow home-world-arrow-prev"
+        type="button"
+        onClick={() => step(-1)}
+        aria-label="Sintesi precedente"
+      >
+        ‹
+      </button>
+      <button
+        className="home-world-arrow home-world-arrow-next"
+        type="button"
+        onClick={() => step(1)}
+        aria-label="Sintesi successiva"
+      >
+        ›
+      </button>
     </section>
   );
 }
