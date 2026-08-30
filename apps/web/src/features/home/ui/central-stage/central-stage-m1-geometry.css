@@ -1,32 +1,34 @@
 /*
  * Central Stage — M1 geometry bridge.
  *
- * The prototype parity layer owns the Worlds visual language and interaction.
- * This file owns only the placement of that projection inside the already
- * accepted M1 Home geography. Keep these anchors aligned with home.css /
- * home-m1.css instead of re-solving the outer stage inside the projection.
+ * M1 owns the outer geography. The projection layers keep the accepted
+ * prototype visuals and interactions, while this file only reconciles their
+ * placement and scale with that geography.
  */
 
 .home-m1 .home-upper-workspace .home-central-stage {
-  --home-m1-world-shift: clamp(96px, 24%, 128px);
+  --home-m1-world-shift: clamp(92px, 22%, 118px);
+  --home-m1-world-inline-bleed: 6%;
 }
 
-/* M1 authority: the surface selector lives at 39% of the stage, centered. */
+/* Surface switch: one quiet control, no nested pills or heavy chrome. */
 .home-m1 .home-upper-workspace .home-central-stage .home-stage-dock {
+  position: absolute;
+  z-index: 40;
   top: 39%;
   right: auto;
   bottom: auto;
   left: 50%;
-  gap: 4px;
+  display: flex;
   width: max-content;
-  padding: 3px;
-  border: 1px solid rgba(159, 177, 184, 0.09);
-  border-radius: 14px;
-  background: rgba(10, 17, 29, 0.44);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.025),
-    0 9px 28px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(12px) saturate(120%);
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
   transform: translate(-50%, -50%);
 }
 
@@ -34,45 +36,56 @@
   .home-upper-workspace
   .home-central-stage
   .home-stage-mode-arrow {
-  width: 29px;
-  height: 29px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
   border: 0;
   border-radius: 9px;
-  color: rgba(185, 198, 210, 0.68);
+  color: rgba(181, 194, 208, 0.48);
   background: transparent;
-  opacity: 0.72;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  opacity: 0.9;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-mode-arrow:hover {
-  color: #f2f4f2;
-  background: rgba(255, 255, 255, 0.045);
-  opacity: 1;
+  color: rgba(242, 246, 248, 0.9);
+  background: rgba(255, 255, 255, 0.028);
+  transform: translateY(-1px);
 }
 
-/* Keep the accepted control visible and use the product-facing M1 labels. */
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-surface-label {
-  width: auto;
-  min-width: 106px;
+  position: relative;
+  display: grid;
+  min-width: 104px;
   height: 32px;
+  place-items: center;
   padding: 0 16px;
-  border: 1px solid rgba(234, 92, 18, 0.24);
+  border: 1px solid rgba(170, 185, 198, 0.11);
   border-radius: 10px;
-  color: #f2f4f2;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent),
-    rgba(234, 92, 18, 0.075);
+  color: rgba(214, 222, 228, 0.8);
+  background: rgba(13, 21, 33, 0.32);
   box-shadow:
-    inset 0 -2px 0 rgba(234, 92, 18, 0.48),
-    0 0 22px rgba(234, 92, 18, 0.055);
+    inset 0 1px 0 rgba(255, 255, 255, 0.018),
+    inset 0 -1px 0 rgba(234, 92, 18, 0.28);
   font-size: 0;
-  font-weight: 720;
-  letter-spacing: 0.145em;
+  font-weight: 680;
+  letter-spacing: 0.155em;
+  line-height: 1;
+  user-select: none;
 }
 
 .home-m1
@@ -80,7 +93,7 @@
   .home-central-stage[data-home-stage-mode='continuity']
   .home-stage-surface-label::after {
   content: 'MONDI';
-  font-size: 9.5px;
+  font-size: 10px;
 }
 
 .home-m1
@@ -88,34 +101,32 @@
   .home-central-stage[data-home-stage-mode='signals']
   .home-stage-surface-label::after {
   content: 'SINTESI';
-  font-size: 9.5px;
+  font-size: 10px;
 }
 
 /*
- * The prototype scene itself stays intact; it is translated as one unit so
- * DOM worlds and canvas FX cannot drift apart. At the current M1 height this
- * restores the old bottom-aligned Worlds baseline without changing carousel
- * math, drag semantics or the accepted stellar skin.
+ * The scene is made slightly wider than the M1 viewport. ResizeObserver then
+ * feeds that real width back into the carousel projection, increasing spacing
+ * without desynchronising the DOM Worlds from their canvas FX.
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
+  right: calc(-1 * var(--home-m1-world-inline-bleed));
+  left: calc(-1 * var(--home-m1-world-inline-bleed));
   transform: translateY(var(--home-m1-world-shift));
 }
 
-/* The accepted stellar treatment stays untouched; the complete orb scales as
-   one unit so icon, label, halo and progress remain in the same proportions. */
+/* Keep the complete stellar object proportional while giving the active group
+   a little more presence than the first M1 mock-up. */
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-world
   .stellar-node {
-  transform: translate(-50%, -50%) scale(1.17);
+  transform: translate(-50%, -50%) scale(1.18);
 }
 
-/*
- * M1 authority: side navigation is anchored 105px from the stage bottom and
- * 2% from each side. Because the arrows live inside the translated scene, the
- * same shift is compensated here so their final screen position remains M1.
- */
+/* The scene itself is wider, so compensate the arrow lanes to land at the
+   original M1 visual anchors rather than on the clipped bleed edge. */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-arrow {
   top: auto;
   bottom: calc(105px + var(--home-m1-world-shift));
@@ -126,19 +137,40 @@
   .home-upper-workspace
   .home-central-stage
   .home-world-arrow-prev {
-  left: 2%;
+  left: 7.2%;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-world-arrow-next {
-  right: 2%;
+  right: 7.2%;
+}
+
+@media (max-width: 1240px) {
+  .home-m1 .home-upper-workspace .home-central-stage {
+    --home-m1-world-inline-bleed: 4.5%;
+  }
+
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-prev {
+    left: 5.8%;
+  }
+
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-next {
+    right: 5.8%;
+  }
 }
 
 @media (max-width: 900px) {
   .home-m1 .home-upper-workspace .home-central-stage {
-    --home-m1-world-shift: clamp(72px, 18%, 96px);
+    --home-m1-world-shift: clamp(72px, 18%, 94px);
+    --home-m1-world-inline-bleed: 3%;
   }
 
   .home-m1
@@ -147,5 +179,28 @@
     .home-world
     .stellar-node {
     transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-prev {
+    left: 4.5%;
+  }
+
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-arrow-next {
+    right: 4.5%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-m1
+    .home-upper-workspace
+    .home-central-stage
+    .home-stage-mode-arrow {
+    transition: none;
   }
 }
