@@ -1,4 +1,4 @@
-"""Executable M4 contracts for signup OTP and password-recovery proof primitives."""
+"""Executable Auth contracts for OTP and password-recovery proof primitives."""
 
 from uuid import uuid7
 
@@ -6,6 +6,7 @@ import pytest
 
 from dante.auth.contracts import AuthIntegrityError
 from dante.auth.proofs import (
+    ProviderEnrollmentOtpCodec,
     SignupOtpCodec,
     issue_recovery_proof,
     recovery_secret_matches,
@@ -57,6 +58,31 @@ def test_signup_otp_rejects_noncanonical_input_and_unknown_stored_key() -> None:
             expected_verifier=issued.verifier,
             key_id="retired-missing-key",
         )
+
+
+def test_provider_enrollment_otp_is_domain_separated_from_password_signup() -> None:
+    key_ring = {"otp-v1": b"o" * 32}
+    reference = uuid7()
+    signup = SignupOtpCodec(key_ring=key_ring, current_key_id="otp-v1")
+    provider = ProviderEnrollmentOtpCodec(key_ring=key_ring, current_key_id="otp-v1")
+    issued = signup.issue(reference)
+    code = issued.code.get_secret_value()
+
+    assert not provider.matches(
+        external_signup_ref=reference,
+        submitted_code=code,
+        expected_verifier=issued.verifier,
+        key_id=issued.key_id,
+    )
+
+    provider_issued = provider.issue(reference)
+    provider_code = provider_issued.code.get_secret_value()
+    assert not signup.matches(
+        signup_ref=reference,
+        submitted_code=provider_code,
+        expected_verifier=provider_issued.verifier,
+        key_id=provider_issued.key_id,
+    )
 
 
 def test_recovery_proof_is_canonical_256_bit_single_bearer_material() -> None:
