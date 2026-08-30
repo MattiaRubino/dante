@@ -2,194 +2,419 @@
 
 # DANTE PostgreSQL Database Architecture & Reference — Part 19
 
-**Status:** CP6-05 FINAL QA REPAIR CANDIDATE / DIRECT POSTGRESQL ACCEPTANCE REQUIRED  
-**Scope:** final clean-room reconciliation after CP6-04 materialization and persistent LOCAL proof  
-**Authority:** narrow supersession only where this Part is more exact than Parts 14/17/18  
-**Topology:** unchanged — 68 tables / 5 views / 14 routines / 75 triggers / 95 indexes / 68 FKs / 120 CHECKs  
+**Status:** CURRENT / MATERIALIZED  
+**Scope:** MaterialState retirement, redaction continuity, recovery suppression and anti-resurrection  
+**PostgreSQL:** 18.6  
+**Alembic head:** `20260830_09`  
+**Current topology:** 69 tables / 5 views / 15 routines / 76 triggers / 97 indexes / 69 FKs / 123 CHECKs  
 
 ---
 
-## 56. CP6-05 final clean-room repair
+## 56. MaterialState retirement and anti-resurrection
 
-### 56.1 Why a final repair exists
+### 56.1 Problem boundary
 
-CP6-04 successfully materialized M1..M7 and proved the persistent LOCAL database, but the mandatory CP6-05 replay found one technical contract mismatch and two repository-consistency gaps:
+A valid DANTE retirement/redaction can happen after an older database backup was created.
 
-```text
-CP6F-01  Role-13 did not independently acquire the source occurrence-generation lock
-CP6F-02  Part-14 BLAKE2b personalized key could not be reproduced by PostgreSQL core
-CP6F-03  historical M6 scope proof was stage-absolute after M7 closure
-CP6F-04  occurrence mapping filename in Part 14 differed from the accepted implementation filename
-CP6F-05  final cross-representation / concurrency proof needed one clean-room head-level suite
-```
-
-No semantic owner, relation, constraint, index or ACL family is reopened.
-
-### 56.2 Forward-only corrective revision
-
-The accepted repair is a normal Alembic revision above M7:
-
-```text
-20260826_07  CP6-M07 runtime ACL activation
-    ↓
-20260826_08  CP6-05 final QA hardening
-```
-
-`20260826_08` is **not CP6-M08** and does not append a materialization stage. `scope.json.completed_stages` remains exactly CP6-M01..CP6-M07 because all baseline objects were already introduced by M1..M7.
-
-The revision changes only the body of the existing Role-13 routine. Object counts remain frozen.
-
-### 56.3 Advisory key digest — narrow supersession of 48.29 / 48.31
-
-The high-level key layout and namespace registry remain unchanged:
-
-```text
-bits 62..56 = 7-bit namespace code
-bits 55..0  = 56-bit deterministic digest
-sign bit    = 0
-one-argument PostgreSQL bigint advisory lock
-namespace codes 1..7 unchanged
-```
-
-Part 14's BLAKE2b `digest_size=7, person=b"dante-lock-v1"` digest is narrowly superseded because PostgreSQL 18 core cannot reproduce that personalized variable-output BLAKE2b contract without adding a new extension, new helper routine family, or a bespoke cryptographic implementation. Any of those would be worse than changing a non-persisted lock-key derivation before CP6 closure.
-
-Final digest contract:
-
-```text
-domain prefix = b"dante-lock-v2"
-input         = domain prefix || UUID canonical 16 raw bytes
-hash          = SHA-256
-low digest    = first 7 bytes of SHA-256 output
-interpretation= unsigned big-endian 56-bit integer
-```
-
-Python:
-
-```python
-digest56 = int.from_bytes(
-    sha256(b"dante-lock-v2" + semantic_ref.bytes).digest()[:7],
-    "big",
-)
-lock_key = (namespace_code << 56) | digest56
-```
-
-PostgreSQL uses only core functions:
-
-```text
-sha256(convert_to('dante-lock-v2','UTF8') || uuid_send(source_ref))
-get_byte(..., 0..6)
-```
-
-This is cross-language deterministic and introduces no new extension or persisted object.
-
-### 56.4 Final golden vector
-
-For:
-
-```text
-UUID 018f1f26-8b2e-7abc-8000-000000000001
-SHA-256 prefix digest56 bytes = 97 02 ff de 8c 05 09
-```
-
-exact keys are:
-
-```text
-namespace 1 = 114563613494871305
-namespace 2 = 186621207532799241
-namespace 3 = 258678801570727177
-namespace 4 = 330736395608655113
-namespace 5 = 402793989646583049
-namespace 6 = 474851583684510985
-namespace 7 = 546909177722438921
-```
-
-Routine generation pair:
-
-```text
-330736395608655113
-474851583684510985
-```
-
-Event generation pair:
-
-```text
-402793989646583049
-546909177722438921
-```
-
-### 56.5 Role-13 defense in depth — final contract
-
-Section 55.16 remains authoritative in intent and is now fully materializable.
-
-For every `origin_code='recurrence_generated'`, after resolving `source_family` and before final coordinate/cardinality validation, Role 13 acquires the exact source occurrence-generation transaction lock:
-
-```text
-Routine → namespace 6 + source RoutineRef
-Event   → namespace 7 + source EventRef
-```
-
-The application operation still acquires the sorted pair:
-
-```text
-source current-recurrence lock + source occurrence-generation lock
-```
-
-Role 13 reuses the same generation lock. PostgreSQL transaction advisory locks are re-entrant for the same transaction, so accepted application paths do not deadlock themselves.
-
-The final database proof must also omit the application lock intentionally and show that two concurrent quota writers or duplicate non-quota writers still serialize at deferred Role-13 validation, producing exactly one accepted generation and one SQLSTATE `23514` rejection.
-
-No owner-row `FOR UPDATE`, synthetic runtime UPDATE privilege, extra lock table, extra routine or extra index is introduced.
-
-### 56.6 Mapping module filename — narrow supersession of 48.4 / 48.12 filename only
-
-The implemented module is accepted as:
-
-```text
-dante/platform/database/mappings/occurrence_generation.py
-```
-
-rather than the earlier planning handle `occurrence.py`.
-
-Reason: the same package already keeps `OccurrenceRow` in `identity.py`; `occurrence_generation.py` names the five actual mapping rows more precisely and prevents ambiguity between semantic Occurrence identity and generation provenance.
-
-Only the Python module filename statement is superseded. The exact five Row classes, five tables, 68-mapping total, relationship-free posture and SQLAlchemy semantics remain unchanged.
-
-### 56.7 Historical-stage test doctrine
-
-A historical stage test may prove the accepted stage prefix without requiring the repository's current `scope.json` to stop at that historical stage.
+If canonical PostgreSQL is later lost and the older backup is restored, raw restored bytes may contain protected payload that is no longer permitted current truth.
 
 Therefore:
 
 ```text
-M4 → completed_stages[:4]
-M5 → completed_stages[:5]
-M6 → completed_stages[:6]
+successful backup != successful semantic recovery
+successful restore != permission to expose restored payload
+restored historical bytes != automatically accepted current truth
 ```
 
-is the correct pattern. A later accepted stage or corrective revision must not falsify an earlier structural proof merely because current repository metadata advanced.
-
-### 56.8 CP6-05 acceptance
-
-CP6 is not closed by publication of this Part or revision 08. Closure requires one direct acceptance on the exact candidate HEAD proving:
+The database and recovery procedure must preserve WL-H10:
 
 ```text
-Draft 2020-12 Dictionary schemas + 87 object instances
-semantic Dictionary validator clean
-Dictionary ↔ SQLAlchemy ↔ Alembic ↔ PostgreSQL clean
-fresh → head and head → base → head
-Alembic check clean
-68 / 5 / 14 / 75 / 95 / 68 / 120 exact topology
-exact M7 ACL posture preserved
-Python ↔ PostgreSQL lock golden vectors identical
-real async lock helper transaction behavior
-Role-13 exact lock present
-quota two-connection race: one PASS + one 23514
-non-quota duplicate race: one PASS + one 23514
-full backend pytest
-Ruff
-mypy strict
-persistent LOCAL upgrade 20260826_07 → 20260826_08
-LOCAL restart persistence + backend readiness
+referent/state existed
+payload may later become unavailable/redacted
+minimal truthful address/tombstone/history continuity remains
+stable identity/reference is not silently reused
+old backups may not silently resurrect retired payload
 ```
 
-Until that direct run is green, status remains **CANDIDATE / ACCEPTANCE REQUIRED**.
+### 56.2 Canonical retirement table
+
+Current PostgreSQL materializes:
+
+```text
+dante.material_state_retirement
+```
+
+Columns:
+
+```text
+material_state_ref          uuid        PRIMARY KEY
+retirement_code             text        NOT NULL
+retired_at                  timestamptz NOT NULL
+recovery_suppression_ref    uuid        NOT NULL UNIQUE
+```
+
+Current constraints:
+
+```text
+material_state_ref
+→ FK dante.material_state_address(material_state_ref)
+→ ON DELETE NO ACTION
+
+retirement_code
+→ redacted | unavailable
+
+retired_at
+→ finite timestamp
+
+recovery_suppression_ref
+→ UUIDv7
+```
+
+`recovery_suppression_ref` is a narrow technical recovery correlation identifier. It is **not** a new Domain identity family and does not redefine NativeRef / ScopedRecordRef / MaterialStateRef / ExternalRef.
+
+### 56.3 Canonical lifecycle semantics
+
+Retirement is append-only.
+
+Ordinary runtime authority may read retirement state but may not insert/update/delete it directly.
+
+A committed retirement means:
+
+```text
+MaterialStateRef address/envelope remains truthful
+permitted current/history rows remain truthful
+retirement reason/time remains truthful
+protected facet payload is absent
+```
+
+A retirement row is not permission to erase identity/address/history continuity that the accepted model still requires.
+
+### 56.4 Materialized facets covered
+
+Current retirement integrity covers exactly these materialized facets:
+
+```text
+schedule.placement
+actual.realization
+session.timing
+routine.recurrence
+event.recurrence
+```
+
+The envelope/state tables remain addressable; protected typed payload/selectors may be removed as part of a governed retirement transaction.
+
+#### Schedule
+
+Retained envelope/history:
+
+```text
+schedule_placement_state
+schedule_placement_current_history
+material_state_address
+current-state bindings where still semantically valid
+```
+
+Retirable protected payload:
+
+```text
+schedule_placement_date_state
+schedule_placement_floating_local_state
+schedule_placement_named_zone_state
+schedule_placement_absolute_state
+```
+
+#### Actual
+
+Retained envelope/history:
+
+```text
+actual_realization_state
+actual_realization_current_history
+material_state_address
+```
+
+Retirable protected payload:
+
+```text
+actual_realization_timing
+actual_realization_session_basis
+```
+
+#### Session
+
+Retained envelope/history:
+
+```text
+session_timing_state
+session_timing_current_history
+material_state_address
+```
+
+Retirable protected payload:
+
+```text
+session_timing_absolute
+session_timing_elapsed
+session_timing_pause
+```
+
+#### Routine/Event Recurrence
+
+Retained envelope/history:
+
+```text
+routine_recurrence_state
+event_recurrence_state
+routine_recurrence_current_history
+event_recurrence_current_history
+material_state_address
+```
+
+Retirable selector/payload families include boundary, calendar, wall-time/weekday/month-day/ordinal/year selector rows, elapsed, quota, cyclic and cycle-position rows.
+
+### 56.5 Deferred retirement validator
+
+Current routine:
+
+```text
+dante.enforce_material_state_retirement()
+```
+
+is installed as a DEFERRABLE INITIALLY DEFERRED constraint trigger on `material_state_retirement`.
+
+This allows one owner-controlled transaction to:
+
+```text
+remove all protected payload
+insert the retirement tombstone
+commit
+```
+
+At commit the validator requires:
+
+```text
+retirement target has a valid MaterialState address
+facet is one of the supported materialized facets
+no protected payload remains
+retirement row is append-only
+```
+
+Attempted UPDATE/DELETE of the retirement row is rejected.
+
+### 56.6 Existing facet validators are retirement-aware
+
+These current routines now distinguish live vs retired state:
+
+```text
+dante.enforce_schedule_placement_totality()
+dante.enforce_actual_realization_basis()
+dante.enforce_session_timing_totality()
+dante.enforce_recurrence_aggregate_integrity()
+```
+
+For a live state they preserve their normal exact payload contract.
+
+For a retired state they require zero protected payload/selectors and reject payload resurrection.
+
+This means anti-resurrection is enforced both during initial retirement and against later attempts to reinsert payload for the same MaterialStateRef.
+
+### 56.7 External recovery suppression ledger
+
+A PostgreSQL tombstone inside canonical PGDATA is not sufficient by itself: an older backup may predate that tombstone.
+
+Recovery therefore uses minimal independently surviving suppression evidence outside:
+
+```text
+canonical PGDATA
+pgBackRest database-backup repository
+```
+
+The ledger is technical recovery control only. It does not become an application datastore or a second source of canonical DANTE truth.
+
+Record protocol v1:
+
+```text
+PREPARED
+→ canonical retirement/redaction transaction
+→ canonical DB read-back verification
+→ COMMITTED
+```
+
+PREPARED records include:
+
+```text
+record_version
+state = PREPARED
+recovery_suppression_ref
+target_reference_family = MaterialStateRef
+material_state_ref
+facet_code
+effect = suppress_payload
+retirement_code
+accepted_at
+```
+
+COMMITTED records include:
+
+```text
+record_version
+state = COMMITTED
+recovery_suppression_ref
+material_state_ref
+prepared_sha256
+committed_at
+```
+
+The COMMITTED marker cryptographically binds to the canonical bytes of PREPARED.
+
+### 56.8 Crash/ambiguity rule
+
+The external ledger must never guess whether a canonical retirement actually committed.
+
+Therefore:
+
+```text
+PREPARED + matching COMMITTED
+→ valid committed suppression evidence
+
+PREPARED without COMMITTED
+→ recovery BLOCKED
+
+COMMITTED without PREPARED
+→ recovery BLOCKED
+
+prepared hash mismatch
+→ recovery BLOCKED
+
+non-canonical/invalid JSON
+→ recovery BLOCKED
+```
+
+This prevents both unsafe resurrection and unsafe automatic deletion caused by an uncommitted PREPARED intent.
+
+### 56.9 Recovery reconciliation sequence
+
+A restored PostgreSQL target remains closed to application traffic while anti-resurrection reconciliation executes.
+
+Required order:
+
+```text
+1. restore/PITR PostgreSQL target
+2. require PostgreSQL recovery to finish / promote
+3. verify current migration/schema contract or apply approved current schema evolution while isolated
+4. load and validate all committed suppression evidence
+5. BLOCK on ambiguous/tampered ledger state
+6. for each valid committed suppression:
+     preserve MaterialStateRef envelope/history
+     ensure material_state_retirement exists with matching suppression identity
+     remove protected resurrected payload/selectors
+7. verify zero retired payload remains
+8. verify owners/roles/ACL/extensions/current topology
+9. verify semantic recovery checks
+10. verify derived/object reconciliation gates
+11. only then permit traffic reopen
+```
+
+### 56.10 Traffic-reopen gate
+
+`pg_isready` is insufficient.
+
+Direct failure testing proved PostgreSQL can report readiness for read-only connections while still replaying recovery and later fail because a required target/WAL is unreachable.
+
+Traffic reopen requires at least:
+
+```text
+pg_is_in_recovery() = false
+PostgreSQL 18.6
+Alembic 20260830_09
+current topology 69|5|15|76|97|69|123|0|0|0
+DANTE ownership/role/ACL checks
+required extension versions
+suppression ledger fully reconciled
+zero protected payload for retired MaterialStates
+semantic acceptance checks
+derived/object reconciliation gate satisfied
+```
+
+### 56.11 Recovery suppression retention
+
+Suppression evidence must remain available for the full resurrection horizon.
+
+It may not expire while any retained object can still reintroduce the protected payload, including as applicable:
+
+```text
+pgBackRest FULL/diff/incremental backup
+archived WAL required by a retained recovery point
+S3 versioned backup objects
+object-store versions/backups that can reintroduce referenced protected state
+```
+
+Production retention must therefore reconcile:
+
+```text
+pgBackRest retention
+S3 Versioning
+Object Lock GOVERNANCE
+S3 lifecycle
+privacy/deletion policy
+PITR continuity
+suppression-ledger retention
+```
+
+### 56.12 Security posture
+
+```text
+material_state_retirement owner    dante_owner
+runtime table privilege            SELECT only
+PUBLIC                              denied
+migrator direct runtime role        bounded by normal migration boundary
+integrity routine EXECUTE runtime   denied
+```
+
+The recovery ledger production identity must be scoped only to its recovery repository and must not gain authority over canonical application data.
+
+### 56.13 Current direct proof obligations
+
+The definitive local acceptance must prove against the versioned `20260830_09` implementation:
+
+```text
+fresh database -> head
+head -> 20260826_08 -> head
+Alembic check clean
+current topology exact
+Dictionary ↔ SQLAlchemy ↔ PostgreSQL exact
+runtime ACL exact
+retirement with surviving payload rejects
+valid retirement removes payload and retains envelope/history
+retirement UPDATE/DELETE rejects
+payload reinsertion after retirement rejects
+PREPARED without COMMITTED blocks
+COMMITTED without PREPARED blocks
+tampered hash blocks
+old B0 physically resurrects protected X
+recovery target remains isolated
+valid committed ledger reconciles X away
+NativeRef / MaterialStateRef continuity remains truthful
+real pgBackRest repository remains untouched by disposable SC-011 proof
+```
+
+### 56.14 Derived and object boundaries
+
+SC-011 database anti-resurrection does not by itself prove external derived/object consistency.
+
+Permanent rule:
+
+```text
+restored PostgreSQL = canonical candidate after semantic reconciliation
+stale derived/search/vector/sync state != authority
+```
+
+Disposable derived stores must be discarded/rebuilt or independently reconciled before they are allowed to serve state that could contradict restored PostgreSQL.
+
+Object-store recovery/reconciliation is a separate boundary. PostgreSQL recovery closure must state which object checks remain required before traffic reopen rather than pretending database recovery proves object availability.
+
+### 56.15 Current status
+
+The anti-resurrection architecture has direct local prototype proof. The repository now materializes the canonical retirement table, recovery ledger protocol and retirement-aware validators at `20260830_09`.
+
+Final SC-011 PASS is earned only after the definitive **versioned** harness runs successfully on the exact current branch HEAD. Until then the implementation is materialized but the checkpoint is not closed.
