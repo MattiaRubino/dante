@@ -194,14 +194,14 @@
 
 /*
  * H1B collapsed desktop already gives CentralStage a real, non-overlapping
- * rectangle. Therefore its projection safe area is the whole local rectangle.
+ * rectangle. Reserve only the selector/control band before the projection.
  */
 @media (min-width: 901px) {
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage {
     --home-stage-selector-top: 21%;
-    --home-stage-projection-top: 0%;
+    --home-stage-projection-top: 28%;
     --home-stage-projection-right: 0%;
     --home-stage-projection-bottom: 0%;
     --home-stage-projection-left: 0%;
@@ -234,7 +234,7 @@
 @media (max-width: 900px) {
   .home-m1 .home-upper-workspace .home-central-stage {
     --home-stage-selector-top: 16%;
-    --home-stage-projection-top: 0%;
+    --home-stage-projection-top: 24%;
     --home-stage-projection-right: 0%;
     --home-stage-projection-bottom: 0%;
     --home-stage-projection-left: 0%;
