@@ -218,17 +218,41 @@ For platform/bootstrap inspection use `postgres` with the contents of `infra/com
 
 After CP3 provisioning, application-level inspection can also use `dante_runtime` with the separately generated LOCAL runtime credential, subject to its intentionally restricted privileges.
 
-The CP2 Windows GUI acceptance remains historical direct evidence and is not re-opened by the later PostgreSQL 18.6 patch refresh.
+## PostgreSQL recovery harness
 
-## Boundaries
+The recovery workstream uses the normal `local.yaml` as its base and overlays only recovery-specific local isolation through:
 
-This Compose configuration still does not provide:
+```text
+infra/compose/postgres-recovery.override.yaml
+```
 
-- a backend application container;
-- PgBouncer;
-- business/domain tables;
-- PowerSync or Restate;
-- backup/recovery services;
-- cloud or production infrastructure.
+Run it with a dedicated Compose project name:
 
-SQLAlchemy/psycopg/Alembic and application database roles belong to CP3 backend/tooling, not to the Compose service definition itself.
+```bash
+docker compose \
+  -p dante-postgres-recovery \
+  -f infra/compose/local.yaml \
+  -f infra/compose/postgres-recovery.override.yaml \
+  config
+```
+
+The recovery overlay intentionally keeps the ordinary LOCAL stack untouched and resolves to:
+
+```text
+Compose project  dante-postgres-recovery
+image            dante-postgres-recovery:18.6-pgbackrest-2.59.1
+host endpoint    127.0.0.1:55432
+container port   5432
+PostgreSQL volume dante-postgres-recovery_postgres-data
+recovery volume   dante-postgres-recovery_pgbackrest-repository
+```
+
+The recovery worktree currently used for direct local proof is:
+
+```text
+/home/mattia/projects/dante-postgres-recovery
+```
+
+The same workstation-local `infra/compose/secrets/postgres_password.local` contract applies; the secret is ignored by Git and must never be committed. Recovery commands must include both Compose files and the `-p dante-postgres-recovery` project name so they cannot accidentally target the ordinary `dante-local` cluster.
+
+CP02 directly proved the isolated harness with PostgreSQL 18.6 and pgBackRest 2.59.1. WAL archiving, backups, restore and PITR remain separate later recovery checkpoints and must not be inferred from foundation health.
