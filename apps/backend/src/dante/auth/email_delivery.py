@@ -1,4 +1,4 @@
-"""Bounded process-owned email delivery boundary for M4 Auth lifecycle messages."""
+"""Bounded process-owned email delivery boundary for Auth lifecycle messages."""
 
 from __future__ import annotations
 
@@ -24,7 +24,16 @@ class EmailDispatchCapacityError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class SignupVerificationEmail:
-    """Out-of-band six-digit signup verification message."""
+    """Out-of-band six-digit password-signup verification message."""
+
+    to_address: str
+    code: SecretStr
+    expires_minutes: int
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderEnrollmentVerificationEmail:
+    """Out-of-band six-digit provider-enrollment mailbox verification message."""
 
     to_address: str
     code: SecretStr
@@ -55,7 +64,10 @@ class NoopEmail:
 
 
 type DeliverableEmail = (
-    SignupVerificationEmail | PasswordRecoveryEmail | PasswordResetNotificationEmail
+    SignupVerificationEmail
+    | ProviderEnrollmentVerificationEmail
+    | PasswordRecoveryEmail
+    | PasswordResetNotificationEmail
 )
 type EmailCommand = DeliverableEmail | NoopEmail
 
@@ -206,6 +218,16 @@ class SmtpEmailDispatcher:
                 f"{command.code.get_secret_value()}.\n\n"
                 f"It expires in {command.expires_minutes} minutes. "
                 "If you did not request this, you can ignore this email.\n"
+            )
+            return message
+
+        if isinstance(command, ProviderEnrollmentVerificationEmail):
+            message["Subject"] = "Verify your email for DANTE"
+            message.set_content(
+                "Use this code to finish setting up your DANTE account: "
+                f"{command.code.get_secret_value()}.\n\n"
+                f"It expires in {command.expires_minutes} minutes. "
+                "If you did not start this sign-in, you can ignore this email.\n"
             )
             return message
 
