@@ -7,11 +7,11 @@ resurrecting payload that was later validly retired/redacted.
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
-import json
-import os
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -31,7 +31,7 @@ _ALLOWED_FACETS = frozenset(
 _ALLOWED_RETIREMENT_CODES = frozenset({"redacted", "unavailable"})
 
 
-class RecoverySuppressionBlocked(RuntimeError):
+class RecoverySuppressionError(RuntimeError):
     """Raised when suppression evidence is incomplete, ambiguous or tampered."""
 
 
@@ -96,7 +96,7 @@ def _create_immutable(path: Path, payload: bytes) -> None:
     try:
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o440)
     except FileExistsError as exc:
-        raise RecoverySuppressionBlocked(f"suppression record already exists: {path.name}") from exc
+        raise RecoverySuppressionError(f"suppression record already exists: {path.name}") from exc
     try:
         with os.fdopen(fd, "wb", closefd=False) as stream:
             stream.write(payload)
@@ -111,15 +111,15 @@ def _read_json(path: Path) -> tuple[dict[str, Any], bytes]:
     try:
         raw = path.read_bytes()
     except FileNotFoundError as exc:
-        raise RecoverySuppressionBlocked(f"missing suppression record: {path.name}") from exc
+        raise RecoverySuppressionError(f"missing suppression record: {path.name}") from exc
     try:
         value = json.loads(raw)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RecoverySuppressionBlocked(f"invalid suppression JSON: {path.name}") from exc
+        raise RecoverySuppressionError(f"invalid suppression JSON: {path.name}") from exc
     if not isinstance(value, dict):
-        raise RecoverySuppressionBlocked(f"suppression record is not an object: {path.name}")
+        raise RecoverySuppressionError(f"suppression record is not an object: {path.name}")
     if raw != _canonical_bytes(value):
-        raise RecoverySuppressionBlocked(
+        raise RecoverySuppressionError(
             f"suppression record is not canonical/immutable: {path.name}"
         )
     return value, raw
@@ -138,9 +138,9 @@ def _validated_uuid7_text(value: Any, *, context: str) -> UUID:
     try:
         parsed = UUID(text)
     except ValueError as exc:
-        raise RecoverySuppressionBlocked(f"invalid {context} UUID") from exc
+        raise RecoverySuppressionError(f"invalid {context} UUID") from exc
     if parsed.version != 7 or str(parsed) != text:
-        raise RecoverySuppressionBlocked(f"{context} must be canonical UUIDv7")
+        raise RecoverySuppressionError(f"{context} must be canonical UUIDv7")
     return parsed
 
 
@@ -148,9 +148,9 @@ def _validated_timestamp(value: Any, *, context: str) -> datetime:
     try:
         parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     except ValueError as exc:
-        raise RecoverySuppressionBlocked(f"invalid {context} timestamp") from exc
+        raise RecoverySuppressionError(f"invalid {context} timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise RecoverySuppressionBlocked(f"{context} timestamp must be timezone-aware")
+        raise RecoverySuppressionError(f"{context} timestamp must be timezone-aware")
     return parsed
 
 
@@ -167,15 +167,15 @@ def _validate_prepared(value: dict[str, Any]) -> PreparedSuppression:
         "accepted_at",
     }
     if set(value) != required:
-        raise RecoverySuppressionBlocked("PREPARED suppression record has unexpected fields")
+        raise RecoverySuppressionError("PREPARED suppression record has unexpected fields")
     if value["record_version"] != _RECORD_VERSION or value["state"] != "PREPARED":
-        raise RecoverySuppressionBlocked("invalid PREPARED suppression version/state")
+        raise RecoverySuppressionError("invalid PREPARED suppression version/state")
     if value["target_reference_family"] != _REFERENCE_FAMILY or value["effect"] != _EFFECT:
-        raise RecoverySuppressionBlocked("invalid PREPARED suppression semantic contract")
+        raise RecoverySuppressionError("invalid PREPARED suppression semantic contract")
     if value["facet_code"] not in _ALLOWED_FACETS:
-        raise RecoverySuppressionBlocked("invalid PREPARED material facet")
+        raise RecoverySuppressionError("invalid PREPARED material facet")
     if value["retirement_code"] not in _ALLOWED_RETIREMENT_CODES:
-        raise RecoverySuppressionBlocked("invalid PREPARED retirement code")
+        raise RecoverySuppressionError("invalid PREPARED retirement code")
     _validated_uuid7_text(
         value["recovery_suppression_ref"], context="PREPARED suppression reference"
     )
@@ -194,12 +194,12 @@ def _validate_committed(value: dict[str, Any]) -> CommittedSuppression:
         "committed_at",
     }
     if set(value) != required:
-        raise RecoverySuppressionBlocked("COMMITTED suppression record has unexpected fields")
+        raise RecoverySuppressionError("COMMITTED suppression record has unexpected fields")
     if value["record_version"] != _RECORD_VERSION or value["state"] != "COMMITTED":
-        raise RecoverySuppressionBlocked("invalid COMMITTED suppression version/state")
+        raise RecoverySuppressionError("invalid COMMITTED suppression version/state")
     digest = str(value["prepared_sha256"])
     if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
-        raise RecoverySuppressionBlocked("invalid COMMITTED prepared SHA-256")
+        raise RecoverySuppressionError("invalid COMMITTED prepared SHA-256")
     _validated_uuid7_text(
         value["recovery_suppression_ref"], context="COMMITTED suppression reference"
     )
@@ -254,9 +254,9 @@ def commit_after_canonical_verification(
     prepared_value, prepared_raw = _read_json(_prepared_path(root, recovery_suppression_ref))
     prepared = _validate_prepared(prepared_value)
     if prepared.recovery_suppression_ref != str(recovery_suppression_ref):
-        raise RecoverySuppressionBlocked("PREPARED suppression identity mismatch")
+        raise RecoverySuppressionError("PREPARED suppression identity mismatch")
     if prepared.material_state_ref != str(verified_material_state_ref):
-        raise RecoverySuppressionBlocked(
+        raise RecoverySuppressionError(
             "canonical verification does not match PREPARED MaterialStateRef"
         )
     committed = CommittedSuppression(
@@ -277,7 +277,7 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
     """Return verified committed suppressions; any ambiguity blocks recovery."""
     records = root / "records"
     if not records.is_dir():
-        raise RecoverySuppressionBlocked("suppression ledger records directory is unavailable")
+        raise RecoverySuppressionError("suppression ledger records directory is unavailable")
 
     entries = tuple(records.iterdir())
     unexpected = sorted(
@@ -287,7 +287,7 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
         or not (path.name.endswith(".prepared.json") or path.name.endswith(".committed.json"))
     )
     if unexpected:
-        raise RecoverySuppressionBlocked(f"unexpected suppression ledger entries: {unexpected}")
+        raise RecoverySuppressionError(f"unexpected suppression ledger entries: {unexpected}")
 
     prepared_paths = {
         path.name.removesuffix(".prepared.json"): path
@@ -302,7 +302,7 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
     if set(prepared_paths) != set(committed_paths):
         missing_commit = sorted(set(prepared_paths) - set(committed_paths))
         missing_prepare = sorted(set(committed_paths) - set(prepared_paths))
-        raise RecoverySuppressionBlocked(
+        raise RecoverySuppressionError(
             "ambiguous suppression ledger: "
             f"prepared_without_commit={missing_commit}, committed_without_prepare={missing_prepare}"
         )
@@ -318,15 +318,15 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
         if prepared.recovery_suppression_ref != str(
             file_ref
         ) or committed.recovery_suppression_ref != str(file_ref):
-            raise RecoverySuppressionBlocked("suppression filename/content identity mismatch")
+            raise RecoverySuppressionError("suppression filename/content identity mismatch")
         if prepared.recovery_suppression_ref != committed.recovery_suppression_ref:
-            raise RecoverySuppressionBlocked("suppression PREPARED/COMMITTED identity mismatch")
+            raise RecoverySuppressionError("suppression PREPARED/COMMITTED identity mismatch")
         if prepared.material_state_ref != committed.material_state_ref:
-            raise RecoverySuppressionBlocked("suppression PREPARED/COMMITTED target mismatch")
+            raise RecoverySuppressionError("suppression PREPARED/COMMITTED target mismatch")
         if committed.prepared_sha256 != _sha256_hex(prepared_raw):
-            raise RecoverySuppressionBlocked("suppression PREPARED hash mismatch")
+            raise RecoverySuppressionError("suppression PREPARED hash mismatch")
         if prepared.material_state_ref in material_state_refs:
-            raise RecoverySuppressionBlocked(
+            raise RecoverySuppressionError(
                 "ambiguous suppression ledger: duplicate MaterialStateRef target"
             )
         material_state_refs.add(prepared.material_state_ref)

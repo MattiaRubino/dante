@@ -8,7 +8,7 @@ from uuid import UUID, uuid7
 
 import psycopg
 import pytest
-from psycopg import errors
+from psycopg import errors, sql
 
 pytestmark = pytest.mark.postgres
 
@@ -49,8 +49,8 @@ def _assert_retired_continuity(
     history_owner_column: str,
     payload_table: str,
 ) -> None:
-    row = connection.execute(
-        f"""
+    statement = sql.SQL(
+        """
         SELECT
           (SELECT count(*) FROM dante.{owner_table} WHERE {owner_column}=%s),
           (SELECT count(*) FROM dante.material_state_address WHERE material_state_ref=%s),
@@ -59,7 +59,17 @@ def _assert_retired_continuity(
           (SELECT count(*) FROM dante.{payload_table} WHERE material_state_ref=%s),
           (SELECT count(*) FROM dante.{history_table}
              WHERE {history_owner_column}=%s AND material_state_ref=%s)
-        """,
+        """
+    ).format(
+        owner_table=sql.Identifier(owner_table),
+        owner_column=sql.Identifier(owner_column),
+        state_table=sql.Identifier(state_table),
+        payload_table=sql.Identifier(payload_table),
+        history_table=sql.Identifier(history_table),
+        history_owner_column=sql.Identifier(history_owner_column),
+    )
+    row = connection.execute(
+        statement,
         (owner_ref, state_ref, state_ref, state_ref, state_ref, owner_ref, state_ref),
     ).fetchone()
     assert row == (1, 1, 1, 1, 0, 1)
@@ -150,19 +160,17 @@ def test_recovery_retirement_is_append_only(migrated_database: Any) -> None:
                 "DELETE FROM dante.session_timing_absolute WHERE material_state_ref=%s",
                 (state_ref,),
             )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "UPDATE dante.material_state_retirement "
-                    "SET retirement_code='unavailable' WHERE material_state_ref=%s",
-                    (state_ref,),
-                )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "DELETE FROM dante.material_state_retirement WHERE material_state_ref=%s",
-                    (state_ref,),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "UPDATE dante.material_state_retirement "
+                "SET retirement_code='unavailable' WHERE material_state_ref=%s",
+                (state_ref,),
+            )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "DELETE FROM dante.material_state_retirement WHERE material_state_ref=%s",
+                (state_ref,),
+            )
 
 
 def test_recovery_retirement_covers_all_five_material_facets(migrated_database: Any) -> None:
@@ -234,13 +242,12 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
             history_owner_column="schedule_ref",
             payload_table="schedule_placement_date_state",
         )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "INSERT INTO dante.schedule_placement_date_state(material_state_ref,date_span) "
-                    "VALUES (%s,'[2026-09-01,2026-09-02)'::daterange)",
-                    (schedule_state,),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.schedule_placement_date_state(material_state_ref,date_span) "
+                "VALUES (%s,'[2026-09-01,2026-09-02)'::daterange)",
+                (schedule_state,),
+            )
 
         actual_ref, actual_state = uuid7(), uuid7()
         with connection.transaction():
@@ -297,13 +304,12 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
             history_owner_column="actual_ref",
             payload_table="actual_realization_timing",
         )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "INSERT INTO dante.actual_realization_timing"
-                    "(material_state_ref,extent_code,started_at) VALUES (%s,'instant',%s)",
-                    (actual_state, now),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.actual_realization_timing"
+                "(material_state_ref,extent_code,started_at) VALUES (%s,'instant',%s)",
+                (actual_state, now),
+            )
 
         session_ref, session_state = uuid7(), uuid7()
         with connection.transaction():
@@ -359,14 +365,13 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
             history_owner_column="session_ref",
             payload_table="session_timing_absolute",
         )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "INSERT INTO dante.session_timing_absolute"
-                    "(material_state_ref,started_at,start_precision_code) "
-                    "VALUES (%s,%s,'exact')",
-                    (session_state, now),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.session_timing_absolute"
+                "(material_state_ref,started_at,start_precision_code) "
+                "VALUES (%s,%s,'exact')",
+                (session_state, now),
+            )
 
         routine_ref, routine_state = uuid7(), uuid7()
         with connection.transaction():
@@ -422,14 +427,13 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
             history_owner_column="routine_ref",
             payload_table="routine_recurrence_elapsed_state",
         )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "INSERT INTO dante.routine_recurrence_elapsed_state"
-                    "(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) "
-                    "VALUES (%s,60,'fixed_anchor',%s)",
-                    (routine_state, now),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.routine_recurrence_elapsed_state"
+                "(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) "
+                "VALUES (%s,60,'fixed_anchor',%s)",
+                (routine_state, now),
+            )
 
         event_ref, event_state = uuid7(), uuid7()
         with connection.transaction():
@@ -485,11 +489,10 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
             history_owner_column="event_ref",
             payload_table="event_recurrence_elapsed_state",
         )
-        with pytest.raises(errors.CheckViolation):
-            with connection.transaction():
-                connection.execute(
-                    "INSERT INTO dante.event_recurrence_elapsed_state"
-                    "(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) "
-                    "VALUES (%s,60,'fixed_anchor',%s)",
-                    (event_state, now),
-                )
+        with pytest.raises(errors.CheckViolation), connection.transaction():
+            connection.execute(
+                "INSERT INTO dante.event_recurrence_elapsed_state"
+                "(material_state_ref,elapsed_seconds,anchor_mode_code,anchor_at) "
+                "VALUES (%s,60,'fixed_anchor',%s)",
+                (event_state, now),
+            )

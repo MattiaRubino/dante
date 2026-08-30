@@ -3,7 +3,7 @@
 from .suppression_ledger import (
     CommittedSuppression,
     PreparedSuppression,
-    RecoverySuppressionBlocked,
+    RecoverySuppressionError,
     commit_after_canonical_verification,
     load_committed_suppressions,
     prepare_suppression,
@@ -12,7 +12,7 @@ from .suppression_ledger import (
 __all__ = [
     "CommittedSuppression",
     "PreparedSuppression",
-    "RecoverySuppressionBlocked",
+    "RecoverySuppressionError",
     "commit_after_canonical_verification",
     "load_committed_suppressions",
     "prepare_suppression",

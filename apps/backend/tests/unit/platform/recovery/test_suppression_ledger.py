@@ -9,7 +9,7 @@ import pytest
 
 from dante.platform.recovery.suppression_ledger import (
     PreparedSuppression,
-    RecoverySuppressionBlocked,
+    RecoverySuppressionError,
     commit_after_canonical_verification,
     load_committed_suppressions,
     prepare_suppression,
@@ -50,7 +50,7 @@ def _commit(root: Path, suppression_ref: UUID, material_ref: UUID) -> None:
 
 
 def test_missing_ledger_records_directory_blocks_recovery(tmp_path: Path) -> None:
-    with pytest.raises(RecoverySuppressionBlocked, match="records directory is unavailable"):
+    with pytest.raises(RecoverySuppressionError, match="records directory is unavailable"):
         load_committed_suppressions(tmp_path)
 
 
@@ -63,19 +63,19 @@ def test_unexpected_ledger_entry_blocks_recovery(tmp_path: Path) -> None:
     records = tmp_path / "records"
     records.mkdir()
     (records / "unexpected.txt").write_text("unexpected\n", encoding="utf-8")
-    with pytest.raises(RecoverySuppressionBlocked, match="unexpected suppression ledger entries"):
+    with pytest.raises(RecoverySuppressionError, match="unexpected suppression ledger entries"):
         load_committed_suppressions(tmp_path)
 
 
 def test_prepared_without_commit_blocks_recovery(tmp_path: Path) -> None:
     _prepare(tmp_path)
-    with pytest.raises(RecoverySuppressionBlocked, match="prepared_without_commit"):
+    with pytest.raises(RecoverySuppressionError, match="prepared_without_commit"):
         load_committed_suppressions(tmp_path)
 
 
 def test_commit_requires_verified_canonical_target(tmp_path: Path) -> None:
     suppression_ref, _, _ = _prepare(tmp_path)
-    with pytest.raises(RecoverySuppressionBlocked, match="does not match"):
+    with pytest.raises(RecoverySuppressionError, match="does not match"):
         commit_after_canonical_verification(
             tmp_path,
             recovery_suppression_ref=suppression_ref,
@@ -88,7 +88,7 @@ def test_committed_pair_round_trips_and_is_immutable(tmp_path: Path) -> None:
     suppression_ref, material_ref, prepared = _prepare(tmp_path)
     _commit(tmp_path, suppression_ref, material_ref)
     assert load_committed_suppressions(tmp_path) == (prepared,)
-    with pytest.raises(RecoverySuppressionBlocked, match="already exists"):
+    with pytest.raises(RecoverySuppressionError, match="already exists"):
         _commit(tmp_path, suppression_ref, material_ref)
 
 
@@ -99,7 +99,7 @@ def test_tampered_prepared_hash_blocks_recovery(tmp_path: Path) -> None:
     value = json.loads(prepared_path.read_text(encoding="utf-8"))
     value["retirement_code"] = "unavailable"
     _canonical_write(prepared_path, value)
-    with pytest.raises(RecoverySuppressionBlocked, match="hash mismatch"):
+    with pytest.raises(RecoverySuppressionError, match="hash mismatch"):
         load_committed_suppressions(tmp_path)
 
 
@@ -120,7 +120,7 @@ def test_committed_without_prepared_blocks_recovery(tmp_path: Path) -> None:
         json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
-    with pytest.raises(RecoverySuppressionBlocked, match="committed_without_prepare"):
+    with pytest.raises(RecoverySuppressionError, match="committed_without_prepare"):
         load_committed_suppressions(tmp_path)
 
 
@@ -131,7 +131,7 @@ def test_naive_record_timestamp_blocks_recovery(tmp_path: Path) -> None:
     value = json.loads(prepared_path.read_text(encoding="utf-8"))
     value["accepted_at"] = "2026-08-30T18:00:00"
     _canonical_write(prepared_path, value)
-    with pytest.raises(RecoverySuppressionBlocked, match="timezone-aware"):
+    with pytest.raises(RecoverySuppressionError, match="timezone-aware"):
         load_committed_suppressions(tmp_path)
 
 
@@ -146,7 +146,7 @@ def test_filename_content_identity_mismatch_blocks_recovery(tmp_path: Path) -> N
     (records / f"{suppression_ref}.committed.json").rename(
         records / f"{replacement_ref}.committed.json"
     )
-    with pytest.raises(RecoverySuppressionBlocked, match="filename/content identity mismatch"):
+    with pytest.raises(RecoverySuppressionError, match="filename/content identity mismatch"):
         load_committed_suppressions(tmp_path)
 
 
@@ -156,5 +156,5 @@ def test_duplicate_material_state_target_blocks_recovery(tmp_path: Path) -> None
     _commit(tmp_path, first_ref, material_ref)
     second_ref, _, _ = _prepare(tmp_path, material_ref=material_ref)
     _commit(tmp_path, second_ref, material_ref)
-    with pytest.raises(RecoverySuppressionBlocked, match="duplicate MaterialStateRef"):
+    with pytest.raises(RecoverySuppressionError, match="duplicate MaterialStateRef"):
         load_committed_suppressions(tmp_path)
