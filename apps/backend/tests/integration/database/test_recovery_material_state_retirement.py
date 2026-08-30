@@ -105,12 +105,9 @@ def test_recovery_retirement_is_append_only(migrated_database: Any) -> None:
     with _owner(migrated_database) as connection:
         session_ref, state_ref, suppression_ref = uuid7(), uuid7(), uuid7()
         with connection.transaction():
+            connection.execute("INSERT INTO dante.session(session_ref) VALUES (%s)", (session_ref,))
             connection.execute(
-                "INSERT INTO dante.session(session_ref) VALUES (%s)", (session_ref,)
-            )
-            connection.execute(
-                "INSERT INTO dante.native_address(native_ref,owner_family) "
-                "VALUES (%s,'session')",
+                "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'session')",
                 (session_ref,),
             )
             connection.execute(
@@ -177,8 +174,7 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
                 "INSERT INTO dante.activity(activity_ref) VALUES (%s)", (activity_ref,)
             )
             connection.execute(
-                "INSERT INTO dante.native_address(native_ref,owner_family) "
-                "VALUES (%s,'activity')",
+                "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'activity')",
                 (activity_ref,),
             )
 
@@ -189,8 +185,7 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
                 (schedule_ref, activity_ref),
             )
             connection.execute(
-                "INSERT INTO dante.scoped_address(scoped_ref,scoped_family) "
-                "VALUES (%s,'schedule')",
+                "INSERT INTO dante.scoped_address(scoped_ref,scoped_family) VALUES (%s,'schedule')",
                 (schedule_ref,),
             )
             connection.execute(
@@ -254,8 +249,7 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
                 (actual_ref, activity_ref),
             )
             connection.execute(
-                "INSERT INTO dante.scoped_address(scoped_ref,scoped_family) "
-                "VALUES (%s,'actual')",
+                "INSERT INTO dante.scoped_address(scoped_ref,scoped_family) VALUES (%s,'actual')",
                 (actual_ref,),
             )
             connection.execute(
@@ -313,12 +307,9 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
 
         session_ref, session_state = uuid7(), uuid7()
         with connection.transaction():
+            connection.execute("INSERT INTO dante.session(session_ref) VALUES (%s)", (session_ref,))
             connection.execute(
-                "INSERT INTO dante.session(session_ref) VALUES (%s)", (session_ref,)
-            )
-            connection.execute(
-                "INSERT INTO dante.native_address(native_ref,owner_family) "
-                "VALUES (%s,'session')",
+                "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'session')",
                 (session_ref,),
             )
             connection.execute(
@@ -379,12 +370,9 @@ def test_recovery_retirement_covers_all_five_material_facets(migrated_database: 
 
         routine_ref, routine_state = uuid7(), uuid7()
         with connection.transaction():
+            connection.execute("INSERT INTO dante.routine(routine_ref) VALUES (%s)", (routine_ref,))
             connection.execute(
-                "INSERT INTO dante.routine(routine_ref) VALUES (%s)", (routine_ref,)
-            )
-            connection.execute(
-                "INSERT INTO dante.native_address(native_ref,owner_family) "
-                "VALUES (%s,'routine')",
+                "INSERT INTO dante.native_address(native_ref,owner_family) VALUES (%s,'routine')",
                 (routine_ref,),
             )
             connection.execute(

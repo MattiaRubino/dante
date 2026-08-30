@@ -74,9 +74,9 @@ def _require_uuid7(value: UUID, *, name: str) -> None:
 
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
-    return (json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n").encode(
-        "utf-8"
-    )
+    return (
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n"
+    ).encode("utf-8")
 
 
 def _sha256_hex(payload: bytes) -> str:
@@ -119,7 +119,9 @@ def _read_json(path: Path) -> tuple[dict[str, Any], bytes]:
     if not isinstance(value, dict):
         raise RecoverySuppressionBlocked(f"suppression record is not an object: {path.name}")
     if raw != _canonical_bytes(value):
-        raise RecoverySuppressionBlocked(f"suppression record is not canonical/immutable: {path.name}")
+        raise RecoverySuppressionBlocked(
+            f"suppression record is not canonical/immutable: {path.name}"
+        )
     return value, raw
 
 
@@ -174,7 +176,9 @@ def _validate_prepared(value: dict[str, Any]) -> PreparedSuppression:
         raise RecoverySuppressionBlocked("invalid PREPARED material facet")
     if value["retirement_code"] not in _ALLOWED_RETIREMENT_CODES:
         raise RecoverySuppressionBlocked("invalid PREPARED retirement code")
-    _validated_uuid7_text(value["recovery_suppression_ref"], context="PREPARED suppression reference")
+    _validated_uuid7_text(
+        value["recovery_suppression_ref"], context="PREPARED suppression reference"
+    )
     _validated_uuid7_text(value["material_state_ref"], context="PREPARED MaterialStateRef")
     _validated_timestamp(value["accepted_at"], context="PREPARED accepted_at")
     return PreparedSuppression(**value)
@@ -196,7 +200,9 @@ def _validate_committed(value: dict[str, Any]) -> CommittedSuppression:
     digest = str(value["prepared_sha256"])
     if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
         raise RecoverySuppressionBlocked("invalid COMMITTED prepared SHA-256")
-    _validated_uuid7_text(value["recovery_suppression_ref"], context="COMMITTED suppression reference")
+    _validated_uuid7_text(
+        value["recovery_suppression_ref"], context="COMMITTED suppression reference"
+    )
     _validated_uuid7_text(value["material_state_ref"], context="COMMITTED MaterialStateRef")
     _validated_timestamp(value["committed_at"], context="COMMITTED committed_at")
     return CommittedSuppression(**value)
@@ -229,7 +235,9 @@ def prepare_suppression(
         retirement_code=retirement_code,
         accepted_at=_utc_text(accepted_at),
     )
-    _create_immutable(_prepared_path(root, recovery_suppression_ref), _canonical_bytes(asdict(record)))
+    _create_immutable(
+        _prepared_path(root, recovery_suppression_ref), _canonical_bytes(asdict(record))
+    )
     return record
 
 
@@ -248,7 +256,9 @@ def commit_after_canonical_verification(
     if prepared.recovery_suppression_ref != str(recovery_suppression_ref):
         raise RecoverySuppressionBlocked("PREPARED suppression identity mismatch")
     if prepared.material_state_ref != str(verified_material_state_ref):
-        raise RecoverySuppressionBlocked("canonical verification does not match PREPARED MaterialStateRef")
+        raise RecoverySuppressionBlocked(
+            "canonical verification does not match PREPARED MaterialStateRef"
+        )
     committed = CommittedSuppression(
         record_version=_RECORD_VERSION,
         state="COMMITTED",
@@ -257,7 +267,9 @@ def commit_after_canonical_verification(
         prepared_sha256=_sha256_hex(prepared_raw),
         committed_at=_utc_text(committed_at),
     )
-    _create_immutable(_committed_path(root, recovery_suppression_ref), _canonical_bytes(asdict(committed)))
+    _create_immutable(
+        _committed_path(root, recovery_suppression_ref), _canonical_bytes(asdict(committed))
+    )
     return committed
 
 
@@ -303,7 +315,9 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
         committed_value, _ = _read_json(committed_paths[key])
         prepared = _validate_prepared(prepared_value)
         committed = _validate_committed(committed_value)
-        if prepared.recovery_suppression_ref != str(file_ref) or committed.recovery_suppression_ref != str(file_ref):
+        if prepared.recovery_suppression_ref != str(
+            file_ref
+        ) or committed.recovery_suppression_ref != str(file_ref):
             raise RecoverySuppressionBlocked("suppression filename/content identity mismatch")
         if prepared.recovery_suppression_ref != committed.recovery_suppression_ref:
             raise RecoverySuppressionBlocked("suppression PREPARED/COMMITTED identity mismatch")
@@ -312,7 +326,9 @@ def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
         if committed.prepared_sha256 != _sha256_hex(prepared_raw):
             raise RecoverySuppressionBlocked("suppression PREPARED hash mismatch")
         if prepared.material_state_ref in material_state_refs:
-            raise RecoverySuppressionBlocked("ambiguous suppression ledger: duplicate MaterialStateRef target")
+            raise RecoverySuppressionBlocked(
+                "ambiguous suppression ledger: duplicate MaterialStateRef target"
+            )
         material_state_refs.add(prepared.material_state_ref)
         verified.append(prepared)
     return tuple(verified)

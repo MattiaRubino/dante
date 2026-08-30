@@ -354,6 +354,10 @@ def downgrade() -> None:
         failure="recovery retirement Schedule rollback point did not match exactly once",
     )
 
-    op.execute(sa.text("DROP TRIGGER ctrg_material_state_retirement_integrity ON dante.material_state_retirement"))
+    op.execute(
+        sa.text(
+            "DROP TRIGGER ctrg_material_state_retirement_integrity ON dante.material_state_retirement"
+        )
+    )
     op.execute(sa.text("DROP FUNCTION dante.enforce_material_state_retirement()"))
     op.drop_table("material_state_retirement", schema=_DANTE_SCHEMA)
