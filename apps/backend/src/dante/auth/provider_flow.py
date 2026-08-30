@@ -1,0 +1,1878 @@
+"""M5 provider application flow over canonical DANTE persistence/session authority."""
+
+from __future__ import annotations
+
+import hmac
+import logging
+import math
+from contextlib import suppress
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from uuid import UUID, uuid7
+
+from pydantic import SecretStr
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from dante.auth.contracts import (
+    AccountUnavailableError,
+    AdmittedSession,
+    AuthIntegrityError,
+    AuthServiceUnavailableError,
+    EmailDeliveryUnavailableError,
+    IssuedSession,
+    Principal,
+    ProviderAuthenticated,
+    ProviderAuthenticationBegun,
+    ProviderAuthenticationResult,
+    ProviderEnrollmentAttemptsExhaustedError,
+    ProviderEnrollmentInvalidOrExpiredError,
+    ProviderEnrollmentRequired,
+    ProviderEnrollmentResult,
+    ProviderEnrollmentVerificationInvalidOrExpiredError,
+    ProviderIdentityConflictError,
+    ProviderLinkRequired,
+    ProviderProofInvalidError,
+    ProviderPurpose,
+    ProviderReturnTarget,
+    ProviderTransactionInvalidOrExpiredError,
+    ProviderUnavailableError,
+    ReauthenticationRequiredError,
+    SignupResendCooldownError,
+)
+from dante.auth.email import EmailNormalizationError, NormalizedEmail, normalize_email
+from dante.auth.email_delivery import (
+    EmailDeliveryPort,
+    EmailDispatchCapacityError,
+    ProviderEnrollmentVerificationEmail,
+)
+from dante.auth.google import (
+    GoogleIdentityEvidence,
+    GoogleProofError,
+    GoogleProviderUnavailableError,
+    GoogleTokenVerifier,
+)
+from dante.auth.lifecycle import KeyedRateLimiter
+from dante.auth.proofs import (
+    FlowProofPurpose,
+    SignupOtpCodec,
+    flow_proof_matches,
+    flow_proof_verifier,
+    issue_flow_proof,
+)
+from dante.auth.sessions import (
+    decode_session_secret,
+    derive_csrf_token,
+    generate_session_secret,
+    session_secret_verifier,
+    session_secret_verifier_from_raw,
+)
+from dante.platform.config.auth import AuthSettings
+from dante.platform.config.auth_provider import GOOGLE_ISSUER
+from dante.platform.database.mappings.auth import (
+    AccountProfileBootstrapRow,
+    AccountRow,
+    AuthSessionRow,
+    EmailIdentityRow,
+    ExternalAuthTransactionRow,
+    ExternalIdentityRow,
+    ExternalLinkChallengeRow,
+    ExternalSignupChallengeRow,
+)
+
+_LOGGER = logging.getLogger(__name__)
+_PROVIDER_TRANSACTION_TTL = timedelta(minutes=15)
+_PROVIDER_LINK_TTL = timedelta(minutes=15)
+_PROVIDER_ENROLLMENT_TTL = timedelta(minutes=30)
+_PROFILE_BOOTSTRAP_TTL = timedelta(days=30)
+_PROVIDER_ENROLLMENT_OTP_MAX_ATTEMPTS = 5
+_PROVIDER_ENROLLMENT_OTP_MAX_TTL = timedelta(minutes=15)
+_EXPIRED_CLEANUP_BATCH = 128
+_EMAIL_UNIQUENESS_CONSTRAINT = "uq_email_identity_comparison_key"
+_EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT = "uq_external_identity_issuer_subject"
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderFlowLimiters:
+    """Bounded process-local ingress limits ahead of provider/database work."""
+
+    begin: KeyedRateLimiter
+    complete: KeyedRateLimiter
+    enrollment: KeyedRateLimiter
+
+
+@dataclass(frozen=True, slots=True)
+class _ClaimedTransaction:
+    ref: UUID
+    purpose: ProviderPurpose
+    expected_issuer: str
+    nonce_verifier: bytes
+    auth_session_ref: UUID | None
+    auth_session_secret_verifier: bytes | None
+    return_target: ProviderReturnTarget
+
+
+@dataclass(frozen=True, slots=True)
+class _BoundSession:
+    account_ref: UUID
+    auth_session_ref: UUID
+    authenticated_at: datetime
+    recent_auth_at: datetime
+    expires_at: datetime
+    old_secret_verifier: bytes
+
+
+class ProviderFlowService:
+    """Google provider state machine converging on DANTE Account/AuthSession truth."""
+
+    def __init__(
+        self,
+        *,
+        session_factory: async_sessionmaker[AsyncSession],
+        settings: AuthSettings,
+        google_verifier: GoogleTokenVerifier,
+        otp_codec: SignupOtpCodec,
+        email_delivery: EmailDeliveryPort,
+        limiters: ProviderFlowLimiters,
+    ) -> None:
+        self._session_factory = session_factory
+        self._settings = settings
+        self._google_verifier = google_verifier
+        self._otp_codec = otp_codec
+        self._email_delivery = email_delivery
+        self._limiters = limiters
+        self._csrf_key = settings.csrf_key_bytes
+
+    async def begin_google(
+        self,
+        *,
+        purpose: ProviderPurpose,
+        return_target: ProviderReturnTarget,
+        source_context: str,
+        admitted: AdmittedSession | None = None,
+        presented_session_secret: str | None = None,
+    ) -> ProviderAuthenticationBegun:
+        """Persist one short-lived Google transaction and return only transient capabilities."""
+        if not self._settings.provider.google.enabled:
+            raise ProviderUnavailableError(retryable=False)
+        await self._limiters.begin.consume(source_context, code="auth.provider_rate_limited")
+
+        auth_session_ref: UUID | None = None
+        auth_session_secret_verifier: bytes | None = None
+        if purpose is not ProviderPurpose.SIGN_IN:
+            if admitted is None or presented_session_secret is None:
+                raise ProviderTransactionInvalidOrExpiredError()
+            raw_secret = decode_session_secret(presented_session_secret)
+            if raw_secret is None:
+                raise ProviderTransactionInvalidOrExpiredError()
+            auth_session_ref = admitted.principal.auth_session_ref
+            auth_session_secret_verifier = session_secret_verifier_from_raw(raw_secret)
+            if purpose is ProviderPurpose.LINK:
+                self._require_recent_auth(admitted)
+            await self._verify_begin_session(
+                admitted=admitted,
+                presented_session_verifier=auth_session_secret_verifier,
+            )
+        elif admitted is not None or presented_session_secret is not None:
+            raise ProviderTransactionInvalidOrExpiredError()
+
+        state = issue_flow_proof(FlowProofPurpose.PROVIDER_STATE)
+        nonce = issue_flow_proof(FlowProofPurpose.OIDC_NONCE)
+        transaction_ref = uuid7()
+        now = datetime.now(UTC)
+        expires_at = now + _PROVIDER_TRANSACTION_TTL
+        row = ExternalAuthTransactionRow(
+            external_auth_transaction_ref=transaction_ref,
+            provider_code="google",
+            expected_issuer=GOOGLE_ISSUER,
+            purpose_code=purpose.value,
+            state_verifier=state.verifier,
+            nonce_verifier=nonce.verifier,
+            auth_session_ref=auth_session_ref,
+            auth_session_secret_verifier=auth_session_secret_verifier,
+            return_target_code=return_target.value,
+            created_at=now,
+            expires_at=expires_at,
+            claimed_at=None,
+        )
+        await self._persist_provider_transaction(row)
+        return ProviderAuthenticationBegun(
+            external_auth_transaction_ref=transaction_ref,
+            state=state.secret,
+            nonce=nonce.secret,
+            expires_at=expires_at,
+        )
+
+    async def complete_google(
+        self,
+        *,
+        external_auth_transaction_ref: UUID,
+        state: str,
+        credential: str,
+        source_context: str,
+    ) -> ProviderAuthenticationResult:
+        """Claim once, verify Google outside DB transaction, then resolve DANTE state."""
+        await self._limiters.complete.consume(source_context, code="auth.provider_rate_limited")
+        transaction = await self._claim_provider_transaction(
+            external_auth_transaction_ref=external_auth_transaction_ref,
+            state=state,
+        )
+        if transaction.expected_issuer != GOOGLE_ISSUER:
+            raise ProviderTransactionInvalidOrExpiredError()
+
+        try:
+            evidence = await self._google_verifier.verify(
+                credential,
+                expected_nonce_verifier=transaction.nonce_verifier,
+            )
+        except GoogleProofError as exc:
+            raise ProviderProofInvalidError() from exc
+        except GoogleProviderUnavailableError as exc:
+            raise ProviderUnavailableError(retryable=True) from exc
+
+        if transaction.purpose is ProviderPurpose.SIGN_IN:
+            return await self._complete_google_sign_in(evidence)
+        if transaction.purpose is ProviderPurpose.LINK:
+            return ProviderAuthenticated(
+                session=await self._complete_google_link(transaction=transaction, evidence=evidence)
+            )
+        if transaction.purpose is ProviderPurpose.REAUTHENTICATE:
+            return ProviderAuthenticated(
+                session=await self._complete_google_reauthentication(
+                    transaction=transaction,
+                    evidence=evidence,
+                )
+            )
+        raise AuthIntegrityError("stored provider transaction has unknown purpose")
+
+    async def set_provider_enrollment_email(
+        self,
+        *,
+        external_signup_ref: UUID,
+        continuation_secret: str,
+        email: str,
+        source_context: str,
+    ) -> ProviderEnrollmentRequired:
+        """Set/replace the mailbox proof on one still-live provider enrollment."""
+        await self._limiters.enrollment.consume(source_context, code="auth.provider_rate_limited")
+        normalized = self._normalize_enrollment_email(email)
+        otp = self._otp_codec.issue(external_signup_ref)
+        now = datetime.now(UTC)
+        verification_expires_at: datetime | None = None
+        expires_at: datetime | None = None
+
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            challenge = await database_session.scalar(
+                select(ExternalSignupChallengeRow)
+                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                .with_for_update()
+            )
+            self._require_enrollment_challenge(
+                challenge,
+                continuation_secret=continuation_secret,
+                now=now,
+            )
+            assert challenge is not None
+            expires_at = challenge.expires_at
+            verification_expires_at = min(
+                expires_at,
+                now + self._provider_otp_ttl(),
+            )
+            challenge.email_address = normalized.address
+            challenge.email_comparison_key = normalized.comparison_key
+            challenge.otp_verifier = otp.verifier
+            challenge.otp_key_id = otp.key_id
+            challenge.verification_issued_at = now
+            challenge.verification_expires_at = verification_expires_at
+            challenge.failed_verification_attempts = 0
+            challenge.updated_at = now
+            await database_session.commit()
+        except ProviderEnrollmentInvalidOrExpiredError:
+            raise
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if expires_at is None or verification_expires_at is None:
+            raise AuthIntegrityError("provider enrollment email update lost challenge timestamps")
+        await self._enqueue_provider_otp(
+            email_address=normalized.address,
+            code=otp.code,
+            expires_at=verification_expires_at,
+            now=now,
+        )
+        return ProviderEnrollmentRequired(
+            external_signup_ref=external_signup_ref,
+            continuation_secret=SecretStr(continuation_secret),
+            expires_at=expires_at,
+            email_address=normalized.address,
+            verification_expires_at=verification_expires_at,
+        )
+
+    async def resend_provider_enrollment_verification(
+        self,
+        *,
+        external_signup_ref: UUID,
+        continuation_secret: str,
+        source_context: str,
+    ) -> ProviderEnrollmentRequired:
+        """Rotate provider-enrollment OTP after the governed resend cooldown."""
+        await self._limiters.enrollment.consume(source_context, code="auth.provider_rate_limited")
+        otp = self._otp_codec.issue(external_signup_ref)
+        now = datetime.now(UTC)
+        email_address: str | None = None
+        expires_at: datetime | None = None
+        verification_expires_at: datetime | None = None
+
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            challenge = await database_session.scalar(
+                select(ExternalSignupChallengeRow)
+                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                .with_for_update()
+            )
+            self._require_enrollment_challenge(
+                challenge,
+                continuation_secret=continuation_secret,
+                now=now,
+            )
+            assert challenge is not None
+            if challenge.email_address is None or challenge.verification_issued_at is None:
+                await database_session.rollback()
+                raise ProviderEnrollmentInvalidOrExpiredError()
+
+            cooldown_until = challenge.verification_issued_at + timedelta(
+                seconds=self._settings.signup_resend_cooldown_seconds
+            )
+            if cooldown_until > now:
+                await database_session.rollback()
+                raise SignupResendCooldownError(
+                    max(1, math.ceil((cooldown_until - now).total_seconds()))
+                )
+
+            email_address = challenge.email_address
+            expires_at = challenge.expires_at
+            verification_expires_at = min(expires_at, now + self._provider_otp_ttl())
+            challenge.otp_verifier = otp.verifier
+            challenge.otp_key_id = otp.key_id
+            challenge.verification_issued_at = now
+            challenge.verification_expires_at = verification_expires_at
+            challenge.failed_verification_attempts = 0
+            challenge.updated_at = now
+            await database_session.commit()
+        except ProviderEnrollmentInvalidOrExpiredError, SignupResendCooldownError:
+            raise
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if email_address is None or expires_at is None or verification_expires_at is None:
+            raise AuthIntegrityError("provider enrollment resend lost challenge state")
+        await self._enqueue_provider_otp(
+            email_address=email_address,
+            code=otp.code,
+            expires_at=verification_expires_at,
+            now=now,
+        )
+        return ProviderEnrollmentRequired(
+            external_signup_ref=external_signup_ref,
+            continuation_secret=SecretStr(continuation_secret),
+            expires_at=expires_at,
+            email_address=email_address,
+            verification_expires_at=verification_expires_at,
+        )
+
+    async def verify_provider_enrollment(
+        self,
+        *,
+        external_signup_ref: UUID,
+        continuation_secret: str,
+        code: str,
+        source_context: str,
+    ) -> ProviderEnrollmentResult:
+        """Consume mailbox proof and atomically create Account or typed link collision."""
+        await self._limiters.enrollment.consume(source_context, code="auth.provider_rate_limited")
+        now = datetime.now(UTC)
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            challenge = await database_session.scalar(
+                select(ExternalSignupChallengeRow)
+                .where(ExternalSignupChallengeRow.external_signup_ref == external_signup_ref)
+                .with_for_update()
+            )
+            self._require_enrollment_challenge(
+                challenge,
+                continuation_secret=continuation_secret,
+                now=now,
+            )
+            assert challenge is not None
+            if (
+                challenge.email_address is None
+                or challenge.email_comparison_key is None
+                or challenge.otp_verifier is None
+                or challenge.otp_key_id is None
+                or challenge.verification_expires_at is None
+                or challenge.verification_expires_at <= now
+            ):
+                await database_session.rollback()
+                raise ProviderEnrollmentVerificationInvalidOrExpiredError()
+            if challenge.failed_verification_attempts >= _PROVIDER_ENROLLMENT_OTP_MAX_ATTEMPTS:
+                await database_session.rollback()
+                raise ProviderEnrollmentAttemptsExhaustedError()
+
+            if not self._otp_codec.matches(
+                signup_ref=external_signup_ref,
+                submitted_code=code,
+                expected_verifier=challenge.otp_verifier,
+                key_id=challenge.otp_key_id,
+            ):
+                challenge.failed_verification_attempts += 1
+                challenge.updated_at = now
+                exhausted = (
+                    challenge.failed_verification_attempts
+                    >= _PROVIDER_ENROLLMENT_OTP_MAX_ATTEMPTS
+                )
+                await database_session.commit()
+                if exhausted:
+                    raise ProviderEnrollmentAttemptsExhaustedError()
+                raise ProviderEnrollmentVerificationInvalidOrExpiredError()
+
+            existing_email = await database_session.scalar(
+                select(EmailIdentityRow).where(
+                    EmailIdentityRow.comparison_key == challenge.email_comparison_key
+                )
+            )
+            if existing_email is not None:
+                result = await self._replace_enrollment_with_link(
+                    database_session,
+                    challenge=challenge,
+                    target_email=existing_email,
+                    now=now,
+                )
+                await database_session.commit()
+                return result
+
+            return await self._create_account_from_enrollment(
+                database_session,
+                challenge=challenge,
+                now=now,
+            )
+        except (
+            ProviderEnrollmentAttemptsExhaustedError,
+            ProviderEnrollmentInvalidOrExpiredError,
+            ProviderEnrollmentVerificationInvalidOrExpiredError,
+        ):
+            raise
+        except IntegrityError as exc:
+            await self._safe_rollback(database_session)
+            return await self._resolve_enrollment_integrity_race(
+                external_signup_ref=external_signup_ref,
+                continuation_secret=continuation_secret,
+                constraint_name=self._constraint_name(exc),
+            )
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+    async def _complete_google_sign_in(
+        self,
+        evidence: GoogleIdentityEvidence,
+    ) -> ProviderAuthenticationResult:
+        existing = await self._read_external_identity(evidence.issuer, evidence.subject)
+        if existing is not None:
+            if existing.status_code == "active":
+                return ProviderAuthenticated(
+                    session=await self._sign_in_existing_identity(existing.account_ref, evidence)
+                )
+            return await self._link_required_for_bound_identity(existing, evidence)
+
+        if evidence.email is None or not evidence.mailbox_authoritative:
+            return await self._create_provider_enrollment(evidence)
+
+        collision = await self._read_email_identity(evidence.email.comparison_key)
+        if collision is not None:
+            return await self._create_link_required(
+                evidence=evidence,
+                target_email=collision,
+            )
+        return ProviderAuthenticated(session=await self._create_google_account(evidence))
+
+    async def _complete_google_link(
+        self,
+        *,
+        transaction: _ClaimedTransaction,
+        evidence: GoogleIdentityEvidence,
+    ) -> IssuedSession:
+        database_session = self._session_factory()
+        new_secret = generate_session_secret()
+        new_verifier = session_secret_verifier(new_secret)
+        bound: _BoundSession | None = None
+        now = datetime.now(UTC)
+        try:
+            await database_session.begin()
+            bound = await self._lock_bound_session(
+                database_session,
+                transaction=transaction,
+                now=now,
+                require_recent=True,
+            )
+            identity = await database_session.scalar(
+                select(ExternalIdentityRow).where(
+                    ExternalIdentityRow.issuer == evidence.issuer,
+                    ExternalIdentityRow.subject == evidence.subject,
+                )
+            )
+            if identity is not None and identity.account_ref != bound.account_ref:
+                await database_session.rollback()
+                raise ProviderIdentityConflictError()
+
+            email_identity_ref: UUID | None = None
+            if evidence.email is not None:
+                same_account_email = await database_session.scalar(
+                    select(EmailIdentityRow).where(
+                        EmailIdentityRow.account_ref == bound.account_ref,
+                        EmailIdentityRow.comparison_key == evidence.email.comparison_key,
+                    )
+                )
+                if same_account_email is not None:
+                    email_identity_ref = same_account_email.email_identity_ref
+
+            if identity is None:
+                identity = ExternalIdentityRow(
+                    external_identity_ref=uuid7(),
+                    account_ref=bound.account_ref,
+                    email_identity_ref=email_identity_ref,
+                    provider_code="google",
+                    issuer=evidence.issuer,
+                    subject=evidence.subject,
+                    provider_email_address=(
+                        evidence.email.address if evidence.email is not None else None
+                    ),
+                    provider_email_private=(False if evidence.email is not None else None),
+                    status_code="active",
+                    created_at=now,
+                    status_changed_at=now,
+                    last_authenticated_at=now,
+                    revoked_at=None,
+                    revocation_reason_code=None,
+                )
+                database_session.add(identity)
+            else:
+                if identity.status_code != "active":
+                    identity.status_code = "active"
+                    identity.status_changed_at = now
+                    identity.revoked_at = None
+                    identity.revocation_reason_code = None
+                if identity.email_identity_ref is None and email_identity_ref is not None:
+                    identity.email_identity_ref = email_identity_ref
+                self._refresh_google_identity_metadata(identity, evidence=evidence, now=now)
+
+            await self._rotate_bound_session(
+                database_session,
+                bound=bound,
+                new_secret_verifier=new_verifier,
+                recent_auth_at=bound.recent_auth_at,
+                expires_at=bound.expires_at,
+                now=now,
+            )
+            await database_session.commit()
+        except ProviderIdentityConflictError, ProviderTransactionInvalidOrExpiredError, ReauthenticationRequiredError:
+            raise
+        except IntegrityError as exc:
+            await self._safe_rollback(database_session)
+            if self._constraint_name(exc) == _EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT:
+                raise ProviderIdentityConflictError() from exc
+            raise AuthServiceUnavailableError(retryable=False) from exc
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if bound is None:
+            raise AuthIntegrityError("Google link completed without bound AuthSession")
+        return self._issued_session(
+            account_ref=bound.account_ref,
+            auth_session_ref=bound.auth_session_ref,
+            authenticated_at=bound.authenticated_at,
+            recent_auth_at=bound.recent_auth_at,
+            expires_at=bound.expires_at,
+            secret_verifier=new_verifier,
+            session_secret=new_secret,
+        )
+
+    async def _complete_google_reauthentication(
+        self,
+        *,
+        transaction: _ClaimedTransaction,
+        evidence: GoogleIdentityEvidence,
+    ) -> IssuedSession:
+        database_session = self._session_factory()
+        new_secret = generate_session_secret()
+        new_verifier = session_secret_verifier(new_secret)
+        bound: _BoundSession | None = None
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
+        try:
+            await database_session.begin()
+            bound = await self._lock_bound_session(
+                database_session,
+                transaction=transaction,
+                now=now,
+                require_recent=False,
+            )
+            identity = await database_session.scalar(
+                select(ExternalIdentityRow).where(
+                    ExternalIdentityRow.issuer == evidence.issuer,
+                    ExternalIdentityRow.subject == evidence.subject,
+                )
+            )
+            if (
+                identity is None
+                or identity.account_ref != bound.account_ref
+                or identity.status_code != "active"
+            ):
+                await database_session.rollback()
+                raise ProviderProofInvalidError()
+
+            self._refresh_google_identity_metadata(identity, evidence=evidence, now=now)
+            await self._rotate_bound_session(
+                database_session,
+                bound=bound,
+                new_secret_verifier=new_verifier,
+                recent_auth_at=now,
+                expires_at=expires_at,
+                now=now,
+            )
+            await database_session.commit()
+        except ProviderProofInvalidError, ProviderTransactionInvalidOrExpiredError:
+            raise
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if bound is None:
+            raise AuthIntegrityError("Google reauthentication completed without bound AuthSession")
+        return self._issued_session(
+            account_ref=bound.account_ref,
+            auth_session_ref=bound.auth_session_ref,
+            authenticated_at=bound.authenticated_at,
+            recent_auth_at=now,
+            expires_at=expires_at,
+            secret_verifier=new_verifier,
+            session_secret=new_secret,
+        )
+
+    async def _sign_in_existing_identity(
+        self,
+        account_ref: UUID,
+        evidence: GoogleIdentityEvidence,
+    ) -> IssuedSession:
+        auth_session_ref = uuid7()
+        session_secret = generate_session_secret()
+        secret_verifier = session_secret_verifier(session_secret)
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
+        database_session = self._session_factory()
+        ambiguous_commit = False
+        try:
+            await database_session.begin()
+            await database_session.execute(select(func.dante.acquire_account_security_lock(account_ref)))
+            account = await database_session.scalar(
+                select(AccountRow).where(AccountRow.account_ref == account_ref)
+            )
+            identity = await database_session.scalar(
+                select(ExternalIdentityRow).where(
+                    ExternalIdentityRow.issuer == evidence.issuer,
+                    ExternalIdentityRow.subject == evidence.subject,
+                    ExternalIdentityRow.account_ref == account_ref,
+                )
+            )
+            if account is None or account.status_code != "active":
+                await database_session.rollback()
+                raise AccountUnavailableError()
+            if identity is None or identity.status_code != "active":
+                await database_session.rollback()
+                raise ProviderProofInvalidError()
+
+            self._refresh_google_identity_metadata(identity, evidence=evidence, now=now)
+            database_session.add(
+                self._new_session_row(
+                    auth_session_ref=auth_session_ref,
+                    account_ref=account_ref,
+                    secret_verifier=secret_verifier,
+                    now=now,
+                    expires_at=expires_at,
+                )
+            )
+            try:
+                await database_session.commit()
+            except DBAPIError as exc:
+                if not exc.connection_invalidated:
+                    raise
+                ambiguous_commit = True
+        except AccountUnavailableError, ProviderProofInvalidError:
+            raise
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if ambiguous_commit:
+            await self._reconcile_session_commit(
+                auth_session_ref=auth_session_ref,
+                account_ref=account_ref,
+                secret_verifier=secret_verifier,
+                created_at=now,
+                expires_at=expires_at,
+            )
+        return self._issued_session(
+            account_ref=account_ref,
+            auth_session_ref=auth_session_ref,
+            authenticated_at=now,
+            recent_auth_at=now,
+            expires_at=expires_at,
+            secret_verifier=secret_verifier,
+            session_secret=session_secret,
+        )
+
+    async def _create_google_account(self, evidence: GoogleIdentityEvidence) -> IssuedSession:
+        if evidence.email is None or not evidence.mailbox_authoritative:
+            raise AuthIntegrityError("Google Account creation requires authoritative mailbox evidence")
+
+        account_ref = uuid7()
+        email_identity_ref = uuid7()
+        external_identity_ref = uuid7()
+        auth_session_ref = uuid7()
+        session_secret = generate_session_secret()
+        secret_verifier = session_secret_verifier(session_secret)
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
+        database_session = self._session_factory()
+        ambiguous_commit = False
+        try:
+            await database_session.begin()
+            database_session.add_all(
+                [
+                    AccountRow(
+                        account_ref=account_ref,
+                        status_code="active",
+                        created_at=now,
+                        disabled_at=None,
+                    ),
+                    EmailIdentityRow(
+                        email_identity_ref=email_identity_ref,
+                        account_ref=account_ref,
+                        address=evidence.email.address,
+                        comparison_key=evidence.email.comparison_key,
+                        created_at=now,
+                        verified_at=now,
+                        recovery_restriction_code=None,
+                        recovery_restriction_observed_at=None,
+                    ),
+                    ExternalIdentityRow(
+                        external_identity_ref=external_identity_ref,
+                        account_ref=account_ref,
+                        email_identity_ref=email_identity_ref,
+                        provider_code="google",
+                        issuer=evidence.issuer,
+                        subject=evidence.subject,
+                        provider_email_address=evidence.email.address,
+                        provider_email_private=False,
+                        status_code="active",
+                        created_at=now,
+                        status_changed_at=now,
+                        last_authenticated_at=now,
+                        revoked_at=None,
+                        revocation_reason_code=None,
+                    ),
+                    self._new_session_row(
+                        auth_session_ref=auth_session_ref,
+                        account_ref=account_ref,
+                        secret_verifier=secret_verifier,
+                        now=now,
+                        expires_at=expires_at,
+                    ),
+                ]
+            )
+            bootstrap = self._profile_bootstrap_row(account_ref=account_ref, evidence=evidence, now=now)
+            if bootstrap is not None:
+                database_session.add(bootstrap)
+            try:
+                await database_session.commit()
+            except DBAPIError as exc:
+                if not exc.connection_invalidated:
+                    raise
+                ambiguous_commit = True
+        except IntegrityError as exc:
+            await self._safe_rollback(database_session)
+            constraint = self._constraint_name(exc)
+            if constraint == _EMAIL_UNIQUENESS_CONSTRAINT:
+                collision = await self._read_email_identity(evidence.email.comparison_key)
+                if collision is None:
+                    raise AuthServiceUnavailableError(retryable=True) from exc
+                link = await self._create_link_required(evidence=evidence, target_email=collision)
+                raise _GoogleAccountCollision(link) from exc
+            if constraint == _EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT:
+                existing = await self._read_external_identity(evidence.issuer, evidence.subject)
+                if existing is None:
+                    raise AuthServiceUnavailableError(retryable=True) from exc
+                if existing.status_code != "active":
+                    raise ProviderIdentityConflictError() from exc
+                return await self._sign_in_existing_identity(existing.account_ref, evidence)
+            raise AuthServiceUnavailableError(retryable=False) from exc
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if ambiguous_commit:
+            await self._reconcile_new_account_commit(
+                account_ref=account_ref,
+                email_identity_ref=email_identity_ref,
+                external_identity_ref=external_identity_ref,
+                auth_session_ref=auth_session_ref,
+                evidence=evidence,
+                secret_verifier=secret_verifier,
+                created_at=now,
+                expires_at=expires_at,
+            )
+        return self._issued_session(
+            account_ref=account_ref,
+            auth_session_ref=auth_session_ref,
+            authenticated_at=now,
+            recent_auth_at=now,
+            expires_at=expires_at,
+            secret_verifier=secret_verifier,
+            session_secret=session_secret,
+        )
+
+    async def _create_provider_enrollment(
+        self,
+        evidence: GoogleIdentityEvidence,
+    ) -> ProviderEnrollmentRequired:
+        continuation = issue_flow_proof(FlowProofPurpose.PROVIDER_ENROLLMENT)
+        external_signup_ref = uuid7()
+        now = datetime.now(UTC)
+        expires_at = now + _PROVIDER_ENROLLMENT_TTL
+        otp = self._otp_codec.issue(external_signup_ref) if evidence.email is not None else None
+        verification_expires_at = (
+            min(expires_at, now + self._provider_otp_ttl()) if otp is not None else None
+        )
+        row = ExternalSignupChallengeRow(
+            external_signup_ref=external_signup_ref,
+            provider_code="google",
+            issuer=evidence.issuer,
+            subject=evidence.subject,
+            provider_email_address=(evidence.email.address if evidence.email is not None else None),
+            provider_email_private=(False if evidence.email is not None else None),
+            apple_auth_grant_ref=None,
+            continuation_verifier=continuation.verifier,
+            email_address=(evidence.email.address if evidence.email is not None else None),
+            email_comparison_key=(
+                evidence.email.comparison_key if evidence.email is not None else None
+            ),
+            otp_verifier=(otp.verifier if otp is not None else None),
+            otp_key_id=(otp.key_id if otp is not None else None),
+            verification_issued_at=(now if otp is not None else None),
+            verification_expires_at=verification_expires_at,
+            failed_verification_attempts=0,
+            bootstrap_display_name=evidence.display_name,
+            bootstrap_given_name=evidence.given_name,
+            bootstrap_family_name=evidence.family_name,
+            bootstrap_picture_url=evidence.picture_url,
+            bootstrap_locale=evidence.locale,
+            created_at=now,
+            updated_at=now,
+            expires_at=expires_at,
+        )
+        await self._persist_provider_enrollment(row)
+        if otp is not None and evidence.email is not None and verification_expires_at is not None:
+            await self._enqueue_provider_otp(
+                email_address=evidence.email.address,
+                code=otp.code,
+                expires_at=verification_expires_at,
+                now=now,
+            )
+        return ProviderEnrollmentRequired(
+            external_signup_ref=external_signup_ref,
+            continuation_secret=continuation.secret,
+            expires_at=expires_at,
+            email_address=(evidence.email.address if evidence.email is not None else None),
+            verification_expires_at=verification_expires_at,
+        )
+
+    async def _create_link_required(
+        self,
+        *,
+        evidence: GoogleIdentityEvidence,
+        target_email: EmailIdentityRow,
+    ) -> ProviderLinkRequired:
+        continuation = issue_flow_proof(FlowProofPurpose.PROVIDER_LINK)
+        challenge_ref = uuid7()
+        now = datetime.now(UTC)
+        expires_at = now + _PROVIDER_LINK_TTL
+        row = ExternalLinkChallengeRow(
+            external_link_challenge_ref=challenge_ref,
+            target_account_ref=target_email.account_ref,
+            target_email_identity_ref=target_email.email_identity_ref,
+            provider_code="google",
+            issuer=evidence.issuer,
+            subject=evidence.subject,
+            provider_email_address=(evidence.email.address if evidence.email is not None else None),
+            provider_email_private=(False if evidence.email is not None else None),
+            apple_auth_grant_ref=None,
+            continuation_verifier=continuation.verifier,
+            created_at=now,
+            expires_at=expires_at,
+        )
+        await self._persist_link_challenge(row)
+        return ProviderLinkRequired(
+            external_link_challenge_ref=challenge_ref,
+            continuation_secret=continuation.secret,
+            expires_at=expires_at,
+        )
+
+    async def _link_required_for_bound_identity(
+        self,
+        identity: ExternalIdentityRow,
+        evidence: GoogleIdentityEvidence,
+    ) -> ProviderLinkRequired:
+        target_email: EmailIdentityRow | None = None
+        if identity.email_identity_ref is not None:
+            target_email = await self._read_email_identity_by_ref(
+                identity.email_identity_ref,
+                identity.account_ref,
+            )
+        if target_email is None and evidence.email is not None:
+            candidate = await self._read_email_identity(evidence.email.comparison_key)
+            if candidate is not None and candidate.account_ref == identity.account_ref:
+                target_email = candidate
+        if target_email is None:
+            raise ProviderIdentityConflictError()
+        return await self._create_link_required(evidence=evidence, target_email=target_email)
+
+    async def _persist_provider_transaction(self, row: ExternalAuthTransactionRow) -> None:
+        ambiguous_commit = False
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            await self._cleanup_expired(database_session, now=row.created_at)
+            database_session.add(row)
+            try:
+                await database_session.commit()
+            except DBAPIError as exc:
+                if not exc.connection_invalidated:
+                    raise
+                ambiguous_commit = True
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if not ambiguous_commit:
+            return
+        persisted = await self._read_provider_transaction(row.external_auth_transaction_ref)
+        if persisted is None or not self._same_provider_transaction(persisted, row):
+            raise AuthServiceUnavailableError(retryable=False)
+
+    async def _claim_provider_transaction(
+        self,
+        *,
+        external_auth_transaction_ref: UUID,
+        state: str,
+    ) -> _ClaimedTransaction:
+        state_verifier = flow_proof_verifier(
+            purpose=FlowProofPurpose.PROVIDER_STATE,
+            encoded_secret=state,
+        )
+        if state_verifier is None:
+            raise ProviderTransactionInvalidOrExpiredError()
+
+        now = datetime.now(UTC)
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            row = await database_session.scalar(
+                select(ExternalAuthTransactionRow)
+                .where(
+                    ExternalAuthTransactionRow.external_auth_transaction_ref
+                    == external_auth_transaction_ref
+                )
+                .with_for_update()
+            )
+            if (
+                row is None
+                or row.provider_code != "google"
+                or row.claimed_at is not None
+                or row.expires_at <= now
+                or not hmac.compare_digest(row.state_verifier, state_verifier)
+            ):
+                await database_session.rollback()
+                raise ProviderTransactionInvalidOrExpiredError()
+            row.claimed_at = now
+            await database_session.commit()
+            return _ClaimedTransaction(
+                ref=row.external_auth_transaction_ref,
+                purpose=ProviderPurpose(row.purpose_code),
+                expected_issuer=row.expected_issuer,
+                nonce_verifier=row.nonce_verifier,
+                auth_session_ref=row.auth_session_ref,
+                auth_session_secret_verifier=row.auth_session_secret_verifier,
+                return_target=ProviderReturnTarget(row.return_target_code),
+            )
+        except ProviderTransactionInvalidOrExpiredError:
+            raise
+        except ValueError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthIntegrityError("stored provider transaction vocabulary is invalid") from exc
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+    async def _persist_provider_enrollment(self, row: ExternalSignupChallengeRow) -> None:
+        ambiguous_commit = False
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            await self._cleanup_expired(database_session, now=row.created_at)
+            await database_session.execute(
+                delete(ExternalSignupChallengeRow).where(
+                    ExternalSignupChallengeRow.issuer == row.issuer,
+                    ExternalSignupChallengeRow.subject == row.subject,
+                )
+            )
+            database_session.add(row)
+            try:
+                await database_session.commit()
+            except DBAPIError as exc:
+                if not exc.connection_invalidated:
+                    raise
+                ambiguous_commit = True
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if not ambiguous_commit:
+            return
+        persisted = await self._read_provider_enrollment(row.external_signup_ref)
+        if persisted is None or not hmac.compare_digest(
+            persisted.continuation_verifier,
+            row.continuation_verifier,
+        ):
+            raise AuthServiceUnavailableError(retryable=False)
+
+    async def _persist_link_challenge(self, row: ExternalLinkChallengeRow) -> None:
+        ambiguous_commit = False
+        database_session = self._session_factory()
+        try:
+            await database_session.begin()
+            await self._cleanup_expired(database_session, now=row.created_at)
+            await database_session.execute(
+                delete(ExternalLinkChallengeRow).where(
+                    ExternalLinkChallengeRow.issuer == row.issuer,
+                    ExternalLinkChallengeRow.subject == row.subject,
+                )
+            )
+            database_session.add(row)
+            try:
+                await database_session.commit()
+            except DBAPIError as exc:
+                if not exc.connection_invalidated:
+                    raise
+                ambiguous_commit = True
+        except SQLAlchemyError as exc:
+            await self._safe_rollback(database_session)
+            raise AuthServiceUnavailableError(retryable=True) from exc
+        finally:
+            await database_session.close()
+
+        if not ambiguous_commit:
+            return
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                persisted = await database_session.scalar(
+                    select(ExternalLinkChallengeRow).where(
+                        ExternalLinkChallengeRow.external_link_challenge_ref
+                        == row.external_link_challenge_ref
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=False) from exc
+        if persisted is None or not hmac.compare_digest(
+            persisted.continuation_verifier,
+            row.continuation_verifier,
+        ):
+            raise AuthServiceUnavailableError(retryable=False)
+
+    async def _verify_begin_session(
+        self,
+        *,
+        admitted: AdmittedSession,
+        presented_session_verifier: bytes,
+    ) -> None:
+        now = datetime.now(UTC)
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                row = await database_session.scalar(
+                    select(AuthSessionRow).where(
+                        AuthSessionRow.auth_session_ref == admitted.principal.auth_session_ref,
+                        AuthSessionRow.account_ref == admitted.principal.account_ref,
+                        AuthSessionRow.secret_verifier == presented_session_verifier,
+                        AuthSessionRow.revoked_at.is_(None),
+                        AuthSessionRow.expires_at > now,
+                        AuthSessionRow.last_user_activity_at
+                        > now - timedelta(seconds=self._settings.session_idle_timeout_seconds),
+                    )
+                )
+                if row is None:
+                    raise ProviderTransactionInvalidOrExpiredError()
+        except ProviderTransactionInvalidOrExpiredError:
+            raise
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _lock_bound_session(
+        self,
+        database_session: AsyncSession,
+        *,
+        transaction: _ClaimedTransaction,
+        now: datetime,
+        require_recent: bool,
+    ) -> _BoundSession:
+        auth_session_ref = transaction.auth_session_ref
+        old_secret_verifier = transaction.auth_session_secret_verifier
+        if auth_session_ref is None or old_secret_verifier is None:
+            raise ProviderTransactionInvalidOrExpiredError()
+
+        initial = await database_session.scalar(
+            select(AuthSessionRow).where(AuthSessionRow.auth_session_ref == auth_session_ref)
+        )
+        if initial is None:
+            raise ProviderTransactionInvalidOrExpiredError()
+        await database_session.execute(
+            select(func.dante.acquire_account_security_lock(initial.account_ref))
+        )
+        account = await database_session.scalar(
+            select(AccountRow).where(AccountRow.account_ref == initial.account_ref)
+        )
+        current = await database_session.scalar(
+            select(AuthSessionRow).where(
+                AuthSessionRow.auth_session_ref == auth_session_ref,
+                AuthSessionRow.account_ref == initial.account_ref,
+                AuthSessionRow.secret_verifier == old_secret_verifier,
+                AuthSessionRow.revoked_at.is_(None),
+            )
+        )
+        if account is None or account.status_code != "active" or current is None:
+            raise ProviderTransactionInvalidOrExpiredError()
+        if (
+            current.expires_at <= now
+            or current.last_user_activity_at
+            <= now - timedelta(seconds=self._settings.session_idle_timeout_seconds)
+        ):
+            raise ProviderTransactionInvalidOrExpiredError()
+        if require_recent and (
+            current.recent_auth_at + timedelta(seconds=self._settings.recent_auth_window_seconds)
+            <= now
+        ):
+            raise ReauthenticationRequiredError()
+        return _BoundSession(
+            account_ref=current.account_ref,
+            auth_session_ref=current.auth_session_ref,
+            authenticated_at=current.authenticated_at,
+            recent_auth_at=current.recent_auth_at,
+            expires_at=current.expires_at,
+            old_secret_verifier=old_secret_verifier,
+        )
+
+    async def _rotate_bound_session(
+        self,
+        database_session: AsyncSession,
+        *,
+        bound: _BoundSession,
+        new_secret_verifier: bytes,
+        recent_auth_at: datetime,
+        expires_at: datetime,
+        now: datetime,
+    ) -> None:
+        rotated = await database_session.scalar(
+            update(AuthSessionRow)
+            .where(
+                AuthSessionRow.auth_session_ref == bound.auth_session_ref,
+                AuthSessionRow.account_ref == bound.account_ref,
+                AuthSessionRow.secret_verifier == bound.old_secret_verifier,
+                AuthSessionRow.revoked_at.is_(None),
+                AuthSessionRow.expires_at > now,
+            )
+            .values(
+                secret_verifier=new_secret_verifier,
+                recent_auth_at=recent_auth_at,
+                last_user_activity_at=now,
+                expires_at=expires_at,
+            )
+            .returning(AuthSessionRow.auth_session_ref)
+        )
+        if rotated is None:
+            raise ProviderTransactionInvalidOrExpiredError()
+
+    async def _replace_enrollment_with_link(
+        self,
+        database_session: AsyncSession,
+        *,
+        challenge: ExternalSignupChallengeRow,
+        target_email: EmailIdentityRow,
+        now: datetime,
+    ) -> ProviderLinkRequired:
+        continuation = issue_flow_proof(FlowProofPurpose.PROVIDER_LINK)
+        link_ref = uuid7()
+        expires_at = now + _PROVIDER_LINK_TTL
+        await database_session.execute(
+            delete(ExternalLinkChallengeRow).where(
+                ExternalLinkChallengeRow.issuer == challenge.issuer,
+                ExternalLinkChallengeRow.subject == challenge.subject,
+            )
+        )
+        database_session.add(
+            ExternalLinkChallengeRow(
+                external_link_challenge_ref=link_ref,
+                target_account_ref=target_email.account_ref,
+                target_email_identity_ref=target_email.email_identity_ref,
+                provider_code=challenge.provider_code,
+                issuer=challenge.issuer,
+                subject=challenge.subject,
+                provider_email_address=challenge.provider_email_address,
+                provider_email_private=challenge.provider_email_private,
+                apple_auth_grant_ref=None,
+                continuation_verifier=continuation.verifier,
+                created_at=now,
+                expires_at=expires_at,
+            )
+        )
+        await database_session.delete(challenge)
+        return ProviderLinkRequired(
+            external_link_challenge_ref=link_ref,
+            continuation_secret=continuation.secret,
+            expires_at=expires_at,
+        )
+
+    async def _create_account_from_enrollment(
+        self,
+        database_session: AsyncSession,
+        *,
+        challenge: ExternalSignupChallengeRow,
+        now: datetime,
+    ) -> ProviderAuthenticated:
+        if challenge.email_address is None or challenge.email_comparison_key is None:
+            raise AuthIntegrityError("verified provider enrollment has no mailbox")
+
+        account_ref = uuid7()
+        email_identity_ref = uuid7()
+        external_identity_ref = uuid7()
+        auth_session_ref = uuid7()
+        session_secret = generate_session_secret()
+        secret_verifier = session_secret_verifier(session_secret)
+        expires_at = now + timedelta(seconds=self._settings.session_max_age_seconds)
+        database_session.add_all(
+            [
+                AccountRow(
+                    account_ref=account_ref,
+                    status_code="active",
+                    created_at=now,
+                    disabled_at=None,
+                ),
+                EmailIdentityRow(
+                    email_identity_ref=email_identity_ref,
+                    account_ref=account_ref,
+                    address=challenge.email_address,
+                    comparison_key=challenge.email_comparison_key,
+                    created_at=now,
+                    verified_at=now,
+                    recovery_restriction_code=None,
+                    recovery_restriction_observed_at=None,
+                ),
+                ExternalIdentityRow(
+                    external_identity_ref=external_identity_ref,
+                    account_ref=account_ref,
+                    email_identity_ref=email_identity_ref,
+                    provider_code=challenge.provider_code,
+                    issuer=challenge.issuer,
+                    subject=challenge.subject,
+                    provider_email_address=challenge.provider_email_address,
+                    provider_email_private=challenge.provider_email_private,
+                    status_code="active",
+                    created_at=now,
+                    status_changed_at=now,
+                    last_authenticated_at=now,
+                    revoked_at=None,
+                    revocation_reason_code=None,
+                ),
+                self._new_session_row(
+                    auth_session_ref=auth_session_ref,
+                    account_ref=account_ref,
+                    secret_verifier=secret_verifier,
+                    now=now,
+                    expires_at=expires_at,
+                ),
+            ]
+        )
+        bootstrap = self._profile_bootstrap_from_challenge(
+            account_ref=account_ref,
+            challenge=challenge,
+            now=now,
+        )
+        if bootstrap is not None:
+            database_session.add(bootstrap)
+        await database_session.delete(challenge)
+        await database_session.commit()
+        return ProviderAuthenticated(
+            session=self._issued_session(
+                account_ref=account_ref,
+                auth_session_ref=auth_session_ref,
+                authenticated_at=now,
+                recent_auth_at=now,
+                expires_at=expires_at,
+                secret_verifier=secret_verifier,
+                session_secret=session_secret,
+            )
+        )
+
+    async def _resolve_enrollment_integrity_race(
+        self,
+        *,
+        external_signup_ref: UUID,
+        continuation_secret: str,
+        constraint_name: str | None,
+    ) -> ProviderEnrollmentResult:
+        challenge = await self._read_provider_enrollment(external_signup_ref)
+        if challenge is None or challenge.email_comparison_key is None:
+            raise AuthServiceUnavailableError(retryable=True)
+        if not flow_proof_matches(
+            purpose=FlowProofPurpose.PROVIDER_ENROLLMENT,
+            encoded_secret=continuation_secret,
+            expected_verifier=challenge.continuation_verifier,
+        ):
+            raise ProviderEnrollmentInvalidOrExpiredError()
+
+        if constraint_name == _EMAIL_UNIQUENESS_CONSTRAINT:
+            collision = await self._read_email_identity(challenge.email_comparison_key)
+            if collision is None:
+                raise AuthServiceUnavailableError(retryable=True)
+            evidence = self._evidence_from_enrollment(challenge)
+            link = await self._create_link_required(evidence=evidence, target_email=collision)
+            await self._delete_provider_enrollment(external_signup_ref)
+            return link
+
+        if constraint_name == _EXTERNAL_IDENTITY_UNIQUENESS_CONSTRAINT:
+            identity = await self._read_external_identity(challenge.issuer, challenge.subject)
+            if identity is None or identity.status_code != "active":
+                raise ProviderIdentityConflictError()
+            matching_email = await self._read_email_identity(challenge.email_comparison_key)
+            if matching_email is None or matching_email.account_ref != identity.account_ref:
+                raise ProviderIdentityConflictError()
+            evidence = self._evidence_from_enrollment(challenge)
+            session = await self._sign_in_existing_identity(identity.account_ref, evidence)
+            await self._delete_provider_enrollment(external_signup_ref)
+            return ProviderAuthenticated(session=session)
+
+        raise AuthServiceUnavailableError(retryable=False)
+
+    async def _read_external_identity(
+        self,
+        issuer: str,
+        subject: str,
+    ) -> ExternalIdentityRow | None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await database_session.scalar(
+                    select(ExternalIdentityRow).where(
+                        ExternalIdentityRow.issuer == issuer,
+                        ExternalIdentityRow.subject == subject,
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _read_email_identity(self, comparison_key: str) -> EmailIdentityRow | None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await database_session.scalar(
+                    select(EmailIdentityRow).where(EmailIdentityRow.comparison_key == comparison_key)
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _read_email_identity_by_ref(
+        self,
+        email_identity_ref: UUID,
+        account_ref: UUID,
+    ) -> EmailIdentityRow | None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await database_session.scalar(
+                    select(EmailIdentityRow).where(
+                        EmailIdentityRow.email_identity_ref == email_identity_ref,
+                        EmailIdentityRow.account_ref == account_ref,
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _read_provider_transaction(
+        self,
+        transaction_ref: UUID,
+    ) -> ExternalAuthTransactionRow | None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await database_session.scalar(
+                    select(ExternalAuthTransactionRow).where(
+                        ExternalAuthTransactionRow.external_auth_transaction_ref == transaction_ref
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=False) from exc
+
+    async def _read_provider_enrollment(
+        self,
+        external_signup_ref: UUID,
+    ) -> ExternalSignupChallengeRow | None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                return await database_session.scalar(
+                    select(ExternalSignupChallengeRow).where(
+                        ExternalSignupChallengeRow.external_signup_ref == external_signup_ref
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _delete_provider_enrollment(self, external_signup_ref: UUID) -> None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                await database_session.execute(
+                    delete(ExternalSignupChallengeRow).where(
+                        ExternalSignupChallengeRow.external_signup_ref == external_signup_ref
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=True) from exc
+
+    async def _cleanup_expired(self, database_session: AsyncSession, *, now: datetime) -> None:
+        transaction_refs = list(
+            await database_session.scalars(
+                select(ExternalAuthTransactionRow.external_auth_transaction_ref)
+                .where(ExternalAuthTransactionRow.expires_at <= now)
+                .order_by(ExternalAuthTransactionRow.expires_at)
+                .limit(_EXPIRED_CLEANUP_BATCH)
+            )
+        )
+        if transaction_refs:
+            await database_session.execute(
+                delete(ExternalAuthTransactionRow).where(
+                    ExternalAuthTransactionRow.external_auth_transaction_ref.in_(transaction_refs)
+                )
+            )
+
+        signup_refs = list(
+            await database_session.scalars(
+                select(ExternalSignupChallengeRow.external_signup_ref)
+                .where(ExternalSignupChallengeRow.expires_at <= now)
+                .order_by(ExternalSignupChallengeRow.expires_at)
+                .limit(_EXPIRED_CLEANUP_BATCH)
+            )
+        )
+        if signup_refs:
+            await database_session.execute(
+                delete(ExternalSignupChallengeRow).where(
+                    ExternalSignupChallengeRow.external_signup_ref.in_(signup_refs)
+                )
+            )
+
+        link_refs = list(
+            await database_session.scalars(
+                select(ExternalLinkChallengeRow.external_link_challenge_ref)
+                .where(ExternalLinkChallengeRow.expires_at <= now)
+                .order_by(ExternalLinkChallengeRow.expires_at)
+                .limit(_EXPIRED_CLEANUP_BATCH)
+            )
+        )
+        if link_refs:
+            await database_session.execute(
+                delete(ExternalLinkChallengeRow).where(
+                    ExternalLinkChallengeRow.external_link_challenge_ref.in_(link_refs)
+                )
+            )
+
+    async def _reconcile_session_commit(
+        self,
+        *,
+        auth_session_ref: UUID,
+        account_ref: UUID,
+        secret_verifier: bytes,
+        created_at: datetime,
+        expires_at: datetime,
+    ) -> None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                persisted = await database_session.scalar(
+                    select(AuthSessionRow).where(
+                        AuthSessionRow.auth_session_ref == auth_session_ref
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=False) from exc
+        if (
+            persisted is None
+            or persisted.account_ref != account_ref
+            or not hmac.compare_digest(persisted.secret_verifier, secret_verifier)
+            or persisted.created_at != created_at
+            or persisted.authenticated_at != created_at
+            or persisted.recent_auth_at != created_at
+            or persisted.expires_at != expires_at
+            or persisted.revoked_at is not None
+        ):
+            raise AuthServiceUnavailableError(retryable=False)
+
+    async def _reconcile_new_account_commit(
+        self,
+        *,
+        account_ref: UUID,
+        email_identity_ref: UUID,
+        external_identity_ref: UUID,
+        auth_session_ref: UUID,
+        evidence: GoogleIdentityEvidence,
+        secret_verifier: bytes,
+        created_at: datetime,
+        expires_at: datetime,
+    ) -> None:
+        try:
+            async with (
+                self._session_factory() as database_session,
+                database_session.begin(),
+            ):
+                account = await database_session.scalar(
+                    select(AccountRow).where(AccountRow.account_ref == account_ref)
+                )
+                email = await database_session.scalar(
+                    select(EmailIdentityRow).where(
+                        EmailIdentityRow.email_identity_ref == email_identity_ref,
+                        EmailIdentityRow.account_ref == account_ref,
+                    )
+                )
+                identity = await database_session.scalar(
+                    select(ExternalIdentityRow).where(
+                        ExternalIdentityRow.external_identity_ref == external_identity_ref,
+                        ExternalIdentityRow.account_ref == account_ref,
+                    )
+                )
+        except SQLAlchemyError as exc:
+            raise AuthServiceUnavailableError(retryable=False) from exc
+        if (
+            account is None
+            or account.status_code != "active"
+            or email is None
+            or evidence.email is None
+            or email.comparison_key != evidence.email.comparison_key
+            or email.verified_at != created_at
+            or identity is None
+            or identity.issuer != evidence.issuer
+            or identity.subject != evidence.subject
+            or identity.status_code != "active"
+        ):
+            raise AuthServiceUnavailableError(retryable=False)
+        await self._reconcile_session_commit(
+            auth_session_ref=auth_session_ref,
+            account_ref=account_ref,
+            secret_verifier=secret_verifier,
+            created_at=created_at,
+            expires_at=expires_at,
+        )
+
+    async def _enqueue_provider_otp(
+        self,
+        *,
+        email_address: str,
+        code: SecretStr,
+        expires_at: datetime,
+        now: datetime,
+    ) -> None:
+        try:
+            await self._email_delivery.enqueue(
+                ProviderEnrollmentVerificationEmail(
+                    to_address=email_address,
+                    code=code,
+                    expires_minutes=max(1, math.ceil((expires_at - now).total_seconds() / 60)),
+                )
+            )
+        except EmailDispatchCapacityError as exc:
+            raise EmailDeliveryUnavailableError() from exc
+
+    def _require_enrollment_challenge(
+        self,
+        challenge: ExternalSignupChallengeRow | None,
+        *,
+        continuation_secret: str,
+        now: datetime,
+    ) -> None:
+        if (
+            challenge is None
+            or challenge.expires_at <= now
+            or not flow_proof_matches(
+                purpose=FlowProofPurpose.PROVIDER_ENROLLMENT,
+                encoded_secret=continuation_secret,
+                expected_verifier=challenge.continuation_verifier,
+            )
+        ):
+            raise ProviderEnrollmentInvalidOrExpiredError()
+
+    def _require_recent_auth(self, admitted: AdmittedSession) -> None:
+        if (
+            admitted.principal.recent_auth_at
+            + timedelta(seconds=self._settings.recent_auth_window_seconds)
+            <= datetime.now(UTC)
+        ):
+            raise ReauthenticationRequiredError()
+
+    def _provider_otp_ttl(self) -> timedelta:
+        return min(
+            timedelta(seconds=self._settings.signup_otp_lifetime_seconds),
+            _PROVIDER_ENROLLMENT_OTP_MAX_TTL,
+        )
+
+    @staticmethod
+    def _normalize_enrollment_email(value: str) -> NormalizedEmail:
+        try:
+            return normalize_email(value)
+        except EmailNormalizationError as exc:
+            raise ProviderEnrollmentInvalidOrExpiredError() from exc
+
+    @staticmethod
+    def _refresh_google_identity_metadata(
+        identity: ExternalIdentityRow,
+        *,
+        evidence: GoogleIdentityEvidence,
+        now: datetime,
+    ) -> None:
+        if evidence.email is not None:
+            identity.provider_email_address = evidence.email.address
+            identity.provider_email_private = False
+        identity.last_authenticated_at = now
+
+    @staticmethod
+    def _new_session_row(
+        *,
+        auth_session_ref: UUID,
+        account_ref: UUID,
+        secret_verifier: bytes,
+        now: datetime,
+        expires_at: datetime,
+    ) -> AuthSessionRow:
+        return AuthSessionRow(
+            auth_session_ref=auth_session_ref,
+            account_ref=account_ref,
+            secret_verifier=secret_verifier,
+            created_at=now,
+            authenticated_at=now,
+            recent_auth_at=now,
+            last_user_activity_at=now,
+            expires_at=expires_at,
+            revoked_at=None,
+            revocation_reason_code=None,
+        )
+
+    def _issued_session(
+        self,
+        *,
+        account_ref: UUID,
+        auth_session_ref: UUID,
+        authenticated_at: datetime,
+        recent_auth_at: datetime,
+        expires_at: datetime,
+        secret_verifier: bytes,
+        session_secret: SecretStr,
+    ) -> IssuedSession:
+        return IssuedSession(
+            principal=Principal(
+                account_ref=account_ref,
+                auth_session_ref=auth_session_ref,
+                authenticated_at=authenticated_at,
+                recent_auth_at=recent_auth_at,
+            ),
+            expires_at=expires_at,
+            session_secret=session_secret,
+            csrf_token=derive_csrf_token(
+                csrf_key=self._csrf_key,
+                auth_session_ref=auth_session_ref,
+                secret_verifier=secret_verifier,
+            ),
+        )
+
+    @staticmethod
+    def _profile_bootstrap_row(
+        *,
+        account_ref: UUID,
+        evidence: GoogleIdentityEvidence,
+        now: datetime,
+    ) -> AccountProfileBootstrapRow | None:
+        values = (
+            evidence.display_name,
+            evidence.given_name,
+            evidence.family_name,
+            evidence.picture_url,
+            evidence.locale,
+        )
+        if not any(value is not None for value in values):
+            return None
+        return AccountProfileBootstrapRow(
+            account_ref=account_ref,
+            source_provider_code="google",
+            source_issuer=evidence.issuer,
+            display_name=evidence.display_name,
+            given_name=evidence.given_name,
+            family_name=evidence.family_name,
+            picture_url=evidence.picture_url,
+            locale=evidence.locale,
+            created_at=now,
+            expires_at=now + _PROFILE_BOOTSTRAP_TTL,
+        )
+
+    @staticmethod
+    def _profile_bootstrap_from_challenge(
+        *,
+        account_ref: UUID,
+        challenge: ExternalSignupChallengeRow,
+        now: datetime,
+    ) -> AccountProfileBootstrapRow | None:
+        values = (
+            challenge.bootstrap_display_name,
+            challenge.bootstrap_given_name,
+            challenge.bootstrap_family_name,
+            challenge.bootstrap_picture_url,
+            challenge.bootstrap_locale,
+        )
+        if not any(value is not None for value in values):
+            return None
+        return AccountProfileBootstrapRow(
+            account_ref=account_ref,
+            source_provider_code=challenge.provider_code,
+            source_issuer=challenge.issuer,
+            display_name=challenge.bootstrap_display_name,
+            given_name=challenge.bootstrap_given_name,
+            family_name=challenge.bootstrap_family_name,
+            picture_url=challenge.bootstrap_picture_url,
+            locale=challenge.bootstrap_locale,
+            created_at=now,
+            expires_at=now + _PROFILE_BOOTSTRAP_TTL,
+        )
+
+    @staticmethod
+    def _evidence_from_enrollment(
+        challenge: ExternalSignupChallengeRow,
+    ) -> GoogleIdentityEvidence:
+        provider_email = None
+        if challenge.provider_email_address is not None:
+            try:
+                provider_email = normalize_email(challenge.provider_email_address)
+            except EmailNormalizationError as exc:
+                raise AuthIntegrityError("stored Google provider email is invalid") from exc
+        return GoogleIdentityEvidence(
+            issuer=challenge.issuer,
+            subject=challenge.subject,
+            email=provider_email,
+            email_verified=False,
+            hosted_domain=None,
+            mailbox_authoritative=False,
+            display_name=challenge.bootstrap_display_name,
+            given_name=challenge.bootstrap_given_name,
+            family_name=challenge.bootstrap_family_name,
+            picture_url=challenge.bootstrap_picture_url,
+            locale=challenge.bootstrap_locale,
+        )
+
+    @staticmethod
+    def _same_provider_transaction(
+        persisted: ExternalAuthTransactionRow,
+        expected: ExternalAuthTransactionRow,
+    ) -> bool:
+        return (
+            persisted.provider_code == expected.provider_code
+            and persisted.expected_issuer == expected.expected_issuer
+            and persisted.purpose_code == expected.purpose_code
+            and hmac.compare_digest(persisted.state_verifier, expected.state_verifier)
+            and hmac.compare_digest(persisted.nonce_verifier, expected.nonce_verifier)
+            and persisted.auth_session_ref == expected.auth_session_ref
+            and persisted.auth_session_secret_verifier
+            == expected.auth_session_secret_verifier
+            and persisted.return_target_code == expected.return_target_code
+            and persisted.created_at == expected.created_at
+            and persisted.expires_at == expected.expires_at
+            and persisted.claimed_at is None
+        )
+
+    @staticmethod
+    def _constraint_name(exc: IntegrityError) -> str | None:
+        diagnostic = getattr(exc.orig, "diag", None)
+        value = getattr(diagnostic, "constraint_name", None)
+        return value if isinstance(value, str) else None
+
+    @staticmethod
+    async def _safe_rollback(database_session: AsyncSession) -> None:
+        if not database_session.in_transaction():
+            return
+        with suppress(SQLAlchemyError):
+            await database_session.rollback()
+
+
+class _GoogleAccountCollision(Exception):
+    """Internal control flow carrying a typed collision from Account creation."""
+
+    def __init__(self, result: ProviderLinkRequired) -> None:
+        super().__init__("Google Account creation collided with existing email")
+        self.result = result
