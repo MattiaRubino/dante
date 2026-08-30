@@ -32,7 +32,7 @@ from dante.auth.email_delivery import (
 )
 from dante.auth.google import GoogleIdentityEvidence, GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
-from dante.auth.proofs import FlowProofPurpose, SignupOtpCodec, flow_proof_verifier
+from dante.auth.proofs import FlowProofPurpose, ProviderEnrollmentOtpCodec, flow_proof_verifier
 from dante.auth.provider_flow import ProviderFlowLimiters, ProviderFlowService
 from dante.auth.sessions import generate_session_secret, session_secret_verifier
 from dante.platform.config.auth import AuthSettings, SmtpSecurity
@@ -176,7 +176,7 @@ async def _provider_service(
         session_factory=database_runtime.session_factory,
         settings=settings,
         google_verifier=cast(GoogleTokenVerifier, verifier),
-        otp_codec=SignupOtpCodec(
+        otp_codec=ProviderEnrollmentOtpCodec(
             key_ring=settings.signup_otp_key_bytes,
             current_key_id=settings.signup_otp_current_key_id,
         ),
