@@ -28,32 +28,34 @@ function eventDurationMinutes(event: TimelineEvent): number {
 
 export function timelineEventReadableHeight(event: TimelineEvent): number {
   const duration = eventDurationMinutes(event);
-  const heights = TIMELINE_POLICY.event.readableHeightPx;
+  const eventPolicy = TIMELINE_POLICY.event;
+  const thresholds = eventPolicy.readableHeightThresholdMinutes;
+  const heights = eventPolicy.readableHeightPx;
 
   let height: number =
-    duration <= 5
+    duration <= thresholds.upTo5Minutes
       ? heights.upTo5Minutes
-      : duration <= 15
+      : duration <= thresholds.upTo15Minutes
         ? heights.upTo15Minutes
-        : duration <= 30
+        : duration <= thresholds.upTo30Minutes
           ? heights.upTo30Minutes
-          : duration <= 45
+          : duration <= thresholds.upTo45Minutes
             ? heights.upTo45Minutes
-            : duration <= 60
+            : duration <= thresholds.upTo60Minutes
               ? heights.upTo60Minutes
-              : duration <= 90
+              : duration <= thresholds.upTo90Minutes
                 ? heights.upTo90Minutes
                 : heights.longer;
 
   if (event.subitems?.length) {
-    height = Math.max(height, TIMELINE_POLICY.event.subitemsMinimumHeightPx);
+    height = Math.max(height, eventPolicy.subitemsMinimumHeightPx);
   }
 
   if (
-    event.title.length > TIMELINE_POLICY.event.longTitleThreshold &&
-    duration <= 30
+    event.title.length > eventPolicy.longTitleThreshold &&
+    duration <= eventPolicy.longTitleMaxDurationMinutes
   ) {
-    height += TIMELINE_POLICY.event.longTitleExtraHeightPx;
+    height += eventPolicy.longTitleExtraHeightPx;
   }
 
   return height;
@@ -62,7 +64,8 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
 export function computeTimelineDensityMetrics(
   events: readonly TimelineEvent[],
 ): TimelineDensityMetrics {
-  const slotMinutes = TIMELINE_POLICY.density.slotMinutes;
+  const policy = TIMELINE_POLICY.density;
+  const slotMinutes = policy.slotMinutes;
   const bins = new Uint16Array(
     Math.ceil(TIMELINE_MINUTES_PER_DAY / slotMinutes),
   );
@@ -71,7 +74,7 @@ export function computeTimelineDensityMetrics(
 
   for (const event of events) {
     const duration = eventDurationMinutes(event);
-    if (duration <= TIMELINE_POLICY.density.shortEventThresholdMinutes) {
+    if (duration <= policy.shortEventThresholdMinutes) {
       shortCount += 1;
     }
 
@@ -106,7 +109,10 @@ export function computeTimelineDensityMetrics(
 
     while (left < right) {
       const leftStart = starts[left];
-      if (leftStart === undefined || rightStart - leftStart < 60) {
+      if (
+        leftStart === undefined ||
+        rightStart - leftStart < policy.burstWindowMinutes
+      ) {
         break;
       }
       left += 1;
@@ -133,13 +139,18 @@ export function computeTimelineBaseScale(
   const density = computeTimelineDensityMetrics(events);
   const policy = TIMELINE_POLICY.density;
   const eventPressure =
-    Math.max(0, density.count - 5) * policy.eventPressurePerItem;
+    Math.max(0, density.count - policy.eventPressureBaselineCount) *
+    policy.eventPressurePerItem;
   const concurrencyPressure =
-    Math.max(0, density.maxConcurrent - 1) * policy.concurrencyPressurePerItem;
+    Math.max(
+      0,
+      density.maxConcurrent - policy.concurrencyPressureBaselineCount,
+    ) * policy.concurrencyPressurePerItem;
   const overlapPressure = density.overlapRatio * policy.overlapPressureFactor;
   const shortPressure = density.shortCount * policy.shortEventPressurePerItem;
   const burstPressure =
-    Math.max(0, density.burst - 3) * policy.burstPressurePerItem;
+    Math.max(0, density.burst - policy.burstPressureBaselineCount) *
+    policy.burstPressurePerItem;
 
   return Math.max(
     policy.minScale,
@@ -212,8 +223,10 @@ export function createTimelineTimeMapper(
     nearbyStarts += valueAt(nearbyStartDiff, minute);
     const localFactor =
       1 +
-      Math.max(0, active - 1) * policy.activeOverlapFactor +
-      Math.max(0, nearbyStarts - 2) * policy.nearbyStartFactor +
+      Math.max(0, active - policy.activeOverlapBaselineCount) *
+        policy.activeOverlapFactor +
+      Math.max(0, nearbyStarts - policy.nearbyStartBaselineCount) *
+        policy.nearbyStartFactor +
       shortActive * policy.shortActiveFactor;
     localScale[minute] = Math.max(
       pxPerMinute,
@@ -259,7 +272,10 @@ export function createTimelineTimeMapper(
     ) {
       const eased =
         requiredPerMinute *
-        (1 - shoulder / (policy.readableHeightShoulderMinutes + 2));
+        (1 -
+          shoulder /
+            (policy.readableHeightShoulderMinutes +
+              policy.readableHeightShoulderEasePadding));
       if (from - shoulder >= 0) {
         requiredScale[from - shoulder] = Math.max(
           valueAt(requiredScale, from - shoulder),
@@ -288,6 +304,7 @@ export function createTimelineTimeMapper(
     }
   }
 
+  const eventPolicy = TIMELINE_POLICY.event;
   const stretches = events.flatMap((event) => {
     const isExpanded = options.expandedEventIds?.has(event.id) ?? false;
     if (!isExpanded || !event.subitems?.length) {
@@ -298,7 +315,9 @@ export function createTimelineTimeMapper(
       {
         start: event.startMinute,
         end: event.endMinute,
-        extra: 18 + event.subitems.length * 27,
+        extra:
+          eventPolicy.expandedSubitemsBaseExtraHeightPx +
+          event.subitems.length * eventPolicy.expandedSubitemExtraHeightPx,
       },
     ];
   });
