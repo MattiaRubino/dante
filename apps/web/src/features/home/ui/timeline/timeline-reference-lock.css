@@ -31,8 +31,8 @@
 /* Keep only the group labels slightly tighter than the material default.
  * Month, Now and week typography intentionally remain untouched. */
 .home-m1 .home-timeline--production .dante-timeline-group-chip {
-  font-size: 8.5px;
-  font-weight: 750;
+  font-size: 9px;
+  font-weight: 780;
 }
 
 /* Desktop Home owns the row height. Timeline and Context Rail are peers in
