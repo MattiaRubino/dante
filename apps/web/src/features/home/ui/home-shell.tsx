@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
 import { AISurface } from './ai-surface/ai-surface';
 import { CentralStage } from './central-stage/central-stage';
-import { SignalStage } from './central-stage/signal-stage';
 import { ContextRail } from './context-rail/context-rail';
 import { DayContextStrip } from './orientation/day-context-strip';
 import { Orientation } from './orientation/orientation';
@@ -161,7 +160,6 @@ export function HomeShell({
             >
               <Orientation />
               <CentralStage />
-              <SignalStage />
             </div>
           </div>
         </section>
