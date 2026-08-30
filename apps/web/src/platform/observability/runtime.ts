@@ -68,7 +68,6 @@ export function initializeFaroRuntime(config: WebObservabilityConfig): void {
       release: config.buildId,
       environment: config.environment,
     },
-    beforeSend: sanitizeTransportItem,
     batching: {
       enabled: true,
       itemLimit: 20,
@@ -89,6 +88,10 @@ export function initializeFaroRuntime(config: WebObservabilityConfig): void {
       trackAttributionSources: false,
     },
   });
+  // Faro registers instrumentation hooks while initializeFaro runs. Register the
+  // privacy boundary afterwards so session/browser/page metadata added by those
+  // hooks cannot bypass DANTE's outbound-data contract.
+  faro.transports.addBeforeSendHooks(sanitizeTransportItem);
   webObservability = faro;
 
   installWebTelemetryAdapter({
