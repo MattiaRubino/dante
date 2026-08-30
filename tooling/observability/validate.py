@@ -16,15 +16,23 @@ _ALLOY = _REPO_ROOT / "infra" / "observability" / "alloy" / "config.alloy"
 _COMPOSE = _REPO_ROOT / "infra" / "compose" / "local.yaml"
 _ENV_EXAMPLE = _REPO_ROOT / "infra" / "observability" / ".env.example"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
-_ALERTS = _REPO_ROOT / "infra" / "observability" / "grafana" / "alerts" / "dante-alerts.json"
+_ALERTS = (
+    _REPO_ROOT / "infra" / "observability" / "grafana" / "alerts" / "dante-alerts.json"
+)
 _DICTIONARY_SCOPE = _REPO_ROOT / "docs" / "database" / "dictionary" / "scope.json"
 _DICTIONARY_SCHEMA = (
     _REPO_ROOT / "docs" / "database" / "dictionary" / "schema" / "scope-v1.schema.json"
 )
-_ALLOY_IMAGE = (
-    "grafana/alloy:v1.19.2@sha256:b8ec653c44235fbe910879145dac3597d66b0aaecf60bcbbe82580767771a839"
-)
+_ALLOY_IMAGE = "grafana/alloy:v1.19.2@sha256:b8ec653c44235fbe910879145dac3597d66b0aaecf60bcbbe82580767771a839"
 _SAFE_SEVERITIES = frozenset({"warning", "critical"})
+_GRAFANA_RUNTIME_JOBS = frozenset(
+    {
+        "integrations/self",
+        "integrations/postgres",
+        "integrations/blackbox/dante-backend-ready",
+    }
+)
+_STALE_LOCAL_JOB_NAMES = frozenset({"dante-alloy", "dante-postgres", "dante-blackbox"})
 _FORBIDDEN_TELEMETRY_LABELS = re.compile(
     r"(?:account|actor|email|identity|person|session|token|user)[_-]?(?:id|ref|key)?",
     re.IGNORECASE,
@@ -108,14 +116,20 @@ def _validate_alloy() -> None:
         if fragment in alloy:
             _fail(f"Alloy contains forbidden telemetry content: {fragment}")
 
-    if "forward_to      = [prometheus.relabel.postgres_privacy_budget.receiver]" not in alloy:
+    if (
+        "forward_to      = [prometheus.relabel.postgres_privacy_budget.receiver]"
+        not in alloy
+    ):
         _fail("PostgreSQL metrics must pass through the privacy/budget allowlist")
 
     if _ALLOY_IMAGE not in compose:
         _fail("Compose must pin the reviewed Alloy version and multi-platform digest")
     if "127.0.0.1:4317:4317" not in compose or "127.0.0.1:12347:12347" not in compose:
         _fail("collector ingestion ports must remain published on loopback only")
-    if "no-new-privileges:true" not in compose or "cap_drop:\n      - ALL" not in compose:
+    if (
+        "no-new-privileges:true" not in compose
+        or "cap_drop:\n      - ALL" not in compose
+    ):
         _fail("Alloy container hardening is incomplete")
     if "grafana_cloud_otlp_authorization" not in compose:
         _fail("Compose must project the private OTLP authorization header")
@@ -156,13 +170,17 @@ def _validate_dashboard(path: Path) -> DashboardSummary:
     panel_ids: list[int] = []
     for panel in raw.get("panels", []):
         if not isinstance(panel, dict) or not isinstance(panel.get("id"), int):
-            _fail(f"dashboard panel lacks an integer id: {path.relative_to(_REPO_ROOT)}")
+            _fail(
+                f"dashboard panel lacks an integer id: {path.relative_to(_REPO_ROOT)}"
+            )
         panel_ids.append(panel["id"])
         for query in _panel_queries(panel):
             if _FORBIDDEN_TELEMETRY_LABELS.search(query):
                 _fail(f"dashboard query uses an identity-like label: {query}")
     if len(panel_ids) != len(set(panel_ids)) or not panel_ids:
-        _fail(f"dashboard panel ids must be non-empty and unique: {path.relative_to(_REPO_ROOT)}")
+        _fail(
+            f"dashboard panel ids must be non-empty and unique: {path.relative_to(_REPO_ROOT)}"
+        )
     return DashboardSummary(path=path, uid=uid, panel_ids=tuple(panel_ids))
 
 
@@ -198,14 +216,40 @@ def _validate_grafana_assets() -> None:
         if _FORBIDDEN_TELEMETRY_LABELS.search(expression):
             _fail(f"alert {identifier} uses an identity-like label")
 
+    runtime_query_sources = [
+        *dashboard_paths,
+        _ALERTS,
+        _REPO_ROOT / "docs" / "development" / "observability-runbook.md",
+    ]
+    runtime_query_text = "\n".join(_read(path) for path in runtime_query_sources)
+    for job in _GRAFANA_RUNTIME_JOBS:
+        if (
+            f'job=\\"{job}\\"' not in runtime_query_text
+            and f'job="{job}"' not in runtime_query_text
+        ):
+            _fail(f"Grafana runtime label contract is missing observed job: {job}")
+    for job in _STALE_LOCAL_JOB_NAMES:
+        if (
+            f'job=\\"{job}\\"' in runtime_query_text
+            or f'job="{job}"' in runtime_query_text
+        ):
+            _fail(f"Grafana query source still uses superseded local job: {job}")
+
 
 def _validate_database_contract() -> None:
     scope = _json(_DICTIONARY_SCOPE)
     schema = _json(_DICTIONARY_SCHEMA)
-    expected_roles = ["dante_owner", "dante_migrator", "dante_runtime", "dante_observer"]
+    expected_roles = [
+        "dante_owner",
+        "dante_migrator",
+        "dante_runtime",
+        "dante_observer",
+    ]
     try:
         scope_roles = scope["technical_foundation"]["roles"]
-        schema_roles = schema["properties"]["technical_foundation"]["properties"]["roles"]["const"]
+        schema_roles = schema["properties"]["technical_foundation"]["properties"][
+            "roles"
+        ]["const"]
     except (KeyError, TypeError) as error:
         _fail(f"Dictionary technical-role contract is malformed: {error}")
     if scope_roles != expected_roles or schema_roles != expected_roles:

@@ -61,7 +61,7 @@
         "wideLayout": true
       },
       "targets": [
-        {"editorMode": "code", "expr": "min(up{job=\"dante-alloy\",environment=~\"$environment\"})", "legendFormat": "Alloy", "range": true, "refId": "A"}
+        {"editorMode": "code", "expr": "min(up{job=\"integrations/self\",environment=~\"$environment\"})", "legendFormat": "Alloy", "range": true, "refId": "A"}
       ],
       "title": "Alloy",
       "type": "stat"
@@ -91,7 +91,7 @@
         "sizing": "auto"
       },
       "targets": [
-        {"editorMode": "code", "expr": "max(process_resident_memory_bytes{job=\"dante-alloy\",environment=~\"$environment\"})", "legendFormat": "RSS", "range": true, "refId": "A"}
+        {"editorMode": "code", "expr": "max(process_resident_memory_bytes{job=\"integrations/self\",environment=~\"$environment\"})", "legendFormat": "RSS", "range": true, "refId": "A"}
       ],
       "title": "Collector memory",
       "type": "gauge"

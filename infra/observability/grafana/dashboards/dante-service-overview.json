@@ -83,7 +83,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "min(probe_success{job=\"dante-blackbox\",environment=~\"$environment\"})",
+          "expr": "min(probe_success{job=\"integrations/blackbox/dante-backend-ready\",environment=~\"$environment\"})",
           "legendFormat": "readiness",
           "range": true,
           "refId": "A"
@@ -345,7 +345,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (datname) (pg_stat_database_numbackends{job=\"dante-postgres\",environment=~\"$environment\"})",
+          "expr": "sum by (datname) (pg_stat_database_numbackends{job=\"integrations/postgres\",environment=~\"$environment\"})",
           "legendFormat": "{{datname}}",
           "range": true,
           "refId": "A"

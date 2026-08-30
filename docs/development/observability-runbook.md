@@ -185,10 +185,10 @@ Never embed the Grafana Cloud API token.
 5. In Grafana Explore verify:
 
 ```promql
-up{job="dante-alloy",environment="local"}
-probe_success{job="dante-blackbox",environment="local"}
+up{job="integrations/self",environment="local"}
+probe_success{job="integrations/blackbox/dante-backend-ready",environment="local"}
 http_server_request_count_total{deployment_environment_name="local"}
-pg_stat_database_numbackends{job="dante-postgres",environment="local"}
+pg_stat_database_numbackends{job="integrations/postgres",environment="local"}
 ```
 
 6. In Loki verify:
