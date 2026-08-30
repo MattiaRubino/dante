@@ -159,6 +159,14 @@ class AuthSettings(BaseModel):
     reauth_rate_window_seconds: PositiveFloat = 300
     lifecycle_rate_max_keys: PositiveInt = 20_000
 
+    provider_begin_rate_capacity: PositiveInt = 30
+    provider_begin_rate_window_seconds: PositiveFloat = 60
+    provider_complete_rate_capacity: PositiveInt = 20
+    provider_complete_rate_window_seconds: PositiveFloat = 60
+    provider_enrollment_rate_capacity: PositiveInt = 10
+    provider_enrollment_rate_window_seconds: PositiveFloat = 300
+    provider_rate_max_keys: PositiveInt = 20_000
+
     hibp_base_url: str = "https://api.pwnedpasswords.com"
     hibp_timeout_seconds: PositiveFloat = 2.0
     hibp_max_response_bytes: PositiveInt = 131_072
