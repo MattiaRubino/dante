@@ -294,10 +294,13 @@ def _validate_web_contract() -> None:
         (runtime, "omitTraceContextForUnsampledSessions: true"),
         (sanitizer, "MAX_TOTAL_NODES"),
         (sanitizer, "new WeakSet<object>()"),
+        (sanitizer, "normalizeFaroV1Boundary"),
     )
     for source, fragment in required_fragments:
         if fragment not in source:
             _fail(f"Web privacy/performance contract is missing: {fragment}")
+    if "fetchTransportV2: true" in runtime:
+        _fail("the pinned Alloy receiver is incompatible with Faro fetch transport v2")
 
 
 def _validate_web_smoke_contract() -> None:
@@ -312,6 +315,7 @@ def _validate_web_smoke_contract() -> None:
         "_require_healthy(alloy_ready_url",
         '_require_healthy(f"{backend_origin}/health/ready"',
         "_require_faro_cors(collector_url)",
+        '"Access-Control-Request-Headers": "content-type,x-faro-session-id"',
         'if not key.startswith("VITE_")',
     )
     for fragment in required_fragments:

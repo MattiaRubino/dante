@@ -31,6 +31,8 @@ type SanitizationState = {
   readonly seen: WeakSet<object>;
 };
 
+type SanitizedRecord = Record<string, unknown>;
+
 function truncate(value: string): string {
   return value.length <= MAX_STRING_CHARACTERS
     ? value
@@ -159,14 +161,104 @@ function sanitizeValue(
   return `[${typeof value}]`;
 }
 
+function isRecord(value: unknown): value is SanitizedRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function normalizeStringRecord(value: unknown): SanitizedRecord | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const output = Object.create(null) as SanitizedRecord;
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry === 'string') {
+      output[key] = entry;
+    } else if (typeof entry === 'boolean' || typeof entry === 'number') {
+      output[key] = String(entry);
+    } else {
+      output[key] = '[REDACTED_STRUCTURED]';
+    }
+  }
+  return output;
+}
+
+function normalizeNumericRecord(value: unknown): SanitizedRecord | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const output = Object.create(null) as SanitizedRecord;
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry === 'number' && Number.isFinite(entry)) {
+      output[key] = entry;
+    }
+  }
+  return output;
+}
+
+function normalizeStringRecordField(
+  record: SanitizedRecord,
+  field: string,
+): void {
+  const normalized = normalizeStringRecord(record[field]);
+  if (normalized === undefined) {
+    delete record[field];
+    return;
+  }
+  record[field] = normalized;
+}
+
+function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
+  if (!isRecord(item) || !isRecord(item.payload)) {
+    return null;
+  }
+
+  const metadata = item.meta;
+  if (isRecord(metadata)) {
+    // Browser identity is never part of DANTE's telemetry contract. Remove the
+    // entire structural field rather than replacing it with a scalar, which
+    // would make the collector reject the payload.
+    delete metadata.user;
+    for (const field of ['session', 'page'] as const) {
+      const section = metadata[field];
+      if (isRecord(section)) {
+        normalizeStringRecordField(section, 'attributes');
+      }
+    }
+  }
+
+  const payload = item.payload;
+  switch (item.type) {
+    case 'event':
+      normalizeStringRecordField(payload, 'attributes');
+      break;
+    case 'exception':
+    case 'log':
+      normalizeStringRecordField(payload, 'context');
+      break;
+    case 'measurement': {
+      normalizeStringRecordField(payload, 'context');
+      const values = normalizeNumericRecord(payload.values);
+      if (values === undefined) {
+        delete payload.values;
+      } else {
+        payload.values = values;
+      }
+      break;
+    }
+  }
+
+  return item;
+}
+
 export function sanitizeTransportItem(
   item: TransportItem,
 ): TransportItem | null {
   try {
-    return sanitizeValue(item, '', 0, {
+    const sanitized = sanitizeValue(item, '', 0, {
       remainingNodes: MAX_TOTAL_NODES,
       seen: new WeakSet<object>(),
     }) as TransportItem;
+    return normalizeFaroV1Boundary(sanitized);
   } catch {
     return null;
   }

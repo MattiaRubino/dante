@@ -187,6 +187,11 @@ uses Faro's stable transport. Do not enable `fetchTransportV2` unless the
 collector version and its exact CORS header contract are upgraded and verified
 with a real-browser smoke, not only a minimal `OPTIONS` request.
 
+The browser boundary also normalizes event/context attribute maps to the
+string-map protocol accepted by this pinned Alloy receiver and removes browser
+user metadata entirely. This preserves low-cardinality operational dimensions
+while keeping the Web SDK and collector independently upgradeable.
+
 The Web build runs a manifest-backed bundle gate. It fails if the Faro runtime
 stops being a dynamic chunk, the initial entry exceeds 500 KiB or the governed
 Faro chunk exceeds 300 KiB. These are uncompressed transfer-independent upper

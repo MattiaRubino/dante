@@ -108,7 +108,7 @@ def _require_faro_cors(collector_url: str) -> None:
         headers={
             "Origin": _WEB_ORIGIN,
             "Access-Control-Request-Method": "POST",
-            "Access-Control-Request-Headers": "content-type",
+            "Access-Control-Request-Headers": "content-type,x-faro-session-id",
         },
     )
     try:

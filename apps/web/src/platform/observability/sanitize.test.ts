@@ -92,6 +92,26 @@ describe('browser telemetry sanitization', () => {
     expect(serialized).not.toContain(REFERENCE);
   });
 
+  it('normalizes SDK-v2 event attributes to Alloy v1.19 string maps', () => {
+    const item = {
+      type: 'event',
+      meta: {
+        user: { id: 'private-user-id' },
+      },
+      payload: {
+        attributes: 'not-a-string-map',
+      },
+    } as unknown as TransportItem;
+
+    const sanitized = sanitizeTransportItem(item) as unknown as {
+      meta: Record<string, unknown>;
+      payload: Record<string, unknown>;
+    };
+
+    expect(sanitized.meta).not.toHaveProperty('user');
+    expect(sanitized.payload).not.toHaveProperty('attributes');
+  });
+
   it('handles circular objects and accessors without evaluating untrusted code', () => {
     const getter = vi.fn(() => 'never-read-this');
     const attributes: Record<string, unknown> = {};
