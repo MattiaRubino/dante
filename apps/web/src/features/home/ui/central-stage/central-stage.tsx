@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import './central-stage.css';
+import { SignalStage } from './signal-stage';
 
 type WorldIconName =
   | 'body'
@@ -400,55 +401,6 @@ function WorldIcon({ name }: { name: WorldIconName }) {
   }
 }
 
-function SignalCards() {
-  return (
-    <div className="home-signal-track" role="list" aria-label="Segnali">
-      <article className="home-signal-card signal-balance" role="listitem">
-        <span>Panoramica</span>
-        <strong>Equilibrio aree</strong>
-        <svg viewBox="0 0 160 104" aria-hidden="true">
-          <polygon
-            className="signal-grid"
-            points="80,12 117,33 117,76 80,98 43,76 43,33"
-          />
-          <polygon
-            className="signal-series"
-            points="80,19 108,37 111,72 80,94 55,70 51,36"
-          />
-        </svg>
-        <footer>
-          <b>6 aree</b>
-          <small>ultimi 30 giorni</small>
-        </footer>
-      </article>
-      <article className="home-signal-card signal-time" role="listitem">
-        <span>Panoramica</span>
-        <strong>Tempo per area</strong>
-        <div className="home-signal-ring" aria-hidden="true">
-          <b>38%</b>
-        </div>
-        <footer>
-          <b>38%</b>
-          <small>quota maggiore: Lavoro</small>
-        </footer>
-      </article>
-      <article className="home-signal-card signal-movement" role="listitem">
-        <span>Corpo</span>
-        <strong>Movimento</strong>
-        <div className="home-signal-bars" aria-hidden="true">
-          {[40, 54, 28, 66, 48, 76, 22].map((height, index) => (
-            <i key={index} style={{ height }} />
-          ))}
-        </div>
-        <footer>
-          <b>5 / 7</b>
-          <small>giorni attivi</small>
-        </footer>
-      </article>
-    </div>
-  );
-}
-
 export function CentralStage() {
   const { t } = useTranslation('common');
   const [mode, setMode] = useState<'worlds' | 'signals'>('worlds');
@@ -684,7 +636,7 @@ export function CentralStage() {
           ‹
         </button>
         <span className="home-stage-surface-label" aria-hidden="true">
-          {mode === 'worlds' ? 'WORLDS' : 'STATS'}
+          {mode === 'worlds' ? 'MONDI' : 'SINTESI'}
         </span>
         <button
           className="home-stage-mode-arrow"
@@ -769,7 +721,7 @@ export function CentralStage() {
           </button>
         </div>
       ) : (
-        <SignalCards />
+        <SignalStage />
       )}
     </section>
   );
