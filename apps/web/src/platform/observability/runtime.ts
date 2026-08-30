@@ -7,6 +7,7 @@ import {
   SessionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  browserMeta,
   initializeFaro,
   type Faro,
 } from '@grafana/faro-web-sdk';
@@ -88,6 +89,10 @@ export function initializeFaroRuntime(config: WebObservabilityConfig): void {
       trackAttributionSources: false,
     },
   });
+  // `browserMeta` is a default Faro producer and is evaluated for every item.
+  // Remove it at the source: an outbound hook alone cannot prevent data added
+  // by a later vendor producer from being serialized.
+  faro.metas.remove(browserMeta);
   // Faro registers instrumentation hooks while initializeFaro runs. Register the
   // privacy boundary afterwards so session/browser/page metadata added by those
   // hooks cannot bypass DANTE's outbound-data contract.
