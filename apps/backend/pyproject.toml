@@ -59,6 +59,9 @@ line-length = 100
 src = ["src"]
 
 [tool.ruff.format]
+# Applied CP6 migrations are immutable evidence under MIG-02. Formatter exclusion prevents
+# style-only history rewrites; Ruff lint still covers them with only the exact historical
+# findings documented below. The current CP6-05 candidate revision is not excluded.
 exclude = [
     "migrations/versions/20260825_01_cp6_native_identity_address.py",
     "migrations/versions/20260825_02_cp6_scoped_material_control.py",
@@ -71,11 +74,37 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "A", "ASYNC", "B", "BLE", "C4", "DTZ", "E4", "E7", "E9", "F", "G", "I", "LOG", "N", "PERF", "PIE", "PT", "PTH", "RET", "RUF", "S", "SIM", "T20", "UP",
+    "A",
+    "ASYNC",
+    "B",
+    "BLE",
+    "C4",
+    "DTZ",
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "G",
+    "I",
+    "LOG",
+    "N",
+    "PERF",
+    "PIE",
+    "PT",
+    "PTH",
+    "RET",
+    "RUF",
+    "S",
+    "SIM",
+    "T20",
+    "UP",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]
+
+# Applied CP6 migrations are byte-stable under MIG-02. These are only the exact historical
+# Ruff findings already present in those immutable revisions; no src/test quality rule is relaxed.
 "migrations/versions/20260825_01_cp6_native_identity_address.py" = ["I001", "RUF005"]
 "migrations/versions/20260825_02_cp6_scoped_material_control.py" = ["I001"]
 "migrations/versions/20260825_03_cp6_schedule_actual_session.py" = ["I001"]
