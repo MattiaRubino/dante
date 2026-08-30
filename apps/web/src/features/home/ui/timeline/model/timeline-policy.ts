@@ -65,6 +65,16 @@ export const TIMELINE_POLICY = {
     compactSingleLaneMinWidthPercent: 56,
     compactSingleLaneMaxWidthPercent: 76,
     compactMultiLaneMinWidthPercent: 18,
+    compactMultiLaneGapPercent: 1,
+    compactTitleWeightMaxChars: 68,
+    compactMetaWeightMaxChars: 44,
+    compactMetaWeightScale: 0.24,
+    compactWidthBasePercent: 48,
+    compactTitleWidthFactor: 0.34,
+    compactMetaWidthFactor: 0.14,
+    compactOrderBiasMaxPercent: 14,
+    compactAbsoluteMinLaneWidthPercent: 14,
+    compactAbsoluteMinWidthPercent: 30,
   },
 } as const;
 
