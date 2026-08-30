@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any
 
@@ -25,7 +26,6 @@ class _JwkCacheEntry:
     expires_at: float
     etag: str | None
     last_modified: str | None
-    last_forced_refresh_at: float
 
 
 class ProviderRuntime:
@@ -51,29 +51,54 @@ class ProviderRuntime:
         )
         self._cache: dict[str, _JwkCacheEntry] = {}
         self._locks: dict[str, asyncio.Lock] = {}
+        self._last_unknown_kid_refresh_at: dict[str, float] = {}
 
     async def aclose(self) -> None:
         await self._client.aclose()
 
     async def jwk_for_kid(self, *, provider: str, kid: str) -> dict[str, Any]:
+        """Resolve one trusted public JWK while coordinating cache refreshes per provider."""
         if not kid or len(kid) > 256 or kid.strip() != kid:
             raise ProviderRuntimeError("invalid JWK kid")
+
         url = self._trusted_jwks_url(provider)
         lock = self._locks.setdefault(provider, asyncio.Lock())
+
         async with lock:
             now = time.monotonic()
             entry = self._cache.get(provider)
-            refreshed_expired = entry is None or entry.expires_at <= now
-            if refreshed_expired:
-                entry = await self._refresh(provider=provider, url=url, previous=entry, forced=False)
+            refreshed_expired = False
+
+            if entry is None:
+                entry = await self._refresh(provider=provider, url=url, previous=None)
+                refreshed_expired = True
+            elif entry.expires_at <= now:
+                entry = await self._refresh(provider=provider, url=url, previous=entry)
+                refreshed_expired = True
+
             key = entry.keys_by_kid.get(kid)
             if key is not None:
                 return dict(key)
+
             if refreshed_expired:
+                self._last_unknown_kid_refresh_at[provider] = time.monotonic()
                 raise ProviderRuntimeError("unknown JWK kid")
-            if now - entry.last_forced_refresh_at < self._settings.network.unknown_kid_refresh_cooldown_seconds:
+
+            cooldown = self._settings.network.unknown_kid_refresh_cooldown_seconds
+            last_refresh = self._last_unknown_kid_refresh_at.get(provider, float("-inf"))
+            if now - last_refresh < cooldown:
                 raise ProviderRuntimeError("unknown JWK kid")
-            entry = await self._refresh(provider=provider, url=url, previous=entry, forced=True)
+
+            # Mark both the beginning and completion of the coordinated attempt. The first
+            # assignment prevents parallel waiters from becoming independent refreshers if the
+            # transport yields; the final assignment keeps the cooldown meaningful after a slow
+            # or failed provider request.
+            self._last_unknown_kid_refresh_at[provider] = now
+            try:
+                entry = await self._refresh(provider=provider, url=url, previous=entry)
+            finally:
+                self._last_unknown_kid_refresh_at[provider] = time.monotonic()
+
             key = entry.keys_by_kid.get(kid)
             if key is None:
                 raise ProviderRuntimeError("unknown JWK kid")
@@ -86,46 +111,65 @@ class ProviderRuntime:
             return self._settings.apple.jwks_url
         raise ProviderRuntimeError("unknown provider")
 
-    async def _refresh(self, *, provider: str, url: str, previous: _JwkCacheEntry | None, forced: bool) -> _JwkCacheEntry:
+    async def _refresh(
+        self,
+        *,
+        provider: str,
+        url: str,
+        previous: _JwkCacheEntry | None,
+    ) -> _JwkCacheEntry:
         headers: dict[str, str] = {}
         if previous is not None:
             if previous.etag:
                 headers["If-None-Match"] = previous.etag
             if previous.last_modified:
                 headers["If-Modified-Since"] = previous.last_modified
+
         async with self._client.stream("GET", url, headers=headers) as response:
             if response.status_code == 304 and previous is not None:
                 entry = _JwkCacheEntry(
                     keys_by_kid=previous.keys_by_kid,
-                    expires_at=time.monotonic() + self._ttl(response.headers, self._settings.network),
+                    expires_at=time.monotonic()
+                    + self._ttl(response.headers, self._settings.network),
                     etag=response.headers.get("etag", previous.etag),
-                    last_modified=response.headers.get("last-modified", previous.last_modified),
-                    last_forced_refresh_at=time.monotonic() if forced else previous.last_forced_refresh_at,
+                    last_modified=response.headers.get(
+                        "last-modified", previous.last_modified
+                    ),
                 )
                 self._cache[provider] = entry
                 return entry
+
             if response.status_code != 200:
-                raise ProviderRuntimeError(f"JWKS request failed with status {response.status_code}")
+                raise ProviderRuntimeError(
+                    f"JWKS request failed with status {response.status_code}"
+                )
+
             declared = response.headers.get("content-length")
             if declared is not None:
                 try:
-                    if int(declared) > self._settings.network.max_jwks_response_bytes:
-                        raise ProviderRuntimeError("JWKS response exceeds configured bound")
+                    declared_size = int(declared)
                 except ValueError as exc:
                     raise ProviderRuntimeError("invalid JWKS Content-Length") from exc
+                if declared_size < 0:
+                    raise ProviderRuntimeError("invalid JWKS Content-Length")
+                if declared_size > self._settings.network.max_jwks_response_bytes:
+                    raise ProviderRuntimeError("JWKS response exceeds configured bound")
+
             body = bytearray()
             async for chunk in response.aiter_bytes():
                 body.extend(chunk)
                 if len(body) > self._settings.network.max_jwks_response_bytes:
                     raise ProviderRuntimeError("JWKS response exceeds configured bound")
+
             keys = self._parse_jwks(bytes(body))
             response_headers = response.headers
+
         entry = _JwkCacheEntry(
             keys_by_kid=keys,
-            expires_at=time.monotonic() + self._ttl(response_headers, self._settings.network),
+            expires_at=time.monotonic()
+            + self._ttl(response_headers, self._settings.network),
             etag=response_headers.get("etag"),
             last_modified=response_headers.get("last-modified"),
-            last_forced_refresh_at=time.monotonic() if forced else (previous.last_forced_refresh_at if previous else float("-inf")),
         )
         self._cache[provider] = entry
         return entry
@@ -135,37 +179,64 @@ class ProviderRuntime:
             payload = json.loads(body)
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise ProviderRuntimeError("provider JWKS is not valid JSON") from exc
-        if not isinstance(payload, dict) or not isinstance(payload.get("keys"), list) or not payload["keys"]:
+
+        if (
+            not isinstance(payload, dict)
+            or not isinstance(payload.get("keys"), list)
+            or not payload["keys"]
+        ):
             raise ProviderRuntimeError("provider JWKS must contain a non-empty keys array")
         if len(payload["keys"]) > self._settings.network.max_jwk_count:
             raise ProviderRuntimeError("provider JWKS contains too many keys")
+
         result: dict[str, dict[str, Any]] = {}
         for value in payload["keys"]:
-            if not isinstance(value, dict) or not isinstance(value.get("kid"), str) or not isinstance(value.get("kty"), str):
+            if (
+                not isinstance(value, dict)
+                or not isinstance(value.get("kid"), str)
+                or not isinstance(value.get("kty"), str)
+            ):
                 raise ProviderRuntimeError("provider JWK is malformed")
+
             kid = value["kid"]
-            if not kid or len(kid) > 256 or kid in result:
-                raise ProviderRuntimeError("provider JWK kid is invalid or duplicated")
+            kty = value["kty"]
+            if (
+                not kid
+                or len(kid) > 256
+                or kid.strip() != kid
+                or kid in result
+                or not kty
+                or kty.strip() != kty
+            ):
+                raise ProviderRuntimeError("provider JWK kid/type is invalid or duplicated")
             if _PRIVATE_JWK_MEMBERS.intersection(value):
-                raise ProviderRuntimeError("provider JWKS unexpectedly contains private/symmetric material")
+                raise ProviderRuntimeError(
+                    "provider JWKS unexpectedly contains private/symmetric material"
+                )
             result[kid] = value
+
         return result
 
     @staticmethod
     def _ttl(headers: Any, network: ProviderNetworkSettings) -> float:
-        directives = {part.strip().lower() for part in headers.get("cache-control", "").split(",") if part.strip()}
+        directives = {
+            part.strip().lower()
+            for part in headers.get("cache-control", "").split(",")
+            if part.strip()
+        }
         if "no-store" in directives or "no-cache" in directives:
             return 0.0
+
         ttl = float(network.default_jwk_ttl_seconds)
         for directive in directives:
             if directive.startswith("max-age="):
-                try:
+                with suppress(ValueError):
                     ttl = float(max(0, int(directive.split("=", 1)[1].strip('"'))))
-                except ValueError:
-                    pass
                 break
+
         try:
             age = max(0.0, float(headers.get("age", "0")))
         except ValueError:
             age = 0.0
+
         return min(max(0.0, ttl - age), float(network.max_jwk_ttl_seconds))

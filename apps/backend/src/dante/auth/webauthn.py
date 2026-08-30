@@ -28,7 +28,7 @@ class WebAuthnPolicy:
     attestation: AttestationConveyancePreference = AttestationConveyancePreference.NONE
 
     @classmethod
-    def from_settings(cls, settings: WebAuthnSettings) -> "WebAuthnPolicy":
+    def from_settings(cls, settings: WebAuthnSettings) -> WebAuthnPolicy:
         origins = frozenset(settings.expected_origins)
 
         def verify_origin(origin: str) -> bool:

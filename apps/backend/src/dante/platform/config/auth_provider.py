@@ -17,7 +17,8 @@ GOOGLE_JWKS_URL = "https://www.googleapis.com/oauth2/v3/certs"
 APPLE_ISSUER = "https://appleid.apple.com"
 APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys"
 APPLE_AUTHORIZE_URL = "https://appleid.apple.com/auth/authorize"
-APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token"
+# Public OAuth endpoint; Ruff's password-name heuristic is a false positive here.
+APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token"  # noqa: S105
 APPLE_REVOKE_URL = "https://appleid.apple.com/auth/revoke"
 _ALLOWED_PROVIDER_ALGORITHMS = ("RS256",)
 _SECRET_BYTES = 32
@@ -137,7 +138,9 @@ class AppleProviderSettings(BaseModel):
         decoded: dict[str, bytes] = {}
         for key_id, value in self.grant_encryption_keys.items():
             _trimmed(key_id, name="Apple grant key id")
-            decoded[key_id] = _decode_key(value.get_secret_value(), name=f"Apple grant key {key_id}")
+            decoded[key_id] = _decode_key(
+                value.get_secret_value(), name=f"Apple grant key {key_id}"
+            )
         if len(set(decoded.values())) != len(decoded):
             raise ValueError("Apple grant key ids must not alias key material")
         if self.grant_encryption_current_key_id is not None:
@@ -147,9 +150,13 @@ class AppleProviderSettings(BaseModel):
         if self.enabled:
             required = (self.client_id, self.team_id, self.key_id, self.client_private_key_pem)
             if any(value is None for value in required):
-                raise ValueError("enabled Apple authentication requires client/team/key/private-key config")
+                raise ValueError(
+                    "enabled Apple authentication requires client/team/key/private-key config"
+                )
             if self.grant_encryption_current_key_id is None:
-                raise ValueError("enabled Apple authentication requires a current grant encryption key")
+                raise ValueError(
+                    "enabled Apple authentication requires a current grant encryption key"
+                )
         return self
 
     @property
@@ -178,7 +185,9 @@ class WebAuthnSettings(BaseModel):
     def validate_origins(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         if not values:
             raise ValueError("WebAuthn expected_origins must not be empty")
-        canonical = tuple(_canonical_url(value, name="WebAuthn origin", origin_only=True) for value in values)
+        canonical = tuple(
+            _canonical_url(value, name="WebAuthn origin", origin_only=True) for value in values
+        )
         if len(set(canonical)) != len(canonical):
             raise ValueError("WebAuthn expected_origins must be unique")
         return canonical
