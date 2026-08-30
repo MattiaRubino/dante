@@ -121,6 +121,113 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
+  it('keeps timeline selection separate from focus and exposes focus as an explicit peek action', () => {
+    const { container } = renderTimeline();
+    const titleButton = screen.getByRole('button', {
+      name: 'Redesign LifeOS — sessione focus',
+    });
+    const card = titleButton.closest<HTMLElement>('[data-timeline-event]');
+    expect(card).toBeTruthy();
+
+    fireEvent.click(titleButton);
+
+    expect(
+      screen.getByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeTruthy();
+    expect(card?.classList.contains('is-selected')).toBe(true);
+    expect(card?.classList.contains('is-focused')).toBe(false);
+    expect(container.querySelectorAll('.timeline-event-card.is-dim')).toHaveLength(
+      0,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }));
+
+    expect(card?.classList.contains('is-selected')).toBe(true);
+    expect(card?.classList.contains('is-focused')).toBe(true);
+    expect(
+      container.querySelectorAll('.timeline-event-card.is-dim').length,
+    ).toBeGreaterThan(0);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(
+      screen.queryByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeNull();
+    expect(card?.classList.contains('is-selected')).toBe(false);
+    expect(card?.classList.contains('is-focused')).toBe(true);
+  });
+
+  it('opens the quick peek from keyboard, restores focus on Escape and hands off to full detail', () => {
+    renderTimeline();
+    const titleButton = screen.getByRole('button', {
+      name: 'Redesign LifeOS — sessione focus',
+    });
+    const card = titleButton.closest<HTMLElement>('[data-timeline-event]');
+    expect(card).toBeTruthy();
+
+    card?.focus();
+    fireEvent.keyDown(card as HTMLElement, { key: 'Enter' });
+    expect(
+      screen.getByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(document.activeElement).toBe(card);
+
+    fireEvent.click(titleButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Apri dettagli' }));
+
+    expect(
+      screen.queryByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('dialog', {
+        name: 'Redesign LifeOS — sessione focus',
+      }),
+    ).toBeTruthy();
+    expect(card?.classList.contains('is-selected')).toBe(true);
+  });
+
+  it('hands selection off to the time editor without reopening the quick peek', () => {
+    renderTimeline();
+    const titleButton = screen.getByRole('button', {
+      name: 'Redesign LifeOS — sessione focus',
+    });
+    const card = titleButton.closest<HTMLElement>('[data-timeline-event]');
+    expect(card).toBeTruthy();
+
+    fireEvent.click(titleButton);
+    expect(
+      screen.getByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Modifica orario di Redesign LifeOS — sessione focus',
+      }),
+    );
+
+    expect(
+      screen.queryByRole('dialog', {
+        name: 'Ispezione rapida di Redesign LifeOS — sessione focus',
+      }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('dialog', { name: 'Modifica orario' }),
+    ).toBeTruthy();
+    expect(card?.classList.contains('is-selected')).toBe(true);
+  });
+
   it('expands event subitems and exposes precise keyboard, wheel and pointer time controls', () => {
     renderTimeline();
 
