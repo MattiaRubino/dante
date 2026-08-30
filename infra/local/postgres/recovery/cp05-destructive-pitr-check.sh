@@ -13,8 +13,8 @@ SOURCE_CONTAINER="dante-postgres-recovery-cp04-restore"
 TARGET_CONTAINER="dante-postgres-recovery-cp05-pitr"
 SCENARIO_FILE="infra/compose/secrets/postgres_recovery_cp05_scenario.local"
 RUNTIME_SECRET="infra/compose/secrets/postgres_recovery_runtime_password.local"
-EXPECTED_ALEMBIC="20260826_08"
-EXPECTED_TOPOLOGY="68|5|14|75|95|68|120|0|0|0"
+EXPECTED_ALEMBIC="20260830_09"
+EXPECTED_TOPOLOGY="69|5|15|76|97|69|123|0|0|0"
 BASELINE_REF="01993f19-9c00-7000-8000-000000000001"
 SOURCE_MARKER="/var/lib/postgresql/CP05_SOURCE_VOLUME_MUST_NOT_SURVIVE"
 
@@ -39,7 +39,7 @@ repo_find() {
     -lc "find /var/lib/pgbackrest/archive/dante -type f -name '$pattern' -print -quit"
 }
 
-echo "=== DANTE CP05 — deterministic destructive PITR ==="
+echo "=== DANTE CP05 — deterministic destructive PITR of current database ==="
 
 test "$(git branch --show-current)" = "feature/postgres-recovery" || die "wrong Git branch"
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feature/postgres-recovery)" || die "local HEAD differs from origin"
@@ -78,11 +78,13 @@ echo "=== verify source state and complete WAL chain ==="
 source_archive_mode="$(docker exec --user postgres "$SOURCE_CONTAINER" psql -X -d dante -Atqc 'SHOW archive_mode;')"
 source_in_recovery="$(docker exec --user postgres "$SOURCE_CONTAINER" psql -X -d dante -Atqc 'SELECT pg_is_in_recovery();')"
 source_wal="$(docker exec --user postgres "$SOURCE_CONTAINER" psql -X -d dante -Atqc 'SELECT pg_walfile_name(pg_current_wal_lsn());')"
+source_head="$(docker exec --user postgres "$SOURCE_CONTAINER" psql -X -d dante -Atqc 'SELECT version_num FROM dante.alembic_version;')"
 source_timeline_hex="${source_wal:0:8}"
 source_timeline="$((16#$source_timeline_hex))"
 
 test "$source_archive_mode" = "on" || die "source archive_mode=$source_archive_mode"
 test "$source_in_recovery" = "f" || die "source is unexpectedly in recovery"
+test "$source_head" = "$EXPECTED_ALEMBIC" || die "source Alembic=$source_head expected=$EXPECTED_ALEMBIC"
 test "$source_timeline" = "$TARGET_TIMELINE" || die "source timeline=$source_timeline expected=$TARGET_TIMELINE"
 
 source_counts="$(docker exec --user postgres "$SOURCE_CONTAINER" psql -X -d dante -Atqc "
@@ -191,9 +193,6 @@ PY
 echo "PGBACKREST PITR RESTORE COMMAND: PASS"
 echo "PHYSICAL_RESTORE_WALL_SECONDS=$physical_restore_seconds"
 
-# PostgreSQL 18 persists /var/lib/postgresql while PGDATA is nested below a version
-# directory. A root pgBackRest restore into a newly-created Docker volume can create
-# that version parent as root:root. Normalize only the proven parent boundary.
 docker run --rm --entrypoint sh -v "${PGVOL}:/var/lib/postgresql" "$IMAGE" -lc '
   set -eu
   chown postgres:postgres /var/lib/postgresql/18
@@ -214,15 +213,7 @@ echo
 echo "=== start PITR target and reach/promote at restore point ==="
 docker rm -f "$TARGET_CONTAINER" >/dev/null 2>&1 || true
 
-target_id="$(
-  compose run -d \
-    --service-ports \
-    --name "$TARGET_CONTAINER" \
-    postgres \
-    postgres \
-      -c shared_preload_libraries=pg_stat_statements \
-      -c compute_query_id=on
-)"
+target_id="$(compose run -d --service-ports --name "$TARGET_CONTAINER" postgres postgres -c shared_preload_libraries=pg_stat_statements -c compute_query_id=on)"
 test -n "$target_id" || die "PITR target did not start"
 
 ready=0
@@ -291,6 +282,9 @@ SELECT
 ")"
 test "$topology" = "$EXPECTED_TOPOLOGY" || die "topology=$topology"
 
+retirement_acl="$(docker exec --user postgres "$TARGET_CONTAINER" psql -X -d dante -Atqc "SELECT to_regclass('dante.material_state_retirement') IS NOT NULL,has_table_privilege('dante_runtime','dante.material_state_retirement','SELECT'),has_table_privilege('dante_runtime','dante.material_state_retirement','INSERT'),has_table_privilege('dante_runtime','dante.material_state_retirement','UPDATE'),has_table_privilege('dante_runtime','dante.material_state_retirement','DELETE');")"
+test "$retirement_acl" = "t|t|f|f|f" || die "retirement table/ACL=$retirement_acl"
+
 owners="$(docker exec --user postgres "$TARGET_CONTAINER" psql -X -d dante -Atqc "SELECT string_agg(owner, ',' ORDER BY owner) FROM (SELECT DISTINCT pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relname<>'alembic_version') x;")"
 test "$owners" = "dante_owner" || die "owners=$owners"
 roles="$(docker exec --user postgres "$TARGET_CONTAINER" psql -X -d dante -Atqc "SELECT string_agg(rolname, ',' ORDER BY rolname) FROM pg_roles WHERE rolname IN ('dante_owner','dante_migrator','dante_runtime');")"
@@ -300,12 +294,7 @@ test "$runtime_alembic" = "f" || die "runtime can SELECT alembic_version"
 extensions="$(docker exec --user postgres "$TARGET_CONTAINER" psql -X -d dante -Atqc "SELECT string_agg(extname || '=' || extversion, ',' ORDER BY extname) FROM pg_extension WHERE extname IN ('postgis','vector','pg_trgm','unaccent','pg_stat_statements');")"
 test "$extensions" = "pg_stat_statements=1.12,pg_trgm=1.6,postgis=3.6.4,unaccent=1.1,vector=0.8.6" || die "extensions=$extensions"
 
-runtime_state="$(docker exec -e PGPASSWORD="$(cat "$RUNTIME_SECRET")" "$TARGET_CONTAINER" psql -X -h 127.0.0.1 -p 5432 -U dante_runtime -d dante -Atqc "
-  SELECT
-    count(*) FILTER (WHERE person_ref='${A_REF}'::uuid),
-    count(*) FILTER (WHERE person_ref='${B_REF}'::uuid)
-  FROM dante.person;
-")"
+runtime_state="$(docker exec -e PGPASSWORD="$(cat "$RUNTIME_SECRET")" "$TARGET_CONTAINER" psql -X -h 127.0.0.1 -p 5432 -U dante_runtime -d dante -Atqc "SELECT count(*) FILTER (WHERE person_ref='${A_REF}'::uuid),count(*) FILTER (WHERE person_ref='${B_REF}'::uuid) FROM dante.person;")"
 test "$runtime_state" = "1|0" || die "runtime A|B=$runtime_state expected=1|0"
 echo "CATALOG / ACL / RUNTIME PATH: PASS"
 
@@ -323,11 +312,9 @@ docker logs --timestamps "$TARGET_CONTAINER" >"$log_file" 2>&1
 
 python3 - "$log_file" <<'PY'
 from __future__ import annotations
-
 import re
 import sys
 from datetime import datetime
-
 path = sys.argv[1]
 patterns = {
     "start": ("starting point-in-time recovery", "starting archive recovery"),
@@ -335,7 +322,6 @@ patterns = {
     "ready": ("database system is ready to accept connections",),
 }
 events: dict[str, datetime] = {}
-
 with open(path, encoding="utf-8", errors="replace") as fh:
     for raw in fh:
         line = raw.rstrip("\n")
@@ -351,37 +337,13 @@ with open(path, encoding="utf-8", errors="replace") as fh:
         for key, needles in patterns.items():
             if key not in events and any(needle in lower for needle in needles):
                 events[key] = ts
-
 missing = [key for key in ("start", "target", "ready") if key not in events]
 if missing:
     raise SystemExit(f"missing recovery timing events: {','.join(missing)}")
-
 print(f"REPLAY_TO_TARGET_SECONDS={(events['target']-events['start']).total_seconds():.6f}")
 print(f"RECOVERY_TO_READY_SECONDS={(events['ready']-events['start']).total_seconds():.6f}")
 print(f"TARGET_TO_READY_SECONDS={(events['ready']-events['target']).total_seconds():.6f}")
 PY
-
-echo
-echo "=== FINAL PITR EVIDENCE ==="
-docker exec --user postgres "$TARGET_CONTAINER" psql -X -d dante -P pager=off -c "
-  SELECT
-    current_setting('server_version_num') AS server_version_num,
-    pg_is_in_recovery() AS in_recovery,
-    current_setting('archive_mode') AS archive_mode,
-    pg_walfile_name(pg_current_wal_lsn()) AS current_wal;
-
-  SELECT version_num AS alembic_head FROM dante.alembic_version;
-
-  SELECT person_ref,
-         CASE
-           WHEN person_ref='${BASELINE_REF}'::uuid THEN 'BASELINE'
-           WHEN person_ref='${A_REF}'::uuid THEN 'A_PRESENT'
-           WHEN person_ref='${B_REF}'::uuid THEN 'B_SHOULD_BE_ABSENT'
-         END AS cp05_state
-  FROM dante.person
-  WHERE person_ref IN ('${BASELINE_REF}'::uuid, '${A_REF}'::uuid, '${B_REF}'::uuid)
-  ORDER BY cp05_state;
-"
 
 printf '%s\n' \
   "PGDATA destructive replacement          PASS" \
@@ -390,13 +352,14 @@ printf '%s\n' \
   "base FULL exact-set restore             PASS" \
   "target timeline selected                PASS" \
   "named restore point reached             PASS" \
-  "target-action promote                  PASS" \
-  "new promoted timeline                  PASS" \
-  "A present                              PASS" \
-  "B absent                               PASS" \
+  "target-action promote                   PASS" \
+  "new promoted timeline                   PASS" \
+  "A present                               PASS" \
+  "B absent                                PASS" \
   "PostgreSQL 18.6                        PASS" \
-  "Alembic 20260826_08                    PASS" \
-  "topology 68/5/14/75/95/68/120         PASS" \
+  "Alembic $EXPECTED_ALEMBIC              PASS" \
+  "topology $EXPECTED_TOPOLOGY            PASS" \
+  "material_state_retirement ACL          PASS" \
   "DANTE owners / roles / ACL             PASS" \
   "required extensions                    PASS" \
   "dante_runtime sees A and not B         PASS"
