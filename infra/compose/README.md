@@ -259,16 +259,16 @@ CP02 directly proved the isolated harness with PostgreSQL 18.6 and pgBackRest 2.
 
 ### Recovery CP03 source activation
 
-CP03 source/config is now materialized only in the isolated recovery overlay. The ordinary `dante-local` service remains unchanged.
+CP03 source/config is materialized only in the isolated recovery overlay. The ordinary `dante-local` service remains unchanged.
 
-Resolved recovery-only PostgreSQL settings are intended to be:
+Resolved recovery-only PostgreSQL settings are:
 
 ```text
 shared_preload_libraries = pg_stat_statements
 compute_query_id          = on
 archive_mode              = on
 archive_command           = /usr/bin/pgbackrest --stanza=dante archive-push %p
-wal_level                 = replica (inherited/current PostgreSQL default; not overridden)
+wal_level                 = replica (inherited/current PostgreSQL value; not overridden)
 archive_library           = unset
 ```
 
@@ -280,6 +280,63 @@ repo1-retention-full=2
 
 This retention value is a deterministic LOCAL test policy only. It is not the production AWS retention contract and must not be extrapolated to S3 Versioning/Object Lock/lifecycle behavior.
 
-Source/config presence is not runtime proof. CP03 remains runtime-pending until the isolated container is recreated from the current branch and direct evidence proves the resolved settings, successful WAL archival, `pgbackrest check`, a full backup, metadata readback and the bounded local retention behavior.
+### Recovery CP03 direct local proof
 
-Restore, PITR and AWS acceptance remain later checkpoints.
+CP03 is now **LOCAL PASS** for continuous WAL archiving and physical full backup on the isolated POSIX recovery harness.
+
+Directly observed evidence includes:
+
+```text
+recovery container health                         PASS
+archive_mode=on runtime                           PASS
+archive_command exact runtime value               PASS
+archive_library unset                             PASS
+wal_level=replica                                 PASS
+forced WAL switch                                 PASS
+pg_stat_archiver successful archive               PASS
+archived WAL physically present in repository     PASS
+pgbackrest --stanza=dante check                   PASS
+first FULL backup                                 PASS
+repeated FULL backups                             PASS
+pgbackrest info status=ok                         PASS
+repo1-retention-full=2 behavior                   PASS
+explicit pgbackrest expire                        PASS
+archive failure visibility                        PASS
+archive retry after repository recovery           PASS
+post-failure physical WAL presence                PASS
+post-failure pgBackRest check                     PASS
+post-failure pgBackRest info status=ok            PASS
+```
+
+The retained full backups at CP03 closure are:
+
+```text
+20260830-114411F
+20260830-114419F
+```
+
+The final observed archived WAL range is:
+
+```text
+00000001000000000000000A / 00000001000000000000000F
+```
+
+The negative archive-path proof temporarily changed the current pgBackRest archive-directory mode from `0750` to `0550`, observed PostgreSQL archiver failure for WAL `00000001000000000000000E`, restored `0750`, observed successful retry of the same WAL, verified the compressed WAL artifact physically in the repository, and finished with `pgbackrest check` and `info` healthy.
+
+The reusable bounded failure/recovery harness is:
+
+```text
+infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+Run it from any repository location with:
+
+```bash
+bash infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+The script targets only the dedicated `dante-postgres-recovery` Compose project and restores repository permissions with a shell trap if the injected failure path exits early.
+
+`pg_stat_archiver` counters are runtime statistics and may reset across PostgreSQL restart/statistics reset. Persistent recovery evidence therefore also relies on pgBackRest repository artifacts plus `check`/`info`, not on treating the counters as durable history.
+
+CP03 **does not** prove destructive restore, PITR, AWS S3, S3 Versioning, Object Lock, production retention, SC-031 or SC-011. Those remain later gates.
