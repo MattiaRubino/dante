@@ -1,13 +1,14 @@
 """Unit acceptance for the immutable recovery suppression ledger."""
 
-from datetime import UTC, datetime
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid7
 
 import pytest
 
 from dante.platform.recovery.suppression_ledger import (
+    PreparedSuppression,
     RecoverySuppressionBlocked,
     commit_after_canonical_verification,
     load_committed_suppressions,
@@ -23,7 +24,9 @@ def _canonical_write(path: Path, value: dict[str, object]) -> None:
     )
 
 
-def _prepare(root: Path, *, material_ref: UUID | None = None):
+def _prepare(
+    root: Path, *, material_ref: UUID | None = None
+) -> tuple[UUID, UUID, PreparedSuppression]:
     suppression_ref = uuid7()
     target_ref = material_ref or uuid7()
     prepared = prepare_suppression(
@@ -44,6 +47,24 @@ def _commit(root: Path, suppression_ref: UUID, material_ref: UUID) -> None:
         verified_material_state_ref=material_ref,
         committed_at=datetime.now(UTC),
     )
+
+
+def test_missing_ledger_records_directory_blocks_recovery(tmp_path: Path) -> None:
+    with pytest.raises(RecoverySuppressionBlocked, match="records directory is unavailable"):
+        load_committed_suppressions(tmp_path)
+
+
+def test_initialized_empty_ledger_is_valid(tmp_path: Path) -> None:
+    (tmp_path / "records").mkdir()
+    assert load_committed_suppressions(tmp_path) == ()
+
+
+def test_unexpected_ledger_entry_blocks_recovery(tmp_path: Path) -> None:
+    records = tmp_path / "records"
+    records.mkdir()
+    (records / "unexpected.txt").write_text("unexpected\n", encoding="utf-8")
+    with pytest.raises(RecoverySuppressionBlocked, match="unexpected suppression ledger entries"):
+        load_committed_suppressions(tmp_path)
 
 
 def test_prepared_without_commit_blocks_recovery(tmp_path: Path) -> None:
