@@ -1,8 +1,8 @@
 /*
  * Central Stage — M1 geometry bridge.
  *
- * M1 owns the outer geography. Projection layers only adapt their placement to
- * that geometry; they do not redefine the Home workspace.
+ * Home/M1 owns the stage rectangle and all fixed navigation anchors. Projection
+ * content may adapt inside that rectangle but must never redefine it.
  */
 
 .home-m1 .home-upper-workspace .home-central-stage {
@@ -10,10 +10,7 @@
   --home-m1-world-inline-bleed: 6%;
 }
 
-/*
- * Surface navigator: intentionally almost chromeless. The mode name is the
- * focus; chevrons remain secondary controls. No nested pill, no orange card.
- */
+/* Exact M1 stage-selector geometry/material. */
 .home-m1 .home-upper-workspace .home-central-stage .home-stage-dock {
   position: absolute;
   z-index: 40;
@@ -21,11 +18,11 @@
   right: auto;
   bottom: auto;
   left: 50%;
-  display: flex;
+  display: inline-flex;
   width: max-content;
   align-items: center;
   justify-content: center;
-  gap: 13px;
+  gap: 12px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -39,96 +36,67 @@
   .home-central-stage
   .home-stage-mode-arrow {
   display: grid;
-  width: 27px;
-  height: 27px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 50%;
-  color: rgba(178, 191, 206, 0.42);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-muted);
   background: transparent;
-  font-size: 23px;
-  font-weight: 250;
+  font-size: 1.05rem;
+  font-weight: 500;
   line-height: 1;
-  opacity: 0.82;
+  opacity: 0.58;
   cursor: pointer;
   transition:
-    color 150ms ease,
-    background 150ms ease,
-    transform 150ms ease;
+    color 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-mode-arrow:hover {
-  color: rgba(243, 247, 250, 0.88);
-  background: rgba(255, 255, 255, 0.025);
-  transform: translateY(-1px);
+  color: var(--dante-semantic-color-home-text-secondary);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control) 34%,
+    transparent
+  );
+  opacity: 0.9;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-surface-label {
-  position: relative;
   display: grid;
-  min-width: 72px;
-  height: 28px;
+  min-width: 92px;
+  height: 32px;
   place-items: center;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 0;
-  color: rgba(218, 225, 232, 0.72);
-  background: transparent;
+  padding: 0 15px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  color: var(--dante-semantic-color-home-text-secondary);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control) 48%,
+    transparent
+  );
   box-shadow: none;
-  font-size: 0;
-  font-weight: 680;
-  letter-spacing: 0.16em;
+  font-size: 0.62rem;
+  font-weight: 670;
+  letter-spacing: 0.14em;
   line-height: 1;
+  text-transform: uppercase;
   user-select: none;
 }
 
-.home-m1
-  .home-upper-workspace
-  .home-central-stage
-  .home-stage-surface-label::before {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 20px;
-  height: 1px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(234, 92, 18, 0.62),
-    transparent
-  );
-  content: '';
-  opacity: 0.72;
-}
-
-.home-m1
-  .home-upper-workspace
-  .home-central-stage[data-home-stage-mode='continuity']
-  .home-stage-surface-label::after {
-  content: 'MONDI';
-  font-size: 10px;
-}
-
-.home-m1
-  .home-upper-workspace
-  .home-central-stage[data-home-stage-mode='signals']
-  .home-stage-surface-label::after {
-  content: 'SINTESI';
-  font-size: 10px;
-}
-
 /*
- * Expanded M1: keep the accepted Worlds scale and spacing from the previous
- * visual pass. The measured scene width drives both DOM projection and canvas
- * FX, so spacing cannot drift from the stellar effects.
+ * Expanded M1: preserve the accepted Worlds scale/spacing. ResizeObserver reads
+ * this real scene width so DOM projection and canvas FX stay synchronized.
  */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
   right: calc(-1 * var(--home-m1-world-inline-bleed));
@@ -165,9 +133,8 @@
 }
 
 /*
- * Desktop collapsed M1 is a different geometry, not a wider expanded layout.
- * CentralStage already starts below In evidenza and to the right of Per te;
- * therefore the expanded downward translation must be removed completely.
+ * Collapsed desktop uses the already-frozen H1B stage rectangle. Only inner
+ * Worlds placement changes; the stage rectangle itself remains owned by M1.
  */
 @media (min-width: 901px) {
   .home-m1[data-home-ai-state='collapsed']
@@ -181,7 +148,7 @@
     .home-upper-workspace
     .home-central-stage
     .home-stage-dock {
-    top: 20%;
+    top: 21%;
   }
 
   .home-m1[data-home-ai-state='collapsed']
