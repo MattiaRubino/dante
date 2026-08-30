@@ -82,6 +82,7 @@ def _validate_alloy() -> None:
         'max_elapsed_time     = "2m"',
         'otelcol.auth.headers "grafana_cloud"',
         'filename  = "/run/secrets/grafana_cloud_otlp_authorization"',
+        "auth               = otelcol.auth.headers.grafana_cloud.handler",
         'prometheus.relabel "postgres_privacy_budget"',
         "pg_long_running_transactions.*",
         "max_streams = 64",
@@ -101,6 +102,7 @@ def _validate_alloy() -> None:
         "response.body",
         '"stat_statements",',
         "stat_statements {",
+        "otelcol.auth.basic.grafana_cloud.handler",
     )
     for fragment in forbidden_fragments:
         if fragment in alloy:

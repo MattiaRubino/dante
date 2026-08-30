@@ -28,7 +28,7 @@ otelcol.auth.headers "grafana_cloud" {
 otelcol.exporter.otlphttp "grafana_cloud" {
   client {
     endpoint           = sys.env("GRAFANA_CLOUD_OTLP_ENDPOINT")
-    auth               = otelcol.auth.basic.grafana_cloud.handler
+    auth               = otelcol.auth.headers.grafana_cloud.handler
     compression        = "gzip"
     max_conns_per_host = 4
     timeout            = "5s"
