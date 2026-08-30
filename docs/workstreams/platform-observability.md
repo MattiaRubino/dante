@@ -1,6 +1,6 @@
 # DANTE Platform Observability Workstream
 
-- **Status:** ACTIVE / IMPLEMENTATION COMPLETE IN WORKTREE / ACCEPTANCE IN PROGRESS
+- **Status:** ACTIVE / FOUNDATION ACTIVATED / REMAINING ACCEPTANCE IN PROGRESS
 - **Branch:** `feature/platform-observability`
 - **PRE-SCOPE:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Authority:** branch-local until protected-main integration
@@ -73,20 +73,40 @@ tests, CI, runbook and current architecture/database docs
 - static validator, private observer-DSN writer and operator runbook;
 - CI native Alloy validation gate.
 
-## Evidence ledger
+## Verified activation checkpoint — 2026-08-30
+
+The following was proved against the real Grafana Cloud Free EU stack, not
+inferred from static configuration. Credentials remain local-only and are not
+represented in this repository.
 
 | Evidence | State |
 |---|---|
-| Backend targeted observability tests | PASS locally |
-| Existing backend fast regression | PASS before final additions; rerun required |
-| Web typecheck/lint/tests | PASS before final infrastructure/docs; rerun required |
-| Static observability artifact validator | pending final rerun |
-| Exact Alloy native validation | CI REQUIRED; local Docker/binary unavailable |
-| Disposable PostgreSQL role/ACL proof | CI REQUIRED; local Docker unavailable |
-| Compose config | Docker environment required |
-| Real Grafana Cloud Free EU ingestion | USER STACK CREDENTIALS/SETUP REQUIRED |
-| Dashboard visual/data-source smoke | REAL STACK REQUIRED |
-| Alert notification delivery | REAL STACK + CONTACT POINT REQUIRED |
+| Alloy native configuration validation, exact pinned image | PASS locally |
+| Compose observability profile (PostgreSQL + Alloy) | PASS locally; both services healthy |
+| Alloy readiness endpoint | PASS (`200`) |
+| Alloy remote-write delivery | PASS; connection failures and enqueue retries observed as `0` |
+| PostgreSQL statistics collector | PASS; `pg_stat_database_numbackends` returned the DANTE database series |
+| Black-box backend readiness | PASS; `probe_success` changed from `0` to `1` when the backend started |
+| Backend OpenTelemetry metrics | PASS; `http_server_request_count_total` received for real requests |
+| Structured backend JSON logs → Loki | PASS; `observability.runtime_initialized` received with expected labels |
+| HTTP and PostgreSQL spans → Tempo | PASS; `GET /api/v1/auth/session` and `postgresql.select` traces received |
+| Secrets committed or displayed | PASS; none |
+
+The HTTP request, its database span, the matching backend log pipeline and
+backend health were all demonstrated using local runtime traffic. This is the
+end-to-end activation checkpoint for the platform foundation.
+
+## Remaining acceptance
+
+| Evidence | State |
+|---|---|
+| Full backend regression and current-tree quality-gate rerun | pending |
+| Full web quality gates and Faro/browser activation | pending |
+| Source-controlled dashboard import and visual smoke | pending |
+| Alert evaluation and delivery to a configured contact point | pending |
+| Explicit redaction/correlation acceptance query | pending |
+| Collector-outage proof: application remains available | pending |
+| Disposable PostgreSQL role/ACL proof in CI | CI REQUIRED |
 
 Historical or earlier runs are never promoted to PASS for the final tree.
 
