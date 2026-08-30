@@ -25,6 +25,7 @@ function HomeRoute() {
   const onViewedDateChange = (isoDate: string | undefined) => {
     void navigate({
       search: isoDate === undefined ? {} : { date: isoDate },
+      resetScroll: false,
     });
   };
 
