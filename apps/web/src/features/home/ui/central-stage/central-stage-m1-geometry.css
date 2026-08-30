@@ -1,20 +1,73 @@
 /*
- * Central Stage — M1 geometry bridge.
+ * Central Stage — M1 geometry authority.
  *
- * Home/M1 owns the stage rectangle and all fixed navigation anchors. Projection
- * content may adapt inside that rectangle but must never redefine it.
+ * M1 owns the workspace geometry. Orientation, selector, projection bounds and
+ * collapsed layout all derive from the same variables so a projection cannot
+ * overlap Home-owned regions by construction.
  */
 
-.home-m1 .home-upper-workspace .home-central-stage {
-  --home-m1-world-shift: clamp(92px, 22%, 118px);
-  --home-m1-world-inline-bleed: 6%;
+.home-m1 .home-upper-workspace {
+  --home-m1-side-width: 29.5%;
+  --home-m1-side-height: 47%;
+  --home-m1-evidence-left: 32%;
+  --home-m1-evidence-width: 36%;
+  --home-m1-evidence-height: 22%;
+  --home-m1-stage-notch-top: 24%;
+  --home-m1-stage-selector-top: 39%;
+  --home-m1-stage-projection-top: 47%;
 }
 
-/* Exact M1 stage-selector geometry/material. */
+/* Expanded desktop orientation and stage silhouette share one authority. */
+.home-m1 .home-upper-workspace .home-orientation-now {
+  left: 0;
+  width: var(--home-m1-side-width);
+  height: var(--home-m1-side-height);
+}
+
+.home-m1 .home-upper-workspace .home-orientation-highlight {
+  left: var(--home-m1-evidence-left);
+  width: var(--home-m1-evidence-width);
+  height: var(--home-m1-evidence-height);
+}
+
+.home-m1 .home-upper-workspace .home-orientation-for-you {
+  right: 0;
+  width: var(--home-m1-side-width);
+  height: var(--home-m1-side-height);
+}
+
+.home-m1 .home-upper-workspace .home-central-stage {
+  --home-stage-selector-top: var(--home-m1-stage-selector-top);
+  --home-stage-projection-top: var(--home-m1-stage-projection-top);
+  --home-stage-projection-right: 0%;
+  --home-stage-projection-bottom: 0%;
+  --home-stage-projection-left: 0%;
+}
+
+.home-m1 .home-upper-workspace .home-central-stage::before {
+  clip-path: polygon(
+    0 var(--home-m1-side-height),
+    var(--home-m1-side-width) var(--home-m1-side-height),
+    var(--home-m1-side-width) var(--home-m1-stage-notch-top),
+    calc(100% - var(--home-m1-side-width)) var(--home-m1-stage-notch-top),
+    calc(100% - var(--home-m1-side-width)) var(--home-m1-side-height),
+    100% var(--home-m1-side-height),
+    100% 100%,
+    0 100%
+  );
+}
+
+.home-m1 .home-upper-workspace .home-central-stage::after {
+  top: var(--home-m1-stage-notch-top);
+  right: var(--home-m1-side-width);
+  left: var(--home-m1-side-width);
+}
+
+/* Fixed M1 stage selector. Visual treatment follows the final prototype. */
 .home-m1 .home-upper-workspace .home-central-stage .home-stage-dock {
   position: absolute;
   z-index: 40;
-  top: 39%;
+  top: var(--home-stage-selector-top);
   right: auto;
   bottom: auto;
   left: 50%;
@@ -22,13 +75,14 @@
   width: max-content;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   padding: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
   transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 
 .home-m1
@@ -42,30 +96,25 @@
   padding: 0;
   border: 0;
   border-radius: 9px;
-  color: var(--dante-semantic-color-home-text-muted);
+  color: rgba(204, 211, 224, 0.34);
   background: transparent;
-  font-size: 1.05rem;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 250;
   line-height: 1;
-  opacity: 0.58;
   cursor: pointer;
   transition:
     color 160ms ease,
     background 160ms ease,
-    opacity 160ms ease;
+    transform 160ms ease;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-stage-mode-arrow:hover {
-  color: var(--dante-semantic-color-home-text-secondary);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control) 34%,
-    transparent
-  );
-  opacity: 0.9;
+  color: rgba(241, 245, 255, 0.88);
+  background: rgba(255, 255, 255, 0.035);
+  transform: translateY(-1px);
 }
 
 .home-m1
@@ -73,20 +122,17 @@
   .home-central-stage
   .home-stage-surface-label {
   display: grid;
+  width: auto;
   min-width: 92px;
   height: 32px;
   place-items: center;
   padding: 0 15px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 11px;
-  color: var(--dante-semantic-color-home-text-secondary);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control) 48%,
-    transparent
-  );
+  color: rgba(190, 199, 218, 0.72);
+  background: rgba(8, 14, 26, 0.26);
   box-shadow: none;
-  font-size: 0.62rem;
+  font-size: 10px;
   font-weight: 670;
   letter-spacing: 0.14em;
   line-height: 1;
@@ -95,13 +141,27 @@
 }
 
 /*
- * Expanded M1: preserve the accepted Worlds scale/spacing. ResizeObserver reads
- * this real scene width so DOM projection and canvas FX stay synchronized.
+ * Projection contract: both modes consume exactly the same M1 safe area.
+ * No mode is allowed to position itself against upper-workspace coordinates.
  */
+.home-m1 .home-upper-workspace .home-central-stage .home-world-scene,
+.home-m1 .home-upper-workspace .home-central-stage .home-stats-stage {
+  position: absolute;
+  top: var(--home-stage-projection-top);
+  right: var(--home-stage-projection-right);
+  bottom: var(--home-stage-projection-bottom);
+  left: var(--home-stage-projection-left);
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  transform: none;
+}
+
+/* Worlds keep the accepted prototype skin, only inside the safe viewport. */
 .home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
-  right: calc(-1 * var(--home-m1-world-inline-bleed));
-  left: calc(-1 * var(--home-m1-world-inline-bleed));
-  transform: translateY(var(--home-m1-world-shift));
+  right: 1.5%;
+  left: 1.5%;
 }
 
 .home-m1
@@ -113,99 +173,71 @@
 }
 
 .home-m1 .home-upper-workspace .home-central-stage .home-world-arrow {
-  top: auto;
-  bottom: calc(105px + var(--home-m1-world-shift));
-  transform: none;
+  top: 54%;
+  bottom: auto;
+  transform: translateY(-50%);
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-world-arrow-prev {
-  left: 7.2%;
+  left: 1.5%;
 }
 
 .home-m1
   .home-upper-workspace
   .home-central-stage
   .home-world-arrow-next {
-  right: 7.2%;
+  right: 1.5%;
 }
 
 /*
- * Collapsed desktop uses the already-frozen H1B stage rectangle. Only inner
- * Worlds placement changes; the stage rectangle itself remains owned by M1.
+ * H1B collapsed desktop already gives CentralStage a real, non-overlapping
+ * rectangle. Therefore its projection safe area is the whole local rectangle.
  */
 @media (min-width: 901px) {
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage {
-    --home-m1-world-shift: 0px;
-    --home-m1-world-inline-bleed: 2.5%;
-  }
-
-  .home-m1[data-home-ai-state='collapsed']
-    .home-upper-workspace
-    .home-central-stage
-    .home-stage-dock {
-    top: 21%;
+    --home-stage-selector-top: 21%;
+    --home-stage-projection-top: 0%;
+    --home-stage-projection-right: 0%;
+    --home-stage-projection-bottom: 0%;
+    --home-stage-projection-left: 0%;
   }
 
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage
     .home-world-scene {
-    transform: none;
-  }
-
-  .home-m1[data-home-ai-state='collapsed']
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow {
-    top: 54%;
-    bottom: auto;
-    transform: translateY(-50%);
+    right: 1.5%;
+    left: 1.5%;
   }
 
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage
     .home-world-arrow-prev {
-    left: 3.5%;
+    left: 1.5%;
   }
 
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage
     .home-world-arrow-next {
-    right: 3.5%;
+    right: 1.5%;
   }
 }
 
-@media (max-width: 1240px) {
-  .home-m1 .home-upper-workspace .home-central-stage {
-    --home-m1-world-inline-bleed: 4.5%;
-  }
-
-  .home-m1
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-prev {
-    left: 5.8%;
-  }
-
-  .home-m1
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-next {
-    right: 5.8%;
-  }
-}
-
+/* Mobile already separates Orientation and CentralStage into distinct rows. */
 @media (max-width: 900px) {
   .home-m1 .home-upper-workspace .home-central-stage {
-    --home-m1-world-shift: clamp(72px, 18%, 94px);
-    --home-m1-world-inline-bleed: 3%;
+    --home-stage-selector-top: 16%;
+    --home-stage-projection-top: 0%;
+    --home-stage-projection-right: 0%;
+    --home-stage-projection-bottom: 0%;
+    --home-stage-projection-left: 0%;
   }
 
   .home-m1
@@ -214,20 +246,6 @@
     .home-world
     .stellar-node {
     transform: translate(-50%, -50%) scale(1.1);
-  }
-
-  .home-m1
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-prev {
-    left: 4.5%;
-  }
-
-  .home-m1
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-next {
-    right: 4.5%;
   }
 }
 
