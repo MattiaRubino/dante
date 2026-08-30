@@ -5,8 +5,24 @@
   right: 2.5%;
   bottom: 54px;
   left: 2.5%;
+  display: none;
   overflow: hidden;
   color: #eef4ff;
+}
+
+.home-upper-workspace:has(
+    .home-central-stage[data-home-stage-mode='signals']
+  )
+  > .home-stats-stage {
+  display: block;
+}
+
+.home-upper-workspace:has(
+    .home-central-stage[data-home-stage-mode='signals']
+  )
+  .home-central-stage
+  .home-signal-track {
+  display: none !important;
 }
 
 .home-stats-track {
@@ -177,7 +193,9 @@
 
 .home-stat-bars .is-peak {
   opacity: 1;
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--stat-accent) 42%, transparent));
+  filter: drop-shadow(
+    0 0 7px color-mix(in srgb, var(--stat-accent) 42%, transparent)
+  );
 }
 
 .home-stat-area {
@@ -193,7 +211,9 @@
 }
 
 .home-stat-ring-value {
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--stat-accent) 32%, transparent));
+  filter: drop-shadow(
+    0 0 6px color-mix(in srgb, var(--stat-accent) 32%, transparent)
+  );
 }
 
 .home-stat-stack rect {
