@@ -71,6 +71,34 @@ export const TIMELINE_POLICY = {
     extendByDays: 3,
     maxPastDays: 14,
     maxFutureDays: 14,
+    extendPastTriggerPx: 420,
+    extendFutureTriggerPx: 500,
+  },
+  viewport: {
+    expandedMinWidthPx: 1121,
+    contextProbeRatio: 0.34,
+    nowOffsetRatio: 0.34,
+    nowOffsetMinPx: 80,
+    defaultGridHeightPx: 570,
+    initialExternalMinute: 8 * 60,
+    initialExternalOffsetPx: 70,
+    horizontalSyncTolerancePx: 0.5,
+  },
+  feedback: {
+    toastDurationMs: 5000,
+  },
+  expansion: {
+    trackChromeWidthPx: 60,
+    groupOpacityStart: 0.16,
+    groupOpacityRange: 0.52,
+    cardMinWidthPx: 24,
+    cardLaneGapPx: 8,
+    cardInsetPx: 4,
+    settledProgress: 0.98,
+    dragActivationDistancePx: 4,
+    settleThreshold: 0.5,
+    defaultContextRailWidthPx: 190,
+    minDragDistancePx: 110,
   },
   layout: {
     rulerWidthPx: 84,
@@ -107,4 +135,8 @@ export function timelineDragSnapMinutes(zoom: number): number {
   return zoom >= TIMELINE_POLICY.zoom.precisionThreshold
     ? TIMELINE_POLICY.drag.precisionSnapMinutes
     : TIMELINE_POLICY.drag.defaultSnapMinutes;
+}
+
+export function timelineSupportsExpandedLayout(viewportWidth: number): boolean {
+  return viewportWidth >= TIMELINE_POLICY.viewport.expandedMinWidthPx;
 }
