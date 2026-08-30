@@ -31,6 +31,8 @@ export const TIMELINE_POLICY = {
     min: 0.75,
     max: 2.1,
     precisionThreshold: 1.75,
+    wheelStepFactor: 1.12,
+    controlStepFactor: 1.18,
   },
   drag: {
     defaultSnapMinutes: 5,
@@ -39,6 +41,7 @@ export const TIMELINE_POLICY = {
     autoScrollEdgePx: 56,
     autoScrollMinPxPerSecond: 100,
     autoScrollMaxPxPerSecond: 700,
+    autoScrollMaxFrameSeconds: 0.05,
   },
   event: {
     readableHeightThresholdMinutes: {
@@ -99,6 +102,13 @@ export const TIMELINE_POLICY = {
     settleThreshold: 0.5,
     defaultContextRailWidthPx: 190,
     minDragDistancePx: 110,
+  },
+  grid: {
+    minorLineIntervalMinutes: 30,
+    majorLineIntervalMinutes: 60,
+    milestoneMinutes: [9 * 60, 18 * 60],
+    marginLabelCutoffMinute: 20 * 60,
+    marginLabelOffsetPx: 4,
   },
   layout: {
     rulerWidthPx: 84,
