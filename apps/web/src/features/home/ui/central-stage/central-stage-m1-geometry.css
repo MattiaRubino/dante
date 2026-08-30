@@ -39,9 +39,9 @@
 .home-m1 .home-upper-workspace .home-central-stage {
   --home-stage-selector-top: var(--home-m1-stage-selector-top);
   --home-stage-projection-top: var(--home-m1-stage-projection-top);
-  --home-stage-projection-right: 0%;
+  --home-stage-projection-right: 1.5%;
   --home-stage-projection-bottom: 0%;
-  --home-stage-projection-left: 0%;
+  --home-stage-projection-left: 1.5%;
 }
 
 .home-m1 .home-upper-workspace .home-central-stage::before {
@@ -159,11 +159,6 @@
 }
 
 /* Worlds keep the accepted prototype skin, only inside the safe viewport. */
-.home-m1 .home-upper-workspace .home-central-stage .home-world-scene {
-  right: 1.5%;
-  left: 1.5%;
-}
-
 .home-m1
   .home-upper-workspace
   .home-central-stage
@@ -202,31 +197,30 @@
     .home-central-stage {
     --home-stage-selector-top: 21%;
     --home-stage-projection-top: 28%;
-    --home-stage-projection-right: 0%;
+    --home-stage-projection-right: 1.5%;
     --home-stage-projection-bottom: 0%;
-    --home-stage-projection-left: 0%;
+    --home-stage-projection-left: 1.5%;
+  }
+
+  /* Use the extra collapsed workspace instead of leaving a dead lower band. */
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-layer,
+  .home-m1[data-home-ai-state='collapsed']
+    .home-upper-workspace
+    .home-central-stage
+    .home-world-fx {
+    transform: translateY(5%) scale(1.07);
+    transform-origin: 50% 54%;
   }
 
   .home-m1[data-home-ai-state='collapsed']
     .home-upper-workspace
     .home-central-stage
-    .home-world-scene {
-    right: 1.5%;
-    left: 1.5%;
-  }
-
-  .home-m1[data-home-ai-state='collapsed']
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-prev {
-    left: 1.5%;
-  }
-
-  .home-m1[data-home-ai-state='collapsed']
-    .home-upper-workspace
-    .home-central-stage
-    .home-world-arrow-next {
-    right: 1.5%;
+    .home-world-scene::before {
+    transform: translateY(5%) scale(1.07);
+    transform-origin: 50% 54%;
   }
 }
 
@@ -235,9 +229,9 @@
   .home-m1 .home-upper-workspace .home-central-stage {
     --home-stage-selector-top: 16%;
     --home-stage-projection-top: 24%;
-    --home-stage-projection-right: 0%;
+    --home-stage-projection-right: 1.5%;
     --home-stage-projection-bottom: 0%;
-    --home-stage-projection-left: 0%;
+    --home-stage-projection-left: 1.5%;
   }
 
   .home-m1
