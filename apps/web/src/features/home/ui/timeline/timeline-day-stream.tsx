@@ -30,7 +30,10 @@ import type {
   TimelineGroup,
   TimelineTimeMapper,
 } from './model/timeline-types';
-import { TimelineEventPeek } from './timeline-event-peek';
+import {
+  TIMELINE_EVENT_PEEK_ID,
+  TimelineEventPeek,
+} from './timeline-event-peek';
 
 export type TimelineRenderedDay = Readonly<{
   date: PlainDate;
@@ -117,6 +120,7 @@ function TimelineEventCard({
   groups,
   focusedEvent,
   selected,
+  peekOpen,
   expandedSubitems,
   filtered,
   onSelectEvent,
@@ -133,6 +137,7 @@ function TimelineEventCard({
   groups: readonly TimelineGroup[];
   focusedEvent: TimelineEvent | null;
   selected: boolean;
+  peekOpen: boolean;
   expandedSubitems: boolean;
   filtered: boolean;
   onSelectEvent: (event: TimelineEvent, opener: HTMLElement) => void;
@@ -223,8 +228,8 @@ function TimelineEventCard({
       tabIndex={0}
       aria-label={`${event.title}, ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
       aria-haspopup="dialog"
-      aria-expanded={selected}
-      aria-controls={selected ? 'timeline-event-peek' : undefined}
+      aria-expanded={peekOpen}
+      aria-controls={peekOpen ? TIMELINE_EVENT_PEEK_ID : undefined}
       aria-keyshortcuts="Enter Space Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
       onKeyDown={keyboardMove}
       onPointerDown={(pointerEvent) =>
@@ -327,6 +332,7 @@ function TimelineDay({
   state,
   focusedEvent,
   selectedEventId,
+  peekEventId,
   onSelectEvent,
   onPrepareOverlay,
   onToggleSubitems,
@@ -342,6 +348,7 @@ function TimelineDay({
   state: TimelineState;
   focusedEvent: TimelineEvent | null;
   selectedEventId: string | null;
+  peekEventId: string | null;
   onSelectEvent: (event: TimelineEvent, opener: HTMLElement) => void;
   onPrepareOverlay: (eventId: string) => void;
   onToggleSubitems: (eventId: string) => void;
@@ -459,6 +466,7 @@ function TimelineDay({
             groups={state.groups}
             focusedEvent={focusedEvent}
             selected={selectedEventId === layout.event.id}
+            peekOpen={peekEventId === layout.event.id}
             expandedSubitems={state.expandedEventIds.has(layout.event.id)}
             filtered={
               state.filters.size > 0 && !state.filters.has(layout.event.groupId)
@@ -945,6 +953,7 @@ export function TimelineDayStream({
               state={state}
               focusedEvent={focusedEvent}
               selectedEventId={selectedEventId}
+              peekEventId={peekState?.eventId ?? null}
               key={day.dateKey}
               onSelectEvent={selectEvent}
               onPrepareOverlay={prepareOverlay}
@@ -1005,7 +1014,6 @@ export function TimelineDayStream({
           event={peekEvent}
           group={peekGroup}
           opener={peekState.opener}
-          gridRef={gridRef}
           focused={state.focusedEventId === peekEvent.id}
           onDismiss={clearSelection}
           onHandoff={() => setPeekState(null)}
