@@ -254,7 +254,9 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
       normalizeTraceContextField(payload);
       break;
     case 'measurement': {
-      normalizeStringRecordField(payload, 'context');
+      // Web Vitals context includes browser/DOM/navigation identifiers. The
+      // metric name and numeric values are sufficient for DANTE operations.
+      delete payload.context;
       normalizeTraceContextField(payload);
       const values = normalizeNumericRecord(payload.values);
       if (values === undefined) {
