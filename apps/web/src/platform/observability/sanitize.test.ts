@@ -156,6 +156,7 @@ describe('browser telemetry sanitization', () => {
       type: 'measurement',
       meta: {},
       payload: {
+        browser_mobile: false,
         context: {
           element: 'main>section>input#private-id',
           id: 'v6-1788116460400-6582841316571',
@@ -163,6 +164,7 @@ describe('browser telemetry sanitization', () => {
           navigation_type: 'reload',
           rating: 'good',
         },
+        event_data_resource_name: 'https://dante.example/private-resource',
         values: { lcp: 92, resource_load_delay: 68 },
       },
     } as unknown as TransportItem;
@@ -172,6 +174,8 @@ describe('browser telemetry sanitization', () => {
     };
 
     expect(sanitized.payload).not.toHaveProperty('context');
+    expect(sanitized.payload).not.toHaveProperty('browser_mobile');
+    expect(sanitized.payload).not.toHaveProperty('event_data_resource_name');
     expect(sanitized.payload.values).toEqual({
       lcp: 92,
       resource_load_delay: 68,
