@@ -20,6 +20,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from dante.auth.apple_crypto import AppleGrantCipher
 from dante.auth.contracts import (
     AccountUnavailableError,
     AdmittedSession,
@@ -40,6 +41,7 @@ from dante.auth.passwords import (
     PasswordKdf,
     normalize_password_for_authentication,
 )
+from dante.auth.provider_runtime import ProviderRuntime
 from dante.auth.sessions import (
     decode_session_secret,
     derive_csrf_token,
@@ -47,6 +49,7 @@ from dante.auth.sessions import (
     session_secret_verifier,
     session_secret_verifier_from_raw,
 )
+from dante.auth.webauthn import WebAuthnPolicy
 from dante.platform.config.auth import AuthSettings
 from dante.platform.database.mappings.auth import (
     AccountRow,
@@ -531,6 +534,9 @@ class AuthRuntime:
     service: AuthService
     password_kdf: PasswordKdf
     http_client: httpx2.AsyncClient
+    provider_runtime: ProviderRuntime
+    apple_grant_cipher: AppleGrantCipher | None
+    webauthn_policy: WebAuthnPolicy | None
     _resources: AsyncExitStack
 
     async def aclose(self) -> None:
@@ -573,6 +579,27 @@ async def create_auth_runtime(
         )
         resources.push_async_callback(http_client.aclose)
 
+        provider_runtime = ProviderRuntime(
+            settings=settings.provider,
+            release_sha=release_sha,
+        )
+        resources.push_async_callback(provider_runtime.aclose)
+
+        apple = settings.provider.apple
+        apple_grant_cipher = (
+            AppleGrantCipher(
+                key_ring=apple.grant_encryption_key_bytes,
+                current_key_id=apple.grant_encryption_current_key_id,
+            )
+            if apple.grant_encryption_current_key_id is not None
+            else None
+        )
+        webauthn_policy = (
+            WebAuthnPolicy.from_settings(settings.provider.webauthn)
+            if settings.provider.webauthn.enabled
+            else None
+        )
+
         breach_checker = HibpPasswordChecker(
             client=http_client,
             max_response_bytes=settings.hibp_max_response_bytes,
@@ -593,6 +620,9 @@ async def create_auth_runtime(
             service=service,
             password_kdf=password_kdf,
             http_client=http_client,
+            provider_runtime=provider_runtime,
+            apple_grant_cipher=apple_grant_cipher,
+            webauthn_policy=webauthn_policy,
             _resources=resources,
         )
     except BaseException:
