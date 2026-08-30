@@ -18,6 +18,8 @@ from dante.auth.contracts import (
     AdmittedSession,
     Principal,
     ProviderAuthenticated,
+    ProviderAuthenticationBegun,
+    ProviderAuthenticationResult,
     ProviderEnrollmentRequired,
     ProviderLinkRequired,
     ProviderPurpose,
@@ -193,7 +195,7 @@ async def _begin_and_complete(
     service: ProviderFlowService,
     *,
     source: str,
-):
+) -> tuple[ProviderAuthenticationBegun, ProviderAuthenticationResult]:
     begun = await service.begin_google(
         purpose=ProviderPurpose.SIGN_IN,
         return_target=ProviderReturnTarget.ACCESS,
