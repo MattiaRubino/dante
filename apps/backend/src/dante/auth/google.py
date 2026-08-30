@@ -21,7 +21,7 @@ _MAX_PROFILE_NAME_LENGTH = 256
 _MAX_PROFILE_PART_LENGTH = 128
 _MAX_LOCALE_LENGTH = 64
 _MAX_PICTURE_URL_LENGTH = 2048
-_MAX_IAT_FUTURE_SKEW_SECONDS = 60
+_MAX_CLOCK_SKEW_SECONDS = 60
 
 
 class GoogleProofError(ValueError):
@@ -136,10 +136,16 @@ class GoogleTokenVerifier:
         if expires_at <= now_timestamp:
             raise GoogleProofError("Google ID token is expired")
 
+        not_before_claim = claims.get("nbf")
+        if not_before_claim is not None:
+            not_before = self._numeric_date(not_before_claim, name="nbf")
+            if not_before > now_timestamp + _MAX_CLOCK_SKEW_SECONDS:
+                raise GoogleProofError("Google ID token is not yet valid")
+
         issued_at_claim = claims.get("iat")
         if issued_at_claim is not None:
             issued_at = self._numeric_date(issued_at_claim, name="iat")
-            if issued_at > now_timestamp + _MAX_IAT_FUTURE_SKEW_SECONDS:
+            if issued_at > now_timestamp + _MAX_CLOCK_SKEW_SECONDS:
                 raise GoogleProofError("Google ID token issue time is in the future")
 
         nonce = self._required_string(claims, "nonce", maximum=512)
@@ -161,9 +167,11 @@ class GoogleTokenVerifier:
 
         hosted_domain = self._hosted_domain(claims.get("hd"))
         mailbox_authoritative = False
-        if email is not None and email_verified:
+        if email is not None:
             domain = email.comparison_key.rsplit("@", 1)[1]
-            mailbox_authoritative = domain == "gmail.com" or hosted_domain is not None
+            mailbox_authoritative = domain == "gmail.com" or (
+                email_verified and hosted_domain is not None
+            )
 
         return GoogleIdentityEvidence(
             issuer=GOOGLE_ISSUER,
