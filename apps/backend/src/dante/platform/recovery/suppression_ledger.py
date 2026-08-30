@@ -264,10 +264,29 @@ def commit_after_canonical_verification(
 def load_committed_suppressions(root: Path) -> tuple[PreparedSuppression, ...]:
     """Return verified committed suppressions; any ambiguity blocks recovery."""
     records = root / "records"
-    if not records.exists():
-        return ()
-    prepared_paths = {path.name.removesuffix(".prepared.json"): path for path in records.glob("*.prepared.json")}
-    committed_paths = {path.name.removesuffix(".committed.json"): path for path in records.glob("*.committed.json")}
+    if not records.is_dir():
+        raise RecoverySuppressionBlocked("suppression ledger records directory is unavailable")
+
+    entries = tuple(records.iterdir())
+    unexpected = sorted(
+        path.name
+        for path in entries
+        if not path.is_file()
+        or not (path.name.endswith(".prepared.json") or path.name.endswith(".committed.json"))
+    )
+    if unexpected:
+        raise RecoverySuppressionBlocked(f"unexpected suppression ledger entries: {unexpected}")
+
+    prepared_paths = {
+        path.name.removesuffix(".prepared.json"): path
+        for path in entries
+        if path.name.endswith(".prepared.json")
+    }
+    committed_paths = {
+        path.name.removesuffix(".committed.json"): path
+        for path in entries
+        if path.name.endswith(".committed.json")
+    }
     if set(prepared_paths) != set(committed_paths):
         missing_commit = sorted(set(prepared_paths) - set(committed_paths))
         missing_prepare = sorted(set(committed_paths) - set(prepared_paths))
