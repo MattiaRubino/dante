@@ -152,7 +152,7 @@ describe('TimelineSurface production parity', () => {
     expect(endMinute.value).toBe('05');
   });
 
-  it('transfers event focus before enabling inline actions on another card', () => {
+  it('consumes the first outside-card interaction only to clear the current focus', () => {
     const { container } = renderTimeline();
     const focusedCard = container.querySelector<HTMLElement>(
       '[data-timeline-event="7"]',
@@ -160,8 +160,10 @@ describe('TimelineSurface production parity', () => {
     const targetCard = container.querySelector<HTMLElement>(
       '[data-timeline-event="12"]',
     );
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
     expect(focusedCard).toBeTruthy();
     expect(targetCard).toBeTruthy();
+    expect(grid).toBeTruthy();
 
     fireEvent.click(focusedCard as HTMLElement);
     expect(focusedCard?.classList.contains('is-focused')).toBe(true);
@@ -175,7 +177,8 @@ describe('TimelineSurface production parity', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Modifica orario' }),
     ).toBeNull();
-    expect(targetCard?.classList.contains('is-focused')).toBe(true);
+    expect(focusedCard?.classList.contains('is-focused')).toBe(false);
+    expect(targetCard?.classList.contains('is-focused')).toBe(false);
 
     const enabledTargetTime = screen.getByRole('button', {
       name: 'Modifica orario di Promemoria',
@@ -185,6 +188,12 @@ describe('TimelineSurface production parity', () => {
     expect(
       screen.getByRole('dialog', { name: 'Modifica orario' }),
     ).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(focusedCard as HTMLElement);
+    expect(focusedCard?.classList.contains('is-focused')).toBe(true);
+    fireEvent.click(grid as HTMLElement);
+    expect(focusedCard?.classList.contains('is-focused')).toBe(false);
   });
 
   it('exposes group split as a real semantic expansion command', () => {
