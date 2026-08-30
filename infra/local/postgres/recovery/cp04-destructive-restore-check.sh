@@ -13,8 +13,8 @@ TEST_CONTAINER="dante-postgres-recovery-cp04-restore"
 BACKUP_LABEL_FILE="infra/compose/secrets/postgres_recovery_cp04_backup_label.local"
 RUNTIME_SECRET="infra/compose/secrets/postgres_recovery_runtime_password.local"
 FIXTURE_REF="01993f19-9c00-7000-8000-000000000001"
-EXPECTED_ALEMBIC="20260826_08"
-EXPECTED_TOPOLOGY="68|5|14|75|95|68|120|0|0|0"
+EXPECTED_ALEMBIC="20260830_09"
+EXPECTED_TOPOLOGY="69|5|15|76|97|69|123|0|0|0"
 SOURCE_MARKER="/var/lib/postgresql/CP04_SOURCE_VOLUME_MUST_NOT_SURVIVE"
 
 cd "$REPO_ROOT"
@@ -29,7 +29,7 @@ die() {
   exit 1
 }
 
-echo "=== DANTE CP04 — destructive / isolated restore ==="
+echo "=== DANTE CP04 — destructive / isolated restore of current database ==="
 
 test "$(git branch --show-current)" = "feature/postgres-recovery" || die "wrong Git branch"
 test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feature/postgres-recovery)" || die "local HEAD differs from origin"
@@ -49,6 +49,9 @@ test "$backup_found" = "yes" || die "backup $backup_label not present"
 fixture_before="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT count(*) FROM dante.person WHERE person_ref='${FIXTURE_REF}'::uuid;")"
 test "$fixture_before" = "1" || die "canonical fixture missing before destruction"
 
+source_head="$(compose exec -T --user postgres postgres psql -X -d dante -Atqc "SELECT version_num FROM dante.alembic_version;")"
+test "$source_head" = "$EXPECTED_ALEMBIC" || die "source Alembic=$source_head expected=$EXPECTED_ALEMBIC"
+
 repo_hash_before="$(compose exec -T --user postgres postgres sha256sum /var/lib/pgbackrest/backup/dante/backup.info | awk '{print $1}')"
 test -n "$repo_hash_before" || die "cannot hash repository metadata"
 
@@ -60,7 +63,7 @@ echo "Backup:            $backup_label"
 echo "Fixture:           $FIXTURE_REF"
 echo "PGDATA volume:     $PGVOL"
 echo "Repository volume: $REPOVOL"
-echo "Source marker:      $marker_token"
+echo "Source marker:     $marker_token"
 echo
 echo "THIS WILL DELETE ONLY: $PGVOL"
 echo "THIS WILL NOT DELETE:  $REPOVOL"
@@ -94,9 +97,6 @@ echo "OLD SOURCE VOLUME ABSENCE: PASS"
 compose run --rm --no-deps --user root --entrypoint /usr/bin/pgbackrest postgres --stanza=dante --set="$backup_label" --archive-mode=off --log-level-console=info restore
 echo "PGBACKREST RESTORE COMMAND: PASS"
 
-# pgBackRest restores PGDATA ownership correctly, but on a brand-new PostgreSQL 18 volume
-# the version parent can be created by the root restore process. Normalize only that parent
-# before the official entrypoint drops privileges to postgres.
 docker run --rm --entrypoint sh -v "${PGVOL}:/var/lib/postgresql" "$IMAGE" -lc '
   set -eu
   chown postgres:postgres /var/lib/postgresql/18
@@ -136,7 +136,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 [ "$recovery_done" = "1" ] || { docker logs "$TEST_CONTAINER"; die "restored PostgreSQL did not finish recovery"; }
-echo "RESTORED POSTGRESQL READY: PASS"
+echo "RESTORED POSTGRESQL READY / NOT IN RECOVERY: PASS"
 
 archive_mode="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SHOW archive_mode;")"
 test "$archive_mode" = "off" || die "archive_mode=$archive_mode"
@@ -162,6 +162,10 @@ test "$topology" = "$EXPECTED_TOPOLOGY" || die "topology=$topology"
 
 fixture_after="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SELECT count(*) FROM dante.person WHERE person_ref='${FIXTURE_REF}'::uuid;")"
 test "$fixture_after" = "1" || die "canonical fixture not restored exactly once"
+retirement_table="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SELECT to_regclass('dante.material_state_retirement') IS NOT NULL;")"
+test "$retirement_table" = "t" || die "current retirement table missing after restore"
+runtime_retirement="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SELECT has_table_privilege('dante_runtime','dante.material_state_retirement','SELECT')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','INSERT')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','UPDATE')::text || '|' || has_table_privilege('dante_runtime','dante.material_state_retirement','DELETE')::text;")"
+test "$runtime_retirement" = "true|false|false|false" || die "unexpected runtime retirement ACL=$runtime_retirement"
 owners="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SELECT string_agg(owner, ',' ORDER BY owner) FROM (SELECT DISTINCT pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='dante' AND c.relname<>'alembic_version') x;")"
 test "$owners" = "dante_owner" || die "owners=$owners"
 roles="$(docker exec --user postgres "$TEST_CONTAINER" psql -X -d dante -Atqc "SELECT string_agg(rolname, ',' ORDER BY rolname) FROM pg_roles WHERE rolname IN ('dante_owner','dante_migrator','dante_runtime');")"
@@ -176,18 +180,20 @@ test "$repo_hash_after_restore" = "$repo_hash_before" || die "repository metadat
 runtime_fixture="$(docker exec -e PGPASSWORD="$(cat "$RUNTIME_SECRET")" "$TEST_CONTAINER" psql -X -h 127.0.0.1 -p 5432 -U dante_runtime -d dante -Atqc "SELECT person_ref FROM dante.person WHERE person_ref='${FIXTURE_REF}'::uuid;")"
 test "$runtime_fixture" = "$FIXTURE_REF" || die "dante_runtime cannot read restored fixture"
 
-echo "PGDATA destructive replacement           PASS"
-echo "old source-volume marker absent         PASS"
-echo "repository survived unchanged           PASS"
-echo "pgBackRest exact-set restore            PASS"
-echo "restore parent permission normalization PASS"
-echo "PostgreSQL 18.6                         PASS"
-echo "archive_mode off on isolated target     PASS"
-echo "Alembic 20260826_08                     PASS"
-echo "topology 68/5/14/75/95/68/120          PASS"
-echo "canonical Person fixture                PASS"
-echo "DANTE owners / roles / ACL              PASS"
-echo "required extensions                     PASS"
-echo "dante_runtime restored login/read path  PASS"
+echo "PGDATA destructive replacement            PASS"
+echo "old source-volume marker absent          PASS"
+echo "repository survived unchanged            PASS"
+echo "pgBackRest exact-set restore             PASS"
+echo "restore parent permission normalization  PASS"
+echo "PostgreSQL 18.6                          PASS"
+echo "archive_mode off on isolated target      PASS"
+echo "pg_is_in_recovery=false                  PASS"
+echo "Alembic $EXPECTED_ALEMBIC                PASS"
+echo "topology $EXPECTED_TOPOLOGY              PASS"
+echo "material_state_retirement + runtime ACL  PASS"
+echo "canonical Person fixture                 PASS"
+echo "DANTE owners / roles / ACL               PASS"
+echo "required extensions                      PASS"
+echo "dante_runtime restored login/read path   PASS"
 echo "=== CP04 DESTRUCTIVE / ISOLATED RESTORE: LOCAL PASS CANDIDATE ==="
 echo "Leave $TEST_CONTAINER running with archive_mode=off until evidence is reconciled."
