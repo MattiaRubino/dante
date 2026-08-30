@@ -360,6 +360,7 @@ function TimelineDay({
   const gaps = state.viewOptions.showMargins
     ? computeTimelineGaps(day.events)
     : [];
+  const gridPolicy = TIMELINE_POLICY.grid;
 
   return (
     <section
@@ -370,9 +371,15 @@ function TimelineDay({
     >
       <div className="timeline-day-section__label">{fullLabel}</div>
 
-      {Array.from({ length: 49 }, (_, index) => index * 30).map((minute) => (
+      {Array.from(
+        {
+          length:
+            TIMELINE_MINUTES_PER_DAY / gridPolicy.minorLineIntervalMinutes + 1,
+        },
+        (_, index) => index * gridPolicy.minorLineIntervalMinutes,
+      ).map((minute) => (
         <span
-          className={`timeline-hour-line${minute % 60 ? ' is-minor' : ''}`}
+          className={`timeline-hour-line${minute % gridPolicy.majorLineIntervalMinutes ? ' is-minor' : ''}`}
           key={minute}
           style={{ top: day.mapper.map(minute) }}
           aria-hidden="true"
@@ -390,7 +397,7 @@ function TimelineDay({
       ) : null}
 
       {isToday && state.viewOptions.showMilestones
-        ? [9 * 60, 18 * 60].map((minute) => (
+        ? gridPolicy.milestoneMinutes.map((minute) => (
             <span
               className="timeline-milestone"
               key={minute}
@@ -409,12 +416,14 @@ function TimelineDay({
       </div>
 
       {gaps
-        .filter((gap) => gap.fromMinute <= 20 * 60)
+        .filter((gap) => gap.fromMinute <= gridPolicy.marginLabelCutoffMinute)
         .map((gap) => (
           <span
             className="timeline-margin-label"
             key={`${gap.fromMinute}-${gap.toMinute}`}
-            style={{ top: day.mapper.map(gap.fromMinute) + 4 }}
+            style={{
+              top: day.mapper.map(gap.fromMinute) + gridPolicy.marginLabelOffsetPx,
+            }}
             aria-hidden="true"
           >
             {gap.durationMinutes} min
@@ -524,7 +533,7 @@ export function TimelineDayStream({
 
     const previousTime = runtime.lastAutoFrame || time;
     const elapsedSeconds = Math.min(
-      0.05,
+      TIMELINE_POLICY.drag.autoScrollMaxFrameSeconds,
       Math.max(0, time - previousTime) / 1000,
     );
     runtime.lastAutoFrame = time;
@@ -794,17 +803,24 @@ export function TimelineDayStream({
               key={day.dateKey}
               style={{ height: day.height }}
             >
-              {Array.from({ length: 25 }, (_, index) => index * 60).map(
-                (minute) => (
-                  <span
-                    className="timeline-ruler-label"
-                    key={minute}
-                    style={{ top: day.mapper.map(minute) }}
-                  >
-                    {formatTimelineMinute(minute)}
-                  </span>
-                ),
-              )}
+              {Array.from(
+                {
+                  length:
+                    TIMELINE_MINUTES_PER_DAY /
+                      TIMELINE_POLICY.grid.majorLineIntervalMinutes +
+                    1,
+                },
+                (_, index) =>
+                  index * TIMELINE_POLICY.grid.majorLineIntervalMinutes,
+              ).map((minute) => (
+                <span
+                  className="timeline-ruler-label"
+                  key={minute}
+                  style={{ top: day.mapper.map(minute) }}
+                >
+                  {formatTimelineMinute(minute)}
+                </span>
+              ))}
             </div>
           ))}
         </div>
@@ -817,9 +833,10 @@ export function TimelineDayStream({
         onWheel={(wheelEvent) => {
           if (wheelEvent.ctrlKey) {
             wheelEvent.preventDefault();
+            const factor = TIMELINE_POLICY.zoom.wheelStepFactor;
             onZoomAt(
               wheelEvent.clientY,
-              wheelEvent.deltaY < 0 ? 1.12 : 1 / 1.12,
+              wheelEvent.deltaY < 0 ? factor : 1 / factor,
             );
             return;
           }
@@ -868,7 +885,10 @@ export function TimelineDayStream({
             const grid = gridRef.current;
             if (grid) {
               const rect = grid.getBoundingClientRect();
-              onZoomAt(rect.top + grid.clientHeight / 2, 1 / 1.18);
+              onZoomAt(
+                rect.top + grid.clientHeight / 2,
+                1 / TIMELINE_POLICY.zoom.controlStepFactor,
+              );
             }
           }}
           aria-label={t(($) => $.common.home.timeline.zoom.out)}
@@ -881,7 +901,10 @@ export function TimelineDayStream({
             const grid = gridRef.current;
             if (grid) {
               const rect = grid.getBoundingClientRect();
-              onZoomAt(rect.top + grid.clientHeight / 2, 1.18);
+              onZoomAt(
+                rect.top + grid.clientHeight / 2,
+                TIMELINE_POLICY.zoom.controlStepFactor,
+              );
             }
           }}
           aria-label={t(($) => $.common.home.timeline.zoom.in)}
