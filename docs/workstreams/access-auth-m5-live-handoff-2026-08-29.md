@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M5 Live Handoff — 2026-08-29
 
-- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-A COMPLETE / M5-B NEXT
+- **Status:** CURRENT CONTINUATION SAVE-GAME / M5.1–M5-B COMPLETE / M5-C NEXT
 - **Vertical:** Access/Auth
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
+- **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
 - **M4 implementation checkpoint:** `c95e3b2ca664725bcacc374cb5ba6ed49409fe2b`
 - **M4 documentation closure:** `a95955da72cbb9119982aa1544c2aaa356fc5e6a`
@@ -13,7 +14,7 @@
 - **M5.2 exact persistence/API authority:** `../architecture/access-auth-m5-persistence-api-contract.md`
 - **Forward plan:** `access-auth-m4-m7-execution-plan.md`
 
-> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-B.
+> This file is the live save-game for continuation. Repository truth wins if the branch has moved after this handoff. A new chat should not replay the conversation or redo broad M5 research; it should verify current branch state, read the authorities above, and continue from M5-C.
 
 ---
 
@@ -65,7 +66,7 @@ Recommended read order:
 11. current Access/Auth Dictionary entries
 12. CP6 persistence constitution
 13. `docs/frontend/access.md`
-14. current backend/Web implementation and tests for the exact M5-B slice
+14. current backend implementation/tests for the exact M5-C slice
 
 ---
 
@@ -88,7 +89,7 @@ real boundary proof rather than mock-only confidence
 no gratuitous enterprise theatre/overengineering without consumer value
 ```
 
-Testing preference retained from M4/M5-A:
+Testing preference retained from M4/M5-A/M5-B:
 
 ```text
 prove each invariant at the truthful layer
@@ -223,10 +224,8 @@ M5.1 external-authority/benchmark freeze    COMPLETE
 M5.1 architecture/security freeze           COMPLETE
 M5.2 persistence/API design                 COMPLETE
 M5-A persistence implementation             COMPLETE / POSTGRESQL PROVEN
-M5 Database Dictionary materialization      COMPLETE
-M5 SQLAlchemy materialization               COMPLETE
-M5 Alembic migration                        COMPLETE / 20260830_12
-M5 dependency/runtime infrastructure        NOT STARTED / M5-B NEXT
+M5-B dependency/runtime infrastructure      COMPLETE / ENGINEERING PASS
+M5-C Google authentication                  NEXT
 M5 OpenAPI/client materialization           NOT STARTED
 M5 Web runtime integration                  NOT STARTED
 ```
@@ -238,7 +237,7 @@ docs/architecture/access-auth-m5-contract.md
 docs/architecture/access-auth-m5-persistence-api-contract.md
 ```
 
-Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-B starts from the frozen contracts plus the accepted M5-A persistence reality.
+Do not perform another broad “what should Google/Apple/passkeys do?” discovery sweep unless provider standards materially changed. M5-C starts from the frozen contracts, accepted M5-A persistence reality and accepted M5-B trust/runtime foundation.
 
 ---
 
@@ -359,7 +358,7 @@ private-email/reachability semantics
 security/authentication claims actually supplied
 ```
 
-Apple name may be one-shot. M5-A now has bounded `account_profile_bootstrap` staging so later lifecycle code does not lose it or dump profile fields into Account/ExternalIdentity.
+Apple name may be one-shot. M5-A has bounded `account_profile_bootstrap` staging so later lifecycle code does not lose it or dump profile fields into Account/ExternalIdentity.
 
 ---
 
@@ -432,50 +431,105 @@ no biometric/PIN material
 
 ---
 
-# 9. Exact next work — M5-B
+# 9. M5-B accepted trust/runtime foundation
 
 ```text
-M5-B — provider transaction + JOSE/JWK/AEAD infrastructure
-NEXT
+M5-B — provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure
+COMPLETE / ENGINEERING PASS
 ```
 
-M5-B must qualify and materialize shared infrastructure before provider product flows:
+Accepted implementation checkpoint:
 
 ```text
-current dependency/advisory/Python 3.14 review
-uv deterministic lock
-explicit JOSE algorithm allowlists
-typed Google/Apple/WebAuthn settings
-bounded provider/JWK HTTP clients
-coordinated JWK refresh/cache
-AEAD key ring for Apple grant secrets
-purpose-separated flow-verifier helpers
-logging/redaction policy
-clean process lifecycle/shutdown
-focused cryptographic/protocol vectors
-Ruff/mypy/tests/build
+e2d40a7666e3c0130afecd8113b8063390b86b9d
+chore(auth): finalize M5-B lock and formatting
 ```
 
-Candidate baseline from M5.2:
+Accepted dependency/runtime baseline:
 
 ```text
 fido2         2.2.1
 joserfc       1.7.4
-cryptography  50.0.x baseline
-existing httpx
+cryptography  50.0.1
+httpx2        existing runtime
+Python        3.14
+uv            0.12.5
 ```
 
-Do not blindly pin stale candidate versions; recheck current truth at M5-B start.
+Accepted infrastructure:
 
-No provider/JWK/token network call may run inside an authoritative DB transaction.
+```text
+typed provider settings + safe disabled defaults
+bounded provider/JWK network runtime
+trusted configured JWKS source only
+coordinated JWK cache/conditional refresh/unknown-kid cooldown
+strict RS256 JOSE boundary + canonical unpadded Base64URL segments
+Apple AES-256-GCM grant key ring + 12-byte nonce + stable AAD
+purpose-separated 256-bit provider/link/enrollment/WebAuthn proofs
+FIDO2 RP/origin policy baseline
+single process-scoped AuthRuntime ownership / clean shutdown
+no provider network I/O at startup
+```
+
+Accepted closeout proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / lint                 PASS
+mypy strict                                  PASS / 73 source files
+backend fast                                 127 / 127 PASS
+backend build                                PASS
+git diff --check                             PASS
+```
+
+No PostgreSQL rerun was required because M5-B changes no schema/Alembic/Dictionary/DB contract.
 
 ---
 
-# 10. Forward execution
+# 10. Exact next work — M5-C
 
 ```text
-M5-B  provider/JWK/JOSE/AEAD infrastructure        NEXT
-M5-C  Google authentication                        PLANNED
+M5-C — Google Authentication + Account Creation / Collision
+NEXT
+```
+
+M5-C must consume the accepted M5-B runtime without creating a second provider/session authority.
+
+Exact product boundary:
+
+```text
+Google GIS/OIDC authentication
+begin/complete transaction lifecycle
+provider ID-token cryptographic verification via trusted JWK runtime
+provider claim semantics: issuer/audience/azp/nonce/expiry/subject
+known ExternalIdentity signin
+new Account path only under frozen mailbox-authority rules
+email collision → explicit link_required state, never silent merge
+provider enrollment state when mailbox authority is insufficient
+provider reauthentication and Settings-link semantics only as frozen by M5 contract
+canonical DANTE AuthSession issuance only
+provider bootstrap staging without overwriting DANTE-owned values
+```
+
+Still out of scope until later slices:
+
+```text
+Apple callback/code exchange/grant notifications
+provider unlink/authenticator management
+full WebAuthn ceremonies
+password lifecycle adaptation
+public M5 FastAPI/OpenAPI/generated client
+Access Web UI
+real provider/browser final M5 acceptance
+Gmail/Calendar/Drive integration scopes
+```
+
+---
+
+# 11. Forward execution
+
+```text
+M5-C  Google authentication                        NEXT
 M5-D  Apple auth + grant/notifications             PLANNED
 M5-E  explicit linking/authenticator lifecycle     PLANNED
 M5-F  WebAuthn/passkeys                            PLANNED
@@ -490,7 +544,7 @@ M7    Security + Observability + final handoff      PLANNED
 
 ---
 
-# 11. Testing / acceptance posture
+# 12. Testing / acceptance posture
 
 Mandatory layers through later M5:
 
@@ -521,7 +575,7 @@ explicit user acceptance
 
 ---
 
-# 12. Whole-vertical state
+# 13. Whole-vertical state
 
 ```text
 M1 CLOSED
@@ -532,7 +586,8 @@ M5 ACTIVE
   M5.1 COMPLETE
   M5.2 COMPLETE
   M5-A COMPLETE / POSTGRESQL PROVEN
-  M5-B NEXT
+  M5-B COMPLETE / ENGINEERING PASS
+  M5-C NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
