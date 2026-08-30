@@ -207,6 +207,25 @@ function normalizeStringRecordField(
   record[field] = normalized;
 }
 
+function normalizeTraceContextField(record: SanitizedRecord): void {
+  const source = record.trace;
+  if (!isRecord(source)) {
+    delete record.trace;
+    return;
+  }
+
+  const traceId = source.trace_id ?? source.traceId;
+  const spanId = source.span_id ?? source.spanId;
+  if (typeof traceId !== 'string' || typeof spanId !== 'string') {
+    delete record.trace;
+    return;
+  }
+  record.trace = {
+    trace_id: sanitizeText(traceId),
+    span_id: sanitizeText(spanId),
+  };
+}
+
 function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
   if (!isRecord(item) || !isRecord(item.payload)) {
     return null;
@@ -230,13 +249,16 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
   switch (item.type) {
     case 'event':
       normalizeStringRecordField(payload, 'attributes');
+      normalizeTraceContextField(payload);
       break;
     case 'exception':
     case 'log':
       normalizeStringRecordField(payload, 'context');
+      normalizeTraceContextField(payload);
       break;
     case 'measurement': {
       normalizeStringRecordField(payload, 'context');
+      normalizeTraceContextField(payload);
       const values = normalizeNumericRecord(payload.values);
       if (values === undefined) {
         delete payload.values;

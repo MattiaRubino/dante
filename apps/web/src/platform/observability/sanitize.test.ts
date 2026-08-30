@@ -112,6 +112,39 @@ describe('browser telemetry sanitization', () => {
     expect(sanitized.payload).not.toHaveProperty('attributes');
   });
 
+  it('normalizes or removes trace context at the Alloy protocol boundary', () => {
+    const item = {
+      type: 'measurement',
+      meta: {},
+      payload: {
+        context: {},
+        trace: {
+          traceId: '0123456789abcdef0123456789abcdef',
+          spanId: '0123456789abcdef',
+        },
+        values: { duration: 12.5 },
+      },
+    } as unknown as TransportItem;
+    const malformedItem = {
+      type: 'measurement',
+      meta: {},
+      payload: { trace: 'not-a-trace-context' },
+    } as unknown as TransportItem;
+
+    const sanitized = sanitizeTransportItem(item) as unknown as {
+      payload: Record<string, unknown>;
+    };
+    const malformed = sanitizeTransportItem(malformedItem) as unknown as {
+      payload: Record<string, unknown>;
+    };
+
+    expect(sanitized.payload.trace).toEqual({
+      trace_id: '0123456789abcdef0123456789abcdef',
+      span_id: '0123456789abcdef',
+    });
+    expect(malformed.payload).not.toHaveProperty('trace');
+  });
+
   it('handles circular objects and accessors without evaluating untrusted code', () => {
     const getter = vi.fn(() => 'never-read-this');
     const attributes: Record<string, unknown> = {};
