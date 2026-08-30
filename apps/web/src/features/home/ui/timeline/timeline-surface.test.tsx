@@ -152,6 +152,41 @@ describe('TimelineSurface production parity', () => {
     expect(endMinute.value).toBe('05');
   });
 
+  it('transfers event focus before enabling inline actions on another card', () => {
+    const { container } = renderTimeline();
+    const focusedCard = container.querySelector<HTMLElement>(
+      '[data-timeline-event="7"]',
+    );
+    const targetCard = container.querySelector<HTMLElement>(
+      '[data-timeline-event="12"]',
+    );
+    expect(focusedCard).toBeTruthy();
+    expect(targetCard).toBeTruthy();
+
+    fireEvent.click(focusedCard as HTMLElement);
+    expect(focusedCard?.classList.contains('is-focused')).toBe(true);
+
+    const targetTime = screen.getByRole('button', {
+      name: 'Modifica orario di Promemoria',
+    });
+    expect(targetTime.tabIndex).toBe(-1);
+
+    fireEvent.click(targetTime);
+    expect(
+      screen.queryByRole('dialog', { name: 'Modifica orario' }),
+    ).toBeNull();
+    expect(targetCard?.classList.contains('is-focused')).toBe(true);
+
+    const enabledTargetTime = screen.getByRole('button', {
+      name: 'Modifica orario di Promemoria',
+    });
+    expect(enabledTargetTime.tabIndex).toBe(0);
+    fireEvent.click(enabledTargetTime);
+    expect(
+      screen.getByRole('dialog', { name: 'Modifica orario' }),
+    ).toBeTruthy();
+  });
+
   it('exposes group split as a real semantic expansion command', () => {
     const { onExpandedChange, onExpansionProgress } = renderTimeline();
 
