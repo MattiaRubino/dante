@@ -18,6 +18,7 @@ from dante.auth.contracts import AuthIntegrityError
 _OTP_DIGITS = 6
 _SECRET_BYTES = 32
 _SIGNUP_OTP_DOMAIN = b"dante:auth:signup-otp:v1\x00"
+_PROVIDER_ENROLLMENT_OTP_DOMAIN = b"dante:auth:provider-enrollment-otp:v1\x00"
 _RECOVERY_DOMAIN = b"dante:auth:password-recovery:v1\x00"
 _M5_DOMAIN_PREFIX = b"dante:auth:m5:"
 _M5_DOMAIN_SUFFIX = b":v1\x00"
@@ -53,23 +54,37 @@ class IssuedSignupOtp:
     key_id: str
 
 
-class SignupOtpCodec:
-    def __init__(self, *, key_ring: dict[str, bytes], current_key_id: str) -> None:
+class _OtpCodec:
+    def __init__(
+        self,
+        *,
+        key_ring: dict[str, bytes],
+        current_key_id: str,
+        domain: bytes,
+        purpose_name: str,
+    ) -> None:
         if current_key_id not in key_ring:
-            raise ValueError("current signup OTP key is absent from the key ring")
+            raise ValueError(f"current {purpose_name} OTP key is absent from the key ring")
         self._key_ring = dict(key_ring)
         self._current_key_id = current_key_id
+        self._domain = domain
+        self._purpose_name = purpose_name
 
-    def issue(self, signup_ref: UUID) -> IssuedSignupOtp:
+    def issue(self, reference: UUID) -> IssuedSignupOtp:
         code = f"{secrets.randbelow(10**_OTP_DIGITS):0{_OTP_DIGITS}d}"
         return IssuedSignupOtp(
             code=SecretStr(code),
-            verifier=self._derive(signup_ref, code, self._current_key_id),
+            verifier=self._derive(reference, code, self._current_key_id),
             key_id=self._current_key_id,
         )
 
     def matches(
-        self, *, signup_ref: UUID, submitted_code: str, expected_verifier: bytes, key_id: str
+        self,
+        *,
+        reference: UUID,
+        submitted_code: str,
+        expected_verifier: bytes,
+        key_id: str,
     ) -> bool:
         if (
             len(submitted_code) != _OTP_DIGITS
@@ -78,15 +93,77 @@ class SignupOtpCodec:
         ):
             return False
         if key_id not in self._key_ring:
-            raise AuthIntegrityError("stored signup challenge references unknown OTP key")
-        candidate = self._derive(signup_ref, submitted_code, key_id)
+            raise AuthIntegrityError(
+                f"stored {self._purpose_name} challenge references unknown OTP key"
+            )
+        candidate = self._derive(reference, submitted_code, key_id)
         return hmac.compare_digest(candidate, expected_verifier)
 
-    def _derive(self, signup_ref: UUID, code: str, key_id: str) -> bytes:
+    def _derive(self, reference: UUID, code: str, key_id: str) -> bytes:
         return hmac.digest(
             self._key_ring[key_id],
-            _SIGNUP_OTP_DOMAIN + signup_ref.bytes + code.encode("ascii"),
+            self._domain + reference.bytes + code.encode("ascii"),
             "sha256",
+        )
+
+
+class SignupOtpCodec:
+    """Password-signup OTP codec retaining the stable M4 public call contract."""
+
+    def __init__(self, *, key_ring: dict[str, bytes], current_key_id: str) -> None:
+        self._codec = _OtpCodec(
+            key_ring=key_ring,
+            current_key_id=current_key_id,
+            domain=_SIGNUP_OTP_DOMAIN,
+            purpose_name="signup",
+        )
+
+    def issue(self, signup_ref: UUID) -> IssuedSignupOtp:
+        return self._codec.issue(signup_ref)
+
+    def matches(
+        self,
+        *,
+        signup_ref: UUID,
+        submitted_code: str,
+        expected_verifier: bytes,
+        key_id: str,
+    ) -> bool:
+        return self._codec.matches(
+            reference=signup_ref,
+            submitted_code=submitted_code,
+            expected_verifier=expected_verifier,
+            key_id=key_id,
+        )
+
+
+class ProviderEnrollmentOtpCodec:
+    """Provider-enrollment OTP codec using a distinct HMAC domain from password signup."""
+
+    def __init__(self, *, key_ring: dict[str, bytes], current_key_id: str) -> None:
+        self._codec = _OtpCodec(
+            key_ring=key_ring,
+            current_key_id=current_key_id,
+            domain=_PROVIDER_ENROLLMENT_OTP_DOMAIN,
+            purpose_name="provider enrollment",
+        )
+
+    def issue(self, external_signup_ref: UUID) -> IssuedSignupOtp:
+        return self._codec.issue(external_signup_ref)
+
+    def matches(
+        self,
+        *,
+        external_signup_ref: UUID,
+        submitted_code: str,
+        expected_verifier: bytes,
+        key_id: str,
+    ) -> bool:
+        return self._codec.matches(
+            reference=external_signup_ref,
+            submitted_code=submitted_code,
+            expected_verifier=expected_verifier,
+            key_id=key_id,
         )
 
 
