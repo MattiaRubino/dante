@@ -109,7 +109,9 @@ CP02 pgBackRest Foundation              LOCAL PASS
 CP03 Continuous WAL + Backup            LOCAL PASS
 CP04 Destructive / Isolated Restore     LOCAL PASS
 SC-031 destructive local restore        PASS
-CP05 Deterministic PITR                 NOT STARTED
+CP05 Deterministic PITR                 LOCAL PASS
+PSV-40 local archive/restore/PITR       PASS
+CP06 Failure + Semantic Recovery        NOT STARTED
 SC-011 anti-resurrection                OPEN HARD GATE / NOT RUN
 AWS S3 selected topology                NOT ACTIVATED
 ```
@@ -121,6 +123,8 @@ The dedicated local worktree is:
 ```
 
 The local recovery harness uses the isolated `dante-postgres-recovery` Compose project, PostgreSQL host port `55432`, a dedicated PostgreSQL data volume and a physically separate pgBackRest repository volume. CP04 directly proved deletion/recreation of the PostgreSQL volume followed by an exact-set pgBackRest restore of a materialized DANTE database, including Alembic `20260826_08`, exact accepted catalog topology, canonical fixture, role/ACL and runtime-login verification.
+
+CP05 then directly proved deterministic named-restore-point PITR across a promoted timeline. The source contained BASELINE + A + B before destructive PGDATA replacement; recovery from FULL `20260830-132540F` targeted the named restore point on timeline 2 and promoted to timeline 3 with BASELINE + A present and B absent. Direct PostgreSQL timing evidence measured `0.263121s` replay to the target and `0.539736s` from recovery start to ready; the exercised pgBackRest physical restore itself completed in `7.530s`. These are LOCAL observations, not production RPO/RTO targets.
 
 Other post-CP6 verticals may be active on independent branches. Their unmerged branch-local truth does not become authority on this branch merely because the branch exists elsewhere.
 
