@@ -51,6 +51,7 @@ services:
         required: false
     secrets:
       - grafana_cloud_api_key
+      - grafana_cloud_otlp_authorization
       - dante_observer_dsn
     volumes:
       - ../observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
@@ -105,5 +106,7 @@ secrets:
     file: ./secrets/postgres_password.local
   grafana_cloud_api_key:
     file: ./secrets/grafana_cloud_api_key.local
+  grafana_cloud_otlp_authorization:
+    file: ./secrets/grafana_cloud_otlp_authorization.local
   dante_observer_dsn:
     file: ./secrets/dante_observer_dsn.local

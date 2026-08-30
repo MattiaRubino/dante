@@ -94,22 +94,24 @@ Then write Alloy's private DSN without putting the password in argv or output:
 ```bash
 cd ../..
 python3 tooling/observability/write-observer-dsn.py
+python3 tooling/observability/write-grafana-otlp-authorization.py
 ```
 
 Keep `dante_observer_password.local` mode `0600` and without a trailing newline.
-The derived observer DSN and the Grafana ingestion token are the only two files
-projected into the non-root Alloy container. LOCAL Docker Compose implements
-file-backed secrets as bind mounts, so make those two files mode `0640` after
-creation/rotation; Alloy is added only to the workstation user's primary group:
+The derived observer DSN, Grafana ingestion token and derived OTLP authorization
+are the only files projected into the non-root Alloy container. LOCAL Docker
+Compose implements file-backed secrets as bind mounts, so make those files mode
+`0640` after creation/rotation; Alloy is added only to the workstation user's
+primary group:
 
 ```bash
-chmod 640 \
-  infra/compose/secrets/grafana_cloud_api_key.local \
-  infra/compose/secrets/dante_observer_dsn.local
+chmod 640 infra/compose/secrets/grafana_cloud_api_key.local infra/compose/secrets/dante_observer_dsn.local infra/compose/secrets/grafana_cloud_otlp_authorization.local
 ```
 
 Never make a secret world-readable. Remote environments use their
 platform-native secret manager rather than this LOCAL bind-mount arrangement.
+The OTLP header is derived from the ingestion token and stack instance ID; it is
+not another token and must be regenerated whenever the ingestion token rotates.
 
 ## 5. Validate before start
 

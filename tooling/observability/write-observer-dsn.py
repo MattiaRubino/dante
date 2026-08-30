@@ -7,6 +7,7 @@ import argparse
 import getpass
 import os
 import stat
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
@@ -85,8 +86,8 @@ def _atomic_collector_secret_write(path: Path, value: str) -> None:
             stream.write(value)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
-        os.chmod(path, 0o640, follow_symlinks=False)
+        temporary.replace(path)
+        path.chmod(0o640)
         directory_descriptor = os.open(path.parent, os.O_RDONLY)
         try:
             os.fsync(directory_descriptor)
@@ -100,9 +101,7 @@ def _atomic_collector_secret_write(path: Path, value: str) -> None:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description=(
-            "Write Alloy's dante_observer DSN as a mode-0640 LOCAL Docker secret."
-        ),
+        description=("Write Alloy's dante_observer DSN as a mode-0640 LOCAL Docker secret."),
     )
     parser.add_argument("--host", type=_non_blank, default="postgres")
     parser.add_argument("--port", type=_port, default=5432)
@@ -132,7 +131,7 @@ def main() -> None:
         arguments.output.resolve(),
         connection.dsn(_password(arguments.password_file.resolve())),
     )
-    print(f"Wrote private observer DSN: {arguments.output.resolve()}")
+    sys.stderr.write(f"Wrote private observer DSN: {arguments.output.resolve()}\n")
 
 
 if __name__ == "__main__":

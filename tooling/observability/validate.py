@@ -80,7 +80,8 @@ def _validate_alloy() -> None:
         "sending_queue {",
         "block_on_overflow = false",
         'max_elapsed_time     = "2m"',
-        'password_file = "/run/secrets/grafana_cloud_api_key"',
+        'otelcol.auth.headers "grafana_cloud"',
+        'filename  = "/run/secrets/grafana_cloud_otlp_authorization"',
         'prometheus.relabel "postgres_privacy_budget"',
         "pg_long_running_transactions.*",
         "max_streams = 64",
@@ -114,6 +115,8 @@ def _validate_alloy() -> None:
         _fail("collector ingestion ports must remain published on loopback only")
     if "no-new-privileges:true" not in compose or "cap_drop:\n      - ALL" not in compose:
         _fail("Alloy container hardening is incomplete")
+    if "grafana_cloud_otlp_authorization" not in compose:
+        _fail("Compose must project the private OTLP authorization header")
 
     alloy_environment = set(re.findall(r'sys\.env\("([A-Z0-9_]+)"\)', alloy))
     declared_environment = {

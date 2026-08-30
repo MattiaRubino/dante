@@ -8,15 +8,20 @@ local.file "grafana_cloud_api_key" {
   is_secret = true
 }
 
+local.file "grafana_cloud_otlp_authorization" {
+  filename  = "/run/secrets/grafana_cloud_otlp_authorization"
+  is_secret = true
+}
+
 local.file "postgres_observer_dsn" {
   filename  = "/run/secrets/dante_observer_dsn"
   is_secret = true
 }
 
-otelcol.auth.basic "grafana_cloud" {
-  client_auth {
-    username      = sys.env("GRAFANA_CLOUD_OTLP_USERNAME")
-    password_file = "/run/secrets/grafana_cloud_api_key"
+otelcol.auth.headers "grafana_cloud" {
+  header {
+    key   = "Authorization"
+    value = local.file.grafana_cloud_otlp_authorization.content
   }
 }
 

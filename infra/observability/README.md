@@ -40,23 +40,24 @@ Provision PostgreSQL with the exact observer password, then construct the creden
 
 ```bash
 python3 tooling/observability/write-observer-dsn.py
+python3 tooling/observability/write-grafana-otlp-authorization.py
 ```
 
-The generated `infra/compose/secrets/dante_observer_dsn.local` is ignored by Git. It contains only the least-privilege observer identity; it is never a backend runtime or database administrator credential.
+The generated `infra/compose/secrets/dante_observer_dsn.local` is ignored by Git. It contains only the least-privilege observer identity; it is never a backend runtime or database administrator credential. `grafana_cloud_otlp_authorization.local` is a derived RFC 7617 header for the OTLP gateway; it is not a second Grafana token and must also remain ignored.
 
 For LOCAL Compose, Alloy runs as non-root UID `473` and is added only to your
 primary WSL group. Docker Compose implements file-backed secrets as bind mounts,
-so make the two files read-only for that private group (not world-readable):
+so make the three projected files read-only for that private group (not
+world-readable):
 
 ```bash
-chmod 640 \
-  infra/compose/secrets/grafana_cloud_api_key.local \
-  infra/compose/secrets/dante_observer_dsn.local
+chmod 640 infra/compose/secrets/grafana_cloud_api_key.local infra/compose/secrets/dante_observer_dsn.local infra/compose/secrets/grafana_cloud_otlp_authorization.local
 ```
 
-The observer password source remains `0600`: only the derived DSN and Grafana
-ingestion token are projected to Alloy. Re-run the `chmod` after rotating either
-file. Remote deployments use their platform-native secret manager instead.
+The observer password source remains `0600`: only the derived DSN, Grafana
+ingestion token and derived OTLP authorization are projected to Alloy. Re-run
+the generator and `chmod` after rotating the token. Remote deployments use
+their platform-native secret manager instead.
 
 ## Grafana Cloud Free connection
 

@@ -42,6 +42,7 @@ jobs:
           secret_dir="$(mktemp -d)"
           trap 'rm -rf -- "$secret_dir"' EXIT
           printf '%s' 'ci-not-a-real-token' > "$secret_dir/cloud-api-key"
+          printf '%s' 'Basic Y2k6Y2ktbm90LWEtcmVhbC10b2tlbg==' > "$secret_dir/otlp-authorization"
           printf '%s' 'postgresql://dante_observer:ci@127.0.0.1:5432/dante?sslmode=disable' > "$secret_dir/observer-dsn"
           docker run --rm \
             --env DANTE_ENV=ci \
@@ -56,6 +57,7 @@ jobs:
             --env GRAFANA_CLOUD_LOKI_USERNAME=ci \
             --volume "$PWD/infra/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro" \
             --volume "$secret_dir/cloud-api-key:/run/secrets/grafana_cloud_api_key:ro" \
+            --volume "$secret_dir/otlp-authorization:/run/secrets/grafana_cloud_otlp_authorization:ro" \
             --volume "$secret_dir/observer-dsn:/run/secrets/dante_observer_dsn:ro" \
             "$ALLOY_IMAGE" validate /etc/alloy/config.alloy
 
