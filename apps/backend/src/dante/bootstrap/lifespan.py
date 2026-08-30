@@ -7,6 +7,7 @@ from typing import cast
 from fastapi import FastAPI
 
 from dante.auth.lifecycle_runtime import create_auth_lifecycle_runtime
+from dante.auth.provider_flow_runtime import create_provider_flow_runtime
 from dante.auth.service import create_auth_runtime
 from dante.platform.config.settings import Settings
 from dante.platform.database.runtime import create_database_runtime
@@ -37,5 +38,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         stack.push_async_callback(auth_lifecycle_runtime.aclose)
         app.state.auth_lifecycle_runtime = auth_lifecycle_runtime
+
+        app.state.provider_flow_runtime = create_provider_flow_runtime(
+            settings=settings.auth,
+            database_runtime=database_runtime,
+            auth_runtime=auth_runtime,
+            lifecycle_runtime=auth_lifecycle_runtime,
+        )
 
         yield
