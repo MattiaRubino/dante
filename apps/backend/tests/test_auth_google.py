@@ -144,6 +144,22 @@ async def test_valid_gmail_token_normalizes_identity_and_bootstrap() -> None:
 
 
 @pytest.mark.asyncio
+async def test_gmail_suffix_is_google_authoritative_without_relying_on_email_verified() -> None:
+    private_key = rsa.generate_private_key(public_exponent=65_537, key_size=2_048)
+    nonce = issue_flow_proof(FlowProofPurpose.OIDC_NONCE)
+
+    evidence = await _verify(
+        claims=_claims(nonce.secret.get_secret_value(), email_verified=False),
+        private_key=private_key,
+        nonce_verifier=nonce.verifier,
+    )
+
+    assert evidence.email is not None
+    assert evidence.email.comparison_key == "person@gmail.com"
+    assert evidence.mailbox_authoritative is True
+
+
+@pytest.mark.asyncio
 async def test_official_bare_google_issuer_is_normalized_to_canonical_https() -> None:
     private_key = rsa.generate_private_key(public_exponent=65_537, key_size=2_048)
     nonce = issue_flow_proof(FlowProofPurpose.OIDC_NONCE)
@@ -175,6 +191,22 @@ async def test_invalid_required_google_claims_are_rejected(claim: str, value: ob
     with pytest.raises(GoogleProofError):
         await _verify(
             claims=_claims(nonce.secret.get_secret_value(), **{claim: value}),
+            private_key=private_key,
+            nonce_verifier=nonce.verifier,
+        )
+
+
+@pytest.mark.asyncio
+async def test_future_nbf_beyond_clock_skew_is_rejected() -> None:
+    private_key = rsa.generate_private_key(public_exponent=65_537, key_size=2_048)
+    nonce = issue_flow_proof(FlowProofPurpose.OIDC_NONCE)
+
+    with pytest.raises(GoogleProofError, match="not yet valid"):
+        await _verify(
+            claims=_claims(
+                nonce.secret.get_secret_value(),
+                nbf=int(_NOW.timestamp()) + 61,
+            ),
             private_key=private_key,
             nonce_verifier=nonce.verifier,
         )
