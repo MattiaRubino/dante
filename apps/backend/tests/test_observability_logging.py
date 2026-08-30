@@ -127,5 +127,8 @@ def test_rotating_log_file_is_created_with_private_mode(tmp_path: Path) -> None:
 
     try:
         assert stat.S_IMODE(log_path.stat().st_mode) == 0o640
+        logging.getLogger("dante.test.file").warning("file-handler-runtime-proof")
+        payload = json.loads(log_path.read_text(encoding="utf-8"))
+        assert payload["event"] == "file-handler-runtime-proof"
     finally:
         runtime.close()

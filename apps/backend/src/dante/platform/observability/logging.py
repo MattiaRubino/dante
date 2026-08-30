@@ -10,11 +10,10 @@ import re
 import sys
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from io import TextIOWrapper
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Final, TextIO, cast, override
+from typing import Final, TextIO, cast, override
 
 from dante.platform.config.observability import ObservabilitySettings
 from dante.platform.observability.context import correlation_fields
@@ -157,7 +156,7 @@ class _DanteStreamHandler(logging.StreamHandler[TextIO]):
 
 class _DanteRotatingFileHandler(RotatingFileHandler):
     @override
-    def _open(self) -> TextIOWrapper[Any]:
+    def _open(self) -> TextIO:
         descriptor = os.open(
             self.baseFilename,
             os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0),
@@ -165,7 +164,7 @@ class _DanteRotatingFileHandler(RotatingFileHandler):
         )
         try:
             return cast(
-                TextIOWrapper[Any],
+                TextIO,
                 os.fdopen(
                     descriptor,
                     self.mode,
