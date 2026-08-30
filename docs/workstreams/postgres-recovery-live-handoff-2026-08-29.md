@@ -1,15 +1,15 @@
 # DANTE — PostgreSQL Recovery Live Handoff — 2026-08-29
 
-- **Status:** CURRENT LIVE HANDOFF / CP02 LOCAL PASS / CP03 SOURCE-CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
+- **Status:** CURRENT LIVE HANDOFF / CP03 LOCAL PASS / CP04 NOT STARTED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Created from protected `main`:** `baa9aba52932a0fa09b957ee7668aeb459fb4a20`
-- **Latest validated checkpoint before this handoff update:** `61871cff919367218bf17eefb4d511a383ead622`
-- **Checkpoint message:** `docs(recovery): materialize CP03 proof plan`
+- **Latest validated checkpoint before this handoff update:** `c38a36c5916f6a6cb629fcdfabb51def3e3bde2b`
+- **Checkpoint message:** `docs(recovery): close CP03 execution gate`
 - **Local worktree:** `/home/mattia/projects/dante-postgres-recovery`
-- **Current macro-checkpoint:** CP03 — Continuous WAL + Backup / source-config implemented / runtime proof pending
-- **Runtime source/config:** CP02 FOUNDATION PASS + CP03 ARCHIVE SOURCE IMPLEMENTED
-- **Runtime execution evidence:** CP02 DIRECT LOCAL PASS / CP03 NOT YET RUN
+- **Current macro-checkpoint:** CP03 — Continuous WAL + Backup / LOCAL PASS; CP04 NOT STARTED
+- **Runtime source/config:** CP02 FOUNDATION PASS + CP03 ARCHIVE/BACKUP IMPLEMENTED
+- **Runtime execution evidence:** CP02 DIRECT LOCAL PASS + CP03 DIRECT LOCAL PASS
 
 > This file is the temporary continuation checkpoint for the active recovery branch. Repository truth beats conversation memory. It must be removed/consolidated before protected-main integration under the documentation lifecycle policy.
 
@@ -58,9 +58,10 @@ Read in this order:
 11. documentation lifecycle policy
 12. `infra/local/postgres/Dockerfile`
 13. `infra/local/postgres/pgbackrest/pgbackrest.conf`
-14. `infra/compose/local.yaml`
-15. `infra/compose/postgres-recovery.override.yaml`
-16. `infra/compose/README.md`
+14. `infra/local/postgres/recovery/archive-failure-recovery-check.sh`
+15. `infra/compose/local.yaml`
+16. `infra/compose/postgres-recovery.override.yaml`
+17. `infra/compose/README.md`
 
 Do not reinterpret the database architecture from scratch.
 
@@ -108,7 +109,7 @@ PostgreSQL                   18.6
 base image                   postgres:18.6-trixie pinned by digest
 PGDATA                       /var/lib/postgresql/18/docker
 accepted pgBackRest baseline 2.59.0 historical selection
-implementation maintenance   2.59.1 RATIFIED by CP02 foundation proof
+implementation maintenance   2.59.1 RATIFIED
 PGDG package                 2.59.1-1.pgdg13+1
 stanza                       dante
 local repository             POSIX
@@ -147,7 +148,7 @@ repo1-path                   /var/lib/pgbackrest
 Docker repository volume     pgbackrest-repository:/var/lib/pgbackrest
 ```
 
-The recovery repository is separate from the PostgreSQL data volume so a later destructive `PGDATA` scenario does not delete the recovery source at the same time.
+The recovery repository is separate from the PostgreSQL data volume so a destructive `PGDATA` scenario does not delete the recovery source at the same time.
 
 ### Recovery Docker isolation
 
@@ -158,7 +159,7 @@ dante-local-postgres-1  → 127.0.0.1:5432
 dante-local-alloy-1     → healthy
 ```
 
-Recovery therefore uses its own contract:
+Recovery uses its own contract:
 
 ```text
 Compose project   dante-postgres-recovery
@@ -168,7 +169,7 @@ PostgreSQL volume dante-postgres-recovery_postgres-data
 recovery volume   dante-postgres-recovery_pgbackrest-repository
 ```
 
-CP02 first proved this using a temporary Compose overlay with exactly those effective values. The same override is now versioned as:
+The versioned override is:
 
 ```text
 infra/compose/postgres-recovery.override.yaml
@@ -178,7 +179,7 @@ Recovery commands must use both Compose files and `-p dante-postgres-recovery`; 
 
 ### CP03 source/config activation
 
-The approved CP03 write gate has now materialized archive configuration only in the isolated recovery harness:
+The approved CP03 source materializes archive configuration only in the isolated recovery harness:
 
 ```text
 archive_mode = on
@@ -190,9 +191,76 @@ repo1-retention-full = 2 (LOCAL test policy only)
 
 The recovery overlay repeats the already-established `shared_preload_libraries=pg_stat_statements` and `compute_query_id=on` settings before the archive settings so replacing the Compose `command` does not remove existing PostgreSQL behavior.
 
-These are **source/config implementation facts only**. The currently running local recovery container must not be assumed to have picked them up until the worktree is fast-forwarded, the resolved Compose config is inspected and the isolated service is recreated.
+### CP03 direct runtime proof
 
-No WAL archive, `pgbackrest check`, backup or retention behavior has yet been proven under CP03.
+The isolated recovery image/config was rebuilt and the recovery PostgreSQL container recreated without destroying its PostgreSQL or pgBackRest repository volumes.
+
+Direct evidence:
+
+```text
+container healthy                                             PASS
+archive_mode                                                  on PASS
+archive_command                                               exact pgBackRest archive-push PASS
+archive_library                                               unset PASS
+wal_level                                                     replica PASS
+initial forced WAL                                            000000010000000000000002
+pg_stat_archiver successful archive                           PASS
+compressed WAL artifact physically present                   PASS
+pgbackrest --stanza=dante check                               PASS
+first FULL backup                                             20260830-114043F PASS
+repeated FULL backups                                         PASS
+repo1-retention-full=2 behavior                               PASS
+explicit pgbackrest expire                                    PASS
+retained FULL backup                                          20260830-114411F
+retained FULL backup                                          20260830-114419F
+```
+
+Retention proof showed older FULL sets expiring as additional FULL backups crossed the configured LOCAL retention count. The explicit `expire` command also completed successfully.
+
+### CP03 archive-failure/recovery proof
+
+The directly executed negative-path scenario used target WAL:
+
+```text
+00000001000000000000000E
+```
+
+Observed sequence:
+
+```text
+archive directory baseline          postgres:postgres 0750
+→ temporary injected mode           0550
+→ pg_stat_archiver failure visible  PASS
+→ last_failed_wal                   target ...000E
+→ restore mode                      0750
+→ automatic archive retry           PASS
+→ last_archived_wal                 same ...000E
+→ compressed physical WAL           PRESENT
+→ pgbackrest check post-failure     PASS
+→ pgbackrest info                   status: ok
+```
+
+Final observed archive range after recovery:
+
+```text
+00000001000000000000000A / 00000001000000000000000F
+```
+
+The reusable bounded harness is versioned at:
+
+```text
+infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+Run it with:
+
+```bash
+bash infra/local/postgres/recovery/archive-failure-recovery-check.sh
+```
+
+The harness targets only the `dante-postgres-recovery` project and restores archive-directory permissions via `trap` if the injected failure path exits early.
+
+`pg_stat_archiver` counters are runtime statistics and may reset across PostgreSQL restart/statistics reset. Persistent proof therefore also uses physical pgBackRest repository artifacts plus `check` and `info` rather than treating those counters as durable history.
 
 ---
 
@@ -221,7 +289,7 @@ archive.info + archive.info.copy                       PRESENT
 backup.info + backup.info.copy                         PRESENT
 ```
 
-Observed end-state from `pgbackrest --stanza=dante info`:
+Observed end-state from `pgbackrest --stanza=dante info` at CP02:
 
 ```text
 stanza: dante
@@ -232,19 +300,19 @@ db (current)
     wal archive min/max (18): none present
 ```
 
-This is **expected at CP02**. No backup or WAL archive existed at the CP02 boundary.
+This was **expected at CP02**. No backup or WAL archive existed at that boundary.
 
 Important distinction:
 
 ```text
 CP02 foundation LOCAL PASS
-!= CP03 source/config presence
-!= WAL archive PASS
-!= backup PASS
+!= CP03 archive/backup LOCAL PASS
 != restore PASS
 != PITR PASS
 != semantic recovery PASS
 ```
+
+CP03 has now independently proven the archive/backup layer; the later distinctions remain active.
 
 ---
 
@@ -262,7 +330,7 @@ implementation maintenance pin 2.59.1
 → finite policy-bound retention
 ```
 
-The `2.59.1` implementation refresh is supported by direct CP02 local foundation evidence. Durable architecture documents are reconciled at integration rather than rewriting historical selection evidence as if it had always used the newer maintenance release.
+The `2.59.1` implementation refresh is supported by direct CP02 foundation evidence plus CP03 WAL/backup evidence. Durable architecture documents are reconciled at integration rather than rewriting historical selection evidence as if it had always used the newer maintenance release.
 
 The LOCAL `repo1-retention-full=2` value is only a deterministic test policy and is not the production retention contract.
 
@@ -277,23 +345,24 @@ CP02 pgBackRest foundation       LOCAL PASS
 pgBackRest source/config         LOCAL PASS
 pgBackRest 2.59.1 runtime        LOCAL PASS
 stanza-create                    LOCAL PASS
-pgBackRest info                  LOCAL PASS
 versioned recovery overlay       IMPLEMENTED
-CP03 archive source/config       IMPLEMENTED
-archive_mode runtime             NOT YET PROVEN
-archive_command runtime          NOT YET PROVEN
-continuous WAL                   NOT YET PROVEN
-pgBackRest check                 NOT RUN / CP03 OWNED
-local POSIX repository topology  LOCAL PASS FOUNDATION
-repo1-retention-full=2           CONFIGURED / BEHAVIOR NOT YET PROVEN
-full backup proof                NOT RUN
-fresh/destructive restore        NOT RUN
+archive_mode runtime             LOCAL PASS
+archive_command runtime          LOCAL PASS
+continuous WAL                   LOCAL PASS
+physical WAL repository proof    LOCAL PASS
+pgBackRest check                 LOCAL PASS
+local POSIX repository topology  LOCAL PASS
+repo1-retention-full=2           LOCAL PASS
+full backup proof                LOCAL PASS
+archive failure/retry            LOCAL PASS
+CP03                             LOCAL PASS
+fresh/destructive restore        NOT RUN / CP04 NOT STARTED
 PITR                             NOT RUN
 AWS S3 repository                SELECTED / NOT ACTIVATED
 S3 Versioning                    SELECTED / NOT ACTIVATED
 Object Lock GOVERNANCE           SELECTED / NOT ACTIVATED
 production retention behavior    NOT PROVEN
-RPO/RTO measurements             NONE
+RPO/RTO measurements             PARTIAL LOCAL OBSERVATIONS ONLY / NO TARGETS RATIFIED
 SC-031                           NOT RUN
 SC-011                           OPEN HARD GATE / NOT RUN
 operator runbook                 NOT IMPLEMENTED
@@ -308,7 +377,7 @@ Never shorten this to `recovery done`.
 ```text
 CP01  Recovery Contract / Bootstrap                  CONTRACT FROZEN
 CP02  pgBackRest Foundation                          LOCAL PASS
-CP03  Continuous WAL + Backup                        SOURCE/CONFIG IMPLEMENTED / RUNTIME PROOF PENDING
+CP03  Continuous WAL + Backup                        LOCAL PASS
 CP04  Destructive / Isolated Restore                 NOT STARTED
 CP05  Deterministic PITR                             NOT STARTED
 CP06  Failure Injection + Semantic Recovery          NOT STARTED
@@ -317,7 +386,7 @@ CP07  Whole Recovery QA + Runbook + Closure          NOT STARTED
 
 Do not skip directly to AWS or a production bucket. Deterministic local proof comes first; real AWS selected-stack acceptance comes before final production-recovery PASS.
 
-`pgbackrest check` is explicitly a **CP03** gate because a meaningful check validates WAL/archive integration and forces archive interaction.
+`pgbackrest check` was a **CP03** gate and is now directly proven. Successful backup still does not prove restore or PITR.
 
 ---
 
@@ -437,7 +506,7 @@ Do not choose Terraform/OpenTofu merely because a bucket may later be needed. Pr
 
 ## 11. What was intentionally NOT changed
 
-The approved CP03 source/config write does **not** modify:
+The CP03 closure write does **not** modify or activate:
 
 ```text
 infra/compose/local.yaml ordinary LOCAL runtime contract
@@ -463,7 +532,7 @@ protected main
 other feature branches/worktrees
 ```
 
-The source now contains recovery-only `archive_mode` and `archive_command`, but their runtime behavior remains unproven until the isolated service is recreated and tested.
+CP03 proves only the isolated LOCAL continuous-WAL/full-backup layer and its bounded local retention/failure behavior.
 
 `PROJECT-STATUS.md` and `ROADMAP.md` remain protected-main truth and should be reconciled at the appropriate integration/closure boundary rather than used as a live branch diary.
 
@@ -471,76 +540,56 @@ The source now contains recovery-only `archive_mode` and `archive_command`, but 
 
 ## 12. Immediate next safe action
 
-Align the dedicated recovery worktree to the current remote branch and validate the CP03 source-config resolution:
+First fast-forward the dedicated recovery worktree to the CP03 closure HEAD and confirm repository health/readback. Then derive CP04 without destroying anything yet.
 
-```bash
-cd /home/mattia/projects/dante-postgres-recovery
-git status --short --branch
-git pull --ff-only
-git rev-parse HEAD
-git rev-parse origin/feature/postgres-recovery
-
-docker compose \
-  -p dante-postgres-recovery \
-  -f infra/compose/local.yaml \
-  -f infra/compose/postgres-recovery.override.yaml \
-  config
-```
-
-The resolved contract must preserve:
+CP04 preparation must answer:
 
 ```text
-project dante-postgres-recovery
-image dante-postgres-recovery:18.6-pgbackrest-2.59.1
-host port 55432
-separate PostgreSQL/recovery volumes
-shared_preload_libraries=pg_stat_statements
-compute_query_id=on
-archive_mode=on
-archive_command=/usr/bin/pgbackrest --stanza=dante archive-push %p
+which PostgreSQL target/container/volume is explicitly disposable?
+which pgBackRest repository volume is the protected recovery source and must survive?
+which retained FULL backup is selected as the restore source?
+what deterministic fixture proves that restored data is the intended backup rather than stale surviving PGDATA?
+what exact catalog/schema/role/ACL/semantic checks must pass?
+what exact pgBackRest restore command/options are valid for PostgreSQL 18.6 and this topology?
+what keeps restored traffic/application use closed until semantic verification passes?
 ```
 
-Then recreate **only** the isolated recovery PostgreSQL service and execute CP03 runtime proof. Keep the ordinary `dante-local` PostgreSQL and Alloy/observability stack untouched.
-
-Do not enter restore, PITR or AWS work under this checkpoint.
+Do **not** destroy PGDATA or invoke `pgbackrest restore` before the new CP04 topology/write/proof gate is explicitly frozen and approved.
 
 ---
 
-## 13. CP03 runtime proof boundary
+## 13. CP04 opening boundary
 
-CP03 now owns direct proof of:
+CP04 owns:
 
 ```text
-resolved archive_mode=on
-resolved archive_command exact value
-archive_library unset
-wal_level remains replica
-pre-test pg_stat_archiver state
-forced/generated WAL evidence
-successful pgBackRest archive-push
-pg_stat_archiver successful archive evidence
-repository archive segment evidence
-pgbackrest --stanza=dante check FULL PASS
-first FULL backup
-backup metadata/info verification
-bounded LOCAL repo1-retention-full=2 behavior
-ordinary LOCAL/observability non-interference
+fresh/disposable PostgreSQL 18.6 restore target
+explicit source-PGDATA isolation/destruction proof
+protected preservation of pgBackRest recovery repository
+selected retained FULL backup readback
+pgBackRest restore execution
+PostgreSQL startup from restored bytes
+extension/catalog/schema topology verification
+critical role/ACL verification where applicable
+representative deterministic data verification
+critical constraint/routine/trigger verification
+application/readiness boundary verification where appropriate
+SC-031 consideration only after direct proof
 ```
 
-CP03 still does **not** prove:
+CP04 still does **not** prove:
 
 ```text
-restore
 PITR
 AWS S3
 S3 Versioning
 Object Lock
 production retention
-SC-031
-SC-011
+SC-011 anti-resurrection
+whole recovery runbook closure
 ```
 
-A source/config implementation is not CP03 LOCAL PASS. Every runtime item above must be observed directly before closure.
+A successful CP03 backup is not restore proof. CP04 must be genuinely destructive/isolated enough that surviving source `PGDATA` cannot make the test pass accidentally.
 
 ---
 
