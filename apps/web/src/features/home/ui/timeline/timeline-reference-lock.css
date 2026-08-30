@@ -13,6 +13,22 @@
   position: relative;
 }
 
+/* The verified interaction contract gives title and time their own precise
+ * targets. They must not stretch across the free event-card body, because
+ * that body owns contextual focus and drag. */
+.home-m1 .home-timeline--production .timeline-event-card__title {
+  display: inline-flex;
+  width: auto;
+  max-width: calc(100% - 12px);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  align-items: center;
+}
+
 /* Compact/normal keeps the prototype's native header-grid placement. Only the
  * fully expanded Timeline overrides the week strip so it sits on the Home's
  * central optical axis beneath Home / Mondi / Oggi. */
