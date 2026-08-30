@@ -13,6 +13,16 @@
   position: relative;
 }
 
+/* timeline.css intentionally normalizes button typography via `font: inherit`.
+ * The group chips are a frozen Timeline-owned visual element, so re-assert their
+ * semantic label typography at higher specificity instead of letting the Home
+ * button normalization erase the dedicated Timeline tokens. */
+.home-m1 .home-timeline--production .dante-timeline-group-chip {
+  font-size: var(--dante-timeline-group-label-font-size);
+  font-weight: var(--dante-timeline-group-label-font-weight);
+  line-height: 1;
+}
+
 /* Compact/normal keeps the prototype's native header-grid placement. Only the
  * fully expanded Timeline overrides the week strip so it sits on the Home's
  * central optical axis beneath Home / Mondi / Oggi. */
