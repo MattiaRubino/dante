@@ -1,10 +1,4 @@
-import {
-  type RefObject,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -25,13 +19,14 @@ type TimelineEventPeekProps = Readonly<{
   event: TimelineEvent;
   group: TimelineGroup | undefined;
   opener: HTMLElement;
-  gridRef: RefObject<HTMLDivElement | null>;
   focused: boolean;
   onDismiss: (restoreFocus: boolean) => void;
   onHandoff: () => void;
   onOpenDetail: (event: TimelineEvent, opener: HTMLElement) => void;
   onToggleFocus: (eventId: string) => void;
 }>;
+
+export const TIMELINE_EVENT_PEEK_ID = 'timeline-event-peek';
 
 const PEEK_GAP_PX = 10;
 const PEEK_VIEWPORT_GUTTER_PX = 8;
@@ -91,7 +86,6 @@ export function TimelineEventPeek({
   event,
   group,
   opener,
-  gridRef,
   focused,
   onDismiss,
   onHandoff,
@@ -144,7 +138,7 @@ export function TimelineEventPeek({
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
-  }, [gridRef, onDismiss, opener]);
+  }, [onDismiss, opener]);
 
   useEffect(() => {
     const onPointerDown = (pointerEvent: PointerEvent) => {
@@ -182,12 +176,11 @@ export function TimelineEventPeek({
 
   return createPortal(
     <div
-      id="timeline-event-peek"
+      id={TIMELINE_EVENT_PEEK_ID}
       ref={peekRef}
       className="timeline-event-peek"
       role="dialog"
       aria-modal="false"
-      aria-labelledby="timeline-event-peek-title"
       aria-label={t(($) => $.common.home.timeline.peek.dialogLabel, {
         title: event.title,
       })}
@@ -199,7 +192,7 @@ export function TimelineEventPeek({
         <div className="timeline-event-peek__identity">
           <span className="timeline-event-peek__tone" aria-hidden="true" />
           <div>
-            <h3 id="timeline-event-peek-title">{event.title}</h3>
+            <h3>{event.title}</h3>
             <p>
               {formatTimelineMinute(event.startMinute)}–
               {formatTimelineMinute(event.endMinute)}
