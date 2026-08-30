@@ -187,7 +187,10 @@ export function applyTimelineExpansion(
     const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
 
     const leftA = (compactLeft / 100) * compactInner;
-    const widthA = (compactWidth / 100) * compactInner;
+    const widthA = Math.min(
+      (compactWidth / 100) * compactInner,
+      layout.compactSingleLaneMaxWidthPx,
+    );
     const leftB =
       groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
     const widthB = Math.max(
