@@ -15,6 +15,7 @@ describe('web observability configuration', () => {
       releaseSha: 'local',
       buildId: 'local',
       sessionSampleRate: 0.1,
+      respectGlobalPrivacyControl: true,
     });
   });
 
@@ -35,6 +36,7 @@ describe('web observability configuration', () => {
       buildId: 'web-20260829.1',
       collectorUrl: 'https://faro.example.test/collect',
       sessionSampleRate: 0.25,
+      respectGlobalPrivacyControl: true,
     });
   });
 
@@ -72,4 +74,20 @@ describe('web observability configuration', () => {
       ).toThrow(WebObservabilityConfigurationError);
     },
   );
+
+  it('allows an explicit deployment decision not to apply GPC to operational telemetry', () => {
+    const config = readWebObservabilityConfig({
+      VITE_DANTE_FARO_RESPECT_GPC: 'false',
+    });
+
+    expect(config.respectGlobalPrivacyControl).toBe(false);
+  });
+
+  it('rejects an ambiguous Global Privacy Control policy', () => {
+    expect(() =>
+      readWebObservabilityConfig({
+        VITE_DANTE_FARO_RESPECT_GPC: 'yes',
+      }),
+    ).toThrow(WebObservabilityConfigurationError);
+  });
 });

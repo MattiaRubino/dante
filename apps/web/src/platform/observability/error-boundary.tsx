@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { observeRenderFailure } from './runtime';
+import { observeRenderFailure } from './bridge';
 import './error-boundary.css';
 
 type FailureProps = Readonly<{

@@ -67,6 +67,11 @@ their platform-native secret manager instead.
 4. Put only the token in `infra/compose/secrets/grafana_cloud_api_key.local`.
 5. For production browser telemetry, create a Frontend Observability application and set its collector URL as `VITE_DANTE_FARO_COLLECTOR_URL` during the Web build. Browser collector URLs are ingestion identifiers, never Grafana administration tokens.
 
+The Web runtime lazy-loads Faro only when enabled and, by default, when Global
+Privacy Control is not active. The production CSP must allow `connect-src` to
+the exact collector origin and the same-origin DANTE API boundary only; do not
+introduce wildcard telemetry destinations.
+
 No paid Grafana feature is required by this baseline. Quotas and retention remain controlled by the selected Cloud Free plan, so the budget dashboard and runbook define the operating guardrails instead of assuming unlimited ingestion.
 
 ## Run and verify

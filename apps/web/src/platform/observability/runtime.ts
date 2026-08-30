@@ -13,10 +13,8 @@ import {
 import { ReactIntegration } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-import {
-  readWebObservabilityConfig,
-  WebObservabilityConfigurationError,
-} from './config';
+import { installWebTelemetryAdapter } from './bridge';
+import type { WebObservabilityConfig } from './config';
 import { sanitizeText, sanitizeTransportItem } from './sanitize';
 
 let webObservability: Faro | undefined;
@@ -52,86 +50,61 @@ function instrumentations(): NonNullable<
   ];
 }
 
-export function initializeWebObservability(
-  source: Readonly<Record<string, string | undefined>> = import.meta.env,
-): Faro | undefined {
+export function initializeFaroRuntime(config: WebObservabilityConfig): void {
   if (webObservability !== undefined) {
-    return webObservability;
-  }
-
-  try {
-    const config = readWebObservabilityConfig(source);
-    if (!config.enabled || config.collectorUrl === undefined) {
-      return undefined;
-    }
-
-    webObservability = initializeFaro({
-      url: config.collectorUrl,
-      app: {
-        name: 'dante-web',
-        version: config.releaseSha,
-        gitHash: config.releaseSha,
-        release: config.buildId,
-        environment: config.environment,
-      },
-      beforeSend: sanitizeTransportItem,
-      instrumentations: instrumentations(),
-      internalLoggerLevel: InternalLoggerLevel.ERROR,
-      sessionTracking: {
-        enabled: true,
-        persistent: false,
-        samplingRate: config.sessionSampleRate,
-      },
-      trackGeolocation: false,
-      trackResources: false,
-      webVitalsInstrumentation: {
-        reportAllChanges: false,
-        trackAttributionSources: false,
-      },
-      experimental: {
-        fetchTransportV2: true,
-      },
-    });
-    return webObservability;
-  } catch (error) {
-    const failure =
-      error instanceof WebObservabilityConfigurationError
-        ? error.name
-        : 'WebObservabilityInitializationError';
-    globalThis.console.warn(`${failure}: browser telemetry is disabled.`);
-    return undefined;
-  }
-}
-
-export function observeResolvedRoute(routeId: string): void {
-  const boundedRouteId = routeId.startsWith('/')
-    ? routeId.slice(0, 160)
-    : 'unknown';
-  try {
-    webObservability?.api.pushEvent('dante.route.resolved', {
-      route_id: boundedRouteId,
-    });
-  } catch {
-    // A failed telemetry adapter cannot become a route-rendering failure.
-  }
-}
-
-export function observeRenderFailure(
-  error: Error,
-  componentStack?: string,
-): void {
-  if (webObservability === undefined) {
     return;
   }
 
-  try {
-    const reportedError = new Error(sanitizeText(error.message));
-    reportedError.name = 'ReactRenderError';
-    reportedError.stack = sanitizeText(
-      [error.stack, componentStack].filter(Boolean).join('\n'),
-    );
-    webObservability.api.pushError(reportedError, { type: 'react.render' });
-  } catch {
-    // Telemetry must never replace the product recovery surface with a failure.
+  if (!config.enabled || config.collectorUrl === undefined) {
+    return;
   }
+
+  const faro = initializeFaro({
+    url: config.collectorUrl,
+    app: {
+      name: 'dante-web',
+      version: config.releaseSha,
+      gitHash: config.releaseSha,
+      release: config.buildId,
+      environment: config.environment,
+    },
+    beforeSend: sanitizeTransportItem,
+    batching: {
+      enabled: true,
+      itemLimit: 20,
+      sendTimeout: 1_000,
+    },
+    instrumentations: instrumentations(),
+    internalLoggerLevel: InternalLoggerLevel.ERROR,
+    preventGlobalExposure: true,
+    sessionTracking: {
+      enabled: true,
+      persistent: false,
+      samplingRate: config.sessionSampleRate,
+    },
+    trackGeolocation: false,
+    trackResources: false,
+    webVitalsInstrumentation: {
+      reportAllChanges: false,
+      trackAttributionSources: false,
+    },
+    experimental: {
+      fetchTransportV2: true,
+    },
+  });
+  webObservability = faro;
+
+  installWebTelemetryAdapter({
+    observeResolvedRoute(routeId) {
+      faro.api.pushEvent('dante.route.resolved', { route_id: routeId });
+    },
+    observeRenderFailure(error, componentStack) {
+      const reportedError = new Error(sanitizeText(error.message));
+      reportedError.name = 'ReactRenderError';
+      reportedError.stack = sanitizeText(
+        [error.stack, componentStack].filter(Boolean).join('\n'),
+      );
+      faro.api.pushError(reportedError, { type: 'react.render' });
+    },
+  });
 }

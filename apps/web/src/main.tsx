@@ -12,7 +12,7 @@ import {
 import { routeTree } from './routeTree.gen';
 import './styles.css';
 
-initializeWebObservability();
+void initializeWebObservability();
 
 const queryClient = new QueryClient({
   defaultOptions: {

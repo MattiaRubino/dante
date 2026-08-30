@@ -16,6 +16,17 @@ _ALLOY = _REPO_ROOT / "infra" / "observability" / "alloy" / "config.alloy"
 _COMPOSE = _REPO_ROOT / "infra" / "compose" / "local.yaml"
 _ENV_EXAMPLE = _REPO_ROOT / "infra" / "observability" / ".env.example"
 _BACKEND_ENV_EXAMPLE = _REPO_ROOT / "apps" / "backend" / ".env.example"
+_WEB_ENV_EXAMPLE = _REPO_ROOT / "apps" / "web" / ".env.example"
+_WEB_MAIN = _REPO_ROOT / "apps" / "web" / "src" / "main.tsx"
+_WEB_INITIALIZER = (
+    _REPO_ROOT / "apps" / "web" / "src" / "platform" / "observability" / "initialize.ts"
+)
+_WEB_RUNTIME = (
+    _REPO_ROOT / "apps" / "web" / "src" / "platform" / "observability" / "runtime.ts"
+)
+_WEB_SANITIZER = (
+    _REPO_ROOT / "apps" / "web" / "src" / "platform" / "observability" / "sanitize.ts"
+)
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
     _REPO_ROOT / "infra" / "observability" / "grafana" / "alerts" / "dante-alerts.json"
@@ -265,12 +276,35 @@ def _validate_database_contract() -> None:
         _fail("Dictionary scope/schema must agree on the exact technical role topology")
 
 
+def _validate_web_contract() -> None:
+    environment = _read(_WEB_ENV_EXAMPLE)
+    main_source = _read(_WEB_MAIN)
+    initializer = _read(_WEB_INITIALIZER)
+    runtime = _read(_WEB_RUNTIME)
+    sanitizer = _read(_WEB_SANITIZER)
+
+    required_fragments = (
+        (environment, "VITE_DANTE_FARO_RESPECT_GPC=true"),
+        (main_source, "void initializeWebObservability();"),
+        (initializer, "await import('./runtime')"),
+        (initializer, "globalPrivacyControl"),
+        (runtime, "preventGlobalExposure: true"),
+        (runtime, "omitTraceContextForUnsampledSessions: true"),
+        (sanitizer, "MAX_TOTAL_NODES"),
+        (sanitizer, "new WeakSet<object>()"),
+    )
+    for source, fragment in required_fragments:
+        if fragment not in source:
+            _fail(f"Web privacy/performance contract is missing: {fragment}")
+
+
 def main() -> int:
     """Validate static artifacts; the pinned Alloy binary remains a separate CI gate."""
     try:
         _validate_alloy()
         _validate_grafana_assets()
         _validate_database_contract()
+        _validate_web_contract()
     except ValidationFailure as error:
         print(f"observability validation failed: {error}", file=sys.stderr)
         return 1

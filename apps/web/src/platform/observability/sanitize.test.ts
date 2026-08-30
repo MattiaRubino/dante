@@ -1,5 +1,5 @@
 import type { TransportItem } from '@grafana/faro-web-sdk';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { sanitizeText, sanitizeTransportItem, sanitizeUrl } from './sanitize';
 
@@ -15,6 +15,16 @@ describe('browser telemetry sanitization', () => {
     expect(sanitized).toBe(
       'https://dante.example/api/accounts/[redacted]/[redacted]',
     );
+  });
+
+  it('removes URL credentials and identifier-like numeric path segments', () => {
+    const sanitized = sanitizeUrl(
+      'https://person:secret@dante.example/api/accounts/123456?token=secret',
+    );
+
+    expect(sanitized).toBe('https://dante.example/api/accounts/[redacted]');
+    expect(sanitized).not.toContain('person');
+    expect(sanitized).not.toContain('secret');
   });
 
   it('redacts credentials and identifiers embedded in unstructured text', () => {
@@ -61,5 +71,58 @@ describe('browser telemetry sanitization', () => {
 
     expect(sanitized.length).toBeLessThan(2_100);
     expect(sanitized.endsWith('…[TRUNCATED]')).toBe(true);
+  });
+
+  it('redacts user identifiers across common field naming conventions', () => {
+    const item = {
+      type: 'event',
+      payload: {
+        attributes: {
+          user_id: '123456',
+          userName: 'private-name',
+          user_ref: REFERENCE,
+        },
+      },
+    } as unknown as TransportItem;
+
+    const serialized = JSON.stringify(sanitizeTransportItem(item));
+
+    expect(serialized).not.toContain('123456');
+    expect(serialized).not.toContain('private-name');
+    expect(serialized).not.toContain(REFERENCE);
+  });
+
+  it('handles circular objects and accessors without evaluating untrusted code', () => {
+    const getter = vi.fn(() => 'never-read-this');
+    const attributes: Record<string, unknown> = {};
+    Object.defineProperty(attributes, 'computed', {
+      enumerable: true,
+      get: getter,
+    });
+    attributes.circular = attributes;
+    const item = {
+      type: 'event',
+      payload: { attributes },
+    } as unknown as TransportItem;
+
+    const serialized = JSON.stringify(sanitizeTransportItem(item));
+
+    expect(getter).not.toHaveBeenCalled();
+    expect(serialized).toContain('[ACCESSOR_REDACTED]');
+    expect(serialized).toContain('[CIRCULAR]');
+    expect(serialized).not.toContain('never-read-this');
+  });
+
+  it('drops an item when an adversarial object prevents safe inspection', () => {
+    const item = new Proxy(
+      { type: 'event' },
+      {
+        ownKeys() {
+          throw new Error('private proxy failure');
+        },
+      },
+    ) as unknown as TransportItem;
+
+    expect(sanitizeTransportItem(item)).toBeNull();
   });
 });

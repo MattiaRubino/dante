@@ -7,6 +7,7 @@ export type WebObservabilityConfig = Readonly<{
   buildId: string;
   collectorUrl?: string;
   sessionSampleRate: number;
+  respectGlobalPrivacyControl: boolean;
 }>;
 
 type EnvironmentSource = Readonly<Record<string, string | undefined>>;
@@ -65,6 +66,20 @@ function parseEnabled(source: EnvironmentSource): boolean {
   if (raw !== 'true' && raw !== 'false') {
     throw new WebObservabilityConfigurationError(
       'VITE_DANTE_OBSERVABILITY_ENABLED must be true or false.',
+    );
+  }
+  return raw === 'true';
+}
+
+function parseBoolean(
+  source: EnvironmentSource,
+  key: string,
+  fallback: boolean,
+): boolean {
+  const raw = source[key]?.trim() ?? String(fallback);
+  if (raw !== 'true' && raw !== 'false') {
+    throw new WebObservabilityConfigurationError(
+      `${key} must be true or false.`,
     );
   }
   return raw === 'true';
@@ -141,5 +156,10 @@ export function readWebObservabilityConfig(
     buildId,
     ...(enabled ? { collectorUrl: collectorUrl(source) } : {}),
     sessionSampleRate: parseSampleRate(source),
+    respectGlobalPrivacyControl: parseBoolean(
+      source,
+      'VITE_DANTE_FARO_RESPECT_GPC',
+      true,
+    ),
   };
 }

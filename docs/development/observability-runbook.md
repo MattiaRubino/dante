@@ -170,10 +170,21 @@ Web LOCAL uses:
 VITE_DANTE_OBSERVABILITY_ENABLED=true
 VITE_DANTE_FARO_COLLECTOR_URL=http://127.0.0.1:12347/collect
 VITE_DANTE_FARO_SESSION_SAMPLE_RATE=0.10
+VITE_DANTE_FARO_RESPECT_GPC=true
 ```
 
 Remote Web values are build-time and must contain exact release/build identity.
 Never embed the Grafana Cloud API token.
+
+Faro is lazy-loaded only when telemetry is enabled and permitted by the privacy
+policy above. The production CSP must add the exact Faro collector origin to
+`connect-src`; never use `*`. Keep browser API calls behind the same-origin
+`/api/` boundary so trace propagation remains narrowly scoped.
+
+The Web build runs a manifest-backed bundle gate. It fails if the Faro runtime
+stops being a dynamic chunk, the initial entry exceeds 500 KiB or the governed
+Faro chunk exceeds 300 KiB. These are uncompressed transfer-independent upper
+bounds; normal gzip/Brotli delivery is still required in deployment.
 
 ## 8. First smoke verification
 

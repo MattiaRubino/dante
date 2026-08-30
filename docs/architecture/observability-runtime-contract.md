@@ -158,11 +158,25 @@ sampled same-origin API traces
 bounded resolved route identifiers
 ```
 
+The Faro vendor runtime is a lazy production chunk. Disabled observability and
+an honored browser Global Privacy Control signal do not download or initialize
+the SDK. Initialization is idempotent under React development concurrency,
+does not expose Faro on the browser global object and buffers at most the latest
+bounded route template while the chunk loads.
+
 It deliberately disables geolocation, resource collection, persistent session
 tracking, attribution sources, console capture and generic user-action capture.
 The transport sanitizer recursively bounds depth/keys/arrays/strings and
 redacts identity-like keys, email, UUID/reference, authorization and URL
-query/fragment content.
+query/fragment content. It also enforces a total node budget, handles circular
+references without recursion failure, never evaluates accessor properties and
+uses null-prototype output objects. URL credentials, identifier-like path
+segments and non-HTTP(S) URLs are removed before export.
+
+The deployment CSP must allow `connect-src` only to the DANTE API origin and
+the exact configured Faro collector origin. Wildcard telemetry origins are
+forbidden. The selected same-origin `/api/` deployment boundary remains the
+only browser-to-backend trace-propagation surface.
 
 The fallback screen is a functional product boundary, not a decorative mock:
 

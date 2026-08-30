@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { observeResolvedRoute } from './runtime';
+import { observeResolvedRoute } from './bridge';
 
 type RouteObserverProps = Readonly<{
   routeId: string;
