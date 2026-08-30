@@ -94,6 +94,7 @@ export function TimelineEventPeek({
 }: TimelineEventPeekProps) {
   const { t } = useTranslation('common');
   const peekRef = useRef<HTMLDivElement | null>(null);
+  const firstActionRef = useRef<HTMLButtonElement | null>(null);
   const [position, setPosition] = useState<PeekPosition>(() =>
     computePeekPosition(
       opener,
@@ -104,6 +105,10 @@ export function TimelineEventPeek({
       PEEK_ESTIMATED_HEIGHT_PX,
     ),
   );
+
+  useLayoutEffect(() => {
+    firstActionRef.current?.focus();
+  }, [event.id]);
 
   useLayoutEffect(() => {
     const update = () => {
@@ -225,6 +230,7 @@ export function TimelineEventPeek({
 
       <div className="timeline-event-peek__actions">
         <button
+          ref={firstActionRef}
           className="timeline-event-peek__action is-primary"
           type="button"
           onClick={() => {
