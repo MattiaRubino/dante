@@ -100,8 +100,9 @@ describe('TimelineSurface production parity', () => {
     });
     onDateNavigation.mockClear();
 
-    const nowButton =
-      container.querySelector<HTMLButtonElement>('.dante-timeline-now');
+    const nowButton = container.querySelector<HTMLButtonElement>(
+      '.dante-timeline-now',
+    );
     expect(nowButton).toBeTruthy();
     fireEvent.click(nowButton as HTMLButtonElement);
 

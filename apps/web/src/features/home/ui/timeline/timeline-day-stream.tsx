@@ -422,7 +422,8 @@ function TimelineDay({
             className="timeline-margin-label"
             key={`${gap.fromMinute}-${gap.toMinute}`}
             style={{
-              top: day.mapper.map(gap.fromMinute) + gridPolicy.marginLabelOffsetPx,
+              top:
+                day.mapper.map(gap.fromMinute) + gridPolicy.marginLabelOffsetPx,
             }}
             aria-hidden="true"
           >

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  TIMELINE_PROTOTYPE_TODAY,
-} from './model/timeline-fixtures';
+import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { TIMELINE_POLICY } from './model/timeline-policy';
 import { createInitialTimelineState } from './model/timeline-state';
 import {
@@ -29,7 +27,9 @@ function buildReferenceDays() {
 
 describe('timeline viewport runtime', () => {
   it('parses external view dates defensively', () => {
-    expect(parseTimelineViewedDate('2034-02-17')?.toString()).toBe('2034-02-17');
+    expect(parseTimelineViewedDate('2034-02-17')?.toString()).toBe(
+      '2034-02-17',
+    );
     expect(parseTimelineViewedDate(undefined)).toBeNull();
     expect(parseTimelineViewedDate('not-a-date')).toBeNull();
   });
@@ -73,9 +73,9 @@ describe('timeline viewport runtime', () => {
       today.dateKey,
     );
     expect(findTimelineDayAtOffset(days, -1)?.dateKey).toBe(days[0]?.dateKey);
-    expect(findTimelineDayAtOffset(days, Number.MAX_SAFE_INTEGER)?.dateKey).toBe(
-      days.at(-1)?.dateKey,
-    );
+    expect(
+      findTimelineDayAtOffset(days, Number.MAX_SAFE_INTEGER)?.dateKey,
+    ).toBe(days.at(-1)?.dateKey);
   });
 
   it('keeps the Now viewport anchor policy-owned', () => {

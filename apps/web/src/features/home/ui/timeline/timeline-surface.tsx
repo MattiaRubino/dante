@@ -194,7 +194,9 @@ export function TimelineSurface({
 
   const syncExpansion = useCallback(
     (progress: number) => {
-      const normalizedProgress = timelineSupportsExpandedLayout(window.innerWidth)
+      const normalizedProgress = timelineSupportsExpandedLayout(
+        window.innerWidth,
+      )
         ? clampTimelineRuntime(progress, 0, 1)
         : 0;
       expansionProgressRef.current = normalizedProgress;
@@ -444,7 +446,8 @@ export function TimelineSurface({
   }, [publishViewportDate, viewDate]);
 
   useLayoutEffect(() => {
-    const externalDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
+    const externalDate =
+      parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
     if (externalDate.equals(viewDate)) {
       return;
     }
@@ -564,7 +567,10 @@ export function TimelineSurface({
   }, []);
 
   const beginExpansionDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (!timelineSupportsExpandedLayout(window.innerWidth) || event.button !== 0) {
+    if (
+      !timelineSupportsExpandedLayout(window.innerWidth) ||
+      event.button !== 0
+    ) {
       return;
     }
     const parent = rootRef.current?.parentElement;
@@ -641,7 +647,8 @@ export function TimelineSurface({
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       settleExpansion(
-        expansionProgressRef.current >= TIMELINE_POLICY.expansion.settleThreshold
+        expansionProgressRef.current >=
+          TIMELINE_POLICY.expansion.settleThreshold
           ? 0
           : 1,
       );
