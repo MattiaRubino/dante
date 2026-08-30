@@ -27,6 +27,8 @@ _WEB_RUNTIME = (
 _WEB_SANITIZER = (
     _REPO_ROOT / "apps" / "web" / "src" / "platform" / "observability" / "sanitize.ts"
 )
+_WEB_SMOKE = _REPO_ROOT / "tooling" / "observability" / "run-local-web-smoke.py"
+_ROOT_PACKAGE = _REPO_ROOT / "package.json"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
     _REPO_ROOT / "infra" / "observability" / "grafana" / "alerts" / "dante-alerts.json"
@@ -298,6 +300,35 @@ def _validate_web_contract() -> None:
             _fail(f"Web privacy/performance contract is missing: {fragment}")
 
 
+def _validate_web_smoke_contract() -> None:
+    smoke = _read(_WEB_SMOKE)
+    package = _json(_ROOT_PACKAGE)
+    required_fragments = (
+        '"VITE_DANTE_FARO_SESSION_SAMPLE_RATE": "1.0"',
+        '"VITE_DANTE_FARO_RESPECT_GPC": "true"',
+        '"DANTE_E2E_API_TARGET": backend_origin',
+        "TemporaryDirectory(",
+        "key_path.chmod(0o600)",
+        "_require_healthy(alloy_ready_url",
+        '_require_healthy(f"{backend_origin}/health/ready"',
+        "_require_faro_cors(collector_url)",
+        'if not key.startswith("VITE_")',
+    )
+    for fragment in required_fragments:
+        if fragment not in smoke:
+            _fail(f"repeatable Web smoke contract is missing: {fragment}")
+    if "GRAFANA_CLOUD_API_KEY" in smoke or "grafana_cloud_api_key" in smoke:
+        _fail("Web smoke runner must not read a Grafana ingestion credential")
+    if _WEB_SMOKE.stat().st_mode & 0o111 == 0:
+        _fail("Web smoke runner must remain executable")
+    try:
+        command = package["scripts"]["observability:smoke:web"]
+    except (KeyError, TypeError) as error:
+        _fail(f"root Web smoke command is missing: {error}")
+    if command != "python3 tooling/observability/run-local-web-smoke.py":
+        _fail("root Web smoke command must execute the governed runner directly")
+
+
 def main() -> int:
     """Validate static artifacts; the pinned Alloy binary remains a separate CI gate."""
     try:
@@ -305,6 +336,7 @@ def main() -> int:
         _validate_grafana_assets()
         _validate_database_contract()
         _validate_web_contract()
+        _validate_web_smoke_contract()
     except ValidationFailure as error:
         print(f"observability validation failed: {error}", file=sys.stderr)
         return 1

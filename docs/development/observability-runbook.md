@@ -188,7 +188,20 @@ bounds; normal gzip/Brotli delivery is still required in deployment.
 
 ## 8. First smoke verification
 
-1. Start Alloy, backend and Web.
+1. Start Alloy and the observability-enabled backend. Then run the governed Web
+   surface from the repository root:
+
+```bash
+corepack pnpm observability:smoke:web
+```
+
+   The command performs backend/Alloy preflight checks, generates an ephemeral
+   one-day loopback certificate, builds with 100% LOCAL Faro sampling, serves
+   HTTPS with the `/api/v1` proxy, and removes the certificate on exit. It never
+   reads or exposes a Grafana credential. Accept the LOCAL certificate warning
+   at `https://127.0.0.1:4173`; production certificates remain unaffected.
+   Global Privacy Control is still honored, so use a LOCAL browser profile
+   without GPC only for this explicit synthetic smoke.
 2. Call `/health/ready` and exercise one successful and one deliberately invalid
    signin using synthetic LOCAL data.
 3. Load Web and perform one navigation; use a synthetic test-only render error
@@ -213,6 +226,8 @@ pg_stat_database_numbackends{job="integrations/postgres",environment="local"}
    contains route template, method and status but no raw URL/query/body/identity.
 8. Confirm a JSON backend log can correlate through `request_id` and, when
    sampled, `trace_id`.
+9. Stop the Web surface with `Ctrl+C`; its child process and ephemeral TLS key
+   must be gone before the smoke is considered complete.
 
 If provider-side OTLP translation produces a different metric suffix/label name,
 stop dashboard/alert materialization, capture the observed exact name and update

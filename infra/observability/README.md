@@ -89,4 +89,10 @@ Alloy endpoints are published only on loopback:
 - OTLP HTTP: `http://127.0.0.1:4318`;
 - LOCAL Faro: `http://127.0.0.1:12347/collect`.
 
+For a repeatable browser verification, keep Alloy and the instrumented backend
+running and execute `corepack pnpm observability:smoke:web` from the repository
+root. It
+uses the allowlisted `https://127.0.0.1:4173` origin, generates only ephemeral
+LOCAL TLS material and embeds no ingestion credential in the Web build.
+
 The application stays available if Alloy or Grafana Cloud is unavailable. Telemetry queues and retries are bounded; exhaustion drops observability data and is itself visible in Alloy self-metrics.

@@ -16,7 +16,8 @@
     "test:e2e:web": "pnpm --filter @dante/web test:e2e",
     "mobile:compat:check": "pnpm --filter @dante/mobile exec expo install --check",
     "mobile:bundle:check": "node tooling/check-mobile-bundle.mjs",
-    "observability:validate": "python3 tooling/observability/validate.py"
+    "observability:validate": "python3 tooling/observability/validate.py",
+    "observability:smoke:web": "python3 tooling/observability/run-local-web-smoke.py"
   },
   "engines": {
     "node": "24.19.0",
