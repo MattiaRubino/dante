@@ -8,6 +8,7 @@ export default {
         path: '^(apps/(web|mobile)|packages/(design-tokens|i18n|time))/',
       },
       to: {
+        pathNot: '^virtual:dante-day-ribbon-backdrop$',
         couldNotResolve: true,
       },
     },
