@@ -1,4 +1,4 @@
-"""Process-scoped M5 provider-flow runtime reusing accepted Auth resources."""
+"""Process-scoped M5 provider/authenticator lifecycle runtime reusing accepted Auth resources."""
 
 from dataclasses import dataclass
 
@@ -9,6 +9,7 @@ from dante.auth.apple import (
     AppleTokenVerifier,
 )
 from dante.auth.apple_flow import AppleFlowService
+from dante.auth.authenticator_lifecycle import AuthenticatorLifecycleService
 from dante.auth.google import GoogleTokenVerifier
 from dante.auth.lifecycle import KeyedRateLimiter
 from dante.auth.lifecycle_runtime import AuthLifecycleRuntime
@@ -21,10 +22,11 @@ from dante.platform.database.runtime import DatabaseRuntime
 
 @dataclass(frozen=True, slots=True)
 class ProviderFlowRuntime:
-    """M5 provider application services; parent runtimes own shared resources."""
+    """M5 provider flows plus Account-wide authenticator lifecycle authority."""
 
     service: ProviderFlowService | None
     apple_service: AppleFlowService | None
+    authenticator_service: AuthenticatorLifecycleService
 
 
 def create_provider_flow_runtime(
@@ -34,7 +36,7 @@ def create_provider_flow_runtime(
     auth_runtime: AuthRuntime,
     lifecycle_runtime: AuthLifecycleRuntime,
 ) -> ProviderFlowRuntime:
-    """Build enabled provider flows without duplicate network/crypto/email ownership."""
+    """Build provider flows and lifecycle authority without duplicate resource ownership."""
     max_keys = settings.provider_rate_max_keys
     limiters = ProviderFlowLimiters(
         begin=KeyedRateLimiter(
@@ -115,4 +117,17 @@ def create_provider_flow_runtime(
             limiters=limiters,
         )
 
-    return ProviderFlowRuntime(service=google_service, apple_service=apple_service)
+    authenticator_service = AuthenticatorLifecycleService(
+        session_factory=database_runtime.session_factory,
+        settings=settings,
+        apple_reconciler=(
+            apple_service.reconcile_expired_pending_grants
+            if apple_service is not None
+            else None
+        ),
+    )
+    return ProviderFlowRuntime(
+        service=google_service,
+        apple_service=apple_service,
+        authenticator_service=authenticator_service,
+    )
