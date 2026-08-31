@@ -128,7 +128,9 @@ def _wait_for_healthy(
         except AcceptanceFailure as error:
             last_failure = error
         if time.monotonic() >= deadline:
-            raise last_failure
+            if last_failure is not None:
+                raise last_failure
+            raise AcceptanceFailure(f"{label} did not become healthy")
         time.sleep(0.5)
 
 def _assert_alloy_service_exists(settings: Settings) -> None:
