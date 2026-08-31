@@ -47,18 +47,35 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
+function pointerActivate(element: HTMLElement, pointerId = 1) {
+  fireEvent.pointerDown(element, {
+    pointerId,
+    pointerType: 'mouse',
+    button: 0,
+    clientX: 100,
+    clientY: 100,
+  });
+  fireEvent.pointerUp(element, {
+    pointerId,
+    pointerType: 'mouse',
+    button: 0,
+    clientX: 100,
+    clientY: 100,
+  });
+}
+
 describe('Home World Focus entry', () => {
-  it('keeps single click for selection and opens the active World on double click', () => {
+  it('uses a stable two-activation gesture instead of native dblclick', () => {
     const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
     render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
 
     const music = screen.getByRole('listitem', { name: 'Musica' });
 
-    fireEvent.click(music);
+    pointerActivate(music, 1);
     expect(onOpenWorldFocus).not.toHaveBeenCalled();
     expect(music.getAttribute('aria-current')).toBe('true');
 
-    fireEvent.doubleClick(music);
+    pointerActivate(music, 2);
     expect(onOpenWorldFocus).toHaveBeenCalledTimes(1);
 
     const intent = onOpenWorldFocus.mock.calls[0]?.[0];
@@ -74,7 +91,21 @@ describe('Home World Focus entry', () => {
     expect(Number.isFinite(intent.origin.height)).toBe(true);
   });
 
-  it('keeps keyboard activation independent from the mouse double-click gesture', () => {
+  it('does not open the initially centered World on the first activation', () => {
+    const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
+    render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
+
+    const body = screen.getByRole('listitem', { name: 'Corpo' });
+    expect(body.getAttribute('aria-current')).toBe('true');
+
+    pointerActivate(body, 1);
+    expect(onOpenWorldFocus).not.toHaveBeenCalled();
+
+    pointerActivate(body, 2);
+    expect(onOpenWorldFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps keyboard activation on the same select-first/open-second contract', () => {
     const onOpenWorldFocus = vi.fn<(intent: HomeWorldOpenIntent) => void>();
     render(<HomePage onOpenWorldFocus={onOpenWorldFocus} />);
 
