@@ -91,7 +91,6 @@ export const TIMELINE_POLICY = {
     toastDurationMs: 5000,
   },
   expansion: {
-    trackChromeWidthPx: 60,
     groupOpacityStart: 0.16,
     groupOpacityRange: 0.52,
     cardMinWidthPx: 24,
@@ -114,13 +113,21 @@ export const TIMELINE_POLICY = {
     rulerWidthPx: 84,
     expansionHandleGutterPx: 14,
     groupMinWidthPx: 260,
+
+    /*
+     * The group header and the event layer share these exact horizontal insets.
+     * Runtime expansion derives its chrome width from their sum, so header,
+     * group columns, scroll range and event columns cannot drift independently.
+     */
+    eventsLeftInsetPx: 44,
+    eventsRightInsetPx: 16,
+
     compactLeftInsetPercent: 1.4,
     compactLaneRegionPercent: 91.6,
+    compactTargetLaneWidthPercent: 18,
     compactMaxLeftPercent: 64,
     compactMaxRightPercent: 94,
-    compactMultiLaneMinWidthPercent: 18,
     compactMultiLaneGapPercent: 1,
-    compactAbsoluteMinLaneWidthPercent: 14,
 
     /*
      * Isolated cards are measured from the actual rendered content at runtime.
