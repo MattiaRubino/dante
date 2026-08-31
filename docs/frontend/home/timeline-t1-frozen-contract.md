@@ -1,7 +1,8 @@
 # DANTE — Home Timeline T1 Frozen Behavior Contract
 
 - Status: **FROZEN — USER ACCEPTED BASELINE**
-- Workstream: `feature/home-react`
+- Workstream owner: `feature/home-timeline`
+- Integration target: `feature/home-react`
 - Behavioral baseline accepted after: `6e7795eab62c828f8dd0b010d893164dfa31b9b9`
 - Scope: Home Timeline interaction/geometry behavior already validated during T1 hardening
 
