@@ -1,21 +1,23 @@
 # DANTE — Access/Auth M5 Persistence + API Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE ACCEPTED / M5-B RUNTIME INFRASTRUCTURE ACCEPTED
+- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE ACCEPTED / M5-B RUNTIME INFRASTRUCTURE ACCEPTED / M5-C GOOGLE BACKEND ACCEPTED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Prerequisite:** M1–M4 CLOSED; M5.1 architecture/external-authority freeze COMPLETE
 - **M5.2:** exact persistence/API/state/race design COMPLETE
 - **M5-A persistence materialization:** COMPLETE / REAL POSTGRESQL 18.6 PROVEN
 - **M5-B provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure:** COMPLETE / ENGINEERING PASS
+- **M5-C Google authentication + Account creation/collision:** COMPLETE / ENGINEERING PASS
 - **Accepted PostgreSQL head:** `20260830_12`
 - **Prior accepted persistence baseline:** `20260829_11`
+- **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
-- **Next implementation step:** M5-C — Google authentication + Account creation/collision
+- **Next implementation step:** M5-D — Apple authentication + grant/notification lifecycle
 - **Companion authority:** `access-auth-m5-contract.md`
 - **Binding foundations:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record, CP6 persistence constitution
 
-This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. Public M5 API, generated client, Web integration and provider/browser acceptance remain future M5 slices.
+This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. M5-C materialized and proved the Google backend application/persistence slice. Public M5 API, generated client, Web integration and real provider/browser acceptance remain future M5 slices.
 
 ---
 
@@ -169,7 +171,54 @@ git diff --check                             PASS
 
 PostgreSQL was intentionally not rerun for M5-B because this slice changes no DB/schema/Alembic/Dictionary contract and no regression evidence justified reopening the accepted M5-A persistence gate.
 
-M5-B does not claim Google/Apple product flows, complete WebAuthn ceremonies, public M5 routes/OpenAPI/client, Web UI or real provider/browser acceptance.
+## 0.2 M5-C Google backend reconciliation
+
+M5-C materialized the Google authentication application/persistence slice without changing schema, Alembic or Dictionary truth.
+
+Accepted implementation checkpoint:
+
+```text
+e6f738a1ea3f5152caa7d99f1d6ccd108747c806
+chore(auth): finalize M5-C formatting
+```
+
+Accepted implementation:
+
+```text
+Google OIDC trust boundary over accepted M5-B JOSE/JWK runtime
+canonical Google issuer + issuer/subject identity authority
+issuer/audience/azp/nonce/exp/iat/nbf/subject validation
+Gmail / Workspace / third-party mailbox authority classification
+verifier-only ExternalAuthTransaction state/nonce persistence
+single transaction claim / replay rejection
+known ExternalIdentity signin → canonical DANTE AuthSession
+provider-authoritative mailbox → passwordless Account + verified EmailIdentity + ExternalIdentity
+third-party mailbox → DANTE provider-enrollment OTP before Account creation
+existing EmailIdentity collision → explicit link_required, never silent merge
+Google link/reauth exact AuthSession binding and bearer rotation
+one-shot account_profile_bootstrap staging
+purpose-separated provider-enrollment OTP verifier
+bounded provider ingress rate limits
+ambiguous commit reconciliation and uniqueness-race convergence
+no Google bearer/ID-token persistence or logging
+provider network work outside DB transactions
+```
+
+Accepted closeout proof:
+
+```text
+uv lock --check                              PASS
+Ruff format / format-check / lint            PASS
+mypy strict                                  PASS / 79 source files
+backend fast                                 148 / 148 PASS
+focused real PostgreSQL M5-C                  7 / 7 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+The focused PostgreSQL suite proves transaction verifier-only persistence/replay rejection, passwordless Account creation and identity reuse, email collision without silent merge, third-party mailbox enrollment, enrollment collision→link transition, concurrent same Google identity convergence and link/reauth session behavior.
+
+M5-C does not claim public M5 routes/OpenAPI/client, Access Web Google UI or real Google browser/provider acceptance.
 
 ---
 
@@ -1431,7 +1480,7 @@ uv lock determinism / uv lock --check
 
 The permanent rule remains: do not hand-roll JWT/JWS/JWK, CBOR/COSE/WebAuthn or AES-GCM.
 
-Future dependency upgrades require their own current compatibility/advisory review; M5-C does not silently widen the algorithms or trust sources admitted by M5-B.
+Future dependency upgrades require their own current compatibility/advisory review; later M5 slices do not silently widen the algorithms or trust sources admitted by M5-B.
 
 ---
 
@@ -1539,7 +1588,7 @@ problem mapping
 
 ## Real PostgreSQL
 
-M5-A already proves the persistence foundation. Later lifecycle slices add focused PG proof only where they add DB/race behavior.
+M5-A proves the persistence foundation. Later lifecycle slices add focused PG proof only where they add DB/race behavior.
 
 ```text
 PK/FK/UQ/CHECK/index/ACL
@@ -1552,6 +1601,8 @@ provider collision/account creation races
 passkey duplicate/removal/auth races
 password/recovery races
 ```
+
+M5-C focused PostgreSQL proof is accepted for the Google application/persistence behavior added by that slice.
 
 ## FastAPI HTTP
 
@@ -1610,8 +1661,8 @@ CI remains deterministic and does not depend on public providers.
 ```text
 M5-A   persistence foundations                              COMPLETE / PROVEN
 M5-B   provider/JWK/JOSE/AEAD infrastructure               COMPLETE / ENGINEERING PASS
-M5-C   Google                                              NEXT
-M5-D   Apple grant/callback/notifications                   PLANNED
+M5-C   Google                                              COMPLETE / ENGINEERING PASS
+M5-D   Apple grant/callback/notifications                   NEXT
 M5-E   linking + authenticator management/anti-lockout      PLANNED
 M5-F   WebAuthn/passkeys                                    PLANNED
 M5-G   add/remove password + passwordless recovery          PLANNED
@@ -1637,7 +1688,11 @@ M5-A static/type/fast/build                    PASS
 M5-B provider/JWK/JOSE/AEAD infrastructure    COMPLETE / ENGINEERING PASS
 M5-B fast                                      127 / 127 PASS
 M5-B Ruff/mypy/build                           PASS
-M5-C                                           NEXT
+M5-C Google backend                            COMPLETE / ENGINEERING PASS
+M5-C fast                                      148 / 148 PASS
+M5-C focused real PostgreSQL                    7 / 7 PASS
+M5-C Ruff/mypy/build                           PASS
+M5-D                                           NEXT
 ```
 
-M5 as a whole remains ACTIVE. M5-A persistence acceptance plus M5-B runtime-infrastructure acceptance do not imply Google/Apple product flows, public API/Web materialization, browser/provider UAT or whole-M5 completion.
+M5 as a whole remains ACTIVE. Accepted M5-A persistence, M5-B runtime infrastructure and M5-C Google backend behavior do not imply Apple, public API/Web materialization, browser/provider UAT or whole-M5 completion.
