@@ -1,11 +1,12 @@
-"""Process-scoped M4 Auth lifecycle runtime built on the accepted M3 security resources."""
+"""Process-scoped Auth lifecycle runtime built on the accepted M3 security resources."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
+from dante.auth.authenticator_lifecycle import MultiAuthenticatorLifecycleService
 from dante.auth.email_delivery import SmtpEmailDispatcher
-from dante.auth.lifecycle import AuthLifecycleService, KeyedRateLimiter, LifecycleLimiters
+from dante.auth.lifecycle import KeyedRateLimiter, LifecycleLimiters
 from dante.auth.passwords import HibpPasswordChecker
 from dante.auth.proofs import SignupOtpCodec
 from dante.auth.service import AuthRuntime
@@ -15,9 +16,9 @@ from dante.platform.database.runtime import DatabaseRuntime
 
 @dataclass(slots=True)
 class AuthLifecycleRuntime:
-    """M4 lifecycle service plus the process-owned email dispatcher it exclusively owns."""
+    """Auth lifecycle service plus the process-owned email dispatcher it exclusively owns."""
 
-    service: AuthLifecycleService
+    service: MultiAuthenticatorLifecycleService
     email_dispatcher: SmtpEmailDispatcher
 
     async def aclose(self) -> None:
@@ -31,7 +32,7 @@ async def create_auth_lifecycle_runtime(
     database_runtime: DatabaseRuntime,
     auth_runtime: AuthRuntime,
 ) -> AuthLifecycleRuntime:
-    """Construct M4 lifecycle capabilities while reusing M3 KDF/HIBP transport resources."""
+    """Construct lifecycle capabilities while reusing M3 KDF/HIBP transport resources."""
     email_dispatcher = SmtpEmailDispatcher(settings=settings)
     await email_dispatcher.start()
     try:
@@ -71,7 +72,7 @@ async def create_auth_lifecycle_runtime(
                 max_keys=max_keys,
             ),
         )
-        service = AuthLifecycleService(
+        service = MultiAuthenticatorLifecycleService(
             session_factory=database_runtime.session_factory,
             settings=settings,
             password_kdf=auth_runtime.password_kdf,
