@@ -71,6 +71,16 @@
   outline-offset: 2px;
 }
 
+.home-timeline--production .timeline-event-card:focus-visible {
+  outline-offset: -2px;
+}
+
+.home-timeline--production .timeline-event-card.is-focused:focus-visible {
+  box-shadow:
+    inset 3px 0 0 var(--timeline-group-color),
+    0 8px 20px rgba(0, 0, 0, 0.14);
+}
+
 /* Header ------------------------------------------------------------------ */
 
 .home-m1 .home-timeline--production .home-timeline-head--production {
