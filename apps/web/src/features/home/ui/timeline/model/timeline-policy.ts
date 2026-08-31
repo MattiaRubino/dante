@@ -118,19 +118,21 @@ export const TIMELINE_POLICY = {
     compactLaneRegionPercent: 91.6,
     compactMaxLeftPercent: 64,
     compactMaxRightPercent: 94,
-    compactSingleLaneMinWidthPercent: 24,
-    compactSingleLaneMaxWidthPercent: 52,
-    compactSingleLaneMaxWidthPx: 640,
     compactMultiLaneMinWidthPercent: 18,
     compactMultiLaneGapPercent: 1,
-    compactTitleWeightMaxChars: 68,
-    compactMetaWeightMaxChars: 44,
-    compactMetaWeightScale: 0.35,
-    compactWidthBasePercent: 18,
-    compactTitleWidthFactor: 0.58,
-    compactMetaWidthFactor: 0.12,
     compactAbsoluteMinLaneWidthPercent: 14,
-    compactAbsoluteMinWidthPercent: 18,
+
+    /*
+     * Isolated cards are measured from the actual rendered content at runtime.
+     * These bounds are presentation policy, not fixture heuristics: they work
+     * for arbitrary titles/locales while preventing both postage-stamp cards
+     * and giant empty slabs on wide timelines.
+     */
+    compactIntrinsicMinWidthPx: 190,
+    compactIntrinsicMaxWidthPx: 480,
+    compactIntrinsicResponsiveMaxFloorPx: 280,
+    compactIntrinsicMaxViewportRatio: 0.42,
+    compactIntrinsicHorizontalBreathingPx: 32,
   },
 } as const;
 
