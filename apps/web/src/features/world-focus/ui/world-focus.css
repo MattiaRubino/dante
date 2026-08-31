@@ -2,34 +2,19 @@
   --world-focus-accent: #8a74ff;
   --world-focus-ambient-intensity: 0.75;
   --world-focus-particle-density: 0.6;
-  --world-focus-origin-x: 0px;
-  --world-focus-origin-y: 0px;
-  --world-focus-origin-scale: 0.58;
-  --world-focus-portal-size: 188px;
 
   position: fixed;
-  z-index: 1600;
-  inset: 0;
+  z-index: 900;
+  top: var(--app-shell-topbar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
   overflow: auto;
   min-width: 0;
-  min-height: 100dvh;
   color: var(--dante-theme-home-text-primary);
-  background:
-    radial-gradient(
-      circle at 50% 43%,
-      color-mix(
-        in srgb,
-        var(--world-focus-accent)
-          calc(var(--world-focus-ambient-intensity) * 17%),
-        transparent
-      ) 0,
-      transparent 42%
-    ),
-    radial-gradient(circle at 16% 18%, rgba(84, 65, 155, 0.18), transparent 38%),
-    linear-gradient(145deg, #060b15 0%, #090f1d 48%, #050912 100%);
+  background: transparent;
   isolation: isolate;
   outline: none;
-  animation: world-focus-shell-enter 360ms ease-out both;
 }
 
 .world-focus-shell,
@@ -39,97 +24,145 @@
 
 .world-focus-ambient,
 .world-focus-ambient-field,
-.world-focus-ambient-stars {
-  position: absolute;
-  inset: 0;
+.world-focus-ambient-stars,
+.world-focus-entry-effect {
+  position: fixed;
+  top: var(--app-shell-topbar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
   pointer-events: none;
 }
 
 .world-focus-ambient {
   z-index: -2;
   overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      color-mix(in srgb, var(--world-focus-accent) 14%, transparent),
+      transparent 43%
+    ),
+    radial-gradient(circle at 15% 18%, rgba(84, 65, 155, 0.2), transparent 38%),
+    linear-gradient(148deg, #040812 0%, #07101f 48%, #04070d 100%);
+  opacity: 1;
+  transform: scale(1);
+}
+
+.world-focus-shell[data-entry-phase='entering'] .world-focus-ambient {
+  animation: world-focus-ambient-enter 920ms cubic-bezier(0.16, 0.78, 0.22, 1)
+    both;
+}
+
+.world-focus-ambient-field,
+.world-focus-ambient-stars {
+  top: 0;
 }
 
 .world-focus-ambient-field {
   background:
     radial-gradient(
-      ellipse at 50% 43%,
-      color-mix(in srgb, var(--world-focus-accent) 12%, transparent),
-      transparent 48%
+      ellipse at 50% 42%,
+      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
+      transparent 50%
     ),
     repeating-radial-gradient(
-      ellipse at 50% 43%,
-      rgba(255, 255, 255, 0.025) 0 1px,
-      transparent 1px 34px
+      ellipse at 50% 42%,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 40px
     );
-  opacity: calc(0.42 + var(--world-focus-ambient-intensity) * 0.35);
-  mask-image: radial-gradient(circle at 50% 43%, black, transparent 72%);
+  opacity: calc(0.28 + var(--world-focus-ambient-intensity) * 0.32);
+  mask-image: radial-gradient(circle at 50% 42%, black 0 12%, transparent 74%);
 }
 
 .world-focus-shell[data-texture='wave'] .world-focus-ambient-field {
   background:
     repeating-radial-gradient(
-      ellipse at 50% 43%,
-      color-mix(in srgb, var(--world-focus-accent) 11%, transparent) 0 1px,
-      transparent 1px 27px
+      ellipse at 50% 42%,
+      color-mix(in srgb, var(--world-focus-accent) 10%, transparent) 0 1px,
+      transparent 1px 31px
     ),
     radial-gradient(
-      ellipse at 50% 43%,
-      color-mix(in srgb, var(--world-focus-accent) 13%, transparent),
-      transparent 52%
+      ellipse at 50% 42%,
+      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
+      transparent 54%
     );
 }
 
 .world-focus-shell[data-texture='grid'] .world-focus-ambient-field {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
     radial-gradient(
-      ellipse at 50% 43%,
-      color-mix(in srgb, var(--world-focus-accent) 12%, transparent),
-      transparent 48%
+      ellipse at 50% 42%,
+      color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
+      transparent 52%
     );
   background-size:
-    42px 42px,
-    42px 42px,
+    46px 46px,
+    46px 46px,
     auto;
 }
 
 .world-focus-ambient-stars {
-  opacity: calc(0.12 + var(--world-focus-particle-density) * 0.44);
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.64) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.7) 0 0.6px, transparent 0.9px),
     radial-gradient(
       circle,
-      color-mix(in srgb, var(--world-focus-accent) 62%, white) 0 0.8px,
+      color-mix(in srgb, var(--world-focus-accent) 55%, white) 0 0.7px,
       transparent 1px
     );
   background-position:
     0 0,
-    37px 61px;
+    43px 71px;
   background-size:
-    113px 107px,
-    167px 149px;
-  mask-image: radial-gradient(circle at 50% 43%, black 0 22%, transparent 78%);
+    137px 127px,
+    191px 173px;
+  mask-image: radial-gradient(circle at 50% 42%, black 0 18%, transparent 78%);
+  opacity: calc(0.08 + var(--world-focus-particle-density) * 0.32);
+}
+
+.world-focus-entry-effect {
+  z-index: 10;
+  width: 100%;
+  height: calc(100dvh - var(--app-shell-topbar-height));
+  display: block;
+}
+
+.world-focus-entry-effect[data-world-focus-entry-renderer='fallback'] {
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--world-focus-accent) 72%, white) 0 2%,
+      color-mix(in srgb, var(--world-focus-accent) 38%, transparent) 9%,
+      transparent 21%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--world-focus-accent) 24%, transparent),
+      transparent 58%
+    );
+  animation: world-focus-fallback-entry 1.08s cubic-bezier(0.16, 0.78, 0.22, 1)
+    both;
 }
 
 .world-focus-back {
   position: fixed;
-  z-index: 4;
-  top: max(24px, env(safe-area-inset-top));
+  z-index: 30;
+  top: calc(var(--app-shell-topbar-height) + max(24px, env(safe-area-inset-top)));
   left: max(28px, env(safe-area-inset-left));
   display: inline-flex;
   min-height: 42px;
   align-items: center;
   gap: 10px;
   padding: 0 14px 0 11px;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 25%, #ffffff1f);
+  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 24%, #ffffff20);
   border-radius: 999px;
   color: rgba(246, 248, 255, 0.9);
-  background: rgba(10, 15, 28, 0.62);
+  background: rgba(9, 15, 27, 0.62);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 34px rgba(0, 0, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 12px 34px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(18px) saturate(125%);
   font: inherit;
   font-size: 0.84rem;
@@ -140,6 +173,13 @@
     border-color 150ms ease,
     background 150ms ease,
     transform 150ms ease;
+}
+
+.world-focus-shell[data-entry-phase='entering'] .world-focus-back,
+.world-focus-shell[data-entry-phase='entering'] .world-focus-identity,
+.world-focus-shell[data-entry-phase='entering'] .world-focus-canvas {
+  animation: world-focus-content-enter 760ms 520ms cubic-bezier(0.16, 0.78, 0.22, 1)
+    both;
 }
 
 .world-focus-back > span:first-child {
@@ -163,10 +203,9 @@
 
 .world-focus-identity {
   position: relative;
-  z-index: 2;
-  width: min(430px, calc(100% - 48px));
-  margin: clamp(112px, 15vh, 154px) 0 0 clamp(28px, 7vw, 116px);
-  animation: world-focus-copy-enter 520ms 180ms ease-out both;
+  z-index: 20;
+  width: min(470px, calc(100% - 48px));
+  margin: clamp(104px, 14vh, 150px) 0 0 clamp(28px, 7vw, 116px);
 }
 
 .world-focus-kicker {
@@ -182,11 +221,11 @@
 .world-focus-identity h1 {
   margin: 0;
   color: rgba(250, 251, 255, 0.98);
-  font-size: clamp(2.4rem, 5vw, 5.6rem);
+  font-size: clamp(2.5rem, 5vw, 5.8rem);
   font-weight: 620;
   letter-spacing: -0.055em;
   line-height: 0.95;
-  text-shadow: 0 14px 52px color-mix(in srgb, var(--world-focus-accent) 18%, transparent);
+  text-shadow: 0 16px 58px color-mix(in srgb, var(--world-focus-accent) 18%, transparent);
 }
 
 .world-focus-identity p {
@@ -197,161 +236,12 @@
   line-height: 1.55;
 }
 
-.world-focus-portal {
-  position: absolute;
-  z-index: 1;
-  top: 43%;
-  left: 50%;
-  width: var(--world-focus-portal-size);
-  height: var(--world-focus-portal-size);
-  transform: translate(-50%, -50%);
-  transform-origin: center;
-  pointer-events: none;
-}
-
-.world-focus-shell[data-entry-origin='live'] .world-focus-portal {
-  animation: world-focus-portal-enter 760ms cubic-bezier(0.16, 0.82, 0.2, 1) both;
-}
-
-.world-focus-shell[data-entry-origin='fallback'] .world-focus-portal {
-  animation: world-focus-portal-fallback 560ms cubic-bezier(0.16, 0.82, 0.2, 1) both;
-}
-
-.world-focus-portal-halo,
-.world-focus-orbit,
-.world-focus-portal-core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.world-focus-portal-halo {
-  width: 365%;
-  height: 365%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--world-focus-accent) 16%, transparent) 0,
-    color-mix(in srgb, var(--world-focus-accent) 5%, transparent) 38%,
-    transparent 68%
-  );
-  filter: blur(10px);
-  opacity: calc(0.56 + var(--world-focus-ambient-intensity) * 0.28);
-  animation: world-focus-halo-breathe 6.4s ease-in-out infinite;
-}
-
-.world-focus-orbit {
-  --world-focus-orbit-index: 0;
-
-  width: calc(145% + var(--world-focus-orbit-index) * 42%);
-  height: calc(96% + var(--world-focus-orbit-index) * 29%);
-  border: 1px solid
-    color-mix(
-      in srgb,
-      var(--world-focus-accent)
-        calc(31% - var(--world-focus-orbit-index) * 3%),
-      transparent
-    );
-  box-shadow:
-    inset 0 0 18px color-mix(in srgb, var(--world-focus-accent) 5%, transparent),
-    0 0 18px color-mix(in srgb, var(--world-focus-accent) 5%, transparent);
-  opacity: calc(0.72 - var(--world-focus-orbit-index) * 0.075);
-  transform:
-    translate(-50%, -50%)
-    rotate(calc(-26deg + var(--world-focus-orbit-index) * 19deg));
-}
-
-.world-focus-orbit::before,
-.world-focus-orbit::after {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--world-focus-accent) 76%, white);
-  box-shadow: 0 0 15px var(--world-focus-accent);
-  content: '';
-}
-
-.world-focus-orbit::before {
-  top: 9%;
-  left: 25%;
-}
-
-.world-focus-orbit::after {
-  right: 17%;
-  bottom: 14%;
-  width: 3px;
-  height: 3px;
-  opacity: 0.68;
-}
-
-.world-focus-portal-core {
-  width: 100%;
-  height: 100%;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 58%, white 12%);
-  background:
-    radial-gradient(
-      circle at 36% 31%,
-      rgba(255, 255, 255, 0.16),
-      transparent 19%
-    ),
-    radial-gradient(
-      circle at 48% 47%,
-      color-mix(in srgb, var(--world-focus-accent) 36%, #101827),
-      #09111f 68%
-    );
-  box-shadow:
-    inset -24px -30px 52px rgba(0, 0, 0, 0.42),
-    inset 16px 14px 38px color-mix(in srgb, var(--world-focus-accent) 10%, transparent),
-    0 0 48px color-mix(in srgb, var(--world-focus-accent) 28%, transparent),
-    0 0 100px color-mix(in srgb, var(--world-focus-accent) 10%, transparent);
-}
-
-.world-focus-portal-core > span {
-  position: absolute;
-  inset: 12%;
-  border: 1px solid color-mix(in srgb, var(--world-focus-accent) 26%, transparent);
-  border-radius: 50%;
-  background:
-    conic-gradient(
-      from 42deg,
-      transparent,
-      color-mix(in srgb, var(--world-focus-accent) 18%, transparent),
-      transparent 28%,
-      transparent 67%,
-      color-mix(in srgb, var(--world-focus-accent) 14%, transparent),
-      transparent
-    );
-  opacity: 0.82;
-}
-
-.world-focus-shell[data-motion='pulse'] .world-focus-portal-core {
-  animation: world-focus-core-pulse 5.8s ease-in-out infinite;
-}
-
-.world-focus-shell[data-motion='orbit'] .world-focus-orbit {
-  animation: world-focus-orbit-drift 12s linear infinite;
-}
-
-.world-focus-shell[data-motion='drift'] .world-focus-portal {
-  animation-duration: 900ms;
-}
-
-.world-focus-shell[data-motion='drift'] .world-focus-portal-core {
-  animation: world-focus-core-drift 9s ease-in-out infinite;
-}
-
-.world-focus-shell[data-motion='steady'] .world-focus-orbit {
-  opacity: calc(0.58 - var(--world-focus-orbit-index) * 0.06);
-}
-
 .world-focus-canvas {
   position: relative;
-  z-index: 2;
+  z-index: 20;
   width: min(1180px, calc(100% - 56px));
   min-height: clamp(300px, 48vh, 560px);
-  margin: clamp(300px, 45vh, 480px) auto 48px;
+  margin: clamp(280px, 42vh, 450px) auto 48px;
   pointer-events: none;
 }
 
@@ -363,126 +253,63 @@
   opacity: 0.42;
 }
 
-@keyframes world-focus-shell-enter {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes world-focus-copy-enter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes world-focus-portal-enter {
+@keyframes world-focus-ambient-enter {
   0% {
-    opacity: 0.88;
-    transform:
-      translate(
-        calc(-50% + var(--world-focus-origin-x)),
-        calc(-50% + var(--world-focus-origin-y))
-      )
-      scale(var(--world-focus-origin-scale));
-    filter: saturate(0.95) brightness(0.92);
+    opacity: 0;
+    transform: scale(1.045);
   }
-  46% {
-    opacity: 1;
-    filter: saturate(1.18) brightness(1.12);
-  }
-  72% {
-    transform: translate(-50%, -50%) scale(1.07);
+  44% {
+    opacity: 0.18;
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-    filter: saturate(1) brightness(1);
+    transform: scale(1);
   }
 }
 
-@keyframes world-focus-portal-fallback {
+@keyframes world-focus-content-enter {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.72);
+    transform: translate3d(0, 16px, 0) scale(0.985);
+    filter: blur(8px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
   }
 }
 
-@keyframes world-focus-halo-breathe {
-  0%,
+@keyframes world-focus-fallback-entry {
+  0% {
+    opacity: 0;
+    transform: scale(0.28);
+  }
+  52% {
+    opacity: 0.94;
+  }
   100% {
-    opacity: 0.62;
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-  50% {
-    opacity: 0.86;
-    transform: translate(-50%, -50%) scale(1.04);
-  }
-}
-
-@keyframes world-focus-core-pulse {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(0.985);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.025);
-  }
-}
-
-@keyframes world-focus-orbit-drift {
-  from {
-    transform:
-      translate(-50%, -50%)
-      rotate(calc(-26deg + var(--world-focus-orbit-index) * 19deg));
-  }
-  to {
-    transform:
-      translate(-50%, -50%)
-      rotate(calc(334deg + var(--world-focus-orbit-index) * 19deg));
-  }
-}
-
-@keyframes world-focus-core-drift {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) translate3d(-3px, 2px, 0);
-  }
-  50% {
-    transform: translate(-50%, -50%) translate3d(4px, -3px, 0);
+    opacity: 0;
+    transform: scale(5.2);
   }
 }
 
 @media (max-width: 760px) {
   .world-focus-back {
-    top: max(16px, env(safe-area-inset-top));
+    top: calc(var(--app-shell-topbar-height) + max(16px, env(safe-area-inset-top)));
     left: max(16px, env(safe-area-inset-left));
+    width: 42px;
+    justify-content: center;
+    padding: 0;
   }
 
   .world-focus-back > span:last-child {
     display: none;
   }
 
-  .world-focus-back {
-    width: 42px;
-    padding: 0;
-    justify-content: center;
-  }
-
   .world-focus-identity {
     width: calc(100% - 40px);
-    margin: 92px 20px 0;
+    margin: 88px 20px 0;
     text-align: center;
   }
 
@@ -490,34 +317,19 @@
     margin-inline: auto;
   }
 
-  .world-focus-portal {
-    top: 49%;
-  }
-
   .world-focus-canvas {
     width: calc(100% - 32px);
-    margin-top: 55vh;
+    margin-top: 52vh;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .world-focus-shell,
-  .world-focus-identity,
-  .world-focus-shell .world-focus-portal,
-  .world-focus-shell .world-focus-portal-core,
-  .world-focus-shell .world-focus-orbit,
-  .world-focus-portal-halo {
+  .world-focus-shell[data-entry-phase='entering'] .world-focus-ambient,
+  .world-focus-shell[data-entry-phase='entering'] .world-focus-back,
+  .world-focus-shell[data-entry-phase='entering'] .world-focus-identity,
+  .world-focus-shell[data-entry-phase='entering'] .world-focus-canvas,
+  .world-focus-entry-effect[data-world-focus-entry-renderer='fallback'] {
     animation: none !important;
-  }
-
-  .world-focus-shell,
-  .world-focus-identity,
-  .world-focus-portal {
-    opacity: 1;
-  }
-
-  .world-focus-portal {
-    transform: translate(-50%, -50%);
   }
 
   .world-focus-back {
