@@ -43,6 +43,35 @@ def _canonical_url(value: str, *, name: str, origin_only: bool = False) -> str:
     return candidate.rstrip("/") if origin_only else candidate
 
 
+def _webauthn_rp_id(value: str) -> str:
+    candidate = _trimmed(value, name="WebAuthn RP ID").lower()
+    try:
+        canonical = candidate.encode("idna").decode("ascii")
+    except UnicodeError as exc:
+        raise ValueError("WebAuthn RP ID must be a valid DNS name") from exc
+    if canonical == "localhost":
+        return canonical
+    try:
+        ip_address(canonical)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("WebAuthn RP ID must be a DNS name, not an IP address")
+    labels = canonical.split(".")
+    if len(labels) < 2:
+        raise ValueError("WebAuthn RP ID must be localhost or a DNS domain")
+    for label in labels:
+        if (
+            not label
+            or len(label) > 63
+            or not label[0].isalnum()
+            or not label[-1].isalnum()
+            or not all(character.isalnum() or character == "-" for character in label)
+        ):
+            raise ValueError("WebAuthn RP ID must be a valid DNS domain")
+    return canonical
+
+
 def _apple_redirect_uri(value: str) -> str:
     candidate = _canonical_url(value, name="Apple redirect URI")
     parts = urlsplit(candidate)
@@ -225,10 +254,15 @@ class WebAuthnSettings(BaseModel):
     complete_rate_window_seconds: PositiveFloat = 60.0
     rate_max_keys: PositiveInt = 20_000
 
-    @field_validator("rp_id", "rp_name")
+    @field_validator("rp_id")
     @classmethod
-    def validate_identity(cls, value: str) -> str:
-        return _trimmed(value, name="WebAuthn RP identity")
+    def validate_rp_id(cls, value: str) -> str:
+        return _webauthn_rp_id(value)
+
+    @field_validator("rp_name")
+    @classmethod
+    def validate_rp_name(cls, value: str) -> str:
+        return _trimmed(value, name="WebAuthn RP name")
 
     @field_validator("expected_origins")
     @classmethod
@@ -238,6 +272,8 @@ class WebAuthnSettings(BaseModel):
         canonical = tuple(
             _canonical_url(value, name="WebAuthn origin", origin_only=True) for value in values
         )
+        if any(urlsplit(origin).scheme != "https" for origin in canonical):
+            raise ValueError("WebAuthn origins must use HTTPS")
         if len(set(canonical)) != len(canonical):
             raise ValueError("WebAuthn expected_origins must be unique")
         return canonical
@@ -246,6 +282,15 @@ class WebAuthnSettings(BaseModel):
     def validate_ceremony_bounds(self) -> Self:
         if self.challenge_lifetime_seconds > 300:
             raise ValueError("WebAuthn challenge lifetime cannot exceed five minutes")
+        for origin in self.expected_origins:
+            hostname = urlsplit(origin).hostname
+            if hostname is None:
+                raise ValueError("WebAuthn origin lost its hostname")
+            if self.rp_id == "localhost":
+                if hostname != "localhost":
+                    raise ValueError("localhost WebAuthn RP requires localhost origins")
+            elif hostname != self.rp_id and not hostname.endswith(f".{self.rp_id}"):
+                raise ValueError("WebAuthn origin host must equal or be a subdomain of the RP ID")
         return self
 
 
