@@ -274,7 +274,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["material_state_ref"],
             ["dante.material_state_address.material_state_ref"],
-            name=op.f("fk_material_state_retirement_material_state_ref_material_state_address"),
+            name=op.f("fk_material_state_retirement_state_ref_material_state_address"),
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",

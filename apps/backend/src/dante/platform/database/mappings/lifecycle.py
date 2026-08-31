@@ -32,7 +32,7 @@ class MaterialStateRetirementRow(Base):
         ForeignKeyConstraint(
             ["material_state_ref"],
             ["dante.material_state_address.material_state_ref"],
-            name="fk_material_state_retirement_material_state_ref_material_state_address",
+            name="fk_material_state_retirement_state_ref_material_state_address",
             match="SIMPLE",
             onupdate="NO ACTION",
             ondelete="NO ACTION",
