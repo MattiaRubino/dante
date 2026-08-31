@@ -117,37 +117,6 @@ export function computeTimelineOverlapLayout(
   return result;
 }
 
-function preferredCompactWidthPercent(
-  event: TimelineEvent,
-  laneCount: number,
-): number {
-  const layout = TIMELINE_POLICY.layout;
-  if (laneCount > 1) {
-    const laneWidth = layout.compactMaxRightPercent / laneCount;
-    return Math.max(
-      layout.compactMultiLaneMinWidthPercent,
-      laneWidth - layout.compactMultiLaneGapPercent,
-    );
-  }
-
-  const titleWeight = Math.min(
-    layout.compactTitleWeightMaxChars,
-    event.title.length,
-  );
-  const metaWeight =
-    Math.min(layout.compactMetaWeightMaxChars, event.meta?.length ?? 0) *
-    layout.compactMetaWeightScale;
-  return Math.max(
-    layout.compactSingleLaneMinWidthPercent,
-    Math.min(
-      layout.compactSingleLaneMaxWidthPercent,
-      layout.compactWidthBasePercent +
-        titleWeight * layout.compactTitleWidthFactor +
-        metaWeight * layout.compactMetaWidthFactor,
-    ),
-  );
-}
-
 export function computeTimelineEventLayouts(
   events: readonly TimelineEvent[],
   groups: readonly TimelineGroup[],
@@ -188,10 +157,14 @@ export function computeTimelineEventLayouts(
     let compactLeftPercent: number;
     let compactWidthPercent: number;
     if (compact.laneCount === 1) {
-      // A lone event has no spatial conflict to explain. Keep the common
-      // timeline axis instead of shifting isolated cards left/right by group.
+      /*
+       * Zero is an explicit intrinsic-sizing sentinel. Isolated cards have no
+       * horizontal collision constraint, so their width belongs to the DOM
+       * runtime where the real rendered content/font/locale can be measured.
+       * The layout engine only owns their temporal position and shared axis.
+       */
       compactLeftPercent = layoutPolicy.compactLeftInsetPercent;
-      compactWidthPercent = preferredCompactWidthPercent(event, 1);
+      compactWidthPercent = 0;
     } else {
       const laneSpan =
         layoutPolicy.compactLaneRegionPercent / compact.laneCount;
@@ -201,18 +174,15 @@ export function computeTimelineEventLayouts(
         layoutPolicy.compactAbsoluteMinLaneWidthPercent,
         laneSpan - layoutPolicy.compactMultiLaneGapPercent,
       );
+      compactWidthPercent = Math.min(
+        compactWidthPercent,
+        layoutPolicy.compactMaxRightPercent - compactLeftPercent,
+      );
     }
 
     compactLeftPercent = Math.max(
       layoutPolicy.compactLeftInsetPercent,
       Math.min(layoutPolicy.compactMaxLeftPercent, compactLeftPercent),
-    );
-    compactWidthPercent = Math.max(
-      layoutPolicy.compactAbsoluteMinWidthPercent,
-      Math.min(
-        compactWidthPercent,
-        layoutPolicy.compactMaxRightPercent - compactLeftPercent,
-      ),
     );
 
     return {
