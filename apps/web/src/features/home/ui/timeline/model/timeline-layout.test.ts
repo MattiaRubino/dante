@@ -10,7 +10,6 @@ import {
   computeTimelineGaps,
   computeTimelineOverlapLayout,
 } from './timeline-layout';
-import { TIMELINE_POLICY } from './timeline-policy';
 import type { TimelineEvent, TimelineGroup } from './timeline-types';
 
 const events = TIMELINE_PROTOTYPE_EVENTS['2026-08-04'] ?? [];
@@ -79,60 +78,37 @@ describe('timeline layout engine', () => {
     );
   });
 
-  it('keeps isolated cards on one axis and sizes them from their content', () => {
+  it('leaves isolated width to the rendered-content runtime and keeps one compact axis', () => {
     const mapper = createTimelineTimeMapper(events, 1);
     const layouts = computeTimelineEventLayouts(
       events,
       TIMELINE_GROUPS,
       mapper,
     );
-    const call = layouts.find((layout) => layout.event.id === '4');
-    const lunch = layouts.find((layout) => layout.event.id === '5');
-    const workout = layouts.find((layout) => layout.event.id === '6');
+    const isolated = layouts.filter((layout) => layout.compactLaneCount === 1);
 
-    expect(call).toBeTruthy();
-    expect(lunch).toBeTruthy();
-    expect(workout).toBeTruthy();
-    expect(call?.compactLaneCount).toBe(1);
-    expect(lunch?.compactLaneCount).toBe(1);
-    expect(workout?.compactLaneCount).toBe(1);
-    expect(call?.compactLeftPercent).toBe(lunch?.compactLeftPercent);
-    expect(lunch?.compactLeftPercent).toBe(workout?.compactLeftPercent);
-    expect(call?.compactWidthPercent ?? 0).toBeGreaterThan(
-      lunch?.compactWidthPercent ?? Number.POSITIVE_INFINITY,
+    expect(isolated.length).toBeGreaterThan(2);
+    expect(new Set(isolated.map((layout) => layout.compactLeftPercent)).size).toBe(
+      1,
     );
-
-    for (const layout of [call, lunch, workout]) {
-      expect(layout?.compactWidthPercent ?? 0).toBeGreaterThanOrEqual(
-        TIMELINE_POLICY.layout.compactSingleLaneMinWidthPercent,
-      );
-      expect(
-        layout?.compactWidthPercent ?? Number.POSITIVE_INFINITY,
-      ).toBeLessThanOrEqual(
-        TIMELINE_POLICY.layout.compactSingleLaneMaxWidthPercent,
-      );
-    }
+    expect(
+      isolated.every((layout) => layout.compactWidthPercent === 0),
+    ).toBe(true);
   });
 
-  it('caps very long isolated content instead of letting a card consume the timeline', () => {
-    const longEvent: TimelineEvent = {
-      id: 'long-card',
-      startMinute: 20 * 60,
-      endMinute: 21 * 60,
-      title: 'Titolo molto lungo '.repeat(12),
-      groupId: 'focus',
-      meta: 'Contesto molto lungo '.repeat(8),
-    };
-    const mapper = createTimelineTimeMapper([longEvent], 1);
-    const [layout] = computeTimelineEventLayouts(
-      [longEvent],
+  it('keeps overlap lane widths explicit because collisions constrain geometry', () => {
+    const mapper = createTimelineTimeMapper(events, 1);
+    const layouts = computeTimelineEventLayouts(
+      events,
       TIMELINE_GROUPS,
       mapper,
     );
+    const overlapping = layouts.filter((layout) => layout.compactLaneCount > 1);
 
-    expect(layout?.compactWidthPercent).toBe(
-      TIMELINE_POLICY.layout.compactSingleLaneMaxWidthPercent,
-    );
+    expect(overlapping.length).toBeGreaterThan(0);
+    expect(
+      overlapping.every((layout) => layout.compactWidthPercent > 0),
+    ).toBe(true);
   });
 
   it('creates deterministic compact and grouped geometry from the semantic model', () => {
@@ -147,7 +123,7 @@ describe('timeline layout engine', () => {
       expect(layout.top).toBeGreaterThanOrEqual(0);
       expect(layout.height).toBeGreaterThan(0);
       expect(layout.compactLeftPercent).toBeGreaterThanOrEqual(0);
-      expect(layout.compactWidthPercent).toBeGreaterThan(0);
+      expect(layout.compactWidthPercent).toBeGreaterThanOrEqual(0);
       expect(layout.groupIndex).toBeGreaterThanOrEqual(0);
       expect(layout.groupIndex).toBeLessThan(TIMELINE_GROUPS.length);
     }
