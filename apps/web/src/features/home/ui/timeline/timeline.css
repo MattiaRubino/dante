@@ -72,6 +72,7 @@
 }
 
 .home-timeline--production .timeline-event-card:focus-visible {
+  outline-color: var(--timeline-group-color);
   outline-offset: -2px;
 }
 
