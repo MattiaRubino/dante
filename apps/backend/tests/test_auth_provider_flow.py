@@ -36,6 +36,10 @@ def _encoded(raw: bytes) -> str:
     return urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
+def _malformed_session_bearer() -> str:
+    return "not-a-session-secret"
+
+
 class _NoDatabase:
     def __call__(self) -> AsyncSession:
         raise AssertionError("database must not be touched by this preflight failure")
@@ -129,7 +133,7 @@ async def test_sign_in_begin_rejects_authenticated_session_binding() -> None:
             return_target=ProviderReturnTarget.ACCESS,
             source_context="test-source",
             admitted=_admitted(recent_auth_at=datetime.now(UTC)),
-            presented_session_secret="not-a-session-secret",
+            presented_session_secret=_malformed_session_bearer(),
         )
 
 
@@ -160,7 +164,7 @@ async def test_link_and_reauth_require_exact_session_bearer_shape() -> None:
                 return_target=ProviderReturnTarget.SECURITY,
                 source_context=f"test-source-{purpose.value}",
                 admitted=admitted,
-                presented_session_secret="not-canonical",
+                presented_session_secret=_malformed_session_bearer(),
             )
 
 
