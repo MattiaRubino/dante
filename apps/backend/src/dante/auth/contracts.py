@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 from uuid import UUID
 
 from pydantic import SecretStr
@@ -133,6 +134,22 @@ class AuthenticatorRemovalBlockedError(AuthError):
 
 class AuthStateChangedError(AuthError):
     """Security state changed after the caller formed its intended mutation."""
+
+
+class PasskeyChallengeInvalidOrExpiredError(AuthError):
+    """WebAuthn ceremony state is invalid, expired, claimed or mismatched."""
+
+
+class PasskeyVerificationFailedError(AuthError):
+    """WebAuthn registration/assertion evidence failed the frozen verification policy."""
+
+
+class PasskeyAlreadyRegisteredError(AuthError):
+    """A WebAuthn credential id is already lifetime-bound in DANTE."""
+
+
+class PasskeyNotFoundError(AuthError):
+    """The requested current passkey is absent from the authenticated Account."""
 
 
 class ProviderUnavailableError(AuthError):
@@ -291,6 +308,15 @@ class AuthenticationMethods:
     providers: tuple[AuthenticationProviderMethod, ...]
     active_passkey_count: int
     recovery_eligible_email_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class PasskeyCeremonyBegun:
+    """Public WebAuthn options plus one non-secret durable ceremony reference."""
+
+    webauthn_challenge_ref: UUID
+    options: dict[str, Any]
+    expires_at: datetime
 
 
 type ProviderAuthenticationResult = (
