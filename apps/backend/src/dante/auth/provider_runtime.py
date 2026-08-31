@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from collections.abc import Mapping
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any
@@ -14,10 +15,23 @@ import httpx2
 from dante.platform.config.auth_provider import AuthProviderSettings, ProviderNetworkSettings
 
 _PRIVATE_JWK_MEMBERS = frozenset({"d", "p", "q", "dp", "dq", "qi", "oth", "k"})
+_MAX_PROVIDER_RESPONSE_BYTES = 262_144
 
 
 class ProviderRuntimeError(RuntimeError):
     """Provider network/JWK material failed the DANTE trust boundary."""
+
+
+class ProviderMutationAmbiguousError(ProviderRuntimeError):
+    """A single-use/provider mutation request lost a conclusive transport result."""
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderJsonResponse:
+    """Bounded provider response with parsed JSON only when a body is present."""
+
+    status_code: int
+    body: dict[str, Any] | None
 
 
 @dataclass(slots=True)
@@ -104,12 +118,57 @@ class ProviderRuntime:
                 raise ProviderRuntimeError("unknown JWK kid")
             return dict(key)
 
+    async def apple_token_exchange(self, form: Mapping[str, str]) -> ProviderJsonResponse:
+        """POST one Apple authorization-code exchange with no automatic retry."""
+        return await self._apple_form_post(url=self._settings.apple.token_url, form=form)
+
+    async def apple_revoke(self, form: Mapping[str, str]) -> ProviderJsonResponse:
+        """POST one Apple revoke request with no automatic retry."""
+        return await self._apple_form_post(url=self._settings.apple.revoke_url, form=form)
+
     def _trusted_jwks_url(self, provider: str) -> str:
         if provider == "google":
             return self._settings.google.jwks_url
         if provider == "apple":
             return self._settings.apple.jwks_url
         raise ProviderRuntimeError("unknown provider")
+
+    async def _apple_form_post(
+        self,
+        *,
+        url: str,
+        form: Mapping[str, str],
+    ) -> ProviderJsonResponse:
+        """Execute one bounded Apple form POST without exposing arbitrary provider URLs."""
+        try:
+            async with self._client.stream(
+                "POST",
+                url,
+                data=dict(form),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            ) as response:
+                body = await self._read_bounded_body(
+                    response,
+                    maximum_bytes=_MAX_PROVIDER_RESPONSE_BYTES,
+                    label="Apple provider response",
+                )
+                status_code = response.status_code
+        except ProviderRuntimeError:
+            raise
+        except Exception as exc:
+            # Authorization codes are single-use and revoke is a provider mutation. If the
+            # transport loses the response, the caller must reconcile instead of blindly retrying.
+            raise ProviderMutationAmbiguousError("Apple provider mutation result is ambiguous") from exc
+
+        if not body:
+            return ProviderJsonResponse(status_code=status_code, body=None)
+        try:
+            payload = json.loads(body)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ProviderRuntimeError("Apple provider response is not valid JSON") from exc
+        if not isinstance(payload, dict):
+            raise ProviderRuntimeError("Apple provider response must be a JSON object")
+        return ProviderJsonResponse(status_code=status_code, body=payload)
 
     async def _refresh(
         self,
@@ -142,24 +201,12 @@ class ProviderRuntime:
                     f"JWKS request failed with status {response.status_code}"
                 )
 
-            declared = response.headers.get("content-length")
-            if declared is not None:
-                try:
-                    declared_size = int(declared)
-                except ValueError as exc:
-                    raise ProviderRuntimeError("invalid JWKS Content-Length") from exc
-                if declared_size < 0:
-                    raise ProviderRuntimeError("invalid JWKS Content-Length")
-                if declared_size > self._settings.network.max_jwks_response_bytes:
-                    raise ProviderRuntimeError("JWKS response exceeds configured bound")
-
-            body = bytearray()
-            async for chunk in response.aiter_bytes():
-                body.extend(chunk)
-                if len(body) > self._settings.network.max_jwks_response_bytes:
-                    raise ProviderRuntimeError("JWKS response exceeds configured bound")
-
-            keys = self._parse_jwks(bytes(body))
+            body = await self._read_bounded_body(
+                response,
+                maximum_bytes=self._settings.network.max_jwks_response_bytes,
+                label="JWKS response",
+            )
+            keys = self._parse_jwks(body)
             response_headers = response.headers
 
         entry = _JwkCacheEntry(
@@ -170,6 +217,31 @@ class ProviderRuntime:
         )
         self._cache[provider] = entry
         return entry
+
+    @staticmethod
+    async def _read_bounded_body(
+        response: Any,
+        *,
+        maximum_bytes: int,
+        label: str,
+    ) -> bytes:
+        declared = response.headers.get("content-length")
+        if declared is not None:
+            try:
+                declared_size = int(declared)
+            except ValueError as exc:
+                raise ProviderRuntimeError(f"invalid {label} Content-Length") from exc
+            if declared_size < 0:
+                raise ProviderRuntimeError(f"invalid {label} Content-Length")
+            if declared_size > maximum_bytes:
+                raise ProviderRuntimeError(f"{label} exceeds configured bound")
+
+        body = bytearray()
+        async for chunk in response.aiter_bytes():
+            body.extend(chunk)
+            if len(body) > maximum_bytes:
+                raise ProviderRuntimeError(f"{label} exceeds configured bound")
+        return bytes(body)
 
     def _parse_jwks(self, body: bytes) -> dict[str, dict[str, Any]]:
         try:
