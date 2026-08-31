@@ -72,6 +72,20 @@ def _webauthn_rp_id(value: str) -> str:
     return canonical
 
 
+def _canonical_webauthn_origin(value: str) -> str:
+    candidate = _canonical_url(value, name="WebAuthn origin", origin_only=True)
+    parts = urlsplit(candidate)
+    if parts.scheme != "https" or parts.hostname is None:
+        raise ValueError("WebAuthn origins must use HTTPS")
+    try:
+        hostname = parts.hostname.encode("idna").decode("ascii").lower()
+        port = parts.port
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError("WebAuthn origin must use a valid browser origin authority") from exc
+    authority = hostname if port in {None, 443} else f"{hostname}:{port}"
+    return f"https://{authority}"
+
+
 def _apple_redirect_uri(value: str) -> str:
     candidate = _canonical_url(value, name="Apple redirect URI")
     parts = urlsplit(candidate)
@@ -269,11 +283,7 @@ class WebAuthnSettings(BaseModel):
     def validate_origins(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         if not values:
             raise ValueError("WebAuthn expected_origins must not be empty")
-        canonical = tuple(
-            _canonical_url(value, name="WebAuthn origin", origin_only=True) for value in values
-        )
-        if any(urlsplit(origin).scheme != "https" for origin in canonical):
-            raise ValueError("WebAuthn origins must use HTTPS")
+        canonical = tuple(_canonical_webauthn_origin(value) for value in values)
         if len(set(canonical)) != len(canonical):
             raise ValueError("WebAuthn expected_origins must be unique")
         return canonical

@@ -540,8 +540,8 @@ class PasskeyFlowService:
         auth_session_ref = uuid7()
         session_secret = generate_session_secret()
         secret_verifier = session_secret_verifier(session_secret)
-        mutation_at = datetime.now(UTC)
-        expires_at = mutation_at + timedelta(seconds=self._settings.session_max_age_seconds)
+        mutation_at: datetime | None = None
+        expires_at: datetime | None = None
         ambiguous_commit = False
         database_session = self._session_factory()
         try:
@@ -549,6 +549,8 @@ class PasskeyFlowService:
             await database_session.execute(
                 select(func.dante.acquire_account_security_lock(credential_snapshot.account_ref))
             )
+            mutation_at = datetime.now(UTC)
+            expires_at = mutation_at + timedelta(seconds=self._settings.session_max_age_seconds)
             account = await database_session.scalar(
                 select(AccountRow).where(
                     AccountRow.account_ref == credential_snapshot.account_ref
@@ -595,6 +597,8 @@ class PasskeyFlowService:
         finally:
             await database_session.close()
 
+        if mutation_at is None or expires_at is None:
+            raise AuthIntegrityError("passkey authentication completion lost mutation time")
         if ambiguous_commit:
             await self._reconcile_authentication(
                 snapshot=snapshot,
@@ -1263,6 +1267,42 @@ class PasskeyFlowService:
         credential.last_used_at = mutation_at
         credential.updated_at = mutation_at
 
+    @staticmethod
+    def _credential_immutable_matches(
+        persisted: PasskeyCredentialRow | None,
+        snapshot: _CredentialSnapshot,
+    ) -> bool:
+        return bool(
+            persisted is not None
+            and persisted.passkey_credential_ref == snapshot.passkey_credential_ref
+            and persisted.account_ref == snapshot.account_ref
+            and hmac.compare_digest(persisted.credential_id, snapshot.credential_id)
+            and hmac.compare_digest(
+                persisted.credential_public_key,
+                snapshot.public_key_cose,
+            )
+            and persisted.cose_algorithm == snapshot.cose_algorithm
+            and persisted.backup_eligible == snapshot.backup_eligible
+        )
+
+    @classmethod
+    def _credential_commit_evidence_matches(
+        cls,
+        persisted: PasskeyCredentialRow | None,
+        *,
+        snapshot: _CredentialSnapshot,
+        evidence: WebAuthnAssertionEvidence,
+        mutation_at: datetime,
+    ) -> bool:
+        return bool(
+            cls._credential_immutable_matches(persisted, snapshot)
+            and persisted is not None
+            and persisted.sign_count >= evidence.sign_count
+            and persisted.last_used_at is not None
+            and persisted.last_used_at >= mutation_at
+            and persisted.updated_at >= mutation_at
+        )
+
     async def _consume_claimed_challenge(
         self,
         database_session: AsyncSession,
@@ -1474,14 +1514,15 @@ class PasskeyFlowService:
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=False) from exc
         if (
-            persisted_credential is not None
-            and persisted_credential.status_code == "active"
-            and persisted_credential.sign_count >= evidence.sign_count
-            and persisted_credential.backup_state == evidence.backup_state
-            and persisted_credential.last_used_at == mutation_at
+            self._credential_commit_evidence_matches(
+                persisted_credential,
+                snapshot=credential,
+                evidence=evidence,
+                mutation_at=mutation_at,
+            )
             and challenge is None
             and auth_session is not None
-            and auth_session.secret_verifier == secret_verifier
+            and hmac.compare_digest(auth_session.secret_verifier, secret_verifier)
             and auth_session.authenticated_at == mutation_at
             and auth_session.recent_auth_at == mutation_at
             and auth_session.expires_at == expires_at
@@ -1489,6 +1530,10 @@ class PasskeyFlowService:
         ):
             return
         if challenge == snapshot.webauthn_challenge_ref and auth_session is None:
+            if not self._credential_immutable_matches(persisted_credential, credential):
+                raise AuthIntegrityError(
+                    "ambiguous passkey authentication changed immutable credential state"
+                )
             raise AuthServiceUnavailableError(retryable=True)
         raise AuthIntegrityError("ambiguous passkey authentication reconciliation mismatched state")
 
@@ -1525,11 +1570,12 @@ class PasskeyFlowService:
         except SQLAlchemyError as exc:
             raise AuthServiceUnavailableError(retryable=False) from exc
         if (
-            persisted_credential is not None
-            and persisted_credential.status_code == "active"
-            and persisted_credential.sign_count >= evidence.sign_count
-            and persisted_credential.backup_state == evidence.backup_state
-            and persisted_credential.last_used_at == recent_auth_at
+            self._credential_commit_evidence_matches(
+                persisted_credential,
+                snapshot=credential,
+                evidence=evidence,
+                mutation_at=recent_auth_at,
+            )
             and challenge is None
             and self._session_has_verifier(auth_session, new_session_verifier)
             and auth_session is not None
@@ -1537,6 +1583,14 @@ class PasskeyFlowService:
         ):
             return
         if challenge == snapshot.webauthn_challenge_ref:
+            if self._session_has_verifier(auth_session, new_session_verifier):
+                raise AuthIntegrityError(
+                    "ambiguous passkey reauthentication partially committed canonical state"
+                )
+            if not self._credential_immutable_matches(persisted_credential, credential):
+                raise AuthIntegrityError(
+                    "ambiguous passkey reauthentication changed immutable credential state"
+                )
             raise AuthServiceUnavailableError(retryable=True)
         raise AuthIntegrityError("ambiguous passkey reauthentication reconciliation mismatched state")
 
