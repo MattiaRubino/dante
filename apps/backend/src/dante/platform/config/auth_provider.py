@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from base64 import b64decode, urlsafe_b64encode
 from binascii import Error as BinasciiError
+from ipaddress import ip_address
 from typing import Annotated, Self
 from urllib.parse import urlsplit
 
@@ -40,6 +41,22 @@ def _canonical_url(value: str, *, name: str, origin_only: bool = False) -> str:
     if origin_only and (parts.path not in {"", "/"} or parts.query):
         raise ValueError(f"{name} must be an origin")
     return candidate.rstrip("/") if origin_only else candidate
+
+
+def _apple_redirect_uri(value: str) -> str:
+    candidate = _canonical_url(value, name="Apple redirect URI")
+    parts = urlsplit(candidate)
+    if parts.scheme != "https" or parts.hostname is None or parts.query:
+        raise ValueError("Apple redirect URI must be an exact HTTPS URL without query")
+    if parts.hostname == "localhost":
+        raise ValueError("Apple redirect URI cannot use localhost")
+    try:
+        ip_address(parts.hostname)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("Apple redirect URI must use a registered domain, not an IP address")
+    return candidate
 
 
 def _decode_key(value: str, *, name: str) -> bytes:
@@ -117,6 +134,7 @@ class AppleProviderSettings(BaseModel):
     team_id: str | None = None
     key_id: str | None = None
     client_private_key_pem: SecretStr | None = None
+    redirect_uri: str | None = None
     issuer: str = APPLE_ISSUER
     jwks_url: str = APPLE_JWKS_URL
     authorize_url: str = APPLE_AUTHORIZE_URL
@@ -130,6 +148,13 @@ class AppleProviderSettings(BaseModel):
     @classmethod
     def validate_urls(cls, value: str) -> str:
         return _canonical_url(value, name="Apple authority URL")
+
+    @field_validator("redirect_uri")
+    @classmethod
+    def validate_redirect_uri(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _apple_redirect_uri(value)
 
     @field_validator("client_id", "team_id", "key_id")
     @classmethod
@@ -161,10 +186,16 @@ class AppleProviderSettings(BaseModel):
             if self.grant_encryption_current_key_id not in decoded:
                 raise ValueError("Apple current grant key id is absent from key ring")
         if self.enabled:
-            required = (self.client_id, self.team_id, self.key_id, self.client_private_key_pem)
+            required = (
+                self.client_id,
+                self.team_id,
+                self.key_id,
+                self.client_private_key_pem,
+                self.redirect_uri,
+            )
             if any(value is None for value in required):
                 raise ValueError(
-                    "enabled Apple authentication requires client/team/key/private-key config"
+                    "enabled Apple authentication requires client/team/key/private-key/redirect config"
                 )
             if self.grant_encryption_current_key_id is None:
                 raise ValueError(
