@@ -15,10 +15,13 @@ test('Home opens a centered World on the dedicated World Focus route', async ({
   await expect(page).toHaveURL(/\/worlds\/music$/);
   const focus = page.locator('.world-focus-shell');
   await expect(page.getByRole('main', { name: 'Mondo Musica' })).toBeVisible();
-  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g1');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-geometry-version',
+    'wf-g2-candidate',
+  );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
-  await expect(page.locator('.world-focus-guide-rail')).toHaveCount(2);
-  await expect(page.locator('[data-guide-line]')).toHaveCount(6);
+  await expect(page.locator('.world-focus-circle-guides')).toHaveCount(1);
+  await expect(page.locator('.world-focus-circle-guides circle')).toHaveCount(3);
   await expect(page.locator('[data-world-focus-region="workspace"]')).toBeVisible();
 
   const background = await focus.evaluate(
@@ -86,39 +89,42 @@ test('direct World Focus URL opens the same geometry and has a safe close path',
   const focus = page.locator('.world-focus-shell');
   await expect(focus).toBeVisible();
   await expect(focus).toHaveAttribute('data-entry-origin', 'fallback');
-  await expect(focus).toHaveAttribute('data-world-focus-geometry-version', 'wf-g1');
+  await expect(focus).toHaveAttribute(
+    'data-world-focus-geometry-version',
+    'wf-g2-candidate',
+  );
   await expect(page.locator('[data-app-region="topbar"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Torna indietro' }).click();
   await expect(page).toHaveURL(/\/worlds$/);
 });
 
-test('WF-G1 keeps the workspace between the side guide rails across desktop widths', async ({
+test('WF-G2 candidate keeps the workspace bounded independently of the visual circles', async ({
   page,
 }) => {
   for (const width of [1600, 1366, 1024, 901]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/worlds/music');
 
+    const shell = await page.locator('.world-focus-shell').boundingBox();
     const workspace = await page
       .locator('[data-world-focus-region="workspace"]')
       .boundingBox();
-    const leftRail = await page
-      .locator('.world-focus-guide-rail[data-side="left"]')
-      .boundingBox();
-    const rightRail = await page
-      .locator('.world-focus-guide-rail[data-side="right"]')
-      .boundingBox();
+    const guides = await page.locator('.world-focus-circle-guides').boundingBox();
 
+    expect(shell).not.toBeNull();
     expect(workspace).not.toBeNull();
-    expect(leftRail).not.toBeNull();
-    expect(rightRail).not.toBeNull();
-    if (workspace === null || leftRail === null || rightRail === null) {
-      throw new Error(`Missing WF-G1 geometry at ${width}px`);
+    expect(guides).not.toBeNull();
+    if (shell === null || workspace === null || guides === null) {
+      throw new Error(`Missing WF-G2 candidate geometry at ${width}px`);
     }
 
     expect(workspace.width).toBeGreaterThan(320);
-    expect(workspace.x).toBeGreaterThanOrEqual(leftRail.x + leftRail.width);
-    expect(workspace.x + workspace.width).toBeLessThanOrEqual(rightRail.x);
+    expect(workspace.x).toBeGreaterThan(shell.x);
+    expect(workspace.x + workspace.width).toBeLessThan(
+      shell.x + shell.width,
+    );
+    expect(guides.x).toBe(shell.x);
+    expect(guides.width).toBe(shell.width);
   }
 });
