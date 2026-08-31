@@ -39,7 +39,7 @@ function requireWorld(id: 'music' | 'travel') {
 }
 
 describe('WorldFocusPage', () => {
-  it('renders the frozen WF0 shell regions and WF-G3 ellipse frame', () => {
+  it('renders the frozen WF0 shell with the WF-V1 masked visual frame', () => {
     primeWorldFocusEntry({
       worldId: 'music',
       source: 'home',
@@ -58,6 +58,7 @@ describe('WorldFocusPage', () => {
     const shell = screen.getByRole('main', { name: 'Mondo Musica' });
     expect(shell.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
+    expect(shell.getAttribute('data-world-focus-visual-version')).toBe('wf-v1');
     expect(shell.getAttribute('data-world-focus-region')).toBe('shell');
     expect(shell.getAttribute('data-entry-origin')).toBe('live');
 
@@ -70,19 +71,16 @@ describe('WorldFocusPage', () => {
     expect(
       container.querySelectorAll('[data-world-focus-region="shell-controls"]'),
     ).toHaveLength(1);
-    expect(
-      container.querySelectorAll('.world-focus-ellipse-guides ellipse'),
-    ).toHaveLength(3);
-    expect(container.querySelectorAll('[data-guide-line="outer"]')).toHaveLength(1);
-    expect(container.querySelectorAll('[data-guide-line="origin"]')).toHaveLength(1);
-    expect(container.querySelectorAll('[data-guide-line="inner"]')).toHaveLength(1);
-    expect(container.querySelector('.world-focus-circle-guides')).toBeNull();
-    expect(container.querySelector('.world-focus-guide-rail')).toBeNull();
+    expect(container.querySelectorAll('.world-focus-corona-svg')).toHaveLength(1);
+    expect(container.querySelectorAll('.world-focus-corona-svg mask')).toHaveLength(1);
+    expect(container.querySelectorAll('.world-focus-corona-svg ellipse').length).toBeGreaterThan(3);
+    expect(container.querySelector('[data-world-focus-visual-layer="corona-field"]')).toBeTruthy();
+    expect(container.querySelector('[data-world-focus-visual-layer="corona-energy"]')).toBeTruthy();
+    expect(container.querySelector('[data-world-focus-visual-layer="corona-geometry"]')).toBeTruthy();
+    expect(container.querySelector('[data-world-focus-visual-layer="corona-particles"]')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Torna indietro' })).toBeNull();
     expect(container.querySelector('.world-focus-portal')).toBeNull();
     expect(container.querySelector('.world-focus-entry-effect')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Torna indietro' }));
-    expect(onClose).toHaveBeenCalledWith({ preferHistory: true });
   });
 
   it('falls back safely for a direct route load and supports Escape', () => {
@@ -100,6 +98,7 @@ describe('WorldFocusPage', () => {
     expect(shell?.getAttribute('data-entry-origin')).toBe('fallback');
     expect(shell?.getAttribute('data-world-focus-structure-version')).toBe('1.0.0');
     expect(shell?.getAttribute('data-world-focus-geometry-version')).toBe('wf-g3');
+    expect(shell?.getAttribute('data-world-focus-visual-version')).toBe('wf-v1');
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith({ preferHistory: false });
