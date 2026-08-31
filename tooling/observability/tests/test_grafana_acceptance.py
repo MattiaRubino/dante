@@ -97,6 +97,7 @@ class GrafanaAcceptanceTests(unittest.TestCase):
         evaluator = payload["data"][2]["model"]["conditions"][0]["evaluator"]
         self.assertEqual(evaluator, {"params": [1.0], "type": "lt"})
         self.assertEqual(payload["noDataState"], "Alerting")
+        self.assertEqual(payload["data"][1]["model"]["settings"], {"mode": "dropNN"})
         self.assertEqual(
             payload["notification_settings"]["receiver"], "DANTE Operations"
         )
