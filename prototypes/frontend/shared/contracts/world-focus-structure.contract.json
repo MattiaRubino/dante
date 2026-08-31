@@ -1,0 +1,153 @@
+{
+  "format": "dante-world-focus-structure-contract-v1",
+  "contractVersion": "1.0.0",
+  "status": "frozen",
+  "scope": "world-focus macro structure and geometry ownership",
+  "changeControl": {
+    "explicitUserApprovalRequiredForObservableStructuralChange": true,
+    "implementationRefactorAllowedWhenContractEquivalent": true,
+    "regressionGuardsMayBeWeakenedToAcceptAccidentalDrift": false
+  },
+  "appShellBoundary": {
+    "owner": "app-shell",
+    "insideWorldFocusFeature": false,
+    "worldFocusMayRenderOwnGlobalTopbar": false,
+    "worldFocusMayModifyGlobalTopbar": false
+  },
+  "routeBoundary": {
+    "pathPattern": "/worlds/:worldId",
+    "worldFocusIsDedicatedRouteSurface": true,
+    "worldFocusMayBeHomeStructuralOverlay": false,
+    "homeMayRemainVisibleAsWorldFocusBackground": false,
+    "entryAnimationRequiredForNavigation": false
+  },
+  "regions": [
+    {
+      "id": "worldFocus.shell",
+      "parent": "app-shell.routeOutlet",
+      "required": true,
+      "ownsMacroComposition": true
+    },
+    {
+      "id": "worldFocus.visualFrame",
+      "parent": "worldFocus.shell",
+      "required": true,
+      "ownsMacroComposition": false,
+      "ownsApplicationLayout": false,
+      "interactive": false
+    },
+    {
+      "id": "worldFocus.workspace",
+      "parent": "worldFocus.shell",
+      "required": true,
+      "ownsMacroComposition": false,
+      "ownsPersistentContentLayout": true,
+      "rectangular": true
+    },
+    {
+      "id": "worldFocus.shellControls",
+      "parent": "worldFocus.shell",
+      "required": true,
+      "ownsMacroComposition": false
+    }
+  ],
+  "reservedLayers": [
+    {
+      "id": "worldFocus.overlayLayer",
+      "parent": "worldFocus.shell",
+      "requiredInCurrentBaseline": false,
+      "transient": true,
+      "participatesInMacroGeometry": false
+    }
+  ],
+  "composition": {
+    "worldFocus.shell": [
+      "worldFocus.visualFrame",
+      "worldFocus.workspace",
+      "worldFocus.shellControls"
+    ]
+  },
+  "geometry": {
+    "geometryVersion": "wf-g3",
+    "visualFrame": {
+      "primitive": "three-concentric-ellipses",
+      "center": {
+        "cx": "50%",
+        "cy": "50%"
+      },
+      "ellipses": {
+        "outer": {
+          "rx": "52.25%",
+          "ry": "90%"
+        },
+        "origin": {
+          "rx": "50%",
+          "ry": "87%"
+        },
+        "inner": {
+          "rx": "47.75%",
+          "ry": "84%"
+        }
+      },
+      "originTouchesLateralRouteEdgesAtMidHeight": true
+    },
+    "workspace": {
+      "standardInlineInset": "clamp(136px, 14vw, 224px)",
+      "compactInlineInset": "clamp(76px, 18vw, 112px)",
+      "standardBlockInset": "clamp(32px, 5vh, 64px)",
+      "compactBlockInset": "20px",
+      "compactTuningBreakpointMaxPx": 720
+    }
+  },
+  "stateInvariants": {
+    "visualFrameMayOwnWorkspaceLayout": false,
+    "visualFrameMayClipWorkspace": false,
+    "workspaceMayBeClippedToEllipse": false,
+    "shellControlsMayReauthorWorkspaceGeometry": false,
+    "overlayLayerMayParticipateInMacroGeometry": false,
+    "worldSpecificSkinMayChangeStructuralGeometry": false,
+    "worldSpecificContentMayChangeStructuralGeometry": false,
+    "entryAnimationMayChangeStableEndGeometry": false
+  },
+  "responsiveModes": [
+    {
+      "id": "WF0-STANDARD",
+      "minWidthPx": 721,
+      "composition": "visual-frame-plus-rectangular-workspace-plus-shell-controls",
+      "geometryTuning": "standard"
+    },
+    {
+      "id": "WF0-COMPACT",
+      "maxWidthPx": 720,
+      "composition": "visual-frame-plus-rectangular-workspace-plus-shell-controls",
+      "geometryTuning": "compact-insets-only"
+    }
+  ],
+  "forbiddenDrift": [
+    "world-focus-mounted-as-home-structural-overlay",
+    "world-focus-owned-global-topbar",
+    "global-topbar-modified-by-world-focus",
+    "visual-frame-becomes-layout-container",
+    "workspace-clipped-to-ellipse",
+    "workspace-replaced-by-circular-layout",
+    "shell-control-changes-workspace-geometry",
+    "world-specific-skin-changes-macro-geometry",
+    "world-specific-content-changes-macro-geometry",
+    "overlay-layer-participates-in-macro-layout",
+    "undocumented-responsive-macro-mode",
+    "unexpected-horizontal-page-overflow"
+  ],
+  "intentionallyOpen": [
+    "workspace-inner-module-composition",
+    "contextual-ai-inner-placement",
+    "widget-layout-and-personalization",
+    "insight-surface-presentation",
+    "overlay-content-and-drill-down-design",
+    "world-specific-skin-colors-textures-particles",
+    "optional-entry-animation",
+    "backend-and-api-semantics",
+    "world-profile-persistence",
+    "module-registry-and-projection-contracts",
+    "mobile-product-composition-beyond-current-web-tuning"
+  ]
+}
