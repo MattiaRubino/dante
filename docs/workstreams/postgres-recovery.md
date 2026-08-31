@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Workstream
 
-- **Status:** ACTIVE / CP06 LOCAL PASS / CLOSED / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+- **Status:** LOCAL RECOVERY WORKSTREAM CLOSED / CP07 LOCAL PASS / REMOTE PROVIDER DEFERRED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -8,7 +8,7 @@
 - **Current DANTE Alembic head on this branch:** `20260830_09`
 - **Current DANTE topology:** `69|5|15|76|97|69|123|0|0|0`
 - **pgBackRest:** 2.59.1 / PGDG `2.59.1-1.pgdg13+1`
-- **Current checkpoint:** CP07 Whole Local Recovery QA + Operator Runbook — IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+- **Current checkpoint:** CP07 Whole Local Recovery QA + Operator Runbook — LOCAL PASS / CLOSED
 - **Execution plan:** `postgres-recovery-execution-plan.md`
 - **Live continuation:** `postgres-recovery-live-handoff-2026-08-29.md`
 
@@ -137,7 +137,7 @@ Failure Matrix versioned final harness  LOCAL PASS
 SC-011 mechanism prototype              LOCAL PASS
 SC-011 versioned implementation         MATERIALIZED
 SC-011 definitive versioned harness     LOCAL PASS
-CP07 Whole Recovery QA + Runbook        IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+CP07 Whole Recovery QA + Runbook        LOCAL PASS / CLOSED
 remote-provider production acceptance           NOT RUN
 ```
 
@@ -490,7 +490,7 @@ Current checkpoint truth:
 ```text
 CP06 = LOCAL PASS / CLOSED
 SC-011 = PASS
-CP07 = IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+CP07 = LOCAL PASS / CLOSED
 remote backup provider = TBD / NOT ACTIVATED
 ```
 
@@ -533,22 +533,65 @@ docs/operations/postgres-recovery-runbook.md
 Closure requires:
 
 ```text
-[ ] exact implementation HEAD proven
-[ ] whole backend QA PASS on the implementation tree
-[ ] whole CP07 rehearsal PASS
-[ ] database-local reopen PASS
-[ ] anti-resurrection retained PASS
-[ ] deterministic PITR A-present / B-absent PASS
-[ ] measured local evidence captured
-[ ] ordinary local volumes untouched
-[ ] retained recovery repository untouched
-[ ] retained CP05 target untouched
-[ ] disposable CP07 resources fully cleaned
-[ ] operator runbook reconciled with executable flow
-[ ] remote backup provider remains TBD / not activated
-[ ] no production/cloud recovery claim
+[x] exact implementation HEAD proven
+[x] whole backend QA PASS on the implementation tree
+[x] whole CP07 rehearsal PASS
+[x] database-local reopen PASS
+[x] anti-resurrection retained PASS
+[x] deterministic PITR A-present / B-absent PASS
+[x] measured local evidence captured
+[x] ordinary local volumes untouched
+[x] retained recovery repository untouched
+[x] retained CP05 target untouched
+[x] disposable CP07 resources fully cleaned
+[x] operator runbook reconciled with executable flow
+[x] remote backup provider remains TBD / not activated
+[x] no production/cloud recovery claim
 ```
 
-<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+### CP07 exact local evidence
+
+Implementation/runtime proof HEAD:
+
+```text
+8893efe629ff1dc9fc2b512779aa56457b802be6
+```
+
+Direct whole-rehearsal result:
+
+```text
+whole local operator rehearsal                  PASS
+database-local reopen                           PASS
+deterministic PITR A-present / B-absent         PASS
+old protected X physical resurrection           PROVEN
+ledger anti-resurrection reconciliation         PASS
+payload reinsertion after retirement            REJECTED
+structural/security/runtime acceptance          PASS
+ordinary local volume non-interference          PASS
+real recovery repository non-interference       PASS
+retained CP05 target non-interference            PASS
+disposable cleanup                              PASS
+remote backup provider                          TBD / NOT ACTIVATED
+production/cloud recovery                       NOT CLAIMED
+```
+
+Measured LOCAL observations:
+
+```text
+backup label                              20260831-091947F
+backup duration                           52.598280 s
+backup repository size                    5743174 bytes
+WAL archive freshness at disaster         0.904446 s
+restore-point age at disaster             3.980700 s
+physical restore                          7.947759 s
+PITR replay to target                     0.145295 s
+recovery to ready                         0.389248 s
+semantic reconciliation                   0.603417 s
+structural/security acceptance            0.928466 s
+PGDATA loss → database-local reopen       15.614213 s
+```
+
+These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
 
 When this checklist is directly proven, the PostgreSQL recovery workstream may close **for the current LOCAL project phase**. Remote-provider production recovery remains a future deployment checkpoint, not an unfinished CP07 item.

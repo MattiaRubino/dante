@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+- **Status:** CURRENT EXECUTION PLAN / CP07 LOCAL PASS / CLOSED / LOCAL RECOVERY CLOSED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Primary workstream:** `postgres-recovery.md`
@@ -47,7 +47,7 @@ CP06 Failure + Semantic Recovery          LOCAL PASS / CLOSED
    ├── derived-state reopen boundary      defined
    └── object-store reopen boundary       defined
    ↓
-CP07 Whole Recovery QA + Runbook          IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+CP07 Whole Recovery QA + Runbook          LOCAL PASS / CLOSED
    ├── whole operator rehearsal
    ├── measured end-to-end evidence
    ├── provider-neutral local operator proof
@@ -493,22 +493,65 @@ These are observations only, not production RPO/RTO targets.
 ### CP07 closure checklist
 
 ```text
-[ ] implementation tree passes Ruff / mypy / whole backend pytest
-[ ] pre-push disposable whole rehearsal PASS
-[ ] implementation commit pushed after proof
-[ ] exact pushed implementation HEAD whole rehearsal PASS
-[ ] ignored JSON evidence report valid
-[ ] database-local reopen PASS
-[ ] anti-resurrection reconciliation PASS
-[ ] deterministic A-present / B-absent PITR PASS
-[ ] non-interference PASS
-[ ] disposable cleanup PASS
-[ ] operator runbook reconciled
-[ ] current durable docs reconciled
-[ ] remote backup provider = TBD / NOT ACTIVATED
-[ ] production/cloud recovery = NOT CLAIMED
+[x] implementation tree passes Ruff / mypy / whole backend pytest
+[x] pre-push disposable whole rehearsal PASS
+[x] implementation commit pushed after proof
+[x] exact pushed implementation HEAD whole rehearsal PASS
+[x] ignored JSON evidence report valid
+[x] database-local reopen PASS
+[x] anti-resurrection reconciliation PASS
+[x] deterministic A-present / B-absent PITR PASS
+[x] non-interference PASS
+[x] disposable cleanup PASS
+[x] operator runbook reconciled
+[x] current durable docs reconciled
+[x] remote backup provider = TBD / NOT ACTIVATED
+[x] production/cloud recovery = NOT CLAIMED
 ```
 
-<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+### CP07 exact local evidence
+
+Implementation/runtime proof HEAD:
+
+```text
+8893efe629ff1dc9fc2b512779aa56457b802be6
+```
+
+Direct whole-rehearsal result:
+
+```text
+whole local operator rehearsal                  PASS
+database-local reopen                           PASS
+deterministic PITR A-present / B-absent         PASS
+old protected X physical resurrection           PROVEN
+ledger anti-resurrection reconciliation         PASS
+payload reinsertion after retirement            REJECTED
+structural/security/runtime acceptance          PASS
+ordinary local volume non-interference          PASS
+real recovery repository non-interference       PASS
+retained CP05 target non-interference            PASS
+disposable cleanup                              PASS
+remote backup provider                          TBD / NOT ACTIVATED
+production/cloud recovery                       NOT CLAIMED
+```
+
+Measured LOCAL observations:
+
+```text
+backup label                              20260831-091947F
+backup duration                           52.598280 s
+backup repository size                    5743174 bytes
+WAL archive freshness at disaster         0.904446 s
+restore-point age at disaster             3.980700 s
+physical restore                          7.947759 s
+PITR replay to target                     0.145295 s
+recovery to ready                         0.389248 s
+semantic reconciliation                   0.603417 s
+structural/security acceptance            0.928466 s
+PGDATA loss → database-local reopen       15.614213 s
+```
+
+These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
 
 Remote-provider implementation is deliberately outside current CP07. A future provider must be selected and proven only when DANTE actually approaches production deployment.

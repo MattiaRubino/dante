@@ -1,6 +1,6 @@
 # DANTE — PostgreSQL Recovery Live Handoff
 
-- **Status:** CURRENT LIVE HANDOFF / CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+- **Status:** CURRENT LIVE HANDOFF / LOCAL RECOVERY CLOSED / REMOTE PROVIDER DEFERRED
 - **Repository:** `MattiaRubino/dante`
 - **Branch:** `feature/postgres-recovery`
 - **Worktree:** `/home/mattia/projects/dante-postgres-recovery`
@@ -10,7 +10,7 @@
 - **CP01–CP05:** directly proven LOCAL PASS
 - **CP06:** LOCAL PASS / CLOSED
 - **SC-011:** PASS — definitive versioned harness directly proven
-- **CP07:** implemented; final whole local rehearsal pending
+- **CP07:** LOCAL PASS / CLOSED
 
 > This file is only the active branch continuation checkpoint. Repository/code/tests beat this handoff if they disagree. Remove/consolidate it before protected-main integration once durable current documents cover all necessary information.
 
@@ -99,7 +99,7 @@ CP06 Failure Injection + Semantic        LOCAL PASS / CLOSED
 Failure Matrix versioned final harness   LOCAL PASS
 SC-011 mechanism prototype               LOCAL PASS
 SC-011 versioned final harness           LOCAL PASS
-CP07 Whole Recovery QA + Runbook         IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+CP07 Whole Recovery QA + Runbook         LOCAL PASS / CLOSED
 remote backup provider                   TBD / NOT ACTIVATED
 ```
 
@@ -348,6 +348,49 @@ remote backup provider      TBD / NOT ACTIVATED
 production/cloud recovery   NOT CLAIMED
 ```
 
-<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+### CP07 exact local evidence
+
+Implementation/runtime proof HEAD:
+
+```text
+8893efe629ff1dc9fc2b512779aa56457b802be6
+```
+
+Direct whole-rehearsal result:
+
+```text
+whole local operator rehearsal                  PASS
+database-local reopen                           PASS
+deterministic PITR A-present / B-absent         PASS
+old protected X physical resurrection           PROVEN
+ledger anti-resurrection reconciliation         PASS
+payload reinsertion after retirement            REJECTED
+structural/security/runtime acceptance          PASS
+ordinary local volume non-interference          PASS
+real recovery repository non-interference       PASS
+retained CP05 target non-interference            PASS
+disposable cleanup                              PASS
+remote backup provider                          TBD / NOT ACTIVATED
+production/cloud recovery                       NOT CLAIMED
+```
+
+Measured LOCAL observations:
+
+```text
+backup label                              20260831-091947F
+backup duration                           52.598280 s
+backup repository size                    5743174 bytes
+WAL archive freshness at disaster         0.904446 s
+restore-point age at disaster             3.980700 s
+physical restore                          7.947759 s
+PITR replay to target                     0.145295 s
+recovery to ready                         0.389248 s
+semantic reconciliation                   0.603417 s
+structural/security acceptance            0.928466 s
+PGDATA loss → database-local reopen       15.614213 s
+```
+
+These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
+
 
 Do not activate or purchase a remote provider as part of CP07.

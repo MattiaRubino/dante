@@ -460,7 +460,7 @@ Therefore:
 ```text
 CP06 LOCAL PASS / CLOSED
 SC-011 PASS
-CP07 IMPLEMENTED / FINAL LOCAL REHEARSAL PENDING
+CP07 LOCAL PASS / CLOSED
 ```
 
 This does not claim remote/cloud production acceptance, production RPO/RTO, remote object-store recovery, derived-store recovery implementation or whole CP07 operator-rehearsal proof.
@@ -484,4 +484,46 @@ database-local reopen gate passes
 
 Remote/cloud-provider recovery is deferred and not claimed by this database-local proof.
 
-<!-- CP07-LOCAL-EVIDENCE: PENDING -->
+### CP07 exact local evidence
+
+Implementation/runtime proof HEAD:
+
+```text
+8893efe629ff1dc9fc2b512779aa56457b802be6
+```
+
+Direct whole-rehearsal result:
+
+```text
+whole local operator rehearsal                  PASS
+database-local reopen                           PASS
+deterministic PITR A-present / B-absent         PASS
+old protected X physical resurrection           PROVEN
+ledger anti-resurrection reconciliation         PASS
+payload reinsertion after retirement            REJECTED
+structural/security/runtime acceptance          PASS
+ordinary local volume non-interference          PASS
+real recovery repository non-interference       PASS
+retained CP05 target non-interference            PASS
+disposable cleanup                              PASS
+remote backup provider                          TBD / NOT ACTIVATED
+production/cloud recovery                       NOT CLAIMED
+```
+
+Measured LOCAL observations:
+
+```text
+backup label                              20260831-091947F
+backup duration                           52.598280 s
+backup repository size                    5743174 bytes
+WAL archive freshness at disaster         0.904446 s
+restore-point age at disaster             3.980700 s
+physical restore                          7.947759 s
+PITR replay to target                     0.145295 s
+recovery to ready                         0.389248 s
+semantic reconciliation                   0.603417 s
+structural/security acceptance            0.928466 s
+PGDATA loss → database-local reopen       15.614213 s
+```
+
+These are LOCAL rehearsal observations only. They are not production RPO/RTO targets.
