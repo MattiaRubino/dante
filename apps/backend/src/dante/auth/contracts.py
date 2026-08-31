@@ -99,6 +99,10 @@ class ProviderIdentityConflictError(AuthError):
     """A provider identity is durably bound to a different DANTE Account."""
 
 
+class ProviderReconciliationPendingError(AuthError):
+    """A provider single-use/mutation operation has an intentionally unretried ambiguous result."""
+
+
 class ProviderEnrollmentInvalidOrExpiredError(AuthError):
     """Provider enrollment continuation state is unavailable or expired."""
 
