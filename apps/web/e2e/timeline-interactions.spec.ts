@@ -335,3 +335,77 @@ test('keyboard next-day move preserves identity and Undo restores the original d
     .toBe('2026-08-04');
   await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
 });
+
+test('calendar keyboard navigation restores focus to its trigger on Escape', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const trigger = page.getByRole('button', { name: 'Apri il calendario' });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Vai a una data' });
+  await expect(dialog).toBeVisible();
+
+  const todayCell = page.locator('[data-calendar-date="2026-08-04"]');
+  await expect(todayCell).toBeFocused();
+  await todayCell.press('ArrowRight');
+  await expect(page.locator('[data-calendar-date="2026-08-05"]')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
+test('time editor rejects an invalid range and restores focus on Escape', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  const timeButton = page.getByRole('button', {
+    name: 'Modifica orario di Promemoria',
+  });
+  const originalLabel = await card.getAttribute('aria-label');
+  expect(originalLabel).not.toBeNull();
+
+  await timeButton.click();
+  const dialog = page.getByRole('dialog', { name: 'Modifica orario' });
+  await expect(dialog).toBeVisible();
+
+  await page.getByLabel('Fine ore').fill('14');
+  await page.getByLabel('Fine minuti').fill('40');
+  await page.getByRole('button', { name: 'Salva' }).click();
+
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('alert')).toBeVisible();
+  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(timeButton).toBeFocused();
+  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+});
+
+test('Detail owns focus while open and returns it to the exact title opener', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  const titleButton = card.locator('.timeline-event-card__title');
+  await titleButton.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Promemoria' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(titleButton).toBeFocused();
+});
