@@ -139,19 +139,23 @@
   cursor: grabbing !important;
 }
 
-/* While another card owns focus, nested actions on surrounding cards are not
- * active pointer targets: the first pointer interaction is reserved for the
- * focus-dismiss boundary rather than accidentally opening another action. */
+/* A surrounding card whose actions are inactive still needs one deterministic
+ * hit surface. Disabling only nested buttons with pointer-events:none allowed
+ * pointer hit-testing to fall through differently depending on the exact pixel
+ * and overlap stack. A transparent shield makes the originating card itself the
+ * interaction target: click-without-move is consumed by the grid focus-dismiss
+ * boundary, while movement can activate the card's drag runtime immediately. */
 .home-m1
   .home-timeline--production
-  .timeline-event-card:is(.is-groupmate, .is-dim)
-  :is(
-    .timeline-event-card__title,
-    .timeline-event-card__time,
-    .timeline-event-card__subitem,
-    .timeline-event-card__expander
-  ) {
-  pointer-events: none;
+  .timeline-event-card:is(.is-groupmate, .is-dim)::after {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  content: '';
+  cursor: default;
+  touch-action: none;
 }
 
 /* Compact/normal keeps the prototype's native header-grid placement. Only the
