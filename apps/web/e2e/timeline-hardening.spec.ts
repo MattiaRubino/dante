@@ -55,11 +55,13 @@ test('reduced motion prevents imperative smooth Timeline navigation', async ({
       __timelineScrollToCalls?: number;
     };
     target.__timelineScrollToCalls = 0;
-    const originalScrollTo = target.scrollTo.bind(target);
-    target.scrollTo = (...args: Parameters<HTMLDivElement['scrollTo']>) => {
-      target.__timelineScrollToCalls = (target.__timelineScrollToCalls ?? 0) + 1;
-      originalScrollTo(...args);
-    };
+    Object.defineProperty(target, 'scrollTo', {
+      configurable: true,
+      value: () => {
+        target.__timelineScrollToCalls =
+          (target.__timelineScrollToCalls ?? 0) + 1;
+      },
+    });
   });
 
   await page.getByRole('button', { name: /5 agosto 2026/i }).click();
