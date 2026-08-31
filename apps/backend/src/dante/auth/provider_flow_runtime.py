@@ -128,8 +128,8 @@ def create_provider_flow_runtime(
     )
 
     passkey_service: PasskeyFlowService | None = None
-    webauthn_policy = auth_runtime.webauthn_policy
     if settings.provider.webauthn.enabled:
+        webauthn_policy = auth_runtime.webauthn_policy
         if webauthn_policy is None:
             raise RuntimeError("enabled WebAuthn lost validated process-scoped policy")
         webauthn = settings.provider.webauthn
