@@ -572,20 +572,77 @@ fresh clone + machine prerequisites
 Acceptance:
 
 ```text
-[ ] bootstrap syntax/static audit PASS
-[ ] runner syntax/static audit PASS
-[ ] validation clone starts without recovery secrets
-[ ] first bootstrap creates all three LOCAL secrets
-[ ] second bootstrap preserves exact secret hashes
-[ ] validation clone builds a dedicated recovery image
-[ ] whole backend QA PASS on the hardened tree
-[ ] whole CP07 rehearsal PASS on the hardened validation tree
-[ ] implementation commit pushed only after pre-push proof
-[ ] exact pushed implementation HEAD bootstrap PASS
-[ ] exact pushed implementation HEAD CP07 PASS
-[ ] durable docs record the new proof HEAD/report
-[ ] temporary live handoff removed
-[ ] remote backup provider remains TBD / NOT ACTIVATED
+[x] bootstrap syntax/static audit PASS
+[x] runner syntax/static audit PASS
+[x] validation clone starts without recovery secrets
+[x] first bootstrap creates all three LOCAL secrets
+[x] second bootstrap preserves exact secret hashes
+[x] validation clone builds a dedicated recovery image
+[x] whole backend QA PASS on the hardened tree
+[x] whole CP07 rehearsal PASS on the hardened validation tree
+[x] implementation commit pushed only after pre-push proof
+[x] exact pushed implementation HEAD bootstrap PASS
+[x] exact pushed implementation HEAD CP07 PASS
+[x] durable docs record the new proof HEAD/report
+[x] temporary live handoff removed
+[x] remote backup provider remains TBD / NOT ACTIVATED
 ```
 
-<!-- RECOVERY-REPRODUCIBILITY-PROOF: PENDING -->
+### Reproducible LOCAL recovery exact-head proof
+
+Implementation/runtime proof HEAD:
+
+```text
+789e946a8f096b52f2a440b967120cc3e0a340a3
+```
+
+Reusable-bootstrap / runner proof:
+
+```text
+validation clone started without recovery secrets         PASS
+first bootstrap created all three LOCAL secrets           PASS
+second bootstrap preserved exact secret contents          PASS
+secret files mode 0600 / ignored / untracked              PASS
+repository Compose validation                              PASS
+repository-built pinned recovery image                     PASS
+runner independent from feature/postgres-recovery name     PASS
+clean attached branch + configured upstream gate           PASS
+whole backend QA on exact hardened tree                    PASS
+pre-push whole CP07 rehearsal                              PASS
+exact pushed implementation HEAD whole CP07 rehearsal      PASS
+database-local reopen                                      PASS
+deterministic PITR A-present / B-absent                    PASS
+old protected X physical resurrection                      PROVEN
+ledger anti-resurrection reconciliation                    PASS
+payload reinsertion after retirement                       REJECTED
+normal LOCAL / retained recovery / CP05 non-interference   PASS
+disposable cleanup                                         PASS
+remote backup provider                                     TBD / NOT ACTIVATED
+production/cloud recovery                                  NOT CLAIMED
+```
+
+Exact-head runtime relation:
+
+```text
+branch          feature/postgres-recovery
+upstream        origin/feature/postgres-recovery
+recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
+```
+
+Measured LOCAL observations from the exact pushed hardened runner:
+
+```text
+backup label                              20260831-120208F
+backup duration                           53.964433 s
+backup repository size                    5743173 bytes
+WAL archive freshness at disaster         0.834662 s
+restore-point age at disaster             3.629809 s
+physical restore                          7.650652 s
+PITR replay to target                     0.144582 s
+recovery to ready                         0.382306 s
+semantic reconciliation                   1.021309 s
+structural/security acceptance            0.910673 s
+PGDATA loss → database-local reopen       16.261533 s
+```
+
+These are LOCAL rehearsal observations, not production RPO/RTO targets.
