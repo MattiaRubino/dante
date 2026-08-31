@@ -73,9 +73,77 @@ describe('HomePage M1 visual materialization', () => {
       'context-rail',
     ]) {
       expect(
-        container.querySelector(`[data-home-region="${region}"]`),
-      ).toBeTruthy();
+        container.querySelectorAll(`[data-home-region="${region}"]`),
+      ).toHaveLength(1);
     }
+  });
+
+  it('preserves the frozen H0 whole-Home ownership tree', () => {
+    const { container } = render(<HomePage />);
+
+    const shell = container.querySelector('[data-home-region="shell"]');
+    const hero = container.querySelector('[data-home-layout="hero"]');
+    const heroBody = container.querySelector('.home-hero-body');
+    const upperWorkspace = container.querySelector(
+      '[data-home-layout="upper-workspace"]',
+    );
+    const todayWorkspace = container.querySelector('[data-home-layout="today"]');
+    const dayContext = container.querySelector('.home-day-strip');
+    const aiSurface = container.querySelector('[data-home-region="ai-surface"]');
+    const orientation = container.querySelector(
+      '[data-home-region="orientation"]',
+    );
+    const stage = container.querySelector('[data-home-region="central-stage"]');
+    const timeline = container.querySelector('[data-home-region="timeline"]');
+    const contextRail = container.querySelector(
+      '[data-home-region="context-rail"]',
+    );
+
+    for (const node of [
+      shell,
+      hero,
+      heroBody,
+      upperWorkspace,
+      todayWorkspace,
+      dayContext,
+      aiSurface,
+      orientation,
+      stage,
+      timeline,
+      contextRail,
+    ]) {
+      expect(node).not.toBeNull();
+    }
+
+    expect(shell?.contains(hero)).toBe(true);
+    expect(shell?.contains(todayWorkspace)).toBe(true);
+    expect(hero?.contains(dayContext)).toBe(true);
+    expect(hero?.contains(heroBody)).toBe(true);
+    expect(heroBody?.contains(aiSurface)).toBe(true);
+    expect(heroBody?.contains(upperWorkspace)).toBe(true);
+    expect(upperWorkspace?.contains(orientation)).toBe(true);
+    expect(upperWorkspace?.contains(stage)).toBe(true);
+    expect(todayWorkspace?.contains(timeline)).toBe(true);
+    expect(todayWorkspace?.contains(contextRail)).toBe(true);
+
+    expect(timeline?.contains(contextRail)).toBe(false);
+    expect(contextRail?.contains(timeline)).toBe(false);
+    expect(stage?.contains(orientation)).toBe(false);
+    expect(orientation?.contains(stage)).toBe(false);
+    expect(shell?.querySelector('[data-app-region="topbar"]')).toBeNull();
+
+    expect(
+      heroBody && aiSurface && upperWorkspace
+        ? Array.from(heroBody.children).indexOf(aiSurface) <
+            Array.from(heroBody.children).indexOf(upperWorkspace)
+        : false,
+    ).toBe(true);
+    expect(
+      todayWorkspace && timeline && contextRail
+        ? Array.from(todayWorkspace.children).indexOf(timeline) <
+            Array.from(todayWorkspace.children).indexOf(contextRail)
+        : false,
+    ).toBe(true);
   });
 
   it('materializes the accepted DANTE Home instead of an iframe bridge', () => {
