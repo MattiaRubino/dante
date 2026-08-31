@@ -1,6 +1,6 @@
 # DANTE Platform Observability Workstream
 
-- **Status:** ACTIVE / FOUNDATION ACTIVATED / SOURCE CLOSURE IN PROGRESS
+- **Status:** ACTIVE / FOUNDATION ACTIVATED / SOURCE CLOSURE COMPLETE / OPERATIONAL ACCEPTANCE IN PROGRESS
 - **Branch:** `feature/platform-observability`
 - **PRE-SCOPE:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Authority:** branch-local until protected-main integration
@@ -100,11 +100,30 @@ The HTTP request, its database span, the matching backend log pipeline and
 backend health were all demonstrated using local runtime traffic. This is the
 end-to-end activation checkpoint for the platform foundation.
 
+## Final source-closure verification — 2026-08-31
+
+The canonical workstation toolchain completed the repository-owned closure
+runner on source baseline `cef64452e2306de5696fe711534b8591aede6b75`:
+
+| Gate | State |
+|---|---|
+| Static observability contracts | PASS |
+| Web formatting, lint, typecheck, tests and production bundle budget | PASS; 58 tests |
+| Backend locked environment, Ruff format and lint | PASS |
+| Backend mypy strict | PASS; 69 source files |
+| Backend non-PostgreSQL regression suite | PASS; 109 passed, 84 intentionally deselected |
+| Backend package build | PASS; sdist and wheel produced |
+
+The closure runner completed all 12 gates with
+`observability source verification (all): PASS`. Source implementation closure
+is therefore earned; the remaining items below are real-stack operational
+acceptance, not unverified code work.
+
 ## Remaining acceptance
 
 | Evidence | State |
 |---|---|
-| Full backend regression and current-tree quality-gate rerun | pending |
+| Full backend regression and current-tree quality-gate rerun | PASS; final canonical source-closure run |
 | Full web quality gates | PASS locally; 58 tests, lint, typecheck, production build and bundle budget |
 | Faro/browser activation | PASS operationally; final release-identity smoke remains part of integration acceptance |
 | Source-controlled dashboard import and visual smoke | pending |
