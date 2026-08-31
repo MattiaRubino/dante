@@ -20,7 +20,7 @@ from dante.platform.database.metadata import Base
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20260830_12"
+_CURRENT_REVISION = "20260831_13"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _DICTIONARY_ROOT = _REPO_ROOT / "docs" / "database" / "dictionary"
 
@@ -230,7 +230,7 @@ def test_current_catalog_matches_dictionary_sqlalchemy_and_alembic(
     assert scripts.get_heads() == [_CURRENT_REVISION]
 
 
-def test_m4_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
+def test_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
     with _admin(migrated_database) as connection:
         table_privileges = connection.execute(
             """
@@ -360,7 +360,7 @@ def test_m4_auth_runtime_acl_is_exact(migrated_database: Any) -> None:
         True,
         False,
         False,
-        False,
+        True,
         True,
         True,
         False,
