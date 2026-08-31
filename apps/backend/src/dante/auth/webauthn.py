@@ -24,6 +24,9 @@ from fido2.webauthn import (
 
 from dante.platform.config.auth_provider import WebAuthnSettings
 
+_MAX_CREDENTIAL_ID_BYTES = 1023
+_MAX_COSE_PUBLIC_KEY_BYTES = 8192
+
 
 @dataclass(frozen=True, slots=True)
 class ParsedWebAuthnResponse:
@@ -179,7 +182,11 @@ class WebAuthnPolicy:
         credential = auth_data.credential_data
         if credential is None:
             raise ValueError("registration response omitted credential data")
+        if not 1 <= len(credential.credential_id) <= _MAX_CREDENTIAL_ID_BYTES:
+            raise ValueError("registered credential id exceeds the persistence contract")
         public_key_cose = cbor.encode(credential.public_key)
+        if not 1 <= len(public_key_cose) <= _MAX_COSE_PUBLIC_KEY_BYTES:
+            raise ValueError("registered COSE public key exceeds the persistence contract")
         algorithm = credential.public_key.ALGORITHM
         if algorithm is None:
             raise ValueError("registered COSE key has no algorithm")
