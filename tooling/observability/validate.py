@@ -28,6 +28,7 @@ _WEB_SANITIZER = (
     _REPO_ROOT / "apps" / "web" / "src" / "platform" / "observability" / "sanitize.ts"
 )
 _WEB_SMOKE = _REPO_ROOT / "tooling" / "observability" / "run-local-web-smoke.py"
+_VERIFY = _REPO_ROOT / "tooling" / "observability" / "verify.py"
 _ROOT_PACKAGE = _REPO_ROOT / "package.json"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
@@ -292,9 +293,13 @@ def _validate_web_contract() -> None:
         (initializer, "globalPrivacyControl"),
         (runtime, "preventGlobalExposure: true"),
         (runtime, "omitTraceContextForUnsampledSessions: true"),
+        (runtime, "faro.metas.remove(...faro.config.metas);"),
+        (runtime, "faro.transports.addBeforeSendHooks(sanitizeTransportItem);"),
         (sanitizer, "MAX_TOTAL_NODES"),
         (sanitizer, "new WeakSet<object>()"),
         (sanitizer, "normalizeFaroV1Boundary"),
+        (sanitizer, "TransportItemType.MEASUREMENT"),
+        (sanitizer, "delete payload.context"),
         (sanitizer, "'user', 'browser', 'page', 'session'"),
     )
     for source, fragment in required_fragments:
@@ -302,6 +307,10 @@ def _validate_web_contract() -> None:
             _fail(f"Web privacy/performance contract is missing: {fragment}")
     if "fetchTransportV2: true" in runtime:
         _fail("the pinned Alloy receiver is incompatible with Faro fetch transport v2")
+    if "PerformanceInstrumentation" in runtime:
+        _fail("generic Faro performance/resource instrumentation is outside the data contract")
+    if "beforeSend: sanitizeTransportItem" in runtime:
+        _fail("the Web sanitizer must remain the terminal post-initialization transport hook")
 
 
 def _validate_web_smoke_contract() -> None:
@@ -334,6 +343,36 @@ def _validate_web_smoke_contract() -> None:
         _fail("root Web smoke command must execute the governed runner directly")
 
 
+def _validate_verifier_contract() -> None:
+    verifier = _read(_VERIFY)
+    package = _json(_ROOT_PACKAGE)
+    required_fragments = (
+        '"Static observability contracts"',
+        '"Web observability lint"',
+        '"Web observability tests"',
+        '"Web production build and bundle budget"',
+        '"Backend locked environment"',
+        '"Backend Ruff format"',
+        '"Backend Ruff lint"',
+        '"Backend mypy strict"',
+        '"Backend regression tests"',
+        '"Backend package build"',
+    )
+    for fragment in required_fragments:
+        if fragment not in verifier:
+            _fail(f"source-closure verifier is missing a mandatory gate: {fragment}")
+    if "shell=True" in verifier:
+        _fail("source-closure verifier must never execute through a shell")
+    if _VERIFY.stat().st_mode & 0o111 == 0:
+        _fail("source-closure verifier must remain executable")
+    try:
+        command = package["scripts"]["observability:verify"]
+    except (KeyError, TypeError) as error:
+        _fail(f"root source-closure command is missing: {error}")
+    if command != "python3 tooling/observability/verify.py":
+        _fail("root source-closure command must execute the governed runner directly")
+
+
 def main() -> int:
     """Validate static artifacts; the pinned Alloy binary remains a separate CI gate."""
     try:
@@ -342,6 +381,7 @@ def main() -> int:
         _validate_database_contract()
         _validate_web_contract()
         _validate_web_smoke_contract()
+        _validate_verifier_contract()
     except ValidationFailure as error:
         print(f"observability validation failed: {error}", file=sys.stderr)
         return 1

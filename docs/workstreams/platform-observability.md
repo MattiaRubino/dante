@@ -1,6 +1,6 @@
 # DANTE Platform Observability Workstream
 
-- **Status:** ACTIVE / FOUNDATION ACTIVATED / REMAINING ACCEPTANCE IN PROGRESS
+- **Status:** ACTIVE / FOUNDATION ACTIVATED / SOURCE CLOSURE IN PROGRESS
 - **Branch:** `feature/platform-observability`
 - **PRE-SCOPE:** `dc5ee595c6291d980dc15f582dd094a399631557`
 - **Authority:** branch-local until protected-main integration
@@ -45,10 +45,11 @@ tests, CI, runbook and current architecture/database docs
 ### Web
 
 - Faro SDK platform adapter and failure-isolated initialization;
-- error, Web Vitals, session, view, navigation, performance, CSP, React and
-  sampled tracing instrumentation;
+- error, Web Vitals, ephemeral session, view, navigation, CSP, React and sampled
+  tracing instrumentation;
 - same-origin `/api/` trace propagation only;
-- recursive transport sanitizer;
+- vendor default metadata and generic resource-performance producers disabled;
+- terminal recursive transport sanitizer with bounded Faro-v1 normalization;
 - localized, responsive, token-driven recovery UI;
 - architecture rule forbidding product/Auth/API data dependencies.
 
@@ -70,7 +71,8 @@ tests, CI, runbook and current architecture/database docs
 - finite queue/retry/WAL/memory/rate limits;
 - two source-controlled Grafana dashboards;
 - eight-rule source-controlled alert catalog;
-- static validator, private observer-DSN writer and operator runbook;
+- static validator, deterministic source-closure runner, private observer-DSN
+  writer and operator runbook;
 - CI native Alloy validation gate.
 
 ## Verified activation checkpoint — 2026-08-30
@@ -90,6 +92,8 @@ represented in this repository.
 | Backend OpenTelemetry metrics | PASS; `http_server_request_count_total` received for real requests |
 | Structured backend JSON logs → Loki | PASS; `observability.runtime_initialized` received with expected labels |
 | HTTP and PostgreSQL spans → Tempo | PASS; `GET /api/v1/auth/session` and `postgresql.select` traces received |
+| Web Faro events/measurements → Loki | PASS; real Firefox navigation and Web Vitals received for `dante-web` |
+| Web privacy boundary | PASS on activation checkpoint; no URL, UA, browser/OS version, session, DOM context or resource timing fields exported |
 | Secrets committed or displayed | PASS; none |
 
 The HTTP request, its database span, the matching backend log pipeline and
@@ -101,10 +105,11 @@ end-to-end activation checkpoint for the platform foundation.
 | Evidence | State |
 |---|---|
 | Full backend regression and current-tree quality-gate rerun | pending |
-| Full web quality gates and Faro/browser activation | pending |
+| Full web quality gates | PASS locally; 58 tests, lint, typecheck, production build and bundle budget |
+| Faro/browser activation | PASS operationally; final release-identity smoke remains part of integration acceptance |
 | Source-controlled dashboard import and visual smoke | pending |
 | Alert evaluation and delivery to a configured contact point | pending |
-| Explicit redaction/correlation acceptance query | pending |
+| Explicit redaction/correlation acceptance query | PASS on activation checkpoint; repeat for the integration release |
 | Collector-outage proof: application remains available | pending |
 | Disposable PostgreSQL role/ACL proof in CI | CI REQUIRED |
 

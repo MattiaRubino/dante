@@ -1,4 +1,4 @@
-import type { TransportItem } from '@grafana/faro-web-sdk';
+import { TransportItemType, type TransportItem } from '@grafana/faro-web-sdk';
 
 const MAX_DEPTH = 8;
 const MAX_ARRAY_ITEMS = 50;
@@ -255,16 +255,16 @@ function normalizeFaroV1Boundary(item: TransportItem): TransportItem | null {
 
   const payload = item.payload;
   switch (item.type) {
-    case 'event':
+    case TransportItemType.EVENT:
       normalizeStringRecordField(payload, 'attributes');
       normalizeTraceContextField(payload);
       break;
-    case 'exception':
-    case 'log':
+    case TransportItemType.EXCEPTION:
+    case TransportItemType.LOG:
       normalizeStringRecordField(payload, 'context');
       normalizeTraceContextField(payload);
       break;
-    case 'measurement': {
+    case TransportItemType.MEASUREMENT: {
       // Web Vitals context includes browser/DOM/navigation identifiers. The
       // metric name and numeric values are sufficient for DANTE operations.
       delete payload.context;

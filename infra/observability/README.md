@@ -70,17 +70,23 @@ their platform-native secret manager instead.
 The Web runtime lazy-loads Faro only when enabled and, by default, when Global
 Privacy Control is not active. The production CSP must allow `connect-src` to
 the exact collector origin and the same-origin DANTE API boundary only; do not
-introduce wildcard telemetry destinations.
+introduce wildcard telemetry destinations. DANTE disables generic resource
+performance collection and Faro's default metadata producers, then applies a
+terminal bounded sanitizer before export.
 
 No paid Grafana feature is required by this baseline. Quotas and retention remain controlled by the selected Cloud Free plan, so the budget dashboard and runbook define the operating guardrails instead of assuming unlimited ingestion.
 
 ## Run and verify
 
 ```bash
-python3 tooling/observability/validate.py
+corepack pnpm observability:verify
 docker compose -f infra/compose/local.yaml config --quiet
 docker compose -f infra/compose/local.yaml --profile observability up -d --wait
 ```
+
+The first command is credential-free and starts no service. It is the canonical
+source-closure gate for the observability-owned Web, backend and infrastructure
+contracts; `observability:validate` remains available as its fast static subset.
 
 Alloy endpoints are published only on loopback:
 

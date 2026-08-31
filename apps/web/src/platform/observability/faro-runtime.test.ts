@@ -90,6 +90,9 @@ describe('Faro vendor runtime', () => {
     expect(faroMocks.removeMeta).toHaveBeenCalledWith(
       ...faroMocks.defaultMetas,
     );
+    expect(faroMocks.removeMeta.mock.invocationCallOrder[0]).toBeLessThan(
+      faroMocks.addBeforeSendHooks.mock.invocationCallOrder[0] ?? 0,
+    );
 
     bridge.observeResolvedRoute('/access');
     bridge.observeRenderFailure(

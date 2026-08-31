@@ -152,7 +152,7 @@ The Web adapter records sampled, ephemeral-session diagnostics:
 ```text
 uncaught errors and React boundary errors
 Web Vitals
-navigation/view/performance signals
+bounded navigation/view signals
 CSP violations
 sampled same-origin API traces
 bounded resolved route identifiers
@@ -166,12 +166,22 @@ bounded route template while the chunk loads.
 
 It deliberately disables geolocation, resource collection, persistent session
 tracking, attribution sources, console capture and generic user-action capture.
+Generic resource-performance instrumentation is also disabled. After Faro
+initializes its instrumentation hooks, DANTE removes the complete vendor
+default metadata-producer set and installs its sanitizer as the terminal
+outbound hook; initialization order is therefore part of the tested privacy
+contract.
 The transport sanitizer recursively bounds depth/keys/arrays/strings and
 redacts identity-like keys, email, UUID/reference, authorization and URL
 query/fragment content. It also enforces a total node budget, handles circular
 references without recursion failure, never evaluates accessor properties and
 uses null-prototype output objects. URL credentials, identifier-like path
 segments and non-HTTP(S) URLs are removed before export.
+
+Receiver translation may derive the coarse boolean `browser_mobile` dimension.
+It contains no browser name/version, operating system, user agent, URL, session
+or identity value. Any other exported `browser_*`, `page_*`, `session_*`,
+`user_*`, `context_*` or resource-performance field violates this contract.
 
 The deployment CSP must allow `connect-src` only to the DANTE API origin and
 the exact configured Faro collector origin. Wildcard telemetry origins are

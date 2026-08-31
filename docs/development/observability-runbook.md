@@ -190,13 +190,38 @@ with a real-browser smoke, not only a minimal `OPTIONS` request.
 The browser boundary also normalizes event/context attribute maps to the
 string-map protocol accepted by this pinned Alloy receiver and removes browser
 user metadata, session identifiers, browser fingerprinting and page URLs
-entirely. This preserves low-cardinality operational dimensions while keeping
-the Web SDK and collector independently upgradeable.
+entirely. The generic resource-performance instrumentation and Faro's complete
+default metadata-producer set are disabled at the source; the recursive
+sanitizer is then registered as the terminal outbound hook. This preserves
+low-cardinality operational dimensions while keeping the Web SDK and collector
+independently upgradeable.
+
+The receiver may derive the coarse boolean `browser_mobile` field during
+translation. It is the only permitted `browser_*` output: browser name/version,
+OS, user agent, URLs, session identifiers, `context_*` and automatic resource
+fields remain forbidden. Treat their appearance as a privacy-contract failure.
 
 The Web build runs a manifest-backed bundle gate. It fails if the Faro runtime
 stops being a dynamic chunk, the initial entry exceeds 500 KiB or the governed
 Faro chunk exceeds 300 KiB. These are uncompressed transfer-independent upper
 bounds; normal gzip/Brotli delivery is still required in deployment.
+
+### 7.1 Source-closure verification
+
+Run the deterministic source gates from the repository root before any runtime
+acceptance or dashboard work:
+
+```bash
+corepack pnpm observability:verify
+```
+
+The command validates source-controlled infrastructure and privacy contracts,
+Web formatting/lint/tests/typecheck/production bundle limits, and the complete
+locked backend format/lint/mypy/non-PostgreSQL regression/build chain. It starts
+no service and reads no credential. The canonical Node, pnpm, Python and uv
+versions remain mandatory; a toolchain mismatch is a failed precondition, not a
+reason to weaken a repository pin. For an isolated diagnosis, use
+`python3 tooling/observability/verify.py --scope web` or `--scope backend`.
 
 ## 8. First smoke verification
 
