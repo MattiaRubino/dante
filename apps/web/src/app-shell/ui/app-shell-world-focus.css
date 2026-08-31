@@ -1,0 +1,5 @@
+.app-shell[data-app-surface='world-focus'] .app-topbar,
+.app-shell[data-app-surface='world-focus'] .app-skip-link {
+  visibility: hidden;
+  pointer-events: none;
+}

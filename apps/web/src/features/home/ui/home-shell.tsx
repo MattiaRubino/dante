@@ -1,7 +1,14 @@
-import { useCallback, useRef, useState } from 'react';
+import {
+  useCallback,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { HOME_COSMOS_DATA_URL } from '../assets/home-cosmos';
+import type { HomeWorldOpenIntent } from '../model/home-world-focus';
 import { AISurface } from './ai-surface/ai-surface';
 import { CentralStage } from './central-stage/central-stage';
 import { ContextRail } from './context-rail/context-rail';
@@ -18,6 +25,7 @@ type HomeShellProps = Readonly<{
   viewedDateIso?: string | undefined;
   preferredName?: string | undefined;
   onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
+  onOpenWorldFocus?: ((intent: HomeWorldOpenIntent) => void) | undefined;
 }>;
 
 type ViewedDateMirror = Readonly<{
@@ -25,10 +33,30 @@ type ViewedDateMirror = Readonly<{
   localIso: string | undefined;
 }>;
 
+type WorldFocusPointerPress = {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  element: HTMLElement;
+};
+
+const WORLD_FOCUS_CLICK_TRAVEL_THRESHOLD = 7;
+
+function getActiveWorldButton(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return null;
+  }
+
+  return target.closest<HTMLElement>(
+    '[data-world-logical][aria-current="true"]',
+  );
+}
+
 export function HomeShell({
   viewedDateIso,
   preferredName,
   onViewedDateChange,
+  onOpenWorldFocus,
 }: HomeShellProps) {
   const { t } = useTranslation('common');
   const [isAiCollapsed, setIsAiCollapsed] = useState(false);
@@ -43,6 +71,7 @@ export function HomeShell({
   const timelineExpansionMetricsRef = useRef<TimelineExpansionMetrics | null>(
     null,
   );
+  const worldFocusPressRef = useRef<WorldFocusPointerPress | null>(null);
 
   const localViewedDateIso =
     viewedDateMirror.externalIso === viewedDateIso
@@ -80,6 +109,103 @@ export function HomeShell({
       });
     },
     [viewedDateIso],
+  );
+
+  const emitWorldFocusIntent = useCallback(
+    (element: HTMLElement) => {
+      if (onOpenWorldFocus === undefined) {
+        return;
+      }
+
+      const label = element.getAttribute('aria-label')?.trim();
+      if (!label) {
+        return;
+      }
+
+      const rect = element.getBoundingClientRect();
+      onOpenWorldFocus({
+        label,
+        origin: {
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+        },
+      });
+    },
+    [onOpenWorldFocus],
+  );
+
+  const handleWorldFocusPointerDownCapture = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (
+        onOpenWorldFocus === undefined ||
+        (event.pointerType === 'mouse' && event.button !== 0)
+      ) {
+        worldFocusPressRef.current = null;
+        return;
+      }
+
+      const element = getActiveWorldButton(event.target);
+      worldFocusPressRef.current =
+        element === null
+          ? null
+          : {
+              pointerId: event.pointerId,
+              startX: event.clientX,
+              startY: event.clientY,
+              element,
+            };
+    },
+    [onOpenWorldFocus],
+  );
+
+  const handleWorldFocusPointerUpCapture = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const press = worldFocusPressRef.current;
+      worldFocusPressRef.current = null;
+
+      if (press === null || press.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const travel = Math.hypot(
+        event.clientX - press.startX,
+        event.clientY - press.startY,
+      );
+
+      if (
+        travel <= WORLD_FOCUS_CLICK_TRAVEL_THRESHOLD &&
+        press.element.isConnected &&
+        press.element.getAttribute('aria-current') === 'true'
+      ) {
+        emitWorldFocusIntent(press.element);
+      }
+    },
+    [emitWorldFocusIntent],
+  );
+
+  const handleWorldFocusPointerCancelCapture = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (worldFocusPressRef.current?.pointerId === event.pointerId) {
+        worldFocusPressRef.current = null;
+      }
+    },
+    [],
+  );
+
+  const handleWorldFocusClickCapture = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (event.detail !== 0) {
+        return;
+      }
+
+      const element = getActiveWorldButton(event.target);
+      if (element !== null) {
+        emitWorldFocusIntent(element);
+      }
+    },
+    [emitWorldFocusIntent],
   );
 
   const applyTimelineExpansionProgress = useCallback((progress: number) => {
@@ -157,6 +283,10 @@ export function HomeShell({
             <div
               className="home-upper-workspace"
               data-home-layout="upper-workspace"
+              onPointerDownCapture={handleWorldFocusPointerDownCapture}
+              onPointerUpCapture={handleWorldFocusPointerUpCapture}
+              onPointerCancelCapture={handleWorldFocusPointerCancelCapture}
+              onClickCapture={handleWorldFocusClickCapture}
             >
               <Orientation />
               <CentralStage />
