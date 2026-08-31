@@ -55,8 +55,14 @@ from dante.platform.database.runtime import DatabaseRuntime, create_database_run
 pytestmark = pytest.mark.postgres
 
 _KEY_ID = "test-authenticator-v1"
-_VALID_SECRET_PHRASE = "correct horse battery staple"
-_REPLACEMENT_SECRET_PHRASE = "replacement horse battery staple"
+
+
+def _valid_password_input() -> str:
+    return "correct horse battery staple"
+
+
+def _replacement_password_input() -> str:
+    return "replacement horse battery staple"
 
 
 def _encoded(raw: bytes) -> str:
@@ -438,7 +444,7 @@ async def test_establish_password_invalidates_recovery_and_rotates_current_beare
         issued = await lifecycle.establish_password(
             admitted=current.admitted,
             presented_session_secret=current.secret.get_secret_value(),
-            new_password=_VALID_SECRET_PHRASE,
+            new_password=_valid_password_input(),
         )
 
         assert await _count(runtime, PasswordCredentialRow) == 1
@@ -482,7 +488,7 @@ async def test_passwordless_recovery_creates_first_password_revokes_sessions_and
         await lifecycle.reset_password(
             password_recovery_ref=recovery.password_recovery_ref,
             secret=recovery.secret.get_secret_value(),
-            new_password=_REPLACEMENT_SECRET_PHRASE,
+            new_password=_replacement_password_input(),
         )
 
         async with runtime.session_factory() as session, session.begin():
@@ -506,7 +512,9 @@ async def test_passwordless_recovery_creates_first_password_revokes_sessions_and
             )
         assert credential is not None
         verification = await kdf.verify(
-            normalized_password=normalize_password_for_authentication(_REPLACEMENT_SECRET_PHRASE),
+            normalized_password=normalize_password_for_authentication(
+                _replacement_password_input()
+            ),
             verifier=credential.verifier,
             pepper_key_id=credential.pepper_key_id,
         )
