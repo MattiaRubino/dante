@@ -29,6 +29,7 @@ _WEB_SANITIZER = (
 )
 _WEB_SMOKE = _REPO_ROOT / "tooling" / "observability" / "run-local-web-smoke.py"
 _VERIFY = _REPO_ROOT / "tooling" / "observability" / "verify.py"
+_OUTAGE_PROBE = _REPO_ROOT / "tooling" / "observability" / "prove-collector-outage.py"
 _ROOT_PACKAGE = _REPO_ROOT / "package.json"
 _DASHBOARD_ROOT = _REPO_ROOT / "infra" / "observability" / "grafana" / "dashboards"
 _ALERTS = (
@@ -373,6 +374,32 @@ def _validate_verifier_contract() -> None:
         _fail("root source-closure command must execute the governed runner directly")
 
 
+def _validate_collector_outage_probe_contract() -> None:
+    probe = _read(_OUTAGE_PROBE)
+    package = _json(_ROOT_PACKAGE)
+    required_fragments = (
+        "--allow-alloy-outage",
+        '"stop", "alloy"',
+        '"start", "alloy"',
+        "_REQUIRED_BACKEND_SUCCESSES = 3",
+        "finally:",
+        "Compose profile has no exact alloy service to stop",
+    )
+    for fragment in required_fragments:
+        if fragment not in probe:
+            _fail(f"collector-outage acceptance probe is missing: {fragment}")
+    if "shell=True" in probe:
+        _fail("collector-outage acceptance probe must never execute through a shell")
+    if _OUTAGE_PROBE.stat().st_mode & 0o111 == 0:
+        _fail("collector-outage acceptance probe must remain executable")
+    try:
+        command = package["scripts"]["observability:prove:collector-outage"]
+    except (KeyError, TypeError) as error:
+        _fail(f"root collector-outage command is missing: {error}")
+    if command != "python3 tooling/observability/prove-collector-outage.py":
+        _fail("root collector-outage command must execute the governed probe directly")
+
+
 def main() -> int:
     """Validate static artifacts; the pinned Alloy binary remains a separate CI gate."""
     try:
@@ -382,6 +409,7 @@ def main() -> int:
         _validate_web_contract()
         _validate_web_smoke_contract()
         _validate_verifier_contract()
+        _validate_collector_outage_probe_contract()
     except ValidationFailure as error:
         print(f"observability validation failed: {error}", file=sys.stderr)
         return 1

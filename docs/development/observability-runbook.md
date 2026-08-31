@@ -343,6 +343,69 @@ Repository presence is not proof that dashboard import, rule evaluation or
 notification delivery is active. PROD activation requires a synthetic alert
 that reaches the chosen contact point and is then removed/paused.
 
+### 9.2 Integrated operational-acceptance procedure
+
+Run this one bounded procedure only after the source-closure gate and the
+runtime smoke both pass. It completes the remaining dashboard, alert,
+notification, collector-isolation and CI evidence without changing a migration,
+business table, product role, secret or Grafana ingestion credential.
+
+1. **Update the two dashboards.** Import both JSON files again, retain their
+   stable UIDs and select Grafana's explicit overwrite/update option. Map only
+   the datasource types listed above. Verify that an absent series renders as
+   neutral `NO SIGNAL`, not green. Capture one screenshot of each console with
+   the `local` selector and real data.
+2. **Materialize the eight source rules.** In Grafana Alerting create a
+   production rule group (for example `DANTE / Production`) from every object
+   in `dante-alerts.json`. Use the Metrics datasource proven by Explore. Copy
+   each `expr`, `for`, severity and no-data state exactly; attach this runbook
+   URL/anchor and the chosen contact point. The source rules intentionally keep
+   `environment="prod"`: LOCAL traffic must not silently rewrite production
+   policy.
+3. **Prove the notification path honestly.** Configure an owned real Grafana
+   contact point (email is the lowest-friction choice; Slack/Discord/webhook is
+   equally valid when owned and configured by the operator). Use Grafana's
+   contact-point **Test** action first. Then create a separate, clearly named
+   temporary rule in a LOCAL acceptance group:
+
+   ```promql
+   vector(1)
+   ```
+
+   Give that temporary rule a `DANTE acceptance` title, a short evaluation
+   interval and an immediate threshold (`A > 0`). It is a deliberate synthetic
+   delivery probe, not a production health rule. Wait for the real received
+   notification, capture the time/title, then delete the temporary rule. Never
+   point this rule at a production escalation route and never report a merely
+   configured contact point as delivered evidence.
+4. **Prove collector/Grafana-delivery isolation.** With the application and
+   Alloy already healthy, run from the repository root:
+
+   ```bash
+   corepack pnpm observability:prove:collector-outage -- --allow-alloy-outage
+   ```
+
+   The guarded command stops only the exact optional `alloy` Compose service,
+   checks backend readiness three times while the collector path is absent and
+   restores/rechecks Alloy in a `finally` block. It does not stop PostgreSQL,
+   delete a volume or alter application data. This safely proves loss of the
+   collector/Grafana delivery boundary, not an invented provider outage.
+5. **Record the CI ACL proof, do not rerun it against a shared database.**
+   `.github/workflows/backend-ci.yml` runs the disposable PostgreSQL acceptance
+   suite. Its
+   `test_current_catalog.py::test_m3_account_security_lock_is_narrow_and_transaction_scoped`
+   test proves direct runtime `SELECT … FOR UPDATE` is denied, the narrow
+   security-definer lock function is allowed and a second real connection sees
+   the row lock. `test_privileges.py` proves exact role posture and that
+   `dante_observer` reads statistics but no DANTE business state. The suite
+   creates its own disposable database; do not run ACL experiments against a
+   persistent development dataset merely to duplicate CI evidence.
+
+The dashboard update, exact eight-rule catalog, real receipt, reversible
+collector proof and named PostgreSQL CI checks form one acceptance record. Any
+missing item remains `IN PROGRESS`; no dashboard image or local metric alone
+upgrades it to PROD activation.
+
 ## 10. Normal triage order
 
 Use this order to avoid chasing symptoms:
@@ -493,6 +556,7 @@ Never drop availability/error/budget self-signals first.
 [ ] test notification reaches real contact point
 [ ] redaction negative probes PASS
 [ ] Alloy/Grafana outage leaves product available
+[ ] disposable PostgreSQL role/ACL CI job passes
 [ ] Free-plan usage measured and within budget
 ```
 

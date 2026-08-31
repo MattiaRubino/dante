@@ -150,11 +150,11 @@ their exact datasources and checked against live signals.
 | Full backend regression and current-tree quality-gate rerun | PASS; final canonical source-closure run |
 | Full web quality gates | PASS locally; 58 tests, lint, typecheck, production build and bundle budget |
 | Faro/browser activation | PASS operationally; final release-identity smoke remains part of integration acceptance |
-| Source-controlled dashboard import and visual smoke | IN PROGRESS; operator-console source revision published, real-stack import/visual check remains required |
-| Alert evaluation and delivery to a configured contact point | pending |
+| Source-controlled dashboard import and visual smoke | IN PROGRESS; final UID-preserving overwrite/update and visual evidence are required |
+| Exact eight-rule catalog, contact point and received synthetic notification | IN PROGRESS; owned real contact plus temporary LOCAL delivery rule required |
 | Explicit redaction/correlation acceptance query | PASS on activation checkpoint; repeat for the integration release |
-| Collector-outage proof: application remains available | pending |
-| Disposable PostgreSQL role/ACL proof in CI | CI REQUIRED |
+| Collector/Grafana-delivery outage: application remains available | IN PROGRESS; guarded reversible `observability:prove:collector-outage` procedure published |
+| Disposable PostgreSQL role/ACL proof in CI | CI COVERED; Backend PostgreSQL workflow runs exact ACL/row-lock tests; current branch job evidence required |
 
 Historical or earlier runs are never promoted to PASS for the final tree.
 
