@@ -90,13 +90,19 @@ class GrafanaAcceptanceTests(unittest.TestCase):
             "runbook_anchor": "example",
         }
 
-        payload = acceptance._rule_payload(rule, "metrics-uid", "DANTE Operations")
+        payload = acceptance._rule_payload(
+            rule, "metrics-uid", "DANTE Operations", "local"
+        )
 
         self.assertEqual(payload["condition"], "C")
-        self.assertEqual(payload["data"][0]["model"]["expr"], rule["expr"])
+        self.assertEqual(
+            payload["data"][0]["model"]["expr"],
+            'max_over_time(up{environment="local"}[5m])',
+        )
         evaluator = payload["data"][2]["model"]["conditions"][0]["evaluator"]
         self.assertEqual(evaluator, {"params": [1.0], "type": "lt"})
         self.assertEqual(payload["noDataState"], "Alerting")
+        self.assertEqual(payload["labels"]["environment"], "local")
         self.assertEqual(payload["data"][1]["model"]["settings"], {"mode": "dropNN"})
         self.assertEqual(
             payload["notification_settings"]["receiver"], "DANTE Operations"
