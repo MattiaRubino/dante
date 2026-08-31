@@ -1,39 +1,36 @@
-export const WORLD_FOCUS_GEOMETRY_VERSION = 'wf-g1' as const;
+export const WORLD_FOCUS_GEOMETRY_VERSION = 'wf-g2-candidate' as const;
 
-const guidePaths = Object.freeze({
-  outer: 'M8 -100 C154 180 154 820 8 1100',
-  origin: 'M42 -100 C184 180 184 820 42 1100',
-  inner: 'M76 -100 C214 180 214 820 76 1100',
+const guideRadii = Object.freeze({
+  outer: '69.5%',
+  origin: '67.5%',
+  inner: '65.5%',
 });
 
 const layout = Object.freeze({
-  guideViewBox: '0 0 220 1000',
-  railWidth: 'clamp(104px, 12vw, 192px)',
-  compactRailWidth: 'clamp(56px, 16vw, 88px)',
-  workspaceGap: 'clamp(16px, 2vw, 32px)',
-  compactWorkspaceGap: '12px',
+  workspaceInlineInset: 'clamp(136px, 14vw, 224px)',
+  compactWorkspaceInlineInset: 'clamp(76px, 18vw, 112px)',
   workspaceBlockInset: 'clamp(32px, 5vh, 64px)',
   compactWorkspaceBlockInset: '20px',
 });
 
 /**
- * WF-G1 is the approved World Focus geometry authority.
+ * WF-G2 candidate geometry authority.
  *
- * Change control:
- * - do not alter these values as visual polish;
- * - do not duplicate them in projection/module CSS;
- * - changing them requires an explicit World Focus geometry approval and a
- *   deliberate version bump.
+ * The World frame is not made from left/right bezier rails. It is three true,
+ * concentric circles centered on the World Focus surface. Their radii are set
+ * close to the viewport half-diagonal, so clipping by the rectangular surface
+ * exposes only four corner arcs instead of vertical side bulges.
  *
- * The three guide lines mean:
- * - outer + inner: reserved visual-frame band boundaries;
- * - origin: canonical visual origin/reference for future transitions/assets.
+ * Circle semantics:
+ * - outer: outer boundary of the reserved visual-frame band;
+ * - origin: canonical visual origin/reference for future transitions/assets;
+ * - inner: inner boundary of the reserved visual-frame band.
  *
- * The workspace is rectangular application layout and is never clipped to the
- * visual-frame curves.
+ * This remains a candidate until visual QA approves it. Once approved, bump to
+ * a locked version and do not alter these values as visual polish.
  */
 export const WORLD_FOCUS_GEOMETRY = Object.freeze({
   version: WORLD_FOCUS_GEOMETRY_VERSION,
-  guidePaths,
+  guideRadii,
   layout,
 });
