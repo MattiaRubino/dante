@@ -23,12 +23,50 @@
   line-height: 1;
 }
 
+/* Expanded header and event canvas consume the exact geometry published by the
+ * runtime. The group scroller starts where the event layer starts and carries
+ * the event layer's right gutter inside its track, making both scroll ranges
+ * identical instead of relying on two almost-equal CSS/JS calculations. */
+.home-m1 .home-timeline--production .dante-timeline-group-row {
+  grid-template-columns:
+    var(--dante-timeline-ruler-width)
+    var(--timeline-events-left-inset, 44px)
+    minmax(0, 1fr)
+    var(--dante-timeline-expansion-handle-gutter);
+}
+
+.home-m1 .home-timeline--production .dante-timeline-group-track {
+  box-sizing: border-box;
+  grid-template-columns: repeat(
+    var(--timeline-group-count),
+    var(--timeline-expanded-group-width, var(--dante-timeline-group-min-width))
+  );
+  width: var(--timeline-expanded-group-track-width, 100%);
+  min-width: var(--timeline-expanded-group-track-width, 100%);
+  padding-right: var(--timeline-events-right-inset, 16px);
+}
+
+.home-m1 .home-timeline--production .timeline-split-columns,
+.home-m1 .home-timeline--production .timeline-events-layer {
+  inset: 0 var(--timeline-events-right-inset, 16px) 0
+    var(--timeline-events-left-inset, 44px);
+}
+
 /* Event cards are explicitly sized by the temporal layout engine, therefore a
  * size container is safe here and lets typography breathe progressively with
  * the real rendered card height instead of using one fixed scale everywhere. */
 .home-m1 .home-timeline--production .timeline-event-card,
 .timeline-event-drag-overlay {
   container-type: size;
+}
+
+/* The Timeline owns drag, not the browser. Prevent native text/image dragging
+ * and selection from creating a second ghost interaction under the custom
+ * pointer-driven event move. */
+.home-m1 .home-timeline--production .timeline-event-card,
+.home-m1 .home-timeline--production .timeline-event-card * {
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__top,
