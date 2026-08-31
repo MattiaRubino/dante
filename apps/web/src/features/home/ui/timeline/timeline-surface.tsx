@@ -18,6 +18,10 @@ import {
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
 import {
+  timelineEffectiveScrollBehavior,
+  timelinePrefersReducedMotion,
+} from './model/timeline-motion';
+import {
   TIMELINE_POLICY,
   timelineSupportsExpandedLayout,
 } from './model/timeline-policy';
@@ -252,10 +256,14 @@ export function TimelineSurface({
         target.minute === null ? 0 : day.mapper.map(target.minute);
       const viewportOffset = target.viewportOffset ?? 0;
       const top = Math.max(0, day.offsetTop + minuteOffset - viewportOffset);
-      if (target.behavior === 'auto' || typeof grid.scrollTo !== 'function') {
+      const behavior = timelineEffectiveScrollBehavior(
+        target.behavior,
+        timelinePrefersReducedMotion(),
+      );
+      if (behavior === 'auto' || typeof grid.scrollTo !== 'function') {
         grid.scrollTop = top;
       } else {
-        grid.scrollTo({ top, behavior: target.behavior });
+        grid.scrollTo({ top, behavior });
       }
       return true;
     },
