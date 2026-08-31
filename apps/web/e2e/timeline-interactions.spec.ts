@@ -82,52 +82,6 @@ test('a focused card never consumes the first drag gesture on another card', asy
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 
-  await page.evaluate(() => {
-    type PointerTraceEntry = Readonly<{
-      type: string;
-      pointerId: number;
-      button: number;
-      buttons: number;
-      clientX: number;
-      clientY: number;
-      targetTag: string | null;
-      targetClass: string | null;
-      targetEventId: string | null;
-      targetButtonClass: string | null;
-      defaultPrevented: boolean;
-    }>;
-    const traceWindow = window as typeof window & {
-      __timelinePointerTrace?: PointerTraceEntry[];
-    };
-    traceWindow.__timelinePointerTrace = [];
-
-    const record = (event: PointerEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
-      const card = target?.closest<HTMLElement>('[data-timeline-event]') ?? null;
-      const button = target?.closest<HTMLElement>('button') ?? null;
-      traceWindow.__timelinePointerTrace?.push({
-        type: event.type,
-        pointerId: event.pointerId,
-        button: event.button,
-        buttons: event.buttons,
-        clientX: event.clientX,
-        clientY: event.clientY,
-        targetTag: target?.tagName ?? null,
-        targetClass:
-          target instanceof HTMLElement ? target.className || null : null,
-        targetEventId: card?.dataset.timelineEvent ?? null,
-        targetButtonClass: button?.className || null,
-        defaultPrevented: event.defaultPrevented,
-      });
-    };
-
-    document.addEventListener('pointerdown', record, true);
-    document.addEventListener('pointermove', record, true);
-    document.addEventListener('pointerup', record, true);
-    document.addEventListener('pointercancel', record, true);
-    document.addEventListener('lostpointercapture', record, true);
-  });
-
   const focused = page.locator('[data-timeline-event="7"]');
   const target = page.locator('[data-timeline-event="12"]');
   await focused.scrollIntoViewIfNeeded();
@@ -156,60 +110,54 @@ test('a focused card never consumes the first drag gesture on another card', asy
     targetBox.y +
     Math.min(targetBox.height - 12, Math.max(18, targetBox.height * 0.62));
 
-  const hitBefore = await page.evaluate(
-    ({ x, y }) => {
-      const element = document.elementFromPoint(x, y);
-      const card = element?.closest<HTMLElement>('[data-timeline-event]') ?? null;
-      const button = element?.closest<HTMLElement>('button') ?? null;
-      return {
-        tag: element?.tagName ?? null,
-        className:
-          element instanceof HTMLElement ? element.className || null : null,
-        cardId: card?.dataset.timelineEvent ?? null,
-        cardClass: card?.className ?? null,
-        buttonClass: button?.className || null,
-      };
-    },
-    { x: startX, y: startY },
-  );
-
   await page.mouse.move(startX, startY);
   await page.mouse.down();
   await page.mouse.move(startX, startY + 52, { steps: 5 });
 
   const overlay = page.locator('.timeline-event-drag-overlay');
-  const overlayCount = await overlay.count();
-  if (overlayCount !== 1) {
-    const diagnostic = await page.evaluate(() => {
-      const traceWindow = window as typeof window & {
-        __timelinePointerTrace?: unknown[];
-      };
-      const active = document.activeElement;
-      const targetCard = document.querySelector<HTMLElement>(
-        '[data-timeline-event="12"]',
-      );
-      return {
-        trace: traceWindow.__timelinePointerTrace ?? [],
-        activeTag: active?.tagName ?? null,
-        activeClass:
-          active instanceof HTMLElement ? active.className || null : null,
-        targetClass: targetCard?.className ?? null,
-      };
-    });
-    await page.mouse.up();
-    throw new Error(
-      `Timeline first-drag diagnostic:\n${JSON.stringify(
-        { hitBefore, ...diagnostic },
-        null,
-        2,
-      )}`,
-    );
-  }
-
+  await expect(overlay).toHaveCount(1);
   await expect(overlay).toContainText('Promemoria');
 
   await page.mouse.up();
   await expect(overlay).toHaveCount(0);
+});
+
+test('a simple click on another card dismisses focus before retargeting it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+
+  const focused = page.locator('[data-timeline-event="7"]');
+  const target = page.locator('[data-timeline-event="12"]');
+  await focused.scrollIntoViewIfNeeded();
+
+  const focusedBox = await focused.boundingBox();
+  const targetBox = await target.boundingBox();
+  expect(focusedBox).not.toBeNull();
+  expect(targetBox).not.toBeNull();
+  if (!focusedBox || !targetBox) {
+    throw new Error('Expected Timeline focus geometry');
+  }
+
+  const focusedX = focusedBox.x + Math.max(12, focusedBox.width - 16);
+  const focusedY =
+    focusedBox.y +
+    Math.min(focusedBox.height - 12, Math.max(18, focusedBox.height * 0.62));
+  const targetX = targetBox.x + Math.max(12, targetBox.width - 16);
+  const targetY =
+    targetBox.y +
+    Math.min(targetBox.height - 12, Math.max(18, targetBox.height * 0.62));
+
+  await page.mouse.click(focusedX, focusedY);
+  await expect(focused).toHaveClass(/is-focused/);
+
+  await page.mouse.click(targetX, targetY);
+  await expect(focused).not.toHaveClass(/is-focused/);
+  await expect(target).not.toHaveClass(/is-focused/);
+
+  await page.mouse.click(targetX, targetY);
+  await expect(target).toHaveClass(/is-focused/);
 });
 
 test('compact overlap cards stay in a bounded cluster instead of jumping across the canvas', async ({
