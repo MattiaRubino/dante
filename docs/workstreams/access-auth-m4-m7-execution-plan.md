@@ -1,10 +1,11 @@
 # DANTE — Access/Auth M4–M7 Execution Plan
 
-- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-C COMPLETE / M5-D NEXT / M6–M7 PLANNED
+- **Status:** CURRENT EXECUTION PLAN / M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE / M5-E NEXT / M6–M7 PLANNED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Worktree:** `/home/mattia/projects/dante`
 - **Closed prerequisite:** M1–M4 CLOSED; M4 engineering gate PASS; user acceptance ACCEPTED
+- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
@@ -213,7 +214,7 @@ provider/link/register/remove mutations require recent-auth
 provider profile bootstrap expires after <=30 days and never resyncs
 ```
 
-Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A/M5-B/M5-C.
+Frozen public API inventory remains in the M5.2 authority and is materialized later in M5-H/I, not by M5-A/M5-B/M5-C/M5-D.
 
 ---
 
@@ -429,37 +430,61 @@ No Gmail/Calendar/Drive scopes. Public M5 routes, Access Web Google UI and real 
 
 # 7. M5-D — Apple Authentication / Grant / Notifications
 
-**Status:** `NEXT`.
+**Status:** `COMPLETE / ENGINEERING PASS`.
 
-Implement:
+Accepted implementation checkpoint:
 
 ```text
-Apple begin authorization URL
-form_post callback
-transaction claim before code exchange
-server-side code exchange
-ID-token/JWK validation
-new Account / collision / enrollment / reauth / link
-one-shot name staging
-Hide My Email
-pending → active grant binding
-revocation_pending → remote revoke → revoked
-signed server notification verification
-email-disabled/email-enabled event ordering
-consent-revoked/account-deleted reconciliation
+7d13b712f032e8d41d7cf03d406555fd9f3c0160
+chore(auth): finalize M5-D formatting
 ```
 
-Real Web production readiness requires registered HTTPS Services ID/domain and Private Email Relay sender configuration.
+Implemented:
 
-No blind retry of ambiguous authorization-code exchange or non-idempotent provider mutation.
+```text
+Apple Web authorization begin + form_post-compatible topology
+transaction claim before single-use code exchange
+front-channel ID token + server-side exchange identity convergence
+issuer/audience/nonce/exp/iat/subject/c_hash verification
+ES256 Apple client-secret issuance
+ambiguous code exchange → reconciliation-pending, never blind retry
+new Account / collision / enrollment / reauth / link
+one-shot Apple name/profile staging
+Hide My Email classification for privaterelay.appleid.com + private.icloud.com
+AES-256-GCM pending/active Apple grant with grant+issuer+subject+client AAD
+local-first revoke → revocation_pending → remote revoke → revoked
+bounded revocation-pending reconciliation + secret wipe
+signed server notification verification
+email-disabled/email-enabled event-time ordering
+consent-revoked/account-deleted identity/grant reconciliation
+ambiguous DB commit reconciliation
+concurrent same issuer+subject convergence without active-grant regression
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / format-check / lint PASS
+mypy src                                     PASS / 49 source files
+backend fast                                 171 / 171 PASS
+focused real PostgreSQL M5-D                  9 / 9 PASS
+full real PostgreSQL regression              111 / 111 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+The full PostgreSQL acceptance retains M4, Google, M5 persistence, CP6 catalog/constraint/ACL/migration/runtime/transaction proof while proving Apple grant and lifecycle races on real PostgreSQL.
+
+Real Web production readiness still requires registered HTTPS Services ID/domain, Private Email Relay sender configuration and real Apple provider/browser UAT in later M5 gates.
 
 ---
 
 # 8. M5-E — Explicit Linking / Authenticator Management
 
-**Status:** PLANNED.
+**Status:** `NEXT`.
 
-Implement current-account method view and safe link/unlink.
+Materialize current-account method view and safe provider link/unlink lifecycle using the provider-specific proof primitives already accepted in M5-C/M5-D.
 
 Key invariant:
 
@@ -482,7 +507,9 @@ provider proof
 
 Normal provider unlink = local logical revoke first, then provider grant reconciliation where needed.
 
-Implement anti-lockout using backend-authoritative active authenticator counts and recovery reachability.
+M5-E must implement backend-authoritative active authenticator counts and recovery reachability before any removal, and preserve lifetime `(issuer, subject)` ownership.
+
+Do not keep adding provider-neutral lifecycle responsibility to `apple_flow.py`; extract shared authenticator-management collaboration where the M5-E boundary requires it.
 
 ---
 
@@ -720,9 +747,10 @@ M5 ACTIVE
   M5-A COMPLETE / REAL POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
   M5-C COMPLETE / ENGINEERING PASS
-  M5-D NEXT
+  M5-D COMPLETE / ENGINEERING PASS
+  M5-E NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 ```
 
-M5-D is now the exact next slice. It must consume the accepted M5-B shared provider/crypto infrastructure and M5-C provider-flow patterns rather than rebuilding or bypassing them.
+M5-E is now the exact next slice. It must consume the accepted Google/Apple provider-specific proof and lifecycle primitives rather than rebuilding or bypassing them.
