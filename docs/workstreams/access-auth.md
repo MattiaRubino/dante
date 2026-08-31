@@ -1,6 +1,6 @@
 # DANTE — Access/Auth Full-Stack Vertical Workstream
 
-- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-C COMPLETE / M5-D NEXT
+- **Status:** ACTIVE VERTICAL / M1–M4 CLOSED / M5 ACTIVE / M5.1–M5-D COMPLETE / M5-E NEXT
 - **Branch:** `feature/access-auth`
 - **Intended worktree:** `/home/mattia/projects/dante`
 - **Created from protected `main`:** `f011e252b6a294a12c38927ef2d528244ea1fee6`
@@ -11,7 +11,9 @@
 - **M5-A:** COMPLETE / REAL POSTGRESQL PROVEN
 - **M5-B:** COMPLETE / ENGINEERING PASS / provider-JWK-JOSE-AEAD-WebAuthn policy infrastructure
 - **M5-C:** COMPLETE / ENGINEERING PASS / Google authentication + Account creation/collision
-- **M5-D:** NEXT / Apple authentication + grant/notification lifecycle
+- **M5-D:** COMPLETE / ENGINEERING PASS / Apple authentication + grant/notification lifecycle
+- **M5-E:** NEXT / explicit linking + authenticator lifecycle
+- **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
@@ -54,7 +56,7 @@ Read first:
 10. CP6 persistence constitution
 11. `docs/frontend/access.md`
 12. `docs/development/agent-operating-manual.md`
-13. current implementation/tests for the exact M5-D concern
+13. current implementation/tests for the exact M5-E concern
 
 Repository truth beats conversation memory. Do not reinterpret M1–M4 or redo broad M5 discovery from scratch.
 
@@ -449,54 +451,102 @@ M5-C does not expose the later public API/Web UI and does not claim real Google 
 
 ---
 
-## 10. Exact next slice — M5-D
+## 10. M5-D — COMPLETE / ENGINEERING PASS
 
 ```text
 M5-D — Apple Authentication + Grant / Notification Lifecycle
+COMPLETE / ENGINEERING PASS
+```
+
+Accepted implementation checkpoint:
+
+```text
+7d13b712f032e8d41d7cf03d406555fd9f3c0160
+chore(auth): finalize M5-D formatting
+```
+
+Implemented:
+
+```text
+Apple begin + form_post-compatible authorization topology
+state/nonce transaction persistence + pre-exchange single claim
+front/back Apple ID-token identity convergence
+server-side single-attempt authorization-code exchange
+issuer/audience/nonce/exp/iat/subject/c_hash verification
+ES256 Apple client-secret issuance
+one-shot Apple name/profile bootstrap preservation
+Hide My Email recognition for privaterelay.appleid.com and private.icloud.com
+known identity signin / passwordless Account / collision / provider enrollment
+Apple link + reauthentication bound to canonical DANTE AuthSession
+AES-256-GCM grant envelope with exact grant+issuer+subject+client AAD
+pending → active → revocation_pending → revoked Apple grant lifecycle
+local-first revoke + bounded idempotent remote reconciliation
+signed server-notification verification
+email-disabled/email-enabled event-time ordering
+consent-revoked/account-deleted identity/grant reconciliation
+ambiguous DB commit reconciliation + same-sub race convergence
+```
+
+Accepted proof:
+
+```text
+uv lock --check                              PASS
+Ruff autofix / format / format-check / lint PASS
+mypy src                                     PASS / 49 source files
+backend fast                                 171 / 171 PASS
+focused real PostgreSQL M5-D                  9 / 9 PASS
+full real PostgreSQL regression              111 / 111 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+```
+
+M5-D does not expose later public API/Web UI and does not claim Apple registered-domain/browser/provider UAT or Private Email Relay sender setup.
+
+---
+
+## 11. Exact next slice — M5-E
+
+```text
+M5-E — Explicit Linking + Authenticator Lifecycle
 NEXT
 ```
 
-M5-D goal: reuse the accepted provider/runtime and provider-flow foundation while implementing Apple-specific authorization-code, grant, relay and notification semantics without creating parallel auth authority.
+M5-E goal: take the provider-specific link primitives proven in M5-C/M5-D and materialize the provider-neutral Account authenticator-management semantics frozen in M5.2, without creating a second identity/session authority.
 
 Required direction:
 
 ```text
-Apple begin authorization URL
-form_post callback
-claim transaction before code exchange
-server-side code exchange outside DB transaction
-trusted JWK signature + issuer/audience/nonce/expiry/subject validation
-known ExternalIdentity signin
-new Account / collision / provider enrollment
-provider link + reauthentication semantics as frozen
-one-shot Apple name bootstrap preservation
-Hide My Email / provider_email_private semantics
-pending AppleAuthGrant after successful exchange
-pending → active exact ExternalIdentity binding
-revocation_pending → remote revoke → revoked
-signed server notification verification
-email-disabled/email-enabled event-time ordering
-consent-revoked/account-deleted reconciliation
-canonical DANTE AuthSession only
+provider-link challenge inspection + explicit confirmation semantics
+exact Account + recent-auth binding
+lifetime issuer+subject ownership preservation
+GET auth methods projection from durable Account/authenticator truth
+provider unlink = logical ExternalIdentity revoke, never DELETE
+Apple unlink composes with local-first grant revoke/reconciliation already proven in M5-D
+Google unlink keeps lifetime issuer+subject ownership and removes active authenticator reachability only
+anti-lockout before any authenticator removal
+password/passwordless Account coherence
+provider link/unlink concurrency under Account security lock
+no provider-email coincidence as ownership proof
+no provider-data integration grant coupling
+canonical DANTE AuthSession remains the only browser session authority
 ```
 
-Still out of scope for M5-D unless separately re-gated:
+Still out of scope for M5-E unless separately re-gated:
 
 ```text
-full provider unlink/authenticator management
 full passkey ceremonies
-password lifecycle adaptation
-public M5 API/OpenAPI/client
+password establish/remove endpoints beyond lifecycle primitives needed for anti-lockout
+public FastAPI M5 route materialization
+OpenAPI/generated client
 Access Web UI
-provider-data integration authorization
-real whole-M5 provider/browser acceptance
+real provider/browser acceptance
 ```
 
-No blind retry of ambiguous authorization-code exchange or non-idempotent provider mutation.
+M5-E must not simply continue growing `apple_flow.py`; provider-neutral lifecycle logic belongs at the shared authenticator-management boundary when extraction is warranted.
 
 ---
 
-## 11. Provider-enriched onboarding
+## 12. Provider-enriched onboarding
 
 User requirement remains: take **all provider data genuinely useful to DANTE** at mature-app quality, then let DANTE own/edit resulting values later.
 
@@ -540,7 +590,7 @@ Apple name may be one-shot; `account_profile_bootstrap` exists so later lifecycl
 
 ---
 
-## 12. Exact provider/link/passkey invariants carried forward
+## 13. Exact provider/link/passkey invariants carried forward
 
 ### ExternalIdentity
 
@@ -601,7 +651,7 @@ backup/signCount metadata handled as risk state, not fake device identity
 
 ---
 
-## 13. Frozen public API inventory for later M5-H/I
+## 14. Frozen public API inventory for later M5-H/I
 
 ```text
 POST   /api/v1/auth/google/begin
@@ -638,7 +688,7 @@ No frontend route or generated client may redefine these semantics independently
 
 ---
 
-## 14. Whole-vertical state
+## 15. Whole-vertical state
 
 ```text
 M1 CLOSED
@@ -651,7 +701,8 @@ M5 ACTIVE
   M5-A COMPLETE / POSTGRESQL PROVEN
   M5-B COMPLETE / ENGINEERING PASS
   M5-C COMPLETE / ENGINEERING PASS
-  M5-D NEXT
+  M5-D COMPLETE / ENGINEERING PASS
+  M5-E NEXT
 M6 PLANNED
 M7 PLANNED / FINAL GATE
 
