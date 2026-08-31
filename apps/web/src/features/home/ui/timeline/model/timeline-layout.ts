@@ -154,24 +154,23 @@ export function computeTimelineEventLayouts(
     const naturalHeight = mapper.map(event.endMinute) - top;
     const height = Math.max(naturalHeight, timelineEventReadableHeight(event));
 
-    let compactLeftPercent: number;
-    let compactWidthPercent: number;
-    if (compact.laneCount === 1) {
+    let compactLeftPercent = layoutPolicy.compactLeftInsetPercent;
+    let compactWidthPercent = 0;
+    if (compact.laneCount > 1) {
       /*
-       * Zero is an explicit intrinsic-sizing sentinel. Isolated cards have no
-       * horizontal collision constraint, so their width belongs to the DOM
-       * runtime where the real rendered content/font/locale can be measured.
-       * The layout engine only owns their temporal position and shared axis.
+       * Overlap lanes are a compact collision cluster, not full-width calendar
+       * columns. Keep a target lane width until concurrency genuinely needs
+       * more horizontal room; this prevents a two-card overlap from throwing
+       * the second card halfway across a wide desktop timeline.
        */
-      compactLeftPercent = layoutPolicy.compactLeftInsetPercent;
-      compactWidthPercent = 0;
-    } else {
-      const laneSpan =
-        layoutPolicy.compactLaneRegionPercent / compact.laneCount;
-      compactLeftPercent =
-        layoutPolicy.compactLeftInsetPercent + compact.lane * laneSpan;
+      const clusterRegionPercent = Math.min(
+        layoutPolicy.compactLaneRegionPercent,
+        compact.laneCount * layoutPolicy.compactTargetLaneWidthPercent,
+      );
+      const laneSpan = clusterRegionPercent / compact.laneCount;
+      compactLeftPercent += compact.lane * laneSpan;
       compactWidthPercent = Math.max(
-        layoutPolicy.compactAbsoluteMinLaneWidthPercent,
+        0,
         laneSpan - layoutPolicy.compactMultiLaneGapPercent,
       );
       compactWidthPercent = Math.min(
