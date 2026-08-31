@@ -156,7 +156,9 @@ export function timelineExpandedTrackGeometry(
   const safeViewportWidth = Number.isFinite(viewportWidth)
     ? Math.max(1, viewportWidth)
     : 1;
-  const safeGroupCount = Math.max(1, Math.floor(groupCount));
+  const safeGroupCount = Number.isFinite(groupCount)
+    ? Math.max(1, Math.floor(groupCount))
+    : 1;
   const chromeWidth = layout.eventsLeftInsetPx + layout.eventsRightInsetPx;
   const compactInnerWidth = Math.max(1, safeViewportWidth - chromeWidth);
   const expandedInnerWidth = Math.max(
@@ -305,7 +307,9 @@ export function applyTimelineExpansion(
     viewportWidth +
     (expanded.expandedTrackWidth - viewportWidth) * normalizedProgress;
   const compactInner = Math.max(1, viewportWidth - expanded.chromeWidth);
-  const safeGroupCount = Math.max(1, groupCount);
+  const safeGroupCount = Number.isFinite(groupCount)
+    ? Math.max(1, Math.floor(groupCount))
+    : 1;
 
   root.style.setProperty(
     '--timeline-group-opacity',
