@@ -1,6 +1,6 @@
 # DANTE — Access/Auth M5 Persistence + API Contract
 
-- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A PERSISTENCE ACCEPTED / M5-B RUNTIME INFRASTRUCTURE ACCEPTED / M5-C GOOGLE BACKEND ACCEPTED / M5-D APPLE BACKEND ACCEPTED
+- **Status:** CURRENT / BRANCH-LOCAL M5.2 AUTHORITY / DESIGN FREEZE COMPLETE / M5-A–D + GROUP 1 ACCEPTED
 - **Vertical:** Access/Auth
 - **Branch:** `feature/access-auth`
 - **Prerequisite:** M1–M4 CLOSED; M5.1 architecture/external-authority freeze COMPLETE
@@ -9,20 +9,22 @@
 - **M5-B provider/JWK/JOSE/AEAD/WebAuthn policy infrastructure:** COMPLETE / ENGINEERING PASS
 - **M5-C Google authentication + Account creation/collision:** COMPLETE / ENGINEERING PASS
 - **M5-D Apple authentication + grant/notification lifecycle:** COMPLETE / ENGINEERING PASS
-- **Accepted PostgreSQL head:** `20260830_12`
+- **Group 1 / M5-E + M5-G authenticator lifecycle + password/passwordless adaptation:** COMPLETE / ENGINEERING PASS
+- **Accepted PostgreSQL head:** `20260831_13`
 - **Prior accepted persistence baseline:** `20260829_11`
+- **Group 1 accepted implementation checkpoint:** `1c4b7c988eaae130d6a90d43940a42e2a550870d`
 - **M5-D accepted implementation checkpoint:** `7d13b712f032e8d41d7cf03d406555fd9f3c0160`
 - **M5-C accepted implementation checkpoint:** `e6f738a1ea3f5152caa7d99f1d6ccd108747c806`
 - **M5-B accepted implementation checkpoint:** `e2d40a7666e3c0130afecd8113b8063390b86b9d`
 - **M5-A accepted implementation checkpoint:** `7e40e02d301b0812b3f55e0d9d4ce6439e420b2a`
-- **Next execution block:** M5-E + M5-G — Authenticator Lifecycle + Password/Passwordless Adaptation
+- **Next execution block:** M5-F — WebAuthn / Passkeys
 - **Companion authority:** `access-auth-m5-contract.md`
 - **Execution authority:** `../workstreams/access-auth-m4-m7-execution-plan.md`
 - **Binding foundations:** Access/Auth architecture/security/API/testing contracts, ADR-011, Database System of Record, CP6 persistence constitution
 
-This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. M5-C materialized and proved the Google backend application/persistence slice. M5-D materialized and proved the Apple protocol/application/persistence/grant-lifecycle slice. Public M5 API, generated client, Web integration, complete authenticator management and real provider/browser acceptance remain future M5 work.
+This document remains the **exact M5 persistence and public-API design authority**. M5-A materialized and proved the persistence subset. M5-B materialized and proved the shared provider/JWK/JOSE/AEAD/WebAuthn-policy runtime foundation. M5-C materialized and proved the Google backend application/persistence slice. M5-D materialized and proved the Apple protocol/application/persistence/grant-lifecycle slice. Group 1 materialized and proved explicit provider-link/unlink, Account-wide authenticator lifecycle, anti-lockout and password/passwordless adaptation. Passkey ceremonies, public M5 API, generated client, Web integration and real provider/browser acceptance remain later M5 work.
 
-The labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by this contract. They no longer imply seven independent sequential implementation gates. Current execution is grouped as `M5-E + M5-G`, then `M5-F`, then `M5-H + M5-I`, then `M5-J + M5-K+`; the workstream execution plan is authoritative for that grouping.
+The labels `M5-E` through `M5-K+` remain the frozen semantic decomposition used by this contract. They no longer imply seven independent sequential implementation gates. Group 1 (`M5-E + M5-G`) is accepted; current execution continues with `M5-F`, then `M5-H + M5-I`, then `M5-J + M5-K+`. The workstream execution plan is authoritative for that grouping.
 
 ---
 
@@ -277,6 +279,62 @@ git diff --check                             PASS
 The focused PostgreSQL proof covers transaction claim/replay, passwordless Account creation, grant binding/lifecycle, collision/enrollment/link/reauth, signed notification effects, concurrent same-sub convergence and durable revocation reconciliation. The full PostgreSQL regression simultaneously retains M4, Google, M5 persistence and CP6 catalog/constraint/ACL/migration/runtime/transaction proof.
 
 M5-D does not claim public M5 routes/OpenAPI/client, Access Web Apple UI, Apple production registration/configuration, Private Email Relay sender setup or real Apple browser/provider acceptance.
+
+## 0.4 Group 1 / M5-E + M5-G reconciliation
+
+Group 1 materialized the provider-neutral Account-wide authenticator lifecycle and password/passwordless adaptation. It introduced one ACL-only forward revision and no table-shape, mapping, index or constraint change.
+
+Accepted implementation checkpoint:
+
+```text
+1c4b7c988eaae130d6a90d43940a42e2a550870d
+chore(auth): finalize M5-EG formatting
+```
+
+Accepted persistence delta:
+
+```text
+Alembic 20260831_13
+GRANT DELETE ON dante.password_credential TO dante_runtime
+```
+
+Accepted implementation:
+
+```text
+provider-neutral authentication-method inventory
+provider-first ExternalLinkChallenge inspection/confirmation
+exact Account + recent-auth authority before link confirmation
+ExternalIdentity lifetime binding preserved on reactivation
+provider unlink = logical revoke
+Apple unlink = local ExternalIdentity revoke + AppleAuthGrant revocation_pending before remote reconciliation
+Account-wide direct-authenticator counting under security lock
+anti-lockout requires >=1 direct authenticator
+passwordless safety additionally requires verified recovery-eligible EmailIdentity
+first PasswordCredential establishment through accepted HIBP/Argon2id/pepper policy
+safe PasswordCredential removal
+M4 password recovery adapted to create-or-replace PasswordCredential
+recovery challenge consumption through existing least-privilege DELETE semantics
+provider-link challenge consumption without widening challenge UPDATE ACL
+retained security-sensitive AuthSession bearer rotation
+operation-specific ambiguous commit reconciliation
+concurrent password/provider removal serializes under Account lock and preserves one viable authenticator
+```
+
+Accepted closeout proof:
+
+```text
+uv lock --check                              PASS / 57 packages
+Ruff format/check/lint                       PASS
+mypy src                                     PASS / 50 source files
+backend fast                                 179 / 179 PASS
+focused real PostgreSQL Group 1              16 / 16 PASS
+full real PostgreSQL regression              120 / 120 PASS
+backend build                                PASS / sdist + wheel
+git diff --check                             PASS
+scope audit                                  PASS
+```
+
+The full PostgreSQL regression simultaneously proves M4 lifecycle, Google, Apple, Group-1 lifecycle, CP6 catalog/constraints, current catalog, M5 persistence, migrations, privileges, runtime and transaction behavior against accepted Alembic head `20260831_13`.
 
 ---
 
@@ -750,7 +808,7 @@ SELECT, INSERT, DELETE
 NO UPDATE
 ```
 
-Successful confirm consumes challenge in the same authoritative transaction as identity creation/reactivation.
+Successful confirm consumes challenge in the same authoritative transaction as identity creation/reactivation. Group 1 preserves this least-privilege contract by using conditional `DELETE ... RETURNING` rather than widening runtime UPDATE merely to obtain a row lock.
 
 ---
 
@@ -1076,6 +1134,8 @@ UI checks are advisory only; backend transaction is authority.
 
 Security-sensitive successful mutations that retain the current session rotate its bearer verifier.
 
+Group 1 has materialized and proved this authority for password/provider mutations. M5-F extends it to passkey management.
+
 ---
 
 # 14. Password lifecycle adaptation
@@ -1103,6 +1163,8 @@ valid AuthSession + CSRF + recent auth
 → DELETE PasswordCredential
 → rotate current session bearer
 ```
+
+Accepted runtime ACL after `20260831_13` includes the exact `DELETE` required on `dante.password_credential`; no broader credential-table mutation authority was introduced.
 
 ## Passwordless recovery
 
@@ -1183,7 +1245,7 @@ valid provider proof
 → issuer+subject uniqueness recheck
 → create/reactivate ExternalIdentity
 → bind Apple grant if applicable
-→ consume challenge
+→ conditionally consume challenge
 → rotate current session bearer
 ```
 
@@ -1646,7 +1708,7 @@ problem mapping
 
 ## Real PostgreSQL
 
-M5-A proves the persistence foundation. Later lifecycle slices add focused PG proof only where they add DB/race behavior.
+M5-A proves the persistence foundation. Later lifecycle slices add focused PG proof where they add DB/race behavior.
 
 ```text
 PK/FK/UQ/CHECK/index/ACL
@@ -1663,6 +1725,8 @@ password/recovery races
 M5-C focused PostgreSQL proof is accepted for the Google application/persistence behavior added by that slice.
 
 M5-D focused PostgreSQL proof is accepted for Apple transaction/grant/collision/enrollment/link/reauth/notification/revocation behavior, and the M5-D closeout additionally passed the full 111-test PostgreSQL regression suite.
+
+Group 1 focused PostgreSQL proof is accepted for provider link/unlink, anti-lockout, password establishment/removal, passwordless recovery and concurrent authenticator-removal behavior. Group-1 closeout additionally passed the full 120-test PostgreSQL regression suite on accepted head `20260831_13`.
 
 ## FastAPI HTTP
 
@@ -1729,11 +1793,11 @@ M5-D   Apple grant/callback/notifications                   COMPLETE / ENGINEERI
 GROUP 1
 M5-E + M5-G
 linking + authenticator management/anti-lockout
-+ add/remove password + passwordless recovery              NEXT
++ add/remove password + passwordless recovery              COMPLETE / ENGINEERING PASS
 
 GROUP 2
 M5-F
-WebAuthn/passkeys                                           PLANNED
+WebAuthn/passkeys                                           NEXT
 
 GROUP 3
 M5-H + M5-I
@@ -1771,10 +1835,15 @@ M5-D fast                                      171 / 171 PASS
 M5-D focused real PostgreSQL                    9 / 9 PASS
 M5-D full real PostgreSQL                     111 / 111 PASS
 M5-D Ruff/mypy/build                           PASS
-GROUP 1 / M5-E + M5-G                         NEXT
-GROUP 2 / M5-F                                PLANNED
+GROUP 1 / M5-E + M5-G                         COMPLETE / ENGINEERING PASS
+GROUP 1 fast                                   179 / 179 PASS
+GROUP 1 focused real PostgreSQL                 16 / 16 PASS
+GROUP 1 full real PostgreSQL                   120 / 120 PASS
+GROUP 1 Ruff/mypy/build                        PASS
+accepted Alembic head                         20260831_13
+GROUP 2 / M5-F                                NEXT
 GROUP 3 / M5-H + M5-I                         PLANNED
 GROUP 4 / M5-J + M5-K+                        PLANNED
 ```
 
-M5 as a whole remains ACTIVE. Accepted M5-A persistence, M5-B runtime infrastructure, M5-C Google backend behavior and M5-D Apple backend behavior do not imply authenticator-lifecycle completion, passkeys, public API/Web materialization, browser/provider UAT or whole-M5 completion.
+M5 as a whole remains ACTIVE. Accepted M5-A persistence, M5-B runtime infrastructure, M5-C Google backend, M5-D Apple backend and Group-1 authenticator/password lifecycle do not imply passkey ceremonies, public API/Web materialization, browser/provider UAT or whole-M5 completion.
