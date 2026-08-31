@@ -53,6 +53,31 @@ export function timelineNowViewportOffset(gridHeight: number): number {
   );
 }
 
+export function timelineIntrinsicCardWidth(
+  renderedContentWidth: number,
+  availableWidth: number,
+): number {
+  const layout = TIMELINE_POLICY.layout;
+  const safeAvailableWidth = Math.max(1, availableWidth);
+  const responsiveMaximum = Math.max(
+    layout.compactIntrinsicResponsiveMaxFloorPx,
+    safeAvailableWidth * layout.compactIntrinsicMaxViewportRatio,
+  );
+  const maximum = Math.min(
+    safeAvailableWidth,
+    layout.compactIntrinsicMaxWidthPx,
+    responsiveMaximum,
+  );
+  const minimum = Math.min(layout.compactIntrinsicMinWidthPx, maximum);
+
+  return clampTimelineRuntime(
+    Math.max(0, renderedContentWidth) +
+      layout.compactIntrinsicHorizontalBreathingPx,
+    minimum,
+    maximum,
+  );
+}
+
 export function parseTimelineViewedDate(
   value: string | undefined,
 ): PlainDate | null {
@@ -116,6 +141,24 @@ export function findTimelineDayAtOffset(
   );
 }
 
+function measureTimelineCardContentWidth(card: HTMLElement): number {
+  const selectors = [
+    '.timeline-event-card__title',
+    '.timeline-event-card__time',
+    '.timeline-event-card__meta',
+  ];
+  let maximum = 0;
+
+  for (const selector of selectors) {
+    const element = card.querySelector<HTMLElement>(selector);
+    if (element) {
+      maximum = Math.max(maximum, element.scrollWidth);
+    }
+  }
+
+  return maximum;
+}
+
 export function applyTimelineExpansion(
   root: HTMLElement | null,
   grid: HTMLDivElement | null,
@@ -140,7 +183,10 @@ export function applyTimelineExpansion(
   );
   const trackWidth =
     viewportWidth + (expandedTrack - viewportWidth) * normalizedProgress;
-  const compactInner = Math.max(1, trackWidth - expansion.trackChromeWidthPx);
+  const compactInner = Math.max(
+    1,
+    viewportWidth - expansion.trackChromeWidthPx,
+  );
   const expandedInner = Math.max(
     1,
     expandedTrack - expansion.trackChromeWidthPx,
@@ -179,18 +225,19 @@ export function applyTimelineExpansion(
     const compactLeft = Number(
       card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
     );
-    const compactWidth = Number(
-      card.dataset.compactWidth ?? layout.compactSingleLaneMinWidthPercent,
-    );
+    const compactWidthPercent = Number(card.dataset.compactWidth ?? 0);
     const groupIndex = Math.max(0, Number(card.dataset.groupIndex ?? 0));
     const groupLane = Math.max(0, Number(card.dataset.groupLane ?? 0));
     const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
 
     const leftA = (compactLeft / 100) * compactInner;
-    const widthA = Math.min(
-      (compactWidth / 100) * compactInner,
-      layout.compactSingleLaneMaxWidthPx,
-    );
+    const widthA =
+      compactWidthPercent > 0
+        ? (compactWidthPercent / 100) * compactInner
+        : timelineIntrinsicCardWidth(
+            measureTimelineCardContentWidth(card),
+            compactInner - leftA - expansion.cardInsetPx,
+          );
     const leftB =
       groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
     const widthB = Math.max(
