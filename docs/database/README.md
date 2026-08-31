@@ -2,7 +2,7 @@
 
 - **Status:** CURRENT / MATERIALIZED
 - **PostgreSQL:** 18.6
-- **Alembic head:** `20260830_09`
+- **Alembic head in this tree:** `20260830_09`
 - **Schema:** `dante`
 - **Scope:** current DANTE PostgreSQL architecture, Dictionary, mappings, migrations, lifecycle/recovery integrity, direct proof and documentation consistency
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`
@@ -12,26 +12,27 @@
 
 This directory is the durable current entry point for the DANTE database.
 
-A developer must be able to start here and determine, without chat history:
+A developer must be able to determine from this repository, without chat history:
 
 ```text
 what database objects exist now
-why each object exists
-what every persisted field means
-how identity, references, current state and history are represented
-what PostgreSQL integrity is enforced
+why they exist
+what persisted fields mean
+how identity/references/current/history are represented
+what PostgreSQL integrity and ACL are enforced
 how retirement/redaction and recovery reconciliation work
-what migration and SQLAlchemy mapping implement each object
-what tests prove the current contract
+what migration/mapping/tests implement and prove the contract
 ```
 
-Git/Alembic preserve chronology. Files in this directory describe the **current accepted database**, not obsolete implementation stages.
+Git/Alembic preserve chronology. Current database docs describe the accepted current contract, not obsolete implementation checkpoints.
 
 ## 2. Current materialized database
 
-The current accepted application schema is:
-
 ```text
+PostgreSQL           18.6
+Alembic              20260830_09
+schema               dante
+
 tables               69
 views                  5
 routines              15
@@ -47,13 +48,7 @@ partitioned tables      0
 RLS policies            0
 ```
 
-Current Alembic head:
-
-```text
-20260830_09
-```
-
-Current extensions required by DANTE:
+Required extensions:
 
 ```text
 postgis             3.6.4
@@ -63,19 +58,31 @@ unaccent            1.1
 pg_stat_statements  1.12
 ```
 
-## 3. Current recovery/lifecycle addition
+The pre-recovery protected-main CP6 baseline remains historical evidence:
+
+```text
+20260826_08 / 68|5|14|75|95|68|120|0|0|0
+```
+
+The Recovery workstream adds the bounded forward evolution:
+
+```text
+20260830_09 / 69|5|15|76|97|69|123|0|0|0
+```
+
+Integration status is determined by live Git refs.
+
+## 3. Recovery/lifecycle addition
 
 `20260830_09` materializes the WL-H10 / SC-011 retirement and anti-resurrection contract.
 
-Canonical PostgreSQL now includes:
+Canonical PostgreSQL adds:
 
 ```text
 dante.material_state_retirement
 ```
 
-for explicit retirement/redaction continuity of material state while protected payload may be physically removed.
-
-The current materialized facets covered by this contract are:
+Supported materialized facets:
 
 ```text
 schedule.placement
@@ -90,7 +97,7 @@ For an explicitly retired MaterialState:
 ```text
 MaterialStateRef address/envelope remains truthful
 permitted current/history continuity remains truthful
-material_state_retirement records reason/time/suppression identity
+retirement reason/time/suppression identity remain explicit
 protected payload must be absent
 payload reinsertion is rejected by database-local integrity
 ```
@@ -99,7 +106,7 @@ This is not a universal soft-delete model and does not introduce a generic Entit
 
 ## 4. Recovery suppression ledger boundary
 
-The external recovery suppression ledger is **technical disaster-recovery evidence only**. PostgreSQL remains the sole canonical DANTE persistence surface.
+The external suppression ledger is **technical disaster-recovery evidence only**. PostgreSQL remains the sole canonical DANTE persistence surface.
 
 Protocol v1:
 
@@ -110,32 +117,26 @@ PREPARED durable suppression intent
 → COMMITTED marker bound to PREPARED SHA-256
 ```
 
-Recovery rules:
+Recovery blocks on ambiguity/tamper, including:
 
 ```text
-valid PREPARED + COMMITTED pair
-→ eligible for deterministic suppression reconciliation
-
-missing/unavailable `records/` directory
-unexpected entry inside `records/`
-duplicate MaterialStateRef suppression target
+missing/unavailable records directory
+unexpected entry
+duplicate MaterialStateRef target
 PREPARED without COMMITTED
 COMMITTED without PREPARED
 identity/target mismatch
 hash mismatch
 invalid/non-canonical record
-→ recovery BLOCKED
 ```
 
-The ledger must survive the relevant database-loss boundary independently from PGDATA and from the pgBackRest database-backup repository. Its retention must cover every retained database/object version that could still resurrect the protected payload.
+The ledger must survive the relevant database-loss boundary independently from PGDATA and from the pgBackRest database-backup repository. Its retention must cover the complete resurrection horizon of retained database/WAL/object versions.
 
 ## 5. Authority model
 
-Current representations have distinct jobs and must agree:
-
 ```text
 closed Domain / Logical / Physical
-→ semantic and architectural authority
+→ semantic + architectural authority
 
 PostgreSQL Persistence Constitution + ADR-010
 → reusable PostgreSQL doctrine
@@ -144,7 +145,7 @@ Alembic
 → deployed schema evolution authority
 
 SQLAlchemy MetaData / mappings
-→ application mapping of deployed schema
+→ application representation of deployed schema
 
 real PostgreSQL introspection
 → observed materialized schema
@@ -159,44 +160,19 @@ direct tests / recovery harnesses
 → executable proof
 ```
 
-A mismatch is a defect.
-
-Permanent invariant:
+Permanent reconciliation invariant:
 
 ```text
 DATABASE ARCHITECTURE & REFERENCE
-        ≈
-DATABASE DICTIONARY
-        ≈
-SQLALCHEMY METADATA / MAPPINGS
-        ≈
-ALEMBIC HEAD
-        ≈
-REAL POSTGRESQL SCHEMA
+≈ DATABASE DICTIONARY
+≈ SQLALCHEMY METADATA / MAPPINGS
+≈ ALEMBIC HEAD
+≈ REAL POSTGRESQL SCHEMA
 ```
 
-## 6. Current directory roles
+A mismatch is a defect.
 
-```text
-docs/database/
-├── README.md
-├── dante-postgresql-database.md
-├── dante-postgresql-database-part-2.md ... part-19.md
-├── dictionary/
-│   ├── README.md
-│   ├── scope.json
-│   ├── schema/
-│   ├── tables/
-│   ├── views/
-│   └── routines/
-├── generated/    only when current generated artifacts exist
-├── diagrams/     only when current useful diagrams exist
-└── evolution/    only when a current complex rollout requires durable rationale
-```
-
-The multi-part reference is one logical reference. Where older prose conflicts with a later materialized contract, that conflict is a documentation defect to remove; readers are not expected to reconstruct historical supersession chains.
-
-## 7. Security baseline
+## 6. Security baseline
 
 ```text
 dante_owner      NOLOGIN ownership identity
@@ -215,9 +191,7 @@ material_state_retirement runtime access = SELECT only
 integrity routines not directly executable by runtime
 ```
 
-## 8. DANTE non-collapse obligations
-
-Database work must preserve:
+## 7. Non-collapse obligations
 
 ```text
 technical address anchor != semantic Entity/Thing
@@ -234,7 +208,7 @@ absence / unknown != explicit negative
 idempotency != semantic identity
 ```
 
-## 9. Same-change rule
+## 8. Same-change rule
 
 A structural database change is incomplete unless the same reviewed change updates, as applicable:
 
@@ -243,15 +217,15 @@ Alembic migration
 SQLAlchemy metadata/mappings
 Database Dictionary
 human-readable current database reference
-generated artifacts/diagrams
+generated artifacts/diagrams where governed
 direct tests
 recovery/operational harnesses affected by head/topology
-workstream documentation
+current workstream/project documentation
 ```
 
-No current document may intentionally retain a superseded head, topology, status or semantic contract as a historical snapshot. Git/Alembic provide history.
+Applied migrations are immutable. Current docs must not intentionally retain a superseded head/topology/status as if it were present truth.
 
-## 10. Current QA contract
+## 9. Current QA contract
 
 QA must detect at least:
 
@@ -266,16 +240,16 @@ migration head mismatch
 owner/ACL drift
 retired MaterialState with protected payload
 payload reinsertion after retirement
-ambiguous/tampered recovery suppression records
+ambiguous/tampered suppression records
 recovery target still in recovery when presented as accepted
 structurally bootable but semantically unacceptable restore
 ```
 
-`pg_isready` alone is never a traffic-reopen proof. Recovery acceptance requires `pg_is_in_recovery() = false` plus current structural/security/semantic verification and completed suppression reconciliation.
+`pg_isready` alone is never a traffic-reopen proof. Recovery acceptance requires `pg_is_in_recovery() = false`, current structural/security/semantic verification and completed suppression reconciliation.
 
-## 11. Current proof state
+## 10. Current recovery proof
 
-Direct current recovery proof includes:
+Direct LOCAL proof includes:
 
 ```text
 pgBackRest foundation                         PASS
@@ -287,11 +261,15 @@ SC-011 definitive anti-resurrection           PASS
 whole CP07 operator recovery rehearsal        PASS
 database-local reopen                         PASS
 whole backend suite at CP07 implementation    PASS
+fresh-clone bootstrap                         PASS
+bootstrap idempotence                         PASS
+branch-agnostic runner                        PASS
+exact pushed implementation HEAD CP07         PASS
 remote backup provider                        TBD / NOT ACTIVATED
 production/cloud recovery                     NOT CLAIMED
 ```
 
-The current reusable operator entry points are:
+Permanent operator entry points:
 
 ```text
 infra/local/postgres/recovery/bootstrap-local-recovery.sh
@@ -299,9 +277,7 @@ infra/local/postgres/recovery/cp07-whole-recovery-rehearsal.sh
 docs/operations/postgres-recovery-runbook.md
 ```
 
-The post-closure fresh-clone/branch-agnostic hardening must be rerun on its exact pushed implementation HEAD before its new proof is recorded below.
-
-### Reproducible LOCAL recovery exact-head proof
+### Reproducible LOCAL exact-head proof
 
 Implementation/runtime proof HEAD:
 
@@ -309,40 +285,30 @@ Implementation/runtime proof HEAD:
 789e946a8f096b52f2a440b967120cc3e0a340a3
 ```
 
-Reusable-bootstrap / runner proof:
+Proof summary:
 
 ```text
-validation clone started without recovery secrets         PASS
-first bootstrap created all three LOCAL secrets           PASS
-second bootstrap preserved exact secret contents          PASS
-secret files mode 0600 / ignored / untracked              PASS
-repository Compose validation                              PASS
-repository-built pinned recovery image                     PASS
-runner independent from feature/postgres-recovery name     PASS
-clean attached branch + configured upstream gate           PASS
-whole backend QA on exact hardened tree                    PASS
-pre-push whole CP07 rehearsal                              PASS
-exact pushed implementation HEAD whole CP07 rehearsal      PASS
-database-local reopen                                      PASS
-deterministic PITR A-present / B-absent                    PASS
-old protected X physical resurrection                      PROVEN
-ledger anti-resurrection reconciliation                    PASS
-payload reinsertion after retirement                       REJECTED
-normal LOCAL / retained recovery / CP05 non-interference   PASS
-disposable cleanup                                         PASS
-remote backup provider                                     TBD / NOT ACTIVATED
-production/cloud recovery                                  NOT CLAIMED
+validation clone without recovery secrets                PASS
+first bootstrap created exactly three LOCAL secrets      PASS
+second bootstrap preserved secret contents               PASS
+secret mode 0600 / ignored / untracked                   PASS
+repository Compose validation                            PASS
+repository-built pinned recovery image                   PASS
+branch-name independence                                 PASS
+clean attached branch + configured upstream gate         PASS
+whole backend QA                                          PASS
+pre-push whole CP07 rehearsal                            PASS
+exact pushed implementation HEAD whole CP07              PASS
+database-local reopen                                    PASS
+deterministic PITR A-present / B-absent                  PASS
+old protected X physical resurrection                    PROVEN
+ledger reconciliation                                    PASS
+payload reinsertion after retirement                     REJECTED
+normal LOCAL / retained recovery / CP05 non-interference PASS
+disposable cleanup                                       PASS
 ```
 
-Exact-head runtime relation:
-
-```text
-branch          feature/postgres-recovery
-upstream        origin/feature/postgres-recovery
-recovery image  dante-postgres-recovery:18.6-pgbackrest-2.59.1
-```
-
-Measured LOCAL observations from the exact pushed hardened runner:
+Exact pushed-run LOCAL observations:
 
 ```text
 backup label                              20260831-120208F
@@ -360,43 +326,22 @@ PGDATA loss → database-local reopen       16.261533 s
 
 These are LOCAL rehearsal observations, not production RPO/RTO targets.
 
-
-## 12. Acceptance bar
-
-The Database System of Record succeeds when a new engineer can use the repository alone to:
+## 11. Directory / maintenance map
 
 ```text
-understand current architecture
-locate every real persisted object
-trace objects to migration + mapping + tests
-understand integrity and ACL
-understand current/history/lifecycle semantics
-understand retirement/redaction and anti-resurrection behavior
-identify what is canonical vs recovery/derived/provider state
-run the current database/recovery acceptance procedures
-```
-
-The goal is not documentation volume. The goal is one coherent, inspectable, current database contract.
-
-
-## 13. Database/recovery maintenance map
-
-Use the owning surface rather than patching whichever file is easiest:
-
-```text
-database meaning / current human contract
+current database meaning
 → docs/database/README.md
-→ docs/database/dante-postgresql-database.md + current continuation part
+→ docs/database/dante-postgresql-database.md + current continuation parts
+
+machine-readable database contract
+→ docs/database/dictionary/
 
 forward schema evolution
 → apps/backend/alembic/versions/
 
 SQLAlchemy deployed-schema representation
 → apps/backend/src/dante/platform/database/mappings/
-→ apps/backend/src/dante/platform/database/metadata.py as applicable
-
-machine-readable database contract
-→ docs/database/dictionary/
+→ apps/backend/src/dante/platform/database/metadata.py
 
 database / recovery acceptance tests
 → apps/backend/tests/
@@ -405,7 +350,7 @@ suppression-ledger implementation
 → apps/backend/src/dante/platform/recovery/suppression_ledger.py
 → infra/local/postgres/recovery/recovery-suppression-record-v1.schema.json
 
-PostgreSQL / pgBackRest image and config
+PostgreSQL / pgBackRest image/config
 → infra/local/postgres/
 
 Compose topology / LOCAL secrets boundary
@@ -417,9 +362,10 @@ recovery bootstrap + executable rehearsals
 operator procedure
 → docs/operations/postgres-recovery-runbook.md
 
-recovery status / proof / closure
-→ docs/workstreams/postgres-recovery.md
-→ docs/workstreams/postgres-recovery-execution-plan.md
+closed Recovery branch history
+→ docs/archive/branches/2026-08-feature-postgres-recovery.md (NON-AUTHORITATIVE)
 ```
 
-A structural or semantic change must still obey the same-change rule; this map is navigation, not permission to update only one representation.
+## 12. Acceptance bar
+
+The database System of Record succeeds when a new engineer can use the repository alone to understand current architecture, locate every real persisted object, trace objects to migration/mapping/tests, understand integrity/ACL/current/history/lifecycle semantics, understand anti-resurrection behavior, distinguish canonical from provider/derived/recovery state and execute the current database/recovery acceptance procedures.
