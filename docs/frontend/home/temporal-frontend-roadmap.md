@@ -1,7 +1,7 @@
 # DANTE — Temporal Frontend Roadmap
 
 **Status:** ACTIVE WORKING ROADMAP — pre-backend temporal vertical  
-**Date:** 2026-08-30  
+**Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
 **Consumes:** `docs/frontend/home/temporal-experience-architecture.md`, current Home contract, closed Domain/Logical/Physical semantics and current frontend production standards  
 **Scope stop:** production-grade frontend temporal capability up to, but not including, real backend/API/provider/solver integration
@@ -29,6 +29,8 @@ Do not open many large temporal features at once.
 The assistant owns the technical implementation, architecture, automated tests, accessibility/performance hardening and the concrete manual-test script. The user performs the final visual/manual product pass in the real browser and reports defects, awkward behavior or visual regression. If a slice becomes too large, it must be split into smaller gates without changing the overall roadmap.
 
 A slice is not complete because it renders. It is complete only when the relevant architecture, behavior, error/state handling, keyboard/focus behavior, responsive behavior and tests are closed.
+
+Once the user accepts an observable behavior, it becomes frozen change-controlled behavior. Internal refactoring remains allowed only when the observable contract and its regression guards remain intact. Any deliberate observable change requires explicit user approval before the first production write.
 
 ---
 
@@ -98,16 +100,19 @@ For each scenario define:
 - what the Timeline card shows at rest;
 - what appears only on hover/focus/selection;
 - quick actions;
-- Peek behavior;
-- Detail behavior;
+- direct Detail/open behavior where needed;
 - when Resolution is used;
 - what state must remain invisible unless relevant;
 - semantic intent produced by manual interaction;
 - expected failure/conflict cases.
 
+### Product decision retained
+
+The previously explored generic `Peek` layer was rejected and removed. Do not reintroduce a card → Peek → Detail chain by default. The accepted direction is direct card/action → Detail where inspection is actually needed, with inline card affordances kept bounded and semantic.
+
 ### Exit gate
 
-No UI implementation begins until these scenarios fit the progressive-disclosure model without overloading the Timeline card.
+No deeper application-core UI implementation begins until these scenarios fit the progressive-disclosure model without overloading the Timeline card.
 
 ### User validation
 
@@ -115,53 +120,88 @@ Review the scenario behavior and confirm that the proposed interactions match th
 
 ---
 
-## T1 — Selection → Peek → Detail foundation
+## T1 — Timeline parity and interaction hardening
 
 ### Goal
 
-Create the first real production-depth interaction layer on top of the frozen Timeline visual baseline.
+Bring the accepted Phase-1 Home Timeline to production-depth frontend parity without redesigning its frozen visual/product baseline and without prematurely introducing T2 application-core abstractions.
+
+T1 is a hardening/parity stage, not a new feature-design stage.
 
 ### Work
 
-Implement:
+Close and protect the existing Timeline behavior, including:
 
-- stable selected-item state;
-- mouse, keyboard and focus selection semantics;
-- non-destructive quick inspection/Peek;
-- shared Detail-shell entry;
-- opener/focus restoration;
-- Escape/back semantics;
-- responsive behavior;
-- correct overlay/sheet/dialog ownership;
-- first simple-item Detail profile;
-- typed projection-to-detail boundary;
-- no persistent mutation yet unless needed only to preserve existing Phase-1 behavior.
+- viewed-date navigation and `Ora` semantics;
+- bounded multi-day stream and scroll preservation;
+- semantic-anchor zoom behavior;
+- stable card focus/selection grammar;
+- deselect-first behavior when another card owns focus;
+- precise title/time/subitem action regions;
+- direct Detail entry where already accepted;
+- anchored time-editor behavior and validation;
+- custom pointer drag on the first gesture with no native browser drag ghost;
+- same-day and cross-day movement semantics;
+- snap, duration preservation and end-of-day bounds;
+- undo/recovery for existing move/time-edit behavior;
+- keyboard movement parity;
+- deterministic compact overlap lanes;
+- stable card intrinsic-width/runtime behavior without measurement feedback loops;
+- expanded group/header/event alignment and horizontal synchronization;
+- filters, group ordering and view options;
+- expansion/collapse pointer + keyboard behavior;
+- listener/timer/RAF cleanup and repeated-interaction stability;
+- responsive behavior at accepted Home breakpoints;
+- Chromium + Firefox coverage for critical pointer/focus/drag contracts.
 
-Do not build a universal optional-field Detail object. Create a shared shell with bounded profile/capability composition.
+Do **not** add a generic Peek layer, a universal Detail object, new persistent CRUD semantics, recurrence logic, solver/replan behavior or backend-shaped application abstractions inside T1.
+
+### Frozen behavior boundary
+
+The current accepted behavior is recorded in:
+
+`docs/frontend/home/timeline-t1-frozen-contract.md`
+
+Any deliberate observable change to that contract requires explicit user approval before production code changes. Regression tests protecting accepted behavior must not be weakened simply to make a new implementation pass.
+
+### Current T1 status
+
+Already hardened/frozen:
+
+- `Ora` and date-navigation page-scroll regressions;
+- focus/deselect-first semantics;
+- title/time/subitem hit regions;
+- first-gesture drag including the previously failing focused-card → other-card case;
+- no native drag ghost/text selection;
+- deterministic compact overlap placement;
+- content/runtime width bounds and layout-thrash guards;
+- expanded group geometry/alignment/horizontal sync;
+- same-day drag commit + Undo browser regression;
+- keyboard next-day move + Undo browser regression;
+- Chromium + Firefox execution of the frozen Timeline interaction contract.
+
+Remaining T1 work is handled as bounded parity/hardening slices discovered by audit; do not reopen frozen behavior without a demonstrated defect or an explicitly approved product change.
 
 ### Engineering gate
 
-- format/lint/typecheck;
-- component tests;
-- keyboard/focus tests;
-- existing Timeline regressions remain green;
-- no layout regression at accepted Home breakpoints;
+For each bounded T1 slice, run the relevant subset and do not hand the change to the user until automatic evidence is green:
+
+- touched-file formatting;
+- lint;
+- typecheck;
+- architecture/generated checks where applicable;
+- Timeline model/component tests;
+- production build;
+- Timeline Playwright regression suite;
+- Firefox Timeline contract when pointer/focus/drag behavior is affected;
 - no leaked event listeners/timers/RAF;
-- accessibility audit on new interactive surfaces.
+- no layout regression at accepted Home breakpoints.
 
-### User visual test
+### User visual/manual gate
 
-Assistant supplies a compact script covering:
+Only after the automatic gate is green, provide the smallest manual test script necessary for the changed behavior. The user remains the final visual/product acceptance gate rather than the primary technical bug finder.
 
-- normal width;
-- expanded Timeline;
-- narrow desktop/tablet breakpoint;
-- click vs keyboard open/close;
-- repeated selection of different cards;
-- long title/subitem content;
-- visual hierarchy of Peek/Detail.
-
-After user PASS, freeze T1.
+After the final combined T1 PASS, freeze T1 and proceed to T2.
 
 ---
 
@@ -591,23 +631,12 @@ Fix issues found by the user, rerun gates and mark the slice closed before openi
 
 # 5. Immediate starting point
 
-Start with **T0 → T1**.
+Current stage: **T1 — Timeline parity and interaction hardening**.
 
-The current Timeline visual baseline is already accepted, so the next concrete design/implementation problem is not another Timeline redesign. It is:
+Do not reopen the rejected Peek experiment. Continue auditing the existing Timeline one bounded capability at a time while preserving `timeline-t1-frozen-contract.md`.
 
-```text
-Timeline card
-→ selection
-→ Peek / quick inspection
-→ shared Detail
-```
+Current completed T1 slices include focus/deselect interaction grammar, first-gesture drag, overlap geometry, expanded alignment, browser move/undo regressions and cross-browser pointer coverage.
 
-Use the first scenarios in increasing richness:
+The next T1 work must come from a demonstrated parity/hardening gap in the existing Timeline, not from adding T2/T3 features early.
 
-```text
-simple appointment
-→ English lesson
-→ diet/meal
-```
-
-This establishes the interaction grammar before create/edit/replan and before the dedicated full-page workspace consumes it.
+When T1 has no remaining material parity/hardening gaps and the final combined automatic + user manual gate is green, freeze T1 and move to **T2 — Temporal application core and truthful local adapter**.
