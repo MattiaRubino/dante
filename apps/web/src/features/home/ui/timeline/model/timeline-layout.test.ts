@@ -10,6 +10,7 @@ import {
   computeTimelineGaps,
   computeTimelineOverlapLayout,
 } from './timeline-layout';
+import { TIMELINE_POLICY } from './timeline-policy';
 import type { TimelineEvent, TimelineGroup } from './timeline-types';
 
 const events = TIMELINE_PROTOTYPE_EVENTS['2026-08-04'] ?? [];
@@ -94,6 +95,36 @@ describe('timeline layout engine', () => {
     expect(
       isolated.every((layout) => layout.compactWidthPercent === 0),
     ).toBe(true);
+  });
+
+  it('packs small overlap clusters instead of spreading them across the whole timeline', () => {
+    const mapper = createTimelineTimeMapper(events, 1);
+    const layouts = computeTimelineEventLayouts(
+      events,
+      TIMELINE_GROUPS,
+      mapper,
+    );
+    const cluster = layouts
+      .filter((layout) => ['7', '8', '12'].includes(layout.event.id))
+      .sort((left, right) => left.compactLane - right.compactLane);
+    const first = cluster[0];
+    const last = cluster.at(-1);
+
+    expect(cluster).toHaveLength(3);
+    expect(first).toBeDefined();
+    expect(last).toBeDefined();
+    if (!first || !last) {
+      return;
+    }
+
+    const spread = last.compactLeftPercent - first.compactLeftPercent;
+    expect(spread).toBeCloseTo(
+      TIMELINE_POLICY.layout.compactTargetLaneWidthPercent * 2,
+      6,
+    );
+    expect(spread).toBeLessThan(
+      TIMELINE_POLICY.layout.compactLaneRegionPercent / 2,
+    );
   });
 
   it('keeps overlap lane widths explicit because collisions constrain geometry', () => {
