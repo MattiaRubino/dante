@@ -7,6 +7,7 @@ import {
   buildTimelineRenderedDays,
   findTimelineDayAtOffset,
   parseTimelineViewedDate,
+  timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
 } from './timeline-viewport-runtime';
 
@@ -87,5 +88,24 @@ describe('timeline viewport runtime', () => {
       ),
       6,
     );
+  });
+
+  it('sizes arbitrary isolated content inside stable responsive bounds', () => {
+    const layout = TIMELINE_POLICY.layout;
+
+    expect(timelineIntrinsicCardWidth(40, 1400)).toBe(
+      layout.compactIntrinsicMinWidthPx,
+    );
+    expect(timelineIntrinsicCardWidth(250, 1400)).toBe(
+      250 + layout.compactIntrinsicHorizontalBreathingPx,
+    );
+    expect(timelineIntrinsicCardWidth(4000, 1400)).toBe(
+      layout.compactIntrinsicMaxWidthPx,
+    );
+  });
+
+  it('never lets intrinsic sizing exceed the compact viewport', () => {
+    expect(timelineIntrinsicCardWidth(4000, 240)).toBeLessThanOrEqual(240);
+    expect(timelineIntrinsicCardWidth(20, 120)).toBe(120);
   });
 });
