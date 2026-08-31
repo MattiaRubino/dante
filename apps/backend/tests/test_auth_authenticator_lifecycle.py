@@ -38,7 +38,9 @@ from dante.auth.contracts import AuthenticatorRemovalBlockedError
         ),
     ],
 )
-def test_viable_authenticator_state_accepts_supported_direct_access(state: AuthenticatorState) -> None:
+def test_viable_authenticator_state_accepts_supported_direct_access(
+    state: AuthenticatorState,
+) -> None:
     require_viable_authenticator_state(state)
 
 

@@ -91,11 +91,7 @@ class AuthenticatorState:
     @property
     def direct_authenticator_count(self) -> int:
         """Return the number of direct authenticators represented by this state."""
-        return (
-            int(self.password_present)
-            + self.active_provider_count
-            + self.active_passkey_count
-        )
+        return int(self.password_present) + self.active_provider_count + self.active_passkey_count
 
 
 def require_viable_authenticator_state(state: AuthenticatorState) -> None:
@@ -177,9 +173,7 @@ async def _lock_current_session(
     ):
         raise AuthStateChangedError()
     if require_recent and (
-        auth_session.recent_auth_at
-        + timedelta(seconds=settings.recent_auth_window_seconds)
-        <= now
+        auth_session.recent_auth_at + timedelta(seconds=settings.recent_auth_window_seconds) <= now
     ):
         raise ReauthenticationRequiredError()
 
@@ -639,8 +633,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                     PasswordRecoveryChallengeRow.password_recovery_ref
                     == snapshot.password_recovery_ref,
                     PasswordRecoveryChallengeRow.account_ref == snapshot.account_ref,
-                    PasswordRecoveryChallengeRow.email_identity_ref
-                    == snapshot.email_identity_ref,
+                    PasswordRecoveryChallengeRow.email_identity_ref == snapshot.email_identity_ref,
                     PasswordRecoveryChallengeRow.secret_verifier == snapshot.secret_verifier,
                     PasswordRecoveryChallengeRow.expires_at > mutation_at,
                 )
@@ -811,8 +804,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             async with self._session_factory() as database_session, database_session.begin():
                 persisted = await database_session.scalar(
                     select(PasswordRecoveryChallengeRow).where(
-                        PasswordRecoveryChallengeRow.password_recovery_ref
-                        == password_recovery_ref
+                        PasswordRecoveryChallengeRow.password_recovery_ref == password_recovery_ref
                     )
                 )
         except SQLAlchemyError as exc:
@@ -845,8 +837,7 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
                         )
                         .join(
                             AccountRow,
-                            AccountRow.account_ref
-                            == PasswordRecoveryChallengeRow.account_ref,
+                            AccountRow.account_ref == PasswordRecoveryChallengeRow.account_ref,
                         )
                         .join(
                             EmailIdentityRow,
@@ -924,9 +915,8 @@ class MultiAuthenticatorLifecycleService(AuthLifecycleService):
             and self._session_has_verifier(auth_session, new_session_verifier)
         ):
             return
-        if (
-            credential is None
-            and self._session_has_verifier(auth_session, locked.old_secret_verifier)
+        if credential is None and self._session_has_verifier(
+            auth_session, locked.old_secret_verifier
         ):
             raise AuthServiceUnavailableError(retryable=True)
         raise AuthIntegrityError("ambiguous password establishment reconciliation mismatched state")
@@ -1168,8 +1158,7 @@ class AuthenticatorLifecycleService:
                 raise ProviderLinkAccountMismatchError()
             target_email = await database_session.scalar(
                 select(EmailIdentityRow).where(
-                    EmailIdentityRow.email_identity_ref
-                    == challenge.target_email_identity_ref,
+                    EmailIdentityRow.email_identity_ref == challenge.target_email_identity_ref,
                     EmailIdentityRow.account_ref == locked.account_ref,
                 )
             )
@@ -1244,8 +1233,7 @@ class AuthenticatorLifecycleService:
                     ExternalLinkChallengeRow.provider_code == challenge.provider_code,
                     ExternalLinkChallengeRow.issuer == challenge.issuer,
                     ExternalLinkChallengeRow.subject == challenge.subject,
-                    ExternalLinkChallengeRow.apple_auth_grant_ref
-                    == challenge.apple_auth_grant_ref,
+                    ExternalLinkChallengeRow.apple_auth_grant_ref == challenge.apple_auth_grant_ref,
                     ExternalLinkChallengeRow.continuation_verifier
                     == challenge.continuation_verifier,
                     ExternalLinkChallengeRow.expires_at == challenge.expires_at,

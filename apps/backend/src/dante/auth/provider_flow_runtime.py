@@ -121,9 +121,7 @@ def create_provider_flow_runtime(
         session_factory=database_runtime.session_factory,
         settings=settings,
         apple_reconciler=(
-            apple_service.reconcile_expired_pending_grants
-            if apple_service is not None
-            else None
+            apple_service.reconcile_expired_pending_grants if apple_service is not None else None
         ),
     )
     return ProviderFlowRuntime(

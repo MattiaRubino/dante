@@ -371,7 +371,13 @@ async def _count(runtime: DatabaseRuntime, model: type[Any]) -> int:
 
 @pytest.mark.asyncio
 async def test_remove_password_blocks_last_direct_authenticator(migrated_database: Any) -> None:
-    async with _services(migrated_database) as (lifecycle, _authenticators, _delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        lifecycle,
+        _authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         _account_ref, _email_ref, sessions = await _seed_account(
             runtime,
             email="password-only@example.com",
@@ -392,7 +398,13 @@ async def test_remove_password_blocks_last_direct_authenticator(migrated_databas
 async def test_remove_password_blocks_passwordless_state_without_recovery_email(
     migrated_database: Any,
 ) -> None:
-    async with _services(migrated_database) as (lifecycle, _authenticators, _delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        lifecycle,
+        _authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         account_ref, email_ref, sessions = await _seed_account(
             runtime,
             email="restricted@example.com",
@@ -420,7 +432,13 @@ async def test_remove_password_blocks_passwordless_state_without_recovery_email(
 async def test_establish_password_invalidates_recovery_and_rotates_current_bearer(
     migrated_database: Any,
 ) -> None:
-    async with _services(migrated_database) as (lifecycle, _authenticators, delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        lifecycle,
+        _authenticators,
+        delivery,
+        _kdf,
+        runtime,
+    ):
         account_ref, email_ref, sessions = await _seed_account(
             runtime,
             email="provider-only@example.com",
@@ -452,8 +470,7 @@ async def test_establish_password_invalidates_recovery_and_rotates_current_beare
         async with runtime.session_factory() as session, session.begin():
             auth_session = await session.scalar(
                 select(AuthSessionRow).where(
-                    AuthSessionRow.auth_session_ref
-                    == current.admitted.principal.auth_session_ref
+                    AuthSessionRow.auth_session_ref == current.admitted.principal.auth_session_ref
                 )
             )
         assert auth_session is not None
@@ -522,12 +539,22 @@ async def test_passwordless_recovery_creates_first_password_revokes_sessions_and
         assert unrevoked == 0
         assert session_count == 2
         assert await _count(runtime, PasswordRecoveryChallengeRow) == 0
-        assert isinstance(delivery.latest(PasswordResetNotificationEmail), PasswordResetNotificationEmail)
+        assert isinstance(
+            delivery.latest(PasswordResetNotificationEmail), PasswordResetNotificationEmail
+        )
 
 
 @pytest.mark.asyncio
-async def test_provider_link_reactivates_same_account_lifetime_identity(migrated_database: Any) -> None:
-    async with _services(migrated_database) as (_lifecycle, authenticators, _delivery, _kdf, runtime):
+async def test_provider_link_reactivates_same_account_lifetime_identity(
+    migrated_database: Any,
+) -> None:
+    async with _services(migrated_database) as (
+        _lifecycle,
+        authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         account_ref, email_ref, sessions = await _seed_account(
             runtime,
             email="link-reactivation@example.com",
@@ -575,7 +602,13 @@ async def test_provider_link_reactivates_same_account_lifetime_identity(migrated
 
 @pytest.mark.asyncio
 async def test_provider_link_rejects_authenticated_account_mismatch(migrated_database: Any) -> None:
-    async with _services(migrated_database) as (_lifecycle, authenticators, _delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        _lifecycle,
+        authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         target_account, target_email, _target_sessions = await _seed_account(
             runtime,
             email="link-target@example.com",
@@ -607,7 +640,13 @@ async def test_provider_link_rejects_authenticated_account_mismatch(migrated_dat
 
 @pytest.mark.asyncio
 async def test_unlink_provider_blocks_last_direct_authenticator(migrated_database: Any) -> None:
-    async with _services(migrated_database) as (_lifecycle, authenticators, _delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        _lifecycle,
+        authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         account_ref, email_ref, sessions = await _seed_account(
             runtime,
             email="last-provider@example.com",
@@ -681,9 +720,7 @@ async def test_apple_unlink_is_locally_durable_when_remote_reconciliation_is_pen
                 )
             )
             grant = await session.scalar(
-                select(AppleAuthGrantRow).where(
-                    AppleAuthGrantRow.apple_auth_grant_ref == grant_ref
-                )
+                select(AppleAuthGrantRow).where(AppleAuthGrantRow.apple_auth_grant_ref == grant_ref)
             )
         assert identity is not None
         assert identity.status_code == "revoked"
@@ -698,7 +735,13 @@ async def test_apple_unlink_is_locally_durable_when_remote_reconciliation_is_pen
 async def test_concurrent_password_and_provider_removal_preserves_one_direct_authenticator(
     migrated_database: Any,
 ) -> None:
-    async with _services(migrated_database) as (lifecycle, authenticators, _delivery, _kdf, runtime):
+    async with _services(migrated_database) as (
+        lifecycle,
+        authenticators,
+        _delivery,
+        _kdf,
+        runtime,
+    ):
         account_ref, email_ref, sessions = await _seed_account(
             runtime,
             email="removal-race@example.com",
@@ -727,7 +770,9 @@ async def test_concurrent_password_and_provider_removal_preserves_one_direct_aut
         )
 
         assert sum(isinstance(outcome, IssuedSession) for outcome in outcomes) == 1
-        assert sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        assert (
+            sum(isinstance(outcome, AuthenticatorRemovalBlockedError) for outcome in outcomes) == 1
+        )
         async with runtime.session_factory() as session, session.begin():
             password_count = await session.scalar(
                 select(func.count())

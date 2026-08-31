@@ -20,17 +20,9 @@ _RUNTIME = "dante_runtime"
 
 def upgrade() -> None:
     """Allow only governed removal of the optional current PasswordCredential."""
-    op.execute(
-        sa.text(
-            f"GRANT DELETE ON TABLE {_SCHEMA}.password_credential TO {_RUNTIME}"
-        )
-    )
+    op.execute(sa.text(f"GRANT DELETE ON TABLE {_SCHEMA}.password_credential TO {_RUNTIME}"))
 
 
 def downgrade() -> None:
     """Restore the prior M4/M5-A runtime ACL exactly."""
-    op.execute(
-        sa.text(
-            f"REVOKE DELETE ON TABLE {_SCHEMA}.password_credential FROM {_RUNTIME}"
-        )
-    )
+    op.execute(sa.text(f"REVOKE DELETE ON TABLE {_SCHEMA}.password_credential FROM {_RUNTIME}"))
