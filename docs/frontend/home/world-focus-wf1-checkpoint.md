@@ -1,11 +1,11 @@
 # DANTE — World Focus WF1 Checkpoint
 
-**Status:** WF-G3 GEOMETRY CANDIDATE / USER VISUAL QA PENDING  
+**Status:** **WF0 STRUCTURE FROZEN / WF-G3 GEOMETRY LOCKED**  
 **Date:** 2026-08-31  
 **Branch:** `feature/home-react`  
-**Scope:** dedicated World Focus route + structural geometry candidate
+**Scope:** dedicated World Focus route + frozen structural shell/geometry baseline
 
-This checkpoint supersedes the earlier `/home?focus=...` overlay implementation and the earlier transition experiments.
+This checkpoint supersedes the earlier `/home?focus=...` overlay implementation and all earlier transition/portal geometry experiments.
 
 ## 1. Current architectural decision
 
@@ -23,9 +23,18 @@ World Focus is **not** rendered over Home and Home is **not** its visible backgr
 
 The persistent AppShell Topbar is outside World Focus ownership and remains unchanged.
 
+The authoritative structural contract is:
+
+`docs/frontend/home/world-focus-structural-contract.md`
+
+Machine authorities:
+
+- `prototypes/frontend/shared/contracts/world-focus-structure.contract.json`
+- `prototypes/frontend/shared/contracts/world-focus-shell-responsive.matrix.json`
+
 ## 2. Current interaction
 
-Home keeps its existing World carousel behavior:
+Home keeps the select-then-open World carousel behavior:
 
 ```text
 first activation
@@ -35,125 +44,140 @@ subsequent activation on the centered World
 -> navigate to /worlds/:worldId
 ```
 
-Pointer drag must not open World Focus. Keyboard activation preserves the same select-then-open semantics.
+Pointer drag must not open World Focus. Keyboard activation preserves the same semantics.
 
-## 3. WF-G3 candidate geometry
+The route works without an intermediate ornamental transition.
 
-The geometry authority is:
+## 3. Frozen ownership tree
 
 ```text
-apps/web/src/features/world-focus/model/world-focus-geometry.ts
+AppShell / Global Topbar
+└── /worlds/:worldId
+    └── worldFocus.shell
+        ├── worldFocus.visualFrame
+        ├── worldFocus.workspace
+        └── worldFocus.shellControls
+
+reserved transient future layer:
+worldFocus.overlayLayer
 ```
+
+The visual frame is decorative/reference geometry only. The rectangular workspace is the persistent application-layout authority.
+
+Future AI, modules, widgets, charts, insights and backend-driven projections must consume that workspace rather than redefine the shell.
+
+## 4. WF-G3 locked geometry
+
+Runtime authority:
+
+`apps/web/src/features/world-focus/model/world-focus-geometry.ts`
 
 Geometry version:
 
 ```text
-wf-g3-candidate
+wf-g3
 ```
 
-The World Focus route is intentionally plain during this gate:
-
-- white route surface below the Topbar;
-- three concentric SVG ellipse guides centered on the route;
-- `outer` extends slightly outside the lateral route edge;
-- `origin` is tangent to the left/right route edge at mid-height and is the canonical future animation/asset reference line;
-- `inner` remains slightly inside;
-- the vertical radii are taller than the route half-height so the visible corner arcs are elongated rather than circular;
-- one real rectangular workspace remains independent from those visual guides;
-- the workspace is blue only as temporary geometry/debug visualization.
-
-The workspace is never clipped to a circle or ellipse.
-
-## 4. Geometry change control
-
-WF-G3 remains a candidate until the user visually approves it.
-
-Once approved it is promoted to a locked geometry version. Any later geometry change requires:
-
-1. explicit user/product approval;
-2. intentional edit to the geometry authority;
-3. geometry version bump;
-4. contract test update;
-5. responsive/E2E revalidation;
-6. documentation update in the same change.
-
-Cosmic styling, particles, magic-circle treatment, image/shader assets and optional entry animation are presentation layers. They may use the approved ellipse band but may not silently move it or redefine the workspace.
-
-## 5. Responsive pressure
-
-The desktop pressure widths are:
+Locked ellipse frame:
 
 ```text
+center  cx 50%, cy 50%
+outer   rx 52.25%, ry 90%
+origin  rx 50%,    ry 87%
+inner   rx 47.75%, ry 84%
+```
+
+`origin` is tangent to both lateral route edges at mid-height. `outer` extends beyond it; `inner` remains inside it.
+
+Locked workspace anchors:
+
+```text
+standard inline inset: clamp(136px, 14vw, 224px)
+compact inline inset:  clamp(76px, 18vw, 112px)
+standard block inset:  clamp(32px, 5vh, 64px)
+compact block inset:   20px
+compact tuning max:    720px
+```
+
+The workspace is never clipped to a circle/ellipse. The current blue fill/border is geometry-debug presentation only.
+
+## 5. Responsive freeze
+
+World Focus keeps one macro composition across current web widths:
+
+```text
+Visual Frame
++ Rectangular Workspace
++ Shell Controls
+```
+
+At `<= 720px`, only workspace inset tuning changes. No region is reparented and no second World Focus product surface is introduced.
+
+Pressure widths:
+
+```text
+1856
 1600
 1366
+1200
 1024
 901
+900
+760
+721
+720
+719
+390
 ```
 
-Compact behavior is separately bounded below `720px`.
+No unexpected horizontal overflow is allowed.
 
-At every pressure width:
+## 6. Structural change control
 
-- the origin ellipse remains centered and tangent to the lateral route edges at mid-height;
-- outer remains outside the origin line and inner remains inside it;
-- the rectangular workspace stays independently bounded;
-- no horizontal overflow is allowed.
+WF0/WF-G3 are frozen.
 
-## 6. Current content boundary
+Any later structural/geometry change requires explicit user approval **before** production writes and must deliberately update:
 
-The workspace is intentionally empty except for truthful shell states:
+1. WF0 structural contract;
+2. machine-readable contracts;
+3. geometry version if geometry changes;
+4. unit/E2E guards;
+5. documentation;
+6. responsive validation.
 
-```text
-loading
-ready
-error
-unavailable
-```
+Regression guards must not be weakened merely to accept accidental drift.
 
-No production AI surface, widgets, modules, charts, insight surfaces or backend data are authorized in this geometry gate.
+## 7. What remains intentionally open
 
-## 7. Deferred presentation
+The freeze does not yet decide:
 
-All previous camera/WebGL/portal transition experiments are outside the current runtime target.
+- workspace inner module composition;
+- contextual DANTE AI exact placement;
+- widget grid/drag/resize behavior;
+- AI insight visual grammar;
+- overlays/drill-down presentation;
+- final World skin/colors/textures/particles;
+- optional entry animation;
+- backend/API semantics;
+- World profile/config persistence;
+- module registry / WorldFocusProjection contracts.
 
-The required navigation is currently:
+These decisions must be made inside the frozen shell unless WF0 is intentionally reopened.
 
-```text
-Home
--> World Focus route
-```
+## 8. Quality guards
 
-without an intermediate ornamental transition.
+WF0 is guarded by:
 
-An optional transition may be designed later, but only after the structural geometry is approved and without making navigation depend on it.
+- `tests/prototypes/world-focus-preprod-contracts.py` — machine contract drift;
+- `world-focus-geometry.test.ts` — locked geometry values;
+- `world-focus-page.test.tsx` — React ownership/region/state contract;
+- `world-focus.spec.ts` — route, Topbar, region, pressure-width and overflow contract;
+- Frontend CI runs the World Focus machine drift guard before normal quality gates.
 
-## 8. Current World identity status
+The current branch must still be validated by the real worktree/CI before claiming all gates green.
 
-The current World catalog remains synthetic pre-backend frontend presentation data.
+## 9. Working rule from now on
 
-```text
-World Focus fixture id
-!= Domain identity
-!= backend DTO
-!= database row
-!= persisted World entity
-```
+> **World features consume the World Focus skeleton; they do not renegotiate it.**
 
-No World Domain primitive or database change is introduced by WF1.
-
-## 9. Visual gate now required
-
-Before adding any cosmic/Dr-Strange-style skin, verify in the real browser:
-
-1. Home opens a dedicated `/worlds/:worldId` page;
-2. the Topbar remains exactly the global Topbar;
-3. the area below it is white;
-4. exactly three concentric ellipse guides are visible;
-5. the central/origin guide reaches the left/right route edge at side mid-height;
-6. the outer guide is farther outside and the inner guide farther inside;
-7. the corner arcs look smooth and intentionally oval;
-8. the blue rectangular workspace remains independent from the visual frame;
-9. resizing across the pressure widths behaves predictably;
-10. nothing overflows or changes geometry ownership.
-
-Only after this visual gate is approved can the geometry be marked LOCKED and presentation work resume.
+This is the structural baseline from which the visual skin and then the actual World content can continue.
