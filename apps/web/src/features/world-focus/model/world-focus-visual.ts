@@ -1,11 +1,10 @@
-export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v1' as const;
+export const WORLD_FOCUS_VISUAL_VERSION = 'wf-v2-candidate' as const;
 
 export const WORLD_FOCUS_VISUAL_LAYER = Object.freeze({
   ambient: 'ambient',
-  coronaField: 'corona-field',
+  coronaFallback: 'corona-fallback',
   coronaEnergy: 'corona-energy',
-  coronaGeometry: 'corona-geometry',
-  coronaParticles: 'corona-particles',
+  coronaReference: 'corona-reference',
 } as const);
 
 export type WorldFocusVisualLayer =
