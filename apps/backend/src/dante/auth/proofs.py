@@ -197,20 +197,27 @@ class IssuedFlowProof:
     purpose: FlowProofPurpose
 
 
+def flow_proof_verifier_from_raw(*, purpose: FlowProofPurpose, raw_secret: bytes) -> bytes | None:
+    """Derive a purpose-separated verifier from an exact 32-byte raw capability."""
+    if len(raw_secret) != _SECRET_BYTES:
+        return None
+    domain = _M5_DOMAIN_PREFIX + purpose.value.encode("ascii") + _M5_DOMAIN_SUFFIX
+    return sha256(domain + raw_secret).digest()
+
+
 def flow_proof_verifier(*, purpose: FlowProofPurpose, encoded_secret: str) -> bytes | None:
     raw = _decode_secret(encoded_secret)
     if raw is None:
         return None
-    domain = _M5_DOMAIN_PREFIX + purpose.value.encode("ascii") + _M5_DOMAIN_SUFFIX
-    return sha256(domain + raw).digest()
+    return flow_proof_verifier_from_raw(purpose=purpose, raw_secret=raw)
 
 
 def issue_flow_proof(purpose: FlowProofPurpose) -> IssuedFlowProof:
     raw = secrets.token_bytes(_SECRET_BYTES)
     encoded = _encode_urlsafe(raw)
-    verifier = flow_proof_verifier(purpose=purpose, encoded_secret=encoded)
-    if verifier is None:  # pragma: no cover - generated canonical input cannot fail decoding
-        raise AssertionError("generated flow proof failed canonical decoding")
+    verifier = flow_proof_verifier_from_raw(purpose=purpose, raw_secret=raw)
+    if verifier is None:  # pragma: no cover - generated exact-width input cannot fail
+        raise AssertionError("generated flow proof failed verifier derivation")
     return IssuedFlowProof(secret=SecretStr(encoded), verifier=verifier, purpose=purpose)
 
 
