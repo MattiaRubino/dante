@@ -429,7 +429,7 @@ function TimelineDay({
             >
               ⚑
             </span>
-          ))
+          ))}
         : null}
 
       <div className="timeline-split-columns" aria-hidden="true">
@@ -693,9 +693,19 @@ export function TimelineDayStream({
     ) {
       return;
     }
+    if (runtimeRef.current?.pointerId === pointerEvent.pointerId) {
+      return;
+    }
+
+    const card =
+      target instanceof Element
+        ? target.closest<HTMLElement>('[data-timeline-event]')
+        : null;
+    if (!card) {
+      return;
+    }
 
     cancelDrag();
-    const card = pointerEvent.currentTarget;
     const rect = card.getBoundingClientRect();
     const pointerId = pointerEvent.pointerId;
     runtimeRef.current = {
@@ -874,6 +884,31 @@ export function TimelineDayStream({
       <div
         ref={gridRef}
         className={`timeline-grid${expanded ? ' is-expanded' : ''}`}
+        onPointerDownCapture={(pointerEvent) => {
+          const target = pointerEvent.target;
+          const card =
+            target instanceof Element
+              ? target.closest<HTMLElement>('[data-timeline-event]')
+              : null;
+          const dateSection = card?.closest<HTMLElement>('[data-timeline-date]');
+          const eventId = card?.dataset.timelineEvent ?? null;
+          const dateKey = dateSection?.dataset.timelineDate ?? null;
+          if (!eventId || !dateKey) {
+            return;
+          }
+
+          const day = daysRef.current.find(
+            (candidate) => candidate.dateKey === dateKey,
+          );
+          const event = day?.events.find(
+            (candidate) => candidate.id === eventId,
+          );
+          if (!event) {
+            return;
+          }
+
+          startPointerPress(pointerEvent, dateKey, event);
+        }}
         onClickCapture={(clickEvent) => {
           const target = clickEvent.target;
           const targetCard =
