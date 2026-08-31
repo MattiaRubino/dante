@@ -34,6 +34,7 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
       data-world-focus-visual-version={WORLD_FOCUS_VISUAL_VERSION}
       data-world-focus-motion-character={world.theme.motionCharacter}
       data-world-focus-texture={world.theme.texture}
+      data-world-focus-vfx-boundary="workspace-protected"
       aria-hidden="true"
     >
       <div
@@ -45,7 +46,7 @@ export function WorldFocusVisualFrame({ world }: WorldFocusVisualFrameProps) {
         className="world-focus-corona-energy-renderer"
         data-world-focus-visual-layer={WORLD_FOCUS_VISUAL_LAYER.coronaEnergy}
       >
-        <WorldFocusEnergyCanvas world={world} animated={false} />
+        <WorldFocusEnergyCanvas world={world} animated />
       </div>
 
       <svg
