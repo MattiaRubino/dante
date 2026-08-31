@@ -38,6 +38,22 @@ type TimelineRenderedDayInputs = Readonly<{
   expandedEventIds: ReadonlySet<TimelineEventId>;
 }>;
 
+type TimelineCardContentMeasurement = Readonly<{
+  signature: string;
+  width: number;
+}>;
+
+type TimelineCardGeometry = Readonly<{
+  card: HTMLElement;
+  left: number;
+  width: number;
+}>;
+
+const timelineCardContentWidthCache = new WeakMap<
+  HTMLElement,
+  TimelineCardContentMeasurement
+>();
+
 export function clampTimelineRuntime(
   value: number,
   min: number,
@@ -58,7 +74,12 @@ export function timelineIntrinsicCardWidth(
   availableWidth: number,
 ): number {
   const layout = TIMELINE_POLICY.layout;
-  const safeAvailableWidth = Math.max(1, availableWidth);
+  const safeAvailableWidth = Number.isFinite(availableWidth)
+    ? Math.max(1, availableWidth)
+    : 1;
+  const safeContentWidth = Number.isFinite(renderedContentWidth)
+    ? Math.max(0, renderedContentWidth)
+    : 0;
   const responsiveMaximum = Math.max(
     layout.compactIntrinsicResponsiveMaxFloorPx,
     safeAvailableWidth * layout.compactIntrinsicMaxViewportRatio,
@@ -71,10 +92,45 @@ export function timelineIntrinsicCardWidth(
   const minimum = Math.min(layout.compactIntrinsicMinWidthPx, maximum);
 
   return clampTimelineRuntime(
-    Math.max(0, renderedContentWidth) +
-      layout.compactIntrinsicHorizontalBreathingPx,
+    safeContentWidth + layout.compactIntrinsicHorizontalBreathingPx,
     minimum,
     maximum,
+  );
+}
+
+/**
+ * Compact width is content-driven regardless of overlap. A collision lane is
+ * a maximum available slot, never a reason to inflate a short card. This keeps
+ * an event visually stable when it moves into or out of an overlap cluster.
+ */
+export function timelineCompactCardWidth(
+  renderedContentWidth: number,
+  availableWidth: number,
+  slotMaximumWidth: number | null,
+): number {
+  const intrinsic = timelineIntrinsicCardWidth(
+    renderedContentWidth,
+    availableWidth,
+  );
+  if (slotMaximumWidth === null || !Number.isFinite(slotMaximumWidth)) {
+    return intrinsic;
+  }
+
+  const safeAvailableWidth = Number.isFinite(availableWidth)
+    ? Math.max(1, availableWidth)
+    : 1;
+  const minimumVisibleWidth = Math.min(
+    TIMELINE_POLICY.expansion.cardMinWidthPx,
+    safeAvailableWidth,
+  );
+  const safeSlotMaximum = Math.max(
+    minimumVisibleWidth,
+    Math.min(safeAvailableWidth, slotMaximumWidth),
+  );
+
+  return Math.max(
+    minimumVisibleWidth,
+    Math.min(intrinsic, safeSlotMaximum),
   );
 }
 
@@ -142,21 +198,44 @@ export function findTimelineDayAtOffset(
 }
 
 function measureTimelineCardContentWidth(card: HTMLElement): number {
-  const selectors = [
-    '.timeline-event-card__title',
-    '.timeline-event-card__time',
-    '.timeline-event-card__meta',
-  ];
-  let maximum = 0;
-
-  for (const selector of selectors) {
-    const element = card.querySelector<HTMLElement>(selector);
-    if (element) {
-      maximum = Math.max(maximum, element.scrollWidth);
-    }
+  /*
+   * textContent and the explicit rendered height form a cheap invalidation key:
+   * locale/content/subitem changes and zoom-driven typography changes invalidate
+   * the cache, while expansion frames reuse the same intrinsic measurement.
+   */
+  const signature = `${card.style.height}\u0000${card.textContent ?? ''}`;
+  const cached = timelineCardContentWidthCache.get(card);
+  if (cached?.signature === signature) {
+    return cached.width;
   }
 
+  const elements = card.querySelectorAll<HTMLElement>(
+    [
+      '.timeline-event-card__title',
+      '.timeline-event-card__time',
+      '.timeline-event-card__meta',
+      '.timeline-event-card__subitem span',
+      '.timeline-event-card__expander',
+    ].join(', '),
+  );
+  let maximum = 0;
+  for (const element of elements) {
+    maximum = Math.max(maximum, element.scrollWidth);
+  }
+
+  timelineCardContentWidthCache.set(card, { signature, width: maximum });
   return maximum;
+}
+
+function setPixelStyle(
+  element: HTMLElement,
+  property: 'left' | 'width' | 'minWidth',
+  value: number,
+): void {
+  const next = `${value}px`;
+  if (element.style[property] !== next) {
+    element.style[property] = next;
+  }
 }
 
 export function applyTimelineExpansion(
@@ -211,17 +290,27 @@ export function applyTimelineExpansion(
   );
   root.style.setProperty('--timeline-group-count', String(safeGroupCount));
 
+  const nextTrackWidth = `${trackWidth}px`;
   const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
-  if (stream) {
-    stream.style.minWidth = `${trackWidth}px`;
+  if (stream && stream.style.minWidth !== nextTrackWidth) {
+    stream.style.minWidth = nextTrackWidth;
   }
   root
     .querySelectorAll<HTMLElement>('.timeline-day-section')
     .forEach((section) => {
-      section.style.minWidth = `${trackWidth}px`;
+      if (section.style.minWidth !== nextTrackWidth) {
+        section.style.minWidth = nextTrackWidth;
+      }
     });
 
-  root.querySelectorAll<HTMLElement>('.timeline-event-card').forEach((card) => {
+  /*
+   * Read phase first, write phase second. Interleaving scrollWidth reads with
+   * left/width writes forces repeated synchronous layouts and becomes visibly
+   * expensive during expansion or repeated move operations.
+   */
+  const geometries: TimelineCardGeometry[] = [];
+  const cards = root.querySelectorAll<HTMLElement>('.timeline-event-card');
+  for (const card of cards) {
     const compactLeft = Number(
       card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
     );
@@ -231,25 +320,48 @@ export function applyTimelineExpansion(
     const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
 
     const leftA = (compactLeft / 100) * compactInner;
-    const widthA =
+    const availableA = Math.max(
+      1,
+      compactInner - leftA - expansion.cardInsetPx,
+    );
+    const slotMaximumA =
       compactWidthPercent > 0
-        ? (compactWidthPercent / 100) * compactInner
-        : timelineIntrinsicCardWidth(
-            measureTimelineCardContentWidth(card),
-            compactInner - leftA - expansion.cardInsetPx,
-          );
+        ? Math.min(
+            availableA,
+            (compactWidthPercent / 100) * compactInner,
+          )
+        : null;
+    const widthA = timelineCompactCardWidth(
+      measureTimelineCardContentWidth(card),
+      availableA,
+      slotMaximumA,
+    );
     const leftB =
       groupIndex * groupWidth + (groupLane / groupLanes) * groupWidth;
     const widthB = Math.max(
       expansion.cardMinWidthPx,
       groupWidth / groupLanes - expansion.cardLaneGapPx,
     );
-    const left = leftA + (leftB - leftA) * normalizedProgress;
-    const width = widthA + (widthB - widthA) * normalizedProgress;
 
-    card.style.left = `${left + expansion.cardInsetPx}px`;
-    card.style.width = `${Math.max(expansion.cardMinWidthPx, width)}px`;
-  });
+    geometries.push({
+      card,
+      left: leftA + (leftB - leftA) * normalizedProgress,
+      width: widthA + (widthB - widthA) * normalizedProgress,
+    });
+  }
+
+  for (const geometry of geometries) {
+    setPixelStyle(
+      geometry.card,
+      'left',
+      geometry.left + expansion.cardInsetPx,
+    );
+    setPixelStyle(
+      geometry.card,
+      'width',
+      Math.max(expansion.cardMinWidthPx, geometry.width),
+    );
+  }
 
   if (normalizedProgress < expansion.settledProgress) {
     if (Math.abs(grid.scrollLeft) > syncTolerance) {
