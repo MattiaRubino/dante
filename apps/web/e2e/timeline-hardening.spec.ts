@@ -165,6 +165,20 @@ test('keyboard nudges cross midnight, retain focus, and Undo restores the origin
     )
     .toBe('-2px');
 
+  const focusColors = await card.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const probe = document.createElement('span');
+    probe.style.color = style.getPropertyValue('--timeline-group-color');
+    document.body.appendChild(probe);
+    const groupColor = getComputedStyle(probe).color;
+    probe.remove();
+    return {
+      outlineColor: style.outlineColor,
+      groupColor,
+    };
+  });
+  expect(focusColors.outlineColor).toBe(focusColors.groupColor);
+
   await page.keyboard.press('Alt+ArrowDown');
   await expect(card).toHaveAttribute(
     'aria-label',
