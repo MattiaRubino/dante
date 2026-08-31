@@ -53,6 +53,30 @@ def test_webauthn_challenge_lifetime_is_capped_at_five_minutes() -> None:
         WebAuthnSettings(challenge_lifetime_seconds=301)
 
 
+def test_webauthn_rp_and_origins_are_https_and_same_rp_family() -> None:
+    settings = WebAuthnSettings(
+        rp_id="DANTE.TEST",
+        expected_origins=("https://dante.test", "https://app.dante.test"),
+    )
+    assert settings.rp_id == "dante.test"
+
+    with pytest.raises(ValidationError, match="HTTPS"):
+        WebAuthnSettings(
+            rp_id="dante.test",
+            expected_origins=("http://dante.test",),
+        )
+    with pytest.raises(ValidationError, match="subdomain|RP ID"):
+        WebAuthnSettings(
+            rp_id="dante.test",
+            expected_origins=("https://evil.test",),
+        )
+    with pytest.raises(ValidationError, match="IP address"):
+        WebAuthnSettings(
+            rp_id="127.0.0.1",
+            expected_origins=("https://127.0.0.1",),
+        )
+
+
 def test_passkey_label_and_transport_hints_are_bounded_without_freezing_vocabulary() -> None:
     assert PasskeyFlowService._normalize_label("My security key") == "My security key"
     assert PasskeyFlowService._normalize_transports(("usb", "hybrid", "future-transport")) == (
